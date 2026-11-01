@@ -1,0 +1,8 @@
+ID,Team,Title,Description,Status,Estimate,Priority,Project ID,Project,Creator,Assignee,Labels,Cycle Number,Cycle Name,Cycle Start,Cycle End,Created,Updated,Started,Triaged,Completed,Canceled,Archived,Due Date,Parent issue,Initiatives,Project Milestone ID,Project Milestone,SLA Status,Roadmaps
+ENG-42,Engineering,Ship the onboarding checklist,"Users drop off at step 3.
+
+Spec: https://linear.app/acme/spec/onboarding",In Progress,3,Urgent,p1,Onboarding,ana@example.com,ana@example.com,"Frontend, Growth",12,Cycle 12,2026-10-20T00:00:00.000Z,2026-11-03T00:00:00.000Z,2026-10-01T10:00:00.000Z,2026-10-25T12:00:00.000Z,2026-10-21T09:15:00.000Z,,,,,2026-11-07,,,,,,
+ENG-43,Engineering,Fix flaky login test,,Todo,1,High,,,ben@example.com,Ben Okafor,Bug,12,,,,2026-10-02T10:00:00.000Z,2026-10-02T10:00:00.000Z,,,,,,,,,,,,
+ENG-44,Engineering,Remove the old pricing page,,Done,,Low,p2,Website,ana@example.com,,,,,,,2026-09-02T10:00:00.000Z,2026-09-10T10:00:00.000Z,2026-09-03T10:00:00.000Z,,2026-09-10T10:00:00.000Z,,2026-09-30T10:00:00.000Z,,,,,,,
+ENG-45,Engineering,Write the API changelog,,Backlog,2000,No priority,,,ana@example.com,,,13,,,,2026-10-03T10:00:00.000Z,2026-10-03T10:00:00.000Z,,,,,,,,,,,,
+ENG-46,Engineering,,,Backlog,,,,,,,,,,,,,,,,,,,,,,,,,

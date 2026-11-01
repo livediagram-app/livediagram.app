@@ -8,6 +8,7 @@ import { useMergeDuplicateStatuses } from '@/hooks/plan/useMergeDuplicateStatuse
 import { useTypeStatusJoins } from '@/hooks/plan/useTypeStatusJoins';
 import { usePresetCardTypes } from '@/hooks/plan/usePresetCardTypes';
 import { usePlanTabImport } from '@/hooks/plan/usePlanTabImport';
+import { useTrackerImport } from '@/hooks/plan/useTrackerImport';
 import { usePlanSlice } from '@/hooks/plan/usePlanSlice';
 import { useWorkbenchProjectSession } from '@/components/providers/workbench-session-context';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
@@ -1769,6 +1770,32 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     sessionShareCode,
   });
 
+  // A board from another tool (docs/specs/026-plan/tracker-import.md): an Editor's, into a new Board tab or plan.
+  const trackerImport = useTrackerImport({
+    canImport: !isStructureReadOnly,
+    projectId,
+    ownerId: selfParticipant.id,
+    signedIn: !!accountUserId,
+    teamId: projectTeamId && teams.some((t) => t.id === projectTeamId) ? projectTeamId : null,
+    self: planItems.self,
+    selfParticipant,
+    teamPeople,
+    status: planItems.status,
+    items: planItems.items,
+    tabs,
+    activeId,
+    catalogue: itemTypes.catalogue,
+    types: itemTypes.types,
+    saveType: itemTypes.saveType,
+    write: planItems.write,
+    commitTabs,
+    createTab,
+    markTabLoaded,
+    openTab: setActiveId,
+    openProject,
+    notify: (message) => toast.success(message),
+  });
+
   // Mark the participant's name as "confirmed" — they explicitly
   // dismissed at least one modal that prompted for it. Persisted in
   // localStorage so a returning visitor isn't re-prompted, and clears
@@ -2770,6 +2797,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     identityOnlyScreenOpen,
     importIntoActiveTab,
     importTextIntoActiveTab,
+    trackerImport,
     isPinchingRef,
     isReadOnly,
     // What this session may do (docs/specs/013-workspace/share-roles.md): a Participant's content gestures.

@@ -20,6 +20,7 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   list_threads: 'thread ls',
   change_threads: 'thread reply',
   add_board: 'board add',
+  import_board: 'board import',
   change_board: 'board set',
   change_card_types: 'type apply',
   list_sheets: 'sheet ls',

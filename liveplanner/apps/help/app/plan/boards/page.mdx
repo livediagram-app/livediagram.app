@@ -144,10 +144,10 @@ Cmd-click (Ctrl-click on Windows) or Shift-click cards, or choose **Select** in 
 
 ## Import and Export CSV
 
-On a **Board tab**, the tab's menu (the **⋯** on its tab, or right-click the tab) holds **Import CSV…** and **Export**. **Export** opens the [Export dialog](/help/tabs/export-tabs/#formats-for-each-kind-of-tab) with the board's picture (PNG, SVG or PDF), its Markdown outline and its **CSV**:
+On a **Board tab**, the tab's menu (the **⋯** on its tab, or right-click the tab) holds **Import…** and **Export**. **Export** opens the [Export dialog](/help/tabs/export-tabs/#formats-for-each-kind-of-tab) with the board's picture (PNG, SVG or PDF), its Markdown outline and its **CSV**:
 
 - **CSV** in the Export dialog gives a row per card the board shows, column by column: Key, Title, Type and Status, then the fields its card types have (Assignee, Priority, Start, Due, Estimate, Labels, Description) and your custom fields by name. Anyone who can see the board can download it.
-- **Import CSV…** reads a `.csv` or `.tsv` file and adds each row as a new card. The first row names the columns, in any order and any case; only **Title** is required. **Type** picks one of the board's card types by name (else its first), **Status** a column by name (else the first column), and **Assignee** a person by name. Dates can be `2026-10-11` or day-first like `11/10/2026`. Columns it doesn't know, and values that don't fit, are left out. The import is one step, so a single **Undo** takes every new card back, and the board tells you how many cards were added and how many rows were skipped.
+- **Import…** opens the [Import dialog](/help/tabs/import-tabs/): its **CSV** row reads a `.csv` or `.tsv` file (or drop the file on the dialog) and adds each row as a new card. The first row names the columns, in any order and any case; only **Title** is required. **Type** picks one of the board's card types by name (else its first), **Status** a column by name (else the first column), and **Assignee** a person by name. Dates can be `2026-10-11` or day-first like `11/10/2026`. Columns it doesn't know, and values that don't fit, are left out. The import is one step, so a single **Undo** takes every new card back, and the board tells you how many cards were added and how many rows were skipped.
 
 Importing adds cards, so it is for people who can edit or take part; on a view-only link it is greyed out, as it is on an Archive board.
 

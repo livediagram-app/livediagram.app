@@ -1,6 +1,6 @@
 import { useButtonLabelsSetting } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import dynamic from 'next/dynamic';
-import { tabDataRows } from './tab-data-rows';
+import { intoTabOf } from '@/components/dialogs/import/into-tab';
 import { hasPlanContent } from '@/hooks/plan/usePlanNeeded';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
 import { useState, type ReactNode } from 'react';
@@ -99,6 +99,9 @@ type TabBarProps = {
   // out of the Palette's Import/Export accordion so the per-tab actions
   // all live in one place).
   onImportTab: () => void;
+  // Whether this session may import a board from another tool (docs/specs/026-plan/tracker-import.md): the Import
+  // dialog then always has something to press, so the menu's Import… stays lit on a locked tab too.
+  canImportFromTool?: boolean;
   onExportTab: () => void;
   // The user's other projects (excluding the current one). Drives the
   // "Add to Project" submenu in the tab ellipsis; savedAt versions the
@@ -161,6 +164,7 @@ export function TabBar({
   onDelete,
   onClearContent,
   onImportTab,
+  canImportFromTool = false,
   onExportTab,
   otherProjects,
   onCopyTabTo,
@@ -225,7 +229,8 @@ export function TabBar({
     // A Plan tab's cards are its project's items: it is not added to another project
     // (docs/specs/026-plan/plan-mode.md "Switching modes keeps the tab").
     planTab: hasPlanContent(tab.elements),
-    dataRows: tabDataRows(tab),
+    // Import… opens the one Import dialog: lit while it has a row to press (plan-tabs.md "The Import dialog").
+    canImport: canImportFromTool || !intoTabOf(tab).blocked,
     selfId,
     otherProjects,
     folderNames,

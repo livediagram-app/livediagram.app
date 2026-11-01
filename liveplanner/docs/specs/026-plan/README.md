@@ -11,5 +11,6 @@ Follow the references below only as needed; never upfront.
 - ./plan-tour.md - when working on the Plan tour: the guided tour of Plan mode, on the footer's Start Tour button once a board or Sheet is open and run on it, its Boards and Sheets tracks, the Dashboards tour, its Settings row and telemetry
 - ./plan-agents.md - when working on how agents (MCP, CLI) read the plan, name columns, types and fields, and change card types
 - ./linked-boards.md - when working on linked boards: the Actions board that collects every action, linked cards kept in step with the canvas, Won't Do
+- ./tracker-import.md - when working on importing a Trello, Asana, Jira or Linear export into a new Board tab or plan: reading the file, the preview, the card type, people, comments and the agent doors
 - ./items.md - when working on items and the item store: fields, item types, writes, access, live sync, undo, offline projects, copies, limits
 - ./blueprints/README.md - when implementing Plan mode, the Plan board or the item store: file-level contracts, constants, defaults and tests

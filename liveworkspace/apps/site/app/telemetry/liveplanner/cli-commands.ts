@@ -36,6 +36,7 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   { type: 'ThreadEdit', command: 'thread edit', what: 'editing a comment the agent wrote' },
   { type: 'ThreadDelete', command: 'thread delete', what: 'deleting a comment the agent wrote' },
   { type: 'BoardAdd', command: 'board add', what: 'adding a Plan board' },
+  { type: 'BoardImport', command: 'board import', what: 'importing a board from another tool' },
   { type: 'BoardSet', command: 'board set', what: 'changing a Plan board' },
   { type: 'SheetLs', command: 'sheet ls', what: 'listing a project’s sheets' },
   { type: 'SheetGet', command: 'sheet get', what: 'reading a sheet’s cells' },

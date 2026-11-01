@@ -10,16 +10,19 @@ type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 // Owns its own text / busy / error so the dialog stays simple.
 export function TextImportPanel({
   placeholder,
+  initialText = '',
   onImportText,
   onImportFile,
   onDone,
 }: {
   placeholder: string;
+  // Text already in hand (a file dropped on the Import dialog), shown in the box to import with a press.
+  initialText?: string;
   onImportText: (text: string) => Promise<ImportOutcome>;
   onImportFile: () => Promise<ImportOutcome>;
   onDone: (outcome: DoneOutcome) => void;
 }) {
-  const [text, setText] = useState('');
+  const [text, setText] = useState(initialText);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

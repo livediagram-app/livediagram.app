@@ -12,6 +12,8 @@ type SheetSettingsEntry = {
   controller: SheetController;
   actions: SheetActions;
   onImportCsv: () => void;
+  // A file already in hand (one dropped on the Import dialog), read as Import CSV… reads a picked one.
+  onImportCsvFile: (file: File) => void;
 };
 
 const entries = new Map<string, SheetSettingsEntry>();

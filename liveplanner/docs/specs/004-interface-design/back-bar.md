@@ -9,7 +9,8 @@ a chevron button or a chain of crumbs. With nowhere to go back to, it stands as 
 
 ## Where it is
 
-- The Import and Export format panels: **All formats** then the format.
+- The Export format panels: **All formats** then the format; the Import dialog's steps: **All Imports** then the
+  choice (**liveplanner Tab**, **Trello**).
 - The Tab Style panels: **Tab Style** then **Colours**.
 - A dashboard slot's Add to Slot: **Add to Slot** then **Metrics**.
 - Add Field, once a kind is picked: **All kinds** then the kind (**Text**).

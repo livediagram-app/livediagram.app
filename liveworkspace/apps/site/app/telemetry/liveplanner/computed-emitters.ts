@@ -26,6 +26,7 @@ import {
 } from '@liveplanner/api-schema';
 import { countedVerbs } from '@liveplanner/agent-verbs';
 import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@liveplanner/forms';
+import { TRACKER_SOURCE_NAMES } from '@liveplanner/items';
 import { MCP_TOOL_VERBS } from '@liveplanner/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from '../_shared/event-vocab';
 
@@ -263,6 +264,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'ViewRestored',
       'SheetRestored',
     ],
+  },
+  // A board imported from another tool names the tool (docs/specs/026-plan/tracker-import.md).
+  'apps/editor/hooks/plan/useTrackerImport.ts Plan·Imported': {
+    values: Object.values(TRACKER_SOURCE_NAMES),
   },
   // A form started names its starter, a question added its type (docs/specs/030-forms/forms.md "Telemetry").
   'apps/editor/hooks/forms/useFormActions.ts Form·Created': {

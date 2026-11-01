@@ -45,6 +45,7 @@ import { tabLs, tabView } from './verbs/tab';
 import { itemVerbs } from './verbs/item';
 import { threadVerbs } from './verbs/thread';
 import { boardVerbs } from './verbs/board';
+import { boardImport } from './verbs/board-import';
 import { cardTypeVerbs } from './verbs/card-type';
 import { sheetVerbs } from './verbs/sheet';
 import { formVerbs } from './verbs/form';
@@ -70,6 +71,7 @@ export const VERBS: readonly Verb[] = [
   ...itemVerbs,
   ...threadVerbs,
   ...boardVerbs,
+  boardImport,
   ...cardTypeVerbs,
   ...sheetVerbs,
   ...formVerbs,
@@ -117,7 +119,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'element', alias: 'el', summary: 'Elements: one edit operation a call' },
   { name: 'item', summary: 'Items: the work Plan boards show' },
   { name: 'thread', summary: 'Comment threads on cards' },
-  { name: 'board', summary: 'Plan boards: add one' },
+  { name: 'board', summary: 'Plan boards: add, change or import one' },
   { name: 'type', summary: 'Card types and their fields' },
   { name: 'sheet', summary: 'Sheets: their cells by A1, rows and columns' },
   { name: 'form', summary: 'Forms: build, read and publish one' },

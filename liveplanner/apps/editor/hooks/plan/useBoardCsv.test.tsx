@@ -182,6 +182,27 @@ describe('useBoardCsv', () => {
     expect(plan.addItems).not.toHaveBeenCalled();
   });
 
+  // A CSV dropped on the Import dialog (docs/specs/026-plan/plan-tabs.md "The Import dialog").
+  it('imports a file already in hand, as a picked one', async () => {
+    const plan = planOf();
+    renderHook(() => useBoardCsv('b9', setup), { wrapper: wrap(plan) });
+    boardCsvEntryOf('b9')!.onImportCsvFile(new File(['Title\nA\nB\n'], 'cards.csv'));
+    await vi.waitFor(() => expect(plan.notify).toHaveBeenCalledWith('Added 2 cards'));
+    expect(pickTabFile).not.toHaveBeenCalled();
+  });
+
+  it('refuses a file in hand past the limit without reading it', async () => {
+    const plan = planOf();
+    renderHook(() => useBoardCsv('b10', setup), { wrapper: wrap(plan) });
+    const big = new File(['x'], 'big.csv');
+    Object.defineProperty(big, 'size', { value: BOARD_CSV_MAX_BYTES + 1 });
+    const read = vi.spyOn(big, 'text');
+    boardCsvEntryOf('b10')!.onImportCsvFile(big);
+    await vi.waitFor(() => expect(plan.notify).toHaveBeenCalledWith(BOARD_CSV_TOO_BIG));
+    expect(read).not.toHaveBeenCalled();
+    expect(plan.addItems).not.toHaveBeenCalled();
+  });
+
   it('does nothing when the picker is cancelled', async () => {
     const plan = planOf();
     renderHook(() => useBoardCsv('b7', setup), { wrapper: wrap(plan) });

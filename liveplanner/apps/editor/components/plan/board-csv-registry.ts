@@ -9,6 +9,8 @@ type BoardCsvEntry = {
   // Whether this person may add cards here (an Editor or a Participant, not on an Archive board).
   canImport: boolean;
   onImportCsv: () => void;
+  // A file already in hand (one dropped on the Import dialog), read as Import CSV reads a picked one.
+  onImportCsvFile: (file: File) => void;
   // The board's cards as CSV text, for the Export dialog's CSV (docs/specs/026-plan/plan-tabs.md "Export").
   csvText: () => string;
 };

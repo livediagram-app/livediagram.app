@@ -995,8 +995,8 @@ for a moment at most ([Maximised board](#maximised-board)).
 ## CSV
 
 A board's cards go out to a CSV file from a **Board tab's** Export dialog (its **CSV** format,
-[Export](plan-tabs.md#export)) and come in from its tab menu's **Import CSV…**, in place of the project's Import
-([Board tab and Sheet tab](plan-tabs.md#board-tab-and-sheet-tab)). The files are read and written by the Sheet's CSV reader and writer
+[Export](plan-tabs.md#export)) and come in through the [Import dialog](plan-tabs.md#the-import-dialog)'s **CSV** row
+(its Into This Tab row on a Board tab), or a CSV dropped on that dialog. The files are read and written by the Sheet's CSV reader and writer
 ([CSV](../029-sheets/sheet.md#csv)): RFC 4180 quoting both ways, a comma (or a tab, when the first line holds one; a semicolon when it holds semicolons
 and no comma).
 A download is safe to open: a field a spreadsheet would run as a formula is made inert with a leading `'` (the
@@ -1017,7 +1017,7 @@ column in board order, each column's cards in their order on it. A file named fo
   Time as its UTC instant in ISO 8601 (`2026-10-31T17:00:00Z`), a Date Range as an ISO 8601 interval
   (`2026-10-31/2026-11-02`), a Phone as typed, the rest as written; a Person or Card field that holds several as its names or titles joined by ", ". A field a card's type does not offer is empty on its row.
 
-**Import CSV…** (an Editor or a Participant, who may add cards; dimmed for a Viewer, and on an Archive board) opens a
+**Import CSV** (an Editor or a Participant, who may add cards; dimmed for a Viewer, and on an Archive board) opens a
 file picker (`.csv`, `.tsv`). The first row names the columns, matched case-insensitively by the names the Sheet's
 card functions take ("Title", "Status" or "State", "Assignee" or "Owner", "Due Date", ...) and then by the custom
 fields' labels; a column it does not know is ignored, and so is **Key** (the new cards are numbered afresh). A file

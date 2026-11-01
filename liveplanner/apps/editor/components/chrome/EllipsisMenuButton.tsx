@@ -1,6 +1,5 @@
 import { useState } from 'react';
 
-import type { TabDataRows } from './tab-data-rows';
 import { PortalMenu } from './TabPortalMenu';
 import { EllipsisGlyph } from '@liveworkspace/workbench/components/primitives/EllipsisTriggerButton';
 import { MenuErrorBoundary } from '@/components/primitives/MenuErrorBoundary';
@@ -26,12 +25,12 @@ export function EllipsisMenuButton({
   onDuplicate,
   onClearContent,
   onImport,
+  canImport,
   onExport,
   onCopyTo,
   onToggleLock,
   onDelete,
   planTab,
-  dataRows,
   selfId,
 }: {
   open: boolean;
@@ -57,12 +56,13 @@ export function EllipsisMenuButton({
   onDuplicate: () => void;
   onClearContent: () => void;
   onImport: () => void;
+  // Whether the Import dialog has anything to press; absent, the tab's lock decides.
+  canImport?: boolean;
   onExport: () => void;
   onCopyTo: (targetProjectId: string) => void;
   onToggleLock: () => void;
   onDelete: () => void;
   planTab?: boolean;
-  dataRows?: TabDataRows;
 }) {
   // In state, so the menu anchors to the button on the render that opens it.
   const [button, setButton] = useState<HTMLButtonElement | null>(null);
@@ -90,12 +90,12 @@ export function EllipsisMenuButton({
             onDuplicate={onDuplicate}
             onClearContent={onClearContent}
             onImport={onImport}
+            {...(canImport === undefined ? {} : { canImport })}
             onExport={onExport}
             onCopyTo={onCopyTo}
             onToggleLock={onToggleLock}
             locked={locked}
             planTab={planTab}
-            {...(dataRows ? { dataRows } : {})}
             selfId={selfId}
             otherProjects={otherProjects}
             folderNames={folderNames}

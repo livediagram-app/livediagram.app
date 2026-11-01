@@ -1,5 +1,4 @@
 import { PencilIcon, TrashIcon } from '@/components/primitives/explorer-icons';
-import type { TabDataRows } from './tab-data-rows';
 import { useLayoutEffect, useRef, useState, useCallback } from 'react';
 import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
 import { useMenuDismiss } from '@liveworkspace/workbench/hooks/ui/useMenuDismiss';
@@ -49,12 +48,12 @@ export function PortalMenu({
   onDuplicate,
   onClearContent,
   onImport,
+  canImport,
   onExport,
   onCopyTo,
   onToggleLock,
   locked,
   planTab = false,
-  dataRows,
   selfId,
   otherProjects,
   folderNames,
@@ -78,15 +77,17 @@ export function PortalMenu({
   onRename: () => void;
   onDuplicate: () => void;
   onClearContent: () => void;
+  // Opens the one Import dialog (docs/specs/026-plan/plan-tabs.md "The Import dialog").
   onImport: () => void;
+  // Whether that dialog has anything to press (a board from another tool, or the tab's own import): dimmed when not.
+  // Absent, the tab's lock decides, as for a tab that takes a liveplanner tab's JSON.
+  canImport?: boolean;
   onExport: () => void;
   onCopyTo: (targetProjectId: string) => void;
   onToggleLock: () => void;
   locked: boolean;
   // A Plan tab: Add to Project is off, its cards belong to this project's items.
   planTab?: boolean;
-  // A Board or Sheet tab's own Import, in place of the project's, and its Download CSV after Export (tab-data-rows.ts).
-  dataRows?: TabDataRows;
   // Viewer identity for the Add to Project dialog's thumbnail fetches.
   selfId: string;
   otherProjects: { id: string; name: string; savedAt?: number }[];
@@ -342,9 +343,9 @@ export function PortalMenu({
           <MenuActionRow
             plain
             icon={<FileImportIcon />}
-            label={dataRows?.importLabel ?? 'Import'}
-            onClick={dataRows ? () => (dataRows.onImport?.(), onClose()) : onImport}
-            disabled={locked || (!!dataRows && !dataRows.onImport)}
+            label="Import…"
+            onClick={onImport}
+            disabled={!(canImport ?? !locked)}
           />
           <MenuActionRow plain icon={<FileExportIcon />} label="Export" onClick={onExport} />
           <MenuActionRow

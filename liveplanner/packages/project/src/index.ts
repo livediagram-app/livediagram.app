@@ -383,6 +383,7 @@ export * from './plan-board-rows';
 export * from './cell-comments';
 export * from './comment-thread';
 export * from './card-threads';
+export * from './imported-thread';
 // The whole-project `liveplanner.project` envelope and the per-tab JSON and Markdown export (the editor and the
 // CLI's pull files).
 export * from './project-envelope';

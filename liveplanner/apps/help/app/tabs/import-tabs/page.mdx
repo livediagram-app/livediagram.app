@@ -1,30 +1,46 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ImportMenu, ImportWarning } from '@/components/illustrations/tabs';
+import {
+  ImportChooser,
+  ImportMenu,
+  ImportWarning,
+  TrackerImportPreview,
+} from '@/components/illustrations/tabs';
 
 export const metadata = helpMetadata({
   title: 'Importing a Tab',
   description:
-    'Import into a liveplanner tab: a CSV of cards onto a Board, a CSV of cells into a Sheet, or a Dashboard or Form exported as JSON.',
+    'Import a CSV onto a Board or into a Sheet, a Dashboard or Form from its JSON export, or a whole board from Trello, Asana, Jira or Linear.',
   path: '/help/tabs/import-tabs/',
 });
 
 <ArticleLayout
   title="Importing a Tab"
-  description="Bring work in from a file: rows of a CSV as new cards or cells, or a Dashboard or Form from its JSON export."
+  description="Bring work in from a file: rows of a CSV as new cards or cells, a Dashboard or Form from its JSON export, or a board from Trello, Asana, Jira or Linear."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
 
-**Import** brings content into the tab you are on, from the tab's menu (the **⋯** button on the active tab, or right-click the tab). What it takes depends on what the tab holds: a Board or Sheet reads a **CSV** file, and a Dashboard or Form reads a liveplanner **JSON** export. It is the counterpart to [exporting](/help/tabs/export-tabs/).
+Every import starts in one place: **Import…** in the tab's menu (the **⋯** button on the active tab, or right-click the tab), or **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). It opens the **Import** dialog, a list of everything that can come in. It is the counterpart to [exporting](/help/tabs/export-tabs/).
 
-<Figure caption="The tab menu holds Import, beside Export and Clear.">
+<Figure caption="The tab menu's one Import… row, beside Export and Clear.">
   <ImportMenu />
 </Figure>
 
+The list has two parts:
+
+- **Into This Tab**: what the tab you are on takes. A Board or Sheet takes a **CSV** file, and a Dashboard or Form a liveplanner tab's **JSON** export (the **liveplanner Tab** row).
+- **A Board from Another Tool**: **Trello**, **Asana**, **Jira** and **Linear**, each with a line saying which file to bring and where the tool keeps it.
+
+<Figure caption="The Import dialog on a Board tab: its own CSV, then the four tools, each with the file to bring.">
+  <ImportChooser />
+</Figure>
+
+You can also **drop a file** on the list. liveplanner works out what it is and sends it to the right place: a tab's JSON to the liveplanner Tab import, a Trello, Asana, Jira or Linear export to its preview, and any other CSV into a Board or Sheet tab. If nothing takes it, the dialog says why.
+
 ## A CSV onto a Board
 
-On a Board tab the menu row reads **Import CSV…**. Pick a `.csv` or `.tsv` file and each row after the first becomes a **new card** on the board, added to what is already there:
+On a Board tab, press **CSV** in the Import dialog (or drop the file on it). Pick a `.csv` or `.tsv` file and each row after the first becomes a **new card** on the board, added to what is already there:
 
 - The first row names the columns. **Title** is required; **Type**, **Status**, **Assignee**, **Priority**, **Estimate**, **Start**, **Due**, **Labels**, **Description** and your card types' own fields are read when present, and any column it doesn't know is skipped.
 - A Status that names one of the board's columns puts the card there; otherwise it goes in the first column that fits.
@@ -34,11 +50,11 @@ Files up to 5 MB are read. A board's own **Export** › **CSV** reads straight b
 
 ## A CSV into a Sheet
 
-On a Sheet tab, **Import CSV…** reads a `.csv` or `.tsv` file into the sheet's cells, values read as if you had typed them. If the sheet already has something in it, you choose first: **Replace Sheet**, **Insert at Selection** or **Cancel**. See [Sheets](/help/plan/sheets/).
+On a Sheet tab, the Import dialog's **CSV** row reads a `.csv` or `.tsv` file into the sheet's cells, values read as if you had typed them. If the sheet already has something in it, you choose first: **Replace Sheet**, **Insert at Selection** or **Cancel**. See [Sheets](/help/plan/sheets/).
 
 ## A Dashboard or Form from JSON
 
-On a Dashboard or Form tab the row reads **Import**, and opens the **Import to Tab** dialog. **Paste** a tab's JSON export into the box and press **Import**, or press **Import a file instead** to pick a `.liveplanner-tab.json` file. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/).
+On a Dashboard or Form tab, press **liveplanner Tab** in the Import dialog. **Paste** a tab's JSON export into the box and press **Import**, or press **Import a file instead** to pick a `.liveplanner-tab.json` file. A tab's JSON dropped on the list lands in the box, ready for **Import**. **All Imports** at the top takes you back to the list.
 
 - A **Dashboard** takes only a Dashboard's own export (**Export** › **JSON** on a Dashboard tab): it replaces the dashboard's rows, slots and what they hold. Anything else is turned away with a message, and the dashboard is left as it was. A slot that showed one of the plan's other tabs reads as deleted when the file comes from another plan; clear it or fill it again.
 - A **Form** takes a tab's JSON export, such as a Form exported from another plan.
@@ -53,11 +69,34 @@ Importing JSON **replaces the tab's contents** with what comes in, it does not m
   <ImportWarning />
 </Figure>
 
-Import is greyed out while a tab is [locked](/help/tabs/locking-tabs/), and the tab menu isn't offered on a view-only share link.
+## A Board from Another Tool
+
+Moving a team over from **Trello**, **Asana**, **Jira** or **Linear**? Open **Import…** and press the tool's row, then choose its export (or drop the file on the list). Each row says where the tool keeps it:
+
+- **Trello**: the board's menu, then Print, export and share, then Export as JSON.
+- **Asana**: the project's name menu, then Export/Print, then CSV.
+- **Jira**: issue search, then Export, then Export CSV (all fields).
+- **Linear**: Settings, then Import / Export, then Export CSV.
+
+The file says which tool it came from, so a Jira file chosen from the Trello row is still read as Jira's. The dialog reads it and shows what it will make before anything is written: the board's columns with their cards, how each of the tool's fields becomes a card field (built in, such as Due or Labels, or a **New Field** on the card type), the people, the comments and anything left out, such as archived cards. Then choose **New Board Tab in This Plan** or **New Plan**, and press **Import**.
+
+<Figure caption="The preview: the board read from the file, its columns, and where it goes. All Imports goes back to the list.">
+  <TrackerImportPreview />
+</Figure>
+
+- Lists or statuses become the board's **columns**, in the tool's order; a board takes up to 12, and the rest share an **Other** column.
+- The cards are one new card type per tool (Trello Card, Asana Task, Jira Issue or Linear Issue), so they keep their own fields. Importing from the same tool again reuses it.
+- Each card keeps its title, description, labels, dates, checklist, priority and estimate. Its **comments** go into one **Imported comments** thread on the card, each starting with who wrote it and when. They mention nobody and send no emails.
+- People are matched by email to the plan's team, then by name to people already on the plan; anyone else is added by name.
+- Attachments are not copied. Each one's link is added to the end of the card's description instead.
+
+A file reads up to 20 MB and 2,000 cards, and an import is never made in part: when the plan has no room for every card, the tab choice is greyed out with the reason, and the board goes into a new plan instead. Into this plan, Undo takes the cards, the tab and the card type back a step at a time. It is a one-off copy: nothing links back to the other tool, and a second import makes a second board. Making a tab, columns and a card type is an Editor's, so only an Editor sees the A Board from Another Tool rows. Agents can do the same with [`import_board`](/help/account-and-data/connect-ai-mcp/).
+
+While a tab is [locked](/help/tabs/locking-tabs/), its Into This Tab row is greyed out with the reason; a board from another tool still comes in, as a new tab. The tab menu isn't offered on a view-only share link.
 
 <Tip>
-  Moving cards in from another tool? Export them from there as a CSV with a Title column, then use
-  **Import CSV…** on a Board tab.
+  Coming from a tool that isn't listed? Export its cards as a CSV with a Title column, then import
+  it on a Board tab with the Import dialog's **CSV** row.
 </Tip>
 
 </ArticleLayout>

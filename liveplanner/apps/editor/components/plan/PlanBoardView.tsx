@@ -121,7 +121,7 @@ export function PlanBoardView({
   const types = plan?.types ?? ITEM_TYPES;
   // The board's set-up as saved: what Setup Board, the CSV and every set-up change start from.
   const fullSetup = useMemo(() => normaliseBoardSetup(element.planBoard), [element.planBoard]);
-  // Its Board tab's Import CSV… and Download CSV (docs/specs/026-plan/plan-board.md "CSV").
+  // Its Board tab's CSV import (the Import dialog's CSV row) and Download CSV (docs/specs/026-plan/plan-board.md "CSV").
   useBoardCsv(element.id, fullSetup);
   // Maximised, for this person only (docs/specs/026-plan/plan-board.md "Maximised board").
   // Or filling its tab, for everyone ("Fill Tab"): no Maximise/Restore then, and Escape leaves it be.

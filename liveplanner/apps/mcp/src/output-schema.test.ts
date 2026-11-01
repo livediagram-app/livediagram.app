@@ -401,6 +401,20 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     args: { projectId: 'd1', tabId: 'f1', columns: ['Ideas', 'Done'], types: ['Task'] },
   },
   {
+    tool: 'import_board',
+    output: 'importBoardOutput',
+    args: {
+      projectId: 'd1',
+      content: 'ID,Title,Status,Team,Assignee\nX-1,One,To Do,Eng,Ana\nX-2,Two,Done,Eng,',
+      preview: true,
+    },
+  },
+  {
+    tool: 'import_board',
+    output: 'importBoardOutput',
+    args: { content: 'ID,Title,Status,Team\nX-1,One,Todo,Eng', name: 'Q4' },
+  },
+  {
     tool: 'change_board',
     output: 'changeBoardOutput',
     args: {

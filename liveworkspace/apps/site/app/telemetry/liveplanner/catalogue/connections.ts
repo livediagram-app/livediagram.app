@@ -90,6 +90,11 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Putting a Plan board on a tab, from a preset or columns by name.',
   ),
   mcpTool(
+    'ImportBoard',
+    'Import Board',
+    'Making a Board tab from a Trello, Asana, Jira or Linear export.',
+  ),
+  mcpTool(
     'ChangeBoard',
     'Change Board',
     'Changing a Plan board’s title, columns or the card types it shows.',

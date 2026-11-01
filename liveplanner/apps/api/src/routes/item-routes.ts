@@ -301,7 +301,9 @@ async function bulk(ctx: PlanRouteContext, projectId: string): Promise<Response>
     return badRequest(`items must be 1 to ${ITEM_BULK_MAX} items`);
   const creates: ItemCreate[] = [];
   const reads: ReadCreate[] = [];
-  let restoring = false;
+  // Its history says Put back only for a card that comes back with its number or votes: an import's cards carry a
+  // new thread (docs/specs/026-plan/tracker-import.md "Comments") and are new cards.
+  let putBack = false;
   const types = typesOf(caller.doc?.itemTypes);
   for (const raw of body.items) {
     const read = readCreate(raw, caller.owner);
@@ -310,7 +312,7 @@ async function bulk(ctx: PlanRouteContext, projectId: string): Promise<Response>
     reads.push(read);
     // A card put back (its number, votes or threads) holds what it held; any other gives no Calculated field a value.
     const restores = input.key !== undefined || input.votes !== undefined || restoresThreads(read);
-    restoring ||= restores;
+    putBack ||= input.key !== undefined || input.votes !== undefined;
     const calculated = restores ? null : calculatedSet(caller, input);
     if (calculated) return rejected('field_calculated', calculated);
     const timed = restores ? null : timeTracked(caller, input);
@@ -330,12 +332,7 @@ async function bulk(ctx: PlanRouteContext, projectId: string): Promise<Response>
   const made = await createMany(ctx, caller, creates);
   if (made instanceof Response) return made;
   relay(ctx, projectId, made.items, [], made.rev);
-  await appendItemHistory(
-    ctx.env,
-    projectId,
-    made.items.map(created),
-    historyTagOf(ctx, restoring),
-  );
+  await appendItemHistory(ctx.env, projectId, made.items.map(created), historyTagOf(ctx, putBack));
   await restoreThreadsOf(ctx, projectId, made.items, reads);
   console.info('[items] bulk created', { projectId, count: made.items.length });
   const answer: ItemsResponse = { items: forCaller(caller, made.items), rev: made.rev };

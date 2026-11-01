@@ -325,7 +325,7 @@ export function BoardCsvArt() {
           <PlanCard x={224} y={20} w={62} title="New logo" id="#62" type="idea" who={AK} />
         </g>
         <text className={TEXT_MUTED} x="156" y="80" fontSize="5">
-          Import CSV… · Export: CSV, PNG, PDF, Markdown
+          Import: CSV, Trello, Jira · Export: CSV, PNG, PDF
         </text>
       </Scene>
     </Frame>
