@@ -11,9 +11,17 @@
 // "tips" stages respect the notifyTips setting in the `all` scope: turned off, the stage is stamped and
 // nothing is sent. Each stage is claimed (stamped) before it is sent, so two runs can't both send it;
 // a failed send takes the stamp back and counts against the row, which leaves every due list at three.
+// Every stage but the welcome waits for the recipient's send window (send-window.ts): the cron runs hourly, and
+// each due list keeps to the accounts whose local time is inside it.
 import type { SiteId } from '@liveworkspace/sites';
 import { lifecycleEmail, type LifecycleEmail, type LifecycleStage } from './lifecycle-email.ts';
 import type { Env } from './env.ts';
+import {
+  sendWindowOf,
+  windowFilter,
+  type SendWindowEnv,
+  type WindowFilter,
+} from './send-window.ts';
 import { isSettingsApp, type SettingsApp } from './settings.ts';
 import { flushServerEvents, reportServerEvent, type TelemetryEnv } from './telemetry.ts';
 
@@ -23,8 +31,8 @@ export const ACTIVATION_DELAY_MS = 3 * DAY_MS;
 export const WINBACK_QUIET_MS = 4 * WEEK_MS;
 // Accounts per stage per run, the longest-waiting first.
 export const SWEEP_LIMIT = 100;
-// Failed sends after which an account leaves every due list: three daily runs ride out an outage, and
-// an address that has failed three days running is dead. A success resets the count.
+// Failed sends after which an account leaves every due list: three runs inside the window ride out a short
+// outage, and an address that has failed three times running is dead. A success resets the count.
 export const MAX_SEND_ATTEMPTS = 3;
 
 export type { LifecycleStage } from './lifecycle-email.ts';
@@ -35,6 +43,8 @@ type Stage = {
   where: string;
   order: string;
   tips: boolean;
+  // Whether it waits for the recipient's send window: every stage but the welcome.
+  windowed: boolean;
   cutoff: (now: number) => number;
 };
 
@@ -46,6 +56,7 @@ const STAGES: Record<LifecycleStage, Stage> = {
     where: 'l.welcome_sent_at IS NULL AND l.created_at <= ?',
     order: 'l.created_at',
     tips: false,
+    windowed: false,
     cutoff: (now) => now,
   },
   activation: {
@@ -54,6 +65,7 @@ const STAGES: Record<LifecycleStage, Stage> = {
       'l.activation_sent_at IS NULL AND l.week1_sent_at IS NULL AND l.active_at IS NULL AND l.created_at <= ?',
     order: 'l.created_at',
     tips: true,
+    windowed: true,
     cutoff: (now) => now - ACTIVATION_DELAY_MS,
   },
   week1: {
@@ -61,6 +73,7 @@ const STAGES: Record<LifecycleStage, Stage> = {
     where: 'l.week1_sent_at IS NULL AND l.created_at <= ?',
     order: 'l.created_at',
     tips: true,
+    windowed: true,
     cutoff: (now) => now - WEEK_MS,
   },
   week2: {
@@ -68,6 +81,7 @@ const STAGES: Record<LifecycleStage, Stage> = {
     where: 'l.week2_sent_at IS NULL AND l.created_at <= ?',
     order: 'l.created_at',
     tips: true,
+    windowed: true,
     cutoff: (now) => now - 2 * WEEK_MS,
   },
   winback: {
@@ -76,6 +90,7 @@ const STAGES: Record<LifecycleStage, Stage> = {
     where: 'l.winback_sent_at IS NULL AND l.active_at <= ?',
     order: 'l.active_at',
     tips: true,
+    windowed: true,
     cutoff: (now) => now - WINBACK_QUIET_MS,
   },
 };
@@ -96,16 +111,19 @@ type Due = {
 };
 
 // One query a stage: the owed rows by their partial index, each joined by primary key to the account
-// (a verified address), its `all` settings and, when it didn't sign up through an app, its first app.
+// (a verified address), its `all` settings and, when it didn't sign up through an app, its first app; a
+// windowed stage keeps to the accounts inside their send window, by their stored zone.
 function dueStatement(
   db: D1Database,
   stage: LifecycleStage,
   now: number,
   limit: number,
-  ids?: string[],
+  ids: string[] | undefined,
+  window: WindowFilter | null,
 ): D1PreparedStatement {
   const spec = STAGES[stage];
   const only = ids ? 'AND l.user_id IN (SELECT value FROM json_each(?))' : '';
+  const inWindow = window ? `AND ${window.sql}` : '';
   return db
     .prepare(
       `SELECT l.user_id, u.email, l.send_attempts AS attempts,
@@ -116,18 +134,26 @@ function dueStatement(
        FROM email_lifecycle l
        JOIN "user" u ON u.id = l.user_id
        LEFT JOIN settings s ON s.owner_id = l.user_id AND s.scope = 'all'
-       WHERE ${spec.where} AND l.send_attempts < ? AND u.emailVerified = 1 ${only}
+       WHERE ${spec.where} AND l.send_attempts < ? AND u.emailVerified = 1 ${only} ${inWindow}
        ORDER BY ${spec.order} LIMIT ?`,
     )
-    .bind(spec.cutoff(now), MAX_SEND_ATTEMPTS, ...(ids ? [JSON.stringify(ids)] : []), limit);
+    .bind(
+      spec.cutoff(now),
+      MAX_SEND_ATTEMPTS,
+      ...(ids ? [JSON.stringify(ids)] : []),
+      ...(window ? [window.bind] : []),
+      limit,
+    );
 }
 
 export type SendEmail = (email: LifecycleEmail & { to: string }) => Promise<void>;
 export type Outcome = 'sent' | 'skipped' | 'failed' | 'taken';
 export type StageCounts = Record<Outcome, number>;
 
-// What a run needs of the Env: the emails' links, and where to report what went.
-export type LifecycleEnv = Pick<Env, 'ENVIRONMENT' | 'BASE_URL'> & Partial<TelemetryEnv>;
+// What a run needs of the Env: the emails' links, where to report what went, and the send window.
+export type LifecycleEnv = Pick<Env, 'ENVIRONMENT' | 'BASE_URL'> &
+  Partial<TelemetryEnv> &
+  SendWindowEnv;
 
 type Ctx = { db: D1Database; env: LifecycleEnv; send: SendEmail };
 
@@ -191,14 +217,20 @@ async function runStage(
 ): Promise<StageCounts> {
   const counts: StageCounts = { sent: 0, skipped: 0, failed: 0, taken: 0 };
   const limit = ids ? ids.length : SWEEP_LIMIT;
-  const { results } = await dueStatement(ctx.db, stage, now, limit, ids).all<Due>();
+  const window = STAGES[stage].windowed
+    ? windowFilter('u.timeZone', sendWindowOf(ctx.env), now)
+    : null;
+  // Nobody's local time is inside the window (most of a weekend): no query.
+  if (window === 'closed') return counts;
+  const { results } = await dueStatement(ctx.db, stage, now, limit, ids, window).all<Due>();
   // One at a time: Email Service limits how fast one account may send.
   for (const row of results) counts[await deliver(ctx, stage, row, now)] += 1;
   return counts;
 }
 
-// A run of the cron: each stage in turn, up to SWEEP_LIMIT accounts each. The 15-minute cron passes
-// just the welcome, catching up a sign-up whose welcome failed.
+// A run of the cron: each stage in turn, up to SWEEP_LIMIT accounts each, those after the welcome only to
+// accounts inside their send window. The 15-minute cron passes just the welcome, catching up a sign-up whose
+// welcome failed.
 export async function runLifecycle(
   db: D1Database,
   env: LifecycleEnv,

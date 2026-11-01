@@ -15,9 +15,11 @@ import { mintApiToken, revokeApiToken } from './tokens.ts';
 const BASE = 'https://liveworkspace.app';
 const DAY = 24 * 60 * 60 * 1000;
 const NOW = Date.UTC(2026, 9, 23, 9, 17);
+// No send window here, for the tests of what goes rather than when: "the send window" below has when.
 const env = {
   BASE_URL: BASE,
   TELEMETRY_URL: 'https://liveworkspace.app/api/telemetry',
+  EMAIL_SEND_WINDOW: 'always',
 };
 
 let db: D1Database;
@@ -189,5 +191,43 @@ describe('the expiring-token warning', () => {
       .map((r) => (r as { detail: string }).detail)
       .join('\n');
     expect(plan).toContain('api_token_expiry_warning_idx');
+  });
+
+  it("waits for the owner's send window, London's when no zone is known", async () => {
+    const HOUR = 60 * 60 * 1000;
+    addUser(sql, { id: 'user_cy', email: 'cy@example.com' });
+    sql.prepare('UPDATE "user" SET timeZone = ? WHERE id = ?').run('America/New_York', 'user_cy');
+    addToken('ada', 'user_ada', NOW + 3 * DAY);
+    addToken('cy', 'user_cy', NOW + 3 * DAY);
+    const windowed = { ...env, EMAIL_SEND_WINDOW: undefined };
+    // NOW is Friday 09:17 UTC: 10:17 in London (BST), 05:17 in New York (EDT).
+    expect(await sweepExpiringTokens(db, windowed, send, NOW)).toEqual({ sent: 1, failed: 0 });
+    expect(sent.map((e) => e.to)).toEqual(['ada@example.com']);
+    expect(warnedAt('cy')).toBeNull();
+    // 13:17 UTC is 09:17 in New York.
+    expect(await sweepExpiringTokens(db, windowed, send, NOW + 4 * HOUR)).toEqual({
+      sent: 1,
+      failed: 0,
+    });
+    expect(sent.map((e) => e.to)).toEqual(['ada@example.com', 'cy@example.com']);
+    // Nothing twice in the runs after.
+    for (let at = NOW + 5 * HOUR; at < NOW + 2 * DAY; at += HOUR) {
+      await sweepExpiringTokens(db, windowed, send, at);
+    }
+    expect(sent).toHaveLength(2);
+  });
+
+  it('sends nothing on a weekend, and the warning still comes days before the token lapses', async () => {
+    const HOUR = 60 * 60 * 1000;
+    const saturday = NOW + DAY; // Saturday 09:17 UTC
+    // Within its week from Saturday morning: held to Monday, with five days left.
+    addToken('weekend', 'user_ada', saturday + TOKEN_EXPIRY_WARNING_MS - HOUR);
+    const windowed = { ...env, EMAIL_SEND_WINDOW: undefined };
+    for (let at = saturday; at < saturday + 2 * DAY; at += HOUR) {
+      await sweepExpiringTokens(db, windowed, send, at);
+    }
+    expect(sent).toEqual([]);
+    await sweepExpiringTokens(db, windowed, send, saturday + 2 * DAY);
+    expect(warnedAt('weekend')).toBe(saturday + 2 * DAY);
   });
 });

@@ -21,10 +21,12 @@ import { addUser, testD1 } from './test-d1.ts';
 
 const DAY = 24 * 60 * 60 * 1000;
 const T0 = 1_000 * DAY;
+// No send window here, for the tests of what goes rather than when: "the send window" below has when.
 const env = {
   ENVIRONMENT: 'production',
   BASE_URL: 'https://liveworkspace.app',
-} as Pick<Env, 'ENVIRONMENT' | 'BASE_URL'>;
+  EMAIL_SEND_WINDOW: 'always',
+} as Pick<Env, 'ENVIRONMENT' | 'BASE_URL' | 'EMAIL_SEND_WINDOW'>;
 
 let db: D1Database;
 let sql: DatabaseSync;
@@ -318,5 +320,126 @@ describe('the emails', () => {
     for (const name of ['livediagram', 'liveplanner', 'livedocuments', 'livedesign']) {
       expect(lifecycleEmail(env, 'welcome', { home: null }).text).toContain(name);
     }
+  });
+});
+
+describe('the send window', () => {
+  const HOUR = 60 * 60 * 1000;
+  // Monday 2026-11-02 00:17 UTC, the hourly run's minute; London is on GMT, New York on EST (UTC-5) and Tokyo
+  // on JST (UTC+9).
+  const MONDAY = Date.UTC(2026, 10, 2, 0, 17);
+  const windowed = { ...env, EMAIL_SEND_WINDOW: undefined };
+  const zone = (id: string, timeZone: string | null) =>
+    sql.prepare('UPDATE "user" SET timeZone = ? WHERE id = ?').run(timeZone, id);
+  const ZONES: Record<string, string | null> = {
+    user_lon: 'Europe/London',
+    user_nyc: 'America/New_York',
+    user_tyo: 'Asia/Tokyo',
+    user_none: null,
+  };
+  // Four accounts owed week 1 since before the weekend: in London, New York and Tokyo, and one with no zone known.
+  async function owedWeek1() {
+    for (const [id, timeZone] of Object.entries(ZONES)) {
+      await account(id, MONDAY - 8 * DAY);
+      zone(id, timeZone);
+    }
+  }
+  const toWhom = () => sent.map((e) => e.to.replace('@example.com', '')).sort();
+
+  it('sends only to the accounts whose local time is inside it', async () => {
+    await owedWeek1();
+    // 00:17 UTC: 09:17 in Tokyo, 19:17 on Sunday in New York, 00:17 in London.
+    await runLifecycle(db, windowed, send, ['week1'], MONDAY);
+    expect(toWhom()).toEqual(['user_tyo']);
+    // 14:17 UTC: 09:17 in New York, 14:17 in London (and for no zone known), 23:17 in Tokyo.
+    await runLifecycle(db, windowed, send, ['week1'], MONDAY + 14 * HOUR);
+    expect(toWhom()).toEqual(['user_lon', 'user_none', 'user_nyc', 'user_tyo']);
+  });
+
+  it('times an account with no zone known by London', async () => {
+    await owedWeek1();
+    await runLifecycle(db, windowed, send, ['week1'], MONDAY + 8 * HOUR); // 08:17 in London
+    expect(toWhom()).toEqual(['user_tyo']);
+    await runLifecycle(db, windowed, send, ['week1'], MONDAY + 9 * HOUR); // 09:17 in London
+    expect(toWhom()).toEqual(['user_lon', 'user_none', 'user_tyo']);
+  });
+
+  it('times an account by London when its stored zone is one the runtime no longer knows', async () => {
+    await account('user_old', MONDAY - 8 * DAY);
+    zone('user_old', 'Old/Zone');
+    await runLifecycle(db, windowed, send, ['week1'], MONDAY + 8 * HOUR); // 08:17 in London
+    expect(sent).toEqual([]);
+    await runLifecycle(db, windowed, send, ['week1'], MONDAY + 9 * HOUR); // 09:17 in London
+    expect(toWhom()).toEqual(['user_old']);
+  });
+
+  it('sends each email once across hourly runs, each inside its window', async () => {
+    await owedWeek1();
+    const sentAt: Record<string, number[]> = {};
+    for (let at = MONDAY - 2 * DAY; at < MONDAY + 9 * DAY; at += HOUR) {
+      const before = sent.length;
+      await runLifecycle(db, windowed, send, undefined, at);
+      for (const email of sent.slice(before)) {
+        if (email.subject !== 'Welcome to liveworkspace') (sentAt[email.to] ??= []).push(at);
+      }
+    }
+    for (const [id, timeZone] of Object.entries(ZONES)) {
+      // The activation nudge and week 1 (both owed by the first run inside), then week 2, one each, each on a
+      // weekday 09:00 to 21:00 in the account's zone (London's for none).
+      const times = sentAt[`${id}@example.com`] ?? [];
+      expect(times, id).toHaveLength(3);
+      for (const at of times) {
+        const parts = new Intl.DateTimeFormat('en-US', {
+          timeZone: timeZone ?? 'Europe/London',
+          weekday: 'short',
+          hour: '2-digit',
+          hourCycle: 'h23',
+        }).formatToParts(at);
+        const hour = Number(parts.find((p) => p.type === 'hour')!.value);
+        const day = parts.find((p) => p.type === 'weekday')!.value;
+        expect(['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], `${id} on ${day}`).toContain(day);
+        expect(hour, id).toBeGreaterThanOrEqual(9);
+        expect(hour, id).toBeLessThan(21);
+      }
+    }
+    const subjects = sent.map((e) => `${e.to} ${e.subject}`);
+    expect(new Set(subjects).size).toBe(subjects.length);
+  });
+
+  it('holds the weekend over to Monday morning, local time', async () => {
+    const saturday = Date.UTC(2026, 10, 7, 0, 17);
+    await account('user_ada', saturday - 7 * DAY);
+    for (let at = saturday; at < saturday + 2 * DAY; at += HOUR) {
+      await runLifecycle(db, windowed, send, ['week1'], at);
+    }
+    expect(sent).toEqual([]);
+    await runLifecycle(db, windowed, send, ['week1'], saturday + 2 * DAY + 9 * HOUR);
+    expect(sent.map((e) => e.subject)).toEqual(['Find your way around the Explorer']);
+  });
+
+  it('never holds the welcome', async () => {
+    await account('user_ada', MONDAY);
+    zone('user_ada', 'Asia/Tokyo');
+    // Saturday 18:00 UTC is Sunday 03:00 in Tokyo: outside, but the welcome goes.
+    const sunday = Date.UTC(2026, 10, 7, 18, 0);
+    expect(await sendWelcomes(db, windowed, send, ['user_ada'], sunday)).toMatchObject({ sent: 1 });
+    await account('user_bea', MONDAY);
+    expect((await runLifecycle(db, windowed, send, ['welcome'], sunday)).welcome).toMatchObject({
+      sent: 1,
+    });
+  });
+
+  it('runs no due query while every zone is in its weekend', async () => {
+    await owedWeek1();
+    const prepare = vi.spyOn(db, 'prepare');
+    const result = await runLifecycle(
+      db,
+      windowed,
+      send,
+      ['activation', 'week1', 'week2', 'winback'],
+      Date.UTC(2026, 10, 7, 12, 17),
+    );
+    expect(prepare).not.toHaveBeenCalled();
+    expect(result.week1).toEqual({ sent: 0, skipped: 0, failed: 0, taken: 0 });
   });
 });

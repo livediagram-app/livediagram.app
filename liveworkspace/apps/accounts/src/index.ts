@@ -35,7 +35,7 @@ import {
   guestMergeConfig,
   mergeGuestOnAuthorize,
 } from './guests.ts';
-import { indexPurgeConfig, PURGE_RETRY_CRON, retryPendingPurges } from './index-purge.ts';
+import { indexPurgeConfig, retryPendingPurges } from './index-purge.ts';
 import { withSessionColour } from './profiles.ts';
 import { networkOf, overCodeLimit } from './rate-limit.ts';
 import { withOwnCookies } from './own-cookies.ts';
@@ -44,7 +44,9 @@ const GET_SESSION_PATH = '/get-session';
 import { SIGN_IN_OPTIONS_PATH, signInOptions } from './sign-in-options.ts';
 import { sendDeletionCodeEmail, sendEmail, sendTeamInviteEmail } from './email.ts';
 import { runLifecycle, sendWelcomes, takeWelcomes, type SendEmail } from './lifecycle.ts';
-import { sweepInvitations } from './teams.ts';
+import { sweepInvitations, type ReminderEmail } from './teams.ts';
+import { canSendEmail, cronRun } from './cron-run.ts';
+import { parseTimeZone, sendWindowOf, TIME_ZONE_HEADER } from './send-window.ts';
 import { noteExpiringTokens, sweepExpiringTokens } from './token-expiry.ts';
 import {
   flushTimeline,
@@ -228,7 +230,12 @@ async function serve(incoming: Request, env: Env, ctx: ExecutionContext): Promis
     let response = await auth.handler(request);
     // liveworkspace.app's header learns the account's presence colour with its session (profiles.ts).
     if (request.method === 'GET' && route === GET_SESSION_PATH) {
-      response = await withSessionColour(response, env.AUTH_DB);
+      // With the browser's time zone, kept for the send window (send-window.ts).
+      response = await withSessionColour(
+        response,
+        env.AUTH_DB,
+        parseTimeZone(request.headers.get(TIME_ZONE_HEADER)),
+      );
     }
     // Someone not signed in here yet signs in on the app's own address (handoff.ts).
     if (request.method === 'GET' && route === AUTHORIZE_PATH) {
@@ -274,13 +281,15 @@ export default {
   },
 
   // Every 15 minutes (wrangler.toml): closed accounts' purges the index hasn't taken yet are sent
-  // again, and welcomes that failed are tried again; once a day the rest of the onboarding series goes
-  // (liveworkspace/docs/specs/003-accounts/accounts.md "Onboarding emails"). Once a day as well: team invitations nobody answered expire, and the rest hear their
-  // reminders (liveworkspace/docs/specs/003-accounts/accounts.md "Reminders and expiry"); owners of API tokens that expire
-  // within a week are warned, once per token, and see it on their Timelines ("API tokens"); and the settings and profiles
-  // of guests who can never come back are deleted ("Guests who never come back").
+  // again, and welcomes that failed are tried again. Every hour, to whoever's local time is inside the send window
+  // (liveworkspace/docs/specs/003-accounts/accounts.md "The send window"): the rest of the onboarding series
+  // ("Onboarding emails"); team invitations' reminders, after those nobody answered expire ("Reminders and expiry");
+  // and the warning to owners of API tokens that expire within a week, once per token ("API tokens"). In the 09:17 UTC
+  // run only: those tokens go on their owners' Timelines, and the settings and profiles of guests who can never come
+  // back are deleted ("Guests who never come back").
   // Each step is isolated (`step`): one that throws is logged and the run goes on to the next.
   async scheduled(controller: ScheduledController, env: Env): Promise<void> {
+    const now = Date.now();
     await step('index purges', async () => {
       const purges = await retryPendingPurges(env.AUTH_DB, indexPurgeConfig(env));
       if (purges.sent + purges.failed > 0)
@@ -300,44 +309,60 @@ export default {
       if (timeline.sent > 0 || timeline.waiting)
         console.log('[accounts] timeline events', JSON.stringify(timeline));
     });
-    // Every run: a welcome that failed is tried again within 15 minutes. Once a day: the whole series.
-    const daily = controller.cron !== PURGE_RETRY_CRON;
+    // Every run: a welcome that failed is tried again within 15 minutes. Every hour: the whole series, the stages
+    // after the welcome to those inside their send window. Without a way to send (no EMAIL binding outside
+    // development), nothing is sent or stamped.
+    const { hourly, daily } = cronRun(controller);
+    const emailOn = canSendEmail(env);
     await step('lifecycle', async () => {
+      if (!emailOn) return;
       const lifecycle = await runLifecycle(
         env.AUTH_DB,
         env,
         lifecycleSender(env),
-        daily ? undefined : ['welcome'],
+        hourly ? undefined : ['welcome'],
+        now,
       );
-      if (daily || (lifecycle.welcome?.sent ?? 0) + (lifecycle.welcome?.failed ?? 0) > 0) {
+      if (hourly || (lifecycle.welcome?.sent ?? 0) + (lifecycle.welcome?.failed ?? 0) > 0) {
         console.log('[lifecycle] onboarding emails', JSON.stringify(lifecycle));
       }
     });
-    if (!daily) return;
+    if (!hourly) return;
     await step('invitation sweep', async () => {
-      const result = await sweepInvitations(env.AUTH_DB, (reminder) =>
-        sendTeamInviteEmail(env, {
-          to: reminder.to,
-          teamName: reminder.teamName,
-          inviterName: reminder.inviterName ?? '',
-          declineToken: reminder.declineToken,
-          stage: reminder.stage,
-          app: reminder.inviterApp,
-        }),
-      );
-      console.log('[teams] invitation sweep', JSON.stringify(result));
+      const send = emailOn
+        ? (reminder: ReminderEmail) =>
+            sendTeamInviteEmail(env, {
+              to: reminder.to,
+              teamName: reminder.teamName,
+              inviterName: reminder.inviterName ?? '',
+              declineToken: reminder.declineToken,
+              stage: reminder.stage,
+              app: reminder.inviterApp,
+            })
+        : null;
+      const result = await sweepInvitations(env.AUTH_DB, send, now, sendWindowOf(env));
+      if (result.expired + result.reminded + result.failed > 0) {
+        console.log('[teams] invitation sweep', JSON.stringify(result));
+      }
     });
     try {
-      const tokens = await sweepExpiringTokens(env.AUTH_DB, env, (email) => sendEmail(env, email));
-      if (tokens.sent + tokens.failed > 0) {
-        console.log('[tokens] expiry warnings', JSON.stringify(tokens));
+      if (emailOn) {
+        const tokens = await sweepExpiringTokens(
+          env.AUTH_DB,
+          env,
+          (email) => sendEmail(env, email),
+          now,
+        );
+        if (tokens.sent + tokens.failed > 0) {
+          console.log('[tokens] expiry warnings', JSON.stringify(tokens));
+        }
       }
     } catch (error) {
       console.error('[tokens] expiry warning sweep failed', error);
     } finally {
-      // Tokens expiring within the week go on their owners' Timelines, then to the index.
+      // Once a day: tokens expiring within the week go on their owners' Timelines, then to the index.
       try {
-        if ((await noteExpiringTokens(env.AUTH_DB)) > 0) {
+        if (daily && (await noteExpiringTokens(env.AUTH_DB)) > 0) {
           await flushTimeline(env.AUTH_DB, indexPurgeConfig(env), TIMELINE_CALLS_PER_RUN);
         }
       } catch (error) {
@@ -348,6 +373,7 @@ export default {
         await flushServerEvents(env);
       });
     }
+    if (!daily) return;
     // Guests who can never come back: what is kept against their ids goes (src/guest-sweep.ts).
     await step('idle guests', async () => {
       const guests = await sweepIdleGuests(env.AUTH_DB);

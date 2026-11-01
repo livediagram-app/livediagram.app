@@ -1,13 +1,15 @@
-// The expiring-token warning (liveworkspace/docs/specs/003-accounts/accounts.md "API tokens"): once a day, the owner of
-// each live token that expires within a week hears about it once, so a script or connected AI tool
-// doesn't stop without warning. An account message: it can't be turned off.
+// The expiring-token warning (liveworkspace/docs/specs/003-accounts/accounts.md "API tokens"): the owner of each live
+// token that expires within a week hears about it once, so a script or connected AI tool doesn't stop without
+// warning. An account message: it can't be turned off. It waits for the owner's send window (send-window.ts),
+// which costs at most a weekend of the week's notice; the hourly cron sends it in the first run inside it.
 //
 // Bounded: one query picks at most TOKEN_EXPIRY_SWEEP_LIMIT tokens, the soonest to expire first, by
 // the partial index in migrations/0002_teams_and_tokens.sql; one sends at a time (Email Service limits how
 // fast one account may send); one batched update stamps those that went. A failed send isn't
-// stamped, so the next day's run tries again while the token is still in its week.
+// stamped, so the next run inside the window tries again while the token is still in its week.
 import { tokenExpiringEmail } from './email.ts';
 import type { Env } from './env.ts';
+import { sendWindowOf, windowFilter, type SendWindowEnv } from './send-window.ts';
 import { isSettingsApp } from './settings.ts';
 import { timelineStatement } from './index-timeline.ts';
 import { reportServerEvent, type TelemetryEnv } from './telemetry.ts';
@@ -25,12 +27,14 @@ type Due = { id: string; name: string; expiresAt: number; email: string; app: st
 
 export async function sweepExpiringTokens(
   db: D1Database,
-  env: Pick<Env, 'BASE_URL'> & Partial<TelemetryEnv>,
+  env: Pick<Env, 'BASE_URL'> & Partial<TelemetryEnv> & SendWindowEnv,
   send: (email: TokenExpiryEmail) => Promise<void>,
   now = Date.now(),
 ): Promise<{ sent: number; failed: number }> {
-  // Each token joined by primary key to its owner (a verified address) and the app they signed up
-  // through, which the email is counted under.
+  const inWindow = windowFilter('u.timeZone', sendWindowOf(env), now);
+  if (inWindow === 'closed') return { sent: 0, failed: 0 };
+  // Each token joined by primary key to its owner (a verified address inside the send window) and the app they
+  // signed up through, which the email is counted under.
   const { results } = await db
     .prepare(
       `SELECT t.id, t.name, t.expiresAt, u.email, l.signup_app AS app
@@ -39,9 +43,15 @@ export async function sweepExpiringTokens(
        LEFT JOIN email_lifecycle l ON l.user_id = t.userId
        WHERE t.revokedAt IS NULL AND t.expiryWarnedAt IS NULL
          AND t.expiresAt > ? AND t.expiresAt <= ? AND u.emailVerified = 1
+         ${inWindow ? `AND ${inWindow.sql}` : ''}
        ORDER BY t.expiresAt LIMIT ?`,
     )
-    .bind(now, now + TOKEN_EXPIRY_WARNING_MS, TOKEN_EXPIRY_SWEEP_LIMIT)
+    .bind(
+      now,
+      now + TOKEN_EXPIRY_WARNING_MS,
+      ...(inWindow ? [inWindow.bind] : []),
+      TOKEN_EXPIRY_SWEEP_LIMIT,
+    )
     .all<Due>();
   const warned: string[] = [];
   let failed = 0;
