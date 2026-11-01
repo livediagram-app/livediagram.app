@@ -399,6 +399,10 @@ team, restored or deleted for good from the Trash, dismissed from Shared With Me
 the row that took its place, or on the row before when it was the last, never to the page's body. A row the list
 only scrolled out of view isn't counted; focus is never pulled back to the list from elsewhere.
 
+**A folder or team that is gone.** A folder link the index answers 404 for (deleted, out of reach, a stale
+bookmark) shows a "Folder not found" card, an h2 under the pane's h1, with a button back to the person's own
+work, the same card a missing team shows. Only other failures offer Try again.
+
 ### 5. Comments, actions and the Inbox live in liveworkspace
 
 What the Inbox needs about comments and actions is stored in liveworkspace, keyed by app, item, tab and
