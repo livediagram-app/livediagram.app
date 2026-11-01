@@ -2,6 +2,7 @@
 // in the same batch, for each of the item scope's live webhooks that listens for it, and nothing else; a plan's card
 // moves queue the same way, off the Timeline. The request wakes the dispatcher only after answering.
 import { CARD_MOVES_MAX } from '@liveworkspace/index-client';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { body, call, h, makeItem, person, useHarness } from '../test-support';
 import { kickWebhooks, queuedCount } from './outbox';
@@ -254,16 +255,15 @@ describe('cost', () => {
   it('adds well under a millisecond to an event write, and writes nothing when no webhook listens', async () => {
     const ada = await person('user_wc1');
     const item = await makeItem(ada.auth, { title: 't0' });
-    const rename = async (n: number) => {
-      const start = performance.now();
-      for (let i = 1; i <= n; i += 1)
-        await call(`/items/${item.id}`, {
-          method: 'PATCH',
-          auth: ada.auth,
-          body: { title: `t${i}` },
-        });
-      return (performance.now() - start) / n;
-    };
+    const rename = async (n: number) =>
+      (await cpuMsOfAsync(async () => {
+        for (let i = 1; i <= n; i += 1)
+          await call(`/items/${item.id}`, {
+            method: 'PATCH',
+            auth: ada.auth,
+            body: { title: `t${i}` },
+          });
+      })) / n;
     const runs = 150;
     await rename(20);
     const quiet = await rename(runs);
@@ -272,7 +272,7 @@ describe('cost', () => {
     const listened = await rename(runs);
     expect(deliveries()).toHaveLength(runs);
     console.info('[measure] webhook outbox', { quietMs: quiet, listenedMs: listened });
-    expect(listened - quiet).toBeLessThan(5);
+    expect(listened - quiet).toBeLessThan(cpuBudgetMs(5));
   });
 });
 
