@@ -142,17 +142,17 @@ types? }`, `change_card_types { projectId, changes[1..32] }`; outputs `listItems
 
 ## Testing
 
-| Rule                                   | Test                                                                         |
-| -------------------------------------- | ---------------------------------------------------------------------------- |
-| outline order, statuses once, types    | `packages/items/src/plan-outline.test.ts`                                    |
-| naming and refusals                    | `packages/items/src/plan-names.test.ts`                                      |
-| card type changes                      | `packages/items/src/type-changes.test.ts`                                    |
+| Rule                                                  | Test                                                                                           |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| outline order, statuses once, types                   | `packages/items/src/plan-outline.test.ts`                                                      |
+| naming and refusals                                   | `packages/items/src/plan-names.test.ts`                                                        |
+| card type changes                                     | `packages/items/src/type-changes.test.ts`                                                      |
 | Blocked By: listing, set by number, loop stop, switch | `packages/agent-verbs/src/plan/plan-engine.test.ts`, `packages/items/src/type-changes.test.ts` |
-| board placement                        | `packages/items/src/board-place.test.ts`                                     |
-| plan route gate, scope, batching       | `apps/api/src/routes/plan-route.test.ts`                                     |
-| engine: listing, changes, types, board | `packages/agent-verbs/src/plan/plan-engine.test.ts`                          |
-| CLI verbs                              | `packages/agent-verbs/src/verbs/item.test.ts`, `plan-verbs.test.ts`          |
-| MCP tools, outputs, annotations        | `apps/mcp/src/output-schema.test.ts`, `tools.test.ts`, `verb-parity.test.ts` |
+| board placement                                       | `packages/items/src/board-place.test.ts`                                                       |
+| plan route gate, scope, batching                      | `apps/api/src/routes/plan-route.test.ts`                                                       |
+| engine: listing, changes, types, board                | `packages/agent-verbs/src/plan/plan-engine.test.ts`                                            |
+| CLI verbs                                             | `packages/agent-verbs/src/verbs/item.test.ts`, `plan-verbs.test.ts`                            |
+| MCP tools, outputs, annotations                       | `apps/mcp/src/output-schema.test.ts`, `tools.test.ts`, `verb-parity.test.ts`                   |
 
 ## Constants and configuration
 
