@@ -394,6 +394,11 @@ to the Trash.", "Delete “Plan” for good?") isolates the name (FSI … PDI, `
 right-to-left name, or one holding a bidi override, stays inside its own run and never turns the words after it
 around.
 
+**Focus when a row leaves.** When the row keyboard focus was on leaves the list (deleted, moved to another folder or
+team, restored or deleted for good from the Trash, dismissed from Shared With Me), focus goes to the same control on
+the row that took its place, or on the row before when it was the last, never to the page's body. A row the list
+only scrolled out of view isn't counted; focus is never pulled back to the list from elsewhere.
+
 ### 5. Comments, actions and the Inbox live in liveworkspace
 
 What the Inbox needs about comments and actions is stored in liveworkspace, keyed by app, item, tab and

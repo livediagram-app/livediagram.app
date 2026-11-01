@@ -12,6 +12,7 @@ import { LIST_CARD, LIST_HEADER } from '../ui/classes';
 import { DismissIcon, ItemIcon } from '../ui/icons';
 import { RelativeTimeChip } from '../ui/RelativeTimeChip';
 import { useCascade } from '../ui/useCascade';
+import { rowKeys, useFocusAfterRemoval } from '../ui/useFocusAfterRemoval';
 import { AppMark, MadeByAiBadge } from './badges';
 import { useExplorer } from './context';
 import { useExtras } from './extras';
@@ -54,6 +55,10 @@ export function SharedList({
   const cascade = useCascade(resetKey);
   const count = items.length;
   const range = useWindowedRange(body, count, ROW_HEIGHT);
+  useFocusAfterRemoval(
+    body,
+    useMemo(() => rowKeys([], items), [items]),
+  );
   const end = Math.min(range.end, count);
   const start = Math.min(range.start, end);
   const [dismissing, setDismissing] = useState<ShownItem | null>(null);

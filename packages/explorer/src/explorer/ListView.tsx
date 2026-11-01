@@ -13,6 +13,7 @@ import { useExplorer } from './context';
 import { FolderRow, ItemRow, ROW_HEIGHT, rowGrid, type RowOptions } from './rows';
 import { useWindowedRange } from './useWindow';
 import { useCascade } from '../ui/useCascade';
+import { rowKeys, useFocusAfterRemoval } from '../ui/useFocusAfterRemoval';
 
 // Ask for the next page this many rows before the end.
 const LOAD_AHEAD = 40;
@@ -40,6 +41,10 @@ export function ListView({
   const cascade = useCascade(resetKey);
   const count = folders.length + items.length;
   const range = useWindowedRange(body, count, ROW_HEIGHT);
+  useFocusAfterRemoval(
+    body,
+    useMemo(() => rowKeys(folders, items), [folders, items]),
+  );
   // The range trails a shrinking list by one render (an item trashed): clamp it to what is there.
   const end = Math.min(range.end, count);
   const start = Math.min(range.start, end);
