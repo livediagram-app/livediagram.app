@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { validateFields } from './fields';
+import { ITEM_TYPES } from './item-types';
+import { REPEAT_REFUSAL, resolveFields } from './plan-names';
 import {
   REPEAT_FIELD,
   hasRepeat,
@@ -293,5 +295,24 @@ describe('repeat words', () => {
     expect(listWords(['Mon', 'Thu'])).toBe('Mon and Thu');
     expect(dayWords('2026-11-05', 2026)).toBe('Thu 5 Nov');
     expect(dayWords('2027-01-01', 2026)).toBe('Fri 1 Jan 2027');
+  });
+});
+
+describe('agents', () => {
+  it('change_items refuses a repeat with where to set one, and a custom field named Repeat is still that field', () => {
+    const task = ITEM_TYPES[1]!;
+    expect(resolveFields({ Repeat: 'weekly' }, task, { statuses: [], items: [] })).toEqual({
+      ok: false,
+      code: 'value_invalid',
+      message: REPEAT_REFUSAL,
+    });
+    const withField = {
+      ...task,
+      custom: [{ id: 'f-repeat', label: 'Repeat', kind: 'text' as const }],
+    };
+    expect(resolveFields({ Repeat: 'weekly' }, withField, { statuses: [], items: [] })).toEqual({
+      ok: true,
+      fields: { 'f-repeat': 'weekly' },
+    });
   });
 });

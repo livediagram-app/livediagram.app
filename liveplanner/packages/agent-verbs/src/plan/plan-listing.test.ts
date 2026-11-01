@@ -1,6 +1,37 @@
-import { describe, expect, it } from 'vitest';
-import { applyCardTypeChanges, defaultCatalogue, ITEM_TYPES } from '@liveplanner/items';
-import { listedType, listedTypes } from './plan-listing';
+import { describe, expect, it, vi } from 'vitest';
+import { applyCardTypeChanges, defaultCatalogue, ITEM_TYPES, type Item } from '@liveplanner/items';
+import { listedType, listedTypes, planListing } from './plan-listing';
+import type { PlanState } from './plan-state';
+
+describe('a repeating card in list_items', () => {
+  it('lists its rule in words with its next day and zone, never the raw field', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(Date.parse('2026-11-02T10:00:00Z'));
+    const repeat = { every: 'week', days: [1, 4], from: '2026-11-02', timeZone: 'Europe/London' };
+    const card = (id: string, key: number, fields: Item['fields']): Item => ({
+      id,
+      type: 'task',
+      key,
+      rank: 'i',
+      fields: { title: id, status: 'todo', ...fields },
+      rev: 1,
+      createdAt: 0,
+      updatedAt: 0,
+      createdBy: { id: 'p', name: 'P', color: '#000000' },
+      updatedBy: { id: 'p', name: 'P', color: '#000000' },
+    });
+    const listing = planListing({
+      items: [card('a', 1, { repeat }), card('b', 2, {})],
+      plan: { boards: [], statuses: [], types: ITEM_TYPES } as unknown as PlanState['plan'],
+    });
+    expect(listing.items[0]).toMatchObject({
+      repeat: { rule: 'every week on Mon and Thu', next: '2026-11-05', timeZone: 'Europe/London' },
+    });
+    expect(listing.items[0]!.fields).not.toHaveProperty('repeat');
+    expect(listing.items[1]).not.toHaveProperty('repeat');
+    vi.useRealTimers();
+  });
+});
 
 // A card type as list_items lists it (docs/specs/026-plan/plan-agents.md "What a card type is made of, as facts"):
 // everything change_card_types sets, by the names it takes.

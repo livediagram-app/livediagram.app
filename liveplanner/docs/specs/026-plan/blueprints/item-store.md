@@ -810,8 +810,9 @@ CREATE INDEX IF NOT EXISTS item_repeats_due ON item_repeats (dirty, next_at);
 ### Agents
 
 - `planListing` lists `repeat: { rule, next, timeZone }` (words, the next day, the zone) beside `fields`, and drops the
-  raw `repeat` from `fields`. change_items names no repeat; a `repeat` an agent names through fields is checked and
-  gated like any write.
+  raw `repeat` from `fields`. change_items refuses a field named Repeat (`resolveFields`, `value_invalid`,
+  `REPEAT_REFUSAL`, saying where an Editor sets one) unless the card's type has a custom field of that name; the
+  api still checks and gates a `repeat` any caller writes.
 
 ## Errors and edge cases
 

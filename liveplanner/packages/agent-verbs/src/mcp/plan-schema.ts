@@ -722,6 +722,21 @@ const listedItem = z.object({
     )
     .optional()
     .describe('Each Time Spent field with time on the card, by the field’s name.'),
+  repeat: z
+    .object({
+      rule: z
+        .string()
+        .describe('The rule in words: "every week on Mon and Thu, until Thu 31 Dec 2026".'),
+      next: z
+        .string()
+        .nullable()
+        .describe('The next day a copy is made (YYYY-MM-DD), or null once it has ended.'),
+      timeZone: z.string().describe('The time zone its days are in: the person’s who set it.'),
+    })
+    .optional()
+    .describe(
+      'A repeating card’s rule: a fresh copy is made on each day it names. Only an Editor sets one, in the editor.',
+    ),
 });
 
 export const listItemsOutput = {

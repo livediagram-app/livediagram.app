@@ -56,6 +56,10 @@ import {
   timePerson,
   type CalculatedValue,
   type CustomFieldDef,
+  REPEAT_FIELD,
+  itemRepeat,
+  repeatNext,
+  repeatRuleWords,
 } from '@liveplanner/items';
 import type { PlanState } from './plan-state';
 
@@ -94,6 +98,22 @@ interface ListedItem {
   // Each Time Spent field's entries and running timers, by the field's name (docs/specs/026-plan/item-types.md "Time
   // Spent"); only on a card with any.
   time?: Record<string, ListedTime>;
+  // A repeating card's rule (docs/specs/026-plan/items.md "Repeating cards"), in words; only on one.
+  repeat?: ListedRepeat;
+}
+
+interface ListedRepeat {
+  rule: string;
+  next: string | null;
+  timeZone: string;
+}
+
+// A card's repeat as agents read it: the rule in words, its next day and its zone. Undefined when it has none.
+function listedRepeat(item: Item, now: number): ListedRepeat | undefined {
+  const rule = itemRepeat(item);
+  return rule
+    ? { rule: repeatRuleWords(rule), next: repeatNext(rule, now), timeZone: rule.timeZone }
+    : undefined;
 }
 
 // A Time Spent field's time as agents read it: who by name, the time as text, when as ISO times.
@@ -294,6 +314,8 @@ function namedFields(
   const out: Record<string, unknown> = {};
   const fields = calculated ? { ...item.fields, ...calculated } : item.fields;
   for (const [key, value] of Object.entries(fields)) {
+    // A repeat reads as its own entry (listedRepeat), in words.
+    if (key === REPEAT_FIELD) continue;
     const field = custom.find((f) => f.id === key);
     const label = field?.label;
     // A name a built-in or another field already uses keeps the id, so nothing is overwritten.
@@ -336,6 +358,7 @@ function listedValue(
 }
 
 const withTime = (time: Record<string, ListedTime> | undefined) => (time ? { time } : {});
+const withRepeat = (repeat: ListedRepeat | undefined) => (repeat ? { repeat } : {});
 
 // A card type as list_items answers it: everything change_card_types sets, by the names it takes. Its Default
 // State by column name when `statuses` has it.
@@ -391,6 +414,7 @@ export const listedTypes = (types: readonly ItemTypeDef[], statuses: readonly Pl
 // The plan, narrowed by a filter resolveListingFilter resolved.
 export function planListing(state: PlanState, filter: ResolvedListingFilter = {}): PlanListing {
   const { plan } = state;
+  const now = Date.now();
   const live = state.items
     .filter((i) => !isTrashed(i) && !isArchived(i))
     .sort((a, b) => compareRank(a.rank, b.rank) || a.key - b.key);
@@ -471,6 +495,7 @@ export function planListing(state: PlanState, filter: ResolvedListingFilter = {}
           plan.types.find((t) => t.id === i.type),
         ),
       ),
+      ...withRepeat(listedRepeat(i, now)),
     }));
   return {
     boards,
