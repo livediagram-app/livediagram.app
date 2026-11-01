@@ -743,6 +743,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Token|Removed|': 'Someone revoked an API token.',
   'UI|Added|PaletteFavourite':
     'Someone added a tile to their Favourites in the shape palette. No longer recorded: the palette opens on Popular, a fixed pick.',
+  'UI|Added|NoteCard':
+    'Someone added a speaker note card to a slide, in the title-bar Notes popover or the Slide Deck panel.',
   'UI|Added|Slide':
     'Someone added a slide to the Slide Deck: either a fresh slide built from the current selection, or a duplicate of an existing one.',
   'UI|Changed|FormatCopies':
@@ -794,7 +796,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|LooksSeasonal':
     "Someone switched the Tab Style popover's Looks to the seasonal looks, with the Seasonal toggle beside the Finish filter.",
   'UI|Changed|SlideNotes':
-    'Someone typed presenter notes for a slide, in the Slide Deck panel. Counted once per slide edited, not per keystroke.',
+    'Someone typed in a speaker note card, in the title-bar Notes popover or the Slide Deck panel. Counted once per card opened, not per keystroke.',
   'UI|Changed|SpotlightDim':
     'Someone changed how dark the area outside the Spotlight is, in the Spotlight panel.',
   'UI|Changed|SpotlightEdge':
@@ -908,6 +910,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|PagesTourSkipped': 'Someone closed the Pages tour before its end.',
   'UI|Moved|PanelDock':
     'Someone dragged a panel, such as the Map or the AI panel, to a different corner of the screen, or let it go free.',
+  'UI|Moved|NoteCard':
+    'Someone moved a speaker note card up or down its slide, by dragging its grip, a Move button or Alt+arrow.',
   'UI|Moved|Slide':
     'Someone dragged a slide to a new position in the Slide Deck. Counted once per completed drag, not per position crossed.',
   'UI|Opened|ActionSignInNudge':
@@ -921,7 +925,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|IconGroup': "Someone opened a category inside the palette's Icons tab.",
   'UI|Opened|PresentationSettings':
     "Someone opened the settings popover on the presentation's on-screen controls, while presenting.",
-  'UI|Opened|PresenterNotes': 'Someone opened the speaker-notes card while presenting.',
+  'UI|Opened|PresenterNotes': 'Someone opened the speaker note cards while presenting.',
   'UI|Opened|Settings': 'Someone opened the Settings dialog.',
   'UI|Opened|SettingsAccessibility':
     'Someone opened the Accessibility category in the Settings dialog.',
@@ -972,6 +976,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "In the Toolbar strip's Search, someone expanded the elements that other editor modes offer.",
   'UI|Opened|PowerUserOffer':
     'The one-time offer of power user mode appeared, after 20 editing days or 50 keyboard shortcuts on one device.',
+  'UI|Used|NoteCardFlip':
+    'Someone flipped to another speaker note card while presenting, with the arrows, a button or a dot.',
   'UI|Used|PowerUserOffer': 'Someone accepted the power user mode offer, switching the mode on.',
   'UI|Declined|PowerUserOffer':
     'Someone said no thanks to the power user mode offer, or closed it.',
@@ -1031,6 +1037,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone opened the help article about building their first diagram, from the empty-canvas banner or a search result.',
   'UI|Removed|PaletteFavourite':
     'Someone removed a tile from their Favourites in the shape palette. No longer recorded: Favourites is gone.',
+  'UI|Removed|NoteCard': 'Someone removed a speaker note card from a slide.',
   'UI|Removed|Slide': 'Someone deleted a slide from the Slide Deck.',
   'UI|Searched|IconSearch': "Someone searched within the palette's Icons tab.",
   'UI|Searched|PaletteSearch':

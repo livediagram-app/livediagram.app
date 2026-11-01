@@ -239,8 +239,10 @@ export function CanvasPages({
           !!view.deck &&
           !mobile &&
           (page.kind === 'slide' || !!view.deck.slideOf(page.id));
-        // Add Notes beside it once the deck has a slide of the page (PageNotesButton).
-        const notesButton = deckButton && !!view.deck!.slideOf(page.id);
+        // Add Notes beside it once the deck has a slide of the page (PageNotesButton). Offered on a
+        // phone too, where the deck button is not, so note cards can be written anywhere
+        // (docs/specs/012-collaboration/speaker-note-cards.md "Writing note cards").
+        const notesButton = !!edit && !!view.deck && !!view.deck.slideOf(page.id);
         // The title bar's fixed buttons (the cog, the lock, the deck button and an infographic or
         // slide page's): the label has what they leave.
         const buttons = {

@@ -24,9 +24,10 @@ import {
   selectionIds,
   type Selection,
 } from '@liveworkspace/workbench/lib/selection-store';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 
-import { slideName } from '@livedocuments/document';
+import { slideName, slideNoteCards } from '@livedocuments/document';
+import { NoteCardList } from '@/components/slide-notes/NoteCardList';
 
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 import { PageSlidePicker } from '@/components/panels/PageSlidePicker';
@@ -37,7 +38,6 @@ import { PlayIcon } from '@liveworkspace/workbench/components/primitives/PlayIco
 import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import type { SlideDeckState } from '@/app/document/[id]/useSlideDeck';
 import { useSlideThumbnails } from '@/hooks/ui/useSlideThumbnails';
-import { track } from '@/lib/telemetry';
 import {
   rowDropIndex,
   useRowReorderDrag,
@@ -81,7 +81,7 @@ export function SlideDeckPanel({
     addSelectionToSlide,
     removeFromSlide,
     renameSlide,
-    setSlideNotes,
+    setSlideNoteCards,
     setSlideMinutes,
     deleteSlide,
     ownPageSlideIds,
@@ -105,10 +105,6 @@ export function SlideDeckPanel({
   // than shown for whatever slide happens to be open, so the panel never grows
   // a text area you did not ask for.
   const [notesForId, setNotesForId] = useState<string | null>(null);
-  // One 'notes were written' event per editing session, fired on the first
-  // keystroke. Per-keystroke would be a flood, and per-open would count the
-  // times somebody looked without typing.
-  const notesTracked = useRef<string | null>(null);
   // Deleting a slide asks first, anchored to the row's own menu button. A deck
   // is authored work — the elements survive, but the arrangement does not, and
   // it is the arrangement you spent the time on.
@@ -255,40 +251,28 @@ export function SlideDeckPanel({
         )}
 
         {notesSlide && !isReadOnly ? (
-          <label className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1.5" data-slide-deck-notes="">
             <span className="flex items-center justify-between px-0.5">
               <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                 Notes · {slideName(notesSlide, deck.slides.indexOf(notesSlide))}
               </span>
               <button
                 type="button"
-                onClick={() => {
-                  setNotesForId(null);
-                  notesTracked.current = null;
-                }}
+                onClick={() => setNotesForId(null)}
                 className="cursor-pointer text-[10px] font-medium text-slate-500 dark:text-slate-400 transition hover:text-slate-700 dark:hover:text-slate-200"
               >
                 Done
               </button>
             </span>
-            {/* The SLIDE's notes: what you mean to say over it. Not the
-                elements' own note field, which is about a thing rather than
-                about a moment in a talk. */}
-            <textarea
-              value={notesSlide.notes ?? ''}
-              autoFocus
-              onChange={(e) => {
-                if (notesTracked.current !== notesSlide.id) {
-                  notesTracked.current = notesSlide.id;
-                  track('UI', 'Changed', 'SlideNotes');
-                }
-                setSlideNotes(notesSlide.id, e.target.value);
-              }}
-              onKeyDown={(e) => e.stopPropagation()}
-              onPointerDown={(e) => e.stopPropagation()}
-              rows={3}
-              placeholder="What you'll say over this slide…"
-              className="w-full resize-none rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] leading-snug text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            {/* The SLIDE's notes as note cards (docs/specs/012-collaboration/speaker-note-cards.md): what you mean
+                to say over it. Not the elements' own note field, which is about a thing rather than about a
+                moment in a talk. Keyed by the slide, so another slide never inherits this one's open card. */}
+            <NoteCardList
+              key={notesSlide.id}
+              compact
+              heading={false}
+              cards={slideNoteCards(notesSlide)}
+              onChange={(cards) => setSlideNoteCards(notesSlide.id, cards)}
             />
             {/* The slide's time budget, beside its notes because both are
                 decided while WRITING the talk rather than while giving it.
@@ -311,7 +295,7 @@ export function SlideDeckPanel({
                 min · shown in the HUD if you turn the budget on
               </span>
             </span>
-          </label>
+          </div>
         ) : null}
 
         {!isReadOnly && pages ? (

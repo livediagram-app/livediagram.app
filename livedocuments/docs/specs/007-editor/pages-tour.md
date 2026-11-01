@@ -84,7 +84,7 @@ never reopens it. Leaving the step closes whatever it opened that is still open.
 3. **Add Another Slide** (the + after the last page, or the Toolbar strip's + while that one is out of the window).
 4. **Your Slide Deck** (the Slide Deck, opened from the Slides button, ringing its rows): every slide page is in the
    deck already; drag a row to reorder, press one to go to that slide.
-5. **Each Slide's Menu** (a row's ⋯ menu, opened): speaker notes, hide from the show, rename, duplicate.
+5. **Each Slide's Menu** (a row's ⋯ menu, opened): speaker note cards, hide from the show, rename, duplicate.
 6. **Set Up the Show** (the deck's Presentation settings, opened): transitions and their speed, auto-advance, slide
    size.
 7. **Present** (the deck's Present button): full screen, arrow keys to move, Escape to end.

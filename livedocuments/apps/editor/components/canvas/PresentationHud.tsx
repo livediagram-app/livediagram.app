@@ -11,7 +11,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, Tooltip, Glyph } from '@livedocuments/ui';
 
+import type { NoteCard } from '@livedocuments/document';
 import { SettingsIcon } from '@/components/chrome/tab-bar-icons';
+import { NoteCardsIcon } from '@/components/slide-notes/NoteCardsIcon';
+import { PresenterNoteCards } from '@/components/slide-notes/PresenterNoteCards';
 
 // How long the pointer must be still before the HUD gets out of the way.
 const IDLE_MS = 2600;
@@ -91,7 +94,10 @@ export function PresentationHud({
   position,
   total,
   name,
-  notes,
+  slideId,
+  cards,
+  cardAt,
+  onCard,
   notesOpen,
   onToggleNotes,
   settingsOpen,
@@ -112,7 +118,12 @@ export function PresentationHud({
   position: number;
   total: number;
   name: string;
-  notes: string | undefined;
+  // The slide on screen, and its note cards that are not blank (docs/specs/012-collaboration/speaker-note-cards.md
+  // "Presenting"): the card in front and how to go to another.
+  slideId: string;
+  cards: readonly NoteCard[];
+  cardAt: number;
+  onCard: (index: number) => void;
   notesOpen: boolean;
   onToggleNotes: () => void;
   settingsOpen: boolean;
@@ -138,7 +149,7 @@ export function PresentationHud({
   onClose: () => void;
   hidden: boolean;
 }) {
-  const hasNotes = (notes ?? '').trim().length > 0;
+  const hasNotes = cards.length > 0;
   return (
     <>
       {/* A landmark of its own: while presenting it is the only chrome on screen, and its
@@ -219,10 +230,7 @@ export function PresentationHud({
         </HudButton>
         {hasNotes ? (
           <HudButton label="Presenter notes" onPress={onToggleNotes} active={notesOpen}>
-            <Glyph size={14} units={16} strokeLinejoin="miter">
-              <rect x="2.5" y="2" width="11" height="12" rx="1.6" />
-              <path d="M5 5.5h6M5 8h6M5 10.5h3.5" />
-            </Glyph>
+            <NoteCardsIcon />
           </HudButton>
         ) : null}
         {/* The app's own settings glyph, not a cog. A cog's spokes around a
@@ -264,20 +272,8 @@ export function PresentationHud({
           })}
         </div>
       ) : null}
-      {notesOpen ? (
-        <div
-          role="dialog"
-          aria-label="Presenter notes"
-          onClick={(e) => e.stopPropagation()}
-          onPointerDown={(e) => e.stopPropagation()}
-          className="pointer-events-auto fixed right-4 top-16 z-[66] max-h-[50vh] w-80 overflow-y-auto rounded-xl bg-slate-900/90 p-3 text-[12px] leading-relaxed text-white/85 shadow-2xl backdrop-blur"
-        >
-          {hasNotes ? (
-            <p className="whitespace-pre-wrap">{notes}</p>
-          ) : (
-            <p className="italic text-white/45">No notes for this slide.</p>
-          )}
-        </div>
+      {notesOpen && hasNotes ? (
+        <PresenterNoteCards cards={cards} at={cardAt} slideId={slideId} onCard={onCard} />
       ) : null}
     </>
   );

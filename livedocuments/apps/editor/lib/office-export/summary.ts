@@ -4,6 +4,7 @@
 
 import {
   pageSlideIdFor,
+  slideHasNotes,
   tabPageKind,
   type Deck,
   type LaidOutPage,
@@ -74,7 +75,10 @@ export function officeSummary(
       ? "The article's writing, its pictures and drawings as images."
       : `The article's ${n} pages of writing, its pictures and drawings as images.`;
   if (n === 1) return '1 slide.';
-  const noted = pages.filter((p) => slideOfPage(deck, tab.id, p.id)?.notes?.trim()).length;
+  const noted = pages.filter((p) => {
+    const slide = slideOfPage(deck, tab.id, p.id);
+    return slide ? slideHasNotes(slide) : false;
+  }).length;
   return noted > 0
     ? `${n} slides, one a page, with the speaker notes of ${noted}.`
     : `${n} slides, one a page.`;

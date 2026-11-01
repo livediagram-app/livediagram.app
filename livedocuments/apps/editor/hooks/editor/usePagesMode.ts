@@ -23,6 +23,7 @@ import {
   withContentOnAPage,
   type Element,
   type LaidOutPage,
+  type NoteCard,
   type Tab,
 } from '@livedocuments/document';
 import { besideSideInsets, computeFitBelow } from '@liveworkspace/workbench/lib/viewport';
@@ -95,11 +96,13 @@ export type PagesModeView = {
 
 export type PageDeckControls = {
   // The deck's slide of this page (on this tab), if it has one.
-  slideOf: (pageId: string) => { id: string; hidden: boolean; notes: string } | undefined;
+  slideOf: (
+    pageId: string,
+  ) => { id: string; hidden: boolean; noteCards: readonly NoteCard[] } | undefined;
   add: (pageId: string) => void;
   toggleHidden: (slideId: string) => void;
-  // The slide's speaker notes, as the Slide Deck panel writes them (an empty string removes them).
-  setNotes: (slideId: string, notes: string) => void;
+  // The slide's speaker notes as note cards, as the Slide Deck panel writes them (none removes them).
+  setNoteCards: (slideId: string, cards: readonly NoteCard[]) => void;
 };
 
 export function usePagesMode(deps: {

@@ -63,7 +63,8 @@ function withoutPresenterNotes(presentation: string | null): string | null {
     ...stored,
     decks: stored.decks.map((deck) => ({
       ...deck,
-      slides: deck.slides.map(({ notes: _notes, ...slide }) => slide),
+      // The notes and the note cards they mirror (docs/specs/012-collaboration/speaker-note-cards.md "Community").
+      slides: deck.slides.map(({ notes: _notes, noteCards: _cards, ...slide }) => slide),
     })),
   });
 }

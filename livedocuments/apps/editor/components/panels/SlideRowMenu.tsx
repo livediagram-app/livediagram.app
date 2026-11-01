@@ -19,7 +19,7 @@ import { EllipsisTriggerButton } from '@liveworkspace/workbench/components/primi
 import { lucideGlyph, PlusIcon } from '@livedocuments/ui';
 import { lucideGroup, lucideMinus } from '@liveworkspace/icons/lucide';
 
-import { slideName, type Slide } from '@livedocuments/document';
+import { slideHasNotes, slideName, type Slide } from '@livedocuments/document';
 
 import {
   MenuAccordionSection,
@@ -114,9 +114,9 @@ export function SlideRowMenu({
             />
             <MenuToolButton
               icon={<NoteMenuIcon />}
-              label={slide.notes ? 'Edit notes' : 'Add notes'}
-              description="What you'll say over this slide."
-              active={!!slide.notes}
+              label={slideHasNotes(slide) ? 'Edit notes' : 'Add notes'}
+              description="What you'll say over this slide, as cards."
+              active={slideHasNotes(slide)}
               onClick={() => {
                 close();
                 onEditNotes();

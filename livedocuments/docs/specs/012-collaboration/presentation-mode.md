@@ -51,8 +51,12 @@ type Slide = {
   // the canvas shows that page's sheet alone. See
   // docs/specs/007-editor/pages-mode.md "Slides".
   pageId?: string;
-  // What you mean to SAY over this slide. The slide's own, not any
-  // element's. See Presenter notes below.
+  // What you mean to SAY over this slide, as note cards in order: the
+  // slide's own, not any element's. See Presenter notes below and
+  // speaker-note-cards.md.
+  noteCards?: { id: string; text: string }[];
+  // The cards' text joined by a blank line, kept for older readers; a slide
+  // written before note cards has only this, read as one card.
   notes?: string;
   // Left out of the run without being deleted. Absent = shown. A separate
   // idea from deleting: a slide you might want next week, a backup detail
@@ -106,7 +110,7 @@ The **Slide Deck panel** is a tool panel, on exactly the contract the others sha
 - **Hidden slides** are skipped by `presentableSlides`, which is the ONE place the run is decided, so the count on the Present button, the `7 / 23` in the HUD, and what advancing lands on can never disagree about the deck's length. The row shows a struck-through name and an eye marker, so a hidden slide is visible in the panel and invisible in the show. A row itself does ONE thing (press it to open that slide) because a panel the width of the palette cannot carry five controls per row and stay legible.
 - **Reorder** by dragging rows. A slide page's slide dragged out of its page order moves its page in the tab, since a tab's page slides follow its page order ([Pages](../007-editor/pages-mode.md) "Slides"). The order does NOT change while you drag: a caret shows where the row will land and the move commits on release, the way the tab bar reorders ([Tab folders](../006-document/tab-folders.md)). Reordering live reshuffled the list under the pointer, which moved the very row you were aiming at. Pointer events rather than HTML5 dnd, so it works on touch.
 - **Rename** inline, **delete**, and **duplicate** a slide. A slide page's only slide has no Delete: the deck would put it straight back, and **Hide** leaves it out of the show.
-- **Presenter notes** opened from the row's `…` menu, written in a text area under the list, with the slide's optional **time budget** beside them: the two things you decide about a slide while writing the talk rather than while giving it (see Pacing). Here rather than on the canvas, because a note is about the slide rather than about anything on it, and behind the menu rather than always-on so the panel never grows a text area you did not ask for.
+- **Presenter notes** opened from the row's `…` menu, written as note cards under the list ([Speaker note cards](speaker-note-cards.md)), with the slide's optional **time budget** beside them: the two things you decide about a slide while writing the talk rather than while giving it (see Pacing). Here rather than on the canvas, because a note is about the slide rather than about anything on it, and behind the menu rather than always-on so the panel never grows a text area you did not ask for.
 - Selecting a row **switches to that slide's tab and highlights its members on the canvas**. This is how you check a slide without presenting, and it is why a slide names its tab rather than inferring one. A page slide has no members to highlight: its row frames its page instead, as the page's own label does ([Pages](../007-editor/pages-mode.md) "Slides").
 - **Present**: enters the full-screen deck at slide 1, with a badge carrying the slide count.
 
@@ -204,9 +208,9 @@ The jump button (or `G`) opens a popover listing every slide by position and nam
 
 **Announcing the slide.** The HUD carries an `aria-live="polite"` region reading the position and name on every change of slide or of the deck's length ("Slide 7 of 23, Architecture"), never on an edit that leaves the slide on screen as it is. The deck is otherwise an entirely visual surface, and a presenter driving it with a screen reader gets nothing back from a slide changing silently.
 
-**Notes open in a popover** from the notes button (or `N`), anchored under it, sized so the slide stays readable behind. Click again, `Esc`, or advancing the slide closes it.
+**Notes open in a popover** from the notes button (or `N`), anchored under it, sized so the slide stays readable behind: the slide's note cards, one at a time, flipped with Previous Card / Next Card or `↑` / `↓` ([Speaker note cards](speaker-note-cards.md) "Presenting"). Click again, `N` or `Esc` closes it. Advancing the slide keeps it open on the next slide's first card, so the speaker's cards stay up for the whole talk.
 
-**The button is only there when the slide HAS notes**, and `N` is inert without them. It began as a permanent button carrying a dot when a script was waiting; a control that opens an empty card lies about there being something to read, and its ABSENCE says "nothing to say here" faster than any dot could. The presence of the button is the signal now. Advancing onto a slide with no script also closes the popover, so an empty card can never be left sitting over a slide.
+**The button is only there when the slide HAS notes**, and `N` is inert without them. It began as a permanent button carrying a dot when a script was waiting; a control that opens an empty card lies about there being something to read, and its ABSENCE says "nothing to say here" faster than any dot could. The presence of the button is the signal now. Advancing onto a slide with no script hides the popover (it comes back on the next slide that has cards), so an empty card can never be left sitting over a slide.
 
 On demand is the whole point: nothing about your script is on screen until you ask for it. It is worth being clear-eyed that the room sees the popover while it is open, because there is one screen and you are sharing it. That is the deliberate trade for not building a second-window presenter console, which stays out of scope.
 
@@ -272,11 +276,11 @@ Tabs load lazily ([Per-tab storage](../006-document/per-tab-storage.md)), so a d
 
 ## Presenter notes
 
-**Each slide carries its own notes**, written and edited in the Slide Deck panel: pick a slide, type what you mean to say over it. They are the slide's, stored on the slide.
+**Each slide carries its own notes**, written and edited in the Slide Deck panel and the slide page's title bar: a short stack of note cards, one point each ([Speaker note cards](speaker-note-cards.md)). They are the slide's, stored on the slide.
 
 They are deliberately NOT the elements' existing `note?` field ([Document structure](../006-document/document-structure.md), rich text per [Rich-text notes](../009-elements/rich-text-notes.md)), which the previous draft reused. That field is a note about a _thing_ ("this queue is the one that backs up"), and it belongs to the element wherever it appears. What a presenter needs is a note about a _moment_ in a talk, and the same element on two slides usually wants two different things said about it. Deriving slide notes by gathering up element notes gives you neither: a caption assembled from three elements' annotations, in element order, saying nothing you chose to say.
 
-- Plain text in v1, not rich text. It is a script you read off, and the rich-text editor is a surface to maintain for something nobody will bold.
+- Plain text, not rich text. It is a script you read off, and the rich-text editor is a surface to maintain for something nobody will bold. Each card is a few lines, so a card is what you glance at, not a page you search.
 - During a presentation they live behind the HUD's notes button, opened on demand. See The HUD above.
 
 ## Realtime: presenting is local, and that is the design

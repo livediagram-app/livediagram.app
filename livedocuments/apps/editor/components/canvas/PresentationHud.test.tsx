@@ -12,7 +12,10 @@ describe('PresentationHud', () => {
         position={1}
         total={6}
         name="Customer Support, Q3"
-        notes={undefined}
+        slideId="s1"
+        cards={[]}
+        cardAt={0}
+        onCard={() => {}}
         notesOpen={false}
         onToggleNotes={() => {}}
         settingsOpen={false}

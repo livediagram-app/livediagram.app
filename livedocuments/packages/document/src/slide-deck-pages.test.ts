@@ -10,6 +10,7 @@ import {
   slidePageOwnSlideIds,
 } from './slide-deck-pages';
 import type { Deck, Slide } from './slide-deck';
+import { LEGACY_NOTE_CARD_ID, slideNoteCards } from './slide-notes';
 import type { Page } from './page';
 import type { Tab } from './index';
 
@@ -296,6 +297,29 @@ describe('deckWithPageSlideDetails (docs/specs/020-import-export/office-import.m
       hidden: true,
     });
     expect(followed.slides.filter((s) => s.tabId === 't')).toHaveLength(3);
+  });
+
+  it('brings imported notes in as one note card, in place of the slide’s own cards', () => {
+    const existing: Slide = {
+      id: pageSlideIdFor('t', 'p1'),
+      tabId: 't',
+      elementIds: [],
+      pageId: 'p1',
+      noteCards: [{ id: 'c1', text: 'Old card' }],
+      notes: 'Old card',
+    };
+    const next = deckWithPageSlideDetails({ slides: [existing] }, 't', [
+      { pageId: 'p1', notes: 'Line one\nLine two' },
+    ]);
+    expect(next.slides[0]).not.toHaveProperty('noteCards');
+    expect(slideNoteCards(next.slides[0]!)).toEqual([
+      { id: LEGACY_NOTE_CARD_ID, text: 'Line one\nLine two' },
+    ]);
+    // A detail with no notes leaves the cards alone.
+    const hiddenOnly = deckWithPageSlideDetails({ slides: [existing] }, 't', [
+      { pageId: 'p1', hidden: true },
+    ]);
+    expect(hiddenOnly.slides[0]).toEqual({ ...existing, hidden: true });
   });
 
   it('is the same deck when nothing is given', () => {

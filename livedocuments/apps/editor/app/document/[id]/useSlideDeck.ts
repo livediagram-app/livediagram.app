@@ -33,7 +33,9 @@ import {
   parseStoredPresentation,
   presentableSlides,
   storePresentation,
+  withNoteCards,
   type Deck,
+  type NoteCard,
   type PageSlideDetail,
   type Slide,
   type Tab,
@@ -330,17 +332,13 @@ export function useSlideDeck({
     [commitDeck, isReadOnly],
   );
 
-  const setSlideNotes = useCallback(
-    (slideId: string, notes: string) => {
+  // A slide's speaker notes as note cards (docs/specs/012-collaboration/speaker-note-cards.md): the cards and the
+  // `notes` mirror older readers keep reading, both gone with the last card.
+  const setSlideNoteCards = useCallback(
+    (slideId: string, cards: readonly NoteCard[]) => {
       if (isReadOnly) return;
       commitDeck((prev) => ({
-        slides: prev.slides.map((s) => {
-          if (s.id !== slideId) return s;
-          const next = { ...s };
-          if (notes) next.notes = notes;
-          else delete next.notes;
-          return next;
-        }),
+        slides: prev.slides.map((s) => (s.id === slideId ? withNoteCards(s, cards) : s)),
       }));
     },
     [commitDeck, isReadOnly],
@@ -519,7 +517,7 @@ export function useSlideDeck({
     addSelectionToSlide,
     removeFromSlide,
     renameSlide,
-    setSlideNotes,
+    setSlideNoteCards,
     adoptImportedSlides,
     setSlideMinutes,
     deleteSlide,

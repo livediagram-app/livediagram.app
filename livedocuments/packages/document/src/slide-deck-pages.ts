@@ -226,11 +226,16 @@ export function deckWithPageSlideDetails(
 ): Deck {
   if (details.length === 0) return deck;
   const byId = new Map(details.map((d) => [pageSlideIdFor(tabId, d.pageId), d]));
-  const withDetail = (slide: Slide, d: PageSlideDetail): Slide => ({
-    ...slide,
-    ...(d.notes ? { notes: d.notes } : {}),
-    ...(d.hidden ? { hidden: true } : {}),
-  });
+  // Imported notes read as one note card (docs/specs/012-collaboration/speaker-note-cards.md "PowerPoint"): the
+  // slide's own cards give way to them.
+  const withDetail = (slide: Slide, d: PageSlideDetail): Slide => {
+    const next: Slide = { ...slide, ...(d.hidden ? { hidden: true } : {}) };
+    if (d.notes) {
+      delete next.noteCards;
+      next.notes = d.notes;
+    }
+    return next;
+  };
   const slides = deck.slides.map((s) => {
     const d = byId.get(s.id);
     if (!d) return s;
