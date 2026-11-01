@@ -30,14 +30,15 @@ export function setting(value: string | undefined): string | undefined {
   return trimmed ? trimmed : undefined;
 }
 
-const ORIGIN_OF: Record<App, keyof Env> = {
+// A held app (livehuddle) has no export door until it launches: no origin or key, so the service can't reach it.
+const ORIGIN_OF: Partial<Record<App, keyof Env>> = {
   livediagram: 'APP_ORIGIN_LIVEDIAGRAM',
   liveplanner: 'APP_ORIGIN_LIVEPLANNER',
   livedocuments: 'APP_ORIGIN_LIVEDOCUMENTS',
   livedesign: 'APP_ORIGIN_LIVEDESIGN',
 };
 
-const KEY_OF: Record<App, keyof Env> = {
+const KEY_OF: Partial<Record<App, keyof Env>> = {
   livediagram: 'DATA_EXPORT_KEY_LIVEDIAGRAM',
   liveplanner: 'DATA_EXPORT_KEY_LIVEPLANNER',
   livedocuments: 'DATA_EXPORT_KEY_LIVEDOCUMENTS',
@@ -45,9 +46,11 @@ const KEY_OF: Record<App, keyof Env> = {
 };
 
 export function appOrigin(env: Env, app: App): string | undefined {
-  return setting(env[ORIGIN_OF[app]] as string | undefined)?.replace(/\/+$/, '');
+  const name = ORIGIN_OF[app];
+  return name ? setting(env[name] as string | undefined)?.replace(/\/+$/, '') : undefined;
 }
 
 export function appKey(env: Env, app: App): string | undefined {
-  return setting(env[KEY_OF[app]] as string | undefined);
+  const name = KEY_OF[app];
+  return name ? setting(env[name] as string | undefined) : undefined;
 }

@@ -166,6 +166,8 @@ the person is ever in them. A guest id answers `403`, a wrong key `401`.
 
 ### The apps
 
+A held app (livehuddle) has no export door until it launches: the service has no origin or key for it.
+
 Each app's export door (`@liveworkspace/index-app` `handleInternalItems`) takes the app's `DATA_EXPORT_KEY` (the
 service's `DATA_EXPORT_KEY_<APP>`) on the export door alone, `GET /api/internal/items/:id/export`, in four formats:
 

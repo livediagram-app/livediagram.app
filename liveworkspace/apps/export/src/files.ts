@@ -29,6 +29,7 @@ export const APP_EXTENSION: Record<App, string> = {
   liveplanner: 'liveplanner',
   livedocuments: 'livedocuments',
   livedesign: 'livedesign',
+  livehuddle: 'livehuddle',
 };
 
 /** The tabs a whole-item envelope holds, in order: `{ kind, …, <noun>: { tabs: [{ id, name }] } }`. */

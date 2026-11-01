@@ -5,6 +5,7 @@
 // origins and keys, and keeps to the calls the Drive key opens.
 
 import { createAppDoors as createDoors, type AppDoors as AllDoors } from '@liveworkspace/app-doors';
+import { isAppName } from '@liveworkspace/drive';
 import { appKey, appOrigin, type Env } from './env';
 
 export { DoorError, DOOR_TIMEOUT_MS, type ImportAnswer } from '@liveworkspace/app-doors';
@@ -16,7 +17,12 @@ export function createAppDoors(
   doFetch: typeof fetch = (i, init) => fetch(i, init),
 ): AppDoors {
   const doors = createDoors(
-    { origin: (app) => appOrigin(env, app), key: (app) => appKey(env, app), caller: 'drive' },
+    // Only the apps the mirror writes files for: a held app (livehuddle) has no Drive doors.
+    {
+      origin: (app) => (isAppName(app) ? appOrigin(env, app) : undefined),
+      key: (app) => (isAppName(app) ? appKey(env, app) : undefined),
+      caller: 'drive',
+    },
     doFetch,
   );
   return {

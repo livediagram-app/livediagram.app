@@ -35,6 +35,11 @@ describe('env', () => {
     expect(appOrigin(ENV, 'livediagram')).toBeUndefined();
     expect(appKey(ENV, 'liveplanner')).toBe('dk');
   });
+
+  it('has no origin or key for a held app', () => {
+    expect(appOrigin(ENV, 'livehuddle')).toBeUndefined();
+    expect(appKey(ENV, 'livehuddle')).toBeUndefined();
+  });
 });
 
 describe('listItems', () => {
