@@ -3,6 +3,7 @@
 // step, 20px, on the 24-unit grid, so the dock reads as part of the same editor.
 import { Glyph, Prims } from '@livediagram/ui';
 import {
+  lucidePaintBucket,
   lucideSettings,
   lucideShapes,
   lucideStickyNote,
@@ -20,6 +21,26 @@ export function PenGlyph({ colour, width }: { colour: string; width: number }) {
       <path d="M7 15 L15.5 6.5 L18 9 L9.5 17.5 L6.4 18 Z" />
       <path d="M6.4 18 L7 15 L9.5 17.5 Z" fill={colour} stroke={colour} />
       <path d="M4 21.5 H20" stroke={colour} strokeWidth={1 + width * 0.75} />
+    </Glyph>
+  );
+}
+
+// The Fill tool (docs/specs/023-draw-mode/fill-tool.md): a paint bucket over a bar of the colour it
+// pours; Transparent (`colour` null) shows the no-colour chip's slash.
+export function FillGlyph({ colour }: { colour: string | null }) {
+  return (
+    <Glyph size={DOCK_ICON_PX} units={24}>
+      <g transform="translate(2.4 0) scale(0.8)">
+        <Prims prims={lucidePaintBucket} />
+      </g>
+      {colour ? (
+        <path d="M4 21.5 H20" stroke={colour} strokeWidth={3} data-fill-bar="" />
+      ) : (
+        <>
+          <rect x="4" y="20" width="16" height="3" rx="1" strokeWidth={1} data-fill-bar="" />
+          <path d="M6 23.2 L18 19.8" strokeWidth={1} />
+        </>
+      )}
     </Glyph>
   );
 }

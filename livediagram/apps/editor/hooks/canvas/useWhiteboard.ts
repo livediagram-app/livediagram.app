@@ -34,6 +34,13 @@ import {
 import { useWhiteboardDockPrefs, type WhiteboardDockPrefsDeps } from './useWhiteboardDockPrefs';
 import { DRAW_PATTERNS } from '@/lib/whiteboard-dock-prefs';
 import type { SnapColoursApi } from './useSnapColours';
+import type { ShownSwatch } from '@/lib/swatch-overrides';
+import {
+  FILL_TRANSPARENT,
+  loadFillChoice,
+  saveFillChoice,
+  type FillChoice,
+} from '@liveworkspace/workbench/lib/fill-choice';
 
 type Deps = {
   activeTab: Tab;
@@ -56,7 +63,13 @@ type Deps = {
   leavePathEdit: () => void;
   // Snap colours (docs/specs/023-draw-mode/draw-mode.md "Snap colours"), for the Settings flyout.
   snapColours: SnapColoursApi;
+  // The Background row's fills as the quick style panel shows them, custom swatches included: the
+  // Fill tool's colours (docs/specs/023-draw-mode/fill-tool.md "Its colour").
+  fillSwatches: ShownSwatch[];
 } & WhiteboardDockPrefsDeps;
+
+// Where this browser keeps the Fill tool's colour (fill-tool.md "Its colour").
+export const FILL_CHOICE_KEY = 'livediagram:v2:whiteboard-fill';
 
 export type WhiteboardDockModel = ReturnType<typeof useWhiteboard>;
 
@@ -91,6 +104,11 @@ export function useWhiteboard(deps: Deps) {
     setPrefsState(next);
     saveWhiteboardPrefs(next);
   };
+  // The Fill tool's colour, as this browser last set it (fill-tool.md "Its colour").
+  // Until one is picked it pours the theme's first fill, so it follows the board's look.
+  const [fillChoice, setFillState] = useState<FillChoice>(() => loadFillChoice(FILL_CHOICE_KEY));
+  const fill: string =
+    fillChoice ?? deps.fillSwatches[1]?.color ?? deps.fillSwatches[0]?.color ?? FILL_TRANSPARENT;
   const tool: WhiteboardTool = activeWhiteboardTool(canvasTool, pendingDraw);
   const activePen = prefs.pens.find((p) => p.id === prefs.activePenId) ?? prefs.pens[0]!;
 
@@ -180,6 +198,22 @@ export function useWhiteboard(deps: Deps) {
     track('Draw', 'Selected', 'Path');
   };
 
+  // The Fill tool (docs/specs/023-draw-mode/fill-tool.md): held like the eraser until another tool
+  // is picked; its colour rides the intent.
+  const pickFill = () => {
+    setCanvasTool('select');
+    beginDraw({ type: 'fill', fill });
+    track('Draw', 'Selected', 'Fill');
+  };
+
+  const setFill = (next: string) => {
+    if (next === fill) return;
+    setFillState(next);
+    saveFillChoice(FILL_CHOICE_KEY, next);
+    if (tool === 'fill') beginDraw({ type: 'fill', fill: next });
+    track('Draw', 'Changed', 'FillColour');
+  };
+
   const pickEraser = () => {
     cancelDraw();
     selectCanvasTool('eraser');
@@ -267,6 +301,10 @@ export function useWhiteboard(deps: Deps) {
     // Where the dock sits (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits").
     position: dockPrefs.position,
     pickPath,
+    fill,
+    fillSwatches: deps.fillSwatches,
+    pickFill,
+    setFill,
     pathEditing,
     leavePathEdit,
     setRecognition,

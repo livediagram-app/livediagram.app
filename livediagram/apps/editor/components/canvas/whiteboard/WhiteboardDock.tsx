@@ -29,6 +29,7 @@ import {
 } from '@/lib/whiteboard-shape-slots';
 import {
   EraserFlyoutBody,
+  FillFlyoutBody,
   PenFlyoutBody,
   penFlyoutLabel,
   SettingsFlyoutBody,
@@ -196,6 +197,8 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
     switch (f.kind) {
       case 'eraser':
         return { label: 'Eraser', body: <EraserFlyoutBody model={model} /> };
+      case 'fill':
+        return { label: 'Fill', body: <FillFlyoutBody model={model} /> };
       case 'shapes':
         return {
           label: 'Shapes',

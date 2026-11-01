@@ -5,6 +5,7 @@ import { useCanvasDrawGesture } from '@/components/canvas/useCanvasDrawGesture';
 import { useStampGhost } from '@/components/canvas/useStampGhost';
 import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGesture';
 import { usePathTool } from '@/components/canvas/path/usePathTool';
+import { useFillPress } from '@/components/canvas/useFillPress';
 
 type CanvasDrawToolsInput = {
   props: CanvasProps;
@@ -97,8 +98,20 @@ export function useCanvasDrawTools({
     onBeginEdit: props.onBeginEdit,
     onCancelDraw: props.onCancelDraw,
   });
+  // The Fill tool (docs/specs/023-draw-mode/fill-tool.md), in front of every drawing gesture: while it
+  // is in hand a press is a fill, never a draw.
+  const { beginFillPress } = useFillPress({
+    pendingDraw,
+    wrapperRef,
+    viewportZoom,
+    isPinchingRef,
+    onPaintBucket: props.onPaintBucket,
+  });
   const beginPendingDrawOrPolygon = (e: React.PointerEvent): boolean =>
-    pathTool.beginPathPress(e) || beginPolygonPoint(e) || beginPendingDrawGesture(e);
+    beginFillPress(e) ||
+    pathTool.beginPathPress(e) ||
+    beginPolygonPoint(e) ||
+    beginPendingDrawGesture(e);
   return {
     stamp,
     drawDrag,

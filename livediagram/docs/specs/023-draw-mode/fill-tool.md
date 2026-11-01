@@ -29,7 +29,7 @@ is the tool every drawing program has for this: one press on the region you mean
 
 ## Its colour
 
-- **Pressed while in hand**, the Fill button opens its flyout, **Fill colour**, below the dock (above
+- **Pressed while in hand**, the Fill button opens its flyout, **Fill**, below the dock (above
   a bottom dock), as a pen's does. It holds the one colour picker
   ([Colour picker](../004-interface-design/colour-picker.md)), as every colour choice does: **No
   fill** first (it clears a fill), the theme's fills as the quick style panel's Background row shows
@@ -104,7 +104,7 @@ A marker stroke's ends meet when all of these hold (`STROKE_LOOP_*`, shared with
 
 - **A press is a click or a tap**: the fill happens on release, where the press went down, when
   the pointer moved less than 6 screen px. A drag, a second finger (a pinch) or a cancelled pointer
-  fills nothing; the canvas pans and zooms as it always does.
+  fills nothing; a pinch still zooms, and the middle button, Space or the scroll wheel still pan, as with every Draw tool.
 - The bucket is not an inking tool: a finger presses with it even after a pen has been used on the
   device (the rule that a finger pans once a pen is seen covers the pens, the Path tool and the
   eraser, [Draw mode](draw-mode.md) "Touch and pen input").
@@ -132,8 +132,8 @@ previews, from the same function the canvas draws with. The Excalidraw export wr
 
 ## Accessibility
 
-- The dock button is a toggle named **Fill** with its key; its flyout is named **Fill colour** and
-  is the colour picker, each swatch named by its colour word ("No fill" for none), the one in hand
+- The dock button is a toggle named **Fill** with its key; its flyout is named **Fill** and holds the picker named **Fill colour**: each
+  swatch named by its colour word ("No fill" for none), the one in hand
   marked.
 - The hint is a polite toast. Filling is pointer-only, like drawing: on the keyboard, the quick
   style panel's Background row sets a selected shape's fill.

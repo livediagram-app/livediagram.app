@@ -47,6 +47,9 @@ import { useWhiteboard } from '@/hooks/canvas/useWhiteboard';
 import { useSnapColours } from '@/hooks/canvas/useSnapColours';
 import { isPathEditing } from '@/lib/path-edit';
 import { usePathCommits } from '@/hooks/canvas/usePathCommits';
+import { usePaintBucket } from '@/hooks/canvas/usePaintBucket';
+import { applySwatchOverrides } from '@/lib/swatch-overrides';
+import { quickSwatches } from '@livediagram/document';
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
@@ -2528,6 +2531,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // The whiteboard dock (docs/specs/023-draw-mode/draw-mode.md): device-local pens, recognition and
   // eraser mode, and the dock presses turned into ordinary editor calls.
+  // The quick style panel's custom swatches (docs/specs/008-canvas/quick-style-panel.md), read by the
+  // panel and by the Fill tool's colours (docs/specs/023-draw-mode/fill-tool.md).
+  const swatchOverrides = useSwatchOverrides({
+    themeId: activeTab.theme ?? DEFAULT_SCHEME_ID,
+    userPreferences,
+    setUserPreferences,
+    writeUserPreferences,
+    ownerId: selfParticipant.id,
+  });
   const whiteboardDock = useWhiteboard({
     activeTab,
     drawMode,
@@ -2541,10 +2553,22 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     pathEditing: isPathEditing(activeTab.elements, editingId),
     leavePathEdit: () => setEditingId(null),
     snapColours,
+    fillSwatches: applySwatchOverrides(quickSwatches(activeTheme, 'fill'), swatchOverrides.overrides.fill),
     userPreferences,
     setUserPreferences,
     writeUserPreferences,
     ownerId: selfParticipant.id,
+  });
+  // The Fill tool's press (docs/specs/023-draw-mode/fill-tool.md): what it fills, as one commit.
+  const { paintBucket } = usePaintBucket({
+    pendingDraw,
+    elements: () => activeTab.elements,
+    layers: activeTab.layers,
+    inertIds: layerInertIds,
+    editsBlocked: structureBlocked,
+    canRecolour: participant.can.recolour,
+    commit,
+    hint: toast.info,
   });
 
   // Eraser canvas tool (docs/specs/008-canvas/canvas-and-palette.md): press / drag to delete any element the
@@ -2694,13 +2718,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // The quick style panel (docs/specs/008-canvas/quick-style-panel.md): its view of the selection and one
   // action per choice. The panel itself decides where and whether it shows.
-  const swatchOverrides = useSwatchOverrides({
-    themeId: activeTab.theme ?? DEFAULT_SCHEME_ID,
-    userPreferences,
-    setUserPreferences,
-    writeUserPreferences,
-    ownerId: selfParticipant.id,
-  });
   // Every input of the Quick Style view but the selection, which QuickStyleHost reads from the store.
   const quickStyleDeps: QuickStyleDeps = {
     activeTab,
@@ -3172,6 +3189,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
           pickText: whiteboardDock.pickText,
           pickShape: whiteboardDock.pickShape,
           pickPath: whiteboardDock.pickPath,
+          pickFill: whiteboardDock.pickFill,
           openShapes: whiteboardDock.openShapes,
         }
       : null,
@@ -3410,6 +3428,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitFreehand,
     commitPolygon,
     commitPath,
+    paintBucket,
     commitPathEdit,
     styleNewElement: styleMemory.styleNewElement,
     commitLabel,

@@ -3,7 +3,7 @@ import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@livediagra
 import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas, snapLeadingAxis } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { StampPlacement } from '@/lib/stamp-placement';
-import { isFreePenIntent, isWhiteboardPenIntent } from '@/lib/draw-mode';
+import { isFillIntent, isFreePenIntent, isWhiteboardPenIntent } from '@/lib/draw-mode';
 import { useWhiteboardPenGesture } from '@/components/canvas/useWhiteboardPenGesture';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 
@@ -153,7 +153,9 @@ export function useCanvasDrawGesture({
     !drawDrag &&
     !penPoints &&
     !stampAt &&
-    !isFreePenIntent(pendingDraw, whiteboard);
+    !isFreePenIntent(pendingDraw, whiteboard) &&
+    // The Fill tool presses, never draws to size (docs/specs/023-draw-mode/fill-tool.md).
+    !isFillIntent(pendingDraw);
   if (!hoverSnaps && drawHover) setDrawHover(null);
   useEffect(() => {
     if (!hoverSnaps) return;
