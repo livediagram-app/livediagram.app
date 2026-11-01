@@ -16,6 +16,7 @@ import {
   TRACKER_FILE_MAX_BYTES,
   TRACKER_SOURCE_NAMES,
   assignedPeople,
+  createBatches,
   cleanText,
   isTrackerRefusal,
   planTrackerImport,
@@ -29,7 +30,7 @@ import {
   type TrackerPreview,
   type TrackerSource,
 } from '@liveplanner/items';
-import { importBatches, withImportedThreads, type ImportedCreate } from '@liveplanner/project';
+import { withImportedThreads, type ImportedCreate } from '@liveplanner/project';
 import { parseCsv } from '@liveplanner/sheets';
 import { apiRefusalOf } from './api-refusal';
 import {
@@ -137,7 +138,7 @@ async function importAsPlan(
     sourceName: plan.sourceName,
     now: Date.now(),
   });
-  const batches = importBatches(creates, new TextEncoder().encode(JSON.stringify(head)).length);
+  const batches = createBatches(creates, new TextEncoder().encode(JSON.stringify(head)).length);
   // The create carries the first write's cards (none, when its own room was spent); the rest follow it.
   await api.json('/projects', {
     method: 'POST',
@@ -257,7 +258,7 @@ async function importIntoPlan(
       sourceName: plan.sourceName,
       now: Date.now(),
     });
-    await postBatches(api, projectId, importBatches(creates));
+    await postBatches(api, projectId, createBatches(creates));
     return done(plan, projectId, tabId, false);
   }
 }

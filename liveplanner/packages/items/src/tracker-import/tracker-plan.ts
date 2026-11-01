@@ -240,6 +240,9 @@ export function planTrackerImport(board: TrackerBoard, ctx: TrackerPlanContext):
   );
   // Every name is cleaned, cut and distinct, and the title within its length: a refusal here is a bug.
   if (!placed.ok) throw new Error(`[tracker-import] board refused: ${placed.message}`);
+  // A Board tab's board draws its cards Detailed: no card size kept (plan-tabs.md "Board tab and Sheet tab").
+  const { cardSize: _size, ...setup } = placed.board.planBoard;
+  const placedBoard = { ...placed.board, planBoard: setup };
   const statusOf = new Map(
     placed.board.planBoard.columns.map((c) => [statusKey(c.name), c.status]),
   );
@@ -272,7 +275,7 @@ export function planTrackerImport(board: TrackerBoard, ctx: TrackerPlanContext):
     source: board.source,
     sourceName,
     title: board.title,
-    board: placed.board,
+    board: placedBoard,
     type: typed.type,
     typeIsNew: typed.isNew,
     creates,

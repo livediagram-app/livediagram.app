@@ -5,6 +5,7 @@
 import type { ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
 import {
   ITEM_BULK_MAX,
+  createBatches,
   type Item,
   type ItemPerson,
   type ItemStoreState,
@@ -165,13 +166,9 @@ export async function writeItem(
       if (write.creates.length === 1)
         return one(await post(scope, '', write.creates[0], 'item create'));
       const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };
-      for (let i = 0; i < write.creates.length; i += ITEM_BULK_MAX) {
-        const r = await post<ItemsResponse>(
-          scope,
-          '/bulk',
-          { items: write.creates.slice(i, i + ITEM_BULK_MAX) },
-          'items create',
-        );
+      // A request per ITEM_BULK_MAX cards, each under the api's request cap (an import's cards carry their threads).
+      for (const items of createBatches(write.creates)) {
+        const r = await post<ItemsResponse>(scope, '/bulk', { items }, 'items create');
         answer.upserts.push(...r.items);
         answer.rev = r.rev;
       }
