@@ -260,3 +260,26 @@ describe('PageRowStack', () => {
     expect(screen.getByRole('button', { name: 'More Actions for Page a' })).toBeTruthy();
   });
 });
+
+describe('row keys', () => {
+  // Cmd+Z did nothing after a Move Down from the menu: focus was back on the ⋯, which stopped every key.
+  it("hands a Cmd or Ctrl chord on ⋯ or Delete to the editor, and keeps a row's arrows its own", () => {
+    const a = model();
+    render(<List models={{ a: a.model }} stack />);
+    const seen: string[] = [];
+    const onKey = (e: KeyboardEvent) =>
+      seen.push(`${e.metaKey ? 'Meta+' : ''}${e.ctrlKey ? 'Ctrl+' : ''}${e.key}`);
+    window.addEventListener('keydown', onKey);
+    try {
+      for (const name of ['More Actions for Page a', 'Delete Page a']) {
+        const el = screen.getByRole('button', { name });
+        fireEvent.keyDown(el, { key: 'z', metaKey: true });
+        fireEvent.keyDown(el, { key: 'z', ctrlKey: true });
+        fireEvent.keyDown(el, { key: 'Home' });
+      }
+    } finally {
+      window.removeEventListener('keydown', onKey);
+    }
+    expect(seen).toEqual(['Meta+z', 'Ctrl+z', 'Meta+z', 'Ctrl+z']);
+  });
+});
