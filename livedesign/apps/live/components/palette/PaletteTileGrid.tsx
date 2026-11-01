@@ -78,6 +78,9 @@ export function tileHandler(
       return actions.beginPolygon;
     case 'path':
       return actions.beginPath;
+    case 'fill':
+      // Its row (FillToolRow) always presses itself: picking it up needs the colour it carries.
+      return () => {};
     case 'arrow':
       // The Arrow tile's pointer, or the Line tile's none (canvas-and-palette.md "Arrows and lines").
       return () => actions.addArrow(a.ends);

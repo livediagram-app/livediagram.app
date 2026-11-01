@@ -102,6 +102,9 @@ type PaletteTileAction =
   | { type: 'polygon' }
   // The Path tool (docs/specs/023-draw-mode/path-tool.md): a logo page's Pen (logo-pages.md).
   | { type: 'path' }
+  // The Fill tool (docs/specs/023-draw-mode/drawing-tools.md "The Fill tool"): a logo page's paint
+  // bucket. Never in PALETTE_TILES: its row (FillToolRow) carries the person's colour and its own press.
+  | { type: 'fill' }
   // `ends`: the Line tile's `'none'`; the Arrow tile leaves it to the tool's pointer at its end.
   | { type: 'arrow'; ends?: import('@livedesign/design').ArrowEnds }
   | { type: 'sticky' }

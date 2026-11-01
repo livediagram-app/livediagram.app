@@ -472,7 +472,8 @@ function CanvasView(props: CanvasProps) {
               // the pen cursor for its own (globals.css, docs/specs/023-draw-mode/drawing-tools.md "Markers").
               data-pen-in-hand={
                 (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard') ||
-                pendingDraw?.type === 'path'
+                pendingDraw?.type === 'path' ||
+                pendingDraw?.type === 'fill'
                   ? ''
                   : undefined
               }

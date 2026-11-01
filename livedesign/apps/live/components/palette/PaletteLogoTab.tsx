@@ -2,9 +2,9 @@
 
 // A logo page's Draw (docs/specs/007-editor/logo-pages.md "The Logo palette"), the body Pages
 // mode's Draw shows while it holds markers: the Pen, the Pencil, the Shape Pen and the Polygon, then
-// the three markers in this person's colours and widths. A marker is picked up for one
-// stroke; pressed again while held, it opens its flyout (colour and width), whose
-// changes re-arm it at once.
+// the three markers in this person's colours and widths, then the Fill tool. A marker is picked up
+// for one stroke; pressed again while held, it opens its flyout (colour and width), whose
+// changes re-arm it at once. The Fill tool stays in hand (FillToolRow).
 import { useContext, useState } from 'react';
 import { EditorContext } from '@/app/design/[id]/EditorContext';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -18,6 +18,7 @@ import { markerTiles } from './palette-marker-tiles';
 import type { PaletteTileDef } from './palette-tile-defs';
 import type { PaletteTileActions } from './PaletteTileGrid';
 import { PaletteToolRow, PaletteToolRows } from './PaletteToolRows';
+import { FillToolRow } from './FillToolRow';
 
 // The tab's own box: the markers' flyout is placed against it.
 const SCOPE = '[data-palette-logo]';
@@ -147,6 +148,19 @@ export function PaletteLogoTab({
               );
             })}
           </div>
+          {editor ? (
+            <>
+              <p className="px-1 pt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                Fill
+              </p>
+              <FillToolRow
+                actions={actions}
+                pendingDraw={pendingDraw}
+                beginDraw={editor.beginDraw}
+                scope={SCOPE}
+              />
+            </>
+          ) : null}
         </>
       ) : null}
     </div>
