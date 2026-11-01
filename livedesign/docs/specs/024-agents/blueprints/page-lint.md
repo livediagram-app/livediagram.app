@@ -118,7 +118,7 @@ export type LintReport = {
   the api's `render.svg`) wraps with.
 - **N10** Rich text is measured as its plain `label` at the element's base size (LN7).
 - **N11** A box or text with `textSize: 'scale'` fits its text by design and never overflows (LN6); a Shift-resized
-  text is measured at its `textScale`.
+  or re-fitted text, and a re-fitted shape's label, is measured at its `textScale` (`labelTextScale`).
 - **N12** Text on a curve (`textArc`) and turned text (a rotation that is not a whole turn) are left out.
 - **N19** A quoted word holding control characters, quotes or newlines: `quoteLabel` strips C0 and C1 controls,
   collapses whitespace, cuts at `LINT_LABEL_QUOTE_MAX` with `…` and JSON-escapes it.

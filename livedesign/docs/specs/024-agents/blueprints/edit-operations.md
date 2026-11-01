@@ -205,7 +205,7 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
 | `stroke`     | every type with a `strokeColor` field                             | `strokeColor`; clears `strokeSwatch`               | a colour: hex (warning `colour_overrides_theme` where the theme colours it) or a marker colour name |
 | `text-color` | every type with a `textColor` field                               | `textColor`                                        | a colour, as `stroke`                                                                               |
 | `border`     | every type with a `strokeStyle` field                             | `strokeStyle`                                      | `solid dashed dotted long-dash dash-dot dash-dot-dot`                                               |
-| `text`       | every type with a `textSize` field                                | `textSize`                                         | `sm md lg scale`                                                                                    |
+| `text`       | every type with a `textSize` field                                | `textSize`, clearing a `textScale`                 | `sm md lg scale`                                                                                    |
 | `line`       | `arrow`                                                           | `arrowStyle`                                       | `straight angled curved`                                                                            |
 
 - **Stored field names** are `ELEMENT_FIELD_NAMES[el.type]`. `id` and `type` are refused (`invalid_value`,
