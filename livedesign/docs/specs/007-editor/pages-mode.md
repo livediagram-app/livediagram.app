@@ -894,8 +894,9 @@ canvas's ink.
   the sidebar (8 px short of its inner edge), the tab's name cut short to fit, then a hairline, then
   the Contents header exactly where it sits without the join. The menu button itself never moves or
   changes: the same glyph, size, hover and pressed look, and the Explorer still hangs under it. A
-  workspace frame's Back takes the row the same way. The palette strip keeps clear of the whole row,
-  as it keeps clear of the box. Pinned right, while it is being dragged, minimised, and on a phone
+  workspace frame's Back takes the row the same way. The palette strip keeps clear of the whole row
+  and centres in what shows beside the sidebar, as a page is framed beside it, so a laptop's strip
+  keeps its category names. Pinned right, while it is being dragged, minimised, and on a phone
   (which has no sidebar), the box is its usual card. It is the same for every role: a Viewer's box
   joins as an Editor's does.
 - **Minimised to its button**: the bottom-right cluster holds **Contents** (a list glyph, named
