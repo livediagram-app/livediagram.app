@@ -124,12 +124,14 @@ export function MakeSizesDialog({
   const [busy, setBusy] = useState<number | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
   const cancelled = useRef(false);
-  useEffect(
-    () => () => {
+  // Set again on every mount: React's development remount runs the cleanup once before the dialog is
+  // really closed, which would otherwise stop the first Make at once.
+  useEffect(() => {
+    cancelled.current = false;
+    return () => {
       cancelled.current = true;
-    },
-    [],
-  );
+    };
+  }, []);
   const preview = usePhotoPreviewUrl(photo.scope, photo.tabId, s.photo.preview, (id) =>
     photo.store?.ownBlob(id),
   );

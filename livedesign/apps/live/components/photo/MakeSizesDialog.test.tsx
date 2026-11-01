@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { StrictMode } from 'react';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createRaster } from '@livedesign/photo-engine';
@@ -23,13 +24,14 @@ afterEach(() => {
   toastApi.action.mockClear();
 });
 
-function open(over: Parameters<typeof photoView>[2] = {}) {
+function open(over: Parameters<typeof photoView>[2] = {}, strict = false) {
   const addSizes = vi.fn(() => true);
   const exportAllSizes = vi.fn(async () => {});
   const pv = photoView(undefined, undefined, { addSizes, exportAllSizes, ...over });
   pv.view.store = pv.store;
   const onClose = vi.fn();
-  render(<MakeSizesDialog photo={pv.view} onClose={onClose} />);
+  const dialog = <MakeSizesDialog photo={pv.view} onClose={onClose} />;
+  render(strict ? <StrictMode>{dialog}</StrictMode> : dialog);
   return { ...pv, addSizes, exportAllSizes, onClose };
 }
 
@@ -132,6 +134,14 @@ describe('the Make Sizes dialog', () => {
     expect(spec.actions.map((a) => a.label)).toEqual(['Export All Sizes']);
     spec.actions[0]!.onSelect();
     expect(exportAllSizes).toHaveBeenCalledWith('');
+  });
+
+  it('makes the sizes after a development remount (the cleanup ran once before)', async () => {
+    const { addSizes, onClose } = open({}, true);
+    fireEvent.click(tile(/^X Post/));
+    fireEvent.click(make());
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(addSizes).toHaveBeenCalledOnce();
   });
 
   it('says so when the pages could not be added, and offers no export without a scope', async () => {
