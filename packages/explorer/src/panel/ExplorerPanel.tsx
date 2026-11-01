@@ -45,7 +45,7 @@ import {
 } from '../explorer/ThisBrowser';
 import type { ThisBrowserItem } from '../this-browser';
 import { PanelThisBrowser } from './PanelThisBrowser';
-import { ConfirmDialog, Tooltip, BackBar } from '@liveworkspace/ui';
+import { BackBar, Button, ConfirmDialog, Tooltip } from '@liveworkspace/ui';
 import { daysLeftLabel, trashedOnLabel, trashGroups } from '../explorer/TrashPane';
 import {
   TRASH_BIN,
@@ -1393,9 +1393,9 @@ function PlaceSection({
           </PaneList>
         ) : null}
         {state.hasMore ? (
-          <button
-            type="button"
-            disabled={state.loadingMore}
+          <Button
+            variant="none"
+            busy={state.loadingMore}
             onClick={state.moreFailed ? state.retryMore : state.loadMore}
             className={`${PANE_LINK} self-center py-1`}
           >
@@ -1404,7 +1404,7 @@ function PlaceSection({
               : state.moreFailed
                 ? 'Couldn’t load more. Try again'
                 : 'Show more'}
-          </button>
+          </Button>
         ) : null}
       </div>
     );
@@ -1604,9 +1604,9 @@ function TrashSection() {
         </PaneSection>
       ))}
       {state.hasMore ? (
-        <button
-          type="button"
-          disabled={state.loadingMore}
+        <Button
+          variant="none"
+          busy={state.loadingMore}
           onClick={state.moreFailed ? state.retryMore : state.loadMore}
           className={`${PANE_LINK} self-center py-1`}
         >
@@ -1615,7 +1615,7 @@ function TrashSection() {
             : state.moreFailed
               ? 'Couldn’t load more. Try again'
               : 'Show more'}
-        </button>
+        </Button>
       ) : null}
       {confirming ? (
         <ConfirmDialog

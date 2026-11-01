@@ -130,7 +130,7 @@ export function ShareComposer({
           <Button
             variant="solid"
             onClick={() => onIssue(level, expiry, multiTab && scope ? scope : null)}
-            disabled={busy}
+            busy={busy}
             data-tour-id="share-create"
             className={`h-9 whitespace-nowrap shadow-sm ${LEVEL_PASS[level].button}`}
           >
