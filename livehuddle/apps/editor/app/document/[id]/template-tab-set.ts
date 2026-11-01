@@ -3,7 +3,7 @@
 // between. So the check runs again here, on the tabs the commit actually applies to, and a tab that is gone or no
 // longer empty is left as is. Pure, so the rule is testable without the hook.
 
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 
 // `tabs` with the template landed on the tab `tabId`.
 export function landTemplateOnTab(

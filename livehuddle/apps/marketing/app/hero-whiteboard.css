@@ -1,5 +1,5 @@
 /* The landing hero's whiteboard wall (docs/specs/019-marketing/marketing-site.md "Hero"): the band's
-   ground on the landing page only (the help centre's page headers keep @livediagram/ui hero-band.css's
+   ground on the landing page only (the help centre's page headers keep @livehuddle/ui hero-band.css's
    dot grid). A near-white board with a faint diagonal sheen and a soft frame, sticky notes hung from
    `xl`, the search arrow in marker and the fan's cards taped up. All static CSS and SVG: the only motion
    is the arrow's play-once draw (hero-animations.css) and the fan's deal (hero-fan.css). */

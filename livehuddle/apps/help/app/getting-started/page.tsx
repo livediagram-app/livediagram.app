@@ -7,7 +7,7 @@ import { site } from '@/lib/help-site';
 const COPY = {
   title: 'Getting Started',
   description:
-    'New to livediagram? Create your first diagram, learn the canvas, and share it with your team.',
+    'New to livehuddle? Create your first diagram, learn the canvas, and share it with your team.',
   lede: 'New here? These guides get you up and running quickly.',
 };
 

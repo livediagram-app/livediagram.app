@@ -1,5 +1,5 @@
 import type { ElementStyleOps } from '@/lib/element-style-ops';
-import type { EventStormingNoteKind } from '@livediagram/document';
+import type { EventStormingNoteKind } from '@livehuddle/document';
 import type {
   AnimationSpeed,
   ArrowEnds,
@@ -46,7 +46,7 @@ import type {
   TablePreset,
   TextSize,
   TextSizePreset,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import type { ArrowPreset } from '@/components/palette/StylePresets';
 import type { ColourPalette } from '@/components/palette/context-menu-input-rows';
 import type { ShapeColorPreset } from '@/lib/themes';
@@ -239,10 +239,10 @@ export type EditorContextMenuProps = {
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the rows of the selected stat row / process /
   // header (each field only lands on its own kind), and an image's hero
   // caption card on or off.
-  onSetWebRows: (rows: import('@livediagram/document').WebRows) => void;
+  onSetWebRows: (rows: import('@livehuddle/document').WebRows) => void;
   onSetHeroCaption: (on: boolean) => void;
   // Mode button (docs/specs/009-elements/mode-button.md): which selection mode pressing it hands out.
-  onSetButtonMode: (mode: import('@livediagram/document').SelectionMode) => void;
+  onSetButtonMode: (mode: import('@livehuddle/document').SelectionMode) => void;
   // Portal (docs/specs/009-elements/portal-element.md): which portal this one leads to; null unpairs it.
   onSetPortalTarget: (targetId: string | null) => void;
   // Portal (docs/specs/009-elements/portal-element.md): its name (menu-only — the canvas ring stays clean), and
@@ -252,12 +252,12 @@ export type EditorContextMenuProps = {
   // Session button (docs/specs/012-collaboration/session-button.md) / Reveal zone (docs/specs/009-elements/reveal-zone.md) / Picker (docs/specs/012-collaboration/picker.md):
   // their settings, applied to the element the menu is acting on. The session button's and the cover's are
   // absent while somebody else holds the baton (docs/specs/012-collaboration/facilitator.md), so neither section shows.
-  onSetSession?: (config: import('@livediagram/document').SessionButtonConfig) => void;
+  onSetSession?: (config: import('@livehuddle/document').SessionButtonConfig) => void;
   onSetRevealed?: (revealed: boolean) => void;
-  onSetPickerSource: (source: import('@livediagram/document').PickerSource) => void;
+  onSetPickerSource: (source: import('@livehuddle/document').PickerSource) => void;
   onSetPickerOptions: (options: string[]) => void;
   // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst the pad throws.
-  onSetReaction: (reaction: import('@livediagram/document').Reaction) => void;
+  onSetReaction: (reaction: import('@livehuddle/document').Reaction) => void;
   // The collaboration elements (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130). The temperature
   // check, idea box and roll call carry no settings — everything they do
   // happens on their own faces — so they need no setter here.
@@ -271,10 +271,10 @@ export type EditorContextMenuProps = {
   onSetDecisionDrivers: (drivers: string[]) => void;
   onSetChairFacing: (facing: ChairFacing) => void;
   // Room (docs/specs/009-elements/office.md): which wall its doorway is in.
-  onSetRoomDoor: (door: import('@livediagram/document').RoomDoor) => void;
+  onSetRoomDoor: (door: import('@livehuddle/document').RoomDoor) => void;
   // Every tab, because a portal link can cross tabs, plus which one is active
   // so the picker can mark the off-tab candidates.
-  tabs: import('@livediagram/document').Tab[];
+  tabs: import('@livehuddle/document').Tab[];
   activeTabId: string;
   // Style presets (docs/specs/010-palette/style-presets.md): one-click colour + border looks for the selected
   // shape, plus a reset back to the theme default. `shapeColorPresets` are
@@ -380,7 +380,7 @@ export type EditorContextMenuProps = {
   colourPalette: ColourPalette;
   // Tag colours (docs/specs/009-elements/tag-colours.md): the active tab's map, and setting or clearing one tag's
   // colour across the tab. Absent where the menu cannot edit the tab.
-  tagColours?: readonly import('@livediagram/document').TagColour[];
+  tagColours?: readonly import('@livehuddle/document').TagColour[];
   onSetTagColour?: (tag: string, colour: string | null) => void;
   // Table structure toggles (header row / column, zebra) for the Table
   // category.

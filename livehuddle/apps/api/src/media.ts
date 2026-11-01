@@ -1,4 +1,4 @@
-// livediagram's side of liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md). The images people upload
+// livehuddle's side of liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md). The images people upload
 // live there, with their gallery, dedupe and caps; this api keeps its own access rules (who may read a
 // document, which documents may serve whose image) and serves the bytes to the people they let in. Every call
 // carries MEDIA_KEY as a bearer token and names this app.
@@ -16,7 +16,7 @@ import {
 } from '@liveworkspace/media';
 import type { Env, ImageSummary } from './types';
 
-export const MEDIA_APP = 'livediagram.app';
+export const MEDIA_APP = 'livehuddle.app';
 
 // The service, or null when this deploy has none (a deployment without the key): images are then off.
 export function mediaClient(env: Pick<Env, 'MEDIA_KEY' | 'MEDIA_URL'>): MediaClient | null {

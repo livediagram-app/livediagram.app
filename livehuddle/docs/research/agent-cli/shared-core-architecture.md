@@ -1,16 +1,16 @@
 # One core, many front-ends: REST, MCP and CLI
 
-Research for the agent-first `livediagram` CLI. Angle: how one capability core serves the REST API, the MCP server and a CLI without drift, and how the CLI is authenticated, distributed, updated, measured and pointed at other hosts. Measured against the code on `main` at `efaee7d29`.
+Research for the agent-first `livehuddle` CLI. Angle: how one capability core serves the REST API, the MCP server and a CLI without drift, and how the CLI is authenticated, distributed, updated, measured and pointed at other hosts. Measured against the code on `main` at `efaee7d29`.
 
 Specs read: [MCP server](../../specs/015-api/mcp-server.md), [Public API and API tokens](../../specs/015-api/public-api-and-tokens.md), [API app](../../specs/015-api/api.md), [Telemetry](../../specs/017-telemetry/telemetry.md).
 
 ## 1. Recommendation in one screen
 
 - **The server owns meaning.** Everything that decides what gets _stored_ (graph and Mermaid to elements, normalisation, layout choice, template materialisation, element ops, validation) runs in the **api worker**, behind REST. MCP and CLI stop computing writes and become adapters. This is the only placement that survives version skew: an installed CLI from March cannot store elements the way the October server expects, but it can always ask the server to.
-- **Packages own presentation.** Read views (outline, ids, graph, comments, diff) are **pure functions in a new `@livediagram/document-views` package**, served by the api as `?view=` text **and** bundled in the CLI for local files. Online, the CLI prefers the server's rendering; offline (synced files) it renders locally and says which format version it understood.
-- **Front-ends own transport.** One **operation catalogue** (`@livediagram/agent-operations`: zod input and output, fact-only descriptions, behaviour preset, handler against a typed api client) is registered by `apps/mcp` as tools and by `apps/cli` as commands. PNG rasterisation stays at the edge (resvg-wasm in both), because it is stateless and presentational.
-- **Auth reuses the token.** `LIVEDIAGRAM_TOKEN` for agents and CI; `livediagram auth login` runs the **existing OAuth 2.1 + PKCE server** in `apps/mcp/src/oauth.ts` with a loopback redirect (needs RFC 8252 port-agnostic loopback matching), with **device code** (RFC 8628) as the headless path. The result is an ordinary `lvd_` token.
-- **Distribution**: an npm package `livediagram` (name free on npm today, as is `@livediagram/cli`), bundled to one ESM file plus the resvg wasm and the Inter font, `npx livediagram@latest` on Node >= 22. Bun-compiled single binaries on GitHub Releases and a Homebrew tap come second.
+- **Packages own presentation.** Read views (outline, ids, graph, comments, diff) are **pure functions in a new `@livehuddle/document-views` package**, served by the api as `?view=` text **and** bundled in the CLI for local files. Online, the CLI prefers the server's rendering; offline (synced files) it renders locally and says which format version it understood.
+- **Front-ends own transport.** One **operation catalogue** (`@livehuddle/agent-operations`: zod input and output, fact-only descriptions, behaviour preset, handler against a typed api client) is registered by `apps/mcp` as tools and by `apps/cli` as commands. PNG rasterisation stays at the edge (resvg-wasm in both), because it is stateless and presentational.
+- **Auth reuses the token.** `LIVEHUDDLE_TOKEN` for agents and CI; `livehuddle auth login` runs the **existing OAuth 2.1 + PKCE server** in `apps/mcp/src/oauth.ts` with a loopback redirect (needs RFC 8252 port-agnostic loopback matching), with **device code** (RFC 8628) as the headless path. The result is an ordinary `lvd_` token.
+- **Distribution**: an npm package `livehuddle` (name free on npm today, as is `@livehuddle/cli`), bundled to one ESM file plus the resvg wasm and the Inter font, `npx livehuddle@latest` on Node >= 22. Bun-compiled single binaries on GitHub Releases and a Homebrew tap come second.
 - **The largest gap is not the CLI.** A REST tab write is last-writer-wins with no revision check and tells the realtime room nothing (`docs/specs/015-api/api.md`: "a write from any other caller reaches connected peers only when they next load the tab"). A chat agent editing while a person watches the canvas is exactly that case. The `ops` endpoint with `If-Match` and room relay (§9) is the most important API addition, for MCP as much as the CLI.
 
 ## 2. What the code is today (an honest map)
@@ -20,24 +20,24 @@ Specs read: [MCP server](../../specs/015-api/mcp-server.md), [Public API and API
 | File                                                                   | Lines | What it is                                                                                                             | Verdict                                                                                                                                                                                  |
 | ---------------------------------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `tools.ts`                                                             | 644   | 11 tool handlers: arg juggling, api calls, ops apply, layout, normalise, render                                        | **Split.** The write logic (ops apply, validate, layout, land arrivals) moves server-side; the rest becomes catalogue entries                                                            |
-| `graph-input.ts`                                                       | 181   | Label cap (`GRAPH_LABEL_MAX` 40), layout style and direction choice, line routing, Mermaid dispatch                    | **Move** to `packages/document` (pure; only imports `@livediagram/document`). It is authoring policy, not MCP policy, once a CLI shares it                                               |
+| `graph-input.ts`                                                       | 181   | Label cap (`GRAPH_LABEL_MAX` 40), layout style and direction choice, line routing, Mermaid dispatch                    | **Move** to `packages/document` (pure; only imports `@livehuddle/document`). It is authoring policy, not MCP policy, once a CLI shares it                                                |
 | `element-normalise.ts`                                                 | 178   | Factory defaults, table padding, code language coercion, entity height, chart coercion, lanes to front, stroke packing | **Move** to `packages/document` (pure). The api worker should run it on every agent write path                                                                                           |
 | `tab-builders.ts`                                                      | 140   | `applyLayout`, `buildTab` (theme paint), `buildGraphTab`, `buildTemplateTab`, `landMcpArrivals`                        | **Move** to `packages/document` + `packages/templates` (pure; already render-free by design)                                                                                             |
-| `schema.ts`                                                            | 469   | Element format text (`ELEMENT_SCHEMA_HINT`, `elementSchemaDoc`) **and** zod input shapes                               | **Split.** The format text moves to `packages/document` (`element-format.ts`) so `livediagram schema`, the api and MCP read one copy; zod shapes move to the catalogue                   |
+| `schema.ts`                                                            | 469   | Element format text (`ELEMENT_SCHEMA_HINT`, `elementSchemaDoc`) **and** zod input shapes                               | **Split.** The format text moves to `packages/document` (`element-format.ts`) so `livehuddle schema`, the api and MCP read one copy; zod shapes move to the catalogue                    |
 | `output-schema.ts`                                                     | 148   | zod output schemas per tool                                                                                            | **Move** to the catalogue                                                                                                                                                                |
 | `find-documents.ts`                                                    | 72    | Personal + team library sweep, name match, ranking                                                                     | **Move server-side** as `GET /api/documents?query=` (one round trip instead of 2 + N teams)                                                                                              |
 | `tool-annotations.ts`                                                  | 110   | `registerTool` wrapper: required behaviour + outputSchema, telemetry, legacy names                                     | **Stays** (MCP adapter); reads behaviour from the catalogue                                                                                                                              |
 | `tool-helpers.ts`, `tool-scope.ts`, `request-scope.ts`                 | ~120  | Result shaping, token guard, AsyncLocalStorage scopes                                                                  | **Stays** (MCP adapter)                                                                                                                                                                  |
 | `api.ts`                                                               | 103   | Service-binding fetch, `ApiError`, 5xx telemetry                                                                       | **Generalise** into `@liveworkspace/api-client` with an injected `fetch` (service binding in the worker, global `fetch` in the CLI)                                                      |
 | `render.ts`, `image-result.ts`                                         | 106   | resvg-wasm + embedded Inter, image prefetch                                                                            | **Extract** the rasteriser to `@liveworkspace/render-png` (wasm init injected: Worker `Data` module vs Node `readFile`); image prefetch already sits on `embedTabImages` in `api-schema` |
-| `oauth.ts`                                                             | 278   | OAuth 2.1 AS: discovery, DCR, authorize, session read, token                                                           | **Stays in `apps/mcp`** for now; two changes for the CLI (§6). Becomes `@livediagram/oauth-server` only if a second host appears                                                         |
+| `oauth.ts`                                                             | 278   | OAuth 2.1 AS: discovery, DCR, authorize, session read, token                                                           | **Stays in `apps/mcp`** for now; two changes for the CLI (§6). Becomes `@livehuddle/oauth-server` only if a second host appears                                                          |
 | `prompts.ts`, `server.ts`, `legacy-tool-names.ts`, `created-folder.ts` |       | MCP-only                                                                                                               | **Stays**                                                                                                                                                                                |
 
 ### 2.2 `packages/*`
 
-- `@livediagram/document` is already the isomorphic core: types, `isValidTab`, `autoLayoutElements`, `graphToElements` (`graph-authoring.ts`, whose header already says "the public API can adopt it"), `parseMermaid`, `mermaid-serialise.ts` (elements to Mermaid), `renderElementsToSvg`, `element-ops.ts` (`diffToElementOps`, `applyElementOp`), `element-deltas.ts`, `comments.ts`, `element-display-label.ts`, `element-kind-label.ts`. Nothing in it touches the DOM. It is the right home for the moved MCP logic.
-- `@livediagram/api-schema` holds the wire DTOs, `DOCUMENT_FORMAT` (2) and its header `X-Livediagram-Format`, `BUILD_ID_HEADER`, telemetry enums, `embedTabImages`, `bearerTokenOf`, `isLoopbackHostname`. The CLI consumes it unchanged.
-- `@livediagram/templates` and `@liveworkspace/icons` (`/resolve`) are pure and Worker-safe; both bundle into Node as is.
+- `@livehuddle/document` is already the isomorphic core: types, `isValidTab`, `autoLayoutElements`, `graphToElements` (`graph-authoring.ts`, whose header already says "the public API can adopt it"), `parseMermaid`, `mermaid-serialise.ts` (elements to Mermaid), `renderElementsToSvg`, `element-ops.ts` (`diffToElementOps`, `applyElementOp`), `element-deltas.ts`, `comments.ts`, `element-display-label.ts`, `element-kind-label.ts`. Nothing in it touches the DOM. It is the right home for the moved MCP logic.
+- `@livehuddle/api-schema` holds the wire DTOs, `DOCUMENT_FORMAT` (2) and its header `X-Livehuddle-Format`, `BUILD_ID_HEADER`, telemetry enums, `embedTabImages`, `bearerTokenOf`, `isLoopbackHostname`. The CLI consumes it unchanged.
+- `@livehuddle/templates` and `@liveworkspace/icons` (`/resolve`) are pure and Worker-safe; both bundle into Node as is.
 - **One piece lived in the wrong app:** `tabToMarkdownText` (the Markdown outline) was in the editor app. It is the seed of the outline view; it now lives in `packages/document/src/export-tab-text.ts`, and the outline view itself in `document-views`.
 - **Packaging fact that shapes distribution:** every internal package is `private` and exports raw TypeScript (`"main": "./src/index.ts"`). Nothing can be published as is; the CLI must be **bundled** (esbuild / tsdown) so internal packages are inlined. Source size: `document` 2.8 MB, `templates` 800 KB, `icons` 280 KB of TS, tree-shaken in the bundle.
 
@@ -53,9 +53,9 @@ Specs read: [MCP server](../../specs/015-api/mcp-server.md), [Public API and API
 
 | Vendor                    | CLI                                                                             | MCP                                                                                                                          | Shared core?                                                                                          | Lesson for us                                                                                                                                                                                     |
 | ------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **GitHub**                | `gh` (Go)                                                                       | `github-mcp-server` (Go), separate repo                                                                                      | No shared command layer; both are clients of REST/GraphQL via go-github. `gh api` is the escape hatch | Two hand-written front-ends drift (toolsets vs commands differ). The escape hatch `gh api` is invaluable for agents; ship `livediagram api <path>`                                                |
+| **GitHub**                | `gh` (Go)                                                                       | `github-mcp-server` (Go), separate repo                                                                                      | No shared command layer; both are clients of REST/GraphQL via go-github. `gh api` is the escape hatch | Two hand-written front-ends drift (toolsets vs commands differ). The escape hatch `gh api` is invaluable for agents; ship `livehuddle api <path>`                                                 |
 | **Stripe**                | Stripe CLI (Go)                                                                 | Hosted MCP + `@stripe/agent-toolkit` (TS)                                                                                    | The **API** is the core; toolkit and MCP are thin, OpenAPI-informed adapters                          | Keep every smart thing behind the API; front-ends stay thin                                                                                                                                       |
-| **Cloudflare**            | `wrangler` (TS)                                                                 | Many MCP servers; **Code Mode** ("entire API in ~1,000 tokens": two tools, `search()` and `execute()`, over 2,500 endpoints) | OpenAPI is the core; Code Mode turns it into a typed surface the model writes code against            | For a large surface, progressive discovery beats a long tool list. Our surface is small, so per-command help is enough; keep the idea for `livediagram api`                                       |
+| **Cloudflare**            | `wrangler` (TS)                                                                 | Many MCP servers; **Code Mode** ("entire API in ~1,000 tokens": two tools, `search()` and `execute()`, over 2,500 endpoints) | OpenAPI is the core; Code Mode turns it into a typed surface the model writes code against            | For a large surface, progressive discovery beats a long tool list. Our surface is small, so per-command help is enough; keep the idea for `livehuddle api`                                        |
 | **Supabase**              | `supabase` (Go)                                                                 | `supabase-mcp` (TS) over the Management API                                                                                  | API is the core                                                                                       | Same as Stripe                                                                                                                                                                                    |
 | **Vercel**                | `vercel` (TS)                                                                   | Hosted MCP                                                                                                                   | API is the core                                                                                       | OAuth for MCP, separate login for CLI: two front doors to one credential                                                                                                                          |
 | **Linear**                | none official                                                                   | Hosted MCP                                                                                                                   | API (GraphQL)                                                                                         | An MCP can be the only agent surface; but agents in a repo still reach for a CLI                                                                                                                  |
@@ -69,7 +69,7 @@ Specs read: [MCP server](../../specs/015-api/mcp-server.md), [Public API and API
 
 |              | A. CLI is an MCP client                                               | B. Fat client (CLI bundles the MCP logic)                                          | C. Server-side core, thin front-ends                          | D. Generated from OpenAPI                                  |
 | ------------ | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------------- |
-| Shape        | `livediagram` speaks MCP to `mcp.livediagram.app`                     | `apps/cli` imports the same packages the MCP worker does and computes locally      | api gains the agent endpoints; MCP and CLI call them          | Stainless / Speakeasy / openapi-to-mcp over `openapi.json` |
+| Shape        | `livehuddle` speaks MCP to `mcp.livehuddle.app`                       | `apps/cli` imports the same packages the MCP worker does and computes locally      | api gains the agent endpoints; MCP and CLI call them          | Stainless / Speakeasy / openapi-to-mcp over `openapi.json` |
 | Drift        | None (one implementation)                                             | Low for code, **high for installs**: logic frozen at install time                  | None for writes; views versioned (§4.2)                       | None for routes, but the routes lack the smarts            |
 | Version skew | None                                                                  | An old CLI writes elements an old way; new element kinds pass through unnormalised | Server decides; client only formats                           | None                                                       |
 | Granularity  | Coarse, MCP-shaped (11 tools); no `element update`, `comment resolve` | Any                                                                                | Any                                                           | Route-shaped, too low-level for agents                     |
@@ -94,20 +94,20 @@ Bundle cost to the api worker: `graph-authoring`, auto-layout, Mermaid parse and
 Views (outline, ids, graph, comments, diff) are read-only, so skew is softer: an old view meets a new element kind and must degrade, not corrupt. Two placements, both needed:
 
 - **Server endpoint** `GET /documents/:id/tabs/:tabId?view=outline|ids|graph|comments|mermaid|json` returning `text/plain` (or JSON). Always current. The MCP can return the same text instead of whole-element JSON, cutting its context cost too.
-- **Client library**, `@livediagram/document-views`, bundled in the CLI, used for local files (`sync pull`, `--file`, offline) and for `diff` between two snapshots.
+- **Client library**, `@livehuddle/document-views`, bundled in the CLI, used for local files (`sync pull`, `--file`, offline) and for `diff` between two snapshots.
 
 Rules that keep them honest:
 
 - One implementation (the package); the api endpoint is a thin wrapper, so server and client views differ only by package version.
 - Every view starts with a one-line header carrying the format it was rendered against (`# tab "Auth flow" · 23 elements · format 2 · rev 41`).
 - An element kind the renderer does not know prints as `? <type>/<shape> #id "label"` with a count in the header, never silently dropped.
-- The CLI compares `X-Livediagram-Format` on every response with the format it was built for; when the server is newer it uses server views by default and prints one stderr line suggesting an update.
+- The CLI compares `X-Livehuddle-Format` on every response with the format it was built for; when the server is newer it uses server views by default and prints one stderr line suggesting an update.
 
 ### 4.3 Rendering
 
 - SVG is pure (`renderElementsToSvg`) and already runs in the api for thumbnails and `/share/{code}/image.svg`. Add a per-tab `render.svg` route so every front-end can fetch the exact server render.
 - PNG stays at the edge. resvg-wasm (about 2.5 MB) plus Inter is already in `apps/mcp`; the CLI bundles the same wasm (works in Node and in Bun-compiled binaries) behind `@liveworkspace/render-png`, whose only seam is "how do I load the wasm and the font bytes". Keeping it out of the api worker keeps the api bundle and CPU budget small.
-- Agents in a repo (Claude Code, Codex) can open a PNG file: `livediagram tab render <doc> --png out.png` writes a file and prints its path, never base64 to stdout.
+- Agents in a repo (Claude Code, Codex) can open a PNG file: `livehuddle tab render <doc> --png out.png` writes a file and prints its path, never base64 to stdout.
 
 ## 5. The operation catalogue
 
@@ -135,8 +135,8 @@ export interface OperationContext {
 }
 ```
 
-- **One schema, three projections.** zod 4's native `z.toJSONSchema` gives MCP `inputSchema` / `outputSchema` (already zod today), the CLI's flags and help, and JSON Schema for `livediagram <cmd> --schema`. The REST endpoints keep the OpenAPI manifest as their contract; the catalogue's handlers call those endpoints, so the catalogue never redefines a wire shape (`api-schema` types are reused in the zod outputs).
-- **Exposure is declared per front-end.** The catalogue is the superset. `apps/mcp` keeps its 11 stable snake_case names (`read_document` maps to `tab.read`; the legacy aliases stay) and may add more; `apps/cli` exposes every operation as `livediagram <resource> <verb>`. A parity test fails when an operation is exposed nowhere, or when an MCP tool's schema stops matching its operation.
+- **One schema, three projections.** zod 4's native `z.toJSONSchema` gives MCP `inputSchema` / `outputSchema` (already zod today), the CLI's flags and help, and JSON Schema for `livehuddle <cmd> --schema`. The REST endpoints keep the OpenAPI manifest as their contract; the catalogue's handlers call those endpoints, so the catalogue never redefines a wire shape (`api-schema` types are reused in the zod outputs).
+- **Exposure is declared per front-end.** The catalogue is the superset. `apps/mcp` keeps its 11 stable snake_case names (`read_document` maps to `tab.read`; the legacy aliases stay) and may add more; `apps/cli` exposes every operation as `livehuddle <resource> <verb>`. A parity test fails when an operation is exposed nowhere, or when an MCP tool's schema stops matching its operation.
 - **Handlers are thin by construction**: input shaping, one or two api calls, output shaping. A handler that grows logic is a sign the logic belongs in the api.
 - **Descriptions stay facts** (MCP spec §4.15), shared verbatim by MCP and CLI help, so a connector review and `--help` read the same sentence.
 
@@ -145,8 +145,8 @@ export interface OperationContext {
 - Default output is a **compact text view**, not JSON. `--json` gives the operation's output object (the same object MCP returns as `structuredContent`); `--view <name>` picks another view.
 - Writes print **what changed**, not the document: `updated 2 · added 1 (#n7) · removed 0 · rev 41 -> 42`.
 - Every command ends with at most two `next:` hints from the operation (incur's call-to-action idea), suppressed by `--quiet`.
-- `livediagram help --llms` prints the whole catalogue as one dense Markdown manifest (incur's `--llms`), so an agent learns the surface in one call; `livediagram <resource> --help` stays short for humans.
-- `livediagram schema [kind]` prints the element format (the moved `element-format.ts`), per kind on request, so the full format is never paid for up front.
+- `livehuddle help --llms` prints the whole catalogue as one dense Markdown manifest (incur's `--llms`), so an agent learns the surface in one call; `livehuddle <resource> --help` stays short for humans.
+- `livehuddle schema [kind]` prints the element format (the moved `element-format.ts`), per kind on request, so the full format is never paid for up front.
 
 ### 5.3 CLI framework
 
@@ -165,9 +165,9 @@ export interface OperationContext {
 
 Precedence, highest first:
 
-1. `LIVEDIAGRAM_TOKEN` env (agents, CI, chat sandboxes). Never echoed.
+1. `LIVEHUDDLE_TOKEN` env (agents, CI, chat sandboxes). Never echoed.
 2. Stored credential for the active profile (§8).
-3. None: read commands against public share links still work (`livediagram tab read https://livediagram.app/document/shared?s=…`), everything else exits 4 with one line: `not signed in: run "livediagram auth login" or set LIVEDIAGRAM_TOKEN`.
+3. None: read commands against public share links still work (`livehuddle tab read https://livehuddle.app/document/shared?s=…`), everything else exits 4 with one line: `not signed in: run "livehuddle auth login" or set LIVEHUDDLE_TOKEN`.
 
 No `--token` flag: it lands in shell history and in agent transcripts.
 
@@ -175,7 +175,7 @@ No `--token` flag: it lands in shell history and in agent transcripts.
 
 The OAuth server in `apps/mcp/src/oauth.ts` already implements RFC 8414 discovery, dynamic client registration accepting loopback redirects (`isLoopbackHostname`), PKCE S256, the Clerk-authed consent page in `apps/editor/app/oauth/consent`, the server-read session (`GET /oauth/session/<id>`, anti-phishing), the read-only checkbox and token mint via `/api/oauth/exchange`. The CLI reuses all of it:
 
-1. `GET {host}/api/capabilities` gives `oauthIssuer` (new field; hosted: `https://mcp.livediagram.app`).
+1. `GET {host}/api/capabilities` gives `oauthIssuer` (new field; hosted: `https://mcp.livehuddle.app`).
 2. Discovery at `{issuer}/.well-known/oauth-authorization-server`.
 3. Listen on `127.0.0.1:0`, register or reuse the public client, open the browser at `/oauth/authorize` with S256 challenge and `state`.
 4. The person approves (optionally read-only) on the consent page; the code returns to the loopback listener; `POST /oauth/token` yields the `lvd_` token and a truthful `expires_in`.
@@ -183,7 +183,7 @@ The OAuth server in `apps/mcp/src/oauth.ts` already implements RFC 8414 discover
 Two changes are needed in `oauth.ts`:
 
 - **Port-agnostic loopback matching** (RFC 8252 §7.3). `/oauth/authorize` today requires the exact registered `redirect_uri` (`reg.redirectUris.includes(redirectUri)`); an ephemeral port would force a fresh DCR per login. Match scheme, host `127.0.0.1` / `[::1]` and path, ignore the port, for loopback URIs only.
-- **A well-known public client id** (`livediagram-cli`), pre-registered in code rather than KV, so the consent screen can show a first-party name the server vouches for, and no DCR call or 30-day KV record is needed per machine.
+- **A well-known public client id** (`livehuddle-cli`), pre-registered in code rather than KV, so the consent screen can show a first-party name the server vouches for, and no DCR call or 30-day KV record is needed per machine.
 
 ### 6.2 Headless: device authorisation grant
 
@@ -191,12 +191,12 @@ SSH sessions, containers and remote agent sandboxes have no browser on the loopb
 
 ### 6.3 Storage, status, logout
 
-- **Storage:** the OS keychain via `@napi-rs/keyring` (2.1, prebuilt) when it loads; otherwise `~/.config/livediagram/credentials.json` at mode 0600 with a one-line notice (`gh` does the same fallback to a plain-text file). The native addon is optional so `npx` never fails on an exotic platform; the Bun binary uses the file store.
+- **Storage:** the OS keychain via `@napi-rs/keyring` (2.1, prebuilt) when it loads; otherwise `~/.config/livehuddle/credentials.json` at mode 0600 with a one-line notice (`gh` does the same fallback to a plain-text file). The native addon is optional so `npx` never fails on an exotic platform; the Bun binary uses the file store.
 - **`auth status`** prints host, account, token name, read-only flag, expiry and days left; never the secret. Under 14 days it warns, matching the Settings "Expires soon" threshold.
 - **`auth token`** prints the secret for piping, refusing when stdout is a TTY without `--show`.
 - **`auth logout`** revokes the token server-side and removes it locally. Today it cannot: `/api/tokens` is session-only by design. A token revoking **itself** escalates nothing, so add `DELETE /api/tokens/current`.
 - **Cap:** each login mints a token against the 10-token cap. `auth login` on a profile that already holds a token revokes the old one (via `tokens/current`) after the new one works.
-- Token name: `livediagram CLI (<hostname>)`, plus a `client: cli` marker so Settings and the timeline can label it.
+- Token name: `livehuddle CLI (<hostname>)`, plus a `client: cli` marker so Settings and the timeline can label it.
 
 ### 6.4 Pure-guest deployments
 
@@ -204,35 +204,35 @@ A host without Clerk cannot mint tokens and has no consent page (Public API §3.
 
 ## 7. Distribution and updates
 
-| Channel                   | How                                                                                                                                                                                                                                                                                              | When              |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------- |
-| **npm** `livediagram`     | One ESM bundle (tsdown or esbuild) inlining every `@livediagram/*` package, plus `resvg.wasm` and `Inter-Regular.ttf` as files. `"engines": { "node": ">=22" }`, `"bin": { "livediagram": "dist/cli.js" }`. `npx livediagram@latest …` works with no install; agents can pin `npx livediagram@1` | First             |
-| **Bun-compiled binaries** | `bun build --compile --target=bun-{linux,darwin,windows}-{x64,arm64}`, wasm and font embedded as files, SHA-256 sums and provenance on GitHub Releases. Larger (tens of MB) but no Node needed                                                                                                   | Second            |
-| **Homebrew tap**          | `livediagram-app/tap/livediagram` formula pointing at the release binaries                                                                                                                                                                                                                       | With the binaries |
-| `curl \| sh` installer    | Not offered: a public repo that asks people to pipe a script is the wrong habit to teach                                                                                                                                                                                                         | Never             |
+| Channel                   | How                                                                                                                                                                                                                                                                                          | When              |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| **npm** `livehuddle`      | One ESM bundle (tsdown or esbuild) inlining every `@livehuddle/*` package, plus `resvg.wasm` and `Inter-Regular.ttf` as files. `"engines": { "node": ">=22" }`, `"bin": { "livehuddle": "dist/cli.js" }`. `npx livehuddle@latest …` works with no install; agents can pin `npx livehuddle@1` | First             |
+| **Bun-compiled binaries** | `bun build --compile --target=bun-{linux,darwin,windows}-{x64,arm64}`, wasm and font embedded as files, SHA-256 sums and provenance on GitHub Releases. Larger (tens of MB) but no Node needed                                                                                               | Second            |
+| **Homebrew tap**          | `livediagram-app/tap/livehuddle` formula pointing at the release binaries                                                                                                                                                                                                                    | With the binaries |
+| `curl \| sh` installer    | Not offered: a public repo that asks people to pipe a script is the wrong habit to teach                                                                                                                                                                                                     | Never             |
 
 - Publishing from CI with npm provenance (`npm publish --provenance`), versioned with semver independent of the apps. The repo is a monorepo of private packages; `apps/cli` is the only public package.
-- **Update checks:** at most once a day, after the command finishes, `GET https://registry.npmjs.org/livediagram/latest` (or the GitHub release for binaries) with a 1.5 s timeout, cached in `~/.cache/livediagram/update.json`. Printed to **stderr** only, never stdout (agents parse stdout). Skipped when `CI`, non-TTY stderr, `LIVEDIAGRAM_NO_UPDATE_CHECK=1`, or `update_check = false`. No self-update command for npm installs (the package manager owns it); binaries get `livediagram upgrade`.
-- **Server-driven compatibility** beats client polling: the api already stamps `X-Livediagram-Format` on every response. Add an optional `cli.minVersion` to `/api/capabilities`; a CLI below it refuses writes with one line naming the version to install. Other deployments control it themselves.
+- **Update checks:** at most once a day, after the command finishes, `GET https://registry.npmjs.org/livehuddle/latest` (or the GitHub release for binaries) with a 1.5 s timeout, cached in `~/.cache/livehuddle/update.json`. Printed to **stderr** only, never stdout (agents parse stdout). Skipped when `CI`, non-TTY stderr, `LIVEHUDDLE_NO_UPDATE_CHECK=1`, or `update_check = false`. No self-update command for npm installs (the package manager owns it); binaries get `livehuddle upgrade`.
+- **Server-driven compatibility** beats client polling: the api already stamps `X-Livehuddle-Format` on every response. Add an optional `cli.minVersion` to `/api/capabilities`; a CLI below it refuses writes with one line naming the version to install. Other deployments control it themselves.
 
 ## 8. Profiles
 
 ```toml
-# ~/.config/livediagram/config.toml
+# ~/.config/livehuddle/config.toml
 default_profile = "hosted"
 
 [profiles.hosted]
-host = "https://livediagram.app"
+host = "https://livehuddle.app"
 
 [profiles.work]
 host = "https://diagrams.example.com"
 api = "https://diagrams.example.com/api"   # optional; discovered otherwise
 ```
 
-- `--host <url>` and `--profile <name>` on every command; `LIVEDIAGRAM_HOST` / `LIVEDIAGRAM_PROFILE` env equivalents.
+- `--host <url>` and `--profile <name>` on every command; `LIVEHUDDLE_HOST` / `LIVEHUDDLE_PROFILE` env equivalents.
 - **Discovery:** `GET {host}/api/capabilities` gives the api base, `authEnabled`, `oauthIssuer` (absent when `apps/mcp` is not deployed: fall back to "paste a token from Settings › API Tokens"), `telemetryEnabled` and `documentFormat`. One unauthenticated call, cached per profile for a day.
-- **No required SaaS calls:** a profile for another host never contacts livediagram.app. The only third-party call is the optional npm update check (§7), which is skippable and never blocks.
-- Credentials are stored per profile (keychain service `livediagram:<host>`).
+- **No required SaaS calls:** a profile for another host never contacts livehuddle.app. The only third-party call is the optional npm update check (§7), which is skippable and never blocks.
+- Credentials are stored per profile (keychain service `livehuddle:<host>`).
 
 ## 9. Telemetry
 
@@ -241,8 +241,8 @@ Consistent with [Telemetry](../../specs/017-telemetry/telemetry.md): anonymous, 
 - New category **`Cli`** in `TELEMETRY_CATEGORIES`, action `Used`, type the PascalCase operation id (`TabRead`, `ElementUpdate`), exactly mirroring `Mcp·Used·<Tool>`. Sent **after success only** (the MCP rule), never on `--help`.
 - Api failures: `Error·Api·Http<status>.<Operation>` / `Internal.<Operation>`, 4xx not reported (model-correctable input), the same rule as MCP §4.12.
 - Delivery: one `POST {profile api}/events` fire-and-forget, awaited at most 300 ms at exit. A Node request sends no `Origin`, so the same-origin guard passes, and the per-IP limiter applies naturally (unlike the MCP's service binding).
-- Destination is the **profile's own api**, so a deployment with `TELEMETRY_ENABLED` off records nothing and livediagram.app hears nothing about it.
-- Opt-out: `LIVEDIAGRAM_TELEMETRY=0`, `DO_NOT_TRACK=1`, or `telemetry = false` in config. `livediagram telemetry off` writes the setting **after** sending `UI·Toggled·TelemetryOff` (the spec's "flip fires before persist" rule). First run prints one stderr line saying what is counted and how to turn it off.
+- Destination is the **profile's own api**, so a deployment with `TELEMETRY_ENABLED` off records nothing and livehuddle.app hears nothing about it.
+- Opt-out: `LIVEHUDDLE_TELEMETRY=0`, `DO_NOT_TRACK=1`, or `telemetry = false` in config. `livehuddle telemetry off` writes the setting **after** sending `UI·Toggled·TelemetryOff` (the spec's "flip fires before persist" rule). First run prints one stderr line saying what is counted and how to turn it off.
 - No device id, no command arguments, no document ids, no host names.
 
 ## 10. Recommended architecture
@@ -250,12 +250,12 @@ Consistent with [Telemetry](../../specs/017-telemetry/telemetry.md): anonymous, 
 ```plantuml
 @startuml
 !theme blueprint
-title livediagram: one capability core, three front-ends
+title livehuddle: one capability core, three front-ends
 
 actor "AI agent / person" as user
 
 package "Front-ends (transport only)" {
-  [apps/cli\nlivediagram <resource> <verb>\nviews · auth · profiles · sync] as cli
+  [apps/cli\nlivehuddle <resource> <verb>\nviews · auth · profiles · sync] as cli
   [apps/mcp\nMCP tools + prompts\nOAuth 2.1 AS (loopback, device)] as mcp
   [apps/editor\neditor · consent · device page] as live
 }
@@ -317,7 +317,7 @@ live --> mcp : consent / device approve
 
 ```text
 apps/
-  cli/                       # NEW, the only published package: "livediagram" on npm
+  cli/                       # NEW, the only published package: "livehuddle" on npm
     src/main.ts              # entry: parseArgs dispatcher generated from the catalogue
     src/commands/            # per-resource exposure lists, aliases, positional args
     src/output/              # view selection, --json, next hints, exit codes
@@ -325,7 +325,7 @@ apps/
     src/config/              # profiles, discovery cache, update check
     src/sync/                # pull/push/status against local files (human use)
     src/telemetry.ts         # Cli·Used, opt-out
-    build.ts                 # bundle: inline @livediagram/*, copy wasm + font
+    build.ts                 # bundle: inline @livehuddle/*, copy wasm + font
   mcp/                       # slims down: adapter + OAuth server + prompts
   api/                       # gains the agent endpoints (section 11)
 packages/
@@ -353,7 +353,7 @@ Ordered by value. Each lands in `apps/api` with its manifest entry, `tokenUsable
 8. **Render:** `GET …/tabs/:tabId/render.svg` (the shared renderer, images embedded under the api's budget).
 9. **Catalogues behind the api:** `GET /api/templates` and `GET /api/schema/elements` (Markdown and JSON Schema), so help text and template lists follow the server, not the install.
 10. **Capabilities:** `authEnabled`, `oauthIssuer`, `documentFormat`, `telemetryEnabled`, `cli.minVersion` on `GET /api/capabilities`.
-11. **OAuth server (`apps/mcp`):** RFC 8252 port-agnostic loopback matching; pre-registered `livediagram-cli` public client; RFC 8628 device authorisation grant with a `apps/editor` `/oauth/device` page; discovery metadata lists `device_authorization_endpoint`.
+11. **OAuth server (`apps/mcp`):** RFC 8252 port-agnostic loopback matching; pre-registered `livehuddle-cli` public client; RFC 8628 device authorisation grant with a `apps/editor` `/oauth/device` page; discovery metadata lists `device_authorization_endpoint`.
 12. **Telemetry enums:** `Cli` category (`Used`), plus the shared `Error·Api` tokens per operation.
 
 Items 1 to 3 also make the MCP thinner and fix its live-editor clobbering; they are worth doing before any CLI code.
@@ -367,14 +367,14 @@ Decided by Webber on 2026-10-03:
 
 Still open:
 
-| Question                               | Options                                                                                                                                                      |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Where the OAuth server lives long term | stays in **`apps/mcp`** (R) · moves into `apps/api` with D1 state · extracted to `@livediagram/oauth-server` mounted by both · CLI login is token-paste only |
-| Command parser                         | **`util.parseArgs` + in-house** (R) · `citty` · `@stricli/core` · `incur`                                                                                    |
+| Question                               | Options                                                                                                                                                     |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Where the OAuth server lives long term | stays in **`apps/mcp`** (R) · moves into `apps/api` with D1 state · extracted to `@livehuddle/oauth-server` mounted by both · CLI login is token-paste only |
+| Command parser                         | **`util.parseArgs` + in-house** (R) · `citty` · `@stricli/core` · `incur`                                                                                   |
 
 ## 13. Sources
 
-- livediagram code at `efaee7d29`: `apps/mcp/src/*`, `apps/api/src/routes/document-subresource-routes.ts`, `apps/api/src/room-client.ts`, `apps/api/src/openapi/manifest.ts`, `packages/api-schema/src/document-format.ts`, and the editor's `export-tab-text.ts` (now `packages/document/src/export-tab-text.ts`).
+- livehuddle code at `efaee7d29`: `apps/mcp/src/*`, `apps/api/src/routes/document-subresource-routes.ts`, `apps/api/src/room-client.ts`, `apps/api/src/openapi/manifest.ts`, `packages/api-schema/src/document-format.ts`, and the editor's `export-tab-text.ts` (now `packages/document/src/export-tab-text.ts`).
 - GitHub CLI login and credential storage: <https://cli.github.com/manual/gh_auth_login>; GitHub MCP server: <https://github.com/github/github-mcp-server>
 - Stripe MCP: <https://docs.stripe.com/mcp>; agent toolkit: <https://github.com/stripe/ai>
 - Cloudflare Code Mode: <https://blog.cloudflare.com/code-mode/> and <https://blog.cloudflare.com/code-mode-mcp/>; wrangler login: <https://developers.cloudflare.com/workers/wrangler/commands/#login>
@@ -382,4 +382,4 @@ Still open:
 - Stainless CLI generator GA: <https://www.stainless.com/changelog/cli-generator-general-availability>; Speakeasy CLI generation: <https://www.speakeasy.com/docs/cli-generation>; Speakeasy MCP: <https://www.speakeasy.com/docs/standalone-mcp/build-server>
 - incur: <https://github.com/wevm/incur>
 - RFC 8252 (OAuth for native apps, loopback redirects §7.3), RFC 8628 (device authorisation grant), RFC 7636 (PKCE), RFC 8414 (AS metadata).
-- Package versions checked on npm on 2026-10-03: citty 0.2.2, @oclif/core 5.1.2, commander 15.0.0, @stricli/core 1.3.0, yargs 18.2.0, incur 0.7.0, @modelcontextprotocol/sdk 1.32.0, @napi-rs/keyring 2.1.0, @resvg/resvg-wasm 2.6.2. `livediagram` and `@livediagram/cli` were unclaimed on npm.
+- Package versions checked on npm on 2026-10-03: citty 0.2.2, @oclif/core 5.1.2, commander 15.0.0, @stricli/core 1.3.0, yargs 18.2.0, incur 0.7.0, @modelcontextprotocol/sdk 1.32.0, @napi-rs/keyring 2.1.0, @resvg/resvg-wasm 2.6.2. `livehuddle` and `@livehuddle/cli` were unclaimed on npm.

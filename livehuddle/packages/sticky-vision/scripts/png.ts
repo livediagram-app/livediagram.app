@@ -6,7 +6,7 @@ import type { ImageBuffer } from '../src/colour';
 // Used by the calibration loop to read working copies of real photographs and
 // to write the overlay that makes "did it find the notes" a question you can
 // answer by looking, and by the editor's e2e suite to encode the wall it
-// draws. Node only; exported as `@livediagram/sticky-vision/png`.
+// draws. Node only; exported as `@livehuddle/sticky-vision/png`.
 
 export function decodePng(path: string): ImageBuffer {
   return decodePngBuffer(readFileSync(path));

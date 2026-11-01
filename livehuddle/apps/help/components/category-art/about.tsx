@@ -1,7 +1,7 @@
 import { Arrow, Label, Shape } from '@liveworkspace/help-site/art/primitives';
 import { Chip, Stage, Window } from '@liveworkspace/help-site/art/parts';
 
-// About livediagram: what it is in one picture. Three windows fanned out, one per way of working (a workshop's
+// About livehuddle: what it is in one picture. Three windows fanned out, one per way of working (a workshop's
 // sticky notes, a diagram, a sketch), under the two promises: free, and open source.
 export function AboutArt() {
   return (

@@ -11,7 +11,7 @@
 // so they can be called from module bodies or non-effect code paths
 // without crashing the static export build.
 //
-// Namespace prefix: `livediagram:v2:`. The `v2` tag survives a
+// Namespace prefix: `livehuddle:v2:`. The `v2` tag survives a
 // future schema break — if the shape of a stored value changes
 // incompatibly we'll bump to `v3:` and drop the old keys at read
 // time so a returning guest doesn't end up with mixed-version state.
@@ -24,7 +24,7 @@ import { readGuestToken } from './guest-token';
 import { GUEST_TOKEN_STORAGE_KEY } from './guest-token-key';
 import { track } from './telemetry';
 
-const NS = 'livediagram:v2:';
+const NS = 'livehuddle:v2:';
 
 const KEYS = {
   // The guest's id is its token's (lib/guest-token.ts, liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests"),
@@ -52,7 +52,7 @@ const KEYS = {
   // the two: stable like the owner id, worthless like the presence id.
   collabKey: `${NS}collab-key`,
   collabSecret: `${NS}collab-secret`,
-  // The old livediagram.app's guest, left in this browser on the same address: its bare UUID and the signature
+  // The old livehuddle.app's guest, left in this browser on the same address: its bare UUID and the signature
   // the old api gave it. Read once to claim that guest's work, then removed (lib/legacy-guest-claim.ts,
   // docs/specs/014-identity/auth-and-guest-access.md "Returning guests from the old site").
   legacyGuestId: `${NS}self-id`,

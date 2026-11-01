@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TRUSTED_TYPES_CSP } from './trusted-types';
 
-// docs/specs/016-platform/trusted-types.md: the header livediagram's pages send. The policies themselves, the default
+// docs/specs/016-platform/trusted-types.md: the header livehuddle's pages send. The policies themselves, the default
 // policy and the boot script are @liveworkspace/trusted-types', tested there.
 
 describe('TRUSTED_TYPES_CSP', () => {

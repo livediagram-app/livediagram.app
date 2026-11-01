@@ -9,7 +9,7 @@ import {
   createText,
   type Element,
   createCalloutCard,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 import { HEAD_GAP, SUBTITLE_H, TITLE_H, heading } from './template-session-parts';
 import {

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 // An element dialog (the link picker, the cell link picker, line data, code, Sankey Flows, Sequence, the image

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isBoxed, isValidElement, type Element } from '@livediagram/document';
+import { isBoxed, isValidElement, type Element } from '@livehuddle/document';
 import {
   ARROW_NEIGHBOURS,
   REFERENCE_AREA,

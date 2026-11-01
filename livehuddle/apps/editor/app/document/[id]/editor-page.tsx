@@ -81,11 +81,11 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // An access change just reloaded us (lib/access-notice.ts): taken once, on mount, so a refusal can say why. The
   // first page after the eject always takes it, whatever it shows (the editor, a password prompt, a refusal).
   const [accessEnded] = useState(() => takeAccessEnded());
-  // Tab title reflects the document: "<name> | livediagram" (falls back to
+  // Tab title reflects the document: "<name> | livehuddle" (falls back to
   // Untitled when the document has no name yet). Updates as the user renames.
   useEffect(() => {
     const name = state.documentName?.trim();
-    document.title = `${name || 'Untitled canvas'} | livediagram`;
+    document.title = `${name || 'Untitled canvas'} | livehuddle`;
   }, [state.documentName]);
   const {
     documentNotFound,
@@ -209,7 +209,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
           </ShapeLibraryProvider>
         </CommentReactionsProvider>
       </MentionContext.Provider>
-      {/* This browser's own store: an old livediagram.app guest's claim, its retired parts, and moving documents in
+      {/* This browser's own store: an old livehuddle.app guest's claim, its retired parts, and moving documents in
           This Browser after signing in (docs/specs/014-identity/auth-and-guest-access.md); never inside someone
           else's page. */}
       {appChrome ? <LocalStorePrompts /> : null}

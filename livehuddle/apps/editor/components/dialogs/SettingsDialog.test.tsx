@@ -12,7 +12,7 @@ import type { UserPreferences } from '@/lib/user-preferences';
 import { setPowerUserMode } from '@/lib/power-user-mode';
 import { TOUR_RELAUNCH_EVENT } from '@/lib/diagram-tour';
 
-const VIEW_KEY = 'livediagram:settings-view:v1';
+const VIEW_KEY = 'livehuddle:settings-view:v1';
 const readSettingsView = () => readView(VIEW_KEY);
 const writeSettingsView = (view: Parameters<typeof writeView>[1]) => writeView(VIEW_KEY, view);
 

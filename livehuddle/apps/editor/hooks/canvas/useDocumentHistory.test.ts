@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import {
   HISTORY_LIMIT,
   type History,

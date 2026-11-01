@@ -1,6 +1,6 @@
 import { useCanvasViewKey } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { RefObject } from 'react';
-import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE, isSelfDrawingShape } from '@livediagram/document';
+import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE, isSelfDrawingShape } from '@livehuddle/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';

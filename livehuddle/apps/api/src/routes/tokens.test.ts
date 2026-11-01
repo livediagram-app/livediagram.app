@@ -66,7 +66,7 @@ describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-
     makeTestRouteContext(method, '/api/tokens/current', {
       accountUserId: null,
       owner: 'user_1',
-      token: { id: 'tok_1', readOnly, name: 'livediagram CLI', expiresAt: 99 },
+      token: { id: 'tok_1', readOnly, name: 'livehuddle CLI', expiresAt: 99 },
       headers: { Authorization: 'Bearer lwt_secret' },
       ...(waitUntil ? { waitUntil } : {}),
     });
@@ -79,7 +79,7 @@ describe('/api/tokens/current (docs/specs/015-api/blueprints/cli.md "Token self-
       accountId: 'user_1',
       accountName: 'Webber',
       tokenId: 'tok_1',
-      tokenName: 'livediagram CLI',
+      tokenName: 'livehuddle CLI',
       role: 'read-only',
       expiresAt: 99,
     });

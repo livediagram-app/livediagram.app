@@ -4,7 +4,7 @@
 // legend rows, and the rich-text toolbar's text colour.
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { penColourHex, standardColours } from '@livediagram/document';
+import { penColourHex, standardColours } from '@livehuddle/document';
 import { ColorSwatch } from './palette-controls';
 import { LegendDataEditor, PieDataEditor } from './context-menu-data-editors';
 import { RichTextToolbar } from '@/components/canvas/RichTextToolbar';

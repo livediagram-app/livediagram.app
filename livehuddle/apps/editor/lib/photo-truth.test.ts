@@ -10,7 +10,7 @@ describe('truthArmed', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it('is off by default on the hosted site: a normal author is not labelling', () => {
-    expect(truthArmedOn('livediagram.app', null)).toBe(false);
+    expect(truthArmedOn('livehuddle.app', null)).toBe(false);
   });
 
   it('is on once the flag is set', () => {
@@ -21,20 +21,20 @@ describe('truthArmed', () => {
   it('is armed by a query parameter, and STAYS armed across the navigation', () => {
     // The editor is reached from /new, so a parameter on the first URL is gone
     // by the time the review opens. Arming writes the flag and the flag lasts.
-    armTruthFromUrl('https://www.livediagram.app/new/?truth=1');
+    armTruthFromUrl('https://www.livehuddle.app/new/?truth=1');
     expect(localStorage.getItem(TRUTH_ARMED_KEY)).toBe('1');
     expect(truthArmed()).toBe(true);
   });
 
   it('is disarmed by the same parameter set to nothing', () => {
     localStorage.setItem(TRUTH_ARMED_KEY, '1');
-    armTruthFromUrl('https://www.livediagram.app/new/?truth=0');
+    armTruthFromUrl('https://www.livehuddle.app/new/?truth=0');
     expect(truthArmed()).toBe(false);
   });
 
   it('leaves the flag alone when the URL says nothing about it', () => {
     localStorage.setItem(TRUTH_ARMED_KEY, '1');
-    armTruthFromUrl('https://www.livediagram.app/document/abc/');
+    armTruthFromUrl('https://www.livehuddle.app/document/abc/');
     expect(truthArmed()).toBe(true);
   });
 
@@ -70,8 +70,8 @@ describe('truthArmed on localhost', () => {
   });
 
   it('is off on the hosted site, whatever the host machine does', () => {
-    expect(truthArmedOn('livediagram.app', null)).toBe(false);
-    expect(truthArmedOn('staging.livediagram.app', null)).toBe(false);
+    expect(truthArmedOn('livehuddle.app', null)).toBe(false);
+    expect(truthArmedOn('staging.livehuddle.app', null)).toBe(false);
   });
 
   it('is on for the loopback address and the LAN-facing dev server', () => {
@@ -92,11 +92,11 @@ describe('truthArmed on localhost', () => {
   it('is off for every public address, which is where the hosted site lives', () => {
     expect(truthArmedOn('172.32.0.1', null)).toBe(false); // just outside 172.16/12
     expect(truthArmedOn('8.8.8.8', null)).toBe(false);
-    expect(truthArmedOn('livediagram.example.com', null)).toBe(false);
+    expect(truthArmedOn('livehuddle.example.com', null)).toBe(false);
   });
 
   it('lets the flag overrule the host, in both directions', () => {
-    expect(truthArmedOn('livediagram.app', '1')).toBe(true);
+    expect(truthArmedOn('livehuddle.app', '1')).toBe(true);
     expect(truthArmedOn('localhost', '0')).toBe(false);
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import { landTemplateOnTab } from './template-tab-set';
 
 const tab = (id: string, extra: Partial<Tab> = {}): Tab => ({

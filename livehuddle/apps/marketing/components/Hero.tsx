@@ -5,7 +5,7 @@ import { HeroWhiteboard } from './HeroWhiteboard';
 
 // The landing page's hero (docs/specs/019-marketing/marketing-site.md "Hero"), intent-led: it asks
 // what the visitor is making and takes them straight to a starting point, so it grows with the product
-// instead of naming one mode. A band in the brand mark's colours (@livediagram/ui hero-band.css, shared with the help centre),
+// instead of naming one mode. A band in the brand mark's colours (@livehuddle/ui hero-band.css, shared with the help centre),
 // drawn here as a whiteboard wall (app/hero-whiteboard.css): the promise badge, the question, the template search,
 // then the fan along its foot: templates taped up and dealt every few seconds, for every visitor.
 const BADGE =

@@ -1,7 +1,7 @@
-import { contrastRatio } from '@livediagram/document';
+import { contrastRatio } from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
 import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings';
-import { IDENTITY_FILL, identityDeep, identityVars } from '@livediagram/ui';
+import { IDENTITY_FILL, identityDeep, identityVars } from '@livehuddle/ui';
 
 // White text on an identity colour in dark mode (docs/specs/004-interface-design/color-scheme.md, Dark
 // palette rules): white fails AA on every participant colour, so dark mode paints the disc a deeper

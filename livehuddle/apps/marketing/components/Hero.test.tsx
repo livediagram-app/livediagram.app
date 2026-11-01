@@ -2,7 +2,7 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { seededRandom } from '@livediagram/document';
+import { seededRandom } from '@livehuddle/document';
 import {
   HERO_FAN_FULL_MIN_PX,
   HERO_FAN_OPENING,

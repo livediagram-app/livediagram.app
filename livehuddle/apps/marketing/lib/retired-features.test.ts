@@ -64,7 +64,7 @@ describe('retired feature pages', () => {
 });
 
 // Plan mode left for liveplanner and Pages mode for livedocuments, so the marketing copy must not offer them as
-// livediagram's own. The FigJam and XMind comparisons still did ("to Plan when the ideas become cards on a board,
+// livehuddle's own. The FigJam and XMind comparisons still did ("to Plan when the ideas become cards on a board,
 // with a Sheet beside it", "Plan mode turns a tab into a board of cards") weeks after both had gone.
 describe('marketing copy', () => {
   const COPY_FILES = ['alternatives.ts', 'faq-content.tsx', 'landing-content.tsx'];
@@ -78,7 +78,7 @@ describe('marketing copy', () => {
     /\ba Sheet\b/,
   ];
 
-  it.each(COPY_FILES)('%s offers no retired mode as livediagram’s', (file) => {
+  it.each(COPY_FILES)('%s offers no retired mode as livehuddle’s', (file) => {
     const source = readFileSync(fileURLToPath(new URL(`./${file}`, import.meta.url)), 'utf8');
     expect(RETIRED_MODE_CLAIMS.filter((claim) => claim.test(source)).map(String)).toEqual([]);
   });

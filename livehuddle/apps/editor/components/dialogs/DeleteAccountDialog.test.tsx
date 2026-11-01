@@ -2,7 +2,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-// livediagram's binding of the shared Delete Account dialog (@liveworkspace/workbench, tested there in full): its name, its
+// livehuddle's binding of the shared Delete Account dialog (@liveworkspace/workbench, tested there in full): its name, its
 // api's code and delete, and the telemetry counter.
 const calls = vi.hoisted(() => [] as string[]);
 vi.mock('@liveworkspace/workbench/components/providers/deferred-auth', () => ({
@@ -26,10 +26,10 @@ vi.mock('@/lib/telemetry', () => ({ track: (...args: string[]) => calls.push(arg
 import { DeleteAccountDialog } from './DeleteAccountDialog';
 
 describe('DeleteAccountDialog', () => {
-  it('names livediagram, emails a code, and deletes with it', async () => {
+  it('names livehuddle, emails a code, and deletes with it', async () => {
     const onDeleted = vi.fn();
     render(<DeleteAccountDialog open onClose={() => {}} onDeleted={onDeleted} />);
-    expect(screen.getByText(/not just livediagram/)).toBeTruthy();
+    expect(screen.getByText(/not just livehuddle/)).toBeTruthy();
     expect(screen.getByText(/Canvases in This Browser stay on this device/)).toBeTruthy();
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a@example.com' } });
     fireEvent.click(screen.getByRole('button', { name: 'Email Me a Code' }));

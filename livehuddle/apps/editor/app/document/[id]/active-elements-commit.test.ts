@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element, Tab } from '@livediagram/document';
+import type { ArrowElement, Element, Tab } from '@livehuddle/document';
 import { activeElementsCommit } from './active-elements-commit';
 
 // Shift-chaining arrows (docs/specs/008-canvas/canvas-and-palette.md quick-connect): the release lands the

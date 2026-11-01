@@ -744,7 +744,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Build diagrams with AI',
         description:
-          'Hook livediagram up to Claude or any MCP client at mcp.livediagram.app and let it find, read, create, edit, and share your canvases for you. Point it at a system and ask for the diagram; it lands in your account. Signed in, and it runs on the same revocable token (read-only if you prefer), so you can disconnect any time.',
+          'Hook livehuddle up to Claude or any MCP client at mcp.livehuddle.app and let it find, read, create, edit, and share your canvases for you. Point it at a system and ask for the diagram; it lands in your account. Signed in, and it runs on the same revocable token (read-only if you prefer), so you can disconnect any time.',
       },
       {
         art: <MermaidArt />,
@@ -752,7 +752,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Works with Mermaid',
         description:
-          'Paste or open a Mermaid flowchart and livediagram lays it out on the canvas, keeping every connection, not just the outline. Export a diagram tab back to Mermaid to copy or download. It is the diagram-as-code format your READMEs, issues, and AI tools already use, so your diagrams travel.',
+          'Paste or open a Mermaid flowchart and livehuddle lays it out on the canvas, keeping every connection, not just the outline. Export a diagram tab back to Mermaid to copy or download. It is the diagram-as-code format your READMEs, issues, and AI tools already use, so your diagrams travel.',
       },
       {
         art: <MarkdownImportArt />,
@@ -784,7 +784,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Write your own integrations',
         description:
-          'Create an API token and call the same REST API the editor uses, under your account, from your own scripts and integrations, or install the livediagram command-line tool from npm to read, edit, share and export canvases from your terminal. Signed in, revocable, six-month tokens, no lock-in. Link a repository to your canvases and coding agents find your diagrams by name, or keep the editor open beside your agent in a workbench.',
+          'Create an API token and call the same REST API the editor uses, under your account, from your own scripts and integrations, or install the livehuddle command-line tool from npm to read, edit, share and export canvases from your terminal. Signed in, revocable, six-month tokens, no lock-in. Link a repository to your canvases and coding agents find your diagrams by name, or keep the editor open beside your agent in a workbench.',
       },
     ],
   },

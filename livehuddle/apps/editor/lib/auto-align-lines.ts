@@ -18,7 +18,7 @@
 //
 // Pure: same input, same output; idempotent on its own output.
 
-import { isBoxed, type BoxedElement, type Element, type ElementId } from '@livediagram/document';
+import { isBoxed, type BoxedElement, type Element, type ElementId } from '@livehuddle/document';
 
 const GRID = 10;
 // How far apart two lines may be and still count as one (a few px of hand drift), and the wider

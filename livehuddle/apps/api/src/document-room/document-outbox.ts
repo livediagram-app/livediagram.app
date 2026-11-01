@@ -17,7 +17,7 @@ import {
   type CollabActionRow,
   type CollabThreadRow,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   capCollabPush,
   drainIndexOutbox,

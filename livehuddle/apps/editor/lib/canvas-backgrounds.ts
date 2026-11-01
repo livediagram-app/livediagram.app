@@ -1,4 +1,4 @@
-import type { BackgroundPattern } from '@livediagram/document';
+import type { BackgroundPattern } from '@livehuddle/document';
 import { seasonalPatternTile } from '@/lib/seasonal-patterns';
 
 // Canvas pattern + backdrop builders lifted out of Canvas.tsx. Pure

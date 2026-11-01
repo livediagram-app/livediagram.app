@@ -8,7 +8,7 @@ import {
   isAccountIdShape,
   type AccessLevel,
   type RoomTicketResponse,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
 import { adderKeyFor } from '../adder-key';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';

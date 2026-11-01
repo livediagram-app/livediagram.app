@@ -1,14 +1,14 @@
 // The diagram lint (docs/specs/024-agents/diagram-lint.md; blueprint "Behaviour and state"): a pure
 // check of how a tab is drawn, returning its measures and findings in a fixed order.
 
-import type { LintCode, LintReport, LintSeverity } from '@livediagram/api-schema';
+import type { LintCode, LintReport, LintSeverity } from '@livehuddle/api-schema';
 import {
   conciseGraph,
   layoutGraph,
   type Element,
   type GraphInput,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { LINT_CHECKS } from './checks';
 import { textOverprint } from './checks/text-overflow';
 import { LINT_MAX_ARROWS } from './constants';

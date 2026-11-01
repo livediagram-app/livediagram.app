@@ -1,7 +1,7 @@
-import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livediagram/document';
-import { COMPONENT_SIZE } from '@livediagram/document';
+import type { ArrowElement, Element, Tab, ThemeDefinition } from '@livehuddle/document';
+import { COMPONENT_SIZE } from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
-import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livediagram/document';
+import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livehuddle/document';
 import {
   buildDrawnArrow,
   buildDressedDrawnArrow,

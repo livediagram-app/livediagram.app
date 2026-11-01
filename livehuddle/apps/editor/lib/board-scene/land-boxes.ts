@@ -6,7 +6,7 @@ import {
   type ShapeElement,
   type StickyElement,
   type TextElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import type { ImportImageRequest } from '@/lib/import-images';
 import { colourAlpha, lineColourFields, resolveFill, resolveStickyFill } from './colour';
 import { commonFields } from './common';

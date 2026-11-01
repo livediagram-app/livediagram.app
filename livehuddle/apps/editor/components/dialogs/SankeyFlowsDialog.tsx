@@ -13,7 +13,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { registerSankeyFlowsDialog } from '@liveworkspace/workbench/lib/sankey-flows-dialog-handle';
 import { useActiveTour } from '@/lib/tour-active';
-import { Button, DialogCloseButton, DialogHeader } from '@livediagram/ui';
+import { Button, DialogCloseButton, DialogHeader } from '@livehuddle/ui';
 import {
   parseSankeyText,
   renameSankeyNode,
@@ -23,7 +23,7 @@ import {
   type SankeyFlow,
   type SankeyNodeStyle,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SankeyView } from '@/components/canvas/SankeyView';

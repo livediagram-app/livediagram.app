@@ -5,7 +5,7 @@
 // for the board's appearance. Null for anything else, which keeps its draw-intent cursor.
 
 import { useMemo } from 'react';
-import { WHITEBOARD_INK, penColourCss } from '@livediagram/document';
+import { WHITEBOARD_INK, penColourCss } from '@livehuddle/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { penCursor, type PenCursorVariant } from '@/lib/whiteboard-pen-cursor';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';

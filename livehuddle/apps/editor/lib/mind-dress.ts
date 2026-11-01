@@ -7,7 +7,7 @@ import {
   type ArrowElement,
   type ShapeElement,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
 import { deriveNewBoxedColours } from '@/lib/themes';
 

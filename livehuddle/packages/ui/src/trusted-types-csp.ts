@@ -1,4 +1,4 @@
-// The Trusted Types header every livediagram page sends (docs/specs/016-platform/trusted-types.md), from the one set of
+// The Trusted Types header every livehuddle page sends (docs/specs/016-platform/trusted-types.md), from the one set of
 // policies every app shares (@liveworkspace/trusted-types). A file of its own, so the e2e stack (scripts/e2e-stack.mjs)
 // can import it under Node and send the pages' header exactly.
 import {

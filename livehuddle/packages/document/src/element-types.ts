@@ -1,7 +1,7 @@
 // Boxed-element type definitions (shape / text / table / sticky / image /
 // freehand / annotation / link-card), split out of index.ts to keep it under
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
-// public `@livediagram/document` surface is unchanged. ElementLink + the enums
+// public `@livehuddle/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
 import type { RoomDoor } from './office';
 import type { Finish } from './finish';

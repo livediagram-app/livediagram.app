@@ -20,7 +20,7 @@ import { useOfflineItemMenu } from './useOfflineItemMenu';
 const item = (over: Partial<Item> = {}): Item =>
   ({
     id: 'doc-1',
-    app: 'livediagram',
+    app: 'livehuddle',
     title: 'Plan',
     access: 'edit',
     sharedVia: null,

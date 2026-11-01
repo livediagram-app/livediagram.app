@@ -6,13 +6,13 @@ import { TelemetryToggle } from '@liveworkspace/help-site/art/illustrations/priv
 export const metadata = helpMetadata({
   title: 'What We Collect',
   description:
-    'livediagram records anonymous, first-party, opt-out product events, published openly on a public dashboard. Here is exactly what that means.',
+    'livehuddle records anonymous, first-party, opt-out product events, published openly on a public dashboard. Here is exactly what that means.',
   path: '/help/privacy-and-security/what-we-collect/',
 });
 
 <ArticleLayout title="What We Collect" description="Anonymous, first-party product events, published on a public dashboard, with a one-click opt-out." categoryTitle="Privacy and Security" categorySlug="privacy-and-security" subArticles={getSubArticles("what-we-collect")}>
 
-livediagram measures which features get used so the project knows what works, and it does this without creepy tracking. The analytics are anonymous and first-party. You can switch off what your browser sends at any time. There are no third-party trackers, no ad pixels, and nothing is ever sold or shared beyond a dashboard anyone can read.
+livehuddle measures which features get used so the project knows what works, and it does this without creepy tracking. The analytics are anonymous and first-party. You can switch off what your browser sends at any time. There are no third-party trackers, no ad pixels, and nothing is ever sold or shared beyond a dashboard anyone can read.
 
 ## What an event looks like
 
@@ -30,7 +30,7 @@ The same rules apply to error tracking. When something breaks, the event records
 
 ## Page views
 
-Every page on livediagram.app (the landing pages, the help centre, the Community, the Explorer and the editor) also counts a view when you open it. The event is the same three fields, with the page's address as the type, reduced in your browser before it is sent to just _which page_ it was:
+Every page on livehuddle.app (the landing pages, the help centre, the Community, the Explorer and the editor) also counts a view when you open it. The event is the same three fields, with the page's address as the type, reduced in your browser before it is sent to just _which page_ it was:
 
 - **No query string or link fragment.** Anything after a `?` or `#`, which is where invite and share codes live, is dropped.
 - **No ids.** Every canvas is counted as the same page, `/document`. Any other part of the address that looks like an id is cut off the same way.
@@ -40,7 +40,7 @@ There is no referrer, no record of which pages one person visited in what order,
 
 ## How long things take
 
-To learn whether livediagram feels fast, a few key moments are timed in your browser: a canvas opening, switching to a tab, a save, joining a canvas's live session, and how quickly each page loads and responds (its Core Web Vitals). Only the _range_ a timing fell in is sent, like "under one second", never the exact time, as the same three fields: for example `Timing`, `Measured`, `DocumentLoad.Under1000ms`.
+To learn whether livehuddle feels fast, a few key moments are timed in your browser: a canvas opening, switching to a tab, a save, joining a canvas's live session, and how quickly each page loads and responds (its Core Web Vitals). Only the _range_ a timing fell in is sent, like "under one second", never the exact time, as the same three fields: for example `Timing`, `Measured`, `DocumentLoad.Under1000ms`.
 
 A timing is thrown away if the page was in the background at any point while it was measured (a background tab is slowed down, so the number would be wrong), saves are timed at most once a minute, and the Settings switch below turns timings off along with everything else. The dashboard's Health tab shows the results, in its Timings section.
 
@@ -52,7 +52,7 @@ The label comes from a fixed list of our own buttons and says nothing about you 
 
 ## The public dashboard
 
-Whatever is collected is published openly at the public [telemetry dashboard](/telemetry), run by liveworkspace, the service that counts usage for livediagram and its sister apps. Events go there from your browser and from our server, each labelled with the app it came from, and are kept in liveworkspace's own database, apart from your canvases. The dashboard shows aggregate counts for today, the last 7 days and the last 30 days, grouped by category and action, for livediagram alone or for every app together. Events are deleted automatically after 60 days, so this is recent trend data, not a permanent archive. The whole point is transparency: anyone can see precisely what is measured. [The Public Telemetry Dashboard](/help/privacy-and-security/what-we-collect/telemetry-dashboard/) walks through each of its views.
+Whatever is collected is published openly at the public [telemetry dashboard](/telemetry), run by liveworkspace, the service that counts usage for livehuddle and its sister apps. Events go there from your browser and from our server, each labelled with the app it came from, and are kept in liveworkspace's own database, apart from your canvases. The dashboard shows aggregate counts for today, the last 7 days and the last 30 days, grouped by category and action, for livehuddle alone or for every app together. Events are deleted automatically after 60 days, so this is recent trend data, not a permanent archive. The whole point is transparency: anyone can see precisely what is measured. [The Public Telemetry Dashboard](/help/privacy-and-security/what-we-collect/telemetry-dashboard/) walks through each of its views.
 
 ## How to opt out
 
@@ -68,7 +68,7 @@ You are always in control of your own browser.
 </Step>
 <Step n={2}>Choose the **Privacy** category and switch off **Send Anonymous Usage Events**.</Step>
 <Step n={3}>
-  From that point on, your browser sends no events from any livediagram page (the editor, the help
+  From that point on, your browser sends no events from any livehuddle page (the editor, the help
   centre, the Community and the public pages share the one setting), whatever the deployment's
   setting.
 </Step>

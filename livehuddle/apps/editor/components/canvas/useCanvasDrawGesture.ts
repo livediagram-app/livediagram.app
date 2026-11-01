@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
-import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@livediagram/document';
+import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@livehuddle/document';
 import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas, snapLeadingAxis } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import type { StampPlacement } from '@/lib/stamp-placement';

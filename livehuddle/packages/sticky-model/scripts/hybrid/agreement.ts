@@ -1,4 +1,4 @@
-import { detectStickies, iou } from '@livediagram/sticky-vision';
+import { detectStickies, iou } from '@livehuddle/sticky-vision';
 import { score } from '../../../sticky-vision/scripts/truth';
 import { CUE_OPTIONS, cuesOf } from '../../src/cues';
 import { loadHybridWalls } from './walls';

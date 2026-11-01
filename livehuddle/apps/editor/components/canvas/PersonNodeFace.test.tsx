@@ -5,7 +5,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { applyShapeVariant, createShape, type ShapeElement } from '@livediagram/document';
+import { applyShapeVariant, createShape, type ShapeElement } from '@livehuddle/document';
 import { PersonNodeFace } from './PersonNodeFace';
 
 afterEach(cleanup);

@@ -1,6 +1,6 @@
 'use client';
 
-import { SaveSwitch, showsSaveSwitch } from '@livediagram/ui';
+import { SaveSwitch, showsSaveSwitch } from '@livehuddle/ui';
 import { kindWords } from '@liveworkspace/explorer';
 import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/ui/useToast';
 import { ConversionInProgressError, syncFailureMessage } from '@/lib/offline/offline-convert';
 import type { StartPalette } from './start-palette';
 
-const KIND = kindWords('livediagram').one;
+const KIND = kindWords('livehuddle').one;
 
 // The start screen's Sync Canvas to Server switch (docs/specs/006-document/save-locations.md "On the start screen"):
 // the shared row (@liveworkspace/ui SaveSwitch) fed this editor's view of the open document and its two in-place

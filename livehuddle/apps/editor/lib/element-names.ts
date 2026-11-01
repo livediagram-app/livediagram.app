@@ -11,7 +11,7 @@ import {
   type Element,
   type SessionTool,
   type ShapeKind,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 // The tool a session button starts, as its kind reads (docs/specs/012-collaboration/session-button.md).
 const SESSION_TOOL_KIND: Record<SessionTool, string> = {

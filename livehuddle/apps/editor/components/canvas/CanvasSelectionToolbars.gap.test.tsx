@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
+import { createShape, type Element } from '@livehuddle/document';
 import { CanvasSelectionToolbars } from './CanvasSelectionToolbars';
 import type { CanvasProps } from './Canvas.types';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';

@@ -7,7 +7,7 @@ import {
   RECENT_DIAGRAMS_KEY,
   RECENT_THUMBS_CACHE,
   RECENT_THUMBS_CACHE_LEGACY,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import { removeLocalStorageSafe } from '@liveworkspace/workbench/lib/local-storage-safe';
 
 export async function forgetRecentDiagrams(): Promise<void> {

@@ -12,7 +12,7 @@ import {
   type BoxedElement,
   type Element,
   type Endpoint,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { originOf, type DrawioCell, type DrawioGraph, type Pt, type Rect } from './cells';
 import { buildArrow, type EndTarget } from './edges';

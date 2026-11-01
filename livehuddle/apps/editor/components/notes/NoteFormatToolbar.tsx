@@ -9,7 +9,7 @@
 // editor, which owns the runs and the selection.
 
 import { useEffect, useRef, useState } from 'react';
-import type { ListStyle, RunBoolKey, RunHeading } from '@livediagram/document';
+import type { ListStyle, RunBoolKey, RunHeading } from '@livehuddle/document';
 import { LinkMenuIcon } from '@/components/palette/context-menu-icons';
 import { noFocusSteal } from '@/components/rich-text/ToolbarDropdown';
 import {
@@ -20,7 +20,7 @@ import {
 import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
 import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
 import { normaliseUrl } from '@liveworkspace/workbench/lib/url-safety';
-import { HoverCard, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { HoverCard, SOLID_BRAND_DARK_CONTROL } from '@livehuddle/ui';
 
 // preventDefault on mousedown keeps focus + the live selection in the
 // contentEditable when a control is clicked (the classic rich-text-toolbar

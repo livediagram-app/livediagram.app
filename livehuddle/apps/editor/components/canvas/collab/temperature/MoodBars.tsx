@@ -5,7 +5,7 @@
 // rises after the card first painted pops.
 
 import { useState } from 'react';
-import { TEMPERATURE_COLORS, TEMPERATURE_VALUES } from '@livediagram/document';
+import { TEMPERATURE_COLORS, TEMPERATURE_VALUES } from '@livehuddle/document';
 import { tint } from '../collab-chrome';
 import { MOOD_GRID } from '@liveworkspace/workbench/components/canvas/collab/temperature/mood-grid';
 import { useFaceShadow } from '@/components/canvas/CanvasFinishContext';

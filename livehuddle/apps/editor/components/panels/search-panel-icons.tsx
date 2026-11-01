@@ -13,12 +13,12 @@ import {
 import type { IconPrim } from '@liveworkspace/icons';
 import type { SearchResultItem } from '@/lib/search';
 import { DocumentIcon } from '@/components/primitives/explorer-icons';
-import { Glyph, Prims } from '@livediagram/ui';
+import { Glyph, Prims } from '@livehuddle/ui';
 
 // The search panel's result-kind glyphs (docs/specs/008-canvas/canvas-and-palette.md Search panel), lifted
 // out of SearchPanel: a compact icon per result kind so users can scan
 // the list by shape without reading labels. The input's magnifier is the
-// shared SearchIcon from @livediagram/ui.
+// shared SearchIcon from @livehuddle/ui.
 
 // One glyph per result kind, the same ones the rest of the editor uses for that thing, so the
 // list scans by shape without reading labels. A palette result ADDS (plus-in-a-box); a command DOES

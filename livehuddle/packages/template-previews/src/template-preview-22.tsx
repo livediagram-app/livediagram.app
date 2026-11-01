@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { TemplateKind } from '@livediagram/templates';
+import type { TemplateKind } from '@livehuddle/templates';
 import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 22: Quizzes & Games (docs/specs/012-collaboration/quiz-and-game-templates.md): Pub Quiz, Icebreaker

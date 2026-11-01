@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-// The Worker itself is every app's (@liveworkspace/community-site/worker, tested there); this is livediagram's entry.
+// The Worker itself is every app's (@liveworkspace/community-site/worker, tested there); this is livehuddle's entry.
 describe('community worker: the entry module', () => {
   it('exports only the handler, or the Workers runtime refuses to start it', async () => {
     const entry = await import('./index');

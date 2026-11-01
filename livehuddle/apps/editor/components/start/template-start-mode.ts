@@ -2,7 +2,7 @@
 // Diagramming, Start Drawing or Start a Workshop, to someone who can edit, while the tab is
 // empty, outside zen and embed, with no draw tool armed. Draw keeps a pen in hand on an empty
 // tab, so there an armed pen does not hide it.
-import type { EditorMode } from '@livediagram/document';
+import type { EditorMode } from '@livehuddle/document';
 import type { TemplateStartMode } from './start-template-items';
 
 export function templateStartMode(at: {

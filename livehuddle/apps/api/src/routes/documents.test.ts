@@ -513,7 +513,7 @@ describe('the document list', () => {
     index.items = [
       {
         id: 'A',
-        app: 'livediagram',
+        app: 'livehuddle',
         ownerId: 'owner',
         teamId: null,
         folderId: null,

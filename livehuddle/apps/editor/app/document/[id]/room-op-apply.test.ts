@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab, TabVote } from '@livediagram/document';
-import { applyElementDelta, responseDeltaFor, type ShapeElement } from '@livediagram/document';
-import type { RoomOp } from '@livediagram/api-schema';
+import type { Element, Tab, TabVote } from '@livehuddle/document';
+import { applyElementDelta, responseDeltaFor, type ShapeElement } from '@livehuddle/document';
+import type { RoomOp } from '@livehuddle/api-schema';
 import { applyRoomOpToTabs } from './room-op-apply';
 import { tabBroadcastOps } from './tab-broadcast-ops';
 

@@ -1,4 +1,4 @@
-import { isUntitledName, titleCase } from '@livediagram/api-schema';
+import { isUntitledName, titleCase } from '@livehuddle/api-schema';
 import { UNTITLED_DOCUMENT_NAME, isUntitledDocumentName } from './legacy-untitled';
 
 export type TemplateKind =

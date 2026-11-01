@@ -6,26 +6,26 @@ import type { Metadata, Viewport } from 'next';
 // inlined the origin, the ShareRail and the editor's GitHub link hardcoded
 // theirs), so the origin and the repo URL lived in five places.
 
-// The canonical origin. livediagram.app is one origin: the router stitches
+// The canonical origin. livehuddle.app is one origin: the router stitches
 // the apps together by path (docs/specs/016-platform/router-app.md), so every app's metadataBase, JSON-LD
 // ids and share links resolve against this one value (docs/specs/019-marketing/marketing-site.md "SEO and
 // metadata").
-export const SITE_URL = 'https://www.livediagram.app';
+export const SITE_URL = 'https://www.livehuddle.app';
 
 // This site in liveworkspace's list of sites (@liveworkspace/sites), marked in the logo's switcher.
-export const SITE_ID = 'livediagram.app' as const;
+export const SITE_ID = 'livehuddle.app' as const;
 
 // The product / site name: the metadata siteName and the JSON-LD name.
-export const SITE_NAME = 'livediagram';
+export const SITE_NAME = 'livehuddle';
 
-// What livediagram is, in the words every public surface uses (docs/specs/019-marketing/marketing-site.md
+// What livehuddle is, in the words every public surface uses (docs/specs/019-marketing/marketing-site.md
 // "SEO and metadata"), kept here so they can't drift: the landing page's title, its description
 // (also the web app manifest's), and the one-line pitch the share card, the share images' alt text
 // and the share rail build on. It names every kind of thing the canvas makes, not just diagrams.
-export const SITE_TITLE = 'livediagram: Diagram, draw and run workshops together, live';
+export const SITE_TITLE = 'livehuddle: Diagram, draw and run workshops together, live';
 export const SITE_DESCRIPTION =
   'A free, real-time canvas for diagrams, whiteboards, mind maps and workshops. Built for teams who think visually.';
-// Lower case: it follows "livediagram: " or starts a sentence through sentencePitch.
+// Lower case: it follows "livehuddle: " or starts a sentence through sentencePitch.
 export const SITE_PITCH = 'a real-time canvas for diagrams, whiteboards and workshops';
 export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.slice(1)}.`;
 
@@ -54,7 +54,7 @@ export const CONTACT_FORM_URL = 'https://www.liveplanner.app/form/90Bgj5sY9eTpVr
 export const BRAND_ICONS: NonNullable<Metadata['icons']> = {
   icon: [
     { url: '/icon.svg', type: 'image/svg+xml' },
-    { url: '/livediagram-icon-256.png', type: 'image/png', sizes: '256x256' },
+    { url: '/livehuddle-icon-256.png', type: 'image/png', sizes: '256x256' },
   ],
   apple: '/apple-icon',
 };

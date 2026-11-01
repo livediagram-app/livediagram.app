@@ -12,7 +12,7 @@ import {
   createText,
   type ArrowheadShape,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { techHeader, TECH_HEADER_H, TECH_MUTED } from './template-builders-technical-kit';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 

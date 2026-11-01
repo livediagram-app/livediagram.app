@@ -4,7 +4,7 @@
 // user's preferences blob (lib/user-preferences.ts), so they follow a signed-in user across devices
 // and stay in this browser for a guest. Read through here, never directly: a stored value is only
 // trusted once parsed.
-import type { BackgroundPattern } from '@livediagram/document';
+import type { BackgroundPattern } from '@livehuddle/document';
 import type { UserPreferences } from './user-preferences';
 import { isWhiteboardShapeKey, type WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import {

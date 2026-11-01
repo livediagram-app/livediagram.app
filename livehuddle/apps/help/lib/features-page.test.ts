@@ -18,7 +18,7 @@ describe('the features index description', () => {
   });
 
   it('fits a search result', () => {
-    expect(description.startsWith('Browse livediagram ')).toBe(true);
+    expect(description.startsWith('Browse livehuddle ')).toBe(true);
     expect(description.length).toBeGreaterThanOrEqual(50);
     expect(description.length).toBeLessThanOrEqual(160);
   });

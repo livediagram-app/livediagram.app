@@ -6,7 +6,7 @@ import {
   useMinimalChrome,
   usePowerUser,
 } from '@liveworkspace/workbench/components/providers/minimal-chrome';
-import { CommentIcon, DuplicateIcon, LockIcon, TrashIcon, HoverCard } from '@livediagram/ui';
+import { CommentIcon, DuplicateIcon, LockIcon, TrashIcon, HoverCard } from '@livehuddle/ui';
 import {
   BringToFrontIcon,
   EllipsisIcon,
@@ -22,7 +22,7 @@ import {
 import dynamic from 'next/dynamic';
 import type { CardinalityToolbar } from '@/components/canvas/entity/CardinalityButton';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
-import type { Rect } from '@livediagram/document';
+import type { Rect } from '@livehuddle/document';
 
 // A relationship's Cardinality group shows only on a selected arrow between two entities: loaded then.
 const CardinalityButton = dynamic(

@@ -8,7 +8,7 @@ const COPY = {
   title: 'Policies',
   description:
     "How to report a vulnerability. The terms and privacy policy are liveworkspace's, on liveworkspace.app.",
-  lede: "How to report a security issue privately. The terms and privacy policy for livediagram.app are liveworkspace's, at liveworkspace.app/terms and liveworkspace.app/privacy.",
+  lede: "How to report a security issue privately. The terms and privacy policy for livehuddle.app are liveworkspace's, at liveworkspace.app/terms and liveworkspace.app/privacy.",
 };
 
 export const metadata = supportCategoryMetadata(site, 'policies', COPY);

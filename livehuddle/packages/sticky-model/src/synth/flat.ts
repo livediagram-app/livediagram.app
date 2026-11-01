@@ -1,4 +1,4 @@
-import { hexToRgb } from '@livediagram/sticky-vision';
+import { hexToRgb } from '@livehuddle/sticky-vision';
 import { layoutNotes, type NoteSpec } from './layout';
 import { dividerLine, handwriting } from './notes';
 import {

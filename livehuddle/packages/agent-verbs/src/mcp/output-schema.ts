@@ -3,10 +3,10 @@
 // The SDK validates every successful result against these on the way out, so a
 // shape here that stops matching tools.ts fails the call rather than shipping a
 // wrong contract. Error results are exempt and carry text only.
-import { EMPTY_DOCUMENT_STALE_DAYS, TRASH_REASONS } from '@livediagram/api-schema';
+import { EMPTY_DOCUMENT_STALE_DAYS, TRASH_REASONS } from '@livehuddle/api-schema';
 import { z } from 'zod';
 
-const url = z.string().describe('Link that opens the document in the livediagram editor.');
+const url = z.string().describe('Link that opens the document in the livehuddle editor.');
 const documentId = z.string().describe('The document id.');
 const tabId = z.string().describe('The tab id.');
 
@@ -41,7 +41,7 @@ export const readDocumentOutput = {
         .array(z.record(z.string(), z.unknown()))
         .optional()
         .describe(
-          'The tab elements (format "json"), in the format of the livediagram://schema/elements resource.',
+          'The tab elements (format "json"), in the format of the livehuddle://schema/elements resource.',
         ),
     })
     .describe('The tab that was read.'),

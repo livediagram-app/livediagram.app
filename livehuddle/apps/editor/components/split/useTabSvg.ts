@@ -1,7 +1,7 @@
 'use client';
 
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import { loadTabImages, renderTabToSvg } from '@/lib/export-tab';
 import { tabImageKey, type ExportImageMap } from '@/lib/export-tab-images';

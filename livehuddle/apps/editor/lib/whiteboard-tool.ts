@@ -3,7 +3,7 @@
 // armed intent so the two can never disagree, plus the intents the dock arms
 // and the pen-versus-touch routing rule.
 import type { CanvasTool } from '@/components/palette/palette.types';
-import { INK_PEN_COLOUR, type Element } from '@livediagram/document';
+import { INK_PEN_COLOUR, type Element } from '@livehuddle/document';
 import type { PendingDraw } from './draw-mode';
 import type { WhiteboardPen } from './whiteboard-prefs';
 

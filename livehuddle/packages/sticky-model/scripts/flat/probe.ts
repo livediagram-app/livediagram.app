@@ -1,4 +1,4 @@
-import { detectStickies, HYBRID_RULES, iou } from '@livediagram/sticky-vision';
+import { detectStickies, HYBRID_RULES, iou } from '@livehuddle/sticky-vision';
 import { CUE_OPTIONS, cuesOf } from '../../src/cues';
 import { isFlatImage } from '../../src/flatness';
 import { predictProbs } from '../model/infer';

@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/template-previews",
+  "name": "@livehuddle/template-previews",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -22,8 +22,8 @@
     "react-dom": "^19.3.0"
   },
   "dependencies": {
-    "@livediagram/document": "workspace:*",
-    "@livediagram/templates": "workspace:*",
+    "@livehuddle/document": "workspace:*",
+    "@livehuddle/templates": "workspace:*",
     "@liveworkspace/template-previews": "workspace:*"
   },
   "devDependencies": {

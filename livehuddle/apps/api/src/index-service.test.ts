@@ -13,7 +13,7 @@ describe('index service', () => {
     const index = await indexServiceFor(env);
     const token = await index.tokenFor('user_ann');
     const client = indexFor(env, { kind: 'bearer', token })!;
-    const { item } = await client.createItem({ id: 'doc-1', app: 'livediagram', title: 'Map' });
+    const { item } = await client.createItem({ id: 'doc-1', app: 'livehuddle', title: 'Map' });
     expect(item).toMatchObject({ id: 'doc-1', ownerId: 'user_ann', kind: 'canvas', title: 'Map' });
     const outcome = await requestGrant(env, { kind: 'bearer', token }, 'doc-1', null);
     expect(outcome.ok).toBe(true);
@@ -26,7 +26,7 @@ describe('index service', () => {
     const env = {} as Env;
     await indexServiceFor(env);
     const client = indexFor(env, { kind: 'delegate', personId: 'user_bo', teams: [] })!;
-    const { item } = await client.createItem({ app: 'livediagram', title: 'Flow' });
+    const { item } = await client.createItem({ app: 'livehuddle', title: 'Flow' });
     expect(item.ownerId).toBe('user_bo');
   });
 
@@ -37,7 +37,7 @@ describe('index service', () => {
       guest: true,
     });
     const { item } = await indexFor(env, { kind: 'bearer', token })!.createItem({
-      app: 'livediagram',
+      app: 'livehuddle',
       title: 'Sketch',
     });
     expect(item.ownerId).toBe('guest_0f5ca4af-9a8a-4a60-be5e-1179e5555880');

@@ -1,18 +1,18 @@
-name = "livediagram-api"
-# The liveworkspace Cloudflare account, which also hosts livediagram.app, so a deploy can never land on another one.
+name = "livehuddle-api"
+# The liveworkspace Cloudflare account, which also hosts livehuddle.app, so a deploy can never land on another one.
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 
 # Local dev port, off wrangler's 8787 default, which the liveworkspace accounts Worker holds, so
-# livediagram's stack runs beside it (the router's API_ORIGIN and the docs name the same port).
+# livehuddle's stack runs beside it (the router's API_ORIGIN and the docs name the same port).
 [dev]
-port = 8687
+port = 9087
 
 # Plain (non-secret) vars. Everything here is every fork's default too, so
-# what only livediagram.app runs with is NOT here: TELEMETRY_ENABLED and the
+# what only livehuddle.app runs with is NOT here: TELEMETRY_ENABLED and the
 # image gallery caps live in `hosted-vars.json`, which the deploy workflow adds
-# with `wrangler deploy --var` on livediagram.app's own repository only, and
+# with `wrangler deploy --var` on livehuddle.app's own repository only, and
 # then verifies on the editor worker (docs/specs/016-platform/deployment.md
 # "Hosted profile"). A fork is therefore telemetry-off and uncapped until it
 # opts in, by declaring the var here. TELEMETRY_ENABLED gates the anonymous,
@@ -23,9 +23,9 @@ port = 8687
 # production's, https://www.liveworkspace.app/api/telemetry. Local dev sets
 # TELEMETRY_URL=http://localhost:8790/api/telemetry in .dev.vars.
 [vars]
-# The sender for this app's email (see EMAIL below). liveplanner.app until livediagram.app moves to this
+# The sender for this app's email (see EMAIL below). liveplanner.app until livehuddle.app moves to this
 # account and is onboarded to Email Service (liveworkspace/docs/specs/003-accounts/email.md "Senders until the domains move").
-EMAIL_FROM = "livediagram <hello@liveplanner.app>"
+EMAIL_FROM = "livehuddle <hello@liveplanner.app>"
 
 # Origin allow-list for POST /api/ai/read-notes (docs/specs/021-event-storming/note-reader.md). Stated HERE, not in the
 # Cloudflare dashboard, for the reason docs/specs/016-platform/staging-environment.md calls a known sharp edge: a
@@ -35,8 +35,8 @@ EMAIL_FROM = "livediagram <hello@liveplanner.app>"
 # answering `403 origin_not_allowed`, which is only possible with this unset —
 # so the key behind `aiEnabled: true` was spendable from any page.
 #
-# BOTH hosts, and `www` is the one that matters: livediagram.app 301-redirects
-# to www.livediagram.app, so that is the origin a real browser sends. Listing
+# BOTH hosts, and `www` is the one that matters: livehuddle.app 301-redirects
+# to www.livehuddle.app, so that is the origin a real browser sends. Listing
 # only the apex — which is what the Env comment in src/types.ts suggested, and
 # what staging does for its own single host — would 403 every genuine AI request
 # in the editor. The apex stays listed so dropping the redirect can't break it.
@@ -49,16 +49,16 @@ EMAIL_FROM = "livediagram <hello@liveplanner.app>"
 # presence alone, so requiring sign-in would leave guests a visible panel that
 # 401s — see the note in src/routes/capabilities.ts). AI_RATE_LIMITER (20/60s
 # per IP) remains the only other control.
-AI_ALLOWED_ORIGINS = "https://www.livediagram.app,https://livediagram.app"
+AI_ALLOWED_ORIGINS = "https://www.livehuddle.app,https://livehuddle.app"
 
 # The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
 # api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
 # from an older CLI.
-OAUTH_ISSUER = "https://mcp.livediagram.app"
+OAUTH_ISSUER = "https://mcp.livehuddle.app"
 
 # No bucket: images are liveworkspace's media service's (MEDIA_KEY below), and snapshots and share cards
 # its previews (liveworkspace/docs/specs/006-media/previews.md). The bytes uploaded before that move are still in the previous
-# Cloudflare account's livediagram-images bucket, until they are migrated into the media service.
+# Cloudflare account's livehuddle-images bucket, until they are migrated into the media service.
 
 # Per-owner rate limiter (Cloudflare Workers Rate Limiting API).
 # Caps writes at 300 / 60s per owner: a generous ceiling for normal
@@ -98,12 +98,12 @@ name = "DOCUMENT_ROOM"
 class_name = "DocumentRoom"
 
 # Each person's Durable Object (src/person-store/person-store.ts): one SQLite-backed instance per person id,
-# holding what livediagram keeps for the person rather than for one canvas (their shape libraries).
+# holding what livehuddle keeps for the person rather than for one canvas (their shape libraries).
 [[durable_objects.bindings]]
 name = "PERSON_STORE"
 class_name = "PersonStore"
 
-# livediagram ships fresh on new infrastructure, so the classes start SQLite-backed with no history.
+# livehuddle ships fresh on new infrastructure, so the classes start SQLite-backed with no history.
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["DocumentRoom", "PersonStore", "WorkbenchStore"]
@@ -189,9 +189,9 @@ simple = { limit = 120, period = 60 }
 #   - EMAIL: the `send_email` binding. `wrangler dev` simulates it, printing each email and saving it to a
 #     file, so nothing is sent locally.
 #   - EMAIL_FROM: [vars] From identity. Its domain must be onboarded to Email Service on this account;
-#     livediagram.app isn't yet, so it sends from liveplanner.app until that domain moves.
+#     livehuddle.app isn't yet, so it sends from liveplanner.app until that domain moves.
 #   - APP_BASE_URL: optional [vars] public origin for links in emails (hosted-vars.json per environment).
-#     Defaults to "https://www.livediagram.app".
+#     Defaults to "https://www.livehuddle.app".
 [[send_email]]
 name = "EMAIL"
 
@@ -202,12 +202,12 @@ name = "EMAIL"
 #   ACCOUNTS_URL            the accounts Worker's origin
 #                           (https://www.liveworkspace.app)
 #   API_RESOURCE            this API's registered resource, the access
-#                           token's audience (https://livediagram.app/api)
+#                           token's audience (https://livehuddle.app/api)
 #   ACCOUNTS_CLIENT_ID      this app's OAuth client id
 #   ACCOUNTS_CLIENT_SECRET  its client secret (the only real secret)
 #
 #   - Local dev: put them in `apps/api/.dev.vars` (gitignored), plus
-#     AUTH_ORIGIN=http://localhost:3100 so the callback comes back
+#     AUTH_ORIGIN=http://localhost:3500 so the callback comes back
 #     through the router. Wrangler reads it on the next `wrangler dev`.
 #   - Production: Cloudflare Worker secrets. The deploy workflow pulls
 #     each from the GitHub repo secret of the same name and pipes it into
@@ -220,59 +220,59 @@ name = "EMAIL"
 # with the same keys. With ACCOUNTS_URL or API_RESOURCE unset no caller has an
 # identity and only share-link visitors are served
 # (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md).
-# The client id and secret come from registering livediagram with the
+# The client id and secret come from registering livehuddle with the
 # accounts Worker (liveworkspace/docs/specs/002-architecture/integrating-an-app.md).
 
-# TELEMETRY_KEY is livediagram's secret on the liveworkspace telemetry service
+# TELEMETRY_KEY is livehuddle's secret on the liveworkspace telemetry service
 # (liveworkspace/docs/specs/008-telemetry/telemetry.md): sent as X-Telemetry-Key, it proves a batch with
-# no Origin (this worker's own events, the relay's, the mcp worker's) is livediagram's.
+# no Origin (this worker's own events, the relay's, the mcp worker's) is livehuddle's.
 # Provisioned out-of-band like the two above; never in [vars] — it is secret material:
 #
-#   - Local dev: `TELEMETRY_KEY=dev-livediagram-key` in `apps/api/.dev.vars`
+#   - Local dev: `TELEMETRY_KEY=dev-livehuddle-key` in `apps/api/.dev.vars`
 #     (gitignored), matching the local service's .dev.vars.
 #   - Production: `wrangler secret put TELEMETRY_KEY`, the SAME value on the mcp
-#     worker, and on the liveworkspace service as TELEMETRY_KEY_LIVEDIAGRAM.
+#     worker, and on the liveworkspace service as TELEMETRY_KEY_LIVEHUDDLE.
 #     Generate with `openssl rand -hex 32`.
 #
 # Unset = this worker sends no telemetry, which is what a deployment gets with no
 # configuration. A mismatch is silent (the service drops the batch), so check
 # `wrangler secret list` on all three if server-side counts look flat.
 
-# COMMUNITY_KEY is livediagram's secret on the liveworkspace Community service
+# COMMUNITY_KEY is livehuddle's secret on the liveworkspace Community service
 # (liveworkspace/docs/specs/007-community/community.md), sent as a bearer token on its app routes, where
-# it proves a publish, a sync or a copy is livediagram's. The service holds the same
-# value as COMMUNITY_KEY_LIVEDIAGRAM. Never in [vars]:
+# it proves a publish, a sync or a copy is livehuddle's. The service holds the same
+# value as COMMUNITY_KEY_LIVEHUDDLE. Never in [vars]:
 #
-#   - Local dev: `COMMUNITY_KEY=dev-livediagram-community-key` and
+#   - Local dev: `COMMUNITY_KEY=dev-livehuddle-community-key` and
 #     `COMMUNITY_URL=http://localhost:8791/api/community` in `apps/api/.dev.vars`.
 #   - Production and staging: the COMMUNITY_KEY / COMMUNITY_KEY_STAGING GitHub
 #     secrets, synced by the deploy workflow. COMMUNITY_URL comes from hosted-vars.json.
 #
 # Unset = no Community: publishing answers 404, and the sync does nothing.
 
-# MEDIA_KEY is livediagram's secret on liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md,
+# MEDIA_KEY is livehuddle's secret on liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md,
 # src/media.ts), which keeps every app's uploaded images. The service holds the same value as
-# MEDIA_KEY_LIVEDIAGRAM. Never in [vars]:
+# MEDIA_KEY_LIVEHUDDLE. Never in [vars]:
 #
-#   - Local dev: `MEDIA_KEY=dev-livediagram-media-key` and
+#   - Local dev: `MEDIA_KEY=dev-livehuddle-media-key` and
 #     `MEDIA_URL=http://localhost:8792/api/media` in `apps/api/.dev.vars`.
 #   - Production and staging: the MEDIA_KEY / MEDIA_KEY_STAGING GitHub secrets, synced by the
 #     deploy workflow. MEDIA_URL comes from hosted-vars.json.
 #
 # Unset = no images: the image endpoints answer 503 and the editor hides the Image entry.
 
-# DRIVE_KEY is livediagram's secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md
-# "Contracts > The apps"); the service holds the same value as DRIVE_KEY_LIVEDIAGRAM. It opens the
+# DRIVE_KEY is livehuddle's secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md
+# "Contracts > The apps"); the service holds the same value as DRIVE_KEY_LIVEHUDDLE. It opens the
 # internal export door's `file` format and the import door, nothing else. Never in [vars]:
 #
-#   - Local dev: `DRIVE_KEY=dev-livediagram-drive-key` in `apps/api/.dev.vars`.
+#   - Local dev: `DRIVE_KEY=dev-livehuddle-drive-key` in `apps/api/.dev.vars`.
 #   - Production and staging: `wrangler secret put DRIVE_KEY` (and `--env staging`).
 #
 # Unset = the mirror cannot export or import canvases (the two doors take only the index's key).
 
 
 # ---------------------------------------------------------------------------
-# Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livediagram-api-staging` via
+# Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livehuddle-api-staging` via
 # `wrangler deploy --env staging`.
 #
 # Everything below is restated ON PURPOSE. Wrangler does NOT inherit
@@ -291,7 +291,7 @@ name = "EMAIL"
 # name on its own, but nothing in `--dry-run` prints the name it resolved,
 # and the router's service bindings depend on this exact string.
 [env.staging]
-name = "livediagram-api-staging"
+name = "livehuddle-api-staging"
 
 # TELEMETRY_ENABLED, TELEMETRY_URL and the image caps come from `hosted-vars.json`, exactly as
 # for production (see the top of this file). Staging's events go to the STAGING telemetry
@@ -299,23 +299,23 @@ name = "livediagram-api-staging"
 [env.staging.vars]
 # APP_BASE_URL comes from `hosted-vars.json` per environment, so staging's email and workbench links point
 # back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
-EMAIL_FROM = "livediagram <hello@liveplanner.app>"
+EMAIL_FROM = "livehuddle <hello@liveplanner.app>"
 
 # Lock the AI endpoint to the staging origin so the model key behind it
 # can't be spent from a third-party page (docs/specs/021-event-storming/note-reader.md). Production states the
 # equivalent in the top-level [vars] above, for the same reason: the
 # environment is reproducible from the repo alone — see docs/specs/016-platform/staging-environment.md "Known sharp
 # edge".
-AI_ALLOWED_ORIGINS = "https://staging.livediagram.app"
+AI_ALLOWED_ORIGINS = "https://staging.livehuddle.app"
 
 # The staging MCP worker's OAuth server, for the CLI against staging.
-OAUTH_ISSUER = "https://mcp-staging.livediagram.app"
+OAUTH_ISSUER = "https://mcp-staging.livehuddle.app"
 # No AI_REQUIRE_SIGN_IN, matching production: the editor offers AI to guests, so
 # requiring sign-in here made staging refuse what production allows (the photo
 # reader stopped with "sign in required"), which is drift, not a staging test.
 
 # Rate limiters. Namespace ids deliberately MATCH production's: Cloudflare
-# scopes a namespace per script, and `livediagram-api-staging` is a different
+# scopes a namespace per script, and `livehuddle-api-staging` is a different
 # script, so these are already separate counters. Renumbering them would
 # imply the number carries meaning across workers, which it doesn't.
 [[env.staging.unsafe.bindings]]

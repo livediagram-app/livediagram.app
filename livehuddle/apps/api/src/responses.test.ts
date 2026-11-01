@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DOCUMENT_CONVERSION_HEADER, DOCUMENT_OPEN_HEADER } from '@livediagram/api-schema';
+import { DOCUMENT_CONVERSION_HEADER, DOCUMENT_OPEN_HEADER } from '@livehuddle/api-schema';
 import { aiError, CORS_HEADERS, imagesUnavailable, json } from './responses';
 
 // The shared envelope and status codes are @liveworkspace/api-kit's, tested there. What is this api's own is its

@@ -3,7 +3,7 @@
 // The Fill tool's colour (docs/specs/023-draw-mode/fill-tool.md "Its colour"): the one colour picker
 // (docs/specs/004-interface-design/colour-picker.md) with No fill first, the theme's fills, the soft
 // standard colours drawn for the board, Custom colours from the document, and +.
-import type { Appearance } from '@livediagram/document';
+import type { Appearance } from '@livehuddle/document';
 import { ColourPicker } from '@/components/colour/ColourPicker';
 import { noColour, standardGroup, themeOptions } from '@/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';

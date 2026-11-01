@@ -1,4 +1,4 @@
-// Pages mode moved out of livediagram to livedocuments. A tab stored while it was in Pages keeps its ordinary elements
+// Pages mode moved out of livehuddle to livedocuments. A tab stored while it was in Pages keeps its ordinary elements
 // and opens in Diagram: its mode (`opensIn: 'pages'`, or its older names), its pages, its articles and the legacy
 // single-page orientation are dropped, and so are the elements that only made sense on a page (a tab window, an
 // article's margin note). Run on every stored or incoming tab by the stored-tab migration (./stored-tab), so no data

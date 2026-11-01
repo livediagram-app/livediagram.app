@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
+import { createShape, type Element } from '@livehuddle/document';
 import { elementUnderFeet } from '@liveworkspace/avatar/walk';
 
 describe('elementUnderFeet', () => {

@@ -1,4 +1,4 @@
-import { ctaHref, isCtaSource, type CtaSurface } from '@livediagram/api-schema';
+import { ctaHref, isCtaSource, type CtaSurface } from '@livehuddle/api-schema';
 import { START_BLANK_HREF, StartBlankLink as SharedLink } from '@liveworkspace/ui/start-blank-link';
 
 export { START_BLANK_HREF };

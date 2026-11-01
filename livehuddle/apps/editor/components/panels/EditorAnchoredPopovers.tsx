@@ -3,7 +3,7 @@
 import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
 import dynamic from 'next/dynamic';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
-import { elementActions, isBoxed } from '@livediagram/document';
+import { elementActions, isBoxed } from '@livehuddle/document';
 
 import { track } from '@/lib/telemetry';
 import { canonicalNote, noteFieldsEqual } from '@/lib/note-value';

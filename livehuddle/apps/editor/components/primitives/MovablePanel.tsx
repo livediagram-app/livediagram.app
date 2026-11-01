@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useClickOutside } from '@livediagram/ui';
+import { useClickOutside } from '@livehuddle/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { announcePanelPresence } from '@liveworkspace/workbench/lib/panel-presence';

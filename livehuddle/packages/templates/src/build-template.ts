@@ -7,7 +7,7 @@
 
 import { buildVirtualOffice } from './template-builders-office';
 import { buildAllHandsHall, buildCoworkingSpace, buildTeamPod } from './template-builders-spaces';
-import { settleChips, type Element } from '@livediagram/document';
+import { settleChips, type Element } from '@livehuddle/document';
 import type { TemplateKind } from './templates';
 import {
   buildComicStrip,

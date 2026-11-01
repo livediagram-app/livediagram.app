@@ -13,7 +13,7 @@ import {
   resolveFinish,
   type ArrowElement,
   type FrameHandle,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { pointerToCanvas, type ArrowEnd, type DragState } from '@/lib/canvas';
 import type { EditorDragDeps } from './useEditorDrag.types';

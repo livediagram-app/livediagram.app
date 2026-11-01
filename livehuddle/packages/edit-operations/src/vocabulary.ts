@@ -90,7 +90,7 @@ export const ORDER_ENDS = ['front', 'back'] as const;
 export const WRAP_CONTAINERS = ['frame', 'lane'] as const;
 
 // The layout engine's rank gap (EO23); larger reads as a separate drawing.
-export { LAYER_GAP as PLACEMENT_GAP } from '@livediagram/document';
+export { LAYER_GAP as PLACEMENT_GAP } from '@livehuddle/document';
 export const PLACEMENT_GAP_MAX = 2000;
 // Below it boxes read as touching (EO32).
 export const INSERT_MIN_GAP = 16;

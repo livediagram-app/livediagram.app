@@ -5,7 +5,7 @@ import {
   Glyph,
   PencilIcon as SharedPencilIcon,
   Prims,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 import {
   lucideArrowUpRight,
   lucideBetweenHorizontalEnd,

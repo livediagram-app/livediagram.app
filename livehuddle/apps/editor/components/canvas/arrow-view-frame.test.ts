@@ -5,7 +5,7 @@ import {
   createPinnedArrow,
   createShape,
   MIND_CONNECTOR_LOOK,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   arrowViewGeometry,
   deriveArrowViewFrame,

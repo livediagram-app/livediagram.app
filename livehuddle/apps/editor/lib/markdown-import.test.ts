@@ -8,7 +8,7 @@ import {
   MAX_TABLE_COLS,
   MAX_TABLE_ROWS,
   type TableElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   buildTabFromMarkdown,
   cleanInline,

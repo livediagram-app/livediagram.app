@@ -1,4 +1,4 @@
-import type { EditLog } from '@livediagram/edit-operations';
+import type { EditLog } from '@livehuddle/edit-operations';
 
 // The changeset log lines (docs/specs/024-agents/blueprints/agent-changesets.md "Observability"):
 // one recognisable fingerprint each, with the document, the tab, the changeset id and counts, never

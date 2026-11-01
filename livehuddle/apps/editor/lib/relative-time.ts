@@ -10,12 +10,12 @@
 //   formatRelativeTimeCompact  — ultra-compact ("2m ago"), comment threads.
 //   formatTimeLeftCompact      — the forward-looking countdown ("6d left")
 //                                for expiring share links (docs/specs/013-workspace/share-link-expiry.md).
-// The first two share their ladder, in @livediagram/ui (relative-time.ts).
+// The first two share their ladder, in @livehuddle/ui (relative-time.ts).
 
 import { useSyncExternalStore } from 'react';
 
-// The verbose and short ladders (and relativeSince) live in @livediagram/ui.
-export { formatRelativeTime, formatRelativeTimeShort, relativeSince } from '@livediagram/ui';
+// The verbose and short ladders (and relativeSince) live in @livehuddle/ui.
+export { formatRelativeTime, formatRelativeTimeShort, relativeSince } from '@livehuddle/ui';
 
 // Forward-looking compact countdown ("6d left" / "3h left"), used by
 // the Share dialog's expiring-link rows (docs/specs/013-workspace/share-link-expiry.md). Zero or negative

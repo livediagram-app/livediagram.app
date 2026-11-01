@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { BLANK_TEMPLATE_FOR_MODE } from '@livediagram/templates';
+import { BLANK_TEMPLATE_FOR_MODE } from '@livehuddle/templates';
 
 // An article that counts the editor modes must count the ones there are. Plan, Pages and Illustrate left, and the
 // Draw mode article's figure still said "the five modes" with three in the switch it drew. Every editor mode has a

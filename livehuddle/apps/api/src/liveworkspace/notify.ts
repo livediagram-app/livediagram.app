@@ -1,6 +1,6 @@
-// What livediagram's notification emails ask of liveworkspace (liveworkspace/docs/specs/003-accounts/accounts.md "Notification
+// What livehuddle's notification emails ask of liveworkspace (liveworkspace/docs/specs/003-accounts/accounts.md "Notification
 // emails"; the shared rules are @liveworkspace/auth-client's notify.ts): who gets one (a verified address and the
-// switch not off, for many people in two requests) and how many canvases someone has made (the index). livediagram
+// switch not off, for many people in two requests) and how many canvases someone has made (the index). livehuddle
 // keeps none of it. Neither throws: without the accounts Worker or the index, or when one can't be reached, each
 // answers as though there were nobody (and logs). A team's people are team-people.ts; the milestone claim
 // emails.ts.
@@ -8,13 +8,13 @@
 import { notificationRecipients } from '@liveworkspace/auth-client';
 import { countOwnedItems } from '@liveworkspace/index-client';
 import { isAllSetting } from '@liveworkspace/settings';
-import { isAccountIdShape } from '@livediagram/api-schema';
+import { isAccountIdShape } from '@livehuddle/api-schema';
 import { accountCredentials } from '../auth/accounts';
 import { indexApiUrl, INDEX_APP } from '../index-service';
 import type { Env } from '../types';
-import { LIVEDIAGRAM_SETTINGS_APP } from './settings';
+import { LIVEHUDDLE_SETTINGS_APP } from './settings';
 
-// The email switches livediagram reads at accounts (docs/specs/014-identity/profile-and-email-notifications.md).
+// The email switches livehuddle reads at accounts (docs/specs/014-identity/profile-and-email-notifications.md).
 export type NotifySetting =
   | 'notifyMilestones'
   | 'notifyDocumentJoin'
@@ -33,7 +33,7 @@ export async function notifyRecipients(
   if (!credentials || accounts.length === 0) return new Map();
   try {
     return await notificationRecipients(credentials, {
-      app: LIVEDIAGRAM_SETTINGS_APP,
+      app: LIVEHUDDLE_SETTINGS_APP,
       ids: accounts,
       setting,
       scope: isAllSetting(setting) ? 'all' : 'app',

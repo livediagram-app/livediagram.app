@@ -5,7 +5,7 @@ import {
   type Element,
   type SequenceElementMessage,
   type SequenceElementParticipant,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 
 // The sequence diagram's dialog writes (docs/specs/009-elements/sequence-diagram.md "The Sequence dialog"). Each is

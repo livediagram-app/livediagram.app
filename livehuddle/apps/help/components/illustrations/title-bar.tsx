@@ -157,7 +157,7 @@ export function TitleBarParts() {
         strokeLinejoin="round"
       />
       <Label x={40} y={y + 21} size={10} weight={600} tone="body">
-        livediagram
+        livehuddle
       </Label>
       <path
         d={`M102 ${y + 19} l3 3 l3 -3`}

@@ -6,24 +6,24 @@ import { vi } from 'vitest';
 import { WorkbenchBackButton, WorkbenchOpenLink, WorkbenchReconnectLine } from './WorkbenchChrome';
 
 // The workbench's chrome (docs/specs/013-workspace/blueprints/workbench-embeds.md "Presentation and UX",
-// "Accessibility"): Open in livediagram in the tab bar, and the Reconnect line once the session ended.
+// "Accessibility"): Open in livehuddle in the tab bar, and the Reconnect line once the session ended.
 
 describe('WorkbenchOpenLink', () => {
   it('links to the document in a new tab, named as such', () => {
     render(<WorkbenchOpenLink href="/document/doc%201" labelled />);
 
-    const link = screen.getByRole('link', { name: 'Open in livediagram (opens in a new tab)' });
+    const link = screen.getByRole('link', { name: 'Open in livehuddle (opens in a new tab)' });
     expect(link.getAttribute('href')).toBe('/document/doc%201');
     expect(link.getAttribute('target')).toBe('_blank');
     expect(link.getAttribute('rel')).toBe('noopener noreferrer');
-    expect(link.textContent).toBe('Open in livediagram');
+    expect(link.textContent).toBe('Open in livehuddle');
     expect(link.className).toContain('min-w-7');
   });
 
   it('is an icon alone where the bar has no room for words', () => {
     render(<WorkbenchOpenLink href="/document/d" labelled={false} />);
 
-    const link = screen.getByRole('link', { name: 'Open in livediagram (opens in a new tab)' });
+    const link = screen.getByRole('link', { name: 'Open in livehuddle (opens in a new tab)' });
     expect(link.textContent).toBe('');
   });
 });

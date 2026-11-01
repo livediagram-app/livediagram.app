@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { sentJson } from '@liveworkspace/vitest-config/sent-request';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';

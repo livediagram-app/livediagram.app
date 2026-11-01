@@ -6,7 +6,7 @@ import {
   CHANGESET_SUMMARY_MAX,
   type ChangesetRequest,
   type ChangesetResponse,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import { AGENT_PRODUCT } from './agent-product';
 import { baseFromCopy, recordCopy } from './copies';
 import type { VerbContext } from './define';

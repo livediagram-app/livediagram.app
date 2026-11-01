@@ -8,10 +8,10 @@
 // that mode's own start (Start Diagramming, Start Drawing, ...), where the templates are. Arrow keys move between the
 // cards, and 1 to 3 (printed on each card) choose one straight away.
 import { useEffect, useRef, type KeyboardEvent } from 'react';
-import { EDITOR_MODE_ICONS } from '@livediagram/ui';
-import { EDITOR_MODES, editorModeLabel, type EditorMode } from '@livediagram/document';
-import { PreviewFan } from '@livediagram/template-previews';
-import { isBlankTemplate, popularKindsFor, type TemplateKind } from '@livediagram/templates';
+import { EDITOR_MODE_ICONS } from '@livehuddle/ui';
+import { EDITOR_MODES, editorModeLabel, type EditorMode } from '@livehuddle/document';
+import { PreviewFan } from '@livehuddle/template-previews';
+import { isBlankTemplate, popularKindsFor, type TemplateKind } from '@livehuddle/templates';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 import { Spinner } from '@liveworkspace/workbench/components/palette/template-picker-icons';

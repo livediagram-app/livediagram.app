@@ -5,7 +5,7 @@
 // the store, so a selection change re-renders this and not the element layer around it.
 
 import type { ComponentProps } from 'react';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import { UnionResizeHandles } from '@/components/canvas/element-parts';
 import { NextNoteButtons } from '@/components/canvas/NextNoteButtons';
 import { QuickConnectPluses } from '@/components/canvas/QuickConnectPluses';

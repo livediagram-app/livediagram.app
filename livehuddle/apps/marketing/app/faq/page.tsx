@@ -1,5 +1,5 @@
 import { lucideBookOpen, lucideMail } from '@liveworkspace/icons/lucide';
-import { JsonLd, lucideGlyph, pageMetadata } from '@livediagram/ui';
+import { JsonLd, lucideGlyph, pageMetadata } from '@livehuddle/ui';
 
 import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { FaqBrowser } from '@/components/faq/FaqBrowser';
@@ -9,9 +9,9 @@ import { TryItCard } from '@/components/TryItCard';
 import { faqAnswerText } from '@liveworkspace/marketing-site/lib/faq';
 import { FAQ_CATEGORIES } from '@/lib/faq-content';
 
-const FAQ_TITLE = 'FAQ · livediagram';
+const FAQ_TITLE = 'FAQ · livehuddle';
 const FAQ_DESCRIPTION =
-  'Answers to common questions about livediagram: getting started, collaboration, sharing, AI and MCP, import and export, and privacy.';
+  'Answers to common questions about livehuddle: getting started, collaboration, sharing, AI and MCP, import and export, and privacy.';
 
 export const metadata = pageMetadata({
   title: FAQ_TITLE,
@@ -46,7 +46,7 @@ export default function FaqPage() {
         <FaqBrowser
           eyebrow="FAQ"
           title="Questions, answered"
-          lede="Everything you might want to know about livediagram, from your first diagram to getting help."
+          lede="Everything you might want to know about livehuddle, from your first diagram to getting help."
         />
 
         <section aria-labelledby="faq-more-title" className="mx-auto mt-20 max-w-6xl px-6">

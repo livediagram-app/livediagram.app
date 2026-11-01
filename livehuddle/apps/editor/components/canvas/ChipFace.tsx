@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { chipColours, chipLookOf, type ShapeElement } from '@livediagram/document';
+import { chipColours, chipLookOf, type ShapeElement } from '@livehuddle/document';
 
 // A badge or step number (docs/specs/009-elements/badge.md, step-number.md): the pill or disc in its look, and the
 // element's ordinary label centred on it in the look's text colour, so it edits, formats and exports like any label.

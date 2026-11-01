@@ -6,7 +6,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { AgendaItem, ShapeElement } from '@livediagram/document';
+import type { AgendaItem, ShapeElement } from '@livehuddle/document';
 import type { ComponentProps } from 'react';
 import { AgendaMenuSection, DecisionMenuSection } from './CollabMenuSections';
 

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { RemoteCursors } from '@liveworkspace/workbench/components/canvas/RemoteCursor';
-import { identityVars } from '@livediagram/ui';
+import { identityVars } from '@livehuddle/ui';
 import { participantKey } from '@/lib/identity';
 import { useStableHandlers } from '@liveworkspace/workbench/hooks/ui/useStableHandlers';
 import { idBound } from './element-layer-props';
@@ -25,7 +25,7 @@ import {
   createElementGridTracker,
   type ElementIndex,
   stackedElementIds,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
@@ -44,7 +44,7 @@ import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { ZoomedLaserOverlay } from '@/components/canvas/view-readers';
 import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { type LaneGutterEdge, type LaneLike } from '@livediagram/document';
+import { type LaneGutterEdge, type LaneLike } from '@livehuddle/document';
 
 // What a drawn arrow resolves its ends against on a board with no arrows yet.
 const EMPTY_ELEMENT_INDEX: ElementIndex = new Map();

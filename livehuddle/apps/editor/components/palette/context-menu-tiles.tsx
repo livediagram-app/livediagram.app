@@ -22,7 +22,7 @@ import {
   type IconWeight,
   type IconAnimation,
   type IconSize,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { AnimationPreviewTile } from '@/components/palette/AnimationPreviewTile';
 import {
@@ -35,7 +35,7 @@ import {
   useRevertOnUnmount,
 } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { IconPrims } from '@/components/primitives/icon-glyph';
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@livehuddle/ui';
 
 // Stable no-op so a tile grid without preview handlers (e.g. a future caller)
 // still calls useRevertOnUnmount unconditionally (hook-rule safe).

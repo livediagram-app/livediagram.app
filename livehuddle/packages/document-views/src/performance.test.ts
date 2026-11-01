@@ -6,7 +6,7 @@
 // counts the time spent waiting for a core, which pushed the ratio past its ceiling.
 import { describe, expect, it } from 'vitest';
 import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { buildViewModel } from './model';
 import { outlineView } from './outline';

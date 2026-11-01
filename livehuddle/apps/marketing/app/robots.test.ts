@@ -4,9 +4,9 @@ import robots from './robots';
 describe('robots.txt', () => {
   it('points crawlers at every sitemap on the origin', () => {
     expect(robots().sitemap).toEqual([
-      'https://www.livediagram.app/sitemap.xml',
-      'https://www.livediagram.app/help/sitemap.xml',
-      'https://www.livediagram.app/community/sitemap.xml',
+      'https://www.livehuddle.app/sitemap.xml',
+      'https://www.livehuddle.app/help/sitemap.xml',
+      'https://www.livehuddle.app/community/sitemap.xml',
     ]);
   });
 

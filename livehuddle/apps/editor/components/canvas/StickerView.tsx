@@ -1,4 +1,4 @@
-import { trustedHtml } from '@livediagram/ui';
+import { trustedHtml } from '@livehuddle/ui';
 // A sticker on the canvas (docs/specs/010-palette/stickers.md): the die-cut plate, its shadow, and the
 // emoji or badge on top, filling the element box.
 //

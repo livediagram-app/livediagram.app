@@ -7,7 +7,7 @@ import {
   removedFieldRemap,
   type EntityField,
   type FieldRemap,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { useFollowingDraft } from '@liveworkspace/workbench/hooks/ui/useFollowingDraft';
 import { EntityKeyGlyph } from '@/components/canvas/entity/EntityKeyGlyph';
 import {

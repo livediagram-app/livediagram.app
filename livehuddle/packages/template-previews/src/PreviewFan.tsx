@@ -1,4 +1,4 @@
-import type { TemplateKind } from '@livediagram/templates';
+import type { TemplateKind } from '@livehuddle/templates';
 import {
   PreviewFan as SharedFan,
   type PreviewFanProps,

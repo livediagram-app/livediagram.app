@@ -1,10 +1,10 @@
-// The OAuth clients livediagram ships itself (docs/specs/015-api/blueprints/cli.md "OAuth server", "The CLI's OAuth
+// The OAuth clients livehuddle ships itself (docs/specs/015-api/blueprints/cli.md "OAuth server", "The CLI's OAuth
 // client", CLI35, CLI36): its CLI client's id and name. The callbacks, the device grant and its user codes are every
 // product's, from @liveworkspace/api-kit/oauth. Shared by the MCP worker's authorization server, the editor's
 // /oauth/device page and the CLI.
 
-export const CLI_CLIENT_ID = 'livediagram-cli';
-export const CLI_CLIENT_NAME = 'livediagram CLI';
+export const CLI_CLIENT_ID = 'livehuddle-cli';
+export const CLI_CLIENT_NAME = 'livehuddle CLI';
 
 export {
   CLI_REDIRECT_URIS,

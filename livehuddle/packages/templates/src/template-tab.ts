@@ -1,9 +1,9 @@
 // Template tabs for the authoring paths outside the editor (docs/specs/015-api/mcp-server.md §4.5,
 // docs/specs/024-agents/edit-operations.md): the MCP's `template` argument and a changeset's
-// `replace` body. Here rather than in @livediagram/document because the catalogue lives here and
+// `replace` body. Here rather than in @livehuddle/document because the catalogue lives here and
 // this package already imports the document one (the reverse would be a cycle).
 
-import { buildTab, stampTabKind, type Tab } from '@livediagram/document';
+import { buildTab, stampTabKind, type Tab } from '@livehuddle/document';
 import { buildTemplate } from './build-template';
 import { TEMPLATES, templateKindOf, type TemplateKind } from './templates';
 import { templateCanvasOverrides } from './template-canvas-overrides';

@@ -6,7 +6,7 @@
 // Pure: takes a centre (cx, cy), returns a fresh Element[]. Built from the
 // shared retro kit (template-retro-kit.ts) the other retro formats use too.
 
-import { createShape, createSticky, createText, type Element } from '@livediagram/document';
+import { createShape, createSticky, createText, type Element } from '@livehuddle/document';
 import {
   actionChecklist,
   actionsColumn,

@@ -1,8 +1,8 @@
 // Pure Tab helpers lifted out of editor-page.tsx to slim the page
 // component. No React, no editor state — just shape transforms on
 // Tab[] used by the document-hydration + autosave paths.
-import type { Tab } from '@livediagram/document';
-import type { AccessLevel } from '@livediagram/api-schema';
+import type { Tab } from '@livehuddle/document';
+import type { AccessLevel } from '@livehuddle/api-schema';
 
 export function createTab(name: string): Tab {
   // New tabs (and a new document's first tab) default the per-tab text size

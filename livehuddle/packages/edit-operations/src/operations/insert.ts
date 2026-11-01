@@ -2,8 +2,8 @@
 // "Operations", EO32, EO33): the node sits between a and b on their axis, room is made for it beyond
 // the midline, the a→b arrow ends at the node, and a new arrow from the node to b copies its style.
 
-import type { EditRejection } from '@livediagram/api-schema';
-import type { ArrowElement, BoxedElement } from '@livediagram/document';
+import type { EditRejection } from '@livehuddle/api-schema';
+import type { ArrowElement, BoxedElement } from '@livehuddle/document';
 import { describeElement } from '../element-text';
 import { mintId } from '../ids';
 import { makeRoom, type Axis } from '../make-room';

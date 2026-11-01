@@ -17,7 +17,7 @@ import {
   createText,
   type Element,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   STRIDE_CATEGORIES,
   THREAT_EXAMPLES,

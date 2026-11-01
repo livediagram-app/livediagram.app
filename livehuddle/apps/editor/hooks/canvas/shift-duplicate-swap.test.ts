@@ -5,7 +5,7 @@ import {
   type ShiftDupSwap,
   type ShiftDuplicateSwapArgs,
 } from './shift-duplicate-swap';
-import { createArrow, createShape, type Element } from '@livediagram/document';
+import { createArrow, createShape, type Element } from '@livehuddle/document';
 
 // Real factory output, re-keyed to a readable id: hand-rolled literals drift
 // from the Element union the moment a required field is added.

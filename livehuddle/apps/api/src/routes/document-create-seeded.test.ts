@@ -5,7 +5,7 @@ import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 import { asUser } from './test-route-context';
 import { compileSeededTabs, seedIntentOf } from './document-seed';
-import { indexIntentOf } from '@livediagram/api-schema';
+import { indexIntentOf } from '@livehuddle/api-schema';
 
 // A create's seeded tabs given as a graph, Mermaid or a template (docs/specs/015-api/api.md): compiled by
 // applyReplace before anything is written, the intent derived from the first, a refusal naming the tab.

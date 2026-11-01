@@ -6,9 +6,9 @@ import type {
   StickyElement,
   TableElement,
   TextElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape, DEFAULT_BACKGROUND_COLOR } from '@livediagram/document';
+import { createPinnedArrow, createShape, DEFAULT_BACKGROUND_COLOR } from '@livehuddle/document';
 import {
   THEMES,
   deriveNewBoxedColours,
@@ -27,7 +27,7 @@ import {
   tableColorPresets,
   type ThemeDefinition,
 } from './themes';
-import { encodeStrokePoints } from '@livediagram/document';
+import { encodeStrokePoints } from '@livehuddle/document';
 
 describe('THEMES catalogue', () => {
   it('has a unique id per theme', () => {

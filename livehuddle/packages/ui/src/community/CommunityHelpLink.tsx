@@ -2,7 +2,7 @@
 
 import type { ComponentProps } from 'react';
 import { CommunityHelpLink as SharedLink } from '@liveworkspace/community-ui/links';
-import { siteTrack } from '@livediagram/telemetry-client';
+import { siteTrack } from '@livehuddle/telemetry-client';
 
 const trackHelp = (telemetryId: string) => siteTrack('UI', 'Opened', telemetryId);
 

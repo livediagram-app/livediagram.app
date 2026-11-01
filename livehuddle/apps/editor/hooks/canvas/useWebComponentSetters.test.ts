@@ -13,7 +13,7 @@ import {
   type Element,
   type ImageElement,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 const track = vi.fn<typeof import('@/lib/telemetry').track>();
 vi.mock('@/lib/telemetry', () => ({

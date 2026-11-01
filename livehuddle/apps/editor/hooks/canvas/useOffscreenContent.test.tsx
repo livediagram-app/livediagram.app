@@ -2,7 +2,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createArrow, createShape, type Element } from '@livediagram/document';
+import { createArrow, createShape, type Element } from '@livehuddle/document';
 import { useOffscreenContent } from './useOffscreenContent';
 
 beforeEach(() =>

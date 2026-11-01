@@ -5,8 +5,8 @@ import {
   DOCUMENT_OPEN_HEADER,
   type TabResponse,
   type TabSummary,
-} from '@livediagram/api-schema';
-import { normalizeTable, type CommentMention, type Tab } from '@livediagram/document';
+} from '@livehuddle/api-schema';
+import { normalizeTable, type CommentMention, type Tab } from '@livehuddle/document';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import {
   isOfflineId,

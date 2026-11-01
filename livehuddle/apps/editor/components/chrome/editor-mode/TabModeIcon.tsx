@@ -1,5 +1,5 @@
-import { EDITOR_MODE_ICONS } from '@livediagram/ui';
-import { opensInOf } from '@livediagram/document';
+import { EDITOR_MODE_ICONS } from '@livehuddle/ui';
+import { opensInOf } from '@livehuddle/document';
 import type { CSSProperties } from 'react';
 import type { EditorModeTab } from '@/lib/editor-mode-store';
 

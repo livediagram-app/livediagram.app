@@ -12,7 +12,7 @@ import {
   type WorkbenchTicketRequest,
   type WorkbenchTicketResponse,
   type WorkbenchWorkspaceTicketResponse,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import { readLibraries } from '../find-documents';
 import { folderChoices, resolveFolderRef } from '../folders';
 import { AddressError, parseDocumentUrl, resolveDocument } from '../addressing';
@@ -73,14 +73,14 @@ function checkScope(input: { doc?: string; workspace?: boolean; tab?: string; fo
   if (workspace === (input.doc !== undefined))
     throw usageRefusal(
       'name a document, or --workspace',
-      `livediagram workbench open --workspace --origin ${EXAMPLE_ORIGIN}`,
+      `livehuddle workbench open --workspace --origin ${EXAMPLE_ORIGIN}`,
     );
   if (workspace && input.tab !== undefined)
     throw usageRefusal('--tab opens a tab of a document, not of the workspace', 'drop --tab');
   if (!workspace && input.folder !== undefined)
     throw usageRefusal(
       '--folder takes --workspace',
-      `livediagram workbench open --workspace --folder <f>`,
+      `livehuddle workbench open --workspace --folder <f>`,
     );
 }
 
@@ -112,7 +112,7 @@ export const workbenchOpen = defineVerb({
     doc: z
       .string()
       .optional()
-      .describe('A name, id prefix or livediagram URL of your own document; or --workspace'),
+      .describe('A name, id prefix or livehuddle URL of your own document; or --workspace'),
     workspace: z.boolean().optional().describe('The whole workspace, in the Explorer'),
     folder: z
       .string()
@@ -152,7 +152,7 @@ export const workbenchOpen = defineVerb({
         input: input.doc,
         candidates: [],
         message: 'a workbench opens your own documents, not a share link',
-        hint: 'livediagram document ls',
+        hint: 'livehuddle document ls',
       });
     }
     const request = await ticketRequestOf(ctx, { doc: input.doc, tab: input.tab }, origin);
@@ -164,8 +164,8 @@ export const workbenchOpen = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      `livediagram workbench open "Home screen" --origin ${EXAMPLE_ORIGIN} --json`,
-      `livediagram workbench open --workspace --folder Minigames --origin ${EXAMPLE_ORIGIN} --json`,
+      `livehuddle workbench open "Home screen" --origin ${EXAMPLE_ORIGIN} --json`,
+      `livehuddle workbench open --workspace --folder Minigames --origin ${EXAMPLE_ORIGIN} --json`,
     ],
     prints:
       'the link; --json { url, documentId, tabId, expiresAt }, or with --workspace { url, scope, folderId, expiresAt }',
@@ -197,7 +197,7 @@ async function mint<T>(
       message: pairFlag
         ? 'this workbench is not paired with your token for your whole workspace'
         : 'this workbench is not paired with your token',
-      hint: `livediagram workbench pair --origin ${request.origin}${pairFlag}`,
+      hint: `livehuddle workbench pair --origin ${request.origin}${pairFlag}`,
     });
   }
 }
@@ -248,8 +248,8 @@ export const workbenchPair = defineVerb({
   cli: {
     positionals: [],
     examples: [
-      `livediagram workbench pair --origin ${EXAMPLE_ORIGIN} --name "Acme Editor"`,
-      `livediagram workbench pair --origin ${EXAMPLE_ORIGIN} --workspace`,
+      `livehuddle workbench pair --origin ${EXAMPLE_ORIGIN} --name "Acme Editor"`,
+      `livehuddle workbench pair --origin ${EXAMPLE_ORIGIN} --workspace`,
     ],
     prints: 'the approval link, then paired <origin> [as <name>]',
   },

@@ -17,7 +17,7 @@ import {
   type Tab,
   frameHeadingRect,
   type Rect,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { lintTab } from '../lint';
 import { prepareLintContext } from '../context';
 

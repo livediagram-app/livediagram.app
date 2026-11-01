@@ -4,7 +4,7 @@
 // browse with its memory.
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { EditorMode } from '@livediagram/document';
+import type { EditorMode } from '@livehuddle/document';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';

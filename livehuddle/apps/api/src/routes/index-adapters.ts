@@ -1,7 +1,7 @@
 // What the routes an API client (the MCP server, the CLI, any script with an `lwt_` token) still calls on this
 // api share, answering from the index (liveworkspace/docs/specs/004-index/one-explorer.md): the index as the caller reaches it, its
 // refusals as this api answers them, its pages read in full, and its shapes as the clients have always read them
-// (@livediagram/api-schema). Where a document is filed, its Trash and its sharing are the index's; the doors are:
+// (@livehuddle/api-schema). Where a document is filed, its Trash and its sharing are the index's; the doors are:
 //
 //   GET    /api/documents, DELETE /api/documents/:id, POST /api/documents/:id/copy|share   document-index-routes.ts
 //   GET    /api/share/:code                                                            share.ts
@@ -24,8 +24,8 @@ import {
   type Folder,
   type DocumentSummary,
   type ShareLink,
-} from '@livediagram/api-schema';
-import { isEditorMode } from '@livediagram/document';
+} from '@livehuddle/api-schema';
+import { isEditorMode } from '@livehuddle/document';
 import { recordedIntentOf } from '../document-intent-row';
 import { INDEX_APP, indexFor } from '../index-service';
 import { json } from '../responses';

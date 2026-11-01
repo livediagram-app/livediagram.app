@@ -7,7 +7,7 @@ import {
   type Element,
   type ShapeKind,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { arrowBetween, shapeAt, strokeAt } from './build';
 
 const STATE_KINDS: [ShapeKind, Record<string, unknown>][] = [

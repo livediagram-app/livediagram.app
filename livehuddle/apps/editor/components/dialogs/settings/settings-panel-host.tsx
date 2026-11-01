@@ -6,7 +6,7 @@ import {
   settingsPanelApp,
   type SettingsAppId,
 } from '@liveworkspace/settings-ui';
-import { BrandMark } from '@livediagram/ui';
+import { BrandMark } from '@livehuddle/ui';
 import { APP_SITES, PLATFORM_SITE, siteOfApp, workspaceOriginFor } from '@liveworkspace/sites';
 import { currentBearer } from '@/lib/api/core';
 
@@ -16,7 +16,9 @@ import { currentBearer } from '@/lib/api/core';
 // this app's router (`/api/workspace/account`), with the person's access token, as the Explorer panel's teams are;
 // nothing is asked (or loaded) until All is first chosen, and what is read is kept for the page's lifetime.
 export const SETTINGS_APP = settingsPanelApp({
-  ...siteOfApp('livediagram'),
+  ...siteOfApp('livehuddle'),
+  // The Settings panel holds livehuddle out until launch, so the fork borrows livediagram's catalogue and scope
+  // until livehuddle has a held catalogue of its own.
   id: 'livediagram.app',
 });
 

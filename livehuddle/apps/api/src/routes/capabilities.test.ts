@@ -54,13 +54,13 @@ describe('the CLI fields (docs/specs/015-api/blueprints/cli.md "Capabilities")',
   it('reports sign-in, an https issuer as its origin, and a well-formed version floor', async () => {
     const caps = await capabilities({
       ACCOUNTS_URL: 'https://accounts.example',
-      API_RESOURCE: 'https://livediagram.example/api',
-      OAUTH_ISSUER: 'https://mcp.livediagram.app/',
+      API_RESOURCE: 'https://livehuddle.example/api',
+      OAUTH_ISSUER: 'https://mcp.livehuddle.app/',
       CLI_MIN_VERSION: ' 1.2.3 ',
     });
     expect(caps).toMatchObject({
       authEnabled: true,
-      oauthIssuer: 'https://mcp.livediagram.app',
+      oauthIssuer: 'https://mcp.livehuddle.app',
       cli: { minVersion: '1.2.3' },
     });
   });

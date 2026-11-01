@@ -3,16 +3,16 @@ import type {
   ChangesetWritten,
   EditRejection,
   LintReport,
-} from '@livediagram/api-schema';
-import { lintFooterPart } from '@livediagram/diagram-lint';
-import { migrateIncomingTab, preferNewerQaAll, type Tab } from '@livediagram/document';
+} from '@livehuddle/api-schema';
+import { lintFooterPart } from '@livehuddle/diagram-lint';
+import { migrateIncomingTab, preferNewerQaAll, type Tab } from '@livehuddle/document';
 import {
   applyEditOperations,
   applyReplace,
   formatResultFooter,
   formatResultLines,
   type ApplySuccess,
-} from '@livediagram/edit-operations';
+} from '@livehuddle/edit-operations';
 import { rewriteCommentAuthors } from '../comments';
 import { lastChangesetRev } from '../db';
 import { capStoredName } from '../names';

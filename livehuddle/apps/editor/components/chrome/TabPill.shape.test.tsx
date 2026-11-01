@@ -5,7 +5,7 @@
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import { TabPill, type TabPillCtx } from './TabPill';
 
 function ctx(over: Partial<TabPillCtx> = {}): TabPillCtx {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ChangesetSummary, LintReport } from '@livediagram/api-schema';
+import type { ChangesetSummary, LintReport } from '@livehuddle/api-schema';
 import { contextOf, DOC_A, DOC_C, fakeApi, library, tabsOfA } from '../testing/fake-api';
 import { changesetLs, changesetRevert, changesetShow } from './changeset';
 import { documentLs, documentView } from './document';
@@ -78,7 +78,7 @@ describe('document view', () => {
       [`/documents/${DOC_C}?view=overview`]: { text: 'document Shop' },
     });
     await documentView.run!(contextOf(api, codes), {
-      doc: 'https://www.livediagram.app/document/shared?s=abc123',
+      doc: 'https://www.livehuddle.app/document/shared?s=abc123',
     });
     expect(codes).toEqual(['abc123']);
   });

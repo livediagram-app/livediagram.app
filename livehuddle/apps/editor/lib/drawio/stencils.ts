@@ -1,4 +1,4 @@
-// Vendor stencils and library images with a clear livediagram icon
+// Vendor stencils and library images with a clear livehuddle icon
 // (docs/specs/020-import-export/drawio-import.md "stencils, icons and unmatched
 // shapes"). Pure data plus the lookups over it; the names are draw.io's
 // identifiers, taken from its shape libraries.

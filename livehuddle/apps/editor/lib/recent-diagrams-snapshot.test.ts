@@ -6,7 +6,7 @@ import {
   RECENT_DIAGRAMS_KEY,
   RECENT_THUMBS_CACHE,
   RECENT_THUMBS_CACHE_LEGACY,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { forgetRecentDiagrams } from './recent-diagrams-snapshot';
 

@@ -2,7 +2,7 @@
 
 import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { useEffect, useRef, type RefObject } from 'react';
-import { clamp } from '@livediagram/document';
+import { clamp } from '@livehuddle/document';
 import { ZOOM_MIN, ZOOM_MAX } from '@/lib/canvas';
 import { WHEEL_SETTLE_MS, beginCanvasGesture } from '@/lib/canvas-gesture';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';

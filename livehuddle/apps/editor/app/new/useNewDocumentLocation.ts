@@ -20,7 +20,7 @@ const answered = (s: {
 
 // Where /new stores a new document (docs/specs/006-document/save-locations.md "The default depends on who is
 // creating"); nobody is asked. Every create decides once, at commit: a `/new?folder=` / `?team=` context names a server
-// place, so it is livediagram whoever is creating; otherwise a guest is known at once and never waits, and a browser
+// place, so it is livehuddle whoever is creating; otherwise a guest is known at once and never waits, and a browser
 // that looks signed in (the `ld_signed_in` hint, docs/specs/014-identity/auth-and-guest-access.md "Who is a guest,
 // before sign-in answers") waits for identity (`settle`, the page's own wait) and then reads the settled answer, so a
 // signed-in person is never handed a document in This Browser.
@@ -40,7 +40,7 @@ export function useNewDocumentLocation(opts: {
     // screen"); null follows the default.
     chosen: SaveLocationId | null = null,
   ): Promise<SaveLocationId> => {
-    if (hasPlacementParams) return 'livediagram';
+    if (hasPlacementParams) return 'livehuddle';
     if (chosen) return chosen;
     // A browser that looks signed in waits for its session's own answer: the page's 5 s give-up settles
     // `authLoaded` with no one in it, and reading that as a guest made a signed-in person's create This Browser.

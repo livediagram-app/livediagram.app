@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useSyncExternalStore } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
-import type { PageToWorkbenchMessage, WorkbenchToPageMessage } from '@livediagram/api-schema';
+import type { PageToWorkbenchMessage, WorkbenchToPageMessage } from '@livehuddle/api-schema';
 import {
   useWorkbenchSession,
   WorkbenchSessionContext,
@@ -164,14 +164,14 @@ describe('WorkspaceFrame', () => {
 
     expect(screen.getByText(/explorer/)).toBeTruthy();
     expect(send.mock.calls[0]![0]).toEqual({
-      type: 'livediagram:ready',
+      type: 'livehuddle:ready',
       v: 1,
       scope: 'workspace',
       role: 'edit',
     });
-    expect(sent('livediagram:place')).toEqual([
+    expect(sent('livehuddle:place')).toEqual([
       {
-        type: 'livediagram:place',
+        type: 'livehuddle:place',
         v: 1,
         view: 'home',
         folderId: null,
@@ -192,9 +192,9 @@ describe('WorkspaceFrame', () => {
     mount();
 
     expect(screen.getByText('explorer folder f1')).toBeTruthy();
-    expect(sent('livediagram:place')).toEqual([]);
+    expect(sent('livehuddle:place')).toEqual([]);
     fireEvent.click(screen.getByRole('button', { name: 'list in' }));
-    expect(sent('livediagram:place')).toMatchObject([
+    expect(sent('livehuddle:place')).toMatchObject([
       { view: 'folder', folderId: 'f1', folderName: 'Specs', documentCount: 0 },
     ]);
   });
@@ -203,7 +203,7 @@ describe('WorkspaceFrame', () => {
     mount();
 
     act(() =>
-      listeners.forEach((l) => l({ type: 'livediagram:open', v: 1, to: { documentId: 'doc-1' } })),
+      listeners.forEach((l) => l({ type: 'livehuddle:open', v: 1, to: { documentId: 'doc-1' } })),
     );
 
     expect(window.location.pathname).toBe('/embed/workbench/document/doc-1');
@@ -218,8 +218,8 @@ describe('WorkspaceFrame', () => {
     expect(screen.getByText('editor workbench on doc-2 by CODE2345')).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'report' }));
-    expect(sent('livediagram:place').at(-1)).toEqual({
-      type: 'livediagram:place',
+    expect(sent('livehuddle:place').at(-1)).toEqual({
+      type: 'livehuddle:place',
       v: 1,
       view: 'document',
       folderId: null,
@@ -241,13 +241,11 @@ describe('WorkspaceFrame', () => {
     mount();
 
     act(() =>
-      listeners.forEach((l) => l({ type: 'livediagram:open', v: 1, to: { folderId: 'f1' } })),
+      listeners.forEach((l) => l({ type: 'livehuddle:open', v: 1, to: { folderId: 'f1' } })),
     );
     expect(window.location.pathname).toBe('/embed/workbench/explorer/folder/f1');
 
-    act(() =>
-      listeners.forEach((l) => l({ type: 'livediagram:open', v: 1, to: { view: 'home' } })),
-    );
+    act(() => listeners.forEach((l) => l({ type: 'livehuddle:open', v: 1, to: { view: 'home' } })));
     expect(window.location.pathname).toBe('/embed/workbench/explorer');
   });
 });

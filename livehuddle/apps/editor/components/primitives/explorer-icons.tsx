@@ -8,7 +8,7 @@ import {
   PlusIcon as SharedPlusIcon,
   SparkleIcon as SharedSparkleIcon,
   TrashIcon as SharedTrashIcon,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 import {
   lucideAppWindow,
   lucideClock,
@@ -38,7 +38,7 @@ import {
 // FolderSolidIcon (the page's filled folder, which morphs open) and
 // FolderOutlineIcon (the line folder of the panel tree and the menus).
 //
-// The close / dismiss X is not here: it is CloseIcon in @livediagram/ui.
+// The close / dismiss X is not here: it is CloseIcon in @livehuddle/ui.
 
 type IconProps = { size?: number };
 
@@ -93,8 +93,8 @@ export const ShareIcon = lucideGlyph(lucideShare2, 13);
 export const ImageIcon = lucideGlyph(lucideImage, 13);
 // Three shapes: the Shape libraries section (docs/specs/013-workspace/shape-libraries.md).
 export const ShapesIcon = lucideGlyph(lucideShapes, 13);
-// A team: one drawing, shared with the landing page (@livediagram/ui).
-export { TeamIcon } from '@livediagram/ui';
+// A team: one drawing, shared with the landing page (@livehuddle/ui).
+export { TeamIcon } from '@livehuddle/ui';
 // The sidebar rows of docs/specs/013-workspace/explorer-structure.md: Home (the Timeline), My
 // documents (a root folder), Library, and This Browser (a browser window).
 export const HomeIcon = lucideGlyph(lucideHouse, 13);
@@ -102,7 +102,7 @@ export const ThisBrowserIcon = lucideGlyph(lucideAppWindow, 13);
 
 // ---------- Verbs ----------------------------------------------------
 
-// The shared verbs from @livediagram/ui, at this set's default sizes.
+// The shared verbs from @livehuddle/ui, at this set's default sizes.
 export function PlusIcon({ size = 12 }: IconProps) {
   return <SharedPlusIcon size={size} />;
 }

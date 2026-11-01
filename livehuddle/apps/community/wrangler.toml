@@ -1,5 +1,5 @@
-name = "livediagram-community"
-# The liveworkspace Cloudflare account, which also hosts livediagram.app, so a deploy can never land on another one.
+name = "livehuddle-community"
+# The liveworkspace Cloudflare account, which also hosts livehuddle.app, so a deploy can never land on another one.
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 compatibility_date = "2026-05-29"
 
@@ -23,13 +23,13 @@ run_worker_first = ["/post", "/post/", "/sitemap.xml"]
 COMMUNITY_URL = "https://www.liveworkspace.app/api/community"
 
 # Staging (docs/specs/016-platform/staging-environment.md): `wrangler deploy --env staging` deploys
-# the same static `./out` as `livediagram-community-staging`. The build that fills `out/` is a
+# the same static `./out` as `livehuddle-community-staging`. The build that fills `out/` is a
 # different one (staging bakes its own NEXT_PUBLIC_* values), so the two never share an artifact.
 #
 # `[assets]` is restated so this block reads as the complete description of the staging worker. The
 # name is explicit because the router's service bindings depend on this exact string.
 [env.staging]
-name = "livediagram-community-staging"
+name = "livehuddle-community-staging"
 
 [env.staging.assets]
 directory = "./out"

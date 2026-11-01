@@ -10,7 +10,7 @@ describe('explorer host', () => {
   });
 
   it('opens a canvas here and another app’s item on its own site', () => {
-    expect(itemHref({ id: 'p1', app: 'livediagram', sharedVia: null } as never)).toBe(
+    expect(itemHref({ id: 'p1', app: 'livehuddle', sharedVia: null } as never)).toBe(
       '/document/p1',
     );
     const elsewhere = itemHref({ id: 'd1', app: 'livedocuments', sharedVia: 'CODE' } as never);
@@ -19,7 +19,7 @@ describe('explorer host', () => {
   });
 
   it('links an Inbox row the way the editor reads it back', () => {
-    const doc = { id: 'p1', app: 'livediagram', sharedVia: null } as never;
+    const doc = { id: 'p1', app: 'livehuddle', sharedVia: null } as never;
     const hashOf = (href: string) => href.slice(href.indexOf('#'));
     const action = itemHref(doc, { tabId: 't 1', elementId: 'e1', open: 'action' });
     expect(action).toBe('/document/p1#t=t+1&el=e1&open=action');

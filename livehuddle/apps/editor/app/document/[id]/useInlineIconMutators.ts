@@ -1,4 +1,4 @@
-import { withInlineIcon, type Element } from '@livediagram/document';
+import { withInlineIcon, type Element } from '@livehuddle/document';
 
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { track } from '@/lib/telemetry';

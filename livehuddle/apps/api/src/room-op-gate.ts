@@ -6,7 +6,7 @@ import {
   isSystemOpKind,
   parseAvatarSay,
   parseStoredLevel,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import { answersAsSelf } from './document-room-rules';
 import { scopedRenames, scopedSenderMayRelay } from './room-scope';
 

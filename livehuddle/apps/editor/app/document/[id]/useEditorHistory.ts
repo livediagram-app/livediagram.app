@@ -1,4 +1,4 @@
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@livehuddle/document';
 import { announce } from '@liveworkspace/workbench/lib/announcer';
 import { track } from '@/lib/telemetry';
 

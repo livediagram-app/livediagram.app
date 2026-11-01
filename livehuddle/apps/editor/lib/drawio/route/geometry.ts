@@ -4,7 +4,7 @@
 // (mxgraph/src/util/mxUtils.js, mxConstants.js; Apache-2.0). Each function names its source.
 // Units are draw.io's own: the view at scale 1, translate 0.
 
-import { boundsOfPoints } from '@livediagram/document';
+import { boundsOfPoints } from '@livehuddle/document';
 
 export type Pt = { x: number; y: number };
 export type Box = { x: number; y: number; width: number; height: number };

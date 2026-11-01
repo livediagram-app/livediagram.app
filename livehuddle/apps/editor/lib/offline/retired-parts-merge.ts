@@ -2,7 +2,7 @@
 // "Moving retired parts to the other apps", "Writing `keep` back"), without undoing anything done since the
 // set-aside. Pure.
 
-import { migrateStoredTab, stampTabKind, type Tab } from '@livediagram/document';
+import { migrateStoredTab, stampTabKind, type Tab } from '@livehuddle/document';
 import type { OfflineDocumentRecord } from './offline-store';
 import type { RetiredPartsRecord } from './retired-parts';
 import { RETIRED_RECORD_FIELDS } from './retired-parts-upgrade';

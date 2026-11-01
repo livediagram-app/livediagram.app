@@ -6,7 +6,7 @@ import {
   MAX_SHAPE_LIBRARY_ITEMS,
   MAX_TAB_BYTES,
   type ShapeLibraryItem,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import { testPersonStores } from '../test-person-store';
 import type { Env } from '../types';
 import type { RouteContext } from './context';

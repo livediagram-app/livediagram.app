@@ -217,7 +217,7 @@ export function qaView(notes: QaNote[] | undefined): QaView {
 // voted for. One-way and per-board, so the published value is neither a
 // credential nor a way to follow a person between boards.
 export async function qaVoterId(ownerId: string, elementId: string): Promise<string> {
-  const bytes = new TextEncoder().encode(`livediagram:qa-vote:v1:${ownerId}:${elementId}`);
+  const bytes = new TextEncoder().encode(`livehuddle:qa-vote:v1:${ownerId}:${elementId}`);
   const digest = await sha256(bytes);
   return Array.from(digest.slice(0, 8), (b) => b.toString(16).padStart(2, '0')).join('');
 }

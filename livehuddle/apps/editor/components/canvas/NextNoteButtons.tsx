@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { PlusIcon, Tooltip, withArticle } from '@livediagram/ui';
+import { PlusIcon, Tooltip, withArticle } from '@livehuddle/ui';
 import {
   ES_NOTE_GAP,
   eventStormingKindOf,
@@ -11,7 +11,7 @@ import {
   type Element,
   type EsSide,
   type EventStormingNoteKind,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { NoteGhost } from '@/components/canvas/NoteGhost';
 
 // The next-note buttons (docs/specs/021-event-storming/event-storming.md Phase 7): on each side of the SELECTED note

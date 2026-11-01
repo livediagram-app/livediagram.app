@@ -6,7 +6,7 @@ import {
 } from '@liveworkspace/workbench/components/chrome/chrome-button';
 import { TourOfferButton } from '@liveworkspace/workbench/components/tour/TourOfferButton';
 import { SettingsIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
-import { REPO_URL, HoverCard } from '@livediagram/ui';
+import { REPO_URL, HoverCard } from '@livehuddle/ui';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
 // the Explorer's bottom bar (docs/specs/007-editor/editor-app.md): search, the open-source GitHub
@@ -70,7 +70,7 @@ export function ChromeControls({
           <span className="hidden sm:contents">
             <HoverCard
               title="Source on GitHub"
-              description="View livediagram's open-source code on GitHub."
+              description="View livehuddle's open-source code on GitHub."
             >
               <a
                 href={REPO_URL}

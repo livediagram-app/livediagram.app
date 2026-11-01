@@ -10,7 +10,7 @@ import {
   isBoxed,
   type ShapeElement,
   visibleLayerElements,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { useAvatarSpeech } from '@liveworkspace/avatar/hooks/useAvatarSpeech';
 import { useSpeechBubbles } from '@liveworkspace/avatar/speech-store';
@@ -25,9 +25,9 @@ import {
   nearestSeat,
   drinkFrom,
   seatingFacing,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { useAvatarConfig } from '@liveworkspace/avatar/hooks/useAvatarConfig';
-import type { Reaction } from '@livediagram/document';
+import type { Reaction } from '@livehuddle/document';
 import { usePortalTravel } from '@/components/canvas/portal-travel';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';

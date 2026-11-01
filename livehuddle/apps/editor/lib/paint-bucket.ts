@@ -14,7 +14,7 @@ import {
   samplePath,
   type Element,
   type FreehandElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { inPointsBox, insideLoop } from '@liveworkspace/model-core/stroke-loop';
 import { supportsQuickSection } from './quick-style';
 import { applyFillColorToEl } from './style-presets';

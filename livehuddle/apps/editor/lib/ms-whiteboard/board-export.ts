@@ -1,4 +1,4 @@
-import { isRecord } from '@livediagram/document';
+import { isRecord } from '@livehuddle/document';
 // Finding and reading board exports (docs/specs/020-import-export/whiteboard-import.md "The board
 // export"): a board is a folder holding manifest.json, session.json and changes.json.
 

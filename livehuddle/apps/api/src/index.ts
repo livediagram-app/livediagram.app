@@ -7,9 +7,9 @@ import { getPersonIdentity } from './auth/accounts';
 import { AccountsUnavailable, type ResolvedApiToken } from './db/api-tokens';
 import { handleAuth } from './routes/auth';
 import { resolveApiToken } from './db';
-import { apiRouteLabel, bearerTokenOf, errorTypeToken } from '@livediagram/api-schema';
-import { isWorkbenchSessionFormat, WORKBENCH_SESSION_PREFIX } from '@livediagram/api-schema';
-import { hasApiTokenPrefix, isApiTokenFormat } from '@livediagram/api-schema';
+import { apiRouteLabel, bearerTokenOf, errorTypeToken } from '@livehuddle/api-schema';
+import { isWorkbenchSessionFormat, WORKBENCH_SESSION_PREFIX } from '@livehuddle/api-schema';
+import { hasApiTokenPrefix, isApiTokenFormat } from '@livehuddle/api-schema';
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
 import { DocumentRoom } from './document-room/document-room';
@@ -96,11 +96,11 @@ async function routeApiRequest(
 
   // Workbench pairing, tickets and sessions are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the router sends
   // /api/workbench/* there itself; a caller that reaches this api directly (the CLI against `wrangler dev`) is
-  // forwarded the same way, as livediagram, before identity, since accounts checks the credential.
+  // forwarded the same way, as livehuddle, before identity, since accounts checks the credential.
   if (segments[1] === 'workbench') {
     const forwarded = env.ACCOUNTS_URL
       ? routeToWorkspace(request, {
-          app: 'livediagram',
+          app: 'livehuddle',
           origin: env.ACCOUNTS_URL,
           routes: [WORKBENCH_ROUTE],
         })
@@ -127,7 +127,7 @@ async function routeApiRequest(
     const bearer = bearerTokenOf(request.headers.get('Authorization'));
     // A bearer that carries the token prefix claims to be a token even when it is cut short or mistyped (a
     // copy-paste slip): it is refused as one below, never read as a guest or handed to the account path. A token
-    // carried over from the old livediagram.app (`lvd_`, @liveworkspace/api-kit api-token.ts) takes the same path.
+    // carried over from the old livehuddle.app (`lvd_`, @liveworkspace/api-kit api-token.ts) takes the same path.
     if (bearer && hasApiTokenPrefix(bearer)) {
       // The token is the liveworkspace account's, checked with liveworkspace (db/api-tokens.ts). When
       // liveworkspace can't answer, the token is neither good nor bad: 503, so a client retries rather
@@ -371,7 +371,7 @@ async function routeApiRequest(
       return await handlePreferences(ctx);
     case 'participants':
       return await handleParticipants(ctx);
-    // The one-time doors of the move from the old livediagram.app (docs/migration.md step 6).
+    // The one-time doors of the move from the old livehuddle.app (docs/migration.md step 6).
     case 'legacy-guest':
       return await handleLegacyGuestClaim(ctx);
     case 'migration':

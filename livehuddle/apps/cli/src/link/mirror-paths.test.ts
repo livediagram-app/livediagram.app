@@ -34,24 +34,24 @@ describe('mirrorPathFor', () => {
   const doc = { id: 'abcdef12-3456', name: 'Home screen' };
 
   it('names the file by its slug under its folder path', () => {
-    expect(mirrorPathFor(doc, ['screens'], new Set())).toBe('screens/home-screen.livediagram.json');
-    expect(mirrorPathFor(doc, [], new Set())).toBe('home-screen.livediagram.json');
+    expect(mirrorPathFor(doc, ['screens'], new Set())).toBe('screens/home-screen.livehuddle.json');
+    expect(mirrorPathFor(doc, [], new Set())).toBe('home-screen.livehuddle.json');
   });
 
   it('steps aside for a path another document holds: its short id, then its whole id', () => {
-    const taken = new Set(['home-screen.livediagram.json']);
-    expect(mirrorPathFor(doc, [], taken)).toBe('home-screen-abcdef12.livediagram.json');
-    taken.add('home-screen-abcdef12.livediagram.json');
-    expect(mirrorPathFor(doc, [], taken)).toBe('home-screen-abcdef12-3456.livediagram.json');
-    taken.add('home-screen-abcdef12-3456.livediagram.json');
-    expect(mirrorPathFor(doc, [], taken)).toBe('home-screen-abcdef12-3456.livediagram.json');
+    const taken = new Set(['home-screen.livehuddle.json']);
+    expect(mirrorPathFor(doc, [], taken)).toBe('home-screen-abcdef12.livehuddle.json');
+    taken.add('home-screen-abcdef12.livehuddle.json');
+    expect(mirrorPathFor(doc, [], taken)).toBe('home-screen-abcdef12-3456.livehuddle.json');
+    taken.add('home-screen-abcdef12-3456.livehuddle.json');
+    expect(mirrorPathFor(doc, [], taken)).toBe('home-screen-abcdef12-3456.livehuddle.json');
   });
 
   it('keeps a whole id that names another folder inside its own', () => {
     const hostile = { id: '../../etc/x', name: 'Home screen' };
     const taken = new Set([
-      'screens/home-screen.livediagram.json',
-      mirrorPathFor(hostile, ['screens'], new Set(['screens/home-screen.livediagram.json'])),
+      'screens/home-screen.livehuddle.json',
+      mirrorPathFor(hostile, ['screens'], new Set(['screens/home-screen.livehuddle.json'])),
     ]);
     const path = mirrorPathFor(hostile, ['screens'], taken);
     expect(path.startsWith('screens/')).toBe(true);
@@ -62,6 +62,6 @@ describe('mirrorPathFor', () => {
 
 describe('outlinePathOf', () => {
   it('sits beside the mirror file as <slug>.md', () => {
-    expect(outlinePathOf('screens/home-screen.livediagram.json')).toBe('screens/home-screen.md');
+    expect(outlinePathOf('screens/home-screen.livehuddle.json')).toBe('screens/home-screen.md');
   });
 });

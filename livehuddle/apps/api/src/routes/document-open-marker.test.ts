@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_OPEN_HEADER } from '@livediagram/api-schema';
+import { DOCUMENT_OPEN_HEADER } from '@livehuddle/api-schema';
 import { sqliteD1, testShareLink, type SqliteD1 } from '../test-sqlite-d1';
 
 // The opens the index was told of (it keeps them, for the reader's Home and Most Used): the canvas, and the link the

@@ -17,10 +17,7 @@ export type ChartLegendRect = ChartRect & {
   pos: 'top' | 'right' | 'bottom' | 'left';
 };
 
-export function chartFrame(
-  element: ShapeElement,
-  palette?: readonly string[],
-) {
+export function chartFrame(element: ShapeElement, palette?: readonly string[]) {
   // Three rungs, narrowest first (docs/specs/009-elements/pie-chart.md): the chart's own palette if it has
   // been given one, then the tab theme's, then the built-in ramp. A per-datum
   // colour beats all three, in `colorAt` below.

@@ -1,10 +1,10 @@
 {
-  "name": "@livediagram/community",
+  "name": "@livehuddle/community",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node ../../scripts/next-dev.mjs --port 3105",
+    "dev": "node ../../scripts/next-dev.mjs --port 3505",
     "build": "next build",
     "lint": "oxlint",
     "test": "vitest run",
@@ -12,9 +12,9 @@
     "clean": "rm -rf .next .next-dev .next-analyze out node_modules .turbo"
   },
   "dependencies": {
-    "@livediagram/api-schema": "workspace:*",
-    "@livediagram/telemetry-client": "workspace:*",
-    "@livediagram/ui": "workspace:*",
+    "@livehuddle/api-schema": "workspace:*",
+    "@livehuddle/telemetry-client": "workspace:*",
+    "@livehuddle/ui": "workspace:*",
     "@liveworkspace/community-site": "workspace:*",
     "@liveworkspace/community-ui": "workspace:*",
     "@liveworkspace/icons": "workspace:*",

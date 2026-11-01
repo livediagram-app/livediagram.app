@@ -5,7 +5,7 @@
 
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { resetAppearanceForTests, setAppearance } from '@livediagram/ui';
+import { resetAppearanceForTests, setAppearance } from '@livehuddle/ui';
 import { DocumentThumbnail } from './DocumentThumbnail';
 import { resetThumbnailCache } from '@/lib/thumbnail-cache';
 

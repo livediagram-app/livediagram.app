@@ -11,7 +11,7 @@ import {
   DOCUMENT_FORMAT_HEADER,
   DOCUMENT_OPEN_HEADER,
   DOCUMENT_TRASHED_ERROR,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import { corsHeaders, createResponses } from '@liveworkspace/api-kit/responses';
 
 // The headers this product's editor sends beyond every product's (`BASE_ALLOWED_HEADERS`), and the ones a page on

@@ -1,4 +1,4 @@
-import { THEMES, quickSwatches } from '@livediagram/document';
+import { THEMES, quickSwatches } from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
 import {
   SWATCH_OVERRIDE_MAX_BYTES,

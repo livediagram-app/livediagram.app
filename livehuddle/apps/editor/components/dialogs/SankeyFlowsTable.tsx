@@ -30,7 +30,7 @@ import {
   SANKEY_MAX_FLOWS,
   type ChartPaletteId,
   type SankeyNodeStyle,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   draftFlows,
   draftNodeNames,
@@ -43,7 +43,7 @@ import {
 } from '@/lib/sankey-flow-rows';
 import { flowLevels, flowNodeColors, flowTotals } from '@/lib/sankey-flow-levels';
 import { SankeyFlowRow, type FlowField } from '@/components/dialogs/SankeyFlowRow';
-import { lucideGlyph, Switch } from '@livediagram/ui';
+import { lucideGlyph, Switch } from '@livehuddle/ui';
 import { lucidePlus } from '@liveworkspace/icons/lucide';
 
 const LOOSE_FIELDS: FlowField[] = ['from', 'to', 'value'];

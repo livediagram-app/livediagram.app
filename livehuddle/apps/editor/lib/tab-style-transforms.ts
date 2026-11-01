@@ -9,7 +9,7 @@ import {
   type Finish,
   type Tab,
   type TextSize,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 // Every element that carries text of its own (a font or a size): boxed elements and arrows.
 const carriesText = (el: Element) => isBoxed(el) || el.type === 'arrow';

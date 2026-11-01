@@ -21,7 +21,7 @@ import {
   withMindBranches,
   type Element,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { type QuickConnectDirection, type QuickConnectKind } from '@/lib/canvas';
 import { quickAddPlacement } from '@/lib/quick-add-placement';
 import { useElementDuplication } from './useElementDuplication';

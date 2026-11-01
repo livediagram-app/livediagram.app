@@ -1,9 +1,9 @@
-// What livediagram still owns of Explorer Home (docs/specs/013-workspace/explorer-home.md): the editor's open
+// What livehuddle still owns of Explorer Home (docs/specs/013-workspace/explorer-home.md): the editor's open
 // marker, which the api reads to count an open, and the use window the offline opens share. Home's reads themselves
 // are liveworkspace's index's.
 
 import { utcDay } from '@liveworkspace/api-schema/within-reach';
-import { DAY_MS } from '@livediagram/document';
+import { DAY_MS } from '@livehuddle/document';
 
 /** How many UTC days back, today included, a use day counts towards most used (spec). */
 export const WITHIN_REACH_USE_WINDOW_DAYS = 90;

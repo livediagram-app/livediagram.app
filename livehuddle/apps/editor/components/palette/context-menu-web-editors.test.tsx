@@ -11,7 +11,7 @@ import {
   PROCESS_MIN_STEPS,
   STATS_MIN,
   type WebRows,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 import {
   ConceptRowsEditor,

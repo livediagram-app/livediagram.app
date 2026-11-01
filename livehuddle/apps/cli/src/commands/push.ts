@@ -10,9 +10,9 @@ import {
   VerbRefusal,
   type VerbContext,
   type WriteFlags,
-} from '@livediagram/agent-verbs';
-import type { ChangesetResponse, DocumentResponse } from '@livediagram/api-schema';
-import type { Tab } from '@livediagram/document';
+} from '@livehuddle/agent-verbs';
+import type { ChangesetResponse, DocumentResponse } from '@livehuddle/api-schema';
+import type { Tab } from '@livehuddle/document';
 import type { CliIo } from '../io';
 import { mirrorFileText } from '../link/mirror-file';
 import { CliError, formatError } from '../output/cli-error';
@@ -34,7 +34,7 @@ async function readPullFile(io: CliIo, path: string): Promise<PullFile> {
       exit: EXIT.rejected,
       code: 'invalid_pull_file',
       message: `${path}: ${parsed.message}`,
-      hint: 'pull it again: livediagram pull <doc>',
+      hint: 'pull it again: livehuddle pull <doc>',
     });
   return parsed.file;
 }
@@ -43,7 +43,7 @@ type TabPlan = { tab: Tab; create: boolean; hashes: { hash: string; settingsHash
 
 // What the file asks for, tab by tab; notices for everything that does not travel.
 async function planOf(ctx: VerbContext, file: PullFile, onServer: Set<string>): Promise<TabPlan[]> {
-  const { tabs: pulled } = file.livediagramSync;
+  const { tabs: pulled } = file.livehuddleSync;
   const plans: TabPlan[] = [];
   for (const tab of file.document.tabs) {
     const hashes = await tabHashes(tab);
@@ -66,12 +66,12 @@ export async function pushFile(
   input: PushInput,
 ): Promise<{ lines: string[]; exit: number }> {
   const file = await readPullFile(io, input.file);
-  if (!sameHost(file.livediagramSync.host, host))
+  if (!sameHost(file.livehuddleSync.host, host))
     throw new CliError({
       exit: EXIT.usage,
       code: 'usage',
-      message: `${input.file} was pulled from ${file.livediagramSync.host}, not ${host}`,
-      hint: `livediagram push ${input.file} --host ${file.livediagramSync.host}`,
+      message: `${input.file} was pulled from ${file.livehuddleSync.host}, not ${host}`,
+      hint: `livehuddle push ${input.file} --host ${file.livehuddleSync.host}`,
     });
   const documentId = file.document.id;
   const { document } = await ctx.api.json<DocumentResponse>(
@@ -100,7 +100,7 @@ export async function pushFile(
         },
         create
           ? { ...flags, base: null }
-          : { ...flags, base: file.livediagramSync.tabs[tab.id]!.rev, strict: true },
+          : { ...flags, base: file.livehuddleSync.tabs[tab.id]!.rev, strict: true },
       );
     } catch (err) {
       if (err instanceof VerbRefusal && err.code === 'stale_tab') {
@@ -117,8 +117,8 @@ export async function pushFile(
     if (input.dryRun) continue;
     // "Nothing changed" writes no revision: the tab keeps the one it was pulled at. The settings stay as pulled,
     // since they were not sent: a rename keeps being named until the file is pulled again.
-    const pulled = file.livediagramSync.tabs[tab.id];
-    file.livediagramSync.tabs[tab.id] = {
+    const pulled = file.livehuddleSync.tabs[tab.id];
+    file.livehuddleSync.tabs[tab.id] = {
       rev: response.changeset?.rev ?? pulled!.rev,
       hash: hashes.hash,
       settingsHash: pulled?.settingsHash ?? hashes.settingsHash,
@@ -127,7 +127,7 @@ export async function pushFile(
   }
   // A mirror file (no `pulledAt`) is written back in its own canonical form, byte-stable for git (RL30, RL31).
   const text =
-    file.livediagramSync.pulledAt === undefined ? mirrorFileText(file) : pullFileText(file);
+    file.livehuddleSync.pulledAt === undefined ? mirrorFileText(file) : pullFileText(file);
   if (landed) await io.files.write(input.file, text);
   return { lines, exit };
 }

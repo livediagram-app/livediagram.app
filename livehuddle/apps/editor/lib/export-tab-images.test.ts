@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 
 vi.mock('./api/images', () => ({ apiFetchImageDataUrl: vi.fn() }));
 

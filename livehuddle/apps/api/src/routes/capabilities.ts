@@ -1,4 +1,4 @@
-import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
+import { DOCUMENT_FORMAT } from '@livehuddle/api-schema';
 import { aiConfigured } from '../ai-provider';
 import { communityEnabled } from '../community-enabled';
 import { communityServiceConfigured } from '../community-service';

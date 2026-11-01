@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, type ComponentProps } from 'react';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import type { DragState } from '@/lib/canvas';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';

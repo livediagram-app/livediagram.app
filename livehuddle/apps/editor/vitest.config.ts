@@ -44,7 +44,7 @@ export default defineProject({
   resolve: {
     // One React, shared with the workspace packages. `packages/ui` peers
     // react (correctly) but carries its own copy for its own tests, so a
-    // hook test here that renders a `@livediagram/ui` hook resolved TWO
+    // hook test here that renders a `@livehuddle/ui` hook resolved TWO
     // Reacts — the renderer's and the package's — and every useState threw
     // "Cannot read properties of null". Next's bundler dedupes for real
     // builds; the test resolver has to be told.

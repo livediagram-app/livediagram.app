@@ -14,7 +14,7 @@ import {
   createText,
   type Element,
   type TableCellStyle,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 const MUTED = '#64748b';
 

@@ -27,7 +27,7 @@ async function open(page: Page, url: string, build: string): Promise<void> {
   const res = await page.goto(url);
   expect(
     res?.status(),
-    `${url} did not load: build it (pnpm --filter @livediagram/${build} build)`,
+    `${url} did not load: build it (pnpm --filter @livehuddle/${build} build)`,
   ).toBe(200);
 }
 

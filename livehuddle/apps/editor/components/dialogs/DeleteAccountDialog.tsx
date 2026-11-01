@@ -1,7 +1,7 @@
 'use client';
 
 // Delete Account (docs/specs/014-identity/auth-and-guest-access.md "Deleting an account"): every editor's dialog
-// (@liveworkspace/workbench), bound to livediagram's name, api and telemetry. The typed email, then the code emailed to the
+// (@liveworkspace/workbench), bound to livehuddle's name, api and telemetry. The typed email, then the code emailed to the
 // account, which the api checks before anything is deleted.
 
 import { DeleteAccountDialog as SharedDeleteAccountDialog } from '@liveworkspace/workbench/components/dialogs/DeleteAccountDialog';
@@ -20,7 +20,7 @@ export function DeleteAccountDialog(props: {
   return (
     <SharedDeleteAccountDialog
       {...props}
-      appName="livediagram"
+      appName="livehuddle"
       localItems="Canvases"
       sendCode={apiSendDeletionCode}
       deleteAccount={apiDeleteAccount}

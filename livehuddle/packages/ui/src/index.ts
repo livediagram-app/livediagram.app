@@ -84,7 +84,7 @@ export {
   useAppearance,
   SiteAppearanceToggle,
 } from './appearance';
-export { indefiniteArticle, withArticle } from '@livediagram/document';
+export { indefiniteArticle, withArticle } from '@livehuddle/document';
 // This product's browser repair (its keys, repair, panel, probe and identity report); the checks' shapes and
 // formatting are @liveworkspace/ui's.
 export {

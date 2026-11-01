@@ -5,7 +5,7 @@ import { CLI_CLIENT_ID, CLI_CLIENT_NAME } from './oauth-clients';
 
 describe('the CLI client', () => {
   it('is a fixed id and name', () => {
-    expect(CLI_CLIENT_ID).toBe('livediagram-cli');
-    expect(CLI_CLIENT_NAME).toBe('livediagram CLI');
+    expect(CLI_CLIENT_ID).toBe('livehuddle-cli');
+    expect(CLI_CLIENT_NAME).toBe('livehuddle CLI');
   });
 });

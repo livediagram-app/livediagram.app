@@ -1,8 +1,8 @@
 'use client';
 
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { errorNameToken, errorTypeToken } from '@livediagram/api-schema';
-import { Button } from '@livediagram/ui';
+import { errorNameToken, errorTypeToken } from '@livehuddle/api-schema';
+import { Button } from '@livehuddle/ui';
 import { track } from '@/lib/telemetry';
 import {
   browserNavigationDeps,

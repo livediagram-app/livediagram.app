@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
-  title: 'Sign in | livediagram',
-  description: 'Sign in to your livediagram account to keep your canvases across devices.',
+  title: 'Sign in | livehuddle',
+  description: 'Sign in to your livehuddle account to keep your canvases across devices.',
 };
 
 export default function SignInLayout({ children }: { children: ReactNode }) {

@@ -11,7 +11,7 @@ vi.mock('./image-result', () => ({
 }));
 
 import { registerTools } from './tools';
-import { deleteDocumentShape } from '@livediagram/agent-verbs/mcp';
+import { deleteDocumentShape } from '@livehuddle/agent-verbs/mcp';
 import { TOOL_ANNOTATIONS, type ToolBehaviour } from './tool-annotations';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 
@@ -485,7 +485,7 @@ describe('the Trash tools', () => {
       restored: 'document',
       id: 'd_1',
       name: 'Plan',
-      url: 'https://www.livediagram.app/document/d_1',
+      url: 'https://www.livehuddle.app/document/d_1',
     });
   });
 

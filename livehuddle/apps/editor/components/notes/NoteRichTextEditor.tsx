@@ -16,7 +16,7 @@ import {
   paragraphEndOffset,
   selectRange,
 } from '@/components/rich-text/rich-text-dom';
-import { listEnter, type TextRun } from '@livediagram/document';
+import { listEnter, type TextRun } from '@livehuddle/document';
 import { formatShortcut } from '@/components/rich-text/rich-text-format';
 import { NOTE_BASE_PX } from './note-run-style';
 import { NoteFormatToolbar } from './NoteFormatToolbar';

@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/telemetry-client",
+  "name": "@livehuddle/telemetry-client",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -16,7 +16,7 @@
     "clean": "rm -rf node_modules .turbo"
   },
   "dependencies": {
-    "@livediagram/api-schema": "workspace:*",
+    "@livehuddle/api-schema": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*",
     "@liveworkspace/telemetry-client": "workspace:*"
   },

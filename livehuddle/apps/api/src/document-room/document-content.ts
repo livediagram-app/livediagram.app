@@ -2,7 +2,7 @@
 // outline a document read carries, what the document knows of itself, the slide deck, the document row a create
 // makes, and a copy's export and import. Runs inside the document's Durable Object, on `env.DOCUMENT_DB`.
 
-import { remapTabLinks, type Element } from '@livediagram/document';
+import { remapTabLinks, type Element } from '@livehuddle/document';
 import { redactTabDataAuthors } from '../comments';
 import { redactTabDataForCommunity } from '../community-redact';
 import { servableImageIds } from '../db/image-grants';

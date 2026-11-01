@@ -5,7 +5,7 @@ import {
   SERVER_EMITTED_EVENT_PAIRS,
   TELEMETRY_ACTIONS,
   TELEMETRY_CATEGORIES,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import { EMITTED_EVENT_PAIRS } from './telemetry-manifest';
 
 // Event-completeness guard (docs/specs/017-telemetry/telemetry.md, issue #30).

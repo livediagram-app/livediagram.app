@@ -8,7 +8,7 @@ import {
   claimMilestone as claimAccountMilestone,
   type Milestone,
 } from '@liveworkspace/auth-client';
-import { isAccountIdShape } from '@livediagram/api-schema';
+import { isAccountIdShape } from '@livehuddle/api-schema';
 import { accountCredentials } from '../auth/accounts';
 import type { Env } from '../types';
 

@@ -2,14 +2,14 @@
 // quoted label, or `key:value` terms joined by spaces, every one of which must match. Matching runs
 // against the working state, so an element an earlier operation added or named is addressable.
 
-import type { EditRejection } from '@livediagram/api-schema';
+import type { EditRejection } from '@livehuddle/api-schema';
 import {
   isContainer,
   kindWordOf,
   resolveRef,
   type Element,
   type ElementId,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { describeElement, kindOf, labelOf } from './element-text';
 import { reachableFrom } from './graph-walk';
 import { nearestElements } from './nearest';

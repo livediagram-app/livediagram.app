@@ -1,7 +1,7 @@
 // Text laid over a shape (docs/specs/020-import-export/drawio-import.md "Legible labels on own fills",
 // blueprint step 15.8). draw.io groups a title onto a note or a label onto a panel as a separate text
 // cell, drawn on that shape rather than on the canvas:
-// - on an empty note, the text becomes the note's own words (a livediagram note shows its "Note"
+// - on an empty note, the text becomes the note's own words (a livehuddle note shows its "Note"
 //   hint until it has some, so a text on top would collide with it);
 // - on any other filled shape, a text with no colour of its own takes the ink that reads on its fill.
 // The holder is the nearest boxed element below the text, in paint order, that holds it wholly.
@@ -13,7 +13,7 @@ import {
   type Endpoint,
   type StickyElement,
   type TextElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { inkOnFill } from './vertex-props';
 

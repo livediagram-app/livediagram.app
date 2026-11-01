@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { VERBS } from '@livediagram/agent-verbs';
-import { MCP_TOOL_VERBS } from '@livediagram/agent-verbs/mcp';
+import { VERBS } from '@livehuddle/agent-verbs';
+import { MCP_TOOL_VERBS } from '@livehuddle/agent-verbs/mcp';
 import { COMMAND_OF_TOOL, inCliWords } from './tool-names';
 import { formatError } from './cli-error';
 
@@ -18,18 +18,18 @@ describe('the CLI words for MCP tools', () => {
 
   it('writes a tool in a message as the command', () => {
     expect(inCliWords('That tab is gone. Add one with add_tab.')).toBe(
-      'That tab is gone. Add one with livediagram tab add.',
+      'That tab is gone. Add one with livehuddle tab add.',
     );
     expect(inCliWords('read_document lists its tabs; add_tabs stays')).toBe(
-      'livediagram document view lists its tabs; add_tabs stays',
+      'livehuddle document view lists its tabs; add_tabs stays',
     );
   });
 
   it('prints an error in those words, text and JSON alike', () => {
     const failure = { exit: 3 as const, code: 'tab_none', message: 'Add one with add_tab.' };
-    expect(formatError(failure, false)).toBe('error: Add one with livediagram tab add.\n');
+    expect(formatError(failure, false)).toBe('error: Add one with livehuddle tab add.\n');
     expect((JSON.parse(formatError(failure, true)) as { message: string }).message).toBe(
-      'Add one with livediagram tab add.',
+      'Add one with livehuddle tab add.',
     );
   });
 });

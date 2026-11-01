@@ -2,11 +2,11 @@
 
 // Which sketched shapes are backdrops (docs/specs/008-canvas/finish.md "Sketch"): shapes other elements sit on,
 // which keep a solid fill rather than hatching. Worked out once per tab by the elements layer
-// (sketchBackdropIds in @livediagram/document) and read per element, so a shape's view re-renders only when its
+// (sketchBackdropIds in @livehuddle/document) and read per element, so a shape's view re-renders only when its
 // own flag flips, never on every drag frame (docs/specs/008-canvas/canvas-performance.md). Keyed by tab, so two
 // canvases side by side each publish their own.
 import { useLayoutEffect, useMemo, useSyncExternalStore } from 'react';
-import { sketchBackdropIds, type Element, type Finish } from '@livediagram/document';
+import { sketchBackdropIds, type Element, type Finish } from '@livehuddle/document';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 const byTab = new Map<string, ReadonlySet<string>>();

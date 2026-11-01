@@ -2,7 +2,7 @@
 // (docs/specs/020-import-export/blueprints/import-image-pipeline.md "prepareImportImage").
 // The DOM work sits behind the injected codec, so this runs under Node.
 
-import { MAX_IMAGE_BYTES, sniffImageType } from '@livediagram/api-schema';
+import { MAX_IMAGE_BYTES, sniffImageType } from '@livehuddle/api-schema';
 import {
   IMPORT_IMAGE_JPEG_QUALITY,
   IMPORT_IMAGE_WEBP_QUALITY,

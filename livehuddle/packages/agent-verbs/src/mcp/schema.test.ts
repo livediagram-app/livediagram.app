@@ -4,7 +4,7 @@ import {
   GRAPH_LAYOUT_MAX_EDGES,
   GRAPH_LAYOUT_MAX_NODES,
   NAME_MAX_LENGTH,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   addTabShape,
   createDocumentShape,
@@ -15,7 +15,7 @@ import {
   SERVER_INSTRUCTIONS,
   updateDocumentShape,
 } from './schema';
-import { resolveTemplate } from '@livediagram/templates';
+import { resolveTemplate } from '@livehuddle/templates';
 
 describe('elementSchemaDoc', () => {
   it('lists element types, the pinned-arrow convention, and the no-colour rule', () => {

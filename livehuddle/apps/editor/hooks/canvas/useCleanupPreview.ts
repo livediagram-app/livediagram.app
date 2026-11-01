@@ -23,7 +23,7 @@
 //     and undo returns to the true pre-hover layout.
 
 import { useRef, type MutableRefObject } from 'react';
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@livehuddle/document';
 import type { CleanupKind } from '@/lib/tab-cleanup';
 import type { CleanupVerdict } from '@/lib/tidy-verdict';
 import { loadTidyEngine, tidyEngine } from '@/lib/tidy-engine';

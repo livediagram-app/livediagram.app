@@ -7,26 +7,26 @@ export type MapSize = 'short' | 'medium' | 'tall';
 //     once per page load via fetchUserPreferences() so a person's flags follow them
 //     across devices, and the shared ones (ALL_SETTING_KEYS) across apps. A deployment
 //     without liveworkspace keeps none: the cache below is then the only copy.
-//   - `localStorage` under `livediagram:user-preferences:v1` is a warm
+//   - `localStorage` under `livehuddle:user-preferences:v1` is a warm
 //     cache so the editor never blocks on the network at boot. Reads
 //     are synchronous; writes go to BOTH localStorage and the api
 //     (one PUT at a time, latest wins, lib/preferences-sync). Last-write-wins per device.
 //
 // Cross-tab consistency: callers can listen for the native `storage`
 // event on STORAGE_KEY. Same-tab writes also fire a window event
-// `livediagram:preferences-changed` so listeners that can't observe
+// `livehuddle:preferences-changed` so listeners that can't observe
 // their own `localStorage.setItem` (like `lib/telemetry.ts`'s
 // in-memory gate cache) still refresh promptly. Every write stores the
 // WHOLE blob in the cache, so a change is built on the cache, never on a
 // render's snapshot (see rebaseUserPreferences): another tab's write since
 // that render would otherwise be undone.
 
-import { upgradeLegacyPreferences } from '@livediagram/api-schema';
+import { upgradeLegacyPreferences } from '@livehuddle/api-schema';
 import type { ElementTourKind } from './element-tours';
 import type { SwatchOverrideStore } from './swatch-overrides';
 import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import type { ShapePicks } from './whiteboard-shape-slots';
-import { USER_PREFERENCES_STORAGE_KEY } from '@livediagram/telemetry-client';
+import { USER_PREFERENCES_STORAGE_KEY } from '@livehuddle/telemetry-client';
 import { apiGetPreferences, PREFERENCES_LOCAL_ONLY } from './api-client';
 import {
   fitPreferences,
@@ -253,7 +253,7 @@ export type UserPreferences = {
 // centre reads the telemetry field out of this same blob and must never get
 // the string wrong — see the note there.
 export const STORAGE_KEY = USER_PREFERENCES_STORAGE_KEY;
-export const PREFERENCES_CHANGED_EVENT = 'livediagram:preferences-changed';
+export const PREFERENCES_CHANGED_EVENT = 'livehuddle:preferences-changed';
 
 // The effective "Auto-Attach Arrows" state (docs/specs/007-editor/user-preferences.md): on by
 // default, so only an explicit `false` turns the on-move rebind off. The
@@ -292,7 +292,7 @@ export function readUserPreferences(): UserPreferences {
 // tests, the editor before identity resolves) skip the network step.
 // The blob is first trimmed to fit the api's size cap, so the cache and
 // the server hold the same thing. On success a same-tab
-// `livediagram:preferences-changed` event fires so in-process
+// `livehuddle:preferences-changed` event fires so in-process
 // listeners refresh without polling. The browser handles cross-tab
 // via its native `storage` event.
 export function writeUserPreferences(prefs: UserPreferences, ownerId?: string | null): void {
@@ -352,7 +352,7 @@ export function __resetFetchedPreferences(): void {
 }
 
 // Fetch preferences from the api, merge over the localStorage cache, and
-// dispatch `livediagram:preferences-changed` so in-process listeners
+// dispatch `livehuddle:preferences-changed` so in-process listeners
 // pick up the merged value. Returns the merged preferences (or null
 // when the fetch failed, or this deployment keeps none; the caller treats
 // that as "stick with the cache"). Called at editor mount per

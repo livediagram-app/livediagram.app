@@ -14,7 +14,7 @@ import {
   svgShadowDefs,
   type Element,
   type Point,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
 import {
   resolveIconArtLoaded,

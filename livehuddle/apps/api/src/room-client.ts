@@ -4,14 +4,14 @@ import {
   type ElementDelta,
   type Tab,
   type TabLedger,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   AGENT_PRESENCE_ACTIVITY_TTL_MS,
   ROOM_RELAY_TIMEOUT_MS,
   ROOM_SELECTIONS_TIMEOUT_MS,
   type ChangesetRoomOp,
   type RoomOp,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import type { AgentPresenceWrite } from '@liveworkspace/api-kit/room-agent-presence';
 import type { Env } from './types';
 

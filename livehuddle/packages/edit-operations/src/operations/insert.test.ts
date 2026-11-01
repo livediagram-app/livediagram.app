@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import { applied, lines, refused } from '../fixtures/outcomes';
 import { boxIn, elementOf, flowWith, lockedFlow, run } from '../fixtures/run';
 import { PLACEMENT_GAP } from '../vocabulary';

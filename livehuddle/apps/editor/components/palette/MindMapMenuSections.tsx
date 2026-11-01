@@ -12,8 +12,8 @@ import {
   MIND_SPACING_LABEL,
   type MindFlow,
   type MindSpacing,
-} from '@livediagram/document';
-import { lucideGlyph } from '@livediagram/ui';
+} from '@livehuddle/document';
+import { lucideGlyph } from '@livehuddle/ui';
 import {
   lucideBetweenHorizontalStart,
   lucideListTree,

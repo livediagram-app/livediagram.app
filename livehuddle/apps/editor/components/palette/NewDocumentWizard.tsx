@@ -1,9 +1,9 @@
 'use client';
 
 import { useLayoutEffect, useState, type ReactNode } from 'react';
-import { Button, CloseIcon, useEscape } from '@livediagram/ui';
-import type { EditorMode } from '@livediagram/document';
-import { BLANK_TEMPLATE_FOR_MODE, type TemplateKind } from '@livediagram/templates';
+import { Button, CloseIcon, useEscape } from '@livehuddle/ui';
+import type { EditorMode } from '@livehuddle/document';
+import { BLANK_TEMPLATE_FOR_MODE, type TemplateKind } from '@livehuddle/templates';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import { takeEarlyModeChoice } from '@/app/new/early-mode-choice';

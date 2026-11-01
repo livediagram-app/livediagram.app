@@ -20,13 +20,13 @@
 // happy accident for a dot-vote, and the turnout numbers below answer the
 // question the host actually has ("is everyone done?") without it.
 
-import { votesSpentBy, type Element, type TabVote } from '@livediagram/document';
+import { votesSpentBy, type Element, type TabVote } from '@livehuddle/document';
 import { describeOne } from '@/lib/element-names';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import type { VoteReview } from '@/hooks/canvas/useVoteReview';
 import { voteRules } from '@/components/panels/session-studio/session-studio';
-import { buttonClassName } from '@livediagram/ui';
+import { buttonClassName } from '@livehuddle/ui';
 
 // A popover never moves.
 const NO_MOVE = () => {};

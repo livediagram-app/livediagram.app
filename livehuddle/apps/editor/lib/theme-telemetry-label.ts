@@ -1,4 +1,4 @@
-import { DEFAULT_SCHEME_ID, isRetiredCustomThemeId, THEMES } from '@livediagram/document';
+import { DEFAULT_SCHEME_ID, isRetiredCustomThemeId, THEMES } from '@livehuddle/document';
 
 // The telemetry `type` for a theme, and the one place that decides it.
 //

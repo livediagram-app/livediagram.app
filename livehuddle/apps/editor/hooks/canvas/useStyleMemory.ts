@@ -5,7 +5,7 @@
 // synced and never in the document. The logic is pure, in lib/style-memory.
 
 import { useEffect, useRef } from 'react';
-import type { Element, ThemeDefinition } from '@livediagram/document';
+import type { Element, ThemeDefinition } from '@livehuddle/document';
 import {
   readLocalStorageSafe,
   writeLocalStorageSafe,

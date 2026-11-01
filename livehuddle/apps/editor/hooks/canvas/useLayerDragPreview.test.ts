@@ -4,7 +4,7 @@ import {
   createPinnedArrow,
   createShape,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { applyOverlay, resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 import { buildArrowLinks } from '@/components/canvas/drag-affected-arrows';
 import {

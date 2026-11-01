@@ -1,7 +1,7 @@
 'use client';
 
 import { AppAccountMenu, type DeferredMenuProps } from '@liveworkspace/account-menu';
-import { SIGNED_IN_HINT_COOKIE } from '@livediagram/api-schema';
+import { SIGNED_IN_HINT_COOKIE } from '@livehuddle/api-schema';
 
 // The account menu on this app's own pages (@liveworkspace/account-menu's AppAccountMenu), with this app's hint
 // cookie. Loaded lazily by SiteAccount: at once for someone signed in, and for a

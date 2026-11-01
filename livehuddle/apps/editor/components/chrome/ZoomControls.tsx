@@ -1,7 +1,7 @@
 import { IsometricOrbitButton } from '@/components/chrome/IsometricOrbitButton';
 import { ZoomMenu } from '@/components/chrome/ZoomMenu';
 import { ZenExitIcon, ZenIcon } from '@/components/palette/palette-icons';
-import { HoverCard, Glyph } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@livehuddle/ui';
 
 type ZoomControlsProps = {
   zoom: number;

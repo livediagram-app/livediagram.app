@@ -9,7 +9,7 @@ import { appearanceBootScript, DARK_MEDIA_QUERY } from '@liveworkspace/ui/appear
 //
 // The key still SAYS ui-mode: it is stored data, not vocabulary. Renaming it would
 // silently reset the preference for everyone who has ever set it.
-export const APPEARANCE_STORAGE_KEY = 'livediagram:v2:ui-mode';
+export const APPEARANCE_STORAGE_KEY = 'livehuddle:v2:ui-mode';
 
 export { DARK_MEDIA_QUERY };
 

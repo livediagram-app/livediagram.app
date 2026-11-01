@@ -5,7 +5,7 @@
 //   GET    /api/tokens/current — the token this request presented (the CLI's auth status)
 //   DELETE /api/tokens/current — that token revoking itself (the CLI's auth logout)
 
-import { bearerTokenOf, type CurrentTokenResponse } from '@livediagram/api-schema';
+import { bearerTokenOf, type CurrentTokenResponse } from '@livehuddle/api-schema';
 import { forbidden, json, methodNotAllowed, noContent, notFound } from '../responses';
 import type { RouteContext } from './context';
 import { revokePresentedToken } from '../db';

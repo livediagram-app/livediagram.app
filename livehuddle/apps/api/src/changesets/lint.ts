@@ -2,9 +2,9 @@
 // LN31): writes, dry runs and reverts lint the whole tab they leave. A lint that throws never fails the
 // write: it logs `[lint] failed` and answers null, which the footer prints as `lint unavailable`.
 
-import type { LintReport } from '@livediagram/api-schema';
-import { coloursSet, lintTab, type LintLogger } from '@livediagram/diagram-lint';
-import type { Tab } from '@livediagram/document';
+import type { LintReport } from '@livehuddle/api-schema';
+import { coloursSet, lintTab, type LintLogger } from '@livehuddle/diagram-lint';
+import type { Tab } from '@livehuddle/document';
 
 type Where = { documentId: string; tabId: string };
 

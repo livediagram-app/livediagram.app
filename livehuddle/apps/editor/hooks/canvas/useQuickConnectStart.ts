@@ -1,6 +1,6 @@
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { Anchor } from '@livediagram/document';
+import type { Anchor } from '@livehuddle/document';
 import type { QuickConnectDirection } from '@/lib/canvas';
 import type { EditorDragApi } from './useEditorDrag.types';
 

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { EditorMode } from '@livediagram/document';
+import type { EditorMode } from '@livehuddle/document';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { StartModeSwitch } from './StartModeSwitch';
 

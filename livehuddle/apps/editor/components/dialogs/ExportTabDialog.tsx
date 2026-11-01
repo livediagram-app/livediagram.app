@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { DialogCloseButton, DialogHeader } from '@livediagram/ui';
+import { DialogCloseButton, DialogHeader } from '@livehuddle/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { FormatCard } from '@liveworkspace/workbench/components/dialogs/FormatCard';
 import { FormatIcon } from './export-format-icons';
@@ -12,7 +12,7 @@ import {
   type Tab,
   tabToJsonText,
   tabToMarkdownText,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   downloadBlob,
   exportTabAsPng,
@@ -88,7 +88,7 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
   {
     kind: 'file',
     title: 'JSON',
-    description: 'A livediagram file. Copy it or save a .json to import back with full fidelity.',
+    description: 'A livehuddle file. Copy it or save a .json to import back with full fidelity.',
   },
   {
     kind: 'mermaid',
@@ -138,9 +138,9 @@ const TEXT_PANELS: Record<
 > = {
   file: {
     blurb:
-      "This tab as a livediagram JSON export. Edit it here to copy a variant; your edits don't change the tab.",
+      "This tab as a livehuddle JSON export. Edit it here to copy a variant; your edits don't change the tab.",
     downloadLabel: 'Download .json',
-    ext: 'livediagram-tab.json',
+    ext: 'livehuddle-tab.json',
     mime: 'application/json',
     getText: tabToJsonText,
   },

@@ -203,7 +203,7 @@ export async function probeDispatch(
   const now = Math.floor(Date.now() / 1000);
   setGrantVerifierForTests(async () => ({
     iss: 'probe',
-    aud: 'livediagram',
+    aud: 'livehuddle',
     sub: 'user_probe',
     item: PARAM,
     level: 'edit',

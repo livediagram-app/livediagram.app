@@ -1,5 +1,5 @@
 // Embeds (docs/specs/009-elements/youtube-video.md, website-embed.md): the URL rules live in
-// @liveworkspace/model-core; livediagram binds the one thing that is its own, the host Figma is told.
+// @liveworkspace/model-core; livehuddle binds the one thing that is its own, the host Figma is told.
 import { createEmbedTargetFor } from '@liveworkspace/model-core/youtube';
 
 export {
@@ -13,4 +13,4 @@ export {
   type EmbedTarget,
 } from '@liveworkspace/model-core/youtube';
 
-export const embedTargetFor = createEmbedTargetFor('livediagram');
+export const embedTargetFor = createEmbedTargetFor('livehuddle');

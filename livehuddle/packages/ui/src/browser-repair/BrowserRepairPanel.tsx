@@ -13,7 +13,7 @@ export type BrowserRepairPanelProps = Omit<SharedProps, 'product' | 'noun' | 're
 export function BrowserRepairPanel(props: BrowserRepairPanelProps) {
   return (
     <SharedPanel
-      product="livediagram"
+      product="livehuddle"
       noun="canvases"
       repair={() => repairBrowserStorage()}
       {...props}

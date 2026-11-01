@@ -203,7 +203,7 @@ export function getBuiltInTheme(
 // and images map to nothing: stickies keep their iconic amber across
 // every theme (same rule `addBoxed` applies to ad-hoc sticky creation),
 // and an image renders its bytes so its colour fields are inert (see
-// ImageElement in @livediagram/document).
+// ImageElement in @livehuddle/document).
 type ThemeColourField = {
   element: 'fillColor' | 'strokeColor' | 'textColor';
   theme: 'elementFill' | 'elementStroke' | 'elementText';

@@ -19,7 +19,7 @@ import {
   type Element,
   type ShapeElement,
   type TextRun,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   DRIVER_BASELINE,
   DRIVER_LEVERS,

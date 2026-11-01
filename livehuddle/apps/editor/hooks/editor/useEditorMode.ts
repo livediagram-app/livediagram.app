@@ -14,7 +14,7 @@
 //   it was in, for everyone. A no-op when the switch is not offered or `next` is already the mode.
 import { useCallback, useMemo } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { withEditorModeSwitched, type EditorMode, type Tab } from '@livediagram/document';
+import { withEditorModeSwitched, type EditorMode, type Tab } from '@livehuddle/document';
 import { resolveEditorMode } from '@/lib/editor-mode-store';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';

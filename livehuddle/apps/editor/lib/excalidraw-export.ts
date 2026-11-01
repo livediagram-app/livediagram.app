@@ -23,7 +23,7 @@ import {
   type BoxedElement,
   type Tab,
   type TextSize,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 // The common Excalidraw element chassis. Excalidraw's restore() fills in
 // anything missing, but emitting the everyday fields keeps the file readable
@@ -328,7 +328,7 @@ export function tabToExcalidrawText(tab: Tab): string {
     {
       type: 'excalidraw',
       version: 2,
-      source: 'https://www.livediagram.app',
+      source: 'https://www.livehuddle.app',
       elements: out,
       appState: {
         gridSize: null,

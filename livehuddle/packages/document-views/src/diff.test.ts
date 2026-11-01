@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@livehuddle/document';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { checkoutTab } from './__fixtures__/checkout-tab';
 import { CHECKOUT_AFTER_REV, checkoutTabAfter } from './__fixtures__/checkout-tab-after';

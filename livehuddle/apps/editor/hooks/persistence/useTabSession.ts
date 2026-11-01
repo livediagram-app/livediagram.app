@@ -16,7 +16,7 @@ import {
   type TabVote,
   type TimerMode,
   type VoteSetup,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 
 type TabSessionDeps = {

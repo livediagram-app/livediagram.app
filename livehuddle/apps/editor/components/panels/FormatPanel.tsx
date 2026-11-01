@@ -21,7 +21,7 @@ import {
 } from '@liveworkspace/workbench/lib/format-config';
 import { AccordionSection } from '@liveworkspace/workbench/components/primitives/AccordionSection';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard } from '@livehuddle/ui';
 
 type Row = 'copies' | 'mode';
 

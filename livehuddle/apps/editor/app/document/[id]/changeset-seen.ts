@@ -1,4 +1,4 @@
-import type { ChangesetRoomOp } from '@livediagram/api-schema';
+import type { ChangesetRoomOp } from '@livehuddle/api-schema';
 
 // The changeset revision each loaded tab holds (docs/specs/024-agents/blueprints/agent-changesets.md
 // "The editor"): set by every tab load, raised by every changeset applied, and sent with every save

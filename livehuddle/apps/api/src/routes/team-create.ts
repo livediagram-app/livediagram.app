@@ -6,7 +6,7 @@
 // The interactive session only (an API token or a workbench can't make one), and the app vouches for
 // the person with the access token they sent.
 
-import { bearerTokenOf } from '@livediagram/api-schema';
+import { bearerTokenOf } from '@livehuddle/api-schema';
 import { makeTeamFor } from '@liveworkspace/index-app';
 import { accountCredentials } from '../auth/accounts';
 import { json, signInRequired } from '../responses';

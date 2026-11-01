@@ -6,7 +6,7 @@
 // local one wins on an element both touch.
 
 import { useSyncExternalStore } from 'react';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export type DragOverlay = {

@@ -11,7 +11,7 @@ import {
   type TableCellStyle,
   type TableElement,
   plural,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { nearestCssBorderStyle } from '@/components/canvas/border-css';
 import {

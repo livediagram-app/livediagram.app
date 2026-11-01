@@ -3,8 +3,8 @@
 // block, so the model can act on each one. From a changeset's report, or read per created tab through
 // `?view=lint&json=1`. A lint that is missing or fails reads `lint unavailable` and never fails the tool.
 
-import type { LintReport } from '@livediagram/api-schema';
-import { formatLintReport, lintSummaryLine } from '@livediagram/diagram-lint';
+import type { LintReport } from '@livehuddle/api-schema';
+import { formatLintReport, lintSummaryLine } from '@livehuddle/diagram-lint';
 import { apiJson } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 

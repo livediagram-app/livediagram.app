@@ -3,8 +3,8 @@ import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { THEMES } from '@livediagram/document';
-import { TEMPLATE_CATEGORIES, TEMPLATES } from '@livediagram/templates';
+import { THEMES } from '@livehuddle/document';
+import { TEMPLATE_CATEGORIES, TEMPLATES } from '@livehuddle/templates';
 
 import { LANDING_SECTIONS } from './landing-content';
 import { faqAnswerText, filterFaq } from '@liveworkspace/marketing-site/lib/faq';

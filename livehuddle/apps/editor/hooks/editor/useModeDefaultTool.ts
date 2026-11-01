@@ -4,7 +4,7 @@
 // with"): Select in every mode, and Hand on a phone, where a drag should move the canvas. Picked
 // whenever the mode changes, the first mode included; any tool can be picked after.
 import { useEffect, useRef } from 'react';
-import type { EditorMode } from '@livediagram/document';
+import type { EditorMode } from '@livehuddle/document';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 

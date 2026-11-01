@@ -4,7 +4,7 @@
 // with a hover card naming its key, acting on the row or line being edited without taking the
 // focus from it.
 import type { ReactNode } from 'react';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard } from '@livehuddle/ui';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 
 export function MindOutlineToolButton({

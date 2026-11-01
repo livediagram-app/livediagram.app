@@ -1,6 +1,6 @@
 // The Trash (own and every joined team's), for API clients (index-adapters.ts).
 
-import { trashPurgeDueAt, type TrashedDocument } from '@livediagram/api-schema';
+import { trashPurgeDueAt, type TrashedDocument } from '@livehuddle/api-schema';
 import { LIST_LIMIT_MAX } from '@liveworkspace/index-client';
 import { INDEX_APP } from '../index-service';
 import { json, noContent, notFound } from '../responses';
@@ -28,7 +28,7 @@ export async function handleTrash(ctx: RouteContext): Promise<Response> {
   if (team !== null && !names.has(team)) return notFound();
   try {
     if (isEmpty) {
-      // Canvases only: the index empties livediagram's items in the scope, never another app's.
+      // Canvases only: the index empties livehuddle's items in the scope, never another app's.
       const { purged } = await client.emptyTrash({ app: INDEX_APP, ...(team ? { team } : {}) });
       console.info('[trash] emptied', team !== null ? 'team' : 'personal', purged);
       return json({ purged });

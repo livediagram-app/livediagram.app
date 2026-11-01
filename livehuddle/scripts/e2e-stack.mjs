@@ -103,14 +103,14 @@ function assetsOutOfCacheFor(req) {
   return cookiesOf(req).get(OUT_OF_CACHE_COOKIE) === '1';
 }
 
-const EDITOR_PORT = Number(process.env.E2E_EDITOR_PORT ?? 3102);
-const API_PORT = Number(process.env.E2E_API_PORT ?? 8687);
+const EDITOR_PORT = Number(process.env.E2E_EDITOR_PORT ?? 3502);
+const API_PORT = Number(process.env.E2E_API_PORT ?? 9087);
 const INDEX_PORT = Number(process.env.E2E_INDEX_PORT ?? 8119);
 const MEDIA_PORT = Number(process.env.E2E_MEDIA_PORT ?? 8120);
 // The media service's local D1 and R2 for this stack, apart from a developer's `wrangler dev` state.
 const MEDIA_STATE = path.join(MEDIA_DIR, '.wrangler', `e2e-state-${MEDIA_PORT}`);
-const MEDIA_APP = 'livediagram.app';
-// The key the api and the index share (the api's INDEX_KEY, the index's INDEX_KEY_LIVEDIAGRAM). Test-only.
+const MEDIA_APP = 'livehuddle.app';
+// The key the api and the index share (the api's INDEX_KEY, the index's INDEX_KEY_LIVEHUDDLE). Test-only.
 const INDEX_KEY = 'e2e-index-key';
 // Accounts' key at the index (its MERGE_KEY): what the index's "teams as they are now" call carries to the
 // stand-in (POST /api/account/index/teams). Test-only.
@@ -124,7 +124,7 @@ const INDEX_STATE = path.join(INDEX_DIR, '.wrangler', 'e2e-state');
 const WRANGLER_REGISTRY = path.join(INDEX_DIR, '.wrangler', `e2e-registry-${MEDIA_PORT}`);
 rmSync(WRANGLER_REGISTRY, { recursive: true, force: true });
 process.env.WRANGLER_REGISTRY_PATH = WRANGLER_REGISTRY;
-// liveworkspace's site, whose Explorer production serves at livediagram's own /explorer (the router's
+// liveworkspace's site, whose Explorer production serves at livehuddle's own /explorer (the router's
 // routeToWorkspace, @liveworkspace/sites/workspace-proxy): its static export, when built.
 // E2E_WORKSPACE_SITE_OUT serves another export of it: the signed-in specs' `.next/out-e2e`
 // (liveworkspace/apps/site/scripts/build-e2e.mjs), which reads the specs' session as the editor's signed-in build does.
@@ -185,14 +185,14 @@ const ACCOUNTS_KID = 'e2e-accounts-stub';
 // What the api worker is started with (below): its issuer is `${ACCOUNTS_URL}/api/auth`, and the
 // audience is its own API_RESOURCE, exactly as against the real accounts Worker.
 const ACCOUNTS_PATH = '/e2e/accounts';
-const API_RESOURCE = 'https://e2e.livediagram.test/api';
+const API_RESOURCE = 'https://e2e.livehuddle.test/api';
 // The accounts origin the api and the index both trust: the stand-in on this live origin.
 const ACCOUNTS_ORIGIN = `http://127.0.0.1:${EDITOR_PORT}${ACCOUNTS_PATH}`;
 
 const b64url = (buf) => Buffer.from(buf).toString('base64url');
 
 // The client the api worker is started with (below), as register-client.ts would make it.
-const ACCOUNTS_CLIENT = { id: 'e2e-livediagram', secret: 'e2e-client-secret' };
+const ACCOUNTS_CLIENT = { id: 'e2e-livehuddle', secret: 'e2e-client-secret' };
 
 // The stand-in's records, as liveworkspace.app keeps them (liveworkspace/docs/specs/003-accounts/accounts.md "Teams" and
 // "API tokens"). Every team and member carries the feed position of its last change, so the change
@@ -638,7 +638,7 @@ function filesUnder(dir, out = []) {
   return out;
 }
 function simulateDeploy(from) {
-  const next = mkdtempSync(path.join(tmpdir(), 'livediagram-e2e-deploy-'));
+  const next = mkdtempSync(path.join(tmpdir(), 'livehuddle-e2e-deploy-'));
   const n = deployDirs.push(next);
   cpSync(from, next, { recursive: true });
   const renames = new Map();
@@ -755,7 +755,7 @@ function proxyApi(req, res) {
 }
 
 // The router's routeToWorkspace (@liveworkspace/sites/workspace-proxy): the Explorer is liveworkspace's page, shown
-// at livediagram's own /explorer with the address unchanged, its build assets under /_liveworkspace. Served from
+// at livehuddle's own /explorer with the address unchanged, its build assets under /_liveworkspace. Served from
 // the site's static export when it is built; otherwise a logged 404, so only the specs that open the Explorer page
 // need the build.
 const isWorkspacePath = (pathname) =>
@@ -913,7 +913,7 @@ function startMarketingServer() {
 async function main() {
   if (!existsSync(OUT_DIR)) {
     console.error(
-      `[e2e] ${OUT_DIR} missing — run \`pnpm --filter @livediagram/editor build\` first`,
+      `[e2e] ${OUT_DIR} missing — run \`pnpm --filter @livehuddle/editor build\` first`,
     );
     process.exit(1);
   }
@@ -971,9 +971,9 @@ async function main() {
       '--var',
       `INDEX_AUDIENCES:${API_RESOURCE}`,
       '--var',
-      `INDEX_KEY_LIVEDIAGRAM:${INDEX_KEY}`,
+      `INDEX_KEY_LIVEHUDDLE:${INDEX_KEY}`,
       '--var',
-      `APP_ORIGIN_LIVEDIAGRAM:http://127.0.0.1:${API_PORT}`,
+      `APP_ORIGIN_LIVEHUDDLE:http://127.0.0.1:${API_PORT}`,
       '--var',
       `MERGE_KEY:${MERGE_KEY}`,
     ],
@@ -994,7 +994,7 @@ async function main() {
     'pnpm',
     [
       '--filter',
-      '@livediagram/api',
+      '@livehuddle/api',
       'exec',
       'wrangler',
       'dev',

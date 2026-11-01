@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import type { CSSProperties, ReactNode } from 'react';
-import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livediagram/document';
+import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@livehuddle/document';
 import {
   DEFAULT_BUTTON_MODE,
   PADDING_PX,
@@ -25,7 +25,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
 import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
 import { CollabSettingsSlot } from '@/components/canvas/collab/collab-chrome';

@@ -1,7 +1,7 @@
 // `show selected` (docs/specs/024-agents/blueprints/document-views.md "show selected", VW65 to VW68): the
 // owner's live selection, each element as `show` prints it, in tab order, under one header and one budget.
-import type { ShowSelectedView, ViewDoor } from '@livediagram/api-schema';
-import type { Element } from '@livediagram/document';
+import type { ShowSelectedView, ViewDoor } from '@livehuddle/api-schema';
+import type { Element } from '@livehuddle/document';
 import {
   fitLines,
   fitOf,

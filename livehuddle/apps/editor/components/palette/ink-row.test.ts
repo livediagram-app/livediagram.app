@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PEN_INK, penColourHex, type Element } from '@livediagram/document';
+import { PEN_INK, penColourHex, type Element } from '@livehuddle/document';
 import { inkSwatch, shownColour } from './ink-row';
 
 const el = (type: string, over: Record<string, unknown> = {}): Element =>

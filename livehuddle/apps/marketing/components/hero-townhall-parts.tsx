@@ -1,4 +1,4 @@
-import { trustedHtml } from '@livediagram/ui';
+import { trustedHtml } from '@livehuddle/ui';
 import type { CSSProperties, ReactNode } from 'react';
 import { stickerArt } from '@liveworkspace/icons';
 import { FONT } from '@/components/art-tokens';

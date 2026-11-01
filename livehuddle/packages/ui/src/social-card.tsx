@@ -1,5 +1,5 @@
 // This product's social card (docs/specs/019-marketing/marketing-site.md "SEO and metadata"): @liveworkspace/ui's
-// card, drawn in livediagram's sky with its own wordmark, headline and footer line.
+// card, drawn in livehuddle's sky with its own wordmark, headline and footer line.
 
 import { createSocialCard } from '@liveworkspace/ui/social-card';
 import { brandMarkSvg } from './brand-app';
@@ -14,7 +14,7 @@ export {
 export const renderSocialCard = /* @__PURE__ */ createSocialCard({
   markSvg: brandMarkSvg({ variant: 'full', scheme: 'light' }),
   wordmark: 'diagram',
-  domain: 'livediagram.app',
+  domain: 'livehuddle.app',
   headline: 'Diagram together,',
   pitch: sentencePitch,
   footer: 'No sign-up. Open the link, start drawing.',

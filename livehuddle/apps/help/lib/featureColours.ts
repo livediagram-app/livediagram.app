@@ -1,7 +1,7 @@
 /** Feature slug → accent colour (hex). The home + features grid and the
  *  MDX <Feature> cards tint each feature with a distinct hue so the index
  *  reads as a colourful catalogue, the same way the Manager Toolkit help
- *  centre does. livediagram's own brand is sky-blue (docs/specs/004-interface-design/color-scheme.md); these hues
+ *  centre does. livehuddle's own brand is sky-blue (docs/specs/004-interface-design/color-scheme.md); these hues
  *  are drawn from a cool, on-brand palette (sky / indigo / teal / violet /
  *  emerald / amber / rose) so cards stay coherent with the product. */
 export const FEATURE_ENTITY_HEX: Record<string, string> = {

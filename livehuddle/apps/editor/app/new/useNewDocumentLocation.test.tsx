@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // docs/specs/006-document/save-locations.md "The default depends on who is creating": /new stores a guest's
-// document on This Browser, a signed-in person's on livediagram, and never makes a signed-in person's
+// document on This Browser, a signed-in person's on livehuddle, and never makes a signed-in person's
 // create This Browser because sign-in had not answered yet.
 
 import { renderHook } from '@testing-library/react';
@@ -25,9 +25,9 @@ describe('useNewDocumentLocation', () => {
   });
 
   describe('resolveSaveLocation', () => {
-    it('keeps a signed-in person on livediagram', async () => {
+    it('keeps a signed-in person on livehuddle', async () => {
       const { result } = render({ authLoaded: true, accountUserId: 'user_1' });
-      await expect(result.current.resolveSaveLocation(false, vi.fn())).resolves.toBe('livediagram');
+      await expect(result.current.resolveSaveLocation(false, vi.fn())).resolves.toBe('livehuddle');
     });
 
     it('answers a guest at once, without waiting for identity', async () => {
@@ -44,7 +44,7 @@ describe('useNewDocumentLocation', () => {
         hook.rerender({ authLoaded: true, accountUserId: 'user_1' });
       });
       await expect(hook.result.current.resolveSaveLocation(false, settle)).resolves.toBe(
-        'livediagram',
+        'livehuddle',
       );
       expect(settle).toHaveBeenCalledOnce();
     });
@@ -56,19 +56,19 @@ describe('useNewDocumentLocation', () => {
       await expect(hook.result.current.resolveSaveLocation(false, settle)).resolves.toBe('browser');
     });
 
-    it('waits past the 5 s give-up for a slow session, so a signed-in person still saves on livediagram', async () => {
+    it('waits past the 5 s give-up for a slow session, so a signed-in person still saves on livehuddle', async () => {
       setHint(true);
       // The page gave up on sign-in: authLoaded with no one in it, the session not yet answered.
       const hook = render({ authLoaded: true, sessionAnswered: false, accountUserId: null });
       const pending = hook.result.current.resolveSaveLocation(false, vi.fn());
       await new Promise((r) => setTimeout(r, 250));
       hook.rerender({ authLoaded: true, sessionAnswered: true, accountUserId: 'user_1' });
-      await expect(pending).resolves.toBe('livediagram');
+      await expect(pending).resolves.toBe('livehuddle');
     });
 
-    it('keeps a folder or team link on livediagram', async () => {
+    it('keeps a folder or team link on livehuddle', async () => {
       const { result } = render({ authLoaded: false, accountUserId: null });
-      await expect(result.current.resolveSaveLocation(true, vi.fn())).resolves.toBe('livediagram');
+      await expect(result.current.resolveSaveLocation(true, vi.fn())).resolves.toBe('livehuddle');
     });
 
     // save-locations.md "On the start screen": the wizard's switch, once flipped, decides the create.
@@ -77,8 +77,8 @@ describe('useNewDocumentLocation', () => {
       const settle = vi.fn(() => new Promise<void>(() => {}));
       const guest = render({ authLoaded: true, accountUserId: null });
       await expect(
-        guest.result.current.resolveSaveLocation(false, vi.fn(), 'livediagram'),
-      ).resolves.toBe('livediagram');
+        guest.result.current.resolveSaveLocation(false, vi.fn(), 'livehuddle'),
+      ).resolves.toBe('livehuddle');
       const waiting = render({ authLoaded: false, accountUserId: null });
       await expect(
         waiting.result.current.resolveSaveLocation(false, settle, 'browser'),
@@ -86,10 +86,10 @@ describe('useNewDocumentLocation', () => {
       expect(settle).not.toHaveBeenCalled();
     });
 
-    it('keeps a folder or team link on livediagram whatever the switch says', async () => {
+    it('keeps a folder or team link on livehuddle whatever the switch says', async () => {
       const { result } = render({ authLoaded: true, accountUserId: 'user_1' });
       await expect(result.current.resolveSaveLocation(true, vi.fn(), 'browser')).resolves.toBe(
-        'livediagram',
+        'livehuddle',
       );
     });
   });

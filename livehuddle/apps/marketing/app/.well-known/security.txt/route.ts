@@ -1,4 +1,4 @@
-import { SITE_URL } from '@livediagram/ui';
+import { SITE_URL } from '@livehuddle/ui';
 import { appSecurityPolicy, securityTxtResponse } from '@liveworkspace/sites/security';
 
 // The RFC 9116 file every liveworkspace site serves, from the one shared builder

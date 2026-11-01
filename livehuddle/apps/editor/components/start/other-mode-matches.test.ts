@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { EDITOR_MODES } from '@livediagram/document';
+import { EDITOR_MODES } from '@livehuddle/document';
 import {
   TEMPLATES,
   isBlankTemplate,
   popularKindsFor,
   templateEditorMode,
-} from '@livediagram/templates';
+} from '@livehuddle/templates';
 import { otherModeMatches } from './other-mode-matches';
 
 // docs/specs/007-editor/start-diagramming.md "Found in other modes".

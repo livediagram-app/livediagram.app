@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { penColourHex, WHITEBOARD_INK } from '@livediagram/document';
+import { penColourHex, WHITEBOARD_INK } from '@livehuddle/document';
 import {
   dismissQuickTour,
   expect,

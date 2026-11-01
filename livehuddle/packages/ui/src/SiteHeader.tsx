@@ -1,4 +1,4 @@
-import type { CtaSurface } from '@livediagram/api-schema';
+import type { CtaSurface } from '@livehuddle/api-schema';
 import { createSiteHeader } from '@liveworkspace/ui/site-header';
 import { Brand } from './Brand';
 import { ExplorerLink } from './ExplorerLink';

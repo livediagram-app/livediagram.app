@@ -6,7 +6,7 @@ import {
   type Element,
   type HeroCaption,
   type WebRows,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { elementTelemetryType } from '@/lib/element-telemetry';
 

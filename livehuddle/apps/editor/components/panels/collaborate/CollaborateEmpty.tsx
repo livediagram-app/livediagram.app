@@ -5,7 +5,7 @@
 // the refreshed Collaborate cards use for theirs.
 
 import { lucideCircleCheck, lucideSparkles } from '@liveworkspace/icons/lucide';
-import { lucideGlyph } from '@livediagram/ui';
+import { lucideGlyph } from '@livehuddle/ui';
 import { emptyCopy, type CollaborateKind, type CollaborateSide } from './collaborate-model';
 
 const SparklesGlyph = lucideGlyph(lucideSparkles, 18);

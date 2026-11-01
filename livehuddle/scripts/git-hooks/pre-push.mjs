@@ -54,7 +54,7 @@ export function prePushPlan(changedFiles, coverageFilters) {
   if (changedFiles.some((f) => OUTSIDE_WORKSPACES.test(f))) {
     steps.push({
       label: 'help guards (repo-wide references)',
-      args: ['exec', 'turbo', 'run', 'test:coverage', '--filter=@livediagram/help'],
+      args: ['exec', 'turbo', 'run', 'test:coverage', '--filter=@livehuddle/help'],
     });
   }
   return steps;

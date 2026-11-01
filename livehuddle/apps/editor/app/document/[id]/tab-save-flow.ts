@@ -1,5 +1,5 @@
-import { diffToElementOps, type ElementOp, type Tab } from '@livediagram/document';
-import type { RoomOp, RoomOutgoing } from '@livediagram/api-schema';
+import { diffToElementOps, type ElementOp, type Tab } from '@livehuddle/document';
+import type { RoomOp, RoomOutgoing } from '@livehuddle/api-schema';
 import { tabBroadcastOps } from './tab-broadcast-ops';
 import { holdOwnWrites, type OwnElementWrites } from './own-element-writes';
 

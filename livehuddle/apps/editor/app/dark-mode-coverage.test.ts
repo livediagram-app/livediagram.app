@@ -85,7 +85,7 @@ describe('tiles of light-canvas illustration art', () => {
     // light-canvas art. One `.dark` rule flips the lot, so a preview nobody
     // has drawn yet is dark-correct the moment it lands.
     expect(RELIGHT_CSS).toMatch(/\.dark \.preview-art-tile \{[^}]*filter:[^}]*invert/);
-    expect(GLOBALS).toContain("@import '@livediagram/template-previews/preview-art-tile.css';");
+    expect(GLOBALS).toContain("@import '@livehuddle/template-previews/preview-art-tile.css';");
   });
 
   // The editor's tiles land on the dark CANVAS colour (docs/specs/007-editor/editor-app.md), so a

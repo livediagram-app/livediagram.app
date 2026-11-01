@@ -6,7 +6,7 @@ import { liveworkspaceNextConfig } from '@liveworkspace/next-config';
 const nextConfig: NextConfig = {
   ...liveworkspaceNextConfig(),
   transpilePackages: [
-    '@livediagram/ui',
+    '@livehuddle/ui',
     '@liveworkspace/ui',
     '@liveworkspace/comparisons',
     '@liveworkspace/marketing-site',

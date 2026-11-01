@@ -13,7 +13,7 @@ import type { DrawioDocumentFile } from '@/lib/drawio/new-document';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { toggled, toggledAll } from '@/lib/import-selection';
 import { track } from '@/lib/telemetry';
-import { pluralGrouped } from '@livediagram/document';
+import { pluralGrouped } from '@livehuddle/document';
 
 export const DRAWIO_UNEXPECTED = "Couldn't import that. Check the files and try again.";
 

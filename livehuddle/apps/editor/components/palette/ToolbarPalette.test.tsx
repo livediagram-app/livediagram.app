@@ -8,7 +8,7 @@ import { ToolbarPalette } from './ToolbarPalette';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import type { EsBoardControls } from './EventStormingBoardRows';
 import { COLLABORATE_CATEGORY_GROUPS } from './palette-tile-defs';
-import { type EditorMode, type Element } from '@livediagram/document';
+import { type EditorMode, type Element } from '@livehuddle/document';
 import type { ReactNode } from 'react';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { requestToolbarSearch } from '@liveworkspace/workbench/lib/toolbar-search-request';

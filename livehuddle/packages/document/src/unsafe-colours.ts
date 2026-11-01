@@ -1,7 +1,7 @@
 // A colour field that is not a colour, dropped where stored elements enter (./stored-elements): from storage, a peer,
 // a paste, a file or an agent's write. The canvas paints element colours into CSS, several of them inside a
 // `background` or a gradient (a card's wash, a reveal's glow, a mood bar), where a value carrying `url(...)` makes
-// every viewer's browser fetch an outside address. Nothing in livediagram loads from outside the document
+// every viewer's browser fetch an outside address. Nothing in livehuddle loads from outside the document
 // (docs/specs/009-elements/images.md "External-URL images"), so a colour that could is refused once, at the door,
 // rather than at each of the sinks. The element then paints with that colour's default, as if it had none.
 

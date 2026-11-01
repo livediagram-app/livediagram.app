@@ -1,7 +1,7 @@
 'use client';
 
 // The person's documents, for the editor's pickers that name another document (Add to Document, a link to a document, search).
-// They are the index's (liveworkspace/docs/specs/004-index/one-explorer-contracts.md): one page of livediagram items, read once the
+// They are the index's (liveworkspace/docs/specs/004-index/one-explorer-contracts.md): one page of livehuddle items, read once the
 // open document has loaded and the browser is idle, so it never joins the open's requests. `refresh` reads it again
 // after this editor changed it (a tab moved to another document).
 
@@ -30,7 +30,7 @@ export function documentListItem(item: Item): DocumentListItem {
 
 // The person's live documents.
 export async function fetchDocumentList(): Promise<DocumentListItem[]> {
-  const page = await indexClient.listItems({ app: 'livediagram', limit: DOCUMENT_LIST_LIMIT });
+  const page = await indexClient.listItems({ app: 'livehuddle', limit: DOCUMENT_LIST_LIMIT });
   const live = page.items.filter((item) => item.trashedAt === null);
   return live.map(documentListItem);
 }
@@ -71,7 +71,7 @@ export function useDocumentList(
       cancel();
     };
   }, [enabled, ownerId, generation]);
-  // An old livediagram.app guest's work, just claimed (docs/specs/014-identity/auth-and-guest-access.md).
+  // An old livehuddle.app guest's work, just claimed (docs/specs/014-identity/auth-and-guest-access.md).
   useAfterLegacyClaim(() => setGeneration((g) => g + 1), enabled);
   return { documentList, refreshDocumentList: () => setGeneration((g) => g + 1) };
 }

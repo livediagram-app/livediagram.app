@@ -7,7 +7,7 @@
 //
 // Pure: every helper returns fresh elements.
 
-import { createShape, createText, type Element } from '@livediagram/document';
+import { createShape, createText, type Element } from '@livehuddle/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 export const SCAFFOLD = { layerId: TEMPLATE_SCAFFOLD_LAYER_ID } as const;

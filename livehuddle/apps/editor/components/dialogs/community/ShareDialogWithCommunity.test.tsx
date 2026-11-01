@@ -2,14 +2,14 @@
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// The editor's Share binds the shared Community tab to livediagram (docs/specs/025-community/community.md
+// The editor's Share binds the shared Community tab to livehuddle (docs/specs/025-community/community.md
 // "Publishing", "Turning the Community off"): the Community's switch, the canvas's sign-in return, the person as the
 // listing's author, and the header badge's store. The tab itself is @liveworkspace/community-ui's, tested there.
 
 const h = vi.hoisted(() => ({ enabled: true, community: null as Record<string, unknown> | null }));
 
-vi.mock('@livediagram/ui', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@livediagram/ui')>()),
+vi.mock('@livehuddle/ui', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@livehuddle/ui')>()),
   useCommunityEnabled: () => h.enabled,
 }));
 vi.mock('@liveworkspace/explorer', () => ({
@@ -19,7 +19,7 @@ vi.mock('@liveworkspace/explorer', () => ({
   },
 }));
 vi.mock('@/lib/community-share-host', () => ({
-  livediagramCommunityHost: (opts: { documentId: string }) => ({ documentId: opts.documentId }),
+  livehuddleCommunityHost: (opts: { documentId: string }) => ({ documentId: opts.documentId }),
 }));
 
 import { getCommunityState } from '@/lib/community-state-store';
@@ -30,7 +30,7 @@ function renderDialog(over: { signedIn?: boolean; firstTabEmpty?: boolean } = {}
     client: {},
     item: {
       id: 'd1',
-      app: 'livediagram',
+      app: 'livehuddle',
       kind: 'canvas',
       sharedVia: null,
       title: 'Doc',

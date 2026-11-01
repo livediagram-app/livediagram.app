@@ -1,5 +1,5 @@
 // The first-run welcome's manifest (liveworkspace/docs/specs/004-index/one-explorer.md "First run"): what liveworkspace.app's
-// Explorer offers a person with nothing yet, written beside the catalogue as @livediagram/templates/welcome.json so the
+// Explorer offers a person with nothing yet, written beside the catalogue as @livehuddle/templates/welcome.json so the
 // Explorer reads a small static file instead of the catalogue and its pictures. This test is the generator and its
 // guard: run with WELCOME_WRITE=1 to write it; without, it fails when the file has drifted from the catalogue.
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -13,8 +13,8 @@ import {
   templateCreateHref,
   BLANK_TEMPLATE_FOR_MODE,
   type TemplateKind,
-} from '@livediagram/templates';
-import { EDITOR_MODES } from '@livediagram/document';
+} from '@livehuddle/templates';
+import { EDITOR_MODES } from '@livehuddle/document';
 import { TemplatePreview } from './template-preview';
 
 const FILE = new URL('../../templates/welcome.json', import.meta.url);
@@ -37,7 +37,7 @@ function start(kind: TemplateKind) {
 
 export function welcomeManifest() {
   return {
-    app: 'livediagram',
+    app: 'livehuddle',
     pillFree: 'Free and open source',
     startBlankHref: '/new?start=blank',
     allTemplatesHref: '/new',

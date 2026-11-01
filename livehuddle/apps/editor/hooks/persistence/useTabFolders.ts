@@ -16,7 +16,7 @@ import {
   normalizeFolderOrder,
   tabFolderName,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { trackTabFolderTransition } from './tab-folder-reporting';
 

@@ -1,4 +1,4 @@
-import { siteTrack } from '@livediagram/telemetry-client';
+import { siteTrack } from '@livehuddle/telemetry-client';
 import type { CommunitySiteTelemetry } from '@liveworkspace/community-site/client';
 
 // Anonymous, first-party telemetry for the Community app (docs/specs/025-community/community.md

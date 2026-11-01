@@ -5,7 +5,7 @@
 // turning one off in any app turns it off here; `notifyDocumentJoin` is this app's own. The team
 // emails' switch (`notifyInviteResponse`) is liveworkspace's to read: it sends those.
 
-import { upgradeLegacyPreferences } from '@livediagram/api-schema';
+import { upgradeLegacyPreferences } from '@livehuddle/api-schema';
 import type { Env } from '../types';
 import { readPreferences } from './settings';
 

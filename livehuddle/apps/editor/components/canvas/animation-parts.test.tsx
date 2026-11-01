@@ -2,7 +2,7 @@
 import { render, renderHook } from '@testing-library/react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { DRAWING_ANIMATIONS, type PathElement, type TableElement } from '@livediagram/document';
+import { DRAWING_ANIMATIONS, type PathElement, type TableElement } from '@livehuddle/document';
 import { AnimationLayer } from '@liveworkspace/workbench/components/canvas/AnimationLayer';
 import { useDrawingAnimation } from './drawing-animation';
 import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';

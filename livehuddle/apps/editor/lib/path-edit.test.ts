@@ -5,7 +5,7 @@ import {
   cubicAt,
   pathSegments,
   type PathAnchor,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   PATH_NODE_HIT_PX,
   bendAt,

@@ -24,7 +24,7 @@ describe('apiRevertChangeset', () => {
     expect(answer.kept).toEqual([{ id: 'a', reason: 'changed' }]);
     expect(calls[0]!.url).toMatch(/\/documents\/d1\/changesets\/cs_0000000001\/revert$/);
     expect(calls[0]!.init.method).toBe('POST');
-    expect(new Headers(calls[0]!.init.headers).get('X-Livediagram-Client')).toBe('editor');
+    expect(new Headers(calls[0]!.init.headers).get('X-Livehuddle-Client')).toBe('editor');
   });
 });
 

@@ -6,7 +6,7 @@
 // Gated so it never runs during a normal test run / CI: it only runs when EMAIL_PREVIEW=1 is passed.
 //
 // Run it:
-//   EMAIL_PREVIEW=1 pnpm --filter @livediagram/api exec \
+//   EMAIL_PREVIEW=1 pnpm --filter @livehuddle/api exec \
 //     vitest run src/email/send-test-email.test.ts
 //
 // Optional, from apps/api/.dev.vars (gitignored) or the shell:
@@ -51,7 +51,7 @@ function devVars(): Record<string, string> {
 const nodeEnv = (process as { env: Record<string, string | undefined> }).env;
 const vars: Record<string, string | undefined> = { ...devVars(), ...nodeEnv };
 const ENABLED = nodeEnv.EMAIL_PREVIEW === '1';
-const OUT = join(tmpdir(), 'livediagram-email-preview');
+const OUT = join(tmpdir(), 'livehuddle-email-preview');
 
 // The binding as wrangler dev simulates it: nothing leaves the machine, each message lands in a file.
 const previewBinding = {
@@ -66,8 +66,8 @@ const previewBinding = {
 
 const env = {
   EMAIL: previewBinding,
-  EMAIL_FROM: vars.EMAIL_FROM ?? 'livediagram <hello@liveplanner.app>',
-  APP_BASE_URL: vars.APP_BASE_URL ?? 'https://www.livediagram.app',
+  EMAIL_FROM: vars.EMAIL_FROM ?? 'livehuddle <hello@liveplanner.app>',
+  APP_BASE_URL: vars.APP_BASE_URL ?? 'https://www.livehuddle.app',
 } as unknown as Env;
 
 describe.skipIf(!ENABLED)('email preview (manual harness)', () => {

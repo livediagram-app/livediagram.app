@@ -1,4 +1,4 @@
-import { PreviewFan } from '@livediagram/template-previews';
+import { PreviewFan } from '@livehuddle/template-previews';
 import {
   BAND_CARD,
   BAND_CONTROL_HOVER,

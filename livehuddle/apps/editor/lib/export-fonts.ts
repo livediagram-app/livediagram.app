@@ -1,5 +1,5 @@
-import { bytesToBase64 } from '@livediagram/api-schema';
-import { googleFontsHref } from '@livediagram/document';
+import { bytesToBase64 } from '@livehuddle/api-schema';
+import { googleFontsHref } from '@livehuddle/document';
 
 // Webfonts, EMBEDDED, for an image export (docs/specs/004-interface-design/fonts.md).
 //

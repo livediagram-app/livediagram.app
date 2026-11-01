@@ -4,7 +4,7 @@
 // a new document is saved, whether to ask for the session at all); every request still
 // authenticates the real way.
 
-import { signedInHintOf } from '@livediagram/api-schema';
+import { signedInHintOf } from '@livehuddle/api-schema';
 
 export function readSignedInHint(cookie: string = readCookie()): boolean {
   return signedInHintOf(cookie) === true;

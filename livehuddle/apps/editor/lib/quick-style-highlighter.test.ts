@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import {
   applyHighlighterStyle,
   isHighlightStroke,

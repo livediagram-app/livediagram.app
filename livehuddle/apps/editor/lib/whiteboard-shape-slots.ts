@@ -8,7 +8,7 @@ import {
   type WhiteboardShapeKey,
 } from './whiteboard-shape-catalogue';
 import { WHITEBOARD_SHAPES } from './whiteboard-tool';
-import { withinReach } from '@livediagram/api-schema';
+import { withinReach } from '@livehuddle/api-schema';
 
 // Per kind: how often it was picked, and when last (epoch ms), as a pair to keep the synced
 // preferences blob (4 KB for everything) small. The time orders the last-used slots.

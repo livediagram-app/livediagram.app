@@ -2,7 +2,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import type { SceneItem } from '@/lib/board-scene/scene';
 import { boardScene, inkStroke } from '@/lib/board-scene/test-scenes';
 import { UNREADABLE_DATES_RULE } from '@/lib/board-scene/board-document';

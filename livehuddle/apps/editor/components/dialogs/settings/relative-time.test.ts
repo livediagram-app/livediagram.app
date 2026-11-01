@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DAY_MS } from '@livediagram/document';
+import { DAY_MS } from '@livehuddle/document';
 import { relativeTime } from './relative-time';
 
 const NOW = Date.UTC(2026, 8, 30);

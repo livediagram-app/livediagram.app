@@ -28,7 +28,7 @@
 // ticks. Keeping that rule in one file makes the policy auditable.
 
 import { useState } from 'react';
-import { createComment, type CommentMention, type CommentThread } from '@livediagram/document';
+import { createComment, type CommentMention, type CommentThread } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import type { ApplyElementDelta } from '@/hooks/collab/useElementDeltas';
 

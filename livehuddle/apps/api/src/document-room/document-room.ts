@@ -27,8 +27,8 @@ import {
   ROOM_PONG,
   roomIsFull,
   type AccessLevel,
-} from '@livediagram/api-schema';
-import { opForTheWire, stampCommentAuthor } from '@livediagram/document';
+} from '@livehuddle/api-schema';
+import { opForTheWire, stampCommentAuthor } from '@livehuddle/document';
 import { RoomParticipantWrites } from '../room-participant';
 import { RoomLedgerStore } from '../room-ledger-store';
 import { RoomLivePoll } from '../room-live-poll';
@@ -71,7 +71,7 @@ import {
   type SessionAttachment,
 } from '../room-session';
 
-import { CHANGESET_RETENTION_MS, type CommunityAuthor } from '@livediagram/api-schema';
+import { CHANGESET_RETENTION_MS, type CommunityAuthor } from '@livehuddle/api-schema';
 import { deleteOldChangesets } from '../db/changesets';
 import { documentHasTab } from '../db/tabs';
 import { documentPlacesImage } from '../db/image-refs';
@@ -784,7 +784,7 @@ export class DocumentRoom extends DurableObject<Env> {
     await importDocumentCopy(this.requireEnv(), documentId, copy);
   }
 
-  // An old livediagram.app document's part (the migration door, document-migration.ts): one transaction, with its
+  // An old livehuddle.app document's part (the migration door, document-migration.ts): one transaction, with its
   // own times; the outbox pushes it to the index and the media service as any write.
   async importMigrated(
     documentId: string,

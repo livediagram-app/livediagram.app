@@ -6,7 +6,7 @@
 // tap on to the next screen. Sticky notes beside them hold what to test and the open questions.
 // Pure: (cx, cy) -> Element[].
 
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import { drop, imageBox, phone, tapMark, tickBox } from './template-sketch-props';
 import {
   FINE,

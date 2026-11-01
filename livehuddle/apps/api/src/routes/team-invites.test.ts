@@ -9,7 +9,7 @@ import { makeTestRouteContext } from './test-route-context';
 
 const ACCOUNTS = {
   ACCOUNTS_URL: 'https://accounts.test',
-  ACCOUNTS_CLIENT_ID: 'livediagram',
+  ACCOUNTS_CLIENT_ID: 'livehuddle',
   ACCOUNTS_CLIENT_SECRET: 'secret',
 } as Partial<Env> as Env;
 

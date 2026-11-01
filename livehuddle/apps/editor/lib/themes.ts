@@ -1,5 +1,5 @@
 // The shared theme ENGINE (catalogue, types, recolour / switch / reset / preset
-// transforms) now lives in @livediagram/document so the MCP worker (docs/specs/015-api/mcp-server.md)
+// transforms) now lives in @livehuddle/document so the MCP worker (docs/specs/015-api/mcp-server.md)
 // themes tabs identically to the editor. This file re-exports it and adds
 // the LIVE-ONLY layer: resolution in the current viewer's appearance and the
 // new-element colour derivation that depends on it. The ~120 `@/lib/themes`
@@ -22,8 +22,8 @@ import {
   type BoxedElement,
   type Tab,
   type ThemeDefinition,
-} from '@livediagram/document';
-import { getResolvedAppearance } from '@livediagram/ui';
+} from '@livehuddle/document';
+import { getResolvedAppearance } from '@livehuddle/ui';
 
 // Pass through the shared engine so `@/lib/themes` stays the editor's theme API.
 export {
@@ -41,8 +41,8 @@ export {
   rederiveColorPresetForTheme,
   themePresetColors,
   themeChartPalette,
-} from '@livediagram/document';
-export type { ThemeId, ThemeDefinition, ShapeColorPreset } from '@livediagram/document';
+} from '@livehuddle/document';
+export type { ThemeId, ThemeDefinition, ShapeColorPreset } from '@livehuddle/document';
 
 // Resolve an id to its real ThemeDefinition, or `undefined` when the id names
 // nothing we know (a `custom:` id is moved to Default on read, docs/specs/011-theme/retired-schemes.md,
@@ -93,7 +93,7 @@ export function getTheme(
 //
 // Only the two COLOURS swap. The pattern, its opacity and its scale are layout
 // choices, identical in both appearances, so they pass straight through.
-export type { ResolvedBackdrop } from '@livediagram/document';
+export type { ResolvedBackdrop } from '@livehuddle/document';
 
 export function resolveTabBackdrop(
   tab: Pick<

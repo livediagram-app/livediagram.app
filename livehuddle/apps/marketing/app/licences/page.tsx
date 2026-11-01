@@ -2,12 +2,12 @@ import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { loadLicencesManifest } from '@liveworkspace/marketing-site/lib/licences-manifest';
 import { LicencesView } from '@liveworkspace/marketing-site/components/licences/LicencesView';
-import { pageMetadata, SiteHeader } from '@livediagram/ui';
+import { pageMetadata, SiteHeader } from '@livehuddle/ui';
 
 export const metadata = pageMetadata({
-  title: 'Open-source licences · livediagram',
+  title: 'Open-source licences · livehuddle',
   description:
-    'The open-source projects livediagram ships, with their licences and notices, generated from what each app actually bundles.',
+    'The open-source projects livehuddle ships, with their licences and notices, generated from what each app actually bundles.',
   path: '/licences',
 });
 
@@ -24,7 +24,7 @@ export default function LicencesPage() {
         <LicencesView
           manifest={manifest}
           title="Open-source licences"
-          lede="livediagram is MIT licensed and built on the work of many open-source projects. These are the ones our apps ship, generated from what each app actually bundles every time the site is built."
+          lede="livehuddle is MIT licensed and built on the work of many open-source projects. These are the ones our apps ship, generated from what each app actually bundles every time the site is built."
           browserIntro="Sent to your browser by the editor, this website, the help centre and the Community."
         />
       </main>

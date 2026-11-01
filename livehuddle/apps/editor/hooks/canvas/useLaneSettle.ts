@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { isEventStormingTab, settleNotesOnLanes, type Tab } from '@livediagram/document';
+import { isEventStormingTab, settleNotesOnLanes, type Tab } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 

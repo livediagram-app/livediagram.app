@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { createShape, type BoxedElement, type TabVote } from '@livediagram/document';
+import { createShape, type BoxedElement, type TabVote } from '@livehuddle/document';
 import { CanvasZoomProvider } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { ElementVoteOverlay } from './ElementVoteOverlay';
 

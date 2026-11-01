@@ -22,7 +22,7 @@ import {
   type Element,
   type ShapeElement,
   type TextRun,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   VALUE_STREAM_HOURS_PER_DAY,
   VALUE_STREAM_STEPS,

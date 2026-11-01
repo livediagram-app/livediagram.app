@@ -14,8 +14,8 @@ import {
   type SequenceElementMessage,
   type SequenceElementParticipant,
   type SequenceMessageKindName,
-} from '@livediagram/document';
-import { CompactEmptyState, lucideGlyph, Select, Tooltip } from '@livediagram/ui';
+} from '@livehuddle/document';
+import { CompactEmptyState, lucideGlyph, Select, Tooltip } from '@livehuddle/ui';
 import {
   lucideChevronDown,
   lucideChevronUp,

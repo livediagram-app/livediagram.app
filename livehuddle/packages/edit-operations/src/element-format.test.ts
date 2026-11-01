@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ELEMENT_FIELD_NAMES } from '@livediagram/document';
-import { estimateTokens } from '@livediagram/document-views';
+import { ELEMENT_FIELD_NAMES } from '@livehuddle/document';
+import { estimateTokens } from '@livehuddle/document-views';
 import {
   addableKinds,
   elementFormatText,

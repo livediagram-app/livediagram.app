@@ -1,7 +1,7 @@
 // Pure tab builders (docs/specs/015-api/mcp-server.md, docs/specs/024-agents/edit-operations.md):
 // validated elements or a node/edge graph turned into a finished, themed, persistable Tab, and the
 // event-storming landing every authoring path shares. Render-free, so the MCP, the api and the CLI
-// all build tabs the same way. Template tabs are `buildTemplateTab` in @livediagram/templates.
+// all build tabs the same way. Template tabs are `buildTemplateTab` in @livehuddle/templates.
 
 import { withFacingBends } from './arrow-orthogonal';
 import { settleDiagramKeys } from './diagram-key';

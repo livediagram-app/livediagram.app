@@ -10,7 +10,7 @@ import type {
   DocumentResponse,
   ShareLinkResponse,
   TabResponse,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import {
   buildGraphTab,
   buildTab,
@@ -19,7 +19,7 @@ import {
   normaliseElements,
   resolveGraphInput,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   buildTemplateTab,
   resolveTemplate,
@@ -29,19 +29,19 @@ import {
   validTemplateKinds,
   closestTemplatesHint,
   type TemplateKind,
-} from '@livediagram/templates';
+} from '@livehuddle/templates';
 import {
   DEFAULT_MCP_SHARE_LEVEL,
   TRASH_RETENTION_DAYS,
   creationIntentOf,
   type LiveDoc,
   type TrashedDocument,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import { createdFolderLabel } from './created-folder';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readDocument } from './read-document';
 import type { Env } from '@liveworkspace/mcp-kit/env';
-import { deleteRefusal, fetchTeamLibraries, matchDocuments } from '@livediagram/agent-verbs';
+import { deleteRefusal, fetchTeamLibraries, matchDocuments } from '@livehuddle/agent-verbs';
 import {
   deepLink,
   errorResult,
@@ -52,7 +52,7 @@ import {
   type Extra,
 } from './tool-helpers';
 import { lintLineOf, lintReportsOf, lintTextOf } from './lint-summary';
-import { withoutFindings } from '@livediagram/diagram-lint';
+import { withoutFindings } from '@livehuddle/diagram-lint';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { elementsIssue, graphIconIssue, tabElementsIssue } from './element-values';
 import { packFreehandPoints } from './freehand-points';
@@ -84,7 +84,7 @@ import {
   mcpSearchIcons,
   mcpShareDocument,
   mcpUpdateDocument,
-} from '@livediagram/agent-verbs/mcp';
+} from '@livehuddle/agent-verbs/mcp';
 
 export function registerTools(server: McpServer, env: Env): void {
   // The user's image gallery, for image elements (docs/specs/015-api/mcp-server.md §4.5b).
@@ -190,7 +190,7 @@ export function registerTools(server: McpServer, env: Env): void {
       if (!t.elements || !isValidTab(candidate)) {
         return errorResult(
           `Invalid elements in tab "${t.name}". Provide "elements" (or a "template" kind ` +
-            'from list_templates). Check the livediagram://schema/elements resource: every ' +
+            'from list_templates). Check the livehuddle://schema/elements resource: every ' +
             'element needs id/type/x/y/width/height (arrows need from/to), and arrays must ' +
             'be well-formed.',
         );
@@ -260,7 +260,7 @@ export function registerTools(server: McpServer, env: Env): void {
     if (!args.template && !input.graph && !args.elements) {
       return errorResult(
         'Invalid input. Provide a "graph" (nodes + edges), "mermaid", "elements", or a "template" kind ' +
-          'from list_templates. Check the livediagram://schema/elements resource.',
+          'from list_templates. Check the livehuddle://schema/elements resource.',
       );
     }
     const drawn = args.elements ? packFreehandPoints(args.elements) : null;

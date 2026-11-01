@@ -23,8 +23,8 @@ import {
   isBoxed,
   type BoxedElement,
   type Element,
-} from '@livediagram/document';
-import { CloseIcon } from '@livediagram/ui';
+} from '@livehuddle/document';
+import { CloseIcon } from '@livehuddle/ui';
 
 import { CommentBubbles } from '@/components/canvas/collab/comment/CommentBubbles';
 import { NoteRichText } from '@/components/notes/NoteRichText';

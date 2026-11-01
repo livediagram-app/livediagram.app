@@ -1,4 +1,4 @@
-// livediagram MCP server (docs/specs/015-api/mcp-server.md) — a standalone Cloudflare Worker fronted by
+// livehuddle MCP server (docs/specs/015-api/mcp-server.md) — a standalone Cloudflare Worker fronted by
 // Hono. POST /mcp carries the Streamable-HTTP MCP transport (stateless, JSON
 // responses), Bearer-gated; tools reach the api worker over the API service
 // binding, forwarding the caller's `Authorization: Bearer lwt_…`. OAuth 2.1

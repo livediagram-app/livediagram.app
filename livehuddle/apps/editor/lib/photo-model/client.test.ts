@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ModelCues, ModelNote } from '@livediagram/sticky-vision';
+import type { ModelCues, ModelNote } from '@livehuddle/sticky-vision';
 import { createBoundaryClient } from './client';
 import type { WorkerRequest, WorkerResponse } from './protocol';
 

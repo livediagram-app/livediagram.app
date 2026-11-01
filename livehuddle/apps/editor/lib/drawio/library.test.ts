@@ -2,7 +2,7 @@
 import { deflateRawSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
-import { contentBounds, type ArrowElement, type ShapeElement } from '@livediagram/document';
+import { contentBounds, type ArrowElement, type ShapeElement } from '@livehuddle/document';
 import { importDrawio } from './import';
 import { importDrawioLibrary } from './library';
 import { PIXEL_PNG } from './library-test-support';

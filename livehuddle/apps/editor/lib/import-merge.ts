@@ -3,7 +3,7 @@ import {
   migrateStoredTab,
   settleNotesOnLanes,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 // How an imported tab lands on top of the tab receiving it (docs/specs/020-import-export/markdown-import.md).
 //

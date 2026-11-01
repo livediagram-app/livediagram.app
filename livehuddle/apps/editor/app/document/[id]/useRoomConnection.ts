@@ -11,14 +11,14 @@ import {
   syncRemoteBesideTabs,
 } from '@liveworkspace/workbench/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
-import type { EditorMode, QaNote, Tab } from '@livediagram/document';
+import type { EditorMode, QaNote, Tab } from '@livehuddle/document';
 import {
   type AgentPresence,
   type AvatarPresence,
   type ChangesetRoomOp,
   type FacilitatorReason,
   type LivePoll,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import {

@@ -1,6 +1,6 @@
 'use client';
 
-// What the shared Share dialog (@liveworkspace/explorer `ShareDialog`) needs from livediagram beyond a link's
+// What the shared Share dialog (@liveworkspace/explorer `ShareDialog`) needs from livehuddle beyond a link's
 // address: a canvas's tabs (a link can open one), its embed (`/embed?s=<code>`, @liveworkspace/workbench/lib/embed.ts) and live image
 // (`/api/share/<code>/image.svg`, @liveworkspace/workbench/lib/live-image.ts), the Help articles, and telemetry. The editor's Share and the
 // Explorer's both use it; the Explorer asks per item, and another app's item gets no embed or live image here.
@@ -23,7 +23,7 @@ const origin = () => (typeof window === 'undefined' ? '' : window.location.origi
 export const documentHandOver: ShareHandOver = {
   embedUrl: (link) => embedUrlFor(origin(), link.code),
   liveImageUrl: (link, tabId) => liveImageUrlFor(origin(), link.code, tabId),
-  liveImageAlt: 'livediagram tab',
+  liveImageAlt: 'livehuddle tab',
 };
 
 const SHARE_HELP: Record<ShareHelpArticle, HelpArticleKey> = {
@@ -57,11 +57,11 @@ export const trackShare: ShareTelemetry = (action, type) => {
 export function explorerShareHost(ownerId: string | null): ShareHost {
   return {
     loadTabs: async (item) => {
-      if (item.app !== 'livediagram' || !ownerId) return [];
+      if (item.app !== 'livehuddle' || !ownerId) return [];
       const document = await apiLoadDocument(ownerId, item.id);
       return (document?.tabs ?? []).map((t) => ({ id: t.id, name: t.name }));
     },
-    handOver: (item) => (item.app === 'livediagram' ? documentHandOver : undefined),
+    handOver: (item) => (item.app === 'livehuddle' ? documentHandOver : undefined),
     helpHref: shareHelpHref,
     onTelemetry: trackShare,
   };

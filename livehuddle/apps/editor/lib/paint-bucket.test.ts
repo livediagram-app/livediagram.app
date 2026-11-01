@@ -10,7 +10,7 @@ import {
   isFilledPenLoop,
   type Element,
   type FreehandElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { paintBucketTarget, pourBucket } from './paint-bucket';
 
 const BLUE = '#dbeafe';

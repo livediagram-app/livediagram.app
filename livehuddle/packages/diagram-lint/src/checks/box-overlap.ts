@@ -2,7 +2,7 @@
 // count (N12). Boxes no arrow connects are decoration and may overlap by design.
 // Candidates come from the element grid, so each pair is tested once, the earlier box first.
 
-import { queryElementGrid } from '@livediagram/document';
+import { queryElementGrid } from '@livehuddle/document';
 import { boxBounds, holdsWholly, isLintBox, overlapDepth } from '../boxes';
 import { LINT_OVERLAP_TOLERANCE_PX } from '../constants';
 import { padded, refOf } from '../context';

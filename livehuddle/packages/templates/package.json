@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/templates",
+  "name": "@livehuddle/templates",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,8 +17,8 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
-    "@livediagram/api-schema": "workspace:*",
-    "@livediagram/document": "workspace:*"
+    "@livehuddle/api-schema": "workspace:*",
+    "@livehuddle/document": "workspace:*"
   },
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",

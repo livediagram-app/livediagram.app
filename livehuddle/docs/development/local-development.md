@@ -1,6 +1,6 @@
 # Local development
 
-How to run livediagram on your machine.
+How to run livehuddle on your machine.
 
 ## Requirements
 
@@ -11,7 +11,7 @@ Cloudflare is not required for local development. The api worker runs locally vi
 
 ## Clone and install
 
-livediagram is the `livediagram/` folder of the liveworkspace monorepo, which has one pnpm workspace and one lockfile
+livehuddle is the `livehuddle/` folder of the liveworkspace monorepo, which has one pnpm workspace and one lockfile
 at its root. Clone the monorepo and install from its root:
 
 ```sh
@@ -21,7 +21,7 @@ corepack pnpm install
 ```
 
 This installs every workspace at once, including TypeScript 7 ([Contributing](contributing.md#typescript)). Never
-install inside `livediagram/`.
+install inside `livehuddle/`.
 
 ## No database to set up
 
@@ -37,36 +37,36 @@ From the monorepo root:
 corepack pnpm dev:diagram
 ```
 
-Turbo spins up livediagram's seven dev servers in parallel, in its port block (3100 onward):
+Turbo spins up livehuddle's seven dev servers in parallel, in its port block (3500 onward):
 
 | App              | Dev URL                                                                                            |
 | ---------------- | -------------------------------------------------------------------------------------------------- |
-| `apps/router`    | `http://localhost:3100`: **everything on one port**, stitched like production                      |
-| `apps/marketing` | `http://localhost:3101`                                                                            |
-| `apps/editor`    | `http://localhost:3102` (clean routes: /new, /document/<id>, ...)                                  |
-| `apps/help`      | `http://localhost:3104/help`                                                                       |
-| `apps/community` | `http://localhost:3105/community`                                                                  |
-| `apps/api`       | `http://localhost:8687/api`                                                                        |
-| `apps/mcp`       | `http://localhost:8788` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
+| `apps/router`    | `http://localhost:3500`: **everything on one port**, stitched like production                      |
+| `apps/marketing` | `http://localhost:3501`                                                                            |
+| `apps/editor`    | `http://localhost:3502` (clean routes: /new, /document/<id>, ...)                                  |
+| `apps/help`      | `http://localhost:3504/help`                                                                       |
+| `apps/community` | `http://localhost:3505/community`                                                                  |
+| `apps/api`       | `http://localhost:9087/api`                                                                        |
+| `apps/mcp`       | `http://localhost:9088` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
 
-The telemetry dashboard is not one of them: it is liveworkspace's (`liveworkspace/apps/telemetry`, [Telemetry](../specs/017-telemetry/telemetry.md)), and `localhost:3100/telemetry` redirects to the local service. To see events locally, run that service and set `NEXT_PUBLIC_TELEMETRY_URL`, `TELEMETRY_URL` and `TELEMETRY_KEY` as the `.env.example` files describe.
+The telemetry dashboard is not one of them: it is liveworkspace's (`liveworkspace/apps/telemetry`, [Telemetry](../specs/017-telemetry/telemetry.md)), and `localhost:3500/telemetry` redirects to the local service. To see events locally, run that service and set `NEXT_PUBLIC_TELEMETRY_URL`, `TELEMETRY_URL` and `TELEMETRY_KEY` as the `.env.example` files describe.
 
-The `router` dev server (`wrangler dev --env local`, port 3100) gives you the production URL shape locally: `/` is marketing, `/new` and `/document/*` are the editor, plus `/telemetry`, `/help`, `/community`, and `/api`, with no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
+The `router` dev server (`wrangler dev --env local`, port 3500) gives you the production URL shape locally: `/` is marketing, `/new` and `/document/*` are the editor, plus `/telemetry`, `/help`, `/community`, and `/api`, with no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
 
-**Use port 3100 unless you have a reason not to.** Each app's own port still serves its pages, but only the router puts the API on the same origin. The frontends call `NEXT_PUBLIC_API_BASE`, defaulting to the relative `/api`: correct in production and behind the router, and a dead end on an app's own port, where nothing serves `/api` (these are static exports; there are no Next API routes, see [Architecture](architecture.md)). So the editor on `http://localhost:3102` cannot reach the api worker until you tell it where the worker is:
+**Use port 3500 unless you have a reason not to.** Each app's own port still serves its pages, but only the router puts the API on the same origin. The frontends call `NEXT_PUBLIC_API_BASE`, defaulting to the relative `/api`: correct in production and behind the router, and a dead end on an app's own port, where nothing serves `/api` (these are static exports; there are no Next API routes, see [Architecture](architecture.md)). So the editor on `http://localhost:3502` cannot reach the api worker until you tell it where the worker is:
 
 ```sh
 # apps/editor/.env.local  (gitignored; see apps/editor/.env.example)
-NEXT_PUBLIC_API_BASE=http://localhost:8687/api
+NEXT_PUBLIC_API_BASE=http://localhost:9087/api
 ```
 
-A remote api works too, and there are two of them: `https://staging.livediagram.app/api`
+A remote api works too, and there are two of them: `https://staging.livehuddle.app/api`
 reaches [staging](../specs/016-platform/staging-environment.md), which keeps its own data and is
 the one to reach for; the production api reads and writes real people's documents.
 
-Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the document”**, which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/help` and `apps/community` read the same variable: the Community needs it for My Shares on `:3105` (its gallery reads liveworkspace's Community service: see below), and the help centre only loses its telemetry posts without it.
+Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the document”**, which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/help` and `apps/community` read the same variable: the Community needs it for My Shares on `:3505` (its gallery reads liveworkspace's Community service: see below), and the help centre only loses its telemetry posts without it.
 
-The editor opens without any auth setup: run `corepack pnpm dev:diagram` and open `http://localhost:3100/new`. Without an accounts Worker there are no guests and no sign-in, so documents stay in This Browser (see [Signing in locally](#signing-in-locally-optional)); with one, documents persist in each document's local Durable Object, with the index running locally (see [The index](#the-index) below). (On `http://localhost:3102/new` instead, set `NEXT_PUBLIC_API_BASE` first: see the note above.)
+The editor opens without any auth setup: run `corepack pnpm dev:diagram` and open `http://localhost:3500/new`. Without an accounts Worker there are no guests and no sign-in, so documents stay in This Browser (see [Signing in locally](#signing-in-locally-optional)); with one, documents persist in each document's local Durable Object, with the index running locally (see [The index](#the-index) below). (On `http://localhost:3502/new` instead, set `NEXT_PUBLIC_API_BASE` first: see the note above.)
 
 ## The Community locally
 
@@ -77,7 +77,7 @@ The Community's listings live in liveworkspace's Community service, not this api
 ```sh
 # apps/api/.dev.vars
 COMMUNITY_URL=http://localhost:8791/api/community
-COMMUNITY_KEY=dev-livediagram-community-key
+COMMUNITY_KEY=dev-livehuddle-community-key
 
 # apps/community/.env.local, apps/editor/.env.local and apps/marketing/.env.local
 NEXT_PUBLIC_COMMUNITY_API=http://localhost:8791/api/community
@@ -88,32 +88,32 @@ Without `COMMUNITY_KEY` the api reports the Community off and Share to Community
 ## Scoping commands to one workspace
 
 ```sh
-corepack pnpm --filter @livediagram/editor dev
-corepack pnpm --filter @livediagram/api test
-corepack pnpm --filter @livediagram/marketing build
+corepack pnpm --filter @livehuddle/editor dev
+corepack pnpm --filter @livehuddle/api test
+corepack pnpm --filter @livehuddle/marketing build
 ```
 
-Workspace names follow the pattern `@livediagram/<app-or-package-folder-name>`.
+Workspace names follow the pattern `@livehuddle/<app-or-package-folder-name>`.
 
 ## Useful scripts
 
 Run through `corepack pnpm` (written `pnpm` below) from the monorepo root, except `format`, `format:check`,
-`licences`, `icons:sheet`, `demo:sticky-vision` and `bench:stroke-points`, which are livediagram's own scripts and
-run from `livediagram/`:
+`licences`, `icons:sheet`, `demo:sticky-vision` and `bench:stroke-points`, which are livehuddle's own scripts and
+run from `livehuddle/`:
 
 | Command                                                                   | What it does                                                                                                                                                                                                                                                                                                                                                                                      |
 | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `pnpm install`                                                            | Install all workspace deps.                                                                                                                                                                                                                                                                                                                                                                       |
-| `pnpm dev:diagram`                                                        | Start livediagram's dev servers in parallel (`turbo run dev --filter=@livediagram/*`).                                                                                                                                                                                                                                                                                                            |
+| `pnpm dev:diagram`                                                        | Start livehuddle's dev servers in parallel (`turbo run dev --filter=@livehuddle/*`).                                                                                                                                                                                                                                                                                                              |
 | `pnpm build`                                                              | Production build across the repo (`turbo run build`).                                                                                                                                                                                                                                                                                                                                             |
 | `pnpm lint`                                                               | oxlint across the repo (`turbo run lint`).                                                                                                                                                                                                                                                                                                                                                        |
 | `pnpm typecheck`                                                          | `tsc --noEmit` across every workspace (`turbo run typecheck`).                                                                                                                                                                                                                                                                                                                                    |
 | `pnpm test`                                                               | Vitest across every workspace that has tests (`turbo run test`).                                                                                                                                                                                                                                                                                                                                  |
-| `pnpm --filter @livediagram/editor perf:canvas`                           | The canvas performance probe ([Canvas performance](../specs/008-canvas/canvas-performance.md)): builds the 1,000-element reference board, traces every gesture at 4x CPU and writes the budget table to `apps/editor/test-results/perf/`. Needs a fresh `next build`; set `E2E_EDITOR_PORT` / `E2E_API_PORT` / `E2E_BASE_URL` to run beside a `pnpm dev:diagram`. Reports, never fails on a miss. |
-| `pnpm --filter @livediagram/editor test:e2e`                              | Playwright end-to-end suite ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev:diagram` or boots its own stack. Set `E2E_WEBKIT=1` (after `npx playwright install webkit`) to also run the image import spec in WebKit.                                                                                                                              |
-| `pnpm --filter @livediagram/editor test:e2e:signed-in`                    | The signed-in specs (`apps/editor/e2e/signed-in/`) against `.next/out-signed-in/`; run `pnpm --filter @livediagram/editor build:signed-in` first. Boots its own stack on `:3115` / `:8115` / `:3116`.                                                                                                                                                                                             |
+| `pnpm --filter @livehuddle/editor perf:canvas`                            | The canvas performance probe ([Canvas performance](../specs/008-canvas/canvas-performance.md)): builds the 1,000-element reference board, traces every gesture at 4x CPU and writes the budget table to `apps/editor/test-results/perf/`. Needs a fresh `next build`; set `E2E_EDITOR_PORT` / `E2E_API_PORT` / `E2E_BASE_URL` to run beside a `pnpm dev:diagram`. Reports, never fails on a miss. |
+| `pnpm --filter @livehuddle/editor test:e2e`                               | Playwright end-to-end suite ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev:diagram` or boots its own stack. Set `E2E_WEBKIT=1` (after `npx playwright install webkit`) to also run the image import spec in WebKit.                                                                                                                              |
+| `pnpm --filter @livehuddle/editor test:e2e:signed-in`                     | The signed-in specs (`apps/editor/e2e/signed-in/`) against `.next/out-signed-in/`; run `pnpm --filter @livehuddle/editor build:signed-in` first. Boots its own stack on `:3115` / `:8115` / `:3116`.                                                                                                                                                                                              |
 | `cd apps/editor && bun scripts/ms-whiteboard-verify.mts <folder or .zip>` | Runs the [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md) over real board exports outside the repo and prints counts only (boards, replay stats, items per kind, report notes, timings, largest tab), never their content.                                                                                                                                          |
-| `pnpm --filter @livediagram/cli build`                                    | Bundle the CLI into `apps/cli/dist/livediagram.mjs` (see [Running the CLI from source](#running-the-cli-from-source-optional)).                                                                                                                                                                                                                                                                   |
+| `pnpm --filter @livehuddle/cli build`                                     | Bundle the CLI into `apps/cli/dist/livehuddle.mjs` (see [Running the CLI from source](#running-the-cli-from-source-optional)).                                                                                                                                                                                                                                                                    |
 | `pnpm format`                                                             | Prettier write across the repo.                                                                                                                                                                                                                                                                                                                                                                   |
 | `pnpm format:check`                                                       | Prettier check (this is what CI runs).                                                                                                                                                                                                                                                                                                                                                            |
 | `pnpm staging:check`                                                      | Dry-run the `[env.staging]` wrangler configs and print the resolved bindings (CI runs it).                                                                                                                                                                                                                                                                                                        |
@@ -122,23 +122,23 @@ run from `livediagram/`:
 | `pnpm icons:sheet`                                                        | Render every editor icon at 1x and 4x into HTML + PNG contact sheets (`$ICON_SHEET_DIR`, default `/tmp/icon-sheet`) for review.                                                                                                                                                                                                                                                                   |
 | `pnpm demo:sticky-vision`                                                 | Bundle + serve the sticky-detection demo at <http://localhost:4199> ([Event storming](../specs/021-event-storming/event-storming.md)).                                                                                                                                                                                                                                                            |
 | `pnpm bench:stroke-points`                                                | Measure packed stroke points against the former `{ nx, ny }` shape on a synthesised board: tab bytes, allocations, parse and draw time, accuracy ([Stroke points](../specs/006-document/stroke-points.md)).                                                                                                                                                                                       |
-| `pnpm --filter @livediagram/document stroke-points <file.json>`           | Print a stored tab or document file with every freehand's `packedPoints` expanded into readable `{ nx, ny, p }` points (`-` reads stdin).                                                                                                                                                                                                                                                         |
+| `pnpm --filter @livehuddle/document stroke-points <file.json>`            | Print a stored tab or document file with every freehand's `packedPoints` expanded into readable `{ nx, ny, p }` points (`-` reads stdin).                                                                                                                                                                                                                                                         |
 
 Turbo caches results, so re-running with no changes is a no-op.
 
 ## Signing in locally (optional)
 
-The editor always offers sign-in, but signing in (and a guest identity) needs an accounts Worker. To exercise the signed-in code paths, run liveworkspace beside it and register livediagram with its accounts API:
+The editor always offers sign-in, but signing in (and a guest identity) needs an accounts Worker. To exercise the signed-in code paths, run liveworkspace beside it and register livehuddle with its accounts API:
 
 1. Start liveworkspace (first-time setup is in `liveworkspace/README.md`, "Local development"): `pnpm dev:workspace` from the repo root runs the site, with the sign-in pages, on `http://localhost:3000`, and the accounts and telemetry Workers behind it, as liveworkspace.app has them. Locally the accounts Worker prints each sign-in code in its own output instead of emailing it.
-2. Register livediagram once against it. `http://localhost/api` is the one resource a development accounts Worker issues tokens for (`RESOURCES` in liveworkspace/apps/accounts/src/resources.ts). The secret is printed once:
+2. Register livehuddle once against it. `http://localhost/api` is the one resource a development accounts Worker issues tokens for (`RESOURCES` in liveworkspace/apps/accounts/src/resources.ts). The secret is printed once:
 
    ```sh
    ADMIN_TOKEN=local-admin-token node liveworkspace/apps/accounts/scripts/register-client.ts \
      --accounts http://localhost:3000 \
-     --name livediagram-dev \
-     --app livediagram.app \
-     --redirect http://localhost:3100/api/auth/callback \
+     --name livehuddle-dev \
+     --app livehuddle.app \
+     --redirect http://localhost:3500/api/auth/callback \
      --resource http://localhost/api
    ```
 
@@ -150,18 +150,18 @@ The editor always offers sign-in, but signing in (and a guest identity) needs an
    API_RESOURCE=http://localhost/api
    ACCOUNTS_CLIENT_ID=...
    ACCOUNTS_CLIENT_SECRET=...
-   AUTH_ORIGIN=http://localhost:3100
+   AUTH_ORIGIN=http://localhost:3500
    ```
 
-4. Restart `corepack pnpm dev:diagram` and open the app through the router (`http://localhost:3100`), so the sign-in cookies and the callback share one origin.
+4. Restart `corepack pnpm dev:diagram` and open the app through the router (`http://localhost:3500`), so the sign-in cookies and the callback share one origin.
 
-With these set, `/sign-in` hands off to the accounts site and comes back signed in. The api worker verifies the access token and derives the owner id from the `sub` claim. The same accounts Worker mints guests their guest tokens, through `/api/auth/guest`. `--app livediagram.app` names the app the client is for: the accounts Worker keeps livediagram's settings, sign-ups and milestone emails under it. With the client registered, every person's preferences, display name and colour live in the accounts Worker's local D1 (`liveworkspace/apps/accounts`), guests' included; without it, the preferences stay in the browser and names are not kept on the server.
+With these set, `/sign-in` hands off to the accounts site and comes back signed in. The api worker verifies the access token and derives the owner id from the `sub` claim. The same accounts Worker mints guests their guest tokens, through `/api/auth/guest`. `--app livehuddle.app` names the app the client is for: the accounts Worker keeps livehuddle's settings, sign-ups and milestone emails under it. With the client registered, every person's preferences, display name and colour live in the accounts Worker's local D1 (`liveworkspace/apps/accounts`), guests' included; without it, the preferences stay in the browser and names are not kept on the server.
 
 Without these set: nobody can sign in, and there are no guests either, because a guest's identity is a guest token the accounts Worker mints (`/api/auth/guest` returns to `/auth/guest#error=guest_not_configured`). The editor still opens and documents in This Browser work, but no document can be kept on the server. Run the accounts Worker locally for anything beyond that. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
 
 ### The index
 
-The Explorer, sharing, access, the Trash and the Timeline are liveworkspace's index ([One Explorer](../../../liveworkspace/docs/specs/004-index/one-explorer.md)). Run it from the monorepo (`corepack pnpm dev:index`, port 8793; [the index](../../../liveworkspace/docs/specs/004-index/index-service.md) "Running it locally"), and give the api worker `INDEX_ORIGIN=http://127.0.0.1:8793` and `INDEX_KEY=dev-livediagram-index-key` in `apps/api/.dev.vars` (see `apps/api/.env.example`). The router forwards `/api/index/*` there. Without it, the Explorer has nothing to list and a document cannot be opened from the server.
+The Explorer, sharing, access, the Trash and the Timeline are liveworkspace's index ([One Explorer](../../../liveworkspace/docs/specs/004-index/one-explorer.md)). Run it from the monorepo (`corepack pnpm dev:index`, port 8793; [the index](../../../liveworkspace/docs/specs/004-index/index-service.md) "Running it locally"), and give the api worker `INDEX_ORIGIN=http://127.0.0.1:8793` and `INDEX_KEY=dev-livehuddle-index-key` in `apps/api/.dev.vars` (see `apps/api/.env.example`). The router forwards `/api/index/*` there. Without it, the Explorer has nothing to list and a document cannot be opened from the server.
 
 ## Running the CLI from source (optional)
 
@@ -169,13 +169,13 @@ The [CLI](../specs/015-api/cli.md) acts only with an API token, so it needs a ho
 above, sign in, and create a token on your local liveworkspace site (Settings › API Tokens links there). Then build the bundle and point it at the local api:
 
 ```bash
-pnpm --filter @livediagram/cli build
-export LIVEDIAGRAM_HOST=http://localhost:8687 LIVEDIAGRAM_TOKEN=lwt_...
-apps/cli/dist/livediagram.mjs document ls
+pnpm --filter @livehuddle/cli build
+export LIVEHUDDLE_HOST=http://localhost:9087 LIVEHUDDLE_TOKEN=lwt_...
+apps/cli/dist/livehuddle.mjs document ls
 ```
 
-`LIVEDIAGRAM_DEBUG=1` prints each decision and request as a `[cli]` line on stderr. The CLI keeps its files under
-`$XDG_CONFIG_HOME/livediagram` and `$XDG_CACHE_HOME/livediagram` (`~/.config` and `~/.cache` by default); point
+`LIVEHUDDLE_DEBUG=1` prints each decision and request as a `[cli]` line on stderr. The CLI keeps its files under
+`$XDG_CONFIG_HOME/livehuddle` and `$XDG_CACHE_HOME/livehuddle` (`~/.config` and `~/.cache` by default); point
 both at a scratch directory to keep a test run apart from your own sign-in.
 
 ## Enabling the photo reader locally (optional)
@@ -196,17 +196,17 @@ Restart `corepack pnpm dev:diagram`. `GET /api/capabilities` will start reportin
 
 ```sh
 pnpm test                                # everything
-pnpm --filter @livediagram/api test      # one workspace
-pnpm --filter @livediagram/editor exec vitest   # watch mode while developing
+pnpm --filter @livehuddle/api test      # one workspace
+pnpm --filter @livehuddle/editor exec vitest   # watch mode while developing
 ```
 
 Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. The test runner is [Vitest](https://vitest.dev) with the shared config from `@liveworkspace/vitest-config`. See [Testing](../specs/003-system-architecture/testing.md) for the testing contract.
 
-Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @livediagram/editor test:e2e:workbench`. It rebuilds `apps/editor/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (editor 3121, api 8121, marketing 3122): the stack acts as the accounts Worker (as under `E2E_ACCOUNTS_STUB`, minting access tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3121`, so its workbench and pairing URLs point at the editor server. The spec serves a fake workbench (`apps/editor/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/document/**`) the stack serves from that one page, as the editor worker does. Since pairing, tickets and sessions moved to liveworkspace's accounts Worker ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../liveworkspace/docs/specs/011-workbench/workbench.md)), the run also needs that Worker and liveworkspace.app's pairing page, which the stack does not start yet: until it does, the run stops at its first mint.
+Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @livehuddle/editor test:e2e:workbench`. It rebuilds `apps/editor/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (editor 3121, api 8121, marketing 3122): the stack acts as the accounts Worker (as under `E2E_ACCOUNTS_STUB`, minting access tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3121`, so its workbench and pairing URLs point at the editor server. The spec serves a fake workbench (`apps/editor/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/document/**`) the stack serves from that one page, as the editor worker does. Since pairing, tickets and sessions moved to liveworkspace's accounts Worker ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../liveworkspace/docs/specs/011-workbench/workbench.md)), the run also needs that Worker and liveworkspace.app's pairing page, which the stack does not start yet: until it does, the run stops at its first mint.
 
 ## Google Drive sync locally (optional)
 
-Google Drive sync is liveworkspace's service, not livediagram's ([liveworkspace/docs/specs/005-drive/drive.md](../../../liveworkspace/docs/specs/005-drive/drive.md)):
+Google Drive sync is liveworkspace's service, not livehuddle's ([liveworkspace/docs/specs/005-drive/drive.md](../../../liveworkspace/docs/specs/005-drive/drive.md)):
 run it from `liveworkspace/apps/drive` as that page says. The router sends `/api/drive/*` to it (`DRIVE_ORIGIN` in
 `apps/router/wrangler.toml`), and the api needs only `DRIVE_KEY` in `apps/api/.dev.vars` for the service's export and
 import doors.
@@ -219,7 +219,7 @@ the photo import reads the handwriting with the in-browser model (and shows
 its download the first time):
 
 ```bash
-E2E_EDITOR_PORT=3110 E2E_API_PORT=8687 E2E_EDITOR_ONLY=1 E2E_NO_AI=1 node scripts/e2e-stack.mjs
+E2E_EDITOR_PORT=3110 E2E_API_PORT=9087 E2E_EDITOR_ONLY=1 E2E_NO_AI=1 node scripts/e2e-stack.mjs
 ```
 
 `E2E_EDITOR_ONLY=1` serves the static editor only, proxying to the api already
@@ -243,10 +243,10 @@ to the in-browser model and says so ([Event storming](../specs/021-event-stormin
 
   Next 16 also writes `next-env.d.ts` into whichever app you run it from, gitignored on purpose: it names the active distDir inside itself, so dev and build would otherwise rewrite it over each other, and each app's tsconfig already picks up the Next types without it being tracked. Next can also generate an `AGENTS.md` + `CLAUDE.md` pair of agent instructions; the shared config turns that off (`agentRules: false`), because the repo's agent instructions are written by hand in the root `AGENTS.md`. Any old generated pair left in an app folder stays gitignored and can be deleted.
 
-  The webpack escape hatch: `pnpm --filter @livediagram/editor dev:webpack` boots the editor on webpack, and `scripts/next-dev.mjs` honours `--webpack` from any app. It exists for the case where Turbopack genuinely doesn't support something the app needs, and it is a diagnostic rather than a default: Turbopack is the default because webpack's HMR desynchronises here and serves `__webpack_modules__[moduleId] is not a function` until `.next` is wiped. If you find yourself needing the hatch, that is worth a spec note rather than a habit. The editor on webpack also runs without the React Compiler, whose native Rust port is Turbopack-only ([React state and effects](../specs/003-system-architecture/react-state-and-effects.md)), so a render bug seen only on one bundler may be the compiler.
+  The webpack escape hatch: `pnpm --filter @livehuddle/editor dev:webpack` boots the editor on webpack, and `scripts/next-dev.mjs` honours `--webpack` from any app. It exists for the case where Turbopack genuinely doesn't support something the app needs, and it is a diagnostic rather than a default: Turbopack is the default because webpack's HMR desynchronises here and serves `__webpack_modules__[moduleId] is not a function` until `.next` is wiped. If you find yourself needing the hatch, that is worth a spec note rather than a habit. The editor on webpack also runs without the React Compiler, whose native Rust port is Turbopack-only ([React state and effects](../specs/003-system-architecture/react-state-and-effects.md)), so a render bug seen only on one bundler may be the compiler.
 
 - **`/licences` needs its generated data.** `pnpm dev:diagram` does not run the generator (it takes about 20 seconds), so the marketing dev server fails that one page with `LicencesManifestMissing` until you run `pnpm licences` once. Don't run `pnpm licences` while a `next build` of the editor or help centre is running: Next's analyzer shares an app's Turbopack build cache (`.next/cache`), and two processes on it corrupt it. `pnpm build` orders them for you.
 
 - **The api worker's local Durable Object state lives at `apps/api/.wrangler/state/`.** Delete the folder to start over with no documents (their index entries live in the local index's own state).
 
-- **Open the editor on `localhost`, not on the machine's LAN address.** Over plain `http` from any other address (`http://192.168.x.x:3102`, `http://<machine-name>:3102`) the browser is not in a secure context, withholds `crypto.randomUUID`, and the editor fails to load with "This page couldn't load". A known gap, not yet fixed: the editor calls `crypto.randomUUID` directly in about 75 places. Testing from a phone or a second laptop needs https (a tunnel, or a dev certificate) until it is.
+- **Open the editor on `localhost`, not on the machine's LAN address.** Over plain `http` from any other address (`http://192.168.x.x:3502`, `http://<machine-name>:3502`) the browser is not in a secure context, withholds `crypto.randomUUID`, and the editor fails to load with "This page couldn't load". A known gap, not yet fixed: the editor calls `crypto.randomUUID` directly in about 75 places. Testing from a phone or a second laptop needs https (a tunnel, or a dev certificate) until it is.

@@ -7,7 +7,7 @@ import {
   type ArrowEnds,
   type Element,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { getTheme } from '@/lib/themes';
 import { track } from '@/lib/telemetry';
 

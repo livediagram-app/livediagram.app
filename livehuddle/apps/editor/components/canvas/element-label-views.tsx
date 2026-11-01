@@ -14,7 +14,7 @@ import {
   type TextRun,
   labelFontPx,
   type TextSize,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   ALIGN_ITEMS,
   effectiveRunStyle,

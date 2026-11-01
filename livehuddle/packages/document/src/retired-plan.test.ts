@@ -124,7 +124,14 @@ describe('dropRetiredPlan', () => {
 describe('isRetiredPlanElement', () => {
   it('names the four Plan shapes and nothing else', () => {
     for (const el of [board, card, view, sheet]) expect(isRetiredPlanElement(el)).toBe(true);
-    for (const el of [square, text, sheetChart, null, 'plan-board', { type: 'text', shape: 'plan-board' }]) {
+    for (const el of [
+      square,
+      text,
+      sheetChart,
+      null,
+      'plan-board',
+      { type: 'text', shape: 'plan-board' },
+    ]) {
       expect(isRetiredPlanElement(el)).toBe(false);
     }
   });

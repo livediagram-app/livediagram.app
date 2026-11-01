@@ -5,7 +5,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { QA_MAX_NOTES, type QaNote, type ShapeElement } from '@livediagram/document';
+import { QA_MAX_NOTES, type QaNote, type ShapeElement } from '@livehuddle/document';
 import { apiQaAction } from '@/lib/api-client';
 import { QA_BOARD_FULL_MESSAGE, useQaBoard } from './useQaBoard';
 

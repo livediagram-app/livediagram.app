@@ -10,7 +10,7 @@ const transcript = [
     subtype: 'init',
     model: 'claude-haiku-5-5',
     session_id: 's-1',
-    mcp_servers: [{ name: 'livediagram', status: 'connected' }],
+    mcp_servers: [{ name: 'livehuddle', status: 'connected' }],
   }),
   line({
     type: 'assistant',
@@ -19,7 +19,7 @@ const transcript = [
         {
           type: 'tool_use',
           id: 't1',
-          name: 'mcp__livediagram__create_document',
+          name: 'mcp__livehuddle__create_document',
           input: { name: 'Retro' },
         },
       ],
@@ -45,7 +45,7 @@ const transcript = [
         {
           type: 'tool_use',
           id: 't2',
-          name: 'mcp__livediagram__create_document',
+          name: 'mcp__livehuddle__create_document',
           input: { name: 'Retro' },
         },
       ],
@@ -69,7 +69,7 @@ const transcript = [
   line({
     type: 'assistant',
     message: {
-      content: [{ type: 'tool_use', id: 't3', name: 'mcp__livediagram__find_diagrams', input: {} }],
+      content: [{ type: 'tool_use', id: 't3', name: 'mcp__livehuddle__find_diagrams', input: {} }],
     },
   }),
   line({
@@ -142,7 +142,7 @@ describe('mcpConnected', () => {
     const failed = JSON.stringify({
       type: 'system',
       subtype: 'init',
-      mcp_servers: [{ name: 'livediagram', status: 'failed' }],
+      mcp_servers: [{ name: 'livehuddle', status: 'failed' }],
     });
     expect(parseTranscript(failed).mcpConnected).toBe(false);
     expect(parseTranscript('').mcpConnected).toBeNull();
@@ -167,7 +167,7 @@ describe('documentIdsIn', () => {
   it('reads ids from documentId fields and document links', () => {
     const other = '11111111-2222-3333-4444-555555555555';
     expect(
-      documentIdsIn(`"documentId": "${DOC}" https://www.livediagram.app/document/${other}`),
+      documentIdsIn(`"documentId": "${DOC}" https://www.livehuddle.app/document/${other}`),
     ).toEqual([DOC, other]);
     expect(documentIdsIn(`"tabId":"${DOC}"`)).toEqual([]);
   });

@@ -1,7 +1,7 @@
 import { setCommunityState } from '@/lib/community-state-store';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
-import type { Tab } from '@livediagram/document';
-import type { LiveDoc } from '@livediagram/api-schema';
+import type { Tab } from '@livehuddle/document';
+import type { LiveDoc } from '@livehuddle/api-schema';
 import { apiLoadTabRevisioned } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { firstTabToLoad, isTabOutOfScope } from '@liveworkspace/workbench/lib/tab-scope';

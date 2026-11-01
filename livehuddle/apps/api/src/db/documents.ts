@@ -3,7 +3,7 @@
 // the `document` row). Where it is filed, who may open it, its sharing and its Trash state are the index's; this
 // module never answers them. The read joins the owner's display name from their profile (liveworkspace/profiles.ts).
 
-import { isDocumentSource } from '@livediagram/api-schema';
+import { isDocumentSource } from '@livehuddle/api-schema';
 import type { DocumentDTO, Env } from '../types';
 import { getParticipant } from '../liveworkspace/profiles';
 import { documentRoom } from '../document-client';

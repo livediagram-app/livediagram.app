@@ -10,7 +10,7 @@ import {
   isRecord,
   MAX_ELEMENTS_PER_TAB,
   type GraphInput,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { iconsLike, isIconId } from '@liveworkspace/icons/search';
 
 const isId = (v: unknown) => typeof v === 'string' && v !== '';

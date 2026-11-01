@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { ShownSwatch } from '@/lib/swatch-overrides';
 import { track } from '@/lib/telemetry';
@@ -200,7 +200,7 @@ describe('useWhiteboard', () => {
     });
     act(() => hook.result.current.setFill('#123456'));
     expect(hook.result.current.fill).toBe('#123456');
-    expect(localStorage.getItem('livediagram:v2:whiteboard-fill')).toBe('#123456');
+    expect(localStorage.getItem('livehuddle:v2:whiteboard-fill')).toBe('#123456');
     expect(deps.beginDraw).toHaveBeenLastCalledWith({ type: 'fill', fill: '#123456' });
     expect(track).toHaveBeenCalledWith('Draw', 'Changed', 'FillColour');
     vi.mocked(track).mockClear();
@@ -240,7 +240,7 @@ describe('useWhiteboard', () => {
     act(() => hook.result.current.setEraserMode('partial'));
     expect(track).toHaveBeenCalledWith('Draw', 'Toggled', 'RecognitionOn');
     expect(track).toHaveBeenCalledWith('Draw', 'Changed', 'EraserPartial');
-    const stored: unknown = JSON.parse(localStorage.getItem('livediagram:v2:whiteboard-pens')!);
+    const stored: unknown = JSON.parse(localStorage.getItem('livehuddle:v2:whiteboard-pens')!);
     expect(stored).toMatchObject({ recognise: true, eraserMode: 'partial' });
   });
 

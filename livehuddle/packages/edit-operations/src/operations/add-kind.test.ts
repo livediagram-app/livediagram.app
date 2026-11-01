@@ -6,7 +6,7 @@ import {
   getBuiltInTheme,
   type Element,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { applyEditOperations } from '../apply';
 import { checkoutFlow, fixedIds } from '../fixtures/checkout-flow';
 import { applied, lines, refused } from '../fixtures/outcomes';

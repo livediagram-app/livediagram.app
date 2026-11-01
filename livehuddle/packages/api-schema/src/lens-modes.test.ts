@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EDITOR_MODES } from '@livediagram/document';
+import { EDITOR_MODES } from '@livehuddle/document';
 import { LENS_MODES } from './lens-modes';
 
 describe('LENS_MODES', () => {

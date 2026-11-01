@@ -6,7 +6,7 @@ import {
   lucideWorkflow,
   lucideTrash2,
 } from '@liveworkspace/icons/lucide';
-import { lucideGlyph } from '@livediagram/ui';
+import { lucideGlyph } from '@livehuddle/ui';
 
 // What it can do (docs/specs/019-marketing/build-with-ai.md "The page" 5): the MCP's tools in plain words. Every
 // card maps to a shipped tool (docs/specs/015-api/mcp-server.md §4); a new tool earns a card here only once it ships.
@@ -14,7 +14,7 @@ const CAPABILITIES = [
   {
     icon: lucideGlyph(lucideWorkflow, 20),
     title: 'Diagrams from a sentence',
-    body: 'Flowcharts, architecture, org charts, mind maps and state machines. Your AI names the boxes and links; livediagram lays them out. Mermaid works too.',
+    body: 'Flowcharts, architecture, org charts, mind maps and state machines. Your AI names the boxes and links; livehuddle lays them out. Mermaid works too.',
   },
   {
     icon: lucideGlyph(lucideSquareKanban, 20),

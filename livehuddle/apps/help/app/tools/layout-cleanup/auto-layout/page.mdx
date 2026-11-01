@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
   path: '/help/tools/layout-cleanup/auto-layout/',
 });
 
-<ArticleLayout title="Auto Layout" description="Let livediagram compute the layout for you from the connections between shapes." categoryTitle="Tools" categorySlug="tools" parentArticle={{ title: "Layout Cleanup", slug: "layout-cleanup" }} subArticles={getSubArticles("layout-cleanup").filter((a) => a.slug !== "auto-layout")}>
+<ArticleLayout title="Auto Layout" description="Let livehuddle compute the layout for you from the connections between shapes." categoryTitle="Tools" categorySlug="tools" parentArticle={{ title: "Layout Cleanup", slug: "layout-cleanup" }} subArticles={getSubArticles("layout-cleanup").filter((a) => a.slug !== "auto-layout")}>
 
 Auto Layout is the structural tidier (the command palette calls it "Auto Layout (tidy up)"). Rather than nudging the positions you already have, it reads the arrow graph, works out how shapes connect, and computes brand-new positions, arranging connected shapes into clean layers. Unlike Auto-Align, it can legitimately move an element right across the canvas to give the diagram a proper layout.
 

@@ -27,7 +27,7 @@ import {
   type Element,
   type TableCellStyle,
   createCalloutCard,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 import {
   PM_ACTIONS,

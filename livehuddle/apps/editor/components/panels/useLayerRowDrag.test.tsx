@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { Layer } from '@livediagram/document';
+import type { Layer } from '@livehuddle/document';
 
 import { useLayerRowDrag } from './useLayerRowDrag';
 

@@ -13,7 +13,7 @@ import {
   type ShapeElement,
   type WebRows,
   chevronLayout,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { ConceptFace } from './ConceptFace';
 import { BAR_MIN_SCALE, barScale, barWidthPx } from './ConceptRowBar';
 import { HOVER_GRACE_MS } from '@liveworkspace/workbench/hooks/ui/useGraceHover';

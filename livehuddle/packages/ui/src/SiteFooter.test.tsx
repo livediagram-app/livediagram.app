@@ -14,7 +14,7 @@ const labels = [...footerNav.matchAll(/<a [^>]*>(?:<svg[\s\S]*?<\/svg>)?([^<]+)<
 describe('SiteFooter', () => {
   it('opens with the large logo, linking home', () => {
     const brand = html.slice(0, html.indexOf('aria-label="Footer"'));
-    expect(brand).toMatch(/<a href="\/" aria-label="livediagram" class="[^"]*gap-3 text-2xl/);
+    expect(brand).toMatch(/<a href="\/" aria-label="livehuddle" class="[^"]*gap-3 text-2xl/);
     expect(brand).toContain('size-10');
   });
 
@@ -85,7 +85,7 @@ describe('SiteFooter year', () => {
     vi.stubEnv('NEXT_PUBLIC_BUILD_YEAR', '2026');
     vi.useFakeTimers({ now: new Date('2031-01-01T00:00:00Z') });
     try {
-      expect(render()).toContain('© 2026 livediagram. MIT licensed.');
+      expect(render()).toContain('© 2026 livehuddle. MIT licensed.');
     } finally {
       vi.useRealTimers();
       vi.unstubAllEnvs();
@@ -95,7 +95,7 @@ describe('SiteFooter year', () => {
   it('shows no year rather than a wrong one when the build gave none', () => {
     vi.stubEnv('NEXT_PUBLIC_BUILD_YEAR', '');
     try {
-      expect(render()).toContain('© livediagram. MIT licensed.');
+      expect(render()).toContain('© livehuddle. MIT licensed.');
     } finally {
       vi.unstubAllEnvs();
     }

@@ -7,7 +7,7 @@ import {
   type BoardNote,
   type PhotoAddition,
   type PhotoNote,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { clusterRows } from '../src/rows';
 import { truthDir, truthFor } from './truth';
 
@@ -21,7 +21,7 @@ import { truthDir, truthFor } from './truth';
 // order kept) and writes an SVG of the result, so a change to the placement can
 // be judged by eye as well as by number.
 //
-//   pnpm --filter @livediagram/sticky-vision exec tsx scripts/placement-check.ts [outDir]
+//   pnpm --filter @livehuddle/sticky-vision exec tsx scripts/placement-check.ts [outDir]
 //
 // The labels live outside this repository (see truth.ts); with none present
 // the script says so and exits.

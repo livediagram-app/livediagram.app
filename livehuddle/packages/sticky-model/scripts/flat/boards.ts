@@ -1,4 +1,4 @@
-import { hexToRgb, type ImageBuffer } from '@livediagram/sticky-vision';
+import { hexToRgb, type ImageBuffer } from '@livehuddle/sticky-vision';
 import { rngFrom, type Rng } from '../../src/synth/rng';
 
 // Drawn boards: the flat, textureless walls a screenshot of a digital board

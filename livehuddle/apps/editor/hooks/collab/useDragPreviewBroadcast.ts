@@ -6,7 +6,7 @@
 // DRAG_PREVIEW_MAX_ELEMENTS elements sends nothing: collaborators see it on release.
 
 import { useEffect, useEffectEvent, type RefObject } from 'react';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import {
   DRAG_PREVIEW_ARROW_FIELDS,
   DRAG_PREVIEW_BOX_FIELDS,
@@ -14,7 +14,7 @@ import {
   type DragPreviewPatch,
   type RoomOp,
   type RoomOutgoing,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import {
   localPreview,
   localPreviewEnding,

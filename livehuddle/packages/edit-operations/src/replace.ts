@@ -4,7 +4,7 @@
 // An existing tab keeps every tab field and swaps its elements (no theme repaint, EO41); a new tab is
 // built whole.
 
-import type { EditRejection } from '@livediagram/api-schema';
+import type { EditRejection } from '@livehuddle/api-schema';
 import {
   buildGraphTab,
   buildTab,
@@ -22,13 +22,13 @@ import {
   type Element,
   type GraphInput,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   buildTemplateTab,
   closestTemplatesHint,
   resolveTemplate,
   validTemplateKinds,
-} from '@livediagram/templates';
+} from '@livehuddle/templates';
 import { tabRejection } from './finalise';
 import { graphBodyIssue } from './graph-body';
 import { invalidResult, tabLocked } from './rejections';

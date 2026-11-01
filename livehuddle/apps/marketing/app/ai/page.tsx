@@ -1,4 +1,4 @@
-import { pageMetadata } from '@livediagram/ui';
+import { pageMetadata } from '@livehuddle/ui';
 import { BuildWithAi } from '@liveworkspace/marketing-site/components/ai/BuildWithAi';
 
 import { AiCapabilities } from '@/components/ai/AiCapabilities';
@@ -9,12 +9,12 @@ import { Header } from '@/components/Header';
 import { AI_CLIENTS, AI_PRODUCT, STARTER_PROMPTS } from '@/lib/ai-clients';
 
 // Build with AI (docs/specs/019-marketing/build-with-ai.md): from "I use an AI tool" to "it just made a diagram in
-// livediagram" in the fewest steps. The page is @liveworkspace/marketing-site's BuildWithAi; this route hands it this product's clients, prompts, art and words.
+// livehuddle" in the fewest steps. The page is @liveworkspace/marketing-site's BuildWithAi; this route hands it this product's clients, prompts, art and words.
 
 export const metadata = pageMetadata({
-  title: 'Build with AI · livediagram',
+  title: 'Build with AI · livehuddle',
   description:
-    'Connect Claude, ChatGPT, Cursor, VS Code or any MCP client to livediagram in a minute, then ask your AI for diagrams, whiteboards and workshops.',
+    'Connect Claude, ChatGPT, Cursor, VS Code or any MCP client to livehuddle in a minute, then ask your AI for diagrams, whiteboards and workshops.',
   path: '/ai',
 });
 
@@ -38,7 +38,7 @@ export default function BuildWithAiPage() {
         capabilities={<AiCapabilities />}
         controlLead={
           <>
-            Connecting needs a free livediagram account, so your AI&apos;s work is saved to you. The
+            Connecting needs a free livehuddle account, so your AI&apos;s work is saved to you. The
             canvas itself never needs one.
           </>
         }

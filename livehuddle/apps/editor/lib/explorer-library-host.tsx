@@ -10,11 +10,11 @@ import { appLibraryHosts, type AppLibraryHosts, type ImportHost } from '@livewor
 import { appImportsHost } from '@liveworkspace/explorer/imports';
 import { currentBearer } from './api/core';
 
-/** Import From: livediagram's sources (the sites registry's), each opening this site's /import page. */
-export const explorerImports: ImportHost | undefined = appImportsHost('livediagram');
+/** Import From: livehuddle's sources (the sites registry's), each opening this site's /import page. */
+export const explorerImports: ImportHost | undefined = appImportsHost('livehuddle');
 
 /** The Gallery and Shape Libraries over this site's API (same-origin paths), as the page's person (stable for the
  *  page's life). */
 export function explorerLibraryHosts(): AppLibraryHosts {
-  return appLibraryHosts('livediagram', { token: currentBearer, origin: '' });
+  return appLibraryHosts('livehuddle', { token: currentBearer, origin: '' });
 }

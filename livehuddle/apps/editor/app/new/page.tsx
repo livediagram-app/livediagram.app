@@ -1,6 +1,6 @@
 'use client';
 
-import { trustedHtml } from '@livediagram/ui';
+import { trustedHtml } from '@livehuddle/ui';
 
 import dynamic from 'next/dynamic';
 import {
@@ -48,8 +48,8 @@ import {
   templateFamilyOf,
   untitledNameForTemplate,
   type TemplateKind,
-} from '@livediagram/templates';
-import { creationIntentOf } from '@livediagram/api-schema';
+} from '@livehuddle/templates';
+import { creationIntentOf } from '@livehuddle/api-schema';
 import {
   WIZARD_BYPASS_PARAMS,
   choosePlacementAgainUrl,
@@ -65,7 +65,7 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { handStartQuery } from '@liveworkspace/workbench/components/start/start-query';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
-import { isBlankTemplate } from '@livediagram/templates';
+import { isBlankTemplate } from '@livehuddle/templates';
 import { NEW_DOCUMENT_THEME_ID, newDocumentTab } from '@/lib/new-document-content';
 
 // In-place handoff (docs/specs/007-editor/new-document-route.md): once a document is created, this page
@@ -123,7 +123,7 @@ export default function NewDocumentPage() {
   // (docs/specs/014-identity/auth-and-guest-access.md): until then `self` stays
   // 'pending', which gates every owner-scoped read below.
   const guestId = useGuestId(authLoaded, accountUserId);
-  // A returning old livediagram.app guest's work is claimed in the background
+  // A returning old livehuddle.app guest's work is claimed in the background
   // (docs/specs/014-identity/auth-and-guest-access.md "Returning guests from the old site").
   useLegacyGuestClaim(true, useSettledOwnerId(authLoaded, accountUserId));
   const [guestSeed] = useState(() => ({ name: randomName(), color: randomColor() }));
@@ -221,7 +221,7 @@ export default function NewDocumentPage() {
   };
 
   useEffect(() => {
-    document.title = 'New Canvas | livediagram';
+    document.title = 'New Canvas | livehuddle';
     // Fetch the editor's chunk while identity + the create run. Fire-and-forget: a failure here
     // just leaves `dynamic` to retry the import at handoff.
     loadEditor().catch(() => {});
@@ -402,7 +402,7 @@ export default function NewDocumentPage() {
   };
 
   // Every create from /new goes where new documents go by default (docs/specs/007-editor/new-document-route.md
-  // "One-step wizard"): This Browser for a guest, livediagram for a signed-in person or anyone with a /new?folder= /
+  // "One-step wizard"): This Browser for a guest, livehuddle for a signed-in person or anyone with a /new?folder= /
   // ?team= context (docs/specs/006-document/save-locations.md), and that context when there is one;
   // without one it carries no placement, so a default folder may answer (docs/specs/013-workspace/default-folders.md
   // "Precedence"). `blank` opens it with its start closed (Skip, Start Blank, a blank's link). The ref holds a second

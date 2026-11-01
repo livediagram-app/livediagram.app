@@ -3,7 +3,7 @@
 // This map is the editor app's one source for help article slugs: surfaces
 // reference a symbolic key, never a hand-written `/help/...` URL, so a slug
 // change is a one-line edit here. (Search is different: the SearchPanel's
-// Help group derives from the full @livediagram/help-registry catalogue in
+// Help group derives from the full @livehuddle/help-registry catalogue in
 // help-search.ts; this map exists for the surfaces that link ONE article.)
 //
 // Each value is the NESTED slug (the path under /help): usually an
@@ -12,10 +12,10 @@
 // palette overview page.tsx) when the editor links to a whole section
 // rather than one article. A key pointing at a path that resolves to no
 // help page is a bug, the same way an unregistered help article is - keep
-// these in sync with @livediagram/help-registry.
+// these in sync with @livehuddle/help-registry.
 
-import { COMMUNITY_HELP } from '@livediagram/help-registry/community';
-import { helpPathTelemetryId } from '@livediagram/help-registry/telemetry';
+import { COMMUNITY_HELP } from '@livehuddle/help-registry/community';
+import { helpPathTelemetryId } from '@livehuddle/help-registry/telemetry';
 
 export const HELP_ARTICLES = {
   // Sharing
@@ -229,7 +229,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   apiTokens: {
     title: 'Learn about API tokens',
-    description: 'Create tokens to call the livediagram API from your own scripts.',
+    description: 'Create tokens to call the livehuddle API from your own scripts.',
   },
   trash: {
     title: 'Learn about the Trash',

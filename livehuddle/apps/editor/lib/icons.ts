@@ -25,7 +25,7 @@ import {
   DEFAULT_ANIMATION_SPEED,
   type AnimationSpeed,
   type IconAnimation,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 import type { IconDef, IconPrim } from '@liveworkspace/workbench/lib/icon-types';
 import { getIconLoaded, getLoadedIconCatalog } from '@liveworkspace/workbench/lib/icon-registry';
@@ -35,17 +35,17 @@ export type { IconDef, IconPrim };
 // DataTransfer MIME for dragging a palette icon onto a shape. Shared by
 // the palette (drag source) and BoxedElementView (drop target) so the
 // type string can't drift. Value carried = the icon id.
-export const ICON_DND_MIME = 'application/x-livediagram-icon';
+export const ICON_DND_MIME = 'application/x-livehuddle-icon';
 
 // Drag-from-palette MIME: a palette tile dragged onto the canvas drops a new
 // element at that point. Value carried = the ShapeKind (shapes + devices).
-export const PALETTE_DND_MIME = 'application/x-livediagram-palette';
+export const PALETTE_DND_MIME = 'application/x-livehuddle-palette';
 
 // A sticker tile dragged from the palette: its own type, so a drop on a shape cannot read it as an icon.
-export const STICKER_DND_MIME = 'application/x-livediagram-sticker';
+export const STICKER_DND_MIME = 'application/x-livehuddle-sticker';
 
 // A technology-icon tile dragged from the palette: distinct from ICON_DND_MIME, so the tile makes a standalone icon.
-export const TECH_ICON_DND_MIME = 'application/x-livediagram-tech-icon';
+export const TECH_ICON_DND_MIME = 'application/x-livehuddle-tech-icon';
 
 // The globals.css class for an `lvd-{prefix}-{anim}` keyframe set (undefined
 // anim = static, no class). The shared shape behind the per-element animation

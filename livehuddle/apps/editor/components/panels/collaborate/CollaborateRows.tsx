@@ -14,7 +14,7 @@ import {
   GlyphDisc,
   IDENTITY_FILL,
   identityVars,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
 import { initialsOf } from '@/lib/identity';
 import type { ActionRow, CommentRow } from '@/components/panels/CollaboratePanel';

@@ -8,7 +8,7 @@ import type { ImportImageProgress } from '@/lib/import-images';
 import { reportHasLosses } from '@/lib/board-scene/report';
 import { ImportImageReport } from './ImportImageReport';
 import type { ImportFormat as Format } from '@/hooks/persistence/useTabImport';
-import { Glyph, DialogCloseButton, DialogHeader } from '@livediagram/ui';
+import { Glyph, DialogCloseButton, DialogHeader } from '@livehuddle/ui';
 
 type ImportTabDialogProps = {
   // The active tab's name — shown in the warning so it's clear which
@@ -51,8 +51,8 @@ const FORMATS: {
     key: 'json',
     title: 'JSON',
     description:
-      'A livediagram tab (a .json export). Restores its elements exactly. Paste it or pick a file.',
-    placeholder: '{\n  "schemaVersion": 1,\n  "kind": "livediagram.tab",\n  "tab": { … }\n}',
+      'A livehuddle tab (a .json export). Restores its elements exactly. Paste it or pick a file.',
+    placeholder: '{\n  "schemaVersion": 1,\n  "kind": "livehuddle.tab",\n  "tab": { … }\n}',
   },
   {
     key: 'mermaid',

@@ -10,7 +10,7 @@ import {
   createSticky,
   createText,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 import { BLUE, MUTED, ORANGE, YELLOW } from './template-workshop-stickies';
 

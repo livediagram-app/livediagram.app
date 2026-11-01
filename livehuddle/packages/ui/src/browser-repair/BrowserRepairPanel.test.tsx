@@ -45,8 +45,8 @@ describe('BrowserRepairPanel', () => {
   });
 
   it('asks before repairing, then clears and reports the count', () => {
-    window.localStorage.setItem('livediagram:v2:guest-token', 'guest-token');
-    window.localStorage.setItem('livediagram:v2:ui-mode', 'x');
+    window.localStorage.setItem('livehuddle:v2:guest-token', 'guest-token');
+    window.localStorage.setItem('livehuddle:v2:ui-mode', 'x');
     const order: string[] = [];
     const onRepairStart = vi.fn(() => order.push('start'));
     const onRepaired = vi.fn(() => order.push('done'));
@@ -62,21 +62,21 @@ describe('BrowserRepairPanel', () => {
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(screen.getByText(/guest identity, Offline Mode canvases/)).toBeTruthy();
     // Nothing cleared until the confirm.
-    expect(window.localStorage.getItem('livediagram:v2:ui-mode')).toBe('x');
+    expect(window.localStorage.getItem('livehuddle:v2:ui-mode')).toBe('x');
 
     fireEvent.click(screen.getByRole('button', { name: 'Repair and Reload' }));
     expect(order).toEqual(['start', 'done']);
     expect(onRepaired).toHaveBeenCalledWith(1);
-    expect(window.localStorage.getItem('livediagram:v2:ui-mode')).toBeNull();
-    expect(window.localStorage.getItem('livediagram:v2:guest-token')).toBe('guest-token');
+    expect(window.localStorage.getItem('livehuddle:v2:ui-mode')).toBeNull();
+    expect(window.localStorage.getItem('livehuddle:v2:guest-token')).toBe('guest-token');
   });
 
   it('cancels without clearing', () => {
-    window.localStorage.setItem('livediagram:v2:ui-mode', 'x');
+    window.localStorage.setItem('livehuddle:v2:ui-mode', 'x');
     render(<BrowserRepairPanel buildReport={async () => ''} onRepaired={() => {}} />);
     fireEvent.click(screen.getByRole('button', { name: /repair this browser/i }));
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(screen.queryByRole('region')).toBeNull();
-    expect(window.localStorage.getItem('livediagram:v2:ui-mode')).toBe('x');
+    expect(window.localStorage.getItem('livehuddle:v2:ui-mode')).toBe('x');
   });
 });

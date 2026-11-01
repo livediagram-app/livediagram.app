@@ -1,6 +1,6 @@
 # Marketing assets
 
-Text and media assets for promoting livediagram: directory listings, launch
+Text and media assets for promoting livehuddle: directory listings, launch
 posts, social copy, screenshots, and logos. This folder is for outbound
 material only. The product source of truth stays in [`docs/specs/`](../docs/specs/), and
 developer docs stay in [`docs/`](../docs/).
@@ -33,5 +33,5 @@ marketing/
   editing, a paid tier) is off limits in every format.
 - **Free means free.** MIT-licensed, no paid tier, no plan for
   one. Say so where the format allows.
-- **Brand color** is sky blue, `#0EA5E9` ("livediagram blue"). See
+- **Brand color** is sky blue, `#0EA5E9` ("livehuddle blue"). See
   [Theme](../docs/specs/004-interface-design/color-scheme.md).

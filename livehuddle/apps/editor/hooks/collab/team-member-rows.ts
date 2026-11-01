@@ -3,7 +3,7 @@
 // rejected invite is no teammate and is left out. Shared by the Assign Action picker and the comment mention list
 // so the two agree on who "your teammates" are.
 
-import { isOpenTeamMember } from '@livediagram/api-schema';
+import { isOpenTeamMember } from '@livehuddle/api-schema';
 import type { TeamMember } from '@/lib/api-client';
 import type { PickableMember } from '@/components/dialogs/AssignActionAssigneePicker';
 

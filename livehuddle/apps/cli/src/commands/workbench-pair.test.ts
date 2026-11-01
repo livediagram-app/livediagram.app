@@ -3,7 +3,7 @@ import {
   DEVICE_SLOW_DOWN_S,
   type PairingRequestStatus,
   type WorkbenchPairingRequestCreated,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import { run } from '../main';
 import { capabilities, fakeIo, NOW, TOKEN, type FakeIo } from '../testing/fake-io';
 
@@ -41,7 +41,7 @@ function host(script: Host = {}) {
   const stdoutAtPoll: string[] = [];
   const polls = [...(script.polls ?? [])];
   const io: FakeIo = fakeIo({
-    env: { LIVEDIAGRAM_TOKEN: TOKEN, ...script.env },
+    env: { LIVEHUDDLE_TOKEN: TOKEN, ...script.env },
     stdoutIsTTY: script.stdoutIsTTY ?? false,
     routes: [
       capabilities,
@@ -86,7 +86,7 @@ describe('workbench pair', () => {
   it('names --workspace in the way to ask again when a workspace request expires', async () => {
     const { io } = host({ polls: ['expired'] });
     expect(await pair(io, '--workspace')).toBe(4);
-    expect(io.err()).toContain(`livediagram workbench pair --origin ${ORIGIN} --workspace`);
+    expect(io.err()).toContain(`livehuddle workbench pair --origin ${ORIGIN} --workspace`);
   });
 
   it('prints the link first, waits at the answered interval, and exits 0 once approved', async () => {
@@ -151,7 +151,7 @@ describe('workbench pair', () => {
     const expired = host({ polls: ['pending', 'expired'] });
     expect(await pair(expired.io)).toBe(4);
     expect(expired.io.err()).toContain(
-      `error: the pairing request expired before it was answered\nhint: livediagram workbench pair --origin ${ORIGIN}\n`,
+      `error: the pairing request expired before it was answered\nhint: livehuddle workbench pair --origin ${ORIGIN}\n`,
     );
   });
 
@@ -191,13 +191,13 @@ describe('workbench pair', () => {
     expect(await pair(recovers.io)).toBe(0);
     const fails = host({ polls: ['network', 'network', 'network'] });
     expect(await pair(fails.io)).toBe(7);
-    expect(fails.io.err()).toContain('could not reach https://www.livediagram.app (fetch failed)');
+    expect(fails.io.err()).toContain('could not reach https://www.livehuddle.app (fetch failed)');
   });
 
   it('reports any other failure of the poll as the CLI reports the api', async () => {
     const { io } = host({ polls: [{ http: 503 }] });
     expect(await pair(io)).toBe(7);
-    expect(io.err()).toContain('https://www.livediagram.app failed (HTTP 503)');
+    expect(io.err()).toContain('https://www.livehuddle.app failed (HTTP 503)');
   });
 
   it('refuses a bad origin or name with exit 1, before asking', async () => {
@@ -216,18 +216,18 @@ describe('workbench pair', () => {
   });
 
   it('counts a pairing that ended paired, and nothing else', async () => {
-    const paired = host({ polls: ['approved'], env: { LIVEDIAGRAM_TELEMETRY: '1' } });
+    const paired = host({ polls: ['approved'], env: { LIVEHUDDLE_TELEMETRY: '1' } });
     expect(await pair(paired.io)).toBe(0);
     expect(paired.events).toEqual([{ category: 'Cli', action: 'Used', type: 'WorkbenchPair' }]);
-    const declined = host({ polls: ['declined'], env: { LIVEDIAGRAM_TELEMETRY: '1' } });
+    const declined = host({ polls: ['declined'], env: { LIVEHUDDLE_TELEMETRY: '1' } });
     expect(await pair(declined.io)).toBe(4);
     expect(declined.events).toEqual([]);
   });
 
-  it('logs each decision under LIVEDIAGRAM_DEBUG=1', async () => {
+  it('logs each decision under LIVEHUDDLE_DEBUG=1', async () => {
     const { io } = host({
       polls: ['network', { http: 429 }, 'pending', 'approved'],
-      env: { LIVEDIAGRAM_DEBUG: '1' },
+      env: { LIVEHUDDLE_DEBUG: '1' },
     });
     expect(await pair(io)).toBe(0);
     const lines = io
@@ -244,7 +244,7 @@ describe('workbench pair', () => {
     ]);
     const opener = host({
       polls: ['approved'],
-      env: { LIVEDIAGRAM_DEBUG: '1' },
+      env: { LIVEHUDDLE_DEBUG: '1' },
       stdoutIsTTY: true,
     });
     opener.io.openUrl = async () => false;
@@ -262,7 +262,7 @@ describe('workbench pair', () => {
           pairedAt: NOW,
         },
       },
-      env: { LIVEDIAGRAM_DEBUG: '1' },
+      env: { LIVEHUDDLE_DEBUG: '1' },
     });
     expect(await pair(already.io)).toBe(0);
     expect(already.io.err()).toContain('[cli] workbench pair paired\n');

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef } from 'react';
-import type { DetectedSticky } from '@livediagram/sticky-vision';
+import type { DetectedSticky } from '@livehuddle/sticky-vision';
 
 // A box that is moved, resized or drawn is read again (docs/specs/021-event-storming/event-storming.md Phase 9).
 // Corrections come in runs, so it waits until this long after the LAST

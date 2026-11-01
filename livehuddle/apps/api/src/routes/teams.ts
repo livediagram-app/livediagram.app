@@ -3,7 +3,7 @@
 // (assigned-actions.md, comment-mentions.md). Making a team is the one write: liveworkspace makes it for the
 // person signed in (team-create.ts, createTeamFor).
 
-import type { TeamListItem, TeamMember } from '@livediagram/api-schema';
+import type { TeamListItem, TeamMember } from '@livehuddle/api-schema';
 import { accountsTeamReader, createTeamAccess } from '@liveworkspace/index-app';
 import { accountCredentials } from '../auth/accounts';
 import { teamPeople } from '../liveworkspace/team-people';

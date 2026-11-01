@@ -6,7 +6,7 @@
 // visitor back where they started.
 //
 // Lives in `components/` (not `packages/`) because the styling is
-// app-specific (livediagram brand colours, livediagram Brand wordmark);
+// app-specific (livehuddle brand colours, livehuddle Brand wordmark);
 // no other workspace consumes it yet. If marketing later grows its
 // own auth surface this can be promoted to `packages/ui`.
 

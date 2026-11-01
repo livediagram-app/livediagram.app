@@ -9,8 +9,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('./user-preferences', () => ({
   readUserPreferences: vi.fn(() => ({})),
-  PREFERENCES_CHANGED_EVENT: 'livediagram:preferences-changed',
-  STORAGE_KEY: 'livediagram:user-preferences:v1',
+  PREFERENCES_CHANGED_EVENT: 'livehuddle:preferences-changed',
+  STORAGE_KEY: 'livehuddle:user-preferences:v1',
 }));
 
 import { readUserPreferences } from './user-preferences';
@@ -161,7 +161,7 @@ describe('track gate', () => {
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({
-          app: 'livediagram.app',
+          app: 'livehuddle.app',
           events: [{ category: 'Element', action: 'Added', type: 'Square' }],
         }),
       }),
@@ -191,7 +191,7 @@ describe('track gate', () => {
       'https://www.liveworkspace.app/api/telemetry/events',
       expect.objectContaining({
         body: JSON.stringify({
-          app: 'livediagram.app',
+          app: 'livehuddle.app',
           events: [{ category: 'Session', action: 'Joined', type: null }],
         }),
       }),
@@ -210,7 +210,7 @@ describe('track gate', () => {
     expect(mockedReadPrefs).toHaveBeenCalledTimes(1);
     // Flip the preferences and dispatch the same-tab event.
     mockedReadPrefs.mockReturnValue({ telemetryEnabled: false });
-    window.dispatchEvent(new Event('livediagram:preferences-changed'));
+    window.dispatchEvent(new Event('livehuddle:preferences-changed'));
     track('Element', 'Added', 'Circle');
     // Cache was invalidated, so readPrefs fired a second time and
     // saw the flip. The flush for the FIRST batch still goes through

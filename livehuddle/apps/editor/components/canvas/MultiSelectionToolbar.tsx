@@ -1,12 +1,5 @@
-import type { Element } from '@livediagram/document';
-import {
-  DuplicateIcon,
-  EllipsisIcon,
-  LockIcon,
-  TrashIcon,
-  HoverCard,
-  Glyph,
-} from '@livediagram/ui';
+import type { Element } from '@livehuddle/document';
+import { DuplicateIcon, EllipsisIcon, LockIcon, TrashIcon, HoverCard, Glyph } from '@livehuddle/ui';
 import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';
 import {
   TOOLBAR_BTN,

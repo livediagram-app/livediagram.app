@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES, buildTemplate } from '@livediagram/templates';
+import { TEMPLATES, buildTemplate } from '@livehuddle/templates';
 import {
   THEMES,
   canvasSurface,
@@ -9,7 +9,7 @@ import {
   mixHex,
   type Appearance,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { withThemeApplied } from './tab-theme-apply';
 import { tabAsSeen } from './export-as-seen';
 

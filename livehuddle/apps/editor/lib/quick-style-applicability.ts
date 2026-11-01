@@ -2,7 +2,7 @@
 // "Multi-selection"): any mix of kinds works. The theme rows style unlocked shapes, arrows, paths
 // and text; a whiteboard's marker rows style its marker strokes; every other element is passed over,
 // neither styled nor counted, and never hides the panel from the rest.
-import type { Element, FreehandElement } from '@livediagram/document';
+import type { Element, FreehandElement } from '@livehuddle/document';
 import { isQuickStyleTarget, type QuickStyleTarget } from './quick-style';
 import { isPenStroke } from './quick-style-pen';
 

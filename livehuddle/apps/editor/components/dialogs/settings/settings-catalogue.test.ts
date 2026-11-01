@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { HELP_ARTICLES } from '@/lib/help-articles';
 import { SETTINGS_CATEGORIES, settingsCategoryPath, visibleCategories } from './settings-catalogue';
-import { TELEMETRY_TYPE_PATTERN } from '@livediagram/api-schema';
+import { TELEMETRY_TYPE_PATTERN } from '@livehuddle/api-schema';
 import type { SettingsRowSpec } from './settings-catalogue';
 import { autoRebindArrowsEnabled, type UserPreferences } from '@/lib/user-preferences';
 

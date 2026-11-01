@@ -7,13 +7,13 @@
 // timing ENDS, not when it starts, so a load that starts before the boot's effect has run (the
 // document page's layout effect runs first) still reports.
 
-import type { EditorTimingMetric } from '@livediagram/api-schema';
+import type { EditorTimingMetric } from '@livehuddle/api-schema';
 import {
   createTimingSampler,
   type TimingHandle,
   type TimingTrack,
 } from '@liveworkspace/telemetry-client';
-import { startTiming } from '@livediagram/telemetry-client';
+import { startTiming } from '@livehuddle/telemetry-client';
 
 let timingTrack: TimingTrack | null = null;
 

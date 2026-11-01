@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { NAME_MAX_LENGTH, type Element, type Tab } from '@livediagram/document';
+import { NAME_MAX_LENGTH, type Element, type Tab } from '@livehuddle/document';
 import { useTabActions } from './useTabActions';
 
 // Duplicate copies a tab, named as a copy, its elements alongside.

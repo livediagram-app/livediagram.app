@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, createSticky, type Element } from '@livediagram/document';
+import { createShape, createSticky, type Element } from '@livehuddle/document';
 import { routeBoardDoubleClick, shapeToEditAt } from './whiteboard-edit-target';
 
 // docs/specs/023-draw-mode/draw-mode.md "Selecting": a whiteboard shape is picked by its outline,

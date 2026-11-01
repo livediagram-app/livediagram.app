@@ -18,10 +18,10 @@
 
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { announce } from '@liveworkspace/workbench/lib/announcer';
-import { isPressableControl } from '@livediagram/ui';
+import { isPressableControl } from '@livehuddle/ui';
 import { presentedSlideName } from '@/lib/slide-headline';
 
-import { type BoxedElement, type Slide, type Tab } from '@livediagram/document';
+import { type BoxedElement, type Slide, type Tab } from '@livehuddle/document';
 
 import {
   PresentationElementPopover,

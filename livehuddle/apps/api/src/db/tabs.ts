@@ -3,7 +3,7 @@
 // (@liveworkspace/index-app item-db.ts).
 
 import { shareLeaveStatements } from '@liveworkspace/index-app';
-import { capElementActions, drawnCount, type Tab } from '@livediagram/document';
+import { capElementActions, drawnCount, type Tab } from '@livehuddle/document';
 import { rowToTab, type TabRow } from '../tab-row';
 import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
 

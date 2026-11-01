@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Glyph, Tooltip, atLeastInset } from '@livediagram/ui';
+import { Glyph, Tooltip, atLeastInset } from '@livehuddle/ui';
 import { TOOLBAR_CARD, TOOLBAR_CONTROL_REST } from './toolbar-surface';
 
 // A phone held sideways (docs/specs/007-editor/editor-app.md "A phone held sideways"): the header and

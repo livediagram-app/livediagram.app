@@ -4,7 +4,7 @@
 // search matcher stays catalogue-agnostic and the Explorer (which never adds
 // elements) doesn't pull the icon data into its bundle.
 
-import type { ShapeKind } from '@livediagram/document';
+import type { ShapeKind } from '@livehuddle/document';
 
 import { tileKeywords } from '@/lib/palette-tile-keywords';
 import type { PaletteSearchItem } from '@/lib/search';

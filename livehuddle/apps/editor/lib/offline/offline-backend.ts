@@ -3,10 +3,10 @@
 // record shape and every operation on it live in ./offline-store.ts.
 
 import { upgradeStores } from './legacy-offline-store';
-import { INDEXED_DB_PROBE_TIMEOUT_MS } from '@livediagram/ui';
+import { INDEXED_DB_PROBE_TIMEOUT_MS } from '@livehuddle/ui';
 import type { OfflineDocumentRecord } from './offline-store';
 
-const DB_NAME = 'livediagram-offline';
+const DB_NAME = 'livehuddle-offline';
 // Version 2 renamed the object store (docs/specs/006-document/offline-mode.md);
 // ./legacy-offline-store moves every record across. Version 3 added the `retired-parts` store and sets aside each
 // record holding Pages or Plan content before anything can read it (./retired-parts-upgrade).

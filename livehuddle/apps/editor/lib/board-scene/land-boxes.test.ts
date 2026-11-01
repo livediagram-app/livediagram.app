@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { STICKY_PRESETS, isValidElement } from '@livediagram/document';
+import { STICKY_PRESETS, isValidElement } from '@livehuddle/document';
 import { createLandContext } from './context';
 import { landFrame, landImage, landShape, landSticky, landText } from './land-boxes';
 import type { SceneAsset, SceneShape, SceneText } from './scene';

@@ -1,6 +1,6 @@
 // /api/account: deleting an account, and the code emailed to confirm it.
 
-import { bearerTokenOf } from '@livediagram/api-schema';
+import { bearerTokenOf } from '@livehuddle/api-schema';
 import { confirmDeletionCode, requestDeletionCode } from '@liveworkspace/auth-client';
 import { deleteAccount } from '../db';
 import { emailEnabled, sendEmail } from '../email/client';
@@ -9,7 +9,7 @@ import { json, missingAuth, notFound } from '../responses';
 import { configured, signedOutCookies } from './auth';
 import type { RouteContext } from './context';
 
-// Deleting the person's account: their livediagram data, then their liveworkspace account, which
+// Deleting the person's account: their livehuddle data, then their liveworkspace account, which
 // closes it in every liveworkspace app (docs/specs/014-identity/auth-and-guest-access.md
 // "Deleting an account"). Signed-in only, never a guest token, because the whole point is
 // to wipe what belongs to a verified account.

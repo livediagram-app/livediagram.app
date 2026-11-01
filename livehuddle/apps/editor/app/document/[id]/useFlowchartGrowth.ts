@@ -9,7 +9,7 @@ import {
   type FlowchartGrowth,
   type FlowchartStepType,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { dressFlowchartConnector, dressFlowchartStep } from '@/lib/flowchart-dress';
 import { lockedElementIds } from '@/lib/tab-cleanup';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';

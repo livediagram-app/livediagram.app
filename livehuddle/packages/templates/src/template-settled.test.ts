@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { settleChips, type Element } from '@livediagram/document';
+import { settleChips, type Element } from '@livehuddle/document';
 import { buildTemplate } from './build-template';
 import { TEMPLATES } from './templates';
 

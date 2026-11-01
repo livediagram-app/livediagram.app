@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import { getTheme, themeChartPalette } from './themes';
 import { slideThumbFor } from './slide-thumb';
 

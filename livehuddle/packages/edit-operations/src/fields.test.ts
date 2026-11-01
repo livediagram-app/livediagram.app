@@ -5,7 +5,7 @@ import {
   shapeColorPresets,
   quickSwatchColor,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { aliasesOf, writeFieldsOnto, type FieldsWrite } from './fields';
 import type { Fields } from './types';
 

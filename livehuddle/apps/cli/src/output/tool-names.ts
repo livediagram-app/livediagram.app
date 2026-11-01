@@ -21,7 +21,7 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
 
 const TOOL_WORD = new RegExp(`\\b(${Object.keys(COMMAND_OF_TOOL).join('|')})\\b`, 'g');
 
-/** `text` with each MCP tool it names written as the CLI command: "add_tab" → "livediagram tab add". */
+/** `text` with each MCP tool it names written as the CLI command: "add_tab" → "livehuddle tab add". */
 export function inCliWords(text: string): string {
-  return text.replace(TOOL_WORD, (tool) => `livediagram ${COMMAND_OF_TOOL[tool]}`);
+  return text.replace(TOOL_WORD, (tool) => `livehuddle ${COMMAND_OF_TOOL[tool]}`);
 }

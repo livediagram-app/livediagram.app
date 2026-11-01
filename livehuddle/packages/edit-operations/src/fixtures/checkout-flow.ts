@@ -2,7 +2,7 @@
 // down a column joined by pinned arrows, a note beside the payment, and a frame `f2` holding the
 // address and card steps. Every suite starts from a fresh copy.
 
-import type { ArrowElement, Element, ShapeKind, Tab } from '@livediagram/document';
+import type { ArrowElement, Element, ShapeKind, Tab } from '@livehuddle/document';
 
 const step = (id: string, shape: ShapeKind, label: string, y: number, height = 60): Element => ({
   id,

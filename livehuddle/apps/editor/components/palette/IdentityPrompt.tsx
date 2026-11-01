@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Button, CloseIcon, useEscape } from '@livediagram/ui';
+import { Button, CloseIcon, useEscape } from '@livehuddle/ui';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import type { Participant } from '@/lib/identity';

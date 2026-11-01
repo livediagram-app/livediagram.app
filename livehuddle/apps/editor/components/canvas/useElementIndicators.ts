@@ -9,7 +9,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { describeLink } from '@/lib/link-label';
 import { colorForKey, initialsOf } from '@/lib/identity';
 import { useCommentBadges } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';

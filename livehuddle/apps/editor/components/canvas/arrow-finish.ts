@@ -6,7 +6,7 @@ import {
   handDrawnArrow,
   type ArrowElement,
   type HandDrawnArrow,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { useElementFinish } from './CanvasFinishContext';
 
 // An arrow in its finish on the canvas (docs/specs/008-canvas/finish.md): Professional thins an arrow that

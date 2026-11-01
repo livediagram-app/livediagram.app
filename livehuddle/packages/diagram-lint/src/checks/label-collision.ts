@@ -7,7 +7,7 @@ import {
   type BoxedElement,
   type Point,
   type Rect,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { arrowName, arrowSelector } from '../arrow-names';
 import { boxBounds, isLintBox } from '../boxes';
 import { LINT_LABEL_RUN_PAD, LINT_OVERLAP_TOLERANCE_PX } from '../constants';

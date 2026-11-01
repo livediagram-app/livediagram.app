@@ -1,8 +1,8 @@
-// livediagram's template families as the shared Explorer takes them: the lens's Template filter, and an entry of
+// livehuddle's template families as the shared Explorer takes them: the lens's Template filter, and an entry of
 // Default Folders each ("Retrospective canvases"), matched against the last word of a canvas's creation intent
 // ("diagram:diagram:retrospective").
 import type { LensOption } from '@liveworkspace/explorer';
-import { TEMPLATE_FAMILIES, type TemplateFamily } from '@livediagram/api-schema';
+import { TEMPLATE_FAMILIES, type TemplateFamily } from '@livehuddle/api-schema';
 
 const FAMILY_LABELS: Record<TemplateFamily, string> = {
   retrospective: 'Retrospective',

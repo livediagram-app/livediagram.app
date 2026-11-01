@@ -3,7 +3,7 @@
 // `.test.ts` file, so vitest doesn't collect it as a suite.
 
 import type { DatabaseSync } from 'node:sqlite';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import type { TestMediaService } from '../test-media-service';
 
 // A started canvas, as its create writes it (test-sqlite-d1.ts `test_documents`).
@@ -27,7 +27,7 @@ export function mediaImages(
   media: TestMediaService,
   owner: string,
   ids: string[],
-  app = 'livediagram.app',
+  app = 'livehuddle.app',
 ) {
   const stmt = media.sql.prepare(
     `INSERT INTO images (id, owner, app, content_type, byte_size, width, height, sha256, created_at)

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { DetectedSticky } from '@livediagram/sticky-vision';
+import type { DetectedSticky } from '@livehuddle/sticky-vision';
 import type { PhotoReview } from '@/hooks/canvas/usePhotoDraft';
 import { NoteBox, sizeOf } from './photo/NoteBox';
 import { PhotoStatus } from './photo/PhotoStatus';
@@ -20,7 +20,7 @@ import { useReviewBoxes } from './photo/useReviewBoxes';
 import { useRereadOnChange } from './photo/useRereadOnChange';
 import { usePhotoView } from './photo/usePhotoView';
 import { kindOfBox } from './photo/kindOfBox';
-import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { SOLID_BRAND_DARK_CONTROL } from '@livehuddle/ui';
 import {
   PhotoReviewShowMe,
   PhotoReviewTourStage,

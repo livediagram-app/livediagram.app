@@ -26,8 +26,8 @@ describe('userCodeOf', () => {
 
 describe('fetchDeviceSession', () => {
   it('asks the MCP origin and returns the client name', async () => {
-    const calls = stubFetch(() => Response.json({ clientName: 'livediagram CLI' }));
-    expect(await fetchDeviceSession('BCDF-GHJK')).toEqual({ clientName: 'livediagram CLI' });
+    const calls = stubFetch(() => Response.json({ clientName: 'livehuddle CLI' }));
+    expect(await fetchDeviceSession('BCDF-GHJK')).toEqual({ clientName: 'livehuddle CLI' });
     expect(calls[0]!.url).toBe(`${MCP_ORIGIN}/oauth/device/session/BCDF-GHJK`);
   });
 

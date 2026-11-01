@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { graftLiveTabState, type Tab } from '@livediagram/document';
+import { graftLiveTabState, type Tab } from '@livehuddle/document';
 
 // Bounded undo/redo over the tabs array. See docs/specs/008-canvas/canvas-and-palette.md ("Undo / Redo").
 //

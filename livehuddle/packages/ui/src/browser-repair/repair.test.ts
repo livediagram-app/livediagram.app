@@ -29,14 +29,14 @@ const blocked = (): Storage => {
 };
 
 describe('isRepairClearable', () => {
-  it('clears livediagram settings and caches', () => {
+  it('clears livehuddle settings and caches', () => {
     for (const k of [
-      'livediagram:user-preferences:v2',
-      'livediagram:recent-diagrams:v1',
-      'livediagram:share-password:abc',
-      'livediagram:v2:ui-mode',
-      'livediagram:stale-chunk-reloads',
-      'livediagram-build',
+      'livehuddle:user-preferences:v2',
+      'livehuddle:recent-diagrams:v1',
+      'livehuddle:share-password:abc',
+      'livehuddle:v2:ui-mode',
+      'livehuddle:stale-chunk-reloads',
+      'livehuddle-build',
     ]) {
       expect(isRepairClearable(k), k).toBe(true);
     }
@@ -50,9 +50,9 @@ describe('isRepairClearable', () => {
 
   it('clears what the removed Google Drive mirror left behind (liveworkspace/docs/specs/005-drive/drive.md)', () => {
     for (const k of [
-      'livediagram:v2:drive-state',
-      'livediagram:v2:drive-seen:user_a',
-      'livediagram:drive-mirror',
+      'livehuddle:v2:drive-state',
+      'livehuddle:v2:drive-seen:user_a',
+      'livehuddle:drive-mirror',
     ]) {
       expect(isRepairClearable(k), k).toBe(true);
     }
@@ -68,46 +68,46 @@ describe('repairBrowserStorage', () => {
   it('removes clearable keys from both storages and keeps the rest', () => {
     const localStorage = new MemoryStorage();
     const sessionStorage = new MemoryStorage();
-    localStorage.setItem('livediagram:v2:guest-token', 'guest-token');
-    localStorage.setItem('livediagram:user-preferences:v2', '{}');
-    localStorage.setItem('livediagram:panel-layout:v1', '{}');
+    localStorage.setItem('livehuddle:v2:guest-token', 'guest-token');
+    localStorage.setItem('livehuddle:user-preferences:v2', '{}');
+    localStorage.setItem('livehuddle:panel-layout:v1', '{}');
     localStorage.setItem('__clerk_x', '1');
-    sessionStorage.setItem('livediagram:stale-chunk-reloads', '{}');
+    sessionStorage.setItem('livehuddle:stale-chunk-reloads', '{}');
 
     const { cleared } = repairBrowserStorage({ localStorage, sessionStorage });
 
     expect(cleared.sort()).toEqual([
-      'livediagram:panel-layout:v1',
-      'livediagram:stale-chunk-reloads',
-      'livediagram:user-preferences:v2',
+      'livehuddle:panel-layout:v1',
+      'livehuddle:stale-chunk-reloads',
+      'livehuddle:user-preferences:v2',
     ]);
-    expect(localStorage.getItem('livediagram:v2:guest-token')).toBe('guest-token');
+    expect(localStorage.getItem('livehuddle:v2:guest-token')).toBe('guest-token');
     expect(localStorage.getItem('__clerk_x')).toBe('1');
     expect(sessionStorage.length).toBe(0);
   });
 
   it('repairs what it can when a storage is blocked', () => {
     const localStorage = new MemoryStorage();
-    localStorage.setItem('livediagram:v2:ui-mode', 'x');
+    localStorage.setItem('livehuddle:v2:ui-mode', 'x');
     const win = {
       localStorage,
       get sessionStorage() {
         return blocked();
       },
     };
-    expect(repairBrowserStorage(win).cleared).toEqual(['livediagram:v2:ui-mode']);
+    expect(repairBrowserStorage(win).cleared).toEqual(['livehuddle:v2:ui-mode']);
   });
 
   it('keeps going when one key will not remove', () => {
     const localStorage = new MemoryStorage();
-    localStorage.setItem('livediagram:a', '1');
-    localStorage.setItem('livediagram:b', '1');
+    localStorage.setItem('livehuddle:a', '1');
+    localStorage.setItem('livehuddle:b', '1');
     const remove = localStorage.removeItem.bind(localStorage);
     localStorage.removeItem = (k: string) => {
-      if (k === 'livediagram:a') throw new Error('nope');
+      if (k === 'livehuddle:a') throw new Error('nope');
       remove(k);
     };
     const { cleared } = repairBrowserStorage({ localStorage, sessionStorage: new MemoryStorage() });
-    expect(cleared).toEqual(['livediagram:b']);
+    expect(cleared).toEqual(['livehuddle:b']);
   });
 });

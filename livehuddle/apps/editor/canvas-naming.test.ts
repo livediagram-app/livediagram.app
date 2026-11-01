@@ -3,7 +3,7 @@ import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-// People see livediagram's items called canvases (docs/specs/003-system-architecture/domain-language.md "Canvas");
+// People see livehuddle's items called canvases (docs/specs/003-system-architecture/domain-language.md "Canvas");
 // code, routes and stored keys still say document. This scans the editor's sources, comments aside, for the old
 // words in the places copy sits (command and button labels in Title Case, and the untitled name), so a new
 // "New Document" doesn't creep back in. The flowchart Document shape is a shape, not an item, and keeps its name.

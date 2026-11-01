@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import { YOUR_COLOURS_MAX, documentColours } from './document-colours';
 
 // docs/specs/004-interface-design/colour-picker.md "Custom colours"

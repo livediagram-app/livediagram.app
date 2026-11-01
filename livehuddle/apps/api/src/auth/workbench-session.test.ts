@@ -6,7 +6,7 @@ import { noteWorkbenchRoom, resolveWorkbenchSession, sessionPrefixOf } from './w
 // credentials and reads the answer in its own words.
 const ENV = {
   ACCOUNTS_URL: 'https://accounts.test',
-  ACCOUNTS_CLIENT_ID: 'livediagram',
+  ACCOUNTS_CLIENT_ID: 'livehuddle',
   ACCOUNTS_CLIENT_SECRET: 'secret',
 };
 

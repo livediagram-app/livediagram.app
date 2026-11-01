@@ -43,7 +43,7 @@ is the team, not the individual.
 - Share links with three roles (Editor, Participant, Viewer), an optional
   expiry and password, revocable any time. "Shared with you" visitors can make
   their own copy.
-- Export the active tab as a livediagram JSON file, Mermaid, Markdown,
+- Export the active tab as a livehuddle JSON file, Mermaid, Markdown,
   Excalidraw, PNG, SVG or PDF; import JSON, Mermaid, Markdown, Excalidraw and
   draw.io files.
 - Email notifications (comments, mentions, assigned actions, replies to team invites),
@@ -62,7 +62,7 @@ is the team, not the individual.
 ## Open source and price
 
 - MIT-licensed and publicly viewable.
-- Hosted free at livediagram.app. No paid tier and no plan to introduce one.
+- Hosted free at livehuddle.app. No paid tier and no plan to introduce one.
 - The OSS core never calls home and never gates features behind a license
   check. Sign-in through liveworkspace accounts is the one optional dependency;
   without it the app degrades to full-featured guest mode.
@@ -81,5 +81,5 @@ the Next.js frontends. No Node-hosted backend, no SSR.
 
 ## Links
 
-- Hosted: https://livediagram.app
-- Editor: https://livediagram.app/new
+- Hosted: https://livehuddle.app
+- Editor: https://livehuddle.app/new

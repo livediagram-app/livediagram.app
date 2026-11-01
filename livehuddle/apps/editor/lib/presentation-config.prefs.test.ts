@@ -18,7 +18,7 @@ describe('presenter settings in the preferences', () => {
 
   it("carries this browser's old settings over until the first change", () => {
     localStorage.setItem(
-      'livediagram:v2:presentation-config',
+      'livehuddle:v2:presentation-config',
       JSON.stringify({ ...DEFAULT_PRESENTATION_CONFIG, loop: true }),
     );
     expect(readPresentationConfig({}).loop).toBe(true);

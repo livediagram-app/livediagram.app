@@ -1,6 +1,6 @@
 // The elements whose colours a write set (docs/specs/024-agents/diagram-lint.md "Where it runs"): those it added with a
 // fill or stroke, and those whose fill or stroke it changed. A changeset's lint judges colour-on-themed on these alone.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 
 const colourOf = (el: Element) =>
   `${Reflect.get(el, 'fillColor') ?? ''}|${Reflect.get(el, 'strokeColor') ?? ''}`;

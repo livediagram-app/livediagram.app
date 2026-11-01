@@ -1,15 +1,15 @@
-# livediagram CLI
+# livehuddle CLI
 
-`livediagram` is the command line agents and scripts read, lint and change livediagram documents with. The
+`livehuddle` is the command line agents and scripts read, lint and change livehuddle documents with. The
 behaviour is specified in [CLI](../../docs/specs/015-api/cli.md) and its
-[blueprint](../../docs/specs/015-api/blueprints/cli.md); the verbs themselves live in `@livediagram/agent-verbs`.
+[blueprint](../../docs/specs/015-api/blueprints/cli.md); the verbs themselves live in `@livehuddle/agent-verbs`.
 
 ## Develop
 
 ```bash
-pnpm --filter @livediagram/cli test        # every suite runs on an in-memory CliIo
-pnpm --filter @livediagram/cli build       # dist/livediagram.mjs, one ESM file for Node 22+
-LIVEDIAGRAM_TOKEN=lwt_... apps/cli/dist/livediagram.mjs --help
+pnpm --filter @livehuddle/cli test        # every suite runs on an in-memory CliIo
+pnpm --filter @livehuddle/cli build       # dist/livehuddle.mjs, one ESM file for Node 22+
+LIVEHUDDLE_TOKEN=lwt_... apps/cli/dist/livehuddle.mjs --help
 ```
 
 `src/main.ts` runs one command from argv to an exit code; `src/io.ts` is everything it touches outside itself, which

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape } from '@livediagram/document';
+import { createShape } from '@livehuddle/document';
 import { canEditSankey } from './sankey-edit';
 import { resolveEditorCapabilities } from './editor-capabilities';
 

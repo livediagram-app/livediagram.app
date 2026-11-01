@@ -41,7 +41,7 @@ describe('the document grant boot script', () => {
   it('asks nothing for an item this browser keeps only here: the index has never heard of it', () => {
     vi.stubGlobal('fetch', vi.fn());
     localStorage.setItem(
-      thisBrowserKey('livediagram'),
+      thisBrowserKey('livehuddle'),
       JSON.stringify({ v: 1, items: [{ id: 'local1' }] }),
     );
     try {

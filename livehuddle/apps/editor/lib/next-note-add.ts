@@ -9,7 +9,7 @@ import {
   type ElementId,
   type EsSide,
   type EventStormingNoteKind,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { travellingIdsFrom, type InsertionSlot } from '@/lib/insert-between';
 
 // Where a next note goes, and what has to stand aside for it (docs/specs/021-event-storming/event-storming.md

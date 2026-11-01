@@ -5,13 +5,13 @@ import { WorkStorage, AccessControl } from '@liveworkspace/help-site/art/illustr
 export const metadata = helpMetadata({
   title: 'Data Privacy',
   description:
-    'Where your livediagram canvases live, what is stored, and the control you have over your own data.',
+    'Where your livehuddle canvases live, what is stored, and the control you have over your own data.',
   path: '/help/privacy-and-security/data-privacy/',
 });
 
 <ArticleLayout title="Data Privacy" description="Where your canvases live, what gets stored, and how you stay in control of your own data." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
-Your canvases are the whole point, so it helps to know exactly where they live and who can reach them. livediagram stores canvases on Cloudflare infrastructure behind an authenticated API, never in a third-party analytics product, and you keep control of them whether you sign in or stay a guest. This page explains how it works; the [Privacy Policy](https://www.liveworkspace.app/privacy), which covers every liveworkspace app, is the formal statement for the hosted service.
+Your canvases are the whole point, so it helps to know exactly where they live and who can reach them. livehuddle stores canvases on Cloudflare infrastructure behind an authenticated API, never in a third-party analytics product, and you keep control of them whether you sign in or stay a guest. This page explains how it works; the [Privacy Policy](https://www.liveworkspace.app/privacy), which covers every liveworkspace app, is the formal statement for the hosted service.
 
 ## Where your canvases live
 
@@ -23,11 +23,11 @@ Canvases are saved through a single Cloudflare Worker API. The browser never tal
 
 **Or nowhere but your own machine.** A canvas created in [Offline Mode](/help/privacy-and-security/offline-mode/) lives only in this browser's IndexedDB. It is never stored by the API, so none of the storage above holds a copy of it, and it stays that way until you choose **Sync Canvas** to move it to the cloud.
 
-livediagram runs on Cloudflare. Your canvas content goes to another company only when you use a feature that needs one:
+livehuddle runs on Cloudflare. Your canvas content goes to another company only when you use a feature that needs one:
 
-- **Reading sticky notes from a photo** sends small crops of the notes, never the whole photo, to the reading model the deployment uses (Google's Gemini on livediagram.app). On a deployment without a reading model the notes are read in your browser and nothing is sent. Nothing is sent until you import a photo.
+- **Reading sticky notes from a photo** sends small crops of the notes, never the whole photo, to the reading model the deployment uses (Google's Gemini on livehuddle.app). On a deployment without a reading model the notes are read in your browser and nothing is sent. Nothing is sent until you import a photo.
 - **[Google Drive](/help/account-and-data/google-drive/)**, if you connect it, gets a copy of your canvases in your own Drive, written by liveworkspace's Drive service (it holds your Google grant, sealed, and never hands it to your browser).
-- **Image search** sends what you type in the image picker's **Search** tab straight from your browser to Openverse, the open image search engine; no livediagram server sees it.
+- **Image search** sends what you type in the image picker's **Search** tab straight from your browser to Openverse, the open image search engine; no livehuddle server sees it.
 - **Emails** about your work go through the email provider. They name the canvas, and a mention or an assigned action quotes a little of the comment or action (see [Email Notifications](/help/account-and-data/email-notifications/)).
 
 <Figure caption="Your edits travel through one API to Cloudflare storage, never straight from the browser to storage.">
@@ -51,7 +51,7 @@ A canvas is owned by an identity. That identity is either a signed-in account or
 - **Opt out of analytics.** The anonymous usage events have a switch in Settings. See [What We Collect](/help/privacy-and-security/what-we-collect/).
 
 <Note>
-  livediagram does not claim end-to-end encryption. Canvas content is protected by authentication
+  livehuddle does not claim end-to-end encryption. Canvas content is protected by authentication
   and access controls, not by client-side encryption. Found a way around them? Please [report it
   privately](/help/policies/report-a-vulnerability/).
 </Note>

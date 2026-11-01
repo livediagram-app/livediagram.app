@@ -4,7 +4,7 @@ import {
   timelineLayout,
   type ConceptRow,
   type LayoutRect,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { ConceptRowLayer } from '@liveworkspace/workbench/components/canvas/concept-row-layer';
 
 // What ConceptFace hands a kind's body to draw its words with (its `line`), so every kind edits in place alike.

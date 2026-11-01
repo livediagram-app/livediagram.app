@@ -3,7 +3,7 @@
 // file, documents in index order (RL41), then the files that name no readable document, by path. Pure. A document
 // with no answer this pass (a pass narrowed to another) gets no action.
 
-import type { OverviewView } from '@livediagram/api-schema';
+import type { OverviewView } from '@livehuddle/api-schema';
 import type { Coverage } from './coverage';
 import { isCovered } from './coverage';
 import type { MirrorLevel } from './link-file';
@@ -97,7 +97,7 @@ function tabMoves(overview: OverviewView, before: Record<string, number>): TabMo
 }
 
 const revsOf = (file: MirrorFile) =>
-  Object.fromEntries(Object.entries(file.livediagramSync.tabs).map(([id, t]) => [id, t.rev]));
+  Object.fromEntries(Object.entries(file.livehuddleSync.tabs).map(([id, t]) => [id, t.rev]));
 
 // The index order (RL41): folder path, then name, then id, in code units.
 function indexOrder(keyOf: (id: string) => { path: readonly string[]; name: string }) {

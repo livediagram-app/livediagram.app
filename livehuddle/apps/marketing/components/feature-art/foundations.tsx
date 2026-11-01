@@ -1,4 +1,4 @@
-// Feature illustrations for livediagram's open edges: the REST API from your own scripts, an AI
+// Feature illustrations for livehuddle's open edges: the REST API from your own scripts, an AI
 // tool building a diagram over MCP, and export that is a faithful picture of the canvas. Same
 // vocabulary as ./features (panel chrome with a light and a dark half, the Default canvas, the
 // fa-b-* loops); under reduced motion each shows its finished state.
@@ -61,7 +61,7 @@ export function ApiArt() {
         <text x="32" y="33" {...mono}>
           <tspan fill={EMERALD}>$ </tspan>
           <tspan fill={TERM.text}>curl </tspan>
-          <tspan fill={TERM.string}>https://www.livediagram.app/api/documents</tspan>
+          <tspan fill={TERM.string}>https://www.livehuddle.app/api/documents</tspan>
           <tspan fill={TERM.dim}> \</tspan>
         </text>
         <text x="42" y="43" {...mono}>
@@ -115,7 +115,7 @@ function Sparkle({ x, y, r = 4 }: { x: number; y: number; r?: number }) {
   );
 }
 
-/** MCP: you ask your AI tool for a diagram; it calls livediagram and the diagram appears. */
+/** MCP: you ask your AI tool for a diagram; it calls livehuddle and the diagram appears. */
 export function McpArt() {
   return (
     <Frame>
@@ -161,7 +161,7 @@ export function McpArt() {
           fontWeight="600"
           fontFamily={MONO}
         >
-          livediagram.create_document
+          livehuddle.create_document
         </text>
         <g className="fa-b-early">
           <circle
@@ -197,7 +197,7 @@ export function McpArt() {
           <rect className={SUBTLE} x="20" y="78" width="64" height="3" rx="1.5" opacity="0.4" />
         </g>
 
-        {/* What lands in livediagram. */}
+        {/* What lands in livehuddle. */}
         <MiniWindow x={176} y={8} w={112} h={80} title="Login flow">
           <g className="fa-b-late">
             <Node x={190} y={30} w={36} h={16} label="Sign in" r={8} />

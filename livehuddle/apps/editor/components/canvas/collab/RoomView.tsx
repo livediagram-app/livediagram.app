@@ -8,7 +8,7 @@ import {
   FURNITURE_RAIL_STROKE,
   roomParts,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 // A room (docs/specs/009-elements/office.md "Room"): a floor in the element's fill, the back wall standing up
 // with the room's name on it (the element's own label, which sits in the wall's face), the side and front walls

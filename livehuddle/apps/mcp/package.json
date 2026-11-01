@@ -1,10 +1,10 @@
 {
-  "name": "@livediagram/mcp",
+  "name": "@livehuddle/mcp",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --inspector-port 9230",
+    "dev": "wrangler dev --inspector-port 9630",
     "build": "wrangler deploy --dry-run --outdir dist",
     "deploy": "wrangler deploy",
     "staging:check": "wrangler deploy --dry-run --env staging",
@@ -15,11 +15,11 @@
     "clean": "rm -rf dist .wrangler node_modules .turbo coverage"
   },
   "dependencies": {
-    "@livediagram/agent-verbs": "workspace:*",
-    "@livediagram/api-schema": "workspace:*",
-    "@livediagram/diagram-lint": "workspace:*",
-    "@livediagram/document": "workspace:*",
-    "@livediagram/templates": "workspace:*",
+    "@livehuddle/agent-verbs": "workspace:*",
+    "@livehuddle/api-schema": "workspace:*",
+    "@livehuddle/diagram-lint": "workspace:*",
+    "@livehuddle/document": "workspace:*",
+    "@livehuddle/templates": "workspace:*",
     "@liveworkspace/api-client": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/mcp-kit": "workspace:*",

@@ -7,7 +7,7 @@ import {
   createShape,
   createText,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { layered, milestoneCard, MUTED, type Shape } from './template-builders-milestones';
 import { CANVAS_TONES, PAPER_INK } from './template-inks';
 

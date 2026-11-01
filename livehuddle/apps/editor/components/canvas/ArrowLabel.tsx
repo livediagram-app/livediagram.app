@@ -10,7 +10,7 @@ import {
   LABEL_PAD_X_PX,
   LABEL_PAD_Y_PX,
   type ArrowLabelLayout,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { BRAND_600 } from '@liveworkspace/workbench/components/canvas/arrow-handle-style';
 import { useCommitOnLeave } from '@liveworkspace/workbench/hooks/ui/useCommitOnLeave';
 

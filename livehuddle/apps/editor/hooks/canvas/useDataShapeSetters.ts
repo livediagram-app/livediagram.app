@@ -33,7 +33,7 @@ import {
   turnedSeatingBox,
   type SeatingKind,
   type RoomDoor,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
 import { useMindMapSetters } from '@/hooks/canvas/useMindMapSetters';

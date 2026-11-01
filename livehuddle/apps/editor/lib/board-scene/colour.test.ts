@@ -5,7 +5,7 @@ import {
   STICKY_PRESETS,
   nearestPenColour,
   penColourHex,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   INK_MAX_CHROMA,
   STOCK_MIN_CHROMA,

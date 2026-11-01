@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { arrowPathPolyline, type BoxedElement } from '@livediagram/document';
+import { arrowPathPolyline, type BoxedElement } from '@livehuddle/document';
 import {
   DRAWIO_CURVE_TOLERANCE_PX,
   axisOf,

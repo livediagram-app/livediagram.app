@@ -6,14 +6,15 @@ import {
   communityImagePath,
   documentPath,
   signedInHintOf,
-} from '@livediagram/api-schema';
-import { CommunityHelpLink } from '@livediagram/ui';
+} from '@livehuddle/api-schema';
+import { CommunityHelpLink } from '@livehuddle/ui';
 import { CommunitySiteProvider, type CommunitySite } from '@liveworkspace/community-site/client';
 import { COMMUNITY_APP_WORDS } from '@liveworkspace/community-ui/words';
 import { communityTelemetry } from './telemetry';
+import { COMMUNITY_APP } from '@livehuddle/api-schema';
 
-// livediagram's binding of the Community pages (@liveworkspace/community-site; docs/specs/025-community/community.md
-// "The Community app"), mounted once by the root layout. The pages are every app's; what is livediagram's is here:
+// livehuddle's binding of the Community pages (@liveworkspace/community-site; docs/specs/025-community/community.md
+// "The Community app"), mounted once by the root layout. The pages are every app's; what is livehuddle's is here:
 // its posts, its words, its api, its editor's routes, its signed-in hint, its telemetry and its help links.
 
 // Where the api lives. In production the router stitches the api worker onto this hostname under `/api`, so the
@@ -24,8 +25,8 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 const shareQuery = (shareCode: string) => `s=${encodeURIComponent(shareCode)}`;
 
 const SITE: CommunitySite = {
-  app: 'livediagram.app',
-  words: COMMUNITY_APP_WORDS['livediagram.app'],
+  app: COMMUNITY_APP,
+  words: COMMUNITY_APP_WORDS[COMMUNITY_APP],
   apiBase: API_BASE,
   communityApi: process.env.NEXT_PUBLIC_COMMUNITY_API,
   keyStorage: COMMUNITY_KEY_STORAGE,

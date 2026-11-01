@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, type ReactNode } from 'react';
-import { CountBadge, NoMatches } from '@livediagram/ui';
+import { CountBadge, NoMatches } from '@livehuddle/ui';
 import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
 import type { BrowserCategory } from './PaletteCategoryBrowser';
 

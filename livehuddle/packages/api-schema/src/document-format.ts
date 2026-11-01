@@ -5,7 +5,7 @@
 export const DOCUMENT_FORMAT = 2;
 
 // Every api response carries the server's number in this header.
-export const DOCUMENT_FORMAT_HEADER = 'X-Livediagram-Format';
+export const DOCUMENT_FORMAT_HEADER = 'X-Livehuddle-Format';
 
 // Reading the number off the wire is liveworkspace's.
 export { parseDocumentFormat } from '@liveworkspace/api-schema/document-format';

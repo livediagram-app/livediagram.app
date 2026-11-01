@@ -3,7 +3,7 @@ import {
   cornerRadiusPx,
   statRowLayout,
   WEB_TEXT_MAX,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';

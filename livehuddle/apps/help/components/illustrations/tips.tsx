@@ -1,4 +1,4 @@
-// livediagram's own tips-and-tricks illustrations (docs/specs/018-help/help-app.md): keyboard shortcuts
+// livehuddle's own tips-and-tricks illustrations (docs/specs/018-help/help-app.md): keyboard shortcuts
 // and the palette strip as a quick-add launchpad. The shortcuts toggle, Zen mode and the laser pointer
 // are @liveworkspace/help-site/art/illustrations/tips; format-painter and theme scenes are reused from
 // canvas.tsx, not redrawn. Composed only from the shared primitives.

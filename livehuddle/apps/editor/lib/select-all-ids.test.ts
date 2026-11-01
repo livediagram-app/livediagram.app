@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Tab } from '@livediagram/document';
+import { createShape, type Tab } from '@livehuddle/document';
 import { selectAllIds } from './select-all-ids';
 
 describe('selectAllIds', () => {

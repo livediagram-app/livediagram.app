@@ -96,9 +96,9 @@ export type DocumentId = string;
 // The model's plain vocabulary (ids, text size, padding, alignment, icon position, arrow flows,
 // background patterns) is shared by every product: @liveworkspace/model-core/basics.
 import type { TabId, ElementId, TextSize } from '@liveworkspace/model-core/basics';
-// livediagram's patterns: the shared ones plus its own (./background-pattern), Isometric among them.
+// livehuddle's patterns: the shared ones plus its own (./background-pattern), Isometric among them.
 import type { BackgroundPattern } from './background-pattern';
-// The selection-mode glyphs: the shared ones plus livediagram's own (./mode-glyphs), Isometric among them.
+// The selection-mode glyphs: the shared ones plus livehuddle's own (./mode-glyphs), Isometric among them.
 export { MODE_GLYPHS, type ModeGlyph } from './mode-glyphs';
 export { isBackgroundPattern, type BackgroundPattern } from './background-pattern';
 export {
@@ -390,12 +390,12 @@ export * from '@liveworkspace/model-core/shape-marker';
 export * from './selection-mode';
 export * from './behaviour-skin';
 // How a poll's answers are shaped (docs/specs/012-collaboration/live-poll.md), shared by the Session button's
-// stored config below and by @livediagram/api-schema's wire `LivePoll`.
+// stored config below and by @livehuddle/api-schema's wire `LivePoll`.
 export * from './poll-style';
 export * from './comments';
 export * from './collab-index-rows';
 export * from './comment-thread';
-// The whole-document `livediagram.document` envelope and the per-tab JSON and Markdown export (the editor, the
+// The whole-document `livehuddle.document` envelope and the per-tab JSON and Markdown export (the editor, the
 // Drive mirror and the CLI's pull files).
 export * from './document-envelope';
 export * from './export-tab-text';

@@ -4,8 +4,8 @@ import {
   type Element,
   type ElementOp,
   type Tab,
-} from '@livediagram/document';
-import type { RevertKept } from '@livediagram/api-schema';
+} from '@livehuddle/document';
+import type { RevertKept } from '@livehuddle/api-schema';
 import type { ChangesetFingerprints } from '../db/changesets';
 
 // A revert (docs/specs/024-agents/agent-changesets.md "Revert"): the changeset's inverse applied to

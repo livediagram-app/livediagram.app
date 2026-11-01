@@ -1,7 +1,7 @@
 // The board tree (docs/specs/020-import-export/whiteboard-import.md "The format"): nodes with a
 // type, an optional payload and id, and named traits of ordered children.
 import { base64ToBytes } from './values';
-import { isRecord } from '@livediagram/document';
+import { isRecord } from '@livehuddle/document';
 
 export type WbNode = {
   id?: string;

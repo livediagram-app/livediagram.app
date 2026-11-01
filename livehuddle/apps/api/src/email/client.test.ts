@@ -31,8 +31,8 @@ describe('emailEnabled', () => {
 });
 
 describe('appBaseUrl', () => {
-  it('defaults to livediagram.app', () =>
-    expect(appBaseUrl(noBinding)).toBe('https://www.livediagram.app'));
+  it('defaults to livehuddle.app', () =>
+    expect(appBaseUrl(noBinding)).toBe('https://www.livehuddle.app'));
   it('uses + trims a trailing slash from APP_BASE_URL', () =>
     expect(appBaseUrl({ APP_BASE_URL: 'https://example.com/' } as unknown as Env)).toBe(
       'https://example.com',
@@ -59,7 +59,7 @@ describe('sendEmail', () => {
     expect(res).toEqual({ sent: true });
     expect(binding.send).toHaveBeenCalledTimes(1);
     expect(binding.send.mock.calls[0]![0]).toMatchObject({
-      from: { email: 'hello@livediagram.app', name: 'livediagram' },
+      from: { email: 'hello@livehuddle.app', name: 'livehuddle' },
       to: 'a@b.com',
       subject: 'Hi',
       html: '<p>h</p>',

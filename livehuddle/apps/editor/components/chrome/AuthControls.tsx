@@ -29,7 +29,7 @@ import {
   useMenu,
   useMenuButton,
   PictureDisc,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { accountInitial } from '@liveworkspace/workbench/lib/account-avatar';

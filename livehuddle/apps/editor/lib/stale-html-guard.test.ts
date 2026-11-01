@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { runInlineScript } from '@liveworkspace/vitest-config/inline-script';
 import { STALE_HTML_GUARD_ATTRIBUTES, STALE_HTML_GUARD_SCRIPT } from './stale-html-guard';
-import { BUILD_ID_HEADER } from '@livediagram/api-schema';
+import { BUILD_ID_HEADER } from '@livehuddle/api-schema';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { RELOAD_GUARD_WINDOW_MS, claimReload } from '@liveworkspace/workbench/lib/reload-guard';
 import { APP_RECOVERY_FLAG, RELOAD_GUARD_KEY } from './workbench-keys';
@@ -44,7 +44,7 @@ function harness({
   const warn = vi.fn();
   const fetchSpy = vi.fn(() =>
     Promise.resolve({
-      headers: { get: (h: string) => (h === 'X-Livediagram-Build' ? liveBuild : null) },
+      headers: { get: (h: string) => (h === 'X-Livehuddle-Build' ? liveBuild : null) },
     }),
   );
   const win: Record<string, unknown> = {
@@ -73,7 +73,7 @@ function harness({
     currentScript: currentScript ? { dataset } : null,
     addEventListener: (type: string, fn: Listener) => (docListeners[type] ??= []).push(fn),
     querySelector: (sel: string) =>
-      sel === 'meta[name="livediagram-build"]' && build ? { content: build } : null,
+      sel === 'meta[name="livehuddle-build"]' && build ? { content: build } : null,
     querySelectorAll: (sel: string) => (sel === 'link[rel="stylesheet"]' ? links : []),
   };
   const location = { pathname: '/explorer/unsorted', search: '?x=1', reload };

@@ -2,7 +2,7 @@
 // sync state, coverage, the scan, the api's answers and the plan, read and written nothing. `sync` acts on it;
 // `link status` prints it.
 
-import type { VerbContext } from '@livediagram/agent-verbs';
+import type { VerbContext } from '@livehuddle/agent-verbs';
 import type { CliIo } from '../io';
 import { readCoverage, type Coverage } from './coverage';
 import type { LinkFile } from './link-file';

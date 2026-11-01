@@ -13,7 +13,7 @@ import {
   isMindNode,
   joinsEntities,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import {
   useCanvasSelectionView,

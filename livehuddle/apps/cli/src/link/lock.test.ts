@@ -14,7 +14,7 @@ describe('acquireLinkLock', () => {
   it('takes a free lock with its holder, and releases it', async () => {
     const logs: string[] = [];
     const io = fakeIo();
-    const lock = await acquireLinkLock(io, '/state', '/repo/livediagram.toml', 'sync', (l) =>
+    const lock = await acquireLinkLock(io, '/state', '/repo/livehuddle.toml', 'sync', (l) =>
       logs.push(l),
     );
     expect(JSON.parse(io.fileMap.get(LOCK)!.data)).toEqual({
@@ -31,7 +31,7 @@ describe('acquireLinkLock', () => {
   it('takes over a lock whose holder on this machine is dead (RL34)', async () => {
     const logs: string[] = [];
     const io = fakeIo({ files: { [LOCK]: holder(77) } });
-    await acquireLinkLock(io, '/state', '/repo/livediagram.toml', 'sync', (l) => logs.push(l));
+    await acquireLinkLock(io, '/state', '/repo/livehuddle.toml', 'sync', (l) => logs.push(l));
     expect(JSON.parse(io.fileMap.get(LOCK)!.data)).toHaveProperty('pid', 4242);
     expect(logs).toEqual(['lock stale 77', 'lock taken']);
   });
@@ -46,7 +46,7 @@ describe('acquireLinkLock', () => {
       if (++polls === 3) io.fileMap.delete(LOCK);
       await sleep(ms);
     };
-    await acquireLinkLock(io, '/state', '/repo/livediagram.toml', 'sync', (l) => logs.push(l));
+    await acquireLinkLock(io, '/state', '/repo/livehuddle.toml', 'sync', (l) => logs.push(l));
     expect(io.slept).toEqual([SYNC_LOCK_POLL_MS, SYNC_LOCK_POLL_MS, SYNC_LOCK_POLL_MS]);
     expect(logs).toEqual(['lock-wait 77', 'lock taken']);
   });
@@ -61,7 +61,7 @@ describe('acquireLinkLock', () => {
       if (++polls === 2) io.alive.delete(77);
       await sleep(ms);
     };
-    await acquireLinkLock(io, '/state', '/repo/livediagram.toml', 'sync', (l) => logs.push(l));
+    await acquireLinkLock(io, '/state', '/repo/livehuddle.toml', 'sync', (l) => logs.push(l));
     expect(JSON.parse(io.fileMap.get(LOCK)!.data)).toHaveProperty('pid', 4242);
     expect(io.slept).toEqual([SYNC_LOCK_POLL_MS, SYNC_LOCK_POLL_MS]);
     expect(logs).toEqual(['lock-wait 77', 'lock stale 77', 'lock taken']);
@@ -72,14 +72,14 @@ describe('acquireLinkLock', () => {
     const failure = await acquireLinkLock(
       io,
       '/state',
-      '/repo/livediagram.toml',
+      '/repo/livehuddle.toml',
       'sync',
       () => {},
     ).catch((err: unknown) => (err as CliError).failure);
     expect(failure).toEqual({
       exit: 5,
       code: 'lock_held',
-      message: 'another sync of /repo/livediagram.toml is running (process 77)',
+      message: 'another sync of /repo/livehuddle.toml is running (process 77)',
       hint: 'wait for it, or stop process 77',
     });
     expect(io.slept.reduce((a, b) => a + b, 0)).toBe(SYNC_LOCK_WAIT_MS);
@@ -90,12 +90,12 @@ describe('acquireLinkLock', () => {
     const failure = await acquireLinkLock(
       io,
       '/state',
-      '/repo/livediagram.toml',
+      '/repo/livehuddle.toml',
       'sync',
       () => {},
     ).catch((err: unknown) => (err as CliError).failure);
     expect(failure).toMatchObject({
-      message: 'another sync of /repo/livediagram.toml is running (process ?)',
+      message: 'another sync of /repo/livehuddle.toml is running (process ?)',
     });
   });
 });
@@ -112,7 +112,7 @@ describe('a stale lock another pass takes first', () => {
         io.fileMap.set(LOCK, { data: holder(88), mode: 0o600 });
       }
     };
-    const failure = await acquireLinkLock(io, '/state', '/repo/livediagram.toml', 'sync', (l) =>
+    const failure = await acquireLinkLock(io, '/state', '/repo/livehuddle.toml', 'sync', (l) =>
       logs.push(l),
     ).catch((err: unknown) => (err as CliError).failure);
     expect(failure).toMatchObject({ code: 'lock_held', hint: 'wait for it, or stop process 88' });
@@ -128,7 +128,7 @@ describe('a lock that vanished or names no process', () => {
       const failure = await acquireLinkLock(
         io,
         '/state',
-        '/repo/livediagram.toml',
+        '/repo/livehuddle.toml',
         'sync',
         () => {},
       ).catch((err: unknown) => (err as CliError).failure);
@@ -163,10 +163,10 @@ describe('two passes taking over the same stale lock', () => {
       },
     };
     const secondLogs: string[] = [];
-    const secondRun = acquireLinkLock(second, '/state', '/repo/livediagram.toml', 'sync', (l) =>
+    const secondRun = acquireLinkLock(second, '/state', '/repo/livehuddle.toml', 'sync', (l) =>
       secondLogs.push(l),
     ).catch((err: unknown) => (err as CliError).failure);
-    firstDone = acquireLinkLock(first, '/state', '/repo/livediagram.toml', 'sync', () => {});
+    firstDone = acquireLinkLock(first, '/state', '/repo/livehuddle.toml', 'sync', () => {});
     await firstDone;
     expect(await secondRun).toMatchObject({
       code: 'lock_held',
@@ -194,7 +194,7 @@ describe('a stale lock another pass moves first', () => {
       }
       return move(from, to);
     };
-    const failure = await acquireLinkLock(io, '/state', '/repo/livediagram.toml', 'sync', (l) =>
+    const failure = await acquireLinkLock(io, '/state', '/repo/livehuddle.toml', 'sync', (l) =>
       logs.push(l),
     ).catch((err: unknown) => (err as CliError).failure);
     expect(failure).toMatchObject({ code: 'lock_held', hint: 'wait for it, or stop process 88' });
@@ -221,7 +221,7 @@ describe('a taken-over lock that cannot be put back', () => {
       }
       return move(from, to);
     };
-    const failure = await acquireLinkLock(io, '/state', '/repo/livediagram.toml', 'sync', (l) =>
+    const failure = await acquireLinkLock(io, '/state', '/repo/livehuddle.toml', 'sync', (l) =>
       logs.push(l),
     ).catch((err: unknown) => (err as CliError).failure);
     expect(failure).toMatchObject({ code: 'lock_held', hint: 'wait for it, or stop process 99' });
@@ -252,7 +252,7 @@ describe('a taken-over lock that cannot be put back', () => {
       // Another pass holds the lock from here on: every create fails.
       return vanished ? false : create(path, data);
     };
-    const failure = await acquireLinkLock(io, '/state', '/repo/livediagram.toml', 'sync', (l) =>
+    const failure = await acquireLinkLock(io, '/state', '/repo/livehuddle.toml', 'sync', (l) =>
       logs.push(l),
     ).catch((err: unknown) => (err as CliError).failure);
     expect(failure).toMatchObject({ code: 'lock_held', hint: 'wait for it, or stop process ?' });

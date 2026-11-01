@@ -14,7 +14,7 @@ import {
   type Element,
   type ShapeElement,
   type TextRun,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { BOTTOM_EXITS, rake } from './template-rake';
 
 export { buildSitemap } from './template-builders-sitemap';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
-import type { ElementAction } from '@livediagram/document';
+import type { ElementAction } from '@livehuddle/document';
 import { apiTeamMembers } from '@/lib/api-client';
 import { teamMemberRows } from './team-member-rows';
 import type { PickableMember } from '@/components/dialogs/AssignActionAssigneePicker';

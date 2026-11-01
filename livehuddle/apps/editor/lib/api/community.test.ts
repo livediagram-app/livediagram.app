@@ -12,8 +12,9 @@ import {
   communityCodeMessage,
   communityErrorMessage,
 } from '@liveworkspace/community-ui/share';
+import { COMMUNITY_APP } from '@livehuddle/api-schema';
 
-const words = COMMUNITY_APP_WORDS['livediagram.app'];
+const words = COMMUNITY_APP_WORDS[COMMUNITY_APP];
 
 vi.mock('../guest-token', () => ({
   readGuestToken: () => ({ token: 'guest-jwt', id: 'guest_1', expiresAt: 1 }),

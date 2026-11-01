@@ -8,9 +8,9 @@ import {
   type CreationIntent,
   type DocumentConversion,
   type SharedTabsSummary,
-} from '@livediagram/api-schema';
-import type { LiveDoc, DocumentResponse, DocumentSummary } from '@livediagram/api-schema';
-import type { Appearance, Tab } from '@livediagram/document';
+} from '@livehuddle/api-schema';
+import type { LiveDoc, DocumentResponse, DocumentSummary } from '@livehuddle/api-schema';
+import type { Appearance, Tab } from '@livehuddle/document';
 import { IndexError } from '@liveworkspace/index-client';
 import { ITEM_GRANT_HEADER } from '@liveworkspace/index-client/browser';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
@@ -33,7 +33,7 @@ import {
   apiFetch,
   saveTimeoutSignal,
 } from './core';
-import type { RoomTicketResponse } from '@livediagram/api-schema';
+import type { RoomTicketResponse } from '@livehuddle/api-schema';
 
 // The document-list row every list surface renders: the Explorer
 // panel, the /explorer page, /new, and the editor's document-list
@@ -205,7 +205,7 @@ export async function apiCreateDocument(
       id: d.id,
       // Synced to the cloud from this browser (Offline Mode): the Timeline says so, not "Created".
       ...(opts.conversion === 'sync' ? { synced: true } : {}),
-      app: 'livediagram',
+      app: 'livehuddle',
       title: d.name,
       ...(d.teamId ? { teamId: d.teamId } : {}),
       // `null` is the space's root chosen on purpose; absent is no choice, where a default folder

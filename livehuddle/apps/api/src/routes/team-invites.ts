@@ -7,7 +7,7 @@
 // Quiet on failure: without accounts configured, or with liveworkspace out of reach, the list is empty
 // rather than an error, as there was nothing here to show before.
 
-import type { TeamInvite } from '@livediagram/api-schema';
+import type { TeamInvite } from '@livehuddle/api-schema';
 import { pendingInvitationsFor } from '@liveworkspace/auth-client';
 import { accountCredentials } from '../auth/accounts';
 import { json } from '../responses';

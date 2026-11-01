@@ -12,8 +12,8 @@ import {
   isParticipantPlaceable,
   participantWritesOn,
   type Element,
-} from '@livediagram/document';
-import type { AccessLevel } from '@livediagram/api-schema';
+} from '@livehuddle/document';
+import type { AccessLevel } from '@livehuddle/api-schema';
 
 export type EditorCapabilities = {
   level: AccessLevel;

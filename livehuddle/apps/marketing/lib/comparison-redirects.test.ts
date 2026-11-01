@@ -6,7 +6,7 @@ import { redirectProblems } from '@liveworkspace/comparisons';
 
 import { COMPARISONS } from './alternatives';
 
-// The comparisons are this site's own again (packages/comparisons/README.md "livediagram"). The one
+// The comparisons are this site's own again (packages/comparisons/README.md "livehuddle"). The one
 // it no longer makes, Google Slides, redirects permanently to the app that compares it now, and no
 // rule in public/_redirects may catch the hub or a live comparison.
 const redirects = readFileSync(

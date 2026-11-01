@@ -3,8 +3,8 @@
 import { useMemo, type ReactNode } from 'react';
 import { HelpClientProvider, type HelpClient } from '@liveworkspace/help-site/client';
 import type { HelpFacts } from '@liveworkspace/help-site/site';
-import { helpPathTelemetryId } from '@livediagram/help-registry/telemetry';
-import { installClientErrorTracking, siteTrack } from '@livediagram/telemetry-client';
+import { helpPathTelemetryId } from '@livehuddle/help-registry/telemetry';
+import { installClientErrorTracking, siteTrack } from '@livehuddle/telemetry-client';
 
 // The browser half of the help centre's binding (lib/help-site.tsx is the server half), mounted once by the root
 // layout. The help centre reports through the public sites' shared siteTrack (docs/specs/017-telemetry/telemetry.md),

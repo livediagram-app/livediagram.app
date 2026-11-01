@@ -99,11 +99,11 @@ describe('GET /api/auth/sign-in', () => {
 
   it('returns to AUTH_ORIGIN when set (local dev behind the router)', async () => {
     const res = await call('/api/auth/sign-in', {
-      env: { ...ENV, AUTH_ORIGIN: 'http://localhost:3100/' },
+      env: { ...ENV, AUTH_ORIGIN: 'http://localhost:3500/' },
     });
     const location = new URL(res.headers.get('Location')!);
     expect(location.searchParams.get('redirect_uri')).toBe(
-      'http://localhost:3100/api/auth/callback',
+      'http://localhost:3500/api/auth/callback',
     );
   });
 });

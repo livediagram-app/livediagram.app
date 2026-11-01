@@ -1,6 +1,6 @@
 // The sweep of the caller's documents the MCP's find_documents and the CLI's addressing share
 // (@liveworkspace/agent-verbs/find), bound to this product's summaries and folders.
-import type { DocumentSummary, Folder } from '@livediagram/api-schema';
+import type { DocumentSummary, Folder } from '@livehuddle/api-schema';
 import {
   createFind,
   type FoundFile,

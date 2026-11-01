@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from 'react';
-import { CHANGESET_REVEAL_MS, type ChangesetRoomOp } from '@livediagram/api-schema';
-import type { Tab } from '@livediagram/document';
+import { CHANGESET_REVEAL_MS, type ChangesetRoomOp } from '@livehuddle/api-schema';
+import type { Tab } from '@livehuddle/document';
 import { apiListChangesets, apiRevertChangeset } from '@/lib/api-client';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';

@@ -1,7 +1,7 @@
 // Reads a `claude -p --output-format stream-json` transcript into what the benchmark measures: each tool call with
 // its outcome, the final reply, usage and the documents the run touched. Pure: lines in, a run out.
 
-const MCP_PREFIX = 'mcp__livediagram__';
+const MCP_PREFIX = 'mcp__livehuddle__';
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}';
 const DOC_ID = new RegExp(`(?:"documentId"\\s*:\\s*"|/document/)(${UUID})`, 'g');
 
@@ -46,8 +46,8 @@ export function parseTranscript(jsonl) {
     if (m.type === 'system' && m.subtype === 'init') {
       run.model = m.model ?? null;
       run.sessionId = m.session_id ?? null;
-      // Whether the livediagram server came up for this session: a run without it never had the tools.
-      const server = (m.mcp_servers ?? []).find((s) => s.name === 'livediagram');
+      // Whether the livehuddle server came up for this session: a run without it never had the tools.
+      const server = (m.mcp_servers ?? []).find((s) => s.name === 'livehuddle');
       run.mcpConnected = server ? server.status === 'connected' : false;
     } else if (m.type === 'assistant' && Array.isArray(m.message?.content)) {
       for (const c of m.message.content) {

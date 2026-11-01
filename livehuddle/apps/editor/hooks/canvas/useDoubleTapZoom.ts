@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, type Ref } from 'react';
-import type { Element as CanvasElement } from '@livediagram/document';
+import type { Element as CanvasElement } from '@livehuddle/document';
 import {
   doubleTapFitsTab,
   doubleTapFrameView,

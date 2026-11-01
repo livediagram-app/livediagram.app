@@ -9,8 +9,8 @@ import {
   handTemplatePick,
   takeTemplatePick,
 } from '@liveworkspace/explorer';
-import { templateFamilyOf, type TemplateKind } from '@livediagram/templates';
-import { creationIntentOf, DEFAULT_FOLDER_OPTIONS, indexIntentOf } from '@livediagram/api-schema';
+import { templateFamilyOf, type TemplateKind } from '@livehuddle/templates';
+import { creationIntentOf, DEFAULT_FOLDER_OPTIONS, indexIntentOf } from '@livehuddle/api-schema';
 import { buildTemplatedTab } from '@/lib/template-builders';
 import { useToast } from '@/hooks/ui/useToast';
 import { CANVAS_TEMPLATE_FAMILIES } from '@/lib/canvas-template-families';
@@ -21,8 +21,8 @@ import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 // canvas: the note /new left is taken at the first pick, and dropped if the tab gains content any other way first.
 // Cheap until it matters: only a pick on a noted canvas asks the index anything.
 const ENTRIES = defaultEntries(
-  'livediagram',
-  kindWords('livediagram'),
+  'livehuddle',
+  kindWords('livehuddle'),
   CANVAS_TEMPLATE_FAMILIES,
   DEFAULT_FOLDER_OPTIONS,
 );
@@ -55,7 +55,7 @@ export function useTemplatePickMove(at: {
         ),
       );
       void moveOnTemplatePick(indexClient, {
-        app: 'livediagram',
+        app: 'livehuddle',
         itemId: documentId,
         handoff,
         intent: intent ?? '',

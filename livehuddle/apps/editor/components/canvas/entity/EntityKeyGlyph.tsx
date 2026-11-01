@@ -6,7 +6,7 @@ import {
   ENTITY_PRIMARY_KEY_INK,
   entityKeyGlyphs,
   type EntityKey,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 // A field's key in the gutter (docs/specs/009-elements/entity.md "How it looks"): the same glyphs the export
 // draws (entity-look.ts). A primary key's is amber; a link or a U takes the row's ink, muted.

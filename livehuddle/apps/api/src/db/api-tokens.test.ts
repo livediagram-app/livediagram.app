@@ -13,7 +13,7 @@ import {
 
 const ACCOUNTS = {
   ACCOUNTS_URL: 'https://accounts.example',
-  ACCOUNTS_CLIENT_ID: 'livediagram',
+  ACCOUNTS_CLIENT_ID: 'livehuddle',
   ACCOUNTS_CLIENT_SECRET: 'secret',
 } satisfies Partial<Env>;
 

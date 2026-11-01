@@ -4,14 +4,14 @@ import sitemap from './sitemap';
 
 describe('sitemap', () => {
   it('lists the licences page as a low-priority transparency page', () => {
-    const entry = sitemap().find((e) => e.url === 'https://www.livediagram.app/licences');
+    const entry = sitemap().find((e) => e.url === 'https://www.livehuddle.app/licences');
     expect(entry).toMatchObject({ changeFrequency: 'monthly', priority: 0.2 });
   });
 });
 
 describe('sitemap: Build with AI', () => {
   it('lists /ai (docs/specs/019-marketing/build-with-ai.md "Metadata")', () => {
-    const entry = sitemap().find((e) => e.url === 'https://www.livediagram.app/ai');
+    const entry = sitemap().find((e) => e.url === 'https://www.livehuddle.app/ai');
     expect(entry).toMatchObject({ changeFrequency: 'monthly', priority: 0.8 });
   });
 });

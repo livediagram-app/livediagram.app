@@ -18,7 +18,7 @@ import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-sca
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { use, useRef, useState } from 'react';
 import { browser } from 'react-dom';
-import { resolveFinish, type BackgroundPattern, type Finish } from '@livediagram/document';
+import { resolveFinish, type BackgroundPattern, type Finish } from '@livehuddle/document';
 import {
   useEscape,
   useFocusTrap,
@@ -28,7 +28,7 @@ import {
   safeInset,
   useSheetDrag,
   BackBar,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { AnimatedHeightBox } from '@liveworkspace/workbench/components/primitives/AnimatedHeightBox';
@@ -38,7 +38,7 @@ import {
   useTabStyleTour,
 } from '@/components/tour/TabStyleTour';
 import { ThemeBrowser } from '@/components/palette/ThemeBrowser';
-import type { TextSize } from '@livediagram/document';
+import type { TextSize } from '@livehuddle/document';
 import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import { FinishTab } from './FinishTab';
 import { TextTab } from './TextTab';

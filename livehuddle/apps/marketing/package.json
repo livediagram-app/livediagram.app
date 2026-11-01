@@ -1,10 +1,10 @@
 {
-  "name": "@livediagram/marketing",
+  "name": "@livehuddle/marketing",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node ../../scripts/next-dev.mjs --port 3101",
+    "dev": "node ../../scripts/next-dev.mjs --port 3501",
     "build": "node ../../../packages/licences/scripts/generate-product.ts --product ../../packages/licences --out . && next build && node ../../../packages/licences/scripts/verify.ts .",
     "licences": "node ../../../packages/licences/scripts/generate-product.ts --product ../../packages/licences --out .",
     "lint": "oxlint",
@@ -14,10 +14,10 @@
     "clean": "rm -rf .next .next-analyze out generated public/licences node_modules .turbo"
   },
   "dependencies": {
-    "@livediagram/api-schema": "workspace:*",
-    "@livediagram/template-previews": "workspace:*",
-    "@livediagram/templates": "workspace:*",
-    "@livediagram/ui": "workspace:*",
+    "@livehuddle/api-schema": "workspace:*",
+    "@livehuddle/template-previews": "workspace:*",
+    "@livehuddle/templates": "workspace:*",
+    "@livehuddle/ui": "workspace:*",
     "@liveworkspace/community-ui": "workspace:*",
     "@liveworkspace/comparisons": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
@@ -29,9 +29,9 @@
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@livediagram/document": "workspace:*",
-    "@livediagram/help-registry": "workspace:*",
-    "@livediagram/licences": "workspace:*",
+    "@livehuddle/document": "workspace:*",
+    "@livehuddle/help-registry": "workspace:*",
+    "@livehuddle/licences": "workspace:*",
     "@liveworkspace/next-config": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",

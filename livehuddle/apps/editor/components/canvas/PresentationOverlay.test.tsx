@@ -3,7 +3,7 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Slide, Tab } from '@livediagram/document';
+import type { Slide, Tab } from '@livehuddle/document';
 import { DEFAULT_PRESENTATION_CONFIG, type PresentationConfig } from '@/lib/presentation-config';
 import { announce } from '@liveworkspace/workbench/lib/announcer';
 import { PresentationOverlay, type PresentationStep } from './PresentationOverlay';

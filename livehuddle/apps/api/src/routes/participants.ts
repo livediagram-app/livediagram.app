@@ -1,8 +1,8 @@
 // /api/participants/<id> — read / update a participant's display name and colour, kept by
 // liveworkspace as the person's profile in every app (liveworkspace/profiles.ts).
 
-import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from '@livediagram/api-schema';
-import { isSafeColourValue } from '@livediagram/document';
+import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from '@livehuddle/api-schema';
+import { isSafeColourValue } from '@livehuddle/document';
 import { ProfileError } from '@liveworkspace/auth-client';
 import { getParticipant, setParticipant, withoutPicture } from '../liveworkspace/profiles';
 import { badRequest, forbidden, json, notFound } from '../responses';
@@ -57,7 +57,7 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
     )
       return badRequest('missing name/color');
     // A colour is painted into every peer's CSS (a card's stripe, a cursor): one that could load
-    // something from outside is no colour (@livediagram/document unsafe-colours.ts).
+    // something from outside is no colour (@livehuddle/document unsafe-colours.ts).
     if (!isSafeColourValue(body.color)) return badRequest('invalid color');
     // Cap the presence identity: it's broadcast to every peer in the room.
     if (body.name.length > MAX_PARTICIPANT_NAME_LEN || body.color.length > MAX_COLOR_LEN) {

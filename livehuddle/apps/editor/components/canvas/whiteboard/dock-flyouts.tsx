@@ -10,7 +10,7 @@ import {
   penColourCss,
   whiteboardBackgroundOf,
   type Appearance,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   WHITEBOARD_PEN_WIDTHS,
   PEN_NAMES,

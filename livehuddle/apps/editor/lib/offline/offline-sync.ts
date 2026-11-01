@@ -7,7 +7,7 @@
 // while it runs. So the local copy is removed only if it still matches what went up, checked and
 // deleted in one transaction; a change in between takes the cloud copy back and uploads again.
 
-import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
+import { DOCUMENT_CONVERSION_HEADER } from '@livehuddle/api-schema';
 import { apiCreateDocument } from '@/lib/api-client';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';

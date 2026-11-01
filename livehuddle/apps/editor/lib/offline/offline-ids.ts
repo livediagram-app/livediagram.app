@@ -13,7 +13,7 @@ import { OfflineStoreUnavailableError, offlineBackend } from './offline-backend'
 import { publishThisBrowser } from './this-browser';
 
 // The channel the tabs of one browser tell each other about offline ids on.
-export const OFFLINE_IDS_CHANNEL = 'livediagram-offline';
+export const OFFLINE_IDS_CHANNEL = 'livehuddle-offline';
 
 // One change to the set of offline ids, as broadcast to the other tabs.
 export type OfflineIdChange = { kind: 'add' | 'remove'; id: string };

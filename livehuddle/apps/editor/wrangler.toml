@@ -1,5 +1,5 @@
-name = "livediagram-editor"
-# The liveworkspace Cloudflare account, which also hosts livediagram.app, so a deploy can never land on another one.
+name = "livehuddle-editor"
+# The liveworkspace Cloudflare account, which also hosts livehuddle.app, so a deploy can never land on another one.
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/worker.ts"
 compatibility_date = "2026-05-29"
@@ -24,13 +24,13 @@ run_worker_first = ["/*", "!/_next/*"]
 # https://www.liveworkspace.app unless PREVIEWS_ORIGIN says otherwise (staging below).
 
 # Staging (docs/specs/016-platform/staging-environment.md): same path-rewrite worker, same static `./out`, deployed
-# as `livediagram-editor-staging`. `main` is inheritable; the assets binding is
+# as `livehuddle-editor-staging`. `main` is inheritable; the assets binding is
 # restated so this block describes the staging worker in full.
 # Named explicitly: wrangler would append "-staging" to the top-level
 # name on its own, but nothing in `--dry-run` prints the name it resolved,
 # and the router's service bindings depend on this exact string.
 [env.staging]
-name = "livediagram-editor-staging"
+name = "livehuddle-editor-staging"
 
 [env.staging.assets]
 directory = "./out"

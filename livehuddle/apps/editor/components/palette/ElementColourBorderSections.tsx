@@ -29,7 +29,7 @@ import {
   type BorderStyle,
   type BoxedElement,
   type ElementShadow,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { BorderGlyph, PaletteMenuIcon } from '@/components/palette/context-menu-icons';
 import {
   MenuAccordionSection,

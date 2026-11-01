@@ -8,8 +8,8 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { TabTimer } from '@livediagram/document';
-import type { LivePoll } from '@livediagram/api-schema';
+import type { TabTimer } from '@livehuddle/document';
+import type { LivePoll } from '@livehuddle/api-schema';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { TimerPane } from './TimerPane';
 import { VotePane } from './VotePane';

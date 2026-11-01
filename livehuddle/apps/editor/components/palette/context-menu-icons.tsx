@@ -14,7 +14,7 @@ import {
   lucideGlyph,
   NoteIcon,
   TrashIcon,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 import {
   lucideArrowRight,
   lucideBaseline,
@@ -53,7 +53,7 @@ export const LayerUpIcon = lucideGlyph(lucideBringToFront, MENU_ICON_PX);
 export const LayerDownIcon = lucideGlyph(lucideSendToBack, MENU_ICON_PX);
 
 // The note / action / comment / link glyphs are the shared element-affordance drawings
-// (@livediagram/ui), the same ones the on-element badge pill shows, at the menu step.
+// (@livehuddle/ui), the same ones the on-element badge pill shows, at the menu step.
 export function NoteMenuIcon() {
   return <NoteIcon size={MENU_ICON_PX} />;
 }

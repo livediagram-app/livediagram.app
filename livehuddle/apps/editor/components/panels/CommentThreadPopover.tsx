@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useId, useRef, useState, useCallback } from 'react';
-import { CloseIcon, useClickOutside, useEscape, Portal } from '@livediagram/ui';
+import { CloseIcon, useClickOutside, useEscape, Portal } from '@livehuddle/ui';
 import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
-import type { CommentMention, CommentThread } from '@livediagram/document';
+import type { CommentMention, CommentThread } from '@livehuddle/document';
 import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import { CommentComposer, CommentResolveToggle, CommentThreadList } from './comment-thread-parts';

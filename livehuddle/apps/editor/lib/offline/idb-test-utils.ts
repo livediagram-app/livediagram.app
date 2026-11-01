@@ -1,7 +1,7 @@
 // Test helpers for the offline database as a browser would hold it (fake-indexeddb): a database seeded at an old
 // version the way the old editor left it, and raw reads that go round the editor's own open (and its upgrade).
 
-export const OFFLINE_DB = 'livediagram-offline';
+export const OFFLINE_DB = 'livehuddle-offline';
 
 export function deleteOfflineDb(): Promise<void> {
   return new Promise((resolve, reject) => {

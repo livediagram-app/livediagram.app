@@ -1,7 +1,7 @@
 // The use-case batch (docs/specs/008-canvas/canvas-and-palette.md "Templates"): the four board grids draw what their
 // data says, the concept map reads as sentences, and the network diagram keeps every device in its VLAN.
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element, ShapeElement, StickyElement } from '@livediagram/document';
+import type { ArrowElement, Element, ShapeElement, StickyElement } from '@livehuddle/document';
 import { buildTemplate } from './build-template';
 import { BOARD_GRIDS, type BoardGridKind } from './template-board-grid-data';
 import { templateEditorMode } from './template-modes';

@@ -1,4 +1,4 @@
-import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from '@livediagram/document';
+import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from '@livehuddle/document';
 import type { Page } from '@playwright/test';
 import { darkVisitor, seedDocument } from './audit-screens';
 import { expect, expectNoPageErrors, mintGuest, test } from './fixtures';

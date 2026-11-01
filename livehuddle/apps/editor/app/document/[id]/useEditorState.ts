@@ -41,7 +41,7 @@ import {
   type Element,
   type ShapeElement,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 import { useWhiteboard } from '@/hooks/canvas/useWhiteboard';
 import { useSnapColours } from '@/hooks/canvas/useSnapColours';
@@ -50,7 +50,7 @@ import { dropsOnTap } from '@/lib/draw-mode';
 import { usePathCommits } from '@/hooks/canvas/usePathCommits';
 import { usePaintBucket } from '@/hooks/canvas/usePaintBucket';
 import { applySwatchOverrides } from '@/lib/swatch-overrides';
-import { quickSwatches } from '@livediagram/document';
+import { quickSwatches } from '@livehuddle/document';
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
@@ -63,7 +63,7 @@ import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
-import { DEFAULT_SCHEME_ID, settleFlowcharts } from '@livediagram/document';
+import { DEFAULT_SCHEME_ID, settleFlowcharts } from '@livehuddle/document';
 import { settleChipsInTabs } from '@/lib/settle-tabs';
 import { lockedElementIds } from '@/lib/tab-cleanup';
 import { useEditorMode } from '@/hooks/editor/useEditorMode';

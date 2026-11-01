@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { recordItemEditor } from '@liveworkspace/index-app';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import { deleteTabRow, upsertTab } from '../db/tabs';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { accountsServiceFor } from '../test-accounts-service';

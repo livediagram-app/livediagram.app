@@ -1,6 +1,6 @@
 import { requestPaletteCategory } from '@/lib/palette-category-request';
-import type { ComponentKind, ShapeKind } from '@livediagram/document';
-import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
+import type { ComponentKind, ShapeKind } from '@livehuddle/document';
+import type { EmbedProvider, EventStormingNoteKind } from '@livehuddle/document';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
 import { tileCaption } from './tile-caption';
 import { IconButton } from '@/components/palette/palette-controls';
@@ -23,7 +23,7 @@ export type PaletteTileActions = {
   beginHighlighter: () => void;
   beginShapePen: () => void;
   beginPolygon: () => void;
-  addArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
+  addArrow: (ends?: import('@livehuddle/document').ArrowEnds) => void;
   // Optional fill + kind: the Event Storming tiles pass their note kind's
   // canonical colour and the kind itself (which routes the note onto its
   // stage's layer, docs/specs/021-event-storming/event-storming.md); plain "Add Sticky Note" passes nothing.

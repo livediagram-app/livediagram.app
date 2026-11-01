@@ -12,7 +12,7 @@ import {
 } from '@liveworkspace/explorer';
 import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
-import { BrandMark, ProductNavLinks, useCommunityEnabled } from '@livediagram/ui';
+import { BrandMark, ProductNavLinks, useCommunityEnabled } from '@livehuddle/ui';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
@@ -174,7 +174,7 @@ function ExplorerImpl({
     >
       <ExplorerPanel
         renderAppLogo={renderAppLogo}
-        app="livediagram"
+        app="livehuddle"
         client={indexClient}
         itemHref={itemHref}
         current={currentDocumentId ? current : null}

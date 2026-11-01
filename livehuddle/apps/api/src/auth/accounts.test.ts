@@ -15,7 +15,7 @@ import { accountCredentials, accountsIssuer, getPersonIdentity } from './account
 
 const CONFIGURED = {
   ACCOUNTS_URL: 'https://accounts.example',
-  API_RESOURCE: 'https://livediagram.example/api',
+  API_RESOURCE: 'https://livehuddle.example/api',
 } as unknown as Env;
 
 function request(authHeader: string | null): Request {
@@ -82,12 +82,12 @@ describe('accountCredentials', () => {
   it('is this app’s client at the accounts Worker, or null when any part is unset', () => {
     const env = {
       ACCOUNTS_URL: 'https://accounts.test',
-      ACCOUNTS_CLIENT_ID: 'livediagram',
+      ACCOUNTS_CLIENT_ID: 'livehuddle',
       ACCOUNTS_CLIENT_SECRET: 'secret',
     };
     expect(accountCredentials(env)).toEqual({
       accountsUrl: 'https://accounts.test',
-      clientId: 'livediagram',
+      clientId: 'livehuddle',
       clientSecret: 'secret',
     });
     expect(accountCredentials({ ...env, ACCOUNTS_URL: undefined })).toBeNull();
@@ -178,10 +178,10 @@ describe('accountsIssuer', () => {
 describe('getPersonIdentity (the Explorer’s reads)', () => {
   const LIVE = {
     ...CONFIGURED,
-    API_RESOURCE: 'https://livediagram.app/api',
+    API_RESOURCE: 'https://livehuddle.app/api',
   } as unknown as Env;
   const at = (path: string, method = 'GET') =>
-    new Request(`https://www.livediagram.app${path}`, {
+    new Request(`https://www.livehuddle.app${path}`, {
       method,
       headers: { Authorization: 'Bearer t' },
     });
@@ -191,7 +191,7 @@ describe('getPersonIdentity (the Explorer’s reads)', () => {
     await getPersonIdentity(LIVE, at('/api/documents/x1/tabs'));
     const audiences = createVerifierMock.mock.calls.map(([o]) => o.audience);
     expect(audiences).toContainEqual([
-      'https://livediagram.app/api',
+      'https://livehuddle.app/api',
       'https://liveplanner.app/api',
       'https://livedocuments.app/api',
       'https://livedesign.app/api',
@@ -203,7 +203,7 @@ describe('getPersonIdentity (the Explorer’s reads)', () => {
     await getPersonIdentity(LIVE, at('/api/documents/x2'));
     await getPersonIdentity(LIVE, at('/api/documents/x2/tabs', 'PUT'));
     expect(createVerifierMock.mock.calls.map(([o]) => o.audience)).toEqual([
-      'https://livediagram.app/api',
+      'https://livehuddle.app/api',
     ]);
     expect(verifyMock).toHaveBeenCalledTimes(2);
   });

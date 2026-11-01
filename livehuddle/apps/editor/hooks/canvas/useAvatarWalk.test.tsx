@@ -2,7 +2,7 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, DRINK_HOLD_MS, type Element } from '@livediagram/document';
+import { createShape, DRINK_HOLD_MS, type Element } from '@livehuddle/document';
 import { DEFAULT_AVATAR_CONFIG } from '@liveworkspace/avatar/config';
 import { FENCE_REACH } from '@liveworkspace/avatar/collision';
 import { useAvatarWalk } from '@liveworkspace/avatar/hooks/useAvatarWalk';

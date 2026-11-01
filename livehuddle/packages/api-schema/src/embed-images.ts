@@ -27,7 +27,7 @@
 // Any image that is missing, over a limit, fails to load, or isn't one of the
 // accepted raster formats is left out, and the renderer draws its placeholder.
 
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import { bytesToBase64 } from '@liveworkspace/api-kit/bytes';
 import { imagePixelSize } from '@liveworkspace/api-schema/image-size';
 import { sniffImageType } from '@liveworkspace/api-schema/image-sniff';

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import { NAME_MAX_LENGTH } from '@livediagram/document';
+import { NAME_MAX_LENGTH } from '@livehuddle/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 
 // The titles the index was asked to give a copy.

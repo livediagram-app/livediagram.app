@@ -7,7 +7,7 @@
 // the binary) and `<out>/<slug>/ld-p<n>.png` (the file imported through the editor's Import dialog
 // against a running live app, each page's tab clipped to its elements at twice the pixel density).
 //
-//   pnpm --filter @livediagram/live exec tsx scripts/drawio-compare.mts <file or folder> [...] \
+//   pnpm --filter @livehuddle/live exec tsx scripts/drawio-compare.mts <file or folder> [...] \
 //     --out /tmp/drawio-compare --base http://localhost:3115 [--drawio /path/to/drawio] [--only <slug>]
 //
 // Exits non-zero when any file fails to import or render.
@@ -20,7 +20,7 @@ import { chromium, type Page } from '@playwright/test';
 type Args = { paths: string[]; out: string; base: string; drawio?: string; only?: string };
 
 function parseArgs(argv: string[]): Args {
-  const args: Args = { paths: [], out: '', base: 'http://localhost:3102' };
+  const args: Args = { paths: [], out: '', base: 'http://localhost:3502' };
   for (let i = 0; i < argv.length; i++) {
     const flag = argv[i]!;
     if (flag === '--out') args.out = argv[++i]!;

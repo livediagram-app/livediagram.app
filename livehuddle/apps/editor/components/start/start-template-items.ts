@@ -15,7 +15,7 @@ import {
   templateMatchesQuery,
   type TemplateDescriptor,
   type TemplateKind,
-} from '@livediagram/templates';
+} from '@livehuddle/templates';
 
 export type TemplateStartMode = 'diagram' | 'draw' | 'workshop';
 

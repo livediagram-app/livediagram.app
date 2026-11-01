@@ -1,12 +1,12 @@
 // A tab shared between documents (docs/specs/006-document/tab-document-many-to-many.md), with each document's
 // content in its own Durable Object (docs/specs/015-api/api.md "Storage"). The mechanism is
 // @liveworkspace/index-app's (tab-shares.ts): every holder keeps its own copy under the same tab id, a write is sent
-// to the others from a trigger-filled outbox, and the later write wins. This is livediagram's part of it: how a tab
+// to the others from a trigger-filled outbox, and the later write wins. This is livehuddle's part of it: how a tab
 // taken in is stored, what a body keeps beside it, and the images a body may carry.
 
 import { createTabShares } from '@liveworkspace/index-app';
-import type { SharedTabsSummary } from '@livediagram/api-schema';
-import type { Tab } from '@livediagram/document';
+import type { SharedTabsSummary } from '@livehuddle/api-schema';
+import type { Tab } from '@livehuddle/document';
 import { imageRefIdsFromData } from '@liveworkspace/api-kit/image-refs';
 import { imageRefReplaceStatements } from '../db/image-refs';
 import { servableImageIds } from '../db/image-grants';

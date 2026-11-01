@@ -1,5 +1,5 @@
-import type { CanvasSurface } from '@livediagram/document';
-import { BRAND_RAMP } from '@livediagram/ui';
+import type { CanvasSurface } from '@livehuddle/document';
+import { BRAND_RAMP } from '@livehuddle/ui';
 
 // The colours of the two "selection box" rectangles the editor draws: the
 // drag-select marquee on the canvas and the Map's current-view window

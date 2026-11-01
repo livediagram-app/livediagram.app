@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { Button, Glyph } from '@livediagram/ui';
+import { Button, Glyph } from '@livehuddle/ui';
 import { useToast } from '@/hooks/ui/useToast';
 import { syncFailureMessage } from '@/lib/offline/offline-convert';
 import { Spinner } from '@liveworkspace/workbench/components/palette/template-picker-icons';
 
-// The offer to move a document in This Browser onto livediagram (docs/specs/006-document/offline-mode.md "Sharing a
+// The offer to move a document in This Browser onto livehuddle (docs/specs/006-document/offline-mode.md "Sharing a
 // document in This Browser"), drawn inside a dialog: the document Share dialog's gate. It says the document is offline and offers Sync
 // Document; the sync converts the open document in place, and the dialog around it swaps this prompt for what it was
 // opened for as the document stops being offline. Sync waits for `ready` (the reader is known).
@@ -18,7 +18,7 @@ export function SyncDocumentPrompt({
 }: {
   onSyncToCloud: () => Promise<void>;
   ready?: boolean;
-  // Why this dialog needs the document on livediagram.
+  // Why this dialog needs the document on livehuddle.
   message: ReactNode;
   // Told while the sync runs, so the dialog can hold its own buttons.
   onBusyChange?: (busy: boolean) => void;
@@ -37,7 +37,7 @@ export function SyncDocumentPrompt({
       await onSyncToCloud();
       // The document is a cloud document now: the dialog shows what it was opened for in place of this prompt.
       // The spinner stays until it does, so the button never flashes back.
-      toast.success('Synced. Your canvas is on livediagram now.');
+      toast.success('Synced. Your canvas is on livehuddle now.');
     } catch (e) {
       setBusy(false);
       toast.error(syncFailureMessage(e));

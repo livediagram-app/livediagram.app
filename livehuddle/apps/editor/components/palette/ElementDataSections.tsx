@@ -38,7 +38,7 @@ import {
   type EntityField,
   type LegendItem,
   type PieSlice,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   AvatarModeIcon,
   EraserIcon,

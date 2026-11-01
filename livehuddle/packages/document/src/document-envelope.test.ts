@@ -7,12 +7,12 @@ import {
   type EnvelopeTab,
 } from './document-envelope';
 
-// The `.livediagram` file's contents (liveworkspace/docs/specs/005-drive/drive.md, "The file").
+// The `.livehuddle` file's contents (liveworkspace/docs/specs/005-drive/drive.md, "The file").
 
 const tab: EnvelopeTab = { id: 't1', name: 'Tab 1', elements: [], folder: 'Ideas' };
 
 describe('documentToEnvelopeText', () => {
-  it('wraps the document, its tabs with folders, and the deck in a livediagram.document envelope', () => {
+  it('wraps the document, its tabs with folders, and the deck in a livehuddle.document envelope', () => {
     const text = documentToEnvelopeText(
       { id: 'd1', name: 'Plan', presentation: '{"slides":[]}' },
       [tab],
@@ -42,17 +42,17 @@ describe('parseDocumentEnvelope', () => {
 
   it('names each failure', () => {
     expect(parseDocumentEnvelope('nope')).toEqual({ ok: false, failure: 'not_json' });
-    expect(parseDocumentEnvelope('{"kind":"livediagram.tab","schemaVersion":1}')).toEqual({
+    expect(parseDocumentEnvelope('{"kind":"livehuddle.tab","schemaVersion":1}')).toEqual({
       ok: false,
       failure: 'wrong_kind',
     });
-    expect(parseDocumentEnvelope('{"kind":"livediagram.document","schemaVersion":2}')).toEqual({
+    expect(parseDocumentEnvelope('{"kind":"livehuddle.document","schemaVersion":2}')).toEqual({
       ok: false,
       failure: 'unsupported_version',
     });
     expect(
       parseDocumentEnvelope(
-        '{"kind":"livediagram.document","schemaVersion":1,"document":{"id":"d","name":"n","tabs":[{"id":1}]}}',
+        '{"kind":"livehuddle.document","schemaVersion":1,"document":{"id":"d","name":"n","tabs":[{"id":1}]}}',
       ),
     ).toEqual({ ok: false, failure: 'malformed' });
     expect(parseDocumentEnvelope('null')).toEqual({ ok: false, failure: 'malformed' });
@@ -60,7 +60,7 @@ describe('parseDocumentEnvelope', () => {
 
   it('reads a missing deck as none', () => {
     const parsed = parseDocumentEnvelope(
-      '{"kind":"livediagram.document","schemaVersion":1,"exportedAt":1,"document":{"id":"d","name":"n","tabs":[]}}',
+      '{"kind":"livehuddle.document","schemaVersion":1,"exportedAt":1,"document":{"id":"d","name":"n","tabs":[]}}',
     );
     expect(parsed.ok && parsed.envelope.document.presentation).toBeNull();
   });

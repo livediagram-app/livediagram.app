@@ -1,4 +1,4 @@
-import type { ElementLink } from '@livediagram/document';
+import type { ElementLink } from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
 import { describeLink } from './link-label';
 

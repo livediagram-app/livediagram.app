@@ -11,7 +11,7 @@ import {
   type FieldRemap,
   type RelatedSide,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { setEntityFieldEdit } from '@/lib/entity-field-edit';
 import { track } from '@/lib/telemetry';

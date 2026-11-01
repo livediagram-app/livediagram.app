@@ -1,4 +1,4 @@
-import type { EditorMode } from '@livediagram/document';
+import type { EditorMode } from '@livehuddle/document';
 import type { ComponentType } from 'react';
 
 import { FlipchartIcon, FlowchartIcon, MarkerIcon, type IconProps } from '@liveworkspace/ui';

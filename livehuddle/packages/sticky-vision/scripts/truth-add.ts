@@ -6,7 +6,7 @@ import type { Truth } from '../src/truth';
 
 // Files a label exported from the editor's review surface.
 //
-//   pnpm --filter @livediagram/sticky-vision truth:add ~/Downloads/wall.json
+//   pnpm --filter @livehuddle/sticky-vision truth:add ~/Downloads/wall.json
 //
 // The editor can only hand a browser download to the disk; this puts it where
 // the sweep looks, and checks it is a label before it does. Labels live OUTSIDE

@@ -1,6 +1,6 @@
 'use client';
 
-import { withArticle } from '@livediagram/ui';
+import { withArticle } from '@livehuddle/ui';
 import dynamic from 'next/dynamic';
 import {
   isBoxed,
@@ -11,7 +11,7 @@ import {
   embedTargetFor,
   parseMindOutline,
   summariseMindOutline,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 import { track } from '@/lib/telemetry';
 import { canEditSankey } from '@/lib/sankey-edit';

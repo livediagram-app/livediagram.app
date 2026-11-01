@@ -43,7 +43,7 @@ const json = (body: unknown, status = 200) =>
 export function accountsServiceFor(env: Partial<Env>): TestAccountsService {
   __resetProfileCache();
   env.ACCOUNTS_URL = ACCOUNTS_URL;
-  env.ACCOUNTS_CLIENT_ID ??= 'livediagram';
+  env.ACCOUNTS_CLIENT_ID ??= 'livehuddle';
   env.ACCOUNTS_CLIENT_SECRET ??= 'secret';
   const service: TestAccountsService = {
     settings: new Map(),

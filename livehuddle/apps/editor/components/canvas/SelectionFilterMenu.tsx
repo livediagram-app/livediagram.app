@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { elementKindLabel, type Element } from '@livediagram/document';
+import { elementKindLabel, type Element } from '@livehuddle/document';
 import { PortalMenu } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
-import { HoverCard, Glyph } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@livehuddle/ui';
 import {
   TOOLBAR_BTN,
   TOOLBAR_BTN_ON,

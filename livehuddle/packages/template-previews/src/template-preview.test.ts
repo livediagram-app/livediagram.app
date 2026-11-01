@@ -1,5 +1,5 @@
 import { describeTemplatePreviews } from '@liveworkspace/template-previews/testing';
-import { TEMPLATES } from '@livediagram/templates';
+import { TEMPLATES } from '@livehuddle/templates';
 import { TemplatePreview } from './template-preview';
 
 // The template previews' checks (@liveworkspace/template-previews' testing), over this product's catalogue:

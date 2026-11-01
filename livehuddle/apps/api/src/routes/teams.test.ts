@@ -104,7 +104,7 @@ describe('GET /api/teams', () => {
 describe('GET /api/teams/:id/library', () => {
   const item = {
     id: 'D',
-    app: 'livediagram',
+    app: 'livehuddle',
     ownerId: 'user_bob',
     teamId: 'team_1',
     folderId: 'f1',

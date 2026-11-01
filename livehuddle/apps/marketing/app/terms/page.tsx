@@ -3,7 +3,7 @@ import { termsMoved } from '@liveworkspace/marketing-site/lib/legal-moved';
 
 // The terms of use live on liveworkspace.app: this stub keeps the historical /terms URL alive, noindex
 // (@liveworkspace/marketing-site/lib/legal-moved).
-const moved = termsMoved('livediagram');
+const moved = termsMoved('livehuddle');
 
 export const metadata = moved.metadata;
 

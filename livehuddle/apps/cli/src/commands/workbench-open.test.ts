@@ -7,12 +7,12 @@ import { capabilities, fakeIo, NOW, TOKEN, type FakeIo } from '../testing/fake-i
 
 const DOC = 'aaaa1111-0000-4000-8000-000000000001';
 const ORIGIN = 'https://127.0.0.1:5175';
-const URL_OUT = `https://www.livediagram.app/embed/workbench?d=${DOC}#ticket=${'t'.repeat(22)}`;
+const URL_OUT = `https://www.livehuddle.app/embed/workbench?d=${DOC}#ticket=${'t'.repeat(22)}`;
 
 function host(mint: Response, env: Record<string, string> = {}) {
   const events: unknown[] = [];
   const io: FakeIo = fakeIo({
-    env: { LIVEDIAGRAM_TOKEN: TOKEN, ...env },
+    env: { LIVEHUDDLE_TOKEN: TOKEN, ...env },
     routes: [
       capabilities,
       async (request, url) => {
@@ -44,7 +44,7 @@ const open = (io: FakeIo, ...more: string[]) =>
 
 describe('workbench open', () => {
   it('prints the link, or the whole answer with --json, and counts the command', async () => {
-    const text = host(minted, { LIVEDIAGRAM_TELEMETRY: '1' });
+    const text = host(minted, { LIVEHUDDLE_TELEMETRY: '1' });
     expect(await open(text.io)).toBe(0);
     expect(text.io.out()).toBe(`${URL_OUT}\n`);
     expect(text.events).toEqual([{ category: 'Cli', action: 'Used', type: 'WorkbenchOpen' }]);
@@ -64,12 +64,12 @@ describe('workbench open', () => {
         { error: 'pairing_required', pairingUrl: 'https://x/p', expiresAt: NOW },
         { status: 428 },
       ),
-      { LIVEDIAGRAM_TELEMETRY: '1' },
+      { LIVEHUDDLE_TELEMETRY: '1' },
     );
     expect(await open(io)).toBe(4);
     expect(io.out()).toBe('');
     expect(io.err()).toBe(
-      `error: this workbench is not paired with your token\nhint: livediagram workbench pair --origin ${ORIGIN}\n`,
+      `error: this workbench is not paired with your token\nhint: livehuddle workbench pair --origin ${ORIGIN}\n`,
     );
     expect(events).toEqual([]);
   });
@@ -78,13 +78,7 @@ describe('workbench open', () => {
     const shared = host(minted);
     expect(
       await run(
-        [
-          'workbench',
-          'open',
-          'https://www.livediagram.app/document/shared?s=x',
-          '--origin',
-          ORIGIN,
-        ],
+        ['workbench', 'open', 'https://www.livehuddle.app/document/shared?s=x', '--origin', ORIGIN],
         shared.io,
       ),
     ).toBe(2);
@@ -102,7 +96,7 @@ describe('workbench open', () => {
 });
 
 describe('workbench open --workspace', () => {
-  const WORKSPACE_URL = `https://www.livediagram.app/embed/workbench/explorer#ticket=${'t'.repeat(22)}`;
+  const WORKSPACE_URL = `https://www.livehuddle.app/embed/workbench/explorer#ticket=${'t'.repeat(22)}`;
   const workspace = (...more: string[]) => [
     'workbench',
     'open',
@@ -129,9 +123,7 @@ describe('workbench open --workspace', () => {
       Response.json({ error: 'pairing_required', pairingUrl: 'u', expiresAt: 1 }, { status: 428 }),
     );
     expect(await run(workspace(), unpaired.io)).toBe(4);
-    expect(unpaired.io.err()).toContain(
-      `livediagram workbench pair --origin ${ORIGIN} --workspace`,
-    );
+    expect(unpaired.io.err()).toContain(`livehuddle workbench pair --origin ${ORIGIN} --workspace`);
 
     const lost = host(minted);
     expect(await run(workspace('--folder', 'Nowhere'), lost.io)).toBe(3);

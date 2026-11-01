@@ -5,8 +5,8 @@ import {
   tint,
   type CanvasSurface,
   type ThemeDefinition,
-} from '@livediagram/document';
-import { BRAND_RAMP } from '@livediagram/ui';
+} from '@livehuddle/document';
+import { BRAND_RAMP } from '@livehuddle/ui';
 
 // How an image element without a bitmap looks (docs/specs/009-elements/images.md "Placeholder
 // rendering"): the empty placeholder, the broken-image state and the loading skeleton.

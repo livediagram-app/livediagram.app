@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contrastRatio, mixHex } from '@livediagram/document';
+import { contrastRatio, mixHex } from '@livehuddle/document';
 import {
   CHOSEN_HOVER_TINT,
   CHOSEN_TINT,

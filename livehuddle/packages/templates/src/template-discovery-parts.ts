@@ -10,7 +10,7 @@ import {
   createText,
   type Element,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 export const SCAFFOLD = { layerId: TEMPLATE_SCAFFOLD_LAYER_ID } as const;

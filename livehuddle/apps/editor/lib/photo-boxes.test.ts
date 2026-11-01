@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { DetectedSticky } from '@livediagram/sticky-vision';
+import type { DetectedSticky } from '@livehuddle/sticky-vision';
 import { boxesFromLabel, moveBox, resizeBox, withKind } from './photo-boxes';
 
 // Correcting a box on the photograph under review (docs/specs/021-event-storming/event-storming.md Phase 9). All in

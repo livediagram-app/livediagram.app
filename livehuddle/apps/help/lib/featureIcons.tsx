@@ -29,7 +29,7 @@ import {
   lucideUsers,
   lucideVote,
 } from '@liveworkspace/icons/lucide';
-import { Prims, Glyph as UiGlyph } from '@livediagram/ui';
+import { Prims, Glyph as UiGlyph } from '@livehuddle/ui';
 import type { ReactNode } from 'react';
 
 /** Feature slug → icon (full <svg>). Used by the home grid, the features

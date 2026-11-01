@@ -10,7 +10,7 @@ import {
   type Element,
   type ShapeElement,
   type TextRun,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { liveFlowchart } from './template-flowchart-live';
 
 // Decision tree: a question every team argues about, "Can we ship on

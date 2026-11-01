@@ -1,7 +1,7 @@
 'use client';
 
-import { communityPostPath, documentPath } from '@livediagram/api-schema';
-import { Button, buttonClassName, lucideGlyph, CommunityAuthorBadge } from '@livediagram/ui';
+import { communityPostPath, documentPath } from '@livehuddle/api-schema';
+import { Button, buttonClassName, lucideGlyph, CommunityAuthorBadge } from '@livehuddle/ui';
 import { lucideArrowLeft, lucideCopyPlus, lucidePencil } from '@liveworkspace/icons/lucide';
 import type { CommunitySession } from '@/app/document/[id]/editor-realtime';
 

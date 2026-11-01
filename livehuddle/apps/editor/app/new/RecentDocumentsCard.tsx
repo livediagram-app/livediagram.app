@@ -7,7 +7,7 @@ import { currentBearer } from '@/lib/api/core';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { useAfterLegacyClaim } from '@/hooks/persistence/useAfterLegacyClaim';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
-import { Glyph, TeamIcon } from '@livediagram/ui';
+import { Glyph, TeamIcon } from '@livehuddle/ui';
 
 // teamName: the team whose library holds it, for its team mark; null for your own.
 type RecentItem = { id: string; name: string; savedAt: number | null; teamName: string | null };
@@ -15,7 +15,7 @@ type RecentItem = { id: string; name: string; savedAt: number | null; teamName: 
 // A small "jump back in" card that pops out to the RIGHT of the new-document
 // wizard (docs/specs/007-editor/new-document-route.md), listing the 5 most recently-saved canvases the person
 // owns or that sit in a team they have joined, as the index lists
-// them (one page of livediagram's items, newest first). Deliberately separate from the create flow: it's a side affordance
+// them (one page of livehuddle's items, newest first). Deliberately separate from the create flow: it's a side affordance
 // for returning users, hidden entirely for someone with no documents yet
 // (and on narrow viewports where the wizard already fills the width). Each
 // row opens that document directly.
@@ -23,7 +23,7 @@ export function RecentDocumentsCard({ ownerId }: { ownerId: string | null }) {
   const [recent, setRecent] = useState<RecentItem[] | null>(null);
   const now = useRelativeNow();
 
-  // Bumped when an old livediagram.app guest's work was claimed, to re-read the list
+  // Bumped when an old livehuddle.app guest's work was claimed, to re-read the list
   // (docs/specs/014-identity/auth-and-guest-access.md).
   const [claimVersion, setClaimVersion] = useState(0);
   useAfterLegacyClaim(() => setClaimVersion((v) => v + 1), !!ownerId);
@@ -32,7 +32,7 @@ export function RecentDocumentsCard({ ownerId }: { ownerId: string | null }) {
     if (!ownerId) return;
     let cancelled = false;
     void Promise.all([
-      indexClient.listItems({ app: 'livediagram', limit: LIST_LIMIT_MAX }),
+      indexClient.listItems({ app: 'livehuddle', limit: LIST_LIMIT_MAX }),
       currentBearer().catch(() => null),
     ])
       .then(([page, token]) => {

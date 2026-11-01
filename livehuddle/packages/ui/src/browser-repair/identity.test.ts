@@ -35,7 +35,7 @@ describe('signedInFromCookie', () => {
 describe('readBrowserIdentity', () => {
   it('reads the guest token and keeps only the id prefix', () => {
     const id = readBrowserIdentity({
-      localStorage: storage({ 'livediagram:v2:guest-token': TOKEN }),
+      localStorage: storage({ 'livehuddle:v2:guest-token': TOKEN }),
       document: { cookie: 'ld_signed_in=0' },
     });
     expect(id).toEqual({ signedIn: false, guestIdPrefix: '6f1c2d3e', guestExpiresAt: EXP * 1000 });
@@ -43,7 +43,7 @@ describe('readBrowserIdentity', () => {
 
   it('reads no guest from something that is not a guest token', () => {
     const id = readBrowserIdentity({
-      localStorage: storage({ 'livediagram:v2:guest-token': 'not-a-token' }),
+      localStorage: storage({ 'livehuddle:v2:guest-token': 'not-a-token' }),
       document: { cookie: '' },
     });
     expect(id.guestIdPrefix).toBeNull();

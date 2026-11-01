@@ -1,11 +1,6 @@
 import { useRef, useState } from 'react';
-import { EDITOR_MODES, editorModeLabel, nextEditorMode } from '@livediagram/document';
-import {
-  ChevronDownIcon,
-  useClickOutside,
-  useMenuButton,
-  EDITOR_MODE_ICONS,
-} from '@livediagram/ui';
+import { EDITOR_MODES, editorModeLabel, nextEditorMode } from '@livehuddle/document';
+import { ChevronDownIcon, useClickOutside, useMenuButton, EDITOR_MODE_ICONS } from '@livehuddle/ui';
 import { TOOLBAR_TRIGGER_TONE } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
 import {
   EDITOR_MODE_KEYSHORTCUT,

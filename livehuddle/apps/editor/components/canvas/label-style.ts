@@ -10,7 +10,7 @@ import {
   RUN_XS_PX,
   labelFontPx,
   MUTED_RUN_OPACITY,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import type {
   BoxedElement,
   RunSize,
@@ -19,7 +19,7 @@ import type {
   TextRun,
   TextSize,
   RunHeading,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import type { RunDefaults } from '@/components/rich-text/rich-text-format';
 
 // The base a label run's unset deltas inherit: the element's whole-element
@@ -46,17 +46,17 @@ export const TEXT_ALIGN: Record<TextAlignX, 'left' | 'center' | 'right'> = {
   right: 'right',
 };
 
-// The label px tables live in @livediagram/document, because the EXPORTERS
+// The label px tables live in @livehuddle/document, because the EXPORTERS
 // need the same numbers: they kept their own set (12 / 14 / 20 / 18 against
 // these) and every exported label came out about two thirds the size it was
 // drawn at. Re-exported here so the canvas's label renderers keep importing
 // them from the module they always have.
 const FIXED_FONT_PX: Record<
-  Exclude<import('@livediagram/document').TextSizePreset, 'scale'>,
+  Exclude<import('@livehuddle/document').TextSizePreset, 'scale'>,
   number
 > = LABEL_FONT_PX;
 
-const MULTI_FONT_PX: Record<import('@livediagram/document').TextSizePreset, number> = NOTE_FONT_PX;
+const MULTI_FONT_PX: Record<import('@livehuddle/document').TextSizePreset, number> = NOTE_FONT_PX;
 
 // Per-run sm/md/lg map to the same px table the element's base size uses,
 // so a run's size override reads consistently against its neighbours; xs is RUN_XS_PX on every

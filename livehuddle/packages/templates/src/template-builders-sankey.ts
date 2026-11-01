@@ -5,7 +5,7 @@
 // Pure: takes a centre (cx, cy), returns a fresh Element[]. See
 // docs/specs/008-canvas/canvas-and-palette.md "Templates".
 
-import { createShape, createText, type Element, type SankeyFlow } from '@livediagram/document';
+import { createShape, createText, type Element, type SankeyFlow } from '@livehuddle/document';
 
 // A month of visits, from the channels they arrive by, through the pages they read, to a trial and a paid plan.
 // Every middle node sends on less than it receives, and the diagram draws the rest to one end node named Bounced

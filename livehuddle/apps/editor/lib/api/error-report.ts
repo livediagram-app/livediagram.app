@@ -29,7 +29,7 @@
 // a loop floods as hard as a throw that does: one editor stuck refetching a
 // forbidden tab sent `Http403.LoadTab` every 15 to 65 seconds for weeks,
 // nearly half of every stored event.
-import { apiRouteLabel, errorNameToken, errorTypeToken } from '@livediagram/api-schema';
+import { apiRouteLabel, errorNameToken, errorTypeToken } from '@livehuddle/api-schema';
 import { createPerTypeCap } from '@liveworkspace/telemetry-client';
 
 let apiErrorReporter: ((type: string) => void) | null = null;

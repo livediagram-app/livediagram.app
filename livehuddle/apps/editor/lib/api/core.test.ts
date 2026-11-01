@@ -1,6 +1,6 @@
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { BUILD_ID_HEADER, DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@livediagram/api-schema';
+import { BUILD_ID_HEADER, DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@livehuddle/api-schema';
 import { resetServerReleaseForTests, serverBuild, serverDocumentFormat } from '../server-release';
 
 // readGuestToken is the only ../guest-token symbol core.ts uses; mock it so

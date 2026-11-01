@@ -13,8 +13,8 @@ import {
   templateLayers,
   untitledNameForTemplate,
   type TemplateKind,
-} from '@livediagram/templates';
-import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livediagram/document';
+} from '@livehuddle/templates';
+import { ES_BOARD_LAYER_ID, eventStormingLayers } from '@livehuddle/document';
 import { getTheme } from './themes';
 
 // `buildTemplatedTab` is the seam between /live/new (the welcome

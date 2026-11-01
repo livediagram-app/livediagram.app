@@ -16,7 +16,7 @@ vi.mock('./server-telemetry', () => ({
   telemetryEnabled: () => true,
 }));
 
-import { DOCUMENT_FORMAT_HEADER } from '@livediagram/api-schema';
+import { DOCUMENT_FORMAT_HEADER } from '@livehuddle/api-schema';
 import worker from './index';
 import type { Env } from './types';
 

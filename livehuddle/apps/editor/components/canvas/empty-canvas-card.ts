@@ -2,7 +2,7 @@
 // the active tab has no elements, outside zen and embed, with no draw tool armed, in Diagram or
 // Workshop. Draw's dock is its own hint (docs/specs/023-draw-mode/draw-mode.md). The sign-in nudge has no say: it sits
 // at the foot of the canvas, clear of the card.
-import type { EditorMode } from '@livediagram/document';
+import type { EditorMode } from '@livehuddle/document';
 
 const CARD_MODES: ReadonlySet<EditorMode> = new Set(['diagram', 'workshop']);
 

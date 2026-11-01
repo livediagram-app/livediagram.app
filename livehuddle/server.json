@@ -1,18 +1,18 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.livediagram-app/livediagram",
-  "title": "livediagram",
-  "description": "Create, edit, share and render real-time collaborative diagrams and mind maps on livediagram.app.",
+  "name": "io.github.livediagram-app/livehuddle",
+  "title": "livehuddle",
+  "description": "Create, edit, share and render real-time collaborative diagrams and mind maps on livehuddle.app.",
   "version": "0.2.0",
-  "websiteUrl": "https://www.livediagram.app",
+  "websiteUrl": "https://www.livehuddle.app",
   "repository": {
     "url": "https://github.com/livediagram-app/livediagram.app",
     "source": "github",
-    "subfolder": "livediagram/apps/mcp"
+    "subfolder": "livehuddle/apps/mcp"
   },
   "icons": [
     {
-      "src": "https://www.livediagram.app/livediagram-icon-512.png",
+      "src": "https://www.livehuddle.app/livehuddle-icon-512.png",
       "mimeType": "image/png",
       "sizes": ["512x512"]
     }
@@ -20,7 +20,7 @@
   "remotes": [
     {
       "type": "streamable-http",
-      "url": "https://mcp.livediagram.app/mcp"
+      "url": "https://mcp.livehuddle.app/mcp"
     }
   ]
 }

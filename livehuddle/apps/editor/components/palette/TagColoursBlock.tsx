@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { tagColourOf, type ShapeElement, type TagColour } from '@livediagram/document';
+import { tagColourOf, type ShapeElement, type TagColour } from '@livehuddle/document';
 import { ColourRow, type ColourPalette } from '@/components/palette/context-menu-input-rows';
 import { MenuActionButton } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 

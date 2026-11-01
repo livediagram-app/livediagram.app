@@ -4,7 +4,7 @@
 // ROOM_RECONNECT_MAX_MS; a document moved to the Trash ends the stream.
 
 import { ApiError, type ApiClient } from '@liveworkspace/api-client';
-import { DOCUMENT_TRASHED_CLOSE } from '@livediagram/api-schema';
+import { DOCUMENT_TRASHED_CLOSE } from '@livehuddle/api-schema';
 import type { CliIo, RoomSocket } from '../io';
 
 export const ROOM_RECONNECT_MIN_MS = 1_000;
@@ -22,7 +22,7 @@ export type RoomStream = {
 type Deps = {
   io: CliIo;
   api: ApiClient;
-  // The api base the token talks to, e.g. https://www.livediagram.app/api.
+  // The api base the token talks to, e.g. https://www.livehuddle.app/api.
   apiBase: string;
   documentId: string;
   log: (line: string) => void;

@@ -15,7 +15,7 @@ import {
 } from 'typescript/unstable/ast';
 import { parseSourceFiles } from '@liveworkspace/source-ast';
 import { describe, expect, it } from 'vitest';
-import { contrastRatio } from '@livediagram/document';
+import { contrastRatio } from '@livehuddle/document';
 
 // The dark palette (docs/specs/004-interface-design/color-scheme.md, Dark palette (Steel)) is a set of
 // token overrides plus two class rules. None of it fails a build when it drifts: a new button painted
@@ -151,7 +151,7 @@ describe('the wordmark', () => {
 
   it('lights its "live" half sky in dark mode, and is brand-700 in light (#74)', () => {
     expect(brand).toMatch(
-      /livediagram: \{(?:(?!\n  live)[\s\S])*?liveClass: 'text-brand-700 dark:text-sky-400'/,
+      /livehuddle: \{(?:(?!\n  live)[\s\S])*?liveClass: 'text-brand-700 dark:text-sky-400'/,
     );
   });
 });

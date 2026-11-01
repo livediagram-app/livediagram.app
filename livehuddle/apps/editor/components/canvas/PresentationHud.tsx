@@ -9,7 +9,7 @@
 // popover would be left orphaned over the slide.
 
 import { useEffect, useRef, useState } from 'react';
-import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, Tooltip, Glyph } from '@livediagram/ui';
+import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, Tooltip, Glyph } from '@livehuddle/ui';
 
 import { SettingsIcon } from '@/components/chrome/tab-bar-icons';
 

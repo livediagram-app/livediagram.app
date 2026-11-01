@@ -3,8 +3,8 @@
 // only when it is in its list, so a retired value never reaches a client as a live option. The
 // opens-in decides whether anything was recorded: when it reads null, so does everything else.
 
-import { isCreationTabKind, isTemplateFamily, type RecordedIntent } from '@livediagram/api-schema';
-import { parseEditorMode } from '@livediagram/document';
+import { isCreationTabKind, isTemplateFamily, type RecordedIntent } from '@livehuddle/api-schema';
+import { parseEditorMode } from '@livehuddle/document';
 
 export type RecordedIntentRow = {
   opens_in: string | null;
@@ -18,7 +18,7 @@ const UNKNOWN: RecordedIntent = { opensIn: null, tabKind: null, templateFamily: 
 
 export function readRecordedIntent(row: RecordedIntentRow): RecordedIntent {
   // A document made in Pages (recorded as `pages`, or before its renames `illustrate` or `infographic`) was made as
-  // something livediagram no longer makes: nothing reads as recorded, rather than Diagram, which it was not made as.
+  // something livehuddle no longer makes: nothing reads as recorded, rather than Diagram, which it was not made as.
   if (RETIRED_MODES.has(row.opens_in)) return UNKNOWN;
   const opensIn = parseEditorMode(row.opens_in);
   if (!opensIn) return UNKNOWN;

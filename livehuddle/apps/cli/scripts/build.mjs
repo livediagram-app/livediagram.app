@@ -1,6 +1,6 @@
-// The CLI as a publishable package (docs/specs/015-api/blueprints/cli.md CLI1, CLI2): dist/livediagram.mjs, every
+// The CLI as a publishable package (docs/specs/015-api/blueprints/cli.md CLI1, CLI2): dist/livehuddle.mjs, every
 // workspace package and dependency bundled for Node 22 and later, beside the package.json npm publishes (named
-// `@livediagram/cli` like the workspace; dist sits outside the workspace globs), the licence, the user README and the notices of every
+// `@livehuddle/cli` like the workspace; dist sits outside the workspace globs), the licence, the user README and the notices of every
 // bundled package, read from esbuild's metafile; beside the bundle the PNG renderer's wasm and font (CLI31), which only a
 // render reads, and the font's licence. A bundled package without a licence fails the build.
 
@@ -14,7 +14,7 @@ import { EMBEDDED_WORKS } from '../../../packages/licences/src/embedded-works.ts
 const app = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repo = resolve(app, '../..');
 const dist = join(app, 'dist');
-const outfile = join(dist, 'livediagram.mjs');
+const outfile = join(dist, 'livehuddle.mjs');
 
 const result = await build({
   entryPoints: [join(app, 'src/bin.ts')],
@@ -98,7 +98,7 @@ const rule = '-'.repeat(78);
 await writeFile(
   join(dist, 'THIRD_PARTY_LICENSES'),
   [
-    'livediagram bundles the following open-source packages. Their licences ask for these notices to travel with it.',
+    'livehuddle bundles the following open-source packages. Their licences ask for these notices to travel with it.',
     ...notices.map(
       (n) =>
         `${rule}\n${n.name} ${n.version} (${n.licence})\n\n${n.text || `Licensed under ${n.licence}.`}`,
@@ -111,29 +111,29 @@ await writeFile(
   join(dist, 'package.json'),
   `${JSON.stringify(
     {
-      // Published under the workspace's own name, @livediagram/cli (CLI1); the command it installs is `livediagram`.
+      // Published under the workspace's own name, @livehuddle/cli (CLI1); the command it installs is `livehuddle`.
       name: source.name,
       version: source.version,
-      description: 'Read, build, edit and discuss livediagram documents from the terminal.',
+      description: 'Read, build, edit and discuss livehuddle documents from the terminal.',
       license: 'MIT',
       type: 'module',
-      bin: { livediagram: 'livediagram.mjs' },
+      bin: { livehuddle: 'livehuddle.mjs' },
       files: [
-        'livediagram.mjs',
+        'livehuddle.mjs',
         ...ASSETS.map(({ to }) => to),
         'README.md',
         'LICENSE',
         'THIRD_PARTY_LICENSES',
       ],
       engines: { node: '>=22' },
-      homepage: 'https://www.livediagram.app',
+      homepage: 'https://www.livehuddle.app',
       repository: {
         type: 'git',
         url: 'git+https://github.com/livediagram-app/livediagram.app.git',
         directory: 'apps/cli',
       },
       bugs: 'https://github.com/livediagram-app/livediagram.app/issues',
-      keywords: ['diagram', 'cli', 'agents', 'livediagram'],
+      keywords: ['diagram', 'cli', 'agents', 'livehuddle'],
     },
     null,
     2,
@@ -143,5 +143,5 @@ await mkdir(dist, { recursive: true });
 await copyFile(join(repo, 'LICENSE'), join(dist, 'LICENSE'));
 await copyFile(join(app, 'PACKAGE_README.md'), join(dist, 'README.md'));
 console.info(
-  `[cli-build] dist ready: livediagram ${source.version}, ${notices.length - embedded.length} bundled packages and ${embedded.length} embedded works noticed`,
+  `[cli-build] dist ready: livehuddle ${source.version}, ${notices.length - embedded.length} bundled packages and ${embedded.length} embedded works noticed`,
 );

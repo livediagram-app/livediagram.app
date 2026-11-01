@@ -1,6 +1,6 @@
 // The parts the palette mode illustrations are drawn from (docs/specs/018-help/help-app.md): a glyph
 // per mode and the isometric projection the Isometric scene needs. The glyphs of the modes every product shares
-// come from @liveworkspace/help-site; Avatar and Isometric are livediagram's alone, so they and the projection
+// come from @liveworkspace/help-site; Avatar and Isometric are livehuddle's alone, so they and the projection
 // helpers (iso, IsoCard) live here.
 //
 // Split out of palette-modes.tsx, which labelled these "Mode glyphs" and
@@ -13,7 +13,7 @@
 
 import { Label } from '@liveworkspace/help-site/art/primitives';
 
-// The glyphs every product's help shares; livediagram's own modes (Avatar, Isometric) are drawn below.
+// The glyphs every product's help shares; livehuddle's own modes (Avatar, Isometric) are drawn below.
 export {
   SelectGlyph,
   HandGlyph,

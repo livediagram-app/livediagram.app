@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ReadCopy } from '@livediagram/agent-verbs';
+import type { ReadCopy } from '@livehuddle/agent-verbs';
 import { fakeIo } from '../testing/fake-io';
 import { fileReadCopies, READ_COPY_MAX_BYTES, READ_COPY_REVS_PER_TAB } from './read-copies';
 
@@ -7,7 +7,7 @@ const copy = (rev: number, label = 'x'): ReadCopy => ({
   rev,
   tab: { id: 't', name: 'T', elements: [{ id: 'n1', label }] } as never,
 });
-const ROOT = '/home/agent/.cache/livediagram/copies';
+const ROOT = '/home/agent/.cache/livehuddle/copies';
 
 describe('fileReadCopies', () => {
   it('keeps copies at 0600 under a hashed key, newest first for latest, and logs hits and misses', async () => {

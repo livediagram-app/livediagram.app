@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/agent-verbs",
+  "name": "@livehuddle/agent-verbs",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -20,12 +20,12 @@
   "dependencies": {
     "@liveworkspace/agent-verbs": "workspace:*",
     "@liveworkspace/api-client": "workspace:*",
-    "@livediagram/api-schema": "workspace:*",
-    "@livediagram/diagram-lint": "workspace:*",
-    "@livediagram/document": "workspace:*",
-    "@livediagram/document-views": "workspace:*",
-    "@livediagram/edit-operations": "workspace:*",
-    "@livediagram/templates": "workspace:*",
+    "@livehuddle/api-schema": "workspace:*",
+    "@livehuddle/diagram-lint": "workspace:*",
+    "@livehuddle/document": "workspace:*",
+    "@livehuddle/document-views": "workspace:*",
+    "@livehuddle/edit-operations": "workspace:*",
+    "@livehuddle/templates": "workspace:*",
     "zod": "^4.6.7"
   },
   "devDependencies": {

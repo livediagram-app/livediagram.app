@@ -1,10 +1,10 @@
 {
-  "name": "@livediagram/help",
+  "name": "@livehuddle/help",
   "version": "0.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node ../../scripts/next-dev.mjs --port 3104",
+    "dev": "node ../../scripts/next-dev.mjs --port 3504",
     "build": "next build",
     "lint": "oxlint",
     "typecheck": "tsc --noEmit",
@@ -13,9 +13,9 @@
     "clean": "rm -rf .next .next-dev .next-analyze out node_modules .turbo"
   },
   "dependencies": {
-    "@livediagram/help-registry": "workspace:*",
-    "@livediagram/telemetry-client": "workspace:*",
-    "@livediagram/ui": "workspace:*",
+    "@livehuddle/help-registry": "workspace:*",
+    "@livehuddle/telemetry-client": "workspace:*",
+    "@livehuddle/ui": "workspace:*",
     "@liveworkspace/help-site": "workspace:*",
     "@liveworkspace/icons": "workspace:^",
     "@mdx-js/loader": "^3.1.0",
@@ -27,7 +27,7 @@
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
-    "@livediagram/templates": "workspace:*",
+    "@livehuddle/templates": "workspace:*",
     "@liveworkspace/next-config": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",

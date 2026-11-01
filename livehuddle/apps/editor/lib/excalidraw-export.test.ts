@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { tabToExcalidrawText } from './excalidraw-export';
-import type { Element, Tab } from '@livediagram/document';
-import { createPath, DEFAULT_BACKGROUND_COLOR } from '@livediagram/document';
-import { STROKE_PRESSURE_MAX_ERROR, encodeStrokePoints } from '@livediagram/document';
+import type { Element, Tab } from '@livehuddle/document';
+import { createPath, DEFAULT_BACKGROUND_COLOR } from '@livehuddle/document';
+import { STROKE_PRESSURE_MAX_ERROR, encodeStrokePoints } from '@livehuddle/document';
 
 const tab = (elements: Element[], over: Partial<Tab> = {}): Tab => ({
   id: 'tab-1',
@@ -42,7 +42,7 @@ describe('tabToExcalidrawText envelope', () => {
     const scene = parse(tabToExcalidrawText(tab([], { backgroundColor: '#0f172a' })));
     expect(scene.type).toBe('excalidraw');
     expect(scene.version).toBe(2);
-    expect(scene.source).toBe('https://www.livediagram.app');
+    expect(scene.source).toBe('https://www.livehuddle.app');
     expect(scene.elements).toEqual([]);
     expect(scene.appState.viewBackgroundColor).toBe('#0f172a');
     expect(scene.files).toEqual({});

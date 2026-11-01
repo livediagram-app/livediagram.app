@@ -8,8 +8,8 @@
 import { useState } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { AccessLevel } from '@livediagram/api-schema';
-import { EDITOR_MODES, editorModeLabel, type EditorMode, type Tab } from '@livediagram/document';
+import type { AccessLevel } from '@livehuddle/api-schema';
+import { EDITOR_MODES, editorModeLabel, type EditorMode, type Tab } from '@livehuddle/document';
 import { useEditorMode, type EditorModeState } from '@/hooks/editor/useEditorMode';
 import { useViewPreview } from '@/app/document/[id]/useViewPreview';
 import { EditorModeProvider } from './editor-mode-context';

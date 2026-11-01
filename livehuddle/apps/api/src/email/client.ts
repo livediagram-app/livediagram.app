@@ -10,8 +10,8 @@ import type { Env } from '../types';
 import { reportServerEvent } from '../server-telemetry';
 import type { EmailKind } from './templates';
 
-const DEFAULT_FROM = 'livediagram <hello@livediagram.app>';
-const DEFAULT_BASE_URL = 'https://www.livediagram.app';
+const DEFAULT_FROM = 'livehuddle <hello@livehuddle.app>';
+const DEFAULT_BASE_URL = 'https://www.livehuddle.app';
 
 export function emailEnabled(env: Env): boolean {
   return env.EMAIL !== undefined && env.EMAIL !== null;

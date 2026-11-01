@@ -9,8 +9,8 @@ import {
   withStepSequence,
   type ChipLook,
   type ShapeElement,
-} from '@livediagram/document';
-import { Glyph } from '@livediagram/ui';
+} from '@livehuddle/document';
+import { Glyph } from '@livehuddle/ui';
 import {
   MenuAccordionSection,
   MenuActionButton,

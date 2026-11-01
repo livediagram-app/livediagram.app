@@ -9,8 +9,8 @@ import {
   withCardMedia,
   type CardMedia,
   type ShapeElement,
-} from '@livediagram/document';
-import { Glyph } from '@livediagram/ui';
+} from '@livehuddle/document';
+import { Glyph } from '@livehuddle/ui';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
 import { BorderGrid, MenuToggleRow } from '@/components/palette/context-menu-rows';

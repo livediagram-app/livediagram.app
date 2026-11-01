@@ -3,7 +3,7 @@
 // The Explorer inside a workbench's workspace frame (WorkspaceFrame.tsx): the shared Explorer
 // (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md) for the person. The Explorer page itself is
 // liveworkspace's, served at this address's /explorer (@liveworkspace/workbench/lib/explorer-href.ts); a frame keeps its own. Everything it
-// lists comes from the index through /api/index; livediagram supplies the addresses and Help articles
+// lists comes from the index through /api/index; livehuddle supplies the addresses and Help articles
 // (lib/explorer-host.ts), New (the /new flow), the Library (Image Gallery, Shape Libraries and Import from,
 // lib/explorer-library-host.tsx), the hero's setting (the synced
 // `homeBanner` preference, docs/specs/013-workspace/explorer-home.md "Hiding the banner"), and the person: an
@@ -20,14 +20,14 @@ import {
   type TimelineTelemetry,
   type HomeTelemetry,
 } from '@liveworkspace/explorer';
-import { DEFAULT_FOLDER_OPTIONS, LENS_MODES } from '@livediagram/api-schema';
+import { DEFAULT_FOLDER_OPTIONS, LENS_MODES } from '@livehuddle/api-schema';
 import { CANVAS_TEMPLATE_FAMILIES } from '@/lib/canvas-template-families';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useGuestId } from '@/hooks/persistence/useGuestId';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
-import { useCommunityEnabled } from '@livediagram/ui';
+import { useCommunityEnabled } from '@livehuddle/ui';
 import { API_BASE } from '@/lib/api-client';
 import { explorerShareHost } from '@/lib/explorer-share-host';
 import { explorerCommunity } from '@/lib/explorer-community-host';
@@ -147,7 +147,7 @@ export function ExplorerHost({
   return (
     <>
       <Explorer
-        app="livediagram"
+        app="livehuddle"
         client={indexClient}
         view={view}
         // The filter field's writes replace the entry, so typing leaves one history entry, not one per pause.

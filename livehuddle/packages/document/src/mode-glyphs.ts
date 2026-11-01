@@ -1,5 +1,5 @@
-// livediagram's selection-mode glyphs (docs/specs/009-elements/mode-button.md): the shared drawings
-// (@liveworkspace/icons/mode-glyphs) plus the modes only livediagram has. Isometric is one
+// livehuddle's selection-mode glyphs (docs/specs/009-elements/mode-button.md): the shared drawings
+// (@liveworkspace/icons/mode-glyphs) plus the modes only livehuddle has. Isometric is one
 // (docs/specs/008-canvas/isometric-view.md), so its cube lives here. The palette, the Mode button face and the
 // export all read this table, so an exported Mode button shows the same glyph as the canvas.
 import {

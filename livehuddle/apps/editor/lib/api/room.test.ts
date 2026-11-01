@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_FORMAT, ROOM_FULL_CLOSE, ROOM_FULL_RETRY_MS } from '@livediagram/api-schema';
+import { DOCUMENT_FORMAT, ROOM_FULL_CLOSE, ROOM_FULL_RETRY_MS } from '@livehuddle/api-schema';
 import { resetServerReleaseForTests, serverBuild, serverDocumentFormat } from '../server-release';
 import {
   connectRoom,

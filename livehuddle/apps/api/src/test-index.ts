@@ -12,8 +12,8 @@ import type { Env } from './types';
 
 export const TEST_INDEX_ORIGIN = 'https://index.test';
 export const TEST_ACCOUNTS_URL = 'https://accounts.test';
-export const TEST_API_RESOURCE = 'https://livediagram.test/api';
-export const TEST_APP_ORIGIN = 'https://livediagram.test';
+export const TEST_API_RESOURCE = 'https://livehuddle.test/api';
+export const TEST_APP_ORIGIN = 'https://livehuddle.test';
 export const TEST_INDEX_KEY = 'test-index-key';
 
 export type TestIndex = {
@@ -36,7 +36,10 @@ async function testKeys() {
   const pair = await generateKeyPair('EdDSA', { crv: 'Ed25519' });
   const jwk = { ...(await exportJWK(pair.publicKey)), kid: 'test-accounts', alg: 'EdDSA' };
   const grantPair = await generateKeyPair('ES256', { extractable: true });
-  const grantSecret = JSON.stringify({ ...(await exportJWK(grantPair.privateKey)), kid: 'grant-1' });
+  const grantSecret = JSON.stringify({
+    ...(await exportJWK(grantPair.privateKey)),
+    kid: 'grant-1',
+  });
   keys = { privateKey: pair.privateKey, jwk, grantSecret };
   return keys;
 }
@@ -54,8 +57,8 @@ export async function indexServiceFor(env: Partial<Env>): Promise<TestIndex> {
     GRANT_SIGNING_KEY: grantSecret,
     ACCOUNTS_URL: env.ACCOUNTS_URL,
     INDEX_AUDIENCES: env.API_RESOURCE,
-    INDEX_KEY_LIVEDIAGRAM: TEST_INDEX_KEY,
-    APP_ORIGIN_LIVEDIAGRAM: TEST_APP_ORIGIN,
+    INDEX_KEY_LIVEHUDDLE: TEST_INDEX_KEY,
+    APP_ORIGIN_LIVEHUDDLE: TEST_APP_ORIGIN,
   });
   const pending: Promise<unknown>[] = [];
   const executionCtx = {
@@ -70,7 +73,11 @@ export async function indexServiceFor(env: Partial<Env>): Promise<TestIndex> {
       const claims: Record<string, unknown> = {};
       if (options.guest) claims.kind = 'guest';
       if (options.teams) {
-        claims.teams = options.teams.map((t) => ({ id: t.id, name: t.id, role: t.role ?? 'member' }));
+        claims.teams = options.teams.map((t) => ({
+          id: t.id,
+          name: t.id,
+          role: t.role ?? 'member',
+        }));
       }
       return new SignJWT(claims)
         .setProtectedHeader({ alg: 'EdDSA', kid: jwk.kid! })

@@ -8,7 +8,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { PenCursorVariant } from '@/lib/whiteboard-pen-cursor';
-import { WHITEBOARD_BACKGROUNDS, type PenColour, type Tab } from '@livediagram/document';
+import { WHITEBOARD_BACKGROUNDS, type PenColour, type Tab } from '@livehuddle/document';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { isWhiteboardOnlyIntent, type PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
@@ -69,7 +69,7 @@ type Deps = {
 } & WhiteboardDockPrefsDeps;
 
 // Where this browser keeps the Fill tool's colour (fill-tool.md "Its colour").
-export const FILL_CHOICE_KEY = 'livediagram:v2:whiteboard-fill';
+export const FILL_CHOICE_KEY = 'livehuddle:v2:whiteboard-fill';
 
 export type WhiteboardDockModel = ReturnType<typeof useWhiteboard>;
 

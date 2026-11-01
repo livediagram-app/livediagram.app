@@ -7,11 +7,11 @@ import {
   endpointPosition,
   isBoxed,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { isPressableControl } from '@livediagram/ui';
+import { isPressableControl } from '@livehuddle/ui';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 

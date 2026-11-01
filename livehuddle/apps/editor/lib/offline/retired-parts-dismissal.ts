@@ -7,7 +7,7 @@ import {
 // the other apps"), remembered for this browser: the set-aside is this browser's, and happens once, so there is no
 // count to grow. Settings' row offers it again.
 
-const KEY = 'livediagram:v2:retired-parts-dismissed';
+const KEY = 'livehuddle:v2:retired-parts-dismissed';
 
 export function retiredPartsOfferDismissed(): boolean {
   return readLocalStorageSafe(KEY) === '1';

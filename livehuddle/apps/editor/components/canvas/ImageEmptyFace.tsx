@@ -1,8 +1,8 @@
 'use client';
 
 import type { CSSProperties, MouseEvent, PointerEvent } from 'react';
-import { shade, tint } from '@livediagram/document';
-import { Glyph } from '@livediagram/ui';
+import { shade, tint } from '@livehuddle/document';
+import { Glyph } from '@livehuddle/ui';
 import {
   EMPTY_FACE,
   imageEmptyLayout,

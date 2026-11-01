@@ -9,7 +9,7 @@ import {
   type ShapeElement,
   type StickyElement,
   type TextElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { landBoardScene } from './land';
 import type { SceneItem } from './scene';
 import { boardScene, countingIds, sceneText } from './test-scenes';

@@ -9,7 +9,7 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { tabHasDrawing } from '@livediagram/document';
+import { tabHasDrawing } from '@livehuddle/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSelectTab } from '@/app/document/[id]/useSelectTab';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';

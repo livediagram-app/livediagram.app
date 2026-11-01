@@ -4,7 +4,7 @@
 // tab costs under eight times as much (the pair check is bounded by LINT_MAX_ARROWS).
 import { describe, expect, it } from 'vitest';
 import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import { arrow, box, lint, tabOf } from './fixtures/build';
 
 // `n` boxes on a grid, each joined to its right and lower neighbours until `n` arrows are drawn.

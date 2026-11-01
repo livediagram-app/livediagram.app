@@ -20,8 +20,8 @@ import {
   lucidePilcrow,
   lucideUnderline,
 } from '@liveworkspace/icons/lucide';
-import { toggleFormatInRange, type RunBoolKey, type TextRun } from '@livediagram/document';
-import { ArrowDownIcon, ArrowUpIcon, IndentIcon, OutdentIcon, lucideGlyph } from '@livediagram/ui';
+import { toggleFormatInRange, type RunBoolKey, type TextRun } from '@livehuddle/document';
+import { ArrowDownIcon, ArrowUpIcon, IndentIcon, OutdentIcon, lucideGlyph } from '@livehuddle/ui';
 import {
   domSelectionToOffsets,
   insertTextAtCaret,

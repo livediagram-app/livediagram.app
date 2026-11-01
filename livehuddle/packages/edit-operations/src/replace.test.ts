@@ -4,7 +4,7 @@ import {
   getBuiltInTheme,
   type Tab,
   type ThemeDefinition,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { formatResultLines } from './format-results';
 import { checkoutFlow, fixedIds } from './fixtures/checkout-flow';
 import { applied, refused } from './fixtures/outcomes';
@@ -272,7 +272,7 @@ describe('applyReplace refusals', () => {
       'an element id: a non-empty string',
     ]);
     expect(refusal({ elements: [{ id: 'q', type: 7 }] }).hint).toBe(
-      'see the format: livediagram schema',
+      'see the format: livehuddle schema',
     );
   });
 

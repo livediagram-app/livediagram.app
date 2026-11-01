@@ -6,7 +6,7 @@ Research holds dated measurements and experiment reports. They record what was m
 
 ## Migration
 
-How boards from Google Drive, Miro and Microsoft Whiteboard can come into livediagram: verified platform facts, costs and the decisions taken. The resulting specs live in docs/specs/020-import-export/.
+How boards from Google Drive, Miro and Microsoft Whiteboard can come into livehuddle: verified platform facts, costs and the decisions taken. The resulting specs live in docs/specs/020-import-export/.
 
 - ./migration-readiness.md - when designing a Miro or Whiteboard import, or checking the Google Drive research behind liveworkspace's Drive sync: sourced findings, cost model, Drive sync cadences
 

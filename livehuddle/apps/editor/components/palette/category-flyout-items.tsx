@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { ChevronRightIcon, Tooltip } from '@livediagram/ui';
+import { ChevronRightIcon, Tooltip } from '@livehuddle/ui';
 import { useMinimalChrome } from '@liveworkspace/workbench/components/providers/minimal-chrome';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { setPaletteDragPreview } from '@/lib/palette-drag-preview';

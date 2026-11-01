@@ -1,4 +1,4 @@
-// @livediagram/diagram-lint: how a tab is drawn, checked (docs/specs/024-agents/diagram-lint.md).
+// @livehuddle/diagram-lint: how a tab is drawn, checked (docs/specs/024-agents/diagram-lint.md).
 
 export { lintGraph, lintTab, type LintOptions } from './lint';
 export { coloursSet } from './colours-set';

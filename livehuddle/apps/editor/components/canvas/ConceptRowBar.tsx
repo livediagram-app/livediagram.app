@@ -1,5 +1,5 @@
 import { useRef, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
-import { Glyph, Tooltip } from '@livediagram/ui';
+import { Glyph, Tooltip } from '@livehuddle/ui';
 import {
   boundsOfPoints,
   type ChevronLayout,
@@ -7,7 +7,7 @@ import {
   type ConceptRow,
   type LayoutRect,
   type WebRows,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { FLOATING_CONTROL_CLASS } from '@liveworkspace/workbench/components/chrome/floating-controls';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
 import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';

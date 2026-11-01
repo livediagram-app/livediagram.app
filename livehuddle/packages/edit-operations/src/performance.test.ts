@@ -7,7 +7,7 @@
 // quadratic step would cost sixteen.
 import { describe, expect, it } from 'vitest';
 import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@livehuddle/document';
 import { applyEditOperations } from './apply';
 import { containersBehindMembers } from './finalise';
 import { createState, noteTarget } from './state';

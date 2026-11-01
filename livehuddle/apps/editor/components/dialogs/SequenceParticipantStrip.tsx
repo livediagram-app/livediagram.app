@@ -11,8 +11,8 @@ import {
   SEQ_PARTICIPANTS_MIN,
   SEQ_PARTICIPANT_LABEL_MAX,
   type SequenceElementParticipant,
-} from '@livediagram/document';
-import { lucideGlyph, SOLID_BRAND_DARK, Tooltip } from '@livediagram/ui';
+} from '@livehuddle/document';
+import { lucideGlyph, SOLID_BRAND_DARK, Tooltip } from '@livehuddle/ui';
 import {
   lucideChevronLeft,
   lucideChevronRight,

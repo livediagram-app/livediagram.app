@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { TRUSTED_TYPES_CSP } from '@livediagram/ui/trusted-types';
+import { TRUSTED_TYPES_CSP } from '@livehuddle/ui/trusted-types';
 import worker from './worker';
 
 function env() {
@@ -17,13 +17,13 @@ function env() {
 describe('editor worker editor route', () => {
   it('serves the editor page for /document/<id>', async () => {
     const { env: e, seen } = env();
-    await worker.fetch(new Request('https://www.livediagram.app/document/abc'), e);
+    await worker.fetch(new Request('https://www.livehuddle.app/document/abc'), e);
     expect(seen).toEqual(['/document/placeholder']);
   });
 
   it('leaves other paths to the static assets', async () => {
     const { env: e, seen } = env();
-    await worker.fetch(new Request('https://www.livediagram.app/pricing'), e);
+    await worker.fetch(new Request('https://www.livehuddle.app/pricing'), e);
     expect(seen).toEqual(['/pricing']);
   });
 });
@@ -33,20 +33,20 @@ describe('editor worker security headers', () => {
   it('enforces Trusted Types on every page', async () => {
     const { env: e } = env();
     for (const path of ['/document/abc', '/embed', '/oauth/consent']) {
-      const res = await worker.fetch(new Request(`https://www.livediagram.app${path}`), e);
+      const res = await worker.fetch(new Request(`https://www.livehuddle.app${path}`), e);
       expect(res.headers.get('Content-Security-Policy'), path).toBe(TRUSTED_TYPES_CSP);
     }
   });
 
   it('denies framing on the MCP OAuth consent screen', async () => {
     const { env: e } = env();
-    const res = await worker.fetch(new Request('https://www.livediagram.app/oauth/consent'), e);
+    const res = await worker.fetch(new Request('https://www.livehuddle.app/oauth/consent'), e);
     expect(res.headers.get('X-Frame-Options')).toBe('DENY');
   });
 
   it('leaves the embed view frameable', async () => {
     const { env: e } = env();
-    const res = await worker.fetch(new Request('https://www.livediagram.app/embed'), e);
+    const res = await worker.fetch(new Request('https://www.livehuddle.app/embed'), e);
     expect(res.headers.get('X-Frame-Options')).toBeNull();
   });
 
@@ -55,7 +55,7 @@ describe('editor worker security headers', () => {
   it('leaves the workbench page frameable, with or without a trailing slash', async () => {
     const { env: e } = env();
     for (const path of ['/embed/workbench', '/embed/workbench/?d=doc-1']) {
-      const res = await worker.fetch(new Request(`https://www.livediagram.app${path}`), e);
+      const res = await worker.fetch(new Request(`https://www.livehuddle.app${path}`), e);
       expect(res.headers.get('X-Frame-Options')).toBeNull();
     }
   });
@@ -68,7 +68,7 @@ describe('editor worker security headers', () => {
       '/embed/workbench/explorer/recent?q=x',
       '/embed/workbench/document/doc-1?s=CODE2345',
     ]) {
-      const res = await worker.fetch(new Request(`https://www.livediagram.app${path}`), e);
+      const res = await worker.fetch(new Request(`https://www.livehuddle.app${path}`), e);
       expect(res.headers.get('X-Frame-Options')).toBeNull();
     }
     expect(seen).toEqual([
@@ -82,7 +82,7 @@ describe('editor worker security headers', () => {
   it('denies framing on the device page and the editor', async () => {
     const { env: e } = env();
     for (const path of ['/oauth/device', '/document/doc-1', '/embedded']) {
-      const res = await worker.fetch(new Request(`https://www.livediagram.app${path}`), e);
+      const res = await worker.fetch(new Request(`https://www.livehuddle.app${path}`), e);
       expect(res.headers.get('X-Frame-Options')).toBe('DENY');
     }
   });

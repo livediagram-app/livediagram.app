@@ -11,10 +11,10 @@
 // dispatch can answer "is this id offline?" cheaply (./offline-ids, which keeps
 // every tab of the browser in step).
 
-import type { LiveDoc, DocumentSummary, RecordedIntent, TabSummary } from '@livediagram/api-schema';
-import { utcDay } from '@livediagram/api-schema';
-import { drawnCount, migrateStoredTab, stampTabKind } from '@livediagram/document';
-import type { Tab } from '@livediagram/document';
+import type { LiveDoc, DocumentSummary, RecordedIntent, TabSummary } from '@livehuddle/api-schema';
+import { utcDay } from '@livehuddle/api-schema';
+import { drawnCount, migrateStoredTab, stampTabKind } from '@livehuddle/document';
+import type { Tab } from '@livehuddle/document';
 import { DocumentTrashedError } from '../document-trashed';
 import {
   offlineBackend,

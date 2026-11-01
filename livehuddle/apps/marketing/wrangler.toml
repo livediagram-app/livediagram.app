@@ -1,5 +1,5 @@
-name = "livediagram-marketing"
-# The liveworkspace Cloudflare account, which also hosts livediagram.app, so a deploy can never land on another one.
+name = "livehuddle-marketing"
+# The liveworkspace Cloudflare account, which also hosts livehuddle.app, so a deploy can never land on another one.
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 compatibility_date = "2026-05-29"
 
@@ -11,7 +11,7 @@ directory = "./out"
 not_found_handling = "404-page"
 
 # Staging (docs/specs/016-platform/staging-environment.md): `wrangler deploy --env staging` deploys the same
-# static `./out` as `livediagram-marketing-staging`. The build that fills
+# static `./out` as `livehuddle-marketing-staging`. The build that fills
 # `out/` is a different one — staging bakes its own NEXT_PUBLIC_* values —
 # so the two environments never share an artifact.
 #
@@ -22,7 +22,7 @@ not_found_handling = "404-page"
 # name on its own, but nothing in `--dry-run` prints the name it resolved,
 # and the router's service bindings depend on this exact string.
 [env.staging]
-name = "livediagram-marketing-staging"
+name = "livehuddle-marketing-staging"
 
 [env.staging.assets]
 directory = "./out"

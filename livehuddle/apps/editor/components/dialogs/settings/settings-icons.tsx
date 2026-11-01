@@ -9,7 +9,7 @@ import {
   SettingsSubcategoryGlyph,
   type SettingsTileId,
 } from '@liveworkspace/settings-ui';
-import { lucideGlyph, EDITOR_MODE_ICONS } from '@livediagram/ui';
+import { lucideGlyph, EDITOR_MODE_ICONS } from '@livehuddle/ui';
 import { lucideLayers, lucideMap, lucidePalette } from '@liveworkspace/icons/lucide';
 import { CollaborateGlyph } from '@liveworkspace/workbench/components/panels/collaborate/CollaborateGlyph';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';

@@ -138,12 +138,12 @@ export async function seedDocumentAndToken(
   const token = await seedToken(request, {
     userId: person.userId,
     email: `${person.userId}@example.test`,
-    name: 'livediagram CLI',
+    name: 'livehuddle CLI',
   });
   return { documentId, tabId, token: token.secret };
 }
 
-// `livediagram workbench open`: POST /api/workbench/tickets with the token.
+// `livehuddle workbench open`: POST /api/workbench/tickets with the token.
 export function mintTicket(
   request: APIRequestContext,
   seeded: Seeded,
@@ -164,7 +164,7 @@ export function received(page: Page): Promise<{ type: string; [k: string]: unkno
   return page.evaluate(() => (window as unknown as { received: never[] }).received);
 }
 
-// `livediagram workbench open --workspace [--folder <f>]`: a workspace ticket, on Home or a folder.
+// `livehuddle workbench open --workspace [--folder <f>]`: a workspace ticket, on Home or a folder.
 export function mintWorkspaceTicket(
   request: APIRequestContext,
   seeded: Seeded,
@@ -181,7 +181,7 @@ export function mintWorkspaceTicket(
   });
 }
 
-// A folder of the person's, at the top of My Work, as `livediagram folder create` makes it.
+// A folder of the person's, at the top of My Work, as `livehuddle folder create` makes it.
 export async function createFolder(
   request: APIRequestContext,
   person: Person,

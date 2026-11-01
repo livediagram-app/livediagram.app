@@ -7,7 +7,7 @@ import {
   type ShapeLibrary,
   type ShapeLibraryItem,
   type ShapeLibrarySource,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import type { ItemSql as DocumentSql } from '@liveworkspace/index-app';
 import { rowToShapeLibrary, type ShapeLibraryRow } from '../shape-library-row';
 

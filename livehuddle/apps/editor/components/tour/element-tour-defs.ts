@@ -9,7 +9,7 @@ import {
   stackSettingsOf,
   type Element,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import type { ElementTourKind } from '@/lib/element-tours';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { layerStackTourSteps } from './layer-stack-tour-steps';

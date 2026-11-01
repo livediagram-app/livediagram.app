@@ -17,7 +17,7 @@ import { mainThreadTasks, type TraceEvent } from './trace-tasks';
 // canvas probe's reference speed. Per move it reads the main thread (trace), the frame gaps (rAF), the
 // key's input-to-paint (Event Timing) and what the move leaves behind (stray snapshots, DOM, heap).
 // It reports and never judges; SLIDE_VARIANT names the build under test in the report.
-// Run with `E2E_PERF=1 pnpm --filter @livediagram/editor exec playwright test --project=perf slide-transition`.
+// Run with `E2E_PERF=1 pnpm --filter @livehuddle/editor exec playwright test --project=perf slide-transition`.
 
 const OUT = 'test-results/perf';
 const CATEGORIES = 'devtools.timeline,disabled-by-default-devtools.timeline';
@@ -97,10 +97,10 @@ async function openDeck(
   });
   await ctx.addInitScript(
     ({ token, transition }) => {
-      if (token) localStorage.setItem('livediagram:v2:guest-token', token);
-      localStorage.setItem('livediagram:v2:name-confirmed', '1');
+      if (token) localStorage.setItem('livehuddle:v2:guest-token', token);
+      localStorage.setItem('livehuddle:v2:name-confirmed', '1');
       localStorage.setItem(
-        'livediagram:v2:presentation-config',
+        'livehuddle:v2:presentation-config',
         JSON.stringify({ transition, speed: 'normal', hidePointer: false, advanceOnClick: false }),
       );
       const w = window as unknown as { __keys: number[]; __errors: string[] };
@@ -339,8 +339,8 @@ test('editing starts no view transitions', async ({ page, browser, baseURL }) =>
   const ctx = await browser.newContext({ viewport: VIEW, colorScheme: 'dark', baseURL });
   await ctx.addInitScript(
     ({ token }) => {
-      if (token) localStorage.setItem('livediagram:v2:guest-token', token);
-      localStorage.setItem('livediagram:v2:name-confirmed', '1');
+      if (token) localStorage.setItem('livehuddle:v2:guest-token', token);
+      localStorage.setItem('livehuddle:v2:name-confirmed', '1');
       const w = window as unknown as { __vt: number };
       w.__vt = 0;
       const start = Document.prototype.startViewTransition;

@@ -18,7 +18,7 @@ export type TestMediaService = TestDb & {
 
 // Points `env` at a fresh service and routes its calls there. Undo with vi.unstubAllGlobals().
 export function mediaServiceFor(env: Env): TestMediaService {
-  const service = testDb({ MEDIA_KEY_LIVEDIAGRAM: KEY });
+  const service = testDb({ MEDIA_KEY_LIVEHUDDLE: KEY });
   const calls: string[] = [];
   env.MEDIA_URL = URL_BASE;
   env.MEDIA_KEY = KEY;

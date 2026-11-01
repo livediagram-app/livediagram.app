@@ -1,10 +1,10 @@
 {
-  "name": "@livediagram/cli",
+  "name": "@livehuddle/cli",
   "version": "0.3.0",
   "private": true,
   "type": "module",
   "bin": {
-    "livediagram": "./src/bin.ts"
+    "livehuddle": "./src/bin.ts"
   },
   "scripts": {
     "build": "node scripts/build.mjs",
@@ -15,11 +15,11 @@
     "clean": "rm -rf node_modules .turbo coverage dist"
   },
   "dependencies": {
-    "@livediagram/agent-verbs": "workspace:*",
-    "@livediagram/api-schema": "workspace:*",
-    "@livediagram/diagram-lint": "workspace:*",
-    "@livediagram/document": "workspace:*",
-    "@livediagram/document-views": "workspace:*",
+    "@livehuddle/agent-verbs": "workspace:*",
+    "@livehuddle/api-schema": "workspace:*",
+    "@livehuddle/diagram-lint": "workspace:*",
+    "@livehuddle/document": "workspace:*",
+    "@livehuddle/document-views": "workspace:*",
     "@liveworkspace/api-client": "workspace:*",
     "@liveworkspace/cli-kit": "workspace:*",
     "@liveworkspace/icons": "workspace:*",

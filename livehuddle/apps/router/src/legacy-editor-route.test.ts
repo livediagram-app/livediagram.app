@@ -24,31 +24,29 @@ function envWithLive() {
   return { env, urls };
 }
 const dispatch = (path: string, env: Env) =>
-  router.fetch(new Request(`https://www.livediagram.app${path}`), env);
+  router.fetch(new Request(`https://www.livehuddle.app${path}`), env);
 
 describe('legacyEditorRedirect', () => {
   it('permanently redirects /diagram/<id> to /document/<id>, keeping the query', () => {
-    const res = legacyEditorRedirect(
-      new URL('https://www.livediagram.app/diagram/abc-123?t=tab1'),
-    )!;
+    const res = legacyEditorRedirect(new URL('https://www.livehuddle.app/diagram/abc-123?t=tab1'))!;
     expect(res.status).toBe(308);
-    expect(res.headers.get('location')).toBe('https://www.livediagram.app/document/abc-123?t=tab1');
+    expect(res.headers.get('location')).toBe('https://www.livehuddle.app/document/abc-123?t=tab1');
   });
 
   it('redirects a share link and the bare segment', () => {
     expect(
       legacyEditorRedirect(
-        new URL('https://www.livediagram.app/diagram/shared?s=CODE1234'),
+        new URL('https://www.livehuddle.app/diagram/shared?s=CODE1234'),
       )!.headers.get('location'),
-    ).toBe('https://www.livediagram.app/document/shared?s=CODE1234');
+    ).toBe('https://www.livehuddle.app/document/shared?s=CODE1234');
     expect(
-      legacyEditorRedirect(new URL('https://www.livediagram.app/diagram'))!.headers.get('location'),
-    ).toBe('https://www.livediagram.app/document');
+      legacyEditorRedirect(new URL('https://www.livehuddle.app/diagram'))!.headers.get('location'),
+    ).toBe('https://www.livehuddle.app/document');
   });
 
   it('leaves look-alike and current paths alone', () => {
     for (const path of ['/diagrams', '/diagramx/1', '/document/abc', '/help/diagram']) {
-      expect(legacyEditorRedirect(new URL(`https://www.livediagram.app${path}`)), path).toBeNull();
+      expect(legacyEditorRedirect(new URL(`https://www.livehuddle.app${path}`)), path).toBeNull();
     }
   });
 });
@@ -64,7 +62,7 @@ describe('router dispatch of the legacy editor route', () => {
   it('still serves the current editor route from the editor worker', async () => {
     const { env, urls } = envWithLive();
     await dispatch('/document/abc-123', env);
-    expect(urls).toEqual(['https://www.livediagram.app/document/abc-123']);
+    expect(urls).toEqual(['https://www.livehuddle.app/document/abc-123']);
   });
 });
 
@@ -88,7 +86,7 @@ describe('legacyHelpRedirect', () => {
       ['/help/developers/working-with-diagrams', '/help/developers/working-with-documents'],
       // Whiteboarding became Draw mode (docs/specs/007-editor/editor-modes.md "Naming in the interface").
       ['/help/canvas/whiteboards/', '/help/canvas/draw-mode/'],
-      // Pages mode (once Infographics, then Illustrate) left livediagram: every article of the three
+      // Pages mode (once Infographics, then Illustrate) left livehuddle: every article of the three
       // sections lands on Editor Modes (docs/specs/007-editor/editor-modes.md).
       ['/help/canvas/illustrate/', '/help/canvas/editor-modes/'],
       ['/help/canvas/illustrate/illustrate-tour/', '/help/canvas/editor-modes/'],
@@ -98,7 +96,7 @@ describe('legacyHelpRedirect', () => {
       ['/help/canvas/pages-mode/', '/help/canvas/editor-modes/'],
       ['/help/canvas/pages-mode/pages-tour/', '/help/canvas/editor-modes/'],
       ['/help/canvas/pages-mode/wireframe-pages/', '/help/canvas/editor-modes/'],
-      // Plan mode left livediagram for liveplanner the same way.
+      // Plan mode left livehuddle for liveplanner the same way.
       ['/help/canvas/plan-mode/', '/help/canvas/editor-modes/'],
       ['/help/canvas/plan-mode/boards/', '/help/canvas/editor-modes/'],
       ['/help/canvas/plan-mode/sheet-functions', '/help/canvas/editor-modes'],
@@ -127,7 +125,7 @@ describe('legacyHelpRedirect', () => {
       ['/help/self-hosting/', '/help/'],
       ['/help/self-hosting', '/help/'],
       ['/help/self-hosting/self-hosting-overview/', '/help/'],
-      ['/help/self-hosting/deploying-livediagram/', '/help/'],
+      ['/help/self-hosting/deploying-livehuddle/', '/help/'],
       ['/help/self-hosting/configuration/', '/help/'],
       ['/help/self-hosting/configuration/drive-and-mcp/', '/help/'],
       // Custom themes, tags and the AI assistant were removed: their articles land on the nearest live one.
@@ -140,13 +138,13 @@ describe('legacyHelpRedirect', () => {
       // A retired category's link that lost its `/help` prefix lands on the help centre home too.
       ['/self-hosting', '/help/'],
       ['/self-hosting/', '/help/'],
-      ['/self-hosting/deploying-livediagram/', '/help/'],
+      ['/self-hosting/deploying-livehuddle/', '/help/'],
       ['/self-hosting/configuration/drive-and-mcp', '/help/'],
     ];
     for (const [from, to] of cases) {
-      const res = legacyHelpRedirect(new URL(`https://www.livediagram.app${from}`))!;
+      const res = legacyHelpRedirect(new URL(`https://www.livehuddle.app${from}`))!;
       expect(res?.status, from).toBe(308);
-      expect(res.headers.get('location')).toBe(`https://www.livediagram.app${to}`);
+      expect(res.headers.get('location')).toBe(`https://www.livehuddle.app${to}`);
     }
   });
 
@@ -161,7 +159,7 @@ describe('legacyHelpRedirect', () => {
       '/self-hostingx/',
       '/help/self-hostingx/',
     ]) {
-      expect(legacyHelpRedirect(new URL(`https://www.livediagram.app${path}`)), path).toBeNull();
+      expect(legacyHelpRedirect(new URL(`https://www.livehuddle.app${path}`)), path).toBeNull();
     }
   });
 
@@ -174,7 +172,7 @@ describe('legacyHelpRedirect', () => {
 });
 
 describe('legacyFormRedirect', () => {
-  const at = (path: string) => new URL(`https://www.livediagram.app${path}`);
+  const at = (path: string) => new URL(`https://www.livehuddle.app${path}`);
 
   it('sends an old form link to the same path on liveplanner, for good, keeping the query', () => {
     const res = legacyFormRedirect(at('/form/AbC123?embed=1'), undefined)!;

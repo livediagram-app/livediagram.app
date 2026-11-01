@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/api-schema",
+  "name": "@livehuddle/api-schema",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,7 +17,7 @@
     "clean": "rm -rf node_modules .turbo"
   },
   "dependencies": {
-    "@livediagram/document": "workspace:*",
+    "@livehuddle/document": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/community": "workspace:*",

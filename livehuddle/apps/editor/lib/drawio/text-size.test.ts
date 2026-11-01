@@ -8,9 +8,9 @@ import {
   runTextSize,
 } from './text-size';
 
-// docs/specs/020-import-export/drawio-import.md "Text": draw.io's font sizes (px) to livediagram's
+// docs/specs/020-import-export/drawio-import.md "Text": draw.io's font sizes (px) to livehuddle's
 // presets, for a whole element and for a span inside its label. One module, so the mapping of
-// text smaller than livediagram's smallest size is decided in one place.
+// text smaller than livehuddle's smallest size is decided in one place.
 
 describe('elementTextSize', () => {
   it('takes the preset nearest on the element own scale', () => {

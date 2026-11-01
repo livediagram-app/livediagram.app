@@ -4,7 +4,7 @@
 // Split out of export-tab.ts: the PDF container format is a self-contained
 // concern, distinct from the canvas/SVG renderers; it just needs the rendered
 // pixels from renderTabToCanvas.
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import { renderedExportScale, renderTabToCanvas, type ImageExportOpts } from './export-tab';
 
 export async function exportTabAsPdf(tab: Tab, opts: ImageExportOpts = {}): Promise<Blob> {

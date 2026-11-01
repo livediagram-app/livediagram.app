@@ -4,7 +4,7 @@
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh Element[].
 
-import { createShape, createSticky, createText, type Element } from '@livediagram/document';
+import { createShape, createSticky, createText, type Element } from '@livehuddle/document';
 import {
   BUTTON_H,
   BUTTON_W,

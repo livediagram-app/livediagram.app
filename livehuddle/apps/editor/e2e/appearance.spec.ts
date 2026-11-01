@@ -1,4 +1,4 @@
-import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from '@livediagram/document';
+import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from '@livehuddle/document';
 import { expect, test, dismissQuickTour, expectNoPageErrors, paletteTile } from './fixtures';
 
 // Appearance (docs/specs/007-editor/editor-app.md) end to end: the three settings on the real control, and

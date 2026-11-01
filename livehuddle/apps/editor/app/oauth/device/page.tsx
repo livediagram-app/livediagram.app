@@ -92,7 +92,7 @@ function Device() {
     const back = window.location.pathname + window.location.search;
     return (
       <OauthShell>
-        <h1 className={HEADING}>Sign in to connect the livediagram CLI</h1>
+        <h1 className={HEADING}>Sign in to connect the livehuddle CLI</h1>
         <div className="mt-5 flex items-center gap-2">
           <a
             href={`/sign-in/?redirect_url=${encodeURIComponent(back)}`}
@@ -182,8 +182,8 @@ function Device() {
           <h1 className={HEADING}>Connect {clientName}</h1>
           <p className={BODY}>
             <span className="font-medium text-slate-700 dark:text-slate-200">{clientName}</span>{' '}
-            wants to act as you in your liveworkspace apps, livediagram among them. Approving
-            creates an API token for your liveworkspace account, which you can revoke any time on
+            wants to act as you in your liveworkspace apps, livehuddle among them. Approving creates
+            an API token for your liveworkspace account, which you can revoke any time on
             liveworkspace.app.
           </p>
           <ReadOnlyAccessToggle readOnly={readOnly} onChange={setReadOnly} />

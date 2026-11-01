@@ -138,7 +138,7 @@ describe('postTelemetry', () => {
     expect(calls).toHaveLength(0);
   });
 
-  it("posts livediagram's batch to the service with its key", async () => {
+  it("posts livehuddle's batch to the service with its key", async () => {
     const calls: Request[] = [];
     stubTelemetryFetch(calls);
     const env = {
@@ -151,7 +151,7 @@ describe('postTelemetry', () => {
     expect(calls[0]!.url).toBe('https://telemetry.test/events');
     expect(calls[0]!.headers.get('X-Telemetry-Key')).toBe('k');
     expect(await calls[0]!.json()).toEqual({
-      app: 'livediagram.app',
+      app: 'livehuddle.app',
       events: [{ category: 'Mcp', action: 'Used', type: 'ReadDocument' }],
     });
   });

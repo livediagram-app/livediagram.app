@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createShape } from '@livediagram/document';
+import { createShape } from '@livehuddle/document';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 
 // docs/specs/004-interface-design/canvas-accessibility.md: a screen reader hears each selection change.

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CROP_MAX_BYTES, READ_MAX_CROPS_PER_REQUEST, type NoteText } from '@livediagram/api-schema';
+import { CROP_MAX_BYTES, READ_MAX_CROPS_PER_REQUEST, type NoteText } from '@livehuddle/api-schema';
 import { handleAiReadNotes } from './ai-read-notes';
 import type { RouteContext } from './context';
 import type { Env } from '../types';
@@ -79,7 +79,7 @@ describe('the shared gate still guards this route', () => {
     const res = await handleAiReadNotes(
       makeCtx({
         env: {
-          AI_ALLOWED_ORIGINS: 'https://www.livediagram.app',
+          AI_ALLOWED_ORIGINS: 'https://www.livehuddle.app',
         },
         origin: 'https://evil.example',
       }),

@@ -7,7 +7,7 @@ import {
   arrowStyleOf,
   type ArrowElement,
   type Point,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import type { LintContext } from './context';
 
 const RESTYLES = ['angled', 'curved', 'straight'] as const;

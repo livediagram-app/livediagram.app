@@ -24,7 +24,7 @@ import {
   type ShapeElement,
   inAnimationSet,
   shapeAnimationsFor,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
 import { AnimationMenuGlyph } from '@/components/palette/context-menu-icons';

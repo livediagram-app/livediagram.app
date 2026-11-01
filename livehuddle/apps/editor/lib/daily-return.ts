@@ -1,7 +1,7 @@
 // Once-per-UTC-day "returning visitor" signal (docs/specs/017-telemetry/telemetry.md): `Participant`/`Returned`,
 // typed `Anonymous` (guest) or `Authenticated` (signed in), the counterpart to `Participant`/`Created` (the
 // new-visitor signal). It goes through the shared gate (@liveworkspace/telemetry-client createDailyReturn) on this
-// app's `livediagram:v2:last-active-day` key: at most once per browser per UTC day, and nothing on a browser's first
+// app's `livehuddle:v2:last-active-day` key: at most once per browser per UTC day, and nothing on a browser's first
 // observed day, which is a new visitor rather than a return.
 //
 // Called from every app-open bootstrap here (editor `useIdentityBootstrap`, `/new`). The Explorer at /explorer is

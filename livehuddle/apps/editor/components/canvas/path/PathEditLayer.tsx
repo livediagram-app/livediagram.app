@@ -1,6 +1,6 @@
 'use client';
 
-import type { PathAnchor, PathElement } from '@livediagram/document';
+import type { PathAnchor, PathElement } from '@livehuddle/document';
 import { visibleHandles, type HandleSide } from '@/lib/path-edit';
 import { HandleMarker, NodeMarker, OVERLAY_SVG_CLASS, PATH_OVERLAY_Z } from './path-markers';
 import type { PathGuides } from './usePathEditGesture';

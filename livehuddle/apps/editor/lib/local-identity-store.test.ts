@@ -26,7 +26,7 @@ describe('guest id store', () => {
     const unsubscribe = subscribeGuestSelfId(onChange);
     window.dispatchEvent(storageEvent({ key: GUEST_TOKEN_STORAGE_KEY }));
     window.dispatchEvent(storageEvent({ key: null }));
-    window.dispatchEvent(storageEvent({ key: 'livediagram:v2:other' }));
+    window.dispatchEvent(storageEvent({ key: 'livehuddle:v2:other' }));
     expect(onChange).toHaveBeenCalledTimes(2);
     unsubscribe();
     window.dispatchEvent(storageEvent({ key: null }));

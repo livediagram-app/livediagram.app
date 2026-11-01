@@ -4,8 +4,8 @@
 // shapes down with it. They are render-free and unit-tested now; everything
 // that genuinely needs a rasteriser lives here.
 
-import { embedTabImages } from '@livediagram/api-schema';
-import { exportFontIds, renderElementsToSvg, type Tab } from '@livediagram/document';
+import { embedTabImages } from '@livehuddle/api-schema';
+import { exportFontIds, renderElementsToSvg, type Tab } from '@livehuddle/document';
 // Static-import icon resolver (Worker bundle, size not user-facing) so icon
 // elements render their real glyph in the inline image.
 // The preview resolvers: an emoji (no emoji font in a Worker) draws from its fetched art, else as a labelled disc,

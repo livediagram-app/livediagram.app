@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type Element, type Tab } from '@livediagram/document';
+import { createShape, type Element, type Tab } from '@livehuddle/document';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { useEditorViewport } from './useEditorViewport';
 

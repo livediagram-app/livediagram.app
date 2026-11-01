@@ -15,7 +15,7 @@ export function useConversionHandoff(ownerId: string | null, signedIn: boolean) 
   useHandoff({
     ownerId,
     signedIn,
-    app: 'livediagram',
+    app: 'livehuddle',
     noun: 'canvas',
     conversions: useOfflineConversions(ownerId),
     confirm: useConfirm(),

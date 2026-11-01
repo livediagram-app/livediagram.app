@@ -18,7 +18,7 @@ import {
   type Anchor,
   type Element,
   type TableCellStyle,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 import { rake } from './template-rake';
 import { TECH_HEADER_H, techHeader } from './template-builders-technical-kit';

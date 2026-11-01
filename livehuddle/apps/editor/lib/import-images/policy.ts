@@ -1,7 +1,7 @@
 // The encoding decisions of the import image pipeline, pure
 // (docs/specs/020-import-export/import-image-pipeline.md "The encoding policy").
 
-import { MAX_IMAGE_BYTES } from '@livediagram/api-schema';
+import { MAX_IMAGE_BYTES } from '@livehuddle/api-schema';
 import {
   IMPORT_IMAGE_MAX_EDGE_PX,
   IMPORT_IMAGE_SVG_DEFAULT_EDGE_PX,

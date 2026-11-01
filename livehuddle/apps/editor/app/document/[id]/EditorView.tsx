@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import { CommentBadgesContext } from '@liveworkspace/workbench/components/canvas/CommentBadgesContext';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
-import { truncateName } from '@livediagram/document';
+import { truncateName } from '@livehuddle/document';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { track } from '@/lib/telemetry';
 import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
@@ -12,7 +12,7 @@ import { registerUnsavedWork } from '@liveworkspace/workbench/lib/unsaved-work';
 import { useRegionCycle } from '@liveworkspace/workbench/hooks/ui/useRegionCycle';
 import { useEffect } from 'react';
 import { addToDocumentTargets } from '@/lib/add-to-document-targets';
-import { canvasSurface } from '@livediagram/document';
+import { canvasSurface } from '@livehuddle/document';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
@@ -29,7 +29,7 @@ import { CommunityBar } from '@/components/chrome/CommunityBar';
 import { useAutoCopyParam } from '@/hooks/canvas/useAutoCopyParam';
 import { documentIsPublic } from '@/lib/community-public';
 import { useCommunityState } from '@/lib/community-state-store';
-import { useCommunityEnabled } from '@livediagram/ui';
+import { useCommunityEnabled } from '@livehuddle/ui';
 import { API_BASE } from '@/lib/api-client';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { WorkbenchOpenLink, WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
@@ -510,7 +510,7 @@ export function EditorView() {
                             />
                           ) : null}
                           {workbench ? (
-                            // The workbench's Reconnect line; its Open in livediagram sits in the tab bar.
+                            // The workbench's Reconnect line; its Open in livehuddle sits in the tab bar.
                             <WorkbenchReconnectLine
                               workbenchName={workbench.workbenchName}
                               ended={workbench.ended}

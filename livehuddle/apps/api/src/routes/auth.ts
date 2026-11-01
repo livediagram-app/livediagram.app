@@ -1,8 +1,8 @@
-import { SIGNED_IN_HINT_COOKIE } from '@livediagram/api-schema';
+import { SIGNED_IN_HINT_COOKIE } from '@livehuddle/api-schema';
 // /api/auth/* — signing in through the liveworkspace accounts Worker
 // (docs/specs/014-identity/auth-and-guest-access.md "Signing in").
 //
-// livediagram.app and liveworkspace.app are separate sites, so the
+// livehuddle.app and liveworkspace.app are separate sites, so the
 // browser is sent there on a full-page visit and comes back with a one-time
 // code (OAuth 2.1 authorization code + PKCE). This worker swaps the code for
 // tokens, because the swap sends the client secret. The refresh token stays
@@ -109,7 +109,7 @@ export function configured(env: Env): Configured | null {
 
 // Where the browser comes back to. The page's own origin in production (the router hands this
 // worker the request as the browser sent it); AUTH_ORIGIN for local dev, where the router proxies
-// to localhost:8687 and the request no longer carries the address the browser is on.
+// to localhost:9087 and the request no longer carries the address the browser is on.
 function appOrigin(env: Env, request: Request): string {
   return env.AUTH_ORIGIN?.replace(/\/+$/, '') || new URL(request.url).origin;
 }
@@ -351,7 +351,7 @@ function noStore(cookies: string[] = []): Headers {
 // Signing out everywhere in this browser (liveworkspace/docs/specs/003-accounts/accounts.md "Signing out"): the
 // accounts site ends the liveworkspace session this refresh token came from, and every app's session from it, and
 // answers the hop the page takes through liveworkspace.app, which clears its cookie there and comes back to
-// `?return=` on this site. `next` is null with no refresh token or no answer: then livediagram alone is signed out.
+// `?return=` on this site. `next` is null with no refresh token or no answer: then livehuddle alone is signed out.
 // Signed out of this app alone (`next` null), that is remembered (the signed-out mark) until the next sign-in here, so
 // signing in without a click never undoes it. Signed out everywhere, nothing is: the next bounce finds no session.
 async function signOut(request: Request, env: Env, config: Configured): Promise<Response> {

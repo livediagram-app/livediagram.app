@@ -9,7 +9,7 @@ import {
   type Element,
   type PathAnchor,
   type PathElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 type Point = { x: number; y: number };
 

@@ -1,14 +1,14 @@
 'use client';
 
 // The chrome of the editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md
-// "Presentation and UX", WB34, WB59): an **Open in livediagram** link at the tab bar's right end, beside
+// "Presentation and UX", WB34, WB59): an **Open in livehuddle** link at the tab bar's right end, beside
 // Search and Settings, where no docked panel can cover it, that opens the document (or, in a workspace frame's
 // Explorer, the view) in a full tab; a workspace frame's **Back** at the canvas's top left, to where the
 // document was opened from; and, once the session has ended unrenewed or revoked, the line at the top centre that
 // says how to edit again.
-import type { WorkbenchEndReason } from '@livediagram/api-schema';
+import type { WorkbenchEndReason } from '@livehuddle/api-schema';
 import { lucideArrowLeft } from '@liveworkspace/icons/lucide';
-import { HoverCard, lucideGlyph } from '@livediagram/ui';
+import { HoverCard, lucideGlyph } from '@livehuddle/ui';
 import {
   CHROME_BTN,
   CHROME_BTN_LABELLED,
@@ -35,16 +35,16 @@ export function WorkbenchOpenLink({
   description?: string;
 }) {
   return (
-    <HoverCard title="Open in livediagram" description={description}>
+    <HoverCard title="Open in livehuddle" description={description}>
       <a
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Open in livediagram (opens in a new tab)"
+        aria-label="Open in livehuddle (opens in a new tab)"
         className={labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN}
       >
         <OpenExternalIcon />
-        <ChromeLabel show={labelled}>Open in livediagram</ChromeLabel>
+        <ChromeLabel show={labelled}>Open in livehuddle</ChromeLabel>
       </a>
     </HoverCard>
   );

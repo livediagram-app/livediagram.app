@@ -27,14 +27,14 @@ const sections: HomeSection[] = [
     id: 'account',
     eyebrow: 'Your Account',
     heading: 'Your account and your data',
-    lede: 'Who you are to livediagram, where your work lives, and the promises that cover it.',
+    lede: 'Who you are to livehuddle, where your work lives, and the promises that cover it.',
     categories: ['account-and-data', 'privacy-and-security', 'supported-devices', 'policies'],
   },
   {
     id: 'build',
     eyebrow: 'Build',
     heading: 'Developers',
-    lede: 'Drive livediagram from your own code, the command line or an AI client.',
+    lede: 'Drive livehuddle from your own code, the command line or an AI client.',
     categories: ['developers'],
   },
 ];

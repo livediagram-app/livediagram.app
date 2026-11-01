@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { MOTION_MS } from '@liveworkspace/style-guards/motion';
-import { useAppearance } from '@livediagram/ui';
+import { useAppearance } from '@livehuddle/ui';
 import { LocalPreview } from '@liveworkspace/explorer/local-preview';
 import {
   loadThumbnail,
@@ -155,7 +155,7 @@ export function DocumentThumbnail({
   if (offline) {
     return (
       <span ref={ref} aria-hidden className={`flex shrink-0 overflow-hidden ${className}`}>
-        <LocalPreview app="livediagram" iconSize={16} className="h-full w-full" />
+        <LocalPreview app="livehuddle" iconSize={16} className="h-full w-full" />
       </span>
     );
   }

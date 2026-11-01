@@ -7,7 +7,7 @@ import {
   parseWorkbenchMessage,
   type PageToWorkbenchMessage,
   type WorkbenchToPageMessage,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 
 export type WorkbenchPort = {
   origin: string;

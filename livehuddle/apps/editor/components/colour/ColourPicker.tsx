@@ -6,8 +6,8 @@
 // options (no colour, a surface's named defaults) go first in the first group. One Tab stop, the
 // arrows move through every swatch, Enter or Space picks.
 import { useContext, useId, useRef, useState, type FocusEvent } from 'react';
-import { Tooltip } from '@livediagram/ui';
-import { isHexColour } from '@livediagram/document';
+import { Tooltip } from '@livehuddle/ui';
+import { isHexColour } from '@livehuddle/document';
 import {
   onMouseHover,
   useRevertOnUnmount,

@@ -1,6 +1,6 @@
 'use client';
 
-// What the shared Explorer (@liveworkspace/explorer) needs from livediagram to be its host: an item's address in
+// What the shared Explorer (@liveworkspace/explorer) needs from livehuddle to be its host: an item's address in
 // its own app, a share link's, where New goes, and the person's teams from their token
 // (liveworkspace/docs/specs/004-index/one-explorer.md). The editor's panel and the workbench's workspace frame both use these.
 
@@ -19,10 +19,10 @@ import { APP_ITEMS, siteOfApp } from '@liveworkspace/sites';
 import { helpArticleHref, type HelpArticleKey } from './help-articles';
 import { currentBearer } from './api/core';
 
-// Where each app opens its own items (@liveworkspace/sites APP_ITEMS). livediagram's open here; another app's open on
+// Where each app opens its own items (@liveworkspace/sites APP_ITEMS). livehuddle's open here; another app's open on
 // its own site.
 export const itemHref: ItemHref = (item, at) => {
-  const origin = item.app === 'livediagram' ? '' : siteOfApp(item.app).url;
+  const origin = item.app === 'livehuddle' ? '' : siteOfApp(item.app).url;
   const query = item.sharedVia ? `?s=${encodeURIComponent(item.sharedVia)}` : '';
   // The editor's deep link (lib/collab-deep-link.ts), built by the Explorer.
   const pin = placeHash(at);

@@ -13,7 +13,7 @@ import {
 test.use({ colorScheme: 'dark' });
 
 const TOOLTIP = '[role="tooltip"][data-hint="tooltip"]';
-const PREFS_KEY = 'livediagram:user-preferences:v1';
+const PREFS_KEY = 'livehuddle:user-preferences:v1';
 
 const dialog = (page: Page) => page.getByRole('dialog', { name: 'Settings' });
 const tabBar = (page: Page) => page.locator('[data-editor-tabbar]');
@@ -248,9 +248,7 @@ test.describe('Power user mode', () => {
     await appearance.click({ button: 'right' });
     await expect(appearance).toHaveAccessibleName(/^Appearance: System\./);
     expect(await painted()).toBe('dark');
-    expect(await page.evaluate(() => localStorage.getItem('livediagram:v2:ui-mode'))).toBe(
-      'system',
-    );
+    expect(await page.evaluate(() => localStorage.getItem('livehuddle:v2:ui-mode'))).toBe('system');
     await expect(page.getByRole('menu')).toHaveCount(0);
 
     // The keyboard reaches System too: Shift+F10 on the focused control (its macOS stand-in there).

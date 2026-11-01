@@ -1,4 +1,4 @@
-import { objectOrEmpty, type WorkbenchRole } from '@livediagram/api-schema';
+import { objectOrEmpty, type WorkbenchRole } from '@livehuddle/api-schema';
 // Shared per-request context for the route handlers. The worker's
 // `fetch` entry (src/index.ts) builds one of these after resolving the
 // caller's identity + running the cross-cutting gates (CORS, write
@@ -7,7 +7,7 @@ import { objectOrEmpty, type WorkbenchRole } from '@livediagram/api-schema';
 // its segment and returns `notFound()` for sub-paths / methods it
 // doesn't recognise (preserving the original fall-through-to-404).
 
-import { capWorkbenchRole, levelAtLeast, type AccessLevel } from '@livediagram/api-schema';
+import { capWorkbenchRole, levelAtLeast, type AccessLevel } from '@livehuddle/api-schema';
 import type { TeamClaim } from '@liveworkspace/auth-client';
 import type { WorkbenchReach } from '../auth/workbench-session';
 import { badRequest, forbidden, missingAuth, notFound } from '../responses';

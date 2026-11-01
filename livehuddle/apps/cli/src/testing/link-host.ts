@@ -1,13 +1,13 @@
-// A livediagram host for the repository link's suites: libraries with folders and teams, documents whose tabs move
+// A livehuddle host for the repository link's suites: libraries with folders and teams, documents whose tabs move
 // on, the overview as the api renders it, and documents that can be trashed, purged, or fail. Over `fakeIo`.
 
-import type { VerbContext } from '@livediagram/agent-verbs';
-import type { Element } from '@livediagram/document';
-import { headerFactsOf, overviewView } from '@livediagram/document-views';
+import type { VerbContext } from '@livehuddle/agent-verbs';
+import type { Element } from '@livehuddle/document';
+import { headerFactsOf, overviewView } from '@livehuddle/document-views';
 import { transport } from '../transport';
 import { NOW, TOKEN, type FakeIo, type Route } from './fake-io';
 
-export const HOST = 'https://www.livediagram.app';
+export const HOST = 'https://www.livehuddle.app';
 
 export type HostTab = {
   id: string;

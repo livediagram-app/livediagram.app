@@ -10,8 +10,8 @@ import {
   type SettingsTrack,
 } from '@liveworkspace/settings-ui';
 import { isAllSettingRow } from '@liveworkspace/settings';
-import type { TelemetryCategory } from '@livediagram/api-schema';
-import type { AppearanceSetting } from '@livediagram/ui';
+import type { TelemetryCategory } from '@livehuddle/api-schema';
+import type { AppearanceSetting } from '@livehuddle/ui';
 import { SHORTCUT_SECTIONS } from '@/components/dialogs/shortcut-sections';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';

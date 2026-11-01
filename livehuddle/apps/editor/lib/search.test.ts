@@ -1,4 +1,4 @@
-import type { Element, ShapeElement, Tab } from '@livediagram/document';
+import type { Element, ShapeElement, Tab } from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
 import { matches } from '@liveworkspace/icons';
 import { buildSearchResults } from './search';

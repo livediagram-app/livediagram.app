@@ -1,7 +1,7 @@
 import { getOnline } from '@liveworkspace/workbench/lib/online-status';
 import { useEffect, useState } from 'react';
 
-import { UNTITLED_DOCUMENT_NAME } from '@livediagram/templates';
+import { UNTITLED_DOCUMENT_NAME } from '@livehuddle/templates';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import type { useToast } from '@/hooks/ui/useToast';
 
@@ -30,7 +30,7 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
   // tabs open can spot the right one. Falls back to the bare brand
   // until hydration lands the real name.
   useEffect(() => {
-    document.title = documentName ? `${documentName} | livediagram` : 'livediagram';
+    document.title = documentName ? `${documentName} | livehuddle` : 'livehuddle';
   }, [documentName]);
 
   // Brief error string surfaced by the Import-tab flow when the

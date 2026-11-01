@@ -12,7 +12,7 @@ import {
   type MenuKind,
   type MenuTree,
   Portal,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 
 // A small `…` menu attached to an element's own face.
 //

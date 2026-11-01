@@ -1,8 +1,8 @@
-// livediagram's telemetry: @liveworkspace/telemetry-client bound to this product
+// livehuddle's telemetry: @liveworkspace/telemetry-client bound to this product
 // (docs/specs/017-telemetry/telemetry.md). The engine, the opt-out rule, page-hide, the error cap and
-// the timing watch are shared; what is livediagram's own is here: its app on the central service,
+// the timing watch are shared; what is livehuddle's own is here: its app on the central service,
 // the key its preferences are stored under, its vocabulary's types, and its error and timing tokens
-// from @livediagram/api-schema. Import those from here and everything else from
+// from @livehuddle/api-schema. Import those from here and everything else from
 // @liveworkspace/telemetry-client.
 
 import {
@@ -13,7 +13,7 @@ import {
   timingType,
   type TelemetryAction,
   type TelemetryCategory,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import type { TelemetryApp } from '@liveworkspace/telemetry';
 import {
   createClientErrorTracking,
@@ -26,16 +26,16 @@ import {
 } from '@liveworkspace/telemetry-client';
 
 // This product's name on the central service.
-export const TELEMETRY_APP: TelemetryApp = 'livediagram.app';
+export const TELEMETRY_APP: TelemetryApp = 'livehuddle.app';
 
 // Where the editor keeps its per-user preferences (docs/specs/007-editor/user-preferences.md). The
-// help centre shares the livediagram.app origin, so an opt-out made in the editor has to be visible there,
+// help centre shares the livehuddle.app origin, so an opt-out made in the editor has to be visible there,
 // which means both apps read this exact string, and a copy in each is a silent privacy bug waiting to
 // happen: version the key in the editor (`:v2`, an ordinary schema migration) and the help centre goes
 // on reading the dead `:v1`, finds nothing, and falls back to its default of ON for a person who
 // explicitly opted out. NEVER change it in place: people's saved preferences and their telemetry
 // opt-out live under it.
-export const USER_PREFERENCES_STORAGE_KEY = 'livediagram:user-preferences:v1';
+export const USER_PREFERENCES_STORAGE_KEY = 'livehuddle:user-preferences:v1';
 
 export type TelemetryEmitter = Emitter<TelemetryCategory, TelemetryAction>;
 

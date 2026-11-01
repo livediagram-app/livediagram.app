@@ -29,6 +29,8 @@ describe('upgradeStoredTabKeepingRetired', () => {
     const pages = [{ id: 'p1', kind: 'slide', size: 'slide' }];
     const out = upgradeStoredTabKeepingRetired({ opensIn: 'pages', pages, elements: [] });
     expect(out.pages).toEqual(pages);
-    expect(upgradeStoredTabKeepingRetired({ elements: 'nope' })).toMatchObject({ elements: 'nope' });
+    expect(upgradeStoredTabKeepingRetired({ elements: 'nope' })).toMatchObject({
+      elements: 'nope',
+    });
   });
 });

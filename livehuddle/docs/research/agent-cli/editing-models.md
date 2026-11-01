@@ -1,12 +1,12 @@
-# How agents edit existing structured documents: an editing model for the livediagram CLI
+# How agents edit existing structured documents: an editing model for the livehuddle CLI
 
-Research for the `livediagram <resource> <verb>` CLI, angle: **editing existing documents**. It asks how
+Research for the `livehuddle <resource> <verb>` CLI, angle: **editing existing documents**. It asks how
 an AI agent (a coding agent in a repo, or a chat agent changing a diagram while a person talks to it)
 reliably changes a spatial, structured document it did not author, and ends with a recommended
 editing model, an op format, layout and concurrency rules, and three mock sessions.
 
 Sources were read on the date of writing; external claims carry a link in [Sources](#sources). Claims
-about livediagram cite the file they come from. Where a claim is an estimate or a judgement, it says so.
+about livehuddle cite the file they come from. Where a claim is an estimate or a judgement, it says so.
 
 ## 1. Summary
 
@@ -37,7 +37,7 @@ about livediagram cite the file they come from. Where a claim is an estimate or 
 - **Dry-run, changeset, undo**: the same pure function produces the plan for `--dry-run`, the
   changeset the server returns, and the inverse batch the CLI journals for `undo`.
 
-## 2. What livediagram has today
+## 2. What livehuddle has today
 
 ### 2.1 The MCP `update_document` ops mode
 
@@ -62,7 +62,7 @@ Gaps an agent will hit, each verified in the code:
 | `update` on an unknown id              | `byId.set(op.elementId, mergeElementUpdate(byId.get(op.elementId), el))` with `prev` undefined                                   | Silently creates a partial element, then fails validation with a generic message |
 | `remove` on an unknown id              | `byId.delete` of a missing key                                                                                                   | Silent no-op: a hallucinated id "succeeds"                                       |
 | Removing a node leaves dangling arrows | `isValidTab` checks a pinned endpoint is a non-empty string with a valid anchor (`validate.ts:223`), not that the element exists | Broken arrows persist                                                            |
-| One generic error                      | `'The resulting elements are invalid. See the livediagram://schema/elements resource.'`                                          | No op index, field or reason; the model guesses                                  |
+| One generic error                      | `'The resulting elements are invalid. See the livehuddle://schema/elements resource.'`                                           | No op index, field or reason; the model guesses                                  |
 | Absolute geometry only on `add`        | `add` takes a full element                                                                                                       | The model must compute `x/y/width/height` and anchors for every insertion        |
 | Shallow merge only                     | Nested fields (`from`, `to`, `entityFields`) replace wholesale; no way to unset a field                                          | Easy to drop an arrow's anchor or styling by sending a partial endpoint          |
 | No preconditions                       | Read-modify-write against D1, no revision check                                                                                  | A stale read silently overwrites newer work                                      |
@@ -140,7 +140,7 @@ format must add the loud failure.
   Figma multiplayer): Figma's server is authoritative, merges **per property** last-writer-wins,
   orders children with fractional indices and guards reparenting cycles
   ([Figma, multiplayer](https://www.figma.com/blog/how-figmas-multiplayer-technology-works/)).
-  livediagram consciously stopped at **per element** LWW. A short-lived CLI should not run a CRDT;
+  livehuddle consciously stopped at **per element** LWW. A short-lived CLI should not run a CRDT;
   it should submit ops that the server turns into the room's existing `el` ops.
 
 ### 3.3 Diagram and document APIs
@@ -202,10 +202,10 @@ Derived from the above, in the order they bite:
 ### 5.1 Shape of the solution
 
 ```text
- agent ──► livediagram edit (CLI)
+ agent ──► livehuddle edit (CLI)
              │  parse line ops / JSON ops
              │  resolve selectors against its last read (cache)
-             │  dry-run: apply locally with @livediagram/edit-ops, print plan, optional PNG
+             │  dry-run: apply locally with @livehuddle/edit-ops, print plan, optional PNG
              ▼
            POST /api/documents/:id/tabs/:tabId/edits   { base, ops, options }
              │  api: load tab from D1, check base fingerprints, apply the same pure engine,
@@ -215,8 +215,8 @@ Derived from the above, in the order they bite:
 ```
 
 - **One pure engine**, `applyEditBatch(tab, ops, options) → { tab, changes, inverse, warnings } |
-{ errors }`, in a new package (working name `@livediagram/edit-ops`, depending on
-  `@livediagram/document` for layout, anchors, validation and normalisation). Consumers: the CLI
+{ errors }`, in a new package (working name `@livehuddle/edit-ops`, depending on
+  `@livehuddle/document` for layout, anchors, validation and normalisation). Consumers: the CLI
   (dry-run, local preview), the api (authoritative apply), and the MCP's `update_document` ops mode,
   which becomes a thin wrapper so the two agent surfaces cannot drift (reuse principle).
 - **One server change**: an edits endpoint that applies the batch server-side and relays it to the
@@ -230,22 +230,22 @@ Derived from the above, in the order they bite:
 Resource-verb, consistent with the rest of the CLI. Editing verbs only; read views belong to the
 reading angle and are referenced where editing depends on them.
 
-| Command                                                       | Purpose                                                                                    |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `livediagram edit <doc> [--tab T] [-f FILE \| -]`             | Apply a batch of ops (line form or JSON lines). The core verb                              |
-| `livediagram edit … --dry-run [--png FILE]`                   | Print the plan (and render it) without writing                                             |
-| `livediagram el set <doc> <sel> k=v…`                         | One-op sugar for `set`; every op has such a verb so `--help` teaches the vocabulary        |
-| `livediagram el add <doc> <kind> k=v… [placement]`            | Sugar for `add`                                                                            |
-| `livediagram el rm <doc> <sel>`                               | Sugar for `rm` (cascades arrows; says so)                                                  |
-| `livediagram el move <doc> <sel> <placement>`                 | Sugar for `move`                                                                           |
-| `livediagram el connect <doc> <a> <b> [label=…]`              | Sugar for `connect`                                                                        |
-| `livediagram el insert <doc> <kind> k=v… between <a> <b>`     | Sugar for `insert`                                                                         |
-| `livediagram el wrap <doc> <sel> in frame\|lane k=v…`         | Sugar for `wrap`                                                                           |
-| `livediagram tab layout <doc> [<sel>] [--style flow\|tree…]`  | Explicit relayout of a selection, a frame, or the tab                                      |
-| `livediagram tab replace <doc> --graph F \| --mermaid F`      | Declarative rebuild (the MCP's graph-first path), as a batch so it previews and undoes too |
-| `livediagram tab pull <doc> > f` / `tab push <doc> f`         | Outline round trip with a three-way base (section 5.9); secondary path                     |
-| `livediagram comment add\|reply\|resolve\|list <doc> <sel> …` | Comments via the existing comment endpoints (author stamping, relay), not via element ops  |
-| `livediagram undo <doc> [<batch>]`                            | Apply the journalled inverse of the agent's own batch                                      |
+| Command                                                      | Purpose                                                                                    |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| `livehuddle edit <doc> [--tab T] [-f FILE \| -]`             | Apply a batch of ops (line form or JSON lines). The core verb                              |
+| `livehuddle edit … --dry-run [--png FILE]`                   | Print the plan (and render it) without writing                                             |
+| `livehuddle el set <doc> <sel> k=v…`                         | One-op sugar for `set`; every op has such a verb so `--help` teaches the vocabulary        |
+| `livehuddle el add <doc> <kind> k=v… [placement]`            | Sugar for `add`                                                                            |
+| `livehuddle el rm <doc> <sel>`                               | Sugar for `rm` (cascades arrows; says so)                                                  |
+| `livehuddle el move <doc> <sel> <placement>`                 | Sugar for `move`                                                                           |
+| `livehuddle el connect <doc> <a> <b> [label=…]`              | Sugar for `connect`                                                                        |
+| `livehuddle el insert <doc> <kind> k=v… between <a> <b>`     | Sugar for `insert`                                                                         |
+| `livehuddle el wrap <doc> <sel> in frame\|lane k=v…`         | Sugar for `wrap`                                                                           |
+| `livehuddle tab layout <doc> [<sel>] [--style flow\|tree…]`  | Explicit relayout of a selection, a frame, or the tab                                      |
+| `livehuddle tab replace <doc> --graph F \| --mermaid F`      | Declarative rebuild (the MCP's graph-first path), as a batch so it previews and undoes too |
+| `livehuddle tab pull <doc> > f` / `tab push <doc> f`         | Outline round trip with a three-way base (section 5.9); secondary path                     |
+| `livehuddle comment add\|reply\|resolve\|list <doc> <sel> …` | Comments via the existing comment endpoints (author stamping, relay), not via element ops  |
+| `livehuddle undo <doc> [<batch>]`                            | Apply the journalled inverse of the agent's own batch                                      |
 
 ### 5.3 Addressing: handles and selectors
 
@@ -349,7 +349,7 @@ outside every frame next to a frame it probably belongs to, an orphaned node.
 ### 5.6 Concurrency: element-scoped optimistic concurrency, relayed live
 
 **Read gives a base.** Every read the CLI performs is cached per document and tab
-(`$XDG_CACHE_HOME/livediagram/<doc>/<tab>.json`): the tab revision and the elements. The tab
+(`$XDG_CACHE_HOME/livehuddle/<doc>/<tab>.json`): the tab revision and the elements. The tab
 revision is an ETag from `tabs.updated_at` (or a content hash), returned on `GET`.
 
 **A batch carries the base it was planned on**: the revision, and a short fingerprint (hash) of every
@@ -400,7 +400,7 @@ agent previewed is what it gets. Compact by default, `--json` for the structured
 + a3b  verify→n4 (style of a3)
 » n4 n5 n6  +0,+100 (make room, flow ↓)
 f2  +verify
-rev 41→42 · batch b7 · undo: livediagram undo d_8f2k b7
+rev 41→42 · batch b7 · undo: livehuddle undo d_8f2k b7
 ```
 
 Line prefixes: `+` added, `~` changed (field: before→after), `-` removed, `»` moved without being
@@ -443,8 +443,8 @@ the code without parsing text.
 
 - Every applied batch returns its inverse: the before-image of each touched element and the removal
   of each added one, as ops. The CLI appends it to a local journal
-  (`$XDG_STATE_HOME/livediagram/journal/<doc>.jsonl`), keyed by batch id.
-- `livediagram undo <doc> [<batch>]` submits the inverse with fingerprints of the **after-images**
+  (`$XDG_STATE_HOME/livehuddle/journal/<doc>.jsonl`), keyed by batch id.
+- `livehuddle undo <doc> [<batch>]` submits the inverse with fingerprints of the **after-images**
   as its base. If a person has since changed one of those elements, that element conflicts and is
   reported; `--partial` undoes the rest. Undo never reverts a human's edit, matching the locked
   decision that undo is local and affects only one's own changes
@@ -478,7 +478,7 @@ The document is `d_8f2k`, a checkout flow on one tab. The outline view is abbrev
 exact format belongs to the reading angle.
 
 ```bash
-$ livediagram tab read d_8f2k
+$ livehuddle tab read d_8f2k
 # Checkout flow · tab main · rev 41 · 16 elements · flow ↓
 n1  stadium "Start"         @0,0
 n2  square  "Cart"          @0,100
@@ -495,9 +495,9 @@ a1 n1→n2 · a2 n2→n3 · a3 n3→n4 · a4 n4→n5 · a5 n5→n6 · a6 n6→n7
 ### 6.1 Rename and restyle a node
 
 ```bash
-$ livediagram el set d_8f2k "Login" label="Sign in" shape=stadium fill=accent
+$ livehuddle el set d_8f2k "Login" label="Sign in" shape=stadium fill=accent
 ~ n3  label "Login"→"Sign in" · shape square→stadium · fill →accent
-rev 41→42 · batch b1 · undo: livediagram undo d_8f2k b1
+rev 41→42 · batch b1 · undo: livehuddle undo d_8f2k b1
 ```
 
 - Targeted by label; unique, so it resolves to `n3`. Arrows `a2` and `a3` are pinned and need no
@@ -505,16 +505,16 @@ rev 41→42 · batch b1 · undo: livediagram undo d_8f2k b1
 - If Webber had moved `n3` between the read and the edit, the fingerprint differs:
 
 ```bash
-$ livediagram el set d_8f2k n3 label="Sign in" shape=stadium fill=accent
+$ livehuddle el set d_8f2k n3 label="Sign in" shape=stadium fill=accent
 error E_CONFLICT · op 1 · set n3
   n3 changed since rev 41 (by Webber):
     base     square "Login" @0,200
     current  square "Log in / Sign up" @0,200
   hint: re-read n3, then retry, or add `test n3 label="Log in / Sign up"` to assert what you saw
 nothing was applied
-$ livediagram tab read d_8f2k --only n3
+$ livehuddle tab read d_8f2k --only n3
 n3  square "Log in / Sign up" @0,200 · selected by Webber
-$ livediagram el set d_8f2k n3 shape=stadium fill=accent
+$ livehuddle el set d_8f2k n3 shape=stadium fill=accent
 ~ n3  shape square→stadium · fill →accent
 ! W_SELECTED_BY n3 is selected by Webber
 rev 43→44 · batch b2
@@ -523,7 +523,7 @@ rev 43→44 · batch b2
 ### 6.2 Insert a new step between two connected nodes
 
 ```bash
-$ livediagram edit d_8f2k --dry-run <<'EOF'
+$ livehuddle edit d_8f2k --dry-run <<'EOF'
 insert shape id=verify label="Verify email" between n3 n4
 EOF
 plan (dry run, nothing written):
@@ -531,7 +531,7 @@ plan (dry run, nothing written):
 ~ a3  to n4→verify
 + a3b  verify→n4 (style of a3)
 » n4 n5 n6 n7 n8  +0,+100 (make room, flow ↓)
-$ livediagram edit d_8f2k <<'EOF'
+$ livehuddle edit d_8f2k <<'EOF'
 insert shape id=verify label="Verify email" between n3 n4
 EOF
 + verify  square "Verify email" @0,300 140×60
@@ -551,7 +551,7 @@ rev 44→45 · rebased over 2 changes · batch b3
 ### 6.3 Reorganise a section into a frame
 
 ```bash
-$ livediagram edit d_8f2k --dry-run <<'EOF'
+$ livehuddle edit d_8f2k --dry-run <<'EOF'
 wrap n5 n6 n7 in frame id=payment label="Payment"
 EOF
 error E_FRAME_CAPTURES · op 1 · wrap n5 n6 n7 in frame
@@ -559,7 +559,7 @@ error E_FRAME_CAPTURES · op 1 · wrap n5 n6 n7 in frame
     t1  text "Retry up to 3 times" @150,620
   hint: add it to the members, `absorb` it, or `make-room` to push it outside
 nothing was applied
-$ livediagram edit d_8f2k --dry-run <<'EOF'
+$ livehuddle edit d_8f2k --dry-run <<'EOF'
 wrap n5 n6 n7 t1 in frame id=payment label="Payment" tidy
 set n6 note="3-D Secure applies to EU cards only"
 EOF
@@ -569,17 +569,17 @@ plan (dry run, nothing written):
 ~ n6  note →"3-D Secure applies to EU cards only"
 » n8  +0,+40 (make room, flow ↓)
 payment  +n5 +n6 +n7 +t1
-$ livediagram edit d_8f2k --png /tmp/plan.png --dry-run -f - <<'EOF'
+$ livehuddle edit d_8f2k --png /tmp/plan.png --dry-run -f - <<'EOF'
 wrap n5 n6 n7 t1 in frame id=payment label="Payment" tidy
 set n6 note="3-D Secure applies to EU cards only"
 EOF
 (plan as above) · preview: /tmp/plan.png
-$ livediagram edit d_8f2k -f - <<'EOF'
+$ livehuddle edit d_8f2k -f - <<'EOF'
 wrap n5 n6 n7 t1 in frame id=payment label="Payment" tidy
 set n6 note="3-D Secure applies to EU cards only"
 EOF
 (changeset as above) · rev 45→46 · batch b4
-$ livediagram comment add d_8f2k payment "Grouped the payment steps. Should the receipt email sit in here too?"
+$ livehuddle comment add d_8f2k payment "Grouped the payment steps. Should the receipt email sit in here too?"
 + comment c_19 on payment
 ```
 
@@ -603,7 +603,7 @@ These are genuine choices for the spec, not defaults the research could pick:
 3. **Line form and JSON form.** Two input syntaxes for one op model. Recommended: both, with the line
    form parsed into the JSON form by one parser, because heredoc line ops are what agents emit most
    cheaply and JSON is what scripts produce.
-4. **Where the engine lives.** A new `@livediagram/edit-ops` package vs files in `@livediagram/document`.
+4. **Where the engine lives.** A new `@livehuddle/edit-ops` package vs files in `@livehuddle/document`.
    Recommended: a new package, because it is one cohesive concern with three consumers.
 5. **Make-room scope.** Shift within the containing frame or component (recommended) vs the whole tab
    beyond the midline.
@@ -649,7 +649,7 @@ When this becomes a spec, the deltas are:
 - Penpot MCP: <https://github.com/penpot/penpot-mcp>
 - VS Code `WorkspaceEdit`: <https://code.visualstudio.com/api/references/vscode-api#WorkspaceEdit>
 - Kubernetes declarative management, three-way merge: <https://kubernetes.io/docs/tasks/manage-kubernetes-objects/declarative-config/>
-- livediagram: `apps/mcp/src/tools.ts`, `packages/document/src/element-normalise.ts`, `packages/agent-verbs/src/mcp/schema.ts`,
+- livehuddle: `apps/mcp/src/tools.ts`, `packages/document/src/element-normalise.ts`, `packages/agent-verbs/src/mcp/schema.ts`,
   `packages/document/src/element-ops.ts`, `element-deltas.ts`, `collab-ledger.ts`, `validate.ts`,
   `mermaid-serialise.ts`, `arrow-rebind.ts`, `anchor-choice.ts`, `graph-authoring.ts`,
   `apps/api/src/routes/document-subresource-routes.ts`, `apps/api/src/db/tabs.ts`,

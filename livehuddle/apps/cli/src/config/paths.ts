@@ -1,5 +1,5 @@
 // Where the CLI keeps its files (blueprint "Data and persistence"): @liveworkspace/cli-kit's XDG directories,
-// named livediagram.
+// named livehuddle.
 
 import type { CliIo } from '../io';
 import { cacheDir as cacheDirOf, configDir as configDirOf } from '@liveworkspace/cli-kit/paths';

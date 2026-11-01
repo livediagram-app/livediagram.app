@@ -1,4 +1,4 @@
-import { classMaskOf, detectStickies, holdsPoint, HYBRID_RULES } from '@livediagram/sticky-vision';
+import { classMaskOf, detectStickies, holdsPoint, HYBRID_RULES } from '@livehuddle/sticky-vision';
 import { luminanceOf } from '../../../sticky-vision/src/seam';
 import { CUE_OPTIONS, cuesOf } from '../../src/cues';
 import { loadHybridWalls } from './walls';

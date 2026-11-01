@@ -16,14 +16,14 @@ import {
   WebVitalsBoot,
   trustedHtml,
   trustedTypesBootScript,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 
-// The livediagram Community (docs/specs/025-community/community.md): an indexable static site served
+// The livehuddle Community (docs/specs/025-community/community.md): an indexable static site served
 // under /community by the router. No third-party scripts, and the session is asked for only by My Shares; it stays free of required services
 // (docs/specs/002-project-scope/open-source-and-business-model.md).
-const COMMUNITY_SITE_NAME = 'livediagram Community';
+const COMMUNITY_SITE_NAME = 'livehuddle Community';
 const COMMUNITY_DESCRIPTION =
-  'Canvases people are proud of. Browse diagrams, drawings and workshops made with livediagram, then make your own copy.';
+  'Canvases people are proud of. Browse diagrams, drawings and workshops made with livehuddle, then make your own copy.';
 
 // Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
 // violation log, and this app's own scripts under its asset prefix.
@@ -34,15 +34,15 @@ export const metadata: Metadata = {
   // Canonical, Open Graph and Twitter card (with the brand card image) from the
   // shared factory; the title below replaces its plain one with the template.
   ...pageMetadata({
-    title: 'Community | livediagram',
+    title: 'Community | livehuddle',
     description: COMMUNITY_DESCRIPTION,
     path: '/community/',
     siteName: COMMUNITY_SITE_NAME,
     type: 'website',
   }),
   title: {
-    default: 'Community | livediagram',
-    template: '%s | livediagram',
+    default: 'Community | livehuddle',
+    template: '%s | livehuddle',
   },
   robots: { index: true, follow: true },
   other: DARK_READER_LOCK,
@@ -69,7 +69,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <WebVitalsBoot />
         <Header />
         <main className="flex-1 pb-20">
-          {/* livediagram's binding of the shared Community pages (lib/community-site.tsx). */}
+          {/* livehuddle's binding of the shared Community pages (lib/community-site.tsx). */}
           <CommunityProvider>
             <CommunityGate>{children}</CommunityGate>
           </CommunityProvider>

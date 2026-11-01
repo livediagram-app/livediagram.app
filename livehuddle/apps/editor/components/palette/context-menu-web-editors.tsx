@@ -19,7 +19,7 @@ import {
   type ShapeElement,
   type StatItem,
   type WebRows,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
 import {

@@ -6,7 +6,7 @@ import {
   type LegendItem,
   type LineSeries,
   type PieSlice,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';

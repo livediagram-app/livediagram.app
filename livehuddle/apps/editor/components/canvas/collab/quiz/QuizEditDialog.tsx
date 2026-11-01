@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, CloseIcon, DialogHeader } from '@livediagram/ui';
+import { Button, CloseIcon, DialogHeader } from '@livehuddle/ui';
 import {
   clampQuizSeconds,
   compactQuizOptions,
@@ -10,7 +10,7 @@ import {
   QUIZ_SECONDS_CHOICES,
   quizOptionLetter,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import type { QuizDraft } from '@/hooks/canvas/useQuizElements';

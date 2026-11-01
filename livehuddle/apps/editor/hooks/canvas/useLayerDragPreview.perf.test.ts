@@ -4,7 +4,7 @@ import {
   createPinnedArrow,
   createShape,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
 import { buildArrowLinks } from '@/components/canvas/drag-affected-arrows';

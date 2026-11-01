@@ -12,7 +12,7 @@
 /* The help centre's shared pages and components (@liveworkspace/help-site). */
 @source '../../../../packages/help-site/src';
 
-@import '@livediagram/ui/hero-band.css';
+@import '@livehuddle/ui/hero-band.css';
 @import '@liveworkspace/help-site/help.css';
 
 /* Print colours for the shared help styles: the default theme's brand, fixed so paper does not follow the reader's

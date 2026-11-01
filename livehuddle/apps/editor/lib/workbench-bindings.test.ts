@@ -21,18 +21,18 @@ afterEach(() => resetWorkbenchForTests());
 
 describe('workbench bindings', () => {
   it("keeps this editor's keys as they are: people's saved flags live under them", () => {
-    expect(DEBUG_STORAGE_KEY).toBe('livediagram:debug');
-    expect(RELOAD_GUARD_KEY).toBe('livediagram:stale-chunk-reloads');
-    expect(APP_RECOVERY_FLAG).toBe('__livediagramChunkRecovery');
-    expect(OPEN_SETTINGS_EVENT).toBe('livediagram:open-settings');
-    expect(PANEL_PRESENCE_EVENT).toBe('livediagram:panel-presence');
-    expect(START_QUERY_KEY).toBe('livediagram:v2:start-query');
-    expect(HIDE_CURSORS_KEY).toBe('livediagram:v2:hide-cursors');
-    expect(LOCAL_MOVE_DISMISSED_PREFIX).toBe('livediagram:v2:local-move-dismissed:');
-    expect(EMPTY_CARD_DISMISSED_KEY).toBe('livediagram:v2:empty-card-dismissed');
-    expect(FORMAT_CONFIG_KEY).toBe('livediagram:v2:format-config');
-    expect(SPOTLIGHT_CONFIG_KEY).toBe('livediagram:v2:spotlight-config');
-    expect(E2E_SESSION_KEY).toBe('livediagram:e2e:session');
+    expect(DEBUG_STORAGE_KEY).toBe('livehuddle:debug');
+    expect(RELOAD_GUARD_KEY).toBe('livehuddle:stale-chunk-reloads');
+    expect(APP_RECOVERY_FLAG).toBe('__livehuddleChunkRecovery');
+    expect(OPEN_SETTINGS_EVENT).toBe('livehuddle:open-settings');
+    expect(PANEL_PRESENCE_EVENT).toBe('livehuddle:panel-presence');
+    expect(START_QUERY_KEY).toBe('livehuddle:v2:start-query');
+    expect(HIDE_CURSORS_KEY).toBe('livehuddle:v2:hide-cursors');
+    expect(LOCAL_MOVE_DISMISSED_PREFIX).toBe('livehuddle:v2:local-move-dismissed:');
+    expect(EMPTY_CARD_DISMISSED_KEY).toBe('livehuddle:v2:empty-card-dismissed');
+    expect(FORMAT_CONFIG_KEY).toBe('livehuddle:v2:format-config');
+    expect(SPOTLIGHT_CONFIG_KEY).toBe('livehuddle:v2:spotlight-config');
+    expect(E2E_SESSION_KEY).toBe('livehuddle:e2e:session');
   });
 
   it('hands the workbench these facts', () => {

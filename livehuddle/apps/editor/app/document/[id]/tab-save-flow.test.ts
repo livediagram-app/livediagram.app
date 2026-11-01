@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
-import type { RoomOp, RoomOutgoing } from '@livediagram/api-schema';
+import type { Tab } from '@livehuddle/document';
+import type { RoomOp, RoomOutgoing } from '@livehuddle/api-schema';
 import {
   participantElementOps,
   prepareTabSave,

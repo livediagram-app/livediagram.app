@@ -9,4 +9,4 @@ export {
   FIND_QUERY_MAX_LENGTH,
   REF_INPUT_MAX_LENGTH,
   VIEW_BUDGET_MAX,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';

@@ -1,4 +1,4 @@
-import type { NoteCrop } from '@livediagram/api-schema';
+import type { NoteCrop } from '@livehuddle/api-schema';
 import type { ModelDownload } from './download-progress';
 
 // What the page and the reading worker say to each other. Only plain data

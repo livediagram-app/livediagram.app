@@ -1,5 +1,5 @@
 // The CLI's OAuth client (docs/specs/015-api/blueprints/cli.md "The CLI's OAuth client", CLI34 to CLI36):
-// @liveworkspace/cli-kit's browser and device sign-in, as livediagram's CLI client.
+// @liveworkspace/cli-kit's browser and device sign-in, as livehuddle's CLI client.
 
 import type { CliIo } from '../io';
 import type { DebugLog } from '../debug';

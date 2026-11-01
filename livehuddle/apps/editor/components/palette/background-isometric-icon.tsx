@@ -1,5 +1,5 @@
-// The Isometric pattern's 28x20 preview for livediagram's pattern picker (./palette-patterns). Isometric is
-// livediagram's alone, so its glyph lives here rather than beside the shared ones in
+// The Isometric pattern's 28x20 preview for livehuddle's pattern picker (./palette-patterns). Isometric is
+// livehuddle's alone, so its glyph lives here rather than beside the shared ones in
 // @liveworkspace/workbench/components/primitives/background-pattern-icons, and follows the same visual contract:
 // a rounded frame stroked at currentColor and the motif inside.
 

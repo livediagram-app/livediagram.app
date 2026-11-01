@@ -33,7 +33,7 @@ vi.mock('../index-service', async (original) => ({
 }));
 
 import type { TeamClaim, TeamPerson } from '@liveworkspace/auth-client';
-import type { Comment, Element } from '@livediagram/document';
+import type { Comment, Element } from '@livehuddle/document';
 import { afterChangeset } from '../changesets/after';
 import { requestGrant } from '../index-service';
 import { personTagFor } from '../person-tag';
@@ -45,7 +45,7 @@ import { handleTeamNotifyRoutes } from '../routes/team-notify-routes';
 import type { Env } from '../types';
 import { pushNewComments, pushTag, pusher } from './push';
 
-// Phone notifications from livediagram (docs/specs/014-identity/phone-notifications.md): who hears of a comment, a
+// Phone notifications from livehuddle (docs/specs/014-identity/phone-notifications.md): who hears of a comment, a
 // reply or an assignment, and where a tap goes. The send itself is accounts' (the stand-in records it).
 
 const OWNER = 'user_owner';

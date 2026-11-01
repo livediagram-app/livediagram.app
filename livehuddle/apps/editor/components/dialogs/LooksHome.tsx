@@ -12,8 +12,8 @@ import {
   type Finish,
   type TextSize,
   type TextSizePreset,
-} from '@livediagram/document';
-import { Glyph, lucideGlyph } from '@livediagram/ui';
+} from '@livehuddle/document';
+import { Glyph, lucideGlyph } from '@livehuddle/ui';
 import { lucideChevronRight } from '@liveworkspace/icons/lucide';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 import { FINISH_LABELS, FinishSwatch } from '@/components/palette/FinishSection';

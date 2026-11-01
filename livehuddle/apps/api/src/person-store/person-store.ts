@@ -1,12 +1,12 @@
 // A person's Durable Object (docs/specs/013-workspace/shape-libraries.md "Storage"): one SQLite-backed instance per
-// person id (an account or a guest), holding what livediagram keeps for the person rather than for one canvas.
+// person id (an account or a guest), holding what livehuddle keeps for the person rather than for one canvas.
 // Today that is their shape libraries. The worker reaches it through person-client.ts; every RPC names the person,
 // so a library reports its owner without the store having to remember its own name.
 //
 // A store that never held anything is never given storage by a read or a purge: those check for the schema first.
 
 import { DurableObject } from 'cloudflare:workers';
-import type { ShapeLibrary, ShapeLibraryItem } from '@livediagram/api-schema';
+import type { ShapeLibrary, ShapeLibraryItem } from '@livehuddle/api-schema';
 import type { ItemSql as DocumentSql } from '@liveworkspace/index-app';
 import type { Env } from '../types';
 import { hasPersonSchema, migratePersonSchema } from './person-schema';

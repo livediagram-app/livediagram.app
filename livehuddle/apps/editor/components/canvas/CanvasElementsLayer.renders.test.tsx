@@ -2,7 +2,7 @@
 import { act, render } from '@testing-library/react';
 import { memo } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createPinnedArrow, createShape, type Element } from '@livediagram/document';
+import { createPinnedArrow, createShape, type Element } from '@livehuddle/document';
 
 // docs/specs/008-canvas/canvas-performance.md: an element view renders only for its own changes. A
 // Canvas render that changes no element, no selection and no zoom renders no element view; a zoom

@@ -6,7 +6,7 @@
 // onto the export canvas without tainting it — then decode it to an
 // HTMLImageElement for the canvas path. Browser-only (uses Image / FileReader);
 // never reached in the no-DOM test runs.
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import { apiFetchImageDataUrl } from './api/images';
 
 type ExportImageEntry = {

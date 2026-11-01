@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE } from '@livediagram/ui';
+import { BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE } from '@livehuddle/ui';
 import { CommunityPostPage } from '@liveworkspace/community-site/post';
 
 // One post (docs/specs/025-community/community.md "Post"): `/community/post/?id=<postId>`, every app's post page
@@ -10,22 +10,22 @@ import { CommunityPostPage } from '@liveworkspace/community-site/post';
 // The Open Graph block is restated without a url for the same reason: the
 // gallery's og:url would tell link previews every post IS the gallery.
 const POST_DESCRIPTION =
-  'A canvas shared to the livediagram Community. Open it to explore every tab, then make your own copy to edit.';
+  'A canvas shared to the livehuddle Community. Open it to explore every tab, then make your own copy to edit.';
 export const metadata: Metadata = {
   title: 'Community Canvas',
   description: POST_DESCRIPTION,
   alternates: {},
   openGraph: {
     type: 'article',
-    siteName: 'livediagram Community',
-    title: 'Community Canvas | livediagram',
+    siteName: 'livehuddle Community',
+    title: 'Community Canvas | livehuddle',
     description: POST_DESCRIPTION,
     locale: 'en_GB',
     images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Community Canvas | livediagram',
+    title: 'Community Canvas | livehuddle',
     description: POST_DESCRIPTION,
     images: [BRAND_TWITTER_IMAGE],
   },

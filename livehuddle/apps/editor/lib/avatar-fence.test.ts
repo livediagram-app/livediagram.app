@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
+import { createShape, type Element } from '@livehuddle/document';
 import { fenceSegments, fenceStep, type FenceSegment } from '@liveworkspace/avatar/collision';
 
 // docs/specs/009-elements/fence.md "Blocking": the collision is @liveworkspace/avatar's (its own tests); this

@@ -23,7 +23,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { AlignIcon as AlignLinesIcon } from '@liveworkspace/workbench/components/canvas/table-icons';
 import { AlignmentGrid } from '@/components/palette/palette-controls';

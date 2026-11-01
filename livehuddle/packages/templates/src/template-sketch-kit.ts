@@ -25,7 +25,7 @@ import {
   type StickyElement,
   type TextElement,
   pointDistance,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 export type Pt = { x: number; y: number };
 

@@ -30,7 +30,7 @@ describe('excalidrawTextFromPaste', () => {
     expect(excalidrawTextFromPaste(data({ 'text/plain': 'hello' }))).toBeNull();
     expect(
       excalidrawTextFromPaste(
-        data({ 'text/plain': '{"kind":"livediagram.elements","elements":[]}' }),
+        data({ 'text/plain': '{"kind":"livehuddle.elements","elements":[]}' }),
       ),
     ).toBeNull();
     expect(excalidrawTextFromPaste(data({}))).toBeNull();

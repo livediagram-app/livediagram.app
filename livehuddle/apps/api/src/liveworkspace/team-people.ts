@@ -1,5 +1,5 @@
 // A team's people as the liveworkspace accounts Worker keeps them (liveworkspace/docs/specs/003-accounts/accounts.md "Teams"):
-// livediagram keeps no copy. Whom a mention or an assignment may reach, and whose images a team canvas serves
+// livehuddle keeps no copy. Whom a mention or an assignment may reach, and whose images a team canvas serves
 // (db/image-grants.ts). Never throws: without the accounts Worker, or when it can't be reached, there is nobody
 // (and it logs).
 

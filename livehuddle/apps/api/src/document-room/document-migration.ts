@@ -1,5 +1,5 @@
 // The migration door's write into a canvas's own SQLite (docs/specs/015-api/api.md "Internal", docs/migration.md
-// "The apps' migration door"): an old livediagram.app document's livediagram part, with its own times, changesets,
+// "The apps' migration door"): an old livehuddle.app document's livehuddle part, with its own times, changesets,
 // image owners and grants, in one transaction. The rules (what is written, replaced or left as edited) are the kit's
 // (@liveworkspace/index-app migration-room.ts); this names the canvas's tables and its own stats and image
 // references.

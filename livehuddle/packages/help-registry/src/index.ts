@@ -26,9 +26,9 @@ export {
 export const categories: Category[] = [
   {
     slug: 'about',
-    title: 'About livediagram',
+    title: 'About livehuddle',
     description:
-      'Get to know livediagram: what it is, who it helps, and the ideas behind a free, open canvas.',
+      'Get to know livehuddle: what it is, who it helps, and the ideas behind a free, open canvas.',
     articleCount: 4,
   },
   {
@@ -63,7 +63,7 @@ export const categories: Category[] = [
     slug: 'developers',
     title: 'Developers',
     description:
-      'Call the livediagram REST API from your own scripts or the command line: authentication, worked examples, the CLI, repositories and developer tools, errors and limits, and the OpenAPI reference.',
+      'Call the livehuddle REST API from your own scripts or the command line: authentication, worked examples, the CLI, repositories and developer tools, errors and limits, and the OpenAPI reference.',
     articleCount: 9,
   },
   {
@@ -77,7 +77,7 @@ export const categories: Category[] = [
     slug: 'supported-devices',
     title: 'Supported Devices',
     description:
-      'How livediagram works on a computer, a tablet, and a phone, and what to expect on each.',
+      'How livehuddle works on a computer, a tablet, and a phone, and what to expect on each.',
     articleCount: 3,
   },
   {
@@ -275,38 +275,38 @@ export const articles: Article[] = [
 
   // ---- About ----
   {
-    slug: 'what-is-livediagram',
-    title: 'What is livediagram?',
+    slug: 'what-is-livehuddle',
+    title: 'What is livehuddle?',
     description: 'An overview of the real-time, multiplayer diagram editor and what it does.',
     keywords: 'overview intro introduction about product whiteboard drawing tool app',
-    category: 'About livediagram',
+    category: 'About livehuddle',
     categorySlug: 'about',
     parentSlug: 'about',
   },
   {
     slug: 'who-is-it-for',
-    title: 'Who is livediagram For?',
-    description: 'The teams and use cases that get the most out of livediagram.',
+    title: 'Who is livehuddle For?',
+    description: 'The teams and use cases that get the most out of livehuddle.',
     keywords: 'audience use cases teams developers designers educators students',
-    category: 'About livediagram',
+    category: 'About livehuddle',
     categorySlug: 'about',
     parentSlug: 'about',
   },
   {
-    slug: 'why-livediagram',
-    title: 'Why Use livediagram?',
+    slug: 'why-livehuddle',
+    title: 'Why Use livehuddle?',
     description: 'Free, open source, no sign-in wall, real-time collaboration. Here is why.',
     keywords: 'benefits reasons comparison alternatives features advantages',
-    category: 'About livediagram',
+    category: 'About livehuddle',
     categorySlug: 'about',
     parentSlug: 'about',
   },
   {
     slug: 'what-is-open-source',
     title: 'What is Open Source?',
-    description: 'What open source means, and what livediagram being MIT-licensed gives you.',
+    description: 'What open source means, and what livehuddle being MIT-licensed gives you.',
     keywords: 'mit license free code github oss public repository',
-    category: 'About livediagram',
+    category: 'About livehuddle',
     categorySlug: 'about',
     parentSlug: 'about',
   },
@@ -491,7 +491,7 @@ export const articles: Article[] = [
   {
     slug: 'api-tokens',
     title: 'API Tokens',
-    description: 'Create signed-in-only tokens to call the livediagram API from your own scripts.',
+    description: 'Create signed-in-only tokens to call the livehuddle API from your own scripts.',
     keywords: 'token key programmatic rest scripts secret bearer automation',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
@@ -508,7 +508,7 @@ export const articles: Article[] = [
   {
     slug: 'ai-clients',
     title: 'Connecting AI Tools',
-    description: 'Add livediagram to Claude, Claude Code, Cursor, ChatGPT or any MCP client',
+    description: 'Add livehuddle to Claude, Claude Code, Cursor, ChatGPT or any MCP client',
     keywords:
       'mcp connector claude desktop claude code cursor chatgpt oauth bearer token setup remote server url',
     category: 'Account and Data',
@@ -520,7 +520,7 @@ export const articles: Article[] = [
     title: 'Google Drive',
     description: 'Sync My Work to your own Google Drive, both ways.',
     keywords:
-      'google drive mirror sync backup copy cloud storage open with livediagram file folders',
+      'google drive mirror sync backup copy cloud storage open with livehuddle file folders',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -537,7 +537,7 @@ export const articles: Article[] = [
   // ---- Developers ----
   {
     slug: 'api-overview',
-    title: 'The livediagram API',
+    title: 'The livehuddle API',
     description: 'What the REST API is, the base URL, and how to start calling it with a token.',
     keywords: 'rest api endpoints base url http programmatic developer integrate',
     category: 'Developers',
@@ -589,7 +589,7 @@ export const articles: Article[] = [
   },
   {
     slug: 'cli',
-    title: 'The livediagram CLI',
+    title: 'The livehuddle CLI',
     description:
       'Read, build, edit and discuss canvases from a terminal: install, sign in, the commands, and profiles for other servers.',
     keywords:
@@ -601,9 +601,9 @@ export const articles: Article[] = [
     slug: 'repositories',
     title: 'Diagrams in Your Repository',
     description:
-      'Link a repository with livediagram.toml so agents find your diagrams, and keep snapshots in git.',
+      'Link a repository with livehuddle.toml so agents find your diagrams, and keep snapshots in git.',
     keywords:
-      'repository repo git github link livediagram.toml sync mirror snapshot index monorepo codebase coding agent ripgrep search folder commit',
+      'repository repo git github link livehuddle.toml sync mirror snapshot index monorepo codebase coding agent ripgrep search folder commit',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -783,7 +783,7 @@ export const articles: Article[] = [
   {
     slug: 'tablet',
     title: 'Tablet',
-    description: 'Using livediagram on a tablet, and how a keyboard changes what you can do.',
+    description: 'Using livehuddle on a tablet, and how a keyboard changes what you can do.',
     keywords: 'ipad touch stylus pen android surface',
     category: 'Supported Devices',
     categorySlug: 'supported-devices',
@@ -1789,7 +1789,7 @@ export const articles: Article[] = [
     // what a reader searches for even though the control is now three-way.
     slug: 'dark-mode',
     title: 'Appearance: Light, Dark, System',
-    description: 'Set livediagram to light, dark, or your device setting, everywhere at once.',
+    description: 'Set livehuddle to light, dark, or your device setting, everywhere at once.',
     keywords:
       'night theme appearance dark light system os device switch toggle cycle eyes mode website help header',
     category: 'Tools',

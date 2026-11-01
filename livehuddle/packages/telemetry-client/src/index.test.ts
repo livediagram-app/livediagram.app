@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // The binding's own facts. The engine, opt-out rule, error cap and timing watch are tested in
-// @liveworkspace/telemetry-client; here, that livediagram's values reach them.
+// @liveworkspace/telemetry-client; here, that livehuddle's values reach them.
 
 type Binding = typeof import('./index');
 let mod: Binding;
@@ -16,24 +16,24 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('livediagram telemetry binding', () => {
+describe('livehuddle telemetry binding', () => {
   it('keeps the storage key both apps read byte-identical', () => {
     // People's saved preferences and telemetry opt-out live under this key. If it changes, they
     // reset, and the editor and the help centre must change it in the same commit.
-    expect(mod.USER_PREFERENCES_STORAGE_KEY).toBe('livediagram:user-preferences:v1');
+    expect(mod.USER_PREFERENCES_STORAGE_KEY).toBe('livehuddle:user-preferences:v1');
   });
 
-  it('reports as livediagram.app', () => {
-    expect(mod.TELEMETRY_APP).toBe('livediagram.app');
+  it('reports as livehuddle.app', () => {
+    expect(mod.TELEMETRY_APP).toBe('livehuddle.app');
   });
 
   it('reads the opt-out under its own key', () => {
     const store: Record<string, string> = {
-      'livediagram:user-preferences:v1': '{"telemetryEnabled":false}',
+      'livehuddle:user-preferences:v1': '{"telemetryEnabled":false}',
     };
     vi.stubGlobal('window', { localStorage: { getItem: (k: string) => store[k] ?? null } });
     expect(mod.readTelemetryOptIn()).toBe(false);
-    delete store['livediagram:user-preferences:v1'];
+    delete store['livehuddle:user-preferences:v1'];
     expect(mod.readTelemetryOptIn()).toBe(true);
   });
 

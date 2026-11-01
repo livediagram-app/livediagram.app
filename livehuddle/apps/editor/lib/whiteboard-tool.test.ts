@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createPath } from '@livediagram/document';
+import { createPath } from '@livehuddle/document';
 import type { PendingDraw } from './draw-mode';
 import {
   WHITEBOARD_SHAPES,

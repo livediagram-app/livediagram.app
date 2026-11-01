@@ -2,8 +2,8 @@
 // op the room relays becomes zero or more events, and each event one line. Pure: the names and refs a line needs
 // are looked up by the caller.
 
-import type { ChangesetCounts } from '@livediagram/api-schema';
-import { isRecord } from '@livediagram/document';
+import type { ChangesetCounts } from '@livehuddle/api-schema';
+import { isRecord } from '@livehuddle/document';
 import { oneLine } from '@liveworkspace/cli-kit/one-line';
 
 export type RoomEvent =

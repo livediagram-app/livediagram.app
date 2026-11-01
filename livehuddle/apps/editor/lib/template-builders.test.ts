@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ES_LANES, laneIndexAt, laneCentre, type Element } from '@livediagram/document';
-import type { TemplateKind } from '@livediagram/templates';
+import { ES_LANES, laneIndexAt, laneCentre, type Element } from '@livehuddle/document';
+import type { TemplateKind } from '@livehuddle/templates';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 

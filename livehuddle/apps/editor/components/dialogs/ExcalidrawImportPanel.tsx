@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Button } from '@livediagram/ui';
+import { Button } from '@livehuddle/ui';
 import { ImportDropZone } from './ImportDropZone';
 import { ImportImageReport } from './ImportImageReport';
 import type { ImportOutcome } from '@/lib/import-tab';

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import type { OfflineDocumentRecord } from './offline-store';
 import {
   __setOfflineBackend,

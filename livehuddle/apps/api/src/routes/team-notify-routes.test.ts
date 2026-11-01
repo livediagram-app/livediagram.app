@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TeamPerson } from '@liveworkspace/auth-client';
-import { MENTIONS_MAX } from '@livediagram/document';
+import { MENTIONS_MAX } from '@livehuddle/document';
 import type { GrantOutcome, ItemGrant } from '../index-service';
 import type { Env } from '../types';
 

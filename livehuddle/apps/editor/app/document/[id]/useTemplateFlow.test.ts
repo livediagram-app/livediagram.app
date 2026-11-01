@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { templateCanvasOverrides } from '@livediagram/templates';
+import { templateCanvasOverrides } from '@livehuddle/templates';
 import { templateOpensIn } from './useTemplateFlow';
 
 // docs/specs/007-editor/editor-modes.md "Where the mode lives": a template decides the mode.

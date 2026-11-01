@@ -1,6 +1,6 @@
 'use client';
 
-import { ButtonContent, buttonClassName } from '@livediagram/ui';
+import { ButtonContent, buttonClassName } from '@livehuddle/ui';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useWorkbenchPairings } from '@/hooks/persistence/useWorkbenchPairings';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';

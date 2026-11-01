@@ -7,7 +7,7 @@ import {
   MAX_ELEMENTS_PER_TAB,
   migrateIncomingElements,
   migrateIncomingTab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import type { RoomElementRules } from '@liveworkspace/api-kit/room-element-ops';
 
 export const ROOM_ELEMENT_RULES: RoomElementRules = {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import type { OfflineDocumentRecord } from './offline-store';
 import type { RetiredPartsRecord } from './retired-parts';
 import { mergeKeptTabs } from './retired-parts-merge';

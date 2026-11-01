@@ -10,7 +10,7 @@ import {
   clampAgendaMinutes,
   type ShapeElement,
   type TabTimer,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { useNow } from '@liveworkspace/workbench/hooks/ui/useNow';
 import {
   ElementEllipsisMenu,

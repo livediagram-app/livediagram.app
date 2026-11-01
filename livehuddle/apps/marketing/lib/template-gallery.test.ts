@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES, isBlankTemplate, templateEditorMode } from '@livediagram/templates';
+import { TEMPLATES, isBlankTemplate, templateEditorMode } from '@livehuddle/templates';
 import {
   filterGallery,
   galleryShelves,

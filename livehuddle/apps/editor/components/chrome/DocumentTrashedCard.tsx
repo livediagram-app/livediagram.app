@@ -6,8 +6,8 @@
 // share-link visitor only learns that it was deleted. Same card shape as
 // ApiErrorPage, so it drops into the same status chrome.
 import { useState } from 'react';
-import { Button, TrashIcon, buttonClassName } from '@livediagram/ui';
-import { EMPTY_DOCUMENT_STALE_DAYS } from '@livediagram/api-schema';
+import { Button, TrashIcon, buttonClassName } from '@livehuddle/ui';
+import { EMPTY_DOCUMENT_STALE_DAYS } from '@livehuddle/api-schema';
 import { TRASH_RETENTION_MS, type TrashReason } from '@liveworkspace/index-client';
 import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 

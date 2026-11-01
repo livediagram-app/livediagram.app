@@ -7,8 +7,8 @@
 // document's own record, so it goes wherever the record goes (the local Trash, a purge, Sync
 // Document) and never leaves the browser.
 
-import type { DocumentSummary } from '@livediagram/api-schema';
-import { windowStartOf, utcDay } from '@livediagram/api-schema';
+import type { DocumentSummary } from '@livehuddle/api-schema';
+import { windowStartOf, utcDay } from '@livehuddle/api-schema';
 import {
   offlineBackend,
   offlineUpdateRecord,

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import type { Layer } from '@livediagram/document';
+import type { Layer } from '@livehuddle/document';
 
 import { stubResizeObserver } from '@/lib/stub-resize-observer';
 import { LayersPanel, SINGLE_LAYER_HINT } from './LayersPanel';

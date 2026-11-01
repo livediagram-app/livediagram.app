@@ -11,7 +11,7 @@ import {
   createTable,
   type Element,
   type TableCellStyle,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   BUTTON_H,
   BUTTON_W,

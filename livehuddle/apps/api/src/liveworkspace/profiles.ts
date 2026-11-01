@@ -8,7 +8,7 @@
 // person per minute per isolate, not one per request. A write updates the remembered copy at once,
 // so the writer sees their own change; another isolate sees it within the minute.
 
-import { colorForKey } from '@livediagram/api-schema';
+import { colorForKey } from '@livehuddle/api-schema';
 import { readProfiles, writeProfile, type Profile } from '@liveworkspace/auth-client';
 import { accountCredentials } from '../auth/accounts';
 import type { Env, ParticipantDTO } from '../types';

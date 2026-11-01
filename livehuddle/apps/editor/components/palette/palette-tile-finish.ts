@@ -3,7 +3,7 @@
 // Professional squares and thins a line glyph; Sketch wobbles every glyph through the shared sketch filter
 // (SketchFilterDefs); Marker draws a line glyph bold with round ends, a felt-tip's line. Full-colour art (technology
 // icons, stickers) keeps its weight under Professional and Marker, as on the canvas, and only wobbles under Sketch.
-import type { Finish } from '@livediagram/document';
+import type { Finish } from '@livehuddle/document';
 import type { PaletteTileDef } from './palette-tile-defs';
 
 /** The id of the one SVG filter Sketch tiles are drawn through. */

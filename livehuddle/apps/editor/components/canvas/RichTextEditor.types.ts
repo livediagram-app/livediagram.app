@@ -1,10 +1,4 @@
-import type {
-  BoxedElement,
-  TextAlignX,
-  TextAlignY,
-  TextRun,
-  TextSize,
-} from '@livediagram/document';
+import type { BoxedElement, TextAlignX, TextAlignY, TextRun, TextSize } from '@livehuddle/document';
 import type { LabelPadding } from './label-style';
 
 export type RichTextEditorProps = {

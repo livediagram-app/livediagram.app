@@ -1,4 +1,4 @@
-import { isFixedSizeElement, rotationOf } from '@livediagram/document';
+import { isFixedSizeElement, rotationOf } from '@livehuddle/document';
 import {
   alignmentGuides,
   distributionSnap,
@@ -14,7 +14,7 @@ import {
   type Element,
   type EsTimeline,
   type TextElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { hugResizedText, hugsText, type MeasureTextBlock } from '@/lib/text-hug';
 import type { LanePreview } from '@/lib/lane-preview';
 import {

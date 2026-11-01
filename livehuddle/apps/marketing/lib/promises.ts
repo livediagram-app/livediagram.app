@@ -1,7 +1,7 @@
-import { REPO_URL } from '@livediagram/ui';
+import { REPO_URL } from '@livehuddle/ui';
 
 // The landing page's promises (docs/specs/019-marketing/marketing-site.md "Promises"): five things
-// that are true of livediagram today, under the page's golden rule (no claim the product does not
+// that are true of livehuddle today, under the page's golden rule (no claim the product does not
 // keep). The site is international, so no value names a currency. Each has a short value set large, a title, one line, and, where there is more to read, a
 // link. The art and hues live with the component (components/PromiseCanvas.tsx).
 

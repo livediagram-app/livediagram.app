@@ -2,7 +2,7 @@ import {
   EllipsisIcon as SharedEllipsisIcon,
   lucideGlyph,
   PlusIcon as SharedPlusIcon,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 import {
   lucideArrowDownToLine,
   lucideArrowUpToLine,
@@ -25,7 +25,7 @@ import {
 // the LayersStackIcon the CanvasChrome cluster button wears. Row controls draw at 16px inside
 // 32px targets; the footer and menu draw at 14-16px.
 
-export { LayersStackIcon } from '@livediagram/ui';
+export { LayersStackIcon } from '@livehuddle/ui';
 export const GripIcon = lucideGlyph(lucideGripVertical, 14);
 // 13px: shared with the slide deck rows, the page deck button and the role indicator.
 export const EyeIcon = lucideGlyph(lucideEye, 13);

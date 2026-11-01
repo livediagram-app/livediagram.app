@@ -13,7 +13,7 @@ import {
   THEMES,
   type Element,
   withArticle,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { fillSlotNames } from './colours';
 import { aliasesOf, ARROW_STYLES, BORDER_STYLES, TEXT_SIZES } from './fields';
 import { buildKind, NOT_ADDED, OTHER_KINDS } from './operations/add-kind';
@@ -43,7 +43,7 @@ export function addableKinds(): string[] {
 
 export function elementKindsText(): string {
   return [
-    'Element kinds: add <kind> makes one; livediagram schema <kind> shows its fields.',
+    'Element kinds: add <kind> makes one; livehuddle schema <kind> shows its fields.',
     `  ${OTHER_KINDS.join(', ')}`,
     '  shapes:',
     ...wrapped([...SHAPE_KINDS], '    ', ', '),
@@ -109,13 +109,7 @@ export const SHAPE_COMMON_FIELDS = [
 export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   'code-block': ['code', 'codeLanguage', 'codeTheme', 'codeWrap'],
   entity: ['entityFields'],
-  'pie-chart': [
-    'pieSlices',
-    'chartVariant',
-    'chartLegend',
-    'chartValues',
-    'chartPalette',
-  ],
+  'pie-chart': ['pieSlices', 'chartVariant', 'chartLegend', 'chartValues', 'chartPalette'],
   'bar-chart': [
     'pieSlices',
     'chartVariant',

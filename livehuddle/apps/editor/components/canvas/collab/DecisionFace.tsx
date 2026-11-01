@@ -18,8 +18,8 @@ import {
   DEFAULT_DECISION_STATUS,
   type DecisionStatus,
   type ShapeElement,
-} from '@livediagram/document';
-import { Glyph } from '@livediagram/ui';
+} from '@livehuddle/document';
+import { Glyph } from '@livehuddle/ui';
 import { CollabPanel, tint } from './collab-chrome';
 
 function StatusGlyph({ status }: { status: DecisionStatus }) {

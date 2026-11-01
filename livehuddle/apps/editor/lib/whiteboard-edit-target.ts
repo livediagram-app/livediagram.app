@@ -10,7 +10,7 @@ import {
   type Element,
   type Layer,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 type Point = { x: number; y: number };

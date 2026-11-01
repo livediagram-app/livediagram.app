@@ -3,7 +3,7 @@ import {
   eventStormingNoteSize,
   isEventStormingTab,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { LanePreview } from '@/lib/lane-preview';
 import { paletteDragSnapAt } from '@/lib/palette-drag-snap';

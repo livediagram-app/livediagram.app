@@ -3,7 +3,7 @@ import { securityMoved } from '@liveworkspace/marketing-site/lib/legal-moved';
 
 // The disclosure policy lives in the help centre: this stub keeps the historical /security URL alive, noindex
 // (@liveworkspace/marketing-site/lib/legal-moved).
-const moved = securityMoved('livediagram');
+const moved = securityMoved('livehuddle');
 
 export const metadata = moved.metadata;
 

@@ -16,6 +16,7 @@ const FILE = fileURLToPath(
   new URL('../../../../../../packages/settings/src/catalogues/livediagram.ts', import.meta.url),
 );
 
+// The fork borrows livediagram's catalogue (settings-panel-host.tsx), so its settings must still match it.
 describe("liveworkspace.app's copy of this app's settings", () => {
   const derived = deriveCatalogue(SETTINGS_CATEGORIES, { tiles: SETTINGS_TILES });
 
@@ -38,7 +39,7 @@ describe("liveworkspace.app's copy of this app's settings", () => {
 // be this editor's own, or a guest's change there would never reach the editor.
 describe("liveworkspace's keys for this app's settings in the browser", () => {
   it('are the editor’s cache and its unsynced mark', () => {
-    expect(DEVICE_PREFERENCES['livediagram.app']).toEqual({
+    expect(DEVICE_PREFERENCES['livehuddle.app']).toEqual({
       storageKey: STORAGE_KEY,
       unsyncedKey: PREFERENCES_UNSYNCED_KEY,
     });

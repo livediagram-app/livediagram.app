@@ -1,6 +1,6 @@
 // Which host a command talks to (docs/specs/015-api/cli.md "Profiles", blueprint CLI7):
-// --host, else --profile, else LIVEDIAGRAM_HOST, else LIVEDIAGRAM_PROFILE, else the config's default profile,
-// else https://www.livediagram.app. --host and --profile together are a usage error.
+// --host, else --profile, else LIVEHUDDLE_HOST, else LIVEHUDDLE_PROFILE, else the config's default profile,
+// else https://www.livehuddle.app. --host and --profile together are a usage error.
 
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
@@ -8,7 +8,7 @@ import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import { parseConfig, type ConfigFile } from '@liveworkspace/cli-kit/config-file';
 import { configDir } from './paths';
 
-export const DEFAULT_HOST = 'https://www.livediagram.app';
+export const DEFAULT_HOST = 'https://www.livehuddle.app';
 export const DEFAULT_PROFILE = 'default';
 
 export type ProfileSource = 'flag' | 'env' | 'config' | 'default';
@@ -44,15 +44,15 @@ export function resolveProfile(
     const host = normaliseHost(flags.host);
     return { name: host, host, source: 'flag' };
   }
-  if (!flags.profile && io.env.LIVEDIAGRAM_HOST) {
-    const host = normaliseHost(io.env.LIVEDIAGRAM_HOST);
+  if (!flags.profile && io.env.LIVEHUDDLE_HOST) {
+    const host = normaliseHost(io.env.LIVEHUDDLE_HOST);
     return { name: host, host, source: 'env' };
   }
-  const named = flags.profile ?? io.env.LIVEDIAGRAM_PROFILE;
+  const named = flags.profile ?? io.env.LIVEHUDDLE_PROFILE;
   const name = named ?? config.defaultProfile ?? DEFAULT_PROFILE;
   const source: ProfileSource = flags.profile
     ? 'flag'
-    : io.env.LIVEDIAGRAM_PROFILE
+    : io.env.LIVEHUDDLE_PROFILE
       ? 'env'
       : config.defaultProfile
         ? 'config'

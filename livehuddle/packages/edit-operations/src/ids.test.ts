@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import { checkoutFlow, fixedIds } from './fixtures/checkout-flow';
 import { newElementId } from './ids';
 import { createState, putElement, removeElement } from './state';

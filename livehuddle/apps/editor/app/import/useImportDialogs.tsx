@@ -16,7 +16,7 @@ import type { ImportSourceId } from './import-sources';
  * The Explorer's "Import from" (docs/specs/013-workspace/folders.md "Import from"), as the /import page runs it:
  * each source's import and the dialogs it opens. Each board becomes its own canvas, filed in `folderId`; draw.io
  * libraries go to Shape Libraries. The Explorer itself draws the toolbar (@liveworkspace/explorer, from
- * APP_ITEMS.livediagram.imports) and sends people here.
+ * APP_ITEMS.livehuddle.imports) and sends people here.
  */
 export function useImportDialogs(opts: {
   ownerId: string | null;

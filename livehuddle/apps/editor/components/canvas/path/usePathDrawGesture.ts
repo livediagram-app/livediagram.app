@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState, type RefObject } from 'react';
-import { isCommittablePath, type Element, type PathAnchor } from '@livediagram/document';
+import { isCommittablePath, type Element, type PathAnchor } from '@livehuddle/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { announce } from '@liveworkspace/workbench/lib/announcer';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';

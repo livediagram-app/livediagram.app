@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import { coloursSet } from './colours-set';
 import { withoutFindings } from './without-findings';
-import type { LintCode, LintFinding, LintSeverity } from '@livediagram/api-schema';
+import type { LintCode, LintFinding, LintSeverity } from '@livehuddle/api-schema';
 import { box, lint, tabOf } from './fixtures/build';
 
 describe('coloursSet', () => {

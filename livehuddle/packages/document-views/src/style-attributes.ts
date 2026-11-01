@@ -11,7 +11,7 @@ import {
   styleKeysFor,
   type Element,
   type ShapeKind,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { fieldOf } from '@liveworkspace/document-views/fields';
 import { attrValue } from '@liveworkspace/document-views/text';
 import { shapeKindOf, type ViewAttribute } from '@liveworkspace/document-views/view-attribute';

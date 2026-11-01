@@ -6,7 +6,7 @@
 // resolves each datum's swatch colour (explicit slice colour, else the
 // palette), matching how the chart body colours its slices / bars.
 
-import type { ChartLegendPosition, PieSlice } from '@livediagram/document';
+import type { ChartLegendPosition, PieSlice } from '@livehuddle/document';
 
 type LegendRect = {
   show: boolean;

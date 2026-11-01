@@ -7,7 +7,7 @@
 // Panels, headers, prompts and axis words are the scaffold layer; the title, notes, tools and checklists the content.
 // Pure: takes a centre (cx, cy), returns a fresh Element[].
 
-import { createShape, createText, type Element } from '@livediagram/document';
+import { createShape, createText, type Element } from '@livehuddle/document';
 import { BOARD_GRIDS, type BoardGrid, type BoardGridKind } from './template-board-grid-data';
 import {
   actionChecklist,

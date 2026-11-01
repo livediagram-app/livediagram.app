@@ -112,12 +112,12 @@ export function SettingsDialog({
     [categories, settings, onChange],
   );
 
-  // The header's livediagram / All switch (docs/specs/007-editor/user-preferences.md "This app or All"): All needs an
+  // The header's livehuddle / All switch (docs/specs/007-editor/user-preferences.md "This app or All"): All needs an
   // account whose settings liveworkspace keeps, so a guest and a workbench see this app's alone.
   const allowAll = signedIn && !workbench;
   // A targeted open (a search result, the `?settings=` deep link) lands in this app's own settings.
   const [scope, setScope] = useSettingsScope(
-    'livediagram:settings-scope:v1',
+    'livehuddle:settings-scope:v1',
     focus || initialCategoryId ? 'app' : null,
   );
   // The Account section's switches are this editor's own shared preferences, changed through its own rows (counted
@@ -221,7 +221,7 @@ export function SettingsDialog({
           focus={focus ?? null}
           initialCategoryId={initialCategoryId ?? null}
           initialSectionId={initialSectionId}
-          memoryKey="livediagram:settings-view:v1"
+          memoryKey="livehuddle:settings-view:v1"
           onCategoryOpened={onCategoryOpened}
           footer={
             <p className="text-[10px] text-slate-500 dark:text-slate-400">

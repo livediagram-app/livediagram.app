@@ -17,7 +17,7 @@
 // the other persisted toggles — see local-storage-safe).
 
 import { useSyncExternalStore } from 'react';
-import { buttonClassName, CloseIcon, ButtonContent } from '@livediagram/ui';
+import { buttonClassName, CloseIcon, ButtonContent } from '@livehuddle/ui';
 import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import Link from 'next/link';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
@@ -26,7 +26,7 @@ import {
   writeLocalStorageValue,
 } from '@liveworkspace/workbench/hooks/ui/useLocalStorageValue';
 
-const DISMISS_KEY = 'livediagram:v2:signin-prompt-dismissed';
+const DISMISS_KEY = 'livehuddle:v2:signin-prompt-dismissed';
 
 const subscribeNever = () => () => {};
 

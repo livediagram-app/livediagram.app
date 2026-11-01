@@ -1,6 +1,6 @@
 'use client';
 
-import { PrivateDotIcon, SharedDotIcon } from '@livediagram/ui';
+import { PrivateDotIcon, SharedDotIcon } from '@livehuddle/ui';
 import { ThisBrowserIcon } from '@/components/primitives/explorer-icons';
 import { COMMUNITY_PUBLIC_BADGE, COMMUNITY_PUBLIC_LABEL } from '@liveworkspace/community-ui/badge';
 import {

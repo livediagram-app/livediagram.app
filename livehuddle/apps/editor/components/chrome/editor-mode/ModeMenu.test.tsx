@@ -6,7 +6,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { editorModeDescription, type EditorMode } from '@livediagram/document';
+import { editorModeDescription, type EditorMode } from '@livehuddle/document';
 import { ModeMenuChip } from './ModeMenuChip';
 import { MODE_TOOLS } from './mode-menu-copy';
 

@@ -5,9 +5,9 @@
 // which the canvas page loads eagerly for its own Share, so the Community's binding loads only with the Explorer.
 
 import type { ShareHost } from '@liveworkspace/explorer';
-import { COMMUNITY_UNKNOWN_AUTHOR } from '@livediagram/api-schema';
+import { COMMUNITY_UNKNOWN_AUTHOR } from '@livehuddle/api-schema';
 import { authHrefWithReturn } from '@/components/chrome/auth-shared';
-import { livediagramCommunityHost } from './community-share-host';
+import { livehuddleCommunityHost } from './community-share-host';
 
 /** `account` is the signed-in person, null for a guest. */
 export function explorerCommunity(
@@ -15,12 +15,12 @@ export function explorerCommunity(
   communityOn: boolean,
 ): ShareHost['community'] {
   return (item) => {
-    if (item.app !== 'livediagram' || !account || !communityOn || item.ownerId !== account.id) {
+    if (item.app !== 'livehuddle' || !account || !communityOn || item.ownerId !== account.id) {
       return undefined;
     }
     return {
       // The snapshot's version is the canvas's last change, so the card preview is read once per change.
-      host: livediagramCommunityHost({
+      host: livehuddleCommunityHost({
         ownerId: account.id,
         documentId: item.id,
         version: item.updatedAt,

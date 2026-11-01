@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { APPEARANCE_STORAGE_KEY, resetAppearanceForTests } from '@livediagram/ui';
+import { APPEARANCE_STORAGE_KEY, resetAppearanceForTests } from '@livehuddle/ui';
 import { AppearanceToggle } from './AppearanceToggle';
 
 // The editor's Appearance control (docs/specs/004-interface-design/appearance.md) and its power

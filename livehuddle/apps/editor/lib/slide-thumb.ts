@@ -13,7 +13,7 @@ import {
   type CanvasSurface,
   type Slide,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { exportChartInk } from '@/lib/export-chart-ink';
 import {
   resolveIconArtLoaded,

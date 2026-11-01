@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og';
-import { renderSocialCard } from '@livediagram/ui';
+import { renderSocialCard } from '@livehuddle/ui';
 import { site } from '@/lib/help-site';
 
 // One PNG per help article and category landing, at /help/og/<route>.png (docs/specs/018-help/help-app.md "SEO"),

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { AgentPresence } from '@livediagram/api-schema';
+import type { AgentPresence } from '@livehuddle/api-schema';
 import type { Participant } from './identity';
 import {
   AGENT_AT_WORK,

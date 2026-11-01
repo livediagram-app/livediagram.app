@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, createSticky, createText, type Element } from '@livediagram/document';
+import { createShape, createSticky, createText, type Element } from '@livehuddle/document';
 import {
   setAnimationState,
   withSetAnimation,

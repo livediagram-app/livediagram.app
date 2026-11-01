@@ -47,10 +47,10 @@ import {
   type TextSize,
   type TextSizePreset,
   withInlineIcon,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import type { ShapeColorPreset } from './themes';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
-import type { TablePreset } from '@livediagram/document';
+import type { TablePreset } from '@livehuddle/document';
 
 // Apply a theme-derived style preset to a shape: its colours (fill + stroke +
 // text) AND its border weight / pattern together — a preset is one complete

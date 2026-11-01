@@ -1,5 +1,5 @@
-import type { Layer, TabTimer, TabVote, TimerMode, VoteSetup } from '@livediagram/document';
-import type { LivePoll, PollStyle } from '@livediagram/api-schema';
+import type { Layer, TabTimer, TabVote, TimerMode, VoteSetup } from '@livehuddle/document';
+import type { LivePoll, PollStyle } from '@livehuddle/api-schema';
 import type { PollCandidate } from '@/lib/poll-collaborators';
 
 // The session-tools bundle (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/live-poll.md, docs/specs/012-collaboration/vote-layer-scope.md): the running timer, the

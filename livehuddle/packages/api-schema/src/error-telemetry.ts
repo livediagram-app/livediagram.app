@@ -45,7 +45,7 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   'trash',
   'preferences',
   'participants',
-  // The one-time doors of the move from the old livediagram.app.
+  // The one-time doors of the move from the old livehuddle.app.
   'legacy-guest',
   'migration',
 ]);

@@ -9,7 +9,7 @@ import {
   elementSchemaDoc,
   SCHEMA_RESOURCE_URI,
   SERVER_INSTRUCTIONS,
-} from '@livediagram/agent-verbs/mcp';
+} from '@livehuddle/agent-verbs/mcp';
 import { LISTING } from './listing';
 import { registerTools } from './tools';
 import { registerPrompts } from './prompts';
@@ -21,7 +21,7 @@ export function buildServer(env: Env): McpServer {
     'element-schema',
     SCHEMA_RESOURCE_URI,
     {
-      title: 'livediagram element schema',
+      title: 'livehuddle element schema',
       description:
         'Element types, shape vocabulary, pinned-arrow anchors, and design rules for ' +
         'producing well-formed diagrams. Read before create_document / update_document.',

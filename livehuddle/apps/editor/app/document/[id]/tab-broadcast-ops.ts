@@ -5,8 +5,8 @@ import {
   mergeIncomingVote,
   preferNewerQa,
   type Tab,
-} from '@livediagram/document';
-import type { RoomOp } from '@livediagram/api-schema';
+} from '@livehuddle/document';
+import type { RoomOp } from '@livehuddle/api-schema';
 
 // Turn the before/after of an autosaved tab into the realtime ops to
 // broadcast (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0). The room used to send the whole `Tab` on

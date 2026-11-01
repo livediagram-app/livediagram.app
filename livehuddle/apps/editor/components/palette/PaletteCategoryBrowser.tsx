@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, type ReactNode, useContext, useMemo, useRef, useState } from 'react';
-import { NoMatches } from '@livediagram/ui';
+import { NoMatches } from '@livehuddle/ui';
 import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
 import {
   ToolsBreadcrumb,

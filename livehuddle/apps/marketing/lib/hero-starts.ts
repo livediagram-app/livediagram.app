@@ -1,4 +1,4 @@
-import { templateQueryWords, type TemplateKind } from '@livediagram/templates';
+import { templateQueryWords, type TemplateKind } from '@livehuddle/templates';
 import { filterGallery, galleryTemplates, popularTemplates } from '@/lib/template-gallery';
 
 // The hero's ways in (docs/specs/019-marketing/marketing-site.md "Hero"): its template search and its

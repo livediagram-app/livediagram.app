@@ -22,11 +22,11 @@ function setup(
 ) {
   const host = linkHost(docs, folders);
   const io = fakeIo({
-    env: { LIVEDIAGRAM_TOKEN: TOKEN },
+    env: { LIVEHUDDLE_TOKEN: TOKEN },
     routes: [host.route],
     links,
     files: {
-      '/work/livediagram.toml': `[covers]\nfolder = "games"\n[mirror]\nlevel = "${level}"\n`,
+      '/work/livehuddle.toml': `[covers]\nfolder = "games"\n[mirror]\nlevel = "${level}"\n`,
       ...more,
     },
   });
@@ -42,11 +42,11 @@ async function sync(io: FakeIo, ...args: string[]) {
 const home = () => hostDoc('d-home', 'Home screen', { folderId: 'screens' });
 const menu = () => hostDoc('d-menu', 'Menu', { folderId: 'games' });
 const file = (io: FakeIo, path: string) => io.fileMap.get(path)?.data;
-const MIRROR = '/work/diagrams/screens/home-screen.livediagram.json';
+const MIRROR = '/work/diagrams/screens/home-screen.livehuddle.json';
 const OUTLINE = '/work/diagrams/screens/home-screen.md';
 const INDEX = '/work/diagrams/INDEX.md';
 const stateDir = async () =>
-  `/home/agent/.cache/livediagram/links/${await linkIdOf('/work/livediagram.toml')}`;
+  `/home/agent/.cache/livehuddle/links/${await linkIdOf('/work/livehuddle.toml')}`;
 
 describe('sync at files', () => {
   it('writes INDEX.md, a mirror file and an outline file per document, then is in step', async () => {
@@ -54,8 +54,8 @@ describe('sync at files', () => {
     expect(await sync(io)).toEqual({
       code: 0,
       out: [
-        '+ diagrams/menu.livediagram.json  "Menu" · 1 tab · rev 1',
-        '+ diagrams/screens/home-screen.livediagram.json  "Home screen" · 1 tab · rev 1',
+        '+ diagrams/menu.livehuddle.json  "Menu" · 1 tab · rev 1',
+        '+ diagrams/screens/home-screen.livehuddle.json  "Home screen" · 1 tab · rev 1',
         '~ diagrams/INDEX.md',
         '2 written',
         '',
@@ -66,7 +66,7 @@ describe('sync at files', () => {
     expect(file(io, MIRROR)).not.toContain('pulledAt');
     expect(file(io, OUTLINE)).toContain('```text\ntab ');
     expect(file(io, INDEX)).toContain(
-      '- Files: `screens/home-screen.livediagram.json`, `screens/home-screen.md`',
+      '- Files: `screens/home-screen.livehuddle.json`, `screens/home-screen.md`',
     );
     const before = new Map([...io.fileMap].map(([k, v]) => [k, v.data]));
     expect(await sync(io)).toMatchObject({ code: 0, out: '2 in step\n' });
@@ -100,8 +100,8 @@ describe('sync at files', () => {
     host.doc('d-home').name = 'Start screen';
     expect((await sync(io)).out).toBe(
       [
-        '» diagrams/screens/home-screen.livediagram.json would move to diagrams/screens/start-screen.livediagram.json: livediagram sync --relocate',
-        '~ diagrams/screens/home-screen.livediagram.json  "Start screen" · Main · rev 1→2',
+        '» diagrams/screens/home-screen.livehuddle.json would move to diagrams/screens/start-screen.livehuddle.json: livehuddle sync --relocate',
+        '~ diagrams/screens/home-screen.livehuddle.json  "Start screen" · Main · rev 1→2',
         '~ diagrams/INDEX.md',
         '1 written',
         '',
@@ -110,7 +110,7 @@ describe('sync at files', () => {
     expect(file(io, MIRROR)).toContain('"name": "Start screen"');
     const moved = await sync(io, '--relocate');
     expect(moved.out).toBe(
-      '» diagrams/screens/home-screen.livediagram.json → diagrams/screens/start-screen.livediagram.json\n~ diagrams/INDEX.md\n1 in step\n',
+      '» diagrams/screens/home-screen.livehuddle.json → diagrams/screens/start-screen.livehuddle.json\n~ diagrams/INDEX.md\n1 in step\n',
     );
     expect(io.fileMap.has(MIRROR)).toBe(false);
     expect(file(io, '/work/diagrams/screens/start-screen.md')).toContain('# Start screen');
@@ -126,10 +126,10 @@ describe('sync at files', () => {
     const moved = await sync(io, '--relocate');
     expect(moved.code).toBe(1);
     expect(moved.out).toContain(
-      '! diagrams/screens/home-screen.livediagram.json: not moved, diagrams/screens/start-screen.md is already there and livediagram did not write it; kept. Move or rename that file, then livediagram sync --relocate',
+      '! diagrams/screens/home-screen.livehuddle.json: not moved, diagrams/screens/start-screen.md is already there and livehuddle did not write it; kept. Move or rename that file, then livehuddle sync --relocate',
     );
     expect(file(io, '/work/diagrams/screens/start-screen.md')).toBe(mine);
-    expect(io.fileMap.has('/work/diagrams/screens/start-screen.livediagram.json')).toBe(false);
+    expect(io.fileMap.has('/work/diagrams/screens/start-screen.livehuddle.json')).toBe(false);
     expect(file(io, MIRROR)).toContain('Play button');
     expect(file(io, OUTLINE)).toContain('# Start screen');
   });
@@ -143,7 +143,7 @@ describe('sync at files', () => {
     const moved = await sync(io, '--relocate');
     expect(moved.code).toBe(0);
     expect(moved.out).toContain(
-      '» diagrams/screens/home-screen.livediagram.json → diagrams/screens/start-screen.livediagram.json',
+      '» diagrams/screens/home-screen.livehuddle.json → diagrams/screens/start-screen.livehuddle.json',
     );
     expect(io.fileMap.has(OUTLINE)).toBe(false);
     expect(file(io, '/work/diagrams/screens/start-screen.md')).not.toContain('An old outline');
@@ -153,7 +153,7 @@ describe('sync at files', () => {
     const { io, host } = setup('files', [home(), menu()]);
     await sync(io);
     const text = file(io, MIRROR)!.replace(
-      '"host": "https://www.livediagram.app"',
+      '"host": "https://www.livehuddle.app"',
       '"host": "not a url"',
     );
     expect(text).toContain('"not a url"');
@@ -162,9 +162,9 @@ describe('sync at files', () => {
     const result = await sync(io);
     expect(result.code).toBe(1);
     expect(result.out).toContain(
-      '! diagrams/screens/home-screen.livediagram.json: livediagramSync.host is not a URL',
+      '! diagrams/screens/home-screen.livehuddle.json: livehuddleSync.host is not a URL',
     );
-    expect(result.out).toContain('~ diagrams/menu.livediagram.json');
+    expect(result.out).toContain('~ diagrams/menu.livehuddle.json');
     expect(file(io, MIRROR)).toBe(text);
     const status = await run(['link', 'status'], io);
     expect(status).toBe(0);
@@ -176,16 +176,16 @@ describe('sync at files', () => {
     const edit = (path: string) =>
       io.fileMap.set(path, { data: file(io, path)!.replace('box"', 'box!"'), mode: 0o644 });
     edit(MIRROR);
-    edit('/work/diagrams/menu.livediagram.json');
+    edit('/work/diagrams/menu.livehuddle.json');
     host.edit('d-menu');
     host.docs.push(hostDoc('d-new', 'New one', { folderId: 'games' }));
     const result = await sync(io);
     expect(result.code).toBe(1);
     expect(result.out).toBe(
       [
-        '! diagrams/menu.livediagram.json: changed here and in livediagram; send it: livediagram push diagrams/menu.livediagram.json',
-        '+ diagrams/new-one.livediagram.json  "New one" · 1 tab · rev 1',
-        '! diagrams/screens/home-screen.livediagram.json: changed here; send it: livediagram push diagrams/screens/home-screen.livediagram.json',
+        '! diagrams/menu.livehuddle.json: changed here and in livehuddle; send it: livehuddle push diagrams/menu.livehuddle.json',
+        '+ diagrams/new-one.livehuddle.json  "New one" · 1 tab · rev 1',
+        '! diagrams/screens/home-screen.livehuddle.json: changed here; send it: livehuddle push diagrams/screens/home-screen.livehuddle.json',
         '~ diagrams/INDEX.md',
         '1 written · 2 refused',
         '',
@@ -203,33 +203,33 @@ describe('sync at files', () => {
     host.doc('d-home').state = 'trashed';
     host.doc('d-menu').folderId = 'other';
     host.doc('d-z').state = 'purged';
-    const zed = file(io, '/work/diagrams/zed.livediagram.json');
+    const zed = file(io, '/work/diagrams/zed.livehuddle.json');
     const result = await sync(io);
     expect(result).toMatchObject({
       code: 0,
       out: [
-        '- diagrams/screens/home-screen.livediagram.json  "Home screen" · in the Trash',
-        '- diagrams/menu.livediagram.json  "Menu" · outside the link',
-        '? diagrams/zed.livediagram.json: no document this account can open; left as it is',
+        '- diagrams/screens/home-screen.livehuddle.json  "Home screen" · in the Trash',
+        '- diagrams/menu.livehuddle.json  "Menu" · outside the link',
+        '? diagrams/zed.livehuddle.json: no document this account can open; left as it is',
         '~ diagrams/INDEX.md',
         '2 removed · 1 unreadable',
         '',
       ].join('\n'),
     });
     expect([...io.fileMap.keys()].filter((k) => k.startsWith('/work/diagrams/'))).toEqual([
-      '/work/diagrams/zed.livediagram.json',
+      '/work/diagrams/zed.livehuddle.json',
       '/work/diagrams/zed.md',
       INDEX,
     ]);
-    expect(file(io, '/work/diagrams/zed.livediagram.json')).toBe(zed);
+    expect(file(io, '/work/diagrams/zed.livehuddle.json')).toBe(zed);
     expect(file(io, INDEX)).toContain('## Zed');
     expect(io.dirMap.has('/work/diagrams/screens')).toBe(false);
   });
 
   it('keeps a gone file that changed here, and a new one written by hand, never creating it', async () => {
     const { io, host } = setup('files', [home()], {
-      '/work/diagrams/hand.livediagram.json': JSON.stringify({
-        kind: 'livediagram.document',
+      '/work/diagrams/hand.livehuddle.json': JSON.stringify({
+        kind: 'livehuddle.document',
         schemaVersion: 1,
         document: { id: 'd-hand', name: 'By hand', tabs: [] },
       }),
@@ -240,10 +240,10 @@ describe('sync at files', () => {
     const result = await sync(io);
     expect(result.code).toBe(1);
     expect(result.out).toContain(
-      `! diagrams/screens/home-screen.livediagram.json: gone from the link, but changed here and not sent; kept. Send it: livediagram push diagrams/screens/home-screen.livediagram.json, or delete it\n`,
+      `! diagrams/screens/home-screen.livehuddle.json: gone from the link, but changed here and not sent; kept. Send it: livehuddle push diagrams/screens/home-screen.livehuddle.json, or delete it\n`,
     );
     expect(result.out).toContain(
-      '? diagrams/hand.livediagram.json: a document written by hand; this version of livediagram does not create it',
+      '? diagrams/hand.livehuddle.json: a document written by hand; this version of livehuddle does not create it',
     );
     expect(io.fileMap.has(MIRROR)).toBe(true);
     expect(io.requests.some((r) => r.method !== 'GET')).toBe(false);
@@ -251,9 +251,9 @@ describe('sync at files', () => {
 
   it('keeps every file through transient failures, exiting 6 or 7', async () => {
     for (const [state, code, says] of [
-      [429, 6, 'https://www.livediagram.app is rate limiting this token'],
-      [503, 7, 'https://www.livediagram.app failed (HTTP 503)'],
-      ['network', 7, 'could not reach https://www.livediagram.app (fetch failed)'],
+      [429, 6, 'https://www.livehuddle.app is rate limiting this token'],
+      [503, 7, 'https://www.livehuddle.app failed (HTTP 503)'],
+      ['network', 7, 'could not reach https://www.livehuddle.app (fetch failed)'],
     ] as const) {
       const { io, host } = setup('files', [home()]);
       await sync(io);
@@ -268,15 +268,15 @@ describe('sync at files', () => {
 
   it('refuses a conflicted file naming the fix, and writes a deleted one again, deleting nothing', async () => {
     const { io } = setup('files', [home()], {
-      '/work/diagrams/merged.livediagram.json': '<<<<<<< HEAD\n{}\n=======\n{}\n>>>>>>> main\n',
+      '/work/diagrams/merged.livehuddle.json': '<<<<<<< HEAD\n{}\n=======\n{}\n>>>>>>> main\n',
     });
     await sync(io);
     io.fileMap.delete(MIRROR);
     const result = await sync(io);
     expect(result.out).toContain(
-      '! diagrams/merged.livediagram.json: holds git conflict markers. Keep one side: git checkout --ours diagrams/merged.livediagram.json (or --theirs), then livediagram sync',
+      '! diagrams/merged.livehuddle.json: holds git conflict markers. Keep one side: git checkout --ours diagrams/merged.livehuddle.json (or --theirs), then livehuddle sync',
     );
-    expect(result.out).toContain('+ diagrams/screens/home-screen.livediagram.json');
+    expect(result.out).toContain('+ diagrams/screens/home-screen.livehuddle.json');
     expect(io.requests.some((r) => r.method === 'DELETE')).toBe(false);
   });
 
@@ -302,12 +302,12 @@ describe('sync at files', () => {
     const { io } = setup('files', [home()]);
     const result = await sync(io, '--dry-run');
     expect(result.out).toBe(
-      '+ diagrams/screens/home-screen.livediagram.json  "Home screen" · 1 tab · rev 1\n~ diagrams/INDEX.md\n1 written\ndry run: nothing written\n',
+      '+ diagrams/screens/home-screen.livehuddle.json  "Home screen" · 1 tab · rev 1\n~ diagrams/INDEX.md\n1 written\ndry run: nothing written\n',
     );
     const state = await stateDir();
     expect(
       [...io.fileMap.keys()].filter((k) => k.startsWith('/work/') || k.startsWith(state)),
-    ).toEqual(['/work/livediagram.toml']);
+    ).toEqual(['/work/livehuddle.toml']);
   });
 });
 
@@ -319,7 +319,7 @@ describe('sync at index and none', () => {
     );
     expect(file(io, INDEX)).toContain('    `tab ');
     expect([...io.fileMap.keys()].filter((k) => k.startsWith('/work/'))).toEqual([
-      '/work/livediagram.toml',
+      '/work/livehuddle.toml',
       INDEX,
     ]);
     const state = JSON.parse(file(io, `${await stateDir()}/state.json`)!) as {
@@ -340,7 +340,7 @@ describe('sync at index and none', () => {
     const { io } = setup('none', [home()]);
     expect((await sync(io)).out).toBe('+ "Home screen" · 1 tab · rev 1\n1 written\n');
     expect([...io.fileMap.keys()].filter((k) => k.startsWith('/work/'))).toEqual([
-      '/work/livediagram.toml',
+      '/work/livehuddle.toml',
     ]);
     expect(file(io, `${await stateDir()}/state.json`)).toContain('d-home');
   });
@@ -348,23 +348,23 @@ describe('sync at index and none', () => {
   it('lowers the level: unchanged files removed, a changed one kept, then INDEX.md at none', async () => {
     const { io } = setup('files', [home(), menu()]);
     await sync(io);
-    io.fileMap.set('/work/diagrams/menu.livediagram.json', {
-      data: file(io, '/work/diagrams/menu.livediagram.json')!.replace('box"', 'box!"'),
+    io.fileMap.set('/work/diagrams/menu.livehuddle.json', {
+      data: file(io, '/work/diagrams/menu.livehuddle.json')!.replace('box"', 'box!"'),
       mode: 0o644,
     });
-    io.fileMap.set('/work/livediagram.toml', { data: '[covers]\nfolder = "games"\n', mode: 0o644 });
+    io.fileMap.set('/work/livehuddle.toml', { data: '[covers]\nfolder = "games"\n', mode: 0o644 });
     const lowered = await sync(io);
     expect(lowered.code).toBe(1);
     expect(lowered.out).toContain(
-      '- diagrams/screens/home-screen.livediagram.json  "Home screen" · level index keeps no mirror files',
+      '- diagrams/screens/home-screen.livehuddle.json  "Home screen" · level index keeps no mirror files',
     );
     expect(lowered.out).toContain(
-      '! diagrams/menu.livediagram.json: level index keeps no mirror files',
+      '! diagrams/menu.livehuddle.json: level index keeps no mirror files',
     );
     expect(io.fileMap.has(MIRROR)).toBe(false);
     expect(file(io, INDEX)).not.toContain('- Files:');
-    io.fileMap.delete('/work/diagrams/menu.livediagram.json');
-    io.fileMap.set('/work/livediagram.toml', {
+    io.fileMap.delete('/work/diagrams/menu.livehuddle.json');
+    io.fileMap.set('/work/livehuddle.toml', {
       data: '[covers]\nfolder = "games"\n[mirror]\nlevel = "none"\n',
       mode: 0o644,
     });
@@ -376,33 +376,33 @@ describe('sync at index and none', () => {
 describe('sync and the link’s host', () => {
   it('refuses a link to another host before any request, naming the profile to use', async () => {
     const { io } = setup('index', [home()], {
-      '/work/livediagram.toml': 'host = "https://self.example"\n[covers]\nfolder = "games"\n',
-      '/home/agent/.config/livediagram/config.toml':
+      '/work/livehuddle.toml': 'host = "https://self.example"\n[covers]\nfolder = "games"\n',
+      '/home/agent/.config/livehuddle/config.toml':
         '[profiles.work]\nhost = "https://self.example"\n',
     });
     const result = await sync(io);
     expect(result).toEqual({
       code: 2,
       out: '',
-      err: 'error: /work/livediagram.toml links https://self.example; this profile is https://www.livediagram.app\nhint: livediagram --profile work sync\n',
+      err: 'error: /work/livehuddle.toml links https://self.example; this profile is https://www.livehuddle.app\nhint: livehuddle --profile work sync\n',
     });
     expect(io.requests).toEqual([]);
-    io.fileMap.delete('/home/agent/.config/livediagram/config.toml');
-    expect((await sync(io)).err).toContain('hint: livediagram --host https://self.example sync');
+    io.fileMap.delete('/home/agent/.config/livehuddle/config.toml');
+    expect((await sync(io)).err).toContain('hint: livehuddle --host https://self.example sync');
   });
 
   it('talks only to a link’s own host', async () => {
     const host: LinkHost = linkHost([home()], folders);
     const self = 'https://self.example';
     const io = fakeIo({
-      env: { LIVEDIAGRAM_TOKEN: TOKEN, LIVEDIAGRAM_HOST: self },
+      env: { LIVEHUDDLE_TOKEN: TOKEN, LIVEHUDDLE_HOST: self },
       routes: [
         (request, url) =>
           url.pathname === '/api/capabilities'
             ? Response.json({ apiBase: `${self}/api`, authEnabled: true, documentFormat: 2 })
             : host.route(request, url),
       ],
-      files: { '/work/livediagram.toml': `host = "${self}"\n[covers]\nfolder = "games"\n` },
+      files: { '/work/livehuddle.toml': `host = "${self}"\n[covers]\nfolder = "games"\n` },
     });
     expect((await sync(io)).code).toBe(0);
     expect(new Set(io.requests.map((r) => new URL(r.url).origin))).toEqual(new Set([self]));
@@ -412,17 +412,17 @@ describe('sync and the link’s host', () => {
 describe('sync, the rest', () => {
   it('syncs every link below with --all, naming each', async () => {
     const { io } = setup('index', [home()], {
-      '/work/apps/b/livediagram.toml': '[covers]\ndocuments = ["d-menu"]\n',
+      '/work/apps/b/livehuddle.toml': '[covers]\ndocuments = ["d-menu"]\n',
     });
     const result = await sync(io, '--all');
     expect(result.out).toBe(
       [
-        'apps/b/livediagram.toml',
+        'apps/b/livehuddle.toml',
         '? d-menu: no document this account can open; left as it is',
         '~ apps/b/diagrams/INDEX.md',
         '1 unreadable',
         '',
-        'livediagram.toml',
+        'livehuddle.toml',
         '+ "Home screen" · 1 tab · rev 1',
         '~ diagrams/INDEX.md',
         '1 written',
@@ -441,14 +441,14 @@ describe('sync, the rest', () => {
 
   it('logs ids and states only, never names or paths', async () => {
     const { io } = setup('files', [home()]);
-    io.fileMap.set('/work/livediagram.toml', {
+    io.fileMap.set('/work/livehuddle.toml', {
       data: '[covers]\nfolder = "games"\n[mirror]\nlevel = "files"\n',
       mode: 0o644,
     });
     const debug = fakeIo({
-      env: { LIVEDIAGRAM_TOKEN: TOKEN, LIVEDIAGRAM_DEBUG: '1' },
+      env: { LIVEHUDDLE_TOKEN: TOKEN, LIVEHUDDLE_DEBUG: '1' },
       routes: [linkHost([home()], folders).route],
-      files: { '/work/livediagram.toml': file(io, '/work/livediagram.toml')! },
+      files: { '/work/livehuddle.toml': file(io, '/work/livehuddle.toml')! },
     });
     const { err } = await sync(debug);
     const lines = err.split('\n').filter((l) => l.startsWith('[sync]'));
@@ -468,7 +468,7 @@ describe('sync, the rest', () => {
 
   it('refuses a mirror directory that leads out of the link (E18)', async () => {
     const { io } = setup('files', [home()], {
-      '/work/livediagram.toml': '[covers]\nfolder = "games"\n[mirror]\ndir = "out"\n',
+      '/work/livehuddle.toml': '[covers]\nfolder = "games"\n[mirror]\ndir = "out"\n',
     });
     io.linkMap.set('/work/out', '/home/agent');
     io.dirMap.add('/home/agent');
@@ -482,10 +482,10 @@ describe('sync, the rest', () => {
 describe('sync, edges', () => {
   it('names --host when a profile’s host does not read', async () => {
     const { io } = setup('index', [home()], {
-      '/work/livediagram.toml': 'host = "https://self.example"\n[covers]\nfolder = "games"\n',
-      '/home/agent/.config/livediagram/config.toml': '[profiles.odd]\nhost = "not a url"\n',
+      '/work/livehuddle.toml': 'host = "https://self.example"\n[covers]\nfolder = "games"\n',
+      '/home/agent/.config/livehuddle/config.toml': '[profiles.odd]\nhost = "not a url"\n',
     });
-    expect((await sync(io)).err).toContain('hint: livediagram --host https://self.example sync');
+    expect((await sync(io)).err).toContain('hint: livehuddle --host https://self.example sync');
   });
 
   it('rewrites a document whose tab was refiled, leaving its outline as it was (E27)', async () => {
@@ -494,7 +494,7 @@ describe('sync, edges', () => {
     const outline = io.fileMap.get(OUTLINE)!;
     host.doc('d-home').tabs[0]!.folder = 'Later';
     expect((await sync(io)).out).toBe(
-      '~ diagrams/screens/home-screen.livediagram.json  "Home screen"\n1 written\n',
+      '~ diagrams/screens/home-screen.livehuddle.json  "Home screen"\n1 written\n',
     );
     expect(file(io, MIRROR)).toContain('"folder": "Later"');
     expect(io.fileMap.get(OUTLINE)).toBe(outline);
@@ -522,9 +522,9 @@ describe('sync, edges', () => {
     host.doc('d-home').name = 'Start';
     const moved = await sync(io, '--relocate');
     expect(moved.out).toContain(
-      '» diagrams/screens/home-screen.livediagram.json → diagrams/screens/start.livediagram.json',
+      '» diagrams/screens/home-screen.livehuddle.json → diagrams/screens/start.livehuddle.json',
     );
-    expect(file(io, '/work/diagrams/screens/start.livediagram.json')).toContain('"name": "Start"');
+    expect(file(io, '/work/diagrams/screens/start.livehuddle.json')).toContain('"name": "Start"');
     host.doc('d-home').name = 'Again';
     io.runTool = async () => null;
     io.files.move = async () => {
@@ -533,9 +533,9 @@ describe('sync, edges', () => {
     const stuck = await sync(io, '--relocate');
     expect(stuck.code).toBe(7);
     expect(stuck.out).toContain(
-      '! "Again": could not move diagrams/screens/start.livediagram.json to diagrams/screens/again.livediagram.json (EACCES); files kept',
+      '! "Again": could not move diagrams/screens/start.livehuddle.json to diagrams/screens/again.livehuddle.json (EACCES); files kept',
     );
-    expect(file(io, '/work/diagrams/screens/start.livediagram.json')).toContain('"name": "Start"');
+    expect(file(io, '/work/diagrams/screens/start.livehuddle.json')).toContain('"name": "Start"');
   });
 
   it('keeps a document whose tab read fails, and fails the pass when the credential is refused', async () => {
@@ -551,14 +551,14 @@ describe('sync, edges', () => {
     const limited = await sync(io);
     expect(limited.code).toBe(6);
     expect(limited.out).toContain(
-      '! "Home screen": https://www.livediagram.app is rate limiting this token; files kept',
+      '! "Home screen": https://www.livehuddle.app is rate limiting this token; files kept',
     );
     expect(io.fileMap.has(MIRROR)).toBe(false);
     status = 503;
     expect((await sync(io)).code).toBe(7);
     status = 0;
     expect((await sync(io)).out).toContain(
-      'could not reach https://www.livediagram.app (fetch failed); files kept',
+      'could not reach https://www.livehuddle.app (fetch failed); files kept',
     );
     status = 401;
     expect((await sync(io)).code).toBe(4);
@@ -593,7 +593,7 @@ describe('sync, edges', () => {
   it('names the INDEX.md a dry run at none would remove, keeping it', async () => {
     const { io } = setup('index', [home()]);
     await sync(io);
-    io.fileMap.set('/work/livediagram.toml', {
+    io.fileMap.set('/work/livehuddle.toml', {
       data: '[covers]\nfolder = "games"\n[mirror]\nlevel = "none"\n',
       mode: 0o644,
     });
@@ -617,8 +617,8 @@ describe('a broken file at a document’s mirror path', () => {
     expect(held).toMatchObject({
       code: 1,
       out: [
-        '! "Home screen": not written while diagrams/screens/home-screen.livediagram.json holds git conflict markers. Keep one side: git checkout --ours diagrams/screens/home-screen.livediagram.json (or --theirs), then livediagram sync',
-        '! diagrams/screens/home-screen.livediagram.json: holds git conflict markers. Keep one side: git checkout --ours diagrams/screens/home-screen.livediagram.json (or --theirs), then livediagram sync',
+        '! "Home screen": not written while diagrams/screens/home-screen.livehuddle.json holds git conflict markers. Keep one side: git checkout --ours diagrams/screens/home-screen.livehuddle.json (or --theirs), then livehuddle sync',
+        '! diagrams/screens/home-screen.livehuddle.json: holds git conflict markers. Keep one side: git checkout --ours diagrams/screens/home-screen.livehuddle.json (or --theirs), then livehuddle sync',
         '2 refused',
         '',
       ].join('\n'),
@@ -627,7 +627,7 @@ describe('a broken file at a document’s mirror path', () => {
     expect(file(io, INDEX)).toContain('## Home screen');
     await run(['link', 'status'], io);
     expect(io.out()).toMatch(
-      /\nheld +\S+ +"Home screen" +diagrams\/screens\/home-screen\.livediagram\.json\n/,
+      /\nheld +\S+ +"Home screen" +diagrams\/screens\/home-screen\.livehuddle\.json\n/,
     );
     expect(io.out()).toMatch(/\n1 held · 1 conflicted\n$/);
     io.fileMap.set(MIRROR, { data: good, mode: 0o644 });
@@ -685,7 +685,7 @@ describe('an edit saved while the pass runs', () => {
     const result = await sync(io);
     expect(result.code).toBe(1);
     expect(result.out).toContain(
-      '! diagrams/screens/home-screen.livediagram.json: changed here and in livediagram; send it:',
+      '! diagrams/screens/home-screen.livehuddle.json: changed here and in livehuddle; send it:',
     );
     expect(now()).toContain('box!"');
     expect(now()).not.toContain('Play button');
@@ -699,7 +699,7 @@ describe('an edit saved while the pass runs', () => {
     const result = await sync(io);
     expect(result.code).toBe(1);
     expect(result.out).toContain(
-      '! diagrams/screens/home-screen.livediagram.json: gone from the link, but changed here and not sent; kept.',
+      '! diagrams/screens/home-screen.livehuddle.json: gone from the link, but changed here and not sent; kept.',
     );
     expect(now()).toContain('box!"');
   });
@@ -707,14 +707,14 @@ describe('an edit saved while the pass runs', () => {
   it('is never removed by a lowered level, refused naming the level', async () => {
     const { io } = setup('files', [home()]);
     await sync(io);
-    io.fileMap.set('/work/livediagram.toml', { data: '[covers]\nfolder = "games"\n', mode: 0o644 });
+    io.fileMap.set('/work/livehuddle.toml', { data: '[covers]\nfolder = "games"\n', mode: 0o644 });
     const now = editDuringPass(io, MIRROR);
     const result = await sync(io);
     expect(result.code).toBe(1);
     expect(result.out).toContain(
-      '! diagrams/screens/home-screen.livediagram.json: level index keeps no mirror files',
+      '! diagrams/screens/home-screen.livehuddle.json: level index keeps no mirror files',
     );
-    expect(result.out).not.toContain('- diagrams/screens/home-screen.livediagram.json');
+    expect(result.out).not.toContain('- diagrams/screens/home-screen.livehuddle.json');
     expect(now()).toContain('box!"');
     expect(io.fileMap.has(OUTLINE)).toBe(true);
   });

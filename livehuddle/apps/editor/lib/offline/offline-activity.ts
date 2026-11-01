@@ -8,8 +8,8 @@ import {
   type ActivityAction,
   type ActivityPlace,
   type ActivityThread,
-} from '@livediagram/api-schema';
-import { collabIndexRowsFromElements } from '@livediagram/document';
+} from '@livehuddle/api-schema';
+import { collabIndexRowsFromElements } from '@livehuddle/document';
 import { offlineBackend } from './offline-backend';
 import { offlineIdCount } from './offline-ids';
 import type { OfflineDocumentRecord } from './offline-store';

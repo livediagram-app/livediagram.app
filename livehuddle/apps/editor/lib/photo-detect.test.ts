@@ -1,16 +1,16 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { PHOTO_MAX_EDGE_PX } from '@livediagram/api-schema';
-import { eventStormingNote } from '@livediagram/document';
-import { detectStickies } from '@livediagram/sticky-vision';
+import { PHOTO_MAX_EDGE_PX } from '@livehuddle/api-schema';
+import { eventStormingNote } from '@livehuddle/document';
+import { detectStickies } from '@livehuddle/sticky-vision';
 import { cropBoxes, detectAndCrop, photoTypeError, PhotoDetectFailed } from './photo-detect';
 import { boundaryCuesFor } from './photo-model/client';
 
 // The boundary model runs in a worker jsdom does not have; its answer is
 // stubbed per test, and by default it is unavailable.
 // The real detector, behind a spy, so a test can see the image it was handed.
-vi.mock('@livediagram/sticky-vision', async (importOriginal) => {
-  const real = await importOriginal<typeof import('@livediagram/sticky-vision')>();
+vi.mock('@livehuddle/sticky-vision', async (importOriginal) => {
+  const real = await importOriginal<typeof import('@livehuddle/sticky-vision')>();
   return { ...real, detectStickies: vi.fn(real.detectStickies) };
 });
 

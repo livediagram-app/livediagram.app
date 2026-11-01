@@ -1,4 +1,4 @@
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import { getTheme, themeChartPalette } from '@/lib/themes';
 
 // What an image export draws its charts in, so they come out as the canvas draws them: the tab

@@ -1,5 +1,5 @@
-// Credentials (docs/specs/015-api/cli.md "Authentication"): LIVEDIAGRAM_TOKEN first, else the profile's stored token,
-// in the platform's keychain where there is one. @liveworkspace/cli-kit's, for livediagram.
+// Credentials (docs/specs/015-api/cli.md "Authentication"): LIVEHUDDLE_TOKEN first, else the profile's stored token,
+// in the platform's keychain where there is one. @liveworkspace/cli-kit's, for livehuddle.
 
 import type { CliIo } from '../io';
 import type { DebugLog } from '../debug';
@@ -23,7 +23,7 @@ export const storeCredential = (
 export const forgetCredential = (io: CliIo, profile: string): Promise<void> =>
   kit.forgetCredential(io, PRODUCT, profile);
 
-// What this profile stored, ignoring LIVEDIAGRAM_TOKEN.
+// What this profile stored, ignoring LIVEHUDDLE_TOKEN.
 export const storedCredential = (io: CliIo, profile: string) =>
   kit.storedCredential(io, PRODUCT, profile);
 

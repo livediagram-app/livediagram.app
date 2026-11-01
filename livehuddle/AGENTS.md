@@ -1,6 +1,6 @@
-# livediagram
+# livehuddle
 
-Monorepo for the livediagram product. Multiple apps share code through internal packages.
+Monorepo for the livehuddle product. Multiple apps share code through internal packages.
 
 ## Before you start
 
@@ -199,9 +199,9 @@ apps/
   help/         # help centre (Next.js export + MDX, /help): its articles, catalogue and art, on @liveworkspace/help-site
   community/    # public gallery of shared boards (Next.js export, /community)
   api/          # Cloudflare Worker REST + WebSocket API (Durable Objects; images in liveworkspace's media service, /api)
-  mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livediagram.app)
+  mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livehuddle.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
-  cli/          # the livediagram command line for agents and scripts (Node, one esbuild bundle)
+  cli/          # the livehuddle command line for agents and scripts (Node, one esbuild bundle)
 packages/
   ui/             # this product's own UI (Brand, SiteHeader, Select, chrome icons), re-exporting @liveworkspace/ui
   document/       # document data model (Tab, Element types + element helpers) over @liveworkspace/model-core
@@ -236,7 +236,7 @@ Workspaces are managed with **pnpm** (the monorepo root's `pnpm-workspace.yaml`)
 See [Open source + distribution](docs/specs/002-project-scope/open-source-and-business-model.md).
 
 - The codebase is **MIT-licensed** and **publicly viewable**.
-- A free hosted version runs alongside at livediagram.app. **No paid tier and no plan to introduce one.**
+- A free hosted version runs alongside at livehuddle.app. **No paid tier and no plan to introduce one.**
 - Keep outside services optional (no required SaaS calls, no license checks gating the core editor). Every build offers sign-in through the liveworkspace accounts Worker, which also gives guests their identity; a visitor never has to sign in.
 - No "Pro features" flags, no billing integration. If we ship it, every user gets it.
 
@@ -255,7 +255,7 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 
 - **The canvas always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
 - **Hybrid identity**: every owner is a liveworkspace identity, sent as `Authorization: Bearer <token>` and verified with `createPersonVerifier` against the accounts Worker's published keys (`ACCOUNTS_URL`) and this API's audience (`API_RESOURCE`):
-  - **Guest**: liveworkspace's year-long guest token (`livediagram:v2:guest-token` in `localStorage`, from the accounts site's guest handoff via `/api/auth/guest`). Its id, `guest_<uuid>`, is the owner id, the same in every liveworkspace app. Full feature set (persistence, share links, real-time collab).
+  - **Guest**: liveworkspace's year-long guest token (`livehuddle:v2:guest-token` in `localStorage`, from the accounts site's guest handoff via `/api/auth/guest`). Its id, `guest_<uuid>`, is the owner id, the same in every liveworkspace app. Full feature set (persistence, share links, real-time collab).
   - **Account**: an account access token. Its `sub` claim (`user_…`) is the owner id.
   - An owner id is never a credential; only a verified token says who is asking. Without the accounts site configured there are no guests either.
 - The two paths coexist forever: a signed-in user can still hand a share link to a guest who edits without auth.

@@ -1,10 +1,10 @@
 'use client';
 
-import { SaveSwitchRow } from '@livediagram/ui';
+import { SaveSwitchRow } from '@livehuddle/ui';
 import { kindWords } from '@liveworkspace/explorer';
 import type { SaveLocationId } from '@/lib/save-locations';
 
-const KIND = kindWords('livediagram').one;
+const KIND = kindWords('livehuddle').one;
 
 // The wizard's Sync Canvas to Server switch (docs/specs/006-document/save-locations.md "On the start screen"): the
 // shared row, choosing where the create goes rather than moving anything. It shows the default for who is creating
@@ -22,8 +22,8 @@ export function NewSaveSwitch({
     <SaveSwitchRow
       kind={KIND}
       signedIn={signedIn}
-      checked={chosen ? chosen === 'livediagram' : signedIn}
-      onChange={(on) => onChoose(on ? 'livediagram' : 'browser')}
+      checked={chosen ? chosen === 'livehuddle' : signedIn}
+      onChange={(on) => onChoose(on ? 'livehuddle' : 'browser')}
     />
   );
 }

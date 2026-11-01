@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
+import { DOCUMENT_CONVERSION_HEADER } from '@livehuddle/api-schema';
 import type { Env } from '../types';
 import type { RouteContext } from './context';
 import { handleDocumentIndexRoutes } from './document-index-routes';

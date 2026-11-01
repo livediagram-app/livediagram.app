@@ -195,9 +195,7 @@ describe('EditorHeader Present button', () => {
 
   it('links the logo to the Explorer on this address, not the homepage', () => {
     renderHeader();
-    expect(screen.getByRole('link', { name: 'livediagram' }).getAttribute('href')).toBe(
-      '/explorer',
-    );
+    expect(screen.getByRole('link', { name: 'livehuddle' }).getAttribute('href')).toBe('/explorer');
   });
 });
 

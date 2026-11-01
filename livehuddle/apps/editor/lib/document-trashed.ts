@@ -3,7 +3,7 @@
 // a trashed canvas from a missing one (its item outlives the trashing), which isTrashedInIndex asks. The Offline Mode store throws DocumentTrashedError for a trashed local record, and an
 // ApiError carrying `document_trashed` still counts. Callers never care which store said it.
 
-import { DOCUMENT_TRASHED_ERROR } from '@livediagram/api-schema';
+import { DOCUMENT_TRASHED_ERROR } from '@livehuddle/api-schema';
 import { ApiError } from './api/core';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 

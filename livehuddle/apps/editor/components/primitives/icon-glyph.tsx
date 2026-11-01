@@ -8,8 +8,8 @@ import {
   type IconAnimation,
   type TextAlignX,
   type TextAlignY,
-} from '@livediagram/document';
-import { Glyph } from '@livediagram/ui';
+} from '@livehuddle/document';
+import { Glyph } from '@livehuddle/ui';
 
 import { iconBandClass } from '@/components/primitives/icon-band';
 
@@ -143,7 +143,7 @@ export function IconGlyph({
   strokeWidth?: number;
   hasLabel?: boolean;
   // The label's alignment; the glyph takes the opposite band (see
-  // iconBandBounds in @livediagram/document, whose numbers the CSS mirrors).
+  // iconBandBounds in @livehuddle/document, whose numbers the CSS mirrors).
   labelAlignX?: TextAlignX;
   labelAlignY?: TextAlignY;
   animation?: IconAnimation;

@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
   // Routes export as `<route>/index.html`, so the spec's `/community/post/?id=` resolves cleanly on
   // Cloudflare static assets.
   trailingSlash: true,
-  transpilePackages: ['@livediagram/ui', '@liveworkspace/ui', '@livediagram/api-schema'],
+  transpilePackages: ['@livehuddle/ui', '@liveworkspace/ui', '@livehuddle/api-schema'],
 };
 
 export default nextConfig;

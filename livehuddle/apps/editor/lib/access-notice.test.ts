@@ -26,7 +26,7 @@ describe('access-ended notes', () => {
   });
 
   it('ignores a note it cannot read', () => {
-    sessionStorage.setItem('livediagram:access-ended:v1', '{nope');
+    sessionStorage.setItem('livehuddle:access-ended:v1', '{nope');
     expect(takeAccessEnded()).toBeNull();
   });
 });

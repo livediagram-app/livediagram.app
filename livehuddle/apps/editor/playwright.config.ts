@@ -9,7 +9,7 @@ const isCI = !!process.env.CI;
 const CI_WORKERS = 4;
 // The signed-in specs (e2e/signed-in/, docs/specs/003-system-architecture/e2e-smoke.md) need
 // the signed-in export (`pnpm build:signed-in`). They run as their own invocation
-// (`pnpm test:e2e:signed-in`) on their own ports, so a guest stack already up on :3102 is never
+// (`pnpm test:e2e:signed-in`) on their own ports, so a guest stack already up on :3502 is never
 // mistaken for it.
 const signedIn = process.env.E2E_SIGNED_IN === '1';
 const SIGNED_IN_PORTS = {
@@ -38,7 +38,7 @@ const BASE_URL =
     ? `http://localhost:${SIGNED_IN_PORTS.live}`
     : workbench
       ? `http://localhost:${WORKBENCH_PORTS.live}`
-      : 'http://localhost:3102');
+      : 'http://localhost:3502');
 const runName = signedIn ? '-signed-in' : workbench ? '-workbench' : '';
 
 export default defineConfig({

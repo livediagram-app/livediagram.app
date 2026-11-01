@@ -20,7 +20,7 @@ import {
   visibleLayerElements,
   type BoxedElement,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
 // MCP worker reuses the same element drawing. The canvas / isometric / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
@@ -42,7 +42,7 @@ import {
   svgShadowDefs,
   xmlEscape,
   type ExportShape,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { backgroundPatternTile } from './canvas-backgrounds';
 import {
   resolveIconArtLoaded,

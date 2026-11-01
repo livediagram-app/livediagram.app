@@ -1,4 +1,4 @@
-import { headlineCase } from '@livediagram/api-schema';
+import { headlineCase } from '@livehuddle/api-schema';
 import type { IconDef, StickerDef, TechIconDef } from '@liveworkspace/icons';
 import { StickerArt } from '@/components/canvas/StickerView';
 import { CatalogIconThumb } from '@/components/primitives/icon-glyph';

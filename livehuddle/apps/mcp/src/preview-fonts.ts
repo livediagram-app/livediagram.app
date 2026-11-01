@@ -1,6 +1,6 @@
 // The typefaces a preview draws in (docs/specs/015-api/mcp-server.md §5 "Fonts"): @liveworkspace/mcp-kit's fetch and
 // cache, over this product's font table.
-import { FONTS } from '@livediagram/document';
+import { FONTS } from '@livehuddle/document';
 import { previewFonts as previewFontsOf, type Fetcher } from '@liveworkspace/mcp-kit/preview-fonts';
 
 export { cached, INTER_ITALIC, type Fetcher } from '@liveworkspace/mcp-kit/preview-fonts';

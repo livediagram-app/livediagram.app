@@ -1,10 +1,10 @@
 'use client';
 
 import { useId } from 'react';
-import { lucideGlyph, PencilIcon, Tooltip } from '@livediagram/ui';
+import { lucideGlyph, PencilIcon, Tooltip } from '@livehuddle/ui';
 import { lucideVote } from '@liveworkspace/icons/lucide';
 import { EyeIcon } from '@/components/panels/layers-panel-icons';
-import type { AccessLevel } from '@livediagram/api-schema';
+import type { AccessLevel } from '@livehuddle/api-schema';
 
 // Whether you are editing, participating in or viewing this document
 // (docs/specs/013-workspace/share-roles.md), in two shapes

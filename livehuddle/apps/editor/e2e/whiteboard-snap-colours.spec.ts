@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { penColourHex, WHITEBOARD_INK } from '@livediagram/document';
+import { penColourHex, WHITEBOARD_INK } from '@livehuddle/document';
 import {
   dismissQuickTour,
   expect,
@@ -97,7 +97,7 @@ async function painted(page: Page, id: string): Promise<string[]> {
     });
 }
 
-const PREFS_KEY = 'livediagram:user-preferences:v1';
+const PREFS_KEY = 'livehuddle:user-preferences:v1';
 const dock = (page: Page) => page.locator('[data-whiteboard-dock]');
 
 async function openSettings(page: Page) {

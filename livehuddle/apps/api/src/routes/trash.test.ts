@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { trashPurgeDueAt } from '@livediagram/api-schema';
+import { trashPurgeDueAt } from '@livehuddle/api-schema';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleTrash } from './trash';
@@ -32,7 +32,7 @@ afterEach(() => {
 
 const item = (id: string, over: Record<string, unknown> = {}) => ({
   id,
-  app: 'livediagram',
+  app: 'livehuddle',
   ownerId: 'user_me',
   teamId: null,
   folderId: null,
@@ -99,7 +99,7 @@ describe('GET /api/trash', () => {
       },
     ]);
     expect(calls.map((c) => [c.method, c.path, c.search.get('app')])).toEqual([
-      ['GET', '/trash', 'livediagram'],
+      ['GET', '/trash', 'livehuddle'],
     ]);
   });
 
@@ -166,7 +166,7 @@ describe('DELETE /api/trash', () => {
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ purged: 3 });
     expect(calls).toHaveLength(1);
-    expect(calls[0]!.search.get('app')).toBe('livediagram');
+    expect(calls[0]!.search.get('app')).toBe('livehuddle');
     expect(calls[0]!.search.get('team')).toBeNull();
   });
 
@@ -175,7 +175,7 @@ describe('DELETE /api/trash', () => {
     const res = await call('DELETE', '/api/trash?team=crew');
     expect(await res.json()).toEqual({ purged: 1 });
     expect(calls[0]!.search.get('team')).toBe('crew');
-    expect(calls[0]!.search.get('app')).toBe('livediagram');
+    expect(calls[0]!.search.get('app')).toBe('livehuddle');
   });
 
   it('a team the caller has not joined reads as missing, without asking the index', async () => {

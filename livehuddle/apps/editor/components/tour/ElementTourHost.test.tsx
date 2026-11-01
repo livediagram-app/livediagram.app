@@ -5,7 +5,7 @@
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
+import { createShape, type Element } from '@livehuddle/document';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import {
   resetTourOffersForTests,

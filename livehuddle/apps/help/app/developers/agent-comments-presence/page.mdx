@@ -17,7 +17,7 @@ export const metadata = helpMetadata({
 
 Comments are how people and agents talk on the canvas when nobody is chatting. An agent holding an [API token](/help/account-and-data/api-tokens/) reads, adds to, resolves and reopens comment threads through the same endpoints the editor uses, and can show the people on a tab what it is doing while it works. Everything it writes appears under the name and colour of the person who owns the token, never as a new person.
 
-The examples use the [CLI](/help/developers/cli/) and `curl`. Paths are relative to `https://livediagram.app/api`, and the `curl` examples assume your token is in `$TOKEN`.
+The examples use the [CLI](/help/developers/cli/) and `curl`. Paths are relative to `https://livehuddle.app/api`, and the `curl` examples assume your token is in `$TOKEN`.
 
 ## Who Can Do What
 
@@ -34,12 +34,12 @@ A comment an agent writes records the token's id for the audit trail, and the pe
 Read the whole conversation without reading a tab:
 
 ```bash
-livediagram comment ls "Shop"                  # open threads (the default)
-livediagram comment ls "Shop" --status all     # resolved ones too
+livehuddle comment ls "Shop"                  # open threads (the default)
+livehuddle comment ls "Shop" --status all     # resolved ones too
 ```
 
 ```bash
-curl "https://livediagram.app/api/documents/$DOC/comments?status=open" \
+curl "https://livehuddle.app/api/documents/$DOC/comments?status=open" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -76,10 +76,10 @@ To read one tab's threads as text, ask for its comments view: `GET /documents/$D
 In the CLI, a thread is named by its element's ref, from any [view](/help/developers/working-with-documents/#read-a-tab-as-text):
 
 ```bash
-livediagram comment add "Shop" n2 "Should this be idempotent?"   # starts a thread, or adds to one
-livediagram comment reply "Shop" n2 "Yes, keyed by order id"
-livediagram comment resolve "Shop" n2
-livediagram comment reopen "Shop" n2
+livehuddle comment add "Shop" n2 "Should this be idempotent?"   # starts a thread, or adds to one
+livehuddle comment reply "Shop" n2 "Yes, keyed by order id"
+livehuddle comment resolve "Shop" n2
+livehuddle comment reopen "Shop" n2
 ```
 
 Add `--tab Flow` when the element is not on the first tab. `reply`, `resolve` and `reopen` on an element with no thread are refused, with the `comment add` command to start one.
@@ -88,19 +88,19 @@ Over the API, a thread is named by **any comment in it**, so take a comment id f
 
 ```bash
 # Start a thread on an element (or add to its thread)
-curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/comments \
+curl -X POST https://livehuddle.app/api/documents/$DOC/tabs/$TAB/comments \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "elementId": "n2", "text": "Should this be idempotent?" }'
 
 # Reply on the thread that holds comment c1f0…
-curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/reply \
+curl -X POST https://livehuddle.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/reply \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "text": "Yes, keyed by order id" }'
 
 # Resolve it, or reopen it
-curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/resolve \
+curl -X POST https://livehuddle.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/resolve \
   -H "Authorization: Bearer $TOKEN"
-curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/reopen \
+curl -X POST https://livehuddle.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/reopen \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -116,13 +116,13 @@ Everyone with the canvas open sees each change arrive at once, exactly as if you
 An agent at work can appear on a tab with a short **status line** ("Adding the payment flow") and a **focus**: the elements it is looking at.
 
 ```bash
-livediagram presence set "Shop" --status "Adding the payment flow" --focus api,db
-livediagram presence set "Shop" --tab Flow --status "Reviewing" --ttl 120
-livediagram presence clear "Shop"
+livehuddle presence set "Shop" --status "Adding the payment flow" --focus api,db
+livehuddle presence set "Shop" --tab Flow --status "Reviewing" --ttl 120
+livehuddle presence clear "Shop"
 ```
 
 ```bash
-curl -X PUT https://livediagram.app/api/documents/$DOC/tabs/$TAB/presence \
+curl -X PUT https://livehuddle.app/api/documents/$DOC/tabs/$TAB/presence \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "status": "Adding the payment flow", "focus": ["api", "db"], "ttl": 60000 }'
 ```
@@ -168,7 +168,7 @@ Presence shows in the editor as an avatar of its own, named after its owner ("We
 To answer comments as they arrive, let the CLI wait for the next one rather than polling:
 
 ```bash
-livediagram wait "Shop" --for comment --timeout 600
+livehuddle wait "Shop" --for comment --timeout 600
 ```
 
 It prints the comment and exits, so an agent can read it, reply and wait again. Agents cannot be @mentioned; they read new comments as they arrive or on their next read.

@@ -2,7 +2,7 @@
 // between the api route that asks the model and the editor that cut the crops.
 //
 // The split is the whole design: the stickies are FOUND in the browser, by
-// measurement (`@livediagram/sticky-vision`), and the model is asked one
+// measurement (`@livehuddle/sticky-vision`), and the model is asked one
 // question about each one — what does it say. So the geometry never depends on
 // a model's coordinate sense, and the whole photograph never leaves the
 // machine it was taken on: only the crops do.

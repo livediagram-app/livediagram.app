@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { GrantClaims } from '@liveworkspace/index-client';
 import { clearGrantCacheForTests, setGrantVerifierForTests } from '../index-service';
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import worker from '../index';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { mediaServiceFor } from '../test-media-service';

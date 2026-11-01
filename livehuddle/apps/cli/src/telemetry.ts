@@ -3,7 +3,7 @@
 // the active profile's api with no credential, awaited at most TELEMETRY_FLUSH_TIMEOUT_MS. Off by environment or
 // config; the first send prints what is counted, once.
 
-import { errorTypeToken, pascalToken } from '@livediagram/api-schema';
+import { errorTypeToken, pascalToken } from '@livehuddle/api-schema';
 import { ApiError, postEvents } from '@liveworkspace/api-client';
 import type { ConfigFile } from '@liveworkspace/cli-kit/config-file';
 import { cacheDir } from './config/paths';
@@ -14,13 +14,13 @@ import { isNetworkFailure } from './output/failure-of';
 const TELEMETRY_FLUSH_TIMEOUT_MS = 300;
 
 export const telemetryNotice = (host: string) =>
-  `livediagram counts which commands succeed (the command's name only: never arguments, documents or hosts) and sends the count to ${host}. Turn it off: livediagram telemetry off, or LIVEDIAGRAM_TELEMETRY=0.`;
+  `livehuddle counts which commands succeed (the command's name only: never arguments, documents or hosts) and sends the count to ${host}. Turn it off: livehuddle telemetry off, or LIVEHUDDLE_TELEMETRY=0.`;
 
 export type TelemetrySink = { io: CliIo; apiBase: string; log: DebugLog };
 
 // Why the count is off, or null when it is on.
 export function telemetryOffReason(io: CliIo, config: ConfigFile): string | null {
-  if (io.env.LIVEDIAGRAM_TELEMETRY === '0') return 'env';
+  if (io.env.LIVEHUDDLE_TELEMETRY === '0') return 'env';
   const dnt = io.env.DO_NOT_TRACK;
   if (dnt !== undefined && dnt !== '' && dnt !== '0') return 'do-not-track';
   if (config.telemetry === false) return 'config';

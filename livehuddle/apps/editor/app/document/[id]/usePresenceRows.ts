@@ -10,12 +10,12 @@ import {
   useLocalBesideTab,
   useRemoteBesideTabs,
 } from '@liveworkspace/workbench/lib/split-presence';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import type { Participant } from '@/lib/identity';
 import type { PresenceClock } from './usePresenceState';
 import type { LaserPoint } from '@/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
-import type { AgentPresence, AvatarPresence } from '@livediagram/api-schema';
+import type { AgentPresence, AvatarPresence } from '@livehuddle/api-schema';
 import { buildAgentFocusByElement, foldAgentPresence } from '@/lib/agent-presence-rows';
 import {
   buildLaserTrailRows,

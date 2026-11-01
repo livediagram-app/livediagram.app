@@ -8,7 +8,7 @@ import {
   type Element,
   type ShapeElement,
   type TextRun,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 // The mind-map templates (docs/specs/009-elements/mind-node.md "Templates"). Every one is built from
 // MIND NODES carrying their parent pointers and the root's flow, and laid out

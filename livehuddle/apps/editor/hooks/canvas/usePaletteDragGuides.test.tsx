@@ -7,7 +7,7 @@ import {
   type Element,
   type EsTimeline,
   type EventStormingNoteKind,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   getPaletteDragSnap,
   setPaletteDragPreview,

@@ -11,7 +11,7 @@ import {
   type ChangesetConflict,
   type ChangesetSummary,
   type ResultLine,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import { redactCommentAuthorIds } from '../comments';
 import { getChangeset, getChangesetPart, getDocument, listChangesets } from '../db';
 import { getParticipant } from '../liveworkspace/profiles';

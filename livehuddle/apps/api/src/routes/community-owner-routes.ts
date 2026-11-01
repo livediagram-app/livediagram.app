@@ -2,7 +2,7 @@
 // "Publishing"; blueprint §4 and §5 G1 to G3). GET reads the canvas's post, PUT publishes it or saves an Edit
 // Listing, DELETE removes it from Community. Every app answers it the same way (@liveworkspace/community/app
 // owner-route.ts); this finds the canvas, checks the caller owns it, and gives the shared route what only
-// livediagram knows: its index, its participants and whether the first tab has something to show.
+// livehuddle knows: its index, its participants and whether the first tab has something to show.
 
 import {
   answerCommunityOwner,

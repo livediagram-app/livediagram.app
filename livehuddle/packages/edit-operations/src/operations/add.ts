@@ -2,8 +2,8 @@
 // (docs/specs/024-agents/blueprints/edit-operations.md "Operations"): taken as given, its geometry
 // kept, its id kept when free. Finalise normalises and validates it.
 
-import type { EditRejection } from '@livediagram/api-schema';
-import { ELEMENT_FIELD_NAMES, type Element } from '@livediagram/document';
+import type { EditRejection } from '@livehuddle/api-schema';
+import { ELEMENT_FIELD_NAMES, type Element } from '@livehuddle/document';
 import { layerLockOf } from '../locks';
 import { idTaken, unknownField } from '../rejections';
 import { type EditState, isTaken, putElement, refuseLocked } from '../state';

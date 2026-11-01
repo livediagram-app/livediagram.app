@@ -6,7 +6,7 @@ import { site } from '@/lib/help-site';
 
 const COPY = {
   title: 'Tips and Tricks',
-  description: 'Shortcuts and lesser-known features that make editing in livediagram faster.',
+  description: 'Shortcuts and lesser-known features that make editing in livehuddle faster.',
   lede: 'Work faster with these shortcuts and hidden features.',
 };
 

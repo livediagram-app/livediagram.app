@@ -1,4 +1,4 @@
-import { articles } from '@livediagram/help-registry';
+import { articles } from '@livehuddle/help-registry';
 import { describe, expect, it } from 'vitest';
 import { HELP_SEARCH_ITEMS } from './help-search';
 import { buildSearchResults } from './search';

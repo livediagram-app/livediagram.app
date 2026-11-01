@@ -176,7 +176,7 @@ describe('the workbench page’s surroundings', () => {
   });
 
   it('let the editor beneath settle as the person', async () => {
-    localStorage.setItem('livediagram:v2:self-id', 'guest-1');
+    localStorage.setItem('livehuddle:v2:self-id', 'guest-1');
     const { AuthProvider, WorkbenchAuthBridge, boot, core } = await load();
     let result: ReturnType<typeof boot.useAccountBootstrap> | null = null;
     function Editor() {

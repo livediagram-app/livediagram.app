@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { sentJson } from '@liveworkspace/vitest-config/sent-request';
-import { CHANGESET_MAX_OPERATIONS } from '@livediagram/api-schema';
-import { elementFingerprint, type Element } from '@livediagram/document';
+import { CHANGESET_MAX_OPERATIONS } from '@livehuddle/api-schema';
+import { elementFingerprint, type Element } from '@livehuddle/document';
 import { accountsServiceFor } from '../test-accounts-service';
 import { sqliteD1, testShareLink, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
@@ -121,7 +121,7 @@ describe('submitting a changeset', () => {
         operations: [{ op: 'set', target: 'a', fields: { label: 'Sign in' } }],
         summary: '  rename a  ',
       },
-      { token: true, headers: { 'X-Livediagram-Client': 'mcp' } },
+      { token: true, headers: { 'X-Livehuddle-Client': 'mcp' } },
     );
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
@@ -451,7 +451,7 @@ describe('reverting', () => {
       'POST',
       `/api/documents/D/changesets/${cs.changeset.id}/revert`,
       undefined,
-      { headers: { 'X-Livediagram-Client': 'editor' } },
+      { headers: { 'X-Livehuddle-Client': 'editor' } },
     );
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({

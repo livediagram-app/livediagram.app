@@ -10,14 +10,14 @@ import {
   SelectIcon,
   ShapePenIcon,
 } from '@/components/palette/palette-icons';
-import { penColourCss } from '@livediagram/document';
+import { penColourCss } from '@livehuddle/document';
 import { penLabel } from '@/lib/whiteboard-prefs';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { WHITEBOARD_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import { DockButton, DockDivider, DockToolbar } from './DockToolbar';
 import type { DockFlyoutApi } from './useDockFlyout';
-import { FillToolIcon } from '@livediagram/ui';
+import { FillToolIcon } from '@livehuddle/ui';
 import { DOCK_ICON_PX, PenGlyph, TextGlyph } from './whiteboard-icons';
 import { FILL_TRANSPARENT } from '@liveworkspace/workbench/lib/fill-choice';
 

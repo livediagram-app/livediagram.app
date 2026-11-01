@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
-import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from '@livediagram/templates';
+import type { Element } from '@livehuddle/document';
+import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from '@livehuddle/templates';
 import { buildTemplate } from './template-builders';
 
 // Structure pins for the discovery and strategy starters built together

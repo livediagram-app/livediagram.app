@@ -2,7 +2,7 @@
 // used out first, and an evicted picture's blob URL is released.
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Appearance } from '@livediagram/document';
+import type { Appearance } from '@livehuddle/document';
 import {
   THUMBNAIL_CACHE_MAX,
   loadThumbnail,

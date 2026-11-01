@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { DetectedSticky } from '@livediagram/sticky-vision';
+import type { DetectedSticky } from '@livehuddle/sticky-vision';
 import type { PhotoReview } from '@/hooks/canvas/usePhotoDraft';
 import { track } from '@/lib/telemetry';
 import { PhotoReviewOverlay } from '@/components/chrome/PhotoReviewOverlay';

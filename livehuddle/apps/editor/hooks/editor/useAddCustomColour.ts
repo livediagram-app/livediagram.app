@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
-import { withCustomColour, type Tab } from '@livediagram/document';
+import { withCustomColour, type Tab } from '@livehuddle/document';
 
 // Keeps a colour picked with + as the active tab's newest custom colour (docs/specs/004-interface-design/
 // colour-picker.md "Custom colours"), so every picker in the document offers it. Not an undoable step: it

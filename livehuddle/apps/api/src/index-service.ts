@@ -1,6 +1,6 @@
 // liveworkspace's index as this api reaches it (liveworkspace/docs/specs/004-index/one-explorer.md, one-explorer-contracts.md):
 // where every canvas is filed and who may open it. The grant check, the grant fetched for a caller that has none,
-// and the clients are @liveworkspace/index-app's, bound here to livediagram.
+// and the clients are @liveworkspace/index-app's, bound here to livehuddle.
 
 import {
   createIndexService,
@@ -15,7 +15,7 @@ import type { Env } from './types';
 export { indexApiUrl, linkCodeOf };
 export type { GrantCaller, GrantOutcome, ItemGrant } from '@liveworkspace/index-app';
 
-export const INDEX_APP = 'livediagram' as const;
+export const INDEX_APP = 'livehuddle' as const;
 
 export const indexService = createIndexService(INDEX_APP);
 

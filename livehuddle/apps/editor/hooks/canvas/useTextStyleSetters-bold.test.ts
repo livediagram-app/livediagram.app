@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { TextElement } from '@livediagram/document';
+import type { TextElement } from '@livehuddle/document';
 import { withTextStyle } from './useTextStyleSetters';
 
 // docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments": the Bold button sets bold and clears a

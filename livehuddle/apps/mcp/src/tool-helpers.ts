@@ -2,10 +2,10 @@
 // error result shapes, the deep links, the bearer-token guard every tool
 // uses, and the load-a-tab sequence the read and edit tools share.
 // Deliberately render-free, so it can be unit-tested: the inline-PNG
-// result lives in image-result.ts and the pure tab builders in @livediagram/document
-// and @livediagram/templates. tools.ts keeps the registrations.
+// result lives in image-result.ts and the pure tab builders in @livehuddle/document
+// and @livehuddle/templates. tools.ts keeps the registrations.
 
-import type { LiveDoc, DocumentResponse, TabRecord, TabResponse } from '@livediagram/api-schema';
+import type { LiveDoc, DocumentResponse, TabRecord, TabResponse } from '@livehuddle/api-schema';
 import { apiJson } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { ToolInputError } from '@liveworkspace/mcp-kit/tool-result';
@@ -23,9 +23,9 @@ export {
 } from '@liveworkspace/mcp-kit/tool-result';
 
 // The editor app this MCP server belongs to: its own host on staging and on a deployment
-// (CONSENT_BASE_URL, as the consent and device pages use), livediagram.app otherwise.
+// (CONSENT_BASE_URL, as the consent and device pages use), livehuddle.app otherwise.
 export const appBase = (env: Pick<Env, 'CONSENT_BASE_URL'>) =>
-  env.CONSENT_BASE_URL ?? 'https://www.livediagram.app';
+  env.CONSENT_BASE_URL ?? 'https://www.livehuddle.app';
 
 export const deepLink = (env: Pick<Env, 'CONSENT_BASE_URL'>, id: string) =>
   `${appBase(env)}/document/${id}`;

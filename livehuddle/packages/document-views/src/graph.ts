@@ -1,6 +1,6 @@
 // The graph view (docs/specs/024-agents/blueprints/document-views.md "graph", VW30): the elements an
 // arrow touches, then every arrow in its stored direction with its ref.
-import type { GraphView, ViewDoor } from '@livediagram/api-schema';
+import type { GraphView, ViewDoor } from '@livehuddle/api-schema';
 import {
   fitLines,
   fitOf,

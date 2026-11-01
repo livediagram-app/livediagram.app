@@ -45,7 +45,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser 
 
   // The owner scopes a new link to Roadmap.
   await adoptGuest(page, owner);
-  await page.addInitScript(() => localStorage.setItem('livediagram:v2:name-confirmed', '1'));
+  await page.addInitScript(() => localStorage.setItem('livehuddle:v2:name-confirmed', '1'));
   await page.goto(`/document/${liveDoc}`);
   await page.getByRole('button', { name: /^Share$/ }).click();
   // The shared Share dialog (@liveworkspace/explorer): issue a pass for one tab, then each pass with its own scope.
@@ -62,7 +62,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser 
   // A visitor opens it, with every response and frame watched.
   const visitorContext = await browser.newContext();
   await visitorContext.addInitScript(() =>
-    localStorage.setItem('livediagram:v2:name-confirmed', '1'),
+    localStorage.setItem('livehuddle:v2:name-confirmed', '1'),
   );
   const visitor = await visitorContext.newPage();
   const leaks: string[] = [];

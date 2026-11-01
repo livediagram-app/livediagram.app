@@ -189,7 +189,7 @@ export function LiveImageArt() {
           ![diagram](https://
         </text>
         <text className={TEXT_BODY} x="18" y="62" fontSize="5.6" fontFamily={MONO}>
-          livediagram.app/…/live.svg)
+          livehuddle.app/…/live.svg)
         </text>
         <rect
           className="fa-d-ring fill-brand-500/10 stroke-brand-500 dark:stroke-brand-400"

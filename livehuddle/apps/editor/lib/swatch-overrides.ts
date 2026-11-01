@@ -8,7 +8,7 @@ import {
   type QuickSwatchRole,
   type QuickSwatchSlot,
   isRetiredCustomThemeId,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 export type SwatchOverrideRow = Partial<Record<QuickSwatchSlot, string>>;
 export type SwatchOverrides = Partial<Record<QuickSwatchRole, SwatchOverrideRow>>;

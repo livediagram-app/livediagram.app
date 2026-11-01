@@ -10,7 +10,7 @@ vi.mock('@liveworkspace/migration/split', () => ({ hasRetiredContent: () => fals
 // database, in the `diagrams` object store (docs/specs/006-document/offline-mode.md).
 function seedVersionOne(records: object[]): Promise<void> {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open('livediagram-offline', 1);
+    const req = indexedDB.open('livehuddle-offline', 1);
     req.onupgradeneeded = () => req.result.createObjectStore('diagrams', { keyPath: 'id' });
     req.onsuccess = () => {
       const db = req.result;
@@ -28,7 +28,7 @@ function seedVersionOne(records: object[]): Promise<void> {
 
 function storeNames(): Promise<string[]> {
   return new Promise((resolve) => {
-    const req = indexedDB.open('livediagram-offline');
+    const req = indexedDB.open('livehuddle-offline');
     req.onsuccess = () => {
       const names = [...req.result.objectStoreNames];
       req.result.close();
@@ -59,7 +59,7 @@ describe('offline store upgrade from the diagrams store', () => {
   beforeEach(
     () =>
       new Promise<void>((resolve) => {
-        const req = indexedDB.deleteDatabase('livediagram-offline');
+        const req = indexedDB.deleteDatabase('livehuddle-offline');
         req.onsuccess = () => resolve();
       }),
   );

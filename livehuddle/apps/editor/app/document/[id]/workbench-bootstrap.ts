@@ -8,7 +8,7 @@
 // the link's code resolves the document and its role, the password gate asks when the link has one, and the code
 // rides every later request of the document.
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
-import { capWorkbenchRole, type LiveDoc, type ShareRole } from '@livediagram/api-schema';
+import { capWorkbenchRole, type LiveDoc, type ShareRole } from '@livehuddle/api-schema';
 import type { WorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import {
   apiLoadDocument,

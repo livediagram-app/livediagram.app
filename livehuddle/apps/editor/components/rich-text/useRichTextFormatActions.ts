@@ -12,7 +12,7 @@ import {
   type RunHeading,
   type RunPatch,
   type TextRun,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { domSelectionToOffsets } from '@/components/rich-text/rich-text-dom';
 import { wordRangeAt, type RunDefaults } from '@/components/rich-text/rich-text-format';
 

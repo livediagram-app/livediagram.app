@@ -1,4 +1,4 @@
-import { TEMPLATES, templateEditorMode } from '@livediagram/templates';
+import { TEMPLATES, templateEditorMode } from '@livehuddle/templates';
 import { describe, expect, it } from 'vitest';
 import { HERO_SCENES } from './hero-scenes';
 
@@ -10,7 +10,7 @@ describe('hero scenes', () => {
   it.each(HERO_SCENES.map((s) => [s.key, s] as const))(
     '%s links to the mode its window shows',
     (_, scene) => {
-      const url = new URL(scene.build, 'https://www.livediagram.app');
+      const url = new URL(scene.build, 'https://www.livehuddle.app');
       expect(url.pathname).toBe('/new');
       expect(url.searchParams.get('mode')).toBe(scene.mode);
     },
@@ -18,10 +18,10 @@ describe('hero scenes', () => {
 
   it.each(
     HERO_SCENES.filter((s) =>
-      new URL(s.build, 'https://www.livediagram.app').searchParams.has('q'),
+      new URL(s.build, 'https://www.livehuddle.app').searchParams.has('q'),
     ).map((s) => [s.key, s] as const),
   )('%s searches for a template that opens in its mode', (_, scene) => {
-    const q = new URL(scene.build, 'https://www.livediagram.app').searchParams
+    const q = new URL(scene.build, 'https://www.livehuddle.app').searchParams
       .get('q')!
       .toLowerCase();
     const match = TEMPLATES.filter(

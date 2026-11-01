@@ -6,8 +6,8 @@ import {
   CHANGESET_MAX_OPERATIONS,
   type EditRejection,
   type JsonValue,
-} from '@livediagram/api-schema';
-import type { Element } from '@livediagram/document';
+} from '@livehuddle/api-schema';
+import type { Element } from '@livehuddle/document';
 import { describeElement, kindOf, labelOf, quoteCut } from './element-text';
 import { nearestName } from './nearest';
 import {
@@ -157,9 +157,7 @@ export function invalidResult(
   return {
     code: 'invalid_result',
     details: [`${subject} ${issue.field}: ${issue.rule}`],
-    hint: kind
-      ? `see the format: livediagram schema ${kind}`
-      : 'see the format: livediagram schema',
+    hint: kind ? `see the format: livehuddle schema ${kind}` : 'see the format: livehuddle schema',
   };
 }
 

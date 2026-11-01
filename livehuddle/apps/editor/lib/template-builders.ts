@@ -1,4 +1,4 @@
-// The editor-side seam over @livediagram/templates: the pure builders
+// The editor-side seam over @livehuddle/templates: the pure builders
 // live in the package (shared with the MCP worker, docs/specs/015-api/mcp-server.md); this
 // wrapper adds what only the app can — resolving the theme id in the
 // viewer's appearance and the graph-aware theme recolour — to land a picked template as a fully styled tab.
@@ -7,8 +7,8 @@
 // /live/new imports it statically since it's the template-creation
 // page by definition.
 
-import { type Tab } from '@livediagram/document';
-import { buildTemplate, templateCanvasOverrides, type TemplateKind } from '@livediagram/templates';
+import { type Tab } from '@livehuddle/document';
+import { buildTemplate, templateCanvasOverrides, type TemplateKind } from '@livehuddle/templates';
 import { getTheme, recolourElementsForTheme } from './themes';
 
 export {
@@ -16,7 +16,7 @@ export {
   isDefaultDocumentName,
   templateCanvasOverrides,
   untitledNameForTemplate,
-} from '@livediagram/templates';
+} from '@livehuddle/templates';
 
 export function buildTemplatedTab(
   kind: TemplateKind,

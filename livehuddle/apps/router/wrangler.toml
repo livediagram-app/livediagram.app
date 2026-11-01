@@ -1,5 +1,5 @@
-name = "livediagram-router"
-# The liveworkspace Cloudflare account, which also hosts livediagram.app, so a deploy can never land on another one.
+name = "livehuddle-router"
+# The liveworkspace Cloudflare account, which also hosts livehuddle.app, so a deploy can never land on another one.
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-01"
@@ -7,8 +7,8 @@ compatibility_date = "2026-05-01"
 # `wrangler deploy` with their DNS records and certificates. www is the canonical origin
 # links are built from (APP_BASE_URL in apps/api/hosted-vars.json), so it is attached too.
 routes = [
-  { pattern = "livediagram.app", custom_domain = true },
-  { pattern = "www.livediagram.app", custom_domain = true },
+  { pattern = "livehuddle.app", custom_domain = true },
+  { pattern = "www.livehuddle.app", custom_domain = true },
 ]
 
 # Service bindings to the marketing and live apps.
@@ -18,28 +18,28 @@ routes = [
 
 [[services]]
 binding = "MARKETING"
-service = "livediagram-marketing"
+service = "livehuddle-marketing"
 
 [[services]]
 binding = "EDITOR"
-service = "livediagram-editor"
+service = "livehuddle-editor"
 
 [[services]]
 binding = "API"
-service = "livediagram-api"
+service = "livehuddle-api"
 
 [[services]]
 binding = "HELP"
-service = "livediagram-help"
+service = "livehuddle-help"
 
 [[services]]
 binding = "COMMUNITY"
-service = "livediagram-community"
+service = "livehuddle-community"
 
 # /telemetry is not a downstream: it redirects to the liveworkspace telemetry
 # dashboard (docs/specs/017-telemetry/telemetry.md).
 
-# Local dev (`wrangler dev --env local --port 3100`, the workspace `dev`
+# Local dev (`wrangler dev --env local --port 3500`, the workspace `dev`
 # script): service bindings can't reach the local Next dev servers, so this
 # environment defines none and sets plain HTTP origins instead. The worker
 # falls back to proxying these when a binding is absent. See docs/specs/016-platform/router-app.md.
@@ -50,11 +50,11 @@ DEPLOY_ENV = "local"
 # liveworkspace.app, run locally by liveworkspace/apps/site: its Explorer is served at /explorer while the app's
 # switch is on (liveworkspace/docs/specs/004-index/one-explorer.md); production's (https://www.liveworkspace.app) needs no var.
 WORKSPACE_ORIGIN = "http://localhost:3000"
-MARKETING_ORIGIN = "http://127.0.0.1:3101"
-EDITOR_ORIGIN = "http://127.0.0.1:3102"
-API_ORIGIN = "http://127.0.0.1:8687"
-HELP_ORIGIN = "http://127.0.0.1:3104"
-COMMUNITY_ORIGIN = "http://127.0.0.1:3105"
+MARKETING_ORIGIN = "http://127.0.0.1:3501"
+EDITOR_ORIGIN = "http://127.0.0.1:3502"
+API_ORIGIN = "http://127.0.0.1:9087"
+HELP_ORIGIN = "http://127.0.0.1:3504"
+COMMUNITY_ORIGIN = "http://127.0.0.1:3505"
 # liveworkspace's index (`pnpm dev` in liveworkspace/apps/index): `/api/index/*` goes there.
 INDEX_ORIGIN = "http://127.0.0.1:8793"
 # liveworkspace's Google Drive mirror (`pnpm dev` in liveworkspace/apps/drive): `/api/drive/*` goes there.
@@ -64,8 +64,8 @@ DRIVE_ORIGIN = "http://127.0.0.1:3011"
 PREVIEWS_ORIGIN = "http://127.0.0.1:8792"
 
 # ---------------------------------------------------------------------------
-# Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livediagram-router-staging` and fronts
-# https://staging.livediagram.app, its custom domain declared below (routes are
+# Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livehuddle-router-staging` and fronts
+# https://staging.livehuddle.app, its custom domain declared below (routes are
 # non-inheritable, so production's two never reach staging).
 #
 # EVERY `service` below carries the `-staging` suffix. Service bindings are
@@ -80,28 +80,28 @@ PREVIEWS_ORIGIN = "http://127.0.0.1:8792"
 # name on its own, but nothing in `--dry-run` prints the name it resolved,
 # and the router's service bindings depend on this exact string.
 [env.staging]
-name = "livediagram-router-staging"
-routes = [{ pattern = "staging.livediagram.app", custom_domain = true }]
+name = "livehuddle-router-staging"
+routes = [{ pattern = "staging.livehuddle.app", custom_domain = true }]
 
 [[env.staging.services]]
 binding = "MARKETING"
-service = "livediagram-marketing-staging"
+service = "livehuddle-marketing-staging"
 
 [[env.staging.services]]
 binding = "EDITOR"
-service = "livediagram-editor-staging"
+service = "livehuddle-editor-staging"
 
 [[env.staging.services]]
 binding = "API"
-service = "livediagram-api-staging"
+service = "livehuddle-api-staging"
 
 [[env.staging.services]]
 binding = "HELP"
-service = "livediagram-help-staging"
+service = "livehuddle-help-staging"
 
 [[env.staging.services]]
 binding = "COMMUNITY"
-service = "livediagram-community-staging"
+service = "livehuddle-community-staging"
 
 # Marks this router as the staging one. The worker reads it to stamp
 # `X-Robots-Tag: noindex, nofollow` on every response, which is what keeps a

@@ -14,7 +14,7 @@ import {
   svgBoxed,
   type Element,
   type Layer,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   resolveIconArtLoaded,
   resolveStickerArtLoaded,

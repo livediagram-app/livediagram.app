@@ -15,7 +15,7 @@ import {
   REF_INPUT_MAX_LENGTH,
   TAB_VIEW_NAMES,
   VIEW_BUDGET_MAX,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import {
   ANCHORS,
   BADGE_LABEL_MAX,
@@ -45,9 +45,9 @@ import {
   STICKY_PRESETS,
   THEMES,
   truncateName,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
-export const SCHEMA_RESOURCE_URI = 'livediagram://schema/elements';
+export const SCHEMA_RESOURCE_URI = 'livehuddle://schema/elements';
 
 const types = [...ELEMENT_TYPES].join(', ');
 const anchors = [...ANCHORS].join(', ');
@@ -197,7 +197,7 @@ const ELEMENT_SCHEMA_HINT =
   CONTENT_KINDS;
 
 export function elementSchemaDoc(): string {
-  return `# livediagram element schema
+  return `# livehuddle element schema
 
 A tab is { name, elements: Element[] }. Every element needs a unique string "id".
 A document has one or more tabs, each its own canvas. create_document makes a
@@ -282,7 +282,7 @@ tabs in a create_document call.
 // resources (docs/specs/015-api/mcp-server.md §4.5). Phrased as facts about the server (what it does
 // with what you send, and where the format is written down), not as rules for
 // the calling model (docs/specs/015-api/mcp-server.md §4.15).
-export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, delete (to the Trash) and restore the user's livediagram documents.
+export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, delete (to the Trash) and restore the user's livehuddle documents.
 The calling model produces the diagram elements AND decides their layout; this
 server validates, persists, and renders them, and only auto-arranges the graph
 when you ask it to (or leave nodes unplaced). The full element format is
@@ -318,7 +318,7 @@ const layoutField = z
   );
 
 // Template kinds are validated at runtime against the shared catalogue
-// (@livediagram/templates) rather than a z.enum, so a new template is one
+// (@livehuddle/templates) rather than a z.enum, so a new template is one
 // catalogue entry with no schema churn; list_templates is the discovery
 // surface.
 const templateField = z

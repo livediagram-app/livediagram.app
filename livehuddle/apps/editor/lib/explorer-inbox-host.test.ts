@@ -54,7 +54,7 @@ describe('the Inbox host', () => {
   it('turns This Browser rows into the index’s shape, the reader standing in for their old ids', () => {
     const rows = localInboxRows(local, 'user_me');
     expect(rows.actions[0]).toMatchObject({
-      app: 'livediagram',
+      app: 'livehuddle',
       itemId: 'p1',
       itemTitle: 'Offline canvas',
       tabName: 'Roadmap',
@@ -87,7 +87,7 @@ describe('the Inbox host', () => {
 describe('the Inbox pane’s verbs in the editor’s panel', () => {
   const row = {
     kind: 'Thread' as const,
-    app: 'livediagram' as const,
+    app: 'livehuddle' as const,
     itemId: 'i1',
     tabId: 't1',
     elementId: 'e1',

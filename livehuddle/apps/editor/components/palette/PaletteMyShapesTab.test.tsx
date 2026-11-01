@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { ShapeLibrary } from '@livediagram/api-schema';
+import type { ShapeLibrary } from '@livehuddle/api-schema';
 import { PaletteMyShapesTab, myShapesSections } from './PaletteMyShapesTab';
 
 // docs/specs/013-workspace/shape-libraries.md "Using a library: the palette".
@@ -76,7 +76,7 @@ describe('PaletteMyShapesTab', () => {
       dataTransfer: { setData, effectAllowed: '' },
     });
     expect(setData).toHaveBeenCalledWith(
-      'application/x-livediagram-library-shape',
+      'application/x-livehuddle-library-shape',
       JSON.stringify({ libraryId: 'l1', itemId: 'a' }),
     );
   });

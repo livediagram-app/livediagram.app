@@ -8,7 +8,7 @@ import {
   penColourLabel,
   type PenColour,
   type PenColourName,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   readLocalStorageSafe,
   safeJson,
@@ -173,7 +173,7 @@ export function parseWhiteboardPrefs(raw: unknown): WhiteboardPrefs {
 
 // --- Storage ----------------------------------------------------------------
 
-const STORAGE_KEY = 'livediagram:v2:whiteboard-pens';
+const STORAGE_KEY = 'livehuddle:v2:whiteboard-pens';
 
 export function loadWhiteboardPrefs(): WhiteboardPrefs {
   const raw = readLocalStorageSafe(STORAGE_KEY);

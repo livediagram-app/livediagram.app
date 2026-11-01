@@ -17,7 +17,7 @@ import { expect, test, pageOwnerHeaders, seedDocumentItem } from './fixtures';
 async function seedDocument(page: Page, name: string): Promise<string> {
   // The guest token arrives through the guest handoff; seed under it.
   await expect
-    .poll(() => page.evaluate(() => localStorage.getItem('livediagram:v2:guest-token')))
+    .poll(() => page.evaluate(() => localStorage.getItem('livehuddle:v2:guest-token')))
     .toBeTruthy();
   const id = crypto.randomUUID();
   const res = await seedDocumentItem(page.request, await pageOwnerHeaders(page), {

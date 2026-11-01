@@ -26,11 +26,11 @@ export function migrateStoredTab<
 }
 
 /**
- * Every stored-tab upgrade but the Pages and Plan drops, for the move from the historical livediagram.app
+ * Every stored-tab upgrade but the Pages and Plan drops, for the move from the historical livehuddle.app
  * (docs/migration.md at the monorepo root, step 3): its migrate tool hands a tab's Pages and Plan content to
- * livedocuments, livedesign and liveplanner, which don't run livediagram's older read migrations, so the tab comes
+ * livedocuments, livedesign and liveplanner, which don't run livehuddle's older read migrations, so the tab comes
  * back in today's shape with its pages, articles, dashboard, form and their elements still in it. Never for a tab
- * livediagram itself opens.
+ * livehuddle itself opens.
  */
 export function migrateStoredTabKeepingRetired<
   T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,

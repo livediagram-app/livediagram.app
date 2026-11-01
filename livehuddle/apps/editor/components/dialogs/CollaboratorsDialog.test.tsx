@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
-import type { AccessLevel } from '@livediagram/api-schema';
+import type { Tab } from '@livehuddle/document';
+import type { AccessLevel } from '@livehuddle/api-schema';
 import type { Participant } from '@/lib/identity';
 import { bindWorkbench } from '@/lib/workbench-bindings';
 import { HIDE_CURSORS_KEY } from '@/lib/workbench-keys';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { Tooltip, Portal } from '@livediagram/ui';
+import { Tooltip, Portal } from '@livehuddle/ui';
 
 const VIEWPORT_MARGIN_PX = 12;
 // How close the tip may come to a corner of the card (its rounding is 12px).

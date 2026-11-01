@@ -1,5 +1,5 @@
 // API-worker type surface. The wire-format DTOs are now defined in
-// `@livediagram/api-schema` so the api worker and the live editor
+// `@livehuddle/api-schema` so the api worker and the live editor
 // share the same source of truth (no more parallel type definitions
 // drifting between them — see AGENTS.md's reuse-over-duplication
 // rule). This file re-exports the canonical names under the
@@ -19,7 +19,7 @@ export type {
   ShareLink as ShareLinkDTO,
   ServerMessage,
   ClientMessage,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 
 import type { DocumentRoom } from './document-room/document-room';
 import type { PersonStore } from './person-store/person-store';
@@ -30,7 +30,7 @@ export type Env = {
   // Each document's Durable Object (src/document-room/document-room.ts): its content, in its own SQLite, and its
   // realtime room. Reached through document-client.ts `documentRoom(env, documentId)`.
   DOCUMENT_ROOM: DurableObjectNamespace<DocumentRoom>;
-  // Each person's Durable Object (src/person-store/person-store.ts): what livediagram keeps for one person rather
+  // Each person's Durable Object (src/person-store/person-store.ts): what livehuddle keeps for one person rather
   // than for one canvas (their shape libraries). Reached through person-client.ts `personStore(env, personId)`.
   PERSON_STORE: DurableObjectNamespace<PersonStore>;
   // The key liveworkspace's index presents on this app's internal endpoints (`/api/internal/items/*`,
@@ -47,7 +47,7 @@ export type Env = {
   // Signing in through the liveworkspace accounts Worker (docs/specs/014-identity/auth-and-guest-access.md,
   // auth/accounts.ts + routes/auth.ts). ACCOUNTS_URL is its origin, e.g.
   // `https://liveworkspace.app`; its issuer and key set sit under `/api/auth`. API_RESOURCE is
-  // what this API was registered as, e.g. `https://livediagram.app/api`, and every access token must
+  // what this API was registered as, e.g. `https://livehuddle.app/api`, and every access token must
   // name it as its audience, as must a guest's token (liveworkspace/docs/specs/003-accounts/accounts.md "Guests"). With either unset
   // no caller has an identity: only share-link visitors are served.
   ACCOUNTS_URL?: string;
@@ -56,7 +56,7 @@ export type Env = {
   // /api/auth routes read them; the secret is a `wrangler secret`.
   ACCOUNTS_CLIENT_ID?: string;
   ACCOUNTS_CLIENT_SECRET?: string;
-  // Local dev only: the origin the browser is on (the router, `http://localhost:3100`), which the
+  // Local dev only: the origin the browser is on (the router, `http://localhost:3500`), which the
   // sign-in redirect returns to. Unset in production, where the request's own origin is right.
   AUTH_ORIGIN?: string;
   // The OAuth server the CLI signs in through (docs/specs/015-api/cli.md), an https origin.
@@ -90,18 +90,18 @@ export type Env = {
   // The liveworkspace Community service (liveworkspace/docs/specs/007-community/community.md), which keeps every app's posts. Unset means
   // production's, https://www.liveworkspace.app/api/community; staging and local development name their own.
   COMMUNITY_URL?: string;
-  // livediagram's secret on that service, sent as a bearer token on its app routes. A secret (wrangler secret put
+  // livehuddle's secret on that service, sent as a bearer token on its app routes. A secret (wrangler secret put
   // COMMUNITY_KEY); unset, this deploy has no Community to publish to.
   COMMUNITY_KEY?: string;
   // liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md, src/media.ts), which keeps every app's uploaded
   // images. Unset means production's, https://www.liveworkspace.app/api/media; staging and local development name
   // their own.
   MEDIA_URL?: string;
-  // livediagram's secret on that service, sent as a bearer token. A secret (wrangler secret put MEDIA_KEY); unset,
+  // livehuddle's secret on that service, sent as a bearer token. A secret (wrangler secret put MEDIA_KEY); unset,
   // this deploy has no images, and the image endpoints answer 503 so the editor hides them.
   MEDIA_KEY?: string;
-  // livediagram's secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"), the
-  // same value as the service's DRIVE_KEY_LIVEDIAGRAM: it opens the internal export door (its `file` format) and the
+  // livehuddle's secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"), the
+  // same value as the service's DRIVE_KEY_LIVEHUDDLE: it opens the internal export door (its `file` format) and the
   // import door, nothing else. A secret (wrangler secret put DRIVE_KEY); unset, the mirror has no way in.
   DRIVE_KEY?: string;
   // The migrate tool's key on the migration door (docs/migration.md "The apps' migration door"): it opens
@@ -118,7 +118,7 @@ export type Env = {
   // The liveworkspace telemetry service (liveworkspace/docs/specs/008-telemetry/telemetry.md). Unset means production's,
   // https://www.liveworkspace.app/api/telemetry; staging and local development name their own.
   TELEMETRY_URL?: string;
-  // livediagram's secret on that service, sent as X-Telemetry-Key: it proves a batch with no Origin
+  // livehuddle's secret on that service, sent as X-Telemetry-Key: it proves a batch with no Origin
   // is this app's own. A secret (wrangler secret put TELEMETRY_KEY); unset sends nothing.
   TELEMETRY_KEY?: string;
   // Cloudflare Email Service's `send_email` binding for this app's notification and milestone emails
@@ -127,10 +127,10 @@ export type Env = {
   // email feature is inert: no sends.
   EMAIL?: SendEmail;
   // From identity for outbound email (optional), a bare address or "Name <address>". Defaults to
-  // "livediagram <hello@livediagram.app>". Its domain must be onboarded to Email Service on this account.
+  // "livehuddle <hello@livehuddle.app>". Its domain must be onboarded to Email Service on this account.
   EMAIL_FROM?: string;
   // Public origin used to build links in emails (optional). Defaults to
-  // "https://www.livediagram.app".
+  // "https://www.livehuddle.app".
   APP_BASE_URL?: string;
   // WHOSE model reads sticky notes from a photo, and where
   // (docs/specs/021-event-storming/note-reader.md). The PROVIDER is inferred
@@ -165,9 +165,9 @@ export type Env = {
   // header exactly matches one of the entries (trimmed for
   // whitespace). Unset = no check, matching the historical
   // behaviour so upgrades don't break. Hosted
-  // livediagram.app sets this in apps/api/wrangler.toml [vars] (NOT the
+  // livehuddle.app sets this in apps/api/wrangler.toml [vars] (NOT the
   // dashboard, which a deploy wipes) to BOTH
-  // "https://www.livediagram.app" and "https://livediagram.app", `www`
+  // "https://www.livehuddle.app" and "https://livehuddle.app", `www`
   // first because the apex 301s to it, so `www` is what a browser sends.
   // This comment previously named the apex alone, which as an actual
   // value would 403 every request the editor makes.
@@ -175,7 +175,7 @@ export type Env = {
   // When the literal string "true", POST /api/ai/read-notes requires a verified
   // access token and rejects a guest with 401
   // (docs/specs/021-event-storming/note-reader.md). Anything else (unset, "false", any other value) keeps
-  // it open to guests. Hosted livediagram.app leaves it unset.
+  // it open to guests. Hosted livehuddle.app leaves it unset.
   AI_REQUIRE_SIGN_IN?: string;
 };
 

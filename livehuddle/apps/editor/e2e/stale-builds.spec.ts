@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { BUILD_ID_HEADER } from '@livediagram/api-schema';
+import { BUILD_ID_HEADER } from '@livehuddle/api-schema';
 import { expect, test } from './fixtures';
 
 // Stale builds (docs/specs/016-platform/stale-builds.md), in dark mode, on the Explorer, whose
@@ -38,7 +38,7 @@ test.describe('stale builds', () => {
     await openExplorer(page);
     // Counted first, so an export built without an id skips at once rather than waiting for a meta
     // tag that never comes.
-    const meta = page.locator('meta[name="livediagram-build"]');
+    const meta = page.locator('meta[name="livehuddle-build"]');
     const ownBuild = (await meta.count()) > 0 ? await meta.getAttribute('content') : null;
     test.skip(!ownBuild, 'this export was built without a build id');
     // The api now reports another build, as it does once the next deploy is live.

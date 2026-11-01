@@ -9,7 +9,7 @@ import {
   lucideUsers,
   lucideZap,
 } from '@liveworkspace/icons/lucide';
-import { CONTACT_FORM_URL, lucideGlyph, REPO_URL, STATUS_PAGE_URL } from '@livediagram/ui';
+import { CONTACT_FORM_URL, lucideGlyph, REPO_URL, STATUS_PAGE_URL } from '@livehuddle/ui';
 import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 
 // The /faq page's content (docs/specs/019-marketing/marketing-site.md "Content pages (FAQ)"): questions grouped
@@ -19,7 +19,7 @@ import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 // image of the page.
 
 const ICON = 18;
-// Written out rather than read from @livediagram/templates: this module ships in the FAQ's client bundle, and the
+// Written out rather than read from @livehuddle/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
 export const TEMPLATE_COUNT = 88;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
@@ -29,15 +29,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: 'getting-started',
     title: 'Getting started',
-    blurb: 'What livediagram is and how to begin.',
+    blurb: 'What livehuddle is and how to begin.',
     icon: lucideGlyph(lucideZap, ICON),
     items: [
       {
-        q: 'What is livediagram?',
+        q: 'What is livehuddle?',
         a: 'A free, real-time canvas for diagrams, whiteboards and workshops. Every canvas is a stack of tabs, and each tab can be worked on in three modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, and Workshop for running a session with your team. Your team can join any of them live.',
       },
       {
-        q: 'Do I need an account to use livediagram?',
+        q: 'Do I need an account to use livehuddle?',
         a: (
           <>
             No. Open the editor and start drawing straight away, with no sign-up. Your work saves in
@@ -131,7 +131,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Will features ever move behind a paywall?',
-        a: 'No. There are no "Pro" features and no billing anywhere in the code. Every feature is in the one free version at livediagram.app.',
+        a: 'No. There are no "Pro" features and no billing anywhere in the code. Every feature is in the one free version at livehuddle.app.',
       },
     ],
   },
@@ -428,7 +428,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I connect my own AI assistant, like Claude?',
         a: (
           <>
-            Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool
+            Yes. livehuddle runs an MCP server at mcp.livehuddle.app. Connect a compatible AI tool
             and, after a one-time authorisation, it can find, read, create and edit the canvases in
             your account. Its changes appear live for anyone on the tab, outlined so you can see
             them and undo them. <a href="/ai">Build with AI</a> walks you through connecting Claude,
@@ -436,7 +436,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           </>
         ),
         aText:
-          'Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the canvases in your account. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
+          'Yes. livehuddle runs an MCP server at mcp.livehuddle.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the canvases in your account. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
       },
       {
         q: 'Is there an API?',
@@ -452,7 +452,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Is there a command-line tool?',
-        a: 'Yes. Install it from npm as @livediagram/cli (or run it with npx). It signs in through your browser and can read, edit, create, share and export canvases from your terminal, which makes it handy for scripts and coding agents.',
+        a: 'Yes. Install it from npm as @livehuddle/cli (or run it with npx). It signs in through your browser and can read, edit, create, share and export canvases from your terminal, which makes it handy for scripts and coding agents.',
       },
       {
         q: 'Can I keep my diagrams next to my code?',
@@ -460,12 +460,12 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             Yes. Link a repository to a folder of canvases with the CLI, and it keeps a snapshot of
             each one in the repository, so coding agents find your diagrams by name and read them as
-            text. livediagram stays the home of every canvas. See{' '}
+            text. livehuddle stays the home of every canvas. See{' '}
             <a href="/help/developers/repositories/">diagrams in your repository</a>.
           </>
         ),
         aText:
-          'Yes. Link a repository to a folder of canvases with the CLI, and it keeps a snapshot of each one in the repository, so coding agents find your diagrams by name and read them as text. livediagram stays the home of every canvas. See diagrams in your repository.',
+          'Yes. Link a repository to a folder of canvases with the CLI, and it keeps a snapshot of each one in the repository, so coding agents find your diagrams by name and read them as text. livehuddle stays the home of every canvas. See diagrams in your repository.',
       },
     ],
   },
@@ -481,7 +481,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Does it work with Mermaid?',
-        a: 'Yes, both ways. Paste or open a Mermaid flowchart, state diagram or ER diagram and livediagram lays it out on the canvas with every connection intact. Export a diagram tab back to Mermaid text for your READMEs, issues and AI tools. Other Mermaid types, such as sequence, class, Gantt, pie and mind map, are not supported.',
+        a: 'Yes, both ways. Paste or open a Mermaid flowchart, state diagram or ER diagram and livehuddle lays it out on the canvas with every connection intact. Export a diagram tab back to Mermaid text for your READMEs, issues and AI tools. Other Mermaid types, such as sequence, class, Gantt, pie and mind map, are not supported.',
       },
       {
         q: 'Can I move my boards over from another tool?',
@@ -489,7 +489,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I turn a photo of sticky notes into a board?',
-        a: 'Yes, on an event storming board. Take a photo of the wall and livediagram finds the sticky notes and places them on the canvas for you to tidy up.',
+        a: 'Yes, on an event storming board. Take a photo of the wall and livehuddle finds the sticky notes and places them on the canvas for you to tidy up.',
       },
       {
         q: 'Can I keep a copy in my own Google Drive?',
@@ -536,13 +536,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             A canvas kept only in your browser goes with it, so share it or sign in first. Share
-            syncs a canvas online in one step, and after you sign in livediagram offers to move
-            every browser-only canvas into your account. Canvases saved to your account are never
-            touched. See <a href="/help/privacy-and-security/offline-mode/">Offline Mode</a>.
+            syncs a canvas online in one step, and after you sign in livehuddle offers to move every
+            browser-only canvas into your account. Canvases saved to your account are never touched.
+            See <a href="/help/privacy-and-security/offline-mode/">Offline Mode</a>.
           </>
         ),
         aText:
-          'A canvas kept only in your browser goes with it, so share it or sign in first. Share syncs a canvas online in one step, and after you sign in livediagram offers to move every browser-only canvas into your account. Canvases saved to your account are never touched. See Offline Mode.',
+          'A canvas kept only in your browser goes with it, so share it or sign in first. Share syncs a canvas online in one step, and after you sign in livehuddle offers to move every browser-only canvas into your account. Canvases saved to your account are never touched. See Offline Mode.',
       },
       {
         q: 'Is my work saved automatically?',
@@ -582,20 +582,20 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Try reloading first. If it still will not open, the editor offers to repair this browser’s saved state without touching your canvases. The troubleshooting guide walks through every step.',
       },
       {
-        q: 'Is livediagram up right now?',
+        q: 'Is livehuddle up right now?',
         a: (
           <>
             The <a href={STATUS_PAGE_URL}>liveworkspace status page</a> checks each of
-            livediagram&rsquo;s services from your browser while you watch, and from Cloudflare
-            every hour, with 90 days of livediagram&rsquo;s history and any recent incidents, beside
-            the services every app shares.
+            livehuddle&rsquo;s services from your browser while you watch, and from Cloudflare every
+            hour, with 90 days of livehuddle&rsquo;s history and any recent incidents, beside the
+            services every app shares.
           </>
         ),
         aText:
-          'The liveworkspace status page checks each of livediagram’s services from your browser while you watch, and from Cloudflare every hour, with 90 days of livediagram’s history and any recent incidents, beside the services every app shares.',
+          'The liveworkspace status page checks each of livehuddle’s services from your browser while you watch, and from Cloudflare every hour, with 90 days of livehuddle’s history and any recent incidents, beside the services every app shares.',
       },
       {
-        q: 'Who makes livediagram?',
+        q: 'Who makes livehuddle?',
         a: (
           <>
             It is built in the open by{' '}

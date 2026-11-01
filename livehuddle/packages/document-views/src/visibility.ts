@@ -1,7 +1,7 @@
 // Which elements a view prints (docs/specs/024-agents/blueprints/document-views.md "The view model"): an
 // element is hidden when its layer is hidden, and so is an arrow pinned to a hidden element or riding on a
 // hidden arrow, however long the chain (VW10): a printed end never names a hidden element's ref.
-import { visibleLayerElements, type Element, type Layer } from '@livediagram/document';
+import { visibleLayerElements, type Element, type Layer } from '@livehuddle/document';
 
 type Partition = { printed: Element[]; hidden: Element[] };
 

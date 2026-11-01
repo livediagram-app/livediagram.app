@@ -1,5 +1,5 @@
-import type { Tab } from '@livediagram/document';
-import type { RoomOp } from '@livediagram/api-schema';
+import type { Tab } from '@livehuddle/document';
+import type { RoomOp } from '@livehuddle/api-schema';
 import { applyRoomOpToTabs } from './room-op-apply';
 
 // The autosave's baseline (`lastSavedTabsRef` + `lastSavedNameRef`) is the

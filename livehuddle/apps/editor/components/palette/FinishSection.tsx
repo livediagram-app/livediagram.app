@@ -7,8 +7,8 @@
 // both read the same.
 
 import type { ReactNode } from 'react';
-import { FINISHES, isFinish, type Finish } from '@livediagram/document';
-import { Glyph, LinkIcon } from '@livediagram/ui';
+import { FINISHES, isFinish, type Finish } from '@livehuddle/document';
+import { Glyph, LinkIcon } from '@livehuddle/ui';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import {
   OptionRows,

@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { brandLogoSvg, brandMarkSvg } from '@livediagram/ui';
+import { brandLogoSvg, brandMarkSvg } from '@livehuddle/ui';
 
 // Each frontend ships its own app/icon.svg, because Next's icon file
 // convention wants one per app (and help's is served under its basePath), and
 // marketing/media/logo/ holds the mark and lockup as files. All are written by
-// `pnpm icons:brand` from the Living Prism module in @livediagram/ui. Nothing
+// `pnpm icons:brand` from the Living Prism module in @livehuddle/ui. Nothing
 // at runtime notices one of them drifting; this does.
 
 const APPS = ['marketing', 'editor', 'help', 'community'] as const;
@@ -23,10 +23,10 @@ describe('brand icon', () => {
 
   it('ships the full mark and the lockup, light and dark, in marketing/media/logo/', () => {
     for (const scheme of ['light', 'dark'] as const) {
-      expect(read(`marketing/media/logo/livediagram-mark-${scheme}.svg`), REGENERATE).toBe(
+      expect(read(`marketing/media/logo/livehuddle-mark-${scheme}.svg`), REGENERATE).toBe(
         brandMarkSvg({ variant: 'full', scheme }),
       );
-      expect(read(`marketing/media/logo/livediagram-logo-${scheme}.svg`), REGENERATE).toBe(
+      expect(read(`marketing/media/logo/livehuddle-logo-${scheme}.svg`), REGENERATE).toBe(
         brandLogoSvg(scheme),
       );
     }
@@ -37,7 +37,7 @@ describe('brand icon', () => {
   // BRAND_ICONS (docs/specs/016-platform/nextjs.md "Features used and declined").
   it('gives help and community the PNG fallback, the same tile marketing serves', () => {
     const tile = readFileSync(
-      fileURLToPath(new URL('apps/marketing/public/livediagram-icon-256.png', REPO)),
+      fileURLToPath(new URL('apps/marketing/public/livehuddle-icon-256.png', REPO)),
     );
     for (const app of ['help', 'community'])
       expect(
@@ -50,11 +50,11 @@ describe('brand icon', () => {
   // copy marketing serves for them must be the transparent 64px PNG the generator renders.
   it('serves the emails the transparent 64px mark', () => {
     const mark = readFileSync(
-      fileURLToPath(new URL('marketing/media/icons/livediagram-icon-transparent-64.png', REPO)),
+      fileURLToPath(new URL('marketing/media/icons/livehuddle-icon-transparent-64.png', REPO)),
     );
     expect(
       readFileSync(
-        fileURLToPath(new URL('apps/marketing/public/email/livediagram-mark-64.png', REPO)),
+        fileURLToPath(new URL('apps/marketing/public/email/livehuddle-mark-64.png', REPO)),
       ).equals(mark),
       REGENERATE,
     ).toBe(true);

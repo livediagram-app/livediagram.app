@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { runInlineScript } from '@liveworkspace/vitest-config/inline-script';
 import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferences';
-import { RANDOM_UUID_BOOT_SCRIPT } from '@livediagram/ui';
+import { RANDOM_UUID_BOOT_SCRIPT } from '@livehuddle/ui';
 import {
   REDUCE_MOTION_BOOT_SCRIPT,
   WEBFONTS_STYLESHEET_ID,
@@ -113,7 +113,7 @@ describe('the randomUUID pre-hydration script', () => {
   });
 });
 
-// The guards themselves are pinned in @liveworkspace/auth-client (silent.test.ts); this pins livediagram's wiring.
+// The guards themselves are pinned in @liveworkspace/auth-client (silent.test.ts); this pins livehuddle's wiring.
 describe('SILENT_SIGN_IN_BOOT_SCRIPT', () => {
   it("bounces through this app's own api and reads only this app's cookies", () => {
     expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain(`"/api"+'/auth/silent?return='`);

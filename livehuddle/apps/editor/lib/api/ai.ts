@@ -5,8 +5,8 @@ import type {
   NoteCrop,
   ReadNotesRequest,
   ReadNotesResponse,
-} from '@livediagram/api-schema';
-import { READ_MAX_CROPS_PER_REQUEST } from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
+import { READ_MAX_CROPS_PER_REQUEST } from '@livehuddle/api-schema';
 import { API_BASE, apiHeaders, apiFetch } from './core';
 
 // Fetch server capabilities. Returns everything fail-closed (false) on any

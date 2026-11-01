@@ -2,7 +2,7 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { avatarPadCore, createShape, type Element, type ShapeElement } from '@livediagram/document';
+import { avatarPadCore, createShape, type Element, type ShapeElement } from '@livehuddle/document';
 import { AVATAR_PAD_ARRIVAL_MS } from '@liveworkspace/avatar/pad';
 import type { AvatarPoint } from '@liveworkspace/avatar/walk';
 import { useAvatarPadArrivals } from '@liveworkspace/avatar/hooks/useAvatarPadArrivals';

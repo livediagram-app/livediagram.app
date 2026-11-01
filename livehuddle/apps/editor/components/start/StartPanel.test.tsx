@@ -2,12 +2,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
-import {
-  contrastRatio,
-  editorModeLabel,
-  hexToRgb,
-  type CanvasSurface,
-} from '@livediagram/document';
+import { contrastRatio, editorModeLabel, hexToRgb, type CanvasSurface } from '@livehuddle/document';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { startPalette } from './start-palette';
 import { StartFromTemplates } from './StartFromTemplates';

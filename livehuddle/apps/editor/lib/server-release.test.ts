@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_FORMAT, parseBuildId } from '@livediagram/api-schema';
+import { DOCUMENT_FORMAT, parseBuildId } from '@livehuddle/api-schema';
 import {
   EDITOR_BUILD_ID,
   isStaleBuild,

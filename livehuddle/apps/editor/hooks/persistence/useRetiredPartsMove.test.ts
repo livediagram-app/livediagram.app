@@ -1,7 +1,7 @@
 // @vitest-environment node
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import type { LocalPartsAnswer, LocalPartsRequest } from '@liveworkspace/migration';
 import { ApiError } from '@/lib/api-client';
 import { deleteOfflineDb, readStoreRaw, seedOfflineDb } from '@/lib/offline/idb-test-utils';
@@ -182,7 +182,7 @@ describe('moving retired parts', () => {
     await seedOfflineDb(2, 'documents', [other]);
     await offlineListDocuments();
     const db = await new Promise<IDBDatabase>((resolve) => {
-      const req = indexedDB.open('livediagram-offline');
+      const req = indexedDB.open('livehuddle-offline');
       req.onsuccess = () => resolve(req.result);
     });
     await new Promise<void>((resolve) => {

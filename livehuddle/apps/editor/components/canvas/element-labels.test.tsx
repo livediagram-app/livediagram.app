@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import type { StickyElement } from '@livediagram/document';
+import type { StickyElement } from '@livehuddle/document';
 import { renderLabel } from './element-labels';
 
 // A note's words take the colour the element view sets (its own textColor, else the note default),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import { lint, of, tabOf } from '../fixtures/build';
 
 // LN text-overflow: no two texts print over each other.

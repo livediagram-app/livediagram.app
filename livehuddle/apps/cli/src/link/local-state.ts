@@ -1,5 +1,5 @@
 // The local sync state (docs/specs/027-repositories/repository-link.md "Local sync state"; blueprint "Data and
-// persistence"): per link and work tree, never committed. Inside a git work tree at `<git dir>/livediagram/<link id>/`
+// persistence"): per link and work tree, never committed. Inside a git work tree at `<git dir>/livehuddle/<link id>/`
 // (each worktree its own), elsewhere at `<cache>/links/<link id>/`; directories 0700, files 0600 (RL8). It holds
 // what each document was at its last sync here (RL44), the lock, and the latest reports.
 
@@ -10,8 +10,8 @@ import { LINK_ID_HEX, SYNC_REPORTS_KEPT } from './constants';
 import { gitDirOf } from './git';
 import type { LinkFile } from './link-file';
 import type { RecordedDocument } from './recorded-state';
-import { isRecord } from '@livediagram/document';
-import { sha256Hex } from '@livediagram/api-schema';
+import { isRecord } from '@livehuddle/document';
+import { sha256Hex } from '@livehuddle/api-schema';
 
 export type LinkState = {
   version: 1;
@@ -37,7 +37,7 @@ export async function linkIdOf(realPath: string): Promise<string> {
 export async function linkStateDir(io: CliIo, link: LinkFile): Promise<string> {
   const id = await linkIdOf(link.path);
   const gitDir = await gitDirOf(io, link.root);
-  return gitDir ? posix.join(gitDir, 'livediagram', id) : `${cacheDir(io)}/links/${id}`;
+  return gitDir ? posix.join(gitDir, 'livehuddle', id) : `${cacheDir(io)}/links/${id}`;
 }
 
 // A missing, unreadable or other-version state starts empty, and is rewritten by the next pass.

@@ -7,15 +7,15 @@
 // names, ids, stencil names or coordinates, so its output is safe to share. Refusals print with any
 // quoted part (a page name) masked.
 //
-//   pnpm --filter @livediagram/live exec tsx scripts/drawio-verify.mts <file or folder> [...]
+//   pnpm --filter @livehuddle/live exec tsx scripts/drawio-verify.mts <file or folder> [...]
 //
 // Exits non-zero when a file crashes the reader, or any element is invalid.
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { JSDOM } from 'jsdom';
-import { MAX_TAB_BYTES, tabDataBytes } from '@livediagram/api-schema';
-import { isValidElement, type Element } from '@livediagram/document';
+import { MAX_TAB_BYTES, tabDataBytes } from '@livehuddle/api-schema';
+import { isValidElement, type Element } from '@livehuddle/document';
 
 // The importer's own logs may carry a cause quoting the file: only their fingerprints print.
 for (const level of ['debug', 'info', 'warn'] as const) {

@@ -15,7 +15,7 @@
 // helper — those are separate concerns that stay in the page (or move
 // in their own pass).
 
-import { defaultTabName } from '@livediagram/document';
+import { defaultTabName } from '@livehuddle/document';
 import {
   normalizeFolderOrder,
   tabFolderName,
@@ -23,7 +23,7 @@ import {
   type EditorMode,
   type Element,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { apiLinkTab } from '@/lib/api-client';
 import { newTabOpening, newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';

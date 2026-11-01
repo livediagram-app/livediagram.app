@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
 import { comparisonProblems } from '@liveworkspace/comparisons';
-import { THEMES } from '@livediagram/document';
-import { TEMPLATES } from '@livediagram/templates';
+import { THEMES } from '@livehuddle/document';
+import { TEMPLATES } from '@livehuddle/templates';
 
 import { COMPARISONS } from './alternatives';
 
-// livediagram's comparisons (packages/comparisons/README.md): the list drives the routes, their
+// livehuddle's comparisons (packages/comparisons/README.md): the list drives the routes, their
 // metadata, the hub and the sitemap, so its shape is checked by the shared comparisonProblems.
 // product-claims.test.ts keeps out claims found false.
 describe('the comparisons', () => {

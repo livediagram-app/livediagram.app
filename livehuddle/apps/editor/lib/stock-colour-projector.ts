@@ -12,7 +12,7 @@ import {
   withReadableLabelInks,
   type CanvasSurface,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 const NO_THEME_MAP: ReadonlyMap<string, string> = new Map();
 

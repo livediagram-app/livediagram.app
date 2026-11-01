@@ -56,7 +56,7 @@ test('a deck presents slide by slide and leaves the view as it was', async ({
   );
   expect(seeded.ok()).toBe(true);
   await adoptGuest(page, owner);
-  await page.addInitScript(() => localStorage.setItem('livediagram:v2:name-confirmed', '1'));
+  await page.addInitScript(() => localStorage.setItem('livehuddle:v2:name-confirmed', '1'));
   await page.goto(`/document/${id}`);
   await page.locator(CANVAS).waitFor();
   await dismissQuickTour(page);

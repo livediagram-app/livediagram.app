@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { createShape, type Element, type ShapeElement } from '@livediagram/document';
+import { createShape, type Element, type ShapeElement } from '@livehuddle/document';
 
 const trackMock = vi.fn<typeof import('@/lib/telemetry').track>();
 vi.mock('@/lib/telemetry', () => ({

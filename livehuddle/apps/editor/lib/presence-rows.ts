@@ -6,7 +6,7 @@
 // to the active tab and filtered to live participants) is unit-testable
 // without standing up the room. `now` and the last-seen map are passed in
 // rather than read from Date.now() / a ref, keeping the functions pure.
-import type { AvatarPresence } from '@livediagram/api-schema';
+import type { AvatarPresence } from '@livehuddle/api-schema';
 import { participantKey, statusFromIdleMs, type Participant } from './identity';
 import type { LaserPoint } from './laser-buffer';
 import type { LaserConfig } from './laser-config';

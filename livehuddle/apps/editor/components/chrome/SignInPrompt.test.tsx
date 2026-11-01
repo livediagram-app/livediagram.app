@@ -12,7 +12,7 @@ vi.mock('@/components/chrome/auth-shared', () => ({
 
 const { SignInPrompt } = await import('./SignInPrompt');
 
-const KEY = 'livediagram:v2:signin-prompt-dismissed';
+const KEY = 'livehuddle:v2:signin-prompt-dismissed';
 
 afterEach(() => {
   cleanup();

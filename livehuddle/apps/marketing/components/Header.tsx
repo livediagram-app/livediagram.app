@@ -1,5 +1,5 @@
-import type { CtaSurface } from '@livediagram/api-schema';
-import { SiteHeader } from '@livediagram/ui';
+import type { CtaSurface } from '@livehuddle/api-schema';
+import { SiteHeader } from '@livehuddle/ui';
 
 // The marketing landing header is the shared SiteHeader (packages/ui), its logo
 // switching between liveworkspace's sites (SiteSwitcher). `surface` is the page's landing-funnel surface (docs/specs/019-marketing/landing-funnel.md),

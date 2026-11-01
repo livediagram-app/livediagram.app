@@ -8,7 +8,7 @@ import { COMPARISONS } from '@/lib/alternatives';
 // is declared inline because Next's file-convention pipeline can't trace it through a re-export.
 
 export const dynamic = 'force-static';
-export const alt = 'A livediagram comparison';
+export const alt = 'A livehuddle comparison';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 

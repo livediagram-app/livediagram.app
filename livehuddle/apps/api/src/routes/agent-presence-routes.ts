@@ -6,9 +6,9 @@ import {
   parseAgentPresenceRequest,
   type AgentPresenceResult,
   type ShareRole,
-} from '@livediagram/api-schema';
-import { resolveRef } from '@livediagram/document';
-import { buildViewModel } from '@livediagram/document-views';
+} from '@livehuddle/api-schema';
+import { resolveRef } from '@livehuddle/document';
+import { buildViewModel } from '@livehuddle/document-views';
 import { frontDoorOf } from '../changesets/front-door';
 import { getDocument, getTab } from '../db';
 import { getParticipant } from '../liveworkspace/profiles';

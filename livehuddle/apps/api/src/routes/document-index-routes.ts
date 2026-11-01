@@ -5,7 +5,7 @@ import {
   DOCUMENT_CONVERSION_HEADER,
   isAccessLevel,
   readDocumentConversion,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import type { ShareLinkExpiry } from '@liveworkspace/index-client';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { countCommunityCopy } from '../community-service';

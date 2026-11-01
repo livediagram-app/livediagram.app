@@ -1,6 +1,6 @@
 # Evaluate MCP output
 
-How to measure, and raise, the quality of what an AI assistant makes through the livediagram MCP server
+How to measure, and raise, the quality of what an AI assistant makes through the livehuddle MCP server
 ([MCP server](../specs/015-api/mcp-server.md)). A **benchmark** runs real headless Claude sessions with the connector
 mounted and nothing else, on several models, several times each, then scores every run mechanically: what the
 transcript shows (calls, refusals, retries) and yes/no **checks** on what was made, read back through the tools. A
@@ -117,7 +117,7 @@ The kit lives in `apps/mcp/eval/`:
 - The per-token limits count api requests (reads 120 a minute), and every run has its own token, so runs do not
   share a limit; a run that still hits one has made a tool read too much. Count the requests one call makes before
   blaming the assistant's pace.
-- Links point at livediagram.app when the local server has no public host set; a check on a link compares its code,
+- Links point at livehuddle.app when the local server has no public host set; a check on a link compares its code,
   never its host.
 - A lint finding that names a template's own design (its colours, its shape) invites the agent to undo it. Check
   `templates.test.ts` stays clean after a lint change, and lint a fresh template of each kind the round touched.

@@ -52,7 +52,7 @@ async function openInMode(page: Page, name: 'diagram' | 'draw') {
   // Marks the Workshop tour seen, as these specs once had to (it offered itself until 25 October 2026); harmless now
   // that tours only start from the footer's Start Tour button.
   await page.addInitScript(() => {
-    const key = 'livediagram:user-preferences:v1';
+    const key = 'livehuddle:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
       if (prefs.workshopTourSeen !== true)

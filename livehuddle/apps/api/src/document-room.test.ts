@@ -1,13 +1,13 @@
 import { MAX_TAB_ID_LEN } from './document-room-rules';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_FORMAT, ROOM_FULL_CLOSE, ROOM_MAX_CONNECTIONS } from '@livediagram/api-schema';
-import type { ParticipantPresence, RoomIncoming } from '@livediagram/api-schema';
+import { DOCUMENT_FORMAT, ROOM_FULL_CLOSE, ROOM_MAX_CONNECTIONS } from '@livehuddle/api-schema';
+import type { ParticipantPresence, RoomIncoming } from '@livehuddle/api-schema';
 import {
   MUTATION_OP_KINDS,
   PRESENCE_OP_KINDS,
   ROOM_OP_KINDS,
   SYSTEM_OP_KINDS,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import type { TelemetryWireEvent } from '@liveworkspace/telemetry';
 import { DocumentRoom } from './document-room/document-room';
 import type { Env } from './types';

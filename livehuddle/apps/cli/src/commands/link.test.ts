@@ -18,7 +18,7 @@ function setup(
   more: Parameters<typeof fakeIo>[0] = {},
 ) {
   const host = linkHost(docs, folders, [{ id: 't1', name: 'Platform' }]);
-  const io = fakeIo({ env: { LIVEDIAGRAM_TOKEN: TOKEN }, routes: [host.route], ...more });
+  const io = fakeIo({ env: { LIVEHUDDLE_TOKEN: TOKEN }, routes: [host.route], ...more });
   return { host, io };
 }
 
@@ -28,7 +28,7 @@ async function cli(io: FakeIo, ...argv: string[]) {
   return { code, out: io.out().slice(outBefore), err: io.err().slice(errBefore) };
 }
 
-const LINK = '/work/livediagram.toml';
+const LINK = '/work/livehuddle.toml';
 
 describe('link init', () => {
   it('writes the link file byte for byte and prints its path', async () => {
@@ -42,7 +42,7 @@ describe('link init', () => {
     });
     expect(io.fileMap.get(LINK)!.data).toBe(
       [
-        `# This repository's diagrams live in livediagram; see ${HOST}/help/developers/repositories/`,
+        `# This repository's diagrams live in livehuddle; see ${HOST}/help/developers/repositories/`,
         `host = "${HOST}"`,
         '',
         '[covers]',
@@ -72,7 +72,7 @@ describe('link init', () => {
         'error: "minigames" matches 2 folders',
         '  games-0001  "Minigames"  personal',
         '  othe  "Minigames"  Platform',
-        'hint: livediagram link init --folder games-0001',
+        'hint: livehuddle link init --folder games-0001',
         '',
       ].join('\n'),
     });
@@ -84,7 +84,7 @@ describe('link init', () => {
     });
     expect(await cli(io, 'link', 'init', '--folder', 'zzz')).toMatchObject({
       code: 3,
-      err: 'error: no folder matches "zzz"\nhint: livediagram link init, in a terminal, to pick one\n',
+      err: 'error: no folder matches "zzz"\nhint: livehuddle link init, in a terminal, to pick one\n',
     });
   });
 
@@ -101,7 +101,7 @@ describe('link init', () => {
     const result = await cli(io, 'link', 'init', '--level', 'files');
     expect(result.code).toBe(2);
     expect(result.err).toContain(
-      '  livediagram link init --folder games-0001 --level files  # Minigames (personal)\n',
+      '  livehuddle link init --folder games-0001 --level files  # Minigames (personal)\n',
     );
     expect(io.prompts).toEqual([]);
     expect(io.fileMap.has(LINK)).toBe(false);
@@ -119,28 +119,28 @@ describe('link init', () => {
     const empty = linkHost([], []);
     for (const tty of [true, false]) {
       const io = fakeIo({
-        env: { LIVEDIAGRAM_TOKEN: TOKEN },
+        env: { LIVEHUDDLE_TOKEN: TOKEN },
         routes: [empty.route],
         stdinIsTTY: tty,
         stdoutIsTTY: tty,
       });
       expect(await cli(io, 'link', 'init')).toMatchObject({
         code: 3,
-        err: expect.stringContaining('there are no folders in https://www.livediagram.app to link'),
+        err: expect.stringContaining('there are no folders in https://www.livehuddle.app to link'),
       });
     }
   });
 
   it('says once that the mirror is as public as a repository with a remote', async () => {
     const line =
-      'this repository has a git remote: its mirror files and INDEX.md are as public as the repository; the ids in livediagram.toml grant nothing\n';
+      'this repository has a git remote: its mirror files and INDEX.md are as public as the repository; the ids in livehuddle.toml grant nothing\n';
     for (const [answer, says, logged] of [
       [{ code: 0, stdout: 'origin\n' }, line, 'yes'],
       [{ code: 0, stdout: '' }, '', 'no'],
       [null, '', 'unknown'],
     ] as const) {
       const { io } = setup(undefined, {
-        env: { LIVEDIAGRAM_TOKEN: TOKEN, LIVEDIAGRAM_DEBUG: '1' },
+        env: { LIVEHUDDLE_TOKEN: TOKEN, LIVEHUDDLE_DEBUG: '1' },
         tool: (command, args) => (command === 'git' && args.includes('remote') ? answer : null),
       });
       const { err } = await cli(io, 'link', 'init', '--doc', DOC);
@@ -167,20 +167,20 @@ describe('link status', () => {
     await cli(io, 'sync');
     host.edit('bbbb2222-0000-4000-8000-000000000002');
     host.doc('cccc3333-0000-4000-8000-000000000003').state = 503;
-    io.fileMap.set('/work/diagrams/bad.livediagram.json', { data: '{', mode: 0o644 });
+    io.fileMap.set('/work/diagrams/bad.livehuddle.json', { data: '{', mode: 0o644 });
     const before = new Map([...io.fileMap].map(([k, v]) => [k, v.data]));
     const result = await cli(io, 'link', 'status');
     expect(result).toEqual({
       code: 0,
       out: [
-        '?        cccc  "Busy"         diagrams/busy.livediagram.json',
-        'behind   bbbb  "Menu"         diagrams/menu.livediagram.json',
-        'in-step  aaaa  "Home screen"  diagrams/screens/home-screen.livediagram.json',
-        'invalid  -                    diagrams/bad.livediagram.json',
+        '?        cccc  "Busy"         diagrams/busy.livehuddle.json',
+        'behind   bbbb  "Menu"         diagrams/menu.livehuddle.json',
+        'in-step  aaaa  "Home screen"  diagrams/screens/home-screen.livehuddle.json',
+        'invalid  -                    diagrams/bad.livehuddle.json',
         '1 in-step · 1 behind · 1 invalid · 1 ?',
         '',
       ].join('\n'),
-      err: '! "Busy": https://www.livediagram.app failed (HTTP 503); files kept\n',
+      err: '! "Busy": https://www.livehuddle.app failed (HTTP 503); files kept\n',
     });
     for (const [k, v] of before)
       if (k.startsWith('/work/')) expect(io.fileMap.get(k)?.data).toBe(v);
@@ -190,15 +190,15 @@ describe('link status', () => {
     const { io } = setup(undefined, {
       files: {
         [LINK]: '[covers]\nfolder = "games-0001"\n',
-        '/work/b/livediagram.toml': '[covers]\nfolder = "other-0001"\n',
+        '/work/b/livehuddle.toml': '[covers]\nfolder = "other-0001"\n',
       },
     });
     expect((await cli(io, 'link', 'status', '--all')).out).toBe(
       [
-        'b/livediagram.toml',
+        'b/livehuddle.toml',
         '0 documents',
         '',
-        'livediagram.toml',
+        'livehuddle.toml',
         'new  aaaa  "Home screen"',
         '1 new',
         '',
@@ -230,7 +230,7 @@ describe('link ls', () => {
       'aaaa  "Home screen"  personal  2026-10-05\n… 1 more; --limit 2, or narrow with a query\n',
     );
     expect(result.err).toBe(
-      'ffff6666-0000-4000-8000-000000000006: https://www.livediagram.app is rate limiting this token\nunreadable: gone-0000\n',
+      'ffff6666-0000-4000-8000-000000000006: https://www.livehuddle.app is rate limiting this token\nunreadable: gone-0000\n',
     );
     expect(
       (
@@ -251,7 +251,7 @@ describe('link status, the files a sync would refuse or remove', () => {
       files: { [LINK]: '[covers]\nfolder = "games-0001"\n[mirror]\nlevel = "files"\n' },
     });
     await cli(io, 'sync');
-    const menu = '/work/diagrams/menu.livediagram.json';
+    const menu = '/work/diagrams/menu.livehuddle.json';
     io.fileMap.set(menu, {
       data: io.fileMap.get(menu)!.data.replace('box"', 'box!"'),
       mode: 0o644,
@@ -260,17 +260,17 @@ describe('link status, the files a sync would refuse or remove', () => {
     host.doc('cccc3333-0000-4000-8000-000000000003').state = 'purged';
     expect((await cli(io, 'link', 'status')).out).toBe(
       [
-        'gone-changed  bbbb  "Menu"         diagrams/menu.livediagram.json',
-        'unreadable    cccc  "Zed"          diagrams/zed.livediagram.json',
-        'in-step       aaaa  "Home screen"  diagrams/screens/home-screen.livediagram.json',
+        'gone-changed  bbbb  "Menu"         diagrams/menu.livehuddle.json',
+        'unreadable    cccc  "Zed"          diagrams/zed.livehuddle.json',
+        'in-step       aaaa  "Home screen"  diagrams/screens/home-screen.livehuddle.json',
         '1 in-step · 1 unreadable · 1 gone-changed',
         '',
       ].join('\n'),
     );
     io.fileMap.set(LINK, { data: '[covers]\nfolder = "games-0001"\n', mode: 0o644 });
-    io.fileMap.set('/work/diagrams/hand.livediagram.json', {
+    io.fileMap.set('/work/diagrams/hand.livehuddle.json', {
       data: JSON.stringify({
-        kind: 'livediagram.document',
+        kind: 'livehuddle.document',
         schemaVersion: 1,
         document: { id: 'd-hand', name: 'By hand', tabs: [] },
       }),
@@ -278,7 +278,7 @@ describe('link status, the files a sync would refuse or remove', () => {
     });
     const lowered = (await cli(io, 'link', 'status')).out;
     expect(lowered).toContain('lowered          -');
-    expect(lowered).toContain('diagrams/screens/home-screen.livediagram.json\n');
+    expect(lowered).toContain('diagrams/screens/home-screen.livehuddle.json\n');
     expect(lowered).toContain('local-new        -');
     expect(lowered).toContain('lowered-changed  -');
   });

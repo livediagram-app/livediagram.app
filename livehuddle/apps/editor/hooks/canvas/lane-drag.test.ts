@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import { laneAnchorOf, lanesHoldDrag } from './lane-drag';
 
 const box = (id: string, over: Record<string, unknown>) =>

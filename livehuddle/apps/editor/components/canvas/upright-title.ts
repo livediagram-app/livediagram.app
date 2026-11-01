@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { UprightTitleStrip } from '@livediagram/document';
+import type { UprightTitleStrip } from '@livehuddle/document';
 
 /**
  * The frame an upright lane title renders in (docs/specs/009-elements/lane.md "Upright titles"): a

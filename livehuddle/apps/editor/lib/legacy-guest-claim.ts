@@ -1,4 +1,4 @@
-// A returning guest of the old livediagram.app (docs/specs/014-identity/auth-and-guest-access.md "Returning guests
+// A returning guest of the old livehuddle.app (docs/specs/014-identity/auth-and-guest-access.md "Returning guests
 // from the old site"): its bare UUID and signature, left in this browser by the old editor on the same address,
 // are claimed once the page has an identity of its own, so the work copied under `guest_<old uuid>` becomes the
 // caller's. At most one attempt per page load; only an answer from the api forgets the keys.

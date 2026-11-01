@@ -1,4 +1,4 @@
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import type { EditorCapabilities } from '@/lib/editor-capabilities';
 import { canEditSankey } from '@/lib/sankey-edit';
 

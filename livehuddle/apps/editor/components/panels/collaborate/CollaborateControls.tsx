@@ -3,7 +3,7 @@
 // The Collaborate panel's two controls (docs/specs/012-collaboration/assigned-actions.md §5): the Open / Resolved
 // segmented control on the shared sliding pill, and the kind chips under it.
 
-import { ACTIVE_SEGMENT, SEGMENT_TRACK, ActionIcon, CommentIcon, Tooltip } from '@livediagram/ui';
+import { ACTIVE_SEGMENT, SEGMENT_TRACK, ActionIcon, CommentIcon, Tooltip } from '@livehuddle/ui';
 import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
 import type { CollaborateKind, CollaborateSide } from './collaborate-model';
 

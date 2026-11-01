@@ -27,7 +27,7 @@ type Conversions = RefObject<ReturnType<typeof useOfflineConversions>>;
 
 // Read when a verb is chosen, never while the menu draws.
 function offlineVerbs(item: Item, conversions: Conversions) {
-  if (item.app !== 'livediagram' || item.sharedVia || item.access !== 'edit') return [];
+  if (item.app !== 'livehuddle' || item.sharedVia || item.access !== 'edit') return [];
   const doc = { id: item.id, name: item.title || 'Untitled' };
   if (isOfflineIdSync(item.id)) {
     return [

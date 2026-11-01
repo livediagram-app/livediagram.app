@@ -10,7 +10,7 @@ import {
   twemojiFileName,
   type EmojiArt,
 } from '@liveworkspace/icons/resolve';
-import { REACTION_DEFAULT, REACTION_EMOJI, type Element } from '@livediagram/document';
+import { REACTION_DEFAULT, REACTION_EMOJI, type Element } from '@livehuddle/document';
 import { cached, type Fetcher } from './preview-fonts';
 
 export const TWEMOJI_BASE = 'https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/';

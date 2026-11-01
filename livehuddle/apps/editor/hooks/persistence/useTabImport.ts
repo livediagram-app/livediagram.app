@@ -6,7 +6,7 @@
 // draw.io, docs/specs/020-import-export/drawio-import.md, whose extra pages
 // become new tabs).
 
-import { remapElementRefs, savableElements, type Element, type Tab } from '@livediagram/document';
+import { remapElementRefs, savableElements, type Element, type Tab } from '@livehuddle/document';
 import type { BoardScene } from '@/lib/board-scene/scene';
 import type { DrawioInput } from '@/lib/drawio/import';
 import { DRAWIO_TAB_FILE_ACCEPT } from '@/lib/drawio/limits';
@@ -211,7 +211,7 @@ export function useTabImport({
         layoutGraph,
         MERMAID_UNSUPPORTED_ERROR,
         rederiveColorPresetForTheme,
-      } = await import('@livediagram/document');
+      } = await import('@livehuddle/document');
       const parsed = graphFromMermaid(text);
       if (!parsed.ok) return { status: 'error', error: parsed.error };
       // Sequence diagrams are the agents' only, for now (docs/specs/020-import-export/mermaid.md).

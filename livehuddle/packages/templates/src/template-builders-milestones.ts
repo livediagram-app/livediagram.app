@@ -23,7 +23,7 @@ import {
   createText,
   type Element,
   createCalloutCard,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 export const MUTED = '#64748b';

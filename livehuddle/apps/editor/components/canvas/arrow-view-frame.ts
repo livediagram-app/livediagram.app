@@ -17,7 +17,7 @@ import {
   type ElementIndex,
   type Finish,
   type Rect,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 // The pure per-render frame of an arrow view, lifted out of ArrowView
 // (following the boxed-drag-resolve / arrow-*-resolve pattern):

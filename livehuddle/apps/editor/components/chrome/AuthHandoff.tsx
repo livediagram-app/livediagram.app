@@ -5,7 +5,7 @@
 // alike with an emailed code, and brings them back to where they were going. The page only shows
 // itself when the hand-off came back with a problem, or when sign-in is off for the deployment.
 
-import { buttonClassName, ButtonContent } from '@livediagram/ui';
+import { buttonClassName, ButtonContent } from '@livehuddle/ui';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
 import {

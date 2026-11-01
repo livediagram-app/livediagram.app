@@ -159,7 +159,7 @@ export const EMBEDDED_WORKS: readonly EmbeddedWork[] = [
     name: 'draw.io (mxGraph view geometry)',
     version: '31.7.0',
     licence: 'Apache-2.0',
-    carrier: 'livediagram source (draw.io import)',
+    carrier: 'livehuddle source (draw.io import)',
     homepage: 'https://github.com/jgraph/drawio',
     trigger: {
       sources: [

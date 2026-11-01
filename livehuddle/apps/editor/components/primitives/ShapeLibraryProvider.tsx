@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import type { ShapeLibrary, ShapeLibraryItem, ShapeLibrarySource } from '@livediagram/api-schema';
+import type { ShapeLibrary, ShapeLibraryItem, ShapeLibrarySource } from '@livehuddle/api-schema';
 import {
   SHAPE_LIBRARY_SAVE_FAILED,
   apiCreateShapeLibrary,

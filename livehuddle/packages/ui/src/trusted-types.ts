@@ -1,5 +1,5 @@
 // Trusted Types (docs/specs/016-platform/trusted-types.md): the policies, the `default` policy's rule for script URLs
-// and the boot script are built once for every app (@liveworkspace/trusted-types); this adds the header livediagram's
+// and the boot script are built once for every app (@liveworkspace/trusted-types); this adds the header livehuddle's
 // pages send. Nothing else of ours creates a policy.
 
 export {

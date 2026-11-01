@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { describeStrokePoints, MAX_FREEHAND_POINTS } from '@livediagram/document';
+import { describeStrokePoints, MAX_FREEHAND_POINTS } from '@livehuddle/document';
 import { packFreehandPoints } from './freehand-points';
 
 describe('packFreehandPoints', () => {

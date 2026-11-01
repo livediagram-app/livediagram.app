@@ -1,4 +1,4 @@
-import type { Appearance } from '@livediagram/document';
+import type { Appearance } from '@livehuddle/document';
 import { apiFetchDocumentThumbnailUrl } from '@/lib/api-client';
 
 // In-memory cache of document snapshot thumbnails (docs/specs/006-document/document-snapshots.md), shared

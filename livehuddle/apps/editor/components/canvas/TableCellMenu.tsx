@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { TableCellStyle, TableElement } from '@livediagram/document';
+import type { TableCellStyle, TableElement } from '@livehuddle/document';
 import {
   ContextMenu,
   ContextMenuDivider,

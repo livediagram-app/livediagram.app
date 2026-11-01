@@ -16,12 +16,7 @@
 // editors' tab autosave) and broadcasts each result as a sequenced system op,
 // so every peer, and the sender, converges on exactly what D1 holds.
 
-import {
-  isParticipantQaAction,
-  parseQaAction,
-  qaVoterId,
-  type QaNote,
-} from '@livediagram/document';
+import { isParticipantQaAction, parseQaAction, qaVoterId, type QaNote } from '@livehuddle/document';
 import { getDocument } from '../db';
 import { getParticipant } from '../liveworkspace/profiles';
 import type { QaWriteRequest } from '../qa-board-write';

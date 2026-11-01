@@ -7,7 +7,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react';
 import { MOTION_MS } from '@liveworkspace/style-guards/motion';
-import { PlusIcon, HoverCard } from '@livediagram/ui';
+import { PlusIcon, HoverCard } from '@livehuddle/ui';
 import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import {
   FLOATING_CONTROL_GAP,

@@ -6,7 +6,7 @@ import { Callout, Stage, Window } from '@liveworkspace/help-site/art/parts';
 export function UserInterfaceArt() {
   return (
     <Stage>
-      <Window x={14} y={10} w={372} h={200} title="Product launch · livediagram">
+      <Window x={14} y={10} w={372} h={200} title="Product launch · livehuddle">
         {/* Menu button and the tab's name. */}
         <rect
           x={24}

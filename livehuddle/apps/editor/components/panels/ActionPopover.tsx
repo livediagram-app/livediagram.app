@@ -13,9 +13,9 @@ import {
   GlyphDisc,
   Portal,
   Tooltip,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 import { useRef, useState, useCallback } from 'react';
-import type { ElementAction } from '@livediagram/document';
+import type { ElementAction } from '@livehuddle/document';
 import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
 import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';

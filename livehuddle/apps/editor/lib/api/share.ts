@@ -8,7 +8,7 @@ import {
   type CommunityShareInfo,
   type DocumentResponse,
   type ShareRole,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import {
   API_BASE,
@@ -17,7 +17,7 @@ import {
   type SharedDocumentResolution,
   apiFetch,
 } from './core';
-import { parseStoredLevel } from '@livediagram/api-schema';
+import { parseStoredLevel } from '@livehuddle/api-schema';
 
 // Resolve a share code to a full canvas + the level granted by that
 // code. Visitors landing on `/document/shared?s=<code>` use

@@ -1,8 +1,8 @@
 // A browser's This Browser document moved by product (docs/migration.md step 6 "Local only documents";
 // docs/specs/015-api/api.md "Migration"): the editor's one-time pass sends a local document's raw record; this splits
-// it (@liveworkspace/migration splitLocalDocument) with livediagram's hooks, keeps nothing, and hands each other app's
+// it (@liveworkspace/migration splitLocalDocument) with livehuddle's hooks, keeps nothing, and hands each other app's
 // part to the index (`POST /app/migration/handoff`, as the caller), which makes the item for them and writes it
-// through that app's migration door. What stays livediagram's goes back to the browser as `keep`, raw.
+// through that app's migration door. What stays livehuddle's goes back to the browser as `keep`, raw.
 //
 // Safe to send again: every part's id (and every tab id the split makes) is a hash of the caller, the local document
 // and the part, so a retry after a lost answer names the same items, and the index's 409 `item_exists` for one counts
@@ -19,7 +19,11 @@ import type {
   MigrationRoomPayload,
   SplitHooks,
 } from '@liveworkspace/migration';
-import { INDEX_APP_HEADER, INDEX_PERSON_HEADER, INDEX_TEAMS_HEADER } from '@liveworkspace/index-client';
+import {
+  INDEX_APP_HEADER,
+  INDEX_PERSON_HEADER,
+  INDEX_TEAMS_HEADER,
+} from '@liveworkspace/index-client';
 import { APP_ITEMS, APP_SITES } from '@liveworkspace/sites';
 import { indexApiUrl } from '../index-service';
 import { capStoredName } from '../names';
@@ -33,7 +37,7 @@ export type Part = LocalPartsAnswer['parts'][number];
 // splitter's seed (`<local document id>:<app>`, or `<local document id>:<tab id>:<family>` for a tab), so the same
 // caller sending the same document makes the same ids every time, and two callers never share one.
 export function localPartId(callerId: string, seed: string): string {
-  const hex = sha256HexPrefix(`livediagram-local-part:${callerId}:${seed}`, 16).split('');
+  const hex = sha256HexPrefix(`livehuddle-local-part:${callerId}:${seed}`, 16).split('');
   hex[12] = '5';
   hex[16] = ((parseInt(hex[16]!, 16) & 0x3) | 0x8).toString(16);
   const h = hex.join('');
@@ -48,7 +52,7 @@ export function partUrl(app: MigrationApp, id: string, tabId: string | null = nu
   return `${site.url}${items.itemPath}${encodeURIComponent(id)}${tab}`;
 }
 
-// livediagram's side of the split, for one caller. `imageOwner` answers null for every image: a browser's own
+// livehuddle's side of the split, for one caller. `imageOwner` answers null for every image: a browser's own
 // record is no proof of whose an image is, so a part claims no owner and no grant for any (the target app asks the
 // media service, and serves only its owner's own), and nobody can make a part serve an image they could not.
 export function localPartsHooks(callerId: string): SplitHooks {
@@ -64,7 +68,7 @@ export function localPartsHooks(callerId: string): SplitHooks {
 
 export type HandoffOutcome = 'landed' | 'failed';
 
-// One part to the index as the caller (the delegated mode, livediagram's key): it makes the item and calls that app's
+// One part to the index as the caller (the delegated mode, livehuddle's key): it makes the item and calls that app's
 // migration door with its INDEX_KEY. A part already made (409 `item_exists`, a retry) has landed.
 export async function handOffPart(
   env: Env,
@@ -80,7 +84,7 @@ export async function handOffPart(
       method: 'POST',
       headers: {
         Authorization: `Bearer ${env.INDEX_KEY}`,
-        [INDEX_APP_HEADER]: 'livediagram',
+        [INDEX_APP_HEADER]: 'livehuddle',
         [INDEX_PERSON_HEADER]: callerId,
         [INDEX_TEAMS_HEADER]: '',
         'Content-Type': 'application/json',

@@ -8,7 +8,7 @@
 //
 // A guest (a guest token only) or a no-auth deployment has no verified account identity, so nothing
 // can be minted.
-import { bearerTokenOf } from '@livediagram/api-schema';
+import { bearerTokenOf } from '@livehuddle/api-schema';
 import { badRequest, conflict, forbidden, json, notFound } from '../responses';
 import { readOptionalBody, type RouteContext } from './context';
 import { mintApiToken } from '../db';

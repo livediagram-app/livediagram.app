@@ -1,7 +1,7 @@
 // Each page's rectangle on a former Pages tab's canvas, for the migration's splitter (docs/migration.md step 3, "A
 // Pages tab with both kinds of page splits by page"): an element goes with the page its centre sits on.
 //
-// livediagram no longer lays pages out (Pages moved to livedocuments, logos and wireframes to livedesign), so this is
+// livehuddle no longer lays pages out (Pages moved to livedocuments, logos and wireframes to livedesign), so this is
 // the old editor's layout as both of those still run it (livedocuments/packages/document/src/page.ts and
 // livedesign/packages/design/src/page.ts `layOutPages`): the pages in one row, the first centred on the row anchor
 // (`rowAt` on the first page carrying it, else the origin), each next one PAGE_GAP to the right, every page centred on

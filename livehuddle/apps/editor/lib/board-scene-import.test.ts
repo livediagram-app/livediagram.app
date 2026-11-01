@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { SceneItem } from '@/lib/board-scene/scene';
 import { boardScene, inkStroke } from '@/lib/board-scene/test-scenes';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import {
   BOARD_TOO_BIG,
   importBoardsAsDocuments,
@@ -10,7 +10,7 @@ import {
   type NewBoardDocument,
 } from './board-scene-import';
 import { ApiError } from '@/lib/api/core';
-import { MAX_TAB_BYTES, tabDataBytes } from '@livediagram/api-schema';
+import { MAX_TAB_BYTES, tabDataBytes } from '@livehuddle/api-schema';
 
 const textItem = (text: string): SceneItem => ({
   key: 't',

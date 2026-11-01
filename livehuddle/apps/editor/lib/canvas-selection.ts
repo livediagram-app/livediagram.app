@@ -4,7 +4,7 @@
 // selection bounds, and every "should this chrome show?" predicate the
 // Canvas render reads. Lifted out of Canvas.tsx so this decision logic
 // is unit-testable in isolation (the component itself has no tests).
-import { isFixedSizeElement, isChipShape, type Rect } from '@livediagram/document';
+import { isFixedSizeElement, isChipShape, type Rect } from '@livehuddle/document';
 import {
   drawnBounds,
   elementBounds,
@@ -13,7 +13,7 @@ import {
   type BoxedElement,
   type Element,
   type ElementId,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 type CanvasSelection = {
   // First element (in z-order) of an active marquee multi-selection,

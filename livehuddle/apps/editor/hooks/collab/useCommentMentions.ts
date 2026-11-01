@@ -7,7 +7,7 @@
 // "Teams"); its people come from the api, which reads them from liveworkspace.
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { assignHandles, type CommentMention } from '@livediagram/document';
+import { assignHandles, type CommentMention } from '@livehuddle/document';
 import { apiNotifyMention, apiTeamMembers } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { teamMemberRows } from './team-member-rows';

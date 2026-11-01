@@ -22,7 +22,7 @@ import {
   type ShapeKind,
   type Tab,
   withVariantColours,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { takeInsertionSlot } from '@/lib/insertion-preview';
 import type { InsertionSlot } from '@/lib/insert-between';
 import { getTechIcon, isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';

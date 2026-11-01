@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@livehuddle/document';
 import { checkoutFlow } from './fixtures/checkout-flow';
 import { applied, lines } from './fixtures/outcomes';
 import { boxIn, flowWith, lockedFlow, run } from './fixtures/run';

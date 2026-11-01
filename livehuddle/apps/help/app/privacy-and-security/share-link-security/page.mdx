@@ -5,13 +5,13 @@ import { SharePasswordSwitch, ShareLifetimes } from '@/components/illustrations/
 export const metadata = helpMetadata({
   title: 'Share Link Security',
   description:
-    'Add a password or an expiry to a livediagram share link so a shared URL does not grant access forever.',
+    'Add a password or an expiry to a livehuddle share link so a shared URL does not grant access forever.',
   path: '/help/privacy-and-security/share-link-security/',
 });
 
 <ArticleLayout title="Share Link Security" description="Two self-serve controls, a share password and link expiry, that bound who can open a shared canvas and for how long." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
-A share link (the Share dialog calls each one a **pass**) is a capability: anyone holding the URL has its role: **Editor**, **Participant** or **Viewer**. That is what makes sharing frictionless, but it also means a link left lying around keeps working. livediagram gives you two controls to tighten that up, a password on the canvas and an expiry on each link, plus revoking a link outright. All three live in the **Share** dialog, and none of them ever stops you, the owner.
+A share link (the Share dialog calls each one a **pass**) is a capability: anyone holding the URL has its role: **Editor**, **Participant** or **Viewer**. That is what makes sharing frictionless, but it also means a link left lying around keeps working. livehuddle gives you two controls to tighten that up, a password on the canvas and an expiry on each link, plus revoking a link outright. All three live in the **Share** dialog, and none of them ever stops you, the owner.
 
 ## Share password
 
@@ -19,9 +19,9 @@ You can put a single password on a canvas: switch on **Password Protection** in 
 
 - **One password covers every link** on the canvas, [embeds](/help/collaboration/sharing/embeds/) included, not one password per link. While a password is set, the live image option is unavailable, because an image can't ask for a password.
 - **You always bypass it.** The owner is identified directly, so you never get prompted on your own canvas. So are members of the [team](/help/collaboration/teams/) whose library holds it.
-- **Nobody can read it back.** livediagram stores only a scrambled (hashed) form of the password, so even you see just **Password Set**. Note it down when you choose it; use **Replace** or **Remove** any time.
+- **Nobody can read it back.** livehuddle stores only a scrambled (hashed) form of the password, so even you see just **Password Set**. Note it down when you choose it; use **Replace** or **Remove** any time.
 - **Changing it takes effect at once.** Setting or replacing the password sends everyone currently in the canvas through a link back to the password prompt.
-- **Guessing is limited.** Share-code and password attempts are rate-limited per network (30 a minute on livediagram.app), wherever they are tried.
+- **Guessing is limited.** Share-code and password attempts are rate-limited per network (30 a minute on livehuddle.app), wherever they are tried.
 
 <Figure caption="With a password saved, Password Protection shows Password Set with Replace and Remove.">
   <SharePasswordSwitch />

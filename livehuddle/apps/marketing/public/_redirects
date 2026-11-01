@@ -3,9 +3,9 @@
 # each old /features/<id> URL moves permanently to where its cards went, so search results and
 # old links keep landing. Workers Static Assets reads this file from out/ (Next copies public/).
 # lib/retired-features.test.ts pins every target to a live page.
-# Pages mode moved out of livediagram into livedocuments: its infographics and documents categories
+# Pages mode moved out of livehuddle into livedocuments: its infographics and documents categories
 # go there, and the slide deck cards that stayed went to collaboration.
-# Plan mode moved out of livediagram into liveplanner: its boards, sheets and forms categories go there.
+# Plan mode moved out of livehuddle into liveplanner: its boards, sheets and forms categories go there.
 
 /features/simple /features/diagrams 301
 /features/simple/ /features/diagrams 301
@@ -44,7 +44,7 @@
 /features/forms https://www.liveplanner.app/ 301
 /features/forms/ https://www.liveplanner.app/ 301
 
-# Retired comparisons (packages/comparisons/README.md "livediagram"): Google Slides left with Pages
+# Retired comparisons (packages/comparisons/README.md "livehuddle"): Google Slides left with Pages
 # mode and is livedocuments' to compare now, so its old address lands on that page there.
 # lib/comparison-redirects.test.ts pins it, and that no rule here catches a live comparison.
 /alternatives/google-slides https://www.livedocuments.app/alternatives/google-slides 301

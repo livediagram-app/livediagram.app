@@ -1,6 +1,6 @@
 # Authoring from scratch, and the visual feedback loop
 
-Research for the agent-facing `livediagram` CLI, dated 2026-10-03. It asks how an AI agent
+Research for the agent-facing `livehuddle` CLI, dated 2026-10-03. It asks how an AI agent
 builds a good diagram from nothing, how it then sees what it built, and how it corrects it,
 and ends with a recommended authoring flow, a `lint` design and a mock session.
 
@@ -14,7 +14,7 @@ was found and measured at the time; it is not a spec.
   at (tldraw's agent, draw.io's MCP, Excalidraw, Eraser, DiagrammerGPT, AutomaTikZ) moves the
   model off absolute pixels: towards a graph plus a layout engine, a relative-placement verb,
   or a high-level language that compiles to geometry.
-- **livediagram already has the right core**: graph or Mermaid input, label capping, a
+- **livehuddle already has the right core**: graph or Mermaid input, label capping, a
   layered, tree and radial layout, clustered groups, and a pure SVG renderer. All of it is
   pure TypeScript, so the CLI can lay out, render and check **locally** before writing.
 - **The layout is not good enough to trust blind.** On a realistic 15-node architecture,
@@ -124,11 +124,11 @@ flows**, then show the result and report its faults in words.
 | Absolute coordinates        | raw `elements`, draw.io XML, Excalidraw JSON                                                                                    | x, y, width, height                | Total control (rings, grids, posters)             | The model's weakest skill; overlaps and drift               |
 | Relative placement verbs    | tldraw agent `place` (side, align, offsets), `align`, `distribute`, `stack`; TikZ `right=of a`                                  | "B below A, centred"               | Local, intuitive, cheap to apply                  | Accumulates; no global optimum; still needs a look          |
 | Constraint systems          | Penrose (Domain, Substance, Style, solved by numeric optimisation), Cassowary (Apple Auto Layout), D2 `near` and `grid-rows`    | Relations and objectives           | Declarative, composable                           | Solver complexity; unsatisfiable sets need explaining       |
-| Graph plus layout engine    | Graphviz `dot`, ELK layered, dagre, D2 (dagre, ELK, TALA), Mermaid, PlantUML, **livediagram `graph` / `mermaid` input**         | Nodes, edges, groups, direction    | Matches how models think; globally tidy           | Little control; groups and long edges can go wrong (see §1) |
+| Graph plus layout engine    | Graphviz `dot`, ELK layered, dagre, D2 (dagre, ELK, TALA), Mermaid, PlantUML, **livehuddle `graph` / `mermaid` input**          | Nodes, edges, groups, direction    | Matches how models think; globally tidy           | Little control; groups and long edges can go wrong (see §1) |
 | Graph plus layout **hints** | Graphviz `rank=same`, `constraint=false`, edge `weight`; ELK layer constraints (first, last) and partitions; PlantUML `-down->` | The graph, plus a few named nudges | Fixes the common faults without leaving the graph | Each hint must be honoured by our own engine                |
-| Templates and scaffolds     | livediagram's 68 templates, Miro, Lucid and Whimsical starters                                                                  | A template kind, then content      | Curated layout for non-graph boards               | Personalising needs a readable outline of slot ids          |
+| Templates and scaffolds     | livehuddle's 68 templates, Miro, Lucid and Whimsical starters                                                                   | A template kind, then content      | Curated layout for non-graph boards               | Personalising needs a readable outline of slot ids          |
 
-What livediagram has, by file:
+What livehuddle has, by file:
 
 - `packages/document/src/graph-authoring.ts`: `graphToElements`; node id becomes element id;
   boxes sized to labels (`labelBoxSize`); entity nodes from `fields`.
@@ -280,7 +280,7 @@ what the PNG is for.
 Compact by default, one finding a line, ids first so the agent can act without re-reading:
 
 ```bash
-$ livediagram tab lint shop-arch/overview
+$ livehuddle tab lint shop-arch/overview
 5 crossings · 2 behind · 0 overlaps · 1319×789 → 2 warn, 1 info
 W arrow-behind-box   orders→bus passes behind pay           fix: regroup, or --lines angled
 W arrow-behind-box   bus→notify passes behind pay           fix: regroup, or --lines angled
@@ -295,7 +295,7 @@ I group-split-edges  core: 12 of 13 edges cross its border  fix: group by owners
   milliseconds, so this costs the agent about 100 tokens to pick a better arrangement:
 
 ```bash
-$ livediagram graph lint arch.yaml --compare direction,groups
+$ livehuddle graph lint arch.yaml --compare direction,groups
 variant              crossings  behind  extent     ratio
 right  groups        5          2       1317×1196  1.1
 right  no-groups     0          0       1319×789   1.7   ← best
@@ -346,16 +346,16 @@ arrows in place instead of replacing them.
 ### The commands, in the order an agent meets them
 
 ```bash
-livediagram help authoring            # the graph format, hints, shapes, one worked example
-livediagram template list             # 68 kinds, one line each; --category to narrow
-livediagram icon search kafka         # icon ids for nodes
-livediagram graph lint arch.yaml      # local: layout + checks, nothing written
-livediagram graph lint arch.yaml --compare direction,groups
-livediagram graph render arch.yaml -o arch.png   # local preview for a multimodal agent
-livediagram doc create "Shop architecture" --tab Overview -f arch.yaml
-livediagram tab apply shop-arch/overview -f arch.yaml [--dry-run]   # re-apply an edited source
-livediagram tab view shop-arch/overview --as outline|layout|png|json
-livediagram tab lint shop-arch/overview
+livehuddle help authoring            # the graph format, hints, shapes, one worked example
+livehuddle template list             # 68 kinds, one line each; --category to narrow
+livehuddle icon search kafka         # icon ids for nodes
+livehuddle graph lint arch.yaml      # local: layout + checks, nothing written
+livehuddle graph lint arch.yaml --compare direction,groups
+livehuddle graph render arch.yaml -o arch.png   # local preview for a multimodal agent
+livehuddle doc create "Shop architecture" --tab Overview -f arch.yaml
+livehuddle tab apply shop-arch/overview -f arch.yaml [--dry-run]   # re-apply an edited source
+livehuddle tab view shop-arch/overview --as outline|layout|png|json
+livehuddle tab lint shop-arch/overview
 ```
 
 - `apply` on a tab the agent still owns relayouts the whole graph; on a tab a person has
@@ -381,12 +381,12 @@ An agent in a repo is asked: "Draw our shop's architecture and give me a link." 
 below are the measured ones from §1.
 
 ```bash
-$ livediagram help authoring | head -20
+$ livehuddle help authoring | head -20
 graph source: YAML/JSON {nodes, edges, groups?, direction?, style?, lines?} or Mermaid
 node:  {id, label (≤40, rest moves to note), shape?, note?, group?, fields?}
 edge:  {from, to, label?}      group: {id, label?}   direction: down|right
 shapes: square (default), stadium, cylinder, diamond, hexagon, ... (shapes list)
-check before writing: livediagram graph lint <file> [--compare direction,groups]
+check before writing: livehuddle graph lint <file> [--compare direction,groups]
 ```
 
 The agent writes the topology in one go, grouped by tier because that is how the README
@@ -432,7 +432,7 @@ edges:
   - {from: auth, to: cache}
 EOF
 
-$ livediagram graph lint arch.yaml
+$ livehuddle graph lint arch.yaml
 15 nodes · 16 edges · 5 crossings · 2 behind · 0 overlaps · 1317×1196 → 2 warn, 2 info
 W arrow-behind-box   orders→bus passes behind pay           fix: regroup, or --lines angled
 W arrow-behind-box   bus→notify passes behind pay           fix: regroup, or --lines angled
@@ -443,7 +443,7 @@ I node-ungrouped     bus is outside every group             fix: give it a group
 The agent does not guess; it asks for the alternatives:
 
 ```bash
-$ livediagram graph lint arch.yaml --compare groups
+$ livehuddle graph lint arch.yaml --compare groups
 variant              crossings  behind  extent     ratio
 right  groups        5          2       1317×1196  1.1
 right  no-groups     0          0       1319×789   1.7   ← best
@@ -455,10 +455,10 @@ already reads as tiers without frames, and re-checks:
 
 ```bash
 $ sed -i -e '/^groups:/,/Third parties}\]$/d' -e 's/, group: [a-z]*//' arch.yaml
-$ livediagram graph lint arch.yaml
+$ livehuddle graph lint arch.yaml
 15 nodes · 16 edges · 0 crossings · 0 behind · 0 overlaps · 1319×789 → clean
 
-$ livediagram graph render arch.yaml -o /tmp/arch.png
+$ livehuddle graph render arch.yaml -o /tmp/arch.png
 /tmp/arch.png 1000×617 (≈823 image tokens)
 ```
 
@@ -467,9 +467,9 @@ auth, orders and inventory, each database beside its service, and the `OrderPlac
 its own edge. It creates the document:
 
 ```bash
-$ livediagram doc create "Shop architecture" --tab Overview -f arch.yaml
+$ livehuddle doc create "Shop architecture" --tab Overview -f arch.yaml
 created shop-architecture (d_7Kq2) · tab Overview (t_1) · 15 nodes · lint clean
-https://livediagram.app/document/d_7Kq2
+https://livehuddle.app/document/d_7Kq2
 ```
 
 Total feedback cost of the loop: two lint reports and a comparison (about 300 tokens) plus one

@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_MCP_ORIGIN, mcpEndpoint, resolveMcpOrigin } from './mcp-origin';
 
-// The resolver's rules are tested in @liveworkspace/api-schema; here, that it is bound to livediagram's MCP.
+// The resolver's rules are tested in @liveworkspace/api-schema; here, that it is bound to livehuddle's MCP.
 describe('resolveMcpOrigin', () => {
   it('falls back to the hosted MCP when unset or blank', () => {
     expect(resolveMcpOrigin(undefined)).toBe(DEFAULT_MCP_ORIGIN);

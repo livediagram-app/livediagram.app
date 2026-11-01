@@ -7,7 +7,7 @@ import {
   polygonStrokePx,
   pathElementD,
   type PathElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { FREEHAND_SVG_CLASS, StrokeHitPath } from '@/components/canvas/boxed-element-overlays';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 

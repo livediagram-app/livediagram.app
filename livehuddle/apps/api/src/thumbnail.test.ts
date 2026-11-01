@@ -4,7 +4,7 @@ import {
   DEFAULT_BACKGROUND_COLOR,
   PEN_INK,
   penColourHex,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import type { DocumentDTO, DocumentEnv, Env } from './types';
 
 // A canvas drawn for liveworkspace's previews (liveworkspace/docs/specs/006-media/previews.md): the platform stores and serves it, so
@@ -135,7 +135,7 @@ describe('drawDocument', () => {
     expect(db.stampTabElementCount).toHaveBeenLastCalledWith(ENV, 't1', 1);
   });
 
-  // Plan left livediagram for liveplanner: a stored Board or Form tab reads as a Diagram tab without its Plan board
+  // Plan left livehuddle for liveplanner: a stored Board or Form tab reads as a Diagram tab without its Plan board
   // or its form (dropRetiredPlan), so it has nothing to draw.
   it('draws nothing for a former Board or Form tab', async () => {
     const board = {
@@ -229,7 +229,7 @@ describe('drawDocument', () => {
 });
 
 // Pages mode moved out to livedocuments: a tab stored in it previews as a Diagram tab, every ordinary element drawn and
-// its pages (and their pictures) left behind (@livediagram/document retired-pages).
+// its pages (and their pictures) left behind (@livehuddle/document retired-pages).
 describe('a drawing of a former Pages tab', () => {
   const A4 = { orientation: 'portrait', size: 'a4', kind: 'infographic' };
   const PICTURE = 'b'.repeat(32);

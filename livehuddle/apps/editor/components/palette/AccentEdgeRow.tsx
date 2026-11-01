@@ -8,8 +8,8 @@ import {
   withAccentEdgeColor,
   type AccentEdge,
   type Element,
-} from '@livediagram/document';
-import { Glyph } from '@livediagram/ui';
+} from '@livehuddle/document';
+import { Glyph } from '@livehuddle/ui';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { BorderGrid } from '@/components/palette/context-menu-rows';
 import { ColourRow } from '@/components/palette/context-menu-input-rows';

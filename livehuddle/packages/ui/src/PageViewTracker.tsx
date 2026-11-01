@@ -1,6 +1,6 @@
 'use client';
 
-import { pageViewPath } from '@livediagram/api-schema';
+import { pageViewPath } from '@livehuddle/api-schema';
 import { createPageViewTracker } from '@liveworkspace/ui/page-view-tracker';
 
 // Page view telemetry (docs/specs/017-telemetry/page-view-telemetry.md): one `Page·View·<path>` per path change,

@@ -5,7 +5,7 @@
 // writes it to the stored tab; an Editor's autosave carries it too.
 
 import { useMemo } from 'react';
-import type { CommentThread, Tab } from '@livediagram/document';
+import type { CommentThread, Tab } from '@livehuddle/document';
 import type { CommentReactionScope } from '@liveworkspace/workbench/components/comments/CommentReactionsContext';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { ApplyElementDelta } from '@/hooks/collab/useElementDeltas';

@@ -1,4 +1,4 @@
-import { sha256Hex } from '@livediagram/api-schema';
+import { sha256Hex } from '@livehuddle/api-schema';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { personTagFor } from './person-tag';
 import { json } from './responses';
@@ -15,7 +15,7 @@ export const GUEST_VOTERS_PER_NETWORK = 100;
 // matched across documents. 32 hex characters (128 bits) keeps the room's poll state and the ledger rows small.
 export async function networkTagFor(scope: string, networkKey: string): Promise<string> {
   const digest = await sha256Hex(
-    new TextEncoder().encode(`livediagram:vote-network:v1:${scope}:${networkKey}`),
+    new TextEncoder().encode(`livehuddle:vote-network:v1:${scope}:${networkKey}`),
   );
   return digest.slice(0, 32);
 }

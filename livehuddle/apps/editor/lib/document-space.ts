@@ -1,4 +1,4 @@
-import type { AccessLevel } from '@livediagram/api-schema';
+import type { AccessLevel } from '@livehuddle/api-schema';
 import { OFFLINE_OWNER_ID } from './offline/offline-store';
 
 // Where a listed document stands to the reader

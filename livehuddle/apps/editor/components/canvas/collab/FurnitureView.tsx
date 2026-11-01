@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import { IDENTITY_FILL, identityVars } from '@livehuddle/ui';
 import { useMachineAnswered } from '@/lib/machine-answer';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
 import {
@@ -24,7 +24,7 @@ import {
   type OfficeKind,
   type SeatingKind,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 // How long a machine answers a drink.
 const MACHINE_ANSWER_MS = 1500;

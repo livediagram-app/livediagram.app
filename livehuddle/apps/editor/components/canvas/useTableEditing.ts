@@ -1,5 +1,5 @@
 import type { Dispatch, RefObject, SetStateAction } from 'react';
-import { addTableRow, setTableCell, type TableElement } from '@livediagram/document';
+import { addTableRow, setTableCell, type TableElement } from '@livehuddle/document';
 
 type Cell = { r: number; c: number } | null;
 

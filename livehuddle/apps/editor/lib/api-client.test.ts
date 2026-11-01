@@ -1,5 +1,5 @@
-import type { Tab } from '@livediagram/document';
-import { DOCUMENT_OPEN_HEADER } from '@livediagram/api-schema';
+import type { Tab } from '@livehuddle/document';
+import { DOCUMENT_OPEN_HEADER } from '@livehuddle/api-schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   apiCreateDocument,
@@ -434,7 +434,7 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
     expect(index.createItem).toHaveBeenCalledWith(
       expect.objectContaining({
         id: 'd2',
-        app: 'livediagram',
+        app: 'livehuddle',
         title: 'N',
         folderId: 'f1',
         teamId: 'team1',

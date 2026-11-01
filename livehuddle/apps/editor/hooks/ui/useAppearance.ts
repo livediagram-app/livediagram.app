@@ -1,6 +1,6 @@
 'use client';
 
-import { APPEARANCE_LABEL, useAppearance as useSharedAppearance } from '@livediagram/ui';
+import { APPEARANCE_LABEL, useAppearance as useSharedAppearance } from '@livehuddle/ui';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 

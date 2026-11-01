@@ -1,6 +1,6 @@
 'use client';
 
-import { PAGE_HEADING_MAX, type ShapeElement } from '@livediagram/document';
+import { PAGE_HEADING_MAX, type ShapeElement } from '@livehuddle/document';
 import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { renderUnits, unitCount } from '@/components/canvas/animated-words';

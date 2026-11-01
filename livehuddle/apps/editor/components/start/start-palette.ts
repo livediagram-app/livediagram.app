@@ -10,9 +10,9 @@ import {
   type CanvasSurface,
   type Tab,
   type ThemeDefinition,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 // Default's accent is the app's own (start-diagramming.md "Look"), never a stand-in blue.
-import { BRAND_ACCENT } from '@livediagram/ui';
+import { BRAND_ACCENT } from '@livehuddle/ui';
 
 export type StartPalette = {
   surface: string;

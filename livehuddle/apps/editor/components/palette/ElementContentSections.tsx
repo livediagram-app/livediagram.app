@@ -1,4 +1,4 @@
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import {
   BoldIcon,

@@ -24,10 +24,10 @@ import {
   safeInset,
   SheetHandle,
   useSheetDrag,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 import { lucideSearch, lucideX } from '@liveworkspace/icons/lucide';
 import { useChromeFloor } from '@liveworkspace/workbench/components/toast/useToastFloor';
-import type { EditorMode } from '@livediagram/document';
+import type { EditorMode } from '@livehuddle/document';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { CHOSEN_HOVER_TINT, CHOSEN_TINT, chosenLabel, type StartPalette } from './start-palette';

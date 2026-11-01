@@ -12,10 +12,10 @@ import {
   groupTabsIntoRuns,
   tabFolderName,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import type { Participant } from '@/lib/identity';
-import { safeInlinePadding, safeInset } from '@livediagram/ui';
+import { safeInlinePadding, safeInset } from '@livehuddle/ui';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import { useTabReorderDrag } from '@liveworkspace/workbench/components/chrome/useTabReorderDrag';
@@ -28,7 +28,7 @@ const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalM
   ssr: false,
 });
 import { TabPill, type TabPillCtx } from './TabPill';
-import type { AccessLevel } from '@livediagram/api-schema';
+import type { AccessLevel } from '@livehuddle/api-schema';
 
 // Canvas-scoped actions folded into the unified tab / canvas menu. (Add-element actions and the
 // Cleanup category used to live here too but were removed: the palette and quick-connect cover
@@ -67,7 +67,7 @@ type TabBarProps = {
   // (docs/specs/007-editor/power-user-mode.md#quick-appearance-switch).
   powerUser?: boolean;
   // A workbench frame (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB34): its Open in
-  // livediagram link at the bar's right end, and no Appearance control (the workbench sets the scheme).
+  // livehuddle link at the bar's right end, and no Appearance control (the workbench sets the scheme).
   workbenchLink?: (labelled: boolean) => ReactNode;
   tabs: Tab[];
   activeId: string;

@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
-import { Button } from '@livediagram/ui';
+import { Button } from '@livehuddle/ui';
 import { ProfileHeaderCard, SettingsRowShell } from '@liveworkspace/settings-ui';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 import { SettingsSignInLink } from './SettingsSignInLink';

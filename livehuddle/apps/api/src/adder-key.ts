@@ -3,12 +3,12 @@
 // else. Derived on the server from the caller's identity on the document, never read from a request: stable for
 // one person on one document across devices, opaque, and different on every document.
 
-import { ADDER_KEY_LENGTH } from '@livediagram/document';
-import { sha256Hex } from '@livediagram/api-schema';
+import { ADDER_KEY_LENGTH } from '@livehuddle/document';
+import { sha256Hex } from '@livehuddle/api-schema';
 
 export async function adderKeyFor(documentId: string, ownerId: string): Promise<string> {
   const digest = await sha256Hex(
-    new TextEncoder().encode(`livediagram:adder:v1:${documentId}:${ownerId}`),
+    new TextEncoder().encode(`livehuddle:adder:v1:${documentId}:${ownerId}`),
   );
   return digest.slice(0, ADDER_KEY_LENGTH);
 }

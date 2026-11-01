@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, DialogCloseButton, DialogHeader } from '@livediagram/ui';
+import { Button, DialogCloseButton, DialogHeader } from '@livehuddle/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { ImportChecklist } from '@liveworkspace/workbench/components/dialogs/ImportChecklist';

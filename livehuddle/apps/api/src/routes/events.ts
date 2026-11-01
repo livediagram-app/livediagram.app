@@ -1,7 +1,7 @@
 // /api/events — the relay for clients that can't reach the liveworkspace telemetry service
 // themselves (docs/specs/017-telemetry/telemetry.md "The relay").
 
-import { isServerEmittedEvent, isValidTelemetryEvent } from '@livediagram/api-schema';
+import { isServerEmittedEvent, isValidTelemetryEvent } from '@livehuddle/api-schema';
 import { TELEMETRY_BATCH_MAX } from '@liveworkspace/telemetry';
 import { isLocalhostPair } from '@liveworkspace/api-kit/origin-check';
 import { noContent, notFound } from '../responses';
@@ -10,7 +10,7 @@ import { reportServerEvents } from '../server-telemetry';
 import type { RouteContext } from './context';
 
 // Telemetry is stored by the liveworkspace service (liveworkspace/docs/specs/008-telemetry/telemetry.md), which takes a
-// batch only from one of livediagram.app's pages or from a Worker holding livediagram's key. The CLI
+// batch only from one of livehuddle.app's pages or from a Worker holding livehuddle's key. The CLI
 // is neither: it runs on somebody's machine and posts to its profile's api, so the api passes its
 // anonymous counts on under its own key. Batched POST of { events }; no auth, no stored identity;
 // only the closed vocabulary goes on. Off unless TELEMETRY_ENABLED. Always 204 — telemetry must

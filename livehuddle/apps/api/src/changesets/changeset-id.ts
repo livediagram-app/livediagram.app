@@ -1,4 +1,4 @@
-import { CHANGESET_ID_LENGTH } from '@livediagram/api-schema';
+import { CHANGESET_ID_LENGTH } from '@livehuddle/api-schema';
 
 // Lowercase Crockford base32: no i, l, o or u, so an id read aloud or retyped survives (CS7).
 const ALPHABET = '0123456789abcdefghjkmnpqrstvwxyz';

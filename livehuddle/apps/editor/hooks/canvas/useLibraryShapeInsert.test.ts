@@ -7,8 +7,8 @@ import {
   type Element,
   type ShapeElement,
   type Tab,
-} from '@livediagram/document';
-import type { ShapeLibraryItem } from '@livediagram/api-schema';
+} from '@livehuddle/document';
+import type { ShapeLibraryItem } from '@livehuddle/api-schema';
 import { useLibraryShapeInsert, type LibraryShapeInsertDeps } from './useLibraryShapeInsert';
 
 // docs/specs/013-workspace/blueprints/shape-libraries.md "Behaviour and state" 5: an item placed like

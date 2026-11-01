@@ -7,5 +7,5 @@ import type { ResultFooter } from './types';
 export { formatResultLines, formatValue } from '@liveworkspace/edit-operations/format-results';
 
 export const formatResultFooter = createFormatResultFooter<ResultFooter>(
-  (footer) => `livediagram changeset revert ${footer.documentId} ${footer.changesetId}`,
+  (footer) => `livehuddle changeset revert ${footer.documentId} ${footer.changesetId}`,
 );

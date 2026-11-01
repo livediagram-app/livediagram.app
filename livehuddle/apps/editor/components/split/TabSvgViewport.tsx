@@ -1,6 +1,6 @@
 'use client';
 
-import { trustedHtml } from '@livediagram/ui';
+import { trustedHtml } from '@livehuddle/ui';
 
 import {
   useCallback,

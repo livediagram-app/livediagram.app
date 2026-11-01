@@ -2,7 +2,7 @@
 import { renderHook } from '@testing-library/react';
 import { useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 
 // docs/specs/006-document/per-tab-storage.md "Saving": the edits still inside the debounce go when the editor goes.
 const flush = vi.fn<typeof import('@/lib/api-client').flushDocumentSavesBeacon>();

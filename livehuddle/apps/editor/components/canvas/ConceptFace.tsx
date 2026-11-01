@@ -25,7 +25,7 @@ import {
   type LayoutRect,
   type ShapeElement,
   type WebRows,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle } from '@/components/canvas/web/web-face-props';

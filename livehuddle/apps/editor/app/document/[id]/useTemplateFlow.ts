@@ -1,8 +1,8 @@
 import type { Dispatch, SetStateAction } from 'react';
-import type { EditorMode, Tab } from '@livediagram/document';
+import type { EditorMode, Tab } from '@livehuddle/document';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { getTheme, recolourElementsForTheme } from '@/lib/themes';
-import type { TemplateKind } from '@livediagram/templates';
+import type { TemplateKind } from '@livehuddle/templates';
 import { templateTabName } from '@/lib/template-tab-name';
 import type { Participant } from '@/lib/identity';
 import { landTemplateOnTab } from './template-tab-set';

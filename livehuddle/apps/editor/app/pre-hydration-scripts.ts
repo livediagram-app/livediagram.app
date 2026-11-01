@@ -1,13 +1,13 @@
 import { STORAGE_KEY as USER_PREFERENCES_STORAGE_KEY } from '@/lib/user-preferences';
 import { silentSignInBootScript, silentCookiesForHint } from '@liveworkspace/auth-client/silent';
-import { SIGNED_IN_HINT_COOKIE } from '@livediagram/api-schema';
+import { SIGNED_IN_HINT_COOKIE } from '@livehuddle/api-schema';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { GUEST_TOKEN_STORAGE_KEY } from '@/lib/guest-token-key';
 import { thisBrowserKey } from '@liveworkspace/explorer/this-browser';
 
 // The editor-only snippet the root layout inlines into a `<script>` that runs
 // BEFORE first paint (the appearance one is shared by every app and lives in
-// @livediagram/ui). It lives here, as a string in a plain module, so the layout
+// @livehuddle/ui). It lives here, as a string in a plain module, so the layout
 // stays readable and a test can reach the source.
 //
 // Deliberately NOT `'use client'`, and neither is anything it imports: the
@@ -32,7 +32,7 @@ export const REDUCE_MOTION_BOOT_SCRIPT = `try{var p=JSON.parse(localStorage.getI
 // without blocking render; this snippet, inlined right after the link, switches it to every medium
 // once it has loaded. Text paints in the fallback face until then, exactly as `display=swap`
 // already paints it while a face downloads, and useFontEpoch re-measures as the faces land.
-export const WEBFONTS_STYLESHEET_ID = 'livediagram-webfonts';
+export const WEBFONTS_STYLESHEET_ID = 'livehuddle-webfonts';
 export const WEBFONTS_SWAP_SCRIPT = `try{var l=document.getElementById('${WEBFONTS_STYLESHEET_ID}');if(l){var on=function(){l.media='all'};if(l.sheet)on();else l.addEventListener('load',on)}}catch(e){}`;
 
 // Signing in without a click (liveworkspace/docs/specs/003-accounts/accounts.md "Signing in without a click"): once per browser
@@ -42,7 +42,7 @@ export const WEBFONTS_SWAP_SCRIPT = `try{var l=document.getElementById('${WEBFON
 // pages, the guest hand-off's way back, embeds; the AI-tool consent and device pages (/oauth) do bounce, since they
 // only work signed in and the bounce keeps their address; the shared script
 // (@liveworkspace/auth-client/silent) also leaves frames, crawlers, share links and anyone who signed out of
-// livediagram alone.
+// livehuddle alone.
 export const SILENT_SIGN_IN_SKIP_PATHS = [
   '/sign-in',
   '/get-started',
@@ -61,8 +61,8 @@ export const SILENT_SIGN_IN_BOOT_SCRIPT = silentSignInBootScript({
 // needs, and both are in storage, so it need not wait for the bundle. The promise is left on `window.__ldiaGrant`
 // for lib/api/document-grants.ts to adopt. A signed-in browser (the hint cookie) skips it: its token arrives with the
 // session, and its grant is asked for then.
-export const SHARE_PASSWORD_STORAGE_PREFIX = 'livediagram:share-password:';
+export const SHARE_PASSWORD_STORAGE_PREFIX = 'livehuddle:share-password:';
 // Where this browser lists what it keeps only here (@liveworkspace/explorer/this-browser): the index has never heard
 // of those, so their grant is not asked for.
-const THIS_BROWSER_KEY = thisBrowserKey('livediagram');
+const THIS_BROWSER_KEY = thisBrowserKey('livehuddle');
 export const DOCUMENT_GRANT_BOOT_SCRIPT = `try{var m=location.pathname.match(/^\\/document\\/([^/]+)\\/?$/);if(m&&m[1]!=='placeholder'&&m[1]!=='shared'&&!/(?:^|; )${SIGNED_IN_HINT_COOKIE}=1/.test(document.cookie)){var t=localStorage.getItem('${GUEST_TOKEN_STORAGE_KEY}');var s=new URLSearchParams(location.search).get('s');if(t||s){var h={};if(t)h.Authorization='Bearer '+t;if(s){h['X-Share-Code']=s;var pw=localStorage.getItem('${SHARE_PASSWORD_STORAGE_PREFIX}'+s);if(pw)h['X-Share-Password']=pw}var id=decodeURIComponent(m[1]);var k=localStorage.getItem('${THIS_BROWSER_KEY}');if(!(k&&(JSON.parse(k).items||[]).some(function(i){return i&&i.id===id})))window.__ldiaGrant={id:id,share:s||'',p:fetch('${API_BASE}/index/items/'+encodeURIComponent(id)+'/grant',{method:'POST',headers:h}).then(function(r){return r.ok?r.json():null}).catch(function(){return null})}}}}catch(e){}`;

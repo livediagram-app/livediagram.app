@@ -1,7 +1,11 @@
 // The browser's one-time doors of the move (routes/migration.ts): the legacy guest claim's forwarding and answers,
 // and a This Browser document's parts handed to the index, with the real splitter and with a stub one.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { HandoffRequest, LocalSplitResult, MigrationRoomPayload } from '@liveworkspace/migration';
+import type {
+  HandoffRequest,
+  LocalSplitResult,
+  MigrationRoomPayload,
+} from '@liveworkspace/migration';
 import type { Env } from '../types';
 import { localPartId } from '../migration/local-parts';
 import { handleLegacyGuestClaim } from './legacy-guest';
@@ -16,7 +20,7 @@ type Call = { url: string; auth: string | null; person: string | null; body: unk
 function envOf(extra: Partial<Env> = {}): Env {
   return {
     ACCOUNTS_URL: 'https://accounts.test',
-    ACCOUNTS_CLIENT_ID: 'livediagram',
+    ACCOUNTS_CLIENT_ID: 'livehuddle',
     ACCOUNTS_CLIENT_SECRET: 'secret',
     INDEX_ORIGIN: 'https://index.test',
     INDEX_KEY: 'idx',
@@ -40,8 +44,11 @@ function stubFetch(answer: (call: Call) => Response | Promise<Response>) {
   return calls;
 }
 
-const ctxOf = (path: string, body: unknown, opts: Parameters<typeof makeTestRouteContext>[2] = {}) =>
-  makeTestRouteContext('POST', path, { owner: CALLER, env: envOf(), body, ...opts });
+const ctxOf = (
+  path: string,
+  body: unknown,
+  opts: Parameters<typeof makeTestRouteContext>[2] = {},
+) => makeTestRouteContext('POST', path, { owner: CALLER, env: envOf(), body, ...opts });
 
 beforeEach(() => {
   vi.spyOn(console, 'info').mockImplementation(() => {});
@@ -212,14 +219,12 @@ describe('POST /api/migration/local-parts', () => {
         imageOwners: [{ imageId: 'i', owner: 'someone' }],
         imageGrants: [{ imageId: 'i', createdAt: 1 }],
       }) as unknown as MigrationRoomPayload;
-    const split = vi.fn(
-      (): LocalSplitResult => ({
-        keep: [diagram],
-        parts: [part('livedocuments', 'p-docs'), part('livedesign', 'p-design')],
-        crossReferences: [],
-        notes: [],
-      }),
-    );
+    const split = vi.fn((): LocalSplitResult => ({
+      keep: [diagram],
+      parts: [part('livedocuments', 'p-docs'), part('livedesign', 'p-design')],
+      crossReferences: [],
+      notes: [],
+    }));
     const handedOff: MigrationRoomPayload[] = [];
     const handOff = vi.fn(async (_env: Env, _caller: string, p: MigrationRoomPayload) => {
       handedOff.push(p);
@@ -251,9 +256,12 @@ describe('POST /api/migration/local-parts', () => {
   });
 
   it('passes the raw record’s fields to the splitter, and refuses a malformed request', async () => {
-    const split = vi.fn(
-      (): LocalSplitResult => ({ keep: [], parts: [], crossReferences: [], notes: [] }),
-    );
+    const split = vi.fn((): LocalSplitResult => ({
+      keep: [],
+      parts: [],
+      crossReferences: [],
+      notes: [],
+    }));
     const handOff = vi.fn(async () => 'landed' as const);
     const record = {
       id: 'l',

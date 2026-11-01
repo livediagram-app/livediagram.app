@@ -3,7 +3,7 @@
 // (docs/specs/020-import-export/blueprints/import-image-pipeline.md "Interfaces and contracts").
 // Proven end to end in the running editor; everything it composes is unit-tested.
 
-import { sha256Hex } from '@livediagram/api-schema';
+import { sha256Hex } from '@livehuddle/api-schema';
 import { apiUploadImage } from '../api/images';
 import { isOfflineIdSync } from '../offline/offline-store';
 import { createImportImageSession } from './session';

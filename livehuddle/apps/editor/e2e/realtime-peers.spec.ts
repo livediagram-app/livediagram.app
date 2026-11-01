@@ -29,11 +29,11 @@ async function openAs(
   await ctx.addInitScript(
     ({ o }) => {
       if (o) {
-        localStorage.setItem('livediagram:v2:name-confirmed', '1');
+        localStorage.setItem('livehuddle:v2:name-confirmed', '1');
       }
       // The Workshop tour offers itself over the board (fixtures openBlankSession); its overlay would take the presses.
       localStorage.setItem(
-        'livediagram:user-preferences:v1',
+        'livehuddle:user-preferences:v1',
         JSON.stringify({ workshopTourSeen: true }),
       );
     },

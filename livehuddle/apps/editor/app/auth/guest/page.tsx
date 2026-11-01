@@ -16,7 +16,7 @@ export default function GuestHandoffPage() {
   }, []);
   return (
     <main className="flex min-h-dvh items-center justify-center bg-white text-sm text-slate-500 dark:bg-slate-950 dark:text-slate-400">
-      <p role="status">Opening livediagram…</p>
+      <p role="status">Opening livehuddle…</p>
     </main>
   );
 }

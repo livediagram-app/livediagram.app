@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { buildTemplateTab, TEMPLATES, templateCatalogue } from '@livediagram/templates';
-import { THEMES } from '@livediagram/document';
+import { buildTemplateTab, TEMPLATES, templateCatalogue } from '@livehuddle/templates';
+import { THEMES } from '@livehuddle/document';
 import { lint } from './fixtures/build';
 
 // Templates are the editor's own drawings: none of them should draw an error.

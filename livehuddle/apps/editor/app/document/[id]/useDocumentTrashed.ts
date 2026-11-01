@@ -7,7 +7,7 @@
 // (liveworkspace/docs/specs/004-index/one-explorer-contracts.md): the item, which outlives the trashing, at edit for them (its owner,
 // or a member of the team that owns it), and never for a share-link visitor.
 import { useCallback, useEffect, useState } from 'react';
-import { trashPurgeDueAt, type TrashedDocument } from '@livediagram/api-schema';
+import { trashPurgeDueAt, type TrashedDocument } from '@livehuddle/api-schema';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';

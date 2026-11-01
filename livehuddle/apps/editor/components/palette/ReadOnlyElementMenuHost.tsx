@@ -10,7 +10,7 @@ import {
   elementSupportsText,
   isBoxed,
   type ElementLink,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { ReadOnlyElementMenu } from '@liveworkspace/workbench/components/palette/ReadOnlyElementMenu';
 import {
   copyElementText,

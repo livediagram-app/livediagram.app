@@ -1,5 +1,5 @@
 // The import door (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"; docs/specs/015-api/api.md "Internal"): a new
-// canvas for `owner` from a `.livediagram` file, the Drive mirror's Import as a copy. The file is read here
+// canvas for `owner` from a `.livehuddle` file, the Drive mirror's Import as a copy. The file is read here
 // (document-room/document-file.ts readDocumentFile: another kind or a malformed tab refused, fresh tab ids with
 // their links and the deck's slides re-pointed, the tab and deck caps), the index makes the item as the owner's
 // personal canvas in the folder named (with this app's key, as the owner), and the new canvas's object writes it.

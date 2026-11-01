@@ -6,7 +6,7 @@ import {
   resolveStockColours,
   type CanvasSurface,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 export type InkRole = 'line' | 'text';
 

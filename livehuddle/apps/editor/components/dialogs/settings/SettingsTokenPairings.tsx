@@ -4,7 +4,7 @@
 // tokens", WB35, WB36, WB67): under the API Tokens row, one row per workbench a token may open documents in, each
 // with Unpair, which asks first. None renders nothing. The tokens themselves are run on liveworkspace.app.
 import { useId, useState } from 'react';
-import type { WorkbenchPairing, WorkbenchScope } from '@livediagram/api-schema';
+import type { WorkbenchPairing, WorkbenchScope } from '@livehuddle/api-schema';
 import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
 import { relativeTime } from './relative-time';
 

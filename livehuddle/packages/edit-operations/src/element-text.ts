@@ -1,7 +1,7 @@
 // How the engine names elements in result lines and refusals (docs/specs/024-agents/blueprints/
 // edit-operations.md "Result lines", EO43): by ref, as views print them, with the kind word.
 
-import { kindWordOf, type Element, type ElementId } from '@livediagram/document';
+import { kindWordOf, type Element, type ElementId } from '@livehuddle/document';
 import { endRef, labelOf, quoteCut } from '@liveworkspace/edit-operations/element-text';
 import { LABEL_CUT_CHARS } from './vocabulary';
 

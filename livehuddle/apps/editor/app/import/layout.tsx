@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 // The /import page's tab title; `index: false` is inherited from the root layout.
 export const metadata: Metadata = {
-  title: 'Import | livediagram',
+  title: 'Import | livehuddle',
 };
 
 export default function ImportLayout({ children }: { children: ReactNode }) {

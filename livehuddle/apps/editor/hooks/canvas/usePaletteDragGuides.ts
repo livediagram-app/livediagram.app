@@ -8,7 +8,7 @@ import {
   type DistributionGuide,
   type Element,
   type EsTimeline,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { paletteDragSnapAt } from '@/lib/palette-drag-snap';
 import {

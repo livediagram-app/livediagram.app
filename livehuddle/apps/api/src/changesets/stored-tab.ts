@@ -1,4 +1,4 @@
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import { getTab } from '../db';
 import type { DocumentEnv } from '../types';
 

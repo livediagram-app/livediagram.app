@@ -68,9 +68,9 @@ function totalsLine(totals: Record<string, number>): string {
 
 export const linkInit = defineVerb({
   id: 'link.init',
-  summary: 'Write livediagram.toml for this directory',
+  summary: 'Write livehuddle.toml for this directory',
   description:
-    'Writes livediagram.toml in the current directory, linking it to a folder, documents, or both.',
+    'Writes livehuddle.toml in the current directory, linking it to a folder, documents, or both.',
   behaviour: 'write',
   local: true,
   input: z.object({
@@ -83,8 +83,8 @@ export const linkInit = defineVerb({
   cli: {
     positionals: [],
     examples: [
-      'livediagram link init --folder "Minigames" --level files',
-      'livediagram link init --doc 3f9c',
+      'livehuddle link init --folder "Minigames" --level files',
+      'livehuddle link init --doc 3f9c',
     ],
     prints: 'the path written',
   },
@@ -109,7 +109,7 @@ export const linkStatus = defineVerb({
     ]),
   cli: {
     positionals: [],
-    examples: ['livediagram link status', 'livediagram link status --all'],
+    examples: ['livehuddle link status', 'livehuddle link status --all'],
     prints: 'one line per document: state, ref, name, file',
   },
 });
@@ -136,7 +136,7 @@ export const linkLs = defineVerb({
   quiet: ({ documents }) => documents.map((d) => d.ref),
   cli: {
     positionals: [],
-    examples: ['livediagram link ls', 'livediagram link ls --json'],
+    examples: ['livehuddle link ls', 'livehuddle link ls --json'],
     prints: 'one document a line: ref, name, library, last saved',
   },
 });
@@ -162,7 +162,7 @@ export const sync = defineVerb({
   telemetryType: (input) => (input.watch ? SYNC_WATCH_TYPE : 'Sync'),
   cli: {
     positionals: [],
-    examples: ['livediagram sync', 'livediagram sync --watch'],
+    examples: ['livehuddle sync', 'livehuddle sync --watch'],
     prints: 'one line per document acted on, then the totals',
   },
 });

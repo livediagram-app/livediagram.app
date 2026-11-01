@@ -9,7 +9,7 @@
 //
 // Every element is content: sketches are the Sketches layer. Pure.
 
-import type { Element, ShapeElement, ShapeKind, TextElement } from '@livediagram/document';
+import type { Element, ShapeElement, ShapeKind, TextElement } from '@livehuddle/document';
 import { textAt, uiAt } from './template-wireframe-kit';
 
 // The sheet's paper and the pen it is drawn with.

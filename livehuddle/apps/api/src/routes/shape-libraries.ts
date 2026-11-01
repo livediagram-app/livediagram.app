@@ -12,8 +12,8 @@ import {
   validateShapeLibraryItems,
   type ShapeLibraryItem,
   type ShapeLibrarySource,
-} from '@livediagram/api-schema';
-import { renderElementsToSvg, type Tab } from '@livediagram/document';
+} from '@livehuddle/api-schema';
+import { renderElementsToSvg, type Tab } from '@livehuddle/document';
 import { resolveIconExportArt, resolveStickerArt } from '@liveworkspace/icons/resolve';
 import { personStore } from '../person-client';
 import { badRequest, conflict, json, noContent, notFound, payloadTooLarge } from '../responses';

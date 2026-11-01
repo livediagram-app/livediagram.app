@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/edit-operations",
+  "name": "@livehuddle/edit-operations",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,14 +17,14 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
-    "@livediagram/api-schema": "workspace:*",
-    "@livediagram/document": "workspace:*",
-    "@livediagram/templates": "workspace:*",
+    "@livehuddle/api-schema": "workspace:*",
+    "@livehuddle/document": "workspace:*",
+    "@livehuddle/templates": "workspace:*",
     "@liveworkspace/edit-operations": "workspace:*",
     "@liveworkspace/icons": "workspace:*"
   },
   "devDependencies": {
-    "@livediagram/document-views": "workspace:*",
+    "@livehuddle/document-views": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@vitest/coverage-v8": "^5.0.3",

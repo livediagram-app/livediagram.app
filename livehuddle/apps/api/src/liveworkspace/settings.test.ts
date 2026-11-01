@@ -35,31 +35,31 @@ const call = (method: string, owner: string | null, body?: unknown, e: Env = env
 describe('readPreferences / writePreferences (liveworkspace settings)', () => {
   it('joins the all scope and this app’s own into one flat set', async () => {
     accounts.settings.set('user_a all', { reduceMotion: true });
-    accounts.settings.set('user_a livediagram.app', { gridSnap: true });
+    accounts.settings.set('user_a livehuddle.app', { gridSnap: true });
     expect(await readPreferences(env, 'user_a')).toEqual({ reduceMotion: true, gridSnap: true });
   });
 
-  it('splits a patch: shared keys to all, the rest to livediagram.app; null deletes', async () => {
-    accounts.settings.set('user_a livediagram.app', { gridSnap: true, gone: 1 });
+  it('splits a patch: shared keys to all, the rest to livehuddle.app; null deletes', async () => {
+    accounts.settings.set('user_a livehuddle.app', { gridSnap: true, gone: 1 });
     expect(
       await writePreferences(env, 'user_a', { reduceMotion: false, gridSnap: false, gone: null }),
     ).toBe(true);
     expect(accounts.settings.get('user_a all')).toEqual({ reduceMotion: false });
-    expect(accounts.settings.get('user_a livediagram.app')).toEqual({ gridSnap: false });
+    expect(accounts.settings.get('user_a livehuddle.app')).toEqual({ gridSnap: false });
   });
 
   it('keeps a common setting this app held before it was shared, until its first change moves it to all', async () => {
-    accounts.settings.set('user_a livediagram.app', { showMinimap: false, gridSnap: true });
+    accounts.settings.set('user_a livehuddle.app', { showMinimap: false, gridSnap: true });
     expect(await readPreferences(env, 'user_a')).toEqual({ showMinimap: false, gridSnap: true });
     await writePreferences(env, 'user_a', { showMinimap: true });
     expect(accounts.settings.get('user_a all')).toEqual({ showMinimap: true });
-    expect(accounts.settings.get('user_a livediagram.app')).toEqual({ gridSnap: true });
+    expect(accounts.settings.get('user_a livehuddle.app')).toEqual({ gridSnap: true });
     expect(await readPreferences(env, 'user_a')).toEqual({ showMinimap: true, gridSnap: true });
   });
 
   it('writes a guest under its guest_<uuid> id, and sends nothing for an empty patch', async () => {
     await writePreferences(env, GUEST, { gridSnap: true });
-    expect(accounts.settings.get(`${GUEST} livediagram.app`)).toEqual({ gridSnap: true });
+    expect(accounts.settings.get(`${GUEST} livehuddle.app`)).toEqual({ gridSnap: true });
     accounts.calls.length = 0;
     expect(await writePreferences(env, GUEST, {})).toBe(true);
     expect(accounts.calls).toEqual([]);
@@ -90,10 +90,10 @@ describe('/api/preferences', () => {
   });
 
   it('PUT applies a patch and answers 204', async () => {
-    accounts.settings.set('user_a livediagram.app', { gridSnap: true, keep: 1 });
+    accounts.settings.set('user_a livehuddle.app', { gridSnap: true, keep: 1 });
     const res = await call('PUT', 'user_a', { prefs: { gridSnap: false, reduceMotion: true } });
     expect(res.status).toBe(204);
-    expect(accounts.settings.get('user_a livediagram.app')).toEqual({ gridSnap: false, keep: 1 });
+    expect(accounts.settings.get('user_a livehuddle.app')).toEqual({ gridSnap: false, keep: 1 });
     expect(accounts.settings.get('user_a all')).toEqual({ reduceMotion: true });
   });
 
@@ -133,7 +133,7 @@ describe('/api/preferences', () => {
 describe('getNotificationPrefs', () => {
   it('reads explicit false as off, in either scope, and defaults the rest to on', async () => {
     accounts.settings.set('user_a all', { notifyComments: false });
-    accounts.settings.set('user_a livediagram.app', { notifyDocumentJoin: false });
+    accounts.settings.set('user_a livehuddle.app', { notifyDocumentJoin: false });
     expect(await getNotificationPrefs(env, 'user_a')).toMatchObject({
       notifyComments: false,
       notifyDocumentJoin: false,

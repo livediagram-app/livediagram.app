@@ -26,7 +26,7 @@ import {
 } from '@liveworkspace/workbench/lib/selection-store';
 import { useMemo, useRef, useState } from 'react';
 
-import { slideName } from '@livediagram/document';
+import { slideName } from '@livehuddle/document';
 
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 import { SlideRowMenu } from '@/components/panels/SlideRowMenu';
@@ -41,7 +41,7 @@ import {
   useRowReorderDrag,
 } from '@liveworkspace/workbench/hooks/ui/useRowReorderDrag';
 import { DropCaret } from '@liveworkspace/workbench/components/primitives/DropCaret';
-import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { SOLID_BRAND_DARK_CONTROL } from '@livehuddle/ui';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
 
 const selectionSetOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);

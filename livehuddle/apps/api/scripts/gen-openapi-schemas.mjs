@@ -1,6 +1,6 @@
 // Generates the OpenAPI component schemas for `/api/openapi.json` from the
-// `@livediagram/api-schema` TypeScript types — the single source of truth for
-// every wire-format DTO (docs/specs/015-api/api-documentation.md). Run `pnpm --filter @livediagram/api
+// `@livehuddle/api-schema` TypeScript types — the single source of truth for
+// every wire-format DTO (docs/specs/015-api/api-documentation.md). Run `pnpm --filter @livehuddle/api
 // gen:openapi` after changing a DTO; the output is committed as
 // `src/openapi/schemas.generated.ts` and served verbatim by the worker.
 //
@@ -165,8 +165,8 @@ export function generateComponentSchemas() {
 function writeGeneratedFile() {
   const schemas = generateComponentSchemas();
   const banner = `// GENERATED FILE — do not edit by hand.
-// Produced by scripts/gen-openapi-schemas.mjs from @livediagram/api-schema.
-// Regenerate with: pnpm --filter @livediagram/api gen:openapi
+// Produced by scripts/gen-openapi-schemas.mjs from @livehuddle/api-schema.
+// Regenerate with: pnpm --filter @livehuddle/api gen:openapi
 // Served as the \`components.schemas\` of GET /api/openapi.json (docs/specs/015-api/api-documentation.md).
 import type { ComponentSchemas } from '@liveworkspace/api-kit/openapi-types';
 

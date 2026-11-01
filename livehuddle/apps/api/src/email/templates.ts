@@ -16,7 +16,7 @@ const MUTED = '#475569';
 // The brand prism's light-to-deep sky run, for the band across the top of the
 // card. Outlook ignores the gradient and paints BRAND underneath instead.
 const BAND_GRADIENT = 'linear-gradient(90deg,#38bdf8 0%,#0ea5e9 45%,#1d4ed8 100%)';
-// The page behind the card: brand-50, so the frame reads livediagram before a
+// The page behind the card: brand-50, so the frame reads livehuddle before a
 // word is read.
 const CANVAS = '#f0f9ff';
 
@@ -24,14 +24,14 @@ const CANVAS = '#f0f9ff';
 // inline SVG: Gmail and Outlook drop SVG, and most clients block data: images.
 // `pnpm icons:brand` writes it into the marketing app's public/email/, a path kept
 // for email alone because every message ever sent points at it. 64px, 2x the slot.
-const LOGO_PATH = '/email/livediagram-mark-64.png';
+const LOGO_PATH = '/email/livehuddle-mark-64.png';
 const LOGO_SIZE = 28;
 
 // Default sign-off, used by the onboarding emails (their recipients all have an
 // account). The invite + account-deleted builders pass their own, since those
 // recipients may not have (or no longer have) an account.
 const ACCOUNT_FOOTER =
-  'You’re receiving this because you have a livediagram account. The editor is free and open source.';
+  'You’re receiving this because you have a livehuddle account. The editor is free and open source.';
 
 // docs/specs/014-identity/transactional-email.md: footer for an opt-out notification email, the reason plus a link to
 // the settings where the recipient can turn the category off in one click.
@@ -155,11 +155,11 @@ export function accountDeletedEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'AccountDeleted',
-    subject: 'Your livediagram account has been deleted',
+    subject: 'Your livehuddle account has been deleted',
     html: shell(env, {
       heading: 'Your account has been deleted',
       intro:
-        'This confirms that your livediagram documents and your liveworkspace account have been permanently removed, as you requested. The account is closed for every liveworkspace app. There’s nothing left for you to do.',
+        'This confirms that your livehuddle documents and your liveworkspace account have been permanently removed, as you requested. The account is closed for every liveworkspace app. There’s nothing left for you to do.',
       outro:
         'If this wasn’t you, or you change your mind, you’re always welcome back. The canvas is free and needs no account to start.',
       ctaText: 'Start a new diagram',
@@ -250,7 +250,7 @@ export function actionAssignedEmail(
             ctaText: 'Open the document',
             ctaHref: `${base}/document/${encodeURIComponent(document.id)}`,
           }
-        : { ctaText: 'Open livediagram', ctaHref: `${base}/explorer` }),
+        : { ctaText: 'Open livehuddle', ctaHref: `${base}/explorer` }),
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because a teammate assigned you an action.',
@@ -355,10 +355,10 @@ export function milestoneEmail(env: Env, count: number): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'Milestone',
-    subject: `You’ve made ${count} documents on livediagram`,
+    subject: `You’ve made ${count} documents on livehuddle`,
     html: shell(env, {
       heading: `That’s ${count} documents`,
-      intro: `Nice work, you’ve created <strong>${count}</strong> documents on livediagram. Thanks for building with us.`,
+      intro: `Nice work, you’ve created <strong>${count}</strong> documents on livehuddle. Thanks for building with us.`,
       outro: 'Here’s to the next one.',
       ctaText: 'Open your Explorer',
       ctaHref: `${base}/explorer`,

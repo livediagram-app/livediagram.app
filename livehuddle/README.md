@@ -1,8 +1,8 @@
-# livediagram
+# livehuddle
 
 A collaborative diagram editor that works without signing in. Open a link, draw, share. Real-time presence, cursors, comments, undo and redo. The canvas never sits behind an auth wall, so the friction to start is "open the link, start drawing."
 
-**Live at [livediagram.app](https://livediagram.app).** MIT-licensed.
+**Live at [livehuddle.app](https://livehuddle.app).** MIT-licensed.
 
 ```
 apps/        marketing site + editor + help centre + community + api + mcp server + router + cli
@@ -14,13 +14,13 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 
 ## Start here
 
-| If you want to...                                     | Read                                                                           |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Understand what livediagram does and where it's going | [docs/README.md](docs/README.md)                                               |
-| Run it on your machine                                | [docs/development/local-development.md](docs/development/local-development.md) |
-| See the repo's shape (apps, packages, deploy)         | [docs/development/architecture.md](docs/development/architecture.md)           |
-| Propose a change                                      | [docs/development/contributing.md](docs/development/contributing.md)           |
-| Read the spec for a specific behaviour                | [docs/specs/README.md](docs/specs/README.md)                                   |
+| If you want to...                                    | Read                                                                           |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Understand what livehuddle does and where it's going | [docs/README.md](docs/README.md)                                               |
+| Run it on your machine                               | [docs/development/local-development.md](docs/development/local-development.md) |
+| See the repo's shape (apps, packages, deploy)        | [docs/development/architecture.md](docs/development/architecture.md)           |
+| Propose a change                                     | [docs/development/contributing.md](docs/development/contributing.md)           |
+| Read the spec for a specific behaviour               | [docs/specs/README.md](docs/specs/README.md)                                   |
 
 ## The 30-second tour
 
@@ -30,9 +30,9 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 - **Telemetry** is anonymous usage events sent to liveworkspace's telemetry service, published on its public dashboard (`/telemetry` redirects there; off in OSS forks by default).
 - **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
 - **Community** at `/community` is the public gallery of shared documents: browse, like and copy what people publish ([Community](docs/specs/025-community/community.md)).
-- **MCP** at `mcp.livediagram.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth, on its own host rather than a router path.
+- **MCP** at `mcp.livehuddle.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth, on its own host rather than a router path.
 - **Router** stitches the five web apps (marketing, editor, help, community, api) under one hostname.
-- **CLI** (`apps/cli`) is `livediagram`, the command line agents and scripts read, lint and change documents with, published on npm as `@livediagram/cli`. It also links a repository to its diagrams and opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Repositories](docs/specs/027-repositories/README.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
+- **CLI** (`apps/cli`) is `livehuddle`, the command line agents and scripts read, lint and change documents with, published on npm as `@livehuddle/cli`. It also links a repository to its diagrams and opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Repositories](docs/specs/027-repositories/README.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
 
 The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR, no Next.js API routes.
 
@@ -45,10 +45,10 @@ The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps).
 
 ## Security
 
-Found a vulnerability? Please report it privately through [GitHub's advisory form](https://github.com/livediagram-app/livediagram.app/security/advisories/new), never in a public issue. See [`SECURITY.md`](SECURITY.md) and the [full policy](https://www.livediagram.app/help/policies/report-a-vulnerability/).
+Found a vulnerability? Please report it privately through [GitHub's advisory form](https://github.com/livediagram-app/livediagram.app/security/advisories/new), never in a public issue. See [`SECURITY.md`](SECURITY.md) and the [full policy](https://www.livehuddle.app/help/policies/report-a-vulnerability/).
 
 ## License
 
-[MIT](LICENSE). A free hosted version runs at [livediagram.app](https://livediagram.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional (the liveworkspace accounts Worker for sign-in, Cloudflare Email Service for transactional email, gated on its `send_email` binding, and a vision model for reading sticky-note photos, Google AI Studio or any OpenAI-compatible endpoint, gated on its key), and the editor runs fully without any of them: without a key, the photo import reads notes with a model in the browser.
+[MIT](LICENSE). A free hosted version runs at [livehuddle.app](https://livehuddle.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional (the liveworkspace accounts Worker for sign-in, Cloudflare Email Service for transactional email, gated on its `send_email` binding, and a vision model for reading sticky-note photos, Google AI Studio or any OpenAI-compatible endpoint, gated on its key), and the editor runs fully without any of them: without a key, the photo import reads notes with a model in the browser.
 
-Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://livediagram.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).
+Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://livehuddle.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

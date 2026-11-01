@@ -144,7 +144,7 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
     expect(other.status).toBe(403);
   });
 
-  // Workbenches are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the api forwards them as livediagram, before
+  // Workbenches are liveworkspace's (liveworkspace/docs/specs/011-workbench/workbench.md): the api forwards them as livehuddle, before
   // any token check of its own, and accounts checks the credential.
   it('forwards /api/workbench/* to liveworkspace untouched, read-only token and all', async () => {
     const seen: Request[] = [];
@@ -164,7 +164,7 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
       expect(res.status).toBe(201);
       expect(resolveApiTokenMock).not.toHaveBeenCalled();
       expect(seen[0]!.url).toBe('https://accounts.test/api/account/workbench/tickets?x=1');
-      expect(seen[0]!.headers.get('X-Liveworkspace-Proxy')).toBe('livediagram');
+      expect(seen[0]!.headers.get('X-Liveworkspace-Proxy')).toBe('livehuddle');
       expect(seen[0]!.headers.get('Authorization')).toBe(RO.Authorization);
       expect(seen[0]!.headers.get('Cookie')).toBeNull();
     } finally {
@@ -365,7 +365,7 @@ describe('workbench sessions at the front door', () => {
   });
 });
 
-// API tokens carried over from the old livediagram.app (docs/migration.md step 1.5, @liveworkspace/api-kit api-token.ts): `lvd_`
+// API tokens carried over from the old livehuddle.app (docs/migration.md step 1.5, @liveworkspace/api-kit api-token.ts): `lvd_`
 // takes the token path as `lwt_` does.
 describe('carried-over lvd_ API tokens', () => {
   beforeEach(() => {

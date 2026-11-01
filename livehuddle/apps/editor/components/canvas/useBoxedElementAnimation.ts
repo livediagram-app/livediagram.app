@@ -14,7 +14,7 @@ import {
   type ShapeAnimation,
   STEP_SEQUENCE_BEAT_S,
   stepOrdinal,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { drawsShapeSvgOverlay } from '@/components/canvas/ShapeContentRouter';
 import { bodySetClass } from '@/lib/animation-classes';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';

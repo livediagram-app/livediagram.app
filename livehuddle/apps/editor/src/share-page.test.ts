@@ -3,7 +3,7 @@ import worker from './worker';
 import { isSharePagePath, SHARE_PITCH } from './share-page';
 
 // The share page's head (docs/specs/013-workspace/share-link-previews.md "The share page's head"): the editor worker
-// hands its share page to liveworkspace's (@liveworkspace/media createSharePage, tested there) with livediagram's
+// hands its share page to liveworkspace's (@liveworkspace/media createSharePage, tested there) with livehuddle's
 // words and the previews origin it is given.
 
 // HTMLRewriter is a Workers runtime global: this stand-in records what each handler set.
@@ -28,7 +28,7 @@ class RecordingRewriter {
   }
 }
 
-const SHELL = '<html><head><title>livediagram</title></head><body></body></html>';
+const SHELL = '<html><head><title>livehuddle</title></head><body></body></html>';
 
 function makeEnv(previewsOrigin?: string) {
   const assets: string[] = [];
@@ -45,7 +45,7 @@ function makeEnv(previewsOrigin?: string) {
 }
 
 const get = (path: string, env: never) =>
-  worker.fetch(new Request(`https://www.livediagram.app${path}`), env);
+  worker.fetch(new Request(`https://www.livehuddle.app${path}`), env);
 
 let asked: string[];
 beforeEach(() => {
@@ -81,9 +81,9 @@ describe('editor worker: the share page', () => {
     expect(edits.title).toBe('Payments flow');
     expect(edits['meta[name="description"]']).toBe(SHARE_PITCH);
     expect(edits['meta[property="og:image"]']).toBe(
-      'https://www.livediagram.app/api/previews/share/CODE1234/image.png',
+      'https://www.livehuddle.app/api/previews/share/CODE1234/image.png',
     );
-    expect(edits['meta[property="og:image:alt"]']).toBe('Payments flow, drawn in livediagram');
+    expect(edits['meta[property="og:image:alt"]']).toBe('Payments flow, drawn in livehuddle');
   });
 
   it('asks the previews origin it is given (staging)', async () => {

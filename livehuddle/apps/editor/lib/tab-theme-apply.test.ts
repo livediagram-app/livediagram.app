@@ -6,7 +6,7 @@ import {
   type Element,
   type ShapeElement,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { getTheme } from '@/lib/themes';
 import { withStyleOfTab, withThemeApplied } from './tab-theme-apply';
 

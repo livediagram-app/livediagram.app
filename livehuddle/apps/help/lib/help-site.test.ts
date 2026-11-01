@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { describeHelpSite } from '@liveworkspace/help-site/testing';
-import { CARD_SUBTITLE_MAX } from '@livediagram/ui';
+import { CARD_SUBTITLE_MAX } from '@livehuddle/ui';
 import { site } from './help-site';
 import { HOME } from './home-sections';
 

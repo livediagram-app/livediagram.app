@@ -5,7 +5,7 @@ import { useShortcutsEnabled } from './useShortcutsEnabled';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-const KEY = 'livediagram:v2:shortcuts-enabled';
+const KEY = 'livehuddle:v2:shortcuts-enabled';
 
 afterEach(() => window.localStorage.clear());
 

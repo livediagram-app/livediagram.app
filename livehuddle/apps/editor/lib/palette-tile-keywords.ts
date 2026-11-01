@@ -4,7 +4,7 @@
 // the same words. Kept apart from palette-search, which also enumerates the icon catalogues, so the
 // strip pulls in only this.
 
-import type { ShapeKind } from '@livediagram/document';
+import type { ShapeKind } from '@livehuddle/document';
 
 import type { PaletteTileDef } from '@/components/palette/palette-tile-defs';
 

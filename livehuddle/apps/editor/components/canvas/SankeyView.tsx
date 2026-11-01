@@ -2,7 +2,7 @@
 
 // The Sankey diagram on the canvas (docs/specs/009-elements/sankey.md): bands as wide as the amount they
 // carry, nodes in columns, labels facing inward. Everything about where things go comes from sankeyFrame in
-// @livediagram/document, which the exporter draws from too; this file adds what only a live canvas has:
+// @livehuddle/document, which the exporter draws from too; this file adds what only a live canvas has:
 // hovering a band or a node to lift it and read it, and the animations (Grow, Flow, Cascade, Pulse, Rise).
 //
 // The layout is memoised on what it depends on (the flows, the options, the box's size and the palette), so
@@ -21,7 +21,7 @@ import {
   sankeyNodeReadout,
   type SankeyLabel,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { animClass, animSpeedVars } from '@/lib/icons';
 import { ChartReadout } from '@liveworkspace/workbench/components/primitives/ChartReadout';
 import { useSankeyTourFocus } from '@liveworkspace/workbench/lib/sankey-tour-focus';

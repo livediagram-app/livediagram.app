@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, BackBar } from '@livediagram/ui';
+import { Button, BackBar } from '@livehuddle/ui';
 import { pickExport, readDrop } from '@/lib/pick-folder';
 import { ImportChecklist } from '@liveworkspace/workbench/components/dialogs/ImportChecklist';
 import { ImportDropZone } from './ImportDropZone';
@@ -10,7 +10,7 @@ import {
   type ImportScenes,
   type MsWhiteboardStep,
 } from '@/hooks/persistence/useMsWhiteboardImport';
-import { pluralGrouped } from '@livediagram/document';
+import { pluralGrouped } from '@livehuddle/document';
 
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 

@@ -7,9 +7,9 @@ import {
   type AnimationSpeed,
   type TextRun,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { setAnimationClass } from '@/lib/animation-classes';
-import { BRAND_RAMP } from '@livediagram/ui';
+import { BRAND_RAMP } from '@livehuddle/ui';
 import { planTextAnimation, type TextAnimPlan } from './animated-words';
 
 // The Text animation of a label (docs/specs/028-animation/element-animations.md "Text"): the class

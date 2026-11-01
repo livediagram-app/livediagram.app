@@ -10,7 +10,7 @@ vi.mock('./image-result', () => ({
 }));
 
 import { connectTestClient } from './mcp-test-client';
-import * as outputs from '@livediagram/agent-verbs/mcp';
+import * as outputs from '@livehuddle/agent-verbs/mcp';
 
 // Structured output and described parameters (docs/specs/015-api/mcp-server.md §4.17), end to end
 // through a real SDK client and server: the server validates each success's

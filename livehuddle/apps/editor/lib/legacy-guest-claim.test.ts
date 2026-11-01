@@ -35,7 +35,7 @@ beforeEach(() => {
   localStorage.clear();
   localStorage.setItem(LEGACY_GUEST_ID_KEY, OLD_ID);
   localStorage.setItem(LEGACY_GUEST_SIG_KEY, 'sig-abc');
-  localStorage.setItem('livediagram:v2:guest-token', 'kept');
+  localStorage.setItem('livehuddle:v2:guest-token', 'kept');
   signals = [];
   subscribeApiWrites((s) => signals.push(s));
 });
@@ -48,7 +48,7 @@ describe('claiming an old guest', () => {
     expect(claim).toHaveBeenCalledWith('guest_new', { legacyId: OLD_ID, signature: 'sig-abc' });
     expect(localStorage.getItem(LEGACY_GUEST_ID_KEY)).toBeNull();
     expect(localStorage.getItem(LEGACY_GUEST_SIG_KEY)).toBeNull();
-    expect(localStorage.getItem('livediagram:v2:guest-token')).toBe('kept');
+    expect(localStorage.getItem('livehuddle:v2:guest-token')).toBe('kept');
     // The lists of the person's documents read again.
     expect(signals).toEqual([{ claimed: true }]);
     expect(tracked).toEqual(['Participant·Moved·LegacyGuest']);

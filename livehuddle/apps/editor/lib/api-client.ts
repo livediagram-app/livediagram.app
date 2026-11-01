@@ -1,4 +1,4 @@
-// Barrel for the livediagram HTTP/WS client. The implementation is split
+// Barrel for the livehuddle HTTP/WS client. The implementation is split
 // by domain under lib/api/* (core plumbing + documents / tabs / share /
 // self / room / images / preferences / ai); this
 // file re-exports the public surface so existing `@/lib/api-client`
@@ -6,7 +6,7 @@
 
 // Wire-format types re-exported under the names the editor app has
 // historically imported from here. The canonical definitions live in
-// `@livediagram/api-schema`; see that package's index.ts for the shapes
+// `@livehuddle/api-schema`; see that package's index.ts for the shapes
 // and per-type rationale.
 export type {
   ImageSummary,
@@ -14,7 +14,7 @@ export type {
   ShareLinkExpiry,
   ShareRole,
   TeamMemberStatus,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 
 // Core plumbing the app uses directly (base URL, identity headers,
 // token / share-password session state). The internal helpers
@@ -54,5 +54,5 @@ export * from './api/community';
 // Workbench embeds (docs/specs/013-workspace/workbench-embeds.md).
 export * from './api/workbench';
 export * from './api/team-people';
-// The move from the old livediagram.app (docs/specs/014-identity/auth-and-guest-access.md "Returning guests").
+// The move from the old livehuddle.app (docs/specs/014-identity/auth-and-guest-access.md "Returning guests").
 export * from './api/migration';

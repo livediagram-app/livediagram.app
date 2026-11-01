@@ -3,7 +3,7 @@
 // someone who asked for nothing gets nothing over the canvas. Choosing a mode on the wizard's Mode step makes the same
 // blank but keeps the start, since it asked for templates next, unless the visit came from a Start Blank link
 // (`/new?start=blank`), which already said no templates.
-import { isBlankTemplate, templateEditorMode, type TemplateKind } from '@livediagram/templates';
+import { isBlankTemplate, templateEditorMode, type TemplateKind } from '@livehuddle/templates';
 import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { startClosedKey } from './start-closed-key';
 

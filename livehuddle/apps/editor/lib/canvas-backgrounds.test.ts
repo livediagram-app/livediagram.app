@@ -3,7 +3,7 @@ import {
   ANIMATED_BACKGROUND_PATTERNS,
   type AnimatedBackgroundPattern,
   type BackgroundPattern,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   backgroundPatternTile,
   safeCssColor,

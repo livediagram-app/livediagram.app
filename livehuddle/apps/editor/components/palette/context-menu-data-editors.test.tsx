@@ -6,7 +6,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactElement } from 'react';
-import type { ChecklistItem, EntityField, LegendItem, PieSlice } from '@livediagram/document';
+import type { ChecklistItem, EntityField, LegendItem, PieSlice } from '@livehuddle/document';
 import { ChecklistRowsEditor, LegendDataEditor, PieDataEditor } from './context-menu-data-editors';
 import { EntityFieldsEditor } from './EntityFieldsEditor';
 

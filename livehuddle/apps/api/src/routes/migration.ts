@@ -1,4 +1,4 @@
-// A This Browser document moved by product, the browser's one-time door after the move from the old livediagram.app
+// A This Browser document moved by product, the browser's one-time door after the move from the old livehuddle.app
 // (docs/migration.md step 6; docs/specs/015-api/api.md "Migration"): `POST /api/migration/local-parts`, body a
 // LocalPartsRequest, as the caller's guest or account (an account access token or a guest token: an API token or a
 // workbench session is a script's, never a browser returning). Its Pages, Plan and design tabs move to their apps as

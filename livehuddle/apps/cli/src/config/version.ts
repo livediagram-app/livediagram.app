@@ -6,7 +6,7 @@ export { isBelow } from '@liveworkspace/cli-kit/version';
 
 export const CLI_VERSION = '0.3.0';
 
-// The name npm publishes the CLI under (blueprint CLI1); its command is `livediagram`.
-export const NPM_PACKAGE = '@livediagram/cli';
+// The name npm publishes the CLI under (blueprint CLI1); its command is `livehuddle`.
+export const NPM_PACKAGE = '@livehuddle/cli';
 
 export const UPGRADE_HINT = upgradeHint(NPM_PACKAGE);

@@ -14,7 +14,7 @@ import {
   type EditorMode,
   type Layer,
   type TabKind,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 /** The tab kinds a document can be created with. The legacy `whiteboard` kind is not one: a
  *  whiteboard is a general tab that opens in Draw mode. */
@@ -32,7 +32,7 @@ export const SPECIFIC_TAB_KINDS: readonly SpecificTabKind[] =
   CREATION_TAB_KINDS.filter(isSpecificTabKind);
 
 /** The template families: ordinary diagram tabs made from a family of templates. The map from each
- *  template to its family is `templateFamilyOf` in `@livediagram/templates`. */
+ *  template to its family is `templateFamilyOf` in `@livehuddle/templates`. */
 export const TEMPLATE_FAMILIES = ['retrospective'] as const;
 export type TemplateFamily = (typeof TEMPLATE_FAMILIES)[number];
 
@@ -55,7 +55,7 @@ const KIND_WORDS: Record<SpecificTabKind, EntryWords> = {
 
 /** Default Folders' entries for each editor mode and specific tab kind, as the shared Explorer takes them
  *  (@liveworkspace/explorer DefaultFolderOption), between "Canvases" and the template families: "Whiteboards" holds
- *  new canvases that open in Draw mode (`livediagram:mode:draw` at the index). Typed per dimension, so a new mode
+ *  new canvases that open in Draw mode (`livehuddle:mode:draw` at the index). Typed per dimension, so a new mode
  *  or kind does not compile until it is named here. */
 export const DEFAULT_FOLDER_OPTIONS: readonly {
   dimension: 'mode' | 'kind';

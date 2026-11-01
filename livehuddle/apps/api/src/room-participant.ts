@@ -13,8 +13,8 @@
 // Answers: a Participant's dot, response or idea relays and enters the ledger like an Editor's, and the room
 // writes the ledger's answers into the stored tab ANSWERS_FLUSH_MS later, one write per tab for a burst.
 
-import { isRoomOpRef, type ServerMessage } from '@livediagram/api-schema';
-import type { ElementOp, TabLedger } from '@livediagram/document';
+import { isRoomOpRef, type ServerMessage } from '@livehuddle/api-schema';
+import type { ElementOp, TabLedger } from '@livehuddle/document';
 import {
   writeParticipantAnswers,
   writeParticipantOp,

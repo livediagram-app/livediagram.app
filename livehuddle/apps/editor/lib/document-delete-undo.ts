@@ -9,7 +9,7 @@ import { markDocumentDeleted, unmarkDocumentDeleted } from '@/lib/document-tombs
 import { track } from '@/lib/telemetry';
 import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 
-const HANDOFF_KEY = 'livediagram:deleted-document';
+const HANDOFF_KEY = 'livehuddle:deleted-document';
 const HANDOFF_MAX_AGE_MS = 30_000;
 
 type Handoff = { id: string; name?: string; at: number };

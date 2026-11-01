@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom';
-import { MenuTreeContext, useMenu } from '@livediagram/ui';
-import type { TableElement } from '@livediagram/document';
+import { MenuTreeContext, useMenu } from '@livehuddle/ui';
+import type { TableElement } from '@livehuddle/document';
 import {
   TableHeaderMenu,
   Trigger,

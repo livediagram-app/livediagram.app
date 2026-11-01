@@ -6,7 +6,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { IDEA_MAX_CARDS, type ShapeElement } from '@livediagram/document';
+import { IDEA_MAX_CARDS, type ShapeElement } from '@livehuddle/document';
 import { IdeaBoxFace } from './IdeaBoxFace';
 
 afterEach(cleanup);

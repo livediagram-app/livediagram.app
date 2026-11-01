@@ -5,7 +5,7 @@
 // with the colours they bound, and so does a whiteboard stock colour stored by name
 // (docs/specs/023-draw-mode/draw-mode.md "Imported and pasted content"), which would otherwise
 // show again the moment the explicit colour is cleared.
-import type { Element, ThemeDefinition } from '@livediagram/document';
+import type { Element, ThemeDefinition } from '@livehuddle/document';
 
 export function resetElementColours(el: Element, theme: ThemeDefinition): Element {
   if (el.type === 'shape') {

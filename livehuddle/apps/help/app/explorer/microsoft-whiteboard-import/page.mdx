@@ -22,7 +22,7 @@ Everything happens in your browser: the import needs no Microsoft account and ma
 
 ## What you need
 
-The import reads a **board export**: a folder per board holding the board's edit history, the way the Whiteboard web app syncs it. (Getting that export out of Whiteboard happens outside livediagram.) A board folder contains:
+The import reads a **board export**: a folder per board holding the board's edit history, the way the Whiteboard web app syncs it. (Getting that export out of Whiteboard happens outside livehuddle.) A board folder contains:
 
 - `manifest.json`, `session.json` and `changes.json`, which every board needs
 - `metadata.json`, which holds the board's title and dates
@@ -57,7 +57,7 @@ A few things change on the way, and the import says how many of each:
 - **Tables** become rectangles, with the ink inside them kept.
 - **Strokes drawn in a dark board's own colour**, which you could never see on it, are left out.
 - **Images missing from the export** are left out, and the report counts them.
-- Anything Whiteboard keeps that livediagram doesn't recognise is skipped and counted, never fatal.
+- Anything Whiteboard keeps that livehuddle doesn't recognise is skipped and counted, never fatal.
 
 Comments and reactions on a board are not imported.
 

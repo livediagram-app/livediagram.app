@@ -27,7 +27,7 @@
 // working even if the pointer leaves the canvas surface mid-drag.
 
 import { useEffect, useRef } from 'react';
-import { withAttachedArrows, type Element, type Tab } from '@livediagram/document';
+import { withAttachedArrows, type Element, type Tab } from '@livehuddle/document';
 
 import { elementHostsAtPoint } from '@liveworkspace/workbench/lib/dom-hit-test';
 import {

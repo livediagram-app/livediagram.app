@@ -112,7 +112,7 @@ describe('handleImages', () => {
   it("keeps a guest's id in this api: the service holds the guest's images under a hash", async () => {
     await uploaded(PNG, { owner: 'guest-1' });
     const owners = media.sql.prepare('SELECT owner FROM images').all() as { owner: string }[];
-    expect(owners).toEqual([{ owner: await mediaGuestOwner('livediagram.app', 'guest-1') }]);
+    expect(owners).toEqual([{ owner: await mediaGuestOwner('livehuddle.app', 'guest-1') }]);
   });
 
   it('lists the gallery from every app, remembering each image as the owner’s', async () => {
@@ -271,7 +271,7 @@ describe('handleImages', () => {
       title: string,
       ownerId = 'user_ada',
       trashedAt: number | null = null,
-      app = 'livediagram',
+      app = 'livehuddle',
     ) => ({
       id,
       title,
@@ -292,7 +292,7 @@ describe('handleImages', () => {
       mediaImages(media, 'user_ada', ['a', 'b']);
       const { createMediaClient } = await import('@liveworkspace/media');
       const client = createMediaClient({
-        app: 'livediagram.app',
+        app: 'livehuddle.app',
         key: db.env.MEDIA_KEY!,
         url: db.env.MEDIA_URL,
       });
@@ -314,10 +314,10 @@ describe('handleImages', () => {
       expect(await res.json()).toEqual({
         usage: {
           a: [
-            { id: 'A', name: 'Apple', app: 'livediagram' },
-            { id: 'Z', name: 'Zebra', app: 'livediagram' },
+            { id: 'A', name: 'Apple', app: 'livehuddle' },
+            { id: 'Z', name: 'Zebra', app: 'livehuddle' },
           ],
-          b: [{ id: 'A', name: 'Apple', app: 'livediagram' }],
+          b: [{ id: 'A', name: 'Apple', app: 'livehuddle' }],
         },
       });
     });
@@ -329,7 +329,7 @@ describe('handleImages', () => {
       media.sql
         .prepare(
           `INSERT INTO refs (app, document, image_id) VALUES
-             ('livedocuments.app', 'D', 'a'), ('livedesign.app', 'P', 'b'), ('livediagram.app', 'C', 'b')`,
+             ('livedocuments.app', 'D', 'a'), ('livedesign.app', 'P', 'b'), ('livehuddle.app', 'C', 'b')`,
         )
         .run();
       index({
@@ -341,7 +341,7 @@ describe('handleImages', () => {
         usage: {
           a: [{ id: 'D', name: 'Brief', app: 'livedocuments' }],
           b: [
-            { id: 'C', name: 'Board', app: 'livediagram' },
+            { id: 'C', name: 'Board', app: 'livehuddle' },
             { id: 'P', name: 'Poster', app: 'livedesign' },
           ],
         },

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canonicalJson, type ShapeElement, type Tab } from '@livediagram/document';
+import { canonicalJson, type ShapeElement, type Tab } from '@livehuddle/document';
 import {
   fileSlug,
   idSlug,
@@ -28,12 +28,12 @@ const tab = (over: Partial<Tab> = {}): Tab => ({
 });
 
 const file = (tabs: Tab[] = [tab()]): PullFile => ({
-  kind: 'livediagram.document',
+  kind: 'livehuddle.document',
   schemaVersion: 1,
   exportedAt: 1,
   document: { id: 'd1', name: 'Shop', presentation: null, tabs },
-  livediagramSync: {
-    host: 'https://www.livediagram.app',
+  livehuddleSync: {
+    host: 'https://www.livehuddle.app',
     pulledAt: 1,
     tabs: { t1: { rev: 4, hash: 'h', settingsHash: 's' } },
   },
@@ -76,47 +76,47 @@ describe('pullFileText and parsePullFile', () => {
   it('round-trips, keeping the envelope the editor imports', () => {
     const text = pullFileText(file());
     expect(JSON.parse(text)).toMatchObject({
-      kind: 'livediagram.document',
-      livediagramSync: { host: 'https://www.livediagram.app' },
+      kind: 'livehuddle.document',
+      livehuddleSync: { host: 'https://www.livehuddle.app' },
     });
     expect(parsePullFile(text)).toEqual({ ok: true, file: file() });
   });
 
   it('refuses what is not a pull file, naming why', () => {
     expect(parsePullFile('{')).toEqual({ ok: false, message: 'not JSON' });
-    expect(parsePullFile('{"kind":"livediagram.tab"}')).toEqual({
+    expect(parsePullFile('{"kind":"livehuddle.tab"}')).toEqual({
       ok: false,
-      message: 'not a livediagram document',
+      message: 'not a livehuddle document',
     });
     expect(parsePullFile(JSON.stringify({ ...file(), schemaVersion: 9 }))).toEqual({
       ok: false,
-      message: 'written by a newer livediagram',
+      message: 'written by a newer livehuddle',
     });
     expect(parsePullFile(JSON.stringify({ ...file(), document: { id: 'd1' } }))).toEqual({
       ok: false,
       message: 'its document is malformed',
     });
-    const { livediagramSync: _s, ...exported } = file();
+    const { livehuddleSync: _s, ...exported } = file();
     expect(parsePullFile(JSON.stringify(exported))).toEqual({
       ok: false,
-      message: 'not pulled by the CLI (no livediagramSync)',
+      message: 'not pulled by the CLI (no livehuddleSync)',
     });
     expect(
-      parsePullFile(JSON.stringify({ ...file(), livediagramSync: { host: 1, tabs: {} } })),
+      parsePullFile(JSON.stringify({ ...file(), livehuddleSync: { host: 1, tabs: {} } })),
     ).toEqual({
       ok: false,
-      message: 'not pulled by the CLI (no livediagramSync)',
+      message: 'not pulled by the CLI (no livehuddleSync)',
     });
     expect(
       parsePullFile(
         JSON.stringify({
           ...file(),
-          livediagramSync: { ...file().livediagramSync, tabs: { t1: { rev: 'x' } } },
+          livehuddleSync: { ...file().livehuddleSync, tabs: { t1: { rev: 'x' } } },
         }),
       ),
     ).toEqual({
       ok: false,
-      message: 'not pulled by the CLI (no livediagramSync)',
+      message: 'not pulled by the CLI (no livehuddleSync)',
     });
   });
 
@@ -133,9 +133,9 @@ describe('pullFileText and parsePullFile', () => {
 
 describe('a pull file without pulledAt', () => {
   it('parses, its sync data kept without a time', () => {
-    const { pulledAt: _p, ...sync } = file().livediagramSync;
-    const text = JSON.stringify({ ...file(), livediagramSync: sync });
-    expect(parsePullFile(text)).toEqual({ ok: true, file: { ...file(), livediagramSync: sync } });
+    const { pulledAt: _p, ...sync } = file().livehuddleSync;
+    const text = JSON.stringify({ ...file(), livehuddleSync: sync });
+    expect(parsePullFile(text)).toEqual({ ok: true, file: { ...file(), livehuddleSync: sync } });
   });
 });
 
@@ -143,11 +143,11 @@ describe('a pull file whose pulledAt is not a time', () => {
   it('is not a pull file', () => {
     const text = JSON.stringify({
       ...file(),
-      livediagramSync: { ...file().livediagramSync, pulledAt: 'x' },
+      livehuddleSync: { ...file().livehuddleSync, pulledAt: 'x' },
     });
     expect(parsePullFile(text)).toEqual({
       ok: false,
-      message: 'not pulled by the CLI (no livediagramSync)',
+      message: 'not pulled by the CLI (no livehuddleSync)',
     });
   });
 });

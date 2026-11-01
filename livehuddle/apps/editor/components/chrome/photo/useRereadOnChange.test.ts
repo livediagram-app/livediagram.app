@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DetectedSticky } from '@livediagram/sticky-vision';
+import type { DetectedSticky } from '@livehuddle/sticky-vision';
 import { REREAD_DELAY_MS, useRereadOnChange } from './useRereadOnChange';
 
 // A box that is moved, resized or drawn is read again (docs/specs/021-event-storming/event-storming.md Phase 9):

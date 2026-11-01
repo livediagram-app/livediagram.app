@@ -2,7 +2,7 @@
 // Durable Object after a privileged action. Not exposed publicly: the worker stubs the DO via
 // `env.DOCUMENT_ROOM.get(...).fetch(...)`, which never traverses Cloudflare's edge, so these paths are implicitly
 // internal and their bodies trusted. Every other request is a WebSocket upgrade, which the room answers itself.
-import { opForTheWire } from '@livediagram/document';
+import { opForTheWire } from '@livehuddle/document';
 import { parseAccessCloseMatch, type AccessCloseMatch } from '@liveworkspace/api-kit/room-access';
 
 /** The room's surface the internal endpoints act on. */

@@ -5,7 +5,7 @@
 // `localNamespace`), so code shared by the worker and the room (getDocument's outline, the room relays) costs no
 // hop there.
 
-import type { CommunityAuthor } from '@livediagram/api-schema';
+import type { CommunityAuthor } from '@livehuddle/api-schema';
 import type { Copier, ExportQuery, ExportResult } from '@liveworkspace/index-app';
 import type { notifyActionAssigned, notifyMentioned } from './email/notifications';
 import type { DocumentCopy, DocumentOutline } from './document-room/document-content';
@@ -49,7 +49,7 @@ export type DocumentRoomClient = {
   // canvas's open Community post's link.
   exportCopy(onlyTabId: string | null, copier: Copier | null): Promise<CopySource | null>;
   importCopy(copy: DocumentCopy): Promise<void>;
-  // An old livediagram.app document's part, written with its own times (the migration door, docs/migration.md).
+  // An old livehuddle.app document's part, written with its own times (the migration door, docs/migration.md).
   importMigrated(payload: MigrationRoomPayload): Promise<MigrationDoorAnswer>;
   // The document is gone for good: end every session and drop everything it stored.
   purge(): Promise<void>;

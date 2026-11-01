@@ -1,5 +1,5 @@
 // The hosted profile (docs/specs/016-platform/deployment.md "Hosted profile"): the
-// plain vars livediagram.app's own deploys add on top of wrangler.toml, and a
+// plain vars livehuddle.app's own deploys add on top of wrangler.toml, and a
 // fork's do not. They live in `hosted-vars.json`, not in `[vars]`, because a
 // committed `[vars]` value is every fork's default too; and not in the
 // Cloudflare dashboard, because `wrangler deploy` replaces a worker's plain

@@ -7,7 +7,7 @@ import {
   type AgendaItem,
   type Element,
   type SessionButtonConfig,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { NOTE_CUT_CHARS, PROGRESS_DEFAULT } from './constants';
 import {
   arrayField,

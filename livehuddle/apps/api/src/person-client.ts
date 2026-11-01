@@ -1,7 +1,7 @@
 // The worker's way into a person's Durable Object (person-store/person-store.ts): one typed stub per person id,
 // its RPC methods with the person filled in.
 
-import type { ShapeLibrary, ShapeLibraryItem } from '@livediagram/api-schema';
+import type { ShapeLibrary, ShapeLibraryItem } from '@livehuddle/api-schema';
 import type { LibraryRecord, NewShapeLibrary } from './person-store/shape-library-store';
 import type { Env } from './types';
 

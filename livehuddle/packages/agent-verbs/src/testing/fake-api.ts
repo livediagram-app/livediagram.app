@@ -6,6 +6,6 @@ import { AGENT_PRODUCT } from '../agent-product';
 
 export const { fakeApi, contextOf, library, tabsOfA } = createFakeApi(
   AGENT_PRODUCT,
-  'https://www.livediagram.app',
+  'https://www.livehuddle.app',
 );
 export { DOC_A, DOC_B, DOC_C } from '@liveworkspace/agent-verbs/testing/fake-api';

@@ -9,7 +9,7 @@ import {
   type Element,
   type PenColourName,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   isQuickStyleTarget,
   supportsQuickSection,

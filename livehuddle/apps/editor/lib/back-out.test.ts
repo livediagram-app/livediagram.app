@@ -3,19 +3,19 @@ import { backOutTarget } from '@liveworkspace/workbench/lib/back-out';
 
 // docs/specs/007-editor/new-document-route.md "Escape backs out".
 describe('backOutTarget', () => {
-  const origin = 'https://www.livediagram.app';
+  const origin = 'https://www.livehuddle.app';
 
   it('goes back to the page of ours that opened the wizard', () => {
     expect(
       backOutTarget({
-        referrer: 'https://www.livediagram.app/',
+        referrer: 'https://www.livehuddle.app/',
         origin,
         historyLength: 2,
       }),
     ).toBe('back');
     expect(
       backOutTarget({
-        referrer: 'https://www.livediagram.app/explorer/recent',
+        referrer: 'https://www.livehuddle.app/explorer/recent',
         origin,
         historyLength: 5,
       }),
@@ -29,7 +29,7 @@ describe('backOutTarget', () => {
     );
     expect(
       backOutTarget({
-        referrer: 'https://www.livediagram.app/',
+        referrer: 'https://www.livehuddle.app/',
         origin,
         historyLength: 1,
       }),
@@ -40,7 +40,7 @@ describe('backOutTarget', () => {
   it('never goes back to the wizard itself', () => {
     expect(
       backOutTarget({
-        referrer: 'https://www.livediagram.app/new?folder=f1',
+        referrer: 'https://www.livehuddle.app/new?folder=f1',
         origin,
         historyLength: 3,
       }),

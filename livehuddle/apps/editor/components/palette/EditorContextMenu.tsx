@@ -29,7 +29,7 @@ import {
   isBoxed,
   isSelfDrawingShape,
   supportsRotation,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { ArrowLineControls, ArrowPointerControls } from '@/components/canvas/arrow-controls';
 import {
   ContextMenu,

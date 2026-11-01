@@ -1,4 +1,4 @@
-import { ctaHref } from '@livediagram/api-schema';
+import { ctaHref } from '@livehuddle/api-schema';
 
 import { StartDrawingArt } from '@liveworkspace/marketing-site/components/StartDrawingArt';
 

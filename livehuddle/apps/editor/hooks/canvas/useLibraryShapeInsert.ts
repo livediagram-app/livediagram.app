@@ -16,8 +16,8 @@ import {
   type Element,
   type Tab,
   type Rect,
-} from '@livediagram/document';
-import type { ShapeLibraryItem } from '@livediagram/api-schema';
+} from '@livehuddle/document';
+import type { ShapeLibraryItem } from '@livehuddle/api-schema';
 import { PASTE_OFFSET } from '@/lib/paste-placement';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element } from '@livediagram/document';
+import type { ArrowElement, Element } from '@livehuddle/document';
 import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';
 
 const centre = (i: number) => ({ x: i * 1000, y: 0 });

@@ -14,11 +14,11 @@ import {
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_BUTTON_MODE,
   PEN_INK,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useState } from 'react';
-import { isBoxed, isVoteHost } from '@livediagram/document';
+import { isBoxed, isVoteHost } from '@livehuddle/document';
 import { commentPersisters } from '@/lib/comment-persistence';
 import { pollHostFor } from '@/hooks/collab/useLivePoll';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';

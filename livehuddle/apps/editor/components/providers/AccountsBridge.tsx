@@ -126,7 +126,7 @@ function stateOf(session: Session | null): DeferredAuthState {
       const to = opts?.redirectUrl ?? '/';
       window.location.assign((await endSession(to)) ?? to);
     },
-    // The api has already deleted this account's livediagram data and closed its liveworkspace
+    // The api has already deleted this account's livehuddle data and closed its liveworkspace
     // account (DeleteAccountDialog); what is left is this tab's session.
     deleteAccount: async () => {
       await endSession();

@@ -1,7 +1,7 @@
 // A board's title and dates for its document (docs/specs/020-import-export/whiteboard-import.md
 // "Documents"), cleaned from the board record. The document's name and the api's own date rule
 // are the board scene's (board-document.ts); this only reads what Whiteboard wrote.
-import { truncateName } from '@livediagram/document';
+import { truncateName } from '@livehuddle/document';
 
 // No Microsoft Whiteboard board predates the app's 2017 preview; earlier dates are damage.
 export const BOARD_DATES_FLOOR = '2016-01-01T00:00:00.000Z';

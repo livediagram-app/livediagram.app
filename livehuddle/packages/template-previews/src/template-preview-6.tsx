@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { TemplateKind } from '@livediagram/templates';
+import type { TemplateKind } from '@livehuddle/templates';
 import { pv } from '@liveworkspace/template-previews/motion';
 import { Pop, PopDot } from '@liveworkspace/template-previews/story-parts';
 

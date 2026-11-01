@@ -23,7 +23,7 @@ import {
   NoMatches,
   lucideGlyph,
   useEscape,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 import { DocumentIcon } from '@/components/primitives/explorer-icons';
 import { matches } from '@liveworkspace/icons';
 

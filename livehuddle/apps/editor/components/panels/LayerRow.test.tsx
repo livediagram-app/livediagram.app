@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Layer } from '@livediagram/document';
+import type { Layer } from '@livehuddle/document';
 
 import { LayerRow, layerMetaLine } from './LayerRow';
 

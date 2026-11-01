@@ -37,7 +37,7 @@ import {
   withAttached,
   type Element,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { watchPrimarySelectionPaste } from '@liveworkspace/workbench/lib/primary-selection-paste';
 import {

@@ -14,7 +14,7 @@ import {
   isHandDrawn,
   isPolygonOutline,
   polygonStrokePx,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 import type { SVGProps } from 'react';
 import { strokeHitWidth } from '@/lib/whiteboard-tool';
@@ -32,7 +32,7 @@ import { useDrawingAnimation } from '@/components/canvas/drawing-animation';
 // elements should scale with the canvas zoom like the rest of the
 // shape so a small browser at low zoom still reads as a browser.
 // Every size and glyph comes from the shared BROWSER_CHROME table
-// (@livediagram/document shape-geometry.ts), which the headless export
+// (@livehuddle/document shape-geometry.ts), which the headless export
 // lays out the same way, so an exported browser matches this strip.
 export function BrowserChrome({ stroke }: { stroke: string }) {
   const c = BROWSER_CHROME;

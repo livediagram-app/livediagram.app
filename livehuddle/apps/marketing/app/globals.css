@@ -1,8 +1,8 @@
 @import 'tailwindcss';
 @import '@liveworkspace/tailwind-config';
-@import '@livediagram/template-previews/preview-art-tile.css';
-@import '@livediagram/template-previews/preview-motion.css';
-@import '@livediagram/ui/hero-band.css';
+@import '@livehuddle/template-previews/preview-art-tile.css';
+@import '@livehuddle/template-previews/preview-motion.css';
+@import '@livehuddle/ui/hero-band.css';
 @import '@liveworkspace/marketing-site/css/hero-fan.css';
 @import './hero-animations.css';
 @import './hero-whiteboard.css';

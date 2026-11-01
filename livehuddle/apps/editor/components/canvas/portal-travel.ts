@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { Ref } from 'react';
-import type { Element, ShapeElement, Tab } from '@livediagram/document';
+import type { Element, ShapeElement, Tab } from '@livehuddle/document';
 import {
   portalExitPoint,
   portalName,

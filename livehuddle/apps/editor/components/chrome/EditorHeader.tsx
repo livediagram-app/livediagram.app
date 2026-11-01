@@ -9,7 +9,7 @@ import {
   safeInset,
   SITE_ID,
   SiteSwitcher,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { SharedBadge } from '@/components/chrome/SharedBadge';
 import {

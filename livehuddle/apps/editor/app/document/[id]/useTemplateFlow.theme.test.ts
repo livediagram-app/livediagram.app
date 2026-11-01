@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
-import { buildTemplate } from '@livediagram/templates';
+import type { Tab } from '@livehuddle/document';
+import { buildTemplate } from '@livehuddle/templates';
 import { getTheme, recolourElementsForTheme } from '@/lib/themes';
 import { useTemplateFlow } from './useTemplateFlow';
 

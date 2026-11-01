@@ -2,7 +2,7 @@ import { writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { classMaskOf } from '../src/detect';
-import { EVENT_STORMING_NOTES } from '@livediagram/document';
+import { EVENT_STORMING_NOTES } from '@livehuddle/document';
 import { encodePng } from './png';
 import { listPhotos, loadPhoto } from './photos';
 import { photoDir } from './truth';

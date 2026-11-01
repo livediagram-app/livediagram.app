@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { communityPostFixture } from '@livediagram/api-schema/testing';
+import { communityPostFixture } from '@livehuddle/api-schema/testing';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import {

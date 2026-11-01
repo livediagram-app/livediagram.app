@@ -86,10 +86,10 @@ export function fakeIo(options: FakeIoOptions & { links?: Record<string, string>
   };
 }
 
-// A host that has sign-in, at livediagram.app.
+// A host that has sign-in, at livehuddle.app.
 export const capabilities = hostCapabilities({
   aiEnabled: false,
-  apiBase: 'https://www.livediagram.app/api',
+  apiBase: 'https://www.livehuddle.app/api',
   authEnabled: true,
   documentFormat: 2,
 });

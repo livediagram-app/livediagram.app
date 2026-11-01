@@ -4,7 +4,7 @@
 // same in every app. Shared by the api worker, which fills in a missing colour, and the editor,
 // which picks a fresh one from the same palette.
 
-import { fnv1aString } from '@livediagram/document';
+import { fnv1aString } from '@livehuddle/document';
 import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings';
 
 // Deterministic palette pick: same key, same colour, every render and every device. FNV-1a over the

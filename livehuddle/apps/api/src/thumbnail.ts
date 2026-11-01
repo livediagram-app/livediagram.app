@@ -4,7 +4,7 @@
 // platform stores it, decides when it is stale and serves it, so nothing here caches or writes a picture. Rendering
 // on request means a canvas nobody looks at never costs a render.
 
-import { embedTabImages } from '@livediagram/api-schema';
+import { embedTabImages } from '@livehuddle/api-schema';
 import {
   drawnCount,
   migrateStoredTab,
@@ -12,7 +12,7 @@ import {
   tabAsSeen,
   type Appearance,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 // Static-import icon resolver (bundle size is fine in a Worker) so icon
 // elements render their real glyph in the preview / live image instead of
 // the renderer's box-with-label fallback.
@@ -149,7 +149,7 @@ async function renderTabBodyToSvg(
 
 // Read each image element's bytes from the media service and return them keyed by imageId
 // as base64 data URLs, ready for the renderer to inline. The shared embedder
-// (@livediagram/api-schema embedTabImages) reads ids in document order until
+// (@livehuddle/api-schema embedTabImages) reads ids in document order until
 // IMAGE_EMBED_BUDGET_BYTES is spent, after which (or on a missing object) the
 // element keeps its placeholder. The service is the same store the authenticated image
 // endpoint reads (src/media.ts), so a shared document's images embed without

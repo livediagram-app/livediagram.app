@@ -7,7 +7,7 @@ import {
   lucideUsers,
 } from '@liveworkspace/icons/lucide';
 import type { ReactNode } from 'react';
-import { Prims } from '@livediagram/ui';
+import { Prims } from '@livehuddle/ui';
 import { Glyph } from './featureIcons';
 
 /**
@@ -152,7 +152,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // ---- About ----
-  'what-is-livediagram': (
+  'what-is-livehuddle': (
     <Glyph>
       <circle cx="12" cy="12" r="9" />
       <path d="M12 11v5" />
@@ -164,7 +164,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideUsers} />
     </Glyph>
   ),
-  'why-livediagram': (
+  'why-livehuddle': (
     <Glyph>
       <path d="M9 18h6M10 21h4" />
       <path d="M12 3a6 6 0 0 0-4 10.5c.6.55 1 1.4 1 2.5h6c0-1.1.4-1.95 1-2.5A6 6 0 0 0 12 3Z" />

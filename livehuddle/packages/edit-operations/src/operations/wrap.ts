@@ -4,7 +4,7 @@
 // its title edge). It never silently takes in what is not a member: such bystanders refuse the
 // changeset unless `absorb` makes them members or `make-room` moves them out.
 
-import type { EditRejection } from '@livediagram/api-schema';
+import type { EditRejection } from '@livehuddle/api-schema';
 import {
   FRAME_PAD,
   FRAME_TOP,
@@ -18,7 +18,7 @@ import {
   type Element,
   type ElementId,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { describeElement } from '../element-text';
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';

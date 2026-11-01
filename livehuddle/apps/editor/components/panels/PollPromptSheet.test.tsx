@@ -6,7 +6,7 @@
 
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { LivePoll } from '@livediagram/api-schema';
+import type { LivePoll } from '@livehuddle/api-schema';
 import { PollPromptSheet } from './PollPromptSheet';
 
 afterEach(cleanup);

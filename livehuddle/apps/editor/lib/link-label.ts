@@ -1,4 +1,4 @@
-import type { ElementLink } from '@livediagram/document';
+import type { ElementLink } from '@livehuddle/document';
 
 // Human-readable destination for a link, shown in the hover card on a
 // link badge so a user can see WHERE a link goes before clicking it.

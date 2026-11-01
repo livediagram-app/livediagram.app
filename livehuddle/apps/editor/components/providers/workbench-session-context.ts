@@ -11,10 +11,10 @@ import type {
   WorkbenchPerson,
   WorkbenchRole,
   WorkbenchScope,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import type { WorkbenchPort } from '@/lib/workbench/workbench-port';
 
-// Where the editor in a workspace frame is, for `livediagram:place`.
+// Where the editor in a workspace frame is, for `livehuddle:place`.
 export type DocumentPlace = {
   documentId: string;
   documentName: string;

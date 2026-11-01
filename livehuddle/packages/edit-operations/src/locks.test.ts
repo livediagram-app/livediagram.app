@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import { checkoutFlow } from './fixtures/checkout-flow';
 import { layerLockOf, lockedIds } from './locks';
 

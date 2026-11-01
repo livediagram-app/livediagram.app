@@ -1,4 +1,4 @@
-import { colorForKey } from '@livediagram/api-schema';
+import { colorForKey } from '@livehuddle/api-schema';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { accountsServiceFor, type TestAccountsService } from '../test-accounts-service';
 import type { Env } from '../types';

@@ -1,10 +1,10 @@
 'use client';
 
 import { track } from '@/lib/telemetry';
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@livehuddle/ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { TabNameInBox } from '@liveworkspace/workbench/components/chrome/TabNameInBox';
-import { NAME_MAX_LENGTH } from '@livediagram/document';
+import { NAME_MAX_LENGTH } from '@livehuddle/document';
 import { ToolbarMenuCard } from './ToolbarMenuCard';
 import { EditorModeSwitch } from './editor-mode/EditorModeSwitch';
 

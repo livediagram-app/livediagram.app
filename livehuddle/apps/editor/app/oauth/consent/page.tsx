@@ -8,7 +8,7 @@
 import { Suspense, use, useEffect, useState } from 'react';
 import { browser } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
-import { CLI_CLIENT_ID } from '@livediagram/api-schema';
+import { CLI_CLIENT_ID } from '@livehuddle/api-schema';
 import { OAUTH_PRIMARY, OauthHelpLink, OauthShell, ReadOnlyAccessToggle } from '../oauth-shell';
 import { AUTH_TITLE } from '@/components/chrome/AuthStage';
 import { apiExchangeOauthToken, apiRevokeTokenAsItself } from '@/lib/api-client';
@@ -199,8 +199,8 @@ function Consent() {
       <h1 className={AUTH_TITLE}>Connect {client}</h1>
       <p className="mt-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
         <span className="font-medium text-slate-700 dark:text-slate-200">{client}</span> wants to
-        act as you in your liveworkspace apps, livediagram among them. Approving creates an API
-        token for your liveworkspace account, which you can revoke any time on liveworkspace.app.
+        act as you in your liveworkspace apps, livehuddle among them. Approving creates an API token
+        for your liveworkspace account, which you can revoke any time on liveworkspace.app.
       </p>
       <ReadOnlyAccessToggle readOnly={readOnly} onChange={setReadOnly} />
       {/* The one fact worth checking before approving, and now the server's

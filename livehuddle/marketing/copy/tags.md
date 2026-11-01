@@ -27,7 +27,7 @@ or `conflict-free`.
 ## Judgment calls
 
 - **`whiteboard`** matches the surface and pulls search traffic, but
-  [Purpose](../../docs/specs/001-project-vision/purpose.md) positions livediagram _against_
+  [Purpose](../../docs/specs/001-project-vision/purpose.md) positions livehuddle _against_
   general-purpose whiteboards (Miro / FigJam). Fine as a tag for reach; don't
   lead with it in prose.
 - **Skip** `crdt` and `conflict-free`: same-element edits are last-writer-wins

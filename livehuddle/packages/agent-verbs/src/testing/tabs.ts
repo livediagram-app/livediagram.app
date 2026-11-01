@@ -1,6 +1,6 @@
 // Plain tabs for the write and diff suites.
 
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@livehuddle/document';
 
 export const box = (id: string, label: string, x = 0): Element => ({
   id,

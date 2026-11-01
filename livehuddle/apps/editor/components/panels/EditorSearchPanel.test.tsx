@@ -68,9 +68,9 @@ describe('EditorSearchPanel', () => {
     pick({ id: 'x 1', app: 'liveplanner', sharedVia: null });
     expect(assign).toHaveBeenCalledWith(expect.stringContaining('x%201'));
     expect(assign.mock.calls[0]![0]).toMatch(/^https:\/\/www\.liveplanner\.app\//);
-    pick({ id: 'own', app: 'livediagram', sharedVia: 'code-1' });
+    pick({ id: 'own', app: 'livehuddle', sharedVia: 'code-1' });
     expect(opened).toHaveBeenCalledWith('own', 'code-1');
-    pick({ id: 'mine', app: 'livediagram', sharedVia: null });
+    pick({ id: 'mine', app: 'livehuddle', sharedVia: null });
     expect(opened).toHaveBeenLastCalledWith('mine', undefined);
   });
 });

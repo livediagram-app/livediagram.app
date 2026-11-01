@@ -6,8 +6,8 @@ import {
   type ReadCopies as SharedReadCopies,
   type ReadCopy as SharedReadCopy,
 } from '@liveworkspace/agent-verbs/copies';
-import { revOfEtag } from '@livediagram/api-schema';
-import { elementFingerprint, type Tab } from '@livediagram/document';
+import { revOfEtag } from '@livehuddle/api-schema';
+import { elementFingerprint, type Tab } from '@livehuddle/document';
 import { AGENT_PRODUCT } from './agent-product';
 
 export type ReadCopy = SharedReadCopy<Tab>;

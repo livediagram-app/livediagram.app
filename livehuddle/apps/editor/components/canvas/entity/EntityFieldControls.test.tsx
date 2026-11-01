@@ -8,7 +8,7 @@ import {
   type EntityField,
   type FieldRemap,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { getEntityFieldEdit, setEntityFieldEdit } from '@/lib/entity-field-edit';
 import { EntityView } from './EntityView';
 import { EntityFieldControls } from './EntityFieldControls';

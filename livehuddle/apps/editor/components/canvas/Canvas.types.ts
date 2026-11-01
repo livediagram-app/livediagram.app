@@ -3,7 +3,7 @@ import type { PenInk } from '@/hooks/canvas/commit-freehand';
 import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { Dispatch, SetStateAction } from 'react';
-import type { ShapeLibraryItem } from '@livediagram/api-schema';
+import type { ShapeLibraryItem } from '@livehuddle/api-schema';
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 // Prop contract for the Canvas component, split out of Canvas.tsx
 // (it was a 320-line inline type). Most field types are referenced
@@ -17,7 +17,7 @@ import type {
   EventStormingNoteKind,
   Finish,
   FrameHandle,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import type {
   BackgroundPattern,
   TabKind,
@@ -29,7 +29,7 @@ import type {
   TextAlignX,
   TextAlignY,
   TextRun,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import type { ArrowEnd, DragMode, QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { UserPreferences } from '@/lib/user-preferences';
@@ -117,13 +117,13 @@ export type CanvasProps = {
   // Press a Mode Button element (docs/specs/009-elements/mode-button.md): hands the LOCAL participant the
   // mode the element carries. Optional — the read-only embed has no tool picker
   // to drive, so its buttons render inert.
-  onPressModeButton?: (element: import('@livediagram/document').ShapeElement) => void;
+  onPressModeButton?: (element: import('@livehuddle/document').ShapeElement) => void;
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else in the room to come and look at
   // this element. Absent on a surface with nobody to ask (an export, a solo
   // canvas), which renders the face inert.
-  onPressFocusButton?: (element: import('@livediagram/document').ShapeElement) => void;
+  onPressFocusButton?: (element: import('@livehuddle/document').ShapeElement) => void;
   // Session button (docs/specs/012-collaboration/session-button.md): starts the tool the pressed element carries.
-  onPressSessionButton?: (element: import('@livediagram/document').ShapeElement) => void;
+  onPressSessionButton?: (element: import('@livehuddle/document').ShapeElement) => void;
   // True when this viewer can't start session tools (view role): the button
   // renders inert and says why instead of failing silently on press.
   sessionStartBlocked?: boolean;
@@ -160,8 +160,8 @@ export type CanvasProps = {
     reopen: (elementId: string, actionId?: string | null) => void;
   };
   onSetSessionConfig?: (
-    element: import('@livediagram/document').ShapeElement,
-    config: import('@livediagram/document').SessionButtonConfig,
+    element: import('@livehuddle/document').ShapeElement,
+    config: import('@livehuddle/document').SessionButtonConfig,
   ) => void;
   // Open an element's own context menu from the `…` on its face, anchored at
   // the trigger's screen position (docs/specs/008-canvas/canvas-and-palette.md). Absent on a read-only surface,
@@ -170,7 +170,7 @@ export type CanvasProps = {
   // Picker (docs/specs/012-collaboration/picker.md): the candidates a roll can land on, and the roll itself.
   // `shared` says whether this viewer's roll is written back (and so reaches
   // the room), which is how the face tells its own landing apart from a peer's.
-  onRollPicker?: (element: import('@livediagram/document').ShapeElement) => {
+  onRollPicker?: (element: import('@livehuddle/document').ShapeElement) => {
     candidates: import('@/lib/picker').PickerCandidate[];
     shared: boolean;
     roll: () => import('@/lib/picker').PickerCandidate | null;
@@ -188,19 +188,16 @@ export type CanvasProps = {
   ) => import('@/components/canvas/collab/FurnitureView').ChairSitter[];
   // Portal (docs/specs/009-elements/portal-element.md): resolve a portal's pairing — the paired portal's name and, when
   // it has one, the action that travels there.
-  onEnterPortal?: (element: import('@livediagram/document').ShapeElement) => {
+  onEnterPortal?: (element: import('@livehuddle/document').ShapeElement) => {
     targetName: string | null;
     travel?: () => void;
   };
   // Reaction pad (docs/specs/009-elements/reaction-pad.md): set one off. Absent on a read-only surface, which
   // renders the pad inert rather than hiding it.
-  onFireReaction?: (element: import('@livediagram/document').ShapeElement) => void;
+  onFireReaction?: (element: import('@livehuddle/document').ShapeElement) => void;
   // The bursts currently playing, keyed by the pad's element id, plus the way
   // to retire one when its animation ends. Ephemeral: never document state.
-  reactionBursts?: Map<
-    string,
-    { reaction: import('@livediagram/document').Reaction; seed: number }
-  >;
+  reactionBursts?: Map<string, { reaction: import('@livehuddle/document').Reaction; seed: number }>;
   onReactionBurstDone?: (elementId: string) => void;
   // Leaves Avatar mode (docs/specs/008-canvas/avatar-mode.md) for the tool that preceded it. Wired to the
   // palette (any tile pick) and to a palette drag-drop, both of which are
@@ -265,11 +262,11 @@ export type CanvasProps = {
     id: string;
     name: string;
     color: string;
-    avatar: import('@livediagram/api-schema').AvatarPresence;
+    avatar: import('@livehuddle/api-schema').AvatarPresence;
   }[];
   // Publishes the local character to the room (null when leaving the mode).
   // Optional: a private, un-shared document has no room to publish to.
-  onAvatarPresence?: (avatar: import('@livediagram/api-schema').AvatarPresence | null) => void;
+  onAvatarPresence?: (avatar: import('@livehuddle/api-schema').AvatarPresence | null) => void;
   // Shove a peer's character (docs/specs/008-canvas/avatar-mode.md): sent when our character finishes
   // walking up to the one we clicked. Optional — no room, no push.
   onAvatarPush?: (targetId: string, dx: number, dy: number) => void;
@@ -363,7 +360,7 @@ export type CanvasProps = {
   // Palette's Image entry hides when missing (docs/specs/009-elements/images.md).
   onAddImage?: () => void;
   // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
-  onAddArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
+  onAddArrow: (ends?: import('@livehuddle/document').ArrowEnds) => void;
   // The arrow whose shape a handle drag is changing (a bend, curve, elbow or endpoint): its
   // selection frame stands down until the drag ends (docs/specs/008-canvas/arrow-bending.md).
   reshapingArrowId?: string | null;
@@ -419,10 +416,10 @@ export type CanvasProps = {
   onCommitPath: (commit: import('@/components/canvas/path/usePathDrawGesture').PathCommit) => void;
   onCommitPathEdit: (
     id: string,
-    next: { anchors: import('@livediagram/document').PathAnchor[]; closed: boolean },
+    next: { anchors: import('@livehuddle/document').PathAnchor[]; closed: boolean },
     kind: import('@/hooks/canvas/usePathCommits').PathEditKind,
   ) => void;
-  onDressPath?: <T extends import('@livediagram/document').Element>(el: T) => T;
+  onDressPath?: <T extends import('@livehuddle/document').Element>(el: T) => T;
   // The line or arrow a draw would land if released now, as the canvas would show it
   // (docs/specs/023-draw-mode/draw-mode.md "Shapes"), drawn in place of a stand-in while the drag
   // is in flight. From lib/drawn-arrow-preview.
@@ -432,7 +429,7 @@ export type CanvasProps = {
     startY: number,
     endX: number,
     endY: number,
-  ) => import('@livediagram/document').ArrowElement;
+  ) => import('@livehuddle/document').ArrowElement;
   // The user preferences (docs/specs/007-editor/user-preferences.md) the chrome reads.
   settings: UserPreferences;
   onCancelDraw: () => void;
@@ -447,7 +444,7 @@ export type CanvasProps = {
   // Portals (docs/specs/009-elements/portal-element.md) link ACROSS tabs, so the canvas needs every tab's
   // elements to resolve where one leads, plus which tab is showing. Optional so
   // read-only / embed mounts that never travel can omit them.
-  portalTabs?: import('@livediagram/document').Tab[];
+  portalTabs?: import('@livehuddle/document').Tab[];
   activeTabId?: string;
   // False while the active tab's content is still on its way (a tab never opened before): its elements arrive with
   // the board once it lands, not as additions. Omitted, the tab is loaded.
@@ -469,7 +466,7 @@ export type CanvasProps = {
   // Live poll (docs/specs/012-collaboration/live-poll.md). The panel exists only while a poll is running
   // and its results are yours to see, so null means the Poll button opens the composer instead.
   pollPanel: {
-    poll: import('@livediagram/api-schema').LivePoll;
+    poll: import('@livehuddle/api-schema').LivePoll;
     answers: Map<string, string | null>;
     isHost: boolean;
     onEnd: () => void;
@@ -589,7 +586,7 @@ export type CanvasProps = {
     id: string,
     patch: Partial<
       Pick<
-        import('@livediagram/document').TableElement,
+        import('@livehuddle/document').TableElement,
         'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'
       >
     >,
@@ -622,13 +619,13 @@ export type CanvasProps = {
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md): a row edited in place, one more row from
   // the quick-connect ring, and a hero's caption line. Omitted in read-only.
-  onSetWebRows?: (elementId: string, rows: import('@livediagram/document').WebRows) => void;
+  onSetWebRows?: (elementId: string, rows: import('@livehuddle/document').WebRows) => void;
   // A pointer note's tip let go at a canvas point (docs/specs/009-elements/pointer-note.md). Omitted in read-only.
   onSetPointerTip?: (elementId: string, tipAbs: { x: number; y: number }) => void;
   onAppendWebRow?: (elementId: string) => void;
   onSetHeroCaptionLine?: (
     elementId: string,
-    field: keyof import('@livediagram/document').HeroCaption,
+    field: keyof import('@livehuddle/document').HeroCaption,
     value: string,
   ) => void;
   // Default chart slice colours derived from the active theme (docs/specs/009-elements/pie-chart.md), used
@@ -648,7 +645,7 @@ export type CanvasProps = {
   // Wrap up the Format canvas tool (the palette tool): drops back to the
   // tool active before it. Drives the format-tool mode banner's "Done" button.
   onExitFormatTool: () => void;
-  onFollowLink: (link: import('@livediagram/document').ElementLink) => void;
+  onFollowLink: (link: import('@livehuddle/document').ElementLink) => void;
   onOpenComments: (elementId: string) => void;
   // Open the element's assigned-action popover (docs/specs/012-collaboration/assigned-actions.md). Available in
   // read-only sessions too — visitors may read an action; the popover
@@ -713,9 +710,9 @@ export type CanvasProps = {
   // the facilitator controls (Tab Settings) and the per-element dot
   // cast/retract used by the canvas vote interaction. State is read off
   // the tab; handlers no-op when edits are blocked.
-  tabTimer?: import('@livediagram/document').TabTimer;
-  tabVote?: import('@livediagram/document').TabVote;
-  onStartTimer: (mode: import('@livediagram/document').TimerMode, durationMs?: number) => void;
+  tabTimer?: import('@livehuddle/document').TabTimer;
+  tabVote?: import('@livehuddle/document').TabVote;
+  onStartTimer: (mode: import('@livehuddle/document').TimerMode, durationMs?: number) => void;
   onPauseTimer: () => void;
   onResumeTimer: () => void;
   onResetTimer: () => void;
@@ -723,10 +720,7 @@ export type CanvasProps = {
   // Change a running / paused countdown's length, restarting it at the new
   // one (docs/specs/012-collaboration/session-button.md). Driven by the Timer element's own `…` menu.
   onSetTimerDuration?: (durationMs: number) => void;
-  onStartVote: (
-    votesPerPerson: number,
-    privacy?: import('@livediagram/document').VoteSetup,
-  ) => void;
+  onStartVote: (votesPerPerson: number, privacy?: import('@livehuddle/document').VoteSetup) => void;
   onEndVote: () => void;
   onRevealVote: () => void;
   onClearVote: () => void;

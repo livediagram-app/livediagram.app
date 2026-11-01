@@ -1,4 +1,4 @@
-import { ACCENT_BAR_TEXT, processLayout, WEB_TEXT_MAX } from '@livediagram/document';
+import { ACCENT_BAR_TEXT, processLayout, WEB_TEXT_MAX } from '@livehuddle/document';
 import { capBandBaselineY } from '@liveworkspace/icons';
 import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';

@@ -3,8 +3,8 @@ import { createRequire } from 'node:module';
 import { crc32, deflateSync } from 'node:zlib';
 import { randomFillSync } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { embedTabImages } from '@livediagram/api-schema';
-import { renderElementsToSvg, type Tab } from '@livediagram/document';
+import { embedTabImages } from '@livehuddle/api-schema';
+import { renderElementsToSvg, type Tab } from '@livehuddle/document';
 import { createPngRenderer } from '@liveworkspace/render-png';
 import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import {

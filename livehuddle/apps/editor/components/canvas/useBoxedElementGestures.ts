@@ -1,6 +1,6 @@
 import { useRightClickRelease } from '@liveworkspace/workbench/hooks/canvas/useRightClickRelease';
 import { useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
-import { opensInlineLabelEditor } from '@livediagram/document';
+import { opensInlineLabelEditor } from '@livehuddle/document';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
 import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { pressLedger } from '@liveworkspace/workbench/lib/double-press';

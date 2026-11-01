@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createFreehand, createShape, type Element } from '@livediagram/document';
+import { createFreehand, createShape, type Element } from '@livehuddle/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { track } from '@/lib/telemetry';
 import { FILL_LOCKED_HINT, FILL_MISSED_HINT, usePaintBucket } from './usePaintBucket';

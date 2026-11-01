@@ -24,7 +24,7 @@ const NOW = Math.floor(Date.now() / 1000);
 function grantFor(claims: Partial<GrantClaims> & { item: string; sub: string }): string {
   const full: GrantClaims = {
     iss: 'index',
-    aud: 'livediagram',
+    aud: 'livehuddle',
     level: 'edit',
     tab: null,
     team: null,

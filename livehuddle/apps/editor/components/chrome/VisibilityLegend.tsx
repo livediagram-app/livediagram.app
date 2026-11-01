@@ -7,7 +7,7 @@
 // deliberate opt-out; then, for someone who may share, Change Who Can See This opens Share. For the eye only:
 // the pill carries the current state's words for assistive technology and opens Share itself.
 import { useState, type ReactNode } from 'react';
-import { ChevronRightIcon, lucideGlyph, SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { ChevronRightIcon, lucideGlyph, SOLID_BRAND_DARK_CONTROL } from '@livehuddle/ui';
 import { lucideGlobe, lucideLink, lucideLock, lucideUsers } from '@liveworkspace/icons/lucide';
 import { ThisBrowserIcon } from '@/components/primitives/explorer-icons';
 import { SHARE_STATE_META, type ShareState } from './share-states';

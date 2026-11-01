@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { resetPictureFailures } from '@livediagram/ui';
+import { resetPictureFailures } from '@livehuddle/ui';
 import type { Participant } from '@/lib/identity';
 import { ParticipantAvatar } from './ParticipantAvatar';
 

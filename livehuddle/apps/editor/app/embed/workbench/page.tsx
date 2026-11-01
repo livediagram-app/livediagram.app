@@ -6,7 +6,7 @@ import { EDITOR_VIEWPORT } from '@liveworkspace/workbench/lib/page-viewport';
 // tool's frame, signed in by a workbench session. Static like /embed; the editor worker leaves every
 // /embed path frameable, and the page itself binds to the minting workbench before it shows anything.
 export const metadata: Metadata = {
-  title: 'Workbench | livediagram',
+  title: 'Workbench | livehuddle',
   robots: { index: false },
 };
 

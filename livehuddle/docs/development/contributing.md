@@ -56,7 +56,7 @@ Drop an entry once an upstream release makes it redundant.
 ### Merging to `main` deploys
 
 A merge to `main` that passes CI **deploys automatically to staging**:
-[staging.livediagram.app](https://staging.livediagram.app), a complete copy of the
+[staging.livehuddle.app](https://staging.livehuddle.app), a complete copy of the
 platform with its own Durable Objects and index ([Staging environment](../specs/016-platform/staging-environment.md)).
 Nobody presses anything. Within a few minutes your change is running somewhere public.
 
@@ -83,7 +83,7 @@ TypeScript 7.0 ships no classic compiler API (`import ts from 'typescript'` find
 
 `apps/help/lib/typescript-version.test.ts` holds every workspace to the root manifest's `typescript` and rejects any alias to another TypeScript, so a second compiler cannot creep back in.
 
-The one exception is `ts-json-schema-generator` (the api's OpenAPI schema generator), which bundles its own TypeScript 5.9 to read the api-schema types; it runs only in `pnpm --filter @livediagram/api gen:openapi` and its drift test.
+The one exception is `ts-json-schema-generator` (the api's OpenAPI schema generator), which bundles its own TypeScript 5.9 to read the api-schema types; it runs only in `pnpm --filter @livehuddle/api gen:openapi` and its drift test.
 
 `pnpm build` is safe to run while a dev server is alive: every Next.js app's dev server goes through `scripts/next-dev.mjs`, which points dev at an isolated `.next-dev/` cache so a concurrent build's `.next/` can never corrupt it. The flip side is a rule for new apps: **a new Next.js app spreads `liveworkspaceNextConfig()` from `@liveworkspace/next-config` into its `next.config`**, which reads `NEXT_DISTDIR` for it, or the old build/dev cache race comes back.
 
@@ -101,33 +101,33 @@ The bar isn't 100% line coverage; it's "the next regression on this code path fa
 
 A [Playwright](https://playwright.dev) suite (`apps/editor/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium, the layer the Vitest unit tests can't reach. It runs on **every pull request** as required checks (the `E2E Smoke` workflow's jobs, `.github/workflows/e2e.yml`: six **Smoke shard** jobs, **Sites audit** and **Signed-in specs**), on push to `main`, and on demand: `gh workflow run e2e.yml --ref <branch>`.
 
-Run it locally against a running `pnpm dev` stack (it reuses the servers on `:3102` / `:8687`):
+Run it locally against a running `pnpm dev` stack (it reuses the servers on `:3502` / `:9087`):
 
 ```sh
-pnpm --filter @livediagram/editor test:e2e
+pnpm --filter @livehuddle/editor test:e2e
 ```
 
-Without a dev stack, it boots its own (`scripts/e2e-stack.mjs`) over the existing `apps/editor/out`, which it never rebuilds: run `pnpm --filter @livediagram/editor build` first, or it exits naming the missing build.
+Without a dev stack, it boots its own (`scripts/e2e-stack.mjs`) over the existing `apps/editor/out`, which it never rebuilds: run `pnpm --filter @livehuddle/editor build` first, or it exits naming the missing build.
 
 The signed-in specs (`apps/editor/e2e/signed-in/`) need sign-in switched on, so they have their own build and run, on their own ports:
 
 ```sh
-pnpm --filter @livediagram/editor build:signed-in
-pnpm --filter @livediagram/editor test:e2e:signed-in
+pnpm --filter @livehuddle/editor build:signed-in
+pnpm --filter @livehuddle/editor test:e2e:signed-in
 ```
 
-Those ports are defaults, not fixtures. Three environment variables move them, which is what you want when `:3102` is already taken (a second checkout, a worktree):
+Those ports are defaults, not fixtures. Three environment variables move them, which is what you want when `:3502` is already taken (a second checkout, a worktree):
 
 | Variable             | Default                 | What it moves                                                         |
 | -------------------- | ----------------------- | --------------------------------------------------------------------- |
-| `E2E_BASE_URL`       | `http://localhost:3102` | Where Playwright points, and the URL it waits on before starting      |
-| `E2E_EDITOR_PORT`    | `3102`                  | The port `e2e-stack.mjs` serves the built editor app on               |
-| `E2E_API_PORT`       | `8687`                  | The api worker's port, and the target its `/api/*` proxy forwards to  |
+| `E2E_BASE_URL`       | `http://localhost:3502` | Where Playwright points, and the URL it waits on before starting      |
+| `E2E_EDITOR_PORT`    | `3502`                  | The port `e2e-stack.mjs` serves the built editor app on               |
+| `E2E_API_PORT`       | `9087`                  | The api worker's port, and the target its `/api/*` proxy forwards to  |
 | `E2E_MARKETING_PORT` | `3113`                  | The port the stack serves the built marketing site on (optical audit) |
 
 `E2E_API_PORT` is self-contained: it sets the worker's port and the proxy that reaches it together. The other two are **not**. Playwright waits on `E2E_BASE_URL` while the stack binds `E2E_EDITOR_PORT`, so moving the editor app means setting both. Set only one and the run hangs until the 180-second `webServer` timeout, with nothing said about why.
 
-The optical audit also opens the help centre, the Community and the marketing site: build them (`pnpm --filter @livediagram/help --filter @livediagram/community --filter @livediagram/marketing build`), or point `E2E_HELP_URL`, `E2E_COMMUNITY_URL` and `E2E_MARKETING_URL` at their dev servers.
+The optical audit also opens the help centre, the Community and the marketing site: build them (`pnpm --filter @livehuddle/help --filter @livehuddle/community --filter @livehuddle/marketing build`), or point `E2E_HELP_URL`, `E2E_COMMUNITY_URL` and `E2E_MARKETING_URL` at their dev servers.
 
 Keep the suite tiny: add a focused smoke for a browser-risky change, not a broad suite; depth belongs in unit tests where it's cheap.
 
@@ -147,7 +147,7 @@ A few hard rules from [`AGENTS.md`](../../AGENTS.md) that constrain PRs:
 - **Worker apps target the Cloudflare Workers runtime.** Prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
 - **The router worker holds no business logic.** Only service bindings. If you're tempted to add logic, it belongs in whichever app the router forwards to.
 - **New Next.js apps spread the shared config.** Dev servers run through `scripts/next-dev.mjs` with an isolated `.next-dev/`; a new app's `next.config` spreads `liveworkspaceNextConfig()` (which reads `NEXT_DISTDIR`) or builds and dev race on `.next/` again, and the monorepo's `packages/next-config/apps-use-shared.test.js` finds the app and holds it to that.
-- **Markup and parsed files go through a Trusted Types policy.** Every page enforces Trusted Types ([Trusted Types](../specs/016-platform/trusted-types.md)): `dangerouslySetInnerHTML` takes `trustedHtml(markup)` from `@livediagram/ui`, and only for markup our own escaping builders made; `DOMParser` goes through `parseInert`. A new app puts the boot script first in its `<head>` and the header in its `public/_headers`; `packages/ui/src/trusted-types-sinks.test.ts` checks all of it.
+- **Markup and parsed files go through a Trusted Types policy.** Every page enforces Trusted Types ([Trusted Types](../specs/016-platform/trusted-types.md)): `dangerouslySetInnerHTML` takes `trustedHtml(markup)` from `@livehuddle/ui`, and only for markup our own escaping builders made; `DOMParser` goes through `parseInert`. A new app puts the boot script first in its `<head>` and the header in its `public/_headers`; `packages/ui/src/trusted-types-sinks.test.ts` checks all of it.
 
 ## Reporting issues
 
@@ -156,7 +156,7 @@ Open a [GitHub issue](https://github.com/livediagram-app/livediagram.app/issues)
 - What you expected vs what happened.
 - The browser / OS if visible UI is involved.
 - A document id, share code, or repro steps if applicable.
-- Whether you're on livediagram.app or staging.livediagram.app.
+- Whether you're on livehuddle.app or staging.livehuddle.app.
 
 For feature requests, link to (or propose) a spec entry. A new feature without a spec is hard to review meaningfully; one with a spec is straightforward.
 

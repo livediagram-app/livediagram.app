@@ -6,13 +6,13 @@ import {
   elementDisplayLabel,
   type BoxedElement,
   type ElementActionStatus,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type {
   MovablePanelPlacementProps,
   MovablePanelPopoverProps,
 } from '@/components/primitives/MovablePanel.types';
-import { CountBadge } from '@livediagram/ui';
+import { CountBadge } from '@livehuddle/ui';
 import { KindChips, SideTabs } from '@/components/panels/collaborate/CollaborateControls';
 import { CollaborateEmpty } from '@/components/panels/collaborate/CollaborateEmpty';
 import { ActionRowItem, CommentRowItem } from '@/components/panels/collaborate/CollaborateRows';

@@ -42,7 +42,7 @@ import {
   type TextAlignY,
   type TextSize,
   isSeatingShape,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import {
   IconCategoryGlyph,

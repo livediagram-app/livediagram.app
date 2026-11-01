@@ -11,7 +11,7 @@
 // in the background (the assignment or comment itself is already in the canvas, through the tab save).
 
 import { teamTargets, type NotifyTarget, type TeamPerson } from '@liveworkspace/auth-client';
-import { MENTIONS_MAX } from '@livediagram/document';
+import { MENTIONS_MAX } from '@livehuddle/document';
 import { documentRoom } from '../document-client';
 import { requestGrant, type ItemGrant } from '../index-service';
 import { legacyDocumentIdOf } from '../legacy-request-forms';

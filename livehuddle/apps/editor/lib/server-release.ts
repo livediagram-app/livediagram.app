@@ -2,7 +2,7 @@
 // docs/specs/016-platform/stale-builds.md): the document format number and the live build id. Fed by
 // every api response's headers (apiFetch) and the realtime room's `format` message; read by the new
 // version prompt and the stale build navigation. Module state: one page, one server.
-import { DOCUMENT_FORMAT, parseBuildId, parseDocumentFormat } from '@livediagram/api-schema';
+import { DOCUMENT_FORMAT, parseBuildId, parseDocumentFormat } from '@livehuddle/api-schema';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 /** The build id this editor was built with; null when the build set none (local development). */

@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/sticky-model",
+  "name": "@livehuddle/sticky-model",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -16,7 +16,7 @@
     "clean": "rm -rf node_modules .turbo"
   },
   "dependencies": {
-    "@livediagram/sticky-vision": "workspace:*"
+    "@livehuddle/sticky-vision": "workspace:*"
   },
   "devDependencies": {
     "@liveworkspace/oxlint-config": "workspace:*",

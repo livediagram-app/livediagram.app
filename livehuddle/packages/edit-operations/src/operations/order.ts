@@ -2,8 +2,8 @@
 // "Operations", EO37): the target moves in the element order, last, first, directly after x or
 // directly before x. Finalise then keeps every container behind its members.
 
-import type { EditRejection } from '@livediagram/api-schema';
-import type { ElementId } from '@livediagram/document';
+import type { EditRejection } from '@livehuddle/api-schema';
+import type { ElementId } from '@livehuddle/document';
 import { resolveOne } from '../selectors';
 import { refsOf, refuseLocked, reorder, touch, type EditState } from '../state';
 import type { OrderOperation } from '../types';

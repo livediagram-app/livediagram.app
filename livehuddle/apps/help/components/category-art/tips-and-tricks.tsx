@@ -1,6 +1,6 @@
 import { TipsAndTricksArt as Scene } from '@liveworkspace/help-site/art/scenes/tips-and-tricks';
 
-// Tips and Tricks: the shared scene (docs/specs/018-help/help-pages.md "Category art"), with livediagram's commands
+// Tips and Tricks: the shared scene (docs/specs/018-help/help-pages.md "Category art"), with livehuddle's commands
 // and the single-key shortcuts that drop a shape without touching the palette.
 export function TipsAndTricksArt() {
   return (

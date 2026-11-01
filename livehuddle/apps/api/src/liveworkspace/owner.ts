@@ -3,7 +3,7 @@
 // is `user_…` and a guest `guest_<uuid>` (its guest token's, docs/specs/014-identity/auth-and-guest-access.md),
 // the same here and there. Any other id (a test fixture, a stand-in) has no record at liveworkspace.
 
-import { isAccountIdShape } from '@livediagram/api-schema';
+import { isAccountIdShape } from '@livehuddle/api-schema';
 import { accountCredentials } from '../auth/accounts';
 import type { Env } from '../types';
 import type { ClientCredentials } from '@liveworkspace/auth-client';

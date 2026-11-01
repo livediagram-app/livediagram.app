@@ -12,7 +12,7 @@ import {
   type Anchor,
   type ErShape,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 
 // Plateful's orders schema: the six Postgres tables every order touches,

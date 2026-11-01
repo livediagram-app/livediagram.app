@@ -8,7 +8,7 @@ import {
   createTable,
   createText,
   type BoxedElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { useBoxedElementGestures } from './useBoxedElementGestures';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Selection" (click the selected element again) and

@@ -132,7 +132,7 @@ test.describe('quick style panel', () => {
     const stored = await page.evaluate(
       () =>
         (
-          JSON.parse(localStorage.getItem('livediagram:user-preferences:v1') ?? '{}') as {
+          JSON.parse(localStorage.getItem('livehuddle:user-preferences:v1') ?? '{}') as {
             quickSwatchOverrides?: unknown;
           }
         ).quickSwatchOverrides,

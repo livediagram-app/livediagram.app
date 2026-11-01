@@ -1,7 +1,7 @@
 'use client';
 
 // The only chrome the read-only embed view renders (docs/specs/013-workspace/embeds.md): the
-// bottom-left "Open in livediagram" badge that links out to the full
+// bottom-left "Open in livehuddle" badge that links out to the full
 // share view, plus a tab switcher next to it (only when the document
 // has more than one tab). Bottom-left specifically because the
 // ZoomControls dock keeps bottom-right in embeds. Pointer events stop
@@ -14,8 +14,8 @@
 // document has many tabs.
 
 import { useRef, type ReactNode } from 'react';
-import { MenuIcon, useClickOutside, Glyph, useMenu, useMenuButton } from '@livediagram/ui';
-import type { Tab } from '@livediagram/document';
+import { MenuIcon, useClickOutside, Glyph, useMenu, useMenuButton } from '@livehuddle/ui';
+import type { Tab } from '@livehuddle/document';
 
 // The external-link glyph, shared with the workbench chrome.
 export function OpenExternalIcon() {
@@ -74,7 +74,7 @@ export function EmbedChrome({ tabs, activeId, onSelectTab, shareCode }: EmbedChr
         className="pointer-events-auto flex shrink-0 items-center gap-1.5 rounded-full bg-white/90 px-2.5 py-1.5 text-[11px] font-medium text-slate-700 shadow-sm transition hover:bg-white hover:text-slate-900 dark:bg-slate-900/90 dark:text-slate-200 dark:hover:bg-slate-900 dark:hover:text-white"
       >
         <OpenExternalIcon />
-        Open in livediagram
+        Open in livehuddle
       </a>
       {tabs.length > 1 ? (
         <div ref={menuRef} className="pointer-events-auto relative">

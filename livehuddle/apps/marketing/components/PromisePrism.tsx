@@ -7,13 +7,7 @@ import {
   lucideUsers,
   lucideUserX,
 } from '@liveworkspace/icons/lucide';
-import {
-  BrandMark,
-  ChevronRightIcon,
-  lucideGlyph,
-  REPO_URL,
-  type IconProps,
-} from '@livediagram/ui';
+import { BrandMark, ChevronRightIcon, lucideGlyph, REPO_URL, type IconProps } from '@livehuddle/ui';
 import {
   useEffect,
   useLayoutEffect,
@@ -146,7 +140,7 @@ export function PromisePrism() {
             Built with your values in mind
           </h2>
           <p className="mt-5 text-pretty text-lg leading-relaxed text-slate-300">
-            livediagram is free, open and private for everyone, and it stays that way. One light,
+            livehuddle is free, open and private for everyone, and it stays that way. One light,
             five promises, kept in the open.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">

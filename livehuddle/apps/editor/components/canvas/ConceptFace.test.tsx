@@ -11,7 +11,7 @@ import {
   type ConceptShape,
   type ShapeElement,
   type WebRows,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { ConceptFace } from './ConceptFace';
 import { setConceptTourPreview } from '@liveworkspace/workbench/lib/concept-tour-preview';
 

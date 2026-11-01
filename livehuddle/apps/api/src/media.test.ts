@@ -14,7 +14,7 @@ import {
   rememberMediaOwner,
 } from './media';
 
-// livediagram's side of the media service's references (liveworkspace/docs/specs/006-media/media.md "References"): each document
+// livehuddle's side of the media service's references (liveworkspace/docs/specs/006-media/media.md "References"): each document
 // tells the service its whole set of images as it changes, from its own outbox, and a purged one tells it none.
 
 let db: SqliteD1;
@@ -131,7 +131,7 @@ describe('whose an image is', () => {
 
   it('names an account by its id and a guest by a hash of its id', async () => {
     expect(await mediaOwner('user_ada')).toBe('user_ada');
-    expect(await mediaOwner('guest-1')).toBe(await mediaGuestOwner('livediagram.app', 'guest-1'));
+    expect(await mediaOwner('guest-1')).toBe(await mediaGuestOwner('livehuddle.app', 'guest-1'));
   });
 });
 

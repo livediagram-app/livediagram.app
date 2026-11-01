@@ -1,8 +1,8 @@
 // The Drive mirror's two doors into a canvas (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps";
-// docs/specs/015-api/api.md "Internal"): the canvas as its `.livediagram` file, and a new canvas from one.
+// docs/specs/015-api/api.md "Internal"): the canvas as its `.livehuddle` file, and a new canvas from one.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MAX_TAB_BYTES } from '@livediagram/api-schema';
-import { parseDocumentEnvelope, type ShapeElement, type Tab } from '@livediagram/document';
+import { MAX_TAB_BYTES } from '@livehuddle/api-schema';
+import { parseDocumentEnvelope, type ShapeElement, type Tab } from '@livehuddle/document';
 
 // The index as the owner reaches it with this app's key: the items it is asked to make, and to take away.
 const { made, removed } = vi.hoisted(() => ({
@@ -32,7 +32,7 @@ import { handleInternalItems } from './internal-items';
 
 const DRIVE_KEY = 'drive-key';
 const OWNER = 'user_ada';
-const MIME = 'application/vnd.livediagram+json';
+const MIME = 'application/vnd.livehuddle+json';
 
 beforeEach(() => {
   made.length = 0;
@@ -96,7 +96,7 @@ describe('GET /api/internal/items/:id/export?format=file', () => {
     const parsed = parseDocumentEnvelope(text);
     if (!parsed.ok) throw new Error(parsed.failure);
     const { envelope } = parsed;
-    expect(envelope.kind).toBe('livediagram.document');
+    expect(envelope.kind).toBe('livehuddle.document');
     expect(envelope.exportedAt).toBe(1234);
     expect(envelope.document).toMatchObject({ id: 'A', name: 'Plan' });
     expect(envelope.document.tabs.map((t) => [t.id, t.name, t.folder])).toEqual([
@@ -134,7 +134,7 @@ describe('POST /api/internal/items/import', () => {
     expect(made).toEqual([
       {
         id,
-        app: 'livediagram',
+        app: 'livehuddle',
         title: 'Plan copy',
         folderId: 'F1',
         source: 'import',
@@ -169,8 +169,8 @@ describe('POST /api/internal/items/import', () => {
   it('refuses a file of another kind, or one that does not parse, with nothing made', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { send, file } = await exported();
-    const other = file.replace('"livediagram.document"', '"livedesign.design"');
-    for (const bad of [other, 'not json', '{"kind":"livediagram.document","schemaVersion":1}']) {
+    const other = file.replace('"livehuddle.document"', '"livedesign.design"');
+    for (const bad of [other, 'not json', '{"kind":"livehuddle.document","schemaVersion":1}']) {
       const res = await send('POST', 'import', { body: body(bad) });
       expect(res.status).toBe(400);
       expect(await res.json()).toEqual({ error: 'invalid_file' });

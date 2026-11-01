@@ -19,8 +19,8 @@ import {
   TrashIcon,
   Tooltip,
   identityVars,
-} from '@livediagram/ui';
-import type { Comment, CommentMention, CommentThread } from '@livediagram/document';
+} from '@livehuddle/ui';
+import type { Comment, CommentMention, CommentThread } from '@livehuddle/document';
 import { MentionMenu } from '@/components/primitives/MentionMenu';
 import { MentionText } from '@/components/primitives/MentionText';
 import { useMentionAutocomplete } from '@/hooks/ui/useMentionAutocomplete';

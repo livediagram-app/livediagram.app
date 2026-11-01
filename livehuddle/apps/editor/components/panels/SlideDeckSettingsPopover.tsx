@@ -1,6 +1,6 @@
 'use client';
 
-import { HoverCard, SettingsToggleRow } from '@livediagram/ui';
+import { HoverCard, SettingsToggleRow } from '@livehuddle/ui';
 import { SettingsPopover, SettingsPopoverResetRow } from '@/components/primitives/SettingsPopover';
 import {
   AUTO_ADVANCE_CHOICES,

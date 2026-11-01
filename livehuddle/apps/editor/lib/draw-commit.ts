@@ -11,7 +11,7 @@ import {
   REACTION_PAD_LABEL,
   type EventStormingNoteKind,
   type StickyElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,
@@ -31,9 +31,9 @@ import {
   type Element,
   type Endpoint,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { deriveNewBoxedColours } from '@/lib/themes';
-import type { ThemeDefinition } from '@livediagram/document';
+import type { ThemeDefinition } from '@livehuddle/document';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { getSticker, stickerDropSize } from '@liveworkspace/workbench/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';

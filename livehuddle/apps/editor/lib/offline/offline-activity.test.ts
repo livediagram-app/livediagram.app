@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livediagram/document';
-import { ACTIVITY_LIST_MAX } from '@livediagram/api-schema';
+import type { Element } from '@livehuddle/document';
+import { ACTIVITY_LIST_MAX } from '@livehuddle/api-schema';
 import { __setOfflineBackend, offlinePutRecord } from './offline-store';
 import {
   offlineActivityFromRecords,

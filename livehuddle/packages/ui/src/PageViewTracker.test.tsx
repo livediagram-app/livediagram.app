@@ -5,7 +5,7 @@ vi.mock('next/navigation', () => ({ usePathname: () => '/' }));
 import { reportPageView, resetPageViewTrackerForTests } from './PageViewTracker';
 
 // The tracker itself is @liveworkspace/ui's, tested there; this checks it is bound to this product's
-// page-view paths (@livediagram/api-schema's pageViewPath).
+// page-view paths (@livehuddle/api-schema's pageViewPath).
 beforeEach(() => resetPageViewTrackerForTests());
 
 describe('reportPageView', () => {

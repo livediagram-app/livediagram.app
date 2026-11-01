@@ -7,7 +7,7 @@ import {
   useEffectEvent,
 } from 'react';
 import { documentIdFromPath, isEditorPath } from '@/lib/legacy-editor-path';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import type { CommunitySession } from './editor-realtime';
 import {
   apiLoadDocument,
@@ -31,7 +31,7 @@ import { documentGrant } from '@/lib/api/document-grants';
 import { armLoadWatchdog, getLoadProgress, setLoadStep } from '@/lib/load-progress';
 import { track } from '@/lib/telemetry';
 import { documentLoadOrigin, noteDocumentLoadEnded, startEditorTiming } from '@/lib/timing';
-import { errorNameToken, errorTypeToken } from '@livediagram/api-schema';
+import { errorNameToken, errorTypeToken } from '@livehuddle/api-schema';
 import type { WorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import { loadWorkbenchDocument } from './workbench-bootstrap';
 

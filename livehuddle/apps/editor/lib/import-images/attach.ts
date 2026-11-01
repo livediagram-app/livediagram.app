@@ -2,7 +2,7 @@
 // element (docs/specs/020-import-export/blueprints/import-image-pipeline.md "attachImportImages").
 // Every importer calls this between converting a file and replacing the tab.
 
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livehuddle/document';
 import { emptyImportImageReport } from './report';
 import type {
   ImportImageOutcome,

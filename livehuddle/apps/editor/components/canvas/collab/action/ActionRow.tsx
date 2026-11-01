@@ -3,8 +3,8 @@
 // for. Pressing the rest of the row edits it. The check pops green on done. A Won't Do action
 // (docs/specs/012-collaboration/assigned-actions.md) wears a grey slashed circle that reopens it.
 
-import { COLLAB_DONE_COLOR as ACTION_DONE, type ElementAction } from '@livediagram/document';
-import { GlyphDisc } from '@livediagram/ui';
+import { COLLAB_DONE_COLOR as ACTION_DONE, type ElementAction } from '@livehuddle/document';
+import { GlyphDisc } from '@livehuddle/ui';
 import { initialsOf } from '@/lib/identity';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { TableElement } from '@livediagram/document';
+import type { TableElement } from '@livehuddle/document';
 import { TableView } from './TableView';
 
 // Touch keeps the ⋯ triggers on screen without a hover (TableAxisTriggers).

@@ -11,7 +11,7 @@
 // new palette glyph belongs here unless it's shared across panels
 // (in which case it goes into a sibling icon module).
 
-import { MODE_GLYPHS, type TextAlignX, type TextAlignY } from '@livediagram/document';
+import { MODE_GLYPHS, type TextAlignX, type TextAlignY } from '@livehuddle/document';
 import {
   lucideArmchair,
   lucideChartNoAxesColumnIncreasing,
@@ -24,7 +24,7 @@ import {
   lucideSpade,
   lucideThermometer,
 } from '@liveworkspace/icons/lucide';
-import { Glyph, lucideGlyph, Prims } from '@livediagram/ui';
+import { Glyph, lucideGlyph, Prims } from '@livehuddle/ui';
 
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
 
@@ -146,13 +146,13 @@ export function EraserIcon({ size = 14 }: IconSizeProps = {}) {
 // 20-unit dock grid (matching LayersStackIcon's stroke weight) that opens
 // the CanvasThemeDialog. Distinct from FormatPainterIcon below (the
 // element-to-element format tool): this one styles the whole tab.
-export { ThemeLookIcon } from '@livediagram/ui';
+export { ThemeLookIcon } from '@livehuddle/ui';
 
 // Format tool (docs/specs/008-canvas/canvas-and-palette.md): a paintbrush, the same glyph as the top-centre
-// "Copy formatting" chip (drawn once in @livediagram/ui): picks one
+// "Copy formatting" chip (drawn once in @livehuddle/ui): picks one
 // element's style and paints it onto others. Two-phase persistent mode
 // (pick a base, then tap targets).
-export { FormatPainterIcon } from '@livediagram/ui';
+export { FormatPainterIcon } from '@livehuddle/ui';
 
 // Spotlight tool (docs/specs/008-canvas/canvas-and-palette.md): a focus glyph — a bright centre dot ringed
 // by a circle with short rays beaming outward, reading as "the cursor
@@ -541,7 +541,7 @@ export function SessionPollIcon() {
   );
 }
 
-// A selection-mode glyph drawn from the data (MODE_GLYPHS in @livediagram/document:
+// A selection-mode glyph drawn from the data (MODE_GLYPHS in @livehuddle/document:
 // the shared @liveworkspace/icons table plus Isometric), the ONE drawing the palette, the Mode button face and
 // the export all use (docs/specs/009-elements/mode-button.md).
 function ModeGlyphIcon({ mode, size }: { mode: string; size: number }) {

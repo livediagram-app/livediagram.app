@@ -1,6 +1,6 @@
 // A canvas's Community post as the canvas keeps it (docs/specs/025-community/community.md; liveworkspace/docs/
 // community.md): every app's document room keeps its post the same way (@liveworkspace/community/app post.ts); this
-// binds it to the canvas's own SQLite, the index as the post's author and livediagram's participants. At most one
+// binds it to the canvas's own SQLite, the index as the post's author and livehuddle's participants. At most one
 // row, in the canvas's own SQLite (document-schema.ts `community_post`).
 
 import {
@@ -15,7 +15,7 @@ import {
   type CommunityPost,
 } from '@liveworkspace/community/app';
 import { communityAppClient } from '@liveworkspace/community/app';
-import type { CommunityAuthor } from '@livediagram/api-schema';
+import type { CommunityAuthor } from '@livehuddle/api-schema';
 import { COMMUNITY_APP } from '../community-service';
 import { indexFor } from '../index-service';
 import { getParticipant } from '../liveworkspace/profiles';

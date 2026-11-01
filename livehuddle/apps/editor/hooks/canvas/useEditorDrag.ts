@@ -30,7 +30,7 @@ import {
   withRelationshipHeads,
   type ArrowElement,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';

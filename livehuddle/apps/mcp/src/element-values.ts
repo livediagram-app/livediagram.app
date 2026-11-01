@@ -11,7 +11,7 @@ import {
   fieldValueIssue,
   withArticle,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { iconsLike, isIconId } from '@liveworkspace/icons/search';
 
 // The fields shown beside an unknown one: those sharing its words, else none.

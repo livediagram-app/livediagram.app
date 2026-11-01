@@ -12,7 +12,7 @@
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useCallback, useMemo } from 'react';
-import { isBoxed, renumberSteps, supportsRotation } from '@livediagram/document';
+import { isBoxed, renumberSteps, supportsRotation } from '@livehuddle/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';

@@ -19,9 +19,9 @@
 //     answer (counted separately in the results) rather than a silent dodge.
 
 import { useEffect, useState } from 'react';
-import { POLL_TEXT_ANSWER_MAX, pollOptionTokens, type LivePoll } from '@livediagram/api-schema';
+import { POLL_TEXT_ANSWER_MAX, pollOptionTokens, type LivePoll } from '@livehuddle/api-schema';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
-import { SOLID_BRAND_DARK_CONTROL, Portal } from '@livediagram/ui';
+import { SOLID_BRAND_DARK_CONTROL, Portal } from '@livehuddle/ui';
 import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 
 export function PollPromptSheet({

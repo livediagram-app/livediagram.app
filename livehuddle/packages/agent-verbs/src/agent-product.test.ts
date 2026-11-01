@@ -7,9 +7,9 @@ import { resolveFolderRef } from './folders';
 import { contextOf, DOC_A, fakeApi, library } from './testing/fake-api';
 import { submitChangeset } from './write';
 
-// The shared verbs bound to livediagram (./agent-product.ts): the words its CLI and MCP print stay its own.
+// The shared verbs bound to livehuddle (./agent-product.ts): the words its CLI and MCP print stay its own.
 
-const HOST = 'https://www.livediagram.app';
+const HOST = 'https://www.livehuddle.app';
 
 async function thrown(run: () => unknown): Promise<unknown> {
   try {
@@ -20,7 +20,7 @@ async function thrown(run: () => unknown): Promise<unknown> {
   throw new Error('expected it to throw');
 }
 
-describe('livediagram’s agent product', () => {
+describe('livehuddle’s agent product', () => {
   it('reads its own links and words a refusal with its CLI', async () => {
     expect(parseDocumentUrl(`${HOST}/document/${DOC_A}`, HOST)).toEqual({ id: DOC_A });
     const notALink = await thrown(() => parseDocumentUrl(`${HOST}/help`, HOST));
@@ -28,20 +28,20 @@ describe('livediagram’s agent product', () => {
     expect((notALink as AddressError).failure).toMatchObject({
       what: 'document',
       message: `${HOST}/help is not a document link`,
-      hint: 'livediagram document ls',
+      hint: 'livehuddle document ls',
     });
     const none = await thrown(() => resolveDocument(fakeApi(library), 'Nope', HOST));
     expect((none as AddressError).failure.message).toBe('no document matches "Nope"');
     const several = await thrown(() => resolveDocument(fakeApi(library), 'aaaa', HOST));
     expect((several as AddressError).failure.message).toBe('"aaaa" matches 2 documents');
     const noTabs = await thrown(() => resolveTab([], undefined, 'Shop'));
-    expect((noTabs as AddressError).failure.hint).toBe('livediagram tab add Shop <name>');
+    expect((noTabs as AddressError).failure.hint).toBe('livehuddle tab add Shop <name>');
   });
 
   it('hints its CLI when a folder or a write is refused', async () => {
     const folder = await thrown(() => resolveFolderRef([], 'Nowhere', '--folder'));
     expect(folder).toBeInstanceOf(VerbRefusal);
-    expect((folder as VerbRefusal).hint).toBe('livediagram folder ls');
+    expect((folder as VerbRefusal).hint).toBe('livehuddle folder ls');
 
     const tab = `/documents/${DOC_A}/tabs/tab-one-0000/changesets`;
     const api = fakeApi({
@@ -53,7 +53,7 @@ describe('livediagram’s agent product', () => {
     );
     expect(stale).toMatchObject({
       code: 'stale_tab',
-      hint: 're-read: livediagram tab view "Shop" --tab "Overview"',
+      hint: 're-read: livehuddle tab view "Shop" --tab "Overview"',
     });
   });
 

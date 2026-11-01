@@ -6,5 +6,5 @@ import { pushWorkerResponse } from '@liveworkspace/marketing-site/lib/install';
 export const dynamic = 'force-static';
 
 export function GET(): Response {
-  return pushWorkerResponse('/livediagram-icon-256.png');
+  return pushWorkerResponse('/livehuddle-icon-256.png');
 }

@@ -2,8 +2,8 @@
 // colour in every editor mode, the tab's own (its theme's canvas, or the custom colour). The
 // pattern is the tab's in Diagram mode and the person's own in Draw mode, so choosing it there
 // changes nothing for anyone else. Exports and thumbnails use the tab's backdrop (resolveTabBackdrop).
-import { hasBoardLook, type Appearance, type EditorMode, type Tab } from '@livediagram/document';
-import { getResolvedAppearance } from '@livediagram/ui';
+import { hasBoardLook, type Appearance, type EditorMode, type Tab } from '@livehuddle/document';
+import { getResolvedAppearance } from '@livehuddle/ui';
 import { resolveTabBackdrop, type ResolvedBackdrop } from './themes';
 import type { DrawPattern } from './whiteboard-dock-prefs';
 

@@ -25,7 +25,7 @@ import {
   WriteTabIcon,
   EventStormingTabIcon,
   ParticipateTabIcon,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 import {
   AskGroupIcon,
   WorkshopGroupIcon,
@@ -33,7 +33,7 @@ import {
   MoveGroupIcon,
   ReactionGroupIcon,
   RecordGroupIcon,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 
 /**
  * The category catalogue's IDENTITY: which categories exist, in band order,

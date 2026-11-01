@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import type { TimingTrack } from '@liveworkspace/telemetry-client';
-import { siteTrack } from '@livediagram/telemetry-client';
+import { siteTrack } from '@livehuddle/telemetry-client';
 
 // Core Web Vitals telemetry (docs/specs/017-telemetry/timing-telemetry.md) for every frontend. The
 // reporter is its own lazily loaded chunk: web-vitals is about 3 KB gzipped and nothing on a page waits

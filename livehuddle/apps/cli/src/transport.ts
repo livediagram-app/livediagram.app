@@ -1,4 +1,4 @@
-// The api client a command uses (blueprint CLI45): @liveworkspace/cli-kit's, sending livediagram's client header and
+// The api client a command uses (blueprint CLI45): @liveworkspace/cli-kit's, sending livehuddle's client header and
 // User-Agent.
 
 import type { CliIo } from './io';

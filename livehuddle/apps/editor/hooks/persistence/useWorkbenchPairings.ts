@@ -4,7 +4,7 @@
 // "Settings > API tokens", WB46): `GET /api/workbench/pairings` once, grouped by token here, and Unpair, which
 // removes the row once the api has ended that pairing.
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { WorkbenchPairing } from '@livediagram/api-schema';
+import type { WorkbenchPairing } from '@livehuddle/api-schema';
 import { apiListWorkbenchPairings, apiUnpairWorkbench } from '@/lib/api-client';
 
 const NONE: readonly WorkbenchPairing[] = [];

@@ -12,8 +12,8 @@ import {
   FLOWCHART_STEP_TYPES,
   type FlowchartDirection,
   type FlowchartStepType,
-} from '@livediagram/document';
-import { Glyph, lucideGlyph } from '@livediagram/ui';
+} from '@livehuddle/document';
+import { Glyph, lucideGlyph } from '@livehuddle/ui';
 import { lucideRoute, lucideShapes, lucideWorkflow } from '@liveworkspace/icons/lucide';
 import { OptionRows } from '@liveworkspace/workbench/components/primitives/OptionRows';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';

@@ -3,7 +3,7 @@
 // keeps syncing until Ctrl-C.
 
 import { posix } from 'node:path';
-import type { VerbContext } from '@livediagram/agent-verbs';
+import type { VerbContext } from '@livehuddle/agent-verbs';
 import { debugLog } from '../debug';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
@@ -26,7 +26,7 @@ export async function syncLinks(
       exit: EXIT.usage,
       code: 'usage',
       message: '--dry-run writes nothing, so there is nothing to watch',
-      hint: 'livediagram sync --dry-run',
+      hint: 'livehuddle sync --dry-run',
     });
   const sync: VerbContext = { ...ctx, log: debugLog(io, 'sync') };
   const options = {

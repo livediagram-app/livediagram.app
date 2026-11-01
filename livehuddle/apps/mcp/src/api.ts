@@ -3,7 +3,7 @@
 // to the owning account and applies the SAME authorization every route already enforces, so the MCP needs
 // no special privilege and adds no business logic.
 import { ApiError, createApiClient, type ApiClient } from '@liveworkspace/api-client';
-import { errorTypeToken } from '@livediagram/api-schema';
+import { errorTypeToken } from '@livehuddle/api-schema';
 import {
   TELEMETRY_EVENTS_PATH,
   TELEMETRY_KEY_HEADER,
@@ -18,7 +18,7 @@ export { ApiError };
 
 // Service-binding requests ignore the host; the path is what the api routes on (it dispatches on the
 // segment after `/api`). A stable internal host keeps logs readable.
-const API_BASE = 'https://livediagram-api/api';
+const API_BASE = 'https://livehuddle-api/api';
 
 // The client for one caller: their token, and failures reported as the running tool's (docs/specs/015-api/mcp-server.md §4.12).
 export function clientFor(env: Env, token: string): ApiClient {
@@ -42,11 +42,11 @@ export function apiFetch(
 // Fire-and-forget anonymous telemetry to the liveworkspace telemetry service
 // (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/specs/008-telemetry/telemetry.md), handed to the request's
 // waitUntil (request-scope.ts) so the runtime can't cancel it when the response goes out. The key
-// proves the batch is livediagram's own; without one nothing is sent.
+// proves the batch is livehuddle's own; without one nothing is sent.
 export function postTelemetry(env: Env, category: string, action: string, type: string): void {
   const key = env.TELEMETRY_KEY;
   if (!key) return;
-  const batch: TelemetryBatch = { app: 'livediagram.app', events: [{ category, action, type }] };
+  const batch: TelemetryBatch = { app: 'livehuddle.app', events: [{ category, action, type }] };
   try {
     keepAlive(
       fetch(`${env.TELEMETRY_URL || TELEMETRY_URL}${TELEMETRY_EVENTS_PATH}`, {

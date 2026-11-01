@@ -3,7 +3,7 @@ import {
   MAX_PARTICIPANT_NAME_LEN,
   type CommentListStatus,
   type DocumentCommentThread,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import {
   cleanReactions,
   commentWithReactions,
@@ -15,8 +15,8 @@ import {
   type CommentThread,
   type Element,
   type Tab,
-} from '@livediagram/document';
-import { buildViewModel, commentHosts } from '@livediagram/document-views';
+} from '@livehuddle/document';
+import { buildViewModel, commentHosts } from '@livehuddle/document-views';
 
 // Who is saving: their profile, or only their id when no profile could be read (a guest-only
 // a deployment keeps none; liveworkspace may be out of reach). Then their own new comments keep the

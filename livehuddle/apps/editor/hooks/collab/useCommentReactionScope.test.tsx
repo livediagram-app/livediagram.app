@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { ShapeElement, Tab } from '@livediagram/document';
+import type { ShapeElement, Tab } from '@livehuddle/document';
 import { useCommentReactionScope } from './useCommentReactionScope';
 
 // docs/specs/012-collaboration/comment-reactions.md: a reaction is one delta on the comment's element.

@@ -38,6 +38,7 @@ export function handleInternalItems(
 ): Promise<Response> {
   return handle(request, {
     key: env.INDEX_KEY,
+    // The migration's name for this app's parts: livediagram's, carried by the fork until Offline Mode is cut.
     app: 'livediagram',
     exportKey: env.MEDIA_KEY,
     driveKey: env.DRIVE_KEY,
@@ -78,9 +79,9 @@ export function handleInternalItems(
           waitUntil(countCommunityCopy(env, from, copier.by, copier.ip ?? `copier:${copier.by}`));
         return { tabs: source.copy.tabs.length, items: 0 };
       },
-      // A closed account, wherever it was closed: what livediagram keeps for them beside their canvases.
+      // A closed account, wherever it was closed: what livehuddle keeps for them beside their canvases.
       personClosed: async (personId) => void (await deleteAccount(env, personId)),
-      // A guest who became an account: what livediagram keeps for the guest becomes the account's. A returning guest
+      // A guest who became an account: what livehuddle keeps for the guest becomes the account's. A returning guest
       // of the old site (`legacy`, docs/migration.md step 6) may merge into another guest: the same moves, since
       // every one of them is keyed by any owner id (the media owner of a guest is its hash, `mediaOwner`).
       personMerged: (guestId, intoId) => mergeGuest(env, guestId, intoId),
@@ -94,13 +95,13 @@ export function handleInternalItems(
           : documentRoom(env, id).exportImage(query),
       // A new canvas from a Drive file, as its owner's (routes/internal-file.ts).
       import: (input) => importDocumentFileFor(env, input),
-      // An old livediagram.app document's livediagram part, into its canvas's room (document-migration.ts). A tab over
+      // An old livehuddle.app document's livehuddle part, into its canvas's room (document-migration.ts). A tab over
       // the tab cap refuses the whole part (413) before the room is called.
       migrate: async (payload) => {
         checkMigrationTabSizes(payload, MAX_TAB_BYTES);
         return documentRoom(env, payload.id).importMigrated(payload);
       },
-      // An old livediagram.app person's shape libraries, into their store (the person migration door,
+      // An old livehuddle.app person's shape libraries, into their store (the person migration door,
       // docs/migration.md): added as a guest's are on sign-in, an id already there left alone.
       migratePerson: (payload) =>
         personStore(env, payload.personId).adoptShapeLibraries(payload.shapeLibraries),

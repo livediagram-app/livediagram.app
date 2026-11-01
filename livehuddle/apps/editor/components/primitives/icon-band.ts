@@ -1,11 +1,11 @@
 // The CSS glyph band inside a captioned icon element (docs/specs/010-palette/technology-icons.md): the region
 // OPPOSITE the caption, so moving the text never stacks it over the glyph.
-// These Tailwind classes mirror iconBandBounds in @livediagram/document
+// These Tailwind classes mirror iconBandBounds in @livehuddle/document
 // (the export renderer + connector geometry), and are shared by BOTH icon
 // kinds — TechIconGlyph centres its fixed-size mark in the band, IconGlyph
 // scales its line art to fill it.
 
-import { isOnGlyphLabel, type TextAlignX, type TextAlignY } from '@livediagram/document';
+import { isOnGlyphLabel, type TextAlignX, type TextAlignY } from '@livehuddle/document';
 
 export function iconBandClass(labelAlignX: TextAlignX, labelAlignY: TextAlignY): string {
   // Middle-centre puts the label ON the glyph (isOnGlyphLabel), so the glyph keeps the whole box.
@@ -28,7 +28,7 @@ export function iconBandClass(labelAlignX: TextAlignX, labelAlignY: TextAlignY):
 }
 
 // The CAPTION's band: the complement of the glyph band above, mirroring
-// iconCaptionBand in @livediagram/document (the export renderer reads the
+// iconCaptionBand in @livehuddle/document (the export renderer reads the
 // same geometry). Confining the caption here — instead of aligning it over
 // the whole box — is what keeps a centre/middle caption off the glyph and a
 // long left/right caption from running under the mark. Pair with

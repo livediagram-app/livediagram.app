@@ -8,7 +8,7 @@
 
 import { apiLoadDocument, apiLoadTab } from '@/lib/api-client';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
-import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
+import { DOCUMENT_CONVERSION_HEADER } from '@livehuddle/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { embedTabImages, isDataImageId, tabImageIds } from './offline-images';
 import {

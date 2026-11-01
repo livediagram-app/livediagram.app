@@ -1,10 +1,10 @@
 'use client';
 
-// What the shared Explorer's Inbox (@liveworkspace/explorer `InboxHost`) needs from livediagram beyond the index:
+// What the shared Explorer's Inbox (@liveworkspace/explorer `InboxHost`) needs from livehuddle beyond the index:
 // the rows of canvases in This Browser, which never reach the index (lib/offline/offline-activity.ts), the help
 // article on actions, and telemetry. The editor's panel and the workspace frame both use it.
 
-import type { ActivityAction, ActivityPlace, ActivityThread } from '@livediagram/api-schema';
+import type { ActivityAction, ActivityPlace, ActivityThread } from '@livehuddle/api-schema';
 import type { InboxAction, InboxThread } from '@liveworkspace/index-client';
 import type {
   InboxActions,
@@ -42,7 +42,7 @@ export const trackInbox: InboxTelemetry = (action, type) => {
 type Place = Pick<ActivityPlace, 'documentId' | 'documentName' | 'teamId'>;
 
 const itemOf = (p: Place) => ({
-  app: 'livediagram' as const,
+  app: 'livehuddle' as const,
   itemId: p.documentId,
   itemTitle: p.documentName,
   itemTeamId: p.teamId,
@@ -138,7 +138,7 @@ export function explorerInboxActions(
   open: InboxOpenAction | null,
 ): InboxActions {
   return createInboxActions({
-    api: (app) => (app === 'livediagram' && ownerId ? inboxApi(ownerId) : null),
+    api: (app) => (app === 'livehuddle' && ownerId ? inboxApi(ownerId) : null),
     openAction: open,
   });
 }

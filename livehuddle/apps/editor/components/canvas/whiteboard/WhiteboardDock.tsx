@@ -48,7 +48,7 @@ import { WhiteboardFlyout } from './WhiteboardFlyout';
 import { useMenuCardClearance } from './useMenuCardClearance';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { announceToastFloorChange } from '@liveworkspace/workbench/components/toast/toast-floor';
-import { useMediaQuery } from '@livediagram/ui';
+import { useMediaQuery } from '@livehuddle/ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';

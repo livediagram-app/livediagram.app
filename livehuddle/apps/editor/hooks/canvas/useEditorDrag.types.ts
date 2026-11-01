@@ -1,6 +1,6 @@
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { Anchor, Element, IconPosition, Tab, FrameHandle } from '@livediagram/document';
+import type { Anchor, Element, IconPosition, Tab, FrameHandle } from '@livehuddle/document';
 import type { ArrowEnd, DragMode, DragState } from '@/lib/canvas';
 import type { InsertionGate } from '@/lib/insert-between';
 import type { SnapGuideStore } from './useSnapGuideState';

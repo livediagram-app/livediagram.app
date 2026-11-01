@@ -1,6 +1,6 @@
 // `export --all --to <dir> [--format json,svg,mermaid,md]` (docs/specs/015-api/blueprints/cli.md "Pull and push",
 // CLI29): every document the token can read, written read-only for backups and docs. `json` is the editor's
-// `livediagram.document` envelope; the other formats are one file per tab under `<slug>/`. Two documents at a time;
+// `livehuddle.document` envelope; the other formats are one file per tab under `<slug>/`. Two documents at a time;
 // a rate-limited read waits a minute and tries again, up to three times. A document that fails is reported and the
 // rest still go (CLI84).
 
@@ -9,16 +9,16 @@ import {
   listAllDocuments,
   tabPath,
   type VerbContext,
-} from '@livediagram/agent-verbs';
+} from '@livehuddle/agent-verbs';
 import { ApiError } from '@liveworkspace/api-client';
-import type { DocumentResponse } from '@livediagram/api-schema';
+import type { DocumentResponse } from '@livehuddle/api-schema';
 import {
   documentToEnvelopeText,
   mermaidFromTab,
   tabToMarkdownText,
   type EnvelopeTab,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import type { CliIo } from '../io';
 import { CliError, formatError } from '../output/cli-error';
 import { EXIT, type ExitCode } from '@liveworkspace/cli-kit/exit-codes';
@@ -159,7 +159,7 @@ export async function exportAll(
       exit: EXIT.usage,
       code: 'usage',
       message: 'export writes every document: add --all',
-      hint: 'one document: livediagram pull <doc>',
+      hint: 'one document: livehuddle pull <doc>',
     });
   const formats = formatsOf(input.format);
   const documents = await patiently(ctx, () => listAllDocuments(ctx.api));

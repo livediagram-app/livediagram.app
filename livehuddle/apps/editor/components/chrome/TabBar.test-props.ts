@@ -1,6 +1,6 @@
 import type { ComponentProps } from 'react';
 import { vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import type { TabBar } from './TabBar';
 
 // Shared fixture for the TabBar component tests: every callback a no-op,

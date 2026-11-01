@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { formatRelativeTime } from '@livediagram/ui';
+import { formatRelativeTime } from '@livehuddle/ui';
 import { offlineIdCount, offlineListDocuments } from '@/lib/offline/offline-store';
 import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 import {

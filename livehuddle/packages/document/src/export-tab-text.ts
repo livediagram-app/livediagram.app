@@ -21,7 +21,7 @@ export const TAB_SCHEMA_VERSION = 2;
 
 export type ExportedTabEnvelope = {
   schemaVersion: number;
-  kind: 'livediagram.tab';
+  kind: 'livehuddle.tab';
   exportedAt: number;
   tab: Tab;
 };
@@ -32,7 +32,7 @@ export type ExportedTabEnvelope = {
 export function tabToJsonText(tab: Tab): string {
   const envelope: ExportedTabEnvelope = {
     schemaVersion: TAB_SCHEMA_VERSION,
-    kind: 'livediagram.tab',
+    kind: 'livehuddle.tab',
     exportedAt: Date.now(),
     tab,
   };

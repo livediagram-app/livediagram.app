@@ -1,6 +1,6 @@
-import { pageViewApp, pageViewPath, WEB_VITALS } from '@livediagram/api-schema';
+import { pageViewApp, pageViewPath, WEB_VITALS } from '@livehuddle/api-schema';
 import { createWebVitalsReport } from '@liveworkspace/ui/web-vitals';
-import { reportTiming } from '@livediagram/telemetry-client';
+import { reportTiming } from '@livehuddle/telemetry-client';
 
 // Core Web Vitals as timings (docs/specs/017-telemetry/timing-telemetry.md): @liveworkspace/ui's report, bound to
 // this product's vitals, the app each page belongs to (named as page views name it) and its reportTiming. Each is

@@ -2,7 +2,7 @@
 
 // The Chart Type section's tiles (docs/specs/009-elements/pie-chart.md "Chart types"): the seven types, each its
 // glyph over its name, the chart's own pressed. A pick changes the chart; hovering previews nothing.
-import { CHART_TYPE_LABELS, CHART_TYPES, type ChartType } from '@livediagram/document';
+import { CHART_TYPE_LABELS, CHART_TYPES, type ChartType } from '@livehuddle/document';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { TileLabel } from '@/components/palette/context-menu-tiles';
 import { ChartTypeIcon } from '@/components/primitives/ChartTypeIcon';

@@ -1,8 +1,8 @@
 // The api Worker's own telemetry (docs/specs/017-telemetry/telemetry.md), sent to liveworkspace's central service
-// (liveworkspace/docs/specs/008-telemetry/telemetry.md) as livediagram.app. The send itself, its gate and its key are the shared
+// (liveworkspace/docs/specs/008-telemetry/telemetry.md) as livehuddle.app. The send itself, its gate and its key are the shared
 // `postServerEvents` (@liveworkspace/telemetry); this file only fixes the app and its event vocabulary.
 
-import type { TelemetryAction, TelemetryCategory } from '@livediagram/api-schema';
+import type { TelemetryAction, TelemetryCategory } from '@livehuddle/api-schema';
 import {
   postServerEvents,
   serverTelemetryEnabled,
@@ -12,8 +12,10 @@ import type { Env } from './types';
 
 export const telemetryEnabled = (env: Env): boolean => serverTelemetryEnabled(env);
 
-export const reportServerEvents = (env: Env, events: readonly TelemetryWireEvent[]): Promise<void> =>
-  postServerEvents(env, 'livediagram.app', events);
+export const reportServerEvents = (
+  env: Env,
+  events: readonly TelemetryWireEvent[],
+): Promise<void> => postServerEvents(env, 'livehuddle.app', events);
 
 export function reportServerEvent(
   env: Env,

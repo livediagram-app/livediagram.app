@@ -8,14 +8,14 @@
 // serve) turns CI red.
 //
 // `requestSchema` / `responseSchema` are either a component name (a key of the
-// generated COMPONENT_SCHEMAS, itself derived from @livediagram/api-schema) or
+// generated COMPONENT_SCHEMAS, itself derived from @livehuddle/api-schema) or
 // an inline JSON Schema for the small envelopes that wrap a payload. Path
 // parameters are derived from the `{param}` placeholders in `path` by
 // document.ts, so they aren't repeated here.
 
-import { LINT_VIEW_NAME, TAB_VIEW_NAMES } from '@livediagram/api-schema';
-import { NAME_MAX_LENGTH } from '@livediagram/document';
-import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livediagram/document-views';
+import { LINT_VIEW_NAME, TAB_VIEW_NAMES } from '@livehuddle/api-schema';
+import { NAME_MAX_LENGTH } from '@livehuddle/document';
+import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livehuddle/document-views';
 import type { BodySchema } from '@liveworkspace/api-kit/openapi-types';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
@@ -1545,7 +1545,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401, 404],
   },
 
-  // ---- The move from the old livediagram.app (docs/specs/015-api/api.md "Migration") ----
+  // ---- The move from the old livehuddle.app (docs/specs/015-api/api.md "Migration") ----
   // One-time doors for the editor's pass after the move, as the browser's own guest or account; an API token or a
   // workbench session is refused (401 identity_required). First-party only.
   {

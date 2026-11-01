@@ -19,11 +19,11 @@
 
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { useCoarsePointer } from '@liveworkspace/workbench/hooks/ui/useCoarsePointer';
-import { REVEAL_COVER_BASE } from '@livediagram/document';
+import { REVEAL_COVER_BASE } from '@livehuddle/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { tint } from '@/lib/element-tint';
 import { LockGlyph } from '@/components/canvas/collab/qa/qa-parts';
-import { Glyph, GlyphDisc } from '@livediagram/ui';
+import { Glyph, GlyphDisc } from '@livehuddle/ui';
 
 // The cover's base comes from the PAPER under it (REVEAL_COVER_BASE, shared
 // with the headless renderer; docs/specs/009-elements/reveal-zone.md "The look").

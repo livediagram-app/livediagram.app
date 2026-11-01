@@ -1,6 +1,6 @@
 import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
 import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
-import type { ElementDelta, QaNote, RoomElementOp, Tab } from '@livediagram/document';
+import type { ElementDelta, QaNote, RoomElementOp, Tab } from '@livehuddle/document';
 import type { ParticipantPresence } from './index';
 import type { AvatarOp, AvatarPushOp } from '@liveworkspace/api-schema/avatar';
 import type { AvatarSayOp } from '@liveworkspace/api-schema/avatar-say';
@@ -370,7 +370,7 @@ export type RoomOp =
   // A single element on a tab changed (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0): add / update /
   // remove / reorder, applied by id so a peer editing a DIFFERENT element
   // on the same tab merges instead of overwriting the whole tab. `op`
-  // carries the element payload (see @livediagram/document ElementOp).
+  // carries the element payload (see @livehuddle/document ElementOp).
   | { kind: 'el'; tabId: string; op: RoomElementOp }
   // A tab's non-element metadata changed (name, background, font, …) —
   // the element array is untouched, so this rides alongside `el` ops

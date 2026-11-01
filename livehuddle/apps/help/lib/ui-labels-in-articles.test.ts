@@ -23,7 +23,7 @@ const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
 
 // The Explorer, its menus and the Share dialog are liveworkspace's shared package
 // (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md), which the editor
-// renders as its own. Its labels are what a reader sees in livediagram, so they
+// renders as its own. Its labels are what a reader sees in livehuddle, so they
 // are read as the editor's.
 const EXPLORER_PACKAGE = `${ROOT}/../packages/explorer/src`;
 // The Settings dialog likewise is the shared view (@liveworkspace/settings-ui; docs/specs/007-editor/

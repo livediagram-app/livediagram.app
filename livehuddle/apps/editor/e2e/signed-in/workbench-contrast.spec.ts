@@ -16,7 +16,7 @@ import { freshUserId, installSession } from './session';
 const DAY = 86_400_000;
 const NOW = Date.now();
 // The token is the liveworkspace account's (made on liveworkspace.app); the app knows only its id and name.
-const TOKEN = { id: 'tok_contrast', name: 'livediagram CLI' };
+const TOKEN = { id: 'tok_contrast', name: 'livehuddle CLI' };
 const PAIRING = {
   id: 'pair_contrast',
   tokenId: TOKEN.id,
@@ -41,10 +41,10 @@ function expectAA(report: ContrastReport, screen: string): void {
 
 async function signedIn(page: Page, scheme: 'dark' | 'light'): Promise<void> {
   await installSession(page, { ...WEBBER, id: freshUserId('webber') });
-  await page.addInitScript((mode) => localStorage.setItem('livediagram:v2:ui-mode', mode), scheme);
+  await page.addInitScript((mode) => localStorage.setItem('livehuddle:v2:ui-mode', mode), scheme);
 }
 
-const MCP = 'https://mcp.livediagram.app';
+const MCP = 'https://mcp.livehuddle.app';
 
 async function expectScheme(page: Page, scheme: 'dark' | 'light'): Promise<void> {
   if (scheme === 'dark') await expect(page.locator('html')).toHaveClass(/\bdark\b/);
@@ -58,7 +58,7 @@ for (const scheme of ['dark', 'light'] as const) {
     test('the device page, entering the code and consenting', async ({ page, pageErrors }) => {
       await signedIn(page, scheme);
       await page.route(`${MCP}/oauth/device/session/*`, (route) =>
-        route.fulfill({ json: { clientName: 'livediagram CLI' } }),
+        route.fulfill({ json: { clientName: 'livehuddle CLI' } }),
       );
       await page.goto('/oauth/device?code=bcdf-ghjk');
       await expect(page.getByRole('heading', { name: 'Connect a terminal' })).toBeVisible();
@@ -66,7 +66,7 @@ for (const scheme of ['dark', 'light'] as const) {
       expectAA(await auditContrast(page), `device page, code entry, ${scheme}`);
 
       await page.getByRole('button', { name: 'Continue' }).click();
-      await expect(page.getByRole('heading', { name: 'Connect livediagram CLI' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Connect livehuddle CLI' })).toBeVisible();
       await page.screenshot({ path: test.info().outputPath(`device-consent-${scheme}.png`) });
       expectAA(await auditContrast(page), `device page, consent, ${scheme}`);
       expectNoPageErrors(pageErrors);

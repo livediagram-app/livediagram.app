@@ -32,7 +32,7 @@ function actions(over: Partial<Parameters<typeof useDocumentActions>[0]> = {}) {
 beforeEach(() => {
   Object.defineProperty(window, 'location', {
     configurable: true,
-    value: { ...window.location, origin: 'http://localhost:3102', assign },
+    value: { ...window.location, origin: 'http://localhost:3502', assign },
   });
 });
 afterEach(() => vi.clearAllMocks());
@@ -44,7 +44,7 @@ describe('useDocumentActions', () => {
     index.copyItem.mockResolvedValue({ item: { id: 'p2' } });
     await actions({ sessionShareCode: 'code1' }).makeCopy();
     expect(index.copyItem).toHaveBeenCalledWith('p1', {}, { code: 'code1', password: null });
-    expect(assign).toHaveBeenCalledWith('http://localhost:3102/document/p2');
+    expect(assign).toHaveBeenCalledWith('http://localhost:3502/document/p2');
   });
 
   it('lets the person try a refused copy again', async () => {
@@ -77,6 +77,6 @@ describe('useDocumentActions', () => {
 
   it('opens a document, through its link when it has one', () => {
     actions().openDocument('p9', 's 1');
-    expect(assign).toHaveBeenCalledWith('http://localhost:3102/document/p9?s=s%201');
+    expect(assign).toHaveBeenCalledWith('http://localhost:3502/document/p9?s=s%201');
   });
 });

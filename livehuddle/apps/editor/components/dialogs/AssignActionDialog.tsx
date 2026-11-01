@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Button, CloseIcon, TextInput, Switch } from '@livediagram/ui';
+import { Button, CloseIcon, TextInput, Switch } from '@livehuddle/ui';
 import {
   ACTION_STATUSES,
   ACTION_STATUS_LABELS,
   type ElementAction,
   type ElementActionStatus,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';

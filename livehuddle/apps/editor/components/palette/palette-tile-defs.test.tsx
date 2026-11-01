@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { headlineCase } from '@livediagram/api-schema';
-import { EVENT_STORMING_NOTES } from '@livediagram/document';
+import { headlineCase } from '@livehuddle/api-schema';
+import { EVENT_STORMING_NOTES } from '@livehuddle/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import {
   PALETTE_TILES,

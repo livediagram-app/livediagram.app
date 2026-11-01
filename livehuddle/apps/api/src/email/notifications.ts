@@ -10,7 +10,7 @@
 import type { TeamPerson } from '@liveworkspace/auth-client';
 import { accountsAllowance, createNotifier } from '@liveworkspace/index-app';
 import { accountCredentials } from '../auth/accounts';
-import { isAccountIdShape } from '@livediagram/api-schema';
+import { isAccountIdShape } from '@livehuddle/api-schema';
 import { claimCommentNotify } from '../document-room/document-content';
 import { claimMilestone } from '../liveworkspace/emails';
 import { canvasesMadeBy, notifyRecipients, type NotifySetting } from '../liveworkspace/notify';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseEditOperations } from '@livediagram/edit-operations';
+import { parseEditOperations } from '@livehuddle/edit-operations';
 import { argvToOperationLine } from '@liveworkspace/agent-verbs/argv-line';
 
 // The shared suite covers the words; this one parses them back with this product's edit operations.

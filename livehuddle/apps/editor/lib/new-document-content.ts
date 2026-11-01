@@ -2,8 +2,8 @@
 // its template; or, for no template, one blank tab in the theme's backdrop. Shared by /new and the workspace frame's
 // New document (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB58), so a document made in either is the
 // same document.
-import type { Tab } from '@livediagram/document';
-import type { TemplateKind } from '@livediagram/templates';
+import type { Tab } from '@livehuddle/document';
+import type { TemplateKind } from '@livehuddle/templates';
 import { buildTemplatedTab } from '@/lib/template-builders';
 import { templateTabName } from '@/lib/template-tab-name';
 import { getTheme } from '@/lib/themes';

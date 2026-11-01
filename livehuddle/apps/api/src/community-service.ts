@@ -1,10 +1,10 @@
-// livediagram's side of the liveworkspace Community service (liveworkspace/docs/specs/007-community/community.md; docs/specs/025-community/
+// livehuddle's side of the liveworkspace Community service (liveworkspace/docs/specs/007-community/community.md; docs/specs/025-community/
 // community.md): the shared app client (@liveworkspace/community/app) bound to this app. The posts, likes,
 // copies and reports live there; each canvas keeps its own post's link (document-room/community-post.ts), and tells
 // the service what only it knows: who may publish, where its canvas stands, and who copied it.
 
 import { communityAppClient, type CommunityAppCall } from '@liveworkspace/community/app';
-import type { CommunityAppPublish } from '@livediagram/api-schema';
+import type { CommunityAppPublish } from '@livehuddle/api-schema';
 import type { Env } from './types';
 
 export {
@@ -12,8 +12,10 @@ export {
   communityServiceConfigured,
   copierHash,
 } from '@liveworkspace/community/app';
+import { COMMUNITY_APP } from '@livehuddle/api-schema';
 
-export const COMMUNITY_APP = 'livediagram.app';
+// Borrowed from livediagram until the community app is cut (@livehuddle/api-schema COMMUNITY_APP).
+export { COMMUNITY_APP };
 
 const client = communityAppClient(COMMUNITY_APP);
 

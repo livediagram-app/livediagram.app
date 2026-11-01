@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('@livediagram/diagram-lint', () => ({
+vi.mock('@livehuddle/diagram-lint', () => ({
   formatLintReport: () => '',
   lintTab: () => {
     throw new Error('boom');

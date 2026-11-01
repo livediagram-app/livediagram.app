@@ -2,7 +2,7 @@
 // codes judge frames, never lanes; a box belongs to the first frame on its chain of containers, and a
 // frame's members are every box whose chain reaches it.
 
-import { isBoxed, type BoxedElement, type ElementId } from '@livediagram/document';
+import { isBoxed, type BoxedElement, type ElementId } from '@livehuddle/document';
 import type { LintContext } from './context';
 
 // The frame an id names, or null for a lane, a mind node or anything else.

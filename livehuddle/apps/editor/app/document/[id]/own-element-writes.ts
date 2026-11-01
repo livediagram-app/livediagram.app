@@ -1,5 +1,5 @@
-import type { RoomElementOp } from '@livediagram/document';
-import type { RoomOp } from '@livediagram/api-schema';
+import type { RoomElementOp } from '@livehuddle/document';
+import type { RoomOp } from '@livehuddle/api-schema';
 
 // This editor's element writes the room has not sequenced yet (docs/specs/012-collaboration/realtime-conflict-resolution.md
 // "Same-element edits converge").

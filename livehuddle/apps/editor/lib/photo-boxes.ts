@@ -1,5 +1,5 @@
-import { clamp, EVENT_STORMING_NOTES } from '@livediagram/document';
-import type { DetectedSticky, Truth, TruthNote } from '@livediagram/sticky-vision';
+import { clamp, EVENT_STORMING_NOTES } from '@livehuddle/document';
+import type { DetectedSticky, Truth, TruthNote } from '@livehuddle/sticky-vision';
 
 // Correcting the boxes on a photograph under review (docs/specs/021-event-storming/event-storming.md Phase 9): move,
 // resize, change kind, and reopen a saved label. Pure, in WORKING-image

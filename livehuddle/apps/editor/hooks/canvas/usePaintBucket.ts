@@ -3,7 +3,7 @@
 // The Fill tool's press landing in the document (docs/specs/023-draw-mode/fill-tool.md "What a press
 // fills"): one `commit`, so one undo step that reaches every collaborator, gated on the session's
 // right to recolour what it would change. A press that fills nothing says why in a small hint.
-import { layerBands, type Element, type Layer } from '@livediagram/document';
+import { layerBands, type Element, type Layer } from '@livehuddle/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { isFillIntent, type PendingDraw } from '@/lib/draw-mode';
 import { paintBucketTarget, pourBucket } from '@/lib/paint-bucket';

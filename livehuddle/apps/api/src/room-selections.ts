@@ -1,4 +1,4 @@
-import { MAX_SELECTION_IDS } from '@livediagram/api-schema';
+import { MAX_SELECTION_IDS } from '@livehuddle/api-schema';
 import type { RoomSelection } from './room-client';
 
 // The room's record of what each open editor has selected (docs/specs/024-agents/agent-changesets.md

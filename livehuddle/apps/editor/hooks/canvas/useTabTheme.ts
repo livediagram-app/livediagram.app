@@ -5,7 +5,7 @@
 
 import { withThemeApplied } from '@/lib/tab-theme-apply';
 import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 
 export function useTabTheme(deps: {

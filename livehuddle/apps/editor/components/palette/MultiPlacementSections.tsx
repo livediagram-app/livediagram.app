@@ -4,7 +4,7 @@ import {
   type BoxedElement,
   type Element,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { SizeButton } from '@/components/palette/palette-controls';
@@ -29,7 +29,7 @@ import { shapeKindLabel } from '@/lib/element-names';
 import { COMMON_SHAPES, ROTATION_ANGLES } from './context-menu-constants';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
-import { Switch } from '@livediagram/ui';
+import { Switch } from '@livehuddle/ui';
 
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 

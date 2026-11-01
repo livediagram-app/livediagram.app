@@ -21,13 +21,13 @@ describe("the Inbox's This Browser snapshot", () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     await offlineCreateDocument({ id: 'a', name: 'Alpha' }, 1_000);
     await vi.advanceTimersByTimeAsync(1_000);
-    expect(readInboxSnapshot('livediagram')).toBeNull();
+    expect(readInboxSnapshot('livehuddle')).toBeNull();
     vi.useRealTimers();
     await inboxSnapshot.flush();
-    expect(readInboxSnapshot('livediagram')?.ownerIds).toEqual(['user_me']);
+    expect(readInboxSnapshot('livehuddle')?.ownerIds).toEqual(['user_me']);
 
     await offlineDeleteDocument('a');
     await inboxSnapshot.flush();
-    expect(readInboxSnapshot('livediagram')).toBeNull();
+    expect(readInboxSnapshot('livehuddle')).toBeNull();
   });
 });

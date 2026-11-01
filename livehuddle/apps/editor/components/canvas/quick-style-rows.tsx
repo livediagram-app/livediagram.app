@@ -7,7 +7,7 @@
 // or Space to pick, and More colours at its end.
 
 import { useRef, type KeyboardEvent, type ReactNode } from 'react';
-import { Tooltip, Glyph } from '@livediagram/ui';
+import { Tooltip, Glyph } from '@livehuddle/ui';
 import { SwatchChip } from '@/components/colour/ColourSwatch';
 import { colourKeyTarget } from '@liveworkspace/workbench/components/colour/useColourKeys';
 import { QUICK_TARGET_PX } from './quick-style-metrics';

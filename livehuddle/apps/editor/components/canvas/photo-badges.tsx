@@ -6,7 +6,7 @@
 // them, not the note (docs/specs/008-canvas/canvas-performance.md).
 
 import { ICON_STROKE_PX_SMALL } from '@liveworkspace/icons';
-import { Glyph, Tooltip } from '@livediagram/ui';
+import { Glyph, Tooltip } from '@livehuddle/ui';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // A dashed accent frame just outside the paper, in the alignment guides' own language, saying "this

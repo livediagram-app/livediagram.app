@@ -24,7 +24,7 @@ export const guide = defineVerb({
   text: ({ text }) => [text],
   cli: {
     positionals: ['topic'],
-    examples: ['livediagram guide', 'livediagram guide edit'],
+    examples: ['livehuddle guide', 'livehuddle guide edit'],
     prints: 'the topics, or one topic',
   },
 });
@@ -41,7 +41,7 @@ export const skillPrint = defineVerb({
   text: ({ text }) => [text],
   cli: {
     positionals: [],
-    examples: ['livediagram skill print', 'livediagram skill print > SKILL.md'],
+    examples: ['livehuddle skill print', 'livehuddle skill print > SKILL.md'],
     prints: 'the SKILL.md file',
   },
 });
@@ -50,7 +50,7 @@ export const skillInstall = defineVerb({
   id: 'skill.install',
   offline: true,
   summary: "Write the skill into an agent's skills directory",
-  description: 'Writes <dir>/livediagram/SKILL.md, overwriting only a livediagram skill.',
+  description: 'Writes <dir>/livehuddle/SKILL.md, overwriting only a livehuddle skill.',
   behaviour: 'write',
   local: true,
   input: z.object({ to: z.string().optional().describe('The skills directory of your agent') }),
@@ -59,8 +59,8 @@ export const skillInstall = defineVerb({
   cli: {
     positionals: [],
     examples: [
-      'livediagram skill install --to ~/.claude/skills',
-      'livediagram skill install --to ./.agents/skills',
+      'livehuddle skill install --to ~/.claude/skills',
+      'livehuddle skill install --to ./.agents/skills',
     ],
     prints: 'the path written',
   },
@@ -82,7 +82,7 @@ export const apiCall = defineVerb({
   text: ({ text }) => [text],
   cli: {
     positionals: ['method', 'path'],
-    examples: ['livediagram api GET /documents', 'livediagram api POST /documents --body doc.json'],
+    examples: ['livehuddle api GET /documents', 'livehuddle api POST /documents --body doc.json'],
     prints: 'the response body',
   },
 });
@@ -102,7 +102,7 @@ export const authLogin = defineVerb({
   text: ({ host, account }) => [`signed in to ${host} as ${account}`],
   cli: {
     positionals: [],
-    examples: ['livediagram auth login', 'livediagram auth login --device'],
+    examples: ['livehuddle auth login', 'livehuddle auth login --device'],
     prints: 'the host and account signed in to',
   },
 });
@@ -134,7 +134,7 @@ export const authStatus = defineVerb({
     ]),
   cli: {
     positionals: [],
-    examples: ['livediagram auth status', 'livediagram auth status --json'],
+    examples: ['livehuddle auth status', 'livehuddle auth status --json'],
     prints: 'host, account, token, role, expires, source',
   },
 });
@@ -143,7 +143,7 @@ export const authLogout = defineVerb({
   id: 'auth.logout',
   summary: 'Revoke the stored token and forget it',
   description:
-    "Revokes the stored token with the api, then forgets it. A token from LIVEDIAGRAM_TOKEN is not the CLI's to revoke.",
+    "Revokes the stored token with the api, then forgets it. A token from LIVEHUDDLE_TOKEN is not the CLI's to revoke.",
   behaviour: 'destructive',
   local: true,
   input: z.object({}),
@@ -151,7 +151,7 @@ export const authLogout = defineVerb({
   text: ({ host }) => [`signed out of ${host}`],
   cli: {
     positionals: [],
-    examples: ['livediagram auth logout', 'livediagram --profile work auth logout'],
+    examples: ['livehuddle auth logout', 'livehuddle --profile work auth logout'],
     prints: 'the host signed out of',
   },
 });
@@ -171,8 +171,8 @@ const telemetryVerb = (on: boolean) =>
     cli: {
       positionals: [],
       examples: [
-        `livediagram telemetry ${on ? 'on' : 'off'}`,
-        `LIVEDIAGRAM_TELEMETRY=0 livediagram document ls`,
+        `livehuddle telemetry ${on ? 'on' : 'off'}`,
+        `LIVEHUDDLE_TELEMETRY=0 livehuddle document ls`,
       ],
       prints: `telemetry ${on ? 'on' : 'off'}`,
     },
@@ -192,7 +192,7 @@ export const waitFor = defineVerb({
   behaviour: 'read',
   local: true,
   input: z.object({
-    doc: z.string().describe('A name, id prefix or livediagram URL'),
+    doc: z.string().describe('A name, id prefix or livehuddle URL'),
     for: z.enum(['comment', 'change']).describe('What to wait for: a comment, or a change'),
     tab: z.string().optional().describe('A tab name or id prefix; every tab when omitted'),
     timeout: z.coerce.number().positive().optional().describe('Seconds to wait at most'),
@@ -204,8 +204,8 @@ export const waitFor = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livediagram wait "Shop" --for comment',
-      'livediagram wait 3f9c --for change --timeout 600',
+      'livehuddle wait "Shop" --for comment',
+      'livehuddle wait 3f9c --for change --timeout 600',
     ],
     prints: 'the comment\u2019s thread, the change, or that nothing came',
   },
@@ -219,7 +219,7 @@ export const watch = defineVerb({
   behaviour: 'read',
   local: true,
   input: z.object({
-    doc: z.string().describe('A name, id prefix or livediagram URL'),
+    doc: z.string().describe('A name, id prefix or livehuddle URL'),
     tab: z.string().optional().describe('A tab name or id prefix; every tab when omitted'),
   }),
   output: streamOutput,
@@ -227,7 +227,7 @@ export const watch = defineVerb({
   exitCode: ({ exit }) => exit,
   cli: {
     positionals: ['doc'],
-    examples: ['livediagram watch "Shop"', 'livediagram watch 3f9c --tab Flow --json'],
+    examples: ['livehuddle watch "Shop"', 'livehuddle watch 3f9c --tab Flow --json'],
     prints: 'one line per event; --json one object a line',
   },
   // Each event went out as it came; nothing is left to print at the end.
@@ -240,11 +240,11 @@ export const pull = defineVerb({
   files: true,
   summary: 'Write a document to a file, to edit and push back',
   description:
-    'Writes <slug>.livediagram.json: the document, every tab and each tab\u2019s revision, in the format the editor imports. --svg adds a drawing per tab. Prints the paths written.',
+    'Writes <slug>.livehuddle.json: the document, every tab and each tab\u2019s revision, in the format the editor imports. --svg adds a drawing per tab. Prints the paths written.',
   behaviour: 'read',
   local: true,
   input: z.object({
-    doc: z.string().describe('A name, id prefix or livediagram URL'),
+    doc: z.string().describe('A name, id prefix or livehuddle URL'),
     to: z.string().optional().describe('The directory to write to; the current one by default'),
     svg: z.boolean().optional().describe('Also write each tab as an SVG drawing'),
     force: z
@@ -257,7 +257,7 @@ export const pull = defineVerb({
   quiet: ({ paths }) => paths,
   cli: {
     positionals: ['doc'],
-    examples: ['livediagram pull "Shop"', 'livediagram pull 3f9c --to docs --svg'],
+    examples: ['livehuddle pull "Shop"', 'livehuddle pull 3f9c --to docs --svg'],
     prints: 'the paths written',
   },
 });
@@ -271,7 +271,7 @@ export const push = defineVerb({
   behaviour: 'write',
   local: true,
   input: z.object({
-    file: z.string().describe('A file written by livediagram pull'),
+    file: z.string().describe('A file written by livehuddle pull'),
     dryRun: writeFlags.dryRun,
     summary: writeFlags.summary,
     waitHeld: writeFlags.waitHeld,
@@ -283,8 +283,8 @@ export const push = defineVerb({
   cli: {
     positionals: ['file'],
     examples: [
-      'livediagram push shop.livediagram.json',
-      'livediagram push shop.livediagram.json --dry-run',
+      'livehuddle push shop.livehuddle.json',
+      'livehuddle push shop.livehuddle.json --dry-run',
     ],
     prints: 'each changed tab\u2019s result lines, or ! stale <tab>',
   },
@@ -298,7 +298,7 @@ export const exportAll = defineVerb({
   files: true,
   summary: 'Every document to files, for backups and docs',
   description:
-    'Writes every document the token can read: <slug>.livediagram.json (json, the default), and per tab <slug>/<tab-slug>.svg, .png, .mmd or .md. Prints the paths written, then the totals.',
+    'Writes every document the token can read: <slug>.livehuddle.json (json, the default), and per tab <slug>/<tab-slug>.svg, .png, .mmd or .md. Prints the paths written, then the totals.',
   behaviour: 'read',
   local: true,
   input: z.object({
@@ -319,8 +319,8 @@ export const exportAll = defineVerb({
   cli: {
     positionals: [],
     examples: [
-      'livediagram export --all --to backup',
-      'livediagram export --all --to docs --format svg,md',
+      'livehuddle export --all --to backup',
+      'livehuddle export --all --to docs --format svg,md',
     ],
     prints: 'the paths written, then <n> documents · <m> files',
   },
@@ -341,7 +341,7 @@ export const tabRender = defineVerb({
   behaviour: 'read',
   local: true,
   input: z.object({
-    doc: z.string().describe('A name, id prefix or livediagram URL'),
+    doc: z.string().describe('A name, id prefix or livehuddle URL'),
     tab: z.string().optional().describe('A tab name or id prefix; the first tab when omitted'),
     ...pictureFlags,
   }),
@@ -350,8 +350,8 @@ export const tabRender = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livediagram tab render "Shop" --png shop.png',
-      'livediagram tab render 3f9c --tab Flow --svg flow.svg',
+      'livehuddle tab render "Shop" --png shop.png',
+      'livehuddle tab render 3f9c --tab Flow --svg flow.svg',
     ],
     prints: '<path>  <width>×<height> · <n> KB',
   },
@@ -374,8 +374,8 @@ export const graphRender = defineVerb({
   cli: {
     positionals: ['file'],
     examples: [
-      'livediagram graph render arch.json --png arch.png',
-      'livediagram graph render flow.mmd --svg flow.svg',
+      'livehuddle graph render arch.json --png arch.png',
+      'livehuddle graph render flow.mmd --svg flow.svg',
     ],
     prints: '<path>  <width>×<height> · <n> KB',
   },

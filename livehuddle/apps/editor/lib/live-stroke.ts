@@ -10,7 +10,7 @@ import {
   type PenPointerKind,
   type PenStroke,
   type RecognisedShape,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { adjustRecognised, shiftRatio } from './recognition-preview';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 

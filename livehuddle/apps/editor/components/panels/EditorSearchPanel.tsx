@@ -133,7 +133,7 @@ export function EditorSearchPanel() {
       workspace={WORKSPACE}
       onSelectWorkspaceItem={(item) => {
         // One of this app's opens here, as a pick from its own lists does; another app's opens in that app.
-        if (item.app === 'livediagram') openDocument(item.id, item.sharedVia ?? undefined);
+        if (item.app === 'livehuddle') openDocument(item.id, item.sharedVia ?? undefined);
         else assignAppLocation(itemHref({ ...item, kind: APP_KINDS[item.app] }));
       }}
       helpItems={HELP_SEARCH_ITEMS}

@@ -1,5 +1,5 @@
 import { ContactPage, contactMetadata } from '@liveworkspace/help-site/components/ContactPage';
-import { REPO_URL } from '@livediagram/ui';
+import { REPO_URL } from '@livehuddle/ui';
 import { site } from '@/lib/help-site';
 
 export const metadata = contactMetadata(site);

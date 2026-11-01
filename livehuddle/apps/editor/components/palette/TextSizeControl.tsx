@@ -16,9 +16,9 @@ import {
   TEXT_PX_MIN,
   type TextSize,
   type TextSizePreset,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
-import { Tooltip } from '@livediagram/ui';
+import { Tooltip } from '@livehuddle/ui';
 import { PreviewSliderRow } from '@liveworkspace/workbench/components/primitives/PreviewSliderRow';
 import { ScaleIcon } from './palette-icons';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';

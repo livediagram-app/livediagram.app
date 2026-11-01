@@ -10,8 +10,8 @@ import {
   type ElementDelta,
   type ElementOp,
   type Tab,
-} from '@livediagram/document';
-import type { RoomOp } from '@livediagram/api-schema';
+} from '@livehuddle/document';
+import type { RoomOp } from '@livehuddle/api-schema';
 import { META_SKIP, mergeRemoteTab, mergeRemoteVote } from './tab-broadcast-ops';
 
 // The document-changing room ops, as a pure function over a tab list.

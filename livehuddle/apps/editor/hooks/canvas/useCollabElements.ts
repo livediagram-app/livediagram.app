@@ -8,7 +8,7 @@
 // don't) and because they share one rule the rest of the editor doesn't — see
 // `patchElement` below.
 
-import { createSticky } from '@livediagram/document';
+import { createSticky } from '@livehuddle/document';
 import {
   checklistDeltaFor,
   clampAgendaMinutes,
@@ -19,7 +19,7 @@ import {
   type ShapeElement,
   type Tab,
   type TimerMode,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { participantKey, uniqueParticipants, type Participant } from '@/lib/identity';
 import { track } from '@/lib/telemetry';
 import type { ApplyElementDelta } from '@/hooks/collab/useElementDeltas';

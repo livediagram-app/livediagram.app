@@ -24,7 +24,7 @@ import {
   createShape,
   createText,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   DEPENDENCIES,
   LAUNCH_WEEK,

@@ -11,7 +11,7 @@ import {
   type ArrowElement,
   type Element,
   type Endpoint,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import {
   ALIGN_SNAP_THRESHOLD,
   ARROW_SNAP_REVEAL_PX,

@@ -1,6 +1,6 @@
 // Which images a canvas may serve (docs/specs/009-elements/images.md, "Placement grants"), answered in the canvas's
 // own SQLite (its Durable Object, document-schema.ts `image_owners`, `image_grants`) by @liveworkspace/index-app's
-// placement grants. livediagram supplies what only it knows: how to ask the media service who owns an image, how the
+// placement grants. livehuddle supplies what only it knows: how to ask the media service who owns an image, how the
 // service names a person (a guest's id is a one-way hash there: media.ts mediaOwner), and a team's joined people
 // (liveworkspace accounts). See the kit's image-grants.ts for the rules.
 

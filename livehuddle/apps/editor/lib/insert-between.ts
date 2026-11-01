@@ -7,7 +7,7 @@ import {
   type Element,
   type ElementId,
   type EsTimeline,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 // Inserting a note BETWEEN two notes (docs/specs/021-event-storming/event-storming.md). An event-storming wall is a
 // left-to-right timeline, so "this happened before that" is the whole

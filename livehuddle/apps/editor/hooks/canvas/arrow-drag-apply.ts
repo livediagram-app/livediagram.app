@@ -30,7 +30,7 @@ import {
   type BendPlan,
   type DistributionGuide,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';
 import { repinnedArrow } from './arrow-repin';
 import { resolveArrowControlFrame, resolveArrowLabelFrame } from './arrow-control-resolve';

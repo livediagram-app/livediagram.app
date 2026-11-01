@@ -1,16 +1,16 @@
 // The whole-document envelope (liveworkspace/docs/specs/005-drive/drive.md, "The file"):
-// the contents of a `.livediagram` file in Google Drive, and what "Import a
-// copy" reads back. The sibling of the per-tab `livediagram.tab` envelope in
+// the contents of a `.livehuddle` file in Google Drive, and what "Import a
+// copy" reads back. The sibling of the per-tab `livehuddle.tab` envelope in
 // export-tab-text.ts: same shape (kind, schemaVersion, exportedAt), one
 // document with every tab, each tab's per-document folder, and the slide deck.
-// Images stay references to livediagram's image store; no bytes are embedded. A file written while livediagram had
+// Images stay references to livehuddle's image store; no bytes are embedded. A file written while livehuddle had
 // Plan may also carry its item, type and sheet stores: they are read past and left behind.
 
 import { remapTabLinks } from './duplicate';
 import type { Tab } from './index';
 import type { StoredPresentation } from './slide-deck';
 
-export const DOCUMENT_ENVELOPE_KIND = 'livediagram.document';
+export const DOCUMENT_ENVELOPE_KIND = 'livehuddle.document';
 export const DOCUMENT_SCHEMA_VERSION = 1;
 
 export type EnvelopeTab = Tab & { folder?: string };

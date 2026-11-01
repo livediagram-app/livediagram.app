@@ -18,8 +18,8 @@ export const CANVAS = '[data-canvas-a11y-root]';
 export async function darkVisitor(page: Page, owner?: string): Promise<void> {
   if (owner) await adoptGuest(page, owner);
   await page.addInitScript(() => {
-    localStorage.setItem('livediagram:v2:ui-mode', 'dark');
-    localStorage.setItem('livediagram:v2:name-confirmed', '1');
+    localStorage.setItem('livehuddle:v2:ui-mode', 'dark');
+    localStorage.setItem('livehuddle:v2:name-confirmed', '1');
   });
 }
 
@@ -111,6 +111,6 @@ export async function freshDarkPage(browser: Browser, deviceScaleFactor = 1): Pr
     deviceScaleFactor,
     baseURL: test.info().project.use.baseURL,
   });
-  await context.addInitScript(() => localStorage.setItem('livediagram:v2:ui-mode', 'dark'));
+  await context.addInitScript(() => localStorage.setItem('livehuddle:v2:ui-mode', 'dark'));
   return context.newPage();
 }

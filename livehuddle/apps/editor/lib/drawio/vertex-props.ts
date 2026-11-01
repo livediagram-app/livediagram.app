@@ -20,7 +20,7 @@ import {
   type TextAlignY,
   type TextRun,
   type TextSize,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import type { ReportTally } from './notes';
 import type { DrawioCell } from './cells';
 import { readFill, readInk, type DrawioColour } from './colour';
@@ -39,7 +39,7 @@ import type { DrawioStyle } from './style';
 
 export type ConvertContext = {
   tally: ReportTally;
-  /** draw.io page id → the livediagram tab it became. */
+  /** draw.io page id → the livehuddle tab it became. */
   pageIdToTab: ReadonlyMap<string, string>;
   /** Whether a cell overlaps another vertex (D41); absent means it overlaps nothing. */
   overlaps?: (cellId: string) => boolean;
@@ -110,7 +110,7 @@ export function arrowheadSizePreset(markerSize: number, strokeWidth: number): Ar
 const SKETCHY = ['comic', 'architects daughter', 'xkcd', 'caveat', 'indie flower'];
 const MONO = ['mono', 'courier', 'consol'];
 
-/** A draw.io font family as a livediagram font id, when one matches. */
+/** A draw.io font family as a livehuddle font id, when one matches. */
 export function fontIdFor(family: string | undefined): string | undefined {
   const first =
     family

@@ -1,4 +1,4 @@
-// Phone notifications from livediagram (docs/specs/014-identity/phone-notifications.md): which comment or assignment
+// Phone notifications from livehuddle (docs/specs/014-identity/phone-notifications.md): which comment or assignment
 // reaches whom, and the link a tap opens. The rules every app shares are @liveworkspace/index-app's createPusher; the
 // sending is accounts' (sendPush). Every call here runs off the request's path and never throws into it.
 
@@ -9,12 +9,7 @@ import {
   type PushThread,
 } from '@liveworkspace/index-app';
 import { isAccountId, sendPush } from '@liveworkspace/auth-client';
-import {
-  MENTIONS_MAX,
-  type Comment,
-  type CommentThread,
-  type Element,
-} from '@livediagram/document';
+import { MENTIONS_MAX, type Comment, type CommentThread, type Element } from '@livehuddle/document';
 import { accountCredentials } from '../auth/accounts';
 import { appBaseUrl } from '../email/client';
 import { requestGrant } from '../index-service';

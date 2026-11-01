@@ -39,13 +39,13 @@ function makeEnv() {
 }
 
 const dispatch = (path: string, env: Env) =>
-  router.fetch(new Request(`https://www.livediagram.app${path}`), env);
+  router.fetch(new Request(`https://www.livehuddle.app${path}`), env);
 
 describe('production dispatch (service bindings)', () => {
   it('forwards /api/* to the api worker with the prefix KEPT', async () => {
     const { env, api } = makeEnv();
     await dispatch('/api/documents/abc', env);
-    expect(api.urls).toEqual(['https://www.livediagram.app/api/documents/abc']);
+    expect(api.urls).toEqual(['https://www.livehuddle.app/api/documents/abc']);
   });
 
   it("sends /api/index/* to the index, not the api, without this site's cookies", async () => {
@@ -57,13 +57,13 @@ describe('production dispatch (service bindings)', () => {
     });
     try {
       const res = await router.fetch(
-        new Request('https://www.livediagram.app/api/index/items?app=livediagram', {
+        new Request('https://www.livehuddle.app/api/index/items?app=livehuddle', {
           headers: { Cookie: 'ld_signed_in=1', Authorization: 'Bearer t' },
         }),
         { ...env, INDEX_ORIGIN: 'https://index.test' },
       );
       expect(await res.text()).toBe('index');
-      expect(seen[0]!.url).toBe('https://index.test/api/index/items?app=livediagram');
+      expect(seen[0]!.url).toBe('https://index.test/api/index/items?app=livehuddle');
       expect(seen[0]!.headers.get('Cookie')).toBeNull();
       expect(seen[0]!.headers.get('Authorization')).toBe('Bearer t');
       expect(api.urls).toEqual([]);
@@ -78,7 +78,7 @@ describe('production dispatch (service bindings)', () => {
     try {
       const { env, api } = makeEnv();
       await router.fetch(
-        new Request('https://www.livediagram.app/api/drive/marks', {
+        new Request('https://www.livehuddle.app/api/drive/marks', {
           headers: { Authorization: 'Bearer t', Cookie: 'a=b' },
         }),
         { ...env, DRIVE_ORIGIN: 'http://127.0.0.1:3011' },
@@ -101,13 +101,13 @@ describe('production dispatch (service bindings)', () => {
   it('strips /live off the asset-prefix requests for the editor worker', async () => {
     const { env, live } = makeEnv();
     await dispatch('/live/_next/static/chunk.js', env);
-    expect(live.urls).toEqual(['https://www.livediagram.app/_next/static/chunk.js']);
+    expect(live.urls).toEqual(['https://www.livehuddle.app/_next/static/chunk.js']);
   });
 
   it('strips the basePath for help, keeping the query', async () => {
     const { env, help } = makeEnv();
     await dispatch('/help/canvas/themes/', env);
-    expect(help.urls).toEqual(['https://www.livediagram.app/canvas/themes/']);
+    expect(help.urls).toEqual(['https://www.livehuddle.app/canvas/themes/']);
   });
 
   it("puts the prefix back on a stripped app's own redirect, keeping its query", async () => {
@@ -138,16 +138,16 @@ describe('production dispatch (service bindings)', () => {
   it('strips the basePath for Community (docs/specs/025-community/community.md)', async () => {
     const { env, community, marketing } = makeEnv();
     await dispatch('/community/post/?id=ABCDEFGH23', env);
-    expect(community.urls).toEqual(['https://www.livediagram.app/post/?id=ABCDEFGH23']);
+    expect(community.urls).toEqual(['https://www.livehuddle.app/post/?id=ABCDEFGH23']);
     await dispatch('/community', env);
-    expect(community.urls[1]).toBe('https://www.livediagram.app/');
+    expect(community.urls[1]).toBe('https://www.livehuddle.app/');
     expect(marketing.urls).toEqual([]);
   });
 
   it('a bare stripped prefix forwards as the root path', async () => {
     const { env, help } = makeEnv();
     await dispatch('/help', env);
-    expect(help.urls).toEqual(['https://www.livediagram.app/']);
+    expect(help.urls).toEqual(['https://www.livehuddle.app/']);
   });
 
   // docs/specs/017-telemetry/telemetry.md: the dashboard is liveworkspace's, filtered to this app.
@@ -157,13 +157,13 @@ describe('production dispatch (service bindings)', () => {
       const res = await dispatch(path, env);
       expect(res.status, path).toBe(301);
       expect(res.headers.get('Location'), path).toBe(
-        'https://www.liveworkspace.app/telemetry?app=livediagram.app',
+        'https://www.liveworkspace.app/telemetry?app=livehuddle.app',
       );
     }
     expect(marketing.urls).toEqual([]);
     const staging = await dispatch('/telemetry', { ...env, DEPLOY_ENV: 'staging' });
     expect(staging.headers.get('Location')).toBe(
-      'https://staging.liveworkspace.app/telemetry?app=livediagram.app',
+      'https://staging.liveworkspace.app/telemetry?app=livehuddle.app',
     );
   });
 
@@ -172,15 +172,15 @@ describe('production dispatch (service bindings)', () => {
     await dispatch('/document/abc123', env);
     await dispatch('/new?blank=1', env);
     expect(live.urls).toEqual([
-      'https://www.livediagram.app/document/abc123',
-      'https://www.livediagram.app/new?blank=1',
+      'https://www.livehuddle.app/document/abc123',
+      'https://www.livehuddle.app/new?blank=1',
     ]);
   });
 
   it("routes the editor app's root-served icon to the editor worker", async () => {
     const { env, live } = makeEnv();
     await dispatch('/icon.svg', env);
-    expect(live.urls).toEqual(['https://www.livediagram.app/icon.svg']);
+    expect(live.urls).toEqual(['https://www.livehuddle.app/icon.svg']);
   });
 
   it('serves the licences page and its texts from marketing', async () => {
@@ -189,8 +189,8 @@ describe('production dispatch (service bindings)', () => {
     await dispatch('/licences', env);
     await dispatch('/licences/texts/0123456789abcdef.txt', env);
     expect(marketing.urls).toEqual([
-      'https://www.livediagram.app/licences',
-      'https://www.livediagram.app/licences/texts/0123456789abcdef.txt',
+      'https://www.livehuddle.app/licences',
+      'https://www.livehuddle.app/licences/texts/0123456789abcdef.txt',
     ]);
   });
 
@@ -209,10 +209,10 @@ describe('local-dev dispatch (origin proxy)', () => {
     const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
     vi.stubGlobal('fetch', fetchMock);
     try {
-      await dispatch('/help/data', { HELP_ORIGIN: 'http://localhost:3104' });
+      await dispatch('/help/data', { HELP_ORIGIN: 'http://localhost:3504' });
       const req = fetchMock.mock.calls[0]![0];
       // Dev servers serve their own basePath, so no strip on this path.
-      expect(req.url).toBe('http://localhost:3104/help/data');
+      expect(req.url).toBe('http://localhost:3504/help/data');
     } finally {
       vi.unstubAllGlobals();
     }
@@ -255,7 +255,7 @@ describe('bare help-article paths', () => {
     const res = await dispatch('/privacy-and-security/data-privacy/', env);
     expect(res.status).toBe(308);
     expect(res.headers.get('location')).toBe(
-      'https://www.livediagram.app/help/privacy-and-security/data-privacy/',
+      'https://www.livehuddle.app/help/privacy-and-security/data-privacy/',
     );
     // Never reached marketing's 404, which is what it used to do.
     expect(marketing.urls).toEqual([]);
@@ -286,7 +286,7 @@ describe('bare help-article paths', () => {
     // The spec's table is prose, so it kept `/drive/*` for weeks after the old Drive mirror's pages left the
     // editor. Pin its row to the set the router actually routes by. `explorer` has its own row (liveworkspace's), and
     // so does `form` (old form links, sent on to liveplanner before the editor sees them).
-    const { LIVE_ROUTE_SEGMENTS } = await import('@livediagram/api-schema');
+    const { LIVE_ROUTE_SEGMENTS } = await import('@livehuddle/api-schema');
     const spec = readFileSync(
       fileURLToPath(
         new URL('../../../docs/specs/016-platform/router-app.md', import.meta.url).href,
@@ -306,7 +306,7 @@ describe('bare help-article paths', () => {
     // The list in index.ts is hand-kept; this is what stops it drifting when
     // the help centre grows a category. `explorer` is the one exclusion: the
     // editor app owns that segment.
-    const { categories } = await import('@livediagram/help-registry');
+    const { categories } = await import('@livehuddle/help-registry');
     expect(categories.length).toBeGreaterThan(15);
     const missed: string[] = [];
     for (const category of categories) {
@@ -448,8 +448,8 @@ describe("liveworkspace's previews under this address (liveworkspace/docs/specs/
     vi.stubGlobal('fetch', fetchMock);
     try {
       const { env, api } = makeEnv();
-      await router.fetch(new Request('https://www.livediagram.app/api/previews/items/d1?v=5'), env);
-      await router.fetch(new Request('https://www.livediagram.app/api/share/ABC/image.png'), {
+      await router.fetch(new Request('https://www.livehuddle.app/api/previews/items/d1?v=5'), env);
+      await router.fetch(new Request('https://www.livehuddle.app/api/share/ABC/image.png'), {
         ...env,
         PREVIEWS_ORIGIN: 'http://127.0.0.1:8792',
       });
@@ -458,8 +458,8 @@ describe("liveworkspace's previews under this address (liveworkspace/docs/specs/
         'http://127.0.0.1:8792/api/previews/share/ABC/image.png',
       ]);
       // What a link opens stays the api's.
-      await router.fetch(new Request('https://www.livediagram.app/api/share/ABC'), env);
-      expect(api.urls).toEqual(['https://www.livediagram.app/api/share/ABC']);
+      await router.fetch(new Request('https://www.livehuddle.app/api/share/ABC'), env);
+      expect(api.urls).toEqual(['https://www.livehuddle.app/api/share/ABC']);
     } finally {
       vi.unstubAllGlobals();
     }
@@ -486,7 +486,7 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
         '/explorer/offline',
       ]) {
         const res = await router.fetch(
-          new Request(`https://www.livediagram.app${path}#ignored`),
+          new Request(`https://www.livehuddle.app${path}#ignored`),
           env,
         );
         expect(res.status).toBe(200);
@@ -507,14 +507,14 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
       const { env, api } = makeEnv();
       const local = { ...env, WORKSPACE_ORIGIN: 'http://localhost:3000' };
       await router.fetch(
-        new Request('https://www.livediagram.app/explorer/recent.txt?_rsc=x'),
+        new Request('https://www.livehuddle.app/explorer/recent.txt?_rsc=x'),
         local,
       );
       expect(fetchMock.mock.calls[0]![0].url).toBe(
         'http://localhost:3000/explorer/recent.txt?_rsc=x',
       );
       await router.fetch(
-        new Request('https://www.livediagram.app/api/workspace/account/people?ids=u1', {
+        new Request('https://www.livehuddle.app/api/workspace/account/people?ids=u1', {
           headers: { Authorization: 'Bearer t', Cookie: 'refresh=secret' },
         }),
         local,
@@ -540,14 +540,14 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
       await dispatch('/api/account', env);
       await dispatch('/new', env);
       expect(live.urls).toEqual([
-        'https://www.livediagram.app/_next/static/chunk.js',
-        'https://www.livediagram.app/new',
+        'https://www.livehuddle.app/_next/static/chunk.js',
+        'https://www.livehuddle.app/new',
       ]);
       expect(marketing.urls).toEqual([
-        'https://www.livediagram.app/_next/static/chunk.js',
-        'https://www.livediagram.app/explorers',
+        'https://www.livehuddle.app/_next/static/chunk.js',
+        'https://www.livehuddle.app/explorers',
       ]);
-      expect(api.urls).toEqual(['https://www.livediagram.app/api/account']);
+      expect(api.urls).toEqual(['https://www.livehuddle.app/api/account']);
       expect(fetchMock).not.toHaveBeenCalled();
     } finally {
       vi.unstubAllGlobals();
@@ -580,14 +580,14 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
     vi.stubGlobal('fetch', fetchMock);
     try {
       const { env } = makeEnv();
-      const self = await router.fetch(new Request('https://www.livediagram.app/explorer'), {
+      const self = await router.fetch(new Request('https://www.livehuddle.app/explorer'), {
         ...env,
-        WORKSPACE_ORIGIN: 'https://www.livediagram.app',
+        WORKSPACE_ORIGIN: 'https://www.livehuddle.app',
       });
       expect(self.status).toBe(508);
       const again = await router.fetch(
-        new Request('https://www.livediagram.app/explorer', {
-          headers: { 'X-Liveworkspace-Proxy': 'livediagram' },
+        new Request('https://www.livehuddle.app/explorer', {
+          headers: { 'X-Liveworkspace-Proxy': 'livehuddle' },
         }),
         env,
       );
@@ -620,9 +620,9 @@ describe('the bare domain', () => {
       '/pricing',
     ]) {
       for (const method of ['GET', 'HEAD']) {
-        const res = await on('livediagram.app', path, env, { method });
+        const res = await on('livehuddle.app', path, env, { method });
         expect(res.status, path).toBe(301);
-        expect(res.headers.get('Location'), path).toBe(`https://www.livediagram.app${path}`);
+        expect(res.headers.get('Location'), path).toBe(`https://www.livehuddle.app${path}`);
         expect(res.headers.get('Cache-Control'), path).toBe('public, max-age=86400');
       }
     }
@@ -647,10 +647,10 @@ describe('the bare domain', () => {
       '/telemetry',
       '/form/AbC123?embed=1',
     ]) {
-      const first = await on('livediagram.app', path, env);
+      const first = await on('livehuddle.app', path, env);
       expect(REDIRECTS.has(first.status), path).toBe(true);
       const next = new URL(first.headers.get('Location')!);
-      if (next.hostname !== 'www.livediagram.app') continue; // Left the site (status, telemetry): its own one hop.
+      if (next.hostname !== 'www.livehuddle.app') continue; // Left the site (status, telemetry): its own one hop.
       const second = await router.fetch(new Request(next), env);
       expect(REDIRECTS.has(second.status), `${path} -> ${next.href}`).toBe(false);
     }
@@ -658,24 +658,24 @@ describe('the bare domain', () => {
 
   it('sends an old form link straight to liveplanner, not through www. first', async () => {
     const { env } = makeEnv();
-    const res = await on('livediagram.app', '/form/AbC123?embed=1', env);
+    const res = await on('livehuddle.app', '/form/AbC123?embed=1', env);
     expect(res.headers.get('Location')).toBe('https://www.liveplanner.app/form/AbC123?embed=1');
   });
 
   it('leaves the api, the sign-in callback, WebSockets and other methods on the bare domain', async () => {
     const { env, api } = makeEnv();
-    await on('livediagram.app', '/api/auth/callback?code=1&state=2', env);
-    await on('livediagram.app', '/api/things', env, { method: 'POST', body: '{}' });
-    await on('livediagram.app', '/api/things/x/ws', env, { headers: { Upgrade: 'websocket' } });
+    await on('livehuddle.app', '/api/auth/callback?code=1&state=2', env);
+    await on('livehuddle.app', '/api/things', env, { method: 'POST', body: '{}' });
+    await on('livehuddle.app', '/api/things/x/ws', env, { headers: { Upgrade: 'websocket' } });
     expect(api.urls).toEqual([
-      'https://livediagram.app/api/auth/callback?code=1&state=2',
-      'https://livediagram.app/api/things',
-      'https://livediagram.app/api/things/x/ws',
+      'https://livehuddle.app/api/auth/callback?code=1&state=2',
+      'https://livehuddle.app/api/things',
+      'https://livehuddle.app/api/things/x/ws',
     ]);
     for (const method of ['POST', 'PUT', 'DELETE', 'OPTIONS']) {
-      expect((await on('livediagram.app', '/new', env, { method })).status, method).not.toBe(301);
+      expect((await on('livehuddle.app', '/new', env, { method })).status, method).not.toBe(301);
     }
-    expect((await on('livediagram.app', '/.well-known/security.txt', env)).status).not.toBe(301);
+    expect((await on('livehuddle.app', '/.well-known/security.txt', env)).status).not.toBe(301);
   });
 
   it('never redirects www., staging or the router’s own address, so it cannot loop or leave staging', async () => {
@@ -684,13 +684,13 @@ describe('the bare domain', () => {
     // `wrangler dev` hands a local router its production host, so local never redirects either.
     for (const DEPLOY_ENV of ['local', 'staging']) {
       expect(
-        REDIRECTS.has((await on('livediagram.app', '/new', { ...env, DEPLOY_ENV })).status),
+        REDIRECTS.has((await on('livehuddle.app', '/new', { ...env, DEPLOY_ENV })).status),
       ).toBe(false);
     }
     for (const host of [
-      'www.livediagram.app',
-      'staging.livediagram.app',
-      'livediagram-router.liveworkspace-easing509.workers.dev',
+      'www.livehuddle.app',
+      'staging.livehuddle.app',
+      'livehuddle-router.liveworkspace-easing509.workers.dev',
     ]) {
       for (const e of [env, staging]) {
         expect(REDIRECTS.has((await on(host, '/new', e)).status), host).toBe(false);

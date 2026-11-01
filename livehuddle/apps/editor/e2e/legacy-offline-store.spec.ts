@@ -15,9 +15,9 @@ test('offline documents saved before the rename survive the store upgrade', asyn
   await page.evaluate(
     () =>
       new Promise<void>((resolve, reject) => {
-        const del = indexedDB.deleteDatabase('livediagram-offline');
+        const del = indexedDB.deleteDatabase('livehuddle-offline');
         del.onsuccess = () => {
-          const req = indexedDB.open('livediagram-offline', 1);
+          const req = indexedDB.open('livehuddle-offline', 1);
           req.onupgradeneeded = () => req.result.createObjectStore('diagrams', { keyPath: 'id' });
           req.onsuccess = () => {
             const db = req.result;
@@ -47,13 +47,13 @@ test('offline documents saved before the rename survive the store upgrade', asyn
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await expect
     .poll(() =>
-      page.evaluate(() => localStorage.getItem('liveworkspace:this-browser:livediagram') ?? ''),
+      page.evaluate(() => localStorage.getItem('liveworkspace:this-browser:livehuddle') ?? ''),
     )
     .toContain('Kept through the rename');
   const stores = await page.evaluate(
     () =>
       new Promise<string[]>((resolve) => {
-        const req = indexedDB.open('livediagram-offline');
+        const req = indexedDB.open('livehuddle-offline');
         req.onsuccess = () => {
           resolve([...req.result.objectStoreNames]);
           req.result.close();

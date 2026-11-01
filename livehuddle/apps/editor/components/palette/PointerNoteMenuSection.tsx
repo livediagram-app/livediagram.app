@@ -1,6 +1,6 @@
 'use client';
 
-import { detachChip, type ShapeElement } from '@livediagram/document';
+import { detachChip, type ShapeElement } from '@livehuddle/document';
 import {
   MenuAccordionSection,
   MenuActionButton,

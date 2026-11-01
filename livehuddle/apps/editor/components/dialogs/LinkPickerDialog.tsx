@@ -6,11 +6,11 @@ import {
   Glyph,
   DialogCloseButton,
   DialogHeader,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { normaliseUrl } from '@liveworkspace/workbench/lib/url-safety';
-import type { ElementLink } from '@livediagram/document';
+import type { ElementLink } from '@livehuddle/document';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 
 // Shared link picker, styled like the import / export dialogs (centred

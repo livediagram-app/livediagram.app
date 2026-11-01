@@ -1,5 +1,5 @@
 import { useId, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
-import { editorModeDescription, editorModeLabel } from '@livediagram/document';
+import { editorModeDescription, editorModeLabel } from '@livehuddle/document';
 import {
   CheckIcon,
   EDITOR_MODE_ICONS,
@@ -9,7 +9,7 @@ import {
   clampIntoRange,
   useMenu,
   type MenuInitialFocus,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 import { MODE_SWITCH_FOCUS, type EditorModeSwitchProps } from './editor-mode-copy';
 import { MODE_TINT, MODE_TOOLS, type ModeMenuAction } from './mode-menu-copy';
 import { ModeKeyHint } from './ModeKeyHint';

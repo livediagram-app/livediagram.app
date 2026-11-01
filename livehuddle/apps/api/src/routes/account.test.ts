@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 
-// Deleting an account removes the livediagram data, then closes the liveworkspace account
+// Deleting an account removes the livehuddle data, then closes the liveworkspace account
 // (docs/specs/014-identity/auth-and-guest-access.md "Deleting an account").
 
 const { db, authClient, order } = vi.hoisted(() => {
@@ -49,7 +49,7 @@ const SIGN_IN: Partial<Env> = {
   ACCOUNTS_URL: 'https://liveworkspace.app',
   ACCOUNTS_CLIENT_ID: 'client-1',
   ACCOUNTS_CLIENT_SECRET: 's3cret',
-  API_RESOURCE: 'https://livediagram.app/api',
+  API_RESOURCE: 'https://livehuddle.app/api',
 };
 
 function remove(

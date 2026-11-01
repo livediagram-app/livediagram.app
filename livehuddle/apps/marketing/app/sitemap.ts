@@ -4,7 +4,7 @@ import { comparisonSitemap } from '@liveworkspace/comparisons';
 
 import { COMPARISONS } from '@/lib/alternatives';
 import { LANDING_SECTION_IDS } from '@/lib/landing-content';
-import { SITE_URL } from '@livediagram/ui';
+import { SITE_URL } from '@livehuddle/ui';
 
 // Required for `output: 'export'` (same reason as robots.ts):
 // route handlers must declare themselves fully static so Next

@@ -31,17 +31,17 @@ const plan = (over: Partial<PlanInput>) =>
 describe('planSync at files', () => {
   it('writes new documents at fresh paths in index order, and leaves in-step ones', async () => {
     const { actions, states } = plan({
-      scan: [await trackedFile(zeta, 'zeta.livediagram.json')],
+      scan: [await trackedFile(zeta, 'zeta.livehuddle.json')],
       coverage: coverageOf([{ ...zeta }, { ...home, folderPath: ['screens'] }]),
     });
     expect(actions).toEqual([
-      { kind: 'none', documentId: 'd-zeta', name: 'Zeta', path: 'zeta.livediagram.json' },
+      { kind: 'none', documentId: 'd-zeta', name: 'Zeta', path: 'zeta.livehuddle.json' },
       {
         kind: 'write',
         documentId: 'd-home',
         name: 'Home',
         reason: 'new',
-        path: 'screens/home.livediagram.json',
+        path: 'screens/home.livehuddle.json',
         tabs: [{ id: 'd-home-t1', name: 'Tab 1', from: null, to: 3 }],
       },
     ]);
@@ -56,7 +56,7 @@ describe('planSync at files', () => {
   it('writes a behind document at its stable path, and names a path that would now differ', async () => {
     const renamed = { ...fixtureDoc('d-home', 'Home screen', [4]) };
     const { actions } = plan({
-      scan: [await trackedFile(home, 'home.livediagram.json')],
+      scan: [await trackedFile(home, 'home.livehuddle.json')],
       coverage: coverageOf([renamed]),
       remote: facts(renamed),
     });
@@ -65,15 +65,15 @@ describe('planSync at files', () => {
         kind: 'relocate',
         documentId: 'd-home',
         name: 'Home screen',
-        path: 'home.livediagram.json',
-        to: 'home-screen.livediagram.json',
+        path: 'home.livehuddle.json',
+        to: 'home-screen.livehuddle.json',
       },
       {
         kind: 'write',
         documentId: 'd-home',
         name: 'Home screen',
         reason: 'behind',
-        path: 'home.livediagram.json',
+        path: 'home.livehuddle.json',
         tabs: [{ id: 'd-home-t1', name: 'Tab 1', from: 3, to: 4 }],
       },
     ]);
@@ -84,8 +84,8 @@ describe('planSync at files', () => {
     const b = fixtureDoc('d-bbbbbbbb2', 'Start', [1]);
     const { actions } = plan({
       scan: [
-        await trackedFile(fixtureDoc('d-aaaaaaaa1', 'One', [1]), 'one.livediagram.json'),
-        await trackedFile(fixtureDoc('d-bbbbbbbb2', 'Two', [1]), 'two.livediagram.json'),
+        await trackedFile(fixtureDoc('d-aaaaaaaa1', 'One', [1]), 'one.livehuddle.json'),
+        await trackedFile(fixtureDoc('d-bbbbbbbb2', 'Two', [1]), 'two.livehuddle.json'),
       ],
       coverage: coverageOf([a, b]),
       remote: facts(a, b),
@@ -93,19 +93,19 @@ describe('planSync at files', () => {
     const targets = actions.flatMap((x) => (x.kind === 'relocate' ? [x.to] : []));
     expect(targets).toHaveLength(2);
     expect(new Set(targets).size).toBe(2);
-    expect(targets).toContain('start.livediagram.json');
+    expect(targets).toContain('start.livehuddle.json');
   });
 
   it('steps a new document aside for a path another file holds', async () => {
     const twin = fixtureDoc('d-twin', 'Home', [1]);
     const { actions } = plan({
-      scan: [await trackedFile(home, 'home.livediagram.json')],
+      scan: [await trackedFile(home, 'home.livehuddle.json')],
       coverage: coverageOf([home, twin]),
       remote: facts(home, twin),
     });
     expect(actions.find((a) => a.documentId === 'd-twin')).toMatchObject({
       kind: 'write',
-      path: 'home-d-twin.livediagram.json',
+      path: 'home-d-twin.livehuddle.json',
     });
   });
 
@@ -113,8 +113,8 @@ describe('planSync at files', () => {
     const moved = fixtureDoc('d-zeta', 'Zeta', [1, 3]);
     const { actions } = plan({
       scan: [
-        await trackedFile(home, 'home.livediagram.json', true),
-        await trackedFile(zeta, 'zeta.livediagram.json', true),
+        await trackedFile(home, 'home.livehuddle.json', true),
+        await trackedFile(zeta, 'zeta.livehuddle.json', true),
       ],
       remote: facts(home, moved),
     });
@@ -122,14 +122,14 @@ describe('planSync at files', () => {
       {
         kind: 'refuse',
         documentId: 'd-home',
-        path: 'home.livediagram.json',
+        path: 'home.livehuddle.json',
         reason: 'ahead',
         detail: null,
       },
       {
         kind: 'refuse',
         documentId: 'd-zeta',
-        path: 'zeta.livediagram.json',
+        path: 'zeta.livehuddle.json',
         reason: 'diverged',
         detail: null,
       },
@@ -141,9 +141,9 @@ describe('planSync at files', () => {
     const other = fixtureDoc('d-other', 'Other', [1]);
     const { actions } = plan({
       scan: [
-        await trackedFile(home, 'home.livediagram.json'),
-        await trackedFile(zeta, 'zeta.livediagram.json', true),
-        await trackedFile(other, 'other.livediagram.json'),
+        await trackedFile(home, 'home.livehuddle.json'),
+        await trackedFile(zeta, 'zeta.livehuddle.json', true),
+        await trackedFile(other, 'other.livehuddle.json'),
       ],
       coverage: coverageOf([home]),
       remote: new Map<string, RemoteFact>([
@@ -157,19 +157,19 @@ describe('planSync at files', () => {
         kind: 'remove',
         documentId: 'd-home',
         name: 'Home',
-        path: 'home.livediagram.json',
+        path: 'home.livehuddle.json',
         reason: 'trashed',
       },
       {
         kind: 'report',
         reason: 'unreadable',
         documentId: 'd-other',
-        path: 'other.livediagram.json',
+        path: 'other.livehuddle.json',
       },
       {
         kind: 'refuse',
         documentId: 'd-zeta',
-        path: 'zeta.livediagram.json',
+        path: 'zeta.livehuddle.json',
         reason: 'gone-changed',
         detail: null,
       },
@@ -178,7 +178,7 @@ describe('planSync at files', () => {
 
   it('judges nothing outside coverage when the covered folder was unreadable (RL6)', async () => {
     const { actions } = plan({
-      scan: [await trackedFile(zeta, 'zeta.livediagram.json')],
+      scan: [await trackedFile(zeta, 'zeta.livehuddle.json')],
       coverage: coverageOf([home], { id: 'f1', found: false }),
     });
     expect(actions.map((a) => [a.kind, a.documentId])).toEqual([
@@ -212,21 +212,21 @@ describe('planSync at files', () => {
 
   it('refuses or reports every other file class, and writes no third file for a duplicated document', async () => {
     const scan: ScannedFile[] = [
-      { class: 'conflicted', path: 'a.livediagram.json' },
-      { class: 'invalid', path: 'b.livediagram.json', message: 'not JSON' },
-      { class: 'local-new', path: 'c.livediagram.json', documentId: 'd-new', name: 'New' },
-      { class: 'foreign-host', path: 'd.livediagram.json', host: 'https://self.example' },
+      { class: 'conflicted', path: 'a.livehuddle.json' },
+      { class: 'invalid', path: 'b.livehuddle.json', message: 'not JSON' },
+      { class: 'local-new', path: 'c.livehuddle.json', documentId: 'd-new', name: 'New' },
+      { class: 'foreign-host', path: 'd.livehuddle.json', host: 'https://self.example' },
       {
         class: 'duplicate',
-        path: 'e.livediagram.json',
+        path: 'e.livehuddle.json',
         documentId: 'd-home',
-        other: 'f.livediagram.json',
+        other: 'f.livehuddle.json',
       },
       {
         class: 'duplicate',
-        path: 'f.livediagram.json',
+        path: 'f.livehuddle.json',
         documentId: 'd-home',
-        other: 'e.livediagram.json',
+        other: 'e.livehuddle.json',
       },
     ];
     const { actions } = plan({ scan, coverage: coverageOf([home]), remote: facts(home) });
@@ -234,46 +234,46 @@ describe('planSync at files', () => {
       {
         kind: 'refuse',
         documentId: null,
-        path: 'a.livediagram.json',
+        path: 'a.livehuddle.json',
         reason: 'conflicted',
         detail: null,
       },
       {
         kind: 'refuse',
         documentId: null,
-        path: 'b.livediagram.json',
+        path: 'b.livehuddle.json',
         reason: 'invalid',
         detail: 'not JSON',
       },
-      { kind: 'report', reason: 'local-new', documentId: null, path: 'c.livediagram.json' },
+      { kind: 'report', reason: 'local-new', documentId: null, path: 'c.livehuddle.json' },
       {
         kind: 'refuse',
         documentId: null,
-        path: 'd.livediagram.json',
+        path: 'd.livehuddle.json',
         reason: 'foreign-host',
         detail: 'https://self.example',
       },
       {
         kind: 'refuse',
         documentId: 'd-home',
-        path: 'e.livediagram.json',
+        path: 'e.livehuddle.json',
         reason: 'duplicate',
-        detail: 'f.livediagram.json',
+        detail: 'f.livehuddle.json',
       },
       {
         kind: 'refuse',
         documentId: 'd-home',
-        path: 'f.livediagram.json',
+        path: 'f.livehuddle.json',
         reason: 'duplicate',
-        detail: 'e.livediagram.json',
+        detail: 'e.livehuddle.json',
       },
     ]);
   });
 
   it('acts on the narrowed documents and files only, and on nothing without an answer', async () => {
     const scan: ScannedFile[] = [
-      await trackedFile(zeta, 'zeta.livediagram.json', true),
-      { class: 'conflicted', path: 'a.livediagram.json' },
+      await trackedFile(zeta, 'zeta.livehuddle.json', true),
+      { class: 'conflicted', path: 'a.livehuddle.json' },
     ];
     const narrowed = plan({
       scan,
@@ -284,10 +284,10 @@ describe('planSync at files', () => {
     const byPath = plan({
       scan,
       remote: facts(zeta),
-      scope: { documents: new Set(), paths: new Set(['zeta.livediagram.json']) },
+      scope: { documents: new Set(), paths: new Set(['zeta.livehuddle.json']) },
     });
     expect(byPath.actions.map((a) => [a.kind, 'path' in a ? a.path : null])).toEqual([
-      ['refuse', 'zeta.livediagram.json'],
+      ['refuse', 'zeta.livehuddle.json'],
     ]);
   });
 });
@@ -302,8 +302,8 @@ describe('planSync at index and none', () => {
     const { actions } = plan({
       level: 'index',
       scan: [
-        await trackedFile(zeta, 'zeta.livediagram.json'),
-        await trackedFile(home, 'home.livediagram.json', true),
+        await trackedFile(zeta, 'zeta.livehuddle.json'),
+        await trackedFile(home, 'home.livehuddle.json', true),
       ],
       recorded,
       remote: new Map<string, RemoteFact>([...facts(home, zeta), ['d-gone', { kind: 'trashed' }]]),
@@ -329,11 +329,11 @@ describe('planSync at index and none', () => {
           { id: 'd-zeta-t2', name: 'Tab 2', from: null, to: 2 },
         ],
       },
-      { kind: 'lower', documentId: 'd-zeta', name: 'Zeta', path: 'zeta.livediagram.json' },
+      { kind: 'lower', documentId: 'd-zeta', name: 'Zeta', path: 'zeta.livehuddle.json' },
       {
         kind: 'refuse',
         documentId: 'd-home',
-        path: 'home.livediagram.json',
+        path: 'home.livehuddle.json',
         reason: 'lowered-changed',
         detail: 'index',
       },
@@ -380,9 +380,9 @@ describe('a broken file at a document’s mirror path', () => {
     const twin = fixtureDoc('d-twin', 'Home', [2]);
     const { actions, states } = plan({
       scan: [
-        { class: 'conflicted', path: 'zeta.livediagram.json' },
-        await trackedFile(fixtureDoc('d-other', 'Home', [1]), 'home.livediagram.json'),
-        { class: 'invalid', path: 'home-d-twin.livediagram.json', message: 'not JSON' },
+        { class: 'conflicted', path: 'zeta.livehuddle.json' },
+        await trackedFile(fixtureDoc('d-other', 'Home', [1]), 'home.livehuddle.json'),
+        { class: 'invalid', path: 'home-d-twin.livehuddle.json', message: 'not JSON' },
       ],
       coverage: coverageOf([zeta, twin]),
       remote: facts(zeta, twin),
@@ -392,7 +392,7 @@ describe('a broken file at a document’s mirror path', () => {
         kind: 'held',
         documentId: 'd-twin',
         name: 'Home',
-        path: 'home-d-twin.livediagram.json',
+        path: 'home-d-twin.livehuddle.json',
         broken: 'invalid',
         message: 'not JSON',
       },
@@ -400,7 +400,7 @@ describe('a broken file at a document’s mirror path', () => {
         kind: 'held',
         documentId: 'd-zeta',
         name: 'Zeta',
-        path: 'zeta.livediagram.json',
+        path: 'zeta.livehuddle.json',
         broken: 'conflicted',
         message: null,
       },
@@ -415,8 +415,8 @@ describe('a new document whose every path another document holds', () => {
     const twin = fixtureDoc('d-twin', 'Home', [2]);
     const { actions } = plan({
       scan: [
-        await trackedFile(fixtureDoc('d-a', 'Home', [1]), 'home.livediagram.json'),
-        await trackedFile(fixtureDoc('d-b', 'Home', [1]), 'home-d-twin.livediagram.json'),
+        await trackedFile(fixtureDoc('d-a', 'Home', [1]), 'home.livehuddle.json'),
+        await trackedFile(fixtureDoc('d-b', 'Home', [1]), 'home-d-twin.livehuddle.json'),
       ],
       coverage: coverageOf([twin]),
       remote: facts(twin),
@@ -425,7 +425,7 @@ describe('a new document whose every path another document holds', () => {
       expect.objectContaining({
         kind: 'write',
         documentId: 'd-twin',
-        path: 'home-d-twin.livediagram.json',
+        path: 'home-d-twin.livehuddle.json',
       }),
     );
   });

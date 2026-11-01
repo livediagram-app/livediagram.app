@@ -1,7 +1,7 @@
 // What a host offers (blueprint "Capabilities", CLI8): from GET <host>/api/capabilities, cached an hour per
 // profile. An absent field reads as the older worker meant it.
 
-import type { CapabilitiesResponse } from '@livediagram/api-schema';
+import type { CapabilitiesResponse } from '@livehuddle/api-schema';
 import type { DebugLog } from '../debug';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
@@ -71,9 +71,9 @@ export async function loadCapabilities(
   if (typeof capabilities !== 'object' || capabilities === null)
     throw new CliError({
       exit: EXIT.failure,
-      code: 'not_livediagram',
-      message: `${profile.host} does not answer as a livediagram host`,
-      hint: 'check the host: --host https://<your livediagram>',
+      code: 'not_livehuddle',
+      message: `${profile.host} does not answer as a livehuddle host`,
+      hint: 'check the host: --host https://<your livehuddle>',
     });
   const entry: CacheEntry = {
     fetchedAt: io.now(),

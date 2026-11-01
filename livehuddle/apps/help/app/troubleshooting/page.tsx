@@ -7,7 +7,7 @@ import { site } from '@/lib/help-site';
 const COPY = {
   title: 'Troubleshooting',
   description:
-    'Solutions to common problems with the livediagram editor and real-time collaboration.',
+    'Solutions to common problems with the livehuddle editor and real-time collaboration.',
   lede: 'Something not working? Start here.',
 };
 

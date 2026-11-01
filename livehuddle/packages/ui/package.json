@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/ui",
+  "name": "@livehuddle/ui",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -37,9 +37,9 @@
     "vitest": "^5.0.3"
   },
   "dependencies": {
-    "@livediagram/api-schema": "workspace:*",
-    "@livediagram/document": "workspace:*",
-    "@livediagram/telemetry-client": "workspace:*",
+    "@livehuddle/api-schema": "workspace:*",
+    "@livehuddle/document": "workspace:*",
+    "@livehuddle/telemetry-client": "workspace:*",
     "@liveworkspace/account-menu": "workspace:*",
     "@liveworkspace/brand": "workspace:*",
     "@liveworkspace/community-ui": "workspace:*",

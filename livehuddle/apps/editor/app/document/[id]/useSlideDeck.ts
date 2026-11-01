@@ -29,7 +29,7 @@ import {
   type Deck,
   type Slide,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 import { track } from '@/lib/telemetry';
 import { useSlideThumbnails } from '@/hooks/ui/useSlideThumbnails';

@@ -43,7 +43,7 @@ import {
   type RunBoolKey,
   type TextAnimation,
   type TextRun,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 
 type BoxedKind = BoxedElement['type'];
 

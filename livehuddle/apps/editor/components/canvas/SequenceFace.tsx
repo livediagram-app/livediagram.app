@@ -1,4 +1,4 @@
-import { trustedHtml } from '@livediagram/ui';
+import { trustedHtml } from '@livehuddle/ui';
 import { memo, useMemo, type CSSProperties } from 'react';
 import {
   ANIMATION_SPEED_FACTOR,
@@ -6,7 +6,7 @@ import {
   sequenceDrawing,
   type SequenceLook,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 
 /** Seconds of the Play wipe per message at Normal speed (docs/specs/009-elements/sequence-diagram.md "Animation"). */

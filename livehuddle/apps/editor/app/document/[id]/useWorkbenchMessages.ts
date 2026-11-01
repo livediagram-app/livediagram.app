@@ -12,10 +12,10 @@ import {
   CHANGESET_REVEAL_MS,
   WORKBENCH_SELECTION_SETTLE_MS,
   type ShareRole,
-} from '@livediagram/api-schema';
-import { computeRefs, resolveRef, type Tab } from '@livediagram/document';
-import { selectionReference } from '@livediagram/document-views';
-import { setAppearanceOverride } from '@livediagram/ui';
+} from '@livehuddle/api-schema';
+import { computeRefs, resolveRef, type Tab } from '@livehuddle/document';
+import { selectionReference } from '@livehuddle/document-views';
+import { setAppearanceOverride } from '@livehuddle/ui';
 import type { WorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import type { RevealStore } from '@/lib/changeset-reveals';
 import { selectionIds, type SelectionStore } from '@liveworkspace/workbench/lib/selection-store';
@@ -70,7 +70,7 @@ export function useWorkbenchMessages(opts: {
     if (text === lastSent.current) return;
     lastSent.current = text;
     port.send({
-      type: 'livediagram:selection',
+      type: 'livehuddle:selection',
       v: 1,
       documentId,
       documentName: opts.documentName,
@@ -107,7 +107,7 @@ export function useWorkbenchMessages(opts: {
     if (!tab) return;
     if (frame) {
       if (sentReady.current)
-        port.send({ type: 'livediagram:tab', v: 1, tabId: tab.id, tabName: tab.name });
+        port.send({ type: 'livehuddle:tab', v: 1, tabId: tab.id, tabName: tab.name });
       sentReady.current = true;
       frame.reportDocumentPlace({
         documentId,
@@ -119,7 +119,7 @@ export function useWorkbenchMessages(opts: {
     } else if (!sentReady.current) {
       sentReady.current = true;
       port.send({
-        type: 'livediagram:ready',
+        type: 'livehuddle:ready',
         v: 1,
         documentId,
         documentName: opts.documentName,
@@ -128,7 +128,7 @@ export function useWorkbenchMessages(opts: {
         role: opts.sessionRole,
       });
     } else {
-      port.send({ type: 'livediagram:tab', v: 1, tabId: tab.id, tabName: tab.name });
+      port.send({ type: 'livehuddle:tab', v: 1, tabId: tab.id, tabName: tab.name });
     }
     scheduleSelection(to);
   });
@@ -179,9 +179,9 @@ export function useWorkbenchMessages(opts: {
   useEffect(() => {
     if (!port) return;
     return port.subscribe((message) => {
-      if (message.type === 'livediagram:theme' && !frame)
+      if (message.type === 'livehuddle:theme' && !frame)
         setAppearanceOverride(message.colourScheme);
-      else if (message.type === 'livediagram:reveal') reveal(message.refs);
+      else if (message.type === 'livehuddle:reveal') reveal(message.refs);
     });
   }, [port, frame]);
 }

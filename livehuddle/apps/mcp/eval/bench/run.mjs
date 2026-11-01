@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Runs the benchmark: each task, on each model, a number of times, as a real headless Claude session with the
-// livediagram MCP mounted and nothing else (docs/instructions/evaluate-mcp-output.md). Each run gets its own fresh
+// livehuddle MCP mounted and nothing else (docs/instructions/evaluate-mcp-output.md). Each run gets its own fresh
 // library (a token minted for a throwaway owner), so runs never see each other's documents. Writes, per run,
 // runs/<round>/<task>-<model>-<n>.{jsonl,snapshot.json} (and .base.jsonl for an edit task's first turn).
 //
@@ -25,7 +25,7 @@ const MCP_URL = process.env.MCP_URL ?? DEFAULT_MCP_URL;
 // What the assistant is told besides the MCP's own instructions: as little as a chat app says, and a fixed date so
 // date questions ("18 December") read the same in every round.
 export const SYSTEM_PROMPT =
-  'You are Claude, an AI assistant made by Anthropic, chatting with a user who has connected the livediagram ' +
+  'You are Claude, an AI assistant made by Anthropic, chatting with a user who has connected the livehuddle ' +
   'connector. Use its tools to do what they ask, then reply to them. The current date is Friday 16 October 2026.';
 const RUN_TIMEOUT_MS = 20 * 60_000;
 
@@ -81,7 +81,7 @@ function claudeTurn({ prompt, model, token, cwd, resume }) {
     join(cwd, 'mcp.json'),
     JSON.stringify({
       mcpServers: {
-        livediagram: { type: 'http', url: MCP_URL, headers: { Authorization: `Bearer ${token}` } },
+        livehuddle: { type: 'http', url: MCP_URL, headers: { Authorization: `Bearer ${token}` } },
       },
     }),
   );
@@ -96,7 +96,7 @@ function claudeTurn({ prompt, model, token, cwd, resume }) {
     '--tools',
     '',
     '--allowedTools',
-    'mcp__livediagram',
+    'mcp__livehuddle',
     '--setting-sources',
     '',
     '--system-prompt',

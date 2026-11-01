@@ -25,7 +25,7 @@ import {
   type TextAlignX,
   type TextElement,
   type ThemeDefinition,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
 import type { PenColourChoice, PenColourOption, QuickPenStyle } from './quick-style-pen';
 

@@ -9,7 +9,7 @@ import type { ExportFileSet } from '@/lib/ms-whiteboard/board-export';
 import { fileSetFromZip } from '@/lib/ms-whiteboard/file-sets';
 import { boardSceneOf, listBoards } from '@/lib/ms-whiteboard/import';
 import { landBoardScene } from '@/lib/board-scene/land';
-import { MAX_TAB_BYTES, tabDataBytes } from '@livediagram/api-schema';
+import { MAX_TAB_BYTES, tabDataBytes } from '@livehuddle/api-schema';
 
 const path = process.argv[2];
 if (!path) {

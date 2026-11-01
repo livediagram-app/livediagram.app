@@ -3,10 +3,10 @@
 // random colour from a curated palette. This module is the single source
 // for that name/colour generation plus presence-status semantics.
 
-import { colorForKey } from '@livediagram/api-schema';
+import { colorForKey } from '@livehuddle/api-schema';
 import { PRESENCE_COLOUR_VALUES } from '@liveworkspace/settings';
 import { randomPick } from '@liveworkspace/workbench/lib/random';
-import type { AccessLevel } from '@livediagram/api-schema';
+import type { AccessLevel } from '@livehuddle/api-schema';
 
 export type ParticipantStatus = 'online' | 'away' | 'offline';
 
@@ -156,7 +156,7 @@ const ANIMALS = [
 ];
 
 // The palette is liveworkspace's one presence palette (@liveworkspace/settings), the same in every
-// app. The deterministic pick lives in @livediagram/api-schema, which the api worker shares: it fills
+// app. The deterministic pick lives in @livehuddle/api-schema, which the api worker shares: it fills
 // in the colour of a profile that never set one.
 export { colorForKey };
 
@@ -194,8 +194,8 @@ export function nextFreeColor(taken: Set<string>, preferred?: string): string {
 }
 
 // Up to two characters for the avatar: shared with the headless export, so
-// it lives in @livediagram/document (names.ts).
-export { initialsOf } from '@livediagram/document';
+// it lives in @livehuddle/document (names.ts).
+export { initialsOf } from '@livehuddle/document';
 
 // Status ring colour for the header avatar. Greens / oranges / reds are
 // the conventional presence vocabulary.

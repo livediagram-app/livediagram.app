@@ -4,7 +4,7 @@ import {
   TEMPLATE_CATEGORIES,
   popularKindsFor,
   templateEditorMode,
-} from '@livediagram/templates';
+} from '@livehuddle/templates';
 import { TEMPLATE_STARTS, type TemplateStartMode } from './start-template-items';
 
 // docs/specs/007-editor/start-diagramming.md

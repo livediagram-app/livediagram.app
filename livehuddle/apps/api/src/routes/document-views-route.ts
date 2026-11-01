@@ -17,10 +17,10 @@ import {
   type TabViewName,
   type ViewDoor,
   type ViewQueryParameter,
-} from '@livediagram/api-schema';
-import { formatLintReport, lintTab } from '@livediagram/diagram-lint';
+} from '@livehuddle/api-schema';
+import { formatLintReport, lintTab } from '@livehuddle/diagram-lint';
 import { lintLog } from '../changesets/lint';
-import { isKnownElement } from '@livediagram/document';
+import { isKnownElement } from '@livehuddle/document';
 import {
   FIND_QUERY_MAX_LENGTH,
   headerFactsOf,
@@ -33,7 +33,7 @@ import {
   VIEW_SLOW_MS,
   type OverviewTabInput,
   type ViewRequest,
-} from '@livediagram/document-views';
+} from '@livehuddle/document-views';
 import { redactTabForCommunity } from '../community-redact';
 import { personTagFor } from '../person-tag';
 import { readRoomSelections } from '../room-client';
@@ -70,7 +70,7 @@ function unknownView(view: string, scope: Scope): Response {
   const names = scope === 'tab' ? TAB_VIEW_NAMES : DOCUMENT_VIEW_NAMES;
   const message =
     view === 'diff'
-      ? 'diff is computed by the CLI: livediagram tab diff'
+      ? 'diff is computed by the CLI: livehuddle tab diff'
       : view === LINT_VIEW_NAME
         ? 'the lint is a tab view: GET …/tabs/:tabId?view=lint'
         : `view takes ${names.join(', ')} here`;

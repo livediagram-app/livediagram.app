@@ -1,4 +1,4 @@
-import { elementBounds, type Element } from '@livediagram/document';
+import { elementBounds, type Element } from '@livehuddle/document';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 // The outlines a relayed changeset draws around what it touched, in its author's colour, for

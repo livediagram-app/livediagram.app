@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { Button, BackBar } from '@livediagram/ui';
+import { Button, BackBar } from '@livehuddle/ui';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { ImportImageProgress } from '@/lib/import-images';
 

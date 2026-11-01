@@ -3,7 +3,7 @@ import { privacyMoved } from '@liveworkspace/marketing-site/lib/legal-moved';
 
 // The privacy policy lives on liveworkspace.app: this stub keeps the historical /privacy URL alive, noindex
 // (@liveworkspace/marketing-site/lib/legal-moved).
-const moved = privacyMoved('livediagram');
+const moved = privacyMoved('livehuddle');
 
 export const metadata = moved.metadata;
 

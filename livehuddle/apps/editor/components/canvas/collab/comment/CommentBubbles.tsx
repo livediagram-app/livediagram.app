@@ -3,8 +3,8 @@
 // else's on the left. Consecutive comments by one author group under one
 // name, the way a chat does, so a three-part remark reads as one voice.
 
-import type { Comment } from '@livediagram/document';
-import { Glyph, GlyphDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import type { Comment } from '@livehuddle/document';
+import { Glyph, GlyphDisc, IDENTITY_FILL, identityVars } from '@livehuddle/ui';
 import { relativeSince } from '@/lib/relative-time';
 import { MentionText } from '@/components/primitives/MentionText';
 import { reactionDef, reactionGroups } from '@liveworkspace/model-core/comment-reactions';

@@ -4,8 +4,8 @@ import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 
 import type { App, IndexClient } from '@liveworkspace/index-client';
 import { appLabel, everyAppResults, useItemSearch } from '@liveworkspace/explorer/item-search';
 import { ThisBrowserPill } from '@liveworkspace/workbench/components/primitives/ThisBrowserPill';
-import { CloseIcon, NoMatches, SearchIcon, useEscape, useFocusTrap } from '@livediagram/ui';
-import type { Tab } from '@livediagram/document';
+import { CloseIcon, NoMatches, SearchIcon, useEscape, useFocusTrap } from '@livehuddle/ui';
+import type { Tab } from '@livehuddle/document';
 import {
   buildSearchResults,
   type CommandSearchItem,

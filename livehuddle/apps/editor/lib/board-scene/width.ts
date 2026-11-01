@@ -1,6 +1,6 @@
 // Width mapping for a landed board scene (docs/specs/020-import-export/board-scene.md "Widths"):
 // ink takes the nearest marker width, shapes, lines and arrows the nearest border preset.
-import { ARROW_THICKNESS_PX, nearestBorderStroke, type BorderStroke } from '@livediagram/document';
+import { ARROW_THICKNESS_PX, nearestBorderStroke, type BorderStroke } from '@livehuddle/document';
 import { WHITEBOARD_PEN_WIDTHS } from '@/lib/whiteboard-prefs';
 
 const MEDIUM_MARKER_PX = WHITEBOARD_PEN_WIDTHS.find((w) => w.id === 'medium')!.px;

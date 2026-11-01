@@ -4,8 +4,8 @@
 // reads it. Built in the behaviour elements' current look ("The face").
 
 import { useState } from 'react';
-import type { RollCallEntry, ShapeElement } from '@livediagram/document';
-import { GlyphDisc, Glyph, IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import type { RollCallEntry, ShapeElement } from '@livehuddle/document';
+import { GlyphDisc, Glyph, IDENTITY_FILL, identityVars } from '@livehuddle/ui';
 import { initialsOf } from '@/lib/identity';
 import { CollabPanel, tint } from './collab-chrome';
 import { CollabAccentScope } from './collab-accent';

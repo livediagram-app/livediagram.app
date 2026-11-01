@@ -26,7 +26,7 @@ describe('touch targets on the public sites', () => {
 
   it('pads the site switcher trigger vertically', () => {
     const html = renderToStaticMarkup(
-      <SiteSwitcher current="livediagram.app">
+      <SiteSwitcher current="livehuddle.app">
         <a href="/">logo</a>
       </SiteSwitcher>,
     );

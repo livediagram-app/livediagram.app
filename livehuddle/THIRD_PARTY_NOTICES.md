@@ -1,6 +1,6 @@
 # Third-party notices
 
-livediagram is MIT-licensed (see [LICENSE](./LICENSE)). It includes icon artwork and small libraries from the projects below, whose licences require these notices.
+livehuddle is MIT-licensed (see [LICENSE](./LICENSE)). It includes icon artwork and small libraries from the projects below, whose licences require these notices.
 
 ## Lucide
 

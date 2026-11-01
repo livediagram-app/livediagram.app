@@ -1,7 +1,7 @@
 // The strategy and systems batch (docs/specs/008-canvas/canvas-and-palette.md "Templates"): each drawing agrees with
 // the data it is built from, and the layouts keep what they hold where it belongs.
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element, ShapeElement, StickyElement } from '@livediagram/document';
+import type { ArrowElement, Element, ShapeElement, StickyElement } from '@livehuddle/document';
 import {
   DRIVER_BASELINE,
   THREAT_EXAMPLES,

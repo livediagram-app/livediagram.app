@@ -7,8 +7,8 @@ import { site } from '@/lib/help-site';
 const COPY = {
   title: 'Developers',
   description:
-    'Call the livediagram REST API from your own scripts or the command line: authentication, worked examples, the CLI, errors and limits, and the OpenAPI reference.',
-  lede: 'Drive livediagram from your own scripts and integrations. The same REST API the editor uses, callable with an API token, or from a terminal with the livediagram CLI.',
+    'Call the livehuddle REST API from your own scripts or the command line: authentication, worked examples, the CLI, errors and limits, and the OpenAPI reference.',
+  lede: 'Drive livehuddle from your own scripts and integrations. The same REST API the editor uses, callable with an API token, or from a terminal with the livehuddle CLI.',
 };
 
 export const metadata = supportCategoryMetadata(site, 'developers', COPY);

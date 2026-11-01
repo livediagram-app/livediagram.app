@@ -1,7 +1,7 @@
 // @vitest-environment node
 import 'fake-indexeddb/auto';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import { openOfflineDb } from './offline-backend';
 import { offlineListDocuments, offlineLoadTab, offlineSaveTab } from './offline-store';
 import { countRetiredParts, listRetiredParts } from './retired-parts';

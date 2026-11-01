@@ -17,7 +17,7 @@ function env() {
 describe('editor worker, the old editor address', () => {
   it('serves it for an old /diagram/<id> address during a deploy', async () => {
     const { env: e, seen } = env();
-    await worker.fetch(new Request('https://www.livediagram.app/diagram/abc'), e);
+    await worker.fetch(new Request('https://www.livehuddle.app/diagram/abc'), e);
     expect(seen).toEqual(['/document/placeholder']);
   });
 });

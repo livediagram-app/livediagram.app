@@ -1,4 +1,4 @@
-// Wire-format type definitions for the livediagram API — the single
+// Wire-format type definitions for the livehuddle API — the single
 // source of truth for what travels between the `api` Cloudflare
 // Worker and the `live` Next.js editor.
 //
@@ -14,7 +14,7 @@
 
 import type { ShareLinkExpiry, ShareRole } from '@liveworkspace/api-schema/share-links';
 import type { DocumentSource } from '@liveworkspace/api-schema/document-source';
-import type { EditorMode, Tab } from '@livediagram/document';
+import type { EditorMode, Tab } from '@livehuddle/document';
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
 
 export type {

@@ -1,14 +1,9 @@
-import {
-  BORDER_RADIUS_PX,
-  cornerRadiusPx,
-  headerLayout,
-  WEB_TEXT_MAX,
-} from '@livediagram/document';
+import { BORDER_RADIUS_PX, cornerRadiusPx, headerLayout, WEB_TEXT_MAX } from '@livehuddle/document';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
-import { GlyphDisc } from '@livediagram/ui';
+import { GlyphDisc } from '@livehuddle/ui';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 
 // Header (docs/specs/009-elements/web-components-and-no-groups.md): a website header bar — a round logo, the brand (the

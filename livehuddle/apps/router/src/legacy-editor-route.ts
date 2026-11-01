@@ -18,7 +18,7 @@ export function legacyEditorRedirect(url: URL): Response | null {
 // the Activity Panel category went when the panel was removed (Undo and Redo moved to Canvas;
 // its other articles land on Undo), Facilitate mode became Workshop mode, and the Welcome Tour
 // became the Diagram Tour. Infographics became Illustrate mode and then Pages mode, which has
-// since left livediagram for livedocuments: every article of all three sections lands on the
+// since left livehuddle for livedocuments: every article of all three sections lands on the
 // Editor Modes article. Plan mode left for liveplanner the same way, its articles landing there too, and the API's
 // Plan Items, Sheets and Images article became Images, Copies and Libraries. Custom themes, tags and the in-editor AI
 // assistant were removed: their articles land on the nearest live one (Themes, Folders, Connect AI Tools). The
@@ -82,7 +82,7 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'tools/ai/ai-tools': 'account-and-data/connect-ai-mcp',
   'self-hosting': '',
   'self-hosting/self-hosting-overview': '',
-  'self-hosting/deploying-livediagram': '',
+  'self-hosting/deploying-livehuddle': '',
   'self-hosting/configuration': '',
   'self-hosting/configuration/drive-and-mcp': '',
 };

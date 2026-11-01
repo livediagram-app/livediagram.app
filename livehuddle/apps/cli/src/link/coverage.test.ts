@@ -7,7 +7,7 @@ import { isCovered, readCoverage } from './coverage';
 // Coverage (docs/specs/027-repositories/blueprints/repository-link.md "Coverage"): the covered folder's subtree in
 // the personal or a team library, the listed documents wherever they are, and each one's folder path.
 
-const linkOf = (covers: string) => parseLinkFile(`[covers]\n${covers}\n`, '/repo/livediagram.toml');
+const linkOf = (covers: string) => parseLinkFile(`[covers]\n${covers}\n`, '/repo/livehuddle.toml');
 
 const folders = [
   { id: 'games', name: 'Minigames', parentId: null, teamId: null },

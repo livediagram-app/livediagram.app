@@ -2,7 +2,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { useReducer } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { WorkbenchDocumentSessionResponse } from '@livediagram/api-schema';
+import type { WorkbenchDocumentSessionResponse } from '@livehuddle/api-schema';
 import type { WorkbenchPort } from '@/lib/workbench/workbench-port';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 import { workbenchTransition, type WorkbenchPhase } from './workbench-machine';
@@ -156,7 +156,7 @@ describe('WorkbenchPage', () => {
     harness.initial = { phase: 'reading' };
     render(<Page />);
     expect(screen.getByRole('status').textContent).toBe('Opening your diagram…');
-    expect(metadata).toEqual({ title: 'Workbench | livediagram', robots: { index: false } });
+    expect(metadata).toEqual({ title: 'Workbench | livehuddle', robots: { index: false } });
   });
 
   it('ends the page when the editor finds the document trashed', () => {
@@ -179,7 +179,7 @@ describe('WorkbenchPage', () => {
     rerender(<WorkbenchPage />);
 
     expect(port.send).toHaveBeenCalledTimes(1);
-    expect(port.send).toHaveBeenCalledWith({ type: 'livediagram:ended', v: 1, reason: 'revoked' });
+    expect(port.send).toHaveBeenCalledWith({ type: 'livehuddle:ended', v: 1, reason: 'revoked' });
     expect(screen.getByText('editor workbench as Webber ended revoked')).toBeTruthy();
   });
 

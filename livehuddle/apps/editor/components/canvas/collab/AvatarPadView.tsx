@@ -1,7 +1,7 @@
 'use client';
 
 import { memo } from 'react';
-import { AVATAR_PAD_GRID, AVATAR_PAD_PARTS, type AvatarPadPart } from '@livediagram/document';
+import { AVATAR_PAD_GRID, AVATAR_PAD_PARTS, type AvatarPadPart } from '@livehuddle/document';
 
 // An Avatar Pad (docs/specs/009-elements/avatar-pad.md): the pixel teleport platform where Avatar-mode characters
 // start. Drawn from the shared `AVATAR_PAD_PARTS` table, which the headless export draws too, on the sprite's own

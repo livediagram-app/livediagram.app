@@ -4,7 +4,7 @@
 // tour drawn over that surface. Never offered: only the button runs it. Each surface keeps its own steps and its own
 // literal telemetry (so the dashboard's emitter scan reads them); these are the parts every Show Me shares.
 import { useEffect, useRef } from 'react';
-import { lucideGlyph } from '@livediagram/ui';
+import { lucideGlyph } from '@livehuddle/ui';
 import { lucideFootprints } from '@liveworkspace/icons/lucide';
 import { helpArticleHref, type HelpArticleKey } from '@/lib/help-articles';
 import { setActiveTour } from '@/lib/tour-active';

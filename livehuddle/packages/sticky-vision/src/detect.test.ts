@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EVENT_STORMING_NOTES, eventStormingNote } from '@livediagram/document';
+import { EVENT_STORMING_NOTES, eventStormingNote } from '@livehuddle/document';
 import { classifyRgb, PAPER_CLASSES } from './classify';
 import { greyWorldBalance, hexToRgb, rgbToHsv, type ImageBuffer } from './colour';
 import { standsOut } from './standout';

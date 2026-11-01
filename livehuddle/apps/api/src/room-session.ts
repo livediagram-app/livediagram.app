@@ -1,7 +1,7 @@
 // One session's state in the room (docs/specs/015-api/api.md, Realtime model): what the room pins on each
 // socket's serialized attachment at the upgrade, read from the headers only the api worker can set.
-import { isAccessLevel, type AccessLevel } from '@livediagram/api-schema';
-import { ADDER_KEY_LENGTH } from '@livediagram/document';
+import { isAccessLevel, type AccessLevel } from '@livehuddle/api-schema';
+import { ADDER_KEY_LENGTH } from '@livehuddle/document';
 import type { ParticipantPresence } from './types';
 
 // Everything the room knows about one session, persisted in the socket's

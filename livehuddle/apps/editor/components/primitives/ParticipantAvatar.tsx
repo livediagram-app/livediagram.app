@@ -7,7 +7,7 @@ import {
 } from '@/lib/identity';
 import { agentRowDetail } from '@/lib/agent-presence-rows';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
-import { AgentIcon, HoverCard, IDENTITY_FILL, PictureDisc, identityVars } from '@livediagram/ui';
+import { AgentIcon, HoverCard, IDENTITY_FILL, PictureDisc, identityVars } from '@livehuddle/ui';
 
 // How far the presence ring paints BEYOND the avatar's layout box, per side.
 //

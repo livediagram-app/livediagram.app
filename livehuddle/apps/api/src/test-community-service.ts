@@ -3,7 +3,7 @@
 // `fetch`. So a test of publishing, the sync or a community link runs both sides for real. Not a `.test.ts` file,
 // so vitest doesn't collect it.
 
-import { COMMUNITY_APP_PARAM } from '@livediagram/api-schema';
+import { COMMUNITY_APP_PARAM } from '@livehuddle/api-schema';
 import worker from '@liveworkspace/community-service';
 import { testDb, type TestDb } from '@liveworkspace/community-service/testing';
 import { vi } from 'vitest';

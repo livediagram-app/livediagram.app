@@ -1,4 +1,4 @@
-import { signedInHintOf } from '@livediagram/api-schema';
+import { signedInHintOf } from '@livehuddle/api-schema';
 import { parseGuestToken } from '@liveworkspace/index-client/browser';
 import { GUEST_IDENTITY_KEYS } from './kept-keys';
 

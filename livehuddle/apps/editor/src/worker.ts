@@ -4,7 +4,7 @@
 // the real document id from `window.location.pathname`. See docs/specs/007-editor/new-document-route.md
 // for why we can't enumerate user-minted ids at build time.
 
-import { TRUSTED_TYPES_CSP } from '@livediagram/ui/trusted-types';
+import { TRUSTED_TYPES_CSP } from '@livehuddle/ui/trusted-types';
 
 type AssetsBinding = { fetch: (request: Request) => Promise<Response> };
 // PREVIEWS_ORIGIN: where the share page's link preview (./share-page.ts) asks liveworkspace's previews for the

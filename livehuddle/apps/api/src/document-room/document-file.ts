@@ -1,5 +1,5 @@
 // The canvas as its Google Drive file (liveworkspace/docs/specs/005-drive/drive.md "The file", "Contracts > The apps";
-// docs/specs/015-api/api.md "Internal"): the `livediagram.document` envelope the CLI exports, every tab with its
+// docs/specs/015-api/api.md "Internal"): the `livehuddle.document` envelope the CLI exports, every tab with its
 // per-document folder, and the slide deck. The export runs inside the canvas's Durable Object, from the same tab read
 // a copy makes (document-content.ts readContentTabRows), stamped with the canvas's last save so unchanged content is
 // byte-identical. The import's file is read in the worker (readDocumentFile: parsed, fresh ids, limits) and written
@@ -16,7 +16,7 @@ import {
   parseDocumentEnvelope,
   type EnvelopeTab,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { APP_FILE_FORMATS } from '@liveworkspace/drive/formats';
 import type { ExportResult } from '@liveworkspace/index-app';
 import { MAX_DECK_LEN, MAX_TAB_BYTES, byteLength, logTabRefused } from '../limits';
@@ -31,6 +31,8 @@ import {
   type DocumentCopy,
 } from './document-content';
 
+// livehuddle registers no file format with Drive (not in its v1), so the fork keeps livediagram's until the Drive
+// mirror is cut (build plan step 5.2).
 export const DOCUMENT_FILE_FORMAT = APP_FILE_FORMATS.livediagram;
 
 // ---------- Export ------------------------------------------------------------------------------------------------

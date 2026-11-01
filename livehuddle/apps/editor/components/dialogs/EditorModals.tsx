@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livediagram/document';
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livehuddle/document';
 
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { commitUserPreferences } from '@/lib/user-preferences';

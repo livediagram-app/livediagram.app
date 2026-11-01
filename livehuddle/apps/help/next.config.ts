@@ -7,7 +7,7 @@ import { withHelpSite } from '@liveworkspace/help-site/next-config';
 // (docs/specs/016-platform/nextjs.md).
 const config: NextConfig = withHelpSite({
   ...liveworkspaceNextConfig(),
-  transpilePackages: ['@livediagram/ui', '@liveworkspace/ui'],
+  transpilePackages: ['@livehuddle/ui', '@liveworkspace/ui'],
 });
 
 export default config;

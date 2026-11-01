@@ -2,8 +2,8 @@
 // its lint, as the api serves them.
 
 import { z } from 'zod';
-import { revOfEtag, TAB_VIEW_NAMES, type LintReport } from '@livediagram/api-schema';
-import { formatLintReport } from '@livediagram/diagram-lint';
+import { revOfEtag, TAB_VIEW_NAMES, type LintReport } from '@livehuddle/api-schema';
+import { formatLintReport } from '@livehuddle/diagram-lint';
 import { readPlainTab, recordCopy, type ReadCopy } from '../copies';
 import { defineVerb, type VerbContext } from '../define';
 import { shortestUniquePrefixes } from '@liveworkspace/agent-verbs/refs';
@@ -27,7 +27,7 @@ export const tabLs = defineVerb({
   summary: "The document's tabs",
   description: 'Lists the tabs of a document in order: position, ref and name.',
   behaviour: 'read',
-  input: z.object({ doc: z.string().describe('A name, id prefix or livediagram URL') }),
+  input: z.object({ doc: z.string().describe('A name, id prefix or livehuddle URL') }),
   output: z.object({
     tabs: z.array(
       z.object({ index: z.number(), ref: z.string(), id: z.string(), name: z.string() }),
@@ -45,7 +45,7 @@ export const tabLs = defineVerb({
   quiet: ({ tabs }) => tabs.map((t) => t.ref),
   cli: {
     positionals: ['doc'],
-    examples: ['livediagram tab ls "Auth flow"', 'livediagram tab ls 3f9c -q'],
+    examples: ['livehuddle tab ls "Auth flow"', 'livehuddle tab ls 3f9c -q'],
     prints: 'one tab a line: position, ref, name',
   },
 });
@@ -85,7 +85,7 @@ export const tabView = defineVerb({
     'Prints a view of a tab as the api renders it: outline (default), graph, layout, comments, show (needs --ref), or find (needs --text). --budget fits it to that many tokens; --raw prints the plain tab instead.',
   behaviour: 'read',
   input: z.object({
-    doc: z.string().describe('A name, id prefix or livediagram URL'),
+    doc: z.string().describe('A name, id prefix or livehuddle URL'),
     tab: tabFlag,
     view: z
       .enum(TAB_VIEW_NAMES)
@@ -138,8 +138,8 @@ export const tabView = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livediagram tab view "Auth flow"',
-      'livediagram tab view 3f9c --view show --ref orders',
+      'livehuddle tab view "Auth flow"',
+      'livehuddle tab view 3f9c --view show --ref orders',
     ],
     prints: 'the view as the api serves it',
   },
@@ -152,7 +152,7 @@ export const tabLint = defineVerb({
     'Prints the diagram lint of a tab: a summary line, then one finding a line, each ending with a fix as edit operations. Exits 1 when a finding is an error.',
   behaviour: 'read',
   input: z.object({
-    doc: z.string().describe('A name, id prefix or livediagram URL'),
+    doc: z.string().describe('A name, id prefix or livehuddle URL'),
     tab: tabFlag,
   }),
   output: z.object({ findings: z.array(z.unknown()), errors: z.number(), text: z.string() }),
@@ -172,7 +172,7 @@ export const tabLint = defineVerb({
   exitCode: ({ errors }) => (errors > 0 ? 1 : 0),
   cli: {
     positionals: ['doc'],
-    examples: ['livediagram tab lint "Auth flow"', 'livediagram tab lint 3f9c --tab Overview'],
+    examples: ['livehuddle tab lint "Auth flow"', 'livehuddle tab lint 3f9c --tab Overview'],
     prints: 'the lint summary line, then one finding a line',
   },
 });

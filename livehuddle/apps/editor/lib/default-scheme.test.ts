@@ -4,8 +4,8 @@ import {
   canvasSurface,
   createShape,
   type Tab,
-} from '@livediagram/document';
-import { resetAppearanceForTests, setAppearance } from '@livediagram/ui';
+} from '@livehuddle/document';
+import { resetAppearanceForTests, setAppearance } from '@livehuddle/ui';
 import { deriveNewBoxedColours, getTheme, resolveTabBackdrop, switchThemeBackdrop } from './themes';
 
 // The Default theme follows the VIEWER (docs/specs/007-editor/editor-app.md): the document stores

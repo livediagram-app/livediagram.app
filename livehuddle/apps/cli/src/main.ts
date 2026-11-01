@@ -2,8 +2,8 @@
 // the verb's input, the profile and credential, the host's capabilities, the handler, and what it prints. The
 // exit code is one of eight; stdout carries data only.
 
-import { graphLint, renderSkill, type Verb, type VerbContext } from '@livediagram/agent-verbs';
-import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
+import { graphLint, renderSkill, type Verb, type VerbContext } from '@livehuddle/agent-verbs';
+import { DOCUMENT_FORMAT } from '@livehuddle/api-schema';
 import { resolveCredential } from './auth/credentials';
 import { callApi, guideOf, installSkill, login, logout, status } from './commands/local';
 import { exportAll, type ExportInput } from './commands/export';
@@ -100,7 +100,7 @@ async function runOnline(
     throw new CliError({
       exit: EXIT.rejected,
       code: 'version',
-      message: `${profile.host} stores documents in format ${caps.documentFormat}; this livediagram reads format ${DOCUMENT_FORMAT}`,
+      message: `${profile.host} stores documents in format ${caps.documentFormat}; this livehuddle reads format ${DOCUMENT_FORMAT}`,
       hint: UPGRADE_HINT,
     });
   }
@@ -114,7 +114,7 @@ async function runOnline(
       exit: EXIT.auth,
       code: 'auth',
       message: `not signed in to ${profile.host}`,
-      hint: 'livediagram auth login --with-token, or set LIVEDIAGRAM_TOKEN',
+      hint: 'livehuddle auth login --with-token, or set LIVEHUDDLE_TOKEN',
     });
   // `api` writes unless it only reads.
   const writes =
@@ -124,7 +124,7 @@ async function runOnline(
     throw new CliError({
       exit: EXIT.rejected,
       code: 'version',
-      message: `${profile.host} accepts writes from livediagram ${caps.minVersion} or later; this is ${CLI_VERSION}`,
+      message: `${profile.host} accepts writes from livehuddle ${caps.minVersion} or later; this is ${CLI_VERSION}`,
       hint: UPGRADE_HINT,
     });
   }

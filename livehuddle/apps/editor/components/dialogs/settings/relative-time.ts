@@ -1,5 +1,5 @@
 // When a paired workbench was paired, as the Settings row says it. Pure, so it is unit-tested.
-import { DAY_MS } from '@livediagram/document';
+import { DAY_MS } from '@livehuddle/document';
 
 // Compact relative time: "2 days ago" (past) / "in 5 months" (future).
 export function relativeTime(ms: number, now: number): string {

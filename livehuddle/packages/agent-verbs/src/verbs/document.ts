@@ -83,7 +83,7 @@ export const documentLs = defineVerb({
   quiet: ({ documents }) => documents.map((d) => d.ref),
   cli: {
     positionals: ['query'],
-    examples: ['livediagram document ls', 'livediagram document ls auth --limit 5'],
+    examples: ['livehuddle document ls', 'livehuddle document ls auth --limit 5'],
     prints: 'one document a line: ref, name, library, last saved',
   },
 });
@@ -94,7 +94,7 @@ export const documentView = defineVerb({
   description:
     'Prints the overview view of a document: one line per tab with its counts and revision.',
   behaviour: 'read',
-  input: z.object({ doc: z.string().describe('A name, id prefix or livediagram URL') }),
+  input: z.object({ doc: z.string().describe('A name, id prefix or livehuddle URL') }),
   output: z.object({ text: z.string() }),
   run: async (ctx, { doc }) => {
     const document = await documentOf(ctx, doc);
@@ -106,7 +106,7 @@ export const documentView = defineVerb({
   text: ({ text }) => [text],
   cli: {
     positionals: ['doc'],
-    examples: ['livediagram document view "Auth flow"', 'livediagram document view 3f9c'],
+    examples: ['livehuddle document view "Auth flow"', 'livehuddle document view 3f9c'],
     prints: 'the overview view',
   },
 });

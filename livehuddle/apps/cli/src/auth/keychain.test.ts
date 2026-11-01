@@ -13,13 +13,13 @@ import {
 
 type Call = { command: string; args: readonly string[]; input: string };
 const details = {
-  host: 'https://www.livediagram.app',
+  host: 'https://www.livehuddle.app',
   tokenId: 't1',
   accountName: 'Ada',
   role: 'full',
   expiresAt: null,
 };
-const FILE = '/home/agent/.config/livediagram/credentials.json';
+const FILE = '/home/agent/.config/livehuddle/credentials.json';
 
 // A system with a keychain the suite plays: entries by account, answers scripted per command.
 function system(
@@ -75,7 +75,7 @@ describe('the keychain on macOS', () => {
     expect(calls[0]).toEqual({
       command: 'security',
       args: ['-i'],
-      input: `add-generic-password -U -s livediagram -a "work \\"q\\"" -w "${TOKEN}"\n`,
+      input: `add-generic-password -U -s livehuddle -a "work \\"q\\"" -w "${TOKEN}"\n`,
     });
     expect(kept.get('work "q"')).toBe(TOKEN);
     expect(await storedCredential(io, 'work "q"')).toEqual({ ...details, keychain: true });
@@ -97,9 +97,9 @@ describe('the keychain on Linux', () => {
       args: [
         'store',
         '--label',
-        'livediagram CLI (default)',
+        'livehuddle CLI (default)',
         'service',
-        'livediagram',
+        'livehuddle',
         'account',
         'default',
       ],
@@ -190,7 +190,7 @@ describe('stores across systems and logins', () => {
     const route = (_request: Request, url: URL) =>
       url.pathname === '/api/capabilities'
         ? Response.json({
-            apiBase: 'https://www.livediagram.app/api',
+            apiBase: 'https://www.livehuddle.app/api',
             authEnabled: true,
           })
         : url.pathname === '/api/tokens/current'

@@ -8,7 +8,7 @@ import {
   test,
 } from './fixtures';
 
-// What livediagram owns of the shared Explorer (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md): the
+// What livehuddle owns of the shared Explorer (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md): the
 // editor's Explorer panel around the open canvas, This Browser in it for the canvases the index never sees (the old
 // /offline page only redirects to the Explorer's This Browser view), and a canvas opened from the Explorer at /explorer (liveworkspace's page, from its site build, listing what the
 // index holds through /api/index on this origin).
@@ -101,9 +101,9 @@ async function keepInThisBrowser(page: Page, name: string): Promise<void> {
   await page.evaluate(
     (docName) =>
       new Promise<void>((resolve, reject) => {
-        const del = indexedDB.deleteDatabase('livediagram-offline');
+        const del = indexedDB.deleteDatabase('livehuddle-offline');
         del.onsuccess = () => {
-          const req = indexedDB.open('livediagram-offline', 1);
+          const req = indexedDB.open('livehuddle-offline', 1);
           req.onupgradeneeded = () => req.result.createObjectStore('diagrams', { keyPath: 'id' });
           req.onsuccess = () => {
             const db = req.result;

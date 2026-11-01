@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DocumentCommentsResponse } from '@livediagram/api-schema';
-import type { Comment, Element } from '@livediagram/document';
+import type { DocumentCommentsResponse } from '@livehuddle/api-schema';
+import type { Comment, Element } from '@livehuddle/document';
 import { accountsServiceFor } from '../test-accounts-service';
 import { sqliteD1, testShareLink, type SqliteD1 } from '../test-sqlite-d1';
 import * as db from '../db';

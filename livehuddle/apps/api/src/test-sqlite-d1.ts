@@ -3,7 +3,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { ItemDb } from '@liveworkspace/index-app';
 import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
 import { IndexError, type IndexClient, type ShareAccess } from '@liveworkspace/index-client';
-import type { AccessLevel } from '@livediagram/api-schema';
+import type { AccessLevel } from '@livehuddle/api-schema';
 import { migrateDocumentSchema } from './document-room/document-schema';
 import type { GrantCaller, GrantOutcome, ItemGrant } from './index-service';
 import { testPersonStores } from './test-person-store';

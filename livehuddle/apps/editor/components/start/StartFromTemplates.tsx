@@ -5,7 +5,7 @@
 // preview over its name and line; a search across them and every other mode's templates (otherModeMatches); the × starts
 // from nothing. Choosing a template lands it on the tab at once, another mode's switching the tab to that mode.
 import { useEffect, useMemo } from 'react';
-import { lucideGlyph } from '@livediagram/ui';
+import { lucideGlyph } from '@livehuddle/ui';
 import {
   lucideBuilding2,
   lucideCalendarRange,
@@ -23,8 +23,8 @@ import {
   lucideVote,
   lucideWorkflow,
 } from '@liveworkspace/icons/lucide';
-import type { EditorMode } from '@livediagram/document';
-import type { TemplateCategory, TemplateKind } from '@livediagram/templates';
+import type { EditorMode } from '@livehuddle/document';
+import type { TemplateCategory, TemplateKind } from '@livehuddle/templates';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@liveworkspace/workbench/components/canvas/useEmptyCardDismissed';

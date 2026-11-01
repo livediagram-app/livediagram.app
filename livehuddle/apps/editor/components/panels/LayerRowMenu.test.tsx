@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Layer } from '@livediagram/document';
+import type { Layer } from '@livehuddle/document';
 
 import { LayerRowMenu, layerMenuPosition } from './LayerRowMenu';
 
@@ -102,7 +102,10 @@ describe('LayerRowMenu', () => {
       expect(button(name).parentElement?.attributes.length).toBeGreaterThan(0);
     fireEvent.click(button('Clear Layer'));
     expect(
-      screen.getByRole('alertdialog', { name: 'Clear the 3 elements on “Notes”?', description: 'The layer stays.' }),
+      screen.getByRole('alertdialog', {
+        name: 'Clear the 3 elements on “Notes”?',
+        description: 'The layer stays.',
+      }),
     ).toBeTruthy();
   });
 
@@ -117,7 +120,10 @@ describe('LayerRowMenu', () => {
     const p = renderMenu();
     fireEvent.click(button('Clear Layer'));
     expect(
-      screen.getByRole('alertdialog', { name: 'Clear the 3 elements on “Notes”?', description: 'The layer stays.' }),
+      screen.getByRole('alertdialog', {
+        name: 'Clear the 3 elements on “Notes”?',
+        description: 'The layer stays.',
+      }),
     ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
     expect(p.onClear).toHaveBeenCalledOnce();

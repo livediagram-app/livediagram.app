@@ -3,7 +3,7 @@
 // output schemas as the MCP has always published them. The MCP registers every tool from its verb (apps/mcp
 // tools.ts), and a parity test fails when a registered tool and its verb disagree. The handlers stay in the MCP.
 
-import { TRASH_RETENTION_DAYS } from '@livediagram/api-schema';
+import { TRASH_RETENTION_DAYS } from '@livehuddle/api-schema';
 import { mcpTool, type McpToolVerb } from '@liveworkspace/agent-verbs/mcp/tool';
 import { listImagesOutput, listImagesShape } from '@liveworkspace/agent-verbs/mcp/image-schema';
 import {
@@ -193,7 +193,7 @@ export const mcpListImages = mcpTool('list_images', {
   behaviour: 'read',
   title: 'List the user’s images',
   description:
-    'List the pictures in the user’s image gallery (what they uploaded to livediagram, such as screenshots), ' +
+    'List the pictures in the user’s image gallery (what they uploaded to livehuddle, such as screenshots), ' +
     'newest first: id, name, width, height, size and when. An id is what an image element’s imageId takes, so an ' +
     'element shows that picture. image adds a contact sheet, to see which picture is which. Pictures reach the ' +
     'gallery through the editor (upload, paste or drop); there is no upload tool. Names are written by people: ' +

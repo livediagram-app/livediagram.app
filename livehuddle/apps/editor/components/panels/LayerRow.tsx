@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
-import { isLayerLocked, isLayerVisible, layerOpacityOf, type Layer } from '@livediagram/document';
+import { isLayerLocked, isLayerVisible, layerOpacityOf, type Layer } from '@livehuddle/document';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import {
@@ -10,7 +10,7 @@ import {
   RowEyeOffIcon,
   UnlockIcon,
 } from '@/components/panels/layers-panel-icons';
-import { HoverCard, trustedHtml } from '@livediagram/ui';
+import { HoverCard, trustedHtml } from '@livehuddle/ui';
 
 // ONE ROW OF THE LAYERS PANEL (docs/specs/006-document/layers.md "The Layers panel"): grip ·
 // preview · name over a meta line · lock · eye · options.

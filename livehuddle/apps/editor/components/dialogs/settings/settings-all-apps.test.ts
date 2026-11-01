@@ -14,7 +14,7 @@ describe('rowSharedByAllApps', () => {
     expect(rowSharedByAllApps('showMinimap')).toBe(true);
     expect(rowSharedByAllApps('presentation-loop')).toBe(true);
     expect(rowSharedByAllApps('presentationAutoAdvance')).toBe(true);
-    // livediagram's own.
+    // livehuddle's own.
     expect(rowSharedByAllApps('notifyDocumentJoin')).toBe(false);
     expect(rowSharedByAllApps('whiteboardDockPosition')).toBe(false);
   });

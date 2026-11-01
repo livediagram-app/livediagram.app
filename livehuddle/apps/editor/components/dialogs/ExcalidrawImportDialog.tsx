@@ -1,5 +1,5 @@
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { DialogCloseButton, DialogHeader } from '@livediagram/ui';
+import { DialogCloseButton, DialogHeader } from '@livehuddle/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { ExcalidrawImportPanel } from './ExcalidrawImportPanel';
 import type { ImportScenes } from '@/hooks/persistence/useMsWhiteboardImport';

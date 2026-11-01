@@ -4,7 +4,7 @@ import {
   defaultScheme,
   type ShapeElement,
   type TextElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { describe, expect, it } from 'vitest';
 import { applyQuickStroke, applyQuickTextColour, quickStyleView, QUICK_INK } from './quick-style';
 

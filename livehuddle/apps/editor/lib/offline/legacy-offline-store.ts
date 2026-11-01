@@ -1,7 +1,7 @@
 // Offline documents were kept in the `diagrams` object store before the container became a
 // document (docs/specs/006-document/offline-mode.md). Version 2 of the database moves every
 // record into the current store. Version 3 adds the `retired-parts` store and sets aside every record holding
-// content livediagram no longer reads (./retired-parts-upgrade). Runs inside the version-change transaction, so a
+// content livehuddle no longer reads (./retired-parts-upgrade). Runs inside the version-change transaction, so a
 // reader never sees a half-moved store, nor a record before it was set aside.
 
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';

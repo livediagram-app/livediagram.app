@@ -6,11 +6,11 @@ import {
   type DocumentResponse,
   type TabResponse,
   type TabViewName,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import { ApiError, apiJson, apiText } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { tabPreview } from './image-result';
-import { READ_DOCUMENT_DEFAULT_BUDGET } from '@livediagram/agent-verbs/mcp';
+import { READ_DOCUMENT_DEFAULT_BUDGET } from '@livehuddle/agent-verbs/mcp';
 import { deepLink, errorResult, textResult, viewResult, type ToolResult } from './tool-helpers';
 
 type ReadDocumentArgs = {

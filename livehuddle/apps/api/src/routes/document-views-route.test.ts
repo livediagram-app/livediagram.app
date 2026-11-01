@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { OVERVIEW_TAB_BATCH } from '@livediagram/document-views';
-import type { Element } from '@livediagram/document';
+import { OVERVIEW_TAB_BATCH } from '@livehuddle/document-views';
+import type { Element } from '@livehuddle/document';
 import { sqliteD1, testShareLink, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { captureTelemetry, TELEMETRY_ON } from '@liveworkspace/telemetry/testing';
@@ -376,7 +376,7 @@ describe('parseViewQuery (VW43)', () => {
     quiet();
     expect(await refusal('view=diff')).toEqual({
       error: 'unknown_view',
-      message: 'diff is computed by the CLI: livediagram tab diff',
+      message: 'diff is computed by the CLI: livehuddle tab diff',
     });
     expect(await refusal('view=lint', 'document')).toMatchObject({
       message: 'the lint is a tab view: GET …/tabs/:tabId?view=lint',

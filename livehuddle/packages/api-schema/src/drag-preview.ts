@@ -2,7 +2,7 @@
 // collaborators"): one patch per element the gesture changes, geometry only, so a collaborator can
 // draw the movement live. Presence: relayed unordered, never logged, never replayed.
 
-import type { ArrowElement, Endpoint } from '@livediagram/document';
+import type { ArrowElement, Endpoint } from '@livehuddle/document';
 
 // docs/specs/008-canvas/blueprints/DEFAULTS.md D71: past this, a gesture sends no patches and
 // collaborators see it on release.

@@ -1,6 +1,6 @@
 'use client';
 
-import { COMMUNITY_HOME_PATH } from '@livediagram/api-schema';
+import { COMMUNITY_HOME_PATH } from '@livehuddle/api-schema';
 import { ProductNavLinks as SharedLinks, type ProductNavKey } from '@liveworkspace/ui';
 import { useCommunityEnabled } from '@liveworkspace/community-ui';
 

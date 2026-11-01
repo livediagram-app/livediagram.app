@@ -5,7 +5,7 @@ import {
   lucideMessagesSquare,
   lucidePackage,
 } from '@liveworkspace/icons/lucide';
-import { Glyph, Prims } from '@livediagram/ui';
+import { Glyph, Prims } from '@livehuddle/ui';
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
 import { CursorMark } from '@/components/hero-cursor';
 import { cursorRide } from '@/lib/hero-motion';

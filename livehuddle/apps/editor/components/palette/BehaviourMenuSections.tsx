@@ -23,7 +23,7 @@ import {
   type PickerSource,
   type SessionButtonConfig,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';

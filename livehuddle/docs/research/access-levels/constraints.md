@@ -1,7 +1,7 @@
 # Access levels: the constraints any model must satisfy
 
 Research note for the access-levels design. It asks one question: whatever levels we choose, what must
-the model honour, given how livediagram is actually built? It then weighs four candidate models against
+the model honour, given how livehuddle is actually built? It then weighs four candidate models against
 those constraints. Read-only research; it decides nothing. Sources are the specs and code on `main` at
 `fc2d2d650`, plus the draft spec and blueprint on the `docs/agent-cli` branch, cited as _worktree_.
 
@@ -35,7 +35,7 @@ Only enough to anchor terms; the product survey is another angle's job.
 - Figma's **can view** already includes commenting: "People with can view access can only perform
   certain 'read only' actions, like inspecting properties, following, and commenting"
   ([Figma: guide to sharing and permissions](https://help.figma.com/hc/en-us/articles/1500007609322-Guide-to-sharing-and-permissions)).
-  Today's livediagram view link is Figma-shaped, not Google-shaped.
+  Today's livehuddle view link is Figma-shaped, not Google-shaped.
 
 ## What exists today
 
@@ -270,7 +270,7 @@ ideas.
 | C11 server-bound key needed      | yes                             | yes                                           | yes (participant only)                                               | yes, and for facilitation                   |
 | C14 persistence without editor   | yes                             | yes                                           | yes                                                                  | yes, plus facilitator writes                |
 | C26 hues and glyphs              | 3                               | 3                                             | 4                                                                    | 3 or 4, plus a capability mark              |
-| Matches a familiar product       | Google Docs words               | Google ladder, livediagram words              | none directly                                                        | none directly                               |
+| Matches a familiar product       | Google Docs words               | Google ladder, livehuddle words               | none directly                                                        | none directly                               |
 
 ### (1) Three roles: view, comment, edit (the worktree draft)
 

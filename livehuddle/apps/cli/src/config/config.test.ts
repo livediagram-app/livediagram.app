@@ -18,21 +18,21 @@ async function failureOf(fn: () => unknown): Promise<CliFailure> {
   throw new Error('expected a CliError');
 }
 
-const CONFIG = '/home/agent/.config/livediagram/config.toml';
+const CONFIG = '/home/agent/.config/livehuddle/config.toml';
 
 describe('paths', () => {
   it('follow XDG, defaulting under the home directory', () => {
-    expect(configDir(fakeIo())).toBe('/home/agent/.config/livediagram');
-    expect(cacheDir(fakeIo())).toBe('/home/agent/.cache/livediagram');
-    expect(configDir(fakeIo({ env: { XDG_CONFIG_HOME: '/x' } }))).toBe('/x/livediagram');
-    expect(cacheDir(fakeIo({ env: { XDG_CACHE_HOME: '/y' } }))).toBe('/y/livediagram');
+    expect(configDir(fakeIo())).toBe('/home/agent/.config/livehuddle');
+    expect(cacheDir(fakeIo())).toBe('/home/agent/.cache/livehuddle');
+    expect(configDir(fakeIo({ env: { XDG_CONFIG_HOME: '/x' } }))).toBe('/x/livehuddle');
+    expect(cacheDir(fakeIo({ env: { XDG_CACHE_HOME: '/y' } }))).toBe('/y/livehuddle');
   });
 });
 
 describe('parseConfig', () => {
   it("reads the default profile, telemetry and each profile's host, skipping comments", () => {
     const text = [
-      '# livediagram',
+      '# livehuddle',
       'default_profile = "work"',
       'telemetry = false',
       'unknown = true',
@@ -67,23 +67,23 @@ describe('resolveProfile', () => {
   };
   const io = (env: Record<string, string> = {}) => fakeIo({ env });
 
-  it('takes --host, then --profile, then LIVEDIAGRAM_HOST, then LIVEDIAGRAM_PROFILE, then the default', () => {
+  it('takes --host, then --profile, then LIVEHUDDLE_HOST, then LIVEHUDDLE_PROFILE, then the default', () => {
     expect(resolveProfile({ host: 'https://h.example/x' }, io(), config)).toEqual({
       name: 'https://h.example',
       host: 'https://h.example',
       source: 'flag',
     });
     expect(
-      resolveProfile({ profile: 'other' }, io({ LIVEDIAGRAM_HOST: 'https://e.example' }), config),
+      resolveProfile({ profile: 'other' }, io({ LIVEHUDDLE_HOST: 'https://e.example' }), config),
     ).toEqual({ name: 'other', host: 'https://other.example', source: 'flag' });
     expect(
       resolveProfile(
         {},
-        io({ LIVEDIAGRAM_HOST: 'https://e.example', LIVEDIAGRAM_PROFILE: 'other' }),
+        io({ LIVEHUDDLE_HOST: 'https://e.example', LIVEHUDDLE_PROFILE: 'other' }),
         config,
       ),
     ).toMatchObject({ host: 'https://e.example', source: 'env' });
-    expect(resolveProfile({}, io({ LIVEDIAGRAM_PROFILE: 'other' }), config)).toMatchObject({
+    expect(resolveProfile({}, io({ LIVEHUDDLE_PROFILE: 'other' }), config)).toMatchObject({
       name: 'other',
       source: 'env',
     });
@@ -122,12 +122,12 @@ describe('resolveProfile', () => {
 
 describe('loadCapabilities', () => {
   const profile = { name: 'default', host: DEFAULT_HOST, source: 'default' as const };
-  const cache = '/home/agent/.cache/livediagram/capabilities/default.json';
+  const cache = '/home/agent/.cache/livehuddle/capabilities/default.json';
   const answer = {
     aiEnabled: false,
     apiBase: `${DEFAULT_HOST}/api`,
     authEnabled: true,
-    oauthIssuer: 'https://mcp.livediagram.app',
+    oauthIssuer: 'https://mcp.livehuddle.app',
     cli: { minVersion: '0.1.0' },
   };
 
@@ -142,7 +142,7 @@ describe('loadCapabilities', () => {
     const expected = {
       apiBase: `${DEFAULT_HOST}/api`,
       authEnabled: true,
-      oauthIssuer: 'https://mcp.livediagram.app',
+      oauthIssuer: 'https://mcp.livehuddle.app',
       minVersion: '0.1.0',
     };
     expect(await loadCapabilities(io, profile, log)).toEqual(expected);
@@ -181,7 +181,7 @@ describe('loadCapabilities', () => {
     });
   });
 
-  it('refuses a failing host and one that is not livediagram', async () => {
+  it('refuses a failing host and one that is not livehuddle', async () => {
     expect(
       await failureOf(() =>
         loadCapabilities(
@@ -200,7 +200,7 @@ describe('loadCapabilities', () => {
       ),
     ).toMatchObject({
       exit: 7,
-      code: 'not_livediagram',
+      code: 'not_livehuddle',
     });
   });
 });

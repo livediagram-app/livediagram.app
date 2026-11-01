@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
-import { communityPostFixture } from '@livediagram/api-schema/testing';
+import { communityPostFixture } from '@livehuddle/api-schema/testing';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sentUrl } from '@liveworkspace/vitest-config/sent-request';
-import type { CommunityPost } from '@livediagram/api-schema';
-import { resetCommunityEnabledForTests } from '@livediagram/ui';
+import type { CommunityPost } from '@livehuddle/api-schema';
+import { resetCommunityEnabledForTests } from '@livehuddle/ui';
 import { CommunityShowcase } from './CommunityShowcase';
 
 // The landing page's Community section (docs/specs/025-community/community.md "Featured on the home page").
@@ -82,7 +82,7 @@ describe('CommunityShowcase', () => {
       expect(
         urls().some(
           (url) =>
-            url === 'https://www.liveworkspace.app/api/community/featured?app=livediagram.app',
+            url === 'https://www.liveworkspace.app/api/community/featured?app=livehuddle.app',
         ),
       ).toBe(true),
     );

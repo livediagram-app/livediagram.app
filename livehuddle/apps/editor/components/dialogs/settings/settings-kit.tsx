@@ -1,7 +1,7 @@
 'use client';
 
 import type { SettingsIllustrationProps, SettingsUiKit } from '@liveworkspace/settings-ui';
-import { DialogCloseButton, Glyph, NoMatches } from '@livediagram/ui';
+import { DialogCloseButton, Glyph, NoMatches } from '@livehuddle/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SearchInput } from '@liveworkspace/workbench/components/primitives/SearchInput';
 import type { HelpArticleKey } from '@/lib/help-articles';

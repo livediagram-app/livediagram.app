@@ -5,15 +5,15 @@ import {
   ShareDialogWithCommunity as SharedShareDialogWithCommunity,
   type ShareDialogProps,
 } from '@liveworkspace/explorer';
-import { useCommunityEnabled } from '@livediagram/ui';
+import { useCommunityEnabled } from '@livehuddle/ui';
 import { API_BASE } from '@/lib/api-client';
 import { authHrefWithReturn } from '@/components/chrome/auth-shared';
 import { setCommunityState } from '@/lib/community-state-store';
-import { livediagramCommunityHost } from '@/lib/community-share-host';
+import { livehuddleCommunityHost } from '@/lib/community-share-host';
 import { useToast } from '@/hooks/ui/useToast';
 
 // The editor's Share: the shared Share dialog with the Community tab beside Passes (@liveworkspace/explorer
-// ShareDialogWithCommunity; docs/specs/025-community/community.md "Publishing"), bound to livediagram
+// ShareDialogWithCommunity; docs/specs/025-community/community.md "Publishing"), bound to livehuddle
 // (lib/community-share-host.tsx). The header's Public badge follows the post through the community state store.
 export function ShareDialogWithCommunity({
   ownerId,
@@ -41,7 +41,7 @@ export function ShareDialogWithCommunity({
   const [version] = useState(() => Date.now());
   const host = useMemo(
     () =>
-      livediagramCommunityHost({
+      livehuddleCommunityHost({
         ownerId,
         documentId,
         version,

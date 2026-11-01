@@ -1,8 +1,8 @@
 // The index's doors into a canvas and about a person (docs/specs/015-api/api.md "Internal"): a copy into a new canvas,
 // the notices for the emails, an account closed anywhere, a guest who became an account and a name taken off a canvas.
-// What livediagram keeps for a person beside their canvases is in their own stores.
+// What livehuddle keeps for a person beside their canvases is in their own stores.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Comment, ShapeElement } from '@livediagram/document';
+import type { Comment, ShapeElement } from '@livehuddle/document';
 
 const { notifyFirstShare, notifyDocumentJoin, reportServerEvent, countCommunityCopy } = vi.hoisted(
   () => ({
@@ -296,7 +296,7 @@ describe('PUT /api/internal/people/:id/migration', () => {
     await library(USER, 'lib-new', 'Sketches');
     const body = {
       v: 1,
-      app: 'livediagram',
+      app: 'livehuddle',
       personId: USER,
       shapeLibraries: [old('lib-old', 'Sketches'), old('lib-two', 'Flows')],
     };
@@ -314,7 +314,7 @@ describe('PUT /api/internal/people/:id/migration', () => {
     const { send } = arrange();
     const res = await send('PUT', `people/${USER}/migration`, {
       v: 1,
-      app: 'livediagram',
+      app: 'livehuddle',
       personId: USER,
       shapeLibraries: [],
     });

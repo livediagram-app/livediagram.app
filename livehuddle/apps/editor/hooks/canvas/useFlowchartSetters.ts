@@ -10,7 +10,7 @@ import {
   type FlowchartDirection,
   type FlowchartStepType,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { lockedElementIds } from '@/lib/tab-cleanup';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';

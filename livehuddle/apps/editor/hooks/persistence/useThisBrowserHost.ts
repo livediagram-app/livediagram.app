@@ -19,7 +19,7 @@ export function useThisBrowserHost(
   signedIn: boolean,
   openId: string | null = null,
 ): ThisBrowserHost {
-  const items = useThisBrowserList('livediagram');
+  const items = useThisBrowserList('livehuddle');
   const conversions = useLatest(useOfflineConversions(ownerId));
   const router = useAppNavigation();
   return useMemo<ThisBrowserHost>(

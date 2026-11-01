@@ -7,7 +7,7 @@ import {
   colorWash,
   labelOn,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { TechIconArt } from '@/components/primitives/tech-icon-glyph';
 import { InlineTextLine } from '@liveworkspace/workbench/components/canvas/InlineTextLine';

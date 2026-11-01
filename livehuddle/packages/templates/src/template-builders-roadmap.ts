@@ -17,7 +17,7 @@
 // cards, their text and stickers ride the "Cards" content layer so they drag
 // between horizons with the lanes locked. The lane tints are left unlocked,
 // like the journey map's bands, so other themes repaint them.
-import { createShape, createText, type Element } from '@livediagram/document';
+import { createShape, createText, type Element } from '@livehuddle/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 
 const MUTED = '#64748b';

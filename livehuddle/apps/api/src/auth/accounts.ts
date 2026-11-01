@@ -1,4 +1,4 @@
-import { bearerTokenOf, isApiTokenFormat, isWorkbenchSessionFormat } from '@livediagram/api-schema';
+import { bearerTokenOf, isApiTokenFormat, isWorkbenchSessionFormat } from '@livehuddle/api-schema';
 import {
   audiencesFor,
   createPersonVerifier,

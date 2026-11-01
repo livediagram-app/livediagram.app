@@ -1,4 +1,4 @@
-// Plan mode moved out of livediagram to liveplanner. A tab stored while it was a Board, Sheet, Dashboard or Form tab,
+// Plan mode moved out of livehuddle to liveplanner. A tab stored while it was a Board, Sheet, Dashboard or Form tab,
 // or while it was in Plan, keeps its ordinary elements and opens in Diagram: its kind and mode, its dashboard and its
 // form are dropped, and so are the elements that only drew from Plan's stores (a Plan board, card or view, a Sheet).
 // A chart drawn from a sheet keeps its last read data as its own, and loses the range it read it from. Run on every

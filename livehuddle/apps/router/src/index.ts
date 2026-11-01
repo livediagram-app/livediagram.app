@@ -9,7 +9,7 @@ import {
   legacyFormRedirect,
   legacyHelpRedirect,
 } from './legacy-editor-route';
-import { LIVE_ROUTE_SEGMENTS } from '@livediagram/api-schema';
+import { LIVE_ROUTE_SEGMENTS } from '@livehuddle/api-schema';
 import {
   routeToWorkspace,
   routeToPreviews,
@@ -62,7 +62,7 @@ const TELEMETRY_PATH = '/telemetry';
 
 // The public telemetry dashboard is liveworkspace's now, shared by every app
 // (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/specs/008-telemetry/telemetry.md), so
-// livediagram.app/telemetry, and every link to it, moves there, filtered to this app.
+// livehuddle.app/telemetry, and every link to it, moves there, filtered to this app.
 export function telemetryDashboardUrl(env: Pick<Env, 'DEPLOY_ENV'>): string {
   const base =
     env.DEPLOY_ENV === 'staging'
@@ -70,7 +70,7 @@ export function telemetryDashboardUrl(env: Pick<Env, 'DEPLOY_ENV'>): string {
       : env.DEPLOY_ENV === 'local'
         ? 'http://localhost:3000/telemetry'
         : 'https://www.liveworkspace.app/telemetry';
-  return `${base}?app=livediagram.app`;
+  return `${base}?app=livehuddle.app`;
 }
 const HELP_PATH = '/help';
 const COMMUNITY_PATH = '/community';
@@ -227,8 +227,8 @@ export default {
 async function route(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
   // The status page is liveworkspace's now, one for every app (liveworkspace/docs/specs/010-site/site.md "Status"): an old link
-  // lands on it at livediagram's group.
-  const status = statusRedirect(url, 'livediagram', env.WORKSPACE_ORIGIN);
+  // lands on it at livehuddle's group.
+  const status = statusRedirect(url, 'livehuddle', env.WORKSPACE_ORIGIN);
   if (status) return status;
   if (hasPrefix(url.pathname, TELEMETRY_PATH)) {
     return Response.redirect(telemetryDashboardUrl(env), 301);
@@ -241,9 +241,9 @@ async function route(request: Request, env: Env): Promise<Response> {
   // only (no DEPLOY_ENV): `wrangler dev` hands the router its production host in request.url.
   const www = env.DEPLOY_ENV ? null : wwwRedirect(request, url, redirectedPath);
   if (www) return www;
-  // liveworkspace's Explorer under this address, while livediagram's switch is on (@liveworkspace/sites/workspace-proxy):
+  // liveworkspace's Explorer under this address, while livehuddle's switch is on (@liveworkspace/sites/workspace-proxy):
   // `/explorer/*` and the account reads it makes, fetched from liveworkspace.app with the address bar unchanged.
-  const workspace = routeToWorkspace(request, { app: 'livediagram', origin: env.WORKSPACE_ORIGIN });
+  const workspace = routeToWorkspace(request, { app: 'livehuddle', origin: env.WORKSPACE_ORIGIN });
   if (workspace) return workspace;
   // Every item's preview, and a share link's live image and card, are liveworkspace's (liveworkspace/docs/specs/006-media/previews.md).
   const preview = routeToPreviews(request, env.PREVIEWS_ORIGIN);

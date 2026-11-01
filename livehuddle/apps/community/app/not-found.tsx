@@ -1,4 +1,4 @@
-import { PageNotFound } from '@livediagram/ui';
+import { PageNotFound } from '@livehuddle/ui';
 
 // An address under /community with no page (docs/specs/016-platform/router-app.md "Not found"); a missing post has
 // its own friendly card on the post page (docs/specs/025-community/community.md).

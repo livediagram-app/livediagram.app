@@ -111,7 +111,11 @@ function payload(over: Partial<MigrationRoomPayload> = {}): MigrationRoomPayload
   };
 }
 
-const rows = (db: DatabaseSync, sql: string) => db.prepare(sql).all().map((r) => ({ ...r }));
+const rows = (db: DatabaseSync, sql: string) =>
+  db
+    .prepare(sql)
+    .all()
+    .map((r) => ({ ...r }));
 const one = (db: DatabaseSync, sql: string) => ({ ...db.prepare(sql).get() });
 
 beforeEach(() => {
@@ -154,10 +158,12 @@ describe('importMigrated (the migration door into a canvas)', () => {
       { tab_id: 't1', order_index: 0, added_at: 1_000, folder: null },
       { tab_id: 't2', order_index: 1, added_at: 1_000, folder: 'Folder' },
     ]);
-    expect(rows(r.db, 'SELECT tab_id, mode, element_count FROM tab_stats ORDER BY tab_id')).toEqual([
-      { tab_id: 't1', mode: 'diagram', element_count: 2 },
-      { tab_id: 't2', mode: 'diagram', element_count: 1 },
-    ]);
+    expect(rows(r.db, 'SELECT tab_id, mode, element_count FROM tab_stats ORDER BY tab_id')).toEqual(
+      [
+        { tab_id: 't1', mode: 'diagram', element_count: 2 },
+        { tab_id: 't2', mode: 'diagram', element_count: 1 },
+      ],
+    );
     expect(rows(r.db, 'SELECT * FROM image_refs')).toEqual([{ tab_id: 't1', image_id: 'img-1' }]);
     expect(rows(r.db, 'SELECT * FROM image_owners')).toEqual([
       { image_id: 'img-1', owner_id: 'user_bo' },
@@ -278,7 +284,10 @@ describe('importMigrated (the migration door into a canvas)', () => {
     const a = open('A');
     await a.room.importMigrated('A', payload({ id: 'A' }));
     a.db.exec(`UPDATE document SET saved_at = 9000, name = 'Mine now'`);
-    const again = await a.room.importMigrated('A', payload({ id: 'A', name: 'Old', savedAt: 5000 }));
+    const again = await a.room.importMigrated(
+      'A',
+      payload({ id: 'A', name: 'Old', savedAt: 5000 }),
+    );
     expect(again.meta).toBe(false);
     expect(one(a.db, 'SELECT name, saved_at FROM document')).toEqual({
       name: 'Mine now',
@@ -299,7 +308,7 @@ describe('importMigrated (the migration door into a canvas)', () => {
   });
 });
 
-describe('PUT /api/internal/items/:id/migration on livediagram', () => {
+describe('PUT /api/internal/items/:id/migration on livehuddle', () => {
   const put = (env: Env, p: unknown, auth: string) =>
     worker.fetch(
       new Request('https://api.test/api/internal/items/D/migration', {
@@ -351,11 +360,18 @@ describe('the cost of an import', () => {
     const manyAgainMs = await cpuMsOfAsync(
       async () => void (await m.room.importMigrated('M', many)),
     );
-    const elements = Array.from({ length: 5_000 }, (_, j) => ({ ...box(`e${j}`), label: 'x'.repeat(300) }));
+    const elements = Array.from({ length: 5_000 }, (_, j) => ({
+      ...box(`e${j}`),
+      label: 'x'.repeat(300),
+    }));
     const data = body(elements);
     expect(data.length).toBeGreaterThan(1_900_000);
     expect(data.length).toBeLessThan(MAX_TAB_BYTES);
-    const big = payload({ id: 'B', changesets: [], tabs: [tab('t1', { data, elementCount: 5_000 })] });
+    const big = payload({
+      id: 'B',
+      changesets: [],
+      tabs: [tab('t1', { data, elementCount: 5_000 })],
+    });
     const b = open('B');
     const bigMs = await cpuMsOfAsync(async () => void (await b.room.importMigrated('B', big)));
     console.log('[perf] migration import', {

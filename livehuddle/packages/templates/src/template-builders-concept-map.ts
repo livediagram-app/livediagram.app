@@ -15,7 +15,7 @@ import {
   keyRowsOf,
   type Anchor,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { TECH_HEADER_H, techHeader } from './template-builders-technical-kit';
 
 const INK = '#0f172a';

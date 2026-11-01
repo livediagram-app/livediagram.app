@@ -8,8 +8,9 @@ import {
   type CommunityOwnPost,
   type CommunityOwnPostResponse,
   type CommunityPostInput,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
+import { COMMUNITY_APP } from '@livehuddle/api-schema';
 
 function documentCommunityUrl(documentId: string): string {
   return `${API_BASE}/documents/${encodeURIComponent(documentId)}/community`;
@@ -59,7 +60,7 @@ export async function apiRemoveCommunityPost(ownerId: string, documentId: string
 export async function apiCommunityPopularTags(): Promise<string[]> {
   try {
     const res = await apiFetch(
-      communityServiceUrl('livediagram.app', '/facets', {
+      communityServiceUrl(COMMUNITY_APP, '/facets', {
         base: process.env.NEXT_PUBLIC_COMMUNITY_API,
       }),
     );

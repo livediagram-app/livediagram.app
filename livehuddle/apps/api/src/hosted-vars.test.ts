@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 // The hosted profile (docs/specs/016-platform/deployment.md "Hosted profile"):
-// the vars livediagram.app's deploys add, and a fork's do not. Two promises
+// the vars livehuddle.app's deploys add, and a fork's do not. Two promises
 // hang on it: a fork deploying the repo as documented is telemetry-off and
 // uncapped, and the hosted deployment's image caps survive every deploy.
 
@@ -198,8 +198,8 @@ describe('hosted-vars script', () => {
 
 // Some vars are per environment: each deployment's own address and the liveworkspace services it reaches.
 describe('hosted profile per environment', () => {
-  const prod = 'https://livediagram-router.example.workers.dev';
-  const staging = 'https://livediagram-router-staging.example.workers.dev';
+  const prod = 'https://livehuddle-router.example.workers.dev';
+  const staging = 'https://livehuddle-router-staging.example.workers.dev';
   const profile: Profile = {
     shared: { TELEMETRY_ENABLED: 'true' },
     environments: {

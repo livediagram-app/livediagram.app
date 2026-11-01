@@ -5,7 +5,7 @@
 // should carry.
 //
 // Pure types; re-exported through index.ts so the public
-// `@livediagram/document` surface is unchanged.
+// `@livehuddle/document` surface is unchanged.
 
 import type { Finish } from './finish';
 import type { ArrowFlow, ElementId, ElementLink, TextSize } from './index';

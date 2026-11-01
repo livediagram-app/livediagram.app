@@ -1,8 +1,8 @@
 'use client';
 
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import type { EditorMode } from '@livediagram/document';
-import { CountBadge } from '@livediagram/ui';
+import type { EditorMode } from '@livehuddle/document';
+import { CountBadge } from '@livehuddle/ui';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';

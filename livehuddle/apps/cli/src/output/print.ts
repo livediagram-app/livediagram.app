@@ -1,10 +1,10 @@
 // What a verb prints on stdout (docs/specs/015-api/cli.md "Output"): its compact text by default, JSON with
 // --json (fields picked with --json=a,b, of each list item for a list verb), refs or ids with -q.
 
-import type { Verb } from '@livediagram/agent-verbs';
+import type { Verb } from '@livehuddle/agent-verbs';
 import { CliError } from './cli-error';
 import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
-import { isRecord } from '@livediagram/document';
+import { isRecord } from '@livehuddle/document';
 
 export type PrintMode = { json: boolean; fields?: string[]; quiet: boolean };
 

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { TabVote } from '@livediagram/document';
+import type { TabVote } from '@livehuddle/document';
 import { VotePanel } from './VotePanel';
 
 afterEach(cleanup);

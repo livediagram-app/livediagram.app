@@ -1,8 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import type { EditorMode } from '@livediagram/document';
-import type { TemplateKind } from '@livediagram/templates';
+import type { EditorMode } from '@livehuddle/document';
+import type { TemplateKind } from '@livehuddle/templates';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
 import { track } from '@/lib/telemetry';

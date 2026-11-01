@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
-import { Glyph, Switch } from '@livediagram/ui';
+import { Glyph, Switch } from '@livehuddle/ui';
 import { DirArrow } from '@/components/palette/context-menu-icons';
-import { type IconPosition, type StandardTone } from '@livediagram/document';
+import { type IconPosition, type StandardTone } from '@livehuddle/document';
 import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { ColourPopover } from '@/components/colour/ColourPopover';

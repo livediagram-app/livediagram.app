@@ -2,7 +2,7 @@
 // ingredients. Each of a look's four settings is drawn independently: a theme from the whole built-in catalogue (every
 // one has light and dark halves that meet the contrast floor), a finish, a tab font the looks use (or none), and a
 // pattern with the strength a look gave it. Curated ingredients keep a mashup respectable; the mix makes it new.
-import { FINISHES, FONTS, type Finish } from '@livediagram/document';
+import { FINISHES, FONTS, type Finish } from '@livehuddle/document';
 import { PATTERNS } from '@/components/palette/palette-patterns';
 import { THEMES } from '@/lib/themes';
 import { TAB_LOOKS, lookMatches, type TabLook } from '@/lib/tab-looks';

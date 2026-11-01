@@ -6,8 +6,8 @@ import {
   HoverCard,
   oppositeAppearanceSetting,
   quickAppearanceToggleName,
-} from '@livediagram/ui';
-import type { AppearanceSetting } from '@livediagram/ui';
+} from '@livehuddle/ui';
+import type { AppearanceSetting } from '@livehuddle/ui';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import {
   CHROME_BTN,

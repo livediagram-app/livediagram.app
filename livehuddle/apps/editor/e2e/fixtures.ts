@@ -64,7 +64,7 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
 // their own unit tests. Marked seen for every page of the context.
 async function markModeToursSeen(context: BrowserContext): Promise<void> {
   await context.addInitScript(() => {
-    const key = 'livediagram:user-preferences:v1';
+    const key = 'livehuddle:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
       if (
@@ -165,7 +165,7 @@ export async function untilHydrated(locator: Locator): Promise<void> {
 // creates the document there and then, and lands on the editor with the mode's start screen over the canvas
 // (docs/specs/007-editor/start-diagramming.md).
 // Resolves to the new document's id; `url` carries a `/new?folder=` / `?team=` context. Without one the document is
-// made on livediagram (serverNewUrl), so a spec can seed it, share it or watch its saves; pass `'/new'` for a guest's
+// made on livehuddle (serverNewUrl), so a spec can seed it, share it or watch its saves; pass `'/new'` for a guest's
 // own create, which keeps it in This Browser.
 export async function createInMode(page: Page, mode: string, url?: string): Promise<string> {
   await page.goto(url ?? (await serverNewUrl(page)));
@@ -260,7 +260,7 @@ export async function startEventStormingRow(page: Page): Promise<void> {
 export async function dismissQuickTour(_page: Page): Promise<void> {}
 
 // A blank canvas straight away: /new?blank=1, the wizard bypass Start Blank
-// links to (docs/specs/007-editor/new-document-route.md), made on livediagram (serverNewUrl) so seedTab can write it.
+// links to (docs/specs/007-editor/new-document-route.md), made on livehuddle (serverNewUrl) so seedTab can write it.
 export async function openStartBlank(page: Page): Promise<void> {
   await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
@@ -285,7 +285,7 @@ export async function startBlankDocument(page: Page): Promise<void> {
   await start.waitFor({ state: 'detached' });
 }
 
-// A /new address that makes the document on livediagram. A guest's own /new makes it in This Browser
+// A /new address that makes the document on livehuddle. A guest's own /new makes it in This Browser
 // (docs/specs/006-document/save-locations.md "The default depends on who is creating"), where the index holds no item
 // and so gives no grant (seedTab's grant request answers 404). A `?folder=` context names a place on the server, so
 // /new makes it there whoever is creating. The page becomes a minted guest (its token where the app keeps it, so /new
@@ -381,7 +381,7 @@ export async function adoptGuest(target: Page | BrowserContext, owner: string): 
   adoptedGuests.set(target, owner);
   await target.addInitScript((t) => {
     try {
-      localStorage.setItem('livediagram:v2:guest-token', t);
+      localStorage.setItem('livehuddle:v2:guest-token', t);
     } catch {
       // A page with no storage keeps none.
     }
@@ -445,7 +445,7 @@ export async function seedDocumentItem(
   const headers = typeof owner === 'string' ? ownerHeaders(owner) : owner;
   const made = await request.post('/api/index/items', {
     headers,
-    data: { id: data.id, app: 'livediagram', title: data.name },
+    data: { id: data.id, app: 'livehuddle', title: data.name },
   });
   expect(made.ok(), `index create: ${made.status()}`).toBe(true);
   const { grant } = (await made.json()) as { grant: { grant: string } };
@@ -463,7 +463,7 @@ export async function pageOwnerHeaders(
   extra: Record<string, string> = {},
   documentId?: string,
 ): Promise<Record<string, string>> {
-  const token = await page.evaluate(() => localStorage.getItem('livediagram:v2:guest-token'));
+  const token = await page.evaluate(() => localStorage.getItem('livehuddle:v2:guest-token'));
   const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
   if (documentId) headers['X-Index-Grant'] = await documentGrant(page.request, headers, documentId);
   return { ...headers, ...extra };

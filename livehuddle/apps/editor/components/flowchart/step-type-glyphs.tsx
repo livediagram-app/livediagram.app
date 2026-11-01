@@ -2,8 +2,8 @@
 // step's own silhouette, so a menu row or tile reads as the shape it makes. Shared by the step
 // toolbar's Step Type menu and the Flowchart menu section.
 import type { ReactNode } from 'react';
-import type { FlowchartStepType } from '@livediagram/document';
-import { Glyph } from '@livediagram/ui';
+import type { FlowchartStepType } from '@livehuddle/document';
+import { Glyph } from '@livehuddle/ui';
 
 export const STEP_TYPE_GLYPH: Record<FlowchartStepType, ReactNode> = {
   terminator: (

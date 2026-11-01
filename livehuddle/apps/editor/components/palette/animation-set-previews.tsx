@@ -5,11 +5,11 @@
 // (ANIMATION_PREVIEW_FRAME) and plays it on hover.
 
 import type { CSSProperties } from 'react';
-import type { AnimationSetId, PathElement } from '@livediagram/document';
+import type { AnimationSetId, PathElement } from '@livehuddle/document';
 import { PathSvg } from '@/components/canvas/path/PathSvg';
 import { planTextAnimation, renderUnits } from '@/components/canvas/animated-words';
 import { ANIMATION_CLASS_PREFIX } from '@/lib/animation-classes';
-import { BRAND_RAMP } from '@livediagram/ui';
+import { BRAND_RAMP } from '@livehuddle/ui';
 
 // The tiles' own art wears the app's brand (brand-500), as the palette around them does.
 const ACCENT = BRAND_RAMP[500];

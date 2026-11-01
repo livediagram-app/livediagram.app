@@ -14,7 +14,7 @@ import {
   type PresentationConfig,
 } from '@/lib/presentation-config';
 import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
-import type { TelemetryCategory } from '@livediagram/api-schema';
+import type { TelemetryCategory } from '@livehuddle/api-schema';
 import {
   autoRebindArrowsEnabled,
   panelEnabled,
@@ -200,7 +200,7 @@ export type SettingsSliderRowSpec = RowBase & {
 };
 
 // Appearance is the one row that is NOT a UserPreference: it is device-local
-// (`livediagram:v2:ui-mode`), because a pre-hydration script has to apply it
+// (`livehuddle:v2:ui-mode`), because a pre-hydration script has to apply it
 // before first paint to avoid a theme flash (docs/specs/007-editor/editor-app.md). It therefore carries
 // no read/write here and is rendered against its own store.
 export type SettingsAppearanceRowSpec = RowBase & { kind: 'appearance' };
@@ -1274,7 +1274,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Delete Account',
         keywords: 'delete account remove wipe erase close cancel data gdpr',
         description:
-          'Removes your livediagram canvases, folders and settings, then signs you out. There is no undo.',
+          'Removes your livehuddle canvases, folders and settings, then signs you out. There is no undo.',
       },
     ],
   },
@@ -1365,7 +1365,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'api token key mcp integration script developer access create revoke secret',
         label: 'API Tokens',
         description:
-          'Let your scripts, and AI tools connected over MCP, use livediagram as you. Treat each like a password: it lasts six months, and you can revoke it any time.',
+          'Let your scripts, and AI tools connected over MCP, use livehuddle as you. Treat each like a password: it lasts six months, and you can revoke it any time.',
         helpArticle: 'apiTokens',
       },
     ],

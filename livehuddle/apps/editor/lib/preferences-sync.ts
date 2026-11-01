@@ -29,7 +29,7 @@ export const PREFERENCES_BODY_MAX = 4096;
 
 // Set while a save for this owner is waiting, in flight or refused; holds the owner id, so a
 // different identity on this browser is not given this one's precedence.
-export const PREFERENCES_UNSYNCED_KEY = 'livediagram:user-preferences:unsynced';
+export const PREFERENCES_UNSYNCED_KEY = 'livehuddle:user-preferences:unsynced';
 
 export function preferencesBodyLength(prefs: UserPreferences): number {
   return JSON.stringify({ prefs }).length;

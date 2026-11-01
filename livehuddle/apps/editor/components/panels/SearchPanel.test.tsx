@@ -90,9 +90,9 @@ describe('SearchPanel', () => {
       ({ id, title, app, sharedVia, trashedAt: null }) as Item;
     const listItems = vi.fn(async () => ({
       items: [
-        found('own', 'Road trip', 'livediagram'),
+        found('own', 'Road trip', 'livehuddle'),
         found('x1', 'Roadmap', 'liveplanner'),
-        found('x2', 'Road show', 'livediagram', 'code-1'),
+        found('x2', 'Road show', 'livehuddle', 'code-1'),
       ],
       nextCursor: null,
     }));
@@ -126,7 +126,7 @@ describe('SearchPanel', () => {
     expect(rows[0]!.querySelector('[data-app-mark="liveplanner"]')).not.toBeNull();
     fireEvent.click(rows[1]!);
     expect(onSelectWorkspaceItem).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'x2', app: 'livediagram', sharedVia: 'code-1' }),
+      expect.objectContaining({ id: 'x2', app: 'livehuddle', sharedVia: 'code-1' }),
     );
   });
 

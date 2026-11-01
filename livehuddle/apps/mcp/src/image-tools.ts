@@ -2,16 +2,16 @@
 // "Agents"): list_images, and the check every element-writing tool runs so an imageId names a picture the caller may
 // place. Pictures reach the gallery through the editor; no tool uploads.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { ImageSummary } from '@livediagram/api-schema';
+import type { ImageSummary } from '@livehuddle/api-schema';
 import {
   CONTACT_SHEET_MAX,
   galleryListing,
   imagesPlacedIn,
   unknownImageIssue,
   type GalleryImage,
-} from '@livediagram/agent-verbs';
-import { mcpListImages } from '@livediagram/agent-verbs/mcp';
-import type { Element, Tab } from '@livediagram/document';
+} from '@livehuddle/agent-verbs';
+import { mcpListImages } from '@livehuddle/agent-verbs/mcp';
+import type { Element, Tab } from '@livehuddle/document';
 import { ApiError, apiJson } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { imageResult } from './image-result';
@@ -24,7 +24,7 @@ import { registerTool } from './tool-annotations';
 import { errorResult, requireToken, textResult } from './tool-helpers';
 
 export const IMAGES_UNAVAILABLE =
-  'Images are not available on this livediagram server (it has no image storage).';
+  'Images are not available on this livehuddle server (it has no image storage).';
 
 // The contact sheet's grid: four pictures a row, each fitted into its cell above a caption.
 const SHEET_COLUMNS = 4;

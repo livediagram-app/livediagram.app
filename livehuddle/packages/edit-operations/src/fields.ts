@@ -3,7 +3,7 @@
 // `null` unsets. Identity, live fields and prototype keys are refused. A shape's long label is capped
 // into its note once every field is written, so it moves into the note the element ends with.
 
-import type { EditRejection, EditWarning } from '@livediagram/api-schema';
+import type { EditRejection, EditWarning } from '@livehuddle/api-schema';
 import {
   BORDER_DASH_ARRAY,
   isTextSize,
@@ -21,7 +21,7 @@ import {
   type ThemeDefinition,
   rederiveColorPresetForTheme,
   shapeColorPresets,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { fillValue, isHexColour, resolveColourValue } from './colours';
 import { kindOf } from './element-text';
 import { applyLabel } from './labels';

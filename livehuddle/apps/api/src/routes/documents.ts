@@ -3,8 +3,8 @@
 // index's (liveworkspace/docs/specs/004-index/one-explorer.md); the doors an API client still calls for those are answered from it
 // (document-index-routes.ts).
 
-import type { Tab } from '@livediagram/document';
-import { isValidTab, migrateIncomingTab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
+import { isValidTab, migrateIncomingTab } from '@livehuddle/document';
 import {
   createItemGrant,
   itemSourceOf,
@@ -28,7 +28,7 @@ import {
   indexIntentOf,
   readCreationIntent,
   readMarkUsed,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import { getDocument, readReorderEntries, reorderTabs, seedTabs } from '../db';
 import {
   badRequest,
@@ -39,7 +39,7 @@ import {
   notFound,
   payloadTooLarge,
 } from '../responses';
-import { documentDates, isDocumentSource } from '@livediagram/api-schema';
+import { documentDates, isDocumentSource } from '@livehuddle/api-schema';
 import {
   redactDocumentForCommunity,
   redactDocumentForReader,

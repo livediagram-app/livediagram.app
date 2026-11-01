@@ -8,7 +8,7 @@ import {
   createText,
   type Element,
   type Tab,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { checkoutTab, FIXED_EPOCH, pinnedId } from './checkout-tab';
 
 export const CHECKOUT_DOCUMENT = {

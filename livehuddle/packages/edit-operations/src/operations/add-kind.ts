@@ -3,7 +3,7 @@
 // input sizes it, its fields written as `set` writes them, painted with the tab's theme, placed, put
 // on the placement reference's layer (or the active one when that is locked) and appended.
 
-import type { EditRejection } from '@livediagram/api-schema';
+import type { EditRejection } from '@livehuddle/api-schema';
 import {
   SHAPE_DEFAULT_SIZE,
   SHAPE_KINDS,
@@ -27,7 +27,7 @@ import {
   type ElementId,
   type TextSize,
   type ThemeDefinition,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';
 import { layerLockOf } from '../locks';

@@ -5,9 +5,9 @@ import {
 import { site } from '@/lib/help-site';
 
 const COPY = {
-  title: 'About livediagram',
-  description: 'What livediagram is, who it is for, and why it exists.',
-  lede: 'What livediagram is, who it is for, and why it exists.',
+  title: 'About livehuddle',
+  description: 'What livehuddle is, who it is for, and why it exists.',
+  lede: 'What livehuddle is, who it is for, and why it exists.',
 };
 
 export const metadata = supportCategoryMetadata(site, 'about', COPY);

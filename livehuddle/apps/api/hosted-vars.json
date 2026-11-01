@@ -2,14 +2,14 @@
   "TELEMETRY_ENABLED": "true",
   "environments": {
     "production": {
-      "APP_BASE_URL": "https://www.livediagram.app",
+      "APP_BASE_URL": "https://www.livehuddle.app",
       "TELEMETRY_URL": "https://www.liveworkspace.app/api/telemetry",
       "COMMUNITY_URL": "https://www.liveworkspace.app/api/community",
       "MEDIA_URL": "https://www.liveworkspace.app/api/media",
       "INDEX_ORIGIN": "https://www.liveworkspace.app"
     },
     "staging": {
-      "APP_BASE_URL": "https://staging.livediagram.app",
+      "APP_BASE_URL": "https://staging.livehuddle.app",
       "TELEMETRY_URL": "https://staging.liveworkspace.app/api/telemetry",
       "COMMUNITY_URL": "https://staging.liveworkspace.app/api/community",
       "MEDIA_URL": "https://staging.liveworkspace.app/api/media",

@@ -10,14 +10,14 @@ import {
   WebVitalsBoot,
   trustedHtml,
   trustedTypesBootScript,
-} from '@livediagram/ui';
+} from '@livehuddle/ui';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { HelpProvider } from '@/lib/help-client';
 import { site } from '@/lib/help-site';
 import './globals.css';
 
-// The livediagram help centre (docs/specs/018-help/help-app.md). Indexable static site served
+// The livehuddle help centre (docs/specs/018-help/help-app.md). Indexable static site served
 // under /help by the router. No third-party scripts
 // (docs/specs/002-project-scope/open-source-and-business-model.md).
 //

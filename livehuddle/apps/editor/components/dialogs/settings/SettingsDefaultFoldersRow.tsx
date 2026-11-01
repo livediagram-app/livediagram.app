@@ -1,7 +1,7 @@
 'use client';
 
 import { DefaultFoldersSettings } from '@liveworkspace/explorer';
-import { DEFAULT_FOLDER_OPTIONS } from '@livediagram/api-schema';
+import { DEFAULT_FOLDER_OPTIONS } from '@livehuddle/api-schema';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useTokenTeams } from '@/lib/explorer-host';
 import { trackOrganise } from '@/lib/explorer-organise';
@@ -20,7 +20,7 @@ export function SettingsDefaultFoldersRow({ row }: { row: SettingsDefaultFolders
       <div className="mt-2">
         <DefaultFoldersSettings
           client={indexClient}
-          app="livediagram"
+          app="livehuddle"
           teams={teams}
           templates={CANVAS_TEMPLATE_FAMILIES}
           options={DEFAULT_FOLDER_OPTIONS}

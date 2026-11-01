@@ -29,7 +29,7 @@ describe('apiRouteLabel', () => {
       'Put.Documents.Tabs',
     );
     expect(
-      apiRouteLabel('POST', 'https://www.livediagram.app/api/documents/x/tabs/y/comments'),
+      apiRouteLabel('POST', 'https://www.livehuddle.app/api/documents/x/tabs/y/comments'),
     ).toBe('Post.Documents.Tabs.Comments');
     expect(apiRouteLabel('GET', 'http://localhost:8787/api/teams?cursor=abc')).toBe('Get.Teams');
     expect(apiRouteLabel('GET', '/api/shape-libraries')).toBe('Get.ShapeLibraries');

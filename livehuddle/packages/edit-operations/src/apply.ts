@@ -4,13 +4,8 @@
 // returns no tab: a changeset applies whole or not at all (I1). Pure and deterministic (I5): no
 // clock, no randomness beyond `options.makeId`.
 
-import { CHANGESET_MAX_OPERATIONS, type EditRejection } from '@livediagram/api-schema';
-import {
-  diffToElementOps,
-  invertElementOps,
-  type ElementId,
-  type Tab,
-} from '@livediagram/document';
+import { CHANGESET_MAX_OPERATIONS, type EditRejection } from '@livehuddle/api-schema';
+import { diffToElementOps, invertElementOps, type ElementId, type Tab } from '@livehuddle/document';
 import { finalise } from './finalise';
 import { applyAdd } from './operations/add';
 import { applyAddKind } from './operations/add-kind';

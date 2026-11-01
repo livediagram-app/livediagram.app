@@ -8,7 +8,7 @@ import { redactTabForCommunity } from '../community-redact';
 import { deleteTabRow, getDocument, getDocumentForSave, getTab } from '../db';
 import { indexFor } from '../index-service';
 import { conflict, forbidden, json, noContent, notFound } from '../responses';
-import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livediagram/api-schema';
+import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@livehuddle/api-schema';
 import { handleQaBoardRoute } from './qa-board-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';

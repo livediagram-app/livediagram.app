@@ -10,8 +10,8 @@ import {
   type ConceptAnim,
   type ConceptShape,
   type ShapeElement,
-} from '@livediagram/document';
-import { Glyph } from '@livediagram/ui';
+} from '@livehuddle/document';
+import { Glyph } from '@livehuddle/ui';
 import { BorderGrid } from '@/components/palette/context-menu-rows';
 import { SizeButton } from '@/components/palette/palette-controls';
 import {

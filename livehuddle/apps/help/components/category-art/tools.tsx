@@ -2,7 +2,7 @@ import { Arrow, Label, Shape } from '@liveworkspace/help-site/art/primitives';
 import { Card, Sparkle } from '@liveworkspace/help-site/art/parts';
 import { ToolsArt as Scene } from '@liveworkspace/help-site/art/scenes/tools';
 
-// Tools: the shared scene (docs/specs/018-help/help-pages.md "Category art"), with livediagram's helper: Auto Layout
+// Tools: the shared scene (docs/specs/018-help/help-pages.md "Category art"), with livehuddle's helper: Auto Layout
 // tidying a sign-up flow, beside the shared appearance switch and Zen mode.
 export function ToolsArt() {
   return (

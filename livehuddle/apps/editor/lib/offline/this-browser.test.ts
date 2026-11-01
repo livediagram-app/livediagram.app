@@ -21,13 +21,13 @@ describe("This Browser's list", () => {
   it('follows a create, a star and a delete', async () => {
     __setOfflineBackend(memBackend());
     await offlineCreateDocument({ id: 'a', name: 'Alpha' }, 1_000);
-    expect(readThisBrowser('livediagram')).toEqual([
+    expect(readThisBrowser('livehuddle')).toEqual([
       expect.objectContaining({ id: 'a', title: 'Alpha', lastOpenedAt: 1_000, trashedAt: null }),
     ]);
     await offlineSetFavourite('a', true);
-    expect(readThisBrowser('livediagram')[0]!.favourite).toBe(true);
+    expect(readThisBrowser('livehuddle')[0]!.favourite).toBe(true);
     await offlineDeleteDocument('a');
-    expect(readThisBrowser('livediagram')).toEqual([]);
+    expect(readThisBrowser('livehuddle')).toEqual([]);
   });
 
   it('is rebuilt from the store on the first id check, trashed records included', async () => {
@@ -36,7 +36,7 @@ describe("This Browser's list", () => {
     await backend.put(testRecord({ id: 'binned', name: 'Binned', savedAt: 6, trashedAt: 7 }));
     __setOfflineBackend(backend);
     expect(await isOfflineId('old')).toBe(true);
-    expect(readThisBrowser('livediagram').map((i) => [i.id, i.trashedAt])).toEqual([
+    expect(readThisBrowser('livehuddle').map((i) => [i.id, i.trashedAt])).toEqual([
       ['binned', 7],
       ['old', null],
     ]);

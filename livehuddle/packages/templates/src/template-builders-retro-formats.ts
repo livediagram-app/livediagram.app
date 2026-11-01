@@ -7,7 +7,7 @@
 //
 // Pure: takes a centre (cx, cy), returns a fresh Element[].
 
-import { createShape, createText, type Element } from '@livediagram/document';
+import { createShape, createText, type Element } from '@livehuddle/document';
 import {
   actionChecklist,
   actionsColumn,

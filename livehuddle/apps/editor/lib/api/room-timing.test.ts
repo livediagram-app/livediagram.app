@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_TRASHED_CLOSE } from '@livediagram/api-schema';
+import { DOCUMENT_TRASHED_CLOSE } from '@livehuddle/api-schema';
 import type { TimingTrack } from '@liveworkspace/telemetry-client';
 import { resetTimingForTests, setTimingTrack } from '../timing';
 import { connectRoom } from './room';

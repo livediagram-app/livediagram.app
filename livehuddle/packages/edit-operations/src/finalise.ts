@@ -3,7 +3,7 @@
 // notes landed on lanes, arrows re-anchored around moved boxes, lanes behind what they hold, and the
 // whole tab validated. Untouched elements pass through as the same objects (I2).
 
-import type { EditRejection } from '@livediagram/api-schema';
+import type { EditRejection } from '@livehuddle/api-schema';
 import {
   MAX_ELEMENTS_PER_TAB,
   agendaFitHeight,
@@ -25,7 +25,7 @@ import {
   type Tab,
   settleDiagramKeys,
   tagColoursOf,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { kindOf } from './element-text';
 import { ROUTE_KEYS, rerouted } from './operations/connect';
 import { sameValue } from './equality';

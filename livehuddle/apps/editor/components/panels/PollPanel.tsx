@@ -13,10 +13,10 @@
 // local Dismiss, which hides their own panel without ending anything —
 // the escape hatch if the host disconnects mid-poll.
 
-import { tallyPoll, type LivePoll, type PollTallyRow } from '@livediagram/api-schema';
+import { tallyPoll, type LivePoll, type PollTallyRow } from '@livehuddle/api-schema';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import type { DockAnchor } from '@/lib/canvas-chrome';
-import { buttonClassName, CompactEmptyState, HoverCard, lucideGlyph } from '@livediagram/ui';
+import { buttonClassName, CompactEmptyState, HoverCard, lucideGlyph } from '@livehuddle/ui';
 import { lucideMessageSquare } from '@liveworkspace/icons/lucide';
 
 const AnswerGlyph = lucideGlyph(lucideMessageSquare, 14);

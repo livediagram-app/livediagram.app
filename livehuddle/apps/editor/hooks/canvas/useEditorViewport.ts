@@ -15,7 +15,7 @@ import {
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { use, useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { browser } from 'react-dom';
-import { isBoxed, type Tab } from '@livediagram/document';
+import { isBoxed, type Tab } from '@livehuddle/document';
 import {
   computeFitToScreen,
   computeViewportCanvasRect,

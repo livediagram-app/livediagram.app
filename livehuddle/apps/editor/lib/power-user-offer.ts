@@ -11,7 +11,7 @@ import type { UserPreferences } from './user-preferences';
 
 export const POWER_USER_OFFER_DAYS = 20;
 export const POWER_USER_OFFER_SHORTCUTS = 50;
-export const OFFER_COUNTERS_KEY = 'livediagram:power-user-offer:v1';
+export const OFFER_COUNTERS_KEY = 'livehuddle:power-user-offer:v1';
 
 export type OfferCounters = { days: number; lastDay: string | null; shortcuts: number };
 

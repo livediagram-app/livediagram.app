@@ -1,11 +1,7 @@
 // The tab-level settings a template ships with (templateCanvasOverrides): its backdrop, layers, mode and kind. Its
 // own module, apart from the template catalogue in templates.ts, which the editor reads (a template's title) on every
 // load.
-import {
-  WHITEBOARD_DEFAULT_PATTERN,
-  type BackgroundPattern,
-  type Tab,
-} from '@livediagram/document';
+import { WHITEBOARD_DEFAULT_PATTERN, type BackgroundPattern, type Tab } from '@livehuddle/document';
 import { templateLayers } from './template-layers';
 import { templateEditorMode } from './template-modes';
 import type { TemplateKind } from './templates';

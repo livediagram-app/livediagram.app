@@ -1,7 +1,7 @@
 // A changeset's operations as text (blueprint "Line form"): the walk is one copy for every product,
 // bound here to this product's operations, their words and its refusals.
 
-import { CHANGESET_MAX_OPERATIONS, type EditRejection } from '@livediagram/api-schema';
+import { CHANGESET_MAX_OPERATIONS, type EditRejection } from '@livehuddle/api-schema';
 import { createParseEditOperations } from '@liveworkspace/edit-operations/parse';
 import { validateEditOperation } from './parse-json';
 import { isOperationName, parseOperationWords } from './parse-line';

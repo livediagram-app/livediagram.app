@@ -1,10 +1,10 @@
 import type { ComponentProps, Dispatch, SetStateAction } from 'react';
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livehuddle/document';
 import type { Participant } from '@/lib/identity';
 import { legibleTabAccent } from '@/lib/tab-accent';
 import { TabLockIcon } from '@/components/chrome/tab-bar-icons';
-import { SideBySideIcon } from '@livediagram/ui';
+import { SideBySideIcon } from '@livehuddle/ui';
 import { useSplitViewContext } from '@/components/split/SplitViewContext';
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
 import { EllipsisMenuButton } from './EllipsisMenuButton';
@@ -13,7 +13,7 @@ import type { useTabReorderDrag } from '@liveworkspace/workbench/components/chro
 import { TAB_RENAME_FIELD_CLASS } from '@liveworkspace/workbench/components/chrome/tab-shape';
 import { TabFrame } from '@liveworkspace/workbench/components/chrome/TabFrame';
 import type { CanvasMenuActions } from './TabBar';
-import type { AccessLevel } from '@livediagram/api-schema';
+import type { AccessLevel } from '@livehuddle/api-schema';
 
 // One tab in the bar: this app's pieces (its rename field, presence avatars, menu and split view mark) in the
 // shared TabFrame, which draws the tab alike in every editor ("How a tab looks" in the editor spec). Loose tabs and

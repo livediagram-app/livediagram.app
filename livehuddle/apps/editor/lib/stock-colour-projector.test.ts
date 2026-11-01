@@ -5,7 +5,7 @@ import {
   createFreehand,
   penColourHex,
   type Element,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { createStockColourProjector } from './stock-colour-projector';
 
 const stroke = (over: Partial<Element> = {}): Element =>

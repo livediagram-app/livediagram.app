@@ -57,7 +57,7 @@ async function openAs(browser: Browser, baseURL: string, url: string, owner: str
   await ctx.addInitScript(
     ({ o }) => {
       if (o) {
-        localStorage.setItem('livediagram:v2:name-confirmed', '1');
+        localStorage.setItem('livehuddle:v2:name-confirmed', '1');
       }
     },
     { o: owner },

@@ -9,7 +9,7 @@ import {
   isCommentListStatus,
   type DocumentCommentThread,
   type DocumentCommentsResponse,
-} from '@livediagram/api-schema';
+} from '@livehuddle/api-schema';
 import {
   applyElementDelta,
   sanitizeMentions,
@@ -17,7 +17,7 @@ import {
   type CommentThread,
   type Element,
   type ElementDelta,
-} from '@livediagram/document';
+} from '@livehuddle/document';
 import { findCommentHost, removeComment, threadsOfTab } from '../comments';
 import { getDocument, getTab, isTabRevStale, tabIdsWithComments, upsertTabAtRev } from '../db';
 import { getParticipant } from '../liveworkspace/profiles';

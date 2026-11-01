@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { explorerImports, explorerLibraryHosts } from './explorer-library-host';
 
 describe('explorer library host', () => {
-  it('offers livediagram’s Import From sources, on this site’s own /import page', () => {
+  it('offers livehuddle’s Import From sources, on this site’s own /import page', () => {
     expect(explorerImports?.sources.map((s) => s.id)).toEqual([
       'microsoft-whiteboard',
       'excalidraw',

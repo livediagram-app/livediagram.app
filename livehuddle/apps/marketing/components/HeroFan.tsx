@@ -1,9 +1,9 @@
 'use client';
 
-import { ctaHref } from '@livediagram/api-schema';
-import { TemplatePreview } from '@livediagram/template-previews';
-import { templateCreateHref, type TemplateKind } from '@livediagram/templates';
-import { PREFERS_REDUCED_MOTION, Tooltip, useMediaQuery } from '@livediagram/ui';
+import { ctaHref } from '@livehuddle/api-schema';
+import { TemplatePreview } from '@livehuddle/template-previews';
+import { templateCreateHref, type TemplateKind } from '@livehuddle/templates';
+import { PREFERS_REDUCED_MOTION, Tooltip, useMediaQuery } from '@livehuddle/ui';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   HERO_FAN_FULL_MIN_PX,

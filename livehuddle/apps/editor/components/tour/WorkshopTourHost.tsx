@@ -15,7 +15,7 @@ import {
   type WorkshopDemo,
   type WorkshopTourApi,
 } from './workshop-tour-steps';
-import { createShape, defaultSessionConfig, type Element } from '@livediagram/document';
+import { createShape, defaultSessionConfig, type Element } from '@livehuddle/document';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { computeViewportCenter } from '@liveworkspace/workbench/lib/viewport';
 import { TourStage } from './TourStage';

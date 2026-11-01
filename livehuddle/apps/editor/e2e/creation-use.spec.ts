@@ -38,8 +38,8 @@ const jumpBackIn = (page: Page) =>
 async function freshGuest(page: Page): Promise<void> {
   await adoptGuest(page, await mintGuest(page.request));
   await page.addInitScript(() => {
-    localStorage.setItem('livediagram:v2:name-confirmed', '1');
-    localStorage.setItem('livediagram:v2:ui-mode', 'dark');
+    localStorage.setItem('livehuddle:v2:name-confirmed', '1');
+    localStorage.setItem('livehuddle:v2:ui-mode', 'dark');
   });
 }
 
