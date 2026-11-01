@@ -571,8 +571,7 @@ describe('the blocked badge', () => {
     expect(svg).toContain('⚑');
     expect(svg).toMatch(badge);
     expect(svgBoxed(board('detailed'), { items })).not.toMatch(badge);
-    expect(planBoardFitHeight(board('detailed'), items, 'light', withBlocks, () => false)).toBe(
-      900,
-    );
+    const shape = board('detailed') as Parameters<typeof planBoardFitHeight>[0];
+    expect(planBoardFitHeight(shape, items, 'light', withBlocks, () => false)).toBe(900);
   });
 });
