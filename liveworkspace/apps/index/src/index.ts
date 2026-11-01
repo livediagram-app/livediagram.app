@@ -22,6 +22,8 @@ import { sweep } from './purge';
 import { sweepExpiringLinks } from './share-expiry';
 import { handleWorkbenchClose } from './workbench-close';
 import { handleAccountTimeline, handleTimeline } from './timeline';
+import { kickWebhooks, queuedCount } from './webhooks/outbox';
+import { handleWebhooks } from './webhooks/routes';
 import { handleItemShare, handleShareCode, handleShared } from './sharing';
 import { under } from '@liveworkspace/index-app/worker-http';
 import { guardRequest } from '@liveworkspace/api-kit/request-failure';
@@ -51,6 +53,7 @@ const PERSON_ROUTES: Record<string, (ctx: PersonContext) => Promise<Response>> =
   inbox: handleInbox,
   trash: handleTrash,
   timeline: handleTimeline,
+  webhooks: (ctx) => handleWebhooks(ctx),
 };
 
 async function route(ctx: RouteContext): Promise<Response> {
@@ -130,6 +133,10 @@ const routeLabel = createApiRouteLabel(
     'drive',
     'migration',
     'handoff',
+    'webhooks',
+    'test',
+    'deliveries',
+    'card-moves',
   ]),
 );
 
@@ -180,11 +187,16 @@ async function serve(request: Request, env: Env, ctx: ExecutionContext): Promise
 
 const worker = {
   // One guard for the whole request (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails").
-  fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    return guardRequest(
+  // After the answer, a request whose writes may have queued webhook deliveries wakes their dispatcher
+  // (webhooks/outbox.ts): never before, so no request waits on a delivery.
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const queued = queuedCount();
+    const response = await guardRequest(
       () => serve(request, env, ctx),
       () => ({ route: routeLabel(request.method, request.url), json }),
     );
+    if (queuedCount() !== queued) ctx.waitUntil(kickWebhooks(env));
+    return response;
   },
 
   // Every 15 minutes: carry on closed accounts' purges, and tell the apps what was purged and which guests
@@ -198,6 +210,10 @@ const worker = {
       });
       await step('person merges', async () => {
         console.log('[index] person merges', await drainPersonMerges(env));
+      });
+      // A wake a request lost (its isolate gone before waitUntil ran) is made up here.
+      await step('webhooks', async () => {
+        await kickWebhooks(env);
       });
       return;
     }
@@ -223,3 +239,7 @@ async function step(name: string, run: () => Promise<void>): Promise<void> {
 }
 
 export default worker;
+
+// The webhook dispatcher's class, which wrangler.toml binds as WEBHOOKS: a Durable Object class must be exported by
+// the Worker's entry.
+export { WebhookDispatcher } from './webhooks/durable-object';

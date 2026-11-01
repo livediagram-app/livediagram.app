@@ -1,6 +1,10 @@
 // The Timeline (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Timeline"): what happened to the items a person
 // reaches as owner or team member, newest first, in every app or one.
 //
+// Webhooks. Every item event a webhook can listen for (webhooks/outbox.ts isListened) adds one statement to the batch
+// recording it, queuing a delivery for each of the item scope's webhooks that listens (none, usually: an indexed
+// probe that writes nothing).
+//
 // Recording. The index writes its own events (created, renamed, moved, trashed, restored, shared,
 // unshared, favourited, synced, taken_offline) in the same batch as the change, each statement reading the
 // item's app, name and scope from its row. From an item's collab push it writes commented,
@@ -48,6 +52,7 @@ import { inTeamNow } from './fresh-teams';
 import { badRequest, forbidden, json, noContent, notFound, readObject, unauthorized } from './http';
 import { useDayOf, useDayStatements } from './items';
 import { ITEM_COLUMNS, directAccess, toItem, type Access, type ItemRow } from './rows';
+import { isListened, webhookOutboxStatement } from './webhooks/outbox';
 
 type Db = D1Database;
 
@@ -105,6 +110,8 @@ export function eventStatements(db: Db, event: EventInput): D1PreparedStatement[
       )
       .bind(event.scope ?? null, id),
   ];
+  // Handed to the item scope's webhooks that listen for it (webhooks/outbox.ts), in the same batch.
+  if (isListened(event.type)) statements.push(webhookOutboxStatement(db, [id]));
   // An event that moved on keeps every scope row's time with it.
   if (event.id) {
     statements.push(
@@ -177,6 +184,7 @@ export function bulkEventStatements(db: Db, events: readonly BulkEvent[]): D1Pre
     at: e.at,
   }));
   const pairs = events.flatMap((e) => [...new Set(e.scopes)].map((scope) => [scope, e.id]));
+  const listened = events.filter((e) => e.itemId !== null && isListened(e.type)).map((e) => e.id);
   return [
     db
       .prepare(
@@ -206,6 +214,8 @@ export function bulkEventStatements(db: Db, events: readonly BulkEvent[]): D1Pre
          WHERE event_id IN (SELECT value FROM json_each(?))`,
       )
       .bind(JSON.stringify(events.map((e) => e.id))),
+    // Handed to their item scopes' webhooks that listen (webhooks/outbox.ts), in the same batch.
+    ...(listened.length > 0 ? [webhookOutboxStatement(db, listened)] : []),
   ];
 }
 
