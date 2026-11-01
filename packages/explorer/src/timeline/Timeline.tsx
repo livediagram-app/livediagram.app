@@ -44,6 +44,10 @@ import {
 } from './model';
 import type { TimelineControls } from './useTimelineControls';
 
+// A day's cards. They are dealt in from 20px to the right, so the grid clips sideways, 8px clear of the cards so their
+// focus rings and shadows still show: the deal never widens a phone's page, which would then pan sideways for good.
+const DEAL_GRID = `${CARD_GRID} -mx-2 overflow-x-clip px-2`;
+
 const SOLID_BRAND = `bg-brand-700 text-white ${SOLID_BRAND_DARK_CONTROL}`;
 
 export type TimelineProps = {
@@ -399,7 +403,7 @@ function TimelineGroup({
           </h2>
           <p className="text-[10px] text-slate-500 dark:text-slate-400">{year}</p>
         </div>
-        <div className={CARD_GRID}>{children}</div>
+        <div className={DEAL_GRID}>{children}</div>
       </div>
     </section>
   );
