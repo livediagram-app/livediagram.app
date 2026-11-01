@@ -10,7 +10,7 @@ import {
   dayNo,
   dayStart,
   isDay,
-  isTimeZone,
+  isRuleTimeZone,
   laterDay,
   localDay,
   weekdayOf,
@@ -55,7 +55,7 @@ function readDays(v: unknown): number[] | undefined {
 export function readRepeatRule(v: unknown): RepeatRule | undefined {
   if (!isObj(v)) return undefined;
   const { every, from, timeZone, until, status } = v;
-  if (!isEvery(every) || !isDay(from) || !isTimeZone(timeZone)) return undefined;
+  if (!isEvery(every) || !isDay(from) || !isRuleTimeZone(timeZone)) return undefined;
   const rule: RepeatRule = { every, from, timeZone };
   if (every === 'week') {
     const days = readDays(v['days']);

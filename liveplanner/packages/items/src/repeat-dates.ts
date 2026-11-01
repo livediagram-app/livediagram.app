@@ -2,6 +2,7 @@
 // "Repeats"): `YYYY-MM-DD` days, worked on as UTC day numbers so a day's weekday never depends on a time zone, and the
 // time zone sums that say which day it is somewhere and when that day starts there.
 
+import { isTimeZone } from './date-time-fields';
 import { DAY_MS, dayKey, dayNumber, dayParts } from './plan-view-dates';
 
 const HOUR_MS = 3_600_000;
@@ -43,16 +44,10 @@ function formatter(timeZone: string): Intl.DateTimeFormat {
   return made;
 }
 
-// An IANA time zone this runtime knows ("Europe/London", "UTC").
-export function isTimeZone(v: unknown): v is string {
-  if (typeof v !== 'string' || v.length === 0 || v.length > 64) return false;
-  try {
-    formatter(v);
-    return true;
-  } catch {
-    return false;
-  }
-}
+// A rule's time zone: a short string naming an IANA zone this runtime knows ("Europe/London", "UTC"), checked by
+// the Date & Time fields' isTimeZone. Bounded first, so a stored rule can never be a long string.
+export const isRuleTimeZone = (v: unknown): v is string =>
+  typeof v === 'string' && v.length > 0 && v.length <= 64 && isTimeZone(v);
 
 type Clock = { y: number; m: number; d: number; h: number; min: number; s: number };
 

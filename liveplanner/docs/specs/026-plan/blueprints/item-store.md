@@ -722,7 +722,7 @@ interface RepeatRule {
   until?: string; // YYYY-MM-DD, on or after `from`; the last day a copy may be made for
   status?: string; // the chosen column; absent: the type's starting state
   from: string; // YYYY-MM-DD in timeZone: the day it was saved
-  timeZone: string; // IANA, checked by Intl (isTimeZone)
+  timeZone: string; // IANA, at most 64 characters (isRuleTimeZone, on date-time-fields.ts isTimeZone)
 }
 ```
 

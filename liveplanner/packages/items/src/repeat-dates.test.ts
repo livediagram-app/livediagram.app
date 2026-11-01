@@ -4,7 +4,7 @@ import {
   addDays,
   dayStart,
   isDay,
-  isTimeZone,
+  isRuleTimeZone,
   laterDay,
   localDay,
   weekdayOf,
@@ -40,12 +40,12 @@ describe('repeat days', () => {
   });
 
   it('knows the IANA zones and refuses the rest', () => {
-    expect(isTimeZone('Europe/London')).toBe(true);
-    expect(isTimeZone('UTC')).toBe(true);
-    expect(isTimeZone('Mars/Olympus')).toBe(false);
-    expect(isTimeZone('')).toBe(false);
-    expect(isTimeZone('x'.repeat(65))).toBe(false);
-    expect(isTimeZone(1)).toBe(false);
+    expect(isRuleTimeZone('Europe/London')).toBe(true);
+    expect(isRuleTimeZone('UTC')).toBe(true);
+    expect(isRuleTimeZone('Mars/Olympus')).toBe(false);
+    expect(isRuleTimeZone('')).toBe(false);
+    expect(isRuleTimeZone('x'.repeat(65))).toBe(false);
+    expect(isRuleTimeZone(1)).toBe(false);
   });
 
   it('reads the same instant as different days in different zones', () => {
@@ -95,7 +95,7 @@ describe('repeat days', () => {
 
   it('keeps a bounded number of zone formatters', () => {
     const zones = Intl.supportedValuesOf('timeZone').slice(0, REPEAT_ZONE_CACHE_MAX + 5);
-    for (const z of zones) expect(isTimeZone(z)).toBe(true);
+    for (const z of zones) expect(isRuleTimeZone(z)).toBe(true);
     // The first ones were dropped and are made again on demand.
     expect(localDay(Date.now(), zones[0]!)).toMatch(/^2026-11-0[123]$/);
   });
