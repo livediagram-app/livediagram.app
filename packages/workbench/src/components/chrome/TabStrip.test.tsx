@@ -434,6 +434,44 @@ describe('TabStrip', () => {
     delete (HTMLElement.prototype as { clientWidth?: number }).clientWidth;
   });
 
+  // Renaming the open tab to a longer name widened it past the strip's edge, under the footer's Search.
+  it('brings the open tab back when it grows, and leaves it alone when it shrinks', () => {
+    let resized: () => void = () => {};
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(cb: () => void) {
+          resized = cb;
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    let tabWidth = 80;
+    Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
+      configurable: true,
+      get() {
+        return (this as HTMLElement).matches('[data-tab][data-active]') ? tabWidth : 0;
+      },
+    });
+    strip();
+    const scroller = screen.getByRole('toolbar').parentElement as HTMLElement;
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      if (this === scroller) return { left: 0, right: 200, width: 200 } as DOMRect;
+      return { left: 100, right: 100 + tabWidth } as DOMRect;
+    });
+    scrollTo.mockClear();
+    tabWidth = 60;
+    resized();
+    expect(scrollTo).not.toHaveBeenCalled();
+    tabWidth = 150;
+    resized();
+    expect(scrollTo).toHaveBeenCalledWith(expect.objectContaining({ left: 78 }));
+    delete (HTMLElement.prototype as { offsetWidth?: number }).offsetWidth;
+  });
+
   it('jumps rather than glides under reduced motion', () => {
     vi.stubGlobal(
       'matchMedia',
