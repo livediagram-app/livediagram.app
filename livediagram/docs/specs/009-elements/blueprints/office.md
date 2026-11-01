@@ -4,21 +4,21 @@ Derived from [Office](../office.md).
 
 ## Files
 
-| File                                                   | Role                                                                                      |
-| ------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| `packages/document/src/office.ts`                      | Kinds, drinks, tones, the drawings (`OFFICE_ART`), footprints, the room's parts and walls |
-| `packages/document/src/seating.ts`                     | The meeting table as seating: `FURNITURE_ART['meeting-table']`, seats with a facing each  |
-| `packages/document/src/shape-factory.ts`               | Default sizes and fields (`roomDoor`, label, padding, aspect lock)                        |
-| `packages/document/src/validate-shape.ts`              | `roomDoor` validation                                                                     |
-| `packages/document/src/colors.ts`                      | Skins (floor and rug fills), the room's `md` padding                                      |
-| `packages/document/src/svg-render-faces.ts`            | Export: `furnitureArt` for the pieces, `roomSvg` for a room                               |
-| `packages/api-schema/src/room-messages.ts`             | `AvatarPresence.holding`                                                                  |
+| File                                                     | Role                                                                                      |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `packages/document/src/office.ts`                        | Kinds, drinks, tones, the drawings (`OFFICE_ART`), footprints, the room's parts and walls |
+| `packages/document/src/seating.ts`                       | The meeting table as seating: `FURNITURE_ART['meeting-table']`, seats with a facing each  |
+| `packages/document/src/shape-factory.ts`                 | Default sizes and fields (`roomDoor`, label, padding, aspect lock)                        |
+| `packages/document/src/validate-shape.ts`                | `roomDoor` validation                                                                     |
+| `packages/document/src/colors.ts`                        | Skins (floor and rug fills), the room's `md` padding                                      |
+| `packages/document/src/svg-render-faces.ts`              | Export: `furnitureArt` for the pieces, `roomSvg` for a room                               |
+| `packages/api-schema/src/room-messages.ts`               | `AvatarPresence.holding`                                                                  |
 | `apps/editor/components/canvas/collab/FurnitureView.tsx` | Canvas drawing of every piece but the room; `MachineAnswer`                               |
 | `apps/editor/components/canvas/collab/RoomView.tsx`      | Canvas drawing of a room at its own size                                                  |
-| `apps/editor/lib/avatar-fence.ts`                        | `fenceSegments`: fences, room walls and footprints                                        |
-| `apps/editor/lib/avatar-walk.ts`                         | `elementUnderFeet` skips floor and scenery                                                |
-| `apps/editor/hooks/canvas/useAvatarWalk.ts`              | `giveDrink`, the held drink, `onWalkIntoDrink`, presence `holding`                        |
-| `apps/editor/components/canvas/avatar-sprite.tsx`        | `HeldCup`                                                                                 |
+| `../packages/avatar/src/collision.ts`                    | `fenceSegments`: fences, room walls and footprints                                        |
+| `../packages/avatar/src/walk.ts`                         | `elementUnderFeet` skips floor and scenery                                                |
+| `../packages/avatar/src/hooks/useAvatarWalk.ts`          | `giveDrink`, the held drink, `onWalkIntoDrink`, presence `holding`                        |
+| `../packages/avatar/src/components/avatar-sprite.tsx`    | `HeldCup`                                                                                 |
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`      | Drink on arrival, the machine's answer, a table seat's facing                             |
 | `apps/editor/app/document/[id]/useElementHelpers.ts`     | A room or rug goes in at the back                                                         |
 | `apps/editor/components/palette/CollabMenuSections.tsx`  | `RoomMenuSection`                                                                         |
@@ -126,11 +126,11 @@ Element add / change telemetry as every element; `Canvas · Used · WaterCooler 
 
 ## Testing
 
-| Rule                                        | Test                                                       |
-| ------------------------------------------- | ---------------------------------------------------------- |
-| Kinds, sizes, room defaults, doorway values | `packages/document/src/office.test.ts`                     |
-| Walls, doorway span, room drawing           | same                                                       |
-| Footprints, table seats and facings         | same                                                       |
+| Rule                                        | Test                                                         |
+| ------------------------------------------- | ------------------------------------------------------------ |
+| Kinds, sizes, room defaults, doorway values | `packages/document/src/office.test.ts`                       |
+| Walls, doorway span, room drawing           | same                                                         |
+| Footprints, table seats and facings         | same                                                         |
 | Walls and footprints block; doorway passes  | `apps/editor/lib/avatar-fence.test.ts`                       |
 | Floor and scenery never rung                | `apps/editor/lib/avatar-walk.test.ts`                        |
 | Drink held, refreshed, put down; on arrival | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx`            |
