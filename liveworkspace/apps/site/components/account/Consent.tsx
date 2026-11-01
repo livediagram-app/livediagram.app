@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Button } from '@liveworkspace/ui';
 import { afterSignIn, call, nextUrl, signedOAuthQuery } from '@/lib/accounts';
 import { useLocationSearch } from '@/lib/location-search';
 import {
@@ -50,22 +51,23 @@ export function Consent() {
       </AccountHeading>
       {error && <Alert tone="error">{error}</Alert>}
       <div className="flex gap-2">
-        <button
-          type="button"
+        {/* Both busy while it answers (busy-buttons.md): the pressed one keeps the keyboard, and neither sends twice. */}
+        <Button
+          variant="none"
           onClick={() => void answer(false)}
-          disabled={busy}
+          busy={busy}
           className={SECONDARY_BUTTON}
         >
           Deny
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
+          variant="none"
           onClick={() => void answer(true)}
-          disabled={busy}
+          busy={busy}
           className={PRIMARY_BUTTON}
         >
           Allow
-        </button>
+        </Button>
       </div>
     </AccountCard>
   );

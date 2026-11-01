@@ -9,6 +9,7 @@ import {
   type WebhookEvent,
   type WebhookKind,
 } from '@liveworkspace/index-client';
+import { Button } from '@liveworkspace/ui';
 import { BUTTON, ErrorNote, INPUT } from '../account-ui';
 import { DestinationPicker, EventPicker, FormStep, ScopePicker, type TeamChoice } from './pickers';
 import { attempt, KINDS, webhookError, webhooksClient } from './webhooks-api';
@@ -54,7 +55,6 @@ export function AddWebhook({
 
   async function submit(event: FormEvent) {
     event.preventDefault();
-    if (busy) return;
     setBusy(true);
     setError(null);
     const result = await attempt(() =>
@@ -195,17 +195,17 @@ export function AddWebhook({
           <button type="button" className={BUTTON.secondary} onClick={onCancel}>
             Cancel
           </button>
-          <button
+          <Button
             type="submit"
+            variant="none"
             className={BUTTON.primary}
-            // Only what the form lacks disables it. While it adds, it stays focusable (aria-disabled, and submit
-            // ignores a second press): a disabled button drops the keyboard to the dialog's top, and an error
-            // then left the person nowhere near it.
+            // Only what the form lacks disables it. While it adds, it keeps the keyboard (busy-buttons.md): a
+            // disabled button drops it to the dialog's top, and an error then left the person nowhere near it.
             disabled={events.size === 0 || missing !== null}
-            aria-disabled={busy || undefined}
+            busy={busy}
           >
             {busy ? 'Adding…' : 'Add Webhook'}
-          </button>
+          </Button>
         </div>
       </div>
     </form>

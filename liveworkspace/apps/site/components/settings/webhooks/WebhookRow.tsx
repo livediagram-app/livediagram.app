@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, type ReactNode } from 'react';
-import { Chip, ConfirmPopover, Tooltip, TrashIcon } from '@liveworkspace/ui';
+import { Button, Chip, ConfirmPopover, Tooltip, TrashIcon } from '@liveworkspace/ui';
 import { AccordionSection } from '@liveworkspace/settings-ui';
 import {
   WEBHOOK_EVENTS,
@@ -190,15 +190,15 @@ export function WebhookRow({
 
   const pauseLabel = paused ? 'Resume Webhook' : 'Pause Webhook';
   const resume = (
-    <button
-      type="button"
+    <Button
+      variant="none"
       className={`${BUTTON.secondary} !px-3 !py-1.5 bg-white dark:bg-slate-800`}
-      aria-disabled={busy || undefined}
+      busy={busy}
       // The note and this button go once it resumes: the keyboard moves to the row's Pause.
       onClick={() => void setPaused(false).then(() => pauseRef.current?.focus())}
     >
       Resume
-    </button>
+    </Button>
   );
 
   return (
@@ -233,48 +233,47 @@ export function WebhookRow({
             </div>
           </div>
           <div className="ml-[52px] flex shrink-0 items-center gap-1.5 sm:ml-0">
-            <button
-              type="button"
+            <Button
+              variant="none"
               className={`${BUTTON.secondary} gap-1.5 !px-3.5`}
-              // Paused, it can't be pressed. While a test sends, or the row is busy, it stays focusable
-              // (aria-disabled, and a press does nothing): disabling the focused button dropped the keyboard
-              // out of Settings altogether.
+              // Paused, it can't be pressed. While a test sends, or the row is busy, it keeps the keyboard
+              // (busy-buttons.md): disabling the focused button dropped it out of Settings altogether.
               disabled={paused}
-              aria-disabled={busy || test.result?.state === 'sending' || undefined}
+              busy={busy || test.result?.state === 'sending'}
               onClick={() => {
-                if (busy || test.result?.state === 'sending') return;
                 setError(null);
                 void test.send();
               }}
             >
               <SendGlyph />
               Send Test
-            </button>
+            </Button>
             <Tooltip label={pauseLabel}>
-              <button
+              <Button
                 ref={pauseRef}
-                type="button"
+                variant="none"
                 aria-label={pauseLabel}
                 className={BUTTON.icon}
-                // Focusable while it saves, so the keyboard stays on it as it turns into Resume (or Pause).
-                aria-disabled={busy || undefined}
+                // Keeps the keyboard while it saves, as it turns into Resume (or Pause).
+                busy={busy}
                 onClick={() => void setPaused(!paused)}
               >
                 {paused ? <PlayGlyph /> : <PauseGlyph />}
-              </button>
+              </Button>
             </Tooltip>
             <Tooltip label="Delete Webhook">
-              <button
+              <Button
                 ref={deleteRef}
-                type="button"
+                variant="none"
                 aria-label="Delete Webhook"
                 aria-haspopup="dialog"
                 className={BUTTON.iconDanger}
-                disabled={busy}
+                // Busy while it deletes: the popover hands the keyboard back here, which a disabled button drops.
+                busy={busy}
                 onClick={(event) => setConfirming(event.currentTarget)}
               >
                 <TrashIcon size={15} />
-              </button>
+              </Button>
             </Tooltip>
           </div>
         </div>
