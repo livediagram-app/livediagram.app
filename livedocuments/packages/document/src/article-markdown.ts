@@ -12,9 +12,10 @@ import {
   type ArticleRun,
 } from './article-flow';
 
-// Something that only Markdown writes: a heading, a list, a quote, a fence, a rule, emphasis or a link.
+// Something that only Markdown writes: a heading, a list, a quote, a fence, a rule, emphasis or a link. A link's text
+// holds no bracket and its address no parenthesis, so each `[` or `(` scans only to the next: linear on `[[[[`.
 const MARKDOWN_SIGNAL =
-  /^(#{1,6}\s|\s*([-*+]|\d+[.)])\s|>\s|```|(-{3,}|\*{3,}|_{3,})\s*$|\[TOC(?: [12])?\]\s*$)|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\)|`[^`]+`/m;
+  /^(#{1,6}\s|\s*([-*+]|\d+[.)])\s|>\s|```|(-{3,}|\*{3,}|_{3,})\s*$|\[TOC(?: [12])?\]\s*$)|\*\*[^*]+\*\*|\[[^\][]+\]\([^()]+\)|`[^`]+`/m;
 
 export function looksLikeMarkdown(text: string): boolean {
   if (MARKDOWN_SIGNAL.test(text)) return true;

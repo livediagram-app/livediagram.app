@@ -194,10 +194,12 @@ function runsMarkdown(runs: readonly ArticleRun[]): string {
 // A line break inside a table cell, held while the cell's runs are written, then written `<br>`.
 const CELL_BREAK = '\ue010';
 
-// A cell's runs as a pipe table's cell: its bars escaped, a line break as `<br>`.
+// A cell's runs as a pipe table's cell: its bars escaped, a line break as `<br>`. Backslashes are already escaped
+// (escapeText), so a bar is the one character left to escape.
 const cellMarkdown = (runs: readonly ArticleRun[]) =>
   runsMarkdown(runs.map((r) => ({ ...r, text: r.text.replace(/\n/g, CELL_BREAK) })))
-    .replace(/\|/g, '\\|')
+    .split('|')
+    .join('\\|')
     .replaceAll(CELL_BREAK, '<br>');
 
 /** A table as a pipe table: its header row the header line, or an empty header line when it has

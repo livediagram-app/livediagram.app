@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import {
   looksLikeMarkdown,
@@ -93,6 +94,16 @@ describe('pasted tables and contents', () => {
     expect(looksLikeMarkdown('| a | b |\n|---|---|\n| 1 | 2 |')).toBe(true);
     expect(looksLikeMarkdown('[TOC]')).toBe(true);
     expect(looksLikeMarkdown('| a | b |\n| 1 | 2 |')).toBe(false);
+  });
+
+  it('tells Markdown in linear time on runs of brackets', () => {
+    const brackets = `x${'['.repeat(50_000)}`;
+    const links = `x${'[a]('.repeat(20_000)}`;
+    const ms = cpuMsOf(() => {
+      expect(looksLikeMarkdown(brackets)).toBe(false);
+      expect(looksLikeMarkdown(links)).toBe(false);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(50));
   });
 
   it('reads a pipe table as a table block', () => {
