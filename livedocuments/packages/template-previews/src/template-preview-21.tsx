@@ -3,9 +3,10 @@ import type { TemplateKind } from '@livedocuments/templates';
 import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 21: the slide decks built from slide layouts (docs/specs/008-canvas/canvas-and-palette.md "Templates on
-// pages"): Launch Keynote, Quarterly Review, Team Welcome and Workshop Kickoff. Each is three 16:9 slides fanned
+// pages"): Launch Keynote, Quarterly Review, Team Welcome, Workshop Kickoff and Class Lesson. Each is three 16:9 slides fanned
 // back to front: two pale slides of its body (a heading and a hint of the layout on each) behind its title slide on
-// its own dark colours, with a hint of the motion it opens on (aurora lights, a mesh of colour, bokeh, waves) and the
+// its own dark colours, with a hint of the motion it opens on (aurora lights, a mesh of colour, bokeh, waves, drifting
+// colour) and the
 // title's bars in white. Hover story: the motion drifts across the title slide. Static SVG preview tiles; TemplatePreview chains the groups with ??.
 
 type Deck = {
@@ -14,8 +15,8 @@ type Deck = {
   light: string;
   accent: string;
   motion: (id: string) => ReactElement;
-  // What the middle slide shows: three numbers, a chart, cards or steps.
-  body: 'stats' | 'chart' | 'cards' | 'steps';
+  // What the middle slide shows: three numbers, a chart, cards, steps or a cycle.
+  body: 'stats' | 'chart' | 'cards' | 'steps' | 'cycle';
 };
 
 const DECKS: Partial<Record<TemplateKind, Deck>> = {
@@ -86,7 +87,55 @@ const DECKS: Partial<Record<TemplateKind, Deck>> = {
       </>
     ),
   },
+  'class-lesson': {
+    from: '#0c4a6e',
+    to: '#0369a1',
+    light: '#f0f9ff',
+    accent: '#0284c7',
+    body: 'cycle',
+    motion: (id) => (
+      <>
+        <ellipse cx="32" cy="38" rx="14" ry="7" fill={`url(#${id}-g1)`} />
+        <ellipse cx="58" cy="27" rx="11" ry="6" fill={`url(#${id}-g1)`} />
+      </>
+    ),
+  },
 };
+
+// The water cycle's four stages round a ring, its arrow going round: the Class Lesson's middle slide.
+function Cycle({ x, y, accent }: { x: number; y: number; accent: string }) {
+  const cx = x + 22;
+  const cy = y + 14.5;
+  return (
+    <g>
+      <circle
+        cx={cx}
+        cy={cy}
+        r="6"
+        fill="none"
+        stroke={accent}
+        strokeWidth="0.5"
+        strokeDasharray="1.2 0.8"
+      />
+      {[
+        [0, -6],
+        [6, 0],
+        [0, 6],
+        [-6, 0],
+      ].map(([dx, dy], i) => (
+        <circle
+          key={i}
+          cx={cx + dx!}
+          cy={cy + dy!}
+          r="2"
+          fill={i === 0 ? accent : 'white'}
+          stroke={accent}
+          strokeWidth="0.5"
+        />
+      ))}
+    </g>
+  );
+}
 
 // A pale slide of the deck's body, offset back.
 function BodySlide({ x, y, d }: { x: number; y: number; d: Deck }) {
@@ -104,57 +153,61 @@ function BodySlide({ x, y, d }: { x: number; y: number; d: Deck }) {
       />
       <rect x={x + 1} y={y + 1} width="42" height="23" rx="1.2" fill={d.light} />
       <rect x={x + 4} y={y + 4} width="18" height="2" rx="0.6" fill="rgb(30 41 59)" />
-      {d.body === 'stats'
-        ? [0, 1, 2].map((i) => (
-            <rect
-              key={i}
-              x={x + 4 + i * 13}
-              y={y + 10}
-              width="9"
-              height="5"
-              rx="0.8"
-              fill={d.accent}
-            />
-          ))
-        : d.body === 'chart'
-          ? [5, 8, 11, 14].map((h, i) => (
-              <rect
-                key={i}
-                x={x + 6 + i * 7}
-                y={y + 21 - h}
-                width="4"
-                height={h}
-                rx="0.6"
-                fill={d.accent}
-              />
-            ))
-          : d.body === 'cards'
-            ? [0, 1, 2, 3].map((i) => (
-                <rect
-                  key={i}
-                  x={x + 4 + (i % 2) * 18}
-                  y={y + 9 + Math.floor(i / 2) * 7}
-                  width="16"
-                  height="5.5"
-                  rx="1"
-                  fill="white"
-                  stroke={d.accent}
-                  strokeWidth="0.4"
-                />
-              ))
-            : [0, 1, 2, 3].map((i) => (
-                <rect
-                  key={i}
-                  x={x + 4 + i * 9.5}
-                  y={y + 12}
-                  width="8"
-                  height="4"
-                  rx="2"
-                  fill="white"
-                  stroke={d.accent}
-                  strokeWidth="0.5"
-                />
-              ))}
+      {d.body === 'stats' ? (
+        [0, 1, 2].map((i) => (
+          <rect
+            key={i}
+            x={x + 4 + i * 13}
+            y={y + 10}
+            width="9"
+            height="5"
+            rx="0.8"
+            fill={d.accent}
+          />
+        ))
+      ) : d.body === 'chart' ? (
+        [5, 8, 11, 14].map((h, i) => (
+          <rect
+            key={i}
+            x={x + 6 + i * 7}
+            y={y + 21 - h}
+            width="4"
+            height={h}
+            rx="0.6"
+            fill={d.accent}
+          />
+        ))
+      ) : d.body === 'cards' ? (
+        [0, 1, 2, 3].map((i) => (
+          <rect
+            key={i}
+            x={x + 4 + (i % 2) * 18}
+            y={y + 9 + Math.floor(i / 2) * 7}
+            width="16"
+            height="5.5"
+            rx="1"
+            fill="white"
+            stroke={d.accent}
+            strokeWidth="0.4"
+          />
+        ))
+      ) : d.body === 'cycle' ? (
+        <Cycle x={x} y={y} accent={d.accent} />
+      ) : (
+        [0, 1, 2, 3].map((i) => (
+          <rect
+            key={i}
+            x={x + 4 + i * 9.5}
+            y={y + 12}
+            width="8"
+            height="4"
+            rx="2"
+            fill="white"
+            stroke={d.accent}
+            strokeWidth="0.5"
+          />
+        ))
+      )}
     </g>
   );
 }

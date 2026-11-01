@@ -4,7 +4,7 @@ import { pv } from '@liveworkspace/template-previews/motion';
 import { FILL_BOX } from '@liveworkspace/template-previews/story-parts';
 
 // Group 26: the flashcard stacks (docs/specs/007-editor/flashcards.md "Making flashcards"): Conference Talk, Wedding
-// Toast and Product Pitch. Each draws its stack as the editor shows it: the card in front (its title and lines, its
+// Toast, Product Pitch and School Presentation. Each draws its stack as the editor shows it: the card in front (its title and lines, its
 // "1 of n" footer) and the cards still to come peeking out below it, deeper for a longer stack, with a mark of its own.
 // Hover story: the front card's lines write themselves and its mark arrives.
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
@@ -130,6 +130,22 @@ export function templatePreviewGroup26(kind: TemplateKind): ReactElement | null 
             strokeWidth="0.8"
             strokeLinecap="round"
             strokeLinejoin="round"
+          />
+        ),
+      });
+    case 'class-presentation':
+      // Five cards; a raindrop, the water cycle the talk is about.
+      return Stack({
+        count: 5,
+        title: 22,
+        lines: [36, 30, 38],
+        mark: (
+          <path
+            className="pv-arrive"
+            opacity="0"
+            style={ARRIVE}
+            d="M56 7 C57.6 9.2 58.6 10.6 58.6 11.8 C58.6 13.2 57.4 14.2 56 14.2 C54.6 14.2 53.4 13.2 53.4 11.8 C53.4 10.6 54.4 9.2 56 7 Z"
+            fill="rgb(56 189 248)"
           />
         ),
       });

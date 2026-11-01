@@ -15,8 +15,19 @@ import { TEMPLATES, type TemplateKind } from './templates';
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
-  it('are the job-based categories Pages fills, alphabetical by label, Title Case, with even descriptions', () => {
-    expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual(['Design', 'Presentations']);
+  it('are the use-case categories, alphabetical by label, Title Case, with even descriptions', () => {
+    expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
+      'Careers',
+      'Events and Celebrations',
+      'Home and Hobbies',
+      'Lessons and Learning',
+      'Marketing and Social',
+      'Pitches and Launches',
+      'Plans and Proposals',
+      'Reports',
+      'Speeches and Talks',
+      'Team and Meetings',
+    ]);
     const labels = TEMPLATE_CATEGORIES.map((c) => c.label);
     expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'en')));
     expect(new Set(ids).size).toBe(ids.length);
@@ -43,8 +54,16 @@ describe('template categories', () => {
   it('pins the primary counts', () => {
     const counts = ids.map((id) => TEMPLATES.filter((t) => templateCategory(t.kind) === id).length);
     expect(Object.fromEntries(ids.map((id, i) => [id, counts[i]]))).toEqual({
-      design: 2,
-      presentations: 19,
+      careers: 2,
+      events: 2,
+      home: 2,
+      learning: 3,
+      marketing: 4,
+      pitches: 3,
+      plans: 4,
+      reports: 4,
+      speeches: 2,
+      team: 3,
     });
   });
 
@@ -57,9 +76,11 @@ describe('template categories', () => {
       expect(also, kind).not.toContain(templateCategory(kind as TemplateKind));
       expect(new Set(also).size, kind).toBe(also.length);
     }
-    expect(isInTemplateCategory('slide-deck', 'presentations')).toBe(true);
-    expect(isInTemplateCategory('floor-plan', 'design')).toBe(true);
-    expect(isInTemplateCategory('blank', 'presentations')).toBe(false);
+    expect(isInTemplateCategory('slide-deck', 'pitches')).toBe(true);
+    expect(isInTemplateCategory('floor-plan', 'home')).toBe(true);
+    // Cross-listed: the toast is a speech for a big day.
+    expect(templateCategories('wedding-toast')).toEqual(['speeches', 'events']);
+    expect(isInTemplateCategory('blank', 'pitches')).toBe(false);
   });
 
   it('leaves no category empty', () => {
@@ -89,8 +110,15 @@ describe('template search words', () => {
     expect(find('instagram')).toContain('social-carousel');
     expect(find('floorplan')).toContain('floor-plan');
     // A category label finds what is in it; every word must match.
-    expect(find('design storyboard')).toContain('storyboard');
-    expect(find('design storyboard')).not.toContain('resume');
+    expect(find('marketing storyboard')).toContain('storyboard');
+    expect(find('marketing storyboard')).not.toContain('resume');
+    expect(find('careers')).toEqual(expect.arrayContaining(['resume', 'cover-letter']));
+    // A category's search words find what is in it, cross-listed or not.
+    expect(find('school')).toEqual(
+      expect.arrayContaining(['lesson-plan', 'class-lesson', 'class-presentation', 'how-it-works']),
+    );
+    expect(find('minutes')).toEqual(['meeting-notes']);
+    expect(find('rfc')).toEqual(['design-doc']);
     expect(find('poster zebra')).toEqual([]);
     expect(find('')).toHaveLength(TEMPLATES.length);
   });

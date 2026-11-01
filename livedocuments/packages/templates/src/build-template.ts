@@ -57,6 +57,13 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
     case 'talk-flashcards':
     case 'wedding-toast':
     case 'pitch-flashcards':
+    case 'class-presentation':
+    case 'meeting-notes':
+    case 'lesson-plan':
+    case 'business-proposal':
+    case 'design-doc':
+    case 'status-report':
+    case 'cover-letter':
       return [];
     // Built on their own pages (template-pages.ts), whatever the centre.
     case 'event-poster':
@@ -79,6 +86,7 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
     case 'quarterly-review':
     case 'team-welcome':
     case 'workshop-kickoff':
+    case 'class-lesson':
       return buildLayoutDeck(kind);
   }
 }

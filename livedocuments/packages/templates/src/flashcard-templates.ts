@@ -13,7 +13,8 @@ import {
 // A card as written: its title and its body, each body entry a paragraph or a list of bullets.
 type CardText = { title: string; body: readonly (string | readonly string[])[] };
 
-export type FlashcardTemplateKind = 'talk-flashcards' | 'wedding-toast' | 'pitch-flashcards';
+export type FlashcardTemplateKind =
+  'talk-flashcards' | 'wedding-toast' | 'pitch-flashcards' | 'class-presentation';
 
 const CARDS: Readonly<Record<FlashcardTemplateKind, readonly CardText[]>> = {
   'talk-flashcards': [
@@ -144,6 +145,47 @@ const CARDS: Readonly<Record<FlashcardTemplateKind, readonly CardText[]>> = {
       body: [
         'We are raising to reach 500 cafés by next summer.',
         'Pause. Then: "Who here has a favourite café? Let us save them some bread." Thank them and stop.',
+      ],
+    },
+  ],
+  'class-presentation': [
+    {
+      title: 'Where Was This Rain?',
+      body: [
+        'Hold up a glass of water. Ask the class: "Where was this water a week ago? A year ago?"',
+        'Say: the same water has been going round for millions of years. Today I will show you how.',
+      ],
+    },
+    {
+      title: '1. Evaporation',
+      body: [
+        'The sun warms seas, lakes and puddles, and some of the water turns into an invisible gas: water vapour.',
+        'Point to the kettle photo on the poster: steam is the same thing, only faster.',
+      ],
+    },
+    {
+      title: '2. Condensation',
+      body: [
+        'High up, the air is cold. The vapour cools and turns back into tiny drops, which gather as clouds.',
+        'Example: a cold drink "sweats" on a hot day. That is condensation too.',
+      ],
+    },
+    {
+      title: '3. Rain and Back Again',
+      body: [
+        'When the drops grow too heavy, they fall as rain, snow or hail. This is precipitation.',
+        [
+          'It runs into rivers and the sea',
+          'It soaks into the ground',
+          'Then the sun warms it, and it all starts again',
+        ],
+      ],
+    },
+    {
+      title: 'What to Remember',
+      body: [
+        'Evaporation, condensation, precipitation, collection: four stages, one circle.',
+        'Hold up the glass again: "Next time it rains, you might be drinking dinosaur water." Thank the class and ask for questions.',
       ],
     },
   ],

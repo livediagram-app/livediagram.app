@@ -43,7 +43,18 @@ export type TemplateKind =
   // Flashcards to speak from (docs/specs/007-editor/flashcards.md "Making flashcards"; flashcard-templates.ts).
   | 'talk-flashcards'
   | 'wedding-toast'
-  | 'pitch-flashcards';
+  | 'pitch-flashcards'
+  | 'class-presentation'
+  // Written documents (article-templates.ts): articles that use tables, contents, headers and footers as a real
+  // document of their kind would.
+  | 'meeting-notes'
+  | 'lesson-plan'
+  | 'business-proposal'
+  | 'design-doc'
+  | 'status-report'
+  | 'cover-letter'
+  // A lesson deck built from the slide layouts, like the decks above.
+  | 'class-lesson';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -241,6 +252,62 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Product Pitch',
     description:
       'A two-minute pitch on five flashcards: the hook, the problem, the answer, the proof and the ask.',
+    extra: true,
+  },
+  {
+    kind: 'class-presentation',
+    title: 'School Presentation',
+    description:
+      'A five-minute class talk on the water cycle, on five flashcards: the question, three stages and what to remember.',
+    extra: true,
+  },
+  {
+    kind: 'meeting-notes',
+    title: 'Meeting Notes',
+    description:
+      'Notes from a weekly team meeting: who came, the agenda, the decisions in a table and the actions with their owners.',
+    extra: true,
+  },
+  {
+    kind: 'lesson-plan',
+    title: 'Lesson Plan',
+    description:
+      'A one-hour science lesson: objectives, what to prepare, the timings in a table, differentiation and homework.',
+    extra: true,
+  },
+  {
+    kind: 'business-proposal',
+    title: 'Business Proposal',
+    description:
+      'A proposal to win a client: a title page, contents, the problem and approach, a timeline and a pricing table.',
+    extra: true,
+  },
+  {
+    kind: 'design-doc',
+    title: 'Design Doc',
+    description:
+      'A technical design doc: contents, context and goals, the proposed design with code, the options weighed and rollout.',
+    extra: true,
+  },
+  {
+    kind: 'status-report',
+    title: 'Status Report',
+    description:
+      'A monthly project status report: the headline, each workstream in a status table, risks and what happens next.',
+    extra: true,
+  },
+  {
+    kind: 'cover-letter',
+    title: 'Cover Letter',
+    description:
+      'A one-page cover letter in the Classic look: your details, the date, three short paragraphs and a sign-off.',
+    extra: true,
+  },
+  {
+    kind: 'class-lesson',
+    title: 'Class Lesson',
+    description:
+      'A six-slide science lesson on drifting colour: what we will learn, a question, the steps, a check and the homework.',
     extra: true,
   },
 ];

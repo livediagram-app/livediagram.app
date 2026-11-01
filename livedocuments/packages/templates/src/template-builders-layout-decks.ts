@@ -19,7 +19,7 @@ import type { PageLayoutId } from './page-layouts';
 import { templateSlidePage } from './template-page-kit';
 
 export type LayoutDeckKind =
-  'launch-keynote' | 'quarterly-review' | 'team-welcome' | 'workshop-kickoff';
+  'launch-keynote' | 'quarterly-review' | 'team-welcome' | 'workshop-kickoff' | 'class-lesson';
 
 type DeckSlide = {
   name: string;
@@ -400,6 +400,89 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
           'Pick the idea you would test first, and tell the person next to you why.',
           'Sign up to a test',
           'example.com/checkout-tests',
+        ],
+      },
+    ],
+  },
+  // A science lesson for a class (the Lesson Plan's water cycle, on slides): what we will learn, a question to
+  // start them thinking, the four stages, a check, and the homework.
+  'class-lesson': {
+    motion: 'drift',
+    dark: { from: '#0c4a6e', to: '#0369a1' },
+    light: { from: '#f0f9ff', to: '#ecfeff' },
+    slides: [
+      {
+        name: 'Today',
+        layout: 'slide-keynote',
+        labels: [
+          'YEAR 7 SCIENCE',
+          'The Water Cycle',
+          'Where every drop of rain has been, and where it goes next',
+          'Ms Chen · Lab 2 · Tuesday, period 3',
+        ],
+      },
+      {
+        name: 'We Will Learn',
+        layout: 'slide-objectives',
+        labels: [
+          'By the end of today',
+          'Three things you will be able to do.',
+          '1',
+          'Name the stages',
+          'Evaporation, condensation, precipitation, collection.',
+          '2',
+          'Explain them',
+          'What makes water rise as vapour and fall as rain.',
+          '3',
+          'Draw the cycle',
+          'From memory, with an arrow and a label for each stage.',
+        ],
+      },
+      {
+        name: 'Think',
+        layout: 'slide-question',
+        labels: [
+          'TALK TO YOUR PARTNER',
+          'Where was the water in this glass a week ago?',
+          'Write one guess each. There is no wrong answer yet.',
+        ],
+      },
+      {
+        name: 'The Cycle',
+        layout: 'slide-process-flow',
+        labels: [
+          'Four stages, one circle',
+          'The same water, round and round for millions of years.',
+          'Evaporation',
+          'The sun turns water into vapour.',
+          'Condensation',
+          'Cold air turns vapour into clouds.',
+          'Precipitation',
+          'Heavy drops fall as rain or snow.',
+          'Collection',
+          'Rivers and seas gather it again.',
+        ],
+      },
+      {
+        name: 'Check',
+        layout: 'slide-takeaway',
+        labels: [
+          'QUICK CHECK',
+          'Show me the stage on your whiteboard.',
+          'I will describe',
+          'A mirror mists up after a shower',
+          'A puddle is gone by the afternoon',
+          'Snow falls on the hills',
+        ],
+      },
+      {
+        name: 'Homework',
+        layout: 'slide-cta',
+        labels: [
+          'FOR NEXT LESSON',
+          'Photograph one stage of the water cycle and write two sentences about it.',
+          'Due Friday',
+          'Upload to the class page',
         ],
       },
     ],

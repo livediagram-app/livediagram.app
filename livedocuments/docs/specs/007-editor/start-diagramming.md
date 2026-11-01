@@ -50,12 +50,14 @@ Blank Illustration, Project Brief, Blank Slide Deck, Event Poster, Year in Revie
 left out). The start swaps two of its picks for blanks of a page kind (`RECOMMENDED_SWAPS`), a page already of its
 kind being the quicker start: **Blank Infographic** in place of Blank Illustration and **Blank Article** in place of
 the Project Brief template, so it leads Blank Infographic, Blank Article, Blank Slide Deck. The marketing gallery's
-shelf (`POPULAR_TEMPLATE_KINDS`) is its own, longer list. The groups (`components/start/start-template-items.ts`), by
-what each makes: **Slides**, **Infographics**, **Articles**, **Posters and Social** and **Design**
-(storyboards and floor plans). Slides, Infographics and Articles each lead with their blank of
-that page kind (Blank Slide Deck, Blank Infographic, Blank Article), one empty page of the kind meant.
+shelf (`POPULAR_TEMPLATE_KINDS`) is its own, longer list. Then **Blank Pages**: Blank Slide Deck, Blank Article,
+Blank Infographic and Blank Flashcards, one empty page of the kind meant. Then one group per catalogue category, in
+the same alphabetical order and with the same names as every other picker
+([Template categories](../008-canvas/canvas-and-palette.md#template-categories)), each template under its primary
+category (`components/start/start-template-items.ts` derives them, so a new template or category needs no change
+there).
 
-A template in none of the groups is placed in the last group, so every listed template is reachable. Blank
+Every listed template is in exactly one group after Recommended, so every one is reachable. Blank
 Illustration is not offered: closing the panel leaves the same empty tab.
 
 ## When it shows

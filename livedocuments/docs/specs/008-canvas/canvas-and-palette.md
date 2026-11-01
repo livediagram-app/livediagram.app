@@ -580,17 +580,52 @@ The catalogue (`packages/templates/src/templates.ts`, pinned by `template-catalo
 
 Every template opens on pages of its own. `templateCanvasOverrides(kind)` ships the tab's `pages` (ids `page-1`, `page-2`, ..., each already of its kind so the first-page kind choice is not offered, each named); `buildTemplate(kind)` builds the elements in page coordinates on exactly those pages, ignoring the centre it is given, with the page layouts' kit at page scale. The pages are declared once per template (`packages/templates/src/template-pages.ts`), so every application path lands the pages and the elements together. Some of them:
 
-| Template          | Pages                                                                                                                   |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Article           | One A4 portrait article page of writing ([Article pages](../007-editor/article-pages.md)).                              |
-| Working Backwards | A4 portrait article pages of writing (the PR/FAQ flows onto as many as it fills, a page break before the Internal FAQ). |
-| Slide deck        | Six 16:9 slide pages, one per slide; the title on a dark gradient, the ask on a light one.                              |
-| Group card        | Two Portrait post (4:5) pages: the Cover (blush-to-sunshine) and the Inside (cream).                                    |
-| Event Poster      | One A3 portrait page.                                                                                                   |
-| Year in Review    | Four A4 portrait pages: Cover, Numbers, Timeline, Thanks.                                                               |
-| Résumé            | One A4 portrait page.                                                                                                   |
-| Recipe Card       | A Square page (the dish) and a Portrait post (4:5) page (the method).                                                   |
-| Design            | One page each: the Storyboard and Floor plan, A3 landscape.                                                             |
+| Template            | Pages                                                                                                                            |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Article             | One A4 portrait article page of writing ([Article pages](../007-editor/article-pages.md)).                                       |
+| Working Backwards   | A4 portrait article pages of writing (the PR/FAQ flows onto as many as it fills, a page break before the Internal FAQ).          |
+| Written documents   | A4 portrait article pages of writing: Meeting Notes, Lesson Plan, Business Proposal, Design Doc, Status Report and Cover Letter. |
+| Class Lesson        | Six 16:9 slide pages built from the slide layouts, like the other layout decks.                                                  |
+| School Presentation | Five flashcards, like the other stacks ([Flashcards](../007-editor/flashcards.md)).                                              |
+| Slide deck          | Six 16:9 slide pages, one per slide; the title on a dark gradient, the ask on a light one.                                       |
+| Group card          | Two Portrait post (4:5) pages: the Cover (blush-to-sunshine) and the Inside (cream).                                             |
+| Event Poster        | One A3 portrait page.                                                                                                            |
+| Year in Review      | Four A4 portrait pages: Cover, Numbers, Timeline, Thanks.                                                                        |
+| Résumé              | One A4 portrait page.                                                                                                            |
+| Recipe Card         | A Square page (the dish) and a Portrait post (4:5) page (the method).                                                            |
+| Design              | One page each: the Storyboard and Floor plan, A3 landscape.                                                                      |
+
+### Written documents
+
+The written templates (`packages/templates/src/article-templates.ts`) are articles ([Article pages](../007-editor/article-pages.md)), each written as Markdown and read by the article's own Markdown reader, so the words stay easy to edit. Each shows off what an article can hold, as a real document of its kind would use it:
+
+| Template          | What it shows                                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Meeting Notes     | A header with the document's name and the date; attendees and decisions in tables; actions as a to-do list.        |
+| Lesson Plan       | The lesson's timings in a table, objectives as a numbered list, a footer with the page number.                     |
+| Business Proposal | A title page with no header or footer, a table of contents, a timeline and a pricing table, "Page n of m" footers. |
+| Design Doc        | A table of contents, a code block, a table of the options weighed, a header with the doc's status.                 |
+| Status Report     | A header and page numbers, the workstreams' status in a table, risks and next steps.                               |
+| Cover Letter      | A one-page letter in the Classic look: the sender's details, the date, three paragraphs and a sign-off.            |
+
+### Template categories
+
+livedocuments' categories are its own: they need not match the other products'. They are grouped by **what the document is for** (the use case), never by page kind, so a deck, an article and a stack of flashcards for the same job sit together. Every template but the blanks has one primary category and may be cross-listed where people would genuinely look for it too (`packages/templates/src/template-categories.ts` holds both; a template does not compile until it has a home). Every picker shows them alphabetically by label.
+
+| Category                | Holds                                                           | Also lists                         |
+| ----------------------- | --------------------------------------------------------------- | ---------------------------------- |
+| Careers                 | Résumé, Cover Letter                                            |                                    |
+| Events and Celebrations | Event Poster, Group Card                                        | Wedding Toast                      |
+| Home and Hobbies        | Recipe Card, Floor Plan                                         |                                    |
+| Lessons and Learning    | Lesson Plan, Class Lesson, School Presentation                  | How It Works                       |
+| Marketing and Social    | Social Carousel, Versus, How It Works, Storyboard (an ad)       | Event Poster                       |
+| Pitches and Launches    | Slide Deck (a pitch), Launch Keynote, Product Pitch             |                                    |
+| Plans and Proposals     | Project Brief, Working Backwards, Business Proposal, Design Doc |                                    |
+| Reports                 | Year in Review, Quarterly Review, Data Story, Status Report     |                                    |
+| Speeches and Talks      | Conference Talk, Wedding Toast                                  | Product Pitch, School Presentation |
+| Team and Meetings       | Meeting Notes, Workshop Kickoff, Team Welcome                   |                                    |
+
+The blanks (Blank Tab, Blank Illustration and the blanks of a page kind) are in no category: they lead Popular, the landing gallery's Blank Slate and the template start's Blank Pages group. A new template joins the category of the job it does; a category is added when a job has no home, rather than stretching one that reads wrong.
 
 ## Modifier hint banner
 

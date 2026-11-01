@@ -77,7 +77,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   ],
   storyboard: ['story', 'scenes', 'frames', 'film', 'video', 'ux'],
   'floor-plan': ['floorplan', 'layout', 'room', 'office', 'house', 'architecture'],
-  // Presentations.
   'slide-deck': ['presentation', 'slides', 'deck', 'pitch', 'powerpoint', 'keynote'],
   article: ['article', 'project', 'document', 'doc', 'brief', 'report', 'writing', 'memo', 'blog'],
   'how-it-works': ['steps', 'explainer', 'onboarding', 'guide', 'infographic'],
@@ -125,6 +124,50 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   resume: ['resume', 'cv', 'curriculum vitae', 'job', 'career'],
   'recipe-card': ['recipe', 'cooking', 'food', 'ingredients', 'menu'],
   'live-card': ['card', 'greeting', 'birthday', 'farewell', 'leaving card', 'thank you'],
+  // The written documents (article-templates.ts).
+  'meeting-notes': [
+    'minutes',
+    'meeting',
+    'agenda',
+    'actions',
+    'decisions',
+    'standup',
+    'notes',
+    'document',
+  ],
+  'lesson-plan': ['lesson', 'teacher', 'teaching', 'school', 'class', 'science', 'plan'],
+  'business-proposal': [
+    'proposal',
+    'pitch',
+    'client',
+    'quote',
+    'quotation',
+    'pricing',
+    'contract',
+    'bid',
+    'word',
+  ],
+  'design-doc': [
+    'design document',
+    'rfc',
+    'spec',
+    'specification',
+    'technical',
+    'engineering',
+    'architecture',
+  ],
+  'status-report': ['report', 'status', 'progress', 'update', 'project', 'rag', 'risks', 'monthly'],
+  'cover-letter': ['cover letter', 'letter', 'job', 'application', 'career', 'hiring'],
+  'class-lesson': ['presentation', 'slides', 'lesson', 'teacher', 'school', 'class', 'deck'],
+  'class-presentation': [
+    'flashcards',
+    'cue cards',
+    'school',
+    'student',
+    'presentation',
+    'class',
+    'homework',
+  ],
 };
 
 /** The words a template is searched by. */

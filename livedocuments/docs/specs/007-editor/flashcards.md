@@ -147,15 +147,17 @@ picture (the card as it is, its writing included) and its name. A press flips to
   "Cards to speak from: a title and a few lines each, flipped one at a time." Choosing it turns the page into the first
   card of a stack, the caret in its title.
 - **Blank Flashcards** (template `blank-flashcards`): one empty card, its kind already chosen. On the Start screen's
-  **Flashcards** group (led by it) and the landing page's Blank Slate, after Blank Infographic.
-- **Templates**: three stacks written out, so the cards show what they are for:
+  **Blank Pages** group and the landing page's Blank Slate, after Blank Infographic.
+- **Templates**: four stacks written out, so the cards show what they are for:
   - **Conference Talk** (`talk-flashcards`): a 15-minute talk on six cards (Opening, The Problem, What We Tried, What
     Worked, What It Means for You, Close and Questions).
   - **Wedding Toast** (`wedding-toast`): a best-person's toast on five cards.
   - **Product Pitch** (`pitch-flashcards`): a two-minute pitch on five cards.
+  - **School Presentation** (`class-presentation`): a five-minute class talk on the water cycle, on five cards.
 
-  They sit in the Presentations category, in the Start screen's Flashcards group and on the marketing site's Slides
-  band.
+  Each sits in the catalogue category of what it is for ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)):
+  Conference Talk and Wedding Toast in Speeches and Talks (the toast also in Events and Celebrations), Product Pitch in
+  Pitches and Launches and School Presentation in Lessons and Learning (both also in Speeches and Talks). Blank Flashcards is in the Start screen's Blank Pages group.
 
 ## Share roles
 
