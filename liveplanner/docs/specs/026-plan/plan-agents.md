@@ -123,6 +123,12 @@ Every write takes what a person would say, and stores the ids:
   the list is first written in the new shape, from the statuses the boards named before the change.
 - The answer gives its columns with their names and statuses.
 
+## Importing a board
+
+- **`import_board`** (MCP; the CLI's `board import`) makes a board from a Trello, Asana, Jira or Linear export, in a
+  new Board tab of the plan named or a new plan, read and mapped as the editor's Import dialog does; `preview` answers
+  what it would make and writes nothing ([Importing from another tool](tracker-import.md#agents)).
+
 ## Changing a board
 
 - **`change_board`** (MCP; the CLI's `board set`) changes a board named by its title (or its element id when two

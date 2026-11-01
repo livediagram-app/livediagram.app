@@ -49,6 +49,9 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
     otherwise). Sheet Settings then leaves Import CSV… and Download CSV out; a Sheet on any other tab keeps them there.
   - A **Board tab**: **Import CSV…** (each row a new card on the board, for someone who may add cards: an Editor or a
     Participant; dimmed for a Viewer, and on an Archive board). The rules are the board's [CSV](plan-board.md#csv).
+  - Every tab, a Board or Sheet tab's included: **Import from Another Tool…** after Import, opening the project's
+    Import dialog on its From Another Tool view, for an Editor; dimmed otherwise and on a locked tab
+    ([Importing from another tool](tracker-import.md#where-it-lives)).
 
 ### Names
 

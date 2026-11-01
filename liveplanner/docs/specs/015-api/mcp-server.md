@@ -173,7 +173,7 @@ browser. A token minted for the CLI is named "liveplanner CLI".
 
 ## 4. Tools
 
-Twenty-seven tools: eleven for projects, seven for Plan boards and their cards' comment threads ([§4.9b](#49b-the-plan-tools)), four for sheets
+Twenty-eight tools: eleven for projects, eight for Plan boards and their cards' comment threads ([§4.9b](#49b-the-plan-tools)), four for sheets
 ([§4.9c](#49c-the-sheet-tools)) and five
 for forms ([§4.9e](#49e-the-form-tools)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
@@ -440,6 +440,9 @@ status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status
 - **`add_board`** (write): a Plan board on a tab, from a preset or columns by name, as one changeset
   ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)).
 - **`change_board`** (write): a board's title, columns (by name) or the card types it takes, as one changeset.
+- **`import_board`** (write): a board from a Trello, Asana, Jira or Linear export (`content`, the file's text), in a
+  new Board tab of `projectId` or a new plan, with its card type, cards and imported comments; `preview` writes
+  nothing ([Importing from another tool](../026-plan/tracker-import.md#agents)).
 - **`change_card_types`** (destructive, as deleting a type moves its cards to the Trash): up to 32 card type
   changes (`add`, `set`, `delete`, `add_default_types`; `restore_built_ins` is its older name), checked whole and saved once.
 - **`list_threads`** (read): a plan's card comment threads, open by default, or one card's, each with its id, title,
@@ -596,14 +599,14 @@ while a destructive one always asks. Directory listings (the Claude connectors
 portal among them) also require them, and a missing block is a listing blocker,
 which is how the gap was found.
 
-Three behaviours cover the twenty-five tools, and each is a preset in
+Three behaviours cover the twenty-eight tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
-| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                             |
-| --------------- | -------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_projects`, `read_project`, `list_templates`, `list_trash`, `list_items`, `list_threads`, `list_sheets`, `read_sheet`, `read_form`                           |
-| **write**       | `false`        | `false`           | `create_project`, `add_tab`, `share_project`, `rename_project`, `restore_project`, `add_board`, `change_board`, `add_sheet`, `add_form`, `share_form`, `try_form` |
-| **destructive** | `false`        | `true`            | `update_project`, `delete_project`, `change_items`, `change_threads`, `change_card_types`, `change_sheet`, `change_form`                                          |
+| Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                                             |
+| --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **read**        | `true`         | (not applicable)  | `find_projects`, `read_project`, `list_templates`, `list_trash`, `list_items`, `list_threads`, `list_sheets`, `read_sheet`, `read_form`                                           |
+| **write**       | `false`        | `false`           | `create_project`, `add_tab`, `share_project`, `rename_project`, `restore_project`, `add_board`, `change_board`, `import_board`, `add_sheet`, `add_form`, `share_form`, `try_form` |
+| **destructive** | `false`        | `true`            | `update_project`, `delete_project`, `change_items`, `change_threads`, `change_card_types`, `change_sheet`, `change_form`                                                          |
 
 The split mirrors §4.11's read-only-token boundary exactly (what a
 `read_only = 1` token can still reach is what `read` annotates), so the hint a
@@ -731,6 +734,7 @@ says why by its status (no such tab, view only, the last tab).
 | `change_threads`    | `applied[]` (one line per change), `url`                                                                                                                                                                                |
 | `add_board`         | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `changesetId`, `rev`, `url`                                                                                                                           |
 | `change_board`      | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `takes`, `changesetId`, `rev`, `url`                                                                                                                  |
+| `import_board`      | `projectId`, `tabId`, `title`, `source`, `columns[]` of `{ name, cards }`, `cards`, `leftOut[]` of `{ reason, count }`, `preview?`, `url`                                                                               |
 | `change_card_types` | `applied[]` (with the ids made), `trashed[]`, `types[]`, `url`                                                                                                                                                          |
 | `list_sheets`       | `sheets[]` of `{ id, title, tabId, tabName, rows, cols, filled, elementId }`, `url`                                                                                                                                     |
 | `read_sheet`        | `sheetId`, `title`, `tabId`, `range`, `rows`, `cols`, `cells[]` of `{ at, input, value, display }`, `truncated`, `note?`, `frozen { rows, cols }`, `merges[]`, `filter`, `url`                                          |

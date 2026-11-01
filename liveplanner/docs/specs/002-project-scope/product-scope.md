@@ -71,6 +71,8 @@ These are livediagram's and not liveplanner's; bringing one in is a scope change
 - No paid tier, billing or feature flags that gate a feature ([Business model + licence](business-model-and-licence.md)).
 - No public source or outside contributions; liveplanner runs only as the hosted service at liveplanner.app.
 - No connectors to other trackers (GitHub Issues, Jira, Linear) ([Build phase](../005-project-roadmap/prototype-scope.md#later)).
+  A one-off import of a Trello, Asana, Jira or Linear export is not a connector: it links nothing back and never
+  syncs ([Importing from another tool](../026-plan/tracker-import.md)).
 - No native desktop or mobile app; the web is the product.
 - No in-editor AI assistant and no model provider behind the api: AI tools work on projects through the
   [MCP server](../015-api/mcp-server.md) and the CLI, under their own terms.
