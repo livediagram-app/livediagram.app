@@ -16,7 +16,7 @@ import {
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import { EditorState, Selection, TextSelection, type Transaction } from 'prosemirror-state';
+import { EditorState, Selection, type Transaction } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { gapCursor } from 'prosemirror-gapcursor';
 import {
@@ -28,6 +28,7 @@ import {
   type LaidOutPage,
 } from '@livedocuments/document';
 import { blocksToDoc, docToBlocks } from '@/lib/article/article-convert';
+import { replaceContentTr } from '@/lib/article/article-replace';
 import type { ArticleNotePlace } from '@livedocuments/document';
 import { articleKeymap, articleInputRules } from '@/lib/article/article-keys';
 import { blockIdsPlugin, decorationsPlugin, todoTogglePlugin } from '@/lib/article/article-plugins';
@@ -782,33 +783,14 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   );
 }
 
-// The editor's content made `blocks`, replacing only the blocks between the first and the last that
-// differ, so a caret in an untouched block stays exactly where it is. An undo's change puts the
-// caret at the end of what it changed.
+// The editor's content made `blocks` (article-replace): only what differs is replaced.
 function replaceContent(
   view: EditorView,
   blocks: readonly ArticleBlock[],
   takeCaret: boolean,
 ): void {
-  const next = blocksToDoc(blocks);
-  const doc = view.state.doc;
-  const start = doc.content.findDiffStart(next.content);
-  if (start === null) return;
-  const end = doc.content.findDiffEnd(next.content)!;
-  // findDiffEnd answers for both articles; keep the two ends ordered for the replace.
-  let { a: endA, b: endB } = end;
-  const overlap = start - Math.min(endA, endB);
-  if (overlap > 0) {
-    endA += overlap;
-    endB += overlap;
-  }
-  const tr = view.state.tr.replace(start, endA, next.slice(start, endB));
-  tr.setMeta('article-remote', true).setMeta('addToHistory', false);
-  if (takeCaret) {
-    const at = Math.min(tr.doc.content.size, Math.max(0, endB));
-    tr.setSelection(TextSelection.near(tr.doc.resolve(at), -1));
-  }
-  view.dispatch(tr);
+  const tr = replaceContentTr(view.state, blocks, takeCaret);
+  if (tr) view.dispatch(tr);
 }
 
 // The id of the first top-level block that does not fit whole on the first page (a box of it in a
