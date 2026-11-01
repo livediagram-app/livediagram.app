@@ -769,6 +769,22 @@ export const PLAN_CARD_TYPES_DUPLICATED = chart(
   { rising: 'neutral' },
 );
 
+export const PLAN_CARD_TYPES_INHERITED = chart(
+  'Plan',
+  'Linked',
+  'Card Types Inherited',
+  'A card type saved inheriting its fields, tabs, states and display from another type.',
+  { types: ['CardTypeBase'], rising: 'neutral' },
+);
+
+export const PLAN_CARD_TYPES_DETACHED = chart(
+  'Plan',
+  'Unlinked',
+  'Card Types Detached',
+  'A card type saved detached from the type it inherited from, keeping a copy of its settings.',
+  { types: ['CardTypeBase'], rising: 'neutral' },
+);
+
 export const PLAN_SETUP_CHANGED = chart(
   'Plan',
   'Changed',
@@ -1092,6 +1108,8 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_TIMERS_STOPPED,
   PLAN_TIME_ENTRIES,
   PLAN_CARD_TYPES_DUPLICATED,
+  PLAN_CARD_TYPES_INHERITED,
+  PLAN_CARD_TYPES_DETACHED,
   PLAN_REVEALED,
   PLAN_CSV_IMPORTED,
   PLAN_CSV_EXPORTED,

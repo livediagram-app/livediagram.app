@@ -16,7 +16,7 @@ Derived from [Item types](../item-types.md). Contract for the type catalogue: it
 | card type (UI)    | the panel `CardTypesPanel`, its button in `PlanCardsClusterStrip`, the editor `ItemTypeEditor`                                                                                                                                                                                                                                              |
 | Add Default Types | `ItemTypesSlice.addDefaultTypes()` (`defaultTypesToAdd`, appended; one undo step), behind a `ConfirmPopover`                                                                                                                                                                                                                                |
 | default types     | `ITEM_TYPES` (`item-types.ts`); ready-made types `READY_MADE_CARD_TYPES` (`brought-types.ts`)                                                                                                                                                                                                                                               |
-| base type         | an `ItemTypeDef` another names in `inherits`; `childrenOf(baseId, types)`, `canBeBase(type, types)` (`type-inheritance.ts`)                                                                                                                                                                                                                 |
+| base type         | an `ItemTypeDef` another names in `inherits`; `inheritingTypesOf(baseId, types)`, `basesFor(typeId, types)` (`type-inheritance.ts`)                                                                                                                                                                                                         |
 | inherited type    | an `ItemTypeDef` with `inherits` (its base id) and `ownFields`; `baseOf`, `inheritedFieldIds`, `withInheritance`, `inheritFrom`, `detachType` (`type-inheritance.ts`)                                                                                                                                                                       |
 
 ## Package `@liveplanner/items`
@@ -732,20 +732,24 @@ Derived from [Item types](../item-types.md#inherited-types).
   resolved. Read by `readType` (an `inherits` that is not a type id: `types[i].inherits`; an `ownFields` that is not
   an array of strings: `types[i].ownFields`; at most `ITEM_TYPE_FIELDS_MAX`).
 - **`type-inheritance.ts`** (pure):
-  - `INHERITED_PARTS`: `tabs`, `detailsLabel`, `statuses`, `excludedStatuses`, `defaultStatus`, `display`,
-    `assigneeNotifies`, `colourField`: copied whole from the base (removed when the base lacks one).
+  - `INHERITED_PARTS`: `tabs`, `detailsLabel`, `statuses`, `excludedStatuses`, `defaultStatus`,
+    `assigneeNotifies`, `colourField`: copied whole from the base (absent when the base lacks one). `display` is
+    inherited as the base shows it (`inheritedDisplay`): each size the base leaves to its default written out from
+    `defaultCardLayout(base.id)`, and a size equal to the inherited type's own default left out, as `readCardDisplay`
+    stores it.
   - `resolveChild(child, base)`: `own` = `child.ownFields` when stored, else the child's fields the base lacks; then
     the ids the base has dropped (its copy wins), and ids that are neither built-in nor one of the child's own
     custom fields dropped. `fields` = the base's then `own` (deduplicated), plus any `requiredFieldsOf(child.id)`
     still missing (appended to `own`); `custom` = the base's (whole, every setting, `blocks` included) then the
-    child's custom fields in `own`; `ownFields` stored only when non-empty.
+    child's custom fields in `own`; `ownFields` always written beside `inherits` (empty too), so a stored type's own
+    fields are exact; absent means not yet worked out (a type just given its base).
   - `withInheritance(types)`: each type with `inherits` resolved against its base, in place; a type whose base the
     list lacks is detached (`detachType`). Returns the same array when nothing changed. Memoised on the input array
     (a `WeakMap`), so a list resolved once is never resolved again.
   - `inheritanceProblem(types)`: the first chain (`types[i].inherits`: the base itself inherits, the type is a base
     of another, or it names itself), or null.
-  - `baseOf(type, types)`, `childrenOf(id, types)`, `canBeBase(candidate, type, types)` (inherits from none, is not
-    the type, and the type is no one's base), `inheritedFieldIds(type, types)` (a Set: the base's fields and custom
+  - `baseOf(type, types)`, `inheritingTypesOf(id, types)`, `basesFor(typeId, types)` (every type inheriting from
+    none but the type itself; none while the type is a base), `inheritedFieldIds(type, types)` (a Set: the base's fields and custom
     ids; empty for a type with no base), `inheritFrom(type, base)` (sets `inherits`, own = the type's fields the
     base lacks, resolved), `detachType(type)` (drops `inherits` and `ownFields`, keeps the rest).
 - **Validation** (`validateItemTypeCatalogue`): every type read, then `inheritanceProblem` (refused by its reason),
@@ -758,21 +762,26 @@ Derived from [Item types](../item-types.md#inherited-types).
 - **Editor** (`useItemTypes`): `withTypes` passes each edit's types through `withInheritance`, so a base saved,
   or deleted, reaches its children in the shown catalogue at once (one undo step with the base's change).
 - **Type editor** (`ItemTypeEditor`): `inherits` draft state; `ItemTypeInheritance.tsx` renders the **Inherits From**
-  row (the house `Select`: None and each `canBeBase` type; disabled with "{names} inherit from this type." for a
-  base) and **Detach** (`UnlinkIcon`, tooltip "Stop following {Base}: keep a copy of its settings"). Choosing a base
+  row (the house `Select`: None and each of `basesFor`; disabled with "{names} inherit from this type." for a
+  base) and **Detach** (`lucideScissors` through `lucideGlyph`, tooltip "Stop following {Base} and keep a copy of its
+  settings", its accessible name "Detach: " and the tooltip). Choosing a base
   re-seeds layout, statuses, Default State, display, Details name and Card Colour from `inheritFrom(draft, base)`;
-  Detach and None drop `inherits` only. `check` validates `[base, draft]`, so the saved type comes back resolved.
+  Moving from one base to another first drops the old base's fields. Detach and None drop `inherits` only. `check`
+  validates the whole catalogue with the draft in place (about 0.5 ms), so the saved type comes back resolved and a
+  base change that takes a type inheriting from it past a cap is named beside Save ("{Type} inherits from this type and
+  can’t hold any more fields.").
   Save tracks `Plan` · `Linked` · `CardTypeBase` when `inherits` was set and was not before, `Plan` · `Unlinked` ·
   `CardTypeBase` when it was and is not.
   - `ItemTypeLayoutEditor` takes `inherited?: { from: string; ids: ReadonlySet<string> }`: an inherited row is not
     removable, has no Edit, no handle and no moves, its lock reads "Inherited from {Base}" (`FieldRow.lockLabel`);
     tab names, the Details name, tab moves and removal and Add Tab are disabled; Add Field shows under Details only.
   - States and Display: `InheritedPartNotice` ("{Type} takes its states from {Base}. Change them on {Base}, or Detach
-    to give {Type} its own.") over the read-only list of the base's states (by name), or the Display preview with
-    no controls.
+    to give {Type} its own.") over `ItemTypeStatuses` or `ItemTypeDisplay` drawn inside an `inert` group named "{Base}’s states" or
+    "{Base}’s display"; the Card Colour picker is left out.
 - **Card Types panel**: a row whose type has `inherits` adds "Inherits {Base}" to its caption; `deleteMessage(label,
 cards, children)` adds "{names} will keep a copy of its settings."
-- **Agents** (`type-changes.ts`): `add` and `set` take `inherits?: string | null`, resolved by `resolveType`; a base
+- **Agents** (`type-changes.ts`, helpers in `type-change-inherit.ts`: `withBase`, `refuseInheritedEdits`,
+  `withOwnFields`): `add` and `set` take `inherits?: string | null`, resolved by `resolveType`; a base
   that inherits, or a type with children given a base, refused with `type_change_invalid`. On an inherited type,
   `removeFields`/`removeCustom`/`editCustom` naming an inherited id, and any of `statuses`, `defaultStatus`, `display`,
   `tabs`, `detailsLabel`, `assigneeNotifies`, refused naming the base. Fields added to an inherited type join
@@ -781,7 +790,9 @@ cards, children)` adds "{names} will keep a copy of its settings."
   schema and `change_card_types`' description name them.
 - **Performance**: `withInheritance` is O(types × fields) with Set lookups: at the caps (32 types, 24 fields, 12
   custom) one pass, run only where a catalogue is validated, rebased or edited; readers (`typeIn`, cards, panels)
-  read the stored, resolved types and never resolve. Measured in `type-inheritance.perf.test.ts` (CPU budget).
+  read the stored, resolved types and never resolve. Measured in `type-inheritance.perf.test.ts` (CPU time): 20
+  resolutions of a full catalogue (32 types, 28 inheriting, 20 fields each) about 10 ms, 10,000 memo hits about 1 ms,
+  and 50 validations of a 16-type catalogue about 24 ms with inheritance against 10 ms without.
 
 ## Errors and edge cases
 
