@@ -63,6 +63,10 @@ export { EXPORT_FORMATS } from './verbs/local';
 export { workbenchNameOf, workbenchOriginOf } from './verbs/workbench';
 export {
   addBoard,
+  importTrackerBoard,
+  trackerImportAnswer,
+  type TrackerImportInput,
+  type TrackerImportResult,
   apiRefusalOf,
   deleteRefusal,
   changeBoard,

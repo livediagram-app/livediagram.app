@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { TrackerCreate } from '@liveplanner/items';
 import { isCardThread, readRestoredThread } from './card-threads';
 import {
+  IMPORT_WRITE_BYTES,
+  importBatches,
   IMPORTED_THREAD_COLOR,
   IMPORTED_THREAD_TITLE,
   importedCommentsThread,
@@ -103,5 +105,20 @@ describe('withImportedThreads', () => {
       random: () => 0.5,
     });
     expect(seeded[0]!.threads![0]!.id).toBe(`th-${'s'.repeat(16)}`);
+  });
+});
+
+describe('importBatches', () => {
+  it('splits at the bulk cap and at the write size, never leaving a write empty', () => {
+    const small = Array.from({ length: 450 }, (_, i) => ({ i }));
+    expect(importBatches(small).map((b) => b.length)).toEqual([200, 200, 50]);
+    expect(importBatches([])).toEqual([]);
+    const big = Array.from({ length: 5 }, () => ({ text: 'x'.repeat(2 * 1024 * 1024) }));
+    expect(importBatches(big).map((b) => b.length)).toEqual([2, 2, 1]);
+    // Room the first write spends elsewhere moves its cards on.
+    expect(importBatches(big, 4 * 1024 * 1024).map((b) => b.length)).toEqual([0, 2, 2, 1]);
+    expect(importBatches(big, IMPORT_WRITE_BYTES - 3 * 1024 * 1024).map((b) => b.length)).toEqual([
+      1, 2, 2,
+    ]);
   });
 });

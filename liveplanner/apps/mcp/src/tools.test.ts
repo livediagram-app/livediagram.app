@@ -221,6 +221,7 @@ const ARGS = {
   board: 'Sprint',
   sheet: 'Budget',
   action: 'close',
+  content: 'ID,Title,Status,Team\nX-1,One,Todo,Eng',
 };
 
 const AUTHED = { authInfo: { token: 'tok_test' } };
@@ -235,7 +236,7 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 afterEach(() => vi.unstubAllGlobals());
 
 describe('registerTools', () => {
-  it('registers the twenty-seven documented tools, each with a description', () => {
+  it('registers the twenty-eight documented tools, each with a description', () => {
     const { registered } = harness();
     const current = registered;
     expect(current.map((r) => r.name).sort()).toEqual([
@@ -252,6 +253,7 @@ describe('registerTools', () => {
       'create_project',
       'delete_project',
       'find_projects',
+      'import_board',
       'list_items',
       'list_sheets',
       'list_templates',
@@ -378,6 +380,8 @@ describe('tool annotations', () => {
     change_threads: 'destructive',
     // docs/specs/026-plan/plan-agents.md: a board is added; deleting a card type trashes its cards.
     add_board: 'write',
+    // docs/specs/026-plan/tracker-import.md "Agents": an import makes a tab, a card type and cards.
+    import_board: 'write',
     change_board: 'write',
     change_card_types: 'destructive',
     // docs/specs/029-sheets/sheet-store.md "Agents": change_sheet clears and deletes cells, rows and columns.

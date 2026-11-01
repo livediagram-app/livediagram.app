@@ -112,7 +112,8 @@ list_items reads a plan's boards, their columns by name, its cards and its
 card types; change_items adds, edits and moves cards, naming columns, card
 types, fields and people as the board shows them; add_board puts a board on a
 tab (a preset or columns by name) and change_board changes one (title, columns,
-the card types it shows); change_card_types adds and edits card types and their
+the card types it shows); import_board makes a Board tab, or a new plan, from a
+Trello, Asana, Jira or Linear export; change_card_types adds and edits card types and their
 custom fields. A board shows only the card types it takes. Cards hold comment threads:
 list_threads reads them (titles, state, cards, Comments field and comments) and change_threads starts,
 replies to, resolves and reopens them, and edits or deletes its own comments, each marked

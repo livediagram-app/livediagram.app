@@ -6,4 +6,5 @@ export * from './plan-schema';
 export * from './thread-schema';
 export * from './sheet-schema';
 export * from './form-schema';
+export * from './tracker-schema';
 export * from '../verbs/mcp-tools';

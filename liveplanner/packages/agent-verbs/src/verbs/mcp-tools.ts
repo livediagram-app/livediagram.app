@@ -54,6 +54,7 @@ import {
   listItemsOutput,
   listItemsShape,
 } from '../mcp/plan-schema';
+import { importBoardOutput, importBoardShape } from '../mcp/tracker-schema';
 import {
   changeThreadsOutput,
   changeThreadsShape,
@@ -265,6 +266,22 @@ export const mcpAddBoard = mcpTool('add_board', {
   outputSchema: addBoardOutput,
 });
 
+export const mcpImportBoard = mcpTool('import_board', {
+  behaviour: 'write',
+  title: 'Import a board from another tool',
+  description:
+    'Make a Board tab from another tool’s export, given as text: a Trello board’s JSON, or an Asana project, Jira ' +
+    'issues or Linear issues CSV. Lists or statuses become columns (up to 12, the rest in Other); cards keep their ' +
+    'title, description, labels, dates, checklist, priority, estimate and assignee, and their comments go in one ' +
+    'Imported comments thread a card, each starting with its author and date. A card type per tool holds them ' +
+    '(Trello Card, Jira Issue...), with a custom field for each field the card has no place for. Attachments are ' +
+    'not imported; their links are kept in the description. With projectId it adds a Board tab to that plan ' +
+    '(Editor access; a plan without room for every card is refused, never part-imported); without, it makes a new ' +
+    'plan. preview: true answers the mapping and counts and writes nothing.',
+  inputSchema: importBoardShape,
+  outputSchema: importBoardOutput,
+});
+
 export const mcpChangeBoard = mcpTool('change_board', {
   behaviour: 'write',
   title: 'Change a Plan board',
@@ -424,6 +441,7 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpListThreads,
   mcpChangeThreads,
   mcpAddBoard,
+  mcpImportBoard,
   mcpChangeBoard,
   mcpChangeCardTypes,
   mcpListSheets,

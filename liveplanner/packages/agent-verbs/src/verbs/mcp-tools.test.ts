@@ -13,6 +13,7 @@ describe('the MCP tool verbs', () => {
       'list_threads',
       'change_threads',
       'add_board',
+      'import_board',
       'change_board',
       'change_card_types',
       'list_sheets',
