@@ -15,6 +15,7 @@ import type {
   ItemMove,
   ItemPatch,
   ItemPatchOf,
+  ItemMoveOf,
   ItemPerson,
   ItemTypeDef,
   PlanBoardSetup,
@@ -88,6 +89,9 @@ export type PlanContextValue = {
   // the editor.
   addItems?: (creates: readonly ItemCreate[]) => Promise<boolean>;
   moveItem: (itemId: string, move: ItemMove) => void;
+  // Many cards moved as one write and one undo step, in order (a group dragged, a selection's Move To; docs/specs/026-plan/
+  // plan-board.md "Several cards at once"). Absent outside the editor.
+  moveItems?: (moves: readonly ItemMoveOf[]) => void;
   // Whether the change landed (false: refused, and the store put back).
   patchItem: (itemId: string, patch: ItemPatch) => Promise<boolean>;
   // A time write to a card's Time Spent field (docs/specs/026-plan/item-types.md "Time Spent"); whether it landed.

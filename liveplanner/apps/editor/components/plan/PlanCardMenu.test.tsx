@@ -120,3 +120,40 @@ describe('PlanCardMenu', () => {
     expect(screen.queryByRole('button', { name: 'Move to To Do' })).toBeNull();
   });
 });
+
+// docs/specs/026-plan/plan-board.md "Several cards at once": Select starts select mode, for an Editor and a Participant.
+describe('PlanCardMenu Select', () => {
+  const item = { id: 'i1', type: 'task', key: 1, rev: 1, fields: { title: 'T', status: 'todo' } };
+  const plan = {
+    items: new Map([['i1', item as unknown as Item]]),
+    types: ITEM_TYPES,
+  } as unknown as PlanContextValue;
+  const setup = { columns: [] } as unknown as PlanBoardSetup;
+  const host = (canEdit: boolean, onSelect?: (id: string) => void) =>
+    render(
+      <PlanCardMenuHost
+        menu={{ itemId: 'i1', at: { x: 0, y: 0 } }}
+        plan={plan}
+        setup={setup}
+        canEdit={canEdit}
+        canRetire={false}
+        onClose={vi.fn()}
+        {...(onSelect ? { onSelect } : {})}
+      />,
+    );
+
+  it('offers Select to a Participant, which picks the card', () => {
+    const onSelect = vi.fn();
+    host(true, onSelect);
+    fireEvent.click(screen.getByRole('button', { name: 'Select' }));
+    expect(onSelect).toHaveBeenCalledWith('i1');
+  });
+
+  it('offers no Select to a Viewer, nor where the board takes no selection', () => {
+    host(false, vi.fn());
+    expect(screen.queryByRole('button', { name: 'Select' })).toBeNull();
+    cleanup();
+    host(true);
+    expect(screen.queryByRole('button', { name: 'Select' })).toBeNull();
+  });
+});

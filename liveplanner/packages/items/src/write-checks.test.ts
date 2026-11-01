@@ -74,6 +74,16 @@ describe('reading a write as the api does', () => {
       move: { status: 'done' },
     });
     expect(readItemWrite({ kind: 'delete', id: 'a' })).toEqual({ kind: 'delete', id: 'a' });
+    // Many moves: each read as one is, a refusal naming its card.
+    expect(
+      readItemWrite({
+        kind: 'moves',
+        moves: [{ id: 'a', move: { status: 'done', before: null } }],
+      }),
+    ).toMatchObject({ kind: 'moves', moves: [{ id: 'a', move: { status: 'done' } }] });
+    expect(
+      readItemWrite({ kind: 'moves', moves: [{ id: 'b', move: { set: { title: 'x' } } }] }),
+    ).toEqual({ error: 'place_invalid', id: 'b' });
   });
 });
 
@@ -96,6 +106,11 @@ describe('the items a write leaves', () => {
       id: was.id,
     });
     expect(writtenItemsRefusal({ ...move, undo: true }, [was], [next], types)).toBeNull();
+    const moves = { kind: 'moves' as const, moves: [{ id: was.id, move: { status: 'done' } }] };
+    expect(writtenItemsRefusal(moves, [was], [next], types)).toEqual({
+      error: 'status_excluded',
+      id: was.id,
+    });
     expect(writtenItemsRefusal({ kind: 'delete', id: was.id }, [was], [], types)).toBeNull();
     const huge = { ...was, fields: { ...was.fields, description: 'x'.repeat(70_000) } };
     expect(

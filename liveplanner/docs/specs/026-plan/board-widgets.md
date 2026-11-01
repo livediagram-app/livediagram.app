@@ -63,7 +63,55 @@ header; they are not in the palette.
 - **Only Mine** keeps the cards that are the viewer's: a notifying Person field holds them, the Assignee unless its
   type switched it off ([Notifies](item-types.md#notifies)).
 - The Filter and Only Mine widgets are each viewer's own and unsaved (the quick filter, see plan-board.md); taking
-  either widget off the board clears that narrowing.
+  either widget off the board clears that narrowing (the Filter's field chips with its words).
+
+## The Filter widget
+
+- **One field**: the board's words and its field filters are one search ([Search and
+  filters](../004-interface-design/search-and-filters.md)), drawn header-sized: the filter glyph, a **chip** per field
+  filter ("Card Type: Bug", its cross removing it), the words being typed ("Filter cards", or "Filter these…" with
+  chips), then inside its right edge **Clear Filter** (a cross, while there are words or chips) and **Add Filter**
+  (a plus). It is one row: past its room it scrolls sideways within the zone, as the zone does.
+- **Field chips** are Find a Card's and Card Search's ([Card Search](plan-views.md#card-search)): Add Filter lists the
+  fields the board's shown cards' types offer (Card Type while they hold more than one type), less those already
+  filtered; picking one lists its values among the cards the board shows under the other narrowings, each with its
+  count, so a chip never leaves nothing; picking a value adds the chip. A card must match every chip. At most 8
+  chips. Backspace in the empty words takes the last chip off.
+- Item Count's **Show all** clears the chips with every other narrowing.
+- Like the words, the chips are this viewer's own and unsaved, until saved as a saved filter.
+
+## Saved filters
+
+A team that opens the same slice every standup ("My Bugs", "Due This Week") saves it once, on the board.
+
+- **Where**: after the Filter field, in the Filter widget, each **saved filter** is a chip of its own, its name and a
+  small bookmark glyph, in the order saved. They show to everyone who sees the board's widgets (not on a phone, nor in
+  a Dashboard slot, where widgets stand down).
+- **Applying**: pressing a chip replaces this viewer's quick filter with the saved one (its words, field chips, Only
+  Mine and widget narrowings) and shows it pressed; pressing it again clears the quick filter. Changing any narrowing
+  afterwards leaves the chip unpressed (the quick filter is no longer the saved one). Applying is each person's own
+  and never changes what anyone else sees. Telemetry: `Plan` · `Used` · `SavedFilter`.
+- **Resolved for whoever applies it, on the day**: **Only Mine** keeps the cards that are the viewer's (not the
+  saver's); a saved **Overdue** or **Due Soon** narrowing (from the Due Soon widget) is a window counted from today,
+  not the day it was saved, with the board's done columns left out as they are now.
+- **Save Filter**: while anything narrows the board, the board holds fewer than 8 and no chip is pressed (the
+  board is not showing a saved filter as saved), an Editor sees **Save Filter**
+  (a bookmark-plus button with a tooltip) after the chips. It opens a small popover, **Save Filter**: a **Name** field
+  (focused, 1 to 40 characters) and **Save**; Enter saves, Escape or a press outside closes it. A name another saved
+  filter on the board already has (case aside) says "A saved filter already has this name." and saves nothing. Saving
+  keeps the current quick filter under that name, on the board set-up (one set-up change: undoable, live for
+  everyone), and shows its chip pressed. Telemetry: `Plan` · `Added` · `SavedFilter`.
+- **The chip's menu**: for an Editor each chip ends in a small chevron (**Saved Filter Options**) opening its menu:
+  **Rename** (the same popover, titled Rename Filter, filled with its name), **Update to Current Filters** (keeps
+  today's quick filter under the chip; shown while something narrows the board and the chip is not the one pressed) and **Delete** (at once; undo brings
+  it back). Telemetry: `Plan` · `Renamed` / `Changed` / `Removed` · `SavedFilter`.
+- **Share roles**: an Editor saves, renames, updates and deletes; a Participant and a Viewer see and apply the chips,
+  without chevrons or Save Filter.
+- **Kept and checked**: at most **8** a board (`SAVED_FILTERS_MAX`, as plan views keep 8 filters); each keeps an id,
+  its name (1 to 40 characters), words (up to 200), at most 8 field chips, Only Mine, and the People, Card Types,
+  Priorities and Due Soon narrowings. The api refuses a board set-up whose saved filters break any of these.
+- A saved filter naming a field, person or type that is gone keeps it, and matches no card on it, as a Card Search
+  filter does.
 
 ## Placing and arranging widgets
 

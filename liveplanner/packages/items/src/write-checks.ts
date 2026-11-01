@@ -215,6 +215,15 @@ export function readItemWrite(write: ItemWrite): ItemWrite | ItemWriteRefusal {
       }
       return { ...write, patches };
     }
+    case 'moves': {
+      const moves: { id: string; move: ItemMove }[] = [];
+      for (const m of write.moves) {
+        const move = readItemMove(m.move as Record<string, unknown>);
+        if (typeof move === 'string') return { error: move, id: m.id };
+        moves.push({ id: m.id, move });
+      }
+      return { ...write, moves };
+    }
     case 'move': {
       const move = readItemMove(write.move as Record<string, unknown>);
       return typeof move === 'string' ? { error: move, id: write.id } : { ...write, move };
@@ -262,7 +271,13 @@ export function writtenItemsRefusal(
     const bound = fieldsWithinBounds(next.fields);
     return bound ? { error: bound, id: next.id } : null;
   }
-  if (write.kind !== 'patch' && write.kind !== 'patches' && write.kind !== 'move') return null;
+  if (
+    write.kind !== 'patch' &&
+    write.kind !== 'patches' &&
+    write.kind !== 'move' &&
+    write.kind !== 'moves'
+  )
+    return null;
   const had = new Map(before.map((i) => [i.id, i]));
   for (const next of upserts) {
     const was = had.get(next.id);

@@ -31,6 +31,8 @@ export type PlanBoardTarget = {
   // Why a refused card cannot land, for the announcement ("This board shows bugs only").
   refusal: () => string;
   drop: (itemId: string, slot: PlanDropSlot) => void;
+  // A group of selected cards dropped together, in order (docs/specs/026-plan/plan-board.md "Several cards at once").
+  dropMany?: (itemIds: readonly string[], slot: PlanDropSlot) => void;
   hover: (incoming: PlanIncoming | null) => void;
   // A card from the palette (docs/specs/026-plan/plan-mode.md "The palette"): whether the board shows
   // that type, and a new item of it made at the slot (its row's field set).

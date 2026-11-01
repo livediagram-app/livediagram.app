@@ -130,3 +130,42 @@ apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the wi
 ## Defaults ledger
 
 See DEFAULTS.md D17 to D19.
+
+## Filter field and saved filters (board-widgets.md "The Filter widget", "Saved filters")
+
+- **Naming**: `QuickFilter.filters?: CardSearchFilter[]` (the field chips, packages/items `board.ts`);
+  `SavedBoardFilter { id; name; text?; mine?: true; filters?: CardSearchFilter[]; person?; type?; priority?;
+due?: 'overdue' | 'soon' }` and `PlanBoardSetup.savedFilters?: SavedBoardFilter[]` (`saved-filters.ts`).
+- **Matching**: `projectBoard` matches the chips once per projection: `cardsMatchingFilters(cards, filters, all,
+types, statusNames)` (card-search.ts, the core `searchCards` now shares; it never drops archived cards, so an
+  Archive board filters too) answers an id set each card is then checked against, beside `quickFilterMatches`. The
+  projection is memoised on the quick filter, so chips do not rescan on a render that changes nothing.
+- **Widget** (`components/plan/widgets/BoardFilterField.tsx`): `FilterSearchBox` with `compact` and `tone` (the board palette's
+  border, ink, muted and focus), chips labelled by `searchFilterLabel`, Add Filter from `searchFields` over the cards
+  the board shows under the other narrowings and `searchValues` for a field's values, memoised on `[items, quick,
+types]`. `components/plan/widgets/SavedFilterChips.tsx` draws the chips, Save Filter and each chip's menu; the name popover is
+  `components/plan/widgets/SavedFilterNamePopover.tsx`.
+- **Pure helpers** (`saved-filters.ts`): `SAVED_FILTERS_MAX = 8`, `SAVED_FILTER_NAME_MAX = 40`,
+  `SAVED_FILTER_TEXT_MAX = 200`; `isSavedBoardFilters(v)` (the api's check, via validate-shape), `readSavedFilters(v)`
+  (normaliseBoardSetup keeps the valid ones, at most 8); `savedFilterFrom(quick, name, id)` (a due window with no
+  `from` is `overdue`, else `soon`; `mine` kept as a flag, never the saver's id); `resolveSavedFilter(saved, { mine,
+today, soonDays, finished })` (the viewer's id or none; the window from today); `quickNarrows(quick)`;
+  `savedFilterNameTaken(list, name, exceptId?)`; `addSavedFilter`, `renameSavedFilter`, `updateSavedFilter`,
+  `removeSavedFilter` (each a new list).
+- **State**: nothing beside `quick`. The pressed chip is derived: each saved filter is resolved for this viewer and
+  today (memoised on the saved list, the set-up, the viewer and the day) and compared with the quick filter by
+  `quickKey` (keys sorted, empty words and lists left out). So any change to a narrowing unpresses it, applying the
+  pressed one again sets `{}`, and a deleted filter simply has no chip. `PlanBoardHeader` passes the plan's items and
+  status names into the widget context (`planItems`, `statusNames`) for the chips' names and counts.
+- **Contracts**: `plan-board-patch.ts` SETUP_KEYS gains `savedFilters` (a set-up delta, like `widgets`);
+  `validate-shape.ts`' `planBoard` rule also refuses a stored `savedFilters` that `isSavedBoardFilters` rejects
+  (more than 8, a bad id or name, words past 200, chips past 8 or malformed, an unknown due window or priority).
+- **Roles**: `canEdit` (an Editor's set-up) shows Save Filter and each chip's chevron; everyone applies.
+- **Errors**: a name taken says "A saved filter already has this name."; an empty name keeps Save disabled; at 8,
+  Save Filter hides; a filter whose field or value is gone matches nothing.
+- **Telemetry**: `Plan` · `Used` / `Added` / `Renamed` / `Changed` / `Removed` · `SavedFilter`.
+- **Testing**: `saved-filters.test.ts` (validation bounds, read, from and resolve, Only Mine for another viewer, the
+  window counted from today with the clock pinned, list edits), `board.test.ts` (chips narrow a projection, on an
+  Archive board), `plan-board-patch.test.ts` (the key travels), validate-shape's test (refusals),
+  `BoardFilterField.test.tsx` (chips, Add Filter, Backspace, Clear), `SavedFilterChips.test.tsx` (apply, press again,
+  save, rename, update, delete, name taken, the cap; Editor sees the controls, Participant and Viewer apply only).

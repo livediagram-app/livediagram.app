@@ -23,6 +23,40 @@ import type { Item } from './item';
 
 const map = (items: Item[]) => new Map(items.map((i) => [i.id, i]));
 
+describe('projectBoard with field chips', () => {
+  const { addTypes: _t, ...kanban } = presetSetup('kanban');
+  const setup: PlanBoardSetup = { ...kanban, swimlaneBy: 'none' };
+  const shown = (p: ReturnType<typeof projectBoard>) =>
+    p.columns.flatMap((c) => c.lanes.flatMap((l) => l.items.map((i) => i.fields['title'])));
+
+  it('keeps only the cards matching every chip, beside the words', () => {
+    const items = map([
+      item({ title: 'ui bug', status: 'todo', labels: ['ui'] }, { type: 'bug' }),
+      item({ title: 'api bug', status: 'todo', labels: ['api'] }, { type: 'bug' }),
+      item({ title: 'ui task', status: 'todo', labels: ['ui'] }),
+    ]);
+    const quick = {
+      filters: [
+        { by: 'type' as const, key: 't:bug' },
+        { by: 'field' as const, field: 'labels', key: 'f:"ui"' },
+      ],
+    };
+    expect(shown(projectBoard(setup, items, quick))).toEqual(['ui bug']);
+    expect(shown(projectBoard(setup, items, { ...quick, text: 'nothing' }))).toEqual([]);
+    expect(shown(projectBoard(setup, items, { filters: [] }))).toHaveLength(3);
+  });
+
+  it('filters an Archive board, whose cards are archived', () => {
+    const archive: PlanBoardSetup = { ...setup, archive: true };
+    const items = map([
+      item({ title: 'old bug', status: 'todo', archived: true }, { type: 'bug' }),
+      item({ title: 'old task', status: 'todo', archived: true }),
+    ]);
+    const p = projectBoard(archive, items, { filters: [{ by: 'type', key: 't:bug' }] });
+    expect(shown(p)).toEqual(['old bug']);
+  });
+});
+
 describe('projectBoard', () => {
   // A Kanban board naming no card types, so it shows every type (the type filter has its own test).
   const { addTypes: _kanbanTypes, ...kanban } = presetSetup('kanban');

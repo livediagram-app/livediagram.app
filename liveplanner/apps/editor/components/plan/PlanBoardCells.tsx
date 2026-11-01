@@ -15,6 +15,7 @@ import {
   type PlanDragPointerStore,
 } from '@/hooks/plan/usePlanCardDrag';
 import { createPortal } from 'react-dom';
+import { CountBadge } from '@liveplanner/ui';
 import {
   ITEM_TYPES,
   itemAccessibleName,
@@ -32,6 +33,8 @@ import type { PlanPalette } from './plan-palette';
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
 const REFUSED_COLOUR = '#dc2626';
+// The cards drawn behind the held one while a group is carried.
+export const GROUP_GHOST_STACK = 2;
 
 // The gap a held card would land in, dashed in the board's focus colour; or, for a palette card of a type the board
 // does not show (`refused`), a red dashed zone saying why (docs/specs/026-plan/plan-mode.md "The palette").
@@ -113,6 +116,7 @@ export function PlanBoardCard({
   palette,
   placeholderBefore,
   lifted,
+  selected = false,
   done,
   setupFields,
   cardSize,
@@ -133,6 +137,8 @@ export function PlanBoardCard({
   palette: PlanPalette;
   placeholderBefore: number | undefined;
   lifted: boolean;
+  // One of this person's selected cards (docs/specs/026-plan/plan-board.md "Several cards at once"): the brand ring.
+  selected?: boolean;
   done: boolean;
   setupFields: Parameters<typeof PlanCardFace>[0]['fields'];
   cardSize: Parameters<typeof PlanCardFace>[0]['size'];
@@ -180,7 +186,8 @@ export function PlanBoardCard({
         role="listitem"
         tabIndex={0}
         data-plan-card={item.id}
-        aria-label={faceDown ? 'Hidden card' : itemAccessibleName(item, types)}
+        aria-label={`${faceDown ? 'Hidden card' : itemAccessibleName(item, types)}${selected ? ', selected' : ''}`}
+        data-selected={selected || undefined}
         // touch-none: a finger on a card drags it, never scrolls the board under it (a maximised board scrolls); on a
         // phone board one column a screen it scrolls, and a card held still is carried (phone-board.ts).
         className={`relative ${touch} rounded-lg outline-none transition-opacity focus-visible:ring-2`}
@@ -188,6 +195,8 @@ export function PlanBoardCard({
           opacity: lifted ? 0.35 : 1,
           cursor: planCardCursor(interactive, canMove),
           ['--tw-ring-color' as string]: palette.focus,
+          // The ring sits outside the card's own box, so every card size and a cover keep their layout.
+          ...(selected ? { boxShadow: `0 0 0 2px ${palette.focus}` } : {}),
         }}
         aria-busy={fileDrop.uploading || undefined}
         {...fileDrop.handlers}
@@ -262,6 +271,7 @@ export function PlanDragGhost({
   fields,
   size,
   stacked = false,
+  count = 1,
 }: {
   drag: {
     clientX: number;
@@ -279,8 +289,12 @@ export function PlanDragGhost({
   size: Parameters<typeof PlanCardFace>[0]['size'];
   // As the card it carries was drawn (PlanBoardCard `stacked`).
   stacked?: boolean;
+  // A group carried together (docs/specs/026-plan/plan-board.md "Several cards at once"): copies stacked behind the held
+  // card and a count badge.
+  count?: number;
 }) {
   const at = usePlanDragPointer(pointer) ?? drag;
+  const behind = Math.min(GROUP_GHOST_STACK, count - 1);
   return createPortal(
     <div
       className="pointer-events-none fixed z-[1000] rotate-2 opacity-90 shadow-xl motion-reduce:rotate-0"
@@ -291,7 +305,31 @@ export function PlanDragGhost({
         height: drag.height,
       }}
     >
-      <PlanCardFace item={item} palette={palette} fields={fields} size={size} stacked={stacked} />
+      {Array.from({ length: behind }, (_, i) => (
+        <div
+          key={i}
+          aria-hidden
+          className="absolute inset-0 rounded-lg border shadow-sm"
+          style={{
+            transform: `translate(${(behind - i) * 5}px, ${(behind - i) * 5}px)`,
+            backgroundColor: palette.card,
+            borderColor: palette.border,
+          }}
+        />
+      ))}
+      <div className="relative">
+        <PlanCardFace item={item} palette={palette} fields={fields} size={size} stacked={stacked} />
+      </div>
+      {count > 1 ? (
+        // The board's surface on its focus colour: the pair each theme already keeps apart.
+        <CountBadge
+          count={count}
+          size="md"
+          background={palette.focus}
+          color={palette.surface}
+          className="absolute -right-2 -top-2 shadow"
+        />
+      ) : null}
     </div>,
     document.body,
   );

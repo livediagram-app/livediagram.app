@@ -351,6 +351,25 @@ describe('itemIdsOfWrite', () => {
   });
 });
 
+describe('many moves', () => {
+  const moves: ItemWrite = {
+    kind: 'moves',
+    moves: [
+      { id: 'a', move: { status: 'done' } },
+      { id: 'b', move: { status: 'done', after: 'a' } },
+    ],
+  };
+  it('names its cards, narrows to the landed ones and marks an undo', () => {
+    expect(itemIdsOfWrite(moves)).toEqual(['a', 'b']);
+    expect(writeLimitedTo(moves, new Set(['b']))).toEqual({
+      kind: 'moves',
+      moves: [{ id: 'b', move: { status: 'done', after: 'a' } }],
+    });
+    expect(writeLimitedTo(moves, new Set())).toBeNull();
+    expect(asUndoWrite(moves)).toEqual({ ...moves, undo: true });
+  });
+});
+
 describe('writeLimitedTo', () => {
   const ids = new Set(['p', 'x', 't']);
 

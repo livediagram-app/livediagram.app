@@ -6,8 +6,8 @@
 import { liveCards } from './plan-views';
 import {
   SWIMLANE_BY,
+  cardsMatchingFilters,
   laneFieldsOf,
-  inLane,
   laneGroups,
   swimlaneGroupingsFor,
   type SwimlaneBy,
@@ -70,15 +70,15 @@ export function searchCards(
   types: readonly ItemTypeDef[] = ITEM_TYPES,
   statusNames?: ReadonlyMap<string, string>,
 ): Item[] {
-  let cards = liveCards(items);
+  const cards = liveCards(items);
   if (filters.length === 0) return cards;
-  const all = new Map(cards.map((c) => [c.id, c]));
-  for (const f of filters) {
-    const groups = laneGroups(f.by, f.field, cards, all, types, statusNames);
-    // A card holding several values matches a filter on any of them (item-types.md "Holds Several").
-    cards = cards.filter((c) => inLane(groups, c.id, f.key));
-  }
-  return cards;
+  return cardsMatchingFilters(
+    cards,
+    filters,
+    new Map(cards.map((c) => [c.id, c])),
+    types,
+    statusNames,
+  );
 }
 
 // The card types in play: the matching cards' types (every type when none match), so a field none of them offer is

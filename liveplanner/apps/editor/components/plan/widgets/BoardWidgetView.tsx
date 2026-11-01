@@ -25,6 +25,7 @@ import {
   finishedStatuses,
   setColumnDone,
   type QuickDueWindow,
+  quickNarrows,
 } from '@liveplanner/items';
 import { PRIORITY_COLOURS, accentOn, type PlanPalette } from '../plan-palette';
 import { BoardWidgetArt } from '../plan-tile-art';
@@ -47,6 +48,8 @@ import {
 import { OVERDUE_RED, PHASE_COLOURS } from '../views/view-frame';
 import { CountBadge } from '@liveplanner/ui';
 import { RunningDot } from '../time/TimerReadouts';
+import { BoardFilterField } from './BoardFilterField';
+import { SavedFilterChips } from './SavedFilterChips';
 
 const PEOPLE_SHOWN = 5;
 const TYPES_SHOWN = 3;
@@ -75,15 +78,14 @@ export type WidgetContext = {
   onSetup: (next: PlanBoardSetup, part: string) => void;
   // Open an item in the item panel (Top Voted).
   onOpenItem: (itemId: string) => void;
+  // Every card of the plan and its status names: the Filter widget's chips name and count by them.
+  planItems?: ReadonlyMap<string, Item> | undefined;
+  statusNames?: ReadonlyMap<string, string> | undefined;
 };
 
-// The quick filter with the widget narrowings cleared, the text and Only Mine kept.
+const NO_PLAN_ITEMS: ReadonlyMap<string, Item> = new Map();
+
 const WIDGET_KEYS = ['person', 'type', 'due', 'priority'] as const;
-function narrowed(quick: QuickFilter): boolean {
-  return (
-    WIDGET_KEYS.some((k) => quick[k] !== undefined) || !!quick.text || quick.mine !== undefined
-  );
-}
 
 // The quick filter with one widget narrowing set, or cleared when it is already the one set.
 function toggle<K extends (typeof WIDGET_KEYS)[number]>(
@@ -100,8 +102,6 @@ function toggle<K extends (typeof WIDGET_KEYS)[number]>(
 // A part of a widget that narrows the board when pressed, pressed while it does.
 const PRESSABLE =
   'relative inline-flex items-center gap-1 rounded-md px-1 py-0.5 touch-target-y transition enabled:cursor-pointer enabled:hover:bg-black/5 dark:enabled:hover:bg-white/10';
-
-const stopKeys = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
 // The widget's glyph, small, in a colour that says what it is about.
 function Lead({ kind, color }: { kind: BoardWidgetKind; color: string }) {
@@ -131,7 +131,7 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
         (n, c) => n + c.lanes.reduce((m, l) => m + l.items.length, 0),
         0,
       );
-      if (narrowed(ctx.quick))
+      if (quickNarrows(ctx.quick))
         return (
           <button
             type="button"
@@ -204,30 +204,31 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
         </span>
       );
     }
-    case 'filter': {
-      const on = !!ctx.quick.text;
+    case 'filter':
+      // The words and field chips as one field, then the board's saved filters (board-widgets.md "The Filter widget").
       return (
-        <span className="relative flex shrink-0 items-center">
-          <span
-            className="pointer-events-none absolute left-2 flex"
-            style={{ color: on ? palette.focus : palette.muted }}
-            aria-hidden
-          >
-            <BoardWidgetArt kind="filter" size={13} />
-          </span>
-          <input
-            type="search"
-            value={ctx.quick.text ?? ''}
-            onChange={(e) => ctx.onQuick({ ...ctx.quick, text: e.target.value })}
-            onKeyDown={stopKeys}
-            placeholder="Filter cards"
-            aria-label="Filter this board"
-            className="h-7 w-36 rounded-md border bg-transparent pl-7 pr-2 text-[12px] outline-none"
-            style={{ borderColor: on ? palette.focus : palette.border, color: palette.text }}
+        <span className="flex shrink-0 items-center gap-1.5">
+          <BoardFilterField
+            projection={projection}
+            planItems={ctx.planItems ?? NO_PLAN_ITEMS}
+            types={ctx.types}
+            statusNames={ctx.statusNames}
+            palette={palette}
+            quick={ctx.quick}
+            onQuick={ctx.onQuick}
+          />
+          <SavedFilterChips
+            setup={setup}
+            palette={palette}
+            quick={ctx.quick}
+            onQuick={ctx.onQuick}
+            mine={ctx.canFilterMine}
+            now={ctx.now}
+            canEdit={ctx.canEdit}
+            onSetup={ctx.onSetup}
           />
         </span>
       );
-    }
     case 'mine': {
       const on = ctx.quick.mine !== undefined;
       return (
@@ -244,7 +245,10 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
           onClick={() =>
             ctx.onQuick(
               on
-                ? { text: ctx.quick.text }
+                ? {
+                    text: ctx.quick.text,
+                    ...(ctx.quick.filters ? { filters: ctx.quick.filters } : {}),
+                  }
                 : { ...ctx.quick, mine: ctx.canFilterMine ?? undefined },
             )
           }
