@@ -134,7 +134,7 @@ The deck is document metadata saved through the document's PUT, which is `gateEd
 ## Telemetry
 
 - `UI · Changed · SlideNotes` once per opening of a card, on its first keystroke (as before).
-- `UI · Added · NoteCard`, `UI · Removed · NoteCard`, `UI · Reordered · NoteCard`.
+- `UI · Added · NoteCard`, `UI · Removed · NoteCard`, `UI · Moved · NoteCard` (a reorder).
 - `UI · Opened · PageNotesButton` and `UI · Opened · PresenterNotes` as before; `UI · Used · NoteCardFlip` once per
   flip in the presenter view.
 - Never text.

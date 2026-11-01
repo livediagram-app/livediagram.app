@@ -4,7 +4,7 @@
 // the list the title bar's Notes popover (or a phone's bottom sheet) and the Slide Deck panel both show. One card open
 // for writing at a time; add, reorder (drag by the grip, the Move buttons or Alt+arrows) and remove with an Undo.
 // Every change hands the whole list to `onChange`, which writes the deck.
-import { useEffect, useEffectEvent, useRef, useState, type RefObject } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { lucidePlus } from '@liveworkspace/icons/lucide';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
@@ -62,9 +62,9 @@ export function NoteCardList({
   compact?: boolean;
   // The "Speaker Notes" heading and summary; off where the surface names it (a phone's sheet, the panel).
   heading?: boolean;
-  // Filled with what Escape does here, for a surface whose own Escape is taken first (a popover, a sheet): closes
-  // the open card and says so, else says it left Escape alone.
-  takeEscape?: RefObject<(() => boolean) | null>;
+  // Given what Escape does here (null on unmount), for a surface whose own Escape is taken first (a popover, a
+  // sheet): it closes the open card and says so, else says it left Escape alone. Keep it stable.
+  takeEscape?: (escape: (() => boolean) | null) => void;
 }) {
   const touch = useCoarsePointer();
   const [openId, setOpenId] = useState<string | null>(null);
@@ -142,7 +142,7 @@ export function NoteCardList({
   const move = (from: number, to: number) => {
     const next = moveNoteCard(cards, from, to);
     if (next === cards) return;
-    track('UI', 'Reordered', 'NoteCard');
+    track('UI', 'Moved', 'NoteCard');
     write(next, 'move');
     // Focus follows the card it moved, so Alt+arrow can carry on.
     focusCard(cards[from]!.id);
@@ -163,10 +163,8 @@ export function NoteCardList({
   });
   useEffect(() => {
     if (!takeEscape) return;
-    takeEscape.current = () => escape();
-    return () => {
-      takeEscape.current = null;
-    };
+    takeEscape(() => escape());
+    return () => takeEscape(null);
   }, [takeEscape]);
 
   // The Undo bar goes on its own after a while.

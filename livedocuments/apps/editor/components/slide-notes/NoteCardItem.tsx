@@ -74,7 +74,7 @@ function CardButton({
         }}
         // A press of a button is never a press of the card under it.
         onKeyDown={(e) => e.stopPropagation()}
-        className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+        className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-200"
       >
         {children}
       </button>
@@ -87,7 +87,7 @@ function SpeakingTime({ text }: { text: string }) {
   if (!label) return null;
   return (
     <span
-      className="flex items-center gap-1 text-[10px] tabular-nums text-slate-400 dark:text-slate-500"
+      className="flex items-center gap-1 text-[10px] tabular-nums text-slate-500 dark:text-slate-400"
       data-note-card-time=""
     >
       <ClockIcon />
@@ -131,7 +131,7 @@ export function NoteCardItem(props: NoteCardItemProps) {
             onPointerUp={props.onGripUp}
             onPointerCancel={props.onGripUp}
             onClick={(e) => e.stopPropagation()}
-            className={`flex h-6 w-4 cursor-grab touch-none items-center justify-center rounded text-slate-400 transition active:cursor-grabbing dark:text-slate-500 ${
+            className={`flex h-6 w-4 cursor-grab touch-none items-center justify-center rounded text-slate-400 transition active:cursor-grabbing dark:text-slate-400 ${
               touch
                 ? ''
                 : 'opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100'
@@ -171,7 +171,7 @@ export function NoteCardItem(props: NoteCardItemProps) {
         {card.text.trim() ? (
           card.text
         ) : (
-          <span className="italic text-slate-400 dark:text-slate-500">Empty card</span>
+          <span className="italic text-slate-500 dark:text-slate-400">Empty card</span>
         )}
       </p>
       <div className="flex justify-end px-3 pb-1.5">
@@ -269,9 +269,9 @@ function OpenCard({ card, index, touch, onClose, onText, onAddAfter }: NoteCardI
           // Typing is the card's, never the editor's shortcuts.
           e.stopPropagation();
         }}
-        className="block w-full resize-none bg-transparent px-3 py-1.5 text-[13px] leading-[19px] text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-500"
+        className="block w-full resize-none bg-transparent px-3 py-1.5 text-[13px] leading-[19px] text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400"
       />
-      <div className="flex min-h-6 items-center gap-2 px-3 pb-1.5 text-[10px] text-slate-400 dark:text-slate-500">
+      <div className="flex min-h-6 items-center gap-2 px-3 pb-1.5 text-[10px] text-slate-500 dark:text-slate-400">
         {touch ? null : (
           <span aria-hidden data-note-card-hint="">
             {keyLabel('Mod-')}↵ New Card · Esc Done

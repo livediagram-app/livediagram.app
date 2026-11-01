@@ -106,10 +106,10 @@ card, each line a run joined by `<a:br/>`.
   removes, Alt+↑/↓ moves, ↑/↓ moves focus. Keys in the open box: Escape closes, ⌘/Ctrl+Enter adds after; every
   other key is stopped from reaching the editor's shortcuts.
 - Escape and the popover: `AnchoredPopover` and the phone sheet take Escape in the capture phase, before the box sees
-  it. So `NoteCardList` takes an optional `takeEscape` ref and sets it to a function that closes the open card and
-  returns true (false with none open); `PageNotesButton` passes `onEscape={() => takeEscape.current?.() ?? false}` to
-  `TitlePopoverButton`, which hands it to `AnchoredPopover`'s `onEscape` and calls it first in its sheet's
-  `useEscape`, closing only when it returns false.
+  it. So `NoteCardList` takes an optional, stable `takeEscape` callback and hands it a function that closes the open
+  card and returns true (false with none open), and null on unmount; `PageNotesButton` keeps it in a ref and passes
+  `onEscape={() => escapeCard.current?.() ?? false}` to `TitlePopoverButton`, which hands it to `AnchoredPopover`'s
+  `onEscape` and calls it first in its sheet's `useEscape`, closing only when it returns false.
 - The cards sit in a scroller (`data-note-card-scroller`, `max-h-[min(55vh,30rem)]`, overscroll contained) with Add
   Card under it; the list is `select-none` while a card is dragged.
 - An outside press while a card is open closes it (`useClickOutside` on the list).

@@ -114,7 +114,7 @@ describe('NoteCardList', () => {
     expect(card(3, 3).querySelector('[aria-label="Move Down"]')).toBeNull();
     fireEvent.click(card(1, 3).querySelector('[aria-label="Move Down"]')!);
     expect(ids()).toBe('c2:Two|c1:One|c3:Three');
-    expect(track).toHaveBeenCalledWith('UI', 'Reordered', 'NoteCard');
+    expect(track).toHaveBeenCalledWith('UI', 'Moved', 'NoteCard');
     fireEvent.click(card(3, 3).querySelector('[aria-label="Move Up"]')!);
     expect(ids()).toBe('c2:Two|c3:Three|c1:One');
     card(1, 3).focus();
