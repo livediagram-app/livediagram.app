@@ -89,8 +89,10 @@ Hibernation resets it, which only re-opens a window.
 
 - One judge per relayed element op: a migration and a validator pass over the element, both linear in its size, and
   for a `tab` op the migrations of the whole tab. The frame cap (256 KiB, `MAX_MESSAGE_CHARS`) bounds the work, as
-  it bounds the `JSON.parse` before it. Measured on the M-series dev machine (`room-element-rules.test.ts`):
-  see the PR's Performance section; the test holds a CPU budget (`cpuBudgetMs`) on a worst-case frame.
+  it bounds the `JSON.parse` before it. Measured as CPU time on a dev machine, across the four products: a typical
+  `el` add 4 to 5 µs; a 200 by 50 table (93 KB) 0.05 ms; a sticky of 100,000 characters (257 KB) 0.5 ms; a `tab` op of 1,500
+  shapes (149 KB) 1.8 to 3.2 ms, about half migration and half validation, against 0.45 ms to parse the same frame.
+  `room-element-rules.test.ts` holds CPU budgets (`cpuBudgetMs`) on a typical element and on frame-sized ops.
 - No allocation survives the call; the log's state is three numbers per room.
 
 ## Observability
