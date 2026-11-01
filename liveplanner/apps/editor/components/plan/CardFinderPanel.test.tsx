@@ -58,7 +58,7 @@ describe('the Card Finder', () => {
     open();
     // Each row is the card's compact face, named for its title, type and number.
     expect(screen.getByRole('button', { name: /^Open Sam Reed, Person #/ })).toBeTruthy();
-    fireEvent.change(screen.getByLabelText('Search cards'), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search cards' }), {
       target: { value: 'person' },
     });
     expect(rows()).toHaveLength(1);

@@ -164,7 +164,7 @@ describe('Setup Sheet', () => {
     fireEvent.click(radio(/Plan Cards/));
     fireEvent.click(btn('Next: Cards'));
     expect(screen.getByRole('status').textContent).toBe('3 cards');
-    fireEvent.change(screen.getByLabelText('Search cards'), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search cards' }), {
       target: { value: 'brief' },
     });
     expect(screen.getByRole('status').textContent).toBe('2 cards');
@@ -239,7 +239,7 @@ describe('Setup Sheet', () => {
       expect([box.disabled, box.getAttribute('aria-checked')]).toEqual([true, 'true']);
     }
     fireEvent.click(btn(/Back/));
-    fireEvent.change(screen.getByLabelText('Search cards'), {
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search cards' }), {
       target: { value: 'zzz' },
     });
     expect(screen.getByRole('status').textContent).toContain('No cards match “zzz”');
@@ -249,7 +249,9 @@ describe('Setup Sheet', () => {
       .closest<HTMLElement>('[data-empty-state]')!;
     fireEvent.click(within(empty).getByRole('button', { name: 'Clear Search' }));
     expect(screen.getByRole('status').textContent).toMatch(/cards?$/);
-    fireEvent.change(screen.getByLabelText('Search cards'), { target: { value: 'zzz' } });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Search cards' }), {
+      target: { value: 'zzz' },
+    });
     expect((btn('Next: Columns') as HTMLButtonElement).disabled).toBe(true);
     // Back keeps the choice.
     fireEvent.click(btn(/Back/));
