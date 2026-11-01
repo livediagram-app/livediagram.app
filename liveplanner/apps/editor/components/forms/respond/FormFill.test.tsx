@@ -183,6 +183,45 @@ describe('what Submit can be told', () => {
     expect(screen.getByRole('button', { name: 'Submit' })).toBeTruthy();
   });
 
+  // axe aria-allowed-attr: a group of checkboxes may not carry aria-required (a radiogroup may). Its prompt says
+  // "(required)" to a screen reader either way.
+  it('marks a required choice group required only where ARIA allows it', () => {
+    const form: PublicForm = {
+      heading: 'Choices',
+      confirmation: 'Thanks',
+      sections: [
+        {
+          id: 's-1',
+          title: '',
+          questions: [
+            {
+              id: 'q-one',
+              type: 'single',
+              prompt: 'Pick one',
+              options: ['A', 'B'],
+              required: true,
+            },
+            {
+              id: 'q-many',
+              type: 'multi',
+              prompt: 'Pick some',
+              options: ['A', 'B'],
+              required: true,
+            },
+          ],
+        },
+      ],
+    };
+    render(<FormFill form={form} submit={vi.fn()} draftKey={null} />);
+    expect(screen.getByRole('radiogroup', { name: /Pick one/ }).getAttribute('aria-required')).toBe(
+      'true',
+    );
+    const many = screen.getByRole('group', { name: /Pick some/ });
+    expect(many.hasAttribute('aria-required')).toBe(false);
+    expect(many.getAttribute('aria-labelledby')).toBeTruthy();
+    expect(screen.getByText('Pick some').parentElement?.textContent).toContain('(required)');
+  });
+
   it('in Preview, says nothing was sent', async () => {
     render(
       <FormFill form={FORM} preview draftKey={null} submit={async () => ({ kind: 'sent' })} />,
