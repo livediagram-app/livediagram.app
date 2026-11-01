@@ -17,7 +17,7 @@
     "e2e:local": "tsx scripts/e2e-local.ts"
   },
   "dependencies": {
-    "@better-auth/oauth-provider": "1.7.12",
+    "@better-auth/oauth-provider": "1.7.14",
     "@liveworkspace/auth-client": "workspace:*",
     "@liveworkspace/brand": "workspace:^",
     "@liveworkspace/email": "workspace:*",
@@ -25,7 +25,7 @@
     "@liveworkspace/migration": "workspace:^",
     "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*",
-    "better-auth": "1.7.12",
+    "better-auth": "1.7.14",
     "jose": "^6.2.12"
   },
   "devDependencies": {
@@ -33,7 +33,7 @@
     "@liveworkspace/api-kit": "workspace:^",
     "@liveworkspace/vitest-config": "workspace:^",
     "@types/node": "^26.6.4",
-    "oxlint": "^1.88.0",
+    "oxlint": "^1.90.0",
     "tsx": "^4.20.6",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3",
