@@ -178,11 +178,46 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
   - **Email** is one email address (up to 254 characters, something@domain), kept as typed less surrounding spaces.
     The panel shows it as a mailto link; the card shows the address. A value that is not an address is refused, as
     a Link that is not `https://` is.
-    Every value
-    is a plain string, number or true/false, or a list of them, which the item store keeps for any field; a Person
-    is the Assignee's `{ id, name, color }` and a Checklist the Checklist's rows (`{ text, done }`), which the store
-    keeps under any field too. Their values are ordinary entries in the item's `fields`, under the custom
-    field's id (`f-` and a slug of its name), so the store, agents and exports already carry them.
+  - <a id="choice-fields"></a>**Choice and Multiple Choice in the card panel** read and are edited the same way,
+    one control for both, so the two sit together:
+    - **An option's colour** is its place in the field's option list, the label swatches in turn (the first
+      option blue, the second green, and so on, starting again past eight), so the options of one field never share
+      a colour while it has eight or fewer. Options store no colour of their own (a Choice's options are plain
+      names, as a form question's are); a colour picked per option would need one, and the field's order already
+      gives each a stable, distinct one. Reordering options in the type editor recolours them with their new
+      places. An option is drawn as a **chip**: a 12% tint of its colour, a dot of the colour itself before the name,
+      inked as a label is (70% of the colour mixed toward the page's ink), so it reads at 4.5:1 in light and dark.
+    - **The field** is one bordered box the width of its row, as a Person field that holds several is
+      ([Holds Several](#holds-several)). A Multiple Choice shows a chip per pick, in option order, wrapping onto
+      more rows as they need, each with a remove button (**Remove {option} from {Field}**), then a **+** at the end
+      (**Add to {Field}**). A Choice shows its one chip, or **None**, and a chevron. A long option wraps inside its
+      chip rather than overflow (it keeps its whole name, up to 100 characters); an emoji reads as any letter.
+    - **Empty**: a Multiple Choice with no picks, or a Choice with none, reads **None**, quietly, in the box; the
+      whole box opens the list, so a phone has a large target.
+    - **The list** opens under the field, over the page (it never pushes the panel or is clipped by its column), at
+      least 260 px wide, wider with the field, kept on screen. Each option is a row: a checkbox (Multiple Choice)
+      or a tick at the end (Choice), the option's chip, its full name wrapping onto a second line. A Choice's list
+      starts with **None**. A Multiple Choice's list stays open for more picks and ends in a quiet footer naming
+      how many are chosen ("2 of 6 chosen") with **Clear** when any are; a Choice's closes on a pick. With more than
+      eight options it opens with a **Find an option** field that narrows the rows as you type (case aside); one
+      that finds nothing says so (the shared no-match state, "No options match “x”", with Clear Search).
+    - **Keys**: Enter, Space or ↓ on the field opens the list on the first pick (else the first row); ↑ and ↓ move,
+      Home and End jump, Enter (and Space, outside the find field) picks or toggles; Escape or a press outside
+      closes it and puts focus back on the field; Tab closes it and moves on. A touch screen picks with a tap; rows and remove buttons are 44 px and 24 px
+      to a finger there.
+    - **A value that is no longer an option** (the option was renamed or removed in the type editor) still shows,
+      as a grey chip with **No longer an option** in its tooltip, and can be removed; it is never dropped by
+      another pick. Picks are kept in option order, any such value after them.
+    - **Share roles**: an Editor and a Participant pick and remove options (editing a card's fields, [Share
+      roles](../013-workspace/share-roles.md#what-a-participant-changes)); a Viewer sees the chips alone, with no
+      remove buttons, no **+** and no list, and **None** when it holds none.
+    - **On the board** a card face keeps reading the value as text ("Design, Research"), the kind's glyph before it,
+      as every custom value pill does: the face is drawn by the card's own SVG-sized pills, not this control.
+      Every value
+      is a plain string, number or true/false, or a list of them, which the item store keeps for any field; a Person
+      is the Assignee's `{ id, name, color }` and a Checklist the Checklist's rows (`{ text, done }`), which the store
+      keeps under any field too. Their values are ordinary entries in the item's `fields`, under the custom
+      field's id (`f-` and a slug of its name), so the store, agents and exports already carry them.
   - <a id="comments-and-votes-fields"></a>**Comments and Votes fields.** A type may hold the built-in Comments
     and Votes and any number of its own (a **Design Review** and a **QA Notes**, a **Priority Vote** beside the
     Votes).

@@ -1,7 +1,7 @@
 'use client';
 
 // The current card's part of the item panel header (docs/specs/026-plan/plan-board.md "The header reads part by
-// part"): its Card Type picker as a bordered pill, its number as a quiet tag that copies "#12", and the desktop's
+// part"): its Card Type picker as a bordered pill (a plain label with one type to offer), its number as a quiet tag that copies "#12", and the desktop's
 // Maximise / Minimise Card button beside the close button ("Maximised").
 import type { ItemTypeDef } from '@liveplanner/items';
 import {
@@ -13,6 +13,7 @@ import {
 } from '@liveplanner/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
+import { hasTypeChoice } from './type-choices';
 
 // How long the number's tooltip says Copied.
 export const KEY_COPIED_MS = 1500;
@@ -27,6 +28,7 @@ export function ItemTypePill({
   // The card's type as drawn (a fallback when its id is not in the catalogue).
   type: ItemTypeDef;
   value: string;
+  // The types it may switch to (typeChoices): its boards' types, its own among them.
   types: readonly ItemTypeDef[];
   canEdit: boolean;
   onType: (typeId: string) => void;
@@ -36,7 +38,9 @@ export function ItemTypePill({
       <PlanTypeGlyph glyph={type.glyph} size={15} />
     </span>
   );
-  if (!canEdit)
+  // One type to offer is no choice: the plain label, as someone who may not edit sees it (plan-board.md "One type
+  // to offer is no choice").
+  if (!canEdit || !hasTypeChoice(types, value))
     return (
       <span className="flex shrink-0 items-center gap-1.5 px-1 text-[13px] font-semibold text-slate-900 dark:text-slate-50">
         {glyph}

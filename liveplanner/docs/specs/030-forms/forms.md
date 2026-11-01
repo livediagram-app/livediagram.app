@@ -336,7 +336,8 @@ Every question's answer is kept on the response's card. **Answer Goes To** offer
 Two kinds join the [custom field kinds](../026-plan/item-types.md) so form answers keep their shape on a card:
 
 - **Multiple Choice**: several of up to 20 named options. Its value is a list of option names in option order. On a
-  card it reads as the names joined by commas; the panel edits it as checkboxes; a board cannot lane by it (a card
+  card it reads as the names joined by commas; the panel edits it as option chips with a list to pick from, as Choice
+  ([Choice and Multiple Choice in the card panel](../026-plan/item-types.md#choice-fields)); a board cannot lane by it (a card
   belongs in one lane). The type editor takes its options one a line, as Choice's.
 - **Rating**: a whole number from 1 to the field's scale (3 to 10, `scale`, 5 by default, chosen in the type editor
   as "Out of 3" to "Out of 10"), drawn as that many stars filled to the value (or "7 / 10" when the scale is past 5);

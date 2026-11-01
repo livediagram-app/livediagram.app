@@ -642,8 +642,21 @@ In Plan mode:
   - **The header reads part by part**, each looking like what it does:
     - the **breadcrumb** above it is the back bar: the earlier card's number and title, cut to fit.
     - the **current card** ends the trail and is not a link: its **Card Type** picker, a bordered pill with the
-      type's glyph and a chevron (a plain label for someone who may not edit), then its number as a quiet
-      monospace **#12** tag; pressing the tag copies "#12" and its tooltip says **Copied**.
+      type's glyph and a chevron, then its number as a quiet monospace **#12** tag; pressing the tag copies "#12"
+      and its tooltip says **Copied**.
+    - <a id="card-type-choices"></a>**The types it offers** are the ones the card's boards take: the card types of
+      every board that names the card's status as a column (their union; a board taking every type, or no board
+      naming the status, a card in the Trash or with no status, offers the whole catalogue), always with the card's
+      own type. So a card never switches to a type that would drop it off the board it sits on. A type the
+      catalogue no longer has is never offered, save the card's own.
+    - **One type to offer is no choice**: when that list holds only the card's own type (a plan with one card
+      type, or a board taking only it), the pill gives way to a **plain label**, the type's glyph in its colour and
+      its name, with no border, chevron or picker, exactly as someone who may not edit sees it. Two or more bring
+      the picker back. The count is worked out live from the catalogue and the boards, so a type added, a board
+      taking another, or a type deleted turns the label into the picker (or back) in place, for everyone, without
+      reopening the card.
+    - **Share roles**: an Editor and a Participant change a card's type from the picker (editing a card); a Viewer
+      always sees the plain label.
     - after a gap, the **⋯** menu and **Close**, each named by a tooltip.
   - **Moving between cards** keeps the panel open: it changes card in place, without opening again, and each card
     starts on its own first tab.

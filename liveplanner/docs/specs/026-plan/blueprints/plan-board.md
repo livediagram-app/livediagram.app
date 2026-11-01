@@ -307,6 +307,19 @@ LabelMenu.tsx            the menu: "Labels on this plan" heading (and ↑↓ hin
                          label chips (labelColour tint, a count badge, the typed text bold, a ring when highlighted),
                          a dashed Create chip, or one note (no labels yet / all on the card / already on it / full);
                          pointer-down prevented so focus stays in the field
+ChoiceField.tsx          a Choice or Multiple Choice field (item-types.md "Choice and Multiple Choice in the card
+                         panel"): Multiple Choice through FieldChips (chip `colour`), Choice a trigger button with
+                         its chip or None and a chevron; the list an AnchoredPopover (width max(CHOICE_LIST_MIN_PX
+                         = 260, field)), a ChoiceOptionRow per option (checkbox or end tick, OptionChip, two lines),
+                         None first for Choice, a "Find an option" filter past CHOICE_FILTER_FROM = 8 options
+                         (NoMatches "options"), a Multiple Choice footer "{n} of {m} chosen" + Clear; ↑/↓ clamp,
+                         Home/End, Enter (Space outside the filter) picks, Tab closes, Escape and a press outside
+                         close and refocus the trigger; picks saved by choicePicks (option order, stale after)
+choice-options.ts        pure: choiceColour(options, option) (LABEL_COLOURS by index, undefined when not an
+                         option), choicePicks / toggledChoice (option order, stale values kept after), matchOptions
+                         (case-insensitive contains)
+OptionChip.tsx           an option's chip: TINT_CHIP (label-colour.ts) on --chip, a dot of the colour, wraps with
+                         [overflow-wrap:anywhere]; a stale value a slate chip with "No longer an option"
 item-field-editors.tsx   editors for text (debounced), priority, number, date, checklist
 PersonPicker.tsx         the Assignee picker: No one, the plan's people, then + Custom Assignee (editable only), whose
                          CustomAssigneePopover (AnchoredPopover, a Name TextInput of CUSTOM_ASSIGNEE_NAME_MAX, Cancel,
@@ -620,7 +633,9 @@ BoardFocused | SheetFocused` and calls the canvas's Focus: `focusBounds` in `use
   "Open {Name} settings", "Add", "A board holds up to 12 columns.", "Move and Remove", "Keep It",
   "Linked as {Field}", "No cards link here as {Field} yet.", "Archived", "Card trail".
 - Item panel: a modal through the shared `Dialog` (`size="lg"`, `phoneSheet`: a sheet from the bottom with a grab
-  handle below `sm`), max height 44rem, header with type picker + key, title
+  handle below `sm`), max height 44rem, header with type picker + key (`ItemTypePill`: `typeChoices(types,
+statusTypes, item)` from `type-choices.ts`, the catalogue types the boards naming the card's status take, the
+  card's own type always first among them in catalogue order; one choice draws the plain label, as a Viewer's), title
   input, field rows in the type's order, description textarea, checklist, footer "Created by (disc) X" and "Edited by (disc) Y, 2m", the disc `PersonDisc`.
 
 ## Accessibility

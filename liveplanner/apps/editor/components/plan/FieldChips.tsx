@@ -5,9 +5,10 @@
 // person's disc and name, a card's glyph, number and title), each with a remove button, then an Add button that opens
 // the kind's own list (PersonPicker, LinkedCardField). Pressing the field's empty room opens it too, so a phone has a
 // large target. A Viewer sees the chips alone. Full at FIELD_VALUES_MAX, Add is disabled and says why.
-import { forwardRef, type ReactNode, type Ref } from 'react';
+import { forwardRef, type CSSProperties, type ReactNode, type Ref } from 'react';
 import { FIELD_VALUES_MAX } from '@liveplanner/items';
 import { CloseIcon, PlusIcon, Tooltip } from '@liveplanner/ui';
+import { TINT_CHIP } from './label-colour';
 
 export interface FieldChip {
   key: string;
@@ -15,6 +16,10 @@ export interface FieldChip {
   name: string;
   // Elements only: each kind puts its text through text-optical-line itself, so it centres in the pill.
   content: ReactNode;
+  // A chip tinted by its own colour (a Choice option's), as a label chip is; slate when absent.
+  colour?: string | undefined;
+  // The chip grows to more lines for a long text rather than cutting it (a Choice option's whole name).
+  wrap?: boolean;
 }
 
 export const FieldChips = forwardRef(function FieldChips(
@@ -69,7 +74,14 @@ export const FieldChips = forwardRef(function FieldChips(
         <span
           key={chip.key}
           data-field-chip=""
-          className="inline-flex h-6 min-w-0 max-w-full items-center gap-1 rounded-full bg-slate-100 pl-0.5 text-[12px] font-medium text-slate-800 max-sm:h-7 max-sm:text-[14px] dark:bg-slate-800 dark:text-slate-100"
+          style={chip.colour ? ({ '--chip': chip.colour } as CSSProperties) : undefined}
+          className={`inline-flex min-w-0 max-w-full items-center gap-1 rounded-full text-[12px] font-medium max-sm:text-[14px] ${
+            chip.wrap ? 'min-h-6 py-0.5 pl-2 leading-4 max-sm:min-h-7' : 'h-6 pl-0.5 max-sm:h-7'
+          } ${
+            chip.colour
+              ? TINT_CHIP
+              : 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100'
+          }`}
         >
           <ChipBody>{chip.content}</ChipBody>
           {disabled ? (
@@ -80,7 +92,11 @@ export const FieldChips = forwardRef(function FieldChips(
                 type="button"
                 aria-label={`Remove ${chip.name} from ${label}`}
                 onClick={() => onRemove(chip.key)}
-                className="mr-0.5 flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-200 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 max-sm:size-6 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white"
+                className={`mr-0.5 flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 max-sm:size-6 ${
+                  chip.colour
+                    ? 'hover:bg-black/10 dark:hover:bg-white/15'
+                    : 'text-slate-500 hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-white'
+                }`}
               >
                 <CloseIcon size={11} />
               </button>

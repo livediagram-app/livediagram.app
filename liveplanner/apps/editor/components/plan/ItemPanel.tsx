@@ -27,6 +27,7 @@ import {
   type ItemTypeDef,
   type LinkedGroup,
   type LabelUse,
+  type BoardStatusTypes,
 } from '@liveplanner/items';
 import { DialogCloseButton } from '@liveplanner/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
@@ -39,6 +40,7 @@ import { LinkedActionBanner } from './LinkedActionBanner';
 import type { PlanContextValue } from './PlanContext';
 import { ItemTrailCrumbs } from './ItemTrailCrumbs';
 import { ItemKeyTag, ItemMaximiseButton, ItemTypePill } from './ItemPanelHeaderParts';
+import { typeChoices } from './type-choices';
 import { PANEL_RESIZE_TRANSITION, panelSizeClass } from './item-panel-size';
 import { useAnimatedMaximise } from './useAnimatedMaximise';
 import type { ItemOpenVia } from './item-trail';
@@ -57,11 +59,15 @@ import { CardActivityTab } from './threads/CardActivity';
 import { CardThreads } from './threads/CardThreads';
 
 const NO_GROUPS: readonly LinkedGroup[] = [];
+const NO_STATUS_TYPES: BoardStatusTypes = new Map();
 
 type ItemPanelProps = {
   item: Item;
   // The project's item types (docs/specs/026-plan/item-types.md).
   types: readonly ItemTypeDef[];
+  // The card types the boards naming each status take: the Card Type picker offers the card's boards' types
+  // (plan-board.md "The types it offers"). Absent: every type.
+  statusTypes?: BoardStatusTypes;
   // The statuses this tab's boards use, by name, for the status picker.
   statuses: readonly { status: string; name: string }[];
   people: readonly ItemPerson[];
@@ -185,6 +191,7 @@ function ItemPanelContent({
   linkedActions,
   maximised = false,
   onMaximise,
+  statusTypes = NO_STATUS_TYPES,
 }: ItemPanelProps) {
   const linkedPlace = linkedActions?.placeOf(item) ?? null;
   const mobile = useIsMobileViewport();
@@ -270,7 +277,13 @@ function ItemPanelContent({
   const header = (
     <div className="flex min-h-12 items-center gap-2 px-4 py-2 sm:px-6">
       {/* The current card: its type picker and number, the trail's end (not a link). */}
-      <ItemTypePill type={type} value={item.type} types={types} canEdit={canEdit} onType={onType} />
+      <ItemTypePill
+        type={type}
+        value={item.type}
+        types={typeChoices(types, statusTypes, item)}
+        canEdit={canEdit}
+        onType={onType}
+      />
       <ItemKeyTag itemKey={item.key} />
       {isFlagged(item) ? (
         <span

@@ -124,6 +124,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
       <ItemPanel
         item={item}
         types={ctx.types}
+        statusTypes={ctx.statusTypes}
         statuses={statuses}
         people={ctx.people}
         labels={labelUses}
