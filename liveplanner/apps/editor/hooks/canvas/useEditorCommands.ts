@@ -37,7 +37,6 @@ const INERT_HANDLERS: CommandHandlers = {
   toggleZen: noop,
   openExport: noop,
   openImport: noop,
-  openTrackerImport: noop,
   openSettings: noop,
   openShortcuts: noop,
 };
@@ -67,7 +66,7 @@ export function useEditorCommands(): {
     toggleZenMode,
     setExportOpen,
     setExportScope,
-    openImportOn,
+    setImportOpen,
     setSettingsOpen,
     openSettingsOn,
     workbenchMode,
@@ -125,8 +124,7 @@ export function useEditorCommands(): {
       setExportScope('tab');
       setExportOpen(true);
     },
-    openImport: () => openImportOn('file'),
-    openTrackerImport: () => openImportOn('tracker'),
+    openImport: () => setImportOpen(true),
     openSettings: () => {
       setSettingsOpen(true);
       track('UI', 'Opened', 'Settings');

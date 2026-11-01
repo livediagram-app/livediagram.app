@@ -10,8 +10,8 @@ vi.mock('@liveworkspace/workbench/lib/clamp-to-viewport', () => ({
   clampToViewport: () => ({ x: 0, y: 0 }),
 }));
 
-// A Board or Sheet tab's Import and Export rows (docs/specs/026-plan/plan-tabs.md "Board tab and Sheet tab"):
-// Import CSV…, then Export (the Export dialog, as on every tab), then Download CSV.
+// The tab menu's Import and Export rows (docs/specs/026-plan/plan-tabs.md "Board tab and Sheet tab", "The Import
+// dialog"): Import… (the one Import dialog) then Export (the Export dialog), on every tab.
 
 type Props = ComponentProps<typeof PortalMenu>;
 
@@ -49,67 +49,33 @@ const rowLabels = () =>
 afterEach(() => cleanup());
 
 describe('the tab menu’s Import and Export rows', () => {
-  it('are Import and Export on any other tab', () => {
-    const onExport = vi.fn();
-    render(<PortalMenu {...props({ point: { x: 10, y: 10 }, onExport })} />);
-    expect(rowLabels()).toEqual(['Import', 'Export']);
-    fireEvent.click(screen.getByRole('button', { name: 'Export' }));
-    expect(onExport).toHaveBeenCalledOnce();
-  });
-
-  it('are Import CSV…, Export and Download CSV on a Board or Sheet tab', () => {
+  it('are Import… and Export on every tab, a Board or Sheet tab’s included', () => {
     const onExport = vi.fn();
     const onImport = vi.fn();
-    const onClose = vi.fn();
-    render(
-      <PortalMenu
-        {...props({
-          point: { x: 10, y: 10 },
-          onExport,
-          onClose,
-          dataRows: {
-            importLabel: 'Import CSV…',
-            onImport,
-          },
-        })}
-      />,
-    );
-    // No Download CSV row: CSV is one of the Export dialog's formats on a Board or Sheet tab.
-    expect(rowLabels()).toEqual(['Import CSV…', 'Export']);
+    render(<PortalMenu {...props({ point: { x: 10, y: 10 }, onExport, onImport })} />);
+    // No Import CSV… or Import from Another Tool… beside it: both are rows of the one Import dialog.
+    expect(rowLabels()).toEqual(['Import…', 'Export']);
     fireEvent.click(screen.getByRole('button', { name: 'Export' }));
     expect(onExport).toHaveBeenCalledOnce();
-    fireEvent.click(screen.getByRole('button', { name: 'Import CSV…' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Import…' }));
     expect(onImport).toHaveBeenCalledOnce();
   });
 
-  it('dims Import CSV… for someone who may not import', () => {
-    render(
-      <PortalMenu
-        {...props({
-          point: { x: 10, y: 10 },
-          dataRows: {
-            importLabel: 'Import CSV…',
-          },
-        })}
-      />,
-    );
-    const row = screen.getByText('Import CSV…').closest('[aria-disabled]');
+  // docs/specs/026-plan/plan-tabs.md "The Import dialog": dimmed only when the dialog has nothing to press.
+  it('dims Import… when the Import dialog would have nothing to press', () => {
+    render(<PortalMenu {...props({ point: { x: 10, y: 10 }, canImport: false })} />);
+    const row = screen.getByText('Import…').closest('[aria-disabled]');
     expect(row?.getAttribute('aria-disabled')).toBe('true');
     expect(rowLabels()).toEqual(['Export']);
   });
 
-  // docs/specs/026-plan/tracker-import.md "Where it lives", "Who may".
-  it('offers Import from Another Tool… after Import to an Editor', () => {
-    const onImportFromTool = vi.fn();
-    render(<PortalMenu {...props({ point: { x: 10, y: 10 }, onImportFromTool })} />);
-    expect(rowLabels()).toEqual(['Import', 'Import from Another Tool…', 'Export']);
-    fireEvent.click(screen.getByRole('button', { name: 'Import from Another Tool…' }));
-    expect(onImportFromTool).toHaveBeenCalledOnce();
+  it('keeps Import… lit on a locked tab when the dialog offers another tool', () => {
+    render(<PortalMenu {...props({ point: { x: 10, y: 10 }, locked: true, canImport: true })} />);
+    expect(rowLabels()).toEqual(['Import…', 'Export']);
   });
 
-  it('dims Import from Another Tool… for a Participant or a Viewer', () => {
-    render(<PortalMenu {...props({ point: { x: 10, y: 10 } })} />);
-    const row = screen.getByText('Import from Another Tool…').closest('[aria-disabled]');
-    expect(row?.getAttribute('aria-disabled')).toBe('true');
+  it('dims Import… on a locked tab by default', () => {
+    render(<PortalMenu {...props({ point: { x: 10, y: 10 }, locked: true })} />);
+    expect(rowLabels()).toEqual(['Export']);
   });
 });

@@ -169,8 +169,8 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'How long deleted plans wait, and how to restore one.',
   },
   importTabs: {
-    title: 'Learn about importing tabs',
-    description: 'What you can import and how it replaces the tab.',
+    title: 'Learn about importing',
+    description: 'Each kind of file, and a board from Trello, Asana, Jira or Linear.',
   },
   linkingTabs: {
     title: 'Learn about linking tabs',

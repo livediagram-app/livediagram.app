@@ -16,7 +16,6 @@ import {
   lucideCircleCheck,
   lucideFileDown,
   lucideFileUp,
-  lucideSquareKanban,
   lucideThermometer,
 } from '@liveworkspace/icons/lucide';
 import { Glyph, lucideGlyph, Prims } from '@liveplanner/ui';
@@ -65,8 +64,6 @@ export function StrikethroughIcon() {
 // Import into / export out of a tab (the tab menu's Content rows).
 export const FileImportIcon = lucideGlyph(lucideFileDown, MENU_ICON_PX);
 export const FileExportIcon = lucideGlyph(lucideFileUp, MENU_ICON_PX);
-// A board from another tool (docs/specs/026-plan/tracker-import.md).
-export const TrackerImportIcon = lucideGlyph(lucideSquareKanban, MENU_ICON_PX);
 
 // The bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): a paintbrush on the
 // 20-unit dock grid (matching LayersStackIcon's stroke weight) that opens
