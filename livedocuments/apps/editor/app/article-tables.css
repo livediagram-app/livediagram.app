@@ -105,6 +105,9 @@
   margin-bottom: calc(0.3 * var(--article-line));
   break-after: avoid;
 }
+.article-flow .article-toc-item {
+  break-inside: avoid;
+}
 .article-flow .article-toc-entry {
   all: unset;
   display: flex;

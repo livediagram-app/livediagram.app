@@ -268,6 +268,18 @@ describe('a contents block as drawn', () => {
       e.getAttribute('aria-label'),
     );
 
+  it('offers each entry as a button inside a list item', () => {
+    const { view } = mount(doc());
+    const items = Array.from(view.dom.querySelectorAll('.article-toc-list > *'));
+    expect(items).toHaveLength(3);
+    for (const item of items) {
+      expect(item.getAttribute('role')).toBe('listitem');
+      const entry = item.querySelector('.article-toc-entry')!;
+      expect(entry.tagName).toBe('BUTTON');
+      expect(entry.hasAttribute('role')).toBe(false);
+    }
+  });
+
   it('lists the headings to its depth, with their pages once measured', () => {
     const { view } = mount(doc());
     expect(entries(view)).toEqual(['Intro', 'Detail', 'Deep']);
