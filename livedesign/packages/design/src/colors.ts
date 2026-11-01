@@ -405,6 +405,8 @@ export function supportsColours(element: Element): boolean {
   // swatch in the Colours category was inert on one. Picking a scheme is the
   // control it actually has (Presets, see code-themes.ts).
   if (element.type === 'shape' && element.shape === 'code-block') return false;
+  // An instance's colours are its main's; it changes them through Overrides (docs/specs/009-elements/components.md).
+  if (element.type === 'shape' && element.shape === 'instance') return false;
   return (
     element.type === 'shape' ||
     // A text element is its words (docs/specs/008-canvas/canvas-and-palette.md "Text element"):
@@ -492,6 +494,8 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'sankey',
   // A tab window (docs/specs/009-elements/tab-window.md) draws its own rounded frame round the tab it shows.
   'tab-window',
+  // An instance draws its main (docs/specs/009-elements/components.md), never a box of its own.
+  'instance',
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md) that lay out their own surfaces: an accent bar
   // (banner, header), a row of cards, circles and connectors. A callout is
   // NOT here: its card is an ordinary bordered box with content inside.
@@ -538,7 +542,8 @@ function drawsNoInlineIcon(element: ShapeElement): boolean {
     element.shape === 'badge' ||
     element.shape === 'step' ||
     isConceptShape(element.shape) ||
-    element.shape === 'tab-window'
+    element.shape === 'tab-window' ||
+    element.shape === 'instance'
   );
 }
 

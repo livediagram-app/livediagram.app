@@ -297,6 +297,13 @@ export * from './pages-edits';
 export * from './photo-pages';
 export * from './pages-background-copy';
 export * from './tab-window';
+export * from './components';
+export * from './component-resolve';
+export * from './component-make';
+export * from './component-session';
+export * from './component-patch';
+export * from './component-fields';
+export * from './component-validate';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 

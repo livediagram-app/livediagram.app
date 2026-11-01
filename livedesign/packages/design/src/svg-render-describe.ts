@@ -381,7 +381,8 @@ export function drawsStandardLabel(el: BoxedElement): boolean {
     (el.shape === 'code-block' ||
       el.shape === 'legend' ||
       el.shape === 'checklist' ||
-      el.shape === 'tab-window')
+      el.shape === 'tab-window' ||
+      el.shape === 'instance')
   )
     return false;
   return !selfLabelled(el);
