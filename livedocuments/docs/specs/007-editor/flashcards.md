@@ -116,6 +116,8 @@ framed); the card changes.
   card that was in front. The same 420 ms, mirrored.
 - A flip to a card several places away is one flip, forward or back.
 - A second flip while one is under way finishes the first at once and starts the next.
+- **The card in front taken away** (an undo of the split that made it, a peer's delete): the card before its place
+  comes to the front (the first, when it was first), as a delete lands on the page before; never the stack's first card.
 - **Reduced motion**: no flip; the card in front changes at once.
 - The flip is drawn over the canvas, holding no presses; the new card in front is ready for the caret and presses at
   once.
