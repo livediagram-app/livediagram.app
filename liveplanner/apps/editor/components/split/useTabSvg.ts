@@ -2,6 +2,7 @@
 
 import { useThreadStore } from '@/components/plan/threads/CardThreadsContext';
 import { itemsWithCounts } from '@/hooks/plan/thread-store';
+import { donePhase } from '@liveplanner/items';
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { canvasSurface, tabWindowNames, type Tab } from '@liveplanner/project';
 import { tabAsSeen } from '@/lib/export-as-seen';
@@ -78,6 +79,8 @@ export function useTabSvg(
         ? {
             items: threadStore ? itemsWithCounts(plan.items, threadStore.counts()) : plan.items,
             itemTypes: plan.types,
+            // The plan-wide done columns, for the blocked badge (docs/specs/026-plan/item-types.md "Blocked By").
+            itemsDone: donePhase(plan.statusPhases),
           }
         : {}),
       ...planOpts,

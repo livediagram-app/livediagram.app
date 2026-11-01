@@ -49,7 +49,10 @@ import {
   isTimeSpent,
   readTimeValue,
   timePerson,
+  openBlockersOf,
+  type BlockingIndex,
 } from '@liveplanner/items';
+import { lucideLink } from '@liveworkspace/icons/lucide';
 import {
   FLAG_COLOUR,
   PLAN_PERCENT_BAR,
@@ -85,24 +88,32 @@ type Bit =
   | { kind: 'person'; name: string; color: string }
   | { kind: 'lines'; lines: string[]; color: string }
   // A share drawn as a Percent field is (docs/specs/026-plan/item-types.md "Percent"): its name, a thin bar, "40%".
-  | { kind: 'percent'; label: string; value: number; color: string; fill: string; track: string };
+  | { kind: 'percent'; label: string; value: number; color: string; fill: string; track: string }
+  // Blocked by open cards (docs/specs/026-plan/item-types.md "Blocked By"): the red link glyph and the count.
+  | { kind: 'blocked'; count: number };
+
+// The blocked badge: the board's red, and its link glyph's size (the editor's BlockedMark).
+export const BLOCKED_RED = '#dc2626';
+const BLOCKED_GLYPH = 12;
 
 // The gap either side of a Percent bit's bar.
 const PERCENT_GAP = 5;
 const charsWidth = (s: string) => s.length * BIT_PX * CHAR_EM;
 
 const bitWidth = (b: Bit): number =>
-  b.kind === 'person'
-    ? 20
-    : b.kind === 'lines'
-      ? 0
-      : b.kind === 'percent'
-        ? charsWidth(b.label) +
-          PLAN_PERCENT_BAR.width +
-          PERCENT_GAP * 2 +
-          charsWidth(percentText(b.value)) +
-          14
-        : charsWidth(b.text) + (b.pill ? 14 : 0) + (b.dot ? 12 : 0);
+  b.kind === 'blocked'
+    ? BLOCKED_GLYPH + 3 + charsWidth(String(b.count))
+    : b.kind === 'person'
+      ? 20
+      : b.kind === 'lines'
+        ? 0
+        : b.kind === 'percent'
+          ? charsWidth(b.label) +
+            PLAN_PERCENT_BAR.width +
+            PERCENT_GAP * 2 +
+            charsWidth(percentText(b.value)) +
+            14
+          : charsWidth(b.text) + (b.pill ? 14 : 0) + (b.dot ? 12 : 0);
 
 export type CardFaceContext = {
   palette: PlanPalette;
@@ -118,6 +129,8 @@ export type CardFaceContext = {
   height?: number;
   // The moment a card's Age is read at; absent, now.
   now?: number;
+  // The plan's Blocked By lookup (blockingIndexOf), made once per board: a blocked card wears the badge.
+  blocking?: BlockingIndex;
 };
 
 // One field's bit, or null when the card has nothing for it.
@@ -371,11 +384,14 @@ export function planCardFace(
   const titleLines = (lines: number, width: number) =>
     wrapLines(itemTitle(item) || 'Untitled', width, TITLE_PX, lines);
   const flagged = isFlagged(item);
+  // At every size, whatever the Display, as a running timer shows.
+  const openBlockers = ctx.blocking ? openBlockersOf(ctx.blocking, item.id) : 0;
+  const blocked: Bit | null = openBlockers ? { kind: 'blocked', count: openBlockers } : null;
   let h: number;
   if (size === 'minimal') {
     const lead = bits('lead');
     const running = runningBit(item, type, p);
-    const trail = running ? [...bits('trail'), running] : bits('trail');
+    const trail = [...bits('trail'), ...(running ? [running] : []), ...(blocked ? [blocked] : [])];
     const leadW = lead.reduce((s, b) => s + bitWidth(b) + BIT_GAP, 0);
     const trailW = trail.reduce((s, b) => s + bitWidth(b) + BIT_GAP, 0);
     row(lead, x + PAD, y + 8, x + PAD + leadW);
@@ -396,7 +412,8 @@ export function planCardFace(
     let cy = y + 9;
     const headEnd = bits('headEnd');
     const head = bits('head');
-    const flagW = flagged ? 14 : 0;
+    const flagOnlyW = flagged ? 14 : 0;
+    const flagW = flagOnlyW + (blocked ? bitWidth(blocked) + BIT_GAP : 0);
     // The header end sits at the right of the header row when both fit; on a narrow card it takes a row of its own.
     const widthOf = (list: Bit[]) => list.reduce((sum, b) => sum + bitWidth(b) + BIT_GAP, 0);
     const shared = widthOf(head) + widthOf(headEnd) <= w - PAD * 2 - flagW;
@@ -411,7 +428,9 @@ export function planCardFace(
       out.push(
         faceText(x + w - PAD, cy + 14, '⚑', { size: 12, color: FLAG_COLOUR, anchor: 'end' }),
       );
-    cy += Math.max(headH, headEnd.length || flagged ? ROW_H : 0) + 4;
+    if (blocked && !measureOnly)
+      out.push(drawBit(blocked, x + w - PAD - flagOnlyW - bitWidth(blocked), cy, 0, p.border));
+    cy += Math.max(headH, headEnd.length || flagged || blocked ? ROW_H : 0) + 4;
     const lines = titleLines(3, w - PAD * 2);
     lines.forEach((line, i) => {
       if (!measureOnly)
@@ -461,6 +480,7 @@ function drawBit(
   if (b.kind === 'person')
     return personDisc(x + 10, y + 10, 10, b.color, { initials: initialsOf(b.name), fill: b.color });
   if (b.kind === 'percent') return drawPercentBit(b, x, y, w, border);
+  if (b.kind === 'blocked') return drawBlockedBit(b.count, x, y);
   const parts: string[] = [];
   let tx = x;
   if (b.pill)
@@ -482,6 +502,22 @@ function drawBit(
     }),
   );
   return parts.join('');
+}
+
+// The blocked badge: the Lucide link glyph in red at 12 px, then its count.
+function drawBlockedBit(count: number, x: number, y: number): string {
+  const scale = BLOCKED_GLYPH / 24;
+  const paths = lucideLink
+    .map((prim) => (prim.t === 'path' ? `<path d="${prim.d}"/>` : ''))
+    .join('');
+  return (
+    `<g transform="translate(${r2(x)} ${r2(y + 4)}) scale(${scale})" fill="none" stroke="${BLOCKED_RED}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${paths}</g>` +
+    faceText(x + BLOCKED_GLYPH + 3, y + 14, String(count), {
+      size: BIT_PX,
+      color: BLOCKED_RED,
+      weight: 600,
+    })
+  );
 }
 
 // A Percent bit: the pill, the field's name, a thin track with the share filled, then "40%". A pill narrower than it
