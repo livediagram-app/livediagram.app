@@ -102,7 +102,8 @@ export interface CustomFieldInput {
   // A Person field tells its person when a card is theirs (item-types.md "Notifies"); only a Person field.
   notifies?: boolean;
   // A Person or Card field holds several people or cards (item-types.md "Holds Several"); only those kinds.
-  multiple?: boolean;
+  multiple?: boolean; // A Card field whose cards block the card (item-types.md "Blocked By"); only a Card field. True holds several too.
+  blocks?: boolean;
 }
 
 // An existing custom field edited in place: renamed, its options replaced (a Choice field), drawn on the card or not.
@@ -131,7 +132,8 @@ export interface CustomFieldEdit {
   // A Person field: true tells its person when a card is theirs, false stops.
   notifies?: boolean;
   // A Person or Card field: true holds several, false holds one (the cards' values are kept as they are).
-  multiple?: boolean;
+  multiple?: boolean; // A Card field: true makes its cards block the card (and holds several), false stops (item-types.md "Blocked By").
+  blocks?: boolean;
 }
 
 // A type's card face and panel (type-change-face.ts), as `add` and `set` take them.
@@ -299,6 +301,11 @@ function editedCustom(
   if (edit.notifies === false) delete next.notifies;
   if (edit.multiple === true) next.multiple = severalable(field);
   if (edit.multiple === false) delete next.multiple;
+  if (edit.blocks === true) {
+    next.blocks = blockable(field);
+    next.multiple = true;
+  }
+  if (edit.blocks === false) delete next.blocks;
   const edited = { ...type, custom: (type.custom ?? []).map((f) => (f.id === key ? next : f)) };
   // Unticked, it leaves a Detailed Display of the type's own too.
   return edit.onCard === false ? withoutOnDetailed(edited, key) : edited;
@@ -435,6 +442,10 @@ function customOf(
   if (input.required) field.required = requirable(field);
   if (input.notifies) field.notifies = notifiable(field);
   if (input.multiple) field.multiple = severalable(field);
+  if (input.blocks) {
+    field.blocks = blockable(field);
+    field.multiple = true;
+  }
   return field;
 }
 
@@ -570,6 +581,15 @@ function severalable(field: Pick<CustomFieldDef, 'kind' | 'label'>): true {
   if (!holdsSeveralKind(field.kind))
     throw invalid(
       `"${field.label}" is ${withArticle(field.kind)} field: only a person or card field holds several.`,
+    );
+  return true;
+}
+
+// Blocks (item-types.md "Blocked By"): only a Card field's cards block the card.
+function blockable(field: Pick<CustomFieldDef, 'kind' | 'label'>): true {
+  if (field.kind !== 'card')
+    throw invalid(
+      `"${field.label}" is ${withArticle(field.kind)} field: only a card field blocks.`,
     );
   return true;
 }
