@@ -24,6 +24,7 @@ import {
 } from '@liveworkspace/icons/lucide';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { track } from '@/lib/telemetry';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { moveStatusRefusal, cardsStayedMessage } from '@/hooks/plan/status-refusal';
 import type { PlanContextValue } from './PlanContext';
 import type { PlanPalette } from './plan-palette';
@@ -219,6 +220,7 @@ export function BoardSelectionBar({
             )
           : null}
         <span className="ml-auto" />
+        <HelpArticleLink article="planSelectCards" />
         {button('Clear Selection', <CloseIcon />, onClear)}
       </div>
       {open ? (

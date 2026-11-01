@@ -27,6 +27,7 @@ import {
   PresenceArt,
   RealtimeArt,
   RevokeArt,
+  SelectCardsArt,
   SelectionGlowArt,
   ShareLinksArt,
   SharedItemsArt,
@@ -89,7 +90,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       'Boards with WIP limits',
       'One card, every board',
       'Card types and fields of your own',
-      'Widgets that narrow the board',
+      'Change many cards at once',
     ],
     items: [
       {
@@ -111,28 +112,35 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/plan/cards/',
         title: 'Cards that hold the detail',
         description:
-          'Open a card for everything about it: a rich-text description, a checklist that counts down to done, status, assignee, priority, labels and dates, and the parent card it belongs to. Flag one for attention, and follow the trail between a piece of work and its tasks without losing your place.',
+          'Open a card for everything about it: a rich-text description, a checklist that counts down to done, status, assignee, priority, labels and dates, screenshots with a cover image, and the parent card it belongs to. Its Activity tab shows who moved it and what they changed. Make it repeat every week, see what it is blocked by, and follow the trail between a piece of work and its tasks without losing your place.',
       },
       {
         art: <CardCommentsArt />,
         href: '/help/plan/cards/',
         title: 'Talk it through on the card',
         description:
-          'Every card has its own thread. @mention a teammate and they get an email that opens the card, resolve the thread when it is settled, and see the comment count on the card from the board.',
+          'Every card holds its own threads. @mention a teammate and they get an email that opens the card, react with an emoji, resolve the thread when it is settled, and see the comment count on the card from the board.',
       },
       {
         art: <CardTypesArt />,
         href: '/help/plan/card-types/',
         title: 'Card types and fields of your own',
         description:
-          'Five built-in types (Project, Task, Note, Idea and Action), or make your own with the fields your team tracks: text, number, date, choice, a link to another card and more.',
+          'Five built-in types (Project, Task, Note, Idea and Action), or make your own with the fields your team tracks: text, number, date, choice, a link to another card, formulas and rollups, a timer that tracks time, and more. Build a Bug and a Story on one base type and change their shared fields in one place.',
       },
       {
         art: <BoardWidgetsArt />,
         href: '/help/plan/boards/',
         title: 'Widgets that narrow the board',
         description:
-          'Pin widgets to a board header (Completion, Due Soon, WIP Alerts, Top Voted, Stale Cards and more) and press one to narrow the board to just those cards.',
+          'Pin widgets to a board header (Completion, Due Soon, WIP Alerts, Top Voted, Stale Cards and more) and press one to narrow the board to just those cards. Save the view your team checks every morning as a filter anyone can apply in one click.',
+      },
+      {
+        art: <SelectCardsArt />,
+        href: '/help/plan/select-cards/',
+        title: 'Change many cards at once',
+        description:
+          'Cmd-click or Shift-click a handful of cards, then move, assign, prioritise, label, flag or archive them all in one step, or drag them to a new column as one group. One undo takes it all back.',
       },
       {
         art: <FindCardArt />,

@@ -103,6 +103,25 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M6 8v12M9 12h6M9 15.5h4" />
     </Glyph>
   ),
+  // Three cards in a column, the top two ticked and ringed: several cards picked at once.
+  'select-cards': (
+    <Glyph>
+      <rect x="3" y="3" width="18" height="5" rx="1.2" strokeWidth="2.2" />
+      <rect x="3" y="10" width="18" height="5" rx="1.2" strokeWidth="2.2" />
+      <rect x="3" y="17" width="18" height="4.5" rx="1.2" />
+      <path d="M6 5.6l1.2 1.1 2-2.2M6 12.6l1.2 1.1 2-2.2M12 5.5h6M12 12.5h6M7 19.25h11" />
+    </Glyph>
+  ),
+  // A card with a clock turning back over its corner: the card's own history.
+  'card-activity': (
+    <Glyph>
+      <path d="M11 20H4.5A1.5 1.5 0 013 18.5v-14A1.5 1.5 0 014.5 3h9A1.5 1.5 0 0115 4.5V8" />
+      <path d="M6 7h6M6 10.5h3.5" />
+      <path d="M12.2 13.2a5 5 0 11.6 5.3" />
+      <path d="M11.8 10.8v2.6h2.6" />
+      <path d="M17 13.4v2.6l1.6 1" />
+    </Glyph>
+  ),
   // A pen over a squiggle with a dashed spotlight ring round it: a guided look at Draw.
   'plan-tour': (
     <Glyph>

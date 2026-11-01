@@ -688,7 +688,7 @@ export function PlanCardPanelScene() {
   );
 }
 
-/** Right-clicking a card: Open, Duplicate, Edit Card Type, a Move to row per column, Flag,
+/** Right-clicking a card: Open, Duplicate, Edit Card Type, a Move to row per column, Select, Flag,
  *  Archive, Trash. */
 export function PlanCardMenuScene() {
   return (
@@ -720,18 +720,20 @@ export function PlanCardMenuScene() {
           'Edit Card Type',
           'Move to In Progress',
           'Move to Review',
+          'Select',
           'Flag',
           'Archive',
           'Trash',
         ]}
       />
-      {/* The menu's header (the card's title), separators between its groups, and Trash in red. */}
+      {/* The menu's header (the card's title), separators between its groups, and Trash at the end. */}
       <rect x={154} y={24} width={172} height={21} rx={5} className="fill-white" />
       <Label x={162} y={35} size={10} weight={700} tone="muted">
         Write docs
       </Label>
       <line x1={156} y1={45} x2={324} y2={45} className="stroke-slate-200" />
-      <line x1={156} y1={129} x2={324} y2={129} className="stroke-slate-200" />
+      <line x1={156} y1={108} x2={324} y2={108} className="stroke-slate-200" />
+      <line x1={156} y1={150} x2={324} y2={150} className="stroke-slate-200" />
       <line x1={156} y1={171} x2={324} y2={171} className="stroke-slate-200" />
       <rect x={154} y={213} width={172} height={21} rx={5} className="fill-white" />
       <Label x={162} y={224} size={11} tone="body">
