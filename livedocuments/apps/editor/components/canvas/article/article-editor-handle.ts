@@ -14,20 +14,65 @@ import {
 } from '@livedocuments/document';
 import { docToBlocks } from '@/lib/article/article-convert';
 import { insertBlocksAfterCaret, selectionStateOf } from '@/lib/article/article-commands';
-import type { ArticleEditorHandle } from '@/lib/article/article-editor-store';
+import type { ArticleEditorHandle, ArticleLinkArea } from '@/lib/article/article-editor-store';
+import { headingPages } from '@/lib/article/article-toc-view';
+import { isSafeArticleHref } from '@livedocuments/document';
 import { articleSchema } from '@/lib/article/article-schema';
 import { columnAt, flowFrame, pagePlaceOf } from '@/lib/article/article-flow-geometry';
 import { snapshotBars, snapshotWriting, type ArticleDrawOp } from '@/lib/article/article-snapshot';
 
 // What the writing is laid out over, as ArticleEditor's props hold it.
-type WritingLayout = { flow: string; pages: LaidOutPage[]; margin: number; zoom: number };
+type WritingLayout = {
+  flow: string;
+  pages: LaidOutPage[];
+  margin: number;
+  // The least top margin (a header's band above the toolbar's room); absent, ARTICLE_TOP_MIN_PX.
+  topMin?: number;
+  zoom: number;
+};
+
+// Each heading's page (0 the first) as laid out now.
+function headingIndexes(view: EditorView, p: WritingLayout): ReadonlyMap<string, number> {
+  const { frame, root, z } = writingScale(view, p);
+  return headingPages(view, (x) =>
+    Math.max(0, Math.min(p.pages.length - 1, columnAt(frame, (x - root.left) / z))),
+  );
+}
+
+/** The writing's link areas as laid out now (contents entries and links in the text), canvas rects. */
+export function linkAreas(view: EditorView, p: WritingLayout): ArticleLinkArea[] {
+  const { frame, root, z } = writingScale(view, p);
+  const pages = headingIndexes(view, p);
+  const out: ArticleLinkArea[] = [];
+  const push = (el: Element, to: { page: number } | { href: string }) => {
+    for (const r of Array.from(el.getClientRects())) {
+      if (r.width === 0 || r.height === 0) continue;
+      out.push({
+        x: frame.x + (r.left - root.left) / z,
+        y: frame.y + (r.top - root.top) / z,
+        w: r.width / z,
+        h: r.height / z,
+        ...to,
+      });
+    }
+  };
+  view.dom.querySelectorAll<HTMLElement>('.article-toc-entry[data-toc-target]').forEach((el) => {
+    const page = pages.get(el.dataset.tocTarget ?? '');
+    if (page !== undefined) push(el, { page });
+  });
+  view.dom.querySelectorAll<HTMLAnchorElement>('a.article-link[href]').forEach((el) => {
+    const href = el.getAttribute('href');
+    if (href && isSafeArticleHref(href)) push(el, { href });
+  });
+  return out;
+}
 
 /**
  * The writing's frame on the canvas, its box on screen, and screen px per canvas px (read off the
  * box, so it holds mid-zoom; the zoom only when the writing is not laid out).
  */
 export function writingScale(view: EditorView, p: WritingLayout) {
-  const frame = flowFrame(p.pages, p.margin);
+  const frame = flowFrame(p.pages, p.margin, p.topMin);
   const root = view.dom.getBoundingClientRect();
   const z = root.width / Math.max(1, view.dom.offsetWidth) || p.zoom;
   return { frame, root, z };
@@ -330,6 +375,13 @@ export function createArticleHandle({
       view.dispatch(view.state.tr.setSelection(Selection.near(view.state.doc.resolve(pos))));
       view.focus();
     },
+    state: () => view.state,
+    headingPages: () => {
+      const out = new Map<string, number>();
+      for (const [id, index] of headingIndexes(view, latest.current)) out.set(id, index + 1);
+      return out;
+    },
+    links: () => linkAreas(view, latest.current),
     caretCanvasPoint: () => {
       try {
         const c = view.coordsAtPos(view.state.selection.head);

@@ -4,8 +4,9 @@
 // Split out of export-tab.ts: the PDF container format is a self-contained
 // concern, distinct from the canvas/SVG renderers; it just needs the rendered
 // pixels from renderTabToCanvas.
-import type { LaidOutPage, Tab } from '@livedocuments/document';
+import { pagesOf, type LaidOutPage, type Tab } from '@livedocuments/document';
 import { renderedExportScale, renderTabToCanvas, type ImageExportOpts } from './export-tab';
+import { linkAnnotation, pdfLinksFor, type PdfLink } from './export-pdf-links';
 
 export async function exportTabAsPdf(tab: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
   const canvas = await renderTabToCanvas(tab, opts);
@@ -48,19 +49,22 @@ export async function exportPagesAsPdf(
   const out: PdfPage[] = [];
   // A deck often repeats one animated background: paint it once for the whole PDF.
   const motionFrames = opts.motionFrames ?? new Map();
-  for (const page of pages) {
+  // The articles' link areas over the pictures: contents entries and links in the text.
+  const links = pdfLinksFor(pages, pagesOf(tab));
+  for (const [i, page] of pages.entries()) {
     const canvas = await renderTabToCanvas(tab, { ...opts, page, motionFrames });
     out.push({
       ...(await pdfImage(canvas)),
       mediaW: Math.round(page.rect.width * PT_PER_PX * 100) / 100,
       mediaH: Math.round(page.rect.height * PT_PER_PX * 100) / 100,
+      links: links[i] ?? [],
     });
   }
   return assemblePdf(out);
 }
 
 type PdfImage = { width: number; height: number; bytes: Uint8Array };
-type PdfPage = PdfImage & { mediaW: number; mediaH: number };
+type PdfPage = PdfImage & { mediaW: number; mediaH: number; links?: readonly PdfLink[] };
 
 // The canvas's pixels as FlateDecode RGB, alpha composited onto white (PDF /DeviceRGB carries no
 // alpha, and transparent regions would otherwise come out black). Raw pixels rather than a JPEG
@@ -80,8 +84,9 @@ async function pdfImage(canvas: HTMLCanvasElement): Promise<PdfImage> {
 }
 
 // A minimal PDF: the catalog (1), the page tree (2), then per page its page object, content
-// stream and image (3 objects each). Objects are 1-indexed; the xref holds each one's byte offset.
-function assemblePdf(pages: readonly PdfPage[]): Blob {
+// stream and image (3 objects each), then every page's link annotations, one object each. Objects
+// are 1-indexed; the xref holds each one's byte offset.
+export function assemblePdf(pages: readonly PdfPage[]): Blob {
   const enc = new TextEncoder();
   const parts: Uint8Array[] = [];
   const offsets: number[] = [];
@@ -96,6 +101,14 @@ function assemblePdf(pages: readonly PdfPage[]): Blob {
     push(`${n} 0 obj\n`);
   };
   const pageObj = (i: number) => 3 + i * 3;
+  // Each page's first annotation object, numbered after every page's three.
+  const annotStart: number[] = [];
+  let nextAnnot = 3 + pages.length * 3;
+  for (const page of pages) {
+    annotStart.push(nextAnnot);
+    nextAnnot += page.links?.length ?? 0;
+  }
+  const pageRef = (index: number) => `${pageObj(index)} 0 R`;
   push('%PDF-1.4\n%\xff\xff\xff\xff\n');
   startObj(1);
   push('<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
@@ -105,8 +118,9 @@ function assemblePdf(pages: readonly PdfPage[]): Blob {
   pages.forEach((page, i) => {
     const n = pageObj(i);
     startObj(n);
+    const annots = (page.links ?? []).map((_, j) => `${annotStart[i]! + j} 0 R`).join(' ');
     push(
-      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${page.mediaW} ${page.mediaH}] /Resources << /XObject << /Img ${n + 2} 0 R >> >> /Contents ${n + 1} 0 R >>\nendobj\n`,
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${page.mediaW} ${page.mediaH}] /Resources << /XObject << /Img ${n + 2} 0 R >> >> /Contents ${n + 1} 0 R${annots ? ` /Annots [${annots}]` : ''} >>\nendobj\n`,
     );
     // Content stream: draw the image across the whole page.
     const content = `q\n${page.mediaW} 0 0 ${page.mediaH} 0 0 cm\n/Img Do\nQ\n`;
@@ -119,7 +133,13 @@ function assemblePdf(pages: readonly PdfPage[]): Blob {
     push(page.bytes);
     push('\nendstream\nendobj\n');
   });
-  const count = 3 + pages.length * 3;
+  pages.forEach((page, i) => {
+    (page.links ?? []).forEach((link, j) => {
+      startObj(annotStart[i]! + j);
+      push(`${linkAnnotation(link, pageRef)}\nendobj\n`);
+    });
+  });
+  const count = nextAnnot;
   const xrefOffset = cursor;
   push(`xref\n0 ${count}\n0000000000 65535 f \n`);
   for (let i = 1; i < count; i++) {

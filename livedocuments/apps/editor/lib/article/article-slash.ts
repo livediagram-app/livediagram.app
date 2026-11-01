@@ -25,7 +25,9 @@ function stateAfter(prev: SlashState, state: EditorState, typed: boolean): Slash
   const sel = state.selection;
   if (!sel.empty) return CLOSED;
   const $head = sel.$head;
-  if ($head.depth < 1 || $head.parent.type.spec.code) return CLOSED;
+  // A table cell holds text: no menu of blocks opens in one.
+  if ($head.depth < 1 || $head.parent.type.spec.code || $head.parent.type.spec.tableRole)
+    return CLOSED;
   if (prev.active) {
     const { from } = prev;
     if (from < $head.start() || from >= $head.pos || from >= state.doc.content.size) return CLOSED;

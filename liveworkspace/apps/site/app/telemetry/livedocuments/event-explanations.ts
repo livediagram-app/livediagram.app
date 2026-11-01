@@ -562,7 +562,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|ArticleStyle':
     "Someone changed one part of an article's style: a font, the accent, spacing, rules, margins or page numbers.",
   'Element|Added|ArticleImage': "Someone inserted an image at the caret in an article's writing.",
-  'Element|Added|ArticleTable': "Someone inserted a table at the caret in an article's writing.",
+  'Element|Added|ArticleTable':
+    "Someone inserted a table into an article's writing, as a table block of rows and cells.",
+  'Element|Added|ArticleContents':
+    "Someone inserted a table of contents into an article's writing, listing its headings with their pages.",
   'Element|Added|ArticleChart': "Someone inserted a chart at the caret in an article's writing.",
   'Element|Added|ArticleCallout':
     "Someone inserted a callout at the caret in an article's writing.",
@@ -587,6 +590,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|ArticleLink': 'Someone added a link to text in an article.',
   'Element|Changed|ArticlePaste':
     'Someone pasted Markdown into an article, and it became headings, lists and formatting.',
+  'Element|Changed|ArticleTableShape':
+    "Someone reshaped a table in an article's writing: a row or column added or removed, the header row, or a column's width.",
+  'Element|Changed|ArticleTablePaste':
+    'Someone pasted a table (from a spreadsheet, a web page or a document) into an article, and it became a table block.',
   'Element|Changed|ArticleZoneWrap':
     "Someone changed how a picture or drawing sits in an article's writing: in line, or wrapped.",
   'Element|Changed|ArticleZoneResized':

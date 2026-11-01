@@ -12,7 +12,14 @@ import {
   type ArticleFlow,
   type ArticleRun,
 } from './article-flow';
-import { closesFence, fenceOpening, parseMarkdownBlocks, spaceWrapped } from './article-markdown';
+import {
+  closesFence,
+  fenceOpening,
+  isTableRow,
+  parseMarkdownBlocks,
+  spaceWrapped,
+} from './article-markdown';
+import { articleTableText, type ArticleTableBlock } from './article-table';
 
 // The most Markdown one write takes: 5,000 blocks of ~80 characters, far inside a tab's row.
 export const ARTICLE_MARKDOWN_MAX = 400_000;
@@ -27,8 +34,6 @@ type ArticleFromMarkdown =
       // Zones of `current` the text keeps, and those it leaves out (to be removed with their elements).
       keptZones: string[];
       droppedZones: string[];
-      // Markdown tables read as lists: an article's text holds no tables.
-      tables: number;
     }
   | { unknownZone: string }
   // A paragraph (a run of lines with no blank line between) longer than a block holds: refused
@@ -56,24 +61,6 @@ function frontMatterOf(text: string): { title?: string; subtitle?: string; body:
   return out;
 }
 
-const TABLE_ROW = /^\s*\|.*\|\s*$/;
-const RULE_CELL = /^:?-{3,}:?$/;
-// A table's rule row (`| --- | :-: |`), checked cell by cell: one regex with `\s*` on both sides of
-// each pipe backtracks quadratically on a long run of spaces.
-const isTableRule = (line: string) =>
-  line
-    .trim()
-    .replace(/^\|/, '')
-    .replace(/\|$/, '')
-    .split('|')
-    .every((cell) => RULE_CELL.test(cell.trim()));
-const cellsOf = (row: string) =>
-  row
-    .trim()
-    .replace(/^\||\|$/g, '')
-    .split('|')
-    .map((c) => c.trim());
-
 /** Reads lines in order, answering true for each line that is a fence or inside one (as parseMarkdownBlocks reads
  *  them), so a line of code is never read as a table, a zone or a page break. */
 function fenceTracker(): (line: string) => boolean {
@@ -86,27 +73,6 @@ function fenceTracker(): (line: string) => boolean {
     open = fenceOpening(line);
     return open > 0;
   };
-}
-
-/** A Markdown table (a header row, a rule, rows) as a list: the header in bold, then a row an item,
- *  cells joined with ` · `. Lines in a code fence stay as they are. `found` is told of each table. */
-function tablesAsLists(lines: readonly string[], found: () => void): string[] {
-  const out: string[] = [];
-  const fence = fenceTracker();
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]!;
-    if (fence(line) || !TABLE_ROW.test(line) || !isTableRule(lines[i + 1] ?? '')) {
-      out.push(line);
-      continue;
-    }
-    found();
-    out.push('', `**${cellsOf(line).filter(Boolean).join(' · ')}**`, '');
-    for (i += 2; i < lines.length && TABLE_ROW.test(lines[i]!); i++)
-      out.push(`- ${cellsOf(lines[i]!).join(' · ')}`);
-    out.push('');
-    i -= 1;
-  }
-  return out;
 }
 
 /**
@@ -140,10 +106,10 @@ export function articleFromMarkdown(text: string, current?: ArticleFlow): Articl
     stretch = [];
   };
   let paragraph = 0;
-  let tables = 0;
   const fence = fenceTracker();
-  for (const line of tablesAsLists(body.split('\n'), () => tables++)) {
-    paragraph = line.trim() ? paragraph + line.length + 1 : 0;
+  for (const line of body.split('\n')) {
+    // A table's rows are cells, not one paragraph: a long table is bounded by the table's own caps.
+    paragraph = line.trim() && !isTableRow(line) ? paragraph + line.length + 1 : 0;
     if (paragraph > MAX_ARTICLE_BLOCK_TEXT) return { tooLong: true };
     const fenced = fence(line);
     const bare = line.trim();
@@ -170,7 +136,6 @@ export function articleFromMarkdown(text: string, current?: ArticleFlow): Articl
     blocks,
     keptZones: kept,
     droppedZones: [...zones.keys()].filter((id) => !kept.includes(id)),
-    tables,
   };
 }
 
@@ -224,6 +189,26 @@ function runsMarkdown(runs: readonly ArticleRun[]): string {
       return inner ? lead + runMarkdown({ ...run, text: inner }) + tail : run.text;
     })
     .join('');
+}
+
+// A line break inside a table cell, held while the cell's runs are written, then written `<br>`.
+const CELL_BREAK = '\ue010';
+
+// A cell's runs as a pipe table's cell: its bars escaped, a line break as `<br>`. Backslashes are already escaped
+// (escapeText), so a bar is the one character left to escape.
+const cellMarkdown = (runs: readonly ArticleRun[]) =>
+  runsMarkdown(runs.map((r) => ({ ...r, text: r.text.replace(/\n/g, CELL_BREAK) })))
+    .split('|')
+    .join('\\|')
+    .replaceAll(CELL_BREAK, '<br>');
+
+/** A table as a pipe table: its header row the header line, or an empty header line when it has
+ *  none (which reads back as no header row). */
+function tableMarkdown(t: ArticleTableBlock): string[] {
+  const row = (cells: string[]) => `| ${cells.join(' | ')} |`;
+  const rows = t.rows.map((r) => r.cells.map(cellMarkdown));
+  const head = t.header ? rows.shift()! : t.cols.map(() => '');
+  return [row(head), row(t.cols.map(() => '---')), ...rows.map(row)];
 }
 
 // A title or subtitle in front matter, quoted when the reader would otherwise take its own quotes off (`unquote`):
@@ -293,6 +278,12 @@ export function articleToMarkdown(flow: ArticleFlow): string {
       case 'zone':
         lines.push(`[zone ${b.id}]`, '');
         break;
+      case 'table':
+        lines.push(...tableMarkdown(b), '');
+        break;
+      case 'toc':
+        lines.push(b.depth ? `[TOC ${b.depth}]` : '[TOC]', '');
+        break;
     }
     prevList = isList;
     opening = false;
@@ -305,7 +296,14 @@ export function articleToMarkdown(flow: ArticleFlow): string {
 export function articleWordCount(flow: ArticleFlow): number {
   let words = 0;
   for (const b of flow.blocks) {
-    const text = 'runs' in b ? b.runs.map((r) => r.text).join('') : b.type === 'code' ? b.text : '';
+    const text =
+      'runs' in b
+        ? b.runs.map((r) => r.text).join('')
+        : b.type === 'code'
+          ? b.text
+          : b.type === 'table'
+            ? articleTableText(b)
+            : '';
     words += text.split(/\s+/).filter(Boolean).length;
   }
   return words;

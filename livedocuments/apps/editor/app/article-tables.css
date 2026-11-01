@@ -1,0 +1,211 @@
+/* Tables and contents blocks in an article's writing (docs/specs/007-editor/article-pages.md "Tables",
+   "Table of contents"), beside article-pages.css and reading the same variables. A table's rows are
+   grids on the columns' shares (--article-table-cols, set by its node view), each an ordinary block in
+   the writing's columns, so a long table splits between rows like text; a header row repeated on a
+   later page is a copy drawn before the row that starts it (article-table-repeat.ts). Sizes are canvas
+   px: they zoom with the canvas. */
+
+.article-flow table.article-table {
+  --article-table-rule: color-mix(in srgb, var(--article-ink) 18%, transparent);
+  display: block;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+  margin: calc(0.4 * var(--article-line)) 0 calc(0.8 * var(--article-line));
+  /* Its left rule is its first cells' (below), so a part ending above a page's foot stops with its rows. */
+  border-top: 1px solid var(--article-table-rule);
+  /* Split across pages, each part ruled as a whole table. */
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  line-height: var(--article-leading);
+}
+.article-flow table.article-table > tbody {
+  display: block;
+}
+.article-flow table.article-table tr {
+  display: grid;
+  grid-template-columns: var(--article-table-cols, 1fr);
+  break-inside: avoid;
+}
+.article-flow table.article-table td,
+.article-flow table.article-table th {
+  display: block;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  border-right: 1px solid var(--article-table-rule);
+  border-bottom: 1px solid var(--article-table-rule);
+  text-align: left;
+  vertical-align: top;
+  font-weight: inherit;
+  overflow-wrap: anywhere;
+}
+.article-flow table.article-table td:first-child,
+.article-flow table.article-table th:first-child {
+  border-left: 1px solid var(--article-table-rule);
+}
+/* The header row: bold on a soft tint of the accent (on the row, so the grip's line can draw over it). */
+.article-flow table.article-table tr:has(> th) {
+  background-color: color-mix(in srgb, var(--article-accent) 9%, transparent);
+}
+.article-flow table.article-table th {
+  font-weight: 650;
+  color: var(--article-heading-color);
+}
+/* A header row repeated at the top of a later page: never the writing's, never pressed. */
+.article-flow table.article-table tr.article-table-repeat {
+  break-before: column;
+  pointer-events: none;
+  user-select: none;
+}
+/* Cells selected by a drag across them. */
+.article-flow table.article-table .selectedCell {
+  background-color: color-mix(in srgb, var(--article-accent) 16%, transparent);
+}
+.article-flow table.article-table .selectedCell ::selection {
+  background: transparent;
+}
+/* A column line's resize grip, under the pointer: a brand line down every row. */
+.article-flow table.article-table[data-grip] {
+  cursor: col-resize;
+}
+.article-flow table.article-table[data-grip] tr {
+  background-image: linear-gradient(
+    to right,
+    transparent calc(var(--article-grip-x) - 1px),
+    var(--article-accent) calc(var(--article-grip-x) - 1px),
+    var(--article-accent) calc(var(--article-grip-x) + 1px),
+    transparent calc(var(--article-grip-x) + 1px)
+  );
+}
+
+/* Contents */
+.article-flow .article-toc {
+  position: relative;
+  margin: calc(0.4 * var(--article-line)) 0 var(--article-line);
+  border-radius: 6px;
+  outline: 1px dashed transparent;
+  outline-offset: 4px;
+  cursor: default;
+  user-select: none;
+  transition: outline-color 120ms ease;
+}
+.article-flow:not([data-readonly]) .article-toc:hover {
+  outline-color: color-mix(in srgb, var(--article-accent) 45%, transparent);
+}
+.article-flow .article-toc.ProseMirror-selectednode {
+  outline: 2px solid var(--article-accent);
+}
+.article-flow .article-toc-title {
+  font-family: var(--article-heading-font);
+  font-size: calc(var(--article-size) * 22 / 16);
+  font-weight: 650;
+  line-height: 1.25;
+  color: var(--article-heading-color);
+  margin-bottom: calc(0.3 * var(--article-line));
+  break-after: avoid;
+}
+.article-flow .article-toc-entry {
+  all: unset;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  width: 100%;
+  box-sizing: border-box;
+  padding-left: calc(var(--toc-level, 0) * 20px);
+  font: inherit;
+  line-height: var(--article-leading);
+  color: inherit;
+  cursor: pointer;
+  break-inside: avoid;
+  white-space: normal;
+}
+.article-flow .article-toc-entry:hover .article-toc-text {
+  color: var(--article-accent);
+}
+.article-flow .article-toc-entry:focus-visible {
+  outline: 2px solid var(--article-accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+.article-flow .article-toc-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  transition: color 120ms ease;
+}
+.article-flow .article-toc-leader {
+  flex: 1;
+  min-width: 12px;
+  border-bottom: 1.5px dotted var(--article-rule);
+  transform: translateY(-0.3em);
+}
+.article-flow .article-toc-page {
+  min-width: 1.5em;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--article-muted);
+}
+.article-flow .article-toc-empty {
+  margin: 0;
+  color: var(--article-muted);
+  font-style: italic;
+}
+/* The levels' chips: top-right, shown while the block is hovered or selected. */
+.article-flow .article-toc-depth {
+  position: absolute;
+  top: -2px;
+  right: 0;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgb(15 23 42 / 0.08),
+    0 2px 6px rgb(15 23 42 / 0.12);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.article-flow .article-toc:hover .article-toc-depth,
+.article-flow .article-toc:focus-within .article-toc-depth,
+.article-flow .article-toc.ProseMirror-selectednode .article-toc-depth {
+  opacity: 1;
+  pointer-events: auto;
+}
+.article-flow .article-toc-chip {
+  all: unset;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font:
+    600 11px/1 system-ui,
+    sans-serif;
+  color: #475569;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.article-flow .article-toc-chip:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+.article-flow .article-toc-chip[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--article-accent) 14%, transparent);
+  color: var(--article-accent);
+}
+.article-flow .article-toc-chip:focus-visible {
+  outline: 2px solid var(--article-accent);
+}
+@media (pointer: coarse) {
+  /* No hover on a touch screen: the chips show while the block is selected. */
+  .article-flow .article-toc:hover:not(.ProseMirror-selectednode) .article-toc-depth {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .article-flow .article-toc,
+  .article-flow .article-toc-depth,
+  .article-flow .article-toc-text {
+    transition: none;
+  }
+}

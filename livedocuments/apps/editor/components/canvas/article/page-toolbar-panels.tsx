@@ -16,6 +16,7 @@ import {
   lucideList,
   lucideListOrdered,
   lucideListTodo,
+  lucideListTree,
   lucidePilcrow,
   lucideRemoveFormatting,
   lucideSeparatorHorizontal,
@@ -61,6 +62,7 @@ const PanelIcons = {
   pageBreak: I(lucidePilcrow),
   image: I(lucideImage),
   table: I(lucideTable),
+  toc: I(lucideListTree),
   chart: I(lucideChartColumn),
 };
 
@@ -392,8 +394,8 @@ export function MorePanel({
   );
 }
 
-export type BlockInsert = 'divider' | 'pageBreak' | 'quote' | 'code';
-export type ObjectInsert = 'image' | 'table' | 'chart' | 'drawing';
+export type BlockInsert = 'table' | 'toc' | 'divider' | 'pageBreak' | 'quote' | 'code';
+export type ObjectInsert = 'image' | 'chart' | 'drawing';
 
 // The Insert menu, dressed as the palette's rows (a glyph chip, the name, a line on what it is,
 // the slash menu's own: lib/article/article-slash-items.ts): the objects, then the blocks.
@@ -404,7 +406,6 @@ const INSERT_OBJECTS: readonly {
   icon: ReactNode;
 }[] = [
   { id: 'image', label: 'Image', blurb: 'A picture in the text', icon: <PanelIcons.image /> },
-  { id: 'table', label: 'Table', blurb: 'Rows and columns', icon: <PanelIcons.table /> },
   {
     id: 'chart',
     label: 'Bar Chart',
@@ -414,6 +415,18 @@ const INSERT_OBJECTS: readonly {
 ];
 const INSERT_BLOCKS: readonly { id: BlockInsert; label: string; blurb: string; icon: ReactNode }[] =
   [
+    {
+      id: 'table',
+      label: 'Table',
+      blurb: 'Rows and columns in the text',
+      icon: <PanelIcons.table />,
+    },
+    {
+      id: 'toc',
+      label: 'Table of Contents',
+      blurb: 'The headings, with their pages',
+      icon: <PanelIcons.toc />,
+    },
     {
       id: 'divider',
       label: 'Divider',

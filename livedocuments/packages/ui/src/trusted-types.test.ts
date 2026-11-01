@@ -7,7 +7,7 @@ import { TRUSTED_TYPES_CSP } from './trusted-types';
 describe('TRUSTED_TYPES_CSP', () => {
   it('enforces Trusted Types and names every policy the pages may create', () => {
     expect(TRUSTED_TYPES_CSP).toBe(
-      "require-trusted-types-for 'script'; trusted-types liveworkspace-markup nextjs ProseMirrorClipboard default",
+      "require-trusted-types-for 'script'; trusted-types liveworkspace-markup liveworkspace-inert-parse nextjs ProseMirrorClipboard default",
     );
   });
 });

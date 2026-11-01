@@ -55,15 +55,22 @@ describe('readDocx, a Word document', () => {
       ['pageBreak', '[pageBreak]'],
       ['h2', 'Details'],
       ['picture', '[picture]'],
-      ['bullet0', 'Name · Score'],
-      ['bullet0', 'Ada · 10'],
+      ['table', '[table]'],
       ['h3', 'Deep heading'],
       ['body', 'Centred'],
     ]);
     expect(pictures).toEqual([
       { path: 'word/media/image1.png', widthPx: 640, heightPx: 480, alt: 'A chart of sales' },
     ]);
-    expect(tally).toEqual({ footnotes: 1, comments: 1, tables: 1, charts: 1, headersFooters: 1 });
+    expect(tally).toEqual({ footnotes: 1, comments: 1, charts: 1, headersFooters: 1 });
+    // The table is a table block, its cells' formatting kept.
+    expect(blocks.find((b) => b.type === 'table')).toMatchObject({
+      type: 'table',
+      rows: [
+        { cells: [[{ text: 'Name', b: true }], [{ text: 'Score' }]] },
+        { cells: [[{ text: 'Ada' }], [{ text: '10' }]] },
+      ],
+    });
   });
 
   it('keeps inline marks, safe links and alignment', async () => {
@@ -264,7 +271,43 @@ describe('readDocx, the edges', () => {
       rels: [{ id: 'img', type: 'image', target: 'media/a.png' }],
       body: `<w:tbl><w:tr>${cell(p(r('Outer')) + `<w:tbl><w:tr>${cell(p(r('Inner')))}</w:tr></w:tbl>` + p(`${r('pic')}${drawing('img', 5, 5)}<w:r><w:br w:type="page"/></w:r>`))}${cell(p(''))}${cell(`<w:sdt><w:sdtContent>${p(r('Ctl'))}</w:sdtContent></w:sdt>`)}</w:tr><w:tr>${cell(p(''))}</w:tr><w:tr/></w:tbl>${p(r('After'))}`,
     });
-    expect(blocks.map(textOf)).toEqual(['Outer Inner pic · Ctl', 'After']);
+    expect(blocks.map(textOf)).toEqual(['[table]', 'After']);
+    const table = blocks[0] as Extract<ArticleBlock, { type: 'table' }>;
+    // The nested table is text in its cell; the row of one cell is padded to the widest; a row with no cell goes.
+    expect(table.rows.map((row) => row.cells.map((c) => c.map((x) => x.text).join('')))).toEqual([
+      ['Outer Inner\npic', '', 'Ctl'],
+      ['', '', ''],
+    ]);
+    expect(table.header).toBeUndefined();
+  });
+
+  it('reads a repeated first row as the header row, and joins a cell’s paragraphs with line breaks', async () => {
+    const cell = (inner: string) => `<w:tc>${inner}</w:tc>`;
+    const { blocks, tally } = await read({
+      body: `<w:tbl><w:tr><w:trPr><w:tblHeader/></w:trPr>${cell(p(r('Name')))}${cell(p(r('Score')))}</w:tr><w:tr>${cell(p(r('Ada')) + p(r('Lovelace')))}${cell(p(r('10')))}</w:tr></w:tbl>`,
+    });
+    const table = blocks[0] as Extract<ArticleBlock, { type: 'table' }>;
+    expect(table.header).toBe(true);
+    expect(table.cols).toHaveLength(2);
+    expect(table.rows[1]!.cells[0]).toEqual([{ text: 'Ada\nLovelace' }]);
+    expect(tally).toEqual({});
+  });
+
+  it('reads a header flag turned off as no header row', async () => {
+    const { blocks } = await read({
+      body: `<w:tbl><w:tr><w:trPr><w:tblHeader w:val="false"/></w:trPr><w:tc>${p(r('A'))}</w:tc></w:tr></w:tbl>`,
+    });
+    expect((blocks[0] as Extract<ArticleBlock, { type: 'table' }>).header).toBeUndefined();
+  });
+
+  it('cuts a table past the caps to fit, counting it, and drops a table with no rows', async () => {
+    const wide = `<w:tr>${Array.from({ length: 25 }, (_, i) => `<w:tc>${p(r(`c${i}`))}</w:tc>`).join('')}</w:tr>`;
+    const { blocks, tally } = await read({
+      body: `<w:tbl>${wide}</w:tbl><w:tbl></w:tbl>${p(r('After'))}`,
+    });
+    expect(blocks.map(textOf)).toEqual(['[table]', 'After']);
+    expect((blocks[0] as Extract<ArticleBlock, { type: 'table' }>).cols).toHaveLength(20);
+    expect(tally).toEqual({ tables: 1 });
   });
 
   it('caps a long paragraph and a long code block, and counts each', async () => {
