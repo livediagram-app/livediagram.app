@@ -116,7 +116,7 @@ known)` where `known` grows with each new person, so one name is one person.
   6. **Fits**: `fits = creates.length <= room && typeFits`; `reason` names the room or the full catalogue.
 - `TrackerImportPlan.creates: TrackerCreate[]` = `ItemCreate & { id: string; comments: TrackerCommentOut[] }`.
 - `trackerPreview` (in the plan): `{ source, sourceName, title, cards, columns: { name, cards }[], fields: { from,
-to, isNew, cards }[], people: { matched, named }, comments: { count, cards }, skips: { reason, label, count }[],
+to, isNew, cards }[], people: { matched, onPlan, named }, comments: { count, cards }, skips: { reason, label, count }[],
 fits, reason?, summary }` with `summary` the footer line.
 
 ## Package `@liveplanner/project`: `src/imported-thread.ts`
@@ -140,57 +140,66 @@ false`, `updatedAt` the last comment's; comments past `THREAD_BYTES` are dropped
 
 ## Agents (`packages/agent-verbs`)
 
-- `src/plan/tracker-import.ts` `importTrackerBoard(api, input, client)`, `input: { content, source?, projectId?,
-name?, preview?, newId }`: `readTrackerFile(content, parseCsv)`; a `source` given that differs: `source_mismatch`.
-  - With `projectId`: `readPlanState` and `GET /projects/:id` (its `teamId`), team members from `GET
-/teams/:teamId/members` (joined, with a `userId` and `email`; `itemPersonId(userId)`; a failure reads none),
-    `planTrackerImport`. Preview answers here. Not `fits`: `items_full` with the reason. Else: `PUT item-types` with
-    the merged type (`expectedRev`, retried on `item_types_stale` up to `CARD_TYPES_SAVE_ATTEMPTS`), then a new tab's
-    changeset `{ replace: { kind: 'board', name, elements: [board] }, base: { rev: 0 } }` (`CLIENT_HEADER`), then
-    `POST /items/bulk` in `ITEM_BULK_MAX` chunks with `withImportedThreads`.
-  - Without: a plan id from `newId`, `planTrackerImport` against no types and no items, then one `POST /projects`
-    `{ id, name, source: client, tabs: [{ id, name, kind: 'board', elements: [board] }], itemTypes: { version,
-types: [type] }, items }`.
-  - Answers `{ projectId, tabId, title, source, columns, cards, leftOut, preview }`; refusals through `apiRefusalOf`.
-- Verb `board.import` (`src/verbs/board-import.ts`): `file` positional (`ctx.readInput`), `--project`, `--from`,
-  `--name`, `--preview`; prints `+ board "<title>" from <Source>: <n> cards, <n> columns · <link>`, a preview as the
-  preview's lines.
-- MCP tool `import_board` (`src/verbs/mcp-tools.ts`, shapes in `src/mcp/tracker-schema.ts`), behaviour `write`,
-  handler in `apps/mcp/src/plan-tools.ts` over `importTrackerBoard(…, 'mcp')`; `content` ≤ `TRACKER_FILE_MAX_BYTES`.
+- `packages/agent-verbs/src/plan/tracker-import.ts` `importTrackerBoard(api, input, client)`, `input: { content,
+fileName?, source?, projectId?, name?, preview? }`: `readTrackerInput` refuses a file over `TRACKER_FILE_MAX_BYTES`
+  (`file_too_large`), reads it with `readTrackerFile(content, parseCsv)`, and refuses a `source` given that differs
+  (`source_mismatch`).
+  - With `projectId`: `readPlanState`, then `planTrackerImport` with `members: []`: an API token never reads a team's
+    people, so an agent matches people by name only. Preview answers here. Not `fits`: `items_full` with the reason.
+    Else: `PUT item-types` with the merged type (`expectedRev`, retried on `item_types_stale` up to
+    `CARD_TYPES_SAVE_ATTEMPTS`), then a new tab's changeset (`CLIENT_HEADER`), then `POST /items/bulk` in
+    `createBatches` writes with `withImportedThreads`.
+  - Without: a new plan id, `planTrackerImport` against no types and no items, then one `POST /projects` carrying the
+    tab, the card type and the first `createBatches` write (sized with the create's own bytes), and the rest through
+    `POST /items/bulk`.
+  - Answers `{ ok, written, projectId, newPlan, tabId, preview, summary }`; refusals through `apiRefusalOf`.
+- Verb `board.import` (`packages/agent-verbs/src/verbs/board-import.ts`): `file` positional (`ctx.readInput`),
+  `--project`, `--from`, `--name`, `--preview`; prints the summary with the plan's link, a preview as its lines.
+- MCP tool `import_board` (`packages/agent-verbs/src/verbs/mcp-tools.ts`, shapes in
+  `packages/agent-verbs/src/mcp/tracker-schema.ts`), behaviour `write`, handler in `apps/mcp/src/plan-tools.ts` over
+  `importTrackerBoard(…, 'mcp')`.
 
 ## Editor
 
-- `ImportTabDialog` takes `view` and `onView`; a two-button switch (`liveplanner File`, `Another Tool`) heads it; the
-  tracker view is `TrackerImportPanel` (`components/dialogs/tracker-import/`), loaded with the dialog.
-- `TrackerImportPanel`: states `choose` (a drop-zone styled button, the four sources named, the 20 MB note), `reading`,
-  `preview` (`TrackerPreviewView`), `importing`, `error` (inline message, Choose Another File). The file is read with
-  `pickTabFile('.json,.csv,.tsv,…', { maxBytes })` and parsed by `readTrackerFile(text, (t) => parseCsv(t).rows,
-name)` after a lazy import of the parser module (`lib/tracker-import.ts`).
-- `TrackerPreviewView`: sections Columns (chips with counts), Fields (a table: From, Becomes, Cards; a "New" pill),
-  People, Comments, Left Out, then Where To as two radio cards (the tab card dimmed with its reason when not
-  `fits`); the footer line and Import. Memoised on the plan: the preview never recomputes while the dialog renders.
-- `useTrackerImport` (composed in `useEditorState`, exposed as `trackerImport`): `{ canImport, planFor(board),
-run(plan, target) }`. `planFor` reads members once (`apiTeamMembers` when signed in and the plan has a team; a
-  failure reads none). `run('tab')`: waits for the item store (`waitUntil`, `PLAN_IMPORT_READY_WAIT_MS`), `addTypes` or
-  `saveType` for the merged type, commits a new tab `{ ...createTab(title), kind: 'board', elements: [board] }`
-  after the active one, marks it loaded and opens it, then `write({ kind: 'create', creates:
-withImportedThreads(…, { home: projectId }) })`. `run('plan')`: `apiCreateProject` with the tab, the catalogue and
-  the creates, intent `{ mode: 'plan', tabKind: 'board' }`, then `router.push(editorPath(id))`. Telemetry `Plan` ·
-  `Imported` · `TRACKER_TELEMETRY_TYPES[source]`.
-- Tab menu: `Import from Another Tool…` after Import (`TabPortalMenu` prop `onImportTracker`), dimmed unless
-  `canEditStructure` and the tab is unlocked; opens the dialog on `tracker`.
+- `ImportTabDialog` takes `view` and `onView` (`ImportView`, held by `useEditorDialogs`, opened with
+  `openImportOn(view)`); a two-button switch (`liveplanner File`, `Another Tool`) heads it when `canImport`; the
+  tracker view is `TrackerImportPanel` (`apps/editor/components/dialogs/tracker-import/`), loaded with the dialog.
+- `TrackerImportPanel`: the choose view (`TrackerChooseView`: a drop-zone styled button that also takes a dropped
+  file, the four sources named, a closed "Where to Find the Export" section, the one-off note), a busy state, the
+  preview (`TrackerPreviewView`) and an inline error with Choose Another File. The file is read by
+  `apps/editor/lib/tracker-file.ts` (`readTrackerText`, `readTrackerDrop`: the 20 MB cap before reading) and parsed
+  by `readTrackerFile(text, (t) => parseCsv(t).rows, name)`. The footer (`DialogFooter`) holds the summary line,
+  Choose Another File and Import.
+- `TrackerPreviewView`: sections Columns (chips with counts), Fields (a table: From, Becomes, Cards; a "New Field"
+  pill), People, Comments, Left Out, then Where To as `OptionRows` (the tab row dimmed with its reason when not
+  `fits`, with an amber note). The preview is planned once per file and target (state), never per render; Import
+  plans the tab again against the plan as it is then.
+- `useTrackerImport` (`apps/editor/hooks/plan/useTrackerImport.ts`, composed in `useEditorState`, exposed as
+  `trackerImport`): `{ canImport, contextFor(target), importPlan(plan, target) }`. `contextFor('tab')` waits for the
+  item store (`waitUntil`), reads members (`apiTeamMembers` when signed in and the plan has a team; a failure reads
+  none), people and statuses; `contextFor('plan')` is an empty plan. `importPlan(…, 'tab')`: `saveType` for the
+  merged type when it changed, commits a new Board tab (`trackerBoardTab`: the board Detailed) after the active one,
+  marks it loaded and opens it, then `write({ kind: 'create', creates: withImportedThreads(…) })`, each a step of
+  Undo. `importPlan(…, 'plan')`: signed in, `apiCreateProject` with the tab, the catalogue and the first
+  `createBatches` write, then `writeItem` for the rest; a guest, the plan is made in This Browser
+  (`offlineCreateProject`, `offlineWriteItem`); then it opens. Telemetry `Plan` · `Imported` · the source's name.
+  Any failure: "Couldn’t import those cards. Try again."
+- Entry points: the tab menu's `Import from Another Tool…` after Import (`TabPortalMenu` prop `onImportFromTool`) and
+  the command palette's `Import from Another Tool…` (`import-tracker`), both only when `canImport`
+  (`!isStructureReadOnly`: an Editor's, so Participants and Viewers see neither). A locked tab does not dim the row:
+  the import makes a new tab and leaves the locked one alone.
 
 ## Errors and edge cases
 
 | Case                                       | Handling                                                                                     |
 | ------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| File over 20 MB                            | refused before reading (`pickTabFile` `tooBig`), the spec's sentence                         |
+| File over 20 MB                            | refused before reading (`tracker-file.ts`; agents `file_too_large`), the spec's sentence     |
 | Bad JSON / unknown shape                   | `not_json` / `unknown_source`, inline                                                        |
 | Over 2,000 cards / no cards                | `too_many_cards` (count) / `no_cards`, inline; nothing offered                               |
 | Plan lacks room or the catalogue is full   | preview `fits: false`, tab target dimmed with `reason`, New Plan chosen; agents `items_full` |
 | More than 12 statuses                      | folded into `Other`, counted                                                                 |
 | A card's fields over 16 KB                 | `fitFields`, counted `shortened`                                                             |
-| Item store never loads                     | nothing written; "Couldn't import those cards. Try again."                                   |
+| Item store never loads                     | nothing written; "Couldn’t import those cards. Try again."                                   |
 | A write fails after the type or tab landed | they stay (undo takes them), the dialog shows the failure                                    |
 | Comments past caps                         | newest kept, rest counted                                                                    |
 | Attachment with no http(s) link            | left out, counted `attachmentsNoLink`                                                        |
@@ -212,7 +221,9 @@ withImportedThreads(…, { home: projectId }) })`. `run('plan')`: `apiCreateProj
 - Reading and planning are linear in the file: lists, members, checklists and comments are indexed by id once (maps),
   never searched per card. Worst case (2,000 cards, 20,000 comments, 50 checklist items each) is held under a
   budget by `tracker-import.perf.test.ts` (well under a second on CI).
-- Writes are batched: one type save, one tab, `ceil(cards / 200)` bulk requests (10 at the cap), threads inside them.
+- Writes are batched: one type save, one tab, then bulk writes of up to `ITEM_BULK_MAX` cards and
+  `ITEM_WRITE_BYTES` (6 MB, `packages/items/src/create-batches.ts` `createBatches`) each, under the api's 8 MB body
+  cap, threads inside them; the editor's create write is cut the same way.
   The api inserts each card's thread one statement at a time inside its request (`cardBackOnThreads`).
 - The preview is computed once per file (state), not per render.
 

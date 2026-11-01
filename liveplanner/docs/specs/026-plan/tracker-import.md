@@ -19,8 +19,10 @@ import makes a second board. liveplanner still has no connectors to other tracke
 ## Where it lives
 
 - **The plan's Import dialog** has a second view, **From Another Tool**, beside the tab's own JSON import. The tab
-  menu's **Import from Another Tool…** row (after Import, on every tab, a Board or Sheet tab's included) opens the
-  dialog on it; the dialog's own switch moves between **liveplanner File** and **Another Tool**.
+  menu's **Import from Another Tool…** row (after Import, on every tab, a Board or Sheet tab's included) and the
+  command palette's **Import from Another Tool…** open the dialog on it; the dialog's own switch moves between
+  **liveplanner File** and **Another Tool**. A locked tab does not dim the row: the import makes a new tab and leaves
+  the locked one as it is.
 - **Agents**: the MCP's `import_board` tool and the CLI's `liveplanner board import` read the same files the same way
   ([Agents](#agents)).
 
@@ -29,8 +31,8 @@ import makes a second board. liveplanner still has no connectors to other tracke
 | Role            | May                                                                                                     |
 | --------------- | ------------------------------------------------------------------------------------------------------- |
 | **Editor**      | Import into a new Board tab of the plan, or into a new plan.                                            |
-| **Participant** | Nothing here: an import makes a tab, columns and a card type, which are an Editor's. The row is dimmed. |
-| **Viewer**      | Nothing here; the row is dimmed.                                                                        |
+| **Participant** | Nothing here: an import makes a tab, columns and a card type, which are an Editor's. No row or command. |
+| **Viewer**      | Nothing here; no row or command.                                                                        |
 
 A new plan is the importer's own, so anyone signed in or a guest may make one from the editor's New; the editor offers
 it from inside a plan only to an Editor, as the dialog is an Editor's. The api refuses a Participant's or a Viewer's
@@ -38,7 +40,7 @@ writes (`403 forbidden`) whatever sends them.
 
 ## Reading the file
 
-- **Choose a File** opens the picker (`.json`, `.csv`, `.tsv`). A file over **20 MB** is refused before it is read:
+- **Choose a File** opens the picker (`.json`, `.csv`, `.tsv`), or a file is dropped on it. A file over **20 MB** is refused before it is read:
   "That file is too big to import. Imports read files up to 20 MB." (a Trello export carries every action on the
   board, so it is the largest of the four).
 - The source comes from the file: a JSON object with `lists` and `cards` is a Trello board; a CSV whose header names
@@ -140,9 +142,10 @@ Choosing a file shows what the import will make, before anything is written:
 
 - **The source and the board**: "Trello board · Website Relaunch", with the card count.
 - **Columns**: each column with its card count, in board order.
-- **Fields**: a row per source field the file fills: its name, the card field it becomes ("Due" or "New field: Issue
-  Type, Choice") and how many cards have it.
-- **People**: how many are matched to team members and how many become named people.
+- **Fields**: a row per source field the file fills: its name, the card field it becomes ("Due", or "Issue Type"
+  with a **New Field** mark when the import adds it to the card type) and how many cards have it.
+- **People**: how many are matched to team members, how many are already on the plan and how many become named
+  people.
 - **Comments**: how many, on how many cards.
 - **Left out**: a row per reason with its count (archived cards, archived lists, rows with no title, comments past the
   cap, attachments kept as links, statuses folded into Other, cards shortened to fit). None: "Nothing left out."
@@ -158,8 +161,12 @@ Choosing a file shows what the import will make, before anything is written:
 - **Into a new Board tab**: the card type is saved (one undo step), the tab is added and opened (one undo step), then
   every card is made in **one write** with its comments (one undo step); undo takes them back newest first, as a
   JSON import's. The import waits for the plan's cards to load first, as a JSON import does.
-- **Into a new plan**: one create carries the tab, the card type and every card with its comments, so the plan opens
-  whole. It is named after the board, filed where a new plan from New would be, and opens in this window once made.
+- **Into a new plan**: one create carries the tab, the card type and as many cards with their comments as one
+  request holds (the rest follow in further writes before the plan opens), so the plan opens whole. It is named after
+  the board, filed where a new plan from New would be, and opens in this window once made. A guest's plan is made in
+  This Browser, as a guest's New makes one.
+- **Large imports** are written in several requests of at most 200 cards and 6 MB each, under the api's request cap;
+  into a tab they are still one undo step. A failure part way leaves the cards already written, for undo.
 - **Done**: the dialog closes and the plan says "Imported 120 cards from Trello" (and ", 3 left out" when some were).
 - **Failed**: nothing the import had not yet written is written, and the dialog stays open with the reason ("Couldn't
   import those cards. Try again."). A failure after the card type or the tab was made leaves them, empty, for undo.
@@ -172,9 +179,10 @@ Choosing a file shows what the import will make, before anything is written:
   columns, the cards made and what was left out, with the link.
 - **`liveplanner board import <file>`** (`-` for stdin) does the same, with `--project`, `--from`, `--name` and
   `--preview`, printing `+ board "<title>" from <Source>: <n> cards, <n> columns` and the link.
-- An agent's import reads the plan's team for email matches as the editor does, and is refused as the editor's is: a
-  file past the caps, a plan without room (`items_full`, naming the room left), or a Participant's or Viewer's token
-  (`forbidden`).
+- An agent's import matches people **by name only**: an API token cannot read a team's members, so emails are not
+  matched. It is refused as the editor's is: a file past the caps (`file_too_large`, `too_many_cards`), a plan without
+  room (`items_full`, naming the room left), a `source` that is not the file's (`source_mismatch`), or a Participant's
+  or Viewer's token (`forbidden`).
 
 ## Telemetry
 

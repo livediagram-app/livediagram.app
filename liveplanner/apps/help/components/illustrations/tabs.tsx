@@ -755,7 +755,7 @@ export function ImportMenu() {
         x={mx}
         y={my}
         width={192}
-        height={110}
+        height={128}
         rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
@@ -764,7 +764,15 @@ export function ImportMenu() {
         x={mx}
         y={my + 6}
         w={192}
-        rows={['Organise in Tab Folder', 'Add to Plan', null, 'Import', 'Export', 'Clear']}
+        rows={[
+          'Organise in Tab Folder',
+          'Add to Plan',
+          null,
+          'Import',
+          'Import from Another Tool…',
+          'Export',
+          'Clear',
+        ]}
         highlight="Import"
       />
     </Scene>
@@ -857,6 +865,109 @@ export function ImportWarning() {
         />
         <Label x={dx + 28} y={dy + 118} size={10} className="fill-slate-400">
           {'{ "kind": "liveplanner.tab", … }'}
+        </Label>
+      </Dialog>
+    </Scene>
+  );
+}
+
+/** The Import dialog's Another Tool view (docs/specs/026-plan/tracker-import.md "The preview"): the switch, the board
+ *  read from the file with its columns, and where it goes, a new Board tab chosen. */
+export function TrackerImportPreview() {
+  const W = 420;
+  const H = 250;
+  const dx = 20;
+  const dy = 10;
+  const chips: [string, number][] = [
+    ['Backlog', 2],
+    ['Doing', 1],
+    ['In Review', 1],
+    ['Done', 1],
+  ];
+  let cx = dx + 16;
+  return (
+    <Scene w={W} h={H}>
+      <Dialog x={dx} y={dy} w={380} h={230} title="Import from Another Tool" sceneW={W} sceneH={H}>
+        {/* The view switch: liveplanner File, Another Tool (chosen) */}
+        <rect x={dx + 16} y={dy + 40} width={348} height={20} rx={6} className="fill-slate-100" />
+        <rect x={dx + 192} y={dy + 42} width={170} height={16} rx={5} className="fill-brand-600" />
+        <Label x={dx + 104} y={dy + 50} size={9} anchor="middle" tone="body">
+          liveplanner File
+        </Label>
+        <Label x={dx + 277} y={dy + 50} size={9} anchor="middle" tone="onAccent">
+          Another Tool
+        </Label>
+        {/* The board read from the file */}
+        <Label x={dx + 16} y={dy + 80} size={10} tone="muted">
+          Trello board ·
+        </Label>
+        <Label x={dx + 84} y={dy + 80} size={10} weight={700} tone="strong">
+          Website Relaunch
+        </Label>
+        <Label x={dx + 364} y={dy + 80} size={9} anchor="end" tone="muted">
+          5 cards
+        </Label>
+        <Label x={dx + 16} y={dy + 100} size={9} weight={600} tone="strong">
+          Columns
+        </Label>
+        {chips.map(([name, n]) => {
+          const w = name.length * 5.4 + 22;
+          const x = cx;
+          cx += w + 6;
+          return (
+            <g key={name}>
+              <rect
+                x={x}
+                y={dy + 107}
+                width={w}
+                height={18}
+                rx={4}
+                className="fill-slate-50 stroke-slate-200"
+                strokeWidth={1}
+              />
+              <Label x={x + 7} y={dy + 116} size={9} tone="body">
+                {name}
+              </Label>
+              <Label x={x + w - 6} y={dy + 116} size={9} anchor="end" tone="muted">
+                {String(n)}
+              </Label>
+            </g>
+          );
+        })}
+        {/* Where To: a new Board tab (chosen) or a new plan */}
+        <Label x={dx + 16} y={dy + 142} size={9} weight={600} tone="strong">
+          Where To
+        </Label>
+        <rect
+          x={dx + 16}
+          y={dy + 148}
+          width={348}
+          height={44}
+          rx={6}
+          className="fill-white stroke-slate-200"
+          strokeWidth={1}
+        />
+        <rect x={dx + 17} y={dy + 149} width={346} height={21} rx={5} className="fill-brand-50" />
+        <Label x={dx + 28} y={dy + 159.5} size={9.5} weight={600} tone="accent">
+          New Board Tab in This Plan
+        </Label>
+        <path
+          d={`M${dx + 346} ${dy + 159} l3 3 l6 -6`}
+          className="fill-none stroke-brand-600"
+          strokeWidth={1.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <Label x={dx + 28} y={dy + 181} size={9.5} tone="body">
+          New Plan
+        </Label>
+        {/* The footer: what it makes, and Import */}
+        <Label x={dx + 16} y={dy + 213} size={9} tone="muted">
+          Makes a Board tab with 4 columns and 5 cards.
+        </Label>
+        <rect x={dx + 300} y={dy + 203} width={64} height={20} rx={5} className="fill-brand-600" />
+        <Label x={dx + 332} y={dy + 213} size={9.5} weight={600} anchor="middle" tone="onAccent">
+          Import
         </Label>
       </Dialog>
     </Scene>

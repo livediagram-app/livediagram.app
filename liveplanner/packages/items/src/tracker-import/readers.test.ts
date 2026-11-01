@@ -312,7 +312,7 @@ describe('Linear', () => {
       labels: ['Frontend', 'Growth'],
     });
     expect(ship.assignee).toEqual({ name: 'ana', email: 'ana@example.com' });
-    expect(ship.description).toContain('https://linear.app/acme/document/onboarding');
+    expect(ship.description).toContain('https://linear.app/acme/spec/onboarding');
     expect(ship.extras).toEqual({
       id: 'ENG-42',
       project: 'Onboarding',
