@@ -403,7 +403,7 @@ export function LinkedCardField({
                           tooltip), and an unbroken string breaks rather than overflow. */}
                         <Tooltip label={itemTitle(card)}>
                           <span
-                            className={`line-clamp-2 min-w-0 flex-1 [overflow-wrap:anywhere] ${waits ? 'text-slate-400 dark:text-slate-500' : ''}`}
+                            className={`line-clamp-2 min-w-0 flex-1 [overflow-wrap:anywhere] ${waits ? 'text-slate-500 dark:text-slate-400' : ''}`}
                           >
                             {itemTitle(card)}
                           </span>
