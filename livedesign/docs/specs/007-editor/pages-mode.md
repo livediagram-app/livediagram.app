@@ -959,6 +959,8 @@ Both show the same list:
     page), in the menu's own tones. Each does exactly what the page's title bar or cog does; none but
     Page Settings glides to the page. A Participant and a Viewer see no grip, no Delete and no ⋯, and
     a right-click or long press opens nothing.
+    A row's tools keep its arrows their own, but a Cmd or Ctrl chord (undo, redo, search) still
+    reaches the editor from them.
 - **Going there**: a press (or Enter) glides the canvas to the page, as the pages row's arrows do,
   and marks it as here. On a desktop the popover stays open, so a reader can hop from page to page;
   on a phone the sheet closes so the page shows. Up and Down move between rows, Home and End to

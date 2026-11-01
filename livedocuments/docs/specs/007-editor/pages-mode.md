@@ -1273,6 +1273,8 @@ Both show the same list:
     (not on a locked page), in the menu's own tones ([Destructive actions](../004-interface-design/destructive-actions.md)). Each does exactly what the page's title bar, cog or the Slide
     Deck does; none but Page Settings glides to the page. A Participant and a Viewer see no grip,
     no Delete and no ⋯, and a right-click or long press opens nothing.
+    A row's tools keep its arrows their own, but a Cmd or Ctrl chord (undo, redo, search) still
+    reaches the editor from them.
   - A row's name carries the padlock on a locked page and a crossed eye (**Hidden in Slides**) on a
     page whose slide is hidden in the deck, so a skipped slide shows at a glance.
 - **Going there**: a press (or Enter) glides the canvas to the page, as the pages row's arrows do,

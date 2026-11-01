@@ -72,6 +72,17 @@ export function pageRowModel(verbs: {
   return { groups, ...(verbs.remove ? { remove: verbs.remove } : {}) };
 }
 
+// A row control's own keys stay its own (no row-to-row arrows, no nudge of the canvas's selection), but
+// a Cmd or Ctrl chord is the editor's: undo, redo and search still work with focus on a row's ⋯ or
+// Delete. Stopping every key there left Cmd+Z dead after a Move Down from the menu.
+export function keepRowKeys(e: {
+  metaKey: boolean;
+  ctrlKey: boolean;
+  stopPropagation: () => void;
+}) {
+  if (!e.metaKey && !e.ctrlKey) e.stopPropagation();
+}
+
 // After a long press opens the menu, the click the lift makes is swallowed, wherever it lands (the
 // row, or the menu now under the finger), for this long after the finger leaves the glass.
 export const LIFT_CLICK_MS = 400;
@@ -225,7 +236,7 @@ export function PageRowMenuButton({
           menu.toggle(id);
         }}
         onKeyDown={(e) => {
-          e.stopPropagation();
+          keepRowKeys(e);
           if (menu.openId !== id && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
             e.preventDefault();
             menu.toggle(id);
@@ -275,7 +286,7 @@ export function PageRowStack({
               e.stopPropagation();
               remove();
             }}
-            onKeyDown={(e) => e.stopPropagation()}
+            onKeyDown={keepRowKeys}
             className="relative flex h-6 w-6 touch-target items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-900/5 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-brand-600 dark:hover:bg-white/10 dark:hover:text-slate-100"
           >
             <DeleteIcon />
