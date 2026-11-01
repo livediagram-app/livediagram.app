@@ -9,9 +9,12 @@
 // lines with the whole title in a tooltip. Keys: Enter or Space opens it, the arrows move, Enter picks, Escape
 // closes. A Card field that holds several (docs/specs/026-plan/item-types.md "Holds Several") draws its cards as chips
 // (FieldChips: each opens its card) and its list toggles: a pick links a card, picking one linked unlinks it, and the
-// list stays open for more.
+// list stays open for more. A Blocked By field (item-types.md "Blocked By") never adds a card that already waits on
+// this one: the pick leaves the field as it was and says why, and such a card reads "Waits on this card" in the list.
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
+  blockingLoop,
+  blockingLoopMessage,
   cardKey,
   fieldCardIds,
   itemColourOf,
@@ -20,6 +23,7 @@ import {
   severalValue,
   toggledValues,
   typeIn,
+  waitingOn,
   type Item,
   type ItemTypeDef,
 } from '@liveplanner/items';
@@ -51,6 +55,7 @@ export function LinkedCardField({
   onSave,
   onOpen,
   multiple = false,
+  blocksFor,
 }: {
   id: string;
   // The field's name: the control's accessible name ("Parent", "Owner").
@@ -66,8 +71,14 @@ export function LinkedCardField({
   onOpen?: (itemId: string) => void;
   // A Card field that holds several: its cards as chips, the list toggling them.
   multiple?: boolean;
+  // A Blocked By field's card: a pick that would close a loop through it is refused.
+  blocksFor?: string;
 }) {
-  const announce = usePlan()?.announce;
+  const plan = usePlan();
+  const announce = plan?.announce;
+  // The chain a card would close as this card's blocker, when it already waits on it; null otherwise.
+  const loopOf = (card: Item) =>
+    blocksFor ? blockingLoop(items, types, blocksFor, card.id) : null;
   const listId = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const boxRef = useRef<HTMLDivElement>(null);
@@ -111,10 +122,25 @@ export function LinkedCardField({
   const pick = (card: Item | undefined) => {
     // Several: a card toggles and the list stays open for more.
     if (multiple) {
+      const loop = card && !chosen.includes(card.id) ? loopOf(card) : null;
+      if (loop) {
+        const message = blockingLoopMessage(loop);
+        announce?.(message);
+        plan?.notify?.(message);
+        return;
+      }
       if (card)
         onSave(
           severalValue(SEVERAL, toggledValues(chosen, card.id, cardKey)) as string[] | undefined,
         );
+      return;
+    }
+    const loop = card && card.id !== linkedId ? loopOf(card) : null;
+    if (loop) {
+      const message = blockingLoopMessage(loop);
+      announce?.(message);
+      plan?.notify?.(message);
+      close();
       return;
     }
     if ((card?.id ?? undefined) !== linkedId) onSave(card?.id);
@@ -133,6 +159,12 @@ export function LinkedCardField({
   useEffect(() => {
     if (open) (filterRef.current ?? listRef.current)?.focus();
   }, [open]);
+  // The cards that already wait on this one, each marked in the list: one walk per open list and items change, so a
+  // closed field walks nothing.
+  const waiting = useMemo(
+    () => (open && blocksFor ? waitingOn(items, types, blocksFor) : null),
+    [open, blocksFor, items, types],
+  );
 
   const onListKey = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
@@ -335,6 +367,7 @@ export function LinkedCardField({
               {options.map((card, i) => {
                 const t = card ? typeIn(types, card.type) : undefined;
                 const selected = held(card);
+                const waits = !!card && !selected && !!waiting?.has(card.id);
                 return (
                   <li
                     key={card?.id ?? 'none'}
@@ -342,7 +375,12 @@ export function LinkedCardField({
                     role="option"
                     aria-selected={selected}
                     // The full number and title, whatever the clamp hides.
-                    aria-label={card ? `#${card.key} ${itemTitle(card)}` : 'None'}
+                    aria-label={
+                      card
+                        ? `#${card.key} ${itemTitle(card)}${waits ? ', waits on this card' : ''}`
+                        : 'None'
+                    }
+                    aria-disabled={waits || undefined}
                     onPointerMove={() => setActive(i)}
                     onClick={() => pick(card)}
                     className={`flex cursor-pointer items-start gap-1.5 px-2 py-1.5 text-[13px] leading-snug max-sm:text-[16px] ${
@@ -364,10 +402,17 @@ export function LinkedCardField({
                         {/* The title on up to two lines; a longer one ends in an ellipsis (the whole title in the
                           tooltip), and an unbroken string breaks rather than overflow. */}
                         <Tooltip label={itemTitle(card)}>
-                          <span className="line-clamp-2 min-w-0 flex-1 [overflow-wrap:anywhere]">
+                          <span
+                            className={`line-clamp-2 min-w-0 flex-1 [overflow-wrap:anywhere] ${waits ? 'text-slate-400 dark:text-slate-500' : ''}`}
+                          >
                             {itemTitle(card)}
                           </span>
                         </Tooltip>
+                        {waits ? (
+                          <span className="mt-[2px] shrink-0 text-[11px] text-slate-500 dark:text-slate-400">
+                            Waits on this card
+                          </span>
+                        ) : null}
                         {/* Several: each card linked is ticked. */}
                         {multiple && selected ? (
                           <span

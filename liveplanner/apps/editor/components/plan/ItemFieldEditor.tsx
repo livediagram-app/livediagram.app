@@ -12,6 +12,7 @@ import {
   isBuiltInFieldId,
   linkCandidates,
   holdsSeveral,
+  isBlocksField,
   isTimeSpent,
   linkTypesOf,
   requiredFieldEmptied,
@@ -116,6 +117,9 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
   // A Card field (docs/specs/026-plan/item-types.md "Card fields"): one card of any of the types it links to.
   const linkTypes = custom?.kind === 'card' ? linkTypesOf(custom) : [];
   if (custom && linkTypes.length) {
+    // A Blocked By field's links are an Editor's to set (docs/specs/026-plan/item-types.md "Blocked By"): a
+    // Participant reads its chips.
+    const blocks = isBlocksField(custom);
     return (
       <LinkedCardField
         id={id}
@@ -124,7 +128,8 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
         candidates={linkCandidates(items.values(), linkTypes, item.id)}
         items={items}
         types={types}
-        disabled={disabled}
+        disabled={disabled || (blocks && plan?.canEdit === false)}
+        {...(blocks ? { blocksFor: item.id } : {})}
         onSave={save}
         onOpen={(target) => ctx.onOpenItem(target, 'Parent')}
         multiple={holdsSeveral(custom)}

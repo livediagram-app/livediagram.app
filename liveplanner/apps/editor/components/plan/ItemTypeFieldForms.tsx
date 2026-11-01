@@ -396,6 +396,43 @@ export function HoldsSeveralSwitch({
   );
 }
 
+// Blocked By (docs/specs/026-plan/item-types.md "Blocked By"): what the switch on a Card field says.
+export const BLOCKS_LINE = 'Its cards block this one: it shows as blocked until each is done.';
+
+// A Card field's Blocks switch, as Holds Several's, with its line under it; none for any other kind. On also turns
+// Holds Several on (a card can wait on several); off is stored as absent and leaves every card's value as it is.
+export function BlocksSwitch({
+  field,
+  onChange,
+}: {
+  field: Pick<CustomFieldDef, 'kind' | 'blocks'>;
+  onChange: (
+    patch: Pick<CustomFieldDef, 'blocks'> & Partial<Pick<CustomFieldDef, 'multiple'>>,
+  ) => void;
+}) {
+  const lineId = useId();
+  if (field.kind !== 'card') return null;
+  return (
+    <div className="flex flex-col">
+      <SwitchRow
+        checked={field.blocks === true}
+        aria-describedby={lineId}
+        onChange={() => {
+          track('Plan', 'Changed', 'FieldBlocks');
+          onChange(field.blocks ? { blocks: undefined } : { blocks: true, multiple: true });
+        }}
+        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
+        className="px-1 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        Blocks
+      </SwitchRow>
+      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {BLOCKS_LINE}
+      </p>
+    </div>
+  );
+}
+
 // A custom field's name, options (Choice), the types it links to (Card) and its calculation (Calculated); where it
 // shows on a card is the Display tab's.
 export function CustomFieldForm({
@@ -475,6 +512,7 @@ export function CustomFieldForm({
         />
       ) : null}
       <HoldsSeveralSwitch field={field} onChange={(multiple) => onChange({ multiple })} />
+      <BlocksSwitch field={field} onChange={onChange} />
       <RequiredSwitch field={field} onChange={(required) => onChange({ required })} />
       <NotifiesSwitch field={field} onChange={(notifies) => onChange({ notifies })} />
       {/* Where it shows on a card is the Display tab's: drag it onto the card there. */}

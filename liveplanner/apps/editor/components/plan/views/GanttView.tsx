@@ -6,12 +6,15 @@
 // lone date, and a line for today. Divs and CSS, so it stays crisp at any zoom. To someone who may edit, a
 // bar's ends and a diamond drag their dates (gantt-drag.tsx), and the names column resizes
 // (gantt-names-resize.tsx). Rows may sit in swimlanes, laid out top down in one pass (ganttLayout), in the chart's
-// own row order when it has one; a row's grip drags it to a new place (useGanttRowReorder).
+// own row order when it has one; a row's grip drags it to a new place (useGanttRowReorder). Blocked By links draw as
+// arrows from blocker to blocked (gantt-arrows.tsx).
 import { useMemo, useRef, useState } from 'react';
 import { useToday } from '@/hooks/ui/useToday';
 import { IDENTITY_FILL, identityVars } from '@liveplanner/ui';
 import {
   ITEM_TYPES,
+  blockingIndexOf,
+  donePhase,
   ganttAt,
   ganttLanes,
   ganttLayout,
@@ -38,6 +41,8 @@ import { Mark } from './gantt-mark';
 import { GANTT_PILL_MIN_COLUMN_PX, GanttLaneHead, GanttNameRow, rowStatus } from './gantt-rows';
 import { GanttNamesResizer } from './gantt-names-resize';
 import { useGanttRowReorder } from './useGanttRowReorder';
+import { GanttArrows } from './gantt-arrows';
+import { planBlocking } from '../blocking';
 
 // A card's row: room for a 20 px bar and a two-line name pill.
 const ROW_H = 40;
@@ -183,6 +188,13 @@ export function GanttView({
         }
       : undefined;
   const liftOf = (id: string) => (lifted?.itemId === id ? lifted.dy : undefined);
+  // The plan's Blocked By lookup (one per items change), for the arrows; a chart without the plan builds its own.
+  const blocking = useMemo(
+    () => (plan ? null : blockingIndexOf(items.values(), types, donePhase(phases))),
+    [plan, items, types, phases],
+  );
+  const shownOf = (row: GanttRow): GanttRow =>
+    preview?.itemId === row.item.id ? { ...row, from: preview.from, to: preview.to } : row;
   return (
     <ViewFrame
       title="Gantt Chart"
@@ -340,6 +352,18 @@ export function GanttView({
               </div>
             );
           })}
+          <GanttArrows
+            entries={layout.entries}
+            index={blocking ?? planBlocking(plan!)}
+            phases={phases}
+            view={view}
+            axisPx={axisPx}
+            top={AXIS_H}
+            rowH={ROW_H}
+            palette={palette}
+            shownOf={shownOf}
+            liftOf={liftOf}
+          />
           {dropLine !== null ? <DropLine top={dropLine} colour={palette.focus} /> : null}
           {/* Today. */}
           <span

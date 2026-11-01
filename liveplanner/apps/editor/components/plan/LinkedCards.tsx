@@ -14,6 +14,7 @@ import {
   type Item,
   type ItemTypeDef,
   namedStatus,
+  blocksHeading,
 } from '@liveplanner/items';
 import { ChevronRightIcon, NoMatches, PlusIcon, Select, lucideGlyph } from '@liveplanner/ui';
 import { lucideLink } from '@liveworkspace/icons/lucide';
@@ -215,13 +216,18 @@ export function LinkedCardGroup({
   const headingId = useId();
   const plan = usePlan();
   const [linking, setLinking] = useState(false);
+  // A Blocked By field's mirror (docs/specs/026-plan/item-types.md "Blocked By"): "Blocks", read-only, and not drawn
+  // without cards, since a block is set on the card that waits.
+  if (group.blocks && group.cards.length === 0) return null;
+  const heading = group.blocks ? blocksHeading(group.label) : `Linked as ${group.label}`;
+  const adds = canAdd && !group.blocks;
   return (
     <section aria-labelledby={headingId} className="mb-8">
       <h3
         id={headingId}
         className="mb-2 flex items-center gap-1.5 text-[13px] font-semibold text-slate-800 dark:text-slate-100"
       >
-        Linked as {group.label}
+        {heading}
         <span className="rounded-full bg-slate-100 px-1.5 text-[11px] font-medium tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
           {group.cards.length}
         </span>
@@ -236,10 +242,10 @@ export function LinkedCardGroup({
           types={types}
           statusNames={statusNames}
           onOpen={onOpen}
-          label={`Linked as ${group.label}`}
+          label={heading}
         />
       )}
-      {canAdd ? (
+      {adds ? (
         <div className="mt-1.5 flex flex-wrap gap-1">
           {group.fromTypes.map((typeId) => {
             const type = typeIn(types, typeId);
@@ -269,7 +275,7 @@ export function LinkedCardGroup({
           ) : null}
         </div>
       ) : null}
-      {linking && target && onLinkExisting ? (
+      {linking && adds && target && onLinkExisting ? (
         <LinkExistingCardDialog
           target={target}
           group={group}

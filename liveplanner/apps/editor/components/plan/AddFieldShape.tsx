@@ -34,6 +34,7 @@ import {
   TrackTimeSwitch,
   CurrencySelect,
   HoldsSeveralSwitch,
+  BlocksSwitch,
   NotifiesSwitch,
   RatingScaleSelect,
   RequiredSwitch,
@@ -67,6 +68,7 @@ export function addedField(field: NewField): NewField {
     ...(field.required && canBeRequired(field.kind) ? {} : { required: undefined }),
     ...(field.notifies && field.kind === 'person' ? {} : { notifies: undefined }),
     ...(field.multiple && holdsSeveralKind(field.kind) ? {} : { multiple: undefined }),
+    ...(field.blocks && field.kind === 'card' ? {} : { blocks: undefined }),
   };
 }
 
@@ -317,6 +319,7 @@ function ShapeOwn({
       <ShowAsPercentSwitch field={field} onChange={(showAs) => set({ showAs })} />
       <TrackTimeSwitch field={field} onChange={set} />
       <HoldsSeveralSwitch field={field} onChange={(multiple) => set({ multiple })} />
+      <BlocksSwitch field={field} onChange={set} />
       <RequiredSwitch field={field} onChange={(required) => set({ required })} />
       <NotifiesSwitch field={field} onChange={(notifies) => set({ notifies })} />
       {/* A Formula, Rollup or Lookup previews on a real card, in its editor. */}
