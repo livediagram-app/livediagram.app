@@ -209,11 +209,30 @@ export function elementPageSurfaces(
   pages: readonly LaidOutPage[],
 ): Map<string, CanvasSurface> {
   const out = new Map<string, CanvasSurface>();
+  for (const [id, tone] of elementPageTones(elements, pages)) out.set(id, canvasSurface(tone));
+  return out;
+}
+
+/** The tone of the page with a fill of its own under every element, by element id: what a label
+ *  with no fill of its own is read against (docs/specs/011-theme/light-and-dark.md "A page's own
+ *  paper"). Elements on the paper, or on no page, are absent. Each page's tone is worked out once. */
+export function elementPageTones(
+  elements: Element[],
+  pages: readonly LaidOutPage[],
+): Map<string, string> {
+  const out = new Map<string, string>();
   if (!pages.some((p) => p.background?.fill)) return out;
+  const tones = new Map<LaidOutPage, string | null>();
   for (const el of elements) {
     const page = pageAt(pages, elementAnchorPoint(el, elements));
-    const surface = page && pageSurface(page);
-    if (surface) out.set(el.id, surface);
+    if (!page) continue;
+    let tone = tones.get(page);
+    if (tone === undefined) {
+      const fill = page.background?.fill;
+      tone = fill ? pageFillTone(fill) : null;
+      tones.set(page, tone);
+    }
+    if (tone) out.set(el.id, tone);
   }
   return out;
 }
