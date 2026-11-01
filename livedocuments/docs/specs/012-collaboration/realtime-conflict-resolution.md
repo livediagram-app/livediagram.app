@@ -60,6 +60,12 @@ the skipped op never reached the baseline) or when the room cannot say (a closed
 
 So two people dragging one element at once both end on the same position (`realtime-same-element.spec.ts` locks it).
 
+An article's writing is held the same way, block by block and cell by cell: a save's `article` ops go through
+`sequence` too, and until the room confirms them a peer's put of one of the blocks they write (in its place; a put
+that moves the block is applied, its place being theirs) or text of one of their cells is left out of the screen and
+the save baseline. So two people committing one paragraph (or one cell) at once both end on the room's last commit;
+before, each saw the other's text until a reload, and the next edit to the paragraph wrote that over the room's.
+
 ### Live drags
 
 A drag writes nothing until it ends; while it lasts, the dragger's preview travels as presence (a
