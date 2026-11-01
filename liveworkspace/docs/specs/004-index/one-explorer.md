@@ -381,7 +381,8 @@ next one names it.
 
 **Dates.** Every date the Explorer, the Settings panel and liveworkspace.app's own pages show is written in the
 browser's locale (its language and region order: "3 Nov 2026" in the UK, "Nov 3, 2026" in the US), never a fixed
-one, through one shared formatter (`@liveworkspace/ui/date-format`). It keeps one `Intl.DateTimeFormat` per set of
+one, through one shared formatter (`@liveworkspace/ui/date-format`). A time is written as the locale's clock writes it: "09:05" on a 24-hour clock, "9:05 AM" on a
+12-hour one, never a padded "09:05 AM". It keeps one `Intl.DateTimeFormat` per set of
 options and locale, made the first time it is asked for, so a list of thousands of rows makes none per row. A date
 that has to be a given zone's day keeps its zone (the status page's days are UTC). Text a prerender would write
 can't know the reader's locale, so dates are written only in the browser: the lists that carry them read their data
