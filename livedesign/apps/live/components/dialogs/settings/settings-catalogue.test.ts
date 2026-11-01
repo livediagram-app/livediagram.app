@@ -362,6 +362,19 @@ describe('settings catalogue', () => {
     expect(workbench.map((c) => c.id)).not.toContain('webhooks');
   });
 
+  it('shows a guest Your Data the same way: a stand-in that says to sign in', () => {
+    const guest = visibleCategories({ emailEnabled: false, signedIn: false });
+    const data = guest.find((c) => c.id === 'data')!;
+    expect(data.parent).toBe('account');
+    expect(data.rows).toEqual([
+      expect.objectContaining({ kind: 'note', key: 'dataExportSignIn', signIn: true }),
+    ]);
+    const ids = visibleCategories({ emailEnabled: false, signedIn: true }).map((c) => c.id);
+    expect(ids).not.toContain('data');
+    const workbench = visibleCategories({ emailEnabled: false, signedIn: false, workbench: true });
+    expect(workbench.map((c) => c.id)).not.toContain('data');
+  });
+
   it('points every link row at a category that exists', () => {
     const ids = new Set(SETTINGS_CATEGORIES.map((c) => c.id));
     const links = ALL_ROWS.filter((r) => r.kind === 'link');

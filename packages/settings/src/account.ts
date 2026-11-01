@@ -179,3 +179,15 @@ export const WEBHOOKS_CATEGORY = {
     'webhook webhooks slack microsoft teams channel post notify integration automation zapier url events signed',
   signInNote: 'Sign in to add webhooks.',
 } as const;
+
+// Download Your Data (liveworkspace/docs/specs/003-accounts/data-export.md "Settings"): an account's, made on
+// liveworkspace's Settings. The category's words wherever it shows, and the stand-in a guest's editor shows in its
+// place (each editor's user-preferences.md).
+export const DATA_EXPORT_CATEGORY = {
+  label: 'Your Data',
+  description:
+    'Download everything you own in every app, or everything a team you run owns, as one zip: each item’s file, a picture of each tab, your comments and your images.',
+  keywords:
+    'download export data zip backup archive portability gdpr takeout everything copy leave move team admin',
+  signInNote: 'Sign in to download your data.',
+} as const;

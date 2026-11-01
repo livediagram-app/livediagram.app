@@ -145,6 +145,8 @@ export function SettingsDialog({
       securityHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=profile`,
       // Webhooks are added and managed in liveworkspace's Settings (liveworkspace/docs/specs/004-index/webhooks.md).
       webhooksHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=webhooks`,
+      // Download Your Data is made in liveworkspace's Settings too (liveworkspace/docs/specs/003-accounts/data-export.md).
+      dataExportHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=data`,
       emails: emailEnabled,
       cloudSync,
     }),
