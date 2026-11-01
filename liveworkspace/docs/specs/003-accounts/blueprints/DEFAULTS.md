@@ -27,3 +27,7 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | ACC21 | push                  | one request to accounts sends at most 200 posts across its people and devices, 8 at a time, 10 seconds each; the rest are dropped and logged.                        |
 | ACC22 | push                  | a message lives 4 hours at the push service (`TTL`), at `Urgency: normal`; the VAPID subject is the Worker's `BASE_URL`.                                             |
 | ACC23 | push                  | comments and assignments made with an API token send no phone notification, and one event reaches at most 50 people.                                                 |
+| ACC24 | data-export           | items in the Trash and an item's folder are not exported; items are filed by app, named with their id.                                                               |
+| ACC25 | data-export           | a team export carries no images and no profiles: an image is its uploader's, in their own export.                                                                    |
+| ACC26 | data-export           | the readable pictures are each tab at twice its size, at most 4096 px on the long side, up to 20 tabs an item.                                                       |
+| ACC27 | data-export           | the emailed link and the file last 3 days; the R2 rule deletes anything older than 4 days.                                                                           |

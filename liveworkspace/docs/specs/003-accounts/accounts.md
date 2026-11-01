@@ -1085,6 +1085,14 @@ window is **`SEND_WINDOW`: Monday to Friday, 09:00 to 21:00 in the recipient's o
   back to the default and is logged. Without an `EMAIL` binding outside development, the windowed
   sweeps send nothing and stamp nothing: they don't run (invitations still expire).
 
+## Downloading your data
+
+A signed-in person can download everything they own, and a team admin everything the team owns, as one zip built in
+the background and sent as a signed, expiring link that also needs them signed in
+([data-export.md](data-export.md)). Accounts holds the doors (`/api/account/data-export`, `src/data-export/`), checks
+the admin, writes the profile into a personal export, signs the link and sends the email; the export service builds
+the zip. Closing an account deletes its personal export.
+
 ## Closing an account
 
 An app's server asks (`POST /api/auth/delete-account`, with its client credentials, the person's access token and the
@@ -1112,6 +1120,9 @@ nothing happens: the code is sent and checked first, by the same app's server
    `Bearer ${DRIVE_KEY_ACCOUNTS}`; `src/drive-disconnect.ts`): it revokes the grant and forgets the token and every
    mirror row, and leaves the files in Drive ([drive.md](../005-drive/drive.md#disconnecting-and-account-deletion)). Best
    effort and never retried: a failure is logged, and without the binding or the key nothing is sent.
+7. After the answer too, the export service deletes the person's latest export and its file
+   (`DELETE /internal/exports/personal:<id>` on the `EXPORT` binding, `Bearer ${EXPORT_KEY_ACCOUNTS}`;
+   [data-export.md](data-export.md#the-service)), best effort as Drive's is.
 
 The account is closed whatever the index answers. A request it doesn't take (an error, a timeout, or
 `INDEX_URL` or `INDEX_MERGE_KEY` unset) stays in `pending_purges` with its attempts and last error, and

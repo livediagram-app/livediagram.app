@@ -67,6 +67,10 @@ time; a key speaks only for its own app. Answers are JSON except the bytes; erro
 where it was uploaded. The owner and the hash never appear in it. The bytes route names the owner in a
 header so an app can apply its "the image's owner owns this document" rule from the one request.
 
+The data export's service ([data-export.md](../003-accounts/data-export.md#the-media-service)) calls with
+`X-Media-App: export` and `MEDIA_KEY_EXPORT`, which opens `GET /images?owner=` and `GET /images/<id>/bytes` alone: an
+owner's gallery and its bytes, for their download. Any other route answers it `401`.
+
 Any app may read any image's bytes: reuse across the suite depends on it, and each app guards its own
 doors. Without a bucket every route answers `503 { error: "media_unavailable" }`; with `MEDIA_ENABLED`
 set to `false`, `0` or `off`, every route answers 404.
@@ -159,6 +163,7 @@ document in any app**. It keeps bytes whenever in doubt:
 | ---------- | ----------------------------------------------------------------------------------------------------- |
 | api Worker | `MEDIA_URL` var (default `https://www.liveworkspace.app/api/media`), `MEDIA_KEY` secret               |
 | Service    | `MEDIA_KEY_<APP>` secret, the same value: `LIVEDIAGRAM`, `LIVEPLANNER`, `LIVEDOCUMENTS`, `LIVEDESIGN` |
+| Export     | `MEDIA_KEY_EXPORT` secret, the data export service's own (read only, above)                           |
 
 An app without a key can't use the service, and the sweep doesn't wait for it. The same key lets the service ask
 the app's export door for a drawing: every app's previews (Explorer thumbnails, live images, share cards) live here

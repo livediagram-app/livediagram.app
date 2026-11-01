@@ -89,6 +89,13 @@ apps/index/src/webhooks/      webhooks: the routes, the outbox, the dispatcher (
   primary key picks the flagged ones. A failed call is logged (`index: drive-signal failed`) and dropped. Without
   the binding nothing is read or sent.
 
+- **The data export's service** ([data-export.md](../003-accounts/data-export.md#the-index)), with `INDEX_KEY_EXPORT`,
+  acting for an account with `X-Index-App: export` and `X-Index-Person`, on `GET /items` alone (anything else answers
+  `404`). Its lists are every app's (an `app` filter it sends still applies) and narrowed to one scope: the person's
+  personal items, or the one team `X-Index-Teams` names (accounts checked the person is its admin before the export
+  started; the index does not ask again); a `team` filter, `view=shared` and `any` play no part. A guest id answers
+  `403`, a wrong key `401`, and more than one team `401` (`auth.ts`, `export-delegate.test.ts`).
+
 ## Decisions the contract left open
 
 - The `team` list filter takes a team id or `personal`; without it, a list holds the person's own items
@@ -127,6 +134,7 @@ apps/index/src/webhooks/      webhooks: the routes, the outbox, the dispatcher (
 | `GRANT_SIGNING_KEY`           | secret: the private ES256 JWK, with its `kid`. Development makes one per isolate if unset                                                                            |
 | `MERGE_KEY`                   | secret: accounts' `INDEX_MERGE_KEY`                                                                                                                                  |
 | `INDEX_KEY_DRIVE`             | secret: the Drive mirror's `INDEX_KEY_DRIVE`, with which it acts for a person and sets their flag                                                                    |
+| `INDEX_KEY_EXPORT`            | secret: the data export service's `INDEX_KEY_EXPORT`, with which it lists a person's or a team's items                                                               |
 | `DRIVE_KEY_INDEX`             | secret: the Drive mirror's `DRIVE_KEY_INDEX`, carried by the change signal                                                                                           |
 | `DRIVE`                       | service binding to `liveworkspace-drive` (`-staging`); without it the index sends no change signal                                                                   |
 | `ACCOUNTS_URL`                | var: the accounts origin; tokens are checked as `${ACCOUNTS_URL}/api/auth`, grants issued as `${ACCOUNTS_URL}/api/index`                                             |
