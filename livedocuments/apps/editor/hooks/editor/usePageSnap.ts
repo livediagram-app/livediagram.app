@@ -13,12 +13,21 @@ import { pageSnap, type SnapBand, type SnapFrame } from '@/lib/page-snap';
 import { track } from '@/lib/telemetry';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { isTypingTarget } from '@liveworkspace/workbench/lib/typing-target';
 
 // How long a view moved by anything but a gesture rests before it snaps: past a held arrow key's
 // repeat and a glide's frames, short of feeling like a second, separate move.
 export const VIEW_REST_MS = 250;
 // A pan's last this-many ms of movement give its speed as the hand lets go.
 export const FLICK_WINDOW_MS = 80;
+
+/** Whether the caret is in text on the canvas (an article's writing, a label, a table cell, an inline line), so a
+ *  view that moved without a hand moved to keep that caret in sight (a phone's keyboard rising) and must stay. */
+export function textHasCaretIn(canvas: HTMLElement | null, focused: Element | null): boolean {
+  return (
+    !!canvas && !!focused && canvas.contains(focused) && isTypingTarget(focused, { select: false })
+  );
+}
 
 export type SnapMeasure = {
   screen: { width: number; height: number };
@@ -51,8 +60,9 @@ export function usePageSnap(deps: {
   cancelGlide: () => void;
   // Following someone or presenting: the view is not this person's to move.
   suspended: () => boolean;
-  // An article's writing has the caret: a view moved by anything but a hand was moved for the caret
-  // (kept in sight, above a phone's keyboard), and is left where it is. A gesture still snaps.
+  // Text on the canvas has the caret (an article's writing, a label being written on): a view moved by anything but
+  // a hand was moved for the caret (kept in sight, above a phone's keyboard), and is left where it is. A gesture
+  // still snaps.
   writing?: () => boolean;
 }): void {
   const latest = useLatest(deps);
