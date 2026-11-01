@@ -52,7 +52,7 @@ document's body, in the order it is written. The article flows onto as many page
 | A line break                                                                | A line break in the block; a tab is a space                       |
 | A picture, inline or floating                                               | An in-line object zone holding an image, at most the text's width |
 | Paragraph alignment (centre, right, justify)                                | The same alignment                                                |
-| A table                                                                     | Each row a bulleted item, its cells joined by " · " (reported)    |
+| A table                                                                     | A table block: its rows and cells, a repeated header row as the header row, merged cells read as one; a table inside a cell as text |
 | Empty paragraphs (spacing)                                                  | Left out                                                          |
 | Tracked insertions; tracked deletions                                       | Kept as written; left out                                         |
 | Content controls, smart tags, fields                                        | Their content or result                                           |
@@ -112,7 +112,7 @@ placeholders and are reported.
 
 Once the tab has been replaced, an import that left anything out shows the Import dialog's report
 (`ImportReport`) instead of closing: one line per kind of thing, with the count, for example "**Tables** · 2
-tables were written as lists: an article's text holds no tables." or "**Images** · 3 images couldn't be saved:
+tables were cut to fit: a table holds at most 500 rows and 20 columns." or "**Images** · 3 images couldn't be saved:
 your image gallery is full." An import that brought everything across closes the dialog.
 
 ## Untrusted files
@@ -177,5 +177,5 @@ panel; `useTabImport` runs it. See the [blueprint](blueprints/office-import.md).
 - The older binary formats (`.doc`, `.ppt`), OpenDocument (`.odt`, `.odp`), PDF and Excel.
 - Importing from Google Drive directly (a sign-in and a picker for what a download already does).
 - Keeping a document's or deck's colours, fonts, backgrounds, animations and transitions.
-- Tables as tables (a table element in a zone) and charts as charts.
+- Charts as charts, and a deck's tables as tables.
 - Exporting to Word or PowerPoint here: that is [PowerPoint and Word export](office-export.md).

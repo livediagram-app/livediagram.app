@@ -2,10 +2,11 @@
 
 An **article page** is the second kind of page ([Pages](pages-mode.md)
 "Page kinds"): a page to **write** on, like a page of a Google Doc or a Word document. Most of it
-is text, typed straight onto the page with no text boxes to place or size; pictures, charts,
-tables and drawings go into the writing from the palette or the toolbar and sit in it inline or
-with the text wrapping round them. Writing that runs past the foot of a page flows onto the next
-page of the same article, which is added for it.
+is text, typed straight onto the page with no text boxes to place or size; tables and a table of
+contents are part of the text; pictures, charts and drawings go into the writing from the palette or
+the toolbar and sit in it inline or with the text wrapping round them. Writing that runs past the foot
+of a page flows onto the next page of the same article, which is added for it, and every page can
+carry a header and a footer.
 
 The text here is the page's own, one continuous piece of writing, never elements.
 
@@ -17,7 +18,10 @@ The text here is the page's own, one continuous piece of writing, never elements
 | **article**       | One or more article pages in a row, linked by one **flow** id (`Page.flow`), and the writing that flows through them (`ArticleFlow`).         |
 | **lead page**     | An article's first page in the row. Positions inside the article are measured from its top-left corner.                                       |
 | **writing**       | The article's text: its **blocks** in order (`ArticleFlow.blocks`).                                                                           |
-| **block**         | One unit of the writing, with an id (`ArticleBlock`): a paragraph, a list item, a code block, a divider, a page break or a zone.              |
+| **block**         | One unit of the writing, with an id (`ArticleBlock`): a paragraph, a list item, a code block, a divider, a page break, a table, a contents block or a zone. |
+| **table**         | A block of rows and columns of **cells**, each cell a stretch of runs; its first row may be a **header row**, repeated on every page the table reaches. |
+| **contents**      | A table of contents: a block listing the article's headings with the page each is on (`toc`).                                                |
+| **header**, **footer** | A line of text in the top or bottom margin of every page of an article, with fields for the page number, page count, document name and date. |
 | **run**           | A stretch of a block's text with the same formatting (`ArticleRun`).                                                                          |
 | **zone**          | A block that holds canvas elements instead of text: an **object zone** hugs one object; a **drawing zone** is an area to draw and connect in. |
 | **wrap**          | How a zone sits in the writing: **In Line** (on its own line), **Wrap Left** or **Wrap Right** (the text runs down beside it).                |
@@ -66,8 +70,13 @@ livedocuments file that holds tabs ([Document](../006-document/document.md)). Th
   added: the writing past the last page's foot is cut off at it, and a notice sits at the foot of
   that page, "This tab has reached 100 pages: the writing below this line is hidden", until
   pages are freed. Nothing is lost: the blocks are kept.
+- **A table splits between its rows**: a row that does not fit at the foot of a page moves to the next
+  page whole, and a table with a header row repeats that row at the top of every page it continues
+  on. A row taller than a whole page breaks inside, between its lines. A contents block splits
+  between its entries.
 - **Page numbers** sit centred in the bottom margin of each page of an article ("2"), in small
-  muted type, whenever the style has them (off by default), one page or many.
+  muted type, whenever the style has them (off by default), one page or many, unless the footer
+  says something in its centre (see "Headers and footers").
   They are a view, never elements; exports draw them.
 
 ## Blocks
@@ -79,6 +88,8 @@ livedocuments file that holds tabs ([Document](../006-document/document.md)). Th
 | `code`      | none (plain text, no runs formatting)                               | Monospaced on a tinted panel, lines kept as typed                 |
 | `divider`   | none                                                                | A hairline across the text width                                  |
 | `pageBreak` | none                                                                | On screen, a dashed line with "Page break"; ends the page         |
+| `table`     | `header`; `cols` (each a share of the text width); `rows` of cells  | A grid of cells across the text width, ruled in hairlines         |
+| `toc`       | `depth`: 1, 2 or 3 (default 3, Heading 1 to Heading 3)              | "Contents", then one line per heading with its page number        |
 | `zone`      | `zone`: object or drawing; `wrap`; `align`; `width`; `height`; `at` | A box the size of the zone, its elements drawn over it            |
 
 - `align`: left (default), centre, right, justify; on paragraphs and list items.
@@ -117,8 +128,8 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   **Shift+Enter** is a line break in the block.
 - **Backspace** at the start of a block: a list item steps out a level, then becomes a paragraph;
   a quote or heading becomes a paragraph; otherwise it joins the block before (a divider or page
-  break before it is removed instead; a zone before it is selected, then a second Backspace
-  removes it). **Delete** at the end joins the next block in the same way.
+  break before it is removed instead; a zone or a contents block before it is selected, then a second Backspace
+  removes it; a table before it takes the caret to the end of its last cell, an empty block going). **Delete** at the end joins the next block in the same way.
 - **Tab** / **Shift+Tab** in a list item move it a level in or out; Tab at the start of a
   paragraph makes it a bullet.
 - **Markdown as you type**, at the start of a block followed by Space: `#`, `##`, `###` headings;
@@ -133,7 +144,8 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
 - **Paste**: from a web page or another editor, its headings, lists, quotes, code, links and
   bold / italic / underline / strike are kept, everything else dropped; Markdown text is read as
   Markdown (headings, lists, to-dos, quotes, code fences, dividers, inline marks, links); other
-  plain text pastes as paragraphs, one per line. Pasted images go into object zones. A paste of
+  plain text pastes as paragraphs, one per line. A pasted table (from a spreadsheet, a web page,
+  Word or Google Docs, or a Markdown pipe table) becomes a table block (see "Tables"). Pasted images go into object zones. A paste of
   canvas elements (copied from a canvas) lands as a drawing zone holding them. A whole Word
   document (from Word or Google Docs) comes in through the tab's Import as an article of its own
   ([Word and PowerPoint import](../020-import-export/office-import.md)).
@@ -145,9 +157,11 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   it closes when the caret leaves the `/`. With nothing matching it says so ("No blocks match"
   and what was typed). Entries: **Text**, **Title**, **Subtitle**, **Heading
   1 to 3**, **Bulleted list**, **Numbered list**, **To-do list**, **Quote**, **Code**,
-  **Divider**, **Page break**, **Image**, **Table**, **Bar chart**, **Pie chart**, **Line chart**,
-  **Drawing**, **Callout**, **Sticky note**. (An icon comes in from the palette, where one is
-  chosen: dropped or placed on the writing it lands as an object zone.)
+  **Divider**, **Page break**, **Table**, **Table of Contents**, **Image**, **Bar chart**, **Pie
+  chart**, **Line chart**, **Drawing**, **Callout**, **Sticky note**. **Table** puts a table block
+  in the text; the palette's table element still places a table freely, as an object zone or loose on
+  a page. (An icon comes in from the palette, where one is chosen: dropped or placed on the writing
+  it lands as an object zone.) Inside a table cell the slash menu does not open: a cell holds text.
 - **Commits**: typing is written to the tab when the writing pauses for **600** ms
   (`ARTICLE_IDLE_COMMIT_MS`), when the caret leaves the writing, before any edit that is not typing
   (a toolbar change, an insert, a zone move) and before an undo. Each commit is one undo step and
@@ -165,7 +179,7 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   hovered, else the one last shown, else the tab's first, so the controls stay as the pointer
   leaves a page for the strip. On a phone its controls scroll in the strip's rail. The **Insert**
   menu is the palette's rows (a glyph chip, the name and the slash menu's line for it), headed
-  **Objects** (Image, Table, Bar Chart) and **Blocks** (Divider, Page Break, Quote, Code). Under
+  **Objects** (Image, Bar Chart) and **Blocks** (Table, Table of Contents, Divider, Page Break, Quote, Code). Under
   any other kind the card below is used.
 - **Where**: a card fixed at the top of the page, inside it, centred in the top margin. An article
   page's top margin is never less than 72 px (`ARTICLE_TOP_MIN_PX`), whatever its margins, so at
@@ -199,9 +213,12 @@ http, https or mailto address), a **text colour** and a **highlight** (each a he
   - **Alignment** (a menu: left, centre, right, justify);
   - **More Formatting** (a menu: strikethrough, inline code, superscript, subscript, clear
     formatting, Article style, which opens the page panel on Style);
-  - **Insert** (a menu: Image, Table, Chart, then Divider, Page break, Quote, Code; a drawing
-    starts from a shape dropped on the page or the slash menu's **Drawing**, a callout from the
-    slash menu).
+  - **Insert** (a menu: Image, Chart, then Table, Table of Contents, Divider, Page break, Quote,
+    Code; a drawing starts from a shape dropped on the page or the slash menu's **Drawing**, a
+    callout from the slash menu).
+  - **Table** (a menu, shown only while the caret or a cell selection is in a table: Insert Row
+    Above, Insert Row Below, Insert Column Left, Insert Column Right, Delete Row, Delete Column,
+    Header Row (on or off), Delete Table);
   - **Comment** (⌘⌥M) and **Assign Action**, usable while text is selected (see "Comments and
     actions").
 - No undo or redo (the canvas controls have them) and no word count.
@@ -292,6 +309,80 @@ laid out with it, holding ordinary canvas elements that move with it.
 - **Loose elements** (on an article page but in no zone) stay fixed to their page in front of the
   text, as on an infographic page; they never move with the writing.
 
+## Tables
+
+A **table** is a block of the writing (`table`): rows and columns of **cells** across the text
+width, laid out, split across pages and synced as part of the text. A cell holds rich text, a stretch
+of runs (every text format, links and line breaks), never another block.
+
+- **Putting one in**: **Table** in the slash menu or the page toolbar's Insert: three columns and
+  three rows, the header row on, the caret in the first cell. One edit.
+- **Moving through it**: **Tab** moves to the next cell (along the row, then down the rows),
+  **Shift+Tab** to the one before; Tab in the last cell adds a row and moves into it, for someone who
+  may reshape (otherwise it stays). **Enter** is a line break in the cell. The arrow keys move through
+  the text and across cell edges. **Backspace** at the start of a cell and **Delete** at its end do
+  nothing, so cells never run together. A drag across cells selects whole cells (shown tinted);
+  Backspace or Delete then empties them, and a copy of them pastes into another table from the
+  cell the caret is in.
+- **Rows and columns**: the page toolbar's **Table** menu (see "The page toolbar"), each one edit:
+  rows go in above or below the caret's row, columns left or right of its column, each new cell
+  empty. Deleting a table's only row or only column deletes the table. A table holds at most
+  **500** rows (`MAX_ARTICLE_TABLE_ROWS`) and **20** columns (`MAX_ARTICLE_TABLE_COLS`); at a
+  limit the menu's entry for it is unavailable, its tooltip saying so ("A table holds at most 500
+  rows").
+- **Header row**: on, the table's first row is drawn bold on a soft tint of the accent, and repeats at
+  the top of every page the table continues onto; off, it is an ordinary row. A new table starts
+  with it on.
+- **Column widths**: each column is a share of the text width, so a table always fits its page,
+  whatever the margins or paper. A column added takes an equal share, the others giving it room in
+  proportion. For someone who may reshape, hovering the line between two columns shows a resize grip
+  (a brand line, the column-resize pointer); dragging it moves width between those two columns, each
+  keeping at least 5% of the table (`ARTICLE_TABLE_MIN_SHARE`). One edit on release; Escape during
+  the drag puts the widths back.
+- **Look**: hairline rules between every cell and round the table, in the page's ink at low
+  opacity; cells padded 6 px by 10 px, their text the article's body text, top aligned.
+- **Paste**: a table copied from a spreadsheet (Google Sheets, Excel, Numbers), a web page, Word or
+  Google Docs becomes a table block, as does tab-separated text of at least two lines and two columns
+  and a Markdown pipe table. Its rows and cells come in order, each cell's text with its bold, italic,
+  underline, strikethrough and links (the formatting the writing keeps from any paste), several
+  paragraphs in one cell joined by line breaks. A first row of header cells (`th`, a `thead`, a
+  Markdown header line) turns the header row on. A merged cell is read as one cell, the rows padded
+  so every row has as many cells as the widest. Rows past 500 and columns past 20 are left out.
+  Pasted into a table's cells, cells (copied from a table) fill the cells from the caret's.
+- **Big tables stay bounded**: a table's stored size is at most 150,000 characters
+  (`MAX_ARTICLE_TABLE_CHARS`, so one table always fits in one sync frame), a cell's text at most
+  2,000 characters (`MAX_ARTICLE_CELL_TEXT`); rows past the size are not kept.
+- **The table element is unchanged**: the palette's table (a table element, its cells plain text) still
+  places a table freely, loose on any page or as an object zone in the writing, and a table already in
+  a document stays as it is. Only the slash menu's and Insert's **Table** make a table block.
+
+## Table of contents
+
+A **contents** block (`toc`) lists the article's headings with the page each one is on. It is drawn
+from the writing and its layout, never stored, so it is always up to date.
+
+- **Putting one in**: **Table of Contents** in the slash menu or the page toolbar's Insert, at the
+  caret. One edit. An article may hold more than one; each lists the whole article.
+- **What it shows**: the word "Contents" in the Heading 2 style, then a line for every Heading 1,
+  Heading 2 and Heading 3 of the article, in order (as many levels as chosen), each indented 20 px a
+  level, its text plain (its formatting left out), a dotted leader, and the page it falls on: its
+  page's number in the article (1 the first page, as the page numbers count). Headings with no text
+  are left out. The title and subtitle are never listed.
+- **Kept up to date**: a heading typed, renamed, restyled, moved or removed, or a reflow that carries
+  one onto another page, changes the contents at once, for everyone, on screen and in every export.
+- **Levels**: for someone who may reshape, hovering the block or selecting it shows three chips in
+  its top-right corner, **H1**, **H1 to H2** and **H1 to H3** (the one in force pressed); a press
+  sets it, one edit.
+- **With no headings** it says "Headings you add are listed here" to someone writing, and nothing
+  below "Contents" to a reader or in an export.
+- **Jumping**: a press on an entry puts the caret at the start of its heading and brings it into view;
+  for a reader it brings the heading into view. An entry is a link in a PDF export (to its heading's
+  page); in a Word document the contents is Word's own table of contents, its entries linked to
+  the headings and refreshed by Word's Update Field.
+- **Selecting and deleting**: it is one unit of the writing, as a zone is: a press on it selects it
+  (outlined), Backspace or Delete removes it, and Backspace from the block after it selects it first.
+- **Splitting across pages**: a long contents breaks between its entries.
+
 ## Comments and actions
 
 A comment or an action can be put on any stretch of the writing, as on an element, and everything
@@ -357,7 +448,7 @@ Background do; **Background** sits beside them (`PageArticleButtons`, `PageBackg
 cog's panel keeps only **Page** (size and orientation) and the page's actions, so the title bar
 carries what is changed often and the cog what is set once. The page toolbar's **Style** command
 opens the Style popover of the page it is on. A locked page shows none of the three. **Style** holds Looks, Accent, Headings in the
-Accent, Margins and Page Numbers; **Text** holds Fonts, then Text Size, Line Spacing, Paragraph
+Accent, Margins, Page Numbers and Header and Footer; **Text** holds Fonts, then Text Size, Line Spacing, Paragraph
 Spacing and Lines Under Text (under **Size and Spacing**). Every change is one edit, previewed on the page while
 a choice is hovered.
 
@@ -383,8 +474,38 @@ a choice is hovered.
 - **Margins**: Narrow (48 px), Normal (96 px, default), Wide (144 px); the top margin is never
   less than 72 px, room for the page toolbar.
 - **Page Numbers**: on or off (default).
+- **Header and Footer**: see "Headers and footers".
 - **Ruled lines**: the page's **Lines** pattern on an article page is drawn on the text's own
   baselines, at the body line height, inside the margins: lined paper the writing sits on.
+
+### Headers and footers
+
+A **header** and a **footer** are a line of text at the top and the bottom of every page of an
+article, the same on each page but for the fields in them. They are part of the style, set from
+**Style** under **Header and Footer**:
+
+- **Header** and **Footer** each have three fields, **Left**, **Centre** and **Right**, plain text of
+  at most 200 characters each (`ARTICLE_BAND_MAX`), the left one aligned to the left margin, the
+  centre one centred, the right one aligned to the right margin. Typing in a field previews it on the
+  page; it is written as one edit when the field is left or Enter is pressed.
+- **Fields**: four buttons under them put a field at the caret of the field last used: **Page
+  Number** (`{page}`, the page's number in the article), **Page Count** (`{pages}`, the article's
+  pages), **Document Name** (`{name}`) and **Date** (`{date}`, today's date in the reader's own long
+  form, "1 November 2026"; an export draws the day it was made).
+- **Different First Page**: on, the article's first page shows no header, no footer and no page number
+  (a title page); the pages after it count on from 2.
+- **Where**: the footer sits on the page number's line, half the bottom margin up, in the page number's
+  12 px muted type. The header sits in the top margin under the page toolbar's room: an article with
+  a header has a top margin of at least `ARTICLE_TOP_MIN_PX` + 32 px (104 px, `ARTICLE_HEADER_BAND_PX`),
+  and the header's line is centred in the 32 px band just above the text, so the toolbar's card (in the
+  72 px above the band) never covers it at 100% and the writing starts below it.
+- **Page Numbers with a footer**: with Page Numbers on, the number is drawn in the footer's centre
+  while the footer's Centre field is empty; a Centre field of its own takes the number's place (with
+  `{page}` in it to keep the number).
+- They are a view, never elements, and never edited on the page. Exports (PDF, PNG, SVG) and
+  presenting draw them; a Word document has them as its own header and footer, the page number and
+  page count as Word fields, Different First Page as Word's own.
+- A look keeps them, as it keeps the margins and page numbers. A flashcard has none.
 
 ## Type
 
@@ -415,9 +536,15 @@ ink").
   from any mode (a page slide presenting outside Pages shows its writing too).
 - **Export**: PDF, PNG and SVG draw an article page's writing exactly as on screen (text as real
   text in SVG output; rasterised in PNG, and in PDF, whose pages are images), with its zones'
-  elements, its page number and its ruled lines; nothing of the editing chrome. **Word** writes the
-  article as an editable `.docx`, its headings as Word styles and its zones as images
-  ([PowerPoint and Word export](../020-import-export/office-export.md)).
+  elements, its tables (split across pages, header rows repeated), its contents with their page
+  numbers, its header, footer and page number, and its ruled lines; nothing of the editing chrome.
+  A PDF's pages carry link areas over the images: each contents entry links to its heading's page,
+  each link in the text to its address. **Word** writes the article as an editable `.docx`, its
+  headings as Word styles, its tables as Word tables, its contents as a Word table of contents,
+  its header and footer as Word's, and its zones as images
+  ([PowerPoint and Word export](../020-import-export/office-export.md)). **Markdown** (an agent's
+  read) writes a table as a pipe table and a contents block as `[TOC]`
+  ([Pages for agents](../024-agents/pages-for-agents.md)).
 - **The Map** shows each page's text as soft grey lines.
 - **Viewers** (a view role, a locked tab) read the writing and cannot change it; no caret, no
   toolbar, no zone bar. **A locked page** makes its whole article read the same way for everyone
@@ -432,15 +559,20 @@ ink").
 
 | Role            | With an article                                                                                                                                                                                                                                                                                                                                                                                       |
 | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Editor**      | Everything on this page: writes, formats, inserts, moves zones, sets the style, puts margin notes on, turns articles into pages.                                                                                                                                                                                                                                                                      |
-| **Participant** | Writes the text: paragraphs, lists and code, put, changed and removed. Never formats the article's style, inserts, moves zones, adds margin notes or turns articles into pages, and never writes on a locked tab or page. Its writing reaches others block by block like anyone's; the pages it needs are grown by an Editor. A margin note's marker opens its thread, where it comments and replies. |
+| **Editor**      | Everything on this page: writes, formats, inserts (tables and contents included), shapes tables (rows, columns, header row, widths), moves zones, sets the style (header and footer included), puts margin notes on, turns articles into pages.                                                                                                                                                                                                                                                                      |
+| **Participant** | Writes the text: paragraphs, lists and code, put, changed and removed, and the text of a table's cells. Never formats the article's style (its header and footer included), inserts (a table or contents included), adds or removes a table's rows or columns, sets its header row or widths, moves zones, adds margin notes or turns articles into pages, and never writes on a locked tab or page. Its writing reaches others block by block like anyone's; the pages it needs are grown by an Editor. A margin note's marker opens its thread, where it comments and replies. |
 | **Viewer**      | Reads the writing and its margin notes; changes nothing.                                                                                                                                                                                                                                                                                                                                              |
 
 ## Collaboration
 
 - Everyone on the tab sees the writing change as each person's commits land. The writing syncs
   **block by block**: two people writing in different paragraphs never overwrite each other; two
-  in the same paragraph at once is last commit wins for that paragraph.
+  in the same paragraph at once is last commit wins for that paragraph. A **table syncs cell by
+  cell**: a commit that only changed cells' text sends each changed cell on its own, so two people
+  in different cells of one table never overwrite each other; two in the same cell at once is last
+  commit wins for that cell. A change to the table's shape (a row or column added or removed, the
+  header row, a width) is sent as the whole table: cell edits by others that reach the room before it
+  are replaced by it, and those after it land in their cells while those cells still exist.
 - **Where others are writing**: a collaborator's caret shows in their colour, with their name for
   a moment after it moves and on hover, and a thin bar in the margin beside the block they are
   in. A caret travels as presence (`article-caret`: the block's id and how many characters into
@@ -467,17 +599,23 @@ ink").
 - `Element · Added · Article<Insert>` for an insert from the toolbar's Insert, the slash menu or
   a palette drop: `ArticleImage`, `ArticleTable`, `ArticleChart`, `ArticleCallout`,
   `ArticleSticky`, `ArticleDrawing`, `ArticleObject`, `ArticleDivider`, `ArticlePageBreak`,
-  `ArticleQuote`, `ArticleCode`; and `ArticleComment`, `ArticleAction` for a margin note. Each is
+  `ArticleQuote`, `ArticleCode`, `ArticleContents` (a contents block); `ArticleTable` counts the
+  table block; and `ArticleComment`, `ArticleAction` for a margin note. Each is
   counted once the insert went in, never for one refused (no caret, a lock).
 - `Element · Changed · ArticleFormat` (a mark from the toolbar), `ArticleBlockStyle` (style menu,
   lists), `ArticleLink`, `ArticlePaste` (Markdown pasted as blocks), `ArticleZoneWrap`,
-  `ArticleZoneFloat`, `ArticleZoneResized`, `ArticleZoneMoved`, `ArticleZoneRemoved`.
+  `ArticleZoneFloat`, `ArticleZoneResized`, `ArticleZoneMoved`, `ArticleZoneRemoved`,
+  `ArticleTableShape` (a table's rows, columns, header row or widths changed from its menu, Tab or a
+  resize grip), `ArticleTablePaste` (a table pasted as a table block).
 - Never text.
 
 ## Non-goals
 
-- Tables as part of the text (a table is an object zone holding a table element).
-- Headers and footers beyond page numbers, footnotes, a table of contents, columns, suggestions
-  and tracked changes. (Find and replace across a tab's pages, the writing included, is its own
+- **Footnotes**, planned for a later card: a note at the foot of its page needs a page layout pass the
+  writing's columns cannot give (the browser fills each page as a column, so it cannot keep a note at
+  the foot of the page its reference lands on). Until then, notes go at the end of the article.
+- Merged cells, cell colours, per-cell alignment and nested tables; a header column.
+- A first-page header or footer with text of its own, and different odd and even pages.
+- Columns, suggestions and tracked changes. (Find and replace across a tab's pages, the writing included, is its own
   feature: [Find and replace](find-and-replace.md).)
 - Character-level merging of two people typing in the same paragraph at the same moment.
