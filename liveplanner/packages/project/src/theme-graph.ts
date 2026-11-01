@@ -1,6 +1,7 @@
 import type { Element } from './index';
 import { assignBranches, branchOfArrow, ROOT_BRANCH } from './hierarchy';
 import { rederiveColorPresetForTheme, rederiveTablePresetForTheme } from './theme-presets';
+import { isPlanPresetId } from './plan-presets';
 import { rederiveQuickSwatches } from './quick-swatch-rederive';
 import {
   recolourElementForTheme,
@@ -150,6 +151,20 @@ export function recolourElementsForTheme(elements: Element[], theme: ThemeDefini
   );
 }
 
+// A board or sheet bound to a calm-hue style preset (plan-presets.ts), cleared back to the tab style: the preset and
+// the fill, border and text colours it wrote go, so the element follows the new theme (docs/specs/010-palette/
+// style-presets.md "Boards and sheets"). Any other element, a hand-coloured board included, is returned as it is.
+function withoutPlanPreset(el: Element): Element {
+  if (el.type !== 'shape' || !isPlanPresetId(el.colorPreset)) return el;
+  return {
+    ...el,
+    colorPreset: undefined,
+    fillColor: undefined,
+    strokeColor: undefined,
+    textColor: undefined,
+  };
+}
+
 // Graph-aware counterpart to `switchThemeElement`: the in-editor
 // "pick a theme" path. The branch map depends only on the elements, so one
 // map serves whichever side is a palette theme, and the preserve-customs
@@ -165,7 +180,7 @@ export function switchThemeElements(
       : null;
   const prevBranches = prev.palette ? branches : null;
   const nextBranches = next.palette ? branches : null;
-  return elements.map((el) =>
+  return elements.map(withoutPlanPreset).map((el) =>
     rederiveQuickSwatches(
       // Preset-bound elements (docs/specs/010-palette/style-presets.md) re-derive their preset for the new
       // theme instead of being preserved as a manual override: picking a new
