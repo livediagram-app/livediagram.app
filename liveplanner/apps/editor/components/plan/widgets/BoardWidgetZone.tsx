@@ -4,15 +4,23 @@
 // the board's widgets in order, one row that scrolls sideways when full. Someone who may edit drags a
 // widget left or right to reorder it (a bar shows where it lands), moves a focused one with Alt+← and
 // Alt+→, and takes one off with its × (shown on every widget while the zone is in edit mode, which Edit Widgets after
-// the + turns on) or Delete. The + at the zone's end opens the widgets the board does not have yet (BoardWidgetPicker);
-// one picked is added at the end.
+// the + turns on) or Delete. The + at the zone's end opens the widget gallery (BoardWidgetPicker): a widget pressed
+// there is added at the end, or taken off when the board has it, and the gallery stays open. For You is worked out
+// as it opens (`suggest`).
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { placeWidget, removeWidget, nudgeWidget, type BoardWidgetKind } from '@liveplanner/items';
+import {
+  placeWidget,
+  removeWidget,
+  nudgeWidget,
+  toggleWidget,
+  type BoardField,
+  type BoardWidgetId,
+} from '@liveplanner/items';
+import type { WidgetSuggestion } from '@liveplanner/plan-art';
 import { CheckIcon, CloseIcon, PlusIcon, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { glyphStrokePx } from '@liveworkspace/icons';
 import { lucidePencil } from '@liveworkspace/icons/lucide';
 import type { PlanPalette } from '../plan-palette';
-import { BOARD_WIDGET_INFO } from '@liveplanner/plan-art';
 import { InfoArt } from '../plan-tile-art';
 import { widgetSlotAt } from '@/hooks/plan/widget-slot';
 import { BoardWidgetPicker } from './BoardWidgetPicker';
@@ -30,7 +38,7 @@ const ZONE_GLYPH_WEIGHT = glyphStrokePx(PLUS_SIZE);
 // Pixels a press travels before it is a reorder rather than a click.
 const REORDER_THRESHOLD_PX = 4;
 
-type Reorder = { kind: BoardWidgetKind; startX: number; dx: number; slot: number; moved: boolean };
+type Reorder = { kind: BoardWidgetId; startX: number; dx: number; slot: number; moved: boolean };
 
 // The zone's small square buttons (the + and Edit Widgets): one container so they match in size, dashed border, hover
 // and dark mode. Pressed (Edit Widgets while editing) fills it with the focus colour and solidifies the border.
@@ -77,8 +85,11 @@ export function BoardWidgetZone({
   palette,
   onChange,
   render,
+  labelOf,
+  fields,
+  suggest,
 }: {
-  widgets: readonly BoardWidgetKind[];
+  widgets: readonly BoardWidgetId[];
   canEdit: boolean;
   // The board is selected: only then does an empty zone show its hint.
   selected?: boolean;
@@ -86,8 +97,13 @@ export function BoardWidgetZone({
   // the board is maximised or fills its tab and no selection shows), the hint still waiting for a selection.
   offerAdd?: boolean;
   palette: PlanPalette;
-  onChange: (next: BoardWidgetKind[]) => void;
-  render: (kind: BoardWidgetKind) => ReactNode;
+  onChange: (next: BoardWidgetId[]) => void;
+  render: (kind: BoardWidgetId) => ReactNode;
+  // A widget's name ("Completion", "Budget Sum"): its wrapper's and its ×'s accessible names.
+  labelOf: (kind: BoardWidgetId) => string;
+  // The gallery's field widgets, and its For You, worked out only as it opens.
+  fields?: readonly BoardField[] | undefined;
+  suggest?: (() => WidgetSuggestion[]) | undefined;
 }) {
   const zone = useRef<HTMLDivElement>(null);
   const [reorder, setReorder] = useState<Reorder | null>(null);
@@ -112,7 +128,7 @@ export function BoardWidgetZone({
     };
   }, [active]);
   // Takes a widget off, leaving no focus on it. Edit mode stays on for the next, unless that was the last.
-  const remove = (kind: BoardWidgetKind) => {
+  const remove = (kind: BoardWidgetId) => {
     if (widgets.length === 1) setEditing(false);
     (document.activeElement as HTMLElement | null)?.blur();
     onChange(removeWidget(widgets, kind));
@@ -120,14 +136,14 @@ export function BoardWidgetZone({
   const suppressClick = useRef(false);
   // The + the widget picker hangs from, while it is open.
   const [pickerAt, setPickerAt] = useState<HTMLElement | null>(null);
+  const [suggestions, setSuggestions] = useState<WidgetSuggestion[]>([]);
   const picker = pickerAt ? (
     <BoardWidgetPicker
       anchor={pickerAt}
       widgets={widgets}
-      onPick={(kind) => {
-        setPickerAt(null);
-        onChange(placeWidget(widgets, kind, widgets.length));
-      }}
+      fields={fields}
+      suggestions={suggestions}
+      onToggle={(kind) => onChange(toggleWidget(widgets, kind))}
       onClose={() => setPickerAt(null)}
       render={render}
       palette={palette}
@@ -140,13 +156,17 @@ export function BoardWidgetZone({
       aria-label="Add a widget"
       aria-haspopup="menu"
       aria-expanded={pickerAt !== null}
-      onClick={(e) => setPickerAt(pickerAt ? null : e.currentTarget)}
+      onClick={(e) => {
+        if (pickerAt) return setPickerAt(null);
+        setSuggestions(suggest?.() ?? []);
+        setPickerAt(e.currentTarget);
+      }}
     >
       <PlusIcon size={size === 'sm' ? 12 : PLUS_SIZE} />
     </ZoneButton>
   );
 
-  const onPointerDown = (kind: BoardWidgetKind) => (e: React.PointerEvent<HTMLDivElement>) => {
+  const onPointerDown = (kind: BoardWidgetId) => (e: React.PointerEvent<HTMLDivElement>) => {
     e.stopPropagation();
     if (!canEdit || e.button !== 0) return;
     // Typing in the Filter box is not a drag.
@@ -234,7 +254,7 @@ export function BoardWidgetZone({
               data-widget={kind}
               role="listitem"
               tabIndex={canEdit ? 0 : undefined}
-              aria-label={canEdit ? `${BOARD_WIDGET_INFO[kind].label} widget` : undefined}
+              aria-label={canEdit ? `${labelOf(kind)} widget` : undefined}
               aria-keyshortcuts={canEdit ? 'Alt+ArrowLeft Alt+ArrowRight Delete' : undefined}
               className={`relative flex shrink-0 items-center rounded-md outline-none focus-visible:ring-2 ${
                 canEdit ? 'cursor-grab active:cursor-grabbing' : ''
@@ -272,7 +292,7 @@ export function BoardWidgetZone({
               {active ? (
                 <button
                   type="button"
-                  aria-label={`Remove ${BOARD_WIDGET_INFO[kind].label}`}
+                  aria-label={`Remove ${labelOf(kind)}`}
                   className="absolute -right-1 -top-1 flex h-4 w-4 cursor-pointer items-center justify-center rounded-full border shadow-sm"
                   style={{
                     backgroundColor: palette.card,

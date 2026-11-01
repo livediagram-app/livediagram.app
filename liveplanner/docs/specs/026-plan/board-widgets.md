@@ -6,11 +6,14 @@ header; they are not in the palette.
 
 ## Domain language
 
-| Term            | Meaning                                                                          | Not          |
-| --------------- | -------------------------------------------------------------------------------- | ------------ |
-| **widget**      | One read-out or control in a board's header, of one widget kind                  | gadget, card |
-| **widget kind** | What a widget is (Completion, Filter, ...); a board holds each kind at most once | widget type  |
-| **widget zone** | The part of a board's header that holds its widgets, after the title             | toolbar      |
+| Term               | Meaning                                                                          | Not          |
+| ------------------ | -------------------------------------------------------------------------------- | ------------ |
+| **widget**         | One read-out or control in a board's header, of one widget kind                  | gadget, card |
+| **widget kind**    | What a widget is (Completion, Filter, ...); a board holds each kind at most once | widget type  |
+| **field widget**   | A widget that reads one custom field of the board's card types, in one view      | field chart  |
+| **widget view**    | How a field widget reads its field (Sum, Breakdown, Upcoming, ...)               | metric, mode |
+| **widget zone**    | The part of a board's header that holds its widgets, after the title             | toolbar      |
+| **widget gallery** | The + popover a widget is added from                                             | widget menu  |
 
 ## The header
 
@@ -116,7 +119,8 @@ A team that opens the same slice every standup ("My Bugs", "Due This Week") save
 ## Placing and arranging widgets
 
 - **Add**: the zone's **+** opens the **widget gallery** under it (see below). Picking a widget adds it at the end
-  of the header and closes the gallery; the + pressed again, Escape or a press outside closes it.
+  of the header and the gallery stays open, so several can be added in a row; picking one already on the board takes
+  it off. The + pressed again, Escape or a press outside closes it.
 - **Reorder**: drag a widget left or right along the zone; the others make way at the bar, and it lands there.
   From the keyboard, a focused widget moves with Alt+← and Alt+→.
 - **Remove**: **Edit Widgets** puts the zone in **edit mode**: every widget shows a × at its top right, on any
@@ -131,26 +135,111 @@ A team that opens the same slice every standup ("My Bugs", "Due This Week") save
 - Each placement, move and removal is one board edit: undoable, live for everyone, and saved with the board.
 - Only someone who may edit the board places, moves or removes widgets; everyone sees and uses them.
 
+## Field widgets
+
+The fields a team adds to its card types (a Budget, a Severity, a Launch Date) are what it most wants to read across a
+board, so each one can be a widget.
+
+- **Which fields**: the custom fields of the card types the board takes ([Plan board](plan-board.md#card-type-chips);
+  every type for a board that names none, and for an Archive board) that a widget can read. A field on several of
+  those types is one field, its cards those of every type that offers it.
+- **The views each kind offers**:
+
+  | Field kind                                                                  | Views                       |
+  | --------------------------------------------------------------------------- | --------------------------- |
+  | Number, Currency, Duration, Votes; Calculated as Number, Currency, Duration | Sum, Average, Range, Spread |
+  | Percent; Calculated as Percent (Children Done among them)                   | Average, Range, Spread      |
+  | Rating                                                                      | Average Stars, Spread       |
+  | Choice, Multiple Choice, Labels, Person; Calculated as Text                 | Breakdown, Donut            |
+  | Checkbox, Checklist; Calculated as Checkbox                                 | Ticked                      |
+  | Date, Date and Time, Date Range (its end); Calculated as Date               | Upcoming, Timeline          |
+  | Text, Paragraph, Link, Email, Phone, Colour, Image, Card, Comments          | None: nothing to add up     |
+
+- **What each view reads**, over the cards holding a value (a card without one counts for nothing):
+  - **Sum**: the values added up, written as the field writes them ("£12,400", "14h 30m", "86").
+  - **Average**: their mean ("avg £1,378"); a Percent reads "avg 62%".
+  - **Range**: the lowest to the highest ("£200 to £4,000").
+  - **Spread**: eight small bars, how many cards fall in each eighth of the range, then how many cards.
+  - **Average Stars**: stars filled to the average rating, and the figure to one place ("4.2"); past 5 stars,
+    "7.2 / 10".
+  - **Breakdown**: one bar split by value, each value in its colour (a Choice option's, a label's, a person's own),
+    then the two commonest values with their counts and "+n" for the rest. A Multiple Choice or Labels card counts
+    once under each of its values.
+  - **Donut**: a ring split the same way, then the commonest value and its share ("High 40%").
+  - **Ticked**: a ring filled to the share ticked, and "7/12" (a Checklist: its rows ticked of all its rows).
+  - **Upcoming**: among cards not done, how many are overdue (red) and due in the next 7 days (amber), as Due Soon
+    counts them; "Nothing due" when neither.
+  - **Timeline**: five small bars (overdue, this week, next week, and the two after), cards not done, then how many
+    fall due in the next four weeks.
+- **With no value yet** a field widget reads, quietly, "<Field>: no values yet".
+- **Its name** is the field's and its view's ("Budget Sum"). Its tooltip and accessible name add the card types it
+  reads ("Budget Sum, on Feature cards"; "on Feature and Bug cards").
+- **Live and filtered as the others are**: it counts the cards the board shows before its quick filter, as every other
+  read-out does, and changes as they change.
+- **A field renamed** keeps its widgets: a field widget follows its field by id and reads the new name.
+- **A field gone** (taken off every type the board takes, or the board no longer taking its types) leaves its widget
+  in place, quiet and dashed: "This field was removed", with **Remove** (a cross named "Remove widget") for someone
+  who may edit. A field whose kind changed so the view no longer fits reads "This field changed kind", with the same
+  Remove.
+- A board holds each field and view at most once, and at most **12** field widgets.
+
 ## The widget gallery
 
-**Add a Widget**, a 560 px popover, with the line "Widgets sit in the board’s header, live as its cards change." and a
-**Find a widget** search beside the title (focused on open). Under it, every widget in three sections, each with its
-line:
+**Add a Widget**, a 720 px popover (narrower in a narrower window), with the line "Live read-outs for this board’s
+header. Pick as many as you like." and a **Find a widget** search beside the title (focused on open).
 
-| Section         | Line                                                | Widgets                                                       |
-| --------------- | --------------------------------------------------- | ------------------------------------------------------------- |
-| Focus the Board | Narrow the cards to the ones that matter right now. | Filter, Only Mine, People, Priorities, Card Types, Unassigned |
-| Track Progress  | See how the work is going at a glance.              | Item Count, Completion, Points, Time, Due Soon, Top Voted     |
-| Keep It Healthy | Catch what is stuck, overloaded or off the board.   | WIP Alerts, Stale Cards, Not on Board                         |
+- **The rail**: down its left, the gallery's sections, each with how many widgets it holds: **For You**, **Focus**,
+  **Progress**, **People**, **Dates**, **Health**, then under a **Fields** heading one entry per card type the board
+  takes that has fields a widget can read (its glyph in its colour, its name). Pressing one scrolls its section to the
+  top; the entry for the section in view is marked as current while the list scrolls. A section with nothing to show
+  is dimmed. In a gallery under 600 px wide the rail is a row of chips over the list.
+- **The sections**, in order, each with its line:
 
-- Each widget is a **card** two to a row: a strip on top drawing the widget **live**, from this board's own cards in
-  its own colours, exactly as it would sit in the header (inert there); under it its glyph, name and line.
-- A widget already on the board is left out of the gallery (a section with none left goes too). The others are named
-  "Add <name>" and lift a pixel on hover (not with reduced motion).
-- The search narrows the cards to those whose name or line holds the text, dropping empty sections; with none left
-  it shows the shared empty state, **No widgets match “<text>”**. With every widget on the board it says **No widgets
-  left to add** ("Every widget is on this board."), as [Empty states](../004-interface-design/empty-states.md).
-- The arrow keys move between the cards that can be picked (left and right one, up and down a row).
+  | Section       | Line                                                  | Widgets                                         |
+  | ------------- | ----------------------------------------------------- | ----------------------------------------------- |
+  | For You       | Picked for this board from what its cards hold.       | Up to 6 suggestions (below)                     |
+  | Focus         | Narrow the cards to the ones that matter right now.   | Filter, Only Mine, Card Types, Priorities       |
+  | Progress      | See how the work is going at a glance.                | Completion, Item Count, Points, Time, Top Voted |
+  | People        | Who has what, and what nobody has picked up.          | People, Unassigned                              |
+  | Dates         | What is due, and what has gone quiet.                 | Due Soon, Stale Cards                           |
+  | Health        | Catch what is overloaded or off the board.            | WIP Alerts, Not on Board                        |
+  | <Type> Fields | The fields on <Type> cards, each in the views it has. | Per field, its views                            |
+
+  A field on several card types sits under the first of them the board takes, its heading naming the others ("Also on
+  Bug cards").
+
+- **Each widget is a tile**, two to a row: a strip on top drawing it **live**, from this board's own cards in its own
+  colours, exactly as it would sit in the header (inert there), then its glyph, name and line (a field widget's line
+  says what the view reads; a suggestion's says why it is suggested). The whole tile is one button: pressing it adds
+  the widget ("Add Budget Sum"); a widget on the board shows **On Board** with a check, in the brand colour, and
+  pressing it takes it off ("Remove Budget Sum"). Tiles lift a pixel on hover (not with reduced motion).
+- **Previews are drawn as they come into view**: a tile out of sight shows a still placeholder the widget's shape,
+  so opening the gallery never works out every widget for every field.
+- **For You** suggests up to 6 widgets the board does not hold yet, most useful first:
+  - each field with values on the board's cards, in its first view (Sum, Average for a Percent, Average Stars,
+    Breakdown, Ticked, Upcoming), ranked by the share of its cards holding a value; a field no card fills is never
+    suggested. Its line: "64% of Feature cards have a Budget" ("Every Feature card has a Budget" at 100%).
+  - the built-in widgets the board's cards would make read true: Completion (a done column, and cards: "This board has
+    a done column"), WIP Alerts (a column with a limit: "Columns here have WIP limits"), Due Soon (cards with a Due
+    date: "12 cards have due dates"), Points ("Cards here carry estimates"), People (two or more people: "4 people
+    have cards here"), Top Voted ("Cards here have votes"), Time ("Cards here track time"), Filter (20 cards or more:
+    "28 cards to search through"), Unassigned (some cards with a person and some without: "5 cards have nobody"),
+    Stale Cards ("3 cards have gone quiet").
+  - A field filled on more than half its cards comes before every built-in suggestion; the rest interleave by how
+    useful they are (blueprint).
+- **Empty states** ([Empty states](../004-interface-design/empty-states.md)): For You with nothing to suggest says
+  **Nothing to suggest yet** ("Suggestions appear as this board’s cards fill in."); a board whose card types have no
+  field a widget reads shows one **Fields** entry whose section says **No fields to chart** ("Add a Number, Choice,
+  Date or other field to a card type this board takes, and its widgets appear here."). The search narrows every
+  section to the tiles whose name, line, field or card type holds the text, dropping empty sections; with none left it
+  shows **No widgets match “<text>”**.
+- **At the cap**: with 12 field widgets on the board, the field tiles not on it are disabled, their tooltip "A board
+  holds up to 12 field widgets".
+- **Keyboard**: the arrow keys move between tiles (left and right one, up and down a row), Down from the search goes
+  to the first tile, Enter or Space presses one; Tab reaches the search, the rail and the tiles in turn.
+- **Share roles**: only someone who may change the board (an Editor) has the **+**, and so the gallery; a Participant
+  and a Viewer see and read every widget, field widgets included, and never see Remove.
+- **Not on a phone**: the gallery hangs from the zone's **+**, and a phone shows no widgets (see "The header").
 
 ## Defaults
 
@@ -185,4 +274,5 @@ line:
 
 ## Telemetry
 
-- A widget placed, moved or removed sends the set-up part `Widgets` (plan-mode.md "Telemetry"), never the kind.
+- A widget placed, moved or removed sends the set-up part `Widgets` (plan-mode.md "Telemetry"), never the kind, nor a
+  field widget's field.

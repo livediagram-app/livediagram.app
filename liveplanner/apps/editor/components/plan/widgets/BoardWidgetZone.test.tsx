@@ -4,24 +4,29 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { planPalette } from '../plan-palette';
 import { BoardWidgetZone } from './BoardWidgetZone';
 import { widgetSlotAt } from '@/hooks/plan/widget-slot';
-import type { BoardWidgetKind } from '@liveplanner/items';
+import type { BoardWidgetId } from '@liveplanner/items';
+import { BOARD_WIDGET_INFO } from '@liveplanner/plan-art';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 
 // docs/specs/026-plan/board-widgets.md "Remove": Edit Widgets puts the zone in edit mode, where every widget shows its
 // ×, on any board, selected or not; out of edit mode no widget shows one.
 afterEach(cleanup);
 
-function show(selected: boolean, canEdit = true, widgets: BoardWidgetKind[] = ['count', 'filter']) {
+const labelOf = (id: BoardWidgetId) =>
+  id in BOARD_WIDGET_INFO ? BOARD_WIDGET_INFO[id as keyof typeof BOARD_WIDGET_INFO].label : id;
+
+function show(selected: boolean, canEdit = true, widgets: BoardWidgetId[] = ['count', 'filter']) {
   const onChange = vi.fn();
   const props = {
     canEdit,
     selected,
     palette: planPalette('light', {}),
     onChange,
-    render: (kind: BoardWidgetKind) => <span>{kind}</span>,
+    labelOf,
+    render: (kind: BoardWidgetId) => <span>{kind}</span>,
   };
   const view = render(<BoardWidgetZone widgets={widgets} {...props} />);
-  const rerender = (next: BoardWidgetKind[]) =>
+  const rerender = (next: BoardWidgetId[]) =>
     view.rerender(<BoardWidgetZone widgets={next} {...props} />);
   return Object.assign(onChange, { rerender });
 }
@@ -112,6 +117,7 @@ describe('BoardWidgetZone empty hint', () => {
         selected={selected}
         palette={planPalette('light', {})}
         onChange={vi.fn()}
+        labelOf={labelOf}
         render={(kind) => <span>{kind}</span>}
       />,
     );
@@ -130,16 +136,42 @@ describe('BoardWidgetZone empty hint', () => {
   });
 });
 
-// docs/specs/026-plan/board-widgets.md "The widget gallery": the + opens the widgets not on the board yet.
+// docs/specs/026-plan/board-widgets.md "The widget gallery": the + opens every widget, those on the board On Board.
 describe('BoardWidgetZone +', () => {
-  it('leaves out the widgets on the board, and adds the one picked at the end', () => {
+  it('shows the widgets on the board On Board, adds one picked at the end and stays open', () => {
     const onChange = show(true);
     fireEvent.click(screen.getByRole('button', { name: 'Add a widget' }));
-    expect(screen.queryByRole('button', { name: 'Add Item Count' })).toBeNull();
-    expect(screen.queryByText('Item Count')).toBeNull();
+    const on = screen.getByRole('button', { name: 'Remove Item Count' });
+    expect(on.getAttribute('aria-pressed')).toBe('true');
     fireEvent.click(screen.getByRole('button', { name: 'Add Completion' }));
     expect(onChange).toHaveBeenCalledWith(['count', 'filter', 'progress']);
-    expect(screen.queryByRole('button', { name: 'Add Completion' })).toBeNull();
+    expect(screen.getByRole('dialog', { name: 'Add a Widget' })).toBeTruthy();
+    fireEvent.click(on);
+    expect(onChange).toHaveBeenLastCalledWith(['filter']);
+    // The + again closes it.
+    fireEvent.click(screen.getByRole('button', { name: 'Add a widget' }));
+    expect(screen.queryByRole('dialog', { name: 'Add a Widget' })).toBeNull();
+  });
+
+  it('works out For You only as the gallery opens', () => {
+    const suggest = vi.fn(() => [
+      { id: 'due' as const, score: 1, reason: '3 cards have due dates' },
+    ]);
+    render(
+      <BoardWidgetZone
+        widgets={['count']}
+        canEdit
+        palette={planPalette('light', {})}
+        onChange={vi.fn()}
+        labelOf={labelOf}
+        suggest={suggest}
+        render={(kind) => <span>{kind}</span>}
+      />,
+    );
+    expect(suggest).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Add a widget' }));
+    expect(suggest).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('3 cards have due dates')).toBeTruthy();
   });
 
   it('names each section in a line that meets AA contrast in both themes', () => {
@@ -160,6 +192,7 @@ describe('BoardWidgetZone +', () => {
       target: { value: 'votes' },
     });
     expect(screen.getByRole('button', { name: 'Add Top Voted' })).toBeTruthy();
+    expect(screen.queryByRole('navigation', { name: 'Widget sections' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Add Completion' })).toBeNull();
     fireEvent.change(screen.getByRole('textbox', { name: 'Find a widget' }), {
       target: { value: 'zzz' },
@@ -170,7 +203,7 @@ describe('BoardWidgetZone +', () => {
 
 describe('WIDGET_GROUPS', () => {
   it('holds every widget kind exactly once', async () => {
-    const { WIDGET_GROUPS } = await import('./BoardWidgetPicker');
+    const { WIDGET_GROUPS } = await import('./widget-gallery-model');
     const { BOARD_WIDGET_KINDS } = await import('@liveplanner/items');
     const all = WIDGET_GROUPS.flatMap((g) => g.kinds);
     expect([...all].sort()).toEqual([...BOARD_WIDGET_KINDS].sort());
@@ -206,6 +239,7 @@ describe('BoardWidgetZone, empty', () => {
         offerAdd={props.offerAdd ?? false}
         palette={planPalette('light', {})}
         onChange={vi.fn()}
+        labelOf={labelOf}
         render={(kind) => <span>{kind}</span>}
       />,
     );
