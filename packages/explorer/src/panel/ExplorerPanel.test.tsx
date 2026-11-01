@@ -125,6 +125,18 @@ describe('<ExplorerPanel>', () => {
     );
   });
 
+  it("deletes from its Trash in the Explorer page's words: Delete Forever, the same confirmation", async () => {
+    const index = createFakeIndex({
+      items: [makeItem(1, { trashedAt: Date.now(), trashReason: 'deleted' })],
+    });
+    renderPanel(index);
+    fireEvent.click(within(rail()).getByRole('button', { name: 'Trash' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete Forever' }));
+    const confirm = screen.getByRole('dialog');
+    expect(within(confirm).getByRole('heading').textContent).toBe('Delete “Item 1” for good?');
+    expect(within(confirm).getByText('This cannot be undone.')).toBeTruthy();
+  });
+
   it("opens a phone's sheet on Home and remembers nothing", () => {
     localStorage.setItem(panelSectionStorageKey('liveplanner'), 'trash');
     renderPanel(createFakeIndex({ items: [] }), { layout: 'sheet', open: true });

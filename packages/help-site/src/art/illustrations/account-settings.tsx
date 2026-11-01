@@ -8,7 +8,7 @@ import { capital, plural } from '../noun';
 import { Switch } from './settings-dialog';
 
 /** The Trash view: one group per scope, each row with when it was deleted, the
- *  days it has left, Restore and Delete permanently, and Empty Trash per group. */
+ *  days it has left, Restore and Delete Forever, and Empty Trash per group. */
 export function TrashView({ noun }: { noun: string }) {
   const rows: [string, string][] = [
     ['Service map', 'Deleted 2 Oct · 25 days left'],
@@ -35,10 +35,10 @@ export function TrashView({ noun }: { noun: string }) {
               <Label x={60} y={y + 31} size={10} tone="muted">
                 {meta}
               </Label>
-              {/* Restore and Delete permanently sit together at the right, on the name's line. */}
+              {/* Restore and Delete Forever sit together at the right, on the name's line. */}
               <Button x={220} y={y} w={58} h={18} label="Restore" />
               <Label x={392} y={y + 10} anchor="end" size={10} weight={600} tone="muted">
-                Delete permanently
+                Delete Forever
               </Label>
             </g>
           );

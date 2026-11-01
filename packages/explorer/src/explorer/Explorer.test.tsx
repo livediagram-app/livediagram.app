@@ -299,13 +299,17 @@ describe('<Explorer>', () => {
     expect(screen.queryByRole('button', { name: /^New / })).toBeNull();
   });
 
-  it('groups the Trash by whose it is, with Restore and Delete permanently', async () => {
+  it('groups the Trash by whose it is, with Restore and Delete Forever', async () => {
     const index = createFakeIndex({
       items: [makeItem(1, { trashedAt: Date.now(), trashReason: 'deleted' })],
     });
     renderExplorer(index, { kind: 'trash' });
     expect(await screen.findByRole('heading', { name: 'Your plans' })).toBeTruthy();
     expect(screen.getByText(/Deleted .* · 30 days left/)).toBeTruthy();
+    // The menu's words, and the name after them (the accessible name starts with what the button shows).
+    expect(screen.getByRole('button', { name: 'Delete Forever: Item 1' }).textContent).toBe(
+      'Delete Forever',
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Restore Item 1' }));
     await waitFor(() => expect(index.count('restoreItem')).toBe(1));
   });

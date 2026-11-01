@@ -2,7 +2,7 @@
 
 // The Trash (livediagram's TrashPane): a note on how long things wait here, then the loaded items grouped
 // by whose Trash they are in (yours, then each team's by name), each group a card with its rows: the item,
-// when it was deleted and how long it has left, Restore, and Delete permanently. Your group's header empties
+// when it was deleted and how long it has left, Restore, and Delete Forever. Your group's header empties
 // your Trash. The list is the Trash view's own paged list, so nothing more is fetched.
 
 import { useMemo, useState } from 'react';
@@ -146,11 +146,13 @@ export function TrashPane({
                     </Button>
                     <button
                       type="button"
-                      aria-label={`Delete ${name} permanently`}
+                      // The menu's and the editors' panel's words; the name after them, so a voice command
+                      // saying what the button shows still finds it.
+                      aria-label={`Delete Forever: ${name}`}
                       onClick={() => setPurging(item)}
                       className="rounded-md px-2.5 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                     >
-                      Delete permanently
+                      Delete Forever
                     </button>
                   </div>
                 </li>
