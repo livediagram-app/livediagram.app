@@ -43,7 +43,12 @@ describe('when ends meet', () => {
     ];
     expect(isStrokeLoop(line, 1.5)).toBe(false);
     // A stroke drawn on one spot has no length at all.
-    expect(isStrokeLoop(Array.from({ length: 5 }, () => ({ x: 3, y: 3 })), 1.5)).toBe(false);
+    expect(
+      isStrokeLoop(
+        Array.from({ length: 5 }, () => ({ x: 3, y: 3 })),
+        1.5,
+      ),
+    ).toBe(false);
     // A long thin oval (10:1) is still a loop.
     const oval = arc(50).map((p) => ({ x: p.x, y: 100 + (p.y - 100) / 10 }));
     expect(isStrokeLoop(oval, 1.5)).toBe(true);

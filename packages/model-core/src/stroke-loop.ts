@@ -83,7 +83,9 @@ export function isStrokeLoop(pts: readonly Point[], penWidth: number): boolean {
   if (pts.length < STROKE_LOOP_MIN_POINTS) return false;
   if (strokeLoopGap(pts) > strokeLoopTolerance(pts, penWidth)) return false;
   const perimeter = loopPerimeter(pts);
-  return perimeter > 0 && (4 * Math.PI * loopArea(pts)) / perimeter ** 2 >= STROKE_LOOP_MIN_ROUNDNESS;
+  return (
+    perimeter > 0 && (4 * Math.PI * loopArea(pts)) / perimeter ** 2 >= STROKE_LOOP_MIN_ROUNDNESS
+  );
 }
 
 /**
@@ -120,7 +122,9 @@ export function insideLoop(p: Point, pts: readonly Point[]): boolean {
 export function inPointsBox(p: Point, pts: readonly Point[], pad = 0): boolean {
   if (pts.length === 0) return false;
   const box = boxOf(pts);
-  return p.x >= box.minX - pad && p.x <= box.maxX + pad && p.y >= box.minY - pad && p.y <= box.maxY + pad;
+  return (
+    p.x >= box.minX - pad && p.x <= box.maxX + pad && p.y >= box.minY - pad && p.y <= box.maxY + pad
+  );
 }
 
 /** The fill a closed stroke draws under its ink: a closed polygon through its centre line. */

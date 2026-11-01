@@ -54,7 +54,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone picked up a whiteboard's second pen (blue unless they changed it).",
   'Draw|Selected|Third': "Someone picked up a whiteboard's third pen (red unless they changed it).",
   'Draw|Selected|Fill': 'Someone picked up the Fill tool, the paint bucket, on a whiteboard.',
-  'Draw|Changed|FillColour': "Someone changed the Fill tool's colour on a whiteboard. Never the colour.",
+  'Draw|Changed|FillColour':
+    "Someone changed the Fill tool's colour on a whiteboard. Never the colour.",
   'Draw|Changed|FillMissed':
     'Someone pressed with the Fill tool where there was nothing it fills: the bare board, open ink or something locked.',
   'Draw|Changed|PenColour': "Someone gave a whiteboard's second or third pen a new colour.",
