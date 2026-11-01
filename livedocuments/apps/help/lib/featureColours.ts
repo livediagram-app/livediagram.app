@@ -33,6 +33,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   sharing: '#0284c7',
   'zen-mode': '#475569',
   'markdown-import': '#0d9488',
+  'find-and-replace': '#ca8a04',
   // The last cards
   'building-a-deck': '#0ea5e9',
   presenting: '#6366f1',
@@ -164,6 +165,8 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'formatting-label-text': '#0e7490',
   'slide-pages': '#f97316',
   flashcards: '#e11d48',
+  'article-tables': '#0f766e',
+  'contents-headers-footers': '#0e7490',
   technology: '#0ea5e9',
   drawing: '#f97316',
   layers: '#6366f1',

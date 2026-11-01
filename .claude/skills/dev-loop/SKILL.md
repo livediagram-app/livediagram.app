@@ -44,6 +44,12 @@ Priority: **Critical, High, Medium, Low, then unset**. Ties keep their board ord
 
 If nothing is selected, say so in one line and stop.
 
+**Blocked cards wait.** A Work Item's **Blocked By** field (id `f-blocked-by`, a list of cards) names the cards that
+must land first. Leave a selected card where it is, untouched and with no thread, while any card it names is not in
+**Implemented** or its Pull Request is not yet merged (`gh pr view <url> -R "$REPO" --json state -q .state` is
+`MERGED`). Work built on top of an unmerged PR would be cut from code main doesn't have. List waiting cards in the
+report as "Blocked by #N". A blocker in Development Failure or Cancelled is worth one line in the report too.
+
 Also note every card in **In Progress** that has no Pull Request link. Those were left by a pass that died.
 Never touch them. List them in the report. The exception is a **Large** card between parts (step 3): it is In
 Progress with its last part's PR link and an open build plan thread, and this pass may pick up its next part.
@@ -253,7 +259,9 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   would unblock it.
 - **Clean up:** remove your build output and stop only the PIDs you started.
 - **Report:** `DONE <PR url>` or `FAILED`, then each answer and how it was built, a few lines on what was
-  built, the decisions, and anything the owner should look at.
+  built, the decisions, and a **Follow-ups** list: every risk to address, deferred piece, owner-only action
+  (secrets, keys, DNS, manual checks on real devices), suspected bug and missing test or help article, each with
+  why, what to do (files, PRs) and when it's done.
 
 Give each agent its own **port block** of 20 (the first agent of a pass 3600 to 3619, the second 3620 to 3639,
 and so on up to the sixth at 3700 to 3719; the next agent reuses a finished one's block) and its own **scratch
@@ -287,6 +295,13 @@ missing, send the agent back to build it (SendMessage) before you touch the card
   this PR built, in one line: "Built in <PR url>: <how, short>". Then resolve every question thread the loop
   started on the card that is now settled (for a Large card, only those its finished parts built, and the plan
   thread after the last part). The owner hears through the Inbox that the card was built and where.
+- **File the follow-ups** (on DONE and FAILED): the owner never reads the chat or this loop's report, so a
+  follow-up left there is lost. Turn every item on the agent's Follow-ups list, and anything else you noticed
+  that needs doing later, into its own **new Work Item in Under Review**, in one `change_items` batch:
+  `{"op": "add", "type": "Work Item", "status": "Under Review", "title": "...", "fields": {"Type": "Feature" or
+  "Bug", "App": [...], "description": "Why / What / Done when", "Related Work Item": "#12"}}`. Plain Title Case
+  titles; an owner-only action says so in its title ("Owner: set WEBHOOK_KEY before deploying #1163").
+  Check the board first and skip one an existing card already covers.
 - **FAILED:** move the card to **Development Failure** and start one thread on it, in review-loop's format: what blocked it, what was tried, and lettered options for how to unblock it, with a recommendation.
 
 Then remove that agent's worktree (`git worktree remove`), and its local branch on FAILED.
@@ -297,7 +312,8 @@ If the MCP refuses a change, report it and carry on with the other cards.
 
 - On the board, only ever do these: move Work Items from Selected for Development to Under Review or In
   Progress, from In Progress to Implemented or Development Failure, set their Pull Request link, start question threads on those cards, reply in the loop's own threads and resolve
-  them once their answers are built, and take a Large card's next part from In Progress. Never
+  them once their answers are built, take a Large card's next part from In Progress, and add follow-up Work
+  Items to Under Review (step 4). Never
   edit titles, descriptions or other fields, never add Question cards, never resolve, edit or
   delete a thread or comment a person wrote, and never touch cards in any other column.
 - One open PR per Work Item, or per group of closely related ones (per part, for a Large card): rework goes onto it, and a follow-up opens only once
@@ -319,4 +335,5 @@ End each pass with a short table, plus one line on anything that went wrong:
 | #13 Flash Cards Feature            | High     | Part 1 of 4, PR #130             |
 
 After the table, list what needs the owner's attention first, one line each: high-risk PRs (`not-ready`),
-decisions an agent took that a person might want to change, and stale In Progress cards with no PR.
+decisions an agent took that a person might want to change, stale In Progress cards with no PR, and the
+follow-up Work Items this pass added (number and title).

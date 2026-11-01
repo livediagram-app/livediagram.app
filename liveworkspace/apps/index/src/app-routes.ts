@@ -12,6 +12,7 @@ import { badRequest, fail, noContent, notFound, readObject, unauthorized } from 
 import { handleMigrationHandoff } from './migration-handoff';
 import { handleAppPeople } from './notices';
 import { FUTURE_SLACK_MS, pushAppEvents, pushPersonEvents } from './timeline';
+import { pushCardMoves } from './webhooks/routes';
 
 const isTime = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value) && value >= 0;
@@ -53,7 +54,8 @@ export async function handleApp(
     segments[5] === 'seen' &&
     isPartId(segments[4]) &&
     isId(segments[6]);
-  // /app/items/:id/summary, /app/items/:id/collab/:tabId, /app/items/:id/events, /app/items/:id/forms/:tabId
+  // /app/items/:id/summary, /app/items/:id/collab/:tabId, /app/items/:id/events, /app/items/:id/card-moves,
+  // /app/items/:id/forms/:tabId
   if (segments[1] !== 'items' || !isId(segments[2])) return notFound();
   if (request.method !== 'PUT' && !seenRead) return notFound();
   const itemId = segments[2];
@@ -101,6 +103,10 @@ export async function handleApp(
     if (!body) return badRequest();
     return pushAppEvents(env, itemId, body);
   }
+
+  // A plan's cards that changed status, for its scope's webhooks only (webhooks/routes.ts).
+  if (segments.length === 4 && segments[3] === 'card-moves')
+    return pushCardMoves(env, itemId, request);
 
   if (segments.length === 5 && segments[3] === 'collab' && isPartId(segments[4])) {
     return pushCollab(request, env, app, itemId, segments[4]);

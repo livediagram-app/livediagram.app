@@ -25,15 +25,6 @@ describe('StartFromTemplates', () => {
     expect(onTemplate).toHaveBeenCalledWith('logo-design');
   });
 
-  // Blank Illustration lands one unchosen page, which leaves the tab empty: the start must not stay up over it.
-  it('closes when the blank is chosen, as the × does', () => {
-    const onTemplate = vi.fn();
-    mount(onTemplate);
-    fireEvent.click(document.querySelector('[data-start-card="blank-illustration"]')!);
-    expect(onTemplate).toHaveBeenCalledWith('blank-illustration');
-    expect(screen.queryByRole('heading', { name: 'Start Making Pages' })).toBeNull();
-  });
-
   it('stays open for a template that lands content', () => {
     mount();
     fireEvent.click(document.querySelector('[data-start-card="logo-design"]')!);
@@ -99,7 +90,7 @@ describe('StartFromTemplates, switching category', () => {
     mount();
     const scroller = document.querySelector('[data-start-card]')!.closest('.overflow-y-auto')!;
     scroller.scrollTop = 300;
-    fireEvent.click(document.querySelector('[data-rail="wireframes"]')!);
+    fireEvent.click(document.querySelector('[data-rail="websites"]')!);
     expect(scroller.scrollTop).toBe(0);
   });
 });

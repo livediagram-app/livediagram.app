@@ -9,6 +9,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./page-layout-build": "./src/page-layout-build.ts",
+    "./template-flow-data": "./src/template-flow-data.ts",
     "./welcome.json": "./welcome.json"
   },
   "scripts": {

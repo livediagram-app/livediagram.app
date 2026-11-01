@@ -1,11 +1,12 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { ModeSwitchScene, DrawDockScene } from '@/components/illustrations/editor-mode-switch';
+import { FillToolScene } from '@/components/illustrations/draw-fill-tool';
 
 export const metadata = helpMetadata({
   title: 'Draw Mode',
   description:
-    'Switch any tab into Draw mode to sketch by hand: a dock of pens, two erasers, stickies, text and every palette shape, on the same canvas as your diagram.',
+    'Switch any tab into Draw mode to sketch by hand: a dock of pens, a fill bucket, two erasers, stickies, text and every palette shape, beside your diagram.',
   path: '/help/canvas/draw-mode/',
 });
 
@@ -44,7 +45,7 @@ Already drew it in Excalidraw? Copy it there and paste it onto a tab in Draw mod
 
 Draw mode swaps the palette strip for its own tools, in three groups: the **drawing tools**, the **shapes** and **Settings**. They form a dock across the top of the canvas, the same height as the strip, and a tool's options open just below it, pointing at its button. Undo and Redo are in the bottom-right corner, as in Diagram mode. Prefer the dock at the bottom, closer to hand when drawing on a tablet? Open **Settings**, choose **Editor**, then **Draw**, and set **Dock Position** to **Bottom**. The choice follows your account to every tab you draw on.
 
-<Figure caption="Draw mode's dock: the drawing tools, your pinned shapes and Shapes, then Settings, each with its key.">
+<Figure caption="Draw mode's dock: the drawing tools (Fill among them, with its colour under the bucket), your pinned shapes and Shapes, then Settings, each with its key.">
   <DrawDockScene />
 </Figure>
 
@@ -54,7 +55,8 @@ The drawing tools:
 2. **Three markers**: **Marker 1**, **Marker 2** and **Marker 3** (keys **1**, **2** and **3**). Press a marker to pick it up; tap the canvas with it to leave a dot. Press the marker already in your hand to change its **width**: Fine, Medium or Bold for a subtle line, or Thick, Heavy or Broad for a bolder, felt-tip mark. Marker 1 always draws in **Ink**; Markers 2 and 3 start blue and red and can also change **colour**, so they can be any two colours you like. Their colour picker is the same one every colour choice in livediagram uses: first **Theme Palette**, the colours of this board's theme, then the ten **Standard Colours**: **Ink** (the default), Grey, Red, Orange, Yellow, Green, Teal, Blue, Violet and Pink. Below them, **Custom Colours** shows the colours anyone has picked with **Add a custom colour** in this canvas, newest first. **Add a custom colour** (four coloured dots) opens a custom picker: drag in the square and along the hue slider, type a hex code, or pick a colour from the screen with the eyedropper where your browser has one, then press **Use**. If a custom colour would be hard to see on a light or a dark canvas, a warning says so and offers a nearby colour that reads well on both. Use the arrow keys to move between colours and **Enter** to pick one. Right-click a marker to reset it to how it started. With a marker in your hand, the style panel on the left shows its colour and width too. Your markers are yours: they are remembered in this browser, not saved with the canvas.
 3. **Text** (**T**): press, then click or drag on the board.
 4. **The Path tool** (**P**, see below).
-5. **Eraser** (key **E**, see below).
+5. **Fill** (key **F**, the paint bucket, see [The Fill Tool](#the-fill-tool)).
+6. **Eraser** (key **E**, see below).
 
 The shapes:
 
@@ -63,7 +65,7 @@ The shapes:
 
 The **sticky note** is one of the shapes: search for it in Shapes ("sticky", "note" or "post-it"), pin it like any shape, or press **N** from anywhere to place one.
 
-Shapes, lines, arrows and paths are drawn in Ink with no fill, whichever pen you last used, and stay that way when you switch to Diagram mode: the pens colour only their own strokes. To change a shape's colour or width, select it and use the style panel on the left; a selected marker stroke gets its **Marker colour** and **Marker width** there as well: nine colours, Ink and eight hues, in one row. **More colours** at its end opens the full colour picker, with Grey and the custom colours used in this canvas.
+Shapes, lines, arrows and paths are drawn in Ink with no fill, whichever pen you last used, and stay that way when you switch to Diagram mode: the pens colour only their own strokes. To colour one in, pour a colour into it with the [Fill tool](#the-fill-tool). To change a shape's colour or width, select it and use the style panel on the left; a selected marker stroke gets its **Marker colour** and **Marker width** there as well: nine colours, Ink and eight hues, in one row. **More colours** at its end opens the full colour picker, with Grey and the custom colours used in this canvas.
 
 Last comes the **Settings** cog (press it to open it): your **Background**, the pen's **Cursor** (Crosshair + nib, the default, or Dot) and **Drawing** (Basic or Shape recognition), then **Colours** while the tab has custom colours (see [Snap colours](#snap-colours)).
 
@@ -83,6 +85,8 @@ The left of the shapes bar holds your **pinned** shapes: at first an arrow and a
 - **Reorder** your pinned shapes by dragging them along the bar.
 - **Unpin** by dragging a pinned shape past the line, or off the bar. It is not forgotten: if you use it a lot it shows in the Shapes flyout's two rows straight away, and it is always a search away. Unpin them all and the bar stays that way.
 - Without dragging: right-click a shape, hold a finger on it, or press **Shift+F10** (in the search box, for the shape you have reached), then choose **Pin to dock** or **Unpin**.
+
+On a phone, or in a window up to about 1,100 px wide such as a tablet, the bar keeps only your **first** pinned shape (the arrow, to start) so the whole dock fits, and the rest wait in a **Pinned** row at the top of the Shapes flyout (the rectangle, to start). They are still pinned, and their keys still work (**R** still picks the rectangle). There, shapes don't drag on or off the bar: pin and unpin from a shape's menu instead (right-click it, or hold a finger on it).
 
 Your pinned shapes and picks follow you to your other devices when you are signed in; without an account they stay in this browser.
 
@@ -108,6 +112,24 @@ Double-click (or double-tap) a path, select it and press **Enter**, or press **E
 - Every change is one undo, and undo keeps you editing. Click away or press **Escape** to finish.
 
 Style a path like a shape from the style panel: its line colour, width and dashes, and a fill once it is closed. The eraser removes a path whole, and exports draw it exactly as on the board.
+
+## The Fill Tool
+
+The **Fill** tool (key **F**, the paint bucket) colours in what you have drawn with one press, like the bucket in a paint program.
+
+- **Pick it up** from the dock, or press **F** anywhere on the board. It stays in your hand, so you can fill one thing after another, until you pick another tool or press **Escape**.
+- **Choose its colour** by pressing the Fill button again while it is in your hand. The colour picker opens with **No fill** first (it clears a fill), then the board's theme colours, the standard colours, the custom colours used in this canvas, and **+** for any other. The small bar under the bucket shows the colour it will pour. Until you choose, it pours the theme's first fill, so it suits the board. Your colour is remembered in this browser, not saved with the canvas.
+- **Click or tap inside** what you want to fill:
+  - **A shape or a closed path** takes the colour as its fill, as if you had picked it as its Background in the style panel.
+  - **A marker loop whose ends meet**, such as a circle or a cloud drawn in one stroke, becomes a filled shape. Its ink stays the outline, drawn over the fill, and if its ends didn't quite touch the ink is joined up for you. A bigger loop forgives a bigger gap, but a squiggle or a line drawn out and back holds nothing, so it never counts.
+  - **Anything else** fills nothing, and a short hint says why: press inside a closed shape, or a loop whose ends meet. The bucket looks past open ink, lines, arrows and text to what is underneath. A sticky note, an image, a table or a chart stops it.
+- **Locked things keep their fill**, and so does anything on a hidden or locked [layer](/help/canvas/layers/).
+
+<Figure caption="Three presses with the Fill tool: a shape takes the colour, a loop whose ends meet fills under its ink, and open ink fills nothing and shows a hint.">
+  <FillToolScene />
+</Figure>
+
+Each fill is one undo, and everyone on the tab sees it at once. A drag or a pinch with the bucket pans and zooms as usual and fills nothing, so it is safe on a touch screen, and a finger fills even after you have used a pen. To fill a filled loop in another colour, or clear it with **No fill**, press inside it again; the Partial eraser cuts it open into unfilled strokes again. Exports draw a filled loop exactly as on the board. Only people who can edit the canvas have the Fill tool, as with every Draw tool: Participants and Viewers don't.
 
 ## Pen, Finger and Mouse
 

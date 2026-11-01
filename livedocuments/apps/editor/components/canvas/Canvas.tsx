@@ -465,11 +465,9 @@ function CanvasView(props: CanvasProps) {
                   key={props.activeTabId}
                   view={staged}
                   zoom={viewportZoom}
-                  // Zen and presenting show the sheets alone: no labels, cogs, layout invites or add
+                  // Zen and presenting show the sheets alone: no labels, cogs, or add
                   // button.
                   bare={props.zenMode === true}
-                  placing={!!pendingDraw}
-                  onOpenTheme={props.onOpenCanvasTheme}
                 />
               ) : null}
               {/* Article pages' writing (ArticleFlows), over the sheets and under the elements, so a

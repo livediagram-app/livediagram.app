@@ -1,3 +1,4 @@
+import { TEMPLATE_CATEGORIES } from '@livedesign/templates';
 import { describe, expect, it } from 'vitest';
 import { seededRandom } from '@livedesign/design';
 import { galleryTemplates } from './template-gallery';
@@ -56,7 +57,7 @@ describe('the fan', () => {
         .sort(),
     );
     const categories = new Set(HERO_FAN_POOL.map((k) => heroTemplate(k).category));
-    expect([...categories].sort()).toEqual(['logos', 'photos', 'wireframes']);
+    expect([...categories].sort()).toEqual(TEMPLATE_CATEGORIES.map((c) => c.id).sort());
     for (const kind of HERO_FAN_OPENING) expect(HERO_FAN_POOL).toContain(kind);
     expect(HERO_FAN_OPENING).toHaveLength(HERO_FAN_SLOTS);
     // Fewer slots than templates, so a swap always has another one to deal in.

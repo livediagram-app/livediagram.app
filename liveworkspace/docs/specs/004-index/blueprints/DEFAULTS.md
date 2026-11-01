@@ -19,3 +19,9 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX13 | default-folders | with no working default an item lands at the root of the person's own space, never a team's.                                                 |
 | IDX14 | guest-merge     | where a guest and the account both have a favourite, open, default or form read, the account's is kept (or the later or further of the two). |
 | IDX15 | guest-merge     | a handed-off item always lands at the root of the person's own space, whatever its old document said.                                        |
+| IDX15 | webhooks        | an address given as an IP literal is refused, public or not: the check is by name, resolved at add and at send.                              |
+| IDX16 | webhooks        | only port 443 is taken; another port is refused as `webhook_url_invalid`.                                                                    |
+| IDX17 | webhooks        | a redirect (3xx) gives the delivery up without retrying; other 4xx but 408, 410 and 429 give up too.                                         |
+| IDX18 | webhooks        | accounts unreachable holds a team webhook's deliveries a minute, counting no try.                                                            |
+| IDX19 | webhooks        | a card move dated more than 5 minutes ahead is dated now + 5 minutes; its texts are cut to 200.                                              |
+| IDX20 | webhooks        | a webhook's deliveries list answers at most 40, newest first.                                                                                |

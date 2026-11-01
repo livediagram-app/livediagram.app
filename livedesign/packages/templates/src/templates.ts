@@ -23,13 +23,32 @@ export type TemplateKind =
   // mark as an app icon, a one-colour version) plus the brand palette, so a designer picks the composition that
   // fits, deletes the rest, and iterates.
   | 'logo-design'
+  // Logo explorations (docs/specs/007-editor/logo-pages.md "Logo layouts"): one logo page per layout of a family.
+  | 'logo-lockups'
+  | 'logo-wordmarks'
+  | 'logo-emblems'
+  | 'logo-marks'
   // Wireframe templates (docs/specs/007-editor/wireframe-pages.md "Templates"): flows of wireframe pages,
   // each screen a wireframe layout in its device.
   | 'wireframe-mobile-app'
   | 'wireframe-website'
   | 'wireframe-dashboard'
   | 'wireframe-tablet-app'
-  | 'wireframe-watch-app';
+  | 'wireframe-watch-app'
+  | 'wireframe-social-app'
+  | 'wireframe-delivery-app'
+  | 'wireframe-travel-app'
+  | 'wireframe-ride-app'
+  | 'wireframe-music-app'
+  | 'wireframe-app-onboarding'
+  | 'wireframe-online-store'
+  | 'wireframe-blog'
+  | 'wireframe-company-site'
+  | 'wireframe-project-tool'
+  | 'wireframe-team-inbox'
+  | 'wireframe-video-app'
+  | 'wireframe-fitness-watch'
+  | 'wireframe-watch-music';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -139,6 +158,128 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'wireframe-watch-app',
     title: 'Watch App Wireframe',
     description: 'Three watch faces: a glance, a list and a notification.',
+    extra: true,
+  },
+  {
+    kind: 'logo-lockups',
+    title: 'Lockup Explorations',
+    description:
+      'Seven logo pages of a mark with its name: above, beside, stacked, to the right, divided, in a pill and below.',
+    extra: true,
+  },
+  {
+    kind: 'logo-wordmarks',
+    title: 'Wordmark Explorations',
+    description:
+      'Six logo pages of type-led logos: a wordmark, a monogram, underlined, two lines, spaced capitals and an initial accent.',
+    extra: true,
+  },
+  {
+    kind: 'logo-emblems',
+    title: 'Emblems and Badges',
+    description:
+      'Six logo pages of contained marks: a badge, a seal, a hexagon, a stamp, a square badge and a diamond.',
+    extra: true,
+  },
+  {
+    kind: 'logo-marks',
+    title: 'Marks and App Icons',
+    description:
+      'Six logo pages of symbols on their own: a disc, an app icon, rings, an initial, peaks and a star.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-social-app',
+    title: 'Social App Wireframe',
+    description:
+      'Six iPhone screens of a social app: the feed, stories, a post, a new post, notifications and a profile.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-delivery-app',
+    title: 'Delivery App Wireframe',
+    description:
+      'Five iPhone screens of a delivery app: the shop, search, an item, the cart and live order tracking.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-travel-app',
+    title: 'Travel App Wireframe',
+    description:
+      'Four iPhone screens of a travel app: flight search, results, a boarding pass and places to explore.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-ride-app',
+    title: 'Ride App Wireframe',
+    description:
+      'Four iPhone screens of a ride app: sign in, where to, the ride on its way and its updates.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-music-app',
+    title: 'Music App Wireframe',
+    description:
+      'Four iPhone screens of a music app: browse, search, now playing and a podcast episode.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-app-onboarding',
+    title: 'App Sign Up Wireframe',
+    description:
+      'Five iPhone screens of a first run: welcome, sign up, a code to verify, permissions and an empty first screen.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-online-store',
+    title: 'Online Store Wireframe',
+    description:
+      'Four browser pages of an online store: the shop, a product, the cart and checkout.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-blog',
+    title: 'Blog Wireframe',
+    description: 'Three browser pages of a blog: the latest posts, an article and a contact page.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-company-site',
+    title: 'Company Site Wireframe',
+    description: 'Four browser pages of a company site: home, the team, help pages and contact.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-project-tool',
+    title: 'Project Tool Wireframe',
+    description:
+      'Four laptop screens of a project tool: a board, a task list, a calendar and the team.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-team-inbox',
+    title: 'Team Inbox Wireframe',
+    description:
+      'Four laptop screens of a team inbox: the inbox, a conversation, notifications and settings.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-video-app',
+    title: 'Video App Wireframe',
+    description: 'Four iPad screens of a video app: browse, search, watch and a profile.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-fitness-watch',
+    title: 'Fitness Watch Wireframe',
+    description:
+      'Four watch faces of a fitness app: a workout, heart rate, an interval timer and the weather.',
+    extra: true,
+  },
+  {
+    kind: 'wireframe-watch-music',
+    title: 'Watch Music Wireframe',
+    description: 'Two watch faces of a music app: what is playing and what is up next.',
     extra: true,
   },
 ];

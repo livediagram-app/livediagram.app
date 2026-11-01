@@ -210,6 +210,7 @@ const ACCOUNT_CATEGORIES: Readonly<Record<string, string>> = {
   profile: 'account',
   notifications: 'notifications',
   tokens: 'tokens',
+  webhooks: 'webhooks',
   privacy: 'privacy',
   accessibility: 'accessibility',
 };

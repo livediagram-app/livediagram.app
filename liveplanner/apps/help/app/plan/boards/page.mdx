@@ -9,7 +9,7 @@ import {
 export const metadata = helpMetadata({
   title: 'Boards',
   description:
-    'Set up Plan boards for Kanban, to-do lists, sprints, bug triage, retros and roadmaps: columns, swimlanes, WIP limits, widgets, card types and CSV import.',
+    'Set up Plan boards for Kanban, sprints, bug triage, retros and roadmaps: columns, swimlanes, WIP limits, widgets, saved filters, card types and CSV import.',
   path: '/help/plan/boards/',
 });
 
@@ -52,7 +52,7 @@ A board placed from the picker starts **empty**: its columns are its own, so car
 
 Add a column from the board's cog (**Columns**, below) or from a column's own **+ Add Column After**. Either way the picker lists under **Existing Statuses** every status your plan already has that this board lacks: the ones other boards use, and any your cards are in. Each shows its colour, the boards it is on, and how many of its cards would appear on this board. Pick one (or press **Add All**) and the cards already in it show straight away. Type to narrow the list, use the arrow keys and Enter, or type a new name and press **Add Column** (**Add** in the board's cog): if the name matches a status you already have, that status is used rather than a near-duplicate, and you are told so. When the board already has every status your plan knows, **Suggested Statuses** offers the common ones it still lacks (Backlog, To Do, In Progress, In Review, Done) to add with one press.
 
-Hover a column's head and press its cog (always there on a touch screen). Along the top, a toolbar holds **Move Left** and **Move Right** on the left and **Remove** on the right. Below it you can:
+Hover a column's head and press its cog (always there on a touch screen). Along the top, a toolbar holds **Move Left**, **Move Right** and **Collapse Column** on the left and **Remove** on the right. Below it you can:
 
 - **Rename** it and give it a **colour** (none, one of ten, or a custom colour).
 - Set a **WIP Limit**: the count turns amber when the column holds more. It warns; it never refuses a card.
@@ -65,6 +65,14 @@ Hover a column's head and press its cog (always there on a touch screen). Along 
 **Delete Status** (the last row) deletes the state itself: when it holds cards, it asks where they go (to another column, or to the **Trash**, where you can restore them), then the state's column comes off every board. A board's last column can't be removed or deleted.
 
 A board holds up to 12 columns. A new Blank board opens **Set up your board** over the editor (for you only; anyone else sees the board marked “Not set up yet”): first choose which **Card Types** go on it, then its **Columns**, picking existing states (so their cards show) or naming new ones, in the order you want (on a new plan, with no states yet, **Suggested States** offers Backlog, To Do, In Progress, In Review and Done, each added with one press, or all with **Add All**), then its **Layout**: its **Swimlanes** and its **Card Display**. The Layout step starts as the board is now, so you can press straight through it. **Create Board** sets it all up in one step, and everything can change later from the board's cog. Press **Not now** (or Escape) to leave it for later: the board shows **Set up board**, which opens it again where you left off. Enter moves on to the next step.
+
+### Collapse a Column
+
+Press the chevron at the right of a column's head (**Collapse Column**; it's in the cog's toolbar too) to fold the column into a thin strip, its colour bar on top, then its count and its name written down it (the name shows only when it fits whole). The other columns take the room it leaves. Press the strip, or its **Expand Column** chevron, to open it again.
+
+- **Drop cards on it:** drag a card onto a collapsed column and let go: it moves to the end of that column (in that swimlane's row, on a board with swimlanes), and the column stays collapsed. A column the card's type can't go in turns red and won't take it.
+- **Just for you:** collapsing changes nothing for anyone else and isn't undone with Undo. This browser remembers it for the board, so a reload or a maximised board keeps it. Everyone can collapse columns, Viewers included.
+- **Not on a phone**, and not on the smaller board inside a Dashboard slot: there every column shows open. Exports always draw every column open.
 
 ## The Board's Own Settings
 
@@ -105,8 +113,18 @@ The header holds **widgets**: Item Count, Completion, Filter, Only Mine, People,
 - **Add one:** press the **+** at the end of the board's header and pick a widget from the list. It lists only the widgets the board doesn't have yet, and adds the one you pick at the end of the header.
 - **Arrange them:** drag left or right, or focus one and press **Alt+←** or **Alt+→**.
 - **Take one off:** press **Edit Widgets** (the pencil after the **+**) and every widget shows an **×**; press one to take that widget off. Press **Done** (the check), Escape or anywhere outside the widgets when you're finished. Or focus a widget and press **Delete**.
-- **Narrow the board:** press a person in People, a type in Card Types, a priority, Unassigned or the overdue count; press again to see everything. Item Count reads "3 of 14 · Show all" while the board is narrowed. **Filter** and **Only Mine** are yours alone and aren't saved.
+- **Narrow the board:** press a person in People, a type in Card Types, a priority, Unassigned or the overdue count; press again to see everything. Item Count reads "3 of 14 · Show all" while the board is narrowed (**Show all** clears every narrowing). **Filter** and **Only Mine** are yours alone and aren't saved, unless you save them (below).
+- **Filter by a field:** type in **Filter** to narrow by words, or press **Add Filter** (the plus inside it) to add a chip for any field the board's cards have, **Card Type** included: pick the field, then one of its values, each with how many cards have it ("Card Type: Bug"). A card must match every chip; add up to eight. A chip's cross takes it off, and so does Backspace in the empty box.
 - **Stale Cards** counts cards not done that nobody has changed in 14 days. **Due Soon** counts overdue cards and those due in the next 7 days.
+
+### Saved Filters
+
+A team that opens the same slice of a board every morning (**My Bugs**, **Due This Week**) can save it once, on the board.
+
+- **Save one:** while something narrows the board, an Editor sees **Save Filter** (a bookmark with a plus) after the Filter widget. Give it a **Name** and press **Save** (or Enter). It keeps the words, the field chips, **Only Mine** and any widget you pressed, and shows as a chip with a small bookmark beside the Filter.
+- **Apply one:** press its chip to swap whatever you had for it; press it again to clear it. Applying it is just for you: nobody else's board changes. **Only Mine** means the cards of whoever applies it, and **Overdue** or **Due Soon** count from today, not from the day it was saved.
+- **Change one:** an Editor's chips end in a small chevron (**Saved Filter Options**): **Rename**, **Update to Current Filters** (keeps what the board shows now under that name) and **Delete**. Saving, changing and deleting are undone with **Undo** like any board change.
+- A board holds up to eight saved filters, each named once. Everyone who sees the board's widgets sees and applies them; only Editors save, rename, update and delete. They aren't shown on a phone or in a Dashboard slot.
 
 A board holds each widget once. Only people who can edit the plan add, move or remove widgets; everyone can use them.
 
@@ -115,6 +133,10 @@ A board holds each widget once. Only people who can edit the plan add, move or r
 To vote on cards, start a vote on the tab with the **Vote** button in the bottom-right corner. It shows on a tab whose board takes cards with votes, such as a **Retro** board or the Team Retro, Content Calendar and Feedback Board templates' boards, beside a **Timer**. While it runs, every card the tab's boards show has the vote's stepper in its corner: add your dots, take them back, within the vote's budget. When the host ends the vote, each card keeps the dots it gathered, and **Top Voted** and the card's ▲ count read them. See [Voting](/help/collaboration/session-tools/voting/).
 
 On a board that hides writing, everyone else's cards show face down (and take no dots) until someone who can edit presses **Reveal** in the header. Hiding is a facilitation aid, not privacy: it hides the card's face, not its data. It has no menu control: it comes with the board.
+
+## Change Several Cards at Once
+
+Cmd-click (Ctrl-click on Windows) or Shift-click cards, or choose **Select** in a card's right-click menu, and a bar under the header moves, assigns, prioritises, labels, flags, archives or trashes them all in one step; drag one of them and they all come. See [Select Several Cards](/help/plan/select-cards/).
 
 ## Archive and All Cards
 

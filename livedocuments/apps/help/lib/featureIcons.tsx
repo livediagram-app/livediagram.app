@@ -314,6 +314,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 12h4l2 5 4-12 2 7h6" />
     </Glyph>
   ),
+  // A magnifier over a word, with the arrow that swaps it for another.
+  'find-and-replace': (
+    <Glyph>
+      <circle cx="9.5" cy="9.5" r="5.5" />
+      <path d="M13.5 13.5l3 3" />
+      <path d="M7 9.5h5" />
+      <path d="M13 19.5h8M18.5 17l2.5 2.5-2.5 2.5" />
+    </Glyph>
+  ),
   'markdown-import': (
     <Glyph>
       <rect x="3" y="6" width="18" height="12" rx="2" />
@@ -1160,6 +1169,24 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M14 5h7M14 9h7M14 13h5" />
       <circle cx="5" cy="18.5" r="1" fill="currentColor" stroke="none" />
       <path d="M8 18.5h13" />
+    </Glyph>
+  ),
+  // A page whose writing holds a grid, its header row filled: a table that is part of the text.
+  'article-tables': (
+    <Glyph>
+      <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
+      <path d="M8 6h8" />
+      <rect x="8" y="9" width="8" height="8" rx="0.5" />
+      <path d="M8 11.5h8M8 14.25h8M12 9v8" />
+    </Glyph>
+  ),
+  // A page with a running line top and bottom, and contents entries with their dotted leaders between.
+  'contents-headers-footers': (
+    <Glyph>
+      <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
+      <path d="M7.5 5.5h9M7.5 18.5h9" />
+      <path d="M8 9.5h3M8 12h2M8 14.5h3" />
+      <path d="M12.5 9.5h1M14.5 9.5h1.5M11.5 12h1M14.5 12h1.5M12.5 14.5h1M14.5 14.5h1.5" />
     </Glyph>
   ),
   // A stack of cards: the one in front with a title and a line, two behind it.

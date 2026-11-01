@@ -81,7 +81,8 @@ is.
 Grouped by priority; each links the keyed article.
 
 Panels carry their article in their header (see "Panel headers carry their article"); the rest live in dialogs,
-in-panel settings (the Settings dialog's rows) and **empty-state messages**.
+in-panel settings (the Settings dialog's rows), **empty-state messages** and toolbars that appear only for one task
+(the board's selection bar).
 
 **High priority**
 
@@ -107,6 +108,13 @@ in-panel settings (the Settings dialog's rows) and **empty-state messages**.
 - Template starts -> `templates` (Start a Workshop, Start Making Pages)
 - Settings - Keyboard category (was the Shortcuts dialog) -> `keyboard-shortcuts`
 - Sign-in reasons modal -> `guest-vs-account`
+- A card's Activity tab, while it has nothing to list (**No Activity Yet**, **No Activity in This Browser**) ->
+  `card-activity` (`planCardActivity`), a **Learn more** text link as the empty state's action
+
+**Toolbars that appear on demand**
+
+- A board's selection bar (several cards selected) -> `select-cards` (`planSelectCards`): a `?` icon after its
+  actions, just before **Clear Selection**, so the bar's own actions stay in front
 
 The set can grow; new placements reuse `HelpArticleLink` + a `HELP_ARTICLES`
 key and never introduce a second linking pattern.

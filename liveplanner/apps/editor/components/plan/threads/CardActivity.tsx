@@ -8,6 +8,7 @@
 
 import { useMemo, useState, type ReactNode } from 'react';
 import { CompactEmptyState, Tooltip, TrashIcon, lucideGlyph } from '@liveplanner/ui';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import {
   lucideEraser,
   lucideFlag,
@@ -321,6 +322,7 @@ export function ActivityNote({ history }: { history: CardHistory }): ReactNode {
       <ActivityState
         title="No Activity in This Browser"
         description="Plans in This Browser keep no card history."
+        action={<HelpArticleLink article="planCardActivity" variant="text" />}
       />
     );
   if (history.status === 'error')
@@ -344,6 +346,7 @@ export function ActivityNote({ history }: { history: CardHistory }): ReactNode {
       <ActivityState
         title="No Activity Yet"
         description="Changes to this card show here: who moved it, what they set, and when."
+        action={<HelpArticleLink article="planCardActivity" variant="text" />}
       />
     );
   return <ActivitySkeleton />;

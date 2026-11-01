@@ -1,6 +1,9 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { TitleBarParts, VisibilityLegendFigure } from '@liveworkspace/help-site/art/illustrations/title-bar';
+import {
+  TitleBarParts,
+  VisibilityLegendFigure,
+} from '@liveworkspace/help-site/art/illustrations/title-bar';
 
 export const metadata = helpMetadata({
   title: 'The Title Bar',
@@ -29,6 +32,8 @@ The logo on the left takes you to the livedocuments home page. On a phone it sho
 ## The document name
 
 The name sits in the middle of the bar. To rename the document, click the name, type the new one, and press `Enter` (or click away) to keep it. `Escape` leaves the old name in place, and clearing the box and confirming keeps the old name too. Names are capped at 60 characters, the same limit the Explorer uses. You can also start a rename from the [command palette](/help/tips-and-tricks/command-palette/) with **Rename Document**.
+
+A new document names itself until you do: while it still has its starting name (such as "Untitled Infographic" or "Untitled Article"), the words you type on the first element of its first tab, or the Title of an article there, become its name. Once you rename it yourself, your name stays.
 
 Only people who can change the document's structure can rename it: its owner and anyone on an Editor link. On a Participant or Viewer link, or a [link to a single tab](/help/collaboration/sharing/one-tab/), the name is plain text and clicking it does nothing.
 

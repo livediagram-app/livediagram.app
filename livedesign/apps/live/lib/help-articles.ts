@@ -91,6 +91,8 @@ export const HELP_ARTICLES = {
   templates: 'canvas/templates',
   logoPages: 'pages/logo-pages',
   wireframePages: 'pages/wireframe-pages',
+  // The Inspect panel's header (docs/specs/007-editor/wireframe-pages.md "Inspect").
+  inspect: 'pages/wireframe-pages/inspect',
   photoPages: 'pages/photo-pages',
   // Each page kind's Show Me links its own article (docs/specs/007-editor/pages-tour.md).
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
@@ -163,6 +165,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   formatPainter: {
     title: 'Learn about the Format Painter',
     description: "Tips for copying one element's look onto others.",
+  },
+  inspect: {
+    title: 'Learn about Inspect',
+    description:
+      'Read sizes, spacing, colours and type off a wireframe, and hand them to developers.',
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',

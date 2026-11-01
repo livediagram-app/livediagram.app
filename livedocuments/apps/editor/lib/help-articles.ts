@@ -47,6 +47,8 @@ export const HELP_ARTICLES = {
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
   markdownImport: 'tools/markdown-import',
+  // The Find bar's `?` (docs/specs/007-editor/find-and-replace.md "The bar").
+  findAndReplace: 'tools/find-and-replace',
   linkingTabs: 'tabs/linking-tabs',
   // Teams
   // Canvas / themes
@@ -126,6 +128,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   sharePasswords: {
     title: 'Learn about share passwords',
     description: 'One password that guards every link to a document, embeds included.',
+  },
+  findAndReplace: {
+    title: 'Learn about Find and Replace',
+    description: 'What Find searches, Match Case and Whole Word, and who may replace.',
   },
   community: {
     title: 'Learn about the Community',

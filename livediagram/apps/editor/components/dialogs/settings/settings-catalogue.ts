@@ -1,3 +1,4 @@
+import { WEBHOOKS_CATEGORY } from '@liveworkspace/settings/account';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import {
   HIDE_CURSORS_HINT,
@@ -1369,6 +1370,26 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
     ],
   },
+  // Webhooks (liveworkspace/docs/specs/004-index/webhooks.md "Managing them"): an account's, like API tokens. Signed
+  // in, the Account section's Webhooks links to liveworkspace's Settings; a guest gets this stand-in in its place,
+  // the email stand-in's shape, so it says why and links to sign in as the API Tokens row does.
+  {
+    id: 'webhooks',
+    label: WEBHOOKS_CATEGORY.label,
+    parent: 'account',
+    rows: [
+      {
+        kind: 'note',
+        key: 'webhooksSignIn',
+        keywords: WEBHOOKS_CATEGORY.keywords,
+        label: WEBHOOKS_CATEGORY.label,
+        description: WEBHOOKS_CATEGORY.description,
+        note: WEBHOOKS_CATEGORY.signInNote,
+        signIn: true,
+        available: (ctx) => !ctx.signedIn,
+      },
+    ],
+  },
   {
     id: 'privacy',
     label: 'Privacy',
@@ -1416,7 +1437,7 @@ export function visibleCategories(ctx: SettingsRowContext): SettingsCategorySpec
 // What a workbench's Settings leave out (docs/specs/013-workspace/blueprints/workbench-embeds.md,
 // Surface table): the account and everything beyond the one document. A category nested under one
 // goes with it, so nothing is left without its parent.
-const WORKBENCH_HIDDEN_CATEGORIES = new Set(['documents', 'account', 'tokens']);
+const WORKBENCH_HIDDEN_CATEGORIES = new Set(['documents', 'account', 'tokens', 'webhooks']);
 
 function hiddenInWorkbench(category: SettingsCategorySpec): boolean {
   return (

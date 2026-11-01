@@ -158,13 +158,16 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             Yes. Write an article straight onto pages: Markdown shortcuts, a / menu for every block,
             and clean paste from web pages, Google Docs and Word. Writing flows onto new pages as it
-            grows, pictures, charts and tables sit in the text, and teammates comment on the words
-            themselves. Pick one of five looks, then export every page as a PDF, or the article as a
-            Word document to keep editing. See <a href="/help/pages/articles/">Articles</a>.
+            grows, tables run across pages with their header row repeated, pictures and charts sit
+            in the text, a table of contents keeps its page numbers up to date, and every page can
+            carry a header and footer. Find and Replace changes a word everywhere at once, and
+            teammates comment on the words themselves. Pick one of five looks, then export every
+            page as a PDF, or the article as a Word document to keep editing. See{' '}
+            <a href="/help/pages/articles/">Articles</a>.
           </>
         ),
         aText:
-          'Yes. Write an article straight onto pages: Markdown shortcuts, a / menu for every block, and clean paste from web pages, Google Docs and Word. Writing flows onto new pages as it grows, pictures, charts and tables sit in the text, and teammates comment on the words themselves. Pick one of five looks, then export every page as a PDF, or the article as a Word document to keep editing. See Articles.',
+          'Yes. Write an article straight onto pages: Markdown shortcuts, a / menu for every block, and clean paste from web pages, Google Docs and Word. Writing flows onto new pages as it grows, tables run across pages with their header row repeated, pictures and charts sit in the text, a table of contents keeps its page numbers up to date, and every page can carry a header and footer. Find and Replace changes a word everywhere at once, and teammates comment on the words themselves. Pick one of five looks, then export every page as a PDF, or the article as a Word document to keep editing. See Articles.',
       },
       {
         q: 'Can I make and present a slide deck?',
@@ -394,7 +397,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I bring in writing from elsewhere?',
-        a: 'Yes. Paste into an article from web pages, Google Docs and Word and it keeps its headings, lists and links. Through the MCP server, the CLI or the API, an AI assistant or a script can write an article from Markdown.',
+        a: 'Yes. Import a Word document as an article, or a PowerPoint deck as a tab of slides with its pictures and speaker notes; Google Docs and Google Slides come in through their own Word and PowerPoint downloads. Markdown imports as an article too. Paste into an article from web pages, Google Docs and Word and it keeps its headings, lists, links and tables. Through the MCP server, the CLI or the API, an AI assistant or a script can write an article from Markdown.',
       },
     ],
   },

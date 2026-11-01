@@ -21,9 +21,9 @@ import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 const ICON = 18;
 // Written out rather than read from @livedesign/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 15;
+export const TEMPLATE_COUNT = 33;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
-export const TEMPLATE_CATEGORY_COUNT = 3;
+export const TEMPLATE_CATEGORY_COUNT = 10;
 // The logo layouts, pinned the same way.
 export const LOGO_LAYOUT_COUNT = 25;
 
@@ -149,7 +149,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How many templates and themes are there?',
-        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, and twenty-four themes that recolour every page in one click, including dark and multi-colour schemes. On top of the templates, a logo page starts from one of ${LOGO_LAYOUT_COUNT} logo layouts. You can also build and save a colour scheme of your own.`,
+        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, grouped by what you are making (branding, shopping, social, travel, work, websites and more), and twenty-four themes that recolour every page in one click, including dark and multi-colour schemes. On top of the templates, a logo page starts from one of ${LOGO_LAYOUT_COUNT} logo layouts. You can also build and save a colour scheme of your own.`,
       },
       {
         q: 'Can I walk people through a design?',
@@ -182,12 +182,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             Yes. A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the
             screen you are planning, and starts from a ready-made screen. Five templates lay out
-            whole flows, from a mobile app to a web dashboard. See{' '}
+            whole flows, from a mobile app to a web dashboard. When it is agreed,{' '}
+            <a href="/help/pages/wireframe-pages/inspect/">Inspect</a> shows whoever builds it every
+            size, gap, colour and font, ready to copy as CSS. See{' '}
             <a href="/help/pages/wireframe-pages/">wireframe pages</a>.
           </>
         ),
         aText:
-          'Yes. A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the screen you are planning, and starts from a ready-made screen. Five templates lay out whole flows, from a mobile app to a web dashboard. See wireframe pages.',
+          'Yes. A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the screen you are planning, and starts from a ready-made screen. Five templates lay out whole flows, from a mobile app to a web dashboard. When it is agreed, Inspect shows whoever builds it every size, gap, colour and font, ready to copy as CSS. See wireframe pages.',
       },
       {
         q: 'Can I edit photos?',
@@ -256,7 +258,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I leave comments and assign follow-ups?',
-        a: 'Yes. Comment on anything on a page and reply in threads, then resolve them when they are done. You can also attach an action and assign it to a teammate, so the follow-ups stay with the design instead of getting lost.',
+        a: 'Yes. Comment on anything on a page, reply in threads or react with an emoji, then resolve them when they are done. You can also attach an action and assign it to a teammate, so the follow-ups stay with the design instead of getting lost.',
       },
       {
         q: 'Can I set up a team with shared designs?',

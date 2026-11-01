@@ -7,13 +7,21 @@ import { DeviceGlyph } from '@/components/canvas/wireframe/DeviceGlyph';
 import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@livedesign/ui';
 import {
+  lucideHeartPulse,
+  lucideImage,
   lucideLightbulb,
-  lucidePenTool,
+  lucideMessageCircle,
+  lucideMusic,
+  lucidePlane,
+  lucideRocket,
   lucideShapes,
+  lucideShoppingBag,
+  lucideSquareDashed,
+  lucideSquareKanban,
   lucideStar,
 } from '@liveworkspace/icons/lucide';
 import type { EditorMode } from '@livedesign/design';
-import { BLANK_TEMPLATE_FOR_MODE, type TemplateKind } from '@livedesign/templates';
+import type { TemplateKind } from '@livedesign/templates';
 import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@liveworkspace/workbench/components/canvas/useEmptyCardDismissed';
 import type { HelpArticleKey } from '@/lib/help-articles';
@@ -27,18 +35,27 @@ import { useStartPalette } from '@/components/start/useStartPalette';
 
 const glyph = (icon: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(icon, 16);
 
-// Each rail group's glyph (start-template-items.ts OWN_GROUPS).
+// Each rail group's glyph (start-template-items.ts OWN_GROUPS): Recommended, Blank Pages, then one per catalogue
+// category (docs/specs/008-canvas/canvas-and-palette.md "Template categories").
 const RAIL_ICONS: Readonly<Record<string, ReturnType<typeof lucideGlyph>>> = {
   recommended: glyph(lucideStar),
-  logos: glyph(lucideShapes),
-  // A phone, the device a wireframe is most often for (docs/specs/007-editor/wireframe-pages.md).
-  wireframes: WireframesIcon,
-  design: glyph(lucidePenTool),
+  'blank-pages': glyph(lucideSquareDashed),
+  branding: glyph(lucideShapes),
+  health: glyph(lucideHeartPulse),
+  media: glyph(lucideMusic),
+  onboarding: glyph(lucideRocket),
+  photos: glyph(lucideImage),
+  shopping: glyph(lucideShoppingBag),
+  social: glyph(lucideMessageCircle),
+  travel: glyph(lucidePlane),
+  // A browser window, the device a website is for (docs/specs/007-editor/wireframe-pages.md).
+  websites: WebsitesIcon,
+  work: glyph(lucideSquareKanban),
 };
 const FALLBACK_ICON = glyph(lucideLightbulb);
 
-function WireframesIcon() {
-  return <DeviceGlyph device="iphone" size={16} />;
+function WebsitesIcon() {
+  return <DeviceGlyph device="browser" size={16} />;
 }
 
 const COPY: Record<
@@ -105,12 +122,7 @@ export function StartFromTemplates({
       search={(query) =>
         start.search(query).map((g) => ({ category: g.group, cards: g.kinds.map(templateCard) }))
       }
-      onChoose={(kind) => {
-        onTemplate(kind as TemplateKind);
-        // The mode's own blank (Recommended's first card) lands one page with no kind, so the tab stays empty and the
-        // start would stay up over it, the card seemingly dead. It starts from a blank page, as the × does.
-        if (kind === BLANK_TEMPLATE_FOR_MODE[mode]) close();
-      }}
+      onChoose={(kind) => onTemplate(kind as TemplateKind)}
       onClose={close}
       // Where the new item lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
       footer={(palette) => <StartSaveSwitch palette={palette} />}

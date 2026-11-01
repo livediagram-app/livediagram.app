@@ -214,17 +214,39 @@ other kinds.
 
 ## Templates
 
-Start Making Pages ([Template start](start-diagramming.md)) holds a wireframe template per flow in its **Wireframes**
-category:
+Start Making Pages ([Template start](start-diagramming.md)) holds the blank wireframes in its **Blank Pages** group
+and each flow under the category of what it is for ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)):
 
 - **Blank wireframes**, one empty wireframe page in a device, its kind already chosen: **Blank Phone
   Wireframe** (iPhone), **Blank Tablet Wireframe** (iPad), **Blank Website Wireframe** (Browser),
   **Blank Laptop Wireframe** and **Blank Watch Wireframe**.
-- **Flows**, a row of wireframe pages, each named for its screen and laid out from a wireframe
-  layout: **Mobile App Wireframe** (iPhone: Onboarding, Sign In, Home, Product, Checkout),
-  **Website Wireframe** (Browser: Home, Pricing, Sign In), **Web App Wireframe** (Laptop: Overview,
-  Orders, Settings), **Tablet App Wireframe** (iPad: Discover, Messages, Profile) and **Watch App
-  Wireframe** (Watch: Glance, Today, Alert).
+- **Flows**, a row of wireframe pages, each named for its screen and laid out from a wireframe layout
+  (`WIREFRAME_FLOWS` in `packages/templates/src/wireframe-flow-data.ts`):
+
+| Template                | Device  | Screens                                               |
+| ----------------------- | ------- | ----------------------------------------------------- |
+| Mobile App Wireframe    | iPhone  | Onboarding, Sign In, Home, Product, Checkout          |
+| Social App Wireframe    | iPhone  | Feed, Stories, Post, New Post, Notifications, Profile |
+| Delivery App Wireframe  | iPhone  | Shop, Search, Item, Cart, Tracking                    |
+| Travel App Wireframe    | iPhone  | Search, Results, Boarding Pass, Explore               |
+| Ride App Wireframe      | iPhone  | Sign In, Where To, Your Ride, Updates                 |
+| Music App Wireframe     | iPhone  | Browse, Search, Now Playing, Podcast                  |
+| App Sign Up Wireframe   | iPhone  | Welcome, Sign Up, Verify, Permissions, Get Started    |
+| Website Wireframe       | Browser | Home, Pricing, Sign In                                |
+| Online Store Wireframe  | Browser | Shop, Product, Cart, Checkout                         |
+| Blog Wireframe          | Browser | Blog, Article, Contact                                |
+| Company Site Wireframe  | Browser | Home, Team, Help, Contact                             |
+| Web App Wireframe       | Laptop  | Overview, Orders, Settings                            |
+| Project Tool Wireframe  | Laptop  | Board, Tasks, Calendar, Team                          |
+| Team Inbox Wireframe    | Laptop  | Inbox, Conversation, Notifications, Settings          |
+| Tablet App Wireframe    | iPad    | Discover, Messages, Profile                           |
+| Video App Wireframe     | iPad    | Browse, Search, Watch, Profile                        |
+| Watch App Wireframe     | Watch   | Glance, Today, Alert                                  |
+| Fitness Watch Wireframe | Watch   | Workout, Heart Rate, Timer, Weather                   |
+| Watch Music Wireframe   | Watch   | Now Playing, Up Next                                  |
+
+A flow only uses layouts made for its device's form: the watch layouts on a watch, the rest on a phone, tablet,
+laptop or browser (`template-builders.test.ts` pins it).
 
 ## Export
 
@@ -268,7 +290,8 @@ them as CSS or as plain values, and export a picture of it, with nothing on the 
 ### The Inspect panel
 
 While Inspect is on, the **Inspect** panel is open: a mode panel ([Panel corner docking](panel-docking.md)),
-homed bottom-right like the Format and Laser panels. With nothing selected it reads "Select an element
+homed bottom-right like the Format and Laser panels, its header carrying the `?` to its help article
+([Contextual help links](../018-help/contextual-help-links.md)). With nothing selected it reads "Select an element
 to see its size, spacing, colours and type."; with several, "<n> elements selected. Select one to
 inspect it." With one, under the element's name (its kind, and its words when it has some):
 

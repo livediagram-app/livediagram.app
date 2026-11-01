@@ -1,0 +1,60 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Card Activity',
+  description:
+    'See who made a card, moved it and changed it, and when: the Activity tab on every card, with agents and undos marked.',
+  path: '/help/plan/card-activity/',
+});
+
+<ArticleLayout
+  title="Card Activity"
+  description="Every card keeps its own history, so you can see who moved it and what they changed without asking around."
+  categoryTitle="Plan"
+  categorySlug="plan"
+>
+
+Every [card](/help/plan/cards/) keeps a **history** of its own: who made it, who moved it from column to column, who set or cleared its fields, and when. Open a card and pick its **Activity** tab to read it. It answers "who moved this?" for one card; it isn't a log of the whole plan, and it doesn't undo anything (use **Undo** for that).
+
+## Open a Card's Activity
+
+Open a card and pick **Activity**, the last of its tabs. Every card has it, whatever its [card type](/help/plan/card-types/) holds, so a type with one tab now shows two. On a phone, **Activity** sits just before **Details**. A card always opens on its first tab, so the history is only read when you pick Activity.
+
+## What It Shows
+
+The newest changes come first, in groups by day: **Today**, **Yesterday**, then the date ("Mon 27 Oct"). Down the left runs a thin line; each person's run of changes hangs from their picture, with their name (**You** for yourself) and the time.
+
+Each change is one short line with a small glyph for its kind:
+
+- **Created** this card, and the column it started in ("Created this card in **To Do**").
+- **Moved** from one column to another ("Moved **In Progress** → **Review**").
+- **Set**, **changed** or **cleared** a field ("Set **Priority** to **High**", "Changed **Due Date** **3 Oct** → **10 Oct**", "Cleared **Estimate**"). A long value, such as the description or a checklist, is named rather than copied ("Edited the **Description**").
+- **Renamed**, **changed type**, **flagged** and **unflagged**, **archived** and **restored**, **trashed** and **restored from the Trash**.
+
+Statuses show as chips with a dot in their stage's colour, priorities in the priority's own colour. The old value shows before the arrow when the card's history still holds it. Changes one person makes within a minute read as one entry, and a change made and taken back inside that minute (a move there and back, a flag on and off) drops out.
+
+- **Times**: changes from today say how long ago ("2h ago"), older ones the time of day ("14:32"). Hover a time for the exact date and time.
+- **Long histories**: the first 20 entries show, then **Show N More** brings the rest. An entry with more than three changes shows three and **Show N More Changes**.
+- **Undo and redo**: a change someone took back with Undo ends with **(Undo)**, so a card moving back reads as a person taking their change back.
+- **AI agents**: a change made by an AI tool through the [MCP server](/help/account-and-data/connect-ai-mcp/), the [CLI](/help/developers/cli/) or the API carries the AI sparkle beside the name, worded by what it did: **Transitioned by AI** for a move, **Created by AI**, **Edited by AI**, **Renamed by AI**, **Trashed by AI**, **Archived by AI**, **Restored by AI**, **Flagged by AI** or **Unflagged by AI**, and **Changed by AI** when it did several kinds of thing.
+- **Forms**: a card made from a [form](/help/plan/forms/) response says so.
+- **Deleted accounts** read **Deleted account**.
+
+## What It Leaves Out
+
+Activity is about changes someone would ask about, so it leaves out a card's place within its column, the dots of a vote, and its [comment threads](/help/plan/cards/#comment-threads), which have their own place on the card. A card's history never travels with it: a duplicate, a copied plan or an imported card starts with none.
+
+## How Long It Keeps
+
+A card keeps its newest 200 entries, none older than 180 days. Trashing or archiving a card keeps its history; deleting it for good from the Trash deletes the history with it. A card made before history was kept, or with nothing left in that window, says **No Activity Yet**.
+
+Plans in **This Browser** keep no card history: their Activity tab says **No Activity in This Browser**. Save the plan to your account to start keeping it.
+
+If the history can't be read (you've lost your connection, say), the tab says **Couldn't Load Activity**, with **Try Again**.
+
+## Who Can See It
+
+Everyone who can open the card reads its Activity, Viewers included. Nobody writes it or edits it: the plan records each change as it is made. Someone on a link to one tab sees the history only of the cards that tab shows.
+
+</ArticleLayout>

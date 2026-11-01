@@ -135,7 +135,9 @@ missing.
 - **Find row**, left to right: the chevron (Show Replace / Hide Replace, `aria-expanded`), the Find
   field (placeholder "Find", the count inside its end), **Match Case** (`Aa`) and **Whole Word**
   (`ab` underlined) as toggles (`aria-pressed`), a hairline, **Previous Match** and **Next Match**,
-  and **Close Find**. Every control has a tooltip naming it and its key.
+  the help `?` (`HelpArticleLink`, the `findAndReplace` key: the Find and Replace article, in a new tab; left
+  out on a phone, where the row has no room and the header's Help is a press away), and **Close Find**. Every
+  control has a tooltip naming it and its key (the `?` its hover card).
 - **Replace row**: the Replace With field (placeholder "Replace With"), then **Replace** and
   **Replace All** (the primary button), and below them, only when there are held matches, one muted
   line: "4 can't be replaced: text you can't edit, or locked".
