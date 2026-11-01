@@ -14,6 +14,7 @@ import {
   NOTIFICATION_ROWS,
   PRIVACY_ROWS,
   readAccountToggle,
+  WEBHOOKS_CATEGORY,
   type AccountToggle,
 } from '@liveworkspace/settings/account';
 import { SettingsCategoryTile, SettingsSharedGlyph, SettingsSubcategoryGlyph } from './glyphs';
@@ -70,10 +71,6 @@ const toggleRow =
 
 const TOKENS_KEYWORDS =
   'api token key mcp integration script developer access create revoke secret';
-const WEBHOOKS_KEYWORDS =
-  'webhook webhooks slack microsoft teams channel post notify integration automation zapier url events signed';
-const WEBHOOKS_ABOUT =
-  'Post what happens to your items, or your team’s, to Slack, Microsoft Teams or any address you run.';
 
 /** The Account section's categories, by their own ids (the panel files them under the Account heading). */
 export function accountCategories(section: AccountSection): SettingsCategory[] {
@@ -161,22 +158,28 @@ export function accountCategories(section: AccountSection): SettingsCategory[] {
     ? {
         kind: 'custom',
         key: 'webhooks',
-        label: 'Webhooks',
-        description: WEBHOOKS_ABOUT,
-        keywords: WEBHOOKS_KEYWORDS,
-        section: 'Webhooks',
+        label: WEBHOOKS_CATEGORY.label,
+        description: WEBHOOKS_CATEGORY.description,
+        keywords: WEBHOOKS_CATEGORY.keywords,
+        section: WEBHOOKS_CATEGORY.label,
         render: renderWebhooks,
       }
     : webhooksHref
       ? {
-          ...linkOut('webhooks', 'Webhooks', WEBHOOKS_ABOUT, webhooksHref, 'Manage'),
-          keywords: WEBHOOKS_KEYWORDS,
+          ...linkOut(
+            'webhooks',
+            WEBHOOKS_CATEGORY.label,
+            WEBHOOKS_CATEGORY.description,
+            webhooksHref,
+            'Manage',
+          ),
+          keywords: WEBHOOKS_CATEGORY.keywords,
         }
       : null;
   if (webhooks) {
     categories.push({
       id: 'webhooks',
-      label: 'Webhooks',
+      label: WEBHOOKS_CATEGORY.label,
       icon: (
         <SettingsSubcategoryGlyph>
           <SettingsSharedGlyph id="webhooks" />
