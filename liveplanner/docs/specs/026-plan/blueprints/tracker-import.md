@@ -17,7 +17,7 @@ Asana, Jira or Linear export, planning what it makes, and writing it from the ed
 | what it makes     | `TrackerImportPlan { preview, type, columns, creates, room }` from `planTrackerImport(board, ctx)` (`tracker-plan.ts`)                                    |
 | imported comments | `importedCommentsThread(input)` (`packages/project/src/imported-thread.ts`)                                                                               |
 | the writes        | editor `useTrackerImport` (`apps/editor/hooks/plan/useTrackerImport.ts`); agents `importTrackerBoard` (`packages/agent-verbs/src/plan/tracker-import.ts`) |
-| the dialog's view | `ImportView = 'file' \| 'tracker'` (`apps/editor/components/dialogs/ImportTabDialog.tsx`)                                                                 |
+| the tool rows     | `TOOL_ROWS` (`apps/editor/components/dialogs/import/import-options.tsx`) in the one Import dialog, `ImportTabDialog`                                      |
 
 ## Package `@liveplanner/items`: `src/tracker-import/` (pure)
 
@@ -161,15 +161,30 @@ fileName?, source?, projectId?, name?, preview? }`: `readTrackerInput` refuses a
 
 ## Editor
 
-- `ImportTabDialog` takes `view` and `onView` (`ImportView`, held by `useEditorDialogs`, opened with
-  `openImportOn(view)`); a two-button switch (`liveplanner File`, `Another Tool`) heads it when `canImport`; the
-  tracker view is `TrackerImportPanel` (`apps/editor/components/dialogs/tracker-import/`), loaded with the dialog.
-- `TrackerImportPanel`: the choose view (`TrackerChooseView`: a drop-zone styled button that also takes a dropped
-  file, the four sources named, a closed "Where to Find the Export" section, the one-off note), a busy state, the
-  preview (`TrackerPreviewView`) and an inline error with Choose Another File. The file is read by
-  `apps/editor/lib/tracker-file.ts` (`readTrackerText`, `readTrackerDrop`: the 20 MB cap before reading) and parsed
-  by `readTrackerFile(text, (t) => parseCsv(t).rows, name)`. The footer (`DialogFooter`) holds the summary line,
-  Choose Another File and Import.
+- `ImportTabDialog` is the one Import dialog ([Import dialog](../plan-tabs.md#the-import-dialog)); its list is
+  `ImportChooseView` (`apps/editor/components/dialogs/import/`): `Into This Tab` (`intoTabOf(tab)`, `into-tab.ts`)
+  then, when `tracker.canImport`, `A Board from Another Tool`, both `OptionRows kind="action"`. The tool rows are
+  `TOOL_ROWS` (`import-options.tsx`: source, file type, the line naming the file and where it lives, `ToolMark` from
+  `tool-marks.tsx`), each `aria-label` "<Tool>: <line>". A row calls `flow.pick(source)`; the row being read says
+  "Reading the File…" (`flow.reading`).
+- The dialog (`ariaLabel="Import"`, `initialFocus="container"` so focus starts on the panel, not the help link) is
+  headed **Import**, "Choose what to bring in, or drop a file here." (the drop clause `pointer-coarse:hidden`). Each
+  section's `OptionRows` roves (one row in the Tab order, ArrowUp / ArrowDown / Home / End), its hint a wrapping
+  line; the tool list is `aria-busy` while a file is read. A dimmed Into This Tab row's reason is a full-contrast line
+  under it, not the dimmed row's own text. The liveplanner Tab step is the paste panel (`TextImportPanel`, its
+  `initialText` a dropped tab's JSON) under the **All Imports** back bar; with nothing else in the list
+  (`!tracker.canImport`, a JSON tab that is not locked) the dialog opens on it with no back bar.
+- `useTrackerFlow(tracker, onDone)` (`apps/editor/components/dialogs/tracker-import/useTrackerFlow.ts`): `{ preview, busy, reading, error, pick,
+show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT, { maxBytes })` and reads by
+  `readTrackerText(text, name)` (`apps/editor/lib/tracker-file.ts`), whose refusal carries its code; `show` previews
+  a board already read (a drop). The file's own source wins over the row pressed.
+- A drop on the list: `routeImportDrop(text, name, { intoTab, tools })` (`apps/editor/components/dialogs/import/import-drop.ts`) after the 20 MB
+  check. A tab's JSON is told by `"kind": "liveplanner.tab"` in its first 512 characters, a tool's CSV by its first
+  line (`isTrackerCsvHead`), so a file is parsed once, by the import it goes to.
+- `TrackerImportPanel` (`{ head, flow, preview }`): the preview under the dialog's `BackBar` (**All Imports**, the
+  tool's name as its chip, `flow.back`), an inline error, and the footer (`DialogFooter`): the summary line,
+  **Choose Another File** (`flow.pick(preview.board.source)`, a cancel keeps the preview) and **Import**. The dialog
+  is headed "Import from <Tool>" while it shows.
 - `TrackerPreviewView`: sections Columns (chips with counts), Fields (a table: From, Becomes, Cards; a "New Field"
   pill), People, Comments, Left Out, then Where To as `OptionRows` (the tab row dimmed with its reason when not
   `fits`, with an amber note). The preview is planned once per file and target (state), never per render; Import
@@ -184,10 +199,10 @@ fileName?, source?, projectId?, name?, preview? }`: `readTrackerInput` refuses a
   `createBatches` write, then `writeItem` for the rest; a guest, the plan is made in This Browser
   (`offlineCreateProject`, `offlineWriteItem`); then it opens. Telemetry `Plan` · `Imported` · the source's name.
   Any failure: "Couldn’t import those cards. Try again."
-- Entry points: the tab menu's `Import from Another Tool…` after Import (`TabPortalMenu` prop `onImportFromTool`) and
-  the command palette's `Import from Another Tool…` (`import-tracker`), both only when `canImport`
-  (`!isStructureReadOnly`: an Editor's, so Participants and Viewers see neither). A locked tab does not dim the row:
-  the import makes a new tab and leaves the locked one alone.
+- Entry points: none of its own. The tab menu's `Import…` (`TabPortalMenu`, lit by `canImport`: TabBar's
+  `canImportFromTool || !intoTabOf(tab).blocked`) and the palette's `import` command open the one dialog; the tool
+  section shows only when `canImport` (`!isStructureReadOnly`: an Editor's, so Participants and Viewers never see it).
+  A locked tab does not dim the section: the import makes a new tab and leaves the locked one alone.
 
 ## Errors and edge cases
 
@@ -242,8 +257,9 @@ fileName?, source?, projectId?, name?, preview? }`: `readTrackerInput` refuses a
 - api: a bulk create with threads and no key is not tagged `undo`.
 - agent-verbs (100% coverage): into a plan (type save, changeset, bulk chunks, stale retry), into a new plan, preview,
   refusals (`items_full`, `source_mismatch`, `forbidden` from the api), the verb's lines, the MCP tool's parity.
-- editor: the dialog's switch and states, the preview's sections and dimmed target, the menu row's gating for an
-  Editor, a Participant and a Viewer, and `useTrackerImport`'s writes in order.
+- editor: the dialog's list (sections, rows, keys, the tool section only for an Editor), a dropped file's route
+  (`import-drop.test.ts`), the preview's sections and dimmed target, the menu row's single `Import…` and its dimming,
+  and `useTrackerImport`'s writes in order.
 
 ## Constants and configuration
 

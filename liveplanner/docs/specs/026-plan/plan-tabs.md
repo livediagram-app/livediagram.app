@@ -41,17 +41,56 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
   Sheet tab's toolbar sits in the top row beside the menu box, in a card of its own
   ([Sheet](../029-sheets/sheet.md#sheet-tab)).
 - Anything else added to a Board or Sheet tab (a paste, an agent) is hidden under the element, as for Fill Tab.
-- **Import and Export** in a Board or Sheet tab's tab menu are only what fits its element, in place of the
-  project's Import dialog: **Import CSV…** and **Export** (the Export dialog, with only the formats that suit the
-  kind, its CSV among them: [Export](#export)), in that order. There is no separate Download CSV row: CSV is one of
-  the Export dialog's formats.
-  - A **Sheet tab**: **Import CSV…** (the Sheet's own file picker and import, for someone who may shape it; dimmed
-    otherwise). Sheet Settings then leaves Import CSV… and Download CSV out; a Sheet on any other tab keeps them there.
-  - A **Board tab**: **Import CSV…** (each row a new card on the board, for someone who may add cards: an Editor or a
-    Participant; dimmed for a Viewer, and on an Archive board). The rules are the board's [CSV](plan-board.md#csv).
-  - Every tab, a Board or Sheet tab's included: **Import from Another Tool…** after Import, opening the project's
-    Import dialog on its From Another Tool view, for an Editor; dimmed otherwise and on a locked tab
-    ([Importing from another tool](tracker-import.md#where-it-lives)).
+- **Import and Export** in a Board or Sheet tab's tab menu are the same two rows as every tab's: **Import…** (the
+  [Import dialog](#the-import-dialog), whose Into This Tab row is the tab's CSV) and **Export** (the Export dialog,
+  with only the formats that suit the kind, its CSV among them: [Export](#export)), in that order. There is no
+  separate Import CSV… or Download CSV row: CSV is one of each dialog's choices.
+  - A **Sheet tab**: the dialog's **CSV** row is the Sheet's own file picker and import, for someone who may shape it.
+    Sheet Settings then leaves Import CSV… and Download CSV out; a Sheet on any other tab keeps them there.
+  - A **Board tab**: the dialog's **CSV** row makes each row a new card on the board, for someone who may add cards
+    (an Editor or a Participant; not a Viewer, and not on an Archive board). The rules are the board's
+    [CSV](plan-board.md#csv).
+
+## The Import dialog
+
+**One dialog holds every way in.** The tab menu's **Import…** row (on every tab, from its **⋯** and the canvas
+right-click menu alike) and the command palette's **Import…** both open it; nothing else in the editor offers an
+import of its own beside it. It is headed **Import**, "Choose what to bring in, or drop a file here.", with the
+Import Tabs help link and Close, and opens on its list:
+
+- **Into This Tab**: what the tab itself takes, one row.
+  - A **Board tab**: **CSV**, "A .csv or .tsv, each row a new card on this board." Pressing it closes the dialog and
+    opens the board's own picker ([CSV](plan-board.md#csv)).
+  - A **Sheet tab**: **CSV**, "A .csv or .tsv into this sheet's cells." Pressing it closes the dialog and opens the
+    Sheet's own picker ([CSV](../029-sheets/sheet.md#csv)).
+  - **Any other tab** (a Dashboard or Form tab, or one not yet started): **liveplanner Tab**, "A tab's JSON from
+    Export. Replaces this tab." Pressing it opens the paste-or-file step ([Import and Export of a
+    Dashboard](#import-and-export-of-a-dashboard)) under an **All Imports** back bar: the amber warning naming the
+    tab, the box to paste into, **Import a file instead** and **Import**.
+  - The row is dimmed, its line saying why, when this person may not import into the tab: "This tab is locked.
+    Unlock it to import into it.", "Only someone who may add cards can import here." (a board) or "Only someone who
+    may change this sheet can import here." (a Sheet).
+- **A Board from Another Tool**, for an Editor only: **Trello**, **Asana**, **Jira** and **Linear**, each with the
+  tool's mark, its file type at the right and a line naming the file and where the tool keeps it
+  ([Importing from another tool](tracker-import.md#where-it-lives)). Under the section, one quiet line: "A one-off
+  copy into a new Board tab or plan, after a preview."
+- **Dropping a file** anywhere on the list reads it as what it is: a liveplanner tab's JSON goes to the liveplanner
+  Tab import (when the tab offers it, and not locked), another tool's export to its preview (an Editor's), and any
+  other CSV into a Board or Sheet tab as its CSV row would. A file none of them takes says why under the list, which
+  stays as it was: "That file isn't a liveplanner tab or a Trello, Asana, Jira or Linear export." (a Dashboard or
+  Form tab), "That file isn't a CSV or a Trello, Asana, Jira or Linear export." (a Board or Sheet tab), "A liveplanner
+  tab's JSON imports into a Dashboard or Form tab. This tab takes a CSV.", "This tab takes a CSV, and that file is
+  JSON." (no tools offered), the row's own reason when it is dimmed, or the tool reader's refusal (not JSON, no cards,
+  too many cards). A file over 20 MB is refused unread, as a picked one is. While a file is dragged over, the list
+  shows a dashed outline and **Drop to Import**. A file is parsed once, by the import it goes to: a tab's JSON is told
+  by its envelope's first lines, a tool's CSV by its header row.
+- **When the list holds one row and it is liveplanner Tab** (someone who is not an Editor, on a Dashboard or Form
+  tab), the dialog opens straight at its step, with no back bar.
+- The rows are the Plan option list ([Option lists](plan-board.md#option-lists)): one is in the Tab order,
+  ArrowUp / ArrowDown / Home / End move between them, Enter or Space presses. On a phone the dialog is a sheet and its
+  rows' lines wrap rather than cut.
+- **The tab menu row** is dimmed only when the dialog would offer nothing to press: no tool section and the Into This
+  Tab row dimmed.
 
 ### Names
 
@@ -346,8 +385,9 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
 
 ## Import and Export of a Dashboard
 
-- **Import** on a Dashboard tab's tab menu opens the Import dialog straight at **JSON**, the only format it offers: a
-  Dashboard tab's own `.json` export (Export's JSON), pasted or picked (the picker asks for `.json`). It replaces the
+- **Import…** on a Dashboard tab's tab menu opens the [Import dialog](#the-import-dialog), whose Into This Tab row is
+  **liveplanner Tab**, the only format a Dashboard takes: a Dashboard tab's own `.json` export (Export's JSON), pasted,
+  picked (the picker asks for `.json`) or dropped on the dialog. It replaces the
   dashboard's rows, slots and elements with the file's, in one undo step; the slots follow their elements' new ids.
 - An imported or duplicated Dashboard's layout is its own: every row and slot takes a new id, a figure from a Sheet on
   the tab names the copy of that Sheet made with it (as a chart from it does), and a layout read with a repeated row or

@@ -18,21 +18,25 @@ import makes a second board. liveplanner still has no connectors to other tracke
 
 ## Where it lives
 
-- **The plan's Import dialog** has a second view, **From Another Tool**, beside the tab's own JSON import. The tab
-  menu's **Import from Another Tool…** row (after Import, on every tab, a Board or Sheet tab's included) and the
-  command palette's **Import from Another Tool…** open the dialog on it; the dialog's own switch moves between
-  **liveplanner File** and **Another Tool**. A locked tab does not dim the row: the import makes a new tab and leaves
-  the locked one as it is.
+- **The plan's one Import dialog**, the same one every import goes through
+  ([Import dialog](plan-tabs.md#the-import-dialog)). It opens on its list of what can come in, and the four tools are
+  rows of its **A Board from Another Tool** section, each with the tool's mark, its name, the file to bring and where
+  the tool keeps it. There is no separate menu row, palette command or switch for them: the tab menu's **Import…** and
+  the command palette's **Import…** open the dialog, as for every other import.
+- A row opens the file picker. **The file says which tool it came from**, so the row is a starting point, not a
+  promise: a Jira CSV picked from the Trello row is read as Jira's. A file **dropped** on the dialog's list is read the
+  same way.
+- A locked tab does not dim the section: the import makes a new tab and leaves the locked one as it is.
 - **Agents**: the MCP's `import_board` tool and the CLI's `liveplanner board import` read the same files the same way
   ([Agents](#agents)).
 
 ## Who may
 
-| Role            | May                                                                                                     |
-| --------------- | ------------------------------------------------------------------------------------------------------- |
-| **Editor**      | Import into a new Board tab of the plan, or into a new plan.                                            |
-| **Participant** | Nothing here: an import makes a tab, columns and a card type, which are an Editor's. No row or command. |
-| **Viewer**      | Nothing here; no row or command.                                                                        |
+| Role            | May                                                                                                                         |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Editor**      | Import into a new Board tab of the plan, or into a new plan.                                                                |
+| **Participant** | Nothing here: an import makes a tab, columns and a card type, which are an Editor's. The dialog shows them no tool section. |
+| **Viewer**      | Nothing here; the dialog shows them no tool section.                                                                        |
 
 A new plan is the importer's own, so anyone signed in or a guest may make one from the editor's New; the editor offers
 it from inside a plan only to an Editor, as the dialog is an Editor's. The api refuses a Participant's or a Viewer's
@@ -40,7 +44,8 @@ writes (`403 forbidden`) whatever sends them.
 
 ## Reading the file
 
-- **Choose a File** opens the picker (`.json`, `.csv`, `.tsv`), or a file is dropped on it. A file over **20 MB** is refused before it is read:
+- A tool's row opens the picker (`.json`, `.csv`, `.tsv`), or a file is dropped on the dialog. While it is read the row
+  says **Reading the File…** and the list waits. A file over **20 MB** is refused before it is read:
   "That file is too big to import. Imports read files up to 20 MB." (a Trello export carries every action on the
   board, so it is the largest of the four).
 - The source comes from the file: a JSON object with `lists` and `cards` is a Trello board; a CSV whose header names
@@ -153,7 +158,9 @@ Choosing a file shows what the import will make, before anything is written:
   when the plan has no room for every card (a plan holds 2,000; "This plan has room for 120 more cards and this file
   has 340"), or no room for the card type, the tab choice is dimmed with that reason and New Plan is chosen. A file
   of more than 2,000 cards is refused outright: "That file has 2,345 cards. A plan holds up to 2,000."
-- **Import** makes it; **Choose Another File** goes back. The dialog's footer says what will happen in one line:
+- The preview is headed by the dialog's **All Imports** back bar, the tool's name at its right. **Import** makes it;
+  **Choose Another File** opens the picker again for the same tool, and the back bar returns to the list. The
+  dialog's footer says what will happen in one line:
   "Makes a Board tab with 4 columns and 120 cards."
 
 ## The import
