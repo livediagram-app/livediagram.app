@@ -24,7 +24,8 @@ type = "Data"
 globs = ["**/*.ttf", "**/*.otf"]
 
 # Secrets (wrangler secret put): each app's Worker key, sent as a bearer token.
-#   MEDIA_KEY_LIVEDIAGRAM, MEDIA_KEY_LIVEPLANNER, MEDIA_KEY_LIVEDOCUMENTS, MEDIA_KEY_LIVEDESIGN
+#   MEDIA_KEY_LIVEDIAGRAM, MEDIA_KEY_LIVEPLANNER, MEDIA_KEY_LIVEDOCUMENTS, MEDIA_KEY_LIVEDESIGN,
+#   MEDIA_KEY_LIVEHUDDLE (livehuddle, held until launch)
 #   shared with that app's api Worker as MEDIA_KEY. An app without one can't use the service, and the
 #   unused-image sweep doesn't wait for it. Previews call that app's export door with the same key.
 [vars]
@@ -39,6 +40,7 @@ APP_ORIGIN_LIVEDIAGRAM = "https://www.livediagram.app"
 APP_ORIGIN_LIVEPLANNER = "https://www.liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://www.livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://www.livedesign.app"
+APP_ORIGIN_LIVEHUDDLE = "https://www.livehuddle.app"
 
 [[services]]
 binding = "INDEX"
@@ -76,6 +78,7 @@ APP_ORIGIN_LIVEDIAGRAM = "https://staging.livediagram.app"
 APP_ORIGIN_LIVEPLANNER = "https://staging.liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://staging.livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://staging.livedesign.app"
+APP_ORIGIN_LIVEHUDDLE = "https://staging.livehuddle.app"
 
 [[env.staging.services]]
 binding = "INDEX"

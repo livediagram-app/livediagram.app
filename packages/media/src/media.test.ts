@@ -1,4 +1,4 @@
-import { APP_SITES } from '@liveworkspace/sites';
+import { REGISTERED_APP_SITES } from '@liveworkspace/sites';
 import { describe, expect, it } from 'vitest';
 import {
   ACCEPTED_IMAGE_TYPES,
@@ -12,8 +12,8 @@ import {
 } from './index';
 
 describe('MEDIA_APPS', () => {
-  it('lists every app site, so a new app cannot be left out of the gallery', () => {
-    expect([...MEDIA_APPS].sort()).toEqual(APP_SITES.map((s) => s.id).sort());
+  it('lists every app site, a held one too, so a new app cannot be left out of the gallery', () => {
+    expect([...MEDIA_APPS].sort()).toEqual(REGISTERED_APP_SITES.map((s) => s.id).sort());
   });
 
   it('knows its own apps only', () => {

@@ -36,7 +36,7 @@ workers_dev = false
 #                         DELETE /app/people/<id> when an account closes (src/drive-disconnect.ts); optional,
 #                         without it (or the DRIVE binding) nothing is sent
 #   TELEMETRY_KEY_LIVEDIAGRAM, TELEMETRY_KEY_LIVEPLANNER, TELEMETRY_KEY_LIVEDOCUMENTS,
-#   TELEMETRY_KEY_LIVEDESIGN
+#   TELEMETRY_KEY_LIVEDESIGN, TELEMETRY_KEY_LIVEHUDDLE (livehuddle, held until launch)
 #                         each app's key on the telemetry service (the telemetry Worker's values), to
 #                         count Email·Sent for the onboarding emails under the app each speaks for;
 #                         optional, an app without one isn't counted

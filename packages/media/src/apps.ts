@@ -9,6 +9,8 @@ export const MEDIA_APPS = [
   'liveplanner.app',
   'livedocuments.app',
   'livedesign.app',
+  // Registered before its launch (liveworkspace/docs/specs/002-architecture/integrating-an-app.md).
+  'livehuddle.app',
 ] as const satisfies readonly Exclude<SiteId, 'liveworkspace.app'>[];
 
 export type MediaApp = (typeof MEDIA_APPS)[number];

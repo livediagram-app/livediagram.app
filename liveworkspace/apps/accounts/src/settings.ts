@@ -2,7 +2,7 @@
 // app reads the same ones. A row is one owner's settings in one scope: 'all', shown by every app, or
 // one app's site id, shown only there. Writes patch keys one by one, so two apps writing different
 // keys never undo each other.
-import { APP_SITES, type SiteId } from '@liveworkspace/sites';
+import { REGISTERED_APP_SITES, type SiteId } from '@liveworkspace/sites';
 import { GUEST_ID, USER_ID } from './ids.ts';
 
 // The most one row's JSON may take, in bytes. Also the settings_size check in 0003_settings.sql,
@@ -15,7 +15,9 @@ export type SettingsApp = Exclude<SiteId, 'liveworkspace.app'>;
 export type SettingsScope = 'all' | SettingsApp;
 export type Prefs = Record<string, unknown>;
 
-const APPS: ReadonlySet<string> = new Set(APP_SITES.map((site) => site.id));
+// Every registered app, a held one too (integrating-an-app.md "Registered before launch"): its settings scope, its
+// OAuth client and its sightings are accepted before it is listed anywhere.
+const APPS: ReadonlySet<string> = new Set(REGISTERED_APP_SITES.map((site) => site.id));
 
 export function isSettingsApp(value: unknown): value is SettingsApp {
   return typeof value === 'string' && APPS.has(value);

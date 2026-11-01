@@ -16,6 +16,7 @@ export interface Env {
   TELEMETRY_KEY_LIVEPLANNER?: string;
   TELEMETRY_KEY_LIVEDOCUMENTS?: string;
   TELEMETRY_KEY_LIVEDESIGN?: string;
+  TELEMETRY_KEY_LIVEHUDDLE?: string;
 }
 
 // Each app's own secret, named per app so no app can ever be handed another's.
@@ -24,6 +25,7 @@ const KEYS: Record<TelemetryApp, keyof Env> = {
   'liveplanner.app': 'TELEMETRY_KEY_LIVEPLANNER',
   'livedocuments.app': 'TELEMETRY_KEY_LIVEDOCUMENTS',
   'livedesign.app': 'TELEMETRY_KEY_LIVEDESIGN',
+  'livehuddle.app': 'TELEMETRY_KEY_LIVEHUDDLE',
 };
 
 export function appKey(env: Env, app: TelemetryApp): string | undefined {

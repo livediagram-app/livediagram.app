@@ -66,7 +66,7 @@ export async function registerClient(request: Request, env: Env, auth: Auth): Pr
     return Response.json(
       {
         error: 'invalid_request',
-        message: `Needs name, redirectUris, an app (livediagram.app, liveplanner.app, livedocuments.app or livedesign.app) and a resource from: ${RESOURCES[env.ENVIRONMENT].join(', ')}`,
+        message: `Needs name, redirectUris, an app (livediagram.app, liveplanner.app, livedocuments.app, livedesign.app or livehuddle.app) and a resource from: ${RESOURCES[env.ENVIRONMENT].join(', ')}`,
       },
       { status: 400 },
     );
