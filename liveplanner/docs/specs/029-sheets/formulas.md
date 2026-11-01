@@ -237,4 +237,6 @@ optional. Each behaves as its Google Sheets namesake; where Sheets and Excel dif
   waiting show their last value, faded.
 - The engine bounds its work: a formula reading more than 1,000,000 cells, or a recalculation of more than
   5,000,000 cell reads, stops with `#NUM!` in the cells it did not reach and says "This sheet is too large to
-  recalculate at once".
+  recalculate at once". The 5,000,000 is the whole recalculation's total (everything worked out between one change
+  and the next, however many cells are read one by one), not each cell's: once the total passes it, every formula
+  worked out after that shows `#NUM!`, until the next change gives the recalculation a fresh budget.
