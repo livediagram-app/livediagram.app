@@ -107,7 +107,7 @@ export function InheritedPartNotice({
         </span>
       </p>
       {/* The base's settings as this type takes them: shown, never edited here. */}
-      <div inert role="group" aria-label={`${baseLabel}’s ${part}`} className="opacity-80">
+      <div inert role="group" aria-label={`${baseLabel}’s ${part}`} className="opacity-60 saturate-50">
         {children}
       </div>
     </div>
