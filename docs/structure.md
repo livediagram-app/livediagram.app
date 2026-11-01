@@ -76,9 +76,11 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 ├─ livedocuments/              forked from livediagram in-tree (Pages mode only)
 │  ├─ apps/                    the same set as livediagram's
 │  └─ packages/                @livedocuments/*
-└─ livedesign/                 forked from livedocuments in-tree (logo, wireframe and photo pages)
-   ├─ apps/                    live (its editor), api, mcp, cli, marketing, help, community, router
-   └─ packages/                @livedesign/*, with photo-engine of its own
+├─ livedesign/                 forked from livedocuments in-tree (logo, wireframe and photo pages)
+│  ├─ apps/                    live (its editor), api, mcp, cli, marketing, help, community, router
+│  └─ packages/                @livedesign/*, with photo-engine of its own
+└─ livehuddle/                 planned, awaiting approval: its product spec only (meetings, workshops, Avatar mode)
+   └─ docs/specs               the spec and build plan; forked from livediagram in-tree once approved
 ```
 
 livedocuments (first called livepages) was forked from livediagram `main` at `82e6ed79a` on 2026-10-22
