@@ -154,7 +154,7 @@ export function BoardWidgetZone({
       size={size}
       palette={palette}
       aria-label="Add a widget"
-      aria-haspopup="menu"
+      aria-haspopup="dialog"
       aria-expanded={pickerAt !== null}
       onClick={(e) => {
         if (pickerAt) return setPickerAt(null);

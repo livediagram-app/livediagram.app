@@ -153,6 +153,16 @@ describe('BoardWidgetZone +', () => {
     expect(screen.queryByRole('dialog', { name: 'Add a Widget' })).toBeNull();
   });
 
+  // The gallery is a dialog (a search, a rail and tiles), not a menu: a screen reader told "menu" expects menu items
+  // and arrow keys from the button.
+  it('says the + opens a dialog', () => {
+    show(true);
+    const add = screen.getByRole('button', { name: 'Add a widget' });
+    expect(add.getAttribute('aria-haspopup')).toBe('dialog');
+    fireEvent.click(add);
+    expect(screen.getByRole('dialog', { name: 'Add a Widget' })).toBeTruthy();
+  });
+
   it('works out For You only as the gallery opens', () => {
     const suggest = vi.fn(() => [
       { id: 'due' as const, score: 1, reason: '3 cards have due dates' },
