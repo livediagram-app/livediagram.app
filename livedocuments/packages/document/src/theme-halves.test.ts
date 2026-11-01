@@ -53,6 +53,49 @@ describe('viewElementInTheme', () => {
   });
 });
 
+// "A page's own paper": a label with no fill of its own is read against the page under it.
+describe('viewElementInTheme on a filled page', () => {
+  const darkPage = '#19354b';
+  // White words on a dark cover: white is a theme fill, which the half draws dark.
+  const words = { type: 'text', textColor: '#ffffff' };
+
+  it('keeps the stored ink when the half would sink the words into the page', () => {
+    expect(viewElementInTheme(words, map, darkPage)).toBe(words);
+  });
+
+  it('keeps the other colours it redraws', () => {
+    const el = { ...words, strokeColor: '#0369a1' };
+    expect(viewElementInTheme(el, map, darkPage)).toEqual({ ...el, strokeColor: '#7dd3fc' });
+  });
+
+  it('redraws the ink when it still reads on the page, or reads better', () => {
+    // On a light page the dark slate reads.
+    expect(viewElementInTheme(words, map, '#f8fafc')).toEqual({ ...words, textColor: '#1e293b' });
+    // The theme's text drawn light reads on the dark page.
+    const ink = { type: 'text', textColor: '#0c4a6e' };
+    expect(viewElementInTheme(ink, map, darkPage)).toEqual({ ...ink, textColor: '#e0f2fe' });
+  });
+
+  it('reads a box on its own fill, and a see-through box on the page', () => {
+    // A pale card on the dark page: its words read on the card, whatever the page.
+    const boxed = { type: 'shape', fillColor: '#fef9c3', textColor: '#ffffff' };
+    expect(viewElementInTheme(boxed, map, darkPage)).toEqual({ ...boxed, textColor: '#1e293b' });
+    const clear = { type: 'shape', fillColor: 'transparent', textColor: '#ffffff' };
+    expect(viewElementInTheme(clear, map, darkPage)).toBe(clear);
+    // A shape with no fill stored takes the theme's, so its words sit on that, not the page.
+    const filled = { type: 'shape', textColor: '#ffffff' };
+    expect(viewElementInTheme(filled, map, darkPage)).toEqual({ ...filled, textColor: '#1e293b' });
+  });
+
+  it('leaves an element whose text the view keeps anyway', () => {
+    const outline = { type: 'text', strokeColor: '#0369a1' };
+    expect(viewElementInTheme(outline, map, darkPage)).toEqual({
+      ...outline,
+      strokeColor: '#7dd3fc',
+    });
+  });
+});
+
 describe('themeColourMap and stored preset colours', () => {
   // A shape styled with Bold before every label met the text floor stores white on a mid-tone fill. The map reads
   // those colours too, so the box is drawn as today's Bold in the viewer's half.
