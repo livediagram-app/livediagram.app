@@ -130,6 +130,20 @@ describe('concept validation and export', () => {
     expect(cycle).toContain('>loop<');
   });
 
+  it('splits a funnel tier with its value as the canvas does: the label left, the value right and muted', () => {
+    const el = applyShapeVariant(make('pyramid'), 'funnel');
+    const svg = svgBoxed(el);
+    const xOf = (word: string) =>
+      Number(new RegExp(`<text x="([0-9.-]+)"[^>]*>${word}<`).exec(svg)?.[1]);
+    const tier = pyramidLayout(el.width, el.height, el.conceptRows!.length, 'funnel').tiers[0]!
+      .label;
+    // Each centred in its own half of the tier, never run together as one line.
+    expect(svg).not.toContain('Visited  12,400');
+    expect(xOf('Visited')).toBeCloseTo(el.x + tier.x + tier.width / 4, 1);
+    expect(xOf('12,400')).toBeCloseTo(el.x + tier.x + (tier.width * 3) / 4, 1);
+    expect(svg).toMatch(/opacity="0.7"[^>]*>12,400</);
+  });
+
   it('writes a stage on a pale disc in an ink that reads there, not the canvas ink its centre words take', () => {
     // A pale fill under a light ink: the light ink is right for the centre words on a dark canvas, wrong on the disc.
     const svg = svgBoxed(
