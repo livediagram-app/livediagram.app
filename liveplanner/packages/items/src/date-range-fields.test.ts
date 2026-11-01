@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import {
   dateRangeText,
@@ -81,6 +82,14 @@ describe('a range’s ends', () => {
 });
 
 describe('writing a range', () => {
+  it('stays linear on long runs of spaces', () => {
+    const spaces = `2026-10-31${' '.repeat(50_000)}x`;
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < 20; i += 1) expect(parseDateRange(spaces, false)).toBeUndefined();
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(50));
+  });
+
   it('reads an ISO 8601 interval, " to ", or a list of its two ends', () => {
     expect(parseDateRange('2026-10-31/2026-11-02', false)).toEqual(['2026-10-31', '2026-11-02']);
     expect(parseDateRange('2026-11-02 to 2026-10-31', false)).toEqual(['2026-10-31', '2026-11-02']);

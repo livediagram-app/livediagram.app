@@ -75,9 +75,31 @@ export function rangeWithEnd(
 }
 
 // The interval separators a range is written with: " to " when the text has one (its days may be day-first, 31/10/2026),
-// else ISO 8601's "/".
-const TO = /\s+to\s+/i;
-const endsOf = (text: string): string[] => (TO.test(text) ? text.split(TO) : text.split('/'));
+// else ISO 8601's "/". Read by a hand-written scanner, not /\s+to\s+/, which slows to a crawl on long runs of spaces.
+const isSpace = (c: string | undefined): boolean => c !== undefined && /\s/.test(c);
+const endsOf = (text: string): string[] => {
+  const parts: string[] = [];
+  let from = 0;
+  let i = 0;
+  while (i < text.length) {
+    if (!isSpace(text[i])) {
+      i += 1;
+      continue;
+    }
+    let j = i;
+    while (isSpace(text[j])) j += 1;
+    if (text.slice(j, j + 2).toLowerCase() === 'to' && isSpace(text[j + 2])) {
+      let k = j + 2;
+      while (isSpace(text[k])) k += 1;
+      parts.push(text.slice(from, i));
+      from = k;
+      i = k;
+    } else i = j;
+  }
+  if (parts.length === 0) return text.split('/');
+  parts.push(text.slice(from));
+  return parts;
+};
 
 // A range written by a person, an agent or a file as the field stores it, or undefined. `input` is a list of two
 // ends or text ("2026-10-31/2026-11-02", "2026-10-31 to 2026-11-02"); each end is a day read by `readDay` (YYYY-MM-DD
