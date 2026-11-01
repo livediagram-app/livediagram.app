@@ -11,6 +11,7 @@ livediagram/     livediagram.app
 liveplanner/     liveplanner.app
 livedocuments/   livedocuments.app: articles, slides and infographics
 livedesign/      livedesign.app: logos, wireframes and photos
+livehuddle/      livehuddle.app (planned): meetings and workshops; its product spec only, awaiting approval
 docs/            how this repo is laid out, CI and deploys, and the move from the historical livediagram.app
 ```
 
