@@ -155,7 +155,7 @@ describe('the menu box joined to the sidebar', () => {
   });
 
   it('joins for every role: a Viewer’s menu box as an Editor’s', () => {
-    expect(chrome({ readOnly: true } as Partial<CanvasChromeProps>).menuJoined).toBe(true);
+    expect(chrome({ readOnly: true }).menuJoined).toBe(true);
   });
 
   it('lets go while the sidebar is dragged across, and joins again once it lands', () => {
