@@ -7,7 +7,7 @@ injection then needs a policy's help, and every policy is small, named and liste
 ## The header
 
 - **Every HTML response carries** `Content-Security-Policy: require-trusted-types-for 'script'; trusted-types
-liveworkspace-markup nextjs ProseMirrorClipboard default`, enforced from the start, never
+liveworkspace-markup liveworkspace-inert-parse nextjs ProseMirrorClipboard default`, enforced from the start, never
   report-only.
 - **Where it is set**: the editor's worker (`apps/editor/src/worker.ts`) beside its other security headers; the four
   static apps (marketing, help, telemetry) in their `public/_headers`. The router adds nothing; it holds no
@@ -17,7 +17,7 @@ liveworkspace-markup nextjs ProseMirrorClipboard default`, enforced from the sta
 
 ## Our policies
 
-Both come from `@liveworkspace/trusted-types`, built once for every app and for liveworkspace.app, and
+All three come from `@liveworkspace/trusted-types`, built once for every app and for liveworkspace.app, and
 re-exported with this app's header by `@livedocuments/ui`'s `trusted-types`. Nothing else of ours creates a policy. Every
 app creates the same policies under the same names, so a page that renders another app's UI (liveworkspace.app's
 telemetry dashboard, the Explorer each app's router serves from liveworkspace.app) never needs another app's names
@@ -36,6 +36,9 @@ in its header.
   sticker and template SVG builders (`@liveworkspace/icons`, `@livedocuments/templates`), the headless tab renderer's
   thumbnails, the JSON-LD block, and the inline boot scripts in each layout. It does not sanitise; the trust is that
   the markup came from one of those builders, which is why nothing else may call it.
+- **`liveworkspace-inert-parse`** lets `DOMParser` read HTML pasted into an article (a table copied from a
+  spreadsheet, a web page or a document) through `parseInert(source, type)`. A parsed document is inert: nothing in
+  it runs; its cells are rebuilt as plain elements and handed back to ProseMirror's own paste parser.
 - **Outside the browser** (the static prerender, tests without Trusted Types) the helpers pass strings through.
 
 ### Server-rendered markup

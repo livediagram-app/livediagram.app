@@ -25,6 +25,7 @@ import {
   itemCaller,
   itemNotFound,
   isItemEditor,
+  blockersRefused,
   editorOnly,
   writer,
 } from './item-route-kit';
@@ -90,6 +91,13 @@ export async function patches(ctx: PlanRouteContext, projectId: string): Promise
         const bound = fieldsWithinBounds(next.fields);
         if (bound) return rejectedFor(id, bound);
       }
+      // Blockers are an Editor's, and the batch never closes a loop (docs/specs/026-plan/item-types.md "Blocked By").
+      const blocked = await blockersRefused(
+        ctx,
+        caller,
+        [...nexts].map(([id, next]) => ({ before: stored.get(id)!, next })),
+      );
+      if (blocked) return blocked;
       return nexts;
     },
     { tag: historyTagOf(ctx, undo) },

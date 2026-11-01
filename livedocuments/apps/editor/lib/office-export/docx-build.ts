@@ -9,6 +9,8 @@ import {
   ARTICLE_TEXT_SIZE_PX,
   articleMarginPx,
   articlesOf,
+  articleTocEntries,
+  bandDate,
   articleTopMarginPx,
   legibleOn,
   nextArticleBlockId,
@@ -17,6 +19,7 @@ import {
   pagesOf,
   resolveArticleStyle,
   resolveFontStack,
+  tocDepthOf,
   zoneCanvasRect,
   zoneMemberIds,
   type ArticleBlock,
@@ -70,6 +73,10 @@ export type DocxInput = {
   pages: readonly LaidOutPage[];
   title: string;
   themeAccent: string;
+  /** The page each heading of an article fell on in the editor (1 its first page), when it is laid out. */
+  headingPages?: (flow: string) => ReadonlyMap<string, number> | undefined;
+  /** Today's date as a header or footer writes it (bandDate); injected so tests are stable. */
+  date?: string;
 };
 
 /** How many zones the export draws, for its progress. */
@@ -119,8 +126,21 @@ export async function buildDocx(
   for (const [i, flow] of flows.entries()) {
     // A second article starts on a new page, as it does in the row.
     if (i > 0) blocks.push({ id: nextArticleBlockId(), type: 'pageBreak' });
-    for (const b of articles[flow]!.blocks) {
+    const own = articles[flow]!.blocks;
+    let pages: ReadonlyMap<string, number> | undefined;
+    for (const b of own) {
       throwIfCancelled(progress.signal);
+      if (b.type === 'toc') {
+        // The contents of its own article, each heading with the page the editor laid it on.
+        pages ??= input.headingPages?.(flow) ?? new Map();
+        const depth = tocDepthOf(b);
+        const entries = articleTocEntries(own, depth).map((e) => {
+          const page = pages!.get(e.id);
+          return page === undefined ? e : { ...e, page };
+        });
+        blocks.push({ type: 'docxToc', id: b.id, depth, entries });
+        continue;
+      }
       if (b.type !== 'zone') {
         blocks.push(b);
         continue;
@@ -145,5 +165,16 @@ export async function buildDocx(
       topMarginPx: articleTopMarginPx(style),
     },
     blocks,
+    ...(style?.header || style?.footer || style?.differentFirstPage
+      ? {
+          bands: {
+            ...(style.header ? { header: style.header } : {}),
+            ...(style.footer ? { footer: style.footer } : {}),
+            differentFirstPage: style.differentFirstPage === true,
+            name: input.title,
+            date: input.date ?? bandDate(),
+          },
+        }
+      : {}),
   };
 }

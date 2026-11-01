@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import {
   looksLikeMarkdown,
@@ -85,5 +86,46 @@ describe('Markdown pasted into an article', () => {
     expect(plainTextBlocks('a\n\nb').map((b) => b.type === 'paragraph' && b.runs[0]!.text)).toEqual(
       ['a', 'b'],
     );
+  });
+});
+
+describe('pasted tables and contents', () => {
+  it('recognises a pipe table or a [TOC] line as Markdown, and plain bars as not', () => {
+    expect(looksLikeMarkdown('| a | b |\n|---|---|\n| 1 | 2 |')).toBe(true);
+    expect(looksLikeMarkdown('[TOC]')).toBe(true);
+    expect(looksLikeMarkdown('| a | b |\n| 1 | 2 |')).toBe(false);
+  });
+
+  it('tells Markdown in linear time on runs of brackets', () => {
+    const brackets = `x${'['.repeat(50_000)}`;
+    const links = `x${'[a]('.repeat(20_000)}`;
+    const ms = cpuMsOf(() => {
+      expect(looksLikeMarkdown(brackets)).toBe(false);
+      expect(looksLikeMarkdown(links)).toBe(false);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(50));
+  });
+
+  it('reads a pipe table as a table block', () => {
+    const [table] = parseMarkdownBlocks('| a | b |\n:---: | ---\n| 1 | 2 |');
+    if (table?.type !== 'table') throw new Error('no table');
+    expect(table.header).toBe(true);
+    expect(table.cols).toHaveLength(2);
+    expect(table.rows.map((r) => r.cells.map((c) => c[0]?.text ?? ''))).toEqual([
+      ['a', 'b'],
+      ['1', '2'],
+    ]);
+  });
+
+  it('keeps an all-empty header table with no body as one empty row', () => {
+    const [table] = parseMarkdownBlocks('|  |  |\n|---|---|');
+    expect(table?.type === 'table' && table.rows).toHaveLength(1);
+  });
+
+  it('reads [TOC] lines as contents blocks', () => {
+    expect(shape('# A\n\n[TOC 2]')).toEqual([
+      { type: 'paragraph', style: 'h1', runs: [{ text: 'A' }] },
+      { type: 'toc', depth: 2 },
+    ]);
   });
 });

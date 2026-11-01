@@ -6,10 +6,10 @@ import type { ArticleListKind, ArticleParagraphStyle } from '@livedocuments/docu
 export type SlashAction =
   | { kind: 'style'; style: ArticleParagraphStyle | 'code' }
   | { kind: 'list'; list: ArticleListKind }
-  | { kind: 'block'; block: 'divider' | 'pageBreak' }
+  | { kind: 'block'; block: 'divider' | 'pageBreak' | 'table' | 'toc' }
   | {
       kind: 'insert';
-      what: 'image' | 'table' | 'chart' | 'pie' | 'line' | 'drawing' | 'callout' | 'sticky';
+      what: 'image' | 'chart' | 'pie' | 'line' | 'drawing' | 'callout' | 'sticky';
     };
 
 export type SlashItem = {
@@ -127,6 +127,22 @@ const SLASH_ITEMS: readonly SlashItem[] = [
     action: { kind: 'block', block: 'pageBreak' },
   },
   {
+    id: 'table',
+    label: 'Table',
+    group: 'Blocks',
+    keywords: 'grid rows columns cells spreadsheet',
+    hint: 'Rows and columns in the text',
+    action: { kind: 'block', block: 'table' },
+  },
+  {
+    id: 'toc',
+    label: 'Table of Contents',
+    group: 'Blocks',
+    keywords: 'contents toc outline headings index',
+    hint: 'The headings, with their pages',
+    action: { kind: 'block', block: 'toc' },
+  },
+  {
     id: 'image',
     label: 'Image',
     group: 'Insert',
@@ -134,14 +150,7 @@ const SLASH_ITEMS: readonly SlashItem[] = [
     hint: 'A picture in the text',
     action: { kind: 'insert', what: 'image' },
   },
-  {
-    id: 'table',
-    label: 'Table',
-    group: 'Insert',
-    keywords: 'grid rows columns',
-    hint: 'Rows and columns',
-    action: { kind: 'insert', what: 'table' },
-  },
+
   {
     id: 'chart',
     label: 'Bar chart',

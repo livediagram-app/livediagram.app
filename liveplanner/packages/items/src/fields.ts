@@ -114,7 +114,10 @@ export type ItemRejection =
   | 'field_time_tracked'
   | 'time_invalid'
   | 'time_full'
-  | 'time_not_yours';
+  | 'time_not_yours'
+  // A write that would make a card block itself, directly or through others (docs/specs/026-plan/item-types.md
+  // "Blocked By").
+  | 'blocks_cycle';
 
 type FieldsResult =
   { ok: true; fields: ItemFields } | { ok: false; error: ItemRejection; field?: string };

@@ -47,6 +47,15 @@ function tokensAfter(source: string, marker: string, close: string): string[] {
 }
 
 // The api's email templates: `export type EmailKind = 'Welcome' | ...;`.
+// ARTICLE_BLOCK_INSERT_EVENT's values (apps/editor/lib/article/article-telemetry.ts).
+const ARTICLE_BLOCK_INSERTS = [
+  'ArticleDivider',
+  'ArticlePageBreak',
+  'ArticleQuote',
+  'ArticleCode',
+  'ArticleTable',
+  'ArticleContents',
+];
 const EMAIL_KINDS = tokensAfter(read('api/src/email/templates.ts'), 'export type EmailKind', ';');
 
 // The verbs the CLI counts (packages/agent-verbs), as their `Cli·Used` types.
@@ -299,10 +308,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   // ARTICLE_BLOCK_INSERT_EVENT (apps/editor/lib/article/article-telemetry.ts): a block put into an
   // article from the page toolbar's Insert or the slash menu.
   'apps/editor/components/canvas/article/PageToolbar.tsx Element·Added': {
-    values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
+    values: ARTICLE_BLOCK_INSERTS,
   },
   'apps/editor/components/canvas/article/ArticleEditor.tsx Element·Added': {
-    values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
+    values: ARTICLE_BLOCK_INSERTS,
   },
   'apps/editor/app/document/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,

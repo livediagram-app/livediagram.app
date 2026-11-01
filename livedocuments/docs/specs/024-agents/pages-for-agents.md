@@ -127,8 +127,11 @@ Writes an article's text from **Markdown**.
   such as `…/Mercury_(planet)` reads back whole. A title or subtitle wrapped in quotes is written inside the other
   quote, so its quotes read back, and without front matter an opening divider is written `***`, never read as front
   matter. A line holding only
-  `\pagebreak` is a page break. An article's text holds no tables: a Markdown table is written as a list, one item
-  per row, and the answer says how many it wrote that way and points at a table element on a page instead.
+  `\pagebreak` is a page break. A pipe table (a header line, a `|---|` line, then rows) is a table block, its header
+  line the header row unless every header cell is empty (then no header row and no such row); cells keep their
+  inline marks and links, `\|` is a literal bar, and a `<br>` in a cell is a line break. A table is written back the
+  same way, its cells' bars escaped. A line holding only `[TOC]` is a contents block (its depth written as `[TOC 2]`
+  when it lists fewer than three levels).
 - **Front matter** sets the title and subtitle: a first line `---`, then `title: ...` and `subtitle: ...` lines, then
   `---`. They become the article's `title` and `subtitle` blocks, first. Without front matter the text is written as
   given (a replace keeps no old title).
@@ -147,7 +150,7 @@ Writes an article's text from **Markdown**.
 - **On a stack of flashcards** each card is an article of its own: `article` names a card by flow id or title (an
   unknown or ambiguous name is refused saying "cards"), `new: true` adds a card after the last, a size other than
   `card` or a portrait orientation is refused (`size_not_offered`), and the blocks go through `flashcardBlocks`: page
-  breaks and zones are left out and a table is written as a list, the answer saying so. A card never flows: writing
+  breaks, zones and contents blocks are left out and a table is written as a list, the answer saying so. A card never flows: writing
   past its foot is kept, and the editor marks it Too long.
 - **The answer**: the article's flow id, title, pages, block count and words, and the page count it reaches is
   settled in the editor (below), said plainly: "Written: 42 blocks, 1,830 words. The article flows onto more pages

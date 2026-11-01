@@ -14,6 +14,7 @@ import {
   type ArticleListKind,
   type ArticleParagraphStyle,
 } from '@livedocuments/document';
+import { articleTableNodes } from './article-schema-table';
 
 const PARAGRAPH_TAG: Record<ArticleParagraphStyle, string> = {
   body: 'p',
@@ -332,6 +333,7 @@ export const articleSchema = new Schema({
         ];
       },
     },
+    ...articleTableNodes,
     text: { group: 'inline' },
     hard_break: {
       inline: true,

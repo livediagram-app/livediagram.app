@@ -110,7 +110,21 @@ export const KIND_ALIASES: Record<PickKind, readonly string[]> = {
   votes: ['like', 'upvote', 'thumbs', 'poll', 'dot vote'],
   colour: ['color', 'swatch', 'hue', 'highlight', 'tint'],
   image: ['picture', 'photo', 'screenshot', 'mock-up', 'mockup', 'upload', 'attachment', 'cover'],
-  card: ['parent', 'epic', 'relation', 'related', 'reference', 'child', 'linked card', 'lookup'],
+  card: [
+    'parent',
+    'epic',
+    'relation',
+    'related',
+    'reference',
+    'child',
+    'linked card',
+    'lookup',
+    'blocked by',
+    'blocker',
+    'depends on',
+    'dependency',
+    'waiting on',
+  ],
   calculated: ['formula', 'computed', 'rollup', 'roll-up', 'sum', 'total'],
 };
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   canSplitFlashcardAt,
   flashcardBlocks,
+  flashcardCut,
   flashcardSpeakingSeconds,
   flashcardWordCount,
   speakingTimeLabel,
@@ -201,6 +202,34 @@ describe('text only', () => {
       { id: 'z', type: 'zone', zone: 'object', width: 100, height: 100 },
     ];
     expect(flashcardBlocks(mixed).map((b) => b.id)).toEqual(['a', 'd']);
+  });
+
+  it('writes a table as a list, a row an item, its header row bold, and leaves contents out', () => {
+    const cut = flashcardCut([
+      p('a', 'Hi'),
+      {
+        id: 't',
+        type: 'table',
+        header: true,
+        cols: [
+          { id: 'c0', w: 0.5 },
+          { id: 'c1', w: 0.5 },
+        ],
+        rows: [
+          { id: 'r0', cells: [[{ text: 'Name' }], [{ text: 'Age' }]] },
+          { id: 'r1', cells: [[{ text: 'Ada' }], []] },
+        ],
+      },
+      { id: 'x', type: 'toc' },
+    ]);
+    expect(cut.tables).toBe(1);
+    expect(cut.leftOut).toBe(1);
+    expect(cut.blocks.map((b) => ('runs' in b ? b.runs : b.type))).toEqual([
+      [{ text: 'Hi' }],
+      [{ text: 'Name', b: true }, { text: ' · ' }, { text: 'Age', b: true }],
+      [{ text: 'Ada · ' }],
+    ]);
+    expect(new Set(cut.blocks.map((b) => b.id)).size).toBe(3);
   });
 });
 

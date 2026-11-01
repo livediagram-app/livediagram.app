@@ -5,6 +5,7 @@
 import { themeAccent, type Deck, type LaidOutPage, type Tab } from '@livedocuments/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { ImageExportOpts } from '../export-tab';
+import { articleHandleOf } from '../article/article-editor-store';
 import { getTheme } from '../themes';
 import { buildDocx } from './docx-build';
 import { DOCX_MIME, writeDocx } from './docx-write';
@@ -40,6 +41,11 @@ export const OFFICE_EXPORT_MESSAGES: Readonly<Record<OfficeExportFailure, string
   failed: "Couldn't make the file. Try again, or export a PDF.",
 };
 
+// The page each heading fell on in the article's editor, for a contents block's page numbers; none while no editor
+// has laid the article out.
+const articleHeadingPages = (flow: string): ReadonlyMap<string, number> | undefined =>
+  articleHandleOf(flow)?.headingPages();
+
 export async function exportOfficeFile(
   input: OfficeExportInput,
   progress: ExportProgress = {},
@@ -54,7 +60,11 @@ export async function exportOfficeFile(
       blob = new Blob([writePptx(deck)], { type: PPTX_MIME });
     } else {
       const doc = await buildDocx(
-        { ...input, themeAccent: themeAccent(getTheme(input.tab.theme, 'light')) },
+        {
+          ...input,
+          themeAccent: themeAccent(getTheme(input.tab.theme, 'light')),
+          headingPages: articleHeadingPages,
+        },
         drawer,
         progress,
       );

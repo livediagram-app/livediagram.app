@@ -1,5 +1,6 @@
 import { useThreadStore } from '@/components/plan/threads/CardThreadsContext';
 import { itemsWithCounts } from '@/hooks/plan/thread-store';
+import { donePhase } from '@liveplanner/items';
 import { usePlan } from '@/components/plan/PlanContext';
 import { tabCsvText } from '@/lib/export-plan/tab-csv';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -181,9 +182,18 @@ export function ExportTabDialog({
   );
   const planTypes = plan?.types;
   const planCatalogue = plan?.itemTypes.catalogue ?? null;
+  // The plan-wide done columns, for the blocked badge (docs/specs/026-plan/item-types.md "Blocked By").
+  const planPhases = plan?.statusPhases;
   const planOpts = useMemo(
-    () => (planItems ? { items: planItems, itemTypes: planTypes } : {}),
-    [planItems, planTypes],
+    () =>
+      planItems
+        ? {
+            items: planItems,
+            itemTypes: planTypes,
+            ...(planPhases ? { itemsDone: donePhase(planPhases) } : {}),
+          }
+        : {},
+    [planItems, planTypes, planPhases],
   );
   // The text formats' view of the same (docs/specs/026-plan/items.md "Copies and exports").
   const planData = useMemo<TabPlanData | undefined>(

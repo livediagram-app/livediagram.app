@@ -25,7 +25,17 @@ export type ArticleDrawOp =
       runs?: { text: string; weight: string; style: string }[];
     }
   | { k: 'rect'; x: number; y: number; w: number; h: number; fill: string; r?: number }
-  | { k: 'line'; x1: number; y1: number; x2: number; y2: number; stroke: string; width: number }
+  | {
+      k: 'line';
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+      stroke: string;
+      width: number;
+      // Dotted (a contents entry's leader), dots one width long and two apart.
+      dash?: true;
+    }
   | { k: 'check'; x: number; y: number; size: number; stroke: string; done: boolean };
 
 /** The operations as SVG markup in canvas coordinates. */
@@ -38,7 +48,7 @@ export function articleOpsToSvg(ops: readonly ArticleDrawOp[]): string {
       );
     } else if (op.k === 'line') {
       out.push(
-        `<line x1="${r2(op.x1)}" y1="${r2(op.y1)}" x2="${r2(op.x2)}" y2="${r2(op.y2)}" stroke="${xmlEscape(op.stroke)}" stroke-width="${r2(op.width)}"/>`,
+        `<line x1="${r2(op.x1)}" y1="${r2(op.y1)}" x2="${r2(op.x2)}" y2="${r2(op.y2)}" stroke="${xmlEscape(op.stroke)}" stroke-width="${r2(op.width)}"${op.dash ? ` stroke-dasharray="${r2(op.width)} ${r2(op.width * 2)}"` : ''}/>`,
       );
     } else if (op.k === 'check') {
       const { x, y, size: z } = op;

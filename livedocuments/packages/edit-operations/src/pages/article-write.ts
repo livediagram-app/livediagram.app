@@ -11,7 +11,7 @@ import {
   articlesOf,
   articleTitleOf,
   elementIdsOnPage,
-  flashcardBlocks,
+  flashcardCut,
   pagesOf,
   layOutPages,
   MAX_ARTICLE_BLOCK_TEXT,
@@ -178,10 +178,12 @@ export function applyArticleWrite(
       (b): b is ArticleZoneBlock => b.type === 'zone' && read.droppedZones.includes(b.id),
     );
   }
-  // A card holds text only: zones and page breaks are left out.
-  const kept = stack ? flashcardBlocks(blocks) : blocks;
-  const leftOut = blocks.length - kept.length;
-  blocks = kept;
+  // A card holds text only: zones, page breaks and contents are left out, tables written as lists.
+  const cut = stack ? flashcardCut(blocks) : { blocks, tables: 0, leftOut: 0 };
+  const leftOut = cut.leftOut;
+  // Each table written as a list adds its rows less the one block it was.
+  const fromTables = cut.blocks.length - blocks.length + leftOut;
+  blocks = cut.blocks;
   // An article always has a block to write in.
   if (blocks.length === 0) blocks = [{ id: nextArticleBlockId(), type: 'paragraph', runs: [] }];
   if (blocks.length > MAX_ARTICLE_BLOCKS)
@@ -208,15 +210,12 @@ export function applyArticleWrite(
 
   const title = articleTitleOf(next);
   lines.push(
-    `${created ? 'Started' : append ? 'Appended to' : 'Wrote'} the ${noun} "${title}" (${flow}): ${append ? `${read.blocks.length - read.keptZones.length - leftOut} blocks added, ` : ''}${blocks.length} blocks.`,
+    `${created ? 'Started' : append ? 'Appended to' : 'Wrote'} the ${noun} "${title}" (${flow}): ${append ? `${read.blocks.length - read.keptZones.length - leftOut + fromTables} blocks added, ` : ''}${blocks.length} blocks.`,
   );
-  if (read.tables)
-    lines.push(
-      stack
-        ? `Wrote Markdown tables as lists (${read.tables}): a card holds text only.`
-        : `Wrote Markdown tables as lists (${read.tables}): an article's text holds no tables (put a table element on a page with update_document).`,
-    );
-  if (leftOut) lines.push(`Left out zones and page breaks (${leftOut}): a card holds text only.`);
+  if (cut.tables)
+    lines.push(`Wrote Markdown tables as lists (${cut.tables}): a card holds text only.`);
+  if (leftOut)
+    lines.push(`Left out zones, page breaks and contents (${leftOut}): a card holds text only.`);
   if (gone.length)
     lines.push(`Removed zones and what was in them: ${gone.map((z) => z.id).join(', ')}.`);
   if (markersGone) lines.push(`Removed margin notes whose text is gone (${markersGone}).`);

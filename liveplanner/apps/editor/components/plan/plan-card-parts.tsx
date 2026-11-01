@@ -2,10 +2,11 @@
 
 // The small parts a card face is built from (docs/specs/026-plan/plan-board.md "What the board shows"): the type
 // chip, the number on its type's colour, the priority's signal bars, the footer's pills (due, start, estimate, checklist, comments, votes),
-// label chips, the flag and the vote control. PlanCardFace lays them out per card size.
+// label chips, the flag, the blocked badge and the vote control. PlanCardFace lays them out per card size.
 import {
   COMMENTS_FIELD,
   PRIORITY_LABELS,
+  blockedLabel,
   itemCommentCount,
   threadFieldOn,
   type Item,
@@ -13,7 +14,8 @@ import {
   type Priority,
 } from '@liveplanner/items';
 import { contrastRatio } from '@liveplanner/project';
-import { CommentIcon } from '@liveplanner/ui';
+import { CommentIcon, Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { lucideLink } from '@liveworkspace/icons/lucide';
 import { useFieldThreadCount } from '@/hooks/plan/thread-store';
 import { useThreadStore } from './threads/CardThreadsContext';
 import { PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
@@ -316,5 +318,27 @@ export function RepeatMark({ color }: { color: string }) {
     <span className="mt-0.5 shrink-0" role="img" aria-label="Repeats">
       <PlanTypeGlyph glyph="repeat" size={13} color={color} />
     </span>
+  );
+}
+
+// A blocked card's badge (docs/specs/026-plan/item-types.md "Blocked By"): a red link and how many of its blockers
+// are open, beside the flag on every size.
+export const BLOCKED_COLOUR = '#dc2626';
+const LinkGlyph = lucideGlyph(lucideLink, 12);
+
+export function BlockedMark({ count }: { count: number }) {
+  return (
+    <Tooltip label={blockedLabel(count)}>
+      <span
+        data-blocked-mark=""
+        className="mt-0.5 inline-flex shrink-0 items-center gap-0.5 text-[11px] font-semibold leading-none"
+        style={{ color: BLOCKED_COLOUR }}
+        role="img"
+        aria-label={blockedLabel(count)}
+      >
+        <LinkGlyph weight={2} />
+        <span aria-hidden>{count}</span>
+      </span>
+    </Tooltip>
   );
 }

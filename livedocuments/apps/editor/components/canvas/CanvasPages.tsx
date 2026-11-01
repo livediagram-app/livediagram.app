@@ -58,6 +58,8 @@ import { FlashcardFooter, FlashcardStackSheets } from './FlashcardStack';
 import { FLASHCARD_STACK_MAX } from '@/lib/flashcard-stack';
 import { ArticleStyleSection } from './article/ArticleStyleSection';
 import { useStylePanelRequest } from '@/lib/article/article-editor-store';
+import { pageBandLayout, useBandDocumentName } from '@/lib/article/article-band-layout';
+import { PageBands } from './article/PageBands';
 import {
   previewedBackground,
   setPageBackgroundPreview,
@@ -118,20 +120,18 @@ export function CanvasPages({
           top: articleTopMarginPx(articleStyleOf(page)),
         }
       : undefined;
-  // An article page's number, in its bottom margin, when its article has them.
-  const pageNumberOf = (page: LaidOutPage) => {
-    // A card says its place in the stack instead (FlashcardFooter).
-    if (page.kind === 'flashcard') return null;
-    if (!page.flow || !articles?.flows[page.flow]) return null;
-    const style = resolveArticleStyle(articleStyleOf(page));
-    if (!style.pageNumbers) return null;
-    const own = pages.filter((p) => p.flow === page.flow);
-    return {
-      n: own.findIndex((p) => p.id === page.id) + 1,
-      bottom: articleMarginPx(articleStyleOf(page)) / 2 - 8,
-      font: resolveFontStack(style.bodyFont),
-    };
-  };
+  // An article page's header and footer (its page number among them), when its article has them. A card
+  // says its place in the stack instead (FlashcardFooter).
+  const documentName = useBandDocumentName();
+  const bandsOf = (page: LaidOutPage) =>
+    page.flow && articles?.flows[page.flow]
+      ? pageBandLayout(
+          articleStyleOf(page),
+          pages.filter((p) => p.flow === page.flow),
+          page,
+          documentName,
+        )
+      : null;
   const edit = bare ? undefined : view.edit;
   // The open panel's page and the tab it opened on. Its cog is looked up live (cogs), so a cog
   // remounted by zen or a role change is the one the panel hangs from.
@@ -239,7 +239,7 @@ export function CanvasPages({
         const background = previewedBackground(page, pages, preview);
         // No "Page n": the page navigator under the page says which it is.
         const label = pageLabel(page, page.index, 1);
-        const number = pageNumberOf(page);
+        const bands = bandsOf(page);
         // The label fits the page's on-screen width, less the title bar's buttons; too narrow, it
         // hides. The title bar's room on screen: the page's width at this zoom. The cog takes its
         // corner.
@@ -435,20 +435,7 @@ export function CanvasPages({
                 onChoose={(kind) => edit.choosePageKind(page.id, kind)}
               />
             ) : null}
-            {number ? (
-              <span
-                aria-hidden
-                data-page-number=""
-                className="pointer-events-none absolute inset-x-0 text-center text-[12px] tabular-nums"
-                style={{
-                  bottom: number.bottom,
-                  color: pageIsDark(page) ? 'rgb(255 255 255 / 0.55)' : 'rgb(71 85 105 / 0.8)',
-                  fontFamily: number.font,
-                }}
-              >
-                {number.n}
-              </span>
-            ) : null}
+            {bands ? <PageBands layout={bands} dark={pageIsDark(page)} /> : null}
             {stack && page.flow ? (
               <FlashcardFooter
                 card={page}

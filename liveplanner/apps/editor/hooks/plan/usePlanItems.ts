@@ -74,6 +74,10 @@ export function refusalMessage(code: string): string {
       return 'That field is required on this card type';
     case 'field_value_invalid':
       return 'That value is too long or isn’t one this field takes';
+    // A Blocked By link that closes a loop (docs/specs/026-plan/item-types.md "Blocked By"); the card panel refuses
+    // it first, naming the chain, so this is a race or an undo.
+    case 'blocks_cycle':
+      return 'Those cards would block each other in a loop';
     default:
       return "Couldn't save that change";
   }

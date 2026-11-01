@@ -23,6 +23,7 @@ import {
 } from '@livedocuments/ui';
 import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
 import { PanelSection } from '../page-panel-sections';
+import { ArticleBandsSection } from './ArticleBandsSection';
 import { ColourPicker } from '@/components/colour/ColourPicker';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
@@ -123,6 +124,14 @@ export function ArticleStyleSection({
               />
             )}
           </PanelSection>
+          {/* A card has no header or footer (docs/specs/007-editor/flashcards.md). */}
+          {card ? null : (
+            <ArticleBandsSection
+              style={style}
+              onChange={(patch) => onChange({ patch })}
+              onPreview={onPreview}
+            />
+          )}
         </>
       ) : (
         <>

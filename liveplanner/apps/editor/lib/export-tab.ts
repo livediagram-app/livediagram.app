@@ -9,7 +9,7 @@
 // omitted in the visual ones (PNG, PDF) where they have no natural
 // rendering.
 
-import type { Item, ItemTypeDef } from '@liveplanner/items';
+import type { IsDoneStatus, Item, ItemTypeDef } from '@liveplanner/items';
 import {
   arrowLabelFontStack,
   arrowLabelPass,
@@ -75,6 +75,9 @@ export type ImageExportOpts = {
   items?: ReadonlyMap<string, Item>;
   // And its item types (docs/specs/026-plan/item-types.md), so custom types keep their colour.
   itemTypes?: readonly ItemTypeDef[];
+  // The statuses the plan's boards count as done, for the blocked badge (docs/specs/026-plan/item-types.md
+  // "Blocked By").
+  itemsDone?: IsDoneStatus;
   // Each Sheet's window of cells by sheet id (docs/specs/029-sheets/sheet.md "Exports and images"), from the sheet
   // store (plan-export-sheets.ts). Without it a Sheet draws its frame and headers alone.
   sheets?: ReadonlyMap<string, SheetRenderModel>;
@@ -278,6 +281,7 @@ export async function renderTabToCanvas(
         ...chartInk,
         items: opts.items,
         itemTypes: opts.itemTypes,
+        itemsDone: opts.itemsDone,
         sheets: opts.sheets,
         resolvePlanArt: opts.resolvePlanArt,
         resolveTabWindow: opts.resolveTabWindow,
@@ -430,6 +434,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
             ...chartInk,
             items: opts.items,
             itemTypes: opts.itemTypes,
+            itemsDone: opts.itemsDone,
             sheets: opts.sheets,
             resolvePlanArt: opts.resolvePlanArt,
             resolveTabWindow: opts.resolveTabWindow,

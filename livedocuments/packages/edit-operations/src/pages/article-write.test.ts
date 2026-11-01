@@ -170,11 +170,11 @@ describe('the writing', () => {
     expect(out.lines[0]).toBe('Appended to the article "Untitled" (f): 2 blocks added, 3 blocks.');
   });
 
-  it('says a Markdown table was written as a list', () => {
-    const out = write(tabOf(), { markdown: '| a | b |\n|---|---|\n| 1 | 2 |' });
-    expect(out.lines).toContain(
-      "Wrote Markdown tables as lists (1): an article's text holds no tables (put a table element on a page with update_document).",
-    );
+  it('writes a Markdown table as a table block, and a [TOC] line as contents', () => {
+    const out = write(tabOf(), { markdown: '[TOC]\n\n| a | b |\n|---|---|\n| 1 | 2 |' });
+    const doc = Object.values(articlesOf(out.tab))[0]!;
+    expect(doc.blocks.map((b) => b.type)).toEqual(['toc', 'table']);
+    expect(out.lines.some((l) => l.includes('as lists'))).toBe(false);
   });
 
   it('keeps one empty paragraph when replaced by nothing', () => {
@@ -341,9 +341,11 @@ describe('a stack of flashcards', () => {
     });
     const blocks = articlesOf(out.tab)['card-0']!.blocks;
     expect(blocks.some((b) => b.type === 'pageBreak')).toBe(false);
+    expect(out.lines[0]).toContain('3 blocks added');
+    expect(blocks.filter((b) => b.type === 'list')).toHaveLength(2);
     expect(out.lines.slice(1)).toEqual([
       'Wrote Markdown tables as lists (1): a card holds text only.',
-      'Left out zones and page breaks (1): a card holds text only.',
+      'Left out zones, page breaks and contents (1): a card holds text only.',
     ]);
   });
 });
