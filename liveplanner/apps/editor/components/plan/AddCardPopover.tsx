@@ -6,10 +6,12 @@
 // the end of the cell, to be titled in place or in its panel. Built on the shared PortalMenu and
 // option list (OptionRows), so arrow keys, Escape, focus return and an outside press behave as every other
 // menu does; a wheel or trackpad pan outside it closes it too, since the board it hangs from moves
-// away. On a phone it is a bottom sheet. Someone who may edit gets a full-width Add New Card Type under the
+// away. On a phone it is a bottom sheet that takes focus on its first choice and closes on Escape or a tap outside
+// it, focus going back to the button. Someone who may edit gets a full-width Add New Card Type under the
 // tiles (docs/specs/026-plan/plan-board.md "Create Card Type").
-import { useEffect, useRef, type SyntheticEvent } from 'react';
+import { useCallback, useEffect, useRef, type SyntheticEvent } from 'react';
 import { type ItemFields, type ItemTypeDef } from '@liveplanner/items';
+import { useClickOutside, useEscape } from '@liveplanner/ui';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
 import { PortalMenu } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { AddCardTypeButton } from './AddCardTypeButton';
@@ -54,6 +56,20 @@ export function AddCardPopover({
     document.addEventListener('wheel', onWheel, { capture: true, passive: true });
     return () => document.removeEventListener('wheel', onWheel, { capture: true });
   }, [mobile, close]);
+  // The sheet keeps its own Escape and outside tap (BottomSheet leaves both to its menu), and starts on its first
+  // choice, as the desktop menu does. A tap on its own Add card button is that button's toggle.
+  const sheet = useRef<HTMLDivElement>(null);
+  const dismiss = () => {
+    close.current();
+    anchor?.focus();
+  };
+  useEscape(dismiss, { enabled: mobile, capture: true, stopPropagation: true });
+  useClickOutside(sheet, () => close.current(), mobile, '[data-add-card-trigger]');
+  // The sheet mounts through a portal, after this component: its first choice takes focus as it attaches.
+  const attachSheet = useCallback((el: HTMLDivElement | null) => {
+    sheet.current = el;
+    el?.querySelector<HTMLElement>('[data-option]')?.focus();
+  }, []);
   const choices = (
     <AddCardChoices
       types={types}
@@ -75,6 +91,7 @@ export function AddCardPopover({
   if (mobile) {
     return (
       <BottomSheet
+        ref={attachSheet}
         role="dialog"
         aria-label="Add a card"
         onClose={onClose}
