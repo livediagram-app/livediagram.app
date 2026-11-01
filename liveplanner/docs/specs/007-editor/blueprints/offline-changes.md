@@ -159,7 +159,7 @@ bridge.canShape }`):
 | No answer vs refusal, waits, reconnect         | `lib/offline-queue/reconnect.test.ts`           |
 | Roles (Editor, Participant, Viewer)            | `lib/offline-queue/queue-roles.test.ts`         |
 | Batching, split on refusal, already landed     | `lib/offline-queue/item-replay.test.ts`         |
-| Cards wait, replay, refusal, roles in the hook | `hooks/plan/usePlanItems.offline.test.tsx`      |
+| Cards wait, replay, refusal, roles in the hook | `hooks/plan/usePlanItems.offline.test.ts`       |
 | Sheets wait, restore, refusal, full, roles     | `components/sheets/sheet-store-queue.test.ts`   |
 | The banner's copy                              | `components/chrome/OfflineBanner.test.tsx`      |
 | Repair keeps the queue                         | `packages/ui/src/browser-repair/repair.test.ts` |
