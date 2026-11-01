@@ -220,6 +220,12 @@ host trashes the item open in its editor itself, from any of the panel's menus o
 `onRenameCurrent?(title)` (the open item was renamed, from its pencil or any menu's Rename, so the editor's title
 follows), and the same optional props as `<Explorer>`.
 
+Its size: `EXPLORER_POPOVER_WIDTH` (`w-[64rem]`) and `EXPLORER_POPOVER_HEIGHT` (`56rem`) are the editors' popover,
+passed to each editor's movable panel so the size lives once. In it the rail is 13rem and the pane's preview cards
+(Jump Back In, up to eight, and folders) are compact: two across, three from a 24rem pane, four from 42rem
+(liveworkspace/docs/specs/004-index/one-explorer.md "The editors' panel: its size and the scrim"). Each card's picture
+is the host's `renderThumbnail`, which should load only once it scrolls into view, as every editor's does.
+
 Rename works in place wherever an item shows: list rows, cards, Details rows, Home's Jump Back In and the panel.
 
 Lists that span places (Recent, Favourites, Search, Shared With Me) carry a location chip on each row and card: its

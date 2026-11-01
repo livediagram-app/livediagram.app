@@ -3,7 +3,6 @@
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import { lucideSettings } from '@liveworkspace/icons/lucide';
 import { FirstPageChoice } from './FirstPageChoice';
-import { PageDeckButton } from './PageDeckButton';
 import { PageLockButton } from '@liveworkspace/workbench/components/canvas/PageLockButton';
 import { PageBackgroundButton } from './PageBackgroundButton';
 import { PageLayoutsButton } from './PageLayoutsButton';
@@ -232,21 +231,15 @@ export function CanvasPages({
           !bare &&
           !locked &&
           offersPageKindChoice(pages, page.id, edit.contentCount(page.id));
-        // A slide page's deck button sits beside its cog (PageDeckButton); any other page shows it
-        // once the deck has a slide of it, so its eye is there wherever the page is presented.
-        const deckButton =
-          !!edit &&
-          !!view.deck &&
-          !mobile &&
-          (page.kind === 'slide' || !!view.deck.slideOf(page.id));
-        // Add Notes beside it once the deck has a slide of the page (PageNotesButton).
-        const notesButton = deckButton && !!view.deck!.slideOf(page.id);
-        // The title bar's fixed buttons (the cog, the lock, the deck button and an infographic or
-        // slide page's): the label has what they leave.
+        // Add Notes, first, once the deck has a slide of the page (PageNotesButton), on a phone too,
+        // so note cards can be written anywhere (docs/specs/012-collaboration/speaker-note-cards.md
+        // "Writing note cards"). Its place in the deck is in Contents' ⋯ menu (page-row-slides).
+        const notesButton = !!edit && !!view.deck && !!view.deck.slideOf(page.id);
+        // The title bar's fixed buttons (the cog, the lock, Add Notes and an infographic or slide
+        // page's): the label has what they leave.
         const buttons = {
           edit: !!edit,
           locked,
-          deck: deckButton,
           notes: notesButton,
           page: pageButtons,
           article: articleButtons,
@@ -331,11 +324,7 @@ export function CanvasPages({
                 className="absolute right-0 flex items-center gap-1"
                 style={{ bottom: '100%', marginBottom: 6 / zoom, ...steady(zoom, 'bottom right') }}
               >
-                {/* First, left of Layout and Background: this slide's place in the deck, and its
-                    notes once it is in it. */}
-                {deckButton && view.deck ? (
-                  <PageDeckButton pageId={page.id} deck={view.deck} labelled={labelled} />
-                ) : null}
+                {/* First, left of Layout and Background: this slide's notes once it is in the deck. */}
                 {notesButton && view.deck ? (
                   <PageNotesButton pageId={page.id} deck={view.deck} labelled={labelled} />
                 ) : null}

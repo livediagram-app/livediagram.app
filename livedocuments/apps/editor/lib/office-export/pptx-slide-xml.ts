@@ -173,15 +173,23 @@ export function slideXml(
   );
 }
 
-/** A slide's notes: the slide image and the notes body placeholders, the notes a paragraph a line. */
-export function notesSlideXml(notes: string): string {
-  const paragraphs = notes
-    .split(/\r\n|\r|\n/)
-    .map((line) =>
-      line
-        ? `<a:p><a:r><a:rPr lang="en-US" dirty="0"/><a:t>${xmlText(line)}</a:t></a:r></a:p>`
-        : '<a:p><a:endParaRPr lang="en-US" dirty="0"/></a:p>',
-    )
+const NOTES_RUN = (text: string) =>
+  `<a:r><a:rPr lang="en-US" dirty="0"/><a:t>${xmlText(text)}</a:t></a:r>`;
+
+/** A slide's notes: the slide image and the notes body placeholders, one paragraph a note card
+ *  (docs/specs/012-collaboration/speaker-note-cards.md "PowerPoint"), a line break inside a card a `<a:br/>`. */
+export function notesSlideXml(cards: readonly string[]): string {
+  const paragraphs = cards
+    .map((card) => {
+      const runs = card
+        .split(/\r\n|\r|\n/)
+        .map(
+          (line, i) =>
+            `${i > 0 ? '<a:br><a:rPr lang="en-US" dirty="0"/></a:br>' : ''}${line ? NOTES_RUN(line) : ''}`,
+        )
+        .join('');
+      return `<a:p>${runs}<a:endParaRPr lang="en-US" dirty="0"/></a:p>`;
+    })
     .join('');
   return (
     `${XML_DECL}<p:notes ${PML_NS}><p:cSld><p:spTree>${SP_TREE_HEAD}` +

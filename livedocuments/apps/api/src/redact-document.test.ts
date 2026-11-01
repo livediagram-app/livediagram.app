@@ -119,7 +119,13 @@ describe('redactDocumentForCommunity', () => {
         {
           slides: [
             { id: 's1', tabId: 't1', elementIds: ['e1'], name: 'Intro', notes: 'Say hello first' },
-            { id: 's2', tabId: 't1', elementIds: [] },
+            {
+              id: 's2',
+              tabId: 't1',
+              elementIds: [],
+              noteCards: [{ id: 'c1', text: 'Card to keep private' }],
+              notes: 'Card to keep private',
+            },
           ],
         },
       ],
@@ -145,6 +151,8 @@ describe('redactDocumentForCommunity', () => {
       ],
     });
     expect(out.presentation).not.toContain('Say hello');
+    // Note cards go with the notes they mirror (docs/specs/012-collaboration/speaker-note-cards.md "Community").
+    expect(out.presentation).not.toContain('Card to keep private');
   });
 
   it('carries no deck when the document has none, or it does not parse', () => {

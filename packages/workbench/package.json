@@ -23,6 +23,7 @@
     "./components/canvas/OffscreenContentHint": "./src/components/canvas/OffscreenContentHint.tsx",
     "./components/canvas/PageCornerFold": "./src/components/canvas/PageCornerFold.tsx",
     "./components/canvas/PageLockButton": "./src/components/canvas/PageLockButton.tsx",
+    "./components/canvas/PageRowMenu": "./src/components/canvas/PageRowMenu.tsx",
     "./components/canvas/PanelSnapSlot": "./src/components/canvas/PanelSnapSlot.tsx",
     "./components/canvas/RemoteCursor": "./src/components/canvas/RemoteCursor.tsx",
     "./components/canvas/SelectionGripsLayer": "./src/components/canvas/SelectionGripsLayer.tsx",

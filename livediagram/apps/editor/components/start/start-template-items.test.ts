@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES, popularKindsFor, templateEditorMode } from '@livediagram/templates';
+import {
+  TEMPLATES,
+  TEMPLATE_CATEGORIES,
+  popularKindsFor,
+  templateEditorMode,
+} from '@livediagram/templates';
 import { TEMPLATE_STARTS, type TemplateStartMode } from './start-template-items';
 
 // docs/specs/007-editor/start-diagramming.md
@@ -45,23 +50,44 @@ describe.each(MODES)('the %s template start', (mode) => {
   });
 });
 
+// The groups are the catalogue's categories in every mode, in the catalogue's order, each skipped where the mode has
+// none of its templates (docs/specs/007-editor/start-diagramming.md "Recommended and groups").
+describe.each(MODES)('the %s start’s groups', (mode) => {
+  const start = TEMPLATE_STARTS[mode];
+
+  it('are the catalogue’s categories, in order, each with its label and line', () => {
+    const ids = start.groups.slice(1).map((g) => g.id);
+    const order = TEMPLATE_CATEGORIES.map((c) => c.id) as string[];
+    expect(ids).toEqual(order.filter((id) => ids.includes(id)));
+    for (const g of start.groups.slice(1)) {
+      const c = TEMPLATE_CATEGORIES.find((x) => x.id === g.id)!;
+      expect([g.name, g.line]).toEqual([c.label, c.description]);
+    }
+  });
+});
+
 describe('Start a Workshop', () => {
-  it('groups by the session run: Retrospectives, Meetings, Quizzes & Games, Ideation, Planning, Strategy, Decisions', () => {
+  it('reaches every session the room runs, by its category', () => {
     expect(TEMPLATE_STARTS.workshop.groups.map((g) => g.id)).toEqual([
       'recommended',
-      'retrospectives',
-      'meetings',
-      'spaces',
-      'games',
-      'ideation',
-      'planning',
-      'strategy',
+      'ideas',
       'decisions',
+      'goals',
+      'meetings',
+      'people',
+      'planning',
+      'product',
+      'games',
+      'retros',
+      'software',
+      'strategy',
+      'learning',
+      'spaces',
     ]);
-    // The boards a team fills in together, moved from Diagram.
     const group = (id: string) => TEMPLATE_STARTS.workshop.groups.find((g) => g.id === id)!.kinds;
-    expect(group('retrospectives')).toContain('incident-postmortem');
-    expect(group('ideation')).toContain('user-persona');
+    // A cross-listed template shows in each of its categories.
+    expect(group('retros')).toContain('incident-postmortem');
+    expect(group('software')).toEqual(['incident-postmortem']);
     expect(group('games')).toEqual([
       'pub-quiz',
       'icebreaker-questions',
@@ -69,18 +95,37 @@ describe('Start a Workshop', () => {
       'would-you-rather',
       'people-bingo',
     ]);
-    expect(group('planning')).toEqual([
-      'objectives-planner',
-      'roadmap',
-      'raci-matrix',
-      'user-story-map',
+    expect(group('spaces')).toEqual([
+      'virtual-office',
+      'coworking-space',
+      'team-pod',
+      'all-hands-hall',
     ]);
-    expect(group('strategy')).toEqual([
-      'swot',
-      'business-model-canvas',
-      'value-proposition-canvas',
-      'stakeholder-map',
-      'opportunity-solution-tree',
+    expect(group('strategy')).toEqual(
+      expect.arrayContaining(['swot', 'pestle-analysis', 'business-model-canvas']),
+    );
+    expect(group('learning')).toEqual(['pub-quiz', 'kwl-chart']);
+  });
+
+  it('lists a search match once, under its primary category', () => {
+    expect(TEMPLATE_STARTS.workshop.search('postmortem')).toEqual([
+      { group: 'software', kinds: ['incident-postmortem'] },
+    ]);
+  });
+});
+
+describe('Start Drawing', () => {
+  it('groups its drawn templates by what each is for', () => {
+    expect(TEMPLATE_STARTS.draw.groups.map((g) => g.id)).toEqual([
+      'recommended',
+      'ideas',
+      'decisions',
+      'meetings',
+      'product',
+      'games',
+      'retros',
+      'strategy',
+      'learning',
     ]);
   });
 });

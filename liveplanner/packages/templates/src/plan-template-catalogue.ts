@@ -39,6 +39,12 @@ export const PLAN_TEMPLATE_KINDS = [
   'guest-list',
   'grade-book',
   'habit-tracker',
+  'event-planner',
+  'sales-crm',
+  'help-desk',
+  'meeting-agenda',
+  'personal-goals',
+  'study-planner',
 ] as const;
 export type PlanTemplateKind = (typeof PLAN_TEMPLATE_KINDS)[number];
 
@@ -769,6 +775,351 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
         },
       },
     },
+  ],
+
+  // Added with the catalogue's use-case categories. Three mix boards with a Sheet tab, filled from its sheet template
+  // as a spreadsheet template's is (plan-templates.md "How a template with tabs is made").
+  'event-planner': [
+    {
+      name: 'Timeline',
+      board: datedBoard(
+        'Workstreams',
+        [
+          col('ev-planned', 'Planned'),
+          col('ev-doing', 'In Progress'),
+          col('ev-at-risk', 'At Risk', { color: RED }),
+          col('ev-confirmed', 'Confirmed', { color: GREEN }),
+        ],
+        'ev-confirmed',
+      ),
+      charts: ['gantt'],
+    },
+    {
+      name: 'Tasks',
+      board: {
+        preset: 'blank',
+        title: 'Tasks',
+        width: W4,
+        height: 720,
+        setup: {
+          columns: [
+            col('todo', 'To Do'),
+            col('doing', 'Doing'),
+            col('waiting', 'Waiting On', { color: AMBER }),
+            col('done', 'Done'),
+          ],
+          doneColumnId: 'done',
+          // Tasks, each under its workstream (Parent), a row each.
+          swimlaneBy: 'field',
+          swimlaneField: 'parent',
+          cardFields: ['assignee', 'priority', 'labels', 'checklist', 'due'],
+          addTypes: ['task'],
+          widgets: ['progress', 'due', 'unassigned'],
+        },
+      },
+      metrics: ['due', 'progress', 'unassigned'],
+      charts: ['calendar'],
+      rail: [
+        {
+          kind: 'sticky',
+          text: steps('How this works', [
+            'Add a Workstream for each part of the event (venue, catering, speakers), with its dates',
+            'Break each into Tasks, under its workstream',
+            'Keep the Guest List as replies come in',
+            'Watch what is due on Overview',
+          ]),
+        },
+      ],
+    },
+    {
+      name: 'Guest List',
+      sheet: { start: 'guest-list', width: 1000, height: 520, fillTab: true },
+    },
+  ],
+
+  'sales-crm': [
+    {
+      name: 'Deals',
+      board: {
+        preset: 'blank',
+        title: 'Deals',
+        width: W6,
+        height: 760,
+        setup: {
+          columns: [
+            col('crm-lead', 'Lead'),
+            col('crm-qualified', 'Qualified'),
+            col('crm-proposal', 'Proposal'),
+            col('crm-negotiation', 'Negotiation', { color: AMBER }),
+            // Won and Lost are both closed: done, as every column after the first done one is.
+            col('crm-won', 'Won', { color: GREEN }),
+            col('crm-lost', 'Lost'),
+          ],
+          doneColumnId: 'crm-won',
+          // A row per deal owner.
+          swimlaneBy: 'assignee',
+          cardFields: ['labels', 'due'],
+          addTypes: ['deal'],
+          widgets: ['count', 'stale', 'filter'],
+        },
+      },
+      metrics: ['count', 'progress', 'people', 'stale'],
+      charts: ['workload', 'calendar'],
+      rail: [
+        {
+          kind: 'sticky',
+          text: steps('How this works', [
+            'Add a Deal for each opportunity, with its company and value',
+            'Move it along as it progresses',
+            'Set Due to when you expect it to close',
+            'Keep the people you speak to on Contacts',
+          ]),
+        },
+      ],
+    },
+    {
+      name: 'Contacts',
+      sheet: { start: 'contact-list', width: 1180, height: 440, fillTab: true },
+    },
+  ],
+
+  'help-desk': [
+    {
+      name: 'Tickets',
+      board: {
+        preset: 'blank',
+        title: 'Tickets',
+        width: W5,
+        height: 760,
+        setup: {
+          columns: [
+            col('hd-new', 'New'),
+            col('hd-open', 'Open'),
+            col('hd-waiting', 'Waiting on Customer', { color: AMBER }),
+            col('hd-resolved', 'Resolved', { color: GREEN }),
+            col('hd-closed', 'Closed'),
+          ],
+          doneColumnId: 'hd-resolved',
+          // A row per priority, Urgent first.
+          swimlaneBy: 'priority',
+          cardFields: ['key', 'assignee', 'labels', 'due'],
+          addTypes: ['ticket'],
+          widgets: ['count', 'unassigned', 'stale'],
+        },
+      },
+      metrics: ['count', 'priorities', 'stale', 'unassigned'],
+      charts: ['priority-matrix', 'workload'],
+      rail: [
+        {
+          kind: 'sticky',
+          text: steps('How we work the queue', [
+            'Every new ticket gets an owner and a priority',
+            'Urgent first, then the oldest',
+            'Waiting on Customer while you need their reply',
+            'Resolved once they confirm, Closed a week later',
+            'A question asked twice becomes an article on Knowledge Base',
+          ]),
+        },
+      ],
+    },
+    {
+      name: 'Knowledge Base',
+      board: {
+        preset: 'blank',
+        title: 'Knowledge Base',
+        width: W4,
+        height: 640,
+        setup: {
+          columns: [
+            col('kb-to-write', 'To Write'),
+            col('kb-drafting', 'Drafting'),
+            col('kb-review', 'In Review'),
+            col('kb-published', 'Published'),
+          ],
+          doneColumnId: 'kb-published',
+          swimlaneBy: 'none',
+          cardFields: ['assignee', 'labels'],
+          addTypes: ['note'],
+          widgets: ['progress', 'filter'],
+        },
+      },
+    },
+  ],
+
+  'meeting-agenda': [
+    {
+      name: 'Agenda',
+      board: {
+        preset: 'blank',
+        title: 'Agenda',
+        width: W3 + 100,
+        height: 640,
+        setup: {
+          columns: [
+            col('mt-to-discuss', 'To Discuss'),
+            col('mt-discussing', 'Discussing', { wipLimit: 1 }),
+            col('mt-discussed', 'Discussed'),
+          ],
+          doneColumnId: 'mt-discussed',
+          swimlaneBy: 'none',
+          cardFields: ['assignee', 'labels', 'votes'],
+          addTypes: ['note'],
+          widgets: ['top-voted', 'count'],
+        },
+      },
+      rail: [
+        {
+          kind: 'sticky',
+          text: steps('How we run it', [
+            'Add topics to To Discuss before the meeting',
+            'Press Vote: 3 dots each, to put them in order',
+            'Take one topic at a time into Discussing',
+            'Write the decision in a comment',
+            'Turn every follow-up into an Action',
+            'Archive the topics when done',
+          ]),
+        },
+        { kind: 'timer', minutes: 10 },
+        { kind: 'vote', dots: 3 },
+      ],
+    },
+    {
+      name: 'Actions',
+      board: {
+        preset: 'blank',
+        title: 'Actions',
+        width: W3,
+        height: 600,
+        setup: {
+          columns: [col('todo', 'To Do'), col('doing', 'Doing'), col('done', 'Done')],
+          doneColumnId: 'done',
+          swimlaneBy: 'assignee',
+          cardFields: ['key', 'assignee', 'due'],
+          addTypes: ['action'],
+          widgets: ['progress', 'due'],
+        },
+      },
+    },
+    {
+      name: 'Archive',
+      board: { preset: 'archive', width: 900, height: 560, title: 'Past Meetings' },
+    },
+  ],
+
+  'personal-goals': [
+    {
+      name: 'Goals',
+      board: datedBoard(
+        'Goals',
+        [
+          col('pg-someday', 'Someday'),
+          col('pg-this-year', 'This Year'),
+          col('pg-working', 'Working On', { color: TEAL }),
+          col('pg-achieved', 'Achieved', { color: GREEN }),
+        ],
+        'pg-achieved',
+        'objective',
+      ),
+      charts: ['gantt'],
+      ganttTypes: ['objective'],
+    },
+    {
+      name: 'Key Results',
+      board: {
+        preset: 'blank',
+        title: 'Key Results',
+        width: W4,
+        height: 680,
+        setup: {
+          columns: [
+            col('pg-kr-not-started', 'Not Started'),
+            col('pg-kr-on-track', 'On Track', { color: GREEN }),
+            col('pg-kr-behind', 'Behind', { color: AMBER }),
+            col('pg-kr-done', 'Done'),
+          ],
+          doneColumnId: 'pg-kr-done',
+          // A row per goal: each Key Result names its own.
+          swimlaneBy: 'field',
+          swimlaneField: 'f-objective',
+          cardFields: ['due', 'checklist'],
+          addTypes: ['key-result'],
+          widgets: ['progress', 'due'],
+        },
+      },
+      rail: [
+        {
+          kind: 'sticky',
+          text: steps('How this works', [
+            'Write each goal on Goals, with when you want it by',
+            'Give it two or three Key Results you can measure',
+            'Each Sunday, update every key result’s Current',
+            'Tick your habits on Habits each day',
+          ]),
+        },
+      ],
+    },
+    {
+      name: 'Habits',
+      sheet: { start: 'habit-tracker', width: 1000, height: 480, fillTab: true },
+    },
+  ],
+
+  'study-planner': [
+    {
+      name: 'Assignments',
+      board: {
+        preset: 'blank',
+        title: 'Assignments',
+        width: W4,
+        height: 680,
+        setup: {
+          columns: [
+            col('st-todo', 'To Do'),
+            col('st-doing', 'In Progress'),
+            col('st-submitted', 'Submitted', { color: TEAL }),
+            col('st-graded', 'Graded', { color: GREEN }),
+          ],
+          doneColumnId: 'st-submitted',
+          swimlaneBy: 'none',
+          cardFields: ['labels', 'due', 'checklist'],
+          addTypes: ['task'],
+          widgets: ['progress', 'due', 'filter'],
+        },
+      },
+    },
+    {
+      name: 'Revision',
+      board: {
+        preset: 'blank',
+        title: 'Revision',
+        width: W3,
+        height: 640,
+        setup: {
+          columns: [
+            col('rv-not-started', 'Not Started'),
+            col('rv-revising', 'Revising', { color: AMBER }),
+            col('rv-confident', 'Confident', { color: GREEN }),
+          ],
+          doneColumnId: 'rv-confident',
+          swimlaneBy: 'none',
+          cardFields: ['labels', 'due', 'checklist'],
+          addTypes: ['note'],
+          widgets: ['progress', 'filter'],
+        },
+      },
+      rail: [
+        {
+          kind: 'sticky',
+          text: steps('How this works', [
+            'Add each assignment with its subject as a label and its due date',
+            'Break big ones into steps on its checklist',
+            'Add a card per exam topic on Revision',
+            'Move a topic to Confident once you can explain it without notes',
+          ]),
+        },
+      ],
+    },
+    { name: 'Calendar', metrics: ['due', 'progress', 'count'], charts: ['calendar'] },
   ],
 
   // Spreadsheet templates (plan-templates.md "Spreadsheet templates"): a Sheet each, filling its tab when the sheet is

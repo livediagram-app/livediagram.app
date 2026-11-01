@@ -23,6 +23,11 @@ import {
 import { pageTexts } from '@/lib/page-texts';
 import { track } from '@/lib/telemetry';
 import { useRowReorderDrag } from '@liveworkspace/workbench/hooks/ui/useRowReorderDrag';
+import {
+  pageRowModel,
+  type PageRowModel,
+} from '@liveworkspace/workbench/components/canvas/PageRowMenu';
+import { requestPagePanel } from '@/lib/page-panel-request';
 
 // How far beyond the list's visible part a row's picture is drawn ahead of a scroll, in px.
 const CONTENTS_DRAW_AHEAD_PX = 400;
@@ -178,18 +183,27 @@ export function usePageContents({
           view.edit!.addPageLike!(lastPage.id);
         }
       : undefined;
-  // A page's own toolbar (an Editor's): what each press does, absent where it cannot. Delete and
-  // the rest refuse a locked page as its title bar's do, so a locked page offers only Unlock.
+  // A page's actions (an Editor's), for its row's tools and ⋯ menu: what each press does, absent
+  // where it cannot. Delete refuses a locked page as the canvas does.
   const { edit } = view;
-  const actionsFor = (row: ContentsRow): PageActions | null => {
+  const actionsFor = (row: ContentsRow): PageRowModel | null => {
     if (!edit) return null;
-    return {
+    return pageRowModel({
+      // The page framed, then its settings opened from its cog once it is there.
+      settings: () => {
+        view.focusPage(row.id);
+        onWent?.();
+        requestAnimationFrame(() => requestPagePanel(row.id));
+      },
       ...(edit.duplicatePage && edit.canDuplicate(row.id) && !full
         ? { duplicate: () => edit.duplicatePage!(row.id) }
         : {}),
+      ...(edit.canMove(row.id, -1) ? { moveUp: () => edit.movePage(row.id, -1) } : {}),
+      ...(edit.canMove(row.id, 1) ? { moveDown: () => edit.movePage(row.id, 1) } : {}),
+      locked: row.locked,
       toggleLock: () => edit.setLocked(row.id, !row.locked),
       ...(edit.removePage && !row.locked ? { remove: () => edit.removePage!(row.id) } : {}),
-    };
+    });
   };
   const focusFirst = () => {
     if (shown[0]) buttons.current.get(shown[0].id)?.focus();
@@ -221,9 +235,3 @@ export function usePageContents({
 }
 
 export type PageContents = ReturnType<typeof usePageContents>;
-
-export type PageActions = {
-  duplicate?: () => void;
-  toggleLock: () => void;
-  remove?: () => void;
-};

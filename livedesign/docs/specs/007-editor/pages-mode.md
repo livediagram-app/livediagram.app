@@ -929,13 +929,24 @@ Both show the same list:
   or where it can't be read, its place shows the image placeholder (a page picture, its tone). A **photo page**
   shows its picture, its preview ([Photo store](../031-photo/photo-store.md) "Previews") from the copy the canvas
   shows unfocused photo pages with; until it has one, the checkerboard and a picture glyph.
-- **A page's actions** (an Editor's): in the sidebar, a small toolbar at the end of the name's
-  line, shown while the row is hovered, focused or marked: **Duplicate**, **Lock** or **Unlock**,
-  and **Delete** (not on a locked page), each a glyph with its Tooltip. In the popover, one **⋯**
-  button (shown on hover or focus) opens the same as a menu, a header naming the page, with Delete
-  last under its own separator.
-  Each does exactly what the page's title bar does; none glides to the page. A Participant and a
-  Viewer see neither.
+- **A page's actions** (an Editor's), down the row's left, so the picture and its name keep the
+  row's whole width:
+  - **In the sidebar** the column beside the picture stacks, under the page's number, the **grip**
+    (drag to reorder), **Delete** (a bin; not on a locked page) and **⋯** (the page's menu), each a
+    glyph with its Tooltip. They show while the row is hovered, focused or marked, or while its menu
+    is open, and always to a finger, where each keeps a 44 px tap area (the stack spaces itself out
+    under a coarse pointer).
+  - **In the popover** (a bottom sheet on a phone) the rows are compact, one line each: the **⋯**
+    sits under the page's number, and the grip stays at the row's right edge, where a thumb finds
+    it. Delete is in the menu.
+  - **The ⋯ menu** (also a right-click on the row, or a long press on it by a finger) is one menu for
+    the whole list, a header naming the page, then in groups: **Page Settings** (the cog: glides to
+    the page and opens its settings, where it is renamed and resized); **Duplicate** (while the copy
+    fits under the page limit), **Move Up** and **Move Down** (while the page has a neighbour that
+    way), **Lock** or **Unlock**; then, under its own separator, **Delete**, last (not on a locked
+    page), in the menu's own tones. Each does exactly what the page's title bar or cog does; none but
+    Page Settings glides to the page. A Participant and a Viewer see no grip, no Delete and no ⋯, and
+    a right-click or long press opens nothing.
 - **Going there**: a press (or Enter) glides the canvas to the page, as the pages row's arrows do,
   and marks it as here. On a desktop the popover stays open, so a reader can hop from page to page;
   on a phone the sheet closes so the page shows. Up and Down move between rows, Home and End to

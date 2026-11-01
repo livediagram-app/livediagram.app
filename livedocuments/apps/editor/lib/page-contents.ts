@@ -30,6 +30,8 @@ export type ContentsRow = {
   kind: PageKind;
   // A slide page with a slide in the deck; absent where there is no deck to ask.
   inDeck?: boolean;
+  // A page (any kind) whose slide the deck skips when presenting: its row shows a crossed eye.
+  hiddenInSlides?: boolean;
   // A card's speaking time ("45 sec"), shown beside its name; absent off a card or on an empty one.
   speakingTime?: string;
 };
@@ -49,6 +51,8 @@ export function contentsRows(
   opts: {
     // Whether the deck has a slide of the page; absent where there is no deck to ask.
     inDeck?: (pageId: string) => boolean;
+    // Whether the deck's slide of the page is hidden; absent where there is no deck to ask.
+    hiddenInSlides?: (pageId: string) => boolean;
     articles?: Readonly<Record<string, ArticleFlow>>;
   } = {},
 ): ContentsRow[] {
@@ -81,6 +85,7 @@ export function contentsRows(
       aspect: p.rect.width / p.rect.height,
       kind,
       ...(kind === 'slide' && opts.inDeck ? { inDeck: opts.inDeck(p.id) } : {}),
+      ...(opts.hiddenInSlides?.(p.id) ? { hiddenInSlides: true } : {}),
       ...(speakingTime ? { speakingTime } : {}),
     };
   });

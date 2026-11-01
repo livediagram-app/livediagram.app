@@ -6,13 +6,11 @@
 // slide's number on it, and Present from Here on hover; in the narrow corner panel a small picture
 // beside its number.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { slideName, type Slide } from '@livedocuments/document';
-import { lucideFileText } from '@liveworkspace/icons/lucide';
-import { HoverCard, lucideGlyph, Tooltip, trustedHtml } from '@livedocuments/ui';
+import { slideName, spokenNoteCards, type Slide } from '@livedocuments/document';
+import { HoverCard, Tooltip, trustedHtml } from '@livedocuments/ui';
+import { NoteCardsIcon } from '@/components/slide-notes/NoteCardsIcon';
 import { EyeOffIcon } from '@/components/panels/layers-panel-icons';
 import { PlayIcon } from '@liveworkspace/workbench/components/primitives/PlayIcon';
-
-const NotesIcon = lucideGlyph(lucideFileText, 11);
 
 export function SlideDeckRow({
   slide,
@@ -85,6 +83,9 @@ export function SlideDeckRow({
   };
 
   const title = slide.name ?? headline ?? slideName(slide, index);
+  // Its note cards with words on them (docs/specs/012-collaboration/speaker-note-cards.md), as a quiet marker.
+  const noteCount = spokenNoteCards(slide).length;
+  const noteLabel = noteCount === 1 ? '1 note card' : `${noteCount} note cards`;
   // Where it comes from: the tab (when the deck spans tabs) and the page, or the count.
   const source = [
     showTab ? (tabName ?? 'Tab deleted') : null,
@@ -203,10 +204,15 @@ export function SlideDeckRow({
           >
             <span className="truncate">{source}</span>
             {/* Quiet markers for what the slide carries: its notes, its minutes, that it is hidden. */}
-            {slide.notes ? (
-              <Tooltip label="Has speaker notes">
-                <span role="img" aria-label="Has speaker notes" className="flex shrink-0">
-                  <NotesIcon />
+            {noteCount > 0 ? (
+              <Tooltip label={noteLabel}>
+                <span
+                  role="img"
+                  aria-label={noteLabel}
+                  className="flex shrink-0 items-center gap-0.5 tabular-nums"
+                >
+                  <NoteCardsIcon size={11} />
+                  {noteCount > 1 ? noteCount : null}
                 </span>
               </Tooltip>
             ) : null}

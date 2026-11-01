@@ -26,6 +26,7 @@ export * from './card-links';
 export * from './several-values';
 export * from './legacy-parent';
 export * from './board-widgets';
+export * from './field-widgets';
 export * from './plan-views';
 export * from './plan-view-dates';
 export * from './plan-view-gantt';

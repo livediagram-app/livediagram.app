@@ -43,6 +43,9 @@ const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
   'affinity-map': 'workshop',
   'prioritization-matrix': 'workshop',
   'risk-matrix': 'workshop',
+  // Sticky boards the room fills in: a PESTLE scan and a class's KWL chart.
+  'pestle-analysis': 'workshop',
+  'kwl-chart': 'workshop',
   // Boards a team fills in together in a session, rather than a diagram one person draws.
   'incident-postmortem': 'workshop',
   'objectives-planner': 'workshop',

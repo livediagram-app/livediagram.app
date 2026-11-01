@@ -12,6 +12,7 @@ import {
   layerOpacityOf,
   pageDimensions,
   pageExportFrame,
+  spokenNoteCards,
   supportsShadow,
   type ArrowLabelPass,
   type Deck,
@@ -177,11 +178,11 @@ async function slideOf(
     if (image) background = { kind: 'picture', image };
   }
   const slide = slideOfPage(input.deck, tab.id, page.id);
-  const notes = slide?.notes?.trim();
+  const notes = slide ? spokenNoteCards(slide).map((c) => c.text.trim()) : [];
   return {
     background,
     items,
-    ...(notes ? { notes } : {}),
+    ...(notes.length > 0 ? { notes } : {}),
     ...(slide?.hidden ? { hidden: true } : {}),
   };
 }

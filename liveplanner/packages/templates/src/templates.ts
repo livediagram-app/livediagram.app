@@ -28,6 +28,12 @@ export type TemplateKind =
   | 'guest-list'
   | 'grade-book'
   | 'habit-tracker'
+  | 'event-planner'
+  | 'sales-crm'
+  | 'help-desk'
+  | 'meeting-agenda'
+  | 'personal-goals'
+  | 'study-planner'
   | FormTemplateKind;
 
 export type TemplateDescriptor = {
@@ -139,6 +145,49 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Feedback Board',
     description:
       'Three tabs: Feedback from users, voted on and reviewed, Delivery for what you plan through to shipped, and an Overview dashboard.',
+    extra: true,
+  },
+  // Added with the catalogue's use-case categories (docs/specs/026-plan/plan-templates.md "The templates").
+  {
+    kind: 'event-planner',
+    title: 'Event Planner',
+    description:
+      'Four tabs: workstreams on a Timeline, the Tasks under each, the Guest List as a sheet and an Overview dashboard.',
+    extra: true,
+  },
+  {
+    kind: 'sales-crm',
+    title: 'Sales CRM',
+    description:
+      'Three tabs: Deals from lead to won, each with its company and value, your Contacts as a sheet and an Overview dashboard.',
+    extra: true,
+  },
+  {
+    kind: 'help-desk',
+    title: 'Help Desk',
+    description:
+      'Three tabs: support Tickets by priority from new to closed, a Knowledge Base of articles to write and an Overview dashboard.',
+    extra: true,
+  },
+  {
+    kind: 'meeting-agenda',
+    title: 'Meeting Agenda',
+    description:
+      'Four tabs: an Agenda of topics voted into order, the Actions you agree, an Archive of past meetings and an Overview dashboard.',
+    extra: true,
+  },
+  {
+    kind: 'personal-goals',
+    title: 'Personal Goals',
+    description:
+      'Four tabs: your Goals on a timeline, the Key Results that measure each, a Habits sheet and an Overview dashboard.',
+    extra: true,
+  },
+  {
+    kind: 'study-planner',
+    title: 'Study Planner',
+    description:
+      'Three tabs: Assignments by subject from to do to graded, exam Revision topics and a Calendar of every deadline.',
     extra: true,
   },
   // Spreadsheet templates (docs/specs/026-plan/plan-templates.md "Spreadsheet templates").

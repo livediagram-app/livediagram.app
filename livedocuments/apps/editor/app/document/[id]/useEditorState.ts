@@ -1764,17 +1764,17 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const placeIntentAtRef = useRef<
     ((intent: Parameters<typeof placeIntentAt>[0], x: number, y: number) => void) | null
   >(null);
-  // A slide page's add-to-deck / hide-from-deck button reaches the deck (pageDeckControls).
+  // A page's Add to Slides / Hide in Slides (its Contents menu) and Add Notes reach the deck (pageDeckControls).
   // Memoised so the pages' view keeps its identity across renders where nothing changed.
-  const { deck: currentDeck, newPageSlide, toggleSlideHidden, setSlideNotes } = slideDeck;
+  const { deck: currentDeck, newPageSlide, toggleSlideHidden, setSlideNoteCards } = slideDeck;
   const pageDeck = useMemo(
     () =>
       pageDeckControls(currentDeck, activeId, !isReadOnly, {
         newPageSlide,
         toggleSlideHidden,
-        setSlideNotes,
+        setSlideNoteCards,
       }),
-    [currentDeck, activeId, isReadOnly, newPageSlide, toggleSlideHidden, setSlideNotes],
+    [currentDeck, activeId, isReadOnly, newPageSlide, toggleSlideHidden, setSlideNoteCards],
   );
   const pagesModeView = useMemo(
     () => ({ ...pagesMode, ...(articles ? { articles } : {}), deck: pageDeck }),

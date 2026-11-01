@@ -21,7 +21,8 @@ import { announce } from '@liveworkspace/workbench/lib/announcer';
 import { isPressableControl } from '@livedocuments/ui';
 import { presentedSlideName } from '@/lib/slide-headline';
 
-import { type BoxedElement, type Slide, type Tab } from '@livedocuments/document';
+import { spokenNoteCards, type BoxedElement, type Slide, type Tab } from '@livedocuments/document';
+import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 import {
   PresentationElementPopover,
@@ -82,9 +83,22 @@ export function PresentationOverlay({
 
   // The HUD stays put while a popover is open, or it would be left orphaned.
   // A slide with no script cannot have its notes open: advancing onto one
-  // would otherwise leave an empty card sitting over the slide.
-  const slideHasNotes = (step?.slide.notes ?? '').trim().length > 0;
-  const notesVisible = notesOpen && slideHasNotes;
+  // would otherwise leave an empty card sitting over the slide. The wish to see
+  // them is kept, so the next slide with cards shows them again
+  // (docs/specs/012-collaboration/speaker-note-cards.md "Presenting").
+  const slide = step?.slide;
+  const cards = useMemo(() => (slide ? spokenNoteCards(slide) : []), [slide]);
+  const notesVisible = notesOpen && cards.length > 0;
+  // The card in front, kept per slide: a new slide (by a move or a peer's edit) starts on its first card.
+  const [cardOf, setCardOf] = useState<{ slideId: string; at: number } | null>(null);
+  const cardAt =
+    slide && cardOf?.slideId === slide.id ? Math.min(cardOf.at, Math.max(0, cards.length - 1)) : 0;
+  const goCard = (index: number) => {
+    if (!slide || index < 0 || index >= cards.length || index === cardAt) return;
+    setCardOf({ slideId: slide.id, at: index });
+    track('UI', 'Used', 'NoteCardFlip');
+    debugLog('[presentation] note-card', { at: index, count: cards.length });
+  };
 
   const idle =
     usePointerIdle(true, notesVisible || settingsOpen || jumpOpen || detail !== null) &&
@@ -118,9 +132,10 @@ export function PresentationOverlay({
 
   const go = useCallback(
     (next: number) => {
-      // Advancing closes what is open, so the next slide starts clean.
-      setNotesOpen(false);
+      // Advancing closes what is open, so the next slide starts clean; the notes stay, on the next slide's
+      // first card, so a speaker's cards are up for the whole talk.
       setSettingsOpen(false);
+      setCardOf(null);
       setDetail(null);
       if (next < 0) return;
       // Every slide change while the deck runs comes through here (the host
@@ -155,10 +170,10 @@ export function PresentationOverlay({
   const advance = useEffectEvent(() => go(at + 1));
   useEffect(() => {
     const seconds = config.autoAdvanceSeconds;
-    if (seconds <= 0 || atEnd || notesOpen || settingsOpen || jumpOpen || detail) return;
+    if (seconds <= 0 || atEnd || notesVisible || settingsOpen || jumpOpen || detail) return;
     const id = window.setTimeout(advance, seconds * 1000);
     return () => window.clearTimeout(id);
-  }, [at, atEnd, config.autoAdvanceSeconds, detail, jumpOpen, notesOpen, settingsOpen]);
+  }, [at, atEnd, config.autoAdvanceSeconds, detail, jumpOpen, notesVisible, settingsOpen]);
 
   // Browser fullscreen where available, on the whole document (docs/specs/012-collaboration/presentation-mode.md
   // "Full screen"). It needs a user gesture and can be refused; the overlay is already full-viewport either way, so
@@ -276,7 +291,7 @@ export function PresentationOverlay({
       if (detail) setDetail(null);
       else if (jumpOpen) setJumpOpen(false);
       else if (settingsOpen) setSettingsOpen(false);
-      else if (notesOpen) setNotesOpen(false);
+      else if (notesVisible) setNotesOpen(false);
       else onExit();
       return;
     }
@@ -312,6 +327,13 @@ export function PresentationOverlay({
       go(Math.max(0, at - 1));
       return;
     }
+    // The note cards (docs/specs/012-collaboration/speaker-note-cards.md "Presenting"): while they show, the up
+    // and down arrows flip back and forward through them.
+    if ((key === 'ArrowDown' || key === 'ArrowUp') && notesVisible) {
+      handled();
+      goCard(cardAt + (key === 'ArrowDown' ? 1 : -1));
+      return;
+    }
     if (key === 'Home') {
       handled();
       go(0);
@@ -326,7 +348,7 @@ export function PresentationOverlay({
       handled();
       // Same rule as the button: a slide with no script has nothing to open,
       // so the key is inert rather than raising an empty card.
-      if (!step?.slide.notes?.trim()) return;
+      if (cards.length === 0) return;
       setNotesOpen((v) => {
         if (!v) track('UI', 'Opened', 'PresenterNotes');
         return !v;
@@ -419,7 +441,10 @@ export function PresentationOverlay({
           position={at + 1}
           total={steps.length}
           name={presentedSlideName(step.slide, step.tab, step.index)}
-          notes={step.slide.notes}
+          slideId={step.slide.id}
+          cards={cards}
+          cardAt={cardAt}
+          onCard={goCard}
           notesOpen={notesVisible}
           onToggleNotes={() => {
             setSettingsOpen(false);

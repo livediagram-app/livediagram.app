@@ -3,18 +3,18 @@ import type { Deck } from '@livedocuments/document';
 import { slideFitOptions } from './presentation-config';
 import { pageDeckControls } from './page-deck-controls';
 
-// docs/specs/007-editor/pages-mode.md "Slides": a slide page's deck button, and a page slide
+// docs/specs/007-editor/pages-mode.md "Slides": a page's place in the deck, and a page slide
 // presenting full screen.
 const deck: Deck = {
   slides: [
     { id: 's1', tabId: 't', elementIds: [], pageId: 'p1' },
-    { id: 's2', tabId: 't', elementIds: [], pageId: 'p2', hidden: true },
+    { id: 's2', tabId: 't', elementIds: [], pageId: 'p2', hidden: true, notes: 'Old note' },
     { id: 's3', tabId: 'other', elementIds: [], pageId: 'p3' },
   ],
 };
 
 describe('pageDeckControls', () => {
-  const verbs = { newPageSlide: vi.fn(), toggleSlideHidden: vi.fn(), setSlideNotes: vi.fn() };
+  const verbs = { newPageSlide: vi.fn(), toggleSlideHidden: vi.fn(), setSlideNoteCards: vi.fn() };
 
   it('is absent for someone who cannot change the deck', () => {
     expect(pageDeckControls(deck, 't', false, verbs)).toBeUndefined();
@@ -22,8 +22,13 @@ describe('pageDeckControls', () => {
 
   it("finds this tab's slide of a page, hidden or not", () => {
     const c = pageDeckControls(deck, 't', true, verbs)!;
-    expect(c.slideOf('p1')).toEqual({ id: 's1', hidden: false, notes: '' });
-    expect(c.slideOf('p2')).toEqual({ id: 's2', hidden: true, notes: '' });
+    expect(c.slideOf('p1')).toEqual({ id: 's1', hidden: false, noteCards: [] });
+    // A note written before note cards reads as one card (docs/specs/012-collaboration/speaker-note-cards.md).
+    expect(c.slideOf('p2')).toEqual({
+      id: 's2',
+      hidden: true,
+      noteCards: [{ id: 'notes', text: 'Old note' }],
+    });
     // Another tab's page of the same id is not this page.
     expect(c.slideOf('p3')).toBeUndefined();
   });
@@ -34,8 +39,9 @@ describe('pageDeckControls', () => {
     c.toggleHidden('s1');
     expect(verbs.newPageSlide).toHaveBeenCalledWith('p9');
     expect(verbs.toggleSlideHidden).toHaveBeenCalledWith('s1');
-    c.setNotes('s1', 'Say hello');
-    expect(verbs.setSlideNotes).toHaveBeenCalledWith('s1', 'Say hello');
+    const cards = [{ id: 'c1', text: 'Say hello' }];
+    c.setNoteCards('s1', cards);
+    expect(verbs.setSlideNoteCards).toHaveBeenCalledWith('s1', cards);
   });
 });
 

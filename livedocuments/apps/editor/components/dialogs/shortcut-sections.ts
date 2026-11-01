@@ -98,6 +98,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['End'], label: 'Last slide' },
       { keys: ['G'], label: 'Jump to any slide' },
       { keys: ['N'], label: 'Presenter notes for this slide' },
+      { keys: ['↓'], label: 'Next note card, while the notes are open  (↑ for the previous)' },
       { keys: ['L'], label: 'Laser pointer over the slide' },
       { keys: ['S'], label: 'Spotlight over the slide' },
       { keys: ['Click'], label: 'On an element: its note, comments and actions' },

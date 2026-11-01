@@ -23,6 +23,7 @@ import {
   withContentOnAPage,
   type Element,
   type LaidOutPage,
+  type NoteCard,
   type Tab,
 } from '@livedocuments/document';
 import { besideSideInsets, computeFitBelow } from '@liveworkspace/workbench/lib/viewport';
@@ -81,7 +82,7 @@ export type PagesModeView = {
   setLayoutPreview: (preview: { pageId: string; layout: PageLayoutId } | null) => void;
   // Absent where the viewer may not change the pages (a view role, a locked tab).
   edit?: PageEdits;
-  // A slide page's place in the slide deck (PageDeckButton), composed in by the editor; absent
+  // A page's place in the slide deck (Contents' page-row-slides, PageNotesButton), composed in by the editor; absent
   // where the deck cannot be changed.
   deck?: PageDeckControls;
   // A page slide presenting: the surround is blacked out round the sheet, as a projector shows it.
@@ -95,11 +96,13 @@ export type PagesModeView = {
 
 export type PageDeckControls = {
   // The deck's slide of this page (on this tab), if it has one.
-  slideOf: (pageId: string) => { id: string; hidden: boolean; notes: string } | undefined;
+  slideOf: (
+    pageId: string,
+  ) => { id: string; hidden: boolean; noteCards: readonly NoteCard[] } | undefined;
   add: (pageId: string) => void;
   toggleHidden: (slideId: string) => void;
-  // The slide's speaker notes, as the Slide Deck panel writes them (an empty string removes them).
-  setNotes: (slideId: string, notes: string) => void;
+  // The slide's speaker notes as note cards, as the Slide Deck panel writes them (none removes them).
+  setNoteCards: (slideId: string, cards: readonly NoteCard[]) => void;
 };
 
 export function usePagesMode(deps: {

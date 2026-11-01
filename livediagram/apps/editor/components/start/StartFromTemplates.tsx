@@ -7,28 +7,24 @@
 import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@livediagram/ui';
 import {
-  lucideClock,
+  lucideBuilding2,
+  lucideCalendarRange,
   lucideCode,
-  lucideCoins,
   lucideDices,
-  lucideGrid3x3,
-  lucideLayers,
+  lucideGoal,
+  lucideGraduationCap,
   lucideLightbulb,
   lucideMap,
   lucideMessagesSquare,
-  lucideNetwork,
   lucidePenTool,
   lucideRefreshCw,
-  lucideShare2,
-  lucideSquareKanban,
   lucideStar,
-  lucideStickyNote,
   lucideUsers,
   lucideVote,
   lucideWorkflow,
 } from '@liveworkspace/icons/lucide';
 import type { EditorMode } from '@livediagram/document';
-import type { TemplateKind } from '@livediagram/templates';
+import type { TemplateCategory, TemplateKind } from '@livediagram/templates';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@liveworkspace/workbench/components/canvas/useEmptyCardDismissed';
@@ -45,31 +41,26 @@ import { useStartPalette } from '@/components/start/useStartPalette';
 
 const glyph = (icon: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(icon, 16);
 
-// Each rail group's glyph: Diagram's catalogue categories and Workshop's session groups.
-const RAIL_ICONS: Readonly<Record<string, ReturnType<typeof lucideGlyph>>> = {
+// Each rail group's glyph: Recommended, then every catalogue category (a Record, so a new category needs one).
+const RAIL_ICONS: Readonly<
+  Record<'recommended' | TemplateCategory, ReturnType<typeof lucideGlyph>>
+> = {
   recommended: glyph(lucideStar),
-  planning: glyph(lucideSquareKanban),
-  finance: glyph(lucideCoins),
-  spreadsheets: glyph(lucideGrid3x3),
-  meetings: glyph(lucideMessagesSquare),
-  mindmaps: glyph(lucideShare2),
-  timelines: glyph(lucideClock),
-  flowcharts: glyph(lucideWorkflow),
-  strategy: glyph(lucideMap),
-  hierarchies: glyph(lucideNetwork),
-  design: glyph(lucidePenTool),
-  presentations: glyph(lucideLayers),
-  technical: glyph(lucideCode),
-  games: glyph(lucideDices),
-  retrospectives: glyph(lucideRefreshCw),
-  workshops: glyph(lucideUsers),
-  ideation: glyph(lucideStickyNote),
-  exercises: glyph(lucideUsers),
+  ideas: glyph(lucideLightbulb),
   decisions: glyph(lucideVote),
-  'visual-notes': glyph(lucidePenTool),
-  prototypes: glyph(lucideLayers),
+  goals: glyph(lucideGoal),
+  meetings: glyph(lucideMessagesSquare),
+  people: glyph(lucideUsers),
+  planning: glyph(lucideCalendarRange),
+  processes: glyph(lucideWorkflow),
+  product: glyph(lucidePenTool),
+  games: glyph(lucideDices),
+  retros: glyph(lucideRefreshCw),
+  software: glyph(lucideCode),
+  strategy: glyph(lucideMap),
+  learning: glyph(lucideGraduationCap),
+  spaces: glyph(lucideBuilding2),
 };
-const FALLBACK_ICON = glyph(lucideLightbulb);
 
 const COPY: Record<
   TemplateStartMode,
@@ -119,7 +110,7 @@ export function StartFromTemplates({
         id: g.id,
         name: g.name,
         line: g.line,
-        icon: RAIL_ICONS[g.id] ?? FALLBACK_ICON,
+        icon: RAIL_ICONS[g.id as keyof typeof RAIL_ICONS],
       })),
     [start],
   );

@@ -25,6 +25,9 @@ interchangeable.
 - What a **page** is (an infographic or design page, a slide, an article page or a flashcard) is the page's kind
   ([Pages mode](../007-editor/pages-mode.md)). Every page of a tab is of one page kind, its first page's
   (`tabPageKind`), so a deck holds only slides. A tab itself has no kind.
+- A **note card** is not a page kind: it is one card of a slide's speaker notes (`Slide.noteCards`), plain text on
+  the deck's slide, the smaller form of a flashcard ([Speaker note cards](../012-collaboration/speaker-note-cards.md)).
+  A flashcard is a page; a note card never is.
 
 ### Template
 

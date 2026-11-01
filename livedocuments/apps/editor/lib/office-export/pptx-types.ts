@@ -60,7 +60,8 @@ export type PptxBackground =
 export type PptxSlide = {
   background: PptxBackground | null;
   items: PptxItem[];
-  notes?: string;
+  // The slide's note cards that are not blank, one notes paragraph each (speaker-note-cards.md "PowerPoint").
+  notes?: string[];
   hidden?: boolean;
 };
 
