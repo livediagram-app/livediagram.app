@@ -213,6 +213,28 @@ describe('applyParticipantOp: updates write text only', () => {
     expect(r.tab.elements[0]).toEqual({ ...img, alt: 'A harbour at dusk' });
   });
 
+  // docs/specs/009-elements/images.md "Alt text": stored clean whoever writes it, and words that clean to nothing
+  // remove it.
+  it("cleans a Participant's alt text, and removes one that cleans to nothing", () => {
+    const img = { ...createImage(0, 0), id: 'i1', imageId: 'pic', alt: 'Old' } as Element;
+    const cleaned = applied(
+      applyParticipantOp(tabOf([img]), {
+        kind: 'update',
+        element: { ...img, alt: ' \u202EA harbour\n at   dusk ' } as Element,
+      }),
+    );
+    expect(cleaned.tab.elements[0]).toEqual({ ...img, alt: 'A harbour at dusk' });
+    expect(cleaned.op).toEqual({ kind: 'patch', id: 'i1', set: { alt: 'A harbour at dusk' } });
+    const emptied = applied(
+      applyParticipantOp(tabOf([img]), {
+        kind: 'update',
+        element: { ...img, alt: '  \n ' } as Element,
+      }),
+    );
+    expect('alt' in emptied.tab.elements[0]!).toBe(false);
+    expect(emptied.op).toEqual({ kind: 'patch', id: 'i1', set: {}, clear: ['alt'] });
+  });
+
   it('answers unchanged when no text moved', () => {
     const stored = shape('col');
     const r = applied(

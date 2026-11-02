@@ -55,6 +55,8 @@ delete, undo, label edit via Space) that already work on a selection.
   shared naming helpers in `lib/element-names.ts` (`kindLabel` /
   `describeOne`): `Square "Login"`, `Sticky note`, `Arrow
 "yes"`. Arrows carry the same on their SVG group.
+- An image with alt text is named by it, not by its kind: its wrapper's `aria-label` is the alt text, and an image
+  without any keeps `Image` / `Image "<label>"` ([Images](../009-elements/images.md#alt-text)).
 - An element whose face holds controls of its own is a named `role="group"` instead (`elementRole`): checklists, a tab window (its Show a Tab and Open), a table (its cells edit in place, and selected it shows its column and row options), an embed, a link card, an image still waiting for its picture, and any element showing indicator buttons (its link, note, action or comments, [Element indicators](../008-canvas/element-indicators.md)). An img's children are
   presentational, so as pictures their tick and Ask buttons could not be reached with a screen reader.
 

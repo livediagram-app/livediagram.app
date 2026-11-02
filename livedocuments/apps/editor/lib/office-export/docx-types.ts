@@ -19,6 +19,8 @@ export type DocxImage = {
   heightPx: number;
   wrap: ArticleZoneWrap;
   align: ArticleZoneAlign;
+  // The alt texts of the zone's pictures (docs/specs/009-elements/images.md "Alt text"), absent when none has any.
+  descr?: string;
 };
 
 /** A contents block resolved: the headings of its article it lists, each with the page the editor laid it on (absent

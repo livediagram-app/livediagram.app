@@ -10,6 +10,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/page-background": "workspace:*",

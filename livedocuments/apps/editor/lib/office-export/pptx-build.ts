@@ -8,6 +8,7 @@ import {
   arrowLabelPass,
   arrowRoutePoints,
   drawnBounds,
+  imageAltTextOf,
   layerBands,
   layerOpacityOf,
   pageDimensions,
@@ -159,13 +160,16 @@ async function slideOf(
     const rect = cutTo(pictureRect(el, tab.elements, labels), page.rect);
     if (!rect) continue;
     const png = await drawer.region(page, new Set([el.id]), rect);
-    if (png)
+    if (png) {
+      const descr = imageAltTextOf([el], new Set([el.id]));
       items.push({
         kind: 'picture',
         name: `Picture ${items.length + 1}`,
         box: emuBox(place, rect),
         png,
+        ...(descr ? { descr } : {}),
       });
+    }
   }
   let background: PptxBackground | null = null;
   const kind = backgroundKind(page);

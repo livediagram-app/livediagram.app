@@ -45,6 +45,13 @@ export {
   isImageCredit,
   type ImageCredit,
 } from './image-credit';
+export {
+  IMAGE_ALT_MAX,
+  cleanImageAlt,
+  cleanImageAlts,
+  imageAltTextOf,
+  withCleanImageAlt,
+} from './image-alt';
 export type {
   ChartLegendPosition,
   ShapeElement,

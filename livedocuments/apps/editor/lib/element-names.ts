@@ -122,6 +122,9 @@ export function describeMany(elements: Element[]): string {
 export function elementAriaLabel(el: Element): string {
   // A margin note names which it is and where it stands (docs/specs/007-editor/article-pages.md "Its name").
   if (el.type === 'article-note') return noteAriaLabel(el);
+  // A picture is named by its alt text (docs/specs/009-elements/images.md "Alt text"), by its kind without any.
+  const alt = el.type === 'image' && typeof el.alt === 'string' ? el.alt.trim() : '';
+  if (alt) return alt;
   const kind = kindLabel(el);
   const label = ('label' in el && typeof el.label === 'string' ? el.label : '').trim();
   return label ? `${kind} "${label}"` : kind;

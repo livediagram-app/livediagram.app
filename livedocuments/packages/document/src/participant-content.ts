@@ -10,6 +10,7 @@ import type { Element, Tab } from './index';
 import { isLayerLocked, resolveLayerId, tabLayers } from './layers';
 import { participantArticlesChange } from './participant-article';
 import { isValidElement } from './validate';
+import { withCleanImageAlt } from './image-alt';
 
 type TextFieldsByKind = {
   readonly [K in Element['type']]?: readonly (keyof Extract<Element, { type: K }> & string)[];
@@ -151,7 +152,8 @@ export function applyParticipantOp(tab: Tab, op: ElementOp): ParticipantOpResult
   if (tab.locked === true) return refuse('tab-locked', restore);
   if (incoming.type !== stored.type) return refuse('type-changed', restore);
   if (isHeld(tab, stored)) return refuse('locked', restore);
-  const merged = mergeText(stored, incoming);
+  // Words are stored clean: an image's alt text as every other path stores it (image-alt.ts).
+  const merged = withCleanImageAlt(mergeText(stored, incoming));
   if (!isValidElement(merged)) return refuse('invalid', restore);
   const changed = !sameValue(merged, stored);
   // Peers get only the fields that changed, never the stored copy whole: theirs may hold an Editor's change the

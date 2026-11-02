@@ -50,7 +50,14 @@ export type PptxShape = {
   body: PptxTextBody | null;
 };
 
-export type PptxPicture = { kind: 'picture'; name: string; box: EmuRect; png: Uint8Array };
+// `descr` is the picture's alt text (docs/specs/009-elements/images.md "Alt text"), absent when it has none.
+export type PptxPicture = {
+  kind: 'picture';
+  name: string;
+  box: EmuRect;
+  png: Uint8Array;
+  descr?: string;
+};
 
 export type PptxItem = PptxShape | PptxPicture;
 
