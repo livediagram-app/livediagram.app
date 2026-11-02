@@ -738,12 +738,10 @@ Pressing it is tracked as `Tab / Aligned / PageTidyUp`.
 
 A **layout** is placed onto one page from its panel's **Layouts** tab, by category.
 
-**Change Theme** sits at the top right of the title bar's Layout popover (never on the in-page
-Start From a Layout card, which keeps to its layouts), left of its X: it closes the picker and opens the Tab Style
-popover, as the dock's Theme button does, so a layout and the look it wears are chosen together.
-It shows wherever the session may restyle the tab (an Editor; never for a Participant or a Viewer,
-who see no layout picker anyway). On a phone the Layout sheet keeps Change Theme and closes by a
-swipe, with no X.
+The title bar's Layout popover keeps to its layouts: an X closes it (on a phone the sheet closes
+by a swipe, with no X), and there is no Change Theme in it. Neither the popover nor the in-page
+Start From a Layout card restyles the tab; the dock's Theme button (Tab Style) does that, as it does
+in livedocuments.
 
 - **Which layouts a page offers** depends on its kind (`layoutCatalogueFor`,
   `packages/templates/src/layout-catalogue.ts`): a logo page the logo layouts
@@ -833,7 +831,7 @@ swipe, with no X.
   size whatever the zoom, as large as the page on screen leaves room for inside a 16 px margin (at
   most 900 by 660 px): a header (a sparkles badge where the card is 520 px or wider, **Start From a
   Layout**, "n logo layouts in your theme. Pick one, then make it yours." naming the page's kind,
-  and Hide; no Change Theme, the card keeps to its layouts) over the layout gallery. Pressing a layout places it (the page is empty,
+  and Hide; the card keeps to its layouts) over the layout gallery. Pressing a layout places it (the page is empty,
   so at once, as one undo step); there is no hover preview here, since drawn over the page it
   would cover the card's own tiles. The card goes as
   soon as anything lands on the page, and **Hide** (in its corner) puts it away for that page until
@@ -844,7 +842,7 @@ swipe, with no X.
   screen to hold it (less than 340 by 380 px inside its margin). There, a phone or a page zoomed out
   small, the page shows a **Choose a Layout** button in its middle instead (brand-filled, a
   sparkles icon, held at its screen size), which opens the layout gallery on its own: a bottom
-  sheet on a phone, a centred dialog on a desktop, headed like the card (no Change Theme either); a press or Surprise Me
+  sheet on a phone, a centred dialog on a desktop, headed like the card; a press or Surprise Me
   places the layout and closes it. Opening it is tracked as `UI / Opened / EmptyPageInvite`.
 - **Hover previews the layout on the page**: while a tile is hovered (or focused) the page shows
   that layout as it would land, drawn over the whole sheet in the page's background, and the

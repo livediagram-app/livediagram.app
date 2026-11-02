@@ -627,7 +627,7 @@ EmptyPageLayouts`) and `layoutCardSize(page, zoom)` (the page on screen less `LA
 - **Choose a Layout**: `EmptyPageInvite` on every page `layoutInviteShows` passes
   (`layoutOfferShows` and not `layoutCardShows`), scaled `1 / zoom` and centred; its press tracks
   `UI · Opened · EmptyPageInvite` and opens `LayoutGalleryDialog` (the shared `Dialog`, `size="3xl"`,
-  `phoneSheet`, `initialFocus="container"`, no Change Theme, as the card) for the page, whose press
+  `phoneSheet`, `initialFocus="container"`, as the card) for the page, whose press
   or Surprise Me applies and closes.
 - **Page navigator**: `PageNavigatorClusterStrip` in `CanvasChrome`'s bottom-right cluster, after
   `UndoRedoClusterStrip`, while not zen, not `isMobile` and `pagesMode.pages.length > 1`: `CLUSTER_STRIP`, 44 px
