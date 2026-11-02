@@ -36,7 +36,7 @@ export function useNewDocumentLocation(opts: {
   const resolveSaveLocation = async (
     hasPlacementParams: boolean,
     settle: () => Promise<unknown>,
-    // The wizard's Sync Canvas to Server switch, once the person has flipped it (save-locations.md "On the start
+    // The wizard's Sync Space to Server switch, once the person has flipped it (save-locations.md "On the start
     // screen"); null follows the default.
     chosen: SaveLocationId | null = null,
   ): Promise<SaveLocationId> => {

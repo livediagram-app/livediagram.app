@@ -10,7 +10,7 @@ import type { StartPalette } from './start-palette';
 
 const KIND = kindWords('livehuddle').one;
 
-// The start screen's Sync Canvas to Server switch (docs/specs/006-document/save-locations.md "On the start screen"):
+// The start screen's Sync Space to Server switch (docs/specs/006-document/save-locations.md "On the start screen"):
 // the shared row (@liveworkspace/ui SaveSwitch) fed this editor's view of the open document and its two in-place
 // moves. Reads only state the editor already holds, so it costs no request; it loads with the start's own chunk.
 // Outside an editor (a start rendered on its own) it is not there.

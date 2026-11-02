@@ -3,9 +3,8 @@
 
 import { communityCategories, communityCategoryTypes } from '@liveworkspace/community';
 
-// The shared contract registers no Community for livehuddle (its v1 ships none, open decision D3), so the fork
-// borrows livediagram's categories until the cut that removes the community app (build plan step 5.3).
-export const COMMUNITY_APP = 'livediagram.app' as const;
+// livehuddle's app on the shared Community service (registered by its "Adding an app" steps).
+export const COMMUNITY_APP = 'livehuddle.app' as const;
 
 export const COMMUNITY_CATEGORIES = communityCategories(COMMUNITY_APP);
 

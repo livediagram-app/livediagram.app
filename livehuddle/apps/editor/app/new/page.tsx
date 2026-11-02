@@ -184,7 +184,7 @@ export default function NewDocumentPage() {
     sessionAnswered,
     accountUserId,
   });
-  // The wizard's Sync Canvas to Server switch (save-locations.md "On the start screen"): null until flipped, so
+  // The wizard's Sync Space to Server switch (save-locations.md "On the start screen"): null until flipped, so
   // the create follows the default. Drawn only once the page runs in the browser: the prerender knows no sign-in,
   // and a switch that flipped on at hydration would jolt.
   const [chosenLocation, setChosenLocation] = useState<SaveLocationId | null>(null);

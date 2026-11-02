@@ -19,7 +19,7 @@ export function useConversionHandoff(ownerId: string | null, signedIn: boolean) 
     ownerId,
     signedIn,
     app: 'livehuddle',
-    noun: 'canvas',
+    noun: 'space',
     conversions: useOfflineConversions(ownerId),
     confirm: useConfirm(),
     toastError: toast.error,

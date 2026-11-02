@@ -35,7 +35,7 @@ export function NewDocumentWizard({
   onBackOut: () => void;
   // To the Explorer, to open a document that exists.
   onOpenExisting?: () => void;
-  // Where the new canvas will be saved: the Sync Canvas to Server switch, under Create
+  // Where the new canvas will be saved: the Sync Space to Server switch, under Create
   // (docs/specs/006-document/save-locations.md "On the start screen"). Absent where /new names a server place.
   saveSwitch?: ReactNode;
 }) {

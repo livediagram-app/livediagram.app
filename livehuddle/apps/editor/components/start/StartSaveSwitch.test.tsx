@@ -2,7 +2,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// docs/specs/006-document/save-locations.md "On the start screen": the start's Sync Canvas to Server switch shows on
+// docs/specs/006-document/save-locations.md "On the start screen": the start's Sync Space to Server switch shows on
 // a fresh document that is the reader's alone, reflects where it is, and moves it with the editor's in-place moves.
 
 const { state, toast } = vi.hoisted(() => ({
