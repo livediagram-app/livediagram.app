@@ -46,7 +46,6 @@ Scope, by file:
 | `apps/telemetry/app/*`                                              | `Whiteboard` colour, description, sentences and the Whiteboards stack     |
 | `apps/editor/components/canvas/boxed-element-overlays.tsx`          | `FreehandSvg` honours `penWidth` on every stroke                          |
 | `apps/editor/lib/style-presets.ts`                                  | A border width clears a stroke's `penWidth`                               |
-| `apps/editor/lib/view-backdrop.ts`                                  | `resolveViewBackdrop`: the person's Draw pattern in Draw mode             |
 | `apps/editor/components/canvas/EditorCanvasHost.tsx`                | Ink projection; whiteboard props                                          |
 | `apps/editor/components/canvas/CanvasChrome.tsx` and friends        | Hidden chrome; the dock's mount                                           |
 | `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`              | Pen versus touch; the eraser frame                                        |
@@ -1006,7 +1005,6 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Pen commit (open, colour, width, held, recognition)                                           | `apps/editor/hooks/canvas/commit-freehand.test.ts`                                                                     |
 | Border width clears `penWidth`                                                                | `apps/editor/lib/style-presets.test.ts`                                                                                |
 | Backdrop on a whiteboard                                                                      | `apps/editor/lib/default-scheme.test.ts`                                                                               |
-| Dock a11y, keyboard, flyouts                                                                  | `apps/editor/components/canvas/whiteboard/WhiteboardDock.test.tsx`                                                     |
 | Dock state, entering, telemetry                                                               | `apps/editor/hooks/canvas/useWhiteboard.test.tsx`, `e2e/whiteboard-opening-tool.spec.ts`                               |
 | Stock colour projection cache                                                                 | `apps/editor/lib/stock-colour-projector.test.ts`                                                                       |
 | Eraser steps                                                                                  | `apps/editor/lib/whiteboard-erase.test.ts`                                                                             |

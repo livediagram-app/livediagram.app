@@ -1,6 +1,6 @@
 # Editor app
 
-The diagram editor: where users actually build diagrams and mindmaps.
+The editor: where people run sessions and build their boards.
 
 - **Workspace:** `apps/editor` (`@livehuddle/editor`).
 - **Public URL:** `https://livehuddle.app`; the app serves at **clean routes** (`/document/...`, `/explorer/...`, `/new`, ...); the [router app](../016-platform/router-app.md) selects it by route. There's no `/live` URL prefix.

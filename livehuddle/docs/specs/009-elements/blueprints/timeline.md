@@ -42,7 +42,6 @@ Scope, by file:
 | `apps/editor/components/canvas/ConceptTimelineBody.tsx`  | The canvas face: spine, arrowhead, a `ConceptRowLayer` per milestone                     |
 | `apps/editor/components/canvas/element-variant.ts`       | Borderless wrapper via `SELF_PAINTING_SHAPES`                                            |
 | `apps/editor/components/canvas/QuickConnectPluses.tsx`   | The ring's Add Milestone                                                                 |
-| `apps/editor/components/palette/ConceptMenuSection.tsx`  | The menu section's title, "Timeline"                                                     |
 | `apps/editor/components/palette/palette-tile-defs.tsx`   | Tile `tools:timeline`, section `concepts`                                                |
 | `apps/editor/lib/palette-tile-keywords.ts`               | Search words for the tile                                                                |
 | `apps/editor/lib/element-tours.ts`                       | `elementTourKindOf`: `'timeline'`                                                        |

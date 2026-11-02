@@ -31,8 +31,8 @@ hosts, named below.
   the address whose page head names the canvas, so it previews as the canvas in chat apps
   ([Share-link previews](share-link-previews.md)). `itemHref` and `shareUrl` in `apps/editor/lib/explorer-host.ts`.
 - **New.** The `/new` flow, filed where it was pressed (`?folder=`, `?team=`) ([Default folders](default-folders.md)).
-- **What it makes.** Home's hero pictures livehuddle's kinds (Flowchart, Mind Map, Whiteboard, Workshop), each
-  starting its template through `/new?template=` (the package's `WORK_KINDS`, [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "What you can make, on Home's hero").
+- **What it makes.** Home's hero pictures an app's kinds of work, each starting its template through
+  `/new?template=`; livehuddle has none listed yet, so its hero shows none (the package's `WORK_KINDS`, [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "What you can make, on Home's hero").
 - **The Library.** The person's **Image Gallery** and **Shape Libraries**, read through this site's API, and
   **Import from**, whose buttons open this site's `/import` page for the source, which imports where New was pressed
   and comes back (`apps/editor/lib/explorer-library-host.tsx`). Shape Libraries' tiles are drawn by

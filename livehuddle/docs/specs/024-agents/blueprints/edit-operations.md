@@ -374,7 +374,7 @@ means `newElementId` ([Ids](#ids)).
   arrows with both ends among them are laid out by `autoLayoutElements(subset, { style, direction, originX,
 originY, fixedSizeIds })`, origin the selection's bounding-box top-left, every selected box keeping its size;
   edgeless selected boxes are swept below with `sweepEdgelessNodes` (EO38). `direction` maps `down`→`TB`,
-  `right`→`LR` for `flow` and `tree` (a mindmap is radial and takes none); omitted, flow detects it
+  `right`→`LR` for `flow` and `tree`; omitted, flow detects it
   (`flowDirectionOf`) and a tree runs down. Nothing outside the selection moves; a locked arrow
   between selected boxes keeps its ends. A locked element in the selection
   is `element_locked`.

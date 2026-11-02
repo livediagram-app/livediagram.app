@@ -60,7 +60,7 @@ Recommended. Choosing the blank closes the panel, as the × does, since it leave
 
 ## When it shows
 
-`templateStartMode` (`components/start/template-start-mode.ts`) decides, from the editor's state:
+`EditorStartPanels` (`components/start/EditorStartPanels.tsx`) decides, from the editor's state:
 
 - To someone who can edit (an **Editor**), after hydration, outside zen and an embed, with
   no draw tool armed.
@@ -147,7 +147,6 @@ A template chosen fires `Template · Used · <kind>` through `chooseTemplate`.
 - `components/start/StartPanel.test.tsx`: Down from the search, Best Match leading, the arrow keys among the cards.
 - `../packages/workbench/src/components/start/best-match.test.ts`: which names lead, exact first, lifted out of their groups once.
 - `../packages/workbench/src/components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.
-- `components/start/template-start-mode.test.ts`: when a start shows.
 - `components/start/StartFromTemplates.test.tsx`: the title, choosing, the blank closing, the close, scroll to top.
 - `components/start/start-palette.test.ts`, `start-panel-open.test.tsx`, `start-query.test.ts`.
 - `components/start/StartAgainTray.test.tsx`, `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing a start back).
