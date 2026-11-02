@@ -184,14 +184,13 @@ export async function probeDispatch(
       },
     );
   // Feature gates open, so a handler reaches its own routing instead of
-  // answering "not configured" for every path: telemetry on, a model key, and Community and media keys set.
+  // answering "not configured" for every path: telemetry on, and Community and media keys set.
   // An index configured (its calls are the trapped `fetch`), and every request carrying an edit grant on the
   // placeholder canvas, so a canvas route reaches its own routing instead of answering "no access".
   const env = {
     DOCUMENT_ROOM: trap('DOCUMENT_ROOM'),
     PERSON_STORE: trap('PERSON_STORE'),
     TELEMETRY_ENABLED: 'true',
-    GOOGLE_AI_STUDIO_API_KEY: 'probe-key',
     // The Community, which lives in liveworkspace's service (liveworkspace/docs/specs/007-community/community.md); never reached.
     COMMUNITY_URL: 'http://community.invalid/api/community',
     COMMUNITY_KEY: 'probe-key',

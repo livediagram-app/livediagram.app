@@ -3,7 +3,6 @@
 // untrusted JSON. Returns the first problem, naming the member, or null.
 
 import {
-  EVENT_STORMING_NOTES,
   graphShapeError,
   isRecord,
   MAX_ELEMENTS_PER_TAB,
@@ -21,8 +20,6 @@ const isOneOf = (values: readonly string[]) => (v: unknown) => values.includes(v
 const isListOf = (v: unknown, check: (item: unknown) => boolean) =>
   Array.isArray(v) && v.every(check);
 
-const ES_KINDS = EVENT_STORMING_NOTES.map((n) => n.kind);
-
 const isEntityField = (f: unknown) => isRecord(f) && isString(f.name) && optional(isString)(f.type);
 
 const isNode = (n: unknown) =>
@@ -30,7 +27,6 @@ const isNode = (n: unknown) =>
   isId(n.id) &&
   ['label', 'shape', 'link', 'note', 'group', 'icon'].every((key) => optional(isString)(n[key])) &&
   optional(isOneOf(['strong', 'soft', 'muted', 'plain']))(n.tone) &&
-  optional(isOneOf(ES_KINDS))(n.esKind) &&
   optional((v) => isListOf(v, isEntityField))(n.fields);
 
 const isEdge = (e: unknown) =>
@@ -68,11 +64,7 @@ const MEMBER_RULES: readonly [string, (v: unknown) => boolean, string][] = [
   ['edges', (v) => isListOf(v, isEdge), 'an array of { from, to, label? }'],
   ['groups', optional((v) => isListOf(v, isGroup)), 'an array of { id, members }'],
   ['direction', optional(isOneOf(['down', 'right'])), 'down or right'],
-  [
-    'style',
-    optional(isOneOf(['flow', 'tree', 'lanes', 'cycle', 'storm'])),
-    'flow, tree, lanes, cycle or storm',
-  ],
+  ['style', optional(isOneOf(['flow', 'tree', 'lanes', 'cycle'])), 'flow, tree, lanes or cycle'],
   ['lines', optional(isOneOf(['straight', 'angled', 'curved'])), 'straight, angled or curved'],
 ];
 

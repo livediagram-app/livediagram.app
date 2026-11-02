@@ -35,69 +35,6 @@ describe('image cap', () => {
   });
 });
 
-// docs/specs/021-event-storming/note-reader.md tabulates the reader route's
-// error envelope. An earlier AI spec drifted badly here (it listed a token that
-// existed nowhere in the repo and missed two the route really emitted), so the
-// table is pinned to the code both ways.
-describe('docs/specs/021-event-storming/note-reader.md lists the error tokens the reader route emits', () => {
-  it('names each one, and invents none', () => {
-    // Every file a caller of the reader can receive an envelope from: the
-    // admission gate and the handler. Reading one file would quietly stop
-    // checking most of them.
-    const route = ['ai-gate.ts', 'ai-read-notes.ts']
-      .map((f) => readFileSync(`${ROOT}/apps/api/src/routes/${f}`, 'utf8'))
-      .join('\n');
-    const spec = readFileSync(`${ROOT}/docs/specs/021-event-storming/note-reader.md`, 'utf8');
-    // Tokens come from inline envelopes AND the shared helpers in
-    // responses.ts: a no-arg helper (`aiError()`) stands for the fixed token
-    // its body returns, and `forbidden('x')` / `conflict('x')` carry theirs as
-    // the argument. Reading only the inline literals would stop checking a
-    // token the moment its route switched to the helper. The helpers every api
-    // shares are @liveworkspace/api-kit's (`const signInRequired = (): Response =>`).
-    const responses = [
-      `${ROOT}/apps/api/src/responses.ts`,
-      `${ROOT}/../packages/api-kit/src/responses.ts`,
-    ]
-      .map((path) => readFileSync(path, 'utf8'))
-      .join('\n');
-    const helperTokens = new Map(
-      [
-        ...responses.matchAll(
-          /(?:export function (\w+)\(\): Response \{\s*return|const (\w+) = \(\): Response =>)\s*json\(\{ error: '([a-z_]+)'/g,
-        ),
-      ].map((m) => [(m[1] ?? m[2])!, m[3]!]),
-    );
-    const emitted = [
-      ...[...route.matchAll(/error: '([a-z_]+)'/g)].map((m) => m[1]!),
-      ...[...route.matchAll(/\b(?:forbidden|conflict)\('([a-z_]+)'\)/g)].map((m) => m[1]!),
-      ...[...route.matchAll(/\b(\w+)\(\)/g)].flatMap((m) => helperTokens.get(m[1]!) ?? []),
-    ];
-    expect(new Set(emitted).size).toBeGreaterThan(3);
-
-    for (const token of new Set(emitted)) {
-      expect(spec, `docs/specs/021-event-storming/note-reader.md omits ${token}`).toContain(
-        `\`${token}\``,
-      );
-    }
-    // The spec may only claim tokens the route actually produces. Scoped to
-    // the envelope TABLES — the `|`-delimited rows between the error section
-    // and the env section — so prose in between (which legitimately names
-    // things like `json_object`) is free.
-    const rows = spec
-      .slice(spec.indexOf('Error responses follow'), spec.indexOf('## Environment'))
-      .split('\n')
-      .filter((line) => line.startsWith('|'))
-      .join('\n');
-    for (const m of rows.matchAll(/`([a-z]+_[a-z_]+)`/g)) {
-      const claimed = m[1]!;
-      expect(
-        emitted,
-        `docs/specs/021-event-storming/note-reader.md claims ${claimed}, which the route never emits`,
-      ).toContain(claimed);
-    }
-  });
-});
-
 // The bug these exist for: the tab cap (and a since-removed second cap) were
 // written as `Number.isFinite(Number(headers.get(...)))`, which is TRUE for an
 // absent header (Number(null) === 0), so they measured a chunked body as zero

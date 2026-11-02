@@ -98,7 +98,7 @@ Workspace names follow the pattern `@livehuddle/<app-or-package-folder-name>`.
 ## Useful scripts
 
 Run through `corepack pnpm` (written `pnpm` below) from the monorepo root, except `format`, `format:check`,
-`licences`, `icons:sheet`, `demo:sticky-vision` and `bench:stroke-points`, which are livehuddle's own scripts and
+`licences`, `icons:sheet` and `bench:stroke-points`, which are livehuddle's own scripts and
 run from `livehuddle/`:
 
 | Command                                                                   | What it does                                                                                                                                                                                                                                                                                                                                                                                     |
@@ -120,7 +120,6 @@ run from `livehuddle/`:
 | `pnpm licences`                                                           | Regenerate the `/licences` page data (`apps/marketing/generated/`, `public/licences/`) from what every app bundles ([Third-party licences](../specs/002-project-scope/third-party-licences.md)); the marketing build runs it itself.                                                                                                                                                             |
 | `pnpm icons:vendor`                                                       | Regenerate the vendored Lucide glyphs from `../packages/icons/lucide-manifest.json` ([Iconography](../specs/004-interface-design/iconography.md)).                                                                                                                                                                                                                                               |
 | `pnpm icons:sheet`                                                        | Render every editor icon at 1x and 4x into HTML + PNG contact sheets (`$ICON_SHEET_DIR`, default `/tmp/icon-sheet`) for review.                                                                                                                                                                                                                                                                  |
-| `pnpm demo:sticky-vision`                                                 | Bundle + serve the sticky-detection demo at <http://localhost:4199> ([Event storming](../specs/021-event-storming/event-storming.md)).                                                                                                                                                                                                                                                           |
 | `pnpm bench:stroke-points`                                                | Measure packed stroke points against the former `{ nx, ny }` shape on a synthesised board: tab bytes, allocations, parse and draw time, accuracy ([Stroke points](../specs/006-document/stroke-points.md)).                                                                                                                                                                                      |
 | `pnpm --filter @livehuddle/document stroke-points <file.json>`            | Print a stored tab or document file with every freehand's `packedPoints` expanded into readable `{ nx, ny, p }` points (`-` reads stdin).                                                                                                                                                                                                                                                        |
 
@@ -178,20 +177,6 @@ apps/cli/dist/livehuddle.mjs document ls
 `$XDG_CONFIG_HOME/livehuddle` and `$XDG_CACHE_HOME/livehuddle` (`~/.config` and `~/.cache` by default); point
 both at a scratch directory to keep a test run apart from your own sign-in.
 
-## Enabling the photo reader locally (optional)
-
-The event-storming photo import reads the handwriting on each sticky in the browser unless the api worker has a model key, in which case a hosted model reads it instead, markedly better ([Note reader](../specs/021-event-storming/note-reader.md)). To turn the server reader on locally:
-
-```sh
-# apps/api/.dev.vars (gitignored).
-GOOGLE_AI_STUDIO_API_KEY=...   # the reader defaults to gemini-2.5-flash-lite
-# AI_API_KEY=...               # or any other OpenAI-compatible provider, used only when
-# AI_BASE_URL=http://127.0.0.1:8080/v1  # the Google key is not set; needs both of these
-# AI_VISION_MODEL=...          # the reader's model; required for AI_API_KEY, optional on Google
-```
-
-Restart `corepack pnpm dev:huddle`. `GET /api/capabilities` will start reporting `{ aiEnabled: true }` and the photo import sends its crops to the server reader. The two spend-DoS knobs `AI_ALLOWED_ORIGINS` and `AI_REQUIRE_SIGN_IN` are hosted-only; leave them unset locally so the guest path keeps working. Production declares `AI_ALLOWED_ORIGINS` in `apps/api/wrangler.toml` `[vars]`, which `wrangler dev` also reads, so the api's `dev` script (and the e2e stack) blank it with `--var AI_ALLOWED_ORIGINS:`; without that, every reader request from a localhost editor answers 403 `origin_not_allowed`. See `apps/api/.env.example` for the full set of vars the worker reads.
-
 ## Running tests
 
 ```sh
@@ -211,29 +196,19 @@ run it from `liveworkspace/apps/drive` as that page says. The router sends `/api
 `apps/router/wrangler.toml`), and the api needs only `DRIVE_KEY` in `apps/api/.dev.vars` for the service's export and
 import doors.
 
-## Trying the photo import without an AI key
+## Serving the built editor beside a running stack
 
-The e2e stack (`scripts/e2e-stack.mjs`) can serve the built editor a second
-time, beside a running stack, as a deployment WITHOUT an AI key runs it, so
-the photo import reads the handwriting with the in-browser model (and shows
-its download the first time):
+The e2e stack (`scripts/e2e-stack.mjs`) can serve the built editor a second time, beside a running stack:
 
 ```bash
-E2E_EDITOR_PORT=3110 E2E_API_PORT=9087 E2E_EDITOR_ONLY=1 E2E_NO_AI=1 node scripts/e2e-stack.mjs
+E2E_EDITOR_PORT=3110 E2E_API_PORT=9087 E2E_EDITOR_ONLY=1 node scripts/e2e-stack.mjs
 ```
 
-`E2E_EDITOR_ONLY=1` serves the static editor only, proxying to the api already
-on `E2E_API_PORT`; `E2E_NO_AI=1` answers `/api/capabilities` with
-`aiEnabled: false`.
+`E2E_EDITOR_ONLY=1` serves the static editor only, proxying to the api already on `E2E_API_PORT`.
 
 `E2E_EDITOR_OUT=<dir>` serves another export of the editor app (the signed-in specs use
 `.next/out-signed-in`). The stack always stands in for the accounts Worker: it keeps settings and profiles in memory, and the api verifies access
 tokens the stack mints on `/e2e/token?sub=user_…` ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)).
-
-To try a hosted reader whose free budget is spent, swap `E2E_NO_AI=1` for
-`E2E_AI_BUDGET_SPENT=1`: the api still reports a model, every
-`/api/ai/read-notes` call answers 429 `ai_quota`, and the import fails over
-to the in-browser model and says so ([Event storming](../specs/021-event-storming/event-storming.md#review-the-detection-draw-the-misses).
 
 ## Four gotchas
 

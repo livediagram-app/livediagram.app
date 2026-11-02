@@ -63,8 +63,6 @@ export const HELP_ARTICLES = {
   choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
   // Links / activity / comments
   workshopTour: 'canvas/workshop-mode/workshop-tour',
-  // The event-storming board, its photo import review included (docs/specs/021-event-storming/event-storming.md).
-  eventStormingBoards: 'canvas/event-storming-boards',
   avatarTour: 'selection-modes/avatar-mode/avatar-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
@@ -126,10 +124,6 @@ export type HelpArticleKey = keyof typeof HELP_ARTICLES;
 // the same article say the same thing, and a `?` never falls back to a bare
 // "Learn more" that tells the reader nothing about where it goes.
 export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description: string }> = {
-  eventStormingBoards: {
-    title: 'Learn about event-storming boards',
-    description: 'Lanes, next-note buttons, and importing a photo of the wall.',
-  },
   workshopTour: {
     title: 'Learn about the Workshop Tour',
     description: 'What the tour shows you and how replaying works.',

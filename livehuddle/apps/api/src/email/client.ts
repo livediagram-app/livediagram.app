@@ -1,7 +1,7 @@
 // docs/specs/014-identity/transactional-email.md: this app's email, sent through Cloudflare Email Service's
 // `send_email` binding by @liveworkspace/email (liveworkspace/docs/specs/003-accounts/email.md). The whole feature is gated on the
 // `EMAIL` binding: absent, every send is a no-op and the lifecycle table is never touched, so a deployment with
-// email off does zero extra work (mirrors the model key -> photo-reader-hidden pattern). Sends are best-effort:
+// email off does zero extra work. Sends are best-effort:
 // this never throws, so an email failure can't fail or delay the request that triggered it (callers run sends
 // inside ctx.waitUntil or the daily cron).
 

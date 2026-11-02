@@ -27,8 +27,6 @@ import {
   useEffectEvent,
 } from 'react';
 import {
-  isEventStormingTab,
-  onlyDraftNotesChanged,
   stampTabKind,
   isBoxed,
   resolveSlide,
@@ -96,7 +94,6 @@ import { useParticipantSession } from './useParticipantSession';
 import { usePowerUserOffer } from '@/hooks/ui/usePowerUserOffer';
 import { useDocumentHistory } from '@/hooks/canvas/useDocumentHistory';
 import { useCanvasA11y } from '@/hooks/canvas/useCanvasA11y';
-import { useLaneSettle } from '@/hooks/canvas/useLaneSettle';
 import { useBurstCheckpoint } from '@liveworkspace/workbench/hooks/canvas/useBurstCheckpoint';
 import { useNudgeSelection } from '@/hooks/canvas/useNudgeSelection';
 import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
@@ -114,10 +111,6 @@ import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
 import { useCommentReactionScope } from '@/hooks/collab/useCommentReactionScope';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
-import { useNoteActions } from '@/hooks/canvas/useNoteActions';
-import { usePhotoPicker } from '@/hooks/canvas/usePhotoPicker';
-import { warmBoundaryModel } from '@/lib/photo-model/client';
-import { usePhotoDraft } from '@/hooks/canvas/usePhotoDraft';
 import { useEditorImages } from '@/hooks/canvas/useEditorImages';
 import { useEditorNotes } from '@/hooks/canvas/useEditorNotes';
 import { useElementLinks } from '@/hooks/canvas/useElementLinks';
@@ -242,7 +235,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // that never materialised `layers`, and on undo/remote applies (which
     // bypass commitTabs entirely).
     rawCommitTabs((ts) => {
-      // Tab kind (docs/specs/021-event-storming/event-storming.md): a committed tab says what KIND of board it
+      // Tab kind: a committed tab says what KIND of board it
       // is, rather than leaving a reader to know that absence means
       // 'diagram'. Same choke point as the layer stamp below, and
       // `stampTabKind` returns the tab unchanged when it already has one,
@@ -268,13 +261,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       });
     });
   };
-  const markCheckpoint = () => {
-    // A gesture inside the draft (dragging a draft note) must not push a step
-    // of its own, or Undo after Add would stop at that drag instead of taking
-    // the whole import back.
-    if (photoDraftOpenRef.current) return;
-    rawMarkCheckpoint();
-  };
+  const markCheckpoint = rawMarkCheckpoint;
   // Stable identity: usePerTabLoad takes this, and an identity that changed
   // every render once turned a failed tab load into a refetch on every
   // re-render (the 30s presence tick included), each one an Error report.
@@ -282,20 +269,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Escape-cancel for an in-flight drag: restore the gesture's
   // checkpoint and DISCARD the step (no redo entry, a cancelled drag
   // never happened).
-  // Restore the armed checkpoint and DISCARD the step. The photo draft's own
-  // Discard calls this directly: it is the gesture's owner, so it is the one
-  // caller that always means it.
-  const cancelGesture = () => {
-    rawCancelToCheckpoint();
-  };
-  const cancelToCheckpoint = () => {
-    // Inside a draft there is no per-gesture checkpoint for anyone ELSE to go
-    // back to — the draft's own is the only one, and popping it because a drag
-    // was cancelled would take the whole import with it. The dragged note
-    // simply stays where it was let go; Discard is how you undo the import.
-    if (photoDraftOpenRef.current) return;
-    cancelGesture();
-  };
+  const cancelToCheckpoint = rawCancelToCheckpoint;
 
   // Stable id + name projection of the tabs for link-badge hover cards
   // (docs/specs/008-canvas/canvas-and-palette.md): keyed on a signature so it only changes when a tab is
@@ -816,7 +790,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     changesetSeen: realtime.changesetSeen.seen,
     noteTabRevision: tabRevisions.noteSaved,
   });
-  // Sync Canvas from the Share dialog, with no reload (docs/specs/006-document/offline-mode.md "Syncing
+  // Sync Space from the Share dialog, with no reload (docs/specs/006-document/offline-mode.md "Syncing
   // in place").
   const syncToCloud = useSyncInPlace({
     documentId,
@@ -1517,12 +1491,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     ((from: string, tabId: string, at: { x: number; y: number }) => void) | null
   >(focusInvite.receiveFocusHere);
 
-  // Server capabilities. Fetched once at mount; `aiEnabled` decides whether the sticky-note photo
-  // import reads on the server or in the browser (docs/specs/021-event-storming/note-reader.md).
-  const capabilities = useCapabilities(sharePasswordGate === null);
-  const { emailEnabled } = capabilities;
-  // A workbench offers no photo reading: the person's agent sits beside it.
-  const aiCapable = capabilities.aiEnabled && !workbenchMode;
+  // Server capabilities. Fetched once at mount.
+  const { emailEnabled } = useCapabilities(sharePasswordGate === null);
 
   // Pinch-to-zoom on touch screens + trackpad pinch (Ctrl+wheel).
   const { isPinchingRef } = useCanvasPinchZoom({
@@ -1787,21 +1757,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // write the element back as it was BEFORE the in-between edit, silently
     // dropping it (the bug where a link-card reset to "Add a link" once its
     // preview fetch landed).
-    // An edit confined to the notes a photo draft brought in belongs to the
-    // draft's gesture, not to the undo stack: it is written live and folded
-    // into the one step Add leaves behind. Anything touching the author's own
-    // work commits normally, so a Discard can never take it with it.
-    if (photoDraftOpenRef.current) {
-      const liveTab = tabsRef.current.find((t) => t.id === activeId) ?? activeTab;
-      const before = liveTab.elements;
-      const after = mapElements(before);
-      if (onlyDraftNotesChanged(before, after)) {
-        tickTabs((ts) => patchTab(ts, activeId, { elements: after }));
-        return;
-      }
-      commitTabs((ts) => patchTab(ts, activeId, { elements: after }));
-      return;
-    }
     // A Participant's edit is checked against the live tab before it lands (guardCommit may refuse it with a
     // notice, so it runs once, here, not inside the update).
     if (participant.participating) {
@@ -1887,25 +1842,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     layerId: activeLayerId,
   });
 
-  // Is this an event-storming board (docs/specs/021-event-storming/event-storming.md)? One layer, so this is just
-  // tab data — it drives the palette, the stationery and the note menu.
-  const esBoard = isEventStormingTab(activeTab);
   // Element creation lands on the active layer, so it's additionally
   // blocked while that layer is hidden or locked (docs/specs/006-document/layers.md).
   const createBlocked = editsBlocked || activeLayerBlocked;
   // As structureBlocked, for the hooks that take createBlocked: shut to a Participant.
   const structureCreateBlocked = createBlocked || isReadOnly;
-
-  // An older event-storming board is settled onto the lanes once
-  // (docs/specs/021-event-storming/event-storming.md "Always on a lane").
-  useLaneSettle({
-    activeTab,
-    editsBlocked: structureBlocked,
-    commitActiveTab,
-    markSettled: (tabId) =>
-      tickTabs((ts) => ts.map((t) => (t.id === tabId ? { ...t, esLanesSettled: true } : t))),
-    toastInfo: toast.info,
-  });
 
   // A layer turning hidden or locked drops its elements from the live selection (layers.md).
   usePruneInertSelection(layerInertIds, selectionStore);
@@ -1954,69 +1895,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setEditingId,
       setFormatSourceId,
     });
-
-  // Photo import (docs/specs/021-event-storming/event-storming.md Phase 8): reads a photographed wall, reconciles it
-  // against this board and lands the result as an on-canvas DRAFT. Detection
-  // and reading are both in-browser now (Phase 9), so this needs no model key.
-  const photoDraft = usePhotoDraft({
-    activeTab,
-    activeId,
-    ownerId: selfParticipant.id,
-    aiEnabled: aiCapable,
-    createBlocked,
-    tick,
-    markCheckpoint,
-    // The draft OWNS the gesture, so it cancels it directly rather than
-    // through the guard that keeps everyone else out of its checkpoint.
-    cancelToCheckpoint: cancelGesture,
-    setSelectedId,
-    setMultiSelectedIds,
-    fitToBounds,
-    toastError: toast.error,
-  });
-  // The hidden file input the palette row and the command-palette entry open.
-  // Keep the history-ownership ref (declared beside `commit`) in step with
-  // whether a draft is actually open.
-  // While a photo draft is open it OWNS the history (docs/specs/021-event-storming/event-storming.md Phase 8): the
-  // landing and every correction the author makes to a draft note are one
-  // gesture, ending at Add (the step stands) or Discard (it is thrown away).
-  // A ref, because `commit` / `markCheckpoint` are defined long before the
-  // draft hook and read it at call time.
-  const photoDraftOpenRef = useLatest(photoDraft.draftOpen);
-  const photoImportAvailable = esBoard;
-  // One draft at a time: while one is open the entry points say so rather
-  // than starting a second import over the first.
-  const photoImportBlocked = createBlocked || photoDraft.draftOpen;
-  // A photo dropped or pasted on one of these boards is a piece of WALL, not
-  // a picture element: it goes straight to the reader, and nothing on the
-  // canvas becomes an image.
-  const readPhotoFile =
-    photoImportAvailable && !photoImportBlocked
-      ? (file: File) => {
-          void photoDraft.startFromFile(file);
-        }
-      : undefined;
-  // One input, rendered once beside the canvas, so the camera-capture attribute
-  // and the accepted-type list live in exactly one place. The picker guards the
-  // dialog itself: a stray second click (a double-click in the file dialog)
-  // must not replace the chooser that is already returning a file.
-  const photoPicker = usePhotoPicker({
-    canOpen: () => photoImportAvailable && !photoImportBlocked,
-    onFile: (file) => readPhotoFile?.(file),
-    onOpen: warmBoundaryModel,
-  });
-  const photoPickerRef = photoPicker.inputRef;
-  const openPhotoImport = photoPicker.open;
-
-  // Note acts on an event-storming board (docs/specs/021-event-storming/event-storming.md): add the next note beside
-  // one, change a note's kind.
-  const noteActions = useNoteActions({
-    activeTab,
-    createBlocked,
-    layerInertIds,
-    commit,
-    addBoxedAt,
-  });
 
   // --- Tab actions ---------------------------------------------------------
 
@@ -2875,7 +2753,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     isReadOnly,
     readSelection,
     activeTab,
-    laneBoard: esBoard,
     markCheckpoint,
     tick,
     autoRebindArrowsRef,
@@ -2932,15 +2809,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     styleNewElement: styleMemory.styleNewElement,
     alignmentGuidesRef,
     isPinchingRef,
-    // Insert between (docs/specs/021-event-storming/event-storming.md): dragging a note already on the board into a
-    // gap, while Alt is held. Same gate the palette drag uses, so both entry
-    // points agree about when the gesture is available.
-    insertGate: {
-      esBoard,
-      readOnly: isReadOnly,
-      tabLocked: activeTabLocked,
-      createBlocked,
-    },
   });
 
   // Copy / paste (in-app element clipboard + OS-clipboard image
@@ -2949,7 +2817,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // useClipboard.
   // The pointer's canvas position while it is over the canvas, null
   // otherwise. Written by the canvas host on every pointer move; read by paste
-  // (docs/specs/021-event-storming/event-storming.md "Always on a lane": a paste lands at the pointer).
+  // (a paste lands at the pointer).
   const canvasPointerRef = useRef<{ x: number; y: number } | null>(null);
   const { copySelection, pasteFromClipboard, dropBoardFile, hasClipboard } = useClipboard({
     isReadOnly,
@@ -2968,8 +2836,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     ownerId: selfParticipant.id,
     documentId,
     toast,
-    onPastePhoto: readPhotoFile,
-    canvasPointerRef,
     getViewportCanvasRect,
     // An Excalidraw copy or file lands through the board-scene insert below (called at paste time).
     insertBoardScene: (scene, at) => void boardSceneInsert.insertScene(scene, at),
@@ -3171,8 +3037,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // against this, never the owner id.
     voteSelfId,
     confirm,
-    // Clipboard copy, also exposed to the event-storming note menu (docs/specs/021-event-storming/event-storming.md),
-    // plus paste + its enabled flag for the canvas menu's Paste row.
+    // Clipboard copy, plus paste + its enabled flag for the canvas menu's Paste row.
     copySelection,
     pasteFromClipboard,
     dropBoardFile,
@@ -3199,22 +3064,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     activeLayerId,
     activeLayerBlocked,
     // The whole creation gate: a locked tab, a view-only session, or a
-    // hidden / locked active layer. The canvas reads it so the
-    // insert-between preview (docs/specs/021-event-storming/event-storming.md) never offers a slot the drop
-    // would refuse.
+    // hidden / locked active layer.
     createBlocked,
     quickStyleDeps,
-    // Note acts on an event-storming board (docs/specs/021-event-storming/event-storming.md).
-    ...noteActions,
-    // Photo import (docs/specs/021-event-storming/event-storming.md Phase 8): the draft run, whether the entry
-    // points may be offered, and the hidden file input they open.
-    photoDraft,
-    photoImportAvailable,
-    photoImportBlocked,
-    openPhotoImport,
-    photoPickerRef,
-    onPhotoPicked: photoPicker.onChange,
-    readPhotoFile,
     layerHiddenIds,
     layerLockedIds,
     layerInertIds,
@@ -3232,8 +3084,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     hideOtherLayersOp: layersState.hideOthers,
     layerPreviewId: layersState.previewLayerId,
     setLayerPreviewId: layersState.setPreviewLayerId,
-    // Event-storming workshop views (docs/specs/021-event-storming/event-storming.md).
-    esBoard,
     // Menu-facing wrapper: moves the CURRENT selection
     // onto the picked layer.
     moveSelectedToLayer: (layerId: string) =>

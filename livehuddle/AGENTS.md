@@ -186,7 +186,7 @@ Whenever you add, remove or rename a help article, follow [`docs/instructions/re
 See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 
 - **Mode** is how a tab is worked on (Diagram, Draw); the tab's, shared by everyone on it, never a type of document or tab.
-- **Kind** is what a tab is; only Event Storming differs from the general diagram tab.
+- **Kind** is what a tab is; every livehuddle tab is the general diagram tab.
 - **Template** is what a document was made from; a template family (Retrospectives, Kanban) is never a kind.
 - **This Browser** names a document saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
 
@@ -213,8 +213,6 @@ packages/
   agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
   edit-operations/ # the engine agent changesets run on: edit operations and replace, into element ops (pure)
   diagram-lint/   # checks how a tab is drawn (overlaps, crossings, arrows behind boxes), with a fix each
-  sticky-vision/  # finds sticky notes in a wall photo (classical CV, no DOM) for the event-storming photo import
-  sticky-model/   # the learned sticky-boundary model's browser-safe parts (cues, decode) + its training scripts
   telemetry-client/ # this product's telemetry facts (app, preferences key, tokens) bound to @liveworkspace/telemetry-client
   licences/     # this product's licence tables (apps, overrides, embedded works) for @liveworkspace/licences' generator
   # Shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client, api-kit, mcp-kit, cli-kit,

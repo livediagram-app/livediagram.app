@@ -5,7 +5,6 @@ import { ErrorTelemetryBoot } from '@/components/providers/ErrorTelemetryBoot';
 import { PageViewBoot } from '@/components/providers/PageViewBoot';
 import { TimingTelemetryBoot } from '@/components/providers/TimingTelemetryBoot';
 import { StaleBuildBoot } from '@liveworkspace/workbench/components/providers/StaleBuildBoot';
-import { TruthArmBoot } from '@/components/providers/TruthArmBoot';
 import { KeyboardAvoidanceBoot } from '@liveworkspace/workbench/components/providers/KeyboardAvoidanceBoot';
 import { ConfirmProvider } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { ToastProvider } from '@/hooks/ui/useToast';
@@ -164,7 +163,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <StaleBuildBoot />
         <PageViewBoot />
         <TimingTelemetryBoot />
-        <TruthArmBoot />
         <KeyboardAvoidanceBoot />
         <AuthProvider>
           <ToastProvider>

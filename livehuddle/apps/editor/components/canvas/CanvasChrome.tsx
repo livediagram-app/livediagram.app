@@ -1,11 +1,10 @@
 import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
-import { ES_LANES, votesSpentBy } from '@livehuddle/document';
+import { votesSpentBy } from '@livehuddle/document';
 import { participantKey } from '@/lib/identity';
 import { useVoteReviewOpener } from '@/hooks/canvas/useVoteReviewOpener';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
-import { TimelineLanesOverlay } from '@/components/canvas/TimelineLanesOverlay';
 import { CanvasDrawPreview } from '@/components/canvas/CanvasDrawPreview';
 import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
 // Lazy-load the visitor name prompt the same way ExportTabDialog + ShareDialog already are. It is gated on
@@ -39,7 +38,6 @@ import { PanelSnapSlot } from '@liveworkspace/workbench/components/canvas/PanelS
 import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
-import type { StampGhost } from '@/components/canvas/useStampGhost';
 import { atLeastInset } from '@livehuddle/ui';
 import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowdsCorners';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
@@ -69,8 +67,6 @@ type ChromeExtras = {
   // Snapped pointer position while a draw is armed but not yet started
   // (pre-press start-snap preview); null when not armed / not snapped.
   drawHover: { x: number; y: number } | null;
-  // The armed fixed-size note's ghost (docs/specs/021-event-storming/event-storming.md Phase 4).
-  stamp: StampGhost | null;
   penPoints: { x: number; y: number }[] | null;
   // Polygon tool in-flight state (docs/specs/008-canvas/polygon-tool.md): the placed vertices and
   // the live rubber-band cursor position, both canvas coords.
@@ -203,7 +199,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     documentName,
     drawDrag,
     drawHover,
-    stamp,
     elements,
     handleDockButtonClick,
     handleSetZoom,
@@ -256,38 +251,16 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // --- Corner docking (docs/specs/007-editor/panel-docking.md) — see useCornerDocking. ---
   const { isMobile, dock, dockLayerRef, cornerRefs, dockingActive, panelWiringFor } =
     useCornerDocking({ zenMode: zenMode === true });
-  // Alignment guides while a palette tile is being dragged in (docs/specs/021-event-storming/event-storming.md):
+  // Alignment guides while a palette tile is being dragged in (docs/specs/008-canvas/canvas-and-palette.md):
   // the same faint lines a move shows, BEFORE the element exists. The hook
   // also publishes the snap the ghost + drop read, so all three agree.
-  //
-  // On an event-storming board, while Alt is held, it additionally offers to
-  // INSERT the note between two others (docs/specs/021-event-storming/event-storming.md): the board is a
-  // left-to-right timeline, so making room in the middle is the board's most
-  // common edit. Never offered where the drop would be refused anyway
-  // (read-only, locked tab, blocked active layer), so the preview can't
-  // promise something it can't keep.
-  const paletteDrag = usePaletteDragGuides({
-    elements,
-    readZoom,
-    wrapperRef,
-    insertGate: {
-      esBoard: props.esBoard === true,
-      readOnly,
-      tabLocked: props.tabLocked,
-      createBlocked: props.createBlocked === true,
-    },
-    inertIds: props.layerInertIds,
-    // Every event-storming board is on lanes; the stack is derived from the
-    // board itself, so there is nothing to gate beyond "is this that board".
-    timeline: props.esBoard === true ? ES_LANES : null,
-  });
+  const paletteDrag = usePaletteDragGuides({ elements, readZoom, wrapperRef });
   // The drag's snap guides, from the editor's store: a new set renders this chrome only.
   const { snapGuides, distGuides, snapTargets } = useSnapGuides(snapGuideStore);
   // A tick as a move catches an alignment guide (Android; @liveworkspace/workbench/lib/haptics).
   useSnapHaptic(snapGuides.length > 0);
   const { alignGuides, allSnapTargets } = computeDrawGuides({
-    // A stamp is placed by the lanes, not sized against edges: no box guides.
-    drawDrag: stamp ? null : drawDrag,
+    drawDrag,
     pendingDraw,
     elements,
     drawHover,
@@ -327,7 +300,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     />
   );
 
-  const stripTools = sessionStripTools(props.editorMode, props.esBoard === true);
+  const stripTools = sessionStripTools(props.editorMode);
   // Panel elements + their wiring live in useCanvasChromePanels.
   const {
     panelEls,
@@ -436,18 +409,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
         />
       ) : null}
 
-      {/* Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6): the lane a dragged note is
-          landing on, lit for the duration of the drag. Beside the guide
-          overlay because it is the same kind of thing — help BEFORE the
-          drop — and it publishes through its own store, so it costs nothing
-          on every other tab. */}
-      <TimelineLanesOverlay
-        timeline={props.esBoard === true ? ES_LANES : null}
-        tabThemeId={tabThemeId}
-        wrapperRef={wrapperRef}
-        mainSize={props.mainSize}
-      />
-
       <CanvasGuideOverlay
         alignGuides={paletteDrag.guides.length > 0 ? paletteDrag.guides : alignGuides}
         allSnapTargets={allSnapTargets}
@@ -465,7 +426,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
         polygonVertices={polygonVertices}
         polygonCursor={polygonCursor}
         pendingDraw={pendingDraw}
-        stamp={stamp}
         wrapperRef={wrapperRef}
         mainSize={props.mainSize}
       />
@@ -493,7 +453,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {sessionPopoverEl}
       {paletteShown ? (
         <ToolbarPalette
-          key={`${props.esBoard ? 'es-board' : 'standard'}${readOnly ? '-participant' : ''}`}
+          key={readOnly ? 'participant' : 'standard'}
           participant={readOnly}
           // Hidden, not unmounted, while the chrome is away (zen, welcome),
           // so the chosen category lasts the page load.
@@ -505,8 +465,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           canvasEmpty={elements.length === 0}
           {...pickPaletteAddHandlers(props)}
           pendingDraw={pendingDraw}
-          esBoard={props.esBoard}
-          esBoardControls={props.esBoardControls}
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
           tabElements={elements}
@@ -583,7 +541,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             ) : null}
             {/* The Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): left of
                 Layers. Kept in Zen: a running session is the one piece of chrome a facilitator still
-                needs there. Workshop (and an event-storming board) has all three; Diagram and Draw keep
+                needs there. Workshop has all three; Diagram and Draw keep
                 their bottom bar to their own tools. */}
             {props.sessionTools && stripTools ? (
               <div className="contents">

@@ -32,11 +32,9 @@ describe('tabStatsOf', () => {
     expect(tabStatsOf({ elements: [] }, data).dataBytes).toBe(data.length + 2);
   });
 
-  it('reads Workshop for a tab with no mode, an event-storming board and every legacy mode', () => {
+  it('reads Workshop for a tab with no mode and every legacy mode', () => {
     expect(tabStatsOf({ elements: [] }, '{}').mode).toBe('workshop');
-    expect(tabStatsOf({ kind: 'event-storming', opensIn: 'draw', elements: [] }, '{}').mode).toBe(
-      'workshop',
-    );
+    expect(tabStatsOf({ opensIn: 'draw', elements: [] }, '{}').mode).toBe('workshop');
     expect(tabStatsOf({ opensIn: 'diagram', elements: [] }, '{}').mode).toBe('workshop');
     expect(tabStatsOf({ opensIn: 'pages', elements: [] }, '{}').mode).toBe('workshop');
   });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EDITOR_MODES, ES_BOARD_LAYER_ID } from '@livehuddle/document';
+import { EDITOR_MODES } from '@livehuddle/document';
 import {
   DEFAULT_FOLDER_OPTIONS,
   SPECIFIC_TAB_KINDS,
@@ -13,12 +13,11 @@ import {
 // creation intent a create carries.
 
 describe('DEFAULT_FOLDER_OPTIONS', () => {
-  it('has one entry per editor mode, then one per specific tab kind', () => {
-    expect(DEFAULT_FOLDER_OPTIONS.map((o) => `${o.dimension}:${o.value}`)).toEqual([
-      ...EDITOR_MODES.map((mode) => `mode:${mode}`),
-      'kind:event-storming',
-    ]);
-    expect(SPECIFIC_TAB_KINDS).toEqual(['event-storming']);
+  it('has one entry per editor mode, and no specific tab kinds', () => {
+    expect(DEFAULT_FOLDER_OPTIONS.map((o) => `${o.dimension}:${o.value}`)).toEqual(
+      EDITOR_MODES.map((mode) => `mode:${mode}`),
+    );
+    expect(SPECIFIC_TAB_KINDS).toEqual([]);
   });
 
   it('has the one template family, the retrospective', () => {
@@ -49,16 +48,11 @@ describe('creationIntentOf', () => {
     });
   });
 
-  it('reads an event-storming tab as its kind, opening in Workshop', () => {
+  it('reads a tab of a kind this product does not have as the general tab', () => {
     expect(creationIntentOf({ kind: 'event-storming' })).toEqual({
       mode: 'workshop',
-      tabKind: 'event-storming',
+      tabKind: 'diagram',
     });
-  });
-
-  it('reads a legacy event-storming board by its layer, as the document model does', () => {
-    const layers = [{ id: ES_BOARD_LAYER_ID, name: 'Event Storming' }];
-    expect(creationIntentOf({ layers }).tabKind).toBe('event-storming');
   });
 
   it('carries the template family it was made from', () => {
@@ -112,12 +106,12 @@ describe('readCreationIntent', () => {
     expect(
       readCreationIntent({
         mode: 'diagram',
-        tabKind: 'event-storming',
+        tabKind: 'diagram',
         templateFamily: 'retrospective',
       }),
     ).toEqual({
       ok: true,
-      intent: { mode: 'workshop', tabKind: 'event-storming', templateFamily: 'retrospective' },
+      intent: { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' },
     });
   });
 
@@ -134,6 +128,7 @@ describe('readCreationIntent', () => {
     ['a missing mode', { templateFamily: 'retrospective' }],
     ['an unknown mode', { mode: 'pixel' }],
     ['the legacy whiteboard kind', { mode: 'draw', tabKind: 'whiteboard' }],
+    ['a kind this product does not have', { mode: 'draw', tabKind: 'event-storming' }],
     ['an unknown template family', { mode: 'diagram', templateFamily: 'mindmap' }],
     ['the retired Kanban family', { mode: 'diagram', templateFamily: 'kanban' }],
     ['a template family that is not a string', { mode: 'diagram', templateFamily: 3 }],
@@ -148,10 +143,10 @@ describe('indexIntentOf', () => {
     expect(
       indexIntentOf({
         mode: 'workshop',
-        tabKind: 'event-storming',
+        tabKind: 'diagram',
         templateFamily: 'retrospective',
       }),
-    ).toBe('workshop:event-storming:retrospective');
+    ).toBe('workshop:diagram:retrospective');
   });
 
   it('is null for no intent', () => {

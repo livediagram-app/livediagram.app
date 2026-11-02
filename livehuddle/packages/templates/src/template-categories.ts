@@ -198,7 +198,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'network-diagram': 'software',
   'state-machine': 'software',
   'data-flow': 'software',
-  'event-storming': 'software',
   'threat-model': 'software',
   'incident-postmortem': 'software',
   // Strategy: where the business stands and where it goes.
@@ -234,8 +233,6 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'concept-map': ['ideas'],
   // Visual notes are taken in meetings and talks.
   sketchnote: ['meetings'],
-  // Event storming is a workshop, and maps a business process.
-  'event-storming': ['meetings', 'processes'],
   // An all-hands is a meeting.
   'all-hands-hall': ['meetings'],
   // Looking back at an incident, or forward at a failure, is a retro's job.

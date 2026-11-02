@@ -50,8 +50,7 @@ export function closestTemplatesHint(given: string): string {
 // A template tab: the curated scaffold at its hand-tuned coordinates (layout deliberately NOT run,
 // that is the point of a template), themed by buildTab like any other elements, plus the template's
 // canvas overrides and the templateChosen flag the editor's Quick Start reads. stampTabKind fills
-// the ordinary 'diagram' for every template without a tab kind of its own
-// (docs/specs/021-event-storming/event-storming.md), so a tab minted here is indistinguishable from
+// the ordinary 'diagram' kind, so a tab minted here is indistinguishable from
 // one the editor commits.
 export function buildTemplateTab(
   tabId: string,

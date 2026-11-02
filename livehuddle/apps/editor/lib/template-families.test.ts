@@ -12,12 +12,9 @@ describe('templateFamilyOf', () => {
     },
   );
 
-  it.each(['event-storming', 'incident-postmortem', 'lean-coffee'] as const)(
-    'reads %s as no family',
-    (kind) => {
-      expect(templateFamilyOf(kind)).toBeNull();
-    },
-  );
+  it.each(['incident-postmortem', 'lean-coffee'] as const)('reads %s as no family', (kind) => {
+    expect(templateFamilyOf(kind)).toBeNull();
+  });
 
   it('reads no template as no family', () => {
     expect(templateFamilyOf(null)).toBeNull();

@@ -96,8 +96,8 @@ describe('dropRetiredPlan', () => {
     expect(out.elements).toEqual([square]);
   });
 
-  it('keeps an event-storming board as it is', () => {
-    const tab = { id: 't', name: 'T', kind: 'event-storming', elements: [square] };
+  it('keeps an ordinary tab as it is', () => {
+    const tab = { id: 't', name: 'T', kind: 'diagram', elements: [square] };
     expect(dropRetiredPlan(tab)).toBe(tab);
   });
 

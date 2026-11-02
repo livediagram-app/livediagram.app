@@ -49,7 +49,6 @@ export function RichTextEditor({
   onLiveText,
   fontFamily,
   multiline,
-  uppercase,
   cursorAtEnd,
   textClassName = '',
   onCommit,
@@ -86,7 +85,6 @@ export function RichTextEditor({
     onLiveText,
     fitBox,
     multiline,
-    uppercase,
     fontFamily,
     cursorAtEnd,
     onCommit,
@@ -234,14 +232,11 @@ export function RichTextEditor({
           // Wordmark type (docs/specs/007-editor/editor-modes.md "Pages moved to livedocuments"): the tracking, weight and case the
           // committed label wears, so editing never shifts the text.
           ...wordmarkTextCss(wordmark),
-          // Same capitals the committed label wears (docs/specs/021-event-storming/event-storming.md): the typed
-          // text is stored as written, it just reads as the note will.
-          textTransform:
-            uppercase || wordmark.uppercase
-              ? 'uppercase'
-              : wordmark.lowercase
-                ? 'lowercase'
-                : undefined,
+          textTransform: wordmark.uppercase
+            ? 'uppercase'
+            : wordmark.lowercase
+              ? 'lowercase'
+              : undefined,
         }}
         // Same typography rule as the display label (label-style): a
         // mismatch here shifts the text the instant editing starts.

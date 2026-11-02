@@ -176,28 +176,6 @@ describe('applyEditOperations', () => {
       ]);
     });
 
-    it('lands a workshop note added to an event-storming tab on its lane', () => {
-      const note = (id: string, x: number, y: number) => ({
-        id,
-        type: 'sticky',
-        x,
-        y,
-        width: 200,
-        height: 200,
-        esKind: 'domain-event',
-        fillColor: '#fdba74',
-        fixedSize: true,
-      });
-      const tab = {
-        id: 'es',
-        name: 'Wall',
-        kind: 'event-storming',
-        elements: [note('down', 0, 0)],
-      } as Tab;
-      const { tab: next } = applied(run([add(note('new', 30, 20))], tab));
-      expect(next.elements.find((el) => el.id === 'new')).toMatchObject({ x: 216, y: 0 });
-    });
-
     it('re-anchors arrows around a moved box, printing no line for anchors alone', () => {
       const outcome = run([set('n4', { x: 300, y: 200 })]);
       const a3 = applied(outcome).tab.elements.find((el) => el.id === 'a3') as Element & {

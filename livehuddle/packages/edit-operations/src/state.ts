@@ -28,7 +28,7 @@ import { RESERVED_WORDS } from './vocabulary';
 // The first operation that touched an element, and the fields operations wrote on it in the order
 // written: how its ~ line orders them.
 // Why an element moved without an operation naming it.
-export type MoveReason = 'make room' | 'carried' | 'laid out' | 'landed on a lane';
+export type MoveReason = 'make room' | 'carried' | 'laid out';
 
 // `moved` marks an element only moved along, which prints as a » line and is not normalised.
 // How `layout` laid elements out, as its `»` line says.

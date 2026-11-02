@@ -46,9 +46,6 @@ describe('tile and element signatures', () => {
   const sigOf = (id: string) => tileSignature(tileById(id)!);
 
   it('tell apart the choices an element records', () => {
-    expect(elementSignature(el({ type: 'sticky', esKind: 'domain-event' }))).toBe(
-      sigOf('tools:es-domain-event'),
-    );
     expect(elementSignature(el({ type: 'sticky' }))).toBe(sigOf('tools:sticky'));
     expect(elementSignature(el({ type: 'freehand', pen: 'highlighter' }))).not.toBe(
       sigOf('tools:pencil'),

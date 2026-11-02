@@ -53,13 +53,6 @@ export function EditorContextMenuHost() {
     commitTextAlign,
     previewTextAlign,
     bringSelectedToFront,
-    copySelection,
-    deleteSelected,
-    setEsKindOf,
-    createBlocked,
-    duplicateSelected,
-    stackSelectedFront,
-    stackSelectedBack,
     sendSelectedToBack,
     layers,
     moveSelectedToLayer,
@@ -264,24 +257,6 @@ export function EditorContextMenuHost() {
       onSetLaneUprightTitle={setLaneUprightTitleSelected}
       onBringToFront={bringSelectedToFront}
       onSendToBack={sendSelectedToBack}
-      // Event-storming note verbs (docs/specs/021-event-storming/event-storming.md). Front/back here are the
-      // IN-LAYER stack (same as the selection popover), not the layer
-      // moves above: on a workshop board the notes share one band and
-      // "bring to front" means "over the note it overlaps".
-      onCutElement={() => {
-        copySelection({ cut: true });
-        deleteSelected();
-      }}
-      onCopyElement={copySelection}
-      onDuplicateElement={duplicateSelected}
-      onDeleteElement={deleteSelected}
-      onSetEsKind={
-        createBlocked || contextMenu.mode !== 'element'
-          ? undefined
-          : (kind) => setEsKindOf(contextMenu.elementId, kind)
-      }
-      onStackFront={stackSelectedFront}
-      onStackBack={stackSelectedBack}
       layers={layers}
       selectionLayerId={selectionLayerId}
       // "Move to layer" goes with the Layers panel's Settings switch

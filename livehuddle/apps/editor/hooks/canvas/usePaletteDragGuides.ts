@@ -2,43 +2,16 @@
 
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import {
-  ES_LANES,
-  type AlignmentGuide,
-  type DistributionGuide,
-  type Element,
-  type EsTimeline,
-} from '@livehuddle/document';
+import type { AlignmentGuide, DistributionGuide, Element } from '@livehuddle/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { paletteDragSnapAt } from '@/lib/palette-drag-snap';
-import {
-  canInsertBetweenOn,
-  findInsertionSlot,
-  insertionGhostCentre,
-  type InsertionGate,
-  type InsertionSlot,
-} from '@/lib/insert-between';
 import { setPaletteDragSnap, usePaletteDragPreview } from '@/lib/palette-drag-preview';
-import { setInsertionSlot } from '@/lib/insertion-preview';
-import { setLanePreview } from '@/lib/lane-preview';
 
-// Alignment guides DURING a palette drag (docs/specs/021-event-storming/event-storming.md) — the single owner of the
+// Alignment guides DURING a palette drag (docs/specs/008-canvas/canvas-and-palette.md): the single owner of the
 // in-flight snap. It tracks the dragover cursor, converts it to canvas coords
 // through the transformed wrapper (the same inversion the drop uses, so the
 // ghost, the guides and the landed element can't disagree), runs the shared
 // snap geometry, and publishes the offset for the ghost + drop to consume.
-//
-// On an event-storming board, WHILE ALT IS HELD, it also resolves the
-// INSERTION SLOT the drag is offering (docs/specs/021-event-storming/event-storming.md insert between): the gap it
-// would open, and which elements slide right to open it. That resolution is
-// pure (lib/insert-between) and its result is published, never committed — the
-// board only really moves on drop.
-//
-// Alt is read off each `dragover`, which is the ONLY channel available: during
-// a native HTML5 drag Chromium delivers no key events to the document at all
-// (the drag controller swallows them), so pressing or releasing Alt shows up
-// on the next pointer movement rather than instantly. A stationary hand sees
-// nothing change until it twitches — measured, not assumed.
 //
 // Why here rather than inside the ghost: the guides need the tab's elements
 // and render in the canvas overlay, the ghost is a fixed-position DOM node,
@@ -55,26 +28,11 @@ export function usePaletteDragGuides({
   elements,
   readZoom,
   wrapperRef,
-  insertGate,
-  inertIds,
-  timeline,
 }: {
   elements: Element[];
   // The zoom now, read on each dragover (docs/specs/008-canvas/blueprints/viewport-store.md).
   readZoom: () => number;
   wrapperRef: RefObject<HTMLElement | null>;
-  // Insert between (docs/specs/021-event-storming/event-storming.md): what the board and session allow. The other
-  // half of the gate — the held Alt — is read off each dragover, so an
-  // ordinary drag never offers a slot and a preview is never offered for a
-  // drop that would be refused.
-  insertGate: InsertionGate;
-  // Elements on a hidden or locked layer: they cannot define the row, but
-  // they still travel with the ripple.
-  inertIds: ReadonlySet<string>;
-  // Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6) when the active tab has them on, else
-  // null. Read at EVENT time like the board below, so a peer flipping the
-  // switch mid-drag is honoured on the next movement.
-  timeline: EsTimeline | null;
 }): { guides: AlignmentGuide[]; distGuides: DistributionGuide[] } {
   const preview = usePaletteDragPreview();
   const [guides, setGuides] = useState<AlignmentGuide[]>([]);
@@ -85,11 +43,11 @@ export function usePaletteDragGuides({
   // per render would otherwise resubscribe on every state change, wiping the
   // in-flight slot's hysteresis with it) — and a peer's mid-drag edit is still
   // seen, because the handler reads the ref.
-  const board = useRef({ elements, inertIds, insertGate, timeline });
+  const board = useRef(elements);
   // The zoom reader, through the latest-value ref: the drag's listeners never re-attach for it.
   const zoomOf = useLatest(readZoom);
   useEffect(() => {
-    board.current = { elements, inertIds, insertGate, timeline };
+    board.current = elements;
   });
 
   useEffect(() => {
@@ -100,20 +58,11 @@ export function usePaletteDragGuides({
     if (!preview) {
       clearGuides();
       setPaletteDragSnap(null);
-      setInsertionSlot(null);
-      setLanePreview(null);
       return;
     }
-    // The slot currently on offer, fed back into the resolver so it sticks
-    // through a shaky hand (hysteresis). Scoped to this drag: a new drag
-    // starts the effect again and can't inherit it.
-    let slot: InsertionSlot | null = null;
     const clear = () => {
-      slot = null;
       clearGuides();
       setPaletteDragSnap(null);
-      setInsertionSlot(null);
-      setLanePreview(null);
     };
     const onDragOver = (e: DragEvent) => {
       const target = e.target as Element2 | null;
@@ -127,69 +76,26 @@ export function usePaletteDragGuides({
         return;
       }
       const { x, y } = pointerToCanvas(e.clientX, e.clientY, rect, zoomOf.current());
-      const { elements: live, inertIds: inert, insertGate: gate, timeline: lanes } = board.current;
-      // Alt, live: press it mid-drag and the slot opens on the next move,
-      // release it and the ordinary alignment snap takes back over. Only for
-      // something that will land as a NOTE — the gesture is about the note
-      // grammar, the same rule the existing-element path follows.
-      slot =
-        preview.note === true && canInsertBetweenOn(gate, e.altKey)
-          ? findInsertionSlot({
-              cursorX: x,
-              cursorY: y,
-              incomingWidth: preview.width,
-              elements: live,
-              inertIds: inert,
-              active: slot,
-              // The row is the cursor's lane: an insertion is offered only on
-              // an event-storming board, which is a board of lanes.
-              lanes: lanes ?? ES_LANES,
-            })
-          : null;
-      if (slot) {
-        // An open slot IS the placement, so every rung below it — the lanes
-        // included — stands down.
-        setLanePreview(null);
-        // The slot IS the placement while it is open, so the alignment snap
-        // yields: two placement rules fighting would put the ghost, the
-        // marker and the drop in three different places. The offset carries
-        // the note to the slot's centre through the same channel the
-        // alignment snap uses, so the ghost and the drop follow for free.
-        const centre = insertionGhostCentre(slot, preview.width);
-        setPaletteDragSnap({ dx: centre.x - x, dy: centre.y - y });
-        setInsertionSlot(slot);
-        // The marker: one vertical line where the board splits, in the guide
-        // overlay's own visual language rather than a second vocabulary.
-        setGuides([{ axis: 'x', position: slot.atX, start: slot.spanTop, end: slot.spanBottom }]);
-        setDistGuides((g) => (g.length === 0 ? emptied(g) : NO_DIST_GUIDES));
-        return;
-      }
-      setInsertionSlot(null);
       const snap = paletteDragSnapAt({
         canvasX: x,
         canvasY: y,
         width: preview.width,
         height: preview.height,
-        elements: live,
-        // Lanes are a NOTE grammar: a shape dragged in from the palette lands
-        // exactly as it does on every other tab.
-        timeline: preview.note === true ? lanes : null,
-        laneHeld: preview.workshop === true,
+        elements: board.current,
       });
       setPaletteDragSnap({ dx: snap.dx, dy: snap.dy });
-      setLanePreview(snap.lane);
       setGuides(snap.guides);
       setDistGuides(snap.distGuides);
     };
     // Leaving the WINDOW (no relatedTarget) would otherwise strand the last
-    // preview: dragover stops firing, so the board would sit open until the
+    // preview: dragover stops firing, so the guides would stay until the
     // cursor came back.
     const onDragLeave = (e: DragEvent) => {
       if (!e.relatedTarget) clear();
     };
     // Escape cancels the drag in most engines (which fires dragend, and the
-    // tile clears the preview) — but not in all, and the board must never be
-    // left holding a slot the user has abandoned.
+    // tile clears the preview), but not in all, and the guides must never be
+    // left standing for a drag the user has abandoned.
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') clear();
     };
@@ -202,8 +108,6 @@ export function usePaletteDragGuides({
       document.removeEventListener('keydown', onKeyDown);
       clearGuides();
       setPaletteDragSnap(null);
-      setInsertionSlot(null);
-      setLanePreview(null);
     };
   }, [preview, zoomOf, wrapperRef]);
 

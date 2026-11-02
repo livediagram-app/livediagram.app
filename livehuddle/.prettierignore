@@ -26,10 +26,6 @@ apps/api/src/openapi/schemas.generated.ts
 # just makes the tree dirty again on the next run.
 **/next-env.d.ts
 
-# The boundary model's graph, written by packages/sticky-model/scripts/hybrid/
-# quantise.ts; kept byte for byte as generated so a regeneration diffs clean.
-apps/editor/lib/photo-model/weights/model.json
-
 # The document views' golden files: each is a view's exact output, compared byte for byte
 # (docs/specs/024-agents/blueprints/document-views.md "Testing").
 packages/document-views/src/__fixtures__/golden/

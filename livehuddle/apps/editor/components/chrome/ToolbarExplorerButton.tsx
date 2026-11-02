@@ -21,7 +21,7 @@ import { ToolbarMenuCard } from './ToolbarMenuCard';
 //
 // The editor mode switch (docs/specs/007-editor/editor-modes.md "The mode switch") rides right of the button in the
 // same card, so it goes wherever the menu goes: named on a computer, its icon alone on a phone. It renders nothing
-// where no switch is offered (a Participant, a Viewer, a locked tab, an event-storming board).
+// where no switch is offered (a Participant, a Viewer, a locked tab).
 export function ToolbarExplorerButton({
   open,
   onToggle,

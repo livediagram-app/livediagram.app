@@ -30,7 +30,7 @@ describe('overviewView (R17, VW37)', () => {
     expect(json.tabs[2]).toMatchObject({
       outOfScope: false,
       view: 'overview',
-      tab: { kind: 'event-storming' },
+      tab: { kind: 'diagram' },
     });
     expect(json.elision).toBeNull();
   });

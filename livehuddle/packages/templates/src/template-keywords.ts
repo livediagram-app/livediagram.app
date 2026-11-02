@@ -188,7 +188,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   'system-architecture': ['architecture', 'system design', 'services', 'components', 'c4'],
   'cloud-architecture': ['aws', 'azure', 'gcp', 'cloud', 'infrastructure', 'devops'],
   'state-machine': ['states', 'transitions', 'fsm', 'lifecycle', 'statechart'],
-  'event-storming': ['ddd', 'domain driven design', 'events', 'workshop', 'bounded context'],
   'incident-postmortem': ['postmortem', 'incident', 'outage', 'rca', 'blameless', 'review'],
   'threat-model': [
     'stride',

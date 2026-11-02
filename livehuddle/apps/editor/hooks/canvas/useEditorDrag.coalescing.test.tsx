@@ -78,7 +78,6 @@ function harness() {
     autoRebindArrowsRef: { current: false },
     alignmentGuidesRef: { current: false },
     isPinchingRef: { current: false },
-    insertGate: { esBoard: false, readOnly: false, tabLocked: false, createBlocked: false },
   } as unknown as EditorDragDeps;
 
   // The board as drawn: the document with the gesture's preview over it (docs/specs/008-canvas/drag-preview.md).

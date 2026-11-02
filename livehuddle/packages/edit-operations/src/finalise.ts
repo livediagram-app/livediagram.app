@@ -1,7 +1,6 @@
 // The working state made into the next tab (docs/specs/024-agents/blueprints/edit-operations.md
-// "Finalise"): touched elements normalised and their shape kinds coerced, then checked, workshop
-// notes landed on lanes, arrows re-anchored around moved boxes, lanes behind what they hold, and the
-// whole tab validated. Untouched elements pass through as the same objects (I2).
+// "Finalise"): touched elements normalised and their shape kinds coerced, then checked, arrows
+// re-anchored around moved boxes, lanes behind what they hold, and the whole tab validated. Untouched elements pass through as the same objects (I2).
 
 import type { EditRejection } from '@livehuddle/api-schema';
 import {
@@ -13,7 +12,6 @@ import {
   chipLabelIssue,
   elementValidationIssue,
   isValidTab,
-  landWorkshopArrivals,
   lanesToFront,
   normaliseElement,
   rebindArrowAnchorsAfterMove,
@@ -167,18 +165,6 @@ export function tabRejection(tab: Tab): EditRejection {
 }
 
 // Workshop notes a lane took in: a note no operation wrote reports the landing as its move.
-function noteLandings(state: EditState, landed: readonly Element[]): void {
-  for (const el of landed) {
-    if (state.byId.get(el.id) === el) continue;
-    replaceElement(state, el);
-    // Only notes that moved arrive, and moving one touches it.
-    const touched = state.touched.get(el.id)!;
-    if (touched.written.length > 0 || !state.before.has(el.id)) continue;
-    touched.moved = 'landed on a lane';
-    delete touched.shift;
-  }
-}
-
 // Every container directly before its earliest member when it is after it, innermost first, so an
 // outer container ends before the inner ones it holds (I6).
 export function containersBehindMembers(elements: readonly Element[]): Element[] {
@@ -212,10 +198,9 @@ export function finalise(state: EditState, log: EditLog): Tab | EditRejection {
   normaliseTouched(state, log);
   const issue = touchedIssue(state);
   if (issue) return issue;
-  const landed = landWorkshopArrivals(state.tab, [...currentElements(state)], 'ops');
-  noteLandings(state, landed);
-  const moved = movedBoxes(state.before, landed);
-  const rebound = rerouteRebound(landed, rebindArrowAnchorsAfterMove(landed, moved), moved);
+  const current = [...currentElements(state)];
+  const moved = movedBoxes(state.before, current);
+  const rebound = rerouteRebound(current, rebindArrowAnchorsAfterMove(current, moved), moved);
   // An element that ends as it began is the element it began as (E1, I2).
   // A diagram key's rows follow the tab's lines and tags (docs/specs/009-elements/diagram-key.md), settled here as the
   // editor settles them on commit: an agent's key otherwise drew its empty hint.

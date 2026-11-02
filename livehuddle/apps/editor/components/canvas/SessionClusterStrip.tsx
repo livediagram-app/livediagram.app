@@ -22,20 +22,16 @@ import {
 export type SessionSegment = 'session-timer' | 'session-vote' | 'session-poll';
 
 // Which tools a mode's strip offers (docs/specs/012-collaboration/session-tools.md "The Session strip"):
-// all three in Workshop (docs/specs/012-collaboration/workshop-mode.md), and on an event-storming
-// board, a workshop that is always Diagram and cannot switch; none in Diagram or Draw, even while a tool
-// runs.
+// all three in Workshop (docs/specs/012-collaboration/workshop-mode.md); none in Diagram or Draw, even while a
+// tool runs.
 export type SessionStripTools = {
   timer: boolean;
   vote: boolean;
   poll: boolean;
 };
 
-export function sessionStripTools(
-  mode: string | undefined,
-  esBoard = false,
-): SessionStripTools | null {
-  if (mode === 'workshop' || esBoard) return { timer: true, vote: true, poll: true };
+export function sessionStripTools(mode: string | undefined): SessionStripTools | null {
+  if (mode === 'workshop') return { timer: true, vote: true, poll: true };
   return null;
 }
 

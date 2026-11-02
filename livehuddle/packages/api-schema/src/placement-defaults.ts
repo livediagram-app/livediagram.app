@@ -2,14 +2,14 @@
 // no place is chosen, keyed by what the document is made as. liveworkspace's index resolves and stores them; the
 // editor and the MCP server send the creation intent, which the api hands the index as `indexIntentOf`.
 //
-// Three honest dimensions, most specific first: the first tab's kind (a specific kind such as an
-// event-storming board), the template family it was made from (a retrospective), and the editor mode it opens in.
+// Three honest dimensions, most specific first: the first tab's kind (a specific kind, of which
+// livehuddle has none today), the template family it was made from (a retrospective), and the editor mode it opens in.
 // Each comes from one closed list, so a new editor mode adds its Default Folders entry here unasked.
 
 import {
   DEFAULT_TAB_KIND,
   EDITOR_MODES,
-  isEventStormingTab,
+  tabKindOf,
   parseEditorMode,
   type EditorMode,
   type Layer,
@@ -18,10 +18,7 @@ import {
 
 /** The tab kinds a document can be created with. The legacy `whiteboard` kind is not one: a
  *  whiteboard is a general tab. */
-export const CREATION_TAB_KINDS = [
-  'diagram',
-  'event-storming',
-] as const satisfies readonly TabKind[];
+export const CREATION_TAB_KINDS = ['diagram'] as const satisfies readonly TabKind[];
 export type CreationTabKind = (typeof CREATION_TAB_KINDS)[number];
 
 /** The specific tab kinds: every creatable kind but the general tab. Each has a `kind:` key. */
@@ -47,9 +44,7 @@ type EntryWords = { label: string; noun: string };
 const MODE_WORDS: Record<EditorMode, EntryWords> = {
   workshop: { label: 'Sessions', noun: 'sessions' },
 };
-const KIND_WORDS: Record<SpecificTabKind, EntryWords> = {
-  'event-storming': { label: 'Event Storming boards', noun: 'Event Storming boards' },
-};
+const KIND_WORDS: Record<SpecificTabKind, EntryWords> = {};
 
 /** Default Folders' entries for each editor mode and specific tab kind, as the shared Explorer takes them
  *  (@liveworkspace/explorer DefaultFolderOption), between "Canvases" and the template families. Typed per
@@ -61,11 +56,10 @@ export const DEFAULT_FOLDER_OPTIONS: readonly {
   noun: string;
 }[] = [
   ...EDITOR_MODES.map((mode) => ({ dimension: 'mode' as const, value: mode, ...MODE_WORDS[mode] })),
-  ...SPECIFIC_TAB_KINDS.map((kind) => ({
-    dimension: 'kind' as const,
-    value: kind,
-    ...KIND_WORDS[kind],
-  })),
+  ...SPECIFIC_TAB_KINDS.map((kind) => {
+    const words: EntryWords = KIND_WORDS[kind];
+    return { dimension: 'kind' as const, value: kind, ...words };
+  }),
 ];
 
 /** The create's refusal of a malformed `intent`. */
@@ -84,8 +78,7 @@ export function isTemplateFamily(value: unknown): value is TemplateFamily {
 
 /**
  * The creation intent of a new document, from its first tab and the family of the template it was
- * made from. Every board is Workshop; the tab kind is read the way the document model reads it,
- * legacy event-storming boards included.
+ * made from. Every board is Workshop; the tab kind is read the way the document model reads it.
  */
 export function creationIntentOf(
   tab: { kind?: string; opensIn?: string; layers?: Layer[] } | undefined,
@@ -93,7 +86,7 @@ export function creationIntentOf(
 ): CreationIntent {
   const intent: CreationIntent = {
     mode: 'workshop',
-    tabKind: isEventStormingTab(tab) ? 'event-storming' : 'diagram',
+    tabKind: tabKindOf(tab),
   };
   return templateFamily ? { ...intent, templateFamily } : intent;
 }

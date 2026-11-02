@@ -29,7 +29,7 @@ describe('duplicate-label', () => {
     ).toBe('rename one, or merge the nodes');
   });
 
-  it("counts a card's title and subtitle, and skips event-storming notes but domain events", () => {
+  it("counts a card's title and subtitle", () => {
     const card = (id: string, x: number, sub: string) =>
       box(id, x, 0, { shape: 'card', pageTitle: 'ECS', pageSubtitle: sub, label: 'Web + API' });
     expect(
@@ -37,17 +37,6 @@ describe('duplicate-label', () => {
     ).toEqual([]);
     expect(
       of(lint(tabOf(card('a', 0, 'AZ A'), card('b', 300, 'AZ A'))), 'duplicate-label'),
-    ).toHaveLength(1);
-    const note = (id: string, x: number, esKind: string) =>
-      box(id, x, 0, { type: 'sticky', esKind, label: 'Restaurant' });
-    expect(
-      of(lint(tabOf(note('a', 0, 'actor'), note('b', 300, 'actor'))), 'duplicate-label'),
-    ).toEqual([]);
-    expect(
-      of(
-        lint(tabOf(note('a', 0, 'domain-event'), note('b', 300, 'domain-event'))),
-        'duplicate-label',
-      ),
     ).toHaveLength(1);
   });
 

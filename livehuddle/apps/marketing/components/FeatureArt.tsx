@@ -37,9 +37,7 @@ export * from './feature-art/whiteboard-pen';
 // Two tabs side by side, and boards brought in from other tools.
 export * from './feature-art/side-by-side';
 export * from './feature-art/imports';
-// Event storming boards and their photo import; the sequence diagram, charts and code blocks; search,
-// follow along and live images.
-export * from './feature-art/storming';
+// The sequence diagram, charts and code blocks; search, follow along and live images.
 export * from './feature-art/canvas-data';
 export * from './feature-art/reach';
 // Draw's dock.

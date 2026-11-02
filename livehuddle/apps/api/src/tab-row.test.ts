@@ -93,22 +93,6 @@ describe('rowToTab', () => {
     expect(dto.elements[2]).toMatchObject({ from: { kind: 'free', x: 100, y: 50 } });
   });
 
-  it('drops a stored anchor-docking relation (docs/specs/021-event-storming/event-storming.md Phase 7)', () => {
-    const elements = [
-      {
-        id: 'c',
-        type: 'sticky',
-        x: 0,
-        y: 0,
-        width: 200,
-        height: 200,
-        esDock: { hostId: 'e', side: 'before' },
-      },
-    ];
-    const dto = rowToTab(baseRow({ data: bodyJson({ elements }) }));
-    expect(dto.elements[0]).not.toHaveProperty('esDock');
-  });
-
   it('reads a stored whiteboard as a general tab that opens in Draw (docs/specs/007-editor/editor-modes.md)', () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const elements = [{ id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 9, height: 9 }];
@@ -142,15 +126,14 @@ describe('rowToTab', () => {
           theme: 'cobalt',
           background: { pattern: 'grid', color: '#ffffff', patternColor: '#cbd5e1' },
           locked: true,
-          // Tab kind (docs/specs/021-event-storming/event-storming.md): tab state with no column of its own, so
-          // the blob is the only thing carrying it.
-          kind: 'event-storming',
+          // Tab kind: tab state with no column of its own, so the blob is the only thing carrying it.
+          kind: 'diagram',
         }),
       }),
     );
     expect((dto as unknown as { theme: string }).theme).toBe('cobalt');
     expect((dto as unknown as { locked: boolean }).locked).toBe(true);
-    expect((dto as unknown as { kind: string }).kind).toBe('event-storming');
+    expect((dto as unknown as { kind: string }).kind).toBe('diagram');
   });
 
   it('preserves elements from the parsed body in array order', () => {

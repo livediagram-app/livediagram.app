@@ -47,7 +47,7 @@ function paste(source: Element[], tab: Element[]): Element[] {
       toast: { error: vi.fn(), info: vi.fn() } as never,
     }),
   );
-  act(() => result.current.pasteFromClipboard(source, null));
+  act(() => result.current.pasteFromClipboard(source));
   return landed;
 }
 

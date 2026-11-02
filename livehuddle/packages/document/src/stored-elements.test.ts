@@ -3,14 +3,11 @@ import { migrateStoredElements } from './stored-elements';
 import type { Element } from './index';
 
 describe('migrateStoredElements', () => {
-  it('drops a legacy group and a legacy dock in one pass', () => {
+  it('drops a legacy group', () => {
     const elements = [
       { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10, groupId: 'g' },
-      { id: 'c', type: 'sticky', x: 0, y: 0, width: 10, height: 10, esDock: { hostId: 'a' } },
     ] as unknown as Element[];
-    const out = migrateStoredElements(elements);
-    expect(out[0]).not.toHaveProperty('groupId');
-    expect(out[1]).not.toHaveProperty('esDock');
+    expect(migrateStoredElements(elements)[0]).not.toHaveProperty('groupId');
   });
 
   it('returns the SAME array when there is nothing to migrate', () => {

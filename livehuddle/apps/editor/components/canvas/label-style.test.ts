@@ -20,7 +20,7 @@ describe('labelTextStyleCss', () => {
     expect(labelTextStyleCss({ strikethrough: true }).textDecoration).toBe('line-through');
   });
 
-  it('renders capitals only when asked (docs/specs/021-event-storming/event-storming.md workshop notes)', () => {
+  it('renders capitals only when asked', () => {
     expect(labelTextStyleCss({ uppercase: true }).textTransform).toBe('uppercase');
     expect(labelTextStyleCss({}).textTransform).toBeUndefined();
   });

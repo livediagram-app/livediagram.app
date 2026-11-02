@@ -1,7 +1,6 @@
 // The template family each template belongs to (docs/specs/013-workspace/default-folders.md
 // "Creation intent"): the one map that routes a new retrospective to its default
-// folder. A family is a set of ordinary diagram templates, never a tab kind: the event-storming
-// template makes a tab of its own kind, read from the tab, so it has no family here. A Record over
+// folder. A family is a set of ordinary diagram templates. A Record over
 // TemplateKind, so a new template kind does not compile until it is mapped.
 
 import type { TemplateFamily } from '@livehuddle/api-schema';
@@ -45,7 +44,6 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'okr-tree': null,
   'cloud-architecture': null,
   'state-machine': null,
-  'event-storming': null,
   'start-stop-continue': 'retrospective',
   'mad-sad-glad': 'retrospective',
   'four-ls': 'retrospective',

@@ -37,7 +37,7 @@ describe('graphBodyIssue', () => {
       'graph.direction: expected down or right',
     );
     expect(graphBodyIssue({ nodes, edges, style: 'radial' })).toBe(
-      'graph.style: expected flow, tree, lanes, cycle or storm',
+      'graph.style: expected flow, tree, lanes or cycle',
     );
     expect(graphBodyIssue({ nodes, edges, lines: 'wavy' })).toBe(
       'graph.lines: expected straight, angled or curved',

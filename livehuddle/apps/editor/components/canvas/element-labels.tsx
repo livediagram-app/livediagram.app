@@ -16,7 +16,6 @@
 import {
   chipLabelMax,
   hasRichFormatting,
-  isEventStormingNote,
   labelFontPx,
   type BoxedElement,
   type TextAlignX,
@@ -79,12 +78,6 @@ export function renderLabel(
   // pre-edit affordance is just an empty rectangle / nothing.
   const placeholder = element.type === 'text' ? (hug ? '' : 'Text') : isSticky ? 'Note' : '';
 
-  // Workshop notes are written in capitals (docs/specs/021-event-storming/event-storming.md) — a presentation rule,
-  // so it rides the label STYLE (and the fit below) rather than touching the
-  // stored text. Display label, rich runs and the live editor all take the
-  // same flag, or the note would change case on double-click.
-  const caps = isEventStormingNote(element);
-
   const wordmark = wordmarkTextStyle(element);
   const textStyle = {
     bold: element.textBold,
@@ -93,12 +86,11 @@ export function renderLabel(
     strikethrough: element.textStrikethrough,
     fontFamily,
     ...wordmark,
-    uppercase: caps || wordmark.uppercase,
   };
 
   const richText = (element as { richText?: TextRun[] }).richText;
 
-  // Auto-fit (docs/specs/021-event-storming/event-storming.md): on a multi-line label (sticky) 'scale' means FILL
+  // Auto-fit: on a multi-line label (sticky) 'scale' means FILL
   // THE NOTE — measured here once, then handed to whichever of the two
   // surfaces renders (label or editor), so they can never disagree and
   // double-clicking never shifts the text.
@@ -114,7 +106,6 @@ export function renderLabel(
         padding,
         bold: !!element.textBold,
         italic: !!element.textItalic,
-        uppercase: caps,
         fontFamily,
       })
     : undefined;
@@ -144,7 +135,6 @@ export function renderLabel(
         onLiveText={hug?.onLiveText}
         fontFamily={fontFamily}
         multiline={isSticky}
-        uppercase={caps}
         cursorAtEnd={editCursorAtEnd}
         textClassName={textClass}
         onCommit={onCommitLabel}
@@ -187,7 +177,6 @@ export function renderLabel(
         textScale={textScale}
         fontFamily={fontFamily}
         multiline={isSticky}
-        uppercase={caps}
         wordmark={wordmark}
         animClass={labelAnimClass}
       />

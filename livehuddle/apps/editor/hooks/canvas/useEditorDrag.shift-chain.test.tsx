@@ -48,7 +48,6 @@ function harness() {
     autoRebindArrowsRef: { current: false },
     alignmentGuidesRef: { current: false },
     isPinchingRef: { current: false },
-    insertGate: { esBoard: false, readOnly: false, tabLocked: false, createBlocked: false },
   } as unknown as EditorDragDeps;
   const view = renderHook(() => useEditorDrag(deps));
   return { ...view, elements: () => current };

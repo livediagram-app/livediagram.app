@@ -69,7 +69,7 @@ describe('template categories', () => {
       product: 10,
       games: 6,
       retros: 5,
-      software: 8,
+      software: 7,
       strategy: 7,
       learning: 3,
       spaces: 4,

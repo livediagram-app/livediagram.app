@@ -80,8 +80,6 @@ export const ROOT_TYPES = [
   'TeamRole',
   'TeamInvite',
   'TelemetryEvent',
-  'ReadNotesRequest',
-  'ReadNotesResponse',
   'CapabilitiesResponse',
   'CurrentTokenResponse',
   'DocumentCommentThread',

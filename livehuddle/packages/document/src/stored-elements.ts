@@ -3,8 +3,6 @@
 
 import { migrateLegacyCallouts } from './card';
 import { settleChips } from './attachment';
-import { dropLegacyDocks } from './legacy-docks';
-import { stampLegacyEsKinds } from './legacy-es-kinds';
 import { migrateLegacyGroups } from './legacy-groups';
 import { migrateLegacyModeButtons } from './legacy-mode-buttons';
 import { migrateLegacyStrokePoints } from './legacy-stroke-points';
@@ -30,17 +28,13 @@ export function migrateStoredElementsUnsettled(elements: Element[]): Element[] {
   // Malformed styles, catalogue keys, bends and chart rows are settled first, so no later migration reads them.
   return dropUnsafeColours(
     dropUnturnableRotation(
-      stampLegacyEsKinds(
-        migrateLegacyModeButtons(
-          migrateLegacyTextSizing(
-            migrateLegacyStrokePoints(
-              dropLegacyDocks(
-                migrateLegacyGroups(
-                  migrateLegacyCallouts(
-                    settleChartRows(
-                      dropMalformedBends(dropMalformedIds(dropMalformedStyles(elements))),
-                    ),
-                  ),
+      migrateLegacyModeButtons(
+        migrateLegacyTextSizing(
+          migrateLegacyStrokePoints(
+            migrateLegacyGroups(
+              migrateLegacyCallouts(
+                settleChartRows(
+                  dropMalformedBends(dropMalformedIds(dropMalformedStyles(elements))),
                 ),
               ),
             ),

@@ -31,7 +31,6 @@ import {
   TOOLBAR_TRIGGER_TONE,
 } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
 import { CATEGORY_BANDS } from './palette-category-bands';
-import { EsPhotoStripButton } from './EsPhotoStripButton';
 import { desktopStripTileLimit, phoneStripTileLimit, stripTilesFor } from './toolbar-strip-tiles';
 import { useStripTileLimit } from './useStripTileLimit';
 import { useViewportWidth } from '@liveworkspace/workbench/hooks/ui/useViewportWidth';
@@ -84,8 +83,6 @@ type Props = Pick<
   | 'onToggleZen'
   | 'canvasEmpty'
   | 'pendingDraw'
-  | 'esBoard'
-  | 'esBoardControls'
   | 'themeTint'
 > &
   PaletteAddHandlers & {
@@ -151,7 +148,7 @@ function CardWidth({ swipe, children }: { swipe: boolean; children: ReactNode })
 }
 
 export function ToolbarPalette(props: Props) {
-  const { canvasTool, esBoard, themeTint, pendingDraw, leading } = props;
+  const { canvasTool, themeTint, pendingDraw, leading } = props;
   // The phone's row: the strip at the left gutter, beside the menu card when there is one.
   const phoneRow = leading !== undefined;
   const hidden = props.hidden;
@@ -183,17 +180,14 @@ export function ToolbarPalette(props: Props) {
         bar.popover.setOpen(false);
       },
     });
-  // The landing rule (palette-layouts, docs/specs/021-event-storming/event-storming.md): the
-  // mode's Popular, or the notation on an event-storming board. A Participant lands on Participate.
+  // The landing rule (palette-layouts): the mode's Popular. A Participant lands on Participate.
   // Diagram shows its categories on the strip, each opening a flyout of its tiles, rather than one category's tiles
-  // (docs/specs/007-editor/toolbar-layout.md "The category bar"). Not on an event-storming board, whose
-  // notation is the palette, nor for a Participant, whose palette is one category.
-  const categoryBar = CATEGORY_BAR_MODES.has(editorMode) && !esBoard && !participant;
+  // (docs/specs/007-editor/toolbar-layout.md "The category bar"). Not for a Participant, whose palette is one
+  // category.
+  const categoryBar = CATEGORY_BAR_MODES.has(editorMode) && !participant;
   // A change of mode cascades its categories in (usePaletteKindMotion).
   usePaletteKindMotion(editorMode, rootRef);
-  const defaultId = participant ? 'participate' : paletteLandingCategory(editorMode, !!esBoard);
-  // Crossing an ES / non-ES tab boundary re-lands on the right default: the
-  // host keys this component on `esBoard`, so a board change re-lands the category.
+  const defaultId = participant ? 'participate' : paletteLandingCategory(editorMode);
   const [categoryId, setCategoryId] = useState(defaultId);
   // Another surface asking for a category (a board's + asks for Widgets).
   useEffect(
@@ -326,7 +320,7 @@ export function ToolbarPalette(props: Props) {
     if (pendingDraw) tileActions.cancelDraw?.();
   };
   // S asks for the Search (lib/toolbar-search-request): answered only while it is on show, so the
-  // key keeps its Select meaning on an event-storming board or with the chrome away.
+  // key keeps its Select meaning for a Participant or with the chrome away.
   const searchButtonRef = useRef<HTMLDivElement>(null);
   const openSearchFromKey = useEffectEvent(() => {
     const button = searchButtonRef.current?.querySelector<HTMLElement>(
@@ -340,9 +334,9 @@ export function ToolbarPalette(props: Props) {
     search.openFrom(button);
   });
   useEffect(() => {
-    if (esBoard || participant || hidden) return;
+    if (participant || hidden) return;
     return onToolbarSearchRequest(() => openSearchFromKey());
-  }, [esBoard, participant, hidden]);
+  }, [participant, hidden]);
   const toggleSearch = (button: HTMLElement) => {
     if (search.open) return search.setOpen(false);
     beforeSearch();
@@ -432,77 +426,65 @@ export function ToolbarPalette(props: Props) {
                       : CARD_CLASS
                   }
                 >
-                  {/* Event-storming boards hide the selection mode (docs/specs/021-event-storming/event-storming.md): the
-                notation is the palette there. */}
-                  {/* ...and lead with the board's own control instead, as the Event Storming
-                category's body does. */}
-                  {esBoard && !participant && props.esBoardControls?.onImportPhoto ? (
-                    <>
-                      <EsPhotoStripButton controls={props.esBoardControls} />
-                      <Divider />
-                    </>
-                  ) : null}
-                  {esBoard && !participant ? null : (
-                    <>
-                      <PaletteDropdown
-                        ariaLabel="Selection mode"
-                        dataTourId="canvas-tool"
-                        hoverCardTitle="Selection Mode"
-                        hoverCardDescription="Choose how the pointer acts on the canvas."
-                        value={canvasTool}
-                        variant="toolbar"
-                        iconOnly
-                        autoHeight
-                        grid
-                        menuClassName=""
-                        groupLabels={{ 0: 'Edit', 1: 'Present', 2: 'Preview' }}
-                        onChange={onCanvasToolChange}
-                        options={canvasToolOptions}
+                  <>
+                    <PaletteDropdown
+                      ariaLabel="Selection mode"
+                      dataTourId="canvas-tool"
+                      hoverCardTitle="Selection Mode"
+                      hoverCardDescription="Choose how the pointer acts on the canvas."
+                      value={canvasTool}
+                      variant="toolbar"
+                      iconOnly
+                      autoHeight
+                      grid
+                      menuClassName=""
+                      groupLabels={{ 0: 'Edit', 1: 'Present', 2: 'Preview' }}
+                      onChange={onCanvasToolChange}
+                      options={canvasToolOptions}
+                    />
+                    {/* A phone's strip runs the two pickers together, sparing the room for tiles. */}
+                    {swipe ? null : <Divider />}
+                    {categoryBar ? (
+                      <CategoryBarButtons
+                        bar={bar}
+                        categories={barCategories}
+                        labels={barLabels}
+                        scrollable={swipe}
                       />
-                      {/* A phone's strip runs the two pickers together, sparing the room for tiles. */}
-                      {swipe ? null : <Divider />}
-                      {categoryBar ? (
-                        <CategoryBarButtons
-                          bar={bar}
-                          categories={barCategories}
-                          labels={barLabels}
-                          scrollable={swipe}
-                        />
-                      ) : (
-                        <>
-                          {/* The category picker sits between the selection mode and the
+                    ) : (
+                      <>
+                        {/* The category picker sits between the selection mode and the
                     tiles it chooses, so it reads as a label for them (docs/specs/007-editor/toolbar-layout.md).
                     Its width follows its label's text, which is fractional:
                     snapped, so the tiles after it stay on whole pixels. */}
-                          <SnapWidth>
-                            <PaletteDropdown
-                              ariaLabel="Palette category"
-                              dataTourId="palette-category"
-                              value={category?.id ?? defaultId}
-                              variant="toolbar"
-                              // A phone shows the category's icon alone, so the
-                              // strip has room for more tiles.
-                              iconOnly={isMobile}
-                              autoHeight
-                              grid
-                              menuClassName=""
-                              groupLabels={CATEGORY_BANDS}
-                              onChange={switchCategory}
-                              options={tabs.map((tab) => ({
-                                id: tab.id,
-                                label: tab.label,
-                                icon: tab.icon,
-                                group: tab.group,
-                                fullWidth: tab.fullWidth,
-                              }))}
-                            />
-                          </SnapWidth>
-                        </>
-                      )}
-                      {/* The bar ends on its last category; Search brings its own divider. */}
-                      {categoryBar ? null : <Divider />}
-                    </>
-                  )}
+                        <SnapWidth>
+                          <PaletteDropdown
+                            ariaLabel="Palette category"
+                            dataTourId="palette-category"
+                            value={category?.id ?? defaultId}
+                            variant="toolbar"
+                            // A phone shows the category's icon alone, so the
+                            // strip has room for more tiles.
+                            iconOnly={isMobile}
+                            autoHeight
+                            grid
+                            menuClassName=""
+                            groupLabels={CATEGORY_BANDS}
+                            onChange={switchCategory}
+                            options={tabs.map((tab) => ({
+                              id: tab.id,
+                              label: tab.label,
+                              icon: tab.icon,
+                              group: tab.group,
+                              fullWidth: tab.fullWidth,
+                            }))}
+                          />
+                        </SnapWidth>
+                      </>
+                    )}
+                    {/* The bar ends on its last category; Search brings its own divider. */}
+                    {categoryBar ? null : <Divider />}
+                  </>
                   {categoryBar ? null : (
                     <>
                       <ToolbarStripRail
@@ -547,9 +529,8 @@ export function ToolbarPalette(props: Props) {
                     </>
                   )}
                   {/* Search, last: any element type, this mode's and the others' (docs/specs/007-editor/toolbar-layout.md
-                    "Search: every element type"). Not on an event-storming board, whose notation is
-                    its palette. */}
-                  {esBoard || participant ? null : (
+                    "Search: every element type"). Not for a Participant. */}
+                  {participant ? null : (
                     <>
                       <Divider />
                       <div ref={searchButtonRef} className="flex">
@@ -597,7 +578,7 @@ export function ToolbarPalette(props: Props) {
                 )}
               </StripPopover>
             ) : null}
-            {search.open && !esBoard && !participant ? (
+            {search.open && !participant ? (
               <StripPopover
                 right={search.right}
                 isMobile={isMobile}

@@ -16,7 +16,6 @@ import {
   getBuiltInTheme,
   invertElementOps,
   isValidTab,
-  landWorkshopArrivals,
   normaliseElements,
   resolveGraphInput,
   type Element,
@@ -142,7 +141,7 @@ function nextTab(
     const made = built.tab(options.tabId, options.name);
     return options.finish ? { ...made, finish: options.finish } : made;
   }
-  return { ...tab, elements: landWorkshopArrivals(tab, built.elements, 'replace') };
+  return { ...tab, elements: built.elements };
 }
 
 export function applyReplace(

@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { labelMeasure, wrapLabel } from '@livehuddle/document';
 import { fitMultilineFontPx, FIT_MAX_PX, FIT_MIN_PX } from './fit-multiline-text';
 
-// Genuine auto-fit for multi-line labels (stickies, docs/specs/021-event-storming/event-storming.md): `scale` should
+// Genuine auto-fit for multi-line labels (stickies, docs/specs/008-canvas/canvas-and-palette.md): `scale` should
 // mean "fill the note", the way writing on a physical sticky does — a
 // two-word event large, a long policy sentence small — rather than the fixed
 // 14px it used to mean. Pure: same inputs, same answer, so the display label,
@@ -51,35 +51,7 @@ describe('fitMultilineFontPx', () => {
   });
 });
 
-// Workshop notes render in capitals (docs/specs/021-event-storming/event-storming.md), and capitals are WIDER. The
-// fitter therefore has to measure the caps, not the typed mixed case — a
-// size fitted against "Order placed" overflows the moment it paints as
-// "ORDER PLACED".
-describe('fitMultilineFontPx — uppercase', () => {
-  const note = { width: 200, height: 200, padding: 12 };
-
-  it('measures the capitals it will actually paint', () => {
-    const asTyped = fitMultilineFontPx({ text: 'Order placed by customer', ...note });
-    const asCaps = fitMultilineFontPx({
-      text: 'Order placed by customer',
-      ...note,
-      uppercase: true,
-    });
-    const preShouted = fitMultilineFontPx({ text: 'ORDER PLACED BY CUSTOMER', ...note });
-    expect(asCaps).toBe(preShouted);
-    expect(asCaps).toBeLessThanOrEqual(asTyped);
-  });
-
-  it('leaves the fit alone when the flag is off', () => {
-    const text = 'Order placed by customer';
-    expect(fitMultilineFontPx({ text, ...note, uppercase: false })).toBe(
-      fitMultilineFontPx({ text, ...note }),
-    );
-  });
-});
-
-// The note is painted in a face of its own (a workshop note wears the marker,
-// docs/specs/021-event-storming/event-storming.md), and faces have different widths at the same px. The fitter
+// The note is painted in a face of its own (docs/specs/004-interface-design/fonts.md), and faces have different widths at the same px. The fitter
 // therefore measures IN THAT FACE — measuring system-ui and painting a marker
 // is how a note ends up with its last word over the edge.
 describe('fitMultilineFontPx — font family', () => {

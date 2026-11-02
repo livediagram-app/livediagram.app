@@ -141,23 +141,6 @@ describe('applyReplace on an existing tab', () => {
     expect(y!.y).not.toBe(x!.y);
   });
 
-  it('lands every workshop note of an event-storming tab on a lane', () => {
-    const note = (id: string, y: number) => ({
-      id,
-      type: 'sticky',
-      x: 0,
-      y,
-      width: 200,
-      height: 200,
-      esKind: 'domain-event',
-      fillColor: '#fdba74',
-      fixedSize: true,
-    });
-    const tab = { id: 'es', name: 'Wall', kind: 'event-storming', elements: [] } as Tab;
-    const { tab: next } = applied(applyReplace(tab, { elements: [note('a', 10)] }, options));
-    expect(next.elements[0]).toMatchObject({ y: 0 });
-  });
-
   it('refuses a locked tab', () => {
     const { calls, log } = recording();
     expect(
@@ -196,9 +179,8 @@ describe('applyReplace for a new tab', () => {
   });
 
   it('builds a template tab whole, with its canvas and kind', () => {
-    // Event storming's tab is an event-storming board (docs/specs/021-event-storming/README.md).
-    const { tab } = applied(applyReplace(null, { template: 'event-storming' }, options));
-    expect(tab).toMatchObject({ id: 'new-tab', templateChosen: true, kind: 'event-storming' });
+    const { tab } = applied(applyReplace(null, { template: 'retrospective' }, options));
+    expect(tab).toMatchObject({ id: 'new-tab', templateChosen: true, kind: 'diagram' });
   });
 
   it('builds an elements tab as add_tab does, themed', () => {

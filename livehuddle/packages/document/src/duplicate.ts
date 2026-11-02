@@ -5,7 +5,6 @@
 // unchanged.
 
 import {
-  eventStormingTilt,
   isBoxed,
   type ArrowElement,
   type BoxedElement,
@@ -14,15 +13,9 @@ import {
 } from './index';
 import { remapElementRefs as sharedRemapElementRefs } from '@liveworkspace/model-core/id-remap';
 
-// What a COPY regenerates rather than inherits. Today: an event-storming
-// note's hand-placement (docs/specs/021-event-storming/event-storming.md) — a duplicate is a new piece of paper, so
-// carrying the source's exact angle made it read as a photocopy, the one
-// thing a real wall never shows. Scoped to the fixed-size sticky (the ES
-// stamp) so a deliberately-rotated element anywhere else keeps its angle.
-//
-// EVERY copy path must spread this: the set duplication below, and the
-// editor's hand-rolled single / multi duplicate paths. It exists precisely
-// because "the one place copies happen" turned out to be three places.
+// What a COPY drops rather than inherits. EVERY copy path must spread this: the set duplication below, and the
+// editor's hand-rolled single / multi duplicate paths. It exists precisely because "the one place copies happen"
+// turned out to be three places.
 //
 // A copy is also nobody's addition (docs/specs/013-workspace/share-roles.md): `addedBy` never rides along, so an
 // Editor's copy of a Participant's sticky is not that Participant's to delete. A Participant's own copy is stamped
@@ -36,7 +29,6 @@ import { remapElementRefs as sharedRemapElementRefs } from '@liveworkspace/model
 export const ORIGINAL_ONLY_FIELDS = ['commentThread', 'responses', 'action', 'actions'] as const;
 
 export function freshCopyFields(el: Element): {
-  rotation?: number;
   addedBy?: undefined;
   commentThread?: undefined;
   responses?: undefined;
@@ -48,7 +40,6 @@ export function freshCopyFields(el: Element): {
   } = {};
   if ('addedBy' in el) fresh.addedBy = undefined;
   for (const field of ORIGINAL_ONLY_FIELDS) if (field in el) fresh[field] = undefined;
-  if (el.type === 'sticky' && el.fixedSize) return { ...fresh, rotation: eventStormingTilt() };
   return fresh;
 }
 
