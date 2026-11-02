@@ -7,7 +7,7 @@ export const metadata = helpMetadata({
   title: 'Timeline',
   description:
     'Lay out a roadmap, a project plan or a history as milestones along a line, each with when it happens and what it is.',
-  path: '/help/palette/concept-graphics/timeline-rail/',
+  path: '/help/palette/timeline-rail/',
 });
 
 <ArticleLayout
@@ -15,8 +15,7 @@ export const metadata = helpMetadata({
   description="Milestones along a line, each with when and what, for roadmaps, plans and histories."
   categoryTitle="Palette"
   categorySlug="palette"
-  parentArticle={{ title: 'Concept Graphics', slug: 'concept-graphics' }}
-  subArticles={getSubArticles('concept-graphics').filter((a) => a.slug !== 'timeline-rail')}
+  subArticles={getSubArticles('timeline-rail')}
 >
 
 A **Timeline** is a row of milestones along one line, read left to right toward its arrow. Each milestone is a dot on the line with **when** it happens and **what** it is, and they take turns above and below the line so even long names have room. It is the shape for a roadmap, a release plan, a project's phases or a company's history, and it lays itself out: add a milestone and the rest space out evenly.
@@ -27,7 +26,7 @@ A **Timeline** is a row of milestones along one line, read left to right toward 
 
 ## Adding one
 
-<Step n={1}>Open the **Concepts** category on the palette strip.</Step>
+<Step n={1}>Open the **Layout** category on the palette strip.</Step>
 <Step n={2}>
   Pick **Timeline**, then tap the canvas to drop it, or drag to draw it at a size. It lands with
   four milestones to write over.

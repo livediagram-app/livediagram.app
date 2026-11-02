@@ -3,7 +3,6 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { PencilStroke, ShapeRecognition } from '@/components/illustrations/palette-tools';
 import { PolygonDraw } from '@liveworkspace/help-site/art/illustrations/palette-tools-drawing';
-import { PaletteRows } from '@liveworkspace/help-site/art/illustrations/palette-rows';
 
 export const metadata = helpMetadata({
   title: 'Drawing and Sketch',
@@ -21,24 +20,18 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("drawing")}
 >
 
-Sometimes the fastest way to capture an idea is to draw it. The palette's **Draw** category holds the drawing tools: **Freehand** for smooth strokes kept exactly as drawn, the **Shape Pen** for rough sketches that snap to real shapes, and the **Polygon** tool for clean point-by-point outlines (plus the **Highlighter**, **Arrow** and **Line**, each covered in its own guide). Everything they draw is a regular element you can move, resize, and style.
+Sometimes the fastest way to capture an idea is to draw it. The palette's **Draw** category holds **Freehand**, for smooth strokes kept exactly as drawn, then the **Highlighter**, **Arrow** and **Line**, each covered in its own guide. Two more drawing tools are a search away rather than on the strip: the **Shape Pen**, for rough sketches that snap to real shapes, and the **Polygon** tool, for clean point-by-point outlines. Everything they draw is a regular element you can move, resize, and style.
 
-<Figure caption="The Draw category: the two pens, the Highlighter and Polygon, then Arrow and Line, with their keys on the right.">
-  <PaletteRows category="Draw" active="Freehand" />
-</Figure>
-
-Looking for the marker? The **Highlighter** sits third in the Draw category, after the two pens: see [Highlighter](/help/palette/tools/highlighter/).
-
-Draw is in the Diagram and [Workshop](/help/canvas/workshop-mode/) palettes (Workshop's leaves out the Shape Pen and Polygon). [Draw mode](/help/canvas/draw-mode/) replaces the palette with a whiteboard's own pens, which stay in your hand stroke after stroke.
+Looking for the marker? The **Highlighter** sits in the Draw category after Freehand: see [Highlighter](/help/palette/tools/highlighter/).
 
 ## Freehand and the Shape Pen
 
-Both pens are gestural tools: pick one from the palette's **Draw** category (**Freehand** is `P` or `7`, **Shape Pen** is `6`) and the next drag on the canvas draws a stroke. A small mode banner tells you which pen is armed, with a **Cancel** action: Freehand's reads "Drag to draw", and the Shape Pen's says your rough shape will snap to the real one. The cursor swaps to a pen nib so you know you are in draw mode.
+Both pens are gestural tools: pick **Freehand** from the palette's **Draw** category (or press `P` or `7`), or the **Shape Pen** from Search (or press `6`), and the next drag on the canvas draws a stroke. A small mode banner tells you which pen is armed, with a **Cancel** action: Freehand's reads "Drag to draw", and the Shape Pen's says your rough shape will snap to the real one. The cursor swaps to a pen nib so you know you are in draw mode.
 
 The only difference is what happens on release: Freehand keeps the stroke exactly as you drew it, and the Shape Pen matches it against real shapes.
 
 <Step n={1}>
-  Select Freehand or the Shape Pen from the palette's Draw category, or press its key.
+  Select Freehand from the palette's Draw category, or the Shape Pen from Search, or press its key.
 </Step>
 <Step n={2}>Drag across the canvas to draw. A live preview follows your pointer.</Step>
 <Step n={3}>
@@ -50,7 +43,7 @@ To put a pen down before drawing, press `Escape`, choose **Cancel** on the banne
 
 On release, your raw points are smoothed into a clean, hand-drawn curve rather than a jagged polyline. With Freehand, if you release near where you started, the path closes into a custom shape and fills, which is the way to sketch a bespoke outline (on a desktop the banner reminds you: "release near the start to close").
 
-<Figure caption="Freehand in draw mode, with a smoothed stroke and its banner.">
+<Figure caption="Freehand armed, with a smoothed stroke and its banner.">
   <PencilStroke />
 </Figure>
 
@@ -66,7 +59,10 @@ A committed sketch is a regular boxed element. Its stroke colour follows the tab
 
 The Polygon tool fills the gap between freehand sketching and the fixed shapes: clean, straight-edged outlines with exactly the corners you choose, for zones on an architecture diagram, floor plans, or any irregular region.
 
-<Step n={1}>Select **Polygon** from the Draw category. It has no keyboard shortcut.</Step>
+<Step n={1}>
+  Search for **Polygon** in the strip's Search or the search panel and pick it. It has no keyboard
+  shortcut.
+</Step>
 <Step n={2}>
   Click to place each point. A preview line follows your pointer from the last point you placed.
 </Step>

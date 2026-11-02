@@ -39,7 +39,7 @@ One arrangement doesn't fit every diagram, so alongside the smart default there 
 
 - **Auto Layout (tidy up)** (the smart default): a layered arrangement with the direction inferred from where your shapes roughly sit now.
 - **Auto Layout: Flowchart (down)** and **Auto Layout: Flowchart (right)**: the same layered arrangement, but with the direction forced top-to-bottom or left-to-right, whatever your current positions suggest.
-- **Auto Layout: Tree**: an org-chart arrangement. Roots sit at the top and every parent is centred over its own children, so hierarchies read cleanly level by level.
+- **Auto Layout: Tree**: a top-down hierarchy. Roots sit at the top and every parent is centred over its own children, so hierarchies read cleanly level by level.
 - **Auto Layout: Mindmap**: a radial arrangement. The most-connected shape becomes the hub in the centre and its branches fan out around it, with each level on a wider ring.
 
 If a diagram isn't a perfect tree (a shape with two parents), Tree still works: it lays out the main skeleton and reconnects the extra arrows across it. Mindmap is for ideas that branch out from a centre, so it isn't offered when your arrows loop back on themselves.
@@ -57,9 +57,7 @@ Run a style that isn't offered from the command palette and nothing moves; a sho
 
 ## Running it
 
-<Step n={1}>
-  In Diagram mode, press the **Tidy Up** button in the bottom-right corner, just left of Layers.
-</Step>
+<Step n={1}>Press the **Tidy Up** button in the bottom-right corner, just left of Layers.</Step>
 
 <Step n={2}>
   Rest the mouse on a style to see the tab laid out that way, then click the one you want. From the

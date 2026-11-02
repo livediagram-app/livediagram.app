@@ -36,7 +36,7 @@ export const categories: Category[] = [
     title: 'Getting Started',
     description:
       'Go from a blank canvas to a shared diagram in minutes, with the basics every new user needs.',
-    articleCount: 8,
+    articleCount: 7,
   },
   {
     slug: 'tips-and-tricks',
@@ -127,7 +127,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 36,
+    articleCount: 29,
     kind: 'feature',
     groups: ['Everyday Elements', 'Diagram Kits', 'Workshop Kits', 'Palette Settings'],
   },
@@ -136,7 +136,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas: place, select, link, annotate, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
-    articleCount: 29,
+    articleCount: 27,
     kind: 'feature',
     groups: [
       'Basics',
@@ -322,16 +322,6 @@ export const articles: Article[] = [
     categorySlug: 'getting-started',
   },
   {
-    slug: 'diagram-tour',
-    title: 'The Diagram Tour',
-    description:
-      'The interactive Diagram mode walkthrough, offered once and replayable from Settings.',
-    keywords:
-      'tour walkthrough guide onboarding show me around intro tutorial replay rerun steps welcome diagram mode palette',
-    category: 'Getting Started',
-    categorySlug: 'getting-started',
-  },
-  {
     slug: 'the-canvas-basics',
     title: 'Canvas Basics',
     description: 'Panning, zooming, and finding your way around the editor.',
@@ -387,7 +377,7 @@ export const articles: Article[] = [
     title: 'Keyboard Shortcuts',
     description: 'The full shortcut reference and how to toggle shortcuts off.',
     keywords:
-      'hotkey hotkeys keybinding cheat sheet reference keys bindings number numbers digit digits tool row excalidraw muscle memory single key letter settings keyboard category draw mode pens shift d disable all',
+      'hotkey hotkeys keybinding cheat sheet reference keys bindings number numbers digit digits tool row excalidraw muscle memory single key letter settings keyboard category disable all',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -962,7 +952,7 @@ export const articles: Article[] = [
     title: 'Where each tool lives',
     description: 'A map of the palette categories and which elements are in each.',
     keywords:
-      'tools tab category where find text pencil pen table frame chart sticky note image draw write build structure mind node lane timeline components media behaviour collaborate data moved',
+      'tools tab category where find text pencil pen table frame chart sticky note image draw write build structure lane timeline components media behaviour collaborate data moved',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -992,9 +982,9 @@ export const articles: Article[] = [
     slug: 'build',
     title: 'Build Elements',
     description:
-      'Mind maps, org charts, flowcharts, sequence diagrams, lanes, frames, stacks, boundaries, keys and tables: diagram structure.',
+      'Lanes, frames, stacks, boundaries, keys and tables: the structure a board is laid out in.',
     keywords:
-      'build structure layout container holds frame lane boundary timeline table mind node sankey flow arrange scaffold group section band track grid organise card badge step number diagram key legend stack row column grid auto layout even gaps org chart organisation reports hierarchy sequence diagram uml lifeline message',
+      'build structure layout container holds frame lane boundary timeline table arrange scaffold group section band track grid organise card badge step number diagram key legend stack row column grid auto layout even gaps',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Diagram Kits',
@@ -1010,16 +1000,6 @@ export const articles: Article[] = [
     parentSlug: 'build',
   },
   {
-    slug: 'sankey-diagram',
-    title: 'Sankey Diagram',
-    description: 'Show how much moves where: bands as wide as the amount they carry.',
-    keywords:
-      'sankey flow flows diagram energy budget money income spending funnel conversion journey migration material supply chain band bands width amount quantity nodes split merge sankeymatic alluvial csv paste spreadsheet',
-    category: 'Palette',
-    categorySlug: 'palette/build',
-    parentSlug: 'build',
-  },
-  {
     slug: 'components',
     title: 'Components',
     description: 'Cards, badges, step numbers and web components: banners, callouts and more.',
@@ -1028,36 +1008,6 @@ export const articles: Article[] = [
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
-  },
-  {
-    slug: 'mind-maps',
-    title: 'Mind Maps',
-    description: 'Tab adds a child, Enter a sibling: build a branch from the keyboard.',
-    keywords:
-      'mind map mindmap node branch child sibling tab enter keyboard tree hierarchy brainstorm outline edit outline markdown list indent bullets branching flow leftward upward downward balanced bubble spacing tight compact comfortable wide select branch delete branch',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
-  },
-  {
-    slug: 'flowcharts',
-    title: 'Flowcharts',
-    description: 'Tab adds the next step, Enter a parallel one: a flowchart that lays itself out.',
-    keywords:
-      'flowchart flow chart process diagram step steps decision diamond yes no branch merge loop start end terminator input output parallelogram document database preparation connector iso 5807 tab enter keyboard auto layout tidy swimlane swim lane lanes cross functional direction down right workflow',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
-  },
-  {
-    slug: 'edit-outline',
-    title: 'Edit a Mind Map as an Outline',
-    description: 'Rewrite a whole mind map as an indented list, then save it back in one go.',
-    keywords:
-      'mind map mindmap outline edit outline list bullets indent outdent restructure rearrange reorder text markdown paste bold italic underline rows tree hierarchy bulk',
-    category: 'Palette',
-    categorySlug: 'palette/mind-maps',
-    parentSlug: 'mind-maps',
   },
   {
     slug: 'collaborate',
@@ -1172,53 +1122,11 @@ export const articles: Article[] = [
     group: 'Diagram Kits',
   },
   {
-    slug: 'org-charts',
-    title: 'Org Charts',
-    description: 'A tree of people with names and roles that lays itself out.',
-    keywords:
-      'org chart organisation organization chart people team hierarchy reports manager reporting line structure role initials tree ownership',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
-  },
-  {
-    slug: 'sequence-diagrams',
-    title: 'Sequence Diagrams',
-    description: 'Who calls whom, in order, laid out from a list of messages.',
-    keywords:
-      'sequence diagram diagrams uml lifeline lifelines message messages call reply async request response interaction api participants actor activation numbered',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
-  },
-  {
-    slug: 'concept-graphics',
-    title: 'Concept Graphics',
-    description:
-      'Stacks, pyramids, funnels, cycles, hubs, onions, chevrons and timelines that lay out their rows.',
-    keywords:
-      'concept concepts graphic layer stack layers tiers pyramid triangle hierarchy maslow inverted funnel conversion cycle loop ring flywheel pdca plan do check act smartart rows build pulse flow animation hub and spoke hub spoke satellites ecosystem onion rings concentric core chevron chevrons pipeline value chain stages timeline milestones roadmap',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
-  },
-  {
     slug: 'lanes',
     title: 'Lanes',
     description: 'Titled bands for swimlanes; dragging one carries its contents.',
     keywords:
       'lane swimlane swim band row role team process cross-functional container pool track column vertical heading gutter upright title draw.io',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
-  },
-  {
-    slug: 'entities',
-    title: 'Entities',
-    description:
-      'A title over fields with keys, joined field to field, for data models and class diagrams.',
-    keywords:
-      'entity class uml er erd record table schema model field attribute method database column inheritance aggregation composition fields popular primary foreign key pk fk unique relationship cardinality crows foot one many related',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Diagram Kits',
@@ -1256,16 +1164,6 @@ export const articles: Article[] = [
     group: 'Workshop Kits',
   },
   {
-    slug: 'devices',
-    title: 'Devices',
-    description: 'Browser, phone, laptop and other wireframing frames.',
-    keywords:
-      'browser phone laptop wireframe mockup frame window screen monitor smartwatch watch tablet foldable fold unfolded desktop device',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Everyday Elements',
-  },
-  {
     slug: 'icons',
     title: 'Icons',
     description: 'A searchable catalogue of single-colour glyphs.',
@@ -1281,16 +1179,6 @@ export const articles: Article[] = [
     description: 'Die-cut colour emoji and word badges for reactions and status.',
     keywords:
       'emoji sticker badge label approved blocked wip reaction smiley face thumbs up heart fire celebrate party status flag arrow decorate pretty feelings emotion',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Everyday Elements',
-  },
-  {
-    slug: 'technology',
-    title: 'Technology',
-    description: 'Full-colour AWS, Azure, Cloudflare, Firebase and infrastructure icons.',
-    keywords:
-      'aws azure gcp cloud logos tech stack infrastructure brands kubernetes docker cloudflare firebase postgres database lambda s3 architecture brand',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1338,7 +1226,7 @@ export const articles: Article[] = [
     title: 'Toolbar Layout',
     description: 'The palette strip across the top of the canvas, its More and its Search.',
     keywords:
-      'toolbar strip top bar excalidraw panel layout floating palette compact menu button explorer more tiles recent recently used order reorder search find element other modes',
+      'toolbar strip top bar excalidraw panel layout floating palette compact menu button explorer more tiles recent recently used order reorder search find element',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Palette Settings',
@@ -1391,28 +1279,6 @@ export const articles: Article[] = [
     group: 'Basics',
   },
   {
-    slug: 'editor-modes',
-    title: 'Editor Modes',
-    description:
-      'Diagram, Draw and Workshop: what each mode is for, choosing one on an empty tab, and Opens in.',
-    keywords:
-      'editor mode editor modes mode switch switch mode change mode choose mode new tab modes diagram draw workshop session shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch boards kanban phone mobile view only read only kind template workflow way of working slides articles documents livedocuments plan planning boards kanban sheets spreadsheet forms liveplanner',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Modes and Boards',
-  },
-  {
-    slug: 'draw-mode',
-    title: 'Draw Mode',
-    description:
-      'Freehand drawing on any tab: switch modes, then a dock of pens, a Path tool, a Fill bucket, erasers and shapes.',
-    keywords:
-      'draw mode drawing mode diagram mode editor mode switch modes mode switch toggle shift+d shift d opens in open in default mode per tab whiteboards whiteboard white board chalkboard blackboard sketch draw drawing freehand hand drawn ink pen pens marker stylus apple pencil surface pen touch finger palm rejection pinch zoom dock toolbar eraser rubber partial erase stroke erase sticky text shapes shape recognition recognise recognize snap clean up background plain dots dotted grid graph microsoft whiteboard dark mode chalk colour color width thickness path tool vector pen tool bezier curve curves anchor point points node nodes handle handles edit points corner smooth mirrored aligned illustrator figma undo redo settings cog more shapes shape search find a shape flowchart pin pinned unpin favourite shapes frequent most used simple mode dock mode colour picker color picker custom colour hex eyedropper eye dropper your colours remove colour contrast dock position top bottom move the dock tablet ipad fill tool fill bucket paint bucket bucket pour colour in color in fill shape fill loop flood fill no fill snap colours snap to stock colours stock colors custom colors convert colours adaptive nearest colour',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Modes and Boards',
-  },
-  {
     slug: 'workshop-mode',
     title: 'Workshop Mode',
     description:
@@ -1422,17 +1288,6 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Modes and Boards',
-  },
-  {
-    slug: 'draw-tour',
-    title: 'The Draw Tour',
-    description:
-      "A short, optional walkthrough of Draw mode's dock, offered the first time you work in Draw and replayable from Settings.",
-    keywords:
-      'draw tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn draw mode whiteboard sketch pen pens marker markers highlighter eraser path tool shapes sticky dock settings background cursor shape recognition replay rerun settings accessibility',
-    category: 'Canvas',
-    categorySlug: 'canvas/draw-mode',
-    parentSlug: 'draw-mode',
   },
   {
     slug: 'workshop-tour',
@@ -1512,7 +1367,7 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, an Excalidraw scene or PNG / SVG export, or a draw.io diagram (a tab per page) into the active tab, or paste a drawing copied in Excalidraw onto the canvas.',
+      'Import JSON, a Mermaid diagram (flowchart or state), a Markdown outline, an Excalidraw scene or PNG / SVG export, or a draw.io diagram (a tab per page) into the active tab, or paste a drawing copied in Excalidraw onto the canvas.',
     keywords:
       'import json mermaid markdown excalidraw drawio draw.io diagrams.net mxfile pages file files paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard new document explorer import from canvas',
     category: 'Tabs',
@@ -1703,7 +1558,7 @@ export const articles: Article[] = [
   {
     slug: 'default-folders',
     title: 'Default Folders',
-    description: 'Choose the folder new diagrams, whiteboards and boards land in automatically.',
+    description: 'Choose the folder new canvases and sessions land in automatically.',
     keywords:
       'default folder where new documents go automatic placement file whiteboards retrospectives event storming diagrams use as default settings documents new document wizard sessions canvas',
     category: 'Explorer',
@@ -1716,7 +1571,7 @@ export const articles: Article[] = [
     description:
       'Narrow any canvas list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:
-      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective edited date last week recent people me others owner space team shared unfiled root lens results pages document',
+      'search find filter filters chips narrow refine query token tokens made by ai generated opens in kind event storming template retrospective edited date last week recent people me others owner space team shared unfiled root lens results pages document',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1965,7 +1820,7 @@ export const articles: Article[] = [
     description:
       'The small icons that show an element has a link, a note, an action or comments, and how to set them to Top, Footer or Off.',
     keywords:
-      'indicators indicator badges badge icons markers chip pip status metadata link note action comment comments count top footer off hide hidden mind map edit outline tidy map settings editor color colour',
+      'indicators indicator badges badge icons markers chip pip status metadata link note action comment comments count top footer off hide hidden settings editor color colour',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -2086,7 +1941,7 @@ export const articles: Article[] = [
   {
     slug: 'arrow-to-arrow',
     title: 'Connecting Arrows to Arrows',
-    description: 'Snap an arrow endpoint onto another arrow for sequence diagrams.',
+    description: 'Snap an arrow endpoint onto another arrow to branch or join a flow.',
     keywords: 'sequence join connect endpoint attach branch',
     category: 'Palette',
     categorySlug: 'palette/arrows',
@@ -2671,8 +2526,8 @@ export const articles: Article[] = [
     keywords:
       'timeline rail roadmap milestones dates when quarter sprint plan project phases schedule history journey concept',
     category: 'Palette',
-    categorySlug: 'palette/concept-graphics',
-    parentSlug: 'concept-graphics',
+    categorySlug: 'palette',
+    group: 'Diagram Kits',
   },
 
   // ---- Sub-articles: Layout Cleanup ----

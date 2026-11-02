@@ -6,7 +6,7 @@ import { CommandPalette } from '@/components/illustrations/tips';
 export const metadata = helpMetadata({
   title: 'Palette Tools',
   description:
-    'Where each element lives in the palette: Write, Draw, Diagrams, Layout, Build, Components, Data, Collaborate, Media, Devices, Shapes, Icons, Stickers, and Tech.',
+    'Where each element lives in the palette: Shapes, Write, Draw, Layout, Collaborate, Icons, Stickers, Media, Data and Components.',
   path: '/help/palette/tools/',
 });
 
@@ -20,35 +20,31 @@ export const metadata = helpMetadata({
 
 The palette's tools are grouped into **categories**, each one press away on the palette strip. This page is a map of where each tool lives.
 
-The categories sit along the strip by name, in groups with a thin line between each: **Common**, **Structure**, **Decorate** and **Dynamic**, plus the session kit in Workshop mode. Rest on one, or click it, to see its elements.
+The categories sit along the strip by name, in groups with a thin line between each: **Common**, **Structure**, **Decorate** and **Dynamic**, plus the session kit. Rest on one, or click it, to see its elements.
 
-<Figure caption="The palette strip in Diagram mode: the selection mode, the categories by name, and Search.">
+<Figure caption="The palette strip: the selection mode, the categories by name, and Search.">
   <CommandPalette />
 </Figure>
 
-## Which categories each mode offers
+## The categories on the strip
 
-The palette is laid out per editor mode, so not every category appears everywhere:
+The strip holds **Popular**, then Shapes, **My shapes**, Write (text, notes, tables and checklists), Draw (the pens and arrows), **Layout** (lanes, frames, stacks, boundaries, the Timeline, the diagram key, cards, badges and step numbers), then the session kit, **Ask**, and **Session**, which holds Tools, Record, React, Selection Mode and Navigate, then Icons, Stickers, Media (Image and Avatar) and Data. **Library** (your shape libraries) joins once you have [imported a shape library](/help/explorer/shape-libraries/), and **Event Storming** joins on an [Event Storming board](/help/canvas/event-storming-boards/). See [Workshop Mode](/help/canvas/workshop-mode/) for how a session uses them.
 
-- **Diagram** (the default): Shapes, Write (text, notes, the Comment panel and the Action card), Draw (the pens and arrows), Build as two categories, **Diagrams** (mind nodes, org charts, flowcharts, sequence diagrams, tables, entities) and **Layout** (lanes, frames, stacks, boundaries, the diagram key, cards, badges and step numbers), after Concepts (with the Sankey and the Timeline), Icons, Tech and Media (Image and Avatar). **Library** (your shape libraries) joins Common once you have [imported a shape library](/help/explorer/shape-libraries/), and **Event Storming** joins Structure on an [Event Storming board](/help/canvas/event-storming-boards/).
-- **[Workshop](/help/canvas/workshop-mode/)**: Shapes, Write (text, notes, tables and checklists), Draw (the pens and arrows), Layout (as in Diagram, with the Timeline), then the session kit, **Ask**, and **Session**, which holds Tools, Record, React, Selection Mode and Navigate, then Icons, Stickers, Media (Image and Avatar) and Data. Write and Draw leave out what a session does not need (Page, Annotation, Shape Pen, Polygon, Mind node, Flowchart and Sankey).
-- **[Draw mode](/help/canvas/draw-mode/)** swaps the palette for the whiteboard's own pens and shapes.
-
-Anything a mode leaves out is still one search away: the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`) can add any palette element by name, whatever the mode.
+Anything the strip leaves out is still one search away: the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`) can add any palette element by name.
 
 ## Where each tool lives
 
-**Build** (in Diagram mode, **Diagrams** and **Layout**) holds the elements you lay a diagram out with, the ones that hold other work: **Mind Node** (Tab adds a child, Enter a sibling), **Table** (an editable grid of cells), **Lane** (a titled band that carries its steps) and **Frame** (a labelled box that groups a section, `F`). The **Timeline** is a [concept graphic](/help/palette/concept-graphics/timeline-rail/), in **Concepts**.
+**Layout** holds the elements you lay a board out with, the ones that hold other work: **Lane** (a titled band that carries its steps), **Frame** (a labelled box that groups a section, `F`), **Stack** and **Boundary**, then the [Timeline](/help/palette/timeline-rail/) (milestones along a line), the diagram key, cards, badges and step numbers. See [Build Elements](/help/palette/build/).
 
-**Write** holds the wordy elements: **Page** is a paper-sized sheet you write into, **Text** drops a free-standing label (`T`), **Note** is a coloured sticky note card (`N`), and **Annotation** is a small marker that holds a note. The coloured Event Storming workshop stickies live in [their own category](/help/palette/event-storming/), which appears on an Event Storming board.
+**Write** holds the wordy elements: **Text** drops a free-standing label (`T`), **Note** is a coloured sticky note card (`N`), **Table** is an editable grid of cells and **Checklist** a list to tick off. The **Page** (a paper-sized sheet you write into) and the **Annotation** (a small marker that holds a note) are added from Search. The coloured Event Storming workshop stickies live in [their own category](/help/palette/event-storming/), which appears on an Event Storming board.
 
-**Draw** holds the gesture tools: **Freehand** (`P`) sketches a stroke and keeps it exactly as drawn, the **Shape Pen** (`6`) turns a rough sketch into a real shape, the **Highlighter** lays one wide translucent marker stroke, **Polygon** places straight-edged outlines point by point, **Arrow** (`A`) drops a connector with a pointer at its end that you position by hand, and **Line** drops the same without the pointer. See [Drawing and Sketch](/help/palette/tools/drawing/) and [Highlighter](/help/palette/tools/highlighter/).
+**Draw** holds the gesture tools: **Freehand** (`P`) sketches a stroke and keeps it exactly as drawn, the **Highlighter** lays one wide translucent marker stroke, **Arrow** (`A`) drops a connector with a pointer at its end that you position by hand, and **Line** drops the same without the pointer. See [Drawing and Sketch](/help/palette/tools/drawing/) and [Highlighter](/help/palette/tools/highlighter/).
 
-**Components** (on no palette strip; the strip's Search and the search panel add them) holds the ready-made pieces in three groups: **Layout** (Hero, Header, Banner and the Stack; Hero needs image uploads, like Image and Avatar), **Page Blocks** (Card, Badge, Step Number, Callout, Stat Row, Process) and **Code and Lists** (Code, Checklist). Entity is a Diagram element. In Diagram mode, **Entity** is in Build; add a **Code block** or a **Checklist** from the strip's Search or the search panel.
+**Components** (on no palette strip; the strip's Search and the search panel add them) holds the ready-made pieces in three groups: **Layout** (Hero, Header, Banner and the Stack; Hero needs image uploads, like Image and Avatar), **Page Blocks** (Card, Badge, Step Number, Callout, Stat Row, Process) and **Code and Lists** (Code, Checklist). The Card, Badge, Step Number and Stack are on the strip too, in **Layout**, and the Checklist in **Write**.
 
-**Data** (Workshop) holds the charts and meters: Pie, Bar, Line, Legend, Progress, Donut and Rating. See [Data and Chart Elements](/help/palette/tools/data-elements/).
+**Data** holds the charts and meters: Pie, Bar, Line, Legend, Progress, Donut and Rating. See [Data and Chart Elements](/help/palette/tools/data-elements/).
 
-**Collaborate** (Workshop) is the elements that do something when somebody interacts with them, or that ask the room something, in six groups: **Ask** on the strip (dot vote, poll, quiz, estimate card, temperature check, idea box, Q&A board), and inside **Session**: **Tools** (timer, stopwatch, reveal zone, done check, picker), **Record** (comment panel, action panel, agenda, decision record, roll call), **React** (the five reaction pads), **Selection Mode** buttons, and **Navigate** (portal, bring focus, chair, desk, sofa, fence, link card, and the virtual office: room, meeting table, plant, bookshelf, water cooler, coffee machine, rug). See [Collaborate](/help/palette/behaviour/) and [Collaborate Elements](/help/palette/collaborate/).
+**Collaborate** is the elements that do something when somebody interacts with them, or that ask the room something, in six groups: **Ask** on the strip (dot vote, poll, quiz, estimate card, temperature check, idea box, Q&A board), and inside **Session**: **Tools** (timer, stopwatch, reveal zone, done check, picker), **Record** (comment panel, action panel, agenda, decision record, roll call), **React** (the five reaction pads), **Selection Mode** buttons, and **Navigate** (portal, bring focus, chair, desk, sofa, fence, link card, and the virtual office: room, meeting table, plant, bookshelf, water cooler, coffee machine, rug). See [Collaborate](/help/palette/behaviour/) and [Collaborate Elements](/help/palette/collaborate/).
 
 **Media** covers pictures and other people's pages: **Image** (`9`) and **Avatar**; the [embeds](/help/palette/embed-elements/) for YouTube, Vimeo, Loom, Figma, Google Docs and any website are added from the strip's Search or the search panel. Image and Avatar only appear where image uploads are available.
 
@@ -64,7 +60,7 @@ Each behaves like any other element once placed: select it, restyle it, multi-se
 
 Several tools have their own walkthroughs, listed below and linked here:
 
-- [Drawing and Sketch](/help/palette/tools/drawing/) covers Freehand, the Shape Pen, and the Polygon tool.
+- [Drawing and Sketch](/help/palette/tools/drawing/) covers the Freehand pen and how strokes are smoothed.
 - [Highlighter](/help/palette/tools/highlighter/) covers the translucent marker and its colours and widths.
 - [Images](/help/palette/tools/images/) covers uploading, searching for and reusing pictures, and avatars.
 - [Pages](/help/palette/tools/pages/) covers the paper-sized sheet for prose.
