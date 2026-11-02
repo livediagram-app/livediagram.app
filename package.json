@@ -60,7 +60,10 @@
       "brace-expansion@2": "^2.1.2",
       "brace-expansion@3 || 4 || 5": "^5.0.8",
       "onnxruntime-node>global-agent": "^4.1.3",
-      "@tensorflow/tfjs>argparse": "^2.0.1"
+      "@tensorflow/tfjs>argparse": "^2.0.1",
+      "glob@13": "^14.0.2",
+      "minimatch@10": "^11.0.1",
+      "body-parser@2": "^2.4.0"
     }
   }
 }
