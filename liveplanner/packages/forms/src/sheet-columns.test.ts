@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
+  HEADER_SCAN_ROWS,
+  headerRowIndex,
   sameSheetColumns,
   sheetColumnPlan,
   sheetHeadersWrite,
@@ -199,5 +201,60 @@ describe('sheetColumnPlan cost', () => {
     for (let pass = 0; pass < 5; pass++) best = Math.min(best, cpuMsOf(plan));
     // About 2 ms a plan here; a scan per remembered column (quadratic) takes several times the budget.
     expect(best).toBeLessThan(cpuBudgetMs(50));
+  });
+});
+
+describe('headerRowIndex', () => {
+  const rows = ['r1', 'r2', 'r3', 'r4', 'r5'];
+  const texts = (entries: [string, string[]][]) =>
+    new Map(entries.map(([r, ts]) => [r, new Map(ts.map((t, i) => [`c${i}`, t]))]));
+
+  it('is the first row for a blank sheet', () => {
+    expect(headerRowIndex(form(['Name']), rows, new Map())).toBe(0);
+  });
+
+  it('is the first row holding one of the form headers, ignoring case', () => {
+    expect(
+      headerRowIndex(
+        form(['Name']),
+        rows,
+        texts([
+          ['r2', ['Other']],
+          ['r4', ['NAME', 'Email']],
+        ]),
+      ),
+    ).toBe(3);
+  });
+
+  it('is the first table head (two text cells) when no header matches', () => {
+    expect(
+      headerRowIndex(
+        form(['Name']),
+        rows,
+        texts([
+          ['r1', ['Title']],
+          ['r3', ['A', 'B']],
+        ]),
+      ),
+    ).toBe(2);
+  });
+
+  it('is the first row when nothing looks like a head', () => {
+    expect(
+      headerRowIndex(
+        form(['Name']),
+        rows,
+        texts([
+          ['r1', ['Title']],
+          ['r2', ['Sub']],
+        ]),
+      ),
+    ).toBe(0);
+  });
+
+  it('looks only at the top rows', () => {
+    const many = Array.from({ length: HEADER_SCAN_ROWS + 3 }, (_, i) => `r${i + 1}`);
+    const low = `r${HEADER_SCAN_ROWS + 2}`;
+    expect(headerRowIndex(form(['Name']), many, texts([[low, ['Name', 'Email']]]))).toBe(0);
   });
 });

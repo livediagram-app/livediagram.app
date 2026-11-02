@@ -2,6 +2,7 @@
 // "Linked by column, not by heading"): the sheet's header row read from the sheet store's copy, and the write that
 // gives it the headers it lacks, planned by @liveplanner/forms. Pure: useFormSheetColumns runs it.
 import {
+  HEADER_SCAN_ROWS,
   sheetHeaders,
   sheetHeadersWrite,
   type FormDefinition,
@@ -13,14 +14,18 @@ import { cellKey, type Sheet, type SheetWrite } from '@liveplanner/sheets';
 // header, not one per letter. Safe range 400..2000 ms.
 export const FORM_COLUMNS_SYNC_MS = 800;
 
-// The first row's text by column id.
-export function headerRowOf(sheet: Pick<Sheet, 'layout' | 'cells'>): Map<string, string> {
-  const out = new Map<string, string>();
-  const row = sheet.layout.rows[0];
-  if (!row) return out;
-  for (const c of sheet.layout.cols) {
-    const input = sheet.cells.get(cellKey(row, c))?.input;
-    if (input && 's' in input) out.set(c, input.s);
+// The text of the sheet's top rows (where its header row is found) by row id, then column id.
+export function topRowTexts(
+  sheet: Pick<Sheet, 'layout' | 'cells'>,
+): Map<string, Map<string, string>> {
+  const out = new Map<string, Map<string, string>>();
+  for (const row of sheet.layout.rows.slice(0, HEADER_SCAN_ROWS)) {
+    const texts = new Map<string, string>();
+    for (const c of sheet.layout.cols) {
+      const input = sheet.cells.get(cellKey(row, c))?.input;
+      if (input && 's' in input) texts.set(c, input.s);
+    }
+    out.set(row, texts);
   }
   return out;
 }
@@ -39,7 +44,7 @@ export function formColumnsSync(
   return sheetHeadersWrite({
     form,
     layout: sheet.layout,
-    header: headerRowOf(sheet),
+    rowTexts: topRowTexts(sheet),
     columns: form.sheet.columns,
     renamed,
   });

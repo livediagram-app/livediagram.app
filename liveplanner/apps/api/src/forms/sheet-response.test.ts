@@ -117,6 +117,36 @@ describe('writeResponseRow', () => {
     expect(await write()).toBe('busy');
   });
 
+  it("writes under a template's headers on a lower row, not a new header row on row 1", async () => {
+    sql.sql
+      .prepare(
+        `UPDATE sheets SET layout = '{"rows":["ra01","ra02","ra03","ra04","ra05","ra06"],"cols":["ca01","ca02"]}' WHERE id = ?`,
+      )
+      .run(SHEET);
+    for (const [row, col, text] of [
+      ['ra01', 'ca01', 'Contacts'],
+      ['ra04', 'ca01', 'A'],
+      ['ra04', 'ca02', 'Company'],
+    ] as const)
+      sql.sql
+        .prepare(
+          `INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, input) VALUES ('d1', ?, ?, ?, ?)`,
+        )
+        .run(SHEET, row, col, JSON.stringify({ s: text }));
+    let planned: SheetWrite | null = null;
+    store.answers.push((w) => {
+      planned = w;
+      return stored(w);
+    });
+    expect(await write()).toBe('written');
+    const w = planned as SheetWrite | null;
+    const cells = !w || w.kind === 'title' ? [] : (w.cells ?? []);
+    // The form's "A" header is on row 4 already; the headers it adds join it there, the answer goes on row 5.
+    expect(cells.filter((c) => c.f).every((c) => c.r === 'ra04')).toBe(true);
+    expect(cells.filter((c) => !c.f).every((c) => c.r === 'ra05')).toBe(true);
+    expect(cells.some((c) => c.r === 'ra01' || c.r === 'ra02')).toBe(false);
+  });
+
   it('is missing once the sheet left its tab', async () => {
     sql.sql.prepare(`UPDATE sheets SET tab_id = 'other' WHERE id = ?`).run(SHEET);
     expect(await write()).toBe('missing');

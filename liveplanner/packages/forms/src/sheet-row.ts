@@ -6,7 +6,7 @@ import { makeAxisIds, type CellInput, type SheetWrite } from '@liveplanner/sheet
 import type { AnswerValue } from './answers';
 import { answerText } from './card';
 import { questionsOf, type FormDefinition, type FormQuestion } from './model';
-import { sheetColumnPlan } from './sheet-columns';
+import { sheetColumnPlan, type RowTexts } from './sheet-columns';
 
 // What a preview's "#" cell reads.
 export const SHEET_PREVIEW_MARK = 'Preview';
@@ -19,8 +19,10 @@ export type SheetRowInput = {
   preview: boolean;
   at: number;
   layout: { rows: readonly string[]; cols: readonly string[] };
-  // The first row's text by column id (only cells holding text).
-  header: ReadonlyMap<string, string>;
+  // The top rows' text (only cells holding text), where the header row is found (sheet-columns.ts).
+  rowTexts?: RowTexts | undefined;
+  // Or the first row's text by column id, when the header row is known to be the first.
+  header?: ReadonlyMap<string, string> | undefined;
   // The rows holding a value.
   usedRows: ReadonlySet<string>;
   // The columns the form remembers (form.sheet.columns).
@@ -50,13 +52,14 @@ export function responseRowWrite(input: SheetRowInput): SheetWrite {
     form: input.form,
     layout: input.layout,
     header: input.header,
+    rowTexts: input.rowTexts,
     columns: input.columns,
     rand,
   });
-  const { changes, cells, colOf, rows, taken } = plan;
+  const { changes, cells, colOf, rows, headerIndex, taken } = plan;
 
-  // The first row after the last one holding a value (never the header row).
-  let last = 0;
+  // The first row after the last one holding a value (never the header row or any above it).
+  let last = headerIndex;
   rows.forEach((r, i) => {
     if (usedRows.has(r)) last = Math.max(last, i);
   });

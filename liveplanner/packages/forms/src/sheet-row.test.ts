@@ -5,6 +5,7 @@ import {
   submittedText,
   type SheetRowInput,
 } from './sheet-row';
+import type { SheetWrite } from '@liveplanner/sheets';
 import { sheetHeaders } from './sheet-columns';
 import type { FormDefinition } from './model';
 
@@ -196,5 +197,161 @@ describe('responseRowWrite with remembered columns', () => {
     );
     const cells = write.kind === 'layout' ? (write.cells ?? []) : [];
     expect(cells).toContainEqual({ r: 'r2', c: 'cc', i: { s: 'Ada' } });
+  });
+});
+
+const cellsOf = (w: SheetWrite) => (w.kind === 'title' ? [] : (w.cells ?? []));
+
+// The header row is found among the top rows (docs/specs/030-forms/forms.md "The row").
+describe('responseRowWrite with the header row below the top', () => {
+  const rows = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6', 'r7'];
+  const cols = ['ca', 'cb', 'cc', 'cd', 'ce', 'cf'];
+  const texts = (entries: [string, [string, string][]][]) =>
+    new Map(entries.map(([r, cells]) => [r, new Map(cells)]));
+  const asked: Pick<FormDefinition, 'sections'> = {
+    sections: [
+      {
+        id: 's',
+        title: '',
+        questions: [
+          { id: 'q-name', type: 'short', prompt: 'Name' },
+          { id: 'q-email', type: 'short', prompt: 'Email' },
+        ],
+      },
+    ],
+  };
+  const answers = new Map<string, string>([
+    ['q-name', 'Ada'],
+    ['q-email', 'ada@example.com'],
+  ]);
+  const input = (over: Partial<SheetRowInput>): SheetRowInput => ({
+    form: asked,
+    answers,
+    number: 1,
+    preview: false,
+    at: AT,
+    layout: { rows, cols },
+    usedRows: new Set(),
+    rand,
+    ...over,
+  });
+
+  it("fills rows under a Contacts template's headers on row 4, adding only #/Submitted after the last", () => {
+    const write = responseRowWrite(
+      input({
+        // Title and subtitle above, the table head on r4, an example person on r5.
+        rowTexts: texts([
+          ['r1', [['ca', 'Contacts']]],
+          ['r2', [['ca', 'Example people']]],
+          [
+            'r4',
+            [
+              ['ca', 'Name'],
+              ['cb', 'Company'],
+              ['cc', 'Email'],
+              ['cd', 'Phone'],
+            ],
+          ],
+          ['r5', [['ca', 'Jordan Lee']]],
+        ]),
+        usedRows: new Set(['r1', 'r2', 'r4', 'r5']),
+      }),
+    );
+    expect(write).toEqual({
+      kind: 'cells',
+      cells: [
+        { r: 'r4', c: 'ce', i: { s: '#' }, f: { b: true } },
+        { r: 'r4', c: 'cf', i: { s: 'Submitted' }, f: { b: true } },
+        { r: 'r6', c: 'ce', i: { n: 1 } },
+        { r: 'r6', c: 'cf', i: { s: '2026-10-15 14:03 UTC' } },
+        { r: 'r6', c: 'ca', i: { s: 'Ada' } },
+        { r: 'r6', c: 'cc', i: { s: 'ada@example.com' } },
+      ],
+    });
+  });
+
+  it('uses the first row with two text cells when no question matches a header (a template with other headers)', () => {
+    const write = responseRowWrite(
+      input({
+        form: {
+          sections: [
+            { id: 's', title: '', questions: [{ id: 'q-x', type: 'short', prompt: 'Favourite' }] },
+          ],
+        },
+        answers: new Map([['q-x', 'blue']]),
+        rowTexts: texts([
+          ['r1', [['ca', 'Guests']]],
+          [
+            'r4',
+            [
+              ['ca', 'Guest'],
+              ['cb', 'Party'],
+            ],
+          ],
+        ]),
+        usedRows: new Set(['r1', 'r4']),
+      }),
+    );
+    expect(
+      cellsOf(write)
+        .filter((c) => c.f)
+        .map((c) => c.r),
+    ).toEqual(['r4', 'r4', 'r4']);
+    expect(
+      cellsOf(write)
+        .filter((c) => !c.f)
+        .every((c) => c.r === 'r5'),
+    ).toBe(true);
+  });
+
+  it('writes the header row on row 1 for a blank sheet, as before', () => {
+    const write = responseRowWrite(input({ rowTexts: new Map() }));
+    expect(write.kind === 'layout' ? write.changes : []).toContainEqual({ k: 'freeze', rows: 1 });
+    expect(
+      cellsOf(write)
+        .filter((c) => c.f)
+        .every((c) => c.r === 'r1'),
+    ).toBe(true);
+    expect(
+      cellsOf(write)
+        .filter((c) => !c.f)
+        .every((c) => c.r === 'r2'),
+    ).toBe(true);
+  });
+
+  it('takes the first row matching the form, not a lower one that matches too', () => {
+    const write = responseRowWrite(
+      input({
+        rowTexts: texts([
+          ['r1', [['ca', 'Notes']]],
+          [
+            'r3',
+            [
+              ['ca', 'Name'],
+              ['cb', 'Email'],
+            ],
+          ],
+          [
+            'r5',
+            [
+              ['ca', 'Name'],
+              ['cb', 'Email'],
+            ],
+          ],
+        ]),
+        usedRows: new Set(['r1', 'r3', 'r5']),
+      }),
+    );
+    // Headers added to r3 (#, Submitted after Email), the response below the last used row (r6).
+    expect(
+      cellsOf(write)
+        .filter((c) => c.f)
+        .every((c) => c.r === 'r3'),
+    ).toBe(true);
+    expect(
+      cellsOf(write)
+        .filter((c) => !c.f)
+        .every((c) => c.r === 'r6'),
+    ).toBe(true);
   });
 });

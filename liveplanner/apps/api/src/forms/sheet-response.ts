@@ -1,12 +1,12 @@
-// A response as a Sheet row (docs/specs/030-forms/forms.md "Responses to a Sheet"): the sheet's header row and the rows
+// A response as a Sheet row (docs/specs/030-forms/forms.md "Responses to a Sheet"): the sheet's top rows' text (where the header row is found) and the rows
 // holding a value read, the row planned by @liveplanner/forms (responseRowWrite, on the form's remembered columns),
 // and stored through the sheet store's own checks, caps and relay (storeSheetWrite) at the rev it was planned on,
 // unchecked against the sheet's validation rules so a response always lands. 'written' only when every cell did.
 import type { AnswerValue, FormSheetDestination } from '@liveplanner/forms';
-import { responseRowWrite, type FormDefinition } from '@liveplanner/forms';
+import { HEADER_SCAN_ROWS, responseRowWrite, type FormDefinition } from '@liveplanner/forms';
 import type { SheetWriteResponse } from '@liveplanner/api-schema';
-import { cellKey, type SheetPerson, type SheetWrite } from '@liveplanner/sheets';
-import { planHasTab, readCells, readSheetHead, usedSheetRows } from '../db';
+import type { SheetPerson, SheetWrite } from '@liveplanner/sheets';
+import { planHasTab, readRowTexts, readSheetHead, usedSheetRows } from '../db';
 import type { PlanRouteContext } from '../routes/context';
 import { SHEET_WRITE_RETRIES } from '../routes/sheet-route-kit';
 import { storeSheetWrite } from '../routes/sheet-write-route';
@@ -43,20 +43,13 @@ export async function writeResponseRow(
   for (let attempt = 0; attempt < SHEET_WRITE_RETRIES; attempt++) {
     const head = await readSheetHead(env, projectId, sheet.sheetId);
     if (!head || head.tabId !== sheet.tabId) return 'missing';
-    const headerRow = head.layout.rows[0];
-    const headerCells = headerRow
-      ? await readCells(
-          env,
-          projectId,
-          sheet.sheetId,
-          head.layout.cols.map((c) => cellKey(headerRow, c)),
-        )
-      : [];
-    const header = new Map<string, string>();
-    for (const cell of headerCells) {
-      const i = cell.i as { s?: unknown } | undefined;
-      if (i && typeof i.s === 'string') header.set(cell.c, i.s);
-    }
+    // The header row is found among the top rows (a template's sit under its title): one indexed read of their text.
+    const rowTexts = await readRowTexts(
+      env,
+      projectId,
+      sheet.sheetId,
+      head.layout.rows.slice(0, HEADER_SCAN_ROWS),
+    );
     const write = responseRowWrite({
       form: input.form,
       answers: input.answers,
@@ -64,7 +57,7 @@ export async function writeResponseRow(
       preview: input.preview,
       at: Date.now(),
       layout: head.layout,
-      header,
+      rowTexts,
       usedRows: await usedSheetRows(env, projectId, sheet.sheetId),
       columns: sheet.columns,
     });

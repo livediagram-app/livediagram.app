@@ -567,11 +567,18 @@ board settings, for switching back.
   keeps it linked. A question with no remembered column (a form from before, or one an agent changed) finds its column
   by its header, as before, and the builder remembers it from then on. A remembered column that was deleted is
   forgotten: the question finds or makes another.
-- **The row** (`responseRowWrite`, `@liveplanner/forms`): the sheet's first row holds the headers, **#**,
+- **The header row**: a sheet's headers need not be on its first row. Among the sheet's top 12 rows the header row is
+  the first one holding a cell that reads one of the form's headers (ignoring case), else the first with two or more
+  text cells (a table head under a title, such as the Contacts template's headers on row 4), else row 1. A blank
+  sheet has none, so row 1 becomes it, as before. Headers the form adds go on that row after its last header, and the
+  response goes below it (never on or above it). The builder's header sync and the api's response row both find it
+  with `headerRowIndex` in `@liveplanner/forms`, so a form pointed at Contacts fills rows under the template's headers
+  instead of writing a second header row on row 1.
+- **The row** (`responseRowWrite`, `@liveplanner/forms`): the sheet's header row holds the headers, **#**,
   **Submitted** and each question's wording (a repeated wording gets " (2)"); a question finds its remembered column,
   else its column by its header, ignoring case, and one with neither takes the next free column after the last header
   (columns added in one insert when the sheet has too few). Headers the form writes are bold, and a sheet given its
-  first headers has row 1 frozen. The response takes the first row after the last row holding a value (a styled but
+  first headers has row 1 frozen (a sheet that already had headers keeps its freeze). The response takes the first row after the last row holding a value (a styled but
   empty row, such as a banded look's, does not count; rows added when there are none).
   Its cells: the response number, the time ("2026-10-15 14:03 UTC"; the api knows no one's zone), and each answer: a
   Number or Rating as a number, a Checkbox as true or false, the rest as text (several picks "Vegan, Halal"); an
