@@ -195,6 +195,32 @@ export async function readCells(
   });
 }
 
+// The text cells of the named rows, by row then column (a form finds its sheet's header row among the top rows).
+export async function readRowTexts(
+  env: PlanEnv,
+  projectId: string,
+  sheetId: string,
+  rowIds: readonly string[],
+): Promise<Map<string, Map<string, string>>> {
+  const out = new Map<string, Map<string, string>>();
+  if (rowIds.length === 0) return out;
+  const rows = await env.PLAN_DB.prepare(
+    `SELECT row_id, col_id, input FROM sheet_cells
+      WHERE plan_id = ? AND sheet_id = ? AND input IS NOT NULL
+        AND row_id IN (SELECT value FROM json_each(?))`,
+  )
+    .bind(projectId, sheetId, JSON.stringify(rowIds))
+    .all<{ row_id: string; col_id: string; input: string }>();
+  for (const cell of rows.results ?? []) {
+    const i = parseJson<{ s?: unknown } | undefined>(cell.input, undefined);
+    if (typeof i?.s !== 'string') continue;
+    const row = out.get(cell.row_id) ?? new Map<string, string>();
+    row.set(cell.col_id, i.s);
+    out.set(cell.row_id, row);
+  }
+  return out;
+}
+
 // The rows of a sheet holding a value (a form's response goes under the last of them). A cell with only a format (a
 // banded or boxed look's empty rows) holds none, so a styled sheet's response lands under its last value, in view.
 export async function usedSheetRows(

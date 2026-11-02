@@ -1,8 +1,10 @@
 // A sheet form's columns (docs/specs/030-forms/forms.md "Responses to a Sheet", "Linked by column, not by heading"):
 // which column each header (#, Submitted, each question) lives in, and the write that gives the sheet the headers it
 // lacks. A remembered column (`form.sheet.columns`) wins while it is still in the sheet, whatever its heading now
-// reads; else a column whose header matches, ignoring case; else a new column after the last header. Pure: the
-// builder plans its header sync here, and the api plans each response's row on the same plan.
+// reads; else a column whose header matches, ignoring case; else a new column after the last header. The header row
+// is the first of the sheet's top rows holding one of the form's headers, else the first holding a table head (a
+// template's headers sit under its title, Contacts' on row 4), else row 1. Pure: the builder plans its header sync
+// here, and the api plans each response's row on the same plan.
 import {
   makeAxisIds,
   type CellChange,
@@ -33,11 +35,37 @@ export function sheetHeaders(form: Pick<FormDefinition, 'sections'>): SheetHeade
   return out;
 }
 
+// How many of a sheet's top rows are looked at for its header row (a template's title and subtitle sit above it).
+export const HEADER_SCAN_ROWS = 12;
+
+// The text cells of some of a sheet's rows: row id -> column id -> text.
+export type RowTexts = ReadonlyMap<string, ReadonlyMap<string, string>>;
+
+const norm = (t: string) => t.trim().toLowerCase();
+
+// Which row holds the sheet's headers: the first top row with a cell reading one of the form's headers (ignoring
+// case), else the first with two or more text cells (a table head, below a template's title), else the first row.
+export function headerRowIndex(
+  form: Pick<FormDefinition, 'sections'>,
+  rows: readonly string[],
+  rowTexts: RowTexts,
+): number {
+  const top = rows.slice(0, HEADER_SCAN_ROWS);
+  const wanted = new Set(sheetHeaders(form).map((h) => norm(h.header)));
+  const textsOf = (r: string) => [...(rowTexts.get(r)?.values() ?? [])].filter((t) => t.trim());
+  const matching = top.findIndex((r) => textsOf(r).some((t) => wanted.has(norm(t))));
+  if (matching >= 0) return matching;
+  const head = top.findIndex((r) => textsOf(r).length >= 2);
+  return head >= 0 ? head : 0;
+}
+
 export type SheetColumnsInput = {
   form: Pick<FormDefinition, 'sections'>;
   layout: { rows: readonly string[]; cols: readonly string[] };
-  // The first row's text by column id (only cells holding text).
-  header: ReadonlyMap<string, string>;
+  // The top rows' text (only cells holding text): the header row is found among them.
+  rowTexts?: RowTexts | undefined;
+  // Or the first row's text by column id, when the header row is known to be the first.
+  header?: ReadonlyMap<string, string> | undefined;
   // The columns the form remembers (form.sheet.columns).
   columns?: Readonly<Record<string, string>> | undefined;
   // The header each key had when the builder last looked: a remembered column still reading it follows the wording.
@@ -54,16 +82,16 @@ export type SheetColumnPlan = {
   colOf: Map<string, string>;
   // What the form should remember: every key's column.
   columns: Record<string, string>;
-  // The sheet's rows, the header row first, with any inserted (for the response row after them).
+  // The sheet's rows with any inserted (for the response row after the header row).
   rows: string[];
+  // The header row's place in `rows`.
+  headerIndex: number;
   // Every id the plan has taken (for more inserts).
   taken: Set<string>;
 };
 
-const norm = (t: string) => t.trim().toLowerCase();
-
 export function sheetColumnPlan(input: SheetColumnsInput): SheetColumnPlan {
-  const { layout, header } = input;
+  const { layout } = input;
   const rand = input.rand ?? Math.random;
   const taken = new Set([...layout.rows, ...layout.cols]);
   const changes: LayoutChange[] = [];
@@ -79,7 +107,10 @@ export function sheetColumnPlan(input: SheetColumnsInput): SheetColumnPlan {
     changes.push({ k: 'insertRows', after: null, ids });
     rows.push(...ids);
   }
-  const headerRow = rows[0]!;
+  const headerIndex = input.rowTexts ? headerRowIndex(input.form, rows, input.rowTexts) : 0;
+  const headerRow = rows[headerIndex]!;
+  const header: ReadonlyMap<string, string> =
+    (input.rowTexts ? input.rowTexts.get(headerRow) : input.header) ?? new Map();
 
   const wanted = sheetHeaders(input.form);
   const colOf = new Map<string, string>();
@@ -140,7 +171,7 @@ export function sheetColumnPlan(input: SheetColumnsInput): SheetColumnPlan {
 
   const columns: Record<string, string> = {};
   for (const w of wanted) columns[w.key] = colOf.get(w.key)!;
-  return { changes, cells, colOf, columns, rows, taken };
+  return { changes, cells, colOf, columns, rows, headerIndex, taken };
 }
 
 // The builder's header sync: the write that gives the sheet every header it lacks (null when none is missing), and

@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';
-import { cellsNamedBy, readCells } from './sheets';
+import { cellsNamedBy, readCells, readRowTexts } from './sheets';
 
 describe('cells named by key', () => {
   it('are sought by (plan, sheet, row, column)', () => {
@@ -44,5 +44,44 @@ describe('cells named by key', () => {
       { r: 'r2', c: 'c1', i: 'x' },
       { r: 'r9', c: 'c9' },
     ]);
+  });
+});
+
+describe('readRowTexts', () => {
+  it('reads the text cells of the named rows only, by an indexed seek', async () => {
+    const { env, sql } = sqliteD1();
+    sql.exec(
+      `INSERT INTO test_plans (id, owner_id, name, created_at, saved_at) VALUES ('d', 'o', 'D', 1, 1)`,
+    );
+    sql.exec(
+      `INSERT INTO sheets (plan_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
+       VALUES ('d', 's', 't', 'S', '{}', 1, 1, 1, 'o')`,
+    );
+    for (const [r, c, input] of [
+      ['r1', 'c1', { s: 'Title' }],
+      ['r1', 'c2', { n: 4 }],
+      ['r2', 'c1', { s: 'Name' }],
+      ['r9', 'c1', { s: 'Elsewhere' }],
+    ] as const)
+      sql
+        .prepare(
+          `INSERT INTO sheet_cells (plan_id, sheet_id, row_id, col_id, input) VALUES ('d', 's', ?, ?, ?)`,
+        )
+        .run(r, c, JSON.stringify(input));
+    expect(await readRowTexts(env, 'd', 's', ['r1', 'r2'])).toEqual(
+      new Map([
+        ['r1', new Map([['c1', 'Title']])],
+        ['r2', new Map([['c1', 'Name']])],
+      ]),
+    );
+    expect(await readRowTexts(env, 'd', 's', [])).toEqual(new Map());
+    const plan = sql
+      .prepare(
+        `EXPLAIN QUERY PLAN SELECT row_id, col_id, input FROM sheet_cells
+          WHERE plan_id = ? AND sheet_id = ? AND input IS NOT NULL AND row_id IN (SELECT value FROM json_each(?))`,
+      )
+      .all('d', 's', '[]')
+      .map((row) => String(row['detail']));
+    expect(plan.join('\n')).not.toMatch(/SCAN sheet_cells/);
   });
 });
