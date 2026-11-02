@@ -23,7 +23,7 @@ const ICON = 18;
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
 export const TEMPLATE_COUNT = 39;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
-export const TEMPLATE_CATEGORY_COUNT = 13;
+export const TEMPLATE_CATEGORY_COUNT = 12;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
