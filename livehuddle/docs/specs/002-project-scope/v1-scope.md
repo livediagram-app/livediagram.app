@@ -101,6 +101,9 @@ spotlight. All as livediagram has them.
 - Guest access and liveworkspace sign-in ([Accounts](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)).
 - Images through the platform's media service, anonymous telemetry through the platform's telemetry
   ([Platform registration](../016-platform/platform-registration.md)).
+- Google Drive sync for signed-in people, liveworkspace's for every app
+  ([Google Drive sync](../../../../liveworkspace/docs/specs/005-drive/drive.md)): each Space they own is a
+  `.livehuddle` file in their Drive, kept in step (owner, 2026-11-02).
 - The [Timeline](../../../../livediagram/docs/specs/013-workspace/timeline.md), undo and redo.
 
 ## Non-goals for v1
@@ -113,7 +116,7 @@ another product.
 | Diagram and Draw modes, Diagrams, Concepts, Technology, Devices | Building diagrams is livediagram's job. Workshop's Draw category (pencil, highlighter) stays                            | Not here        |
 | Event Storming boards                                           | A diagram kind with its own rules; livediagram's                                                                        | Not here        |
 | Pages, slides, presenting as a deck                             | livedocuments'                                                                                                          | Not here        |
-| Repositories, the Drive mirror                                  | Neither serves a meeting; both carry platform wiring livehuddle does not need yet                                       | Later           |
+| Repositories                                                    | Doesn't serve a meeting; carries platform wiring livehuddle does not need yet                                           | Later           |
 | Offline Mode (This Browser)                                     | A space is for meeting in, which needs the room; a space kept in one browser has nobody else in it                      | Later, if asked |
 | The Community (publishing a space, the gallery)                 | A gallery of offices is worth having once there are spaces worth showing                                                | Later           |
 | The MCP server and the CLI                                      | Recommended after v1 ([Open decisions](../005-project-roadmap/open-decisions.md) D3)                                    | v1.1            |

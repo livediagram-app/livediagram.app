@@ -22,11 +22,15 @@ beforeAll(async () => {
   jwk = { ...(await exportJWK(pair.publicKey)), kid: 'acc1', alg: 'EdDSA' };
 });
 
-function token(sub: string, claims: Record<string, unknown> = {}): Promise<string> {
+function token(
+  sub: string,
+  claims: Record<string, unknown> = {},
+  audience = AUDIENCE,
+): Promise<string> {
   return new SignJWT(claims)
     .setProtectedHeader({ alg: 'EdDSA', kid: 'acc1' })
     .setIssuer(ISSUER)
-    .setAudience(AUDIENCE)
+    .setAudience(audience)
     .setSubject(sub)
     .setIssuedAt()
     .setExpirationTime('5m')
@@ -176,6 +180,40 @@ describe('who may call', () => {
       expect(await res.json()).toEqual({ error: 'unauthorised' });
     }
     expect(objectWakes).toBe(0);
+  });
+
+  // livehuddle, held until launch, is mirrored like any app: its signed-in people connect from its own address, and
+  // its guests (whatever a share link let them do in a Space) are refused before the object wakes.
+  it("lets in a livehuddle account and keeps its return page, and refuses livehuddle's guests", async () => {
+    const huddle = 'https://livehuddle.app/api';
+    const env = { ...ENV, INDEX_AUDIENCES: `${AUDIENCE},${huddle}` } as Env;
+    const guest = await token('guest_1', { kind: 'guest' }, huddle);
+    for (const path of ['/api/drive/connection', '/api/drive/marks']) {
+      expect((await call(path, { bearer: guest, env })).status).toBe(401);
+    }
+    expect(
+      (await call('/api/drive/state', { method: 'POST', bearer: guest, env, body: {} })).status,
+    ).toBe(401);
+    expect(objectWakes).toBe(0);
+
+    const bearer = await token(PERSON, {}, huddle);
+    const res = await call('/api/drive/state', {
+      method: 'POST',
+      bearer,
+      env,
+      body: { returnTo: 'http://localhost:3500/explorer?settings=account:account' },
+    });
+    const { state } = (await res.json()) as { state: string };
+    const connect = await call('/api/drive/connect', {
+      method: 'POST',
+      bearer,
+      env,
+      body: { code: h.google.consent(GOOGLE_USER), state },
+    });
+    expect(await connect.json()).toEqual({
+      outcome: 'connected',
+      returnTo: 'http://localhost:3500/explorer?settings=account:account',
+    });
   });
 
   it('answers 404 for an unknown route or method', async () => {

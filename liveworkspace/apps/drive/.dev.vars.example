@@ -13,6 +13,7 @@ APP_ORIGIN_LIVEDIAGRAM=http://localhost:3100
 APP_ORIGIN_LIVEPLANNER=http://localhost:3200
 APP_ORIGIN_LIVEDOCUMENTS=http://localhost:3300
 APP_ORIGIN_LIVEDESIGN=http://localhost:3400
+APP_ORIGIN_LIVEHUDDLE=http://localhost:3500
 # Staging's Google client allows localhost (liveworkspace/docs/specs/005-drive/drive.md "Google").
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
@@ -27,3 +28,4 @@ DRIVE_KEY_LIVEDIAGRAM=dev-livediagram-drive-key
 DRIVE_KEY_LIVEPLANNER=dev-liveplanner-drive-key
 DRIVE_KEY_LIVEDOCUMENTS=dev-livedocuments-drive-key
 DRIVE_KEY_LIVEDESIGN=dev-livedesign-drive-key
+DRIVE_KEY_LIVEHUDDLE=dev-livehuddle-drive-key

@@ -33,8 +33,17 @@ import { handleInternalItems } from './internal-items';
 
 const DRIVE_KEY = 'drive-key';
 const OWNER = 'user_ada';
-// The file format the fork borrows from livediagram for now (document-file.ts).
+// livehuddle's own Drive format (document-file.ts), never the livediagram one the fork started with.
 const MIME = DOCUMENT_FILE_FORMAT.mimeType;
+
+it("answers in livehuddle's own Drive format", () => {
+  expect(DOCUMENT_FILE_FORMAT).toEqual({
+    app: 'livehuddle',
+    kind: 'livehuddle.document',
+    mimeType: 'application/vnd.livehuddle+json',
+    extension: '.livehuddle',
+  });
+});
 
 beforeEach(() => {
   made.length = 0;

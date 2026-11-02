@@ -31,9 +31,8 @@ import {
   type DocumentCopy,
 } from './document-content';
 
-// livehuddle registers no file format with Drive (not in its v1), so the fork keeps livediagram's until the Drive
-// mirror is cut (build plan step 5.2).
-export const DOCUMENT_FILE_FORMAT = APP_FILE_FORMATS.livediagram;
+// A Space's Drive file: `.livehuddle`, `application/vnd.livehuddle+json`, the `livehuddle.document` envelope.
+export const DOCUMENT_FILE_FORMAT = APP_FILE_FORMATS.livehuddle;
 
 // ---------- Export ------------------------------------------------------------------------------------------------
 

@@ -74,7 +74,7 @@ One PR per cut, each removing code, tests, palette entries, templates, help arti
 1. Diagram and Draw modes: the mode switch goes, every board is Workshop, and the mode-only elements (flowcharts,
    mind maps, sequence diagrams, Sankey, org charts, entities, concept graphics, Technology, Devices) leave the
    element union. livehuddle has no stored spaces yet, so nothing needs migrating.
-2. Event Storming, repositories, the Drive mirror, Offline Mode.
+2. Event Storming, repositories, Offline Mode. The Drive mirror stays: it is in v1 (owner, 2026-11-02).
 3. The `community` app; and the `mcp` and `cli` apps if the owner takes D3.
 4. Templates down to Workshop's and the Spaces.
 
