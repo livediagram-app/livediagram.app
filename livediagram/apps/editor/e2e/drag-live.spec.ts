@@ -68,10 +68,14 @@ async function openAs(browser: Browser, baseURL: string, url: string, owner: str
 }
 
 const box = (page: Page, id: string) => page.locator(`${CANVAS} [data-element-id="${id}"]`).first();
-// Where a page draws a box, in canvas px (its left style): comparable across two browsers whatever
-// each one's pan and zoom.
+// Where a page draws a box, in canvas px (its left style, plus the offset a move rides,
+// docs/specs/008-canvas/drag-preview.md "Moves ride an offset"): comparable across two browsers
+// whatever each one's pan and zoom.
 const leftOf = async (page: Page, id: string) =>
-  parseFloat((await box(page, id).evaluate((el) => (el as HTMLElement).style.left)) || 'NaN');
+  box(page, id).evaluate((el) => {
+    const { left, translate } = (el as HTMLElement).style;
+    return parseFloat(left || 'NaN') + (parseFloat(translate) || 0);
+  });
 
 test('a collaborator sees a drag live, and where it lands', async ({ page, browser, baseURL }) => {
   const owner = await mintGuest(page.request);

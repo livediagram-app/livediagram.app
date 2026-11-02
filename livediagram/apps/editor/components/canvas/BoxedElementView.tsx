@@ -447,6 +447,8 @@ function BoxedElementViewImpl({
     <div
       ref={wrapperRef}
       data-element-id={element.id}
+      // Where a move's offset rides (docs/specs/008-canvas/drag-preview.md "Moves ride an offset").
+      data-ride-id={element.id}
       // Carries the slot's easing (globals.css) for as long as a slot COULD
       // be open, so the board eases shut as well as open.
       data-insert-shift={insertShiftAnimates ? '' : undefined}

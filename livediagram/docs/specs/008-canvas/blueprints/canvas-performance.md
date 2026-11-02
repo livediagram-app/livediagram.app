@@ -545,6 +545,7 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 | Opening animates nothing across the board        | `canvas-motion.test.tsx`: arriving elements do not pop and arm no timer, later ones pop; `canvas-motion.test.ts`: the fade rule omits the world                                                                                                            |
 | Timings come from the trace, never a profiler    | `canvas.perf.ts`: its CDP session sends no `Profiler.*` command                                                                                                                                                                                            |
 | The budget holds                                 | The nightly probe                                                                                                                                                                                                                                          |
+| Dragging a very large selection                  | `drag-affected-arrows.perf.test.ts` (CPU time); `CanvasElementsLayer.renders.test.tsx` (no element renders, 1,770 elements); `e2e/perf/large-selection-drag.perf.ts` (by hand)                                                                             |
 
 ## Constants and configuration
 

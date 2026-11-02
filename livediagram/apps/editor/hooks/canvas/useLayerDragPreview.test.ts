@@ -24,6 +24,7 @@ const BOARD: Element[] = [a, b, c, ab];
 const ordered = BOARD.map((element) => ({ element, layerOpacity: 1 }));
 const NONE = { layout: null, knockouts: [] };
 const tracker = createElementGridTracker();
+const NO_STACK: ReadonlySet<string> = new Set();
 
 function inputs(over: Partial<LayerPreviewInputs> = {}): LayerPreviewInputs {
   return {
@@ -39,6 +40,7 @@ function inputs(over: Partial<LayerPreviewInputs> = {}): LayerPreviewInputs {
       draftLayout: () => null,
     },
     tabFinish: undefined,
+    stackedIds: NO_STACK,
     ...over,
   };
 }
@@ -87,14 +89,15 @@ describe('shownWithOverlay', () => {
 });
 
 describe('the layer preview store', () => {
-  it('tells only the moved element and the arrows on it, and draws them from the preview', () => {
+  it('tells only the reshaped element and the arrows on it, and draws them from the preview', () => {
     const store = createLayerPreviewStore();
     const told = { a: vi.fn(), b: vi.fn(), c: vi.fn(), ab: vi.fn() };
     store.subscribe(a.id, told.a);
     store.subscribe(b.id, told.b);
     store.subscribe(c.id, told.c);
     store.subscribe(ab.id, told.ab);
-    const movedA = { ...a, y: 40 };
+    // A reshape, not a move: a move rides an offset instead (below).
+    const movedA = { ...a, y: 40, width: 160 };
     setLocalPreview('t', [movedA, b, c, ab], BOARD);
     store.update(inputs());
     expect(told.a).toHaveBeenCalledTimes(1);
@@ -114,7 +117,7 @@ describe('the layer preview store', () => {
     const same = inputs();
     store.update(same);
     expect(told).not.toHaveBeenCalled();
-    setLocalPreview('t', [{ ...a, y: 1 }, b, c, ab], BOARD);
+    setLocalPreview('t', [{ ...a, width: 121 }, b, c, ab], BOARD);
     store.update(same);
     store.update(same);
     expect(told).toHaveBeenCalledTimes(1);
@@ -126,7 +129,7 @@ describe('the layer preview store', () => {
     store.subscribe(a.id, told);
     store.subscribe(ab.id, told);
     const base = inputs();
-    setLocalPreview('t', [{ ...a, y: 1 }, b, c, ab], BOARD);
+    setLocalPreview('t', [{ ...a, width: 121 }, b, c, ab], BOARD);
     store.update(base);
     told.mockClear();
     // The layer re-renders (a peer's cursor): a new object, a new gridFor closure, the same fields.
@@ -139,12 +142,12 @@ describe('the layer preview store', () => {
     const told = { a: vi.fn(), ab: vi.fn() };
     store.subscribe(a.id, told.a);
     store.subscribe(ab.id, told.ab);
-    setLocalPreview('t', [{ ...a, y: 1 }, b, c, ab], BOARD);
+    setLocalPreview('t', [{ ...a, width: 121 }, b, c, ab], BOARD);
     store.update(inputs());
     const kept = store.entryOf(a.id);
     told.a.mockClear();
     told.ab.mockClear();
-    setLocalPreview('t', [{ ...a, y: 1 }, b, c, ab], BOARD);
+    setLocalPreview('t', [{ ...a, width: 121 }, b, c, ab], BOARD);
     store.update(inputs());
     expect(told.a).not.toHaveBeenCalled();
     expect(told.ab).not.toHaveBeenCalled();
@@ -155,7 +158,7 @@ describe('the layer preview store', () => {
     const store = createLayerPreviewStore();
     const told = vi.fn();
     store.subscribe(a.id, told);
-    setLocalPreview('t', [{ ...a, y: 1 }, b, c, ab], BOARD);
+    setLocalPreview('t', [{ ...a, width: 121 }, b, c, ab], BOARD);
     store.update(inputs());
     resetDragPreviewForTests();
     store.update(inputs());
@@ -181,10 +184,33 @@ describe('the layer preview store', () => {
 
   it('draws no arrow geometry on a board without arrows', () => {
     const store = createLayerPreviewStore();
-    setLocalPreview('t', [{ ...a, y: 1 }, b, c, ab], BOARD);
+    setLocalPreview('t', [{ ...a, width: 121 }, b, c, ab], BOARD);
     store.update(inputs({ elementIndex: null, arrowLinks: null }));
     expect(store.entryOf(ab.id)).toBeUndefined();
-    expect((store.entryOf(a.id)?.element as { y: number } | undefined)?.y).toBe(1);
+    expect((store.entryOf(a.id)?.element as { width: number } | undefined)?.width).toBe(121);
+  });
+
+  it('keeps a moved element and the arrow between moved ends out of its entries: they ride', () => {
+    const store = createLayerPreviewStore();
+    const told = { a: vi.fn(), ab: vi.fn() };
+    store.subscribe(a.id, told.a);
+    store.subscribe(ab.id, told.ab);
+    setLocalPreview('t', [{ ...a, y: 9 }, { ...b, y: 9 }, c, ab], BOARD);
+    store.update(inputs());
+    expect(store.entryOf(a.id)).toBeUndefined();
+    expect(store.entryOf(b.id)).toBeUndefined();
+    expect(store.entryOf(ab.id)).toBeUndefined();
+    expect(told.a).not.toHaveBeenCalled();
+    expect(told.ab).not.toHaveBeenCalled();
+  });
+
+  it('draws a stack’s child from the preview: it never rides', () => {
+    const store = createLayerPreviewStore();
+    const moved = { ...a, y: 9 };
+    setLocalPreview('t', [moved, b, c, ab], BOARD);
+    store.update(inputs({ stackedIds: new Set([a.id]) }));
+    expect(store.entryOf(a.id)?.element).toBe(moved);
+    expect(store.entryOf(ab.id)?.geometry).toBeDefined();
   });
 
   it('stops telling an element once it unsubscribes', () => {
@@ -192,7 +218,7 @@ describe('the layer preview store', () => {
     const told = vi.fn();
     const off = store.subscribe(a.id, told);
     off();
-    setLocalPreview('t', [{ ...a, y: 1 }, b, c, ab], BOARD);
+    setLocalPreview('t', [{ ...a, width: 121 }, b, c, ab], BOARD);
     store.update(inputs());
     expect(told).not.toHaveBeenCalled();
   });
@@ -207,7 +233,8 @@ describe('a previewed arrow with a label', () => {
     const placed = { x: 9, y: 9, width: 3, height: 3 };
     const draftLayout = vi.fn(() => ({ knockout: placed }));
     const store = createLayerPreviewStore();
-    const movedA = { ...a, y: 40 };
+    // A reshape, not a move: a move rides an offset instead (below).
+    const movedA = { ...a, y: 40, width: 160 };
     setLocalPreview('t', [movedA, b, c, labelled], board);
     store.update(
       inputs({

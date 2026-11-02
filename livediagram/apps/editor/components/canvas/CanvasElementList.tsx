@@ -109,6 +109,8 @@ type CanvasElementListProps = Pick<
 > & {
   shownOrder: readonly LayerDrawn[];
   previewStore: LayerPreviewStore;
+  // The preview store's plane ref (LayerPreviewStore.attachPlane): where riding offsets are written.
+  attachPlane: (plane: HTMLElement | null) => void;
   h: ElementListHandlers;
   boxedShared: BoxedShared;
   arrowGeometry: ReadonlyMap<string, ReturnType<typeof arrowViewGeometry>>;
@@ -130,6 +132,7 @@ type BoxedViewProp<K extends string> = K extends keyof Parameters<typeof Selecta
 export const CanvasElementList = memo(function CanvasElementList({
   shownOrder,
   previewStore,
+  attachPlane,
   h,
   boxedShared,
   arrowGeometry,
@@ -163,7 +166,8 @@ export const CanvasElementList = memo(function CanvasElementList({
     // The element plane (docs/specs/008-canvas/canvas-performance.md "The canvas's cursor stays off the
     // elements"): no box of its own, and a cursor of its own (globals.css), so the canvas's cursor
     // changing restyles this node and not the board beneath it.
-    <div data-element-plane="" className="contents">
+    // Its parent holds every node a riding element's offset is written to (useLayerDragPreview).
+    <div data-element-plane="" className="contents" ref={attachPlane}>
       {shownOrder.map(({ element: listed, layerOpacity }, isoDepth) => (
         <PreviewedElement
           key={listed.id}
@@ -194,6 +198,8 @@ export const CanvasElementList = memo(function CanvasElementList({
                     // animation repaints every frame, so the fight is visible
                     // continuously rather than only while the camera orbits).
                     data-arrow-svg=""
+                    // Where a move's offset rides (docs/specs/008-canvas/drag-preview.md "Moves ride an offset").
+                    data-ride-id={element.id}
                     // An arrow travels whole or not at all in the preview (see
                     // insert-between.ts): one that straddles the insertion point
                     // stretches, which a transform cannot express, so it waits for

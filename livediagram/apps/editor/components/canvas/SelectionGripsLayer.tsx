@@ -75,7 +75,10 @@ export function ArrowGripsPortal({ arrowId, children }: { arrowId: string; child
   const shiftX = useInsertShift().xFor(arrowId);
   if (!hosts) return null;
   return createPortal(
-    <g transform={shiftX ? `translate(${shiftX} 0)` : undefined}>{children}</g>,
+    // Tagged so the arrow's grips ride a move's offset with it (docs/specs/008-canvas/drag-preview.md).
+    <g data-ride-id={arrowId} transform={shiftX ? `translate(${shiftX} 0)` : undefined}>
+      {children}
+    </g>,
     hosts.arrows,
   );
 }
