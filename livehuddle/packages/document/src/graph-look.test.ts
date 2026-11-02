@@ -723,6 +723,29 @@ describe('tree', () => {
     expect(bus.to.kind === 'pinned' && bus.to.anchor).toBe('w');
   });
 
+  it('runs left to right when asked right: no stack, each generation a column, lines leaving right', () => {
+    const els = lay({
+      style: 'tree',
+      direction: 'right',
+      nodes: [{ id: 'ceo' }, { id: 'cto' }, { id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'coo' }],
+      edges: [
+        { from: 'ceo', to: 'cto' },
+        { from: 'ceo', to: 'coo' },
+        { from: 'cto', to: 'a' },
+        { from: 'cto', to: 'b' },
+        { from: 'cto', to: 'c' },
+      ],
+    });
+    const [ceo, cto, coo, a, b, c] = ['ceo', 'cto', 'coo', 'a', 'b', 'c'].map((id) => box(els, id));
+    expect(cto!.x).toBeGreaterThan(ceo!.x + ceo!.width);
+    expect(cto!.x).toBe(coo!.x);
+    expect(a!.x).toBeGreaterThan(cto!.x + cto!.width);
+    expect([b!.x, c!.x]).toEqual([a!.x, a!.x]);
+    const line = arrowTo(els, 'cto', 'b');
+    expect(line.from.kind === 'pinned' && line.from.anchor).toBe('e');
+    expect(line.to.kind === 'pinned' && line.to.anchor).toBe('w');
+  });
+
   it('draws its lines without heads, as the org-chart template does, unless an edge asks', () => {
     const els = lay({
       style: 'tree',

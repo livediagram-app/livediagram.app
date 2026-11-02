@@ -50,8 +50,8 @@ export type AutoLayoutOptions = {
   // Top-left of the laid-out block in canvas space (defaults to 0,0).
   originX?: number;
   originY?: number;
-  // Force a flow direction; omit to auto-detect from the model's positions.
-  // Only meaningful for the 'flow' style (tree is always TB, mindmap radial).
+  // Force a direction; omit to auto-detect from the model's positions (flow) or run down (tree).
+  // Meaningful for 'flow' and 'tree'; a mindmap is radial (docs/specs/015-api/mcp-server.md §4.7 "Layout choices").
   direction?: LayoutDirection;
   // Positioning style; omit for the layered flow (the long-standing default).
   style?: LayoutStyle;
@@ -68,11 +68,27 @@ export type AutoLayoutOptions = {
   // decision's side step (docs/specs/015-api/mcp-server.md §4.7 "Side steps sit level with their decision").
   // Graph input only; Tidy Up never passes it.
   flatEdges?: ReadonlySet<string>;
-  // Tree style: parents whose leaf children stack in a column under them (auto-layout-tree.ts). Graph input only.
+  // Tree style: parents whose leaf children stack in a column under them (auto-layout-tree.ts). Graph input only;
+  // a tree run left to right stacks none (its families are already columns).
   stackedParents?: ReadonlySet<ElementId>;
 };
 
 export const edgeKey = (from: ElementId, to: ElementId) => `${from}->${to}`;
+
+// The axis swap a tree run left to right is laid out through (docs/specs/015-api/mcp-server.md §4.7).
+function transposedSizes(size: Map<ElementId, Size>): Map<ElementId, Size> {
+  const out = new Map<ElementId, Size>();
+  for (const [id, s] of size) out.set(id, { w: s.h, h: s.w });
+  return out;
+}
+function transposedPoints(points: Map<ElementId, Pt>): Map<ElementId, Pt> {
+  const out = new Map<ElementId, Pt>();
+  for (const [id, p] of points) out.set(id, { x: p.y, y: p.x });
+  return out;
+}
+function transposedPlacement(placed: PlacedComponent): PlacedComponent {
+  return { pos: transposedPoints(placed.pos), width: placed.height, height: placed.width };
+}
 
 // TB when the model's edges trend more vertical than horizontal, else LR.
 function detectDirection(centers: Map<ElementId, Pt>, edges: Edge[]): LayoutDirection {
@@ -357,9 +373,19 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
   const centers = new Map<ElementId, Pt>(
     nodes.map((n) => [n.id, { x: n.x + n.width / 2, y: n.y + n.height / 2 }]),
   );
-  // Tree and mindmap have no flow axis; components stack horizontally, the
-  // same as a TB flow.
-  const dir = style === 'flow' ? (opts.direction ?? detectDirection(centers, edges)) : 'TB';
+  // A flow detects its axis; a tree runs down unless asked across; a mindmap has none, and its components stack
+  // horizontally, the same as a TB flow.
+  const dir =
+    style === 'flow'
+      ? (opts.direction ?? detectDirection(centers, edges))
+      : style === 'tree'
+        ? (opts.direction ?? 'TB')
+        : 'TB';
+  // A tree across the page is the tree down it with the axes swapped: laid out on transposed boxes, then turned
+  // back (transposed once here, not per component).
+  const across = style === 'tree' && dir === 'LR';
+  const treeSize = across ? transposedSizes(size) : size;
+  const treeCenters = across ? transposedPoints(centers) : centers;
 
   const comps = components(
     nodes.map((n) => n.id),
@@ -375,7 +401,9 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
   for (const comp of comps) {
     let placed: PlacedComponent;
     if (style === 'tree') {
-      placed = positionTreeComponent(comp, edges, size, centers, opts.stackedParents);
+      placed = across
+        ? transposedPlacement(positionTreeComponent(comp, edges, treeSize, treeCenters))
+        : positionTreeComponent(comp, edges, size, centers, opts.stackedParents);
     } else if (style === 'mindmap') {
       placed = positionMindmapComponent(comp, edges, size, centers);
     } else {
