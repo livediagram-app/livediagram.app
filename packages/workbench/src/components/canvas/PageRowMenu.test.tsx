@@ -114,6 +114,13 @@ describe('PageRowMenu', () => {
     expect(screen.queryByRole('menu')).toBeNull();
   });
 
+  it('sits in a named region, so axe finds no content outside a landmark', () => {
+    render(<List models={{ a: model().model }} />);
+    fireEvent.click(screen.getByRole('button', { name: 'More Actions for Page a' }));
+    const region = screen.getByRole('region', { name: 'Page a actions' });
+    expect(region.contains(screen.getByRole('menu'))).toBe(true);
+  });
+
   it('ends in Delete, after its own separator', () => {
     const a = model();
     render(<List models={{ a: a.model }} />);

@@ -201,7 +201,12 @@ export function PageRowMenu({
       onKeyDown={(e) => e.stopPropagation()}
       onClick={(e) => e.stopPropagation()}
     >
-      <PortalMenu anchor={anchor} placement="below-start" onClose={onClose}>
+      <PortalMenu
+        anchor={anchor}
+        placement="below-start"
+        onClose={onClose}
+        landmark={`${title} actions`}
+      >
         <MenuHeader title={title} />
         {model.groups.map((group, i) => (
           <Fragment key={group[0]!.key}>

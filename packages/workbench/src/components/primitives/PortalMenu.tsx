@@ -28,6 +28,9 @@ type PortalMenuBase = {
   beside?: HTMLElement | null;
   onClose: () => void;
   children: ReactNode;
+  // Wrap the menu in a named region (axe "region": a menu portalled to the body belongs to no landmark). Opt in
+  // where the menu is not inside a dialog or panel that is one already.
+  landmark?: string;
   // A wider menu for rows that carry a line under their name (the Sheet's function menus): 20rem, not 14.
   wide?: boolean;
 };
@@ -64,6 +67,7 @@ function CommandPortalMenu({
   label,
   initialFocus,
   wide,
+  landmark,
 }: PortalMenuBase & { label?: string; initialFocus?: MenuInitialFocus }) {
   const { attach, element, tree, surfaceProps } = useMenu({
     onClose,
@@ -80,6 +84,7 @@ function CommandPortalMenu({
       tree={tree}
       surfaceProps={surfaceProps}
       wide={wide}
+      landmark={landmark}
     >
       {children}
     </PortalMenuFrame>
@@ -94,6 +99,7 @@ function ControlPortalMenu({
   children,
   label,
   wide,
+  landmark,
 }: PortalMenuBase & { label: string }) {
   const { attach, element, tree, surfaceProps } = useControlMenu({
     onClose,
@@ -109,6 +115,7 @@ function ControlPortalMenu({
       tree={tree}
       surfaceProps={surfaceProps}
       wide={wide}
+      landmark={landmark}
     >
       {children}
     </PortalMenuFrame>
@@ -122,6 +129,7 @@ function PortalMenuFrame({
   tree,
   surfaceProps,
   wide = false,
+  landmark,
   children,
 }: {
   at: { left: number; top: number; flat: boolean } | null;
@@ -130,24 +138,34 @@ function PortalMenuFrame({
   tree: MenuTree;
   surfaceProps: object;
   wide?: boolean | undefined;
+  landmark?: string | undefined;
   children: ReactNode;
 }) {
   if (!at) return null;
+  const menu = (
+    <div
+      ref={attach}
+      {...surfaceProps}
+      className={`fixed z-[var(--z-popover)] flex ${wide ? 'w-80' : 'w-56'} animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg outline-none backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40`}
+      style={{
+        left: at.left,
+        top: at.top,
+        transform: at.flat ? 'none' : PLACEMENT_TRANSFORM[placement],
+      }}
+    >
+      {children}
+    </div>
+  );
   return (
     <Portal>
       <MenuTreeContext.Provider value={tree}>
-        <div
-          ref={attach}
-          {...surfaceProps}
-          className={`fixed z-[var(--z-popover)] flex ${wide ? 'w-80' : 'w-56'} animate-fade-in flex-col rounded-md border border-slate-200 bg-white/90 py-1 text-sm shadow-lg outline-none backdrop-blur-sm dark:border-slate-700 dark:bg-slate-900/90 dark:shadow-slate-950/40`}
-          style={{
-            left: at.left,
-            top: at.top,
-            transform: at.flat ? 'none' : PLACEMENT_TRANSFORM[placement],
-          }}
-        >
-          {children}
-        </div>
+        {landmark ? (
+          <div role="region" aria-label={landmark}>
+            {menu}
+          </div>
+        ) : (
+          menu
+        )}
       </MenuTreeContext.Provider>
     </Portal>
   );
