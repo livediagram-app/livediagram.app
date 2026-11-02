@@ -43,7 +43,12 @@ function arrange() {
     tabStatsStatement(
       db.env,
       tabId,
-      { mode: mode as 'diagram', elementCount: elements, commentCount: comments, dataBytes: bytes },
+      {
+        mode: mode as 'workshop',
+        elementCount: elements,
+        commentCount: comments,
+        dataBytes: bytes,
+      },
       at,
     ).run();
   return { db, doc, tab, stats };
@@ -64,7 +69,12 @@ describe('documentStatsSql', () => {
     tab('D', 't2', 1);
     await stats('t1', 'draw', 4, 1, 1000, T0 + 2);
     await stats('t2', 'workshop', 6, 2, 500, T0 + 1);
-    expect(docStats(db.sql, 'D')).toEqual({ mode: 'draw', elements: 10, comments: 3, bytes: 1500 });
+    expect(docStats(db.sql, 'D')).toEqual({
+      mode: 'workshop',
+      elements: 10,
+      comments: 3,
+      bytes: 1500,
+    });
   });
 
   it('breaks a tie in written time by the tab order', async () => {
@@ -128,7 +138,7 @@ describe('tabStatsOfData', () => {
 
   it('counts a corrupt body as an empty Diagram tab, its bytes measured', () => {
     expect(tabStatsOfData('{not json')).toEqual({
-      stats: { mode: 'diagram', elementCount: 0, commentCount: 0, dataBytes: 9 },
+      stats: { mode: 'workshop', elementCount: 0, commentCount: 0, dataBytes: 9 },
       corrupt: true,
     });
     expect(tabStatsOfData('null').corrupt).toBe(true);

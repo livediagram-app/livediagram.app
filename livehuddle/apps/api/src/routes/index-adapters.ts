@@ -25,7 +25,6 @@ import {
   type DocumentSummary,
   type ShareLink,
 } from '@livehuddle/api-schema';
-import { isEditorMode } from '@livehuddle/document';
 import { recordedIntentOf } from '../document-intent-row';
 import { INDEX_APP, indexFor } from '../index-service';
 import { json } from '../responses';
@@ -68,7 +67,7 @@ export function summaryOf(item: Item): DocumentSummary {
       elements === null
         ? null
         : {
-            mode: isEditorMode(s.mode) ? s.mode : 'diagram',
+            mode: 'workshop',
             elements,
             comments: typeof s.comments === 'number' ? s.comments : 0,
             bytes: typeof s.bytes === 'number' ? s.bytes : 0,

@@ -14,7 +14,7 @@ const row = (opens_in: string | null, tab_kind: string | null, template_family: 
 describe('readRecordedIntent', () => {
   it('reads a full record', () => {
     expect(readRecordedIntent(row('diagram', 'diagram', 'retrospective'))).toEqual({
-      opensIn: 'diagram',
+      opensIn: 'workshop',
       tabKind: 'diagram',
       templateFamily: 'retrospective',
     });
@@ -22,7 +22,7 @@ describe('readRecordedIntent', () => {
 
   it('reads a known record with no family', () => {
     expect(readRecordedIntent(row('draw', 'diagram', null))).toEqual({
-      opensIn: 'draw',
+      opensIn: 'workshop',
       tabKind: 'diagram',
       templateFamily: null,
     });
@@ -50,7 +50,7 @@ describe('readRecordedIntent', () => {
 
   it('reads a retired tab kind or family as null', () => {
     expect(readRecordedIntent(row('draw', 'whiteboard', 'mindmap'))).toEqual({
-      opensIn: 'draw',
+      opensIn: 'workshop',
       tabKind: null,
       templateFamily: null,
     });

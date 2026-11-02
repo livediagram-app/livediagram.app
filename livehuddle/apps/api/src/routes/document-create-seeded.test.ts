@@ -75,7 +75,7 @@ describe('seeded tabs compiled on create', () => {
   });
 
   it('keeps an intent the create gives', () => {
-    expect(indexIntentOf({ mode: 'draw', tabKind: 'diagram' })).toBe('draw:diagram');
+    expect(indexIntentOf({ mode: 'workshop', tabKind: 'diagram' })).toBe('workshop:diagram');
   });
 
   it('refuses a malformed intent, writing nothing', async () => {
@@ -129,7 +129,7 @@ describe('compileSeededTabs', () => {
     );
     expect(out).toMatchObject({
       tabs: [{ id: 't1', name: 'Tab', background: 'dots' }],
-      intent: { mode: 'diagram' },
+      intent: { mode: 'workshop' },
     });
   });
 });

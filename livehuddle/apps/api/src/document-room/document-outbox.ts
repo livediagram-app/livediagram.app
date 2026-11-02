@@ -165,7 +165,7 @@ export async function readContentSummary(
 export function itemSummaryOf(summary: ContentSummary): ItemSummary {
   return {
     // The mode of the tab written last: what the Explorer's details view shows beside the counts.
-    mode: summary.stats?.mode ?? 'diagram',
+    mode: summary.stats?.mode ?? 'workshop',
     elements: summary.stats?.elements ?? 0,
     comments: summary.stats?.comments ?? 0,
     bytes: summary.stats?.bytes ?? 0,

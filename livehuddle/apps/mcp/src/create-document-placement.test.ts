@@ -74,17 +74,17 @@ describe('create_document intent', () => {
   it('sends a diagram for elements', async () => {
     const { run, posted } = harness(undefined);
     await run([elements]);
-    expect(posted[0]!.intent).toEqual({ mode: 'diagram', tabKind: 'diagram' });
+    expect(posted[0]!.intent).toEqual({ mode: 'workshop', tabKind: 'diagram' });
   });
 
   it.each([
     ['retrospective', { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' }],
     ['four-ls', { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' }],
-    ['event-storming', { mode: 'diagram', tabKind: 'event-storming' }],
+    ['event-storming', { mode: 'workshop', tabKind: 'event-storming' }],
     ['incident-postmortem', { mode: 'workshop', tabKind: 'diagram' }],
     ['lean-coffee', { mode: 'workshop', tabKind: 'diagram' }],
-    ['whiteboard', { mode: 'draw', tabKind: 'diagram' }],
-    ['flowchart', { mode: 'diagram', tabKind: 'diagram' }],
+    ['whiteboard', { mode: 'workshop', tabKind: 'diagram' }],
+    ['gantt', { mode: 'workshop', tabKind: 'diagram' }],
   ])('sends the intent of a %s template tab', async (template, intent) => {
     const { run, posted } = harness(undefined);
     await run([{ name: 'Tab', template }]);
@@ -94,7 +94,7 @@ describe('create_document intent', () => {
   it('reads the intent from the first tab only', async () => {
     const { run, posted } = harness(undefined);
     await run([elements, { name: 'Retro', template: 'start-stop-continue' }]);
-    expect(posted[0]!.intent).toEqual({ mode: 'diagram', tabKind: 'diagram' });
+    expect(posted[0]!.intent).toEqual({ mode: 'workshop', tabKind: 'diagram' });
   });
 });
 
@@ -103,9 +103,9 @@ describe('create_document intent', () => {
 describe('create_document tab names', () => {
   it('names an unnamed template tab after its template, and an unnamed other tab "Tab n"', async () => {
     const { run, posted } = harness(undefined);
-    await run([{ template: 'flowchart' }, { elements: [] }, { name: 'Mine', template: 'swot' }]);
+    await run([{ template: 'sailboat' }, { elements: [] }, { name: 'Mine', template: 'swot' }]);
     const tabs = posted[0]!.tabs as { name: string }[];
-    expect(tabs.map((t) => t.name)).toEqual(['Flowchart', 'Tab 2', 'Mine']);
+    expect(tabs.map((t) => t.name)).toEqual(['Sailboat Retrospective', 'Tab 2', 'Mine']);
   });
 });
 

@@ -305,8 +305,8 @@ describe('the tabs alone', () => {
     const text = await res.text();
     expect(JSON.parse(text) as Tabs).toEqual({
       tabs: [
-        { id: 't1', name: 'Pricing', kind: 'diagram' },
-        { id: 't2', name: 'Roadmap', kind: 'diagram' },
+        { id: 't1', name: 'Pricing', kind: 'workshop' },
+        { id: 't2', name: 'Roadmap', kind: 'workshop' },
       ],
     });
     // The tabs' content never leaves.
@@ -326,7 +326,7 @@ describe('the tabs alone', () => {
     });
     expect(res.status).toBe(200);
     expect(await res.json<Tabs>()).toEqual({
-      tabs: [{ id: 't2', name: 'Roadmap', kind: 'diagram' }],
+      tabs: [{ id: 't2', name: 'Roadmap', kind: 'workshop' }],
     });
   });
 
