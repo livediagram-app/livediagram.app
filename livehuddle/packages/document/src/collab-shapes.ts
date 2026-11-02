@@ -12,6 +12,12 @@ import type { ShapeKind } from './index';
 import { isQaBoardShape } from './qa-board';
 import { isQuizShape } from './quiz';
 import { isSelfDrawingShape } from './data-shapes';
+import type { AvatarFacing } from '@liveworkspace/avatar/walk';
+import {
+  DEFAULT_SEATING_FACING,
+  SEAT_SITTER_FACING,
+  type SeatFacing,
+} from '@liveworkspace/avatar/seats';
 
 // --- Estimate card (docs/specs/012-collaboration/estimate-card.md) ---------------------------------------------
 
@@ -271,10 +277,11 @@ function isRollCallShape(kind: ShapeKind): boolean {
 // --- Chair (docs/specs/009-elements/chair.md) ------------------------------------------------------
 
 // Which way the seat points. 'n' = the chair's back is at the top, so the
-// sitter faces down the canvas toward the reader.
-export type ChairFacing = 'n' | 'e' | 's' | 'w';
+// sitter faces down the canvas toward the reader. The vocabulary is the seat
+// geometry's (@liveworkspace/avatar/seats), which every product seats with.
+export type ChairFacing = SeatFacing;
 export const CHAIR_FACINGS: readonly ChairFacing[] = ['n', 'e', 's', 'w'];
-export const DEFAULT_CHAIR_FACING: ChairFacing = 'n';
+export const DEFAULT_CHAIR_FACING: ChairFacing = DEFAULT_SEATING_FACING.chair;
 
 export const CHAIR_FACING_LABELS: Record<ChairFacing, string> = {
   n: 'Facing down',
@@ -291,14 +298,10 @@ export function isChairFacing(value: unknown): value is ChairFacing {
 // vocabulary (the same four words CHAIR_FACING_LABELS prints). The seat points
 // AWAY from the back, so a chair with its back at the top ('n') faces its
 // sitter down the canvas.
-export type ChairSitterFacing = 'down' | 'left' | 'up' | 'right';
+export type ChairSitterFacing = AvatarFacing;
 
-export const CHAIR_SITTER_FACING: Record<ChairFacing, ChairSitterFacing> = {
-  n: 'down',
-  e: 'left',
-  s: 'up',
-  w: 'right',
-};
+export const CHAIR_SITTER_FACING: Readonly<Record<ChairFacing, ChairSitterFacing>> =
+  SEAT_SITTER_FACING;
 
 // --- The family ------------------------------------------------------------
 

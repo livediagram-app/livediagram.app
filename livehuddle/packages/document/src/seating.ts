@@ -7,32 +7,27 @@
 // All three share `chairFacing` (where the furniture's back is) and the walk hook's arrival rule;
 // what differs is the drawing, the facing it is drawn at, and how many seats it has.
 
-import { DEFAULT_CHAIR_FACING, type ChairFacing, type ChairSitterFacing } from './collab-shapes';
-import { MEETING_TABLE_ART, MEETING_TABLE_VIEW } from './office';
+import type { ChairFacing } from './collab-shapes';
+import { MEETING_TABLE_ART } from './office';
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 import { isSeatingShape, type SeatingKind } from '@liveworkspace/avatar/office-geometry';
+import { facingView, SEAT_GRIDS, type SeatGrid } from '@liveworkspace/avatar/seats';
 
-// Which kinds seat a character is the walk's question too, so it is @liveworkspace/avatar's.
+// Which kinds seat a character, and where in each one, are the walk's questions too, so they are
+// @liveworkspace/avatar's: every drawing below takes its grid and its seats from there.
 export { isSeatingShape, type SeatingKind } from '@liveworkspace/avatar/office-geometry';
+export {
+  DEFAULT_SEATING_FACING,
+  facingView,
+  nearestSeat,
+  seatingFacing,
+  seatPoints,
+} from '@liveworkspace/avatar/seats';
 
 /** Whether a seating kind takes a facing: a chair, desk or sofa; a meeting table seats six all round and never
  *  turns (docs/specs/009-elements/office.md). */
 export function turnsWithFacing(kind: string): kind is Exclude<SeatingKind, 'meeting-table'> {
   return isSeatingShape(kind) && kind !== 'meeting-table';
-}
-
-// Where a new one's back is. A chair and a sofa face the reader; a desk is placed with its desk at
-// the top and its chair in front, so the sitter faces up, at the computer, with their back to you.
-export const DEFAULT_SEATING_FACING: Record<SeatingKind, ChairFacing> = {
-  chair: DEFAULT_CHAIR_FACING,
-  sofa: 'n',
-  desk: 's',
-  // The meeting table reads the same from every side and does not turn.
-  'meeting-table': 'n',
-};
-
-export function seatingFacing(el: { shape: SeatingKind; chairFacing?: ChairFacing }): ChairFacing {
-  return el.chairFacing ?? DEFAULT_SEATING_FACING[el.shape];
 }
 
 // The turn, in clockwise degrees, from one facing to another.
@@ -68,14 +63,10 @@ export type FurniturePart = (
   | { tag: 'path'; role: FurniturePartRole; d: string }
 ) & { fill?: string };
 
-// One drawing of a piece, from the room's camera (docs/specs/009-elements/chair.md "Facing").
-export type FurnitureDrawing = {
-  // The drawing grid.
-  width: number;
-  height: number;
+// One drawing of a piece, from the room's camera (docs/specs/009-elements/chair.md "Facing"): its grid and where
+// a sitter's feet go on it, as fractions of the grid (the package's SeatGrid), and what is painted.
+export type FurnitureDrawing = SeatGrid & {
   parts: readonly FurniturePart[];
-  // Where a sitter's feet go, as fractions of the grid.
-  seats: readonly { u: number; v: number }[];
   // The occupied ring, in grid units: under the seats.
   ring: { cx: number; cy: number; rx: number; ry: number };
   // Where the ring is painted among the parts: before `parts[ringUnder]`, so it lies on the seat and under
@@ -93,22 +84,6 @@ export type FurnitureArt = {
   side: FurnitureDrawing;
 };
 
-type FurnitureViewName = keyof FurnitureArt;
-
-/** Which drawing a facing shows, and whether it is the mirrored side. */
-export function facingView(facing: ChairFacing): { view: FurnitureViewName; mirrored: boolean } {
-  switch (facing) {
-    case 's':
-      return { view: 'back', mirrored: false };
-    case 'e':
-      return { view: 'side', mirrored: false };
-    case 'w':
-      return { view: 'side', mirrored: true };
-    default:
-      return { view: 'front', mirrored: false };
-  }
-}
-
 const rect = (role: FurniturePartRole, x: number, y: number, w: number, h: number, rx: number) =>
   ({ tag: 'rect', role, x, y, w, h, rx }) as const;
 const ellipse = (role: FurniturePartRole, cx: number, cy: number, rx: number, ry: number) =>
@@ -119,8 +94,7 @@ const path = (role: FurniturePartRole, d: string) => ({ tag: 'path', role, d }) 
 export const CHAIR_ART: FurnitureArt = {
   // Facing you: the seat, its front edge, and the backrest standing behind it.
   front: {
-    width: 64,
-    height: 72,
+    ...SEAT_GRIDS.chair.front,
     parts: [
       ellipse('shadow', 32, 66, 20, 4),
       path('line', 'M15 47v16M49 47v16'),
@@ -130,14 +104,12 @@ export const CHAIR_ART: FurnitureArt = {
       rect('panel', 10, 33, 44, 12, 3),
       rect('face', 10, 43, 44, 5, 2.5),
     ],
-    seats: [{ u: 0.5, v: 0.62 }],
     ring: { cx: 32, cy: 40, rx: 24, ry: 10 },
     ringUnder: 6,
   },
   // Its back to you: the seat beyond, and the backrest's back nearest you, over it.
   back: {
-    width: 64,
-    height: 72,
+    ...SEAT_GRIDS.chair.back,
     parts: [
       ellipse('shadow', 32, 66, 20, 4),
       path('line', 'M15 44v19M49 44v19'),
@@ -146,14 +118,12 @@ export const CHAIR_ART: FurnitureArt = {
       rect('face', 17, 12, 30, 34, 4),
       path('rail', 'M32 17v24'),
     ],
-    seats: [{ u: 0.5, v: 0.38 }],
     ring: { cx: 32, cy: 27, rx: 24, ry: 9 },
     ringUnder: 4,
   },
   // Facing left: the seat from above with its front edge, the backrest a bar along its right.
   side: {
-    width: 64,
-    height: 72,
+    ...SEAT_GRIDS.chair.side,
     parts: [
       ellipse('shadow', 30, 66, 20, 4),
       path('line', 'M13 47v16M45 47v16'),
@@ -163,7 +133,6 @@ export const CHAIR_ART: FurnitureArt = {
       rect('panel', 42, 4, 9, 43, 3),
       rect('face', 42, 41, 9, 6, 2),
     ],
-    seats: [{ u: 0.38, v: 0.5 }],
     ring: { cx: 26, cy: 38, rx: 20, ry: 9 },
     ringUnder: 4,
   },
@@ -174,8 +143,7 @@ export const DESK_ART: FurnitureArt = {
   // The sitter faces you: the chair beyond the desk, the desk nearest you, and the monitor's back on it
   // (low and narrow, so the sitter is seen over it).
   front: {
-    width: 120,
-    height: 112,
+    ...SEAT_GRIDS.desk.front,
     parts: [
       ellipse('shadow', 60, 102, 54, 5),
       // The chair beyond the desk: its backrest, then its seat.
@@ -194,14 +162,12 @@ export const DESK_ART: FurnitureArt = {
       // A mug at the corner.
       rect('panel', 98, 46, 8, 9, 2),
     ],
-    seats: [{ u: 0.5, v: 0.26 }],
     ring: { cx: 60, cy: 28, rx: 28, ry: 8 },
     ringUnder: 4,
   },
   // Its back to you: the desk at the back, the monitor's screen toward you, the chair's back nearest.
   back: {
-    width: 120,
-    height: 112,
+    ...SEAT_GRIDS.desk.back,
     parts: [
       ellipse('shadow', 60, 78, 54, 5),
       path('line', 'M12 52v26M108 52v26'),
@@ -219,15 +185,13 @@ export const DESK_ART: FurnitureArt = {
       rect('face', 41, 74, 38, 26, 5),
       path('rail', 'M60 79v16'),
     ],
-    seats: [{ u: 0.5, v: 0.68 }],
     ring: { cx: 60, cy: 72, rx: 28, ry: 9 },
     ringUnder: 13,
   },
   // Facing left: the desk a long top down the left with its near end toward you, the monitor side-on
   // and its screen toward the chair, the chair on the right with its backrest along its right.
   side: {
-    width: 112,
-    height: 120,
+    ...SEAT_GRIDS.desk.side,
     parts: [
       ellipse('shadow', 56, 113, 50, 5),
       path('line', 'M12 102v14M40 102v14'),
@@ -251,7 +215,6 @@ export const DESK_ART: FurnitureArt = {
       rect('panel', 85, 34, 10, 44, 3),
       rect('face', 85, 74, 10, 7, 2),
     ],
-    seats: [{ u: 0.62, v: 0.52 }],
     ring: { cx: 70, cy: 62, rx: 24, ry: 14 },
     ringUnder: 14,
   },
@@ -261,8 +224,7 @@ export const DESK_ART: FurnitureArt = {
 export const SOFA_ART: FurnitureArt = {
   // Facing you: the back behind, the arms either end, the cushions and their front edge.
   front: {
-    width: 136,
-    height: 76,
+    ...SEAT_GRIDS.sofa.front,
     parts: [
       ellipse('shadow', 68, 70, 64, 4),
       path('line', 'M12 58v10M124 58v10'),
@@ -274,17 +236,12 @@ export const SOFA_ART: FurnitureArt = {
       rect('panel', 68, 33, 48, 16, 5),
       rect('face', 20, 47, 96, 10, 4),
     ],
-    seats: [
-      { u: 44 / 136, v: 0.58 },
-      { u: 92 / 136, v: 0.58 },
-    ],
     ring: { cx: 68, cy: 44, rx: 56, ry: 12 },
     ringUnder: 8,
   },
   // Its back to you: the cushions beyond, the arms, and the back's broad back nearest you.
   back: {
-    width: 136,
-    height: 76,
+    ...SEAT_GRIDS.sofa.back,
     parts: [
       ellipse('shadow', 68, 70, 64, 4),
       path('line', 'M12 58v10M124 58v10'),
@@ -295,18 +252,13 @@ export const SOFA_ART: FurnitureArt = {
       rect('face', 10, 22, 116, 38, 9),
       path('rail', 'M68 27v28'),
     ],
-    seats: [
-      { u: 44 / 136, v: 0.27 },
-      { u: 92 / 136, v: 0.27 },
-    ],
     ring: { cx: 68, cy: 20, rx: 56, ry: 10 },
     ringUnder: 4,
   },
   // Facing left: tall, its two cushions one above the other, the back a long bar on the right, the
   // arms at either end, and its legs only under its lower end.
   side: {
-    width: 76,
-    height: 136,
+    ...SEAT_GRIDS.sofa.side,
     parts: [
       ellipse('shadow', 38, 131, 34, 4),
       path('line', 'M12 124v8M64 124v8'),
@@ -316,10 +268,6 @@ export const SOFA_ART: FurnitureArt = {
       rect('panel', 6, 4, 64, 20, 7),
       rect('panel', 6, 106, 64, 16, 7),
       rect('face', 6, 118, 64, 7, 3),
-    ],
-    seats: [
-      { u: 33 / 76, v: 44 / 136 },
-      { u: 33 / 76, v: 88 / 136 },
     ],
     ring: { cx: 33, cy: 66, rx: 24, ry: 48 },
     ringUnder: 5,
@@ -355,59 +303,6 @@ export function furnitureFrame(
     transform: mirrored ? `translate(${view.width} 0) scale(-1 1)` : '',
     view,
   };
-}
-
-/**
- * Every seat's feet point, in canvas coordinates, from the drawing its facing shows. A meeting table's seats
- * also say which way their sitter faces (docs/specs/009-elements/office.md "Meeting Table").
- */
-export function seatPoints(
-  el: Rect & { shape: SeatingKind; chairFacing?: ChairFacing },
-): { x: number; y: number; facing?: ChairSitterFacing }[] {
-  if (el.shape === 'meeting-table') {
-    const drawn = drawnRect(el, MEETING_TABLE_VIEW);
-    return MEETING_TABLE_VIEW.tableSeats.map(({ u, v, facing }) => ({
-      x: drawn.x + drawn.width * u,
-      y: drawn.y + drawn.height * v,
-      facing,
-    }));
-  }
-  const { view: name, mirrored } = facingView(seatingFacing(el));
-  const view = FURNITURE_ART[el.shape][name];
-  const drawn = drawnRect(el, view);
-  return view.seats.map(({ u, v }) => ({
-    x: drawn.x + drawn.width * (mirrored ? 1 - u : u),
-    y: drawn.y + drawn.height * v,
-  }));
-}
-
-// Where the drawing actually lies in the box: both renderers fit its grid whole and centred (preserveAspectRatio
-// meet), so a box of other proportions (a quarter turn written without swapping the box, an aspect unlocked and
-// stretched) letterboxes it, and a seat measured on the whole box would miss the drawn cushion.
-function drawnRect(box: Rect, view: { width: number; height: number }): Rect {
-  const scale = Math.min(box.width / view.width, box.height / view.height);
-  const width = view.width * scale;
-  const height = view.height * scale;
-  return {
-    x: box.x + (box.width - width) / 2,
-    y: box.y + (box.height - height) / 2,
-    width,
-    height,
-  };
-}
-
-/** The seat nearest a point (where the character walked in), so a sofa seats you on your side. */
-export function nearestSeat(
-  el: Rect & { shape: SeatingKind; chairFacing?: ChairFacing },
-  from: { x: number; y: number },
-): { x: number; y: number; facing?: ChairSitterFacing } {
-  const seats = seatPoints(el);
-  let best = seats[0]!;
-  for (const seat of seats) {
-    if (Math.hypot(seat.x - from.x, seat.y - from.y) < Math.hypot(best.x - from.x, best.y - from.y))
-      best = seat;
-  }
-  return best;
 }
 
 /**
