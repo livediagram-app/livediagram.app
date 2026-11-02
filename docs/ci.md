@@ -106,7 +106,9 @@ what it measures) and times only the work under test.
 
 The Checks job's **Speed budgets use CPU time** step (`.github/scripts/cpu-budget-guard.mjs`, also in
 the pre-push hook) fails a change that adds `performance.now()` to a test file. Older budgets are left
-for a pass of their own. A line that truly needs the wall clock says why in a `wall-clock:` comment.
+for a pass of their own, and so is a copy of one: a line another product already has at the same path
+(a fork, such as livehuddle's of livediagram) isn't new. A line that truly needs the wall clock says why
+in a `wall-clock:` comment.
 
 ## Coverage report
 
