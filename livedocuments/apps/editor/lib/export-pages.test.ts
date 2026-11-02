@@ -19,4 +19,12 @@ describe('page export', () => {
     expect(zipEntryName(pages[1]!, 2, 'svg')).toMatch(/^02 Page 2/);
     expect(sanitizeFilename('a/b:c')).toBe('a-b-c');
   });
+
+  it('drops brackets and colons from a name and collapses repeated dashes', () => {
+    expect(sanitizeFilename('Poster (9:16)')).toBe('Poster 9-16');
+    expect(sanitizeFilename('(9:16)')).toBe('9-16');
+    expect(sanitizeFilename('Deck - Slide [1]: intro?')).toBe('Deck - Slide 1- intro');
+    expect(sanitizeFilename('a---b')).toBe('a-b');
+    expect(sanitizeFilename('?')).toBe('');
+  });
 });
