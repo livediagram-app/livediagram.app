@@ -37,7 +37,6 @@ async function openWhiteboard(page: Page) {
   await page.goto(await serverNewUrl(page, '/new?template=whiteboard'));
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
-  await page.locator('[data-whiteboard-dock]').waitFor();
 }
 
 async function drawStroke(page: Page) {
