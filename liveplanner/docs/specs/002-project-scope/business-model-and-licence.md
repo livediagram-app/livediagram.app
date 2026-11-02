@@ -4,7 +4,7 @@ liveplanner is **MIT-licensed software** run as one hosted service at [liveplann
 
 ## Licence
 
-The codebase is **MIT licensed** (see `LICENSE` at the repo root), like the other liveworkspace apps; the site footer says "MIT licensed." Every `package.json` declares `"license": "MIT"`, including the packages published for people to run (the `liveplanner` CLI and the MCP server's registry entry, `server.json`). The repository (the liveworkspace monorepo) is private.
+The codebase is **MIT licensed** (see `LICENSE` at the repo root), like the other liveworkspace apps; the site footer says "MIT licensed." Every `package.json` declares `"license": "MIT"`, including the packages published for people to run (the `liveplanner` CLI and the MCP server's registry entry, `server.json`). The repository (the liveworkspace monorepo) is public.
 
 Third-party components keep their own licences. The MIT, Apache and other permissively licensed work the apps bundle requires attribution, so it is credited on the generated `/licences` page and in `THIRD_PARTY_NOTICES.md` ([Third-party licences](third-party-licences.md)).
 
@@ -26,7 +26,7 @@ These are the claims the product makes about itself, and each holds without anyo
 
 - **No paid-tier shims.** The codebase contains no "Pro features" feature-flag, no billing integration (no Stripe), no "upgrade" CTAs. If we ship it, every user gets it.
 - **Optional integrations degrade, never break.** Each integration is gated on its own key or binding: the liveworkspace accounts Worker for sign-in ([Auth + guest access](../014-identity/auth-and-guest-access.md)) and Cloudflare Email Service's `EMAIL` binding for email ([Transactional email](../014-identity/transactional-email.md)). The editor always offers sign-in; when the api's `ACCOUNTS_URL` / `API_RESOURCE` aren't set (local development, previews), every visitor settles as a guest and the editor is fully usable.
-- **Secrets stay out of source** even though the repository is private ([Secrets policy](secrets-policy.md)).
+- **Secrets stay out of source**, and the repository is public, so its history is readable by anyone ([Secrets policy](secrets-policy.md)).
 
 ## Non-goals
 

@@ -119,8 +119,8 @@ markers (`<!-- liveworkspace:coverage-report:start -->` and `…:end -->`). A de
 one, where a comment emails every watcher. Each run replaces only that section and keeps the author's
 text around it; an unchanged report writes nothing.
 
-- **Where the numbers come from:** CI's own lcov files, not a coverage service, so it works on a
-  private repository. The Tests job (`test:coverage` workspaces) and each editor shard keep their
+- **Where the numbers come from:** CI's own lcov files, not a coverage service, so it works on any
+  repository, public or private. The Tests job (`test:coverage` workspaces) and each editor shard keep their
   `lcov.info` files as artifacts, `coverage-<group>-tests` and `coverage-<group>-editor-<shard>`, for 30
   days. Codecov still receives its uploads, but the report doesn't depend on them.
 - **What it shows:** patch coverage (the lines the pull request adds, from `git diff` against its

@@ -1,6 +1,6 @@
 # Secrets policy
 
-The repository is private, but source code is copied to every machine, CI runner and tool that builds it, and its history is permanent. Therefore:
+The repository is public, and even a private one would not change this: source code is copied to every machine, CI runner and tool that builds it, and its history is permanent. Therefore:
 
 > **No secret may ever live in source code.** No API keys, no tokens, no passwords, no OAuth client secrets, no signing keys, no service-account JSON.
 
