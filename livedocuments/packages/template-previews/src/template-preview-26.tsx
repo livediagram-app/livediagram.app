@@ -6,7 +6,8 @@ import { FILL_BOX } from '@liveworkspace/template-previews/story-parts';
 // Group 26: the flashcard stacks (docs/specs/007-editor/flashcards.md "Making flashcards"): Conference Talk, Wedding
 // Toast, Product Pitch and School Presentation. Each draws its stack as the editor shows it: the card in front (its title and lines, its
 // "1 of n" footer) and the cards still to come peeking out below it, deeper for a longer stack, with a mark of its own.
-// Hover story: the front card's lines write themselves and its mark arrives.
+// Each stack's mark sits on a tinted badge at rest, so the four read apart without a hover. Hover story: the front
+// card's lines write themselves and its badge swells.
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
 
 const INK = 'rgb(15 23 42)';
@@ -67,8 +68,18 @@ function Stack({
   );
 }
 
-// The mark's arrival: a little rise, once the lines are written.
-const ARRIVE = { ...FILL_BOX, ...pv({ '--pv-from-y': '2px', '--pv-at': '1100ms' }) };
+// The mark's badge: a tinted disc in the front card's top right with the mark's glyph on it, centred on (57, 9).
+// Drawn at rest, so the four stacks tell apart without a hover; on hover it swells once the lines are written.
+const BADGE_EDGE = 'rgb(226 232 240)';
+
+function Badge({ tint, children }: { tint: string; children: ReactNode }) {
+  return (
+    <g className="pv-pulse" style={{ ...FILL_BOX, ...pv({ '--pv-at': '1100ms' }) }}>
+      <circle cx="57" cy="9.2" r="5" fill={tint} stroke={BADGE_EDGE} strokeWidth="0.3" />
+      {children}
+    </g>
+  );
+}
 
 export function templatePreviewGroup26(kind: TemplateKind): ReactElement | null {
   switch (kind) {
@@ -79,22 +90,23 @@ export function templatePreviewGroup26(kind: TemplateKind): ReactElement | null 
         title: 20,
         lines: [38, 34, 38, 22],
         mark: (
-          <g className="pv-arrive" opacity="0" style={ARRIVE}>
+          <Badge tint="rgb(224 231 255)">
             <circle
-              cx="56"
-              cy="10"
-              r="3.2"
+              cx="57"
+              cy="9"
+              r="2.8"
               fill="white"
               stroke="var(--color-brand-500)"
               strokeWidth="0.8"
             />
             <path
-              d="M56 8.2 V10 L57.4 11"
+              d="M57 7.4 V9 L58.3 9.9"
               fill="none"
               stroke="var(--color-brand-500)"
               strokeWidth="0.7"
+              strokeLinecap="round"
             />
-          </g>
+          </Badge>
         ),
       });
     case 'wedding-toast':
@@ -104,13 +116,12 @@ export function templatePreviewGroup26(kind: TemplateKind): ReactElement | null 
         title: 14,
         lines: [36, 38, 26],
         mark: (
-          <path
-            className="pv-arrive"
-            opacity="0"
-            style={ARRIVE}
-            d="M56 12.6 C53 10.4 53 7.8 54.6 7.6 C55.4 7.5 56 8.2 56 8.8 C56 8.2 56.6 7.5 57.4 7.6 C59 7.8 59 10.4 56 12.6 Z"
-            fill="rgb(244 63 94)"
-          />
+          <Badge tint="rgb(255 228 230)">
+            <path
+              d="M57 11.8 C54 9.6 54 7 55.6 6.8 C56.4 6.7 57 7.4 57 8 C57 7.4 57.6 6.7 58.4 6.8 C60 7 60 9.6 57 11.8 Z"
+              fill="rgb(244 63 94)"
+            />
+          </Badge>
         ),
       });
     case 'pitch-flashcards':
@@ -120,17 +131,16 @@ export function templatePreviewGroup26(kind: TemplateKind): ReactElement | null 
         title: 17,
         lines: [30, 38, 34],
         mark: (
-          <path
-            className="pv-arrive"
-            opacity="0"
-            style={ARRIVE}
-            d="M53 12 L56 8.6 L58.2 10.6 L60 8 M57.8 8 H60 V10.2"
-            fill="none"
-            stroke="rgb(16 185 129)"
-            strokeWidth="0.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          <Badge tint="rgb(209 250 229)">
+            <path
+              d="M53.8 11 L56.4 8 L58.2 9.6 L60.2 7 M58.4 7 H60.2 V8.8"
+              fill="none"
+              stroke="rgb(5 150 105)"
+              strokeWidth="0.9"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </Badge>
         ),
       });
     case 'class-presentation':
@@ -140,13 +150,12 @@ export function templatePreviewGroup26(kind: TemplateKind): ReactElement | null 
         title: 22,
         lines: [36, 30, 38],
         mark: (
-          <path
-            className="pv-arrive"
-            opacity="0"
-            style={ARRIVE}
-            d="M56 7 C57.6 9.2 58.6 10.6 58.6 11.8 C58.6 13.2 57.4 14.2 56 14.2 C54.6 14.2 53.4 13.2 53.4 11.8 C53.4 10.6 54.4 9.2 56 7 Z"
-            fill="rgb(56 189 248)"
-          />
+          <Badge tint="rgb(224 242 254)">
+            <path
+              d="M57 6 C58.5 8 59.5 9.2 59.5 10.4 C59.5 11.7 58.4 12.6 57 12.6 C55.6 12.6 54.5 11.7 54.5 10.4 C54.5 9.2 55.5 8 57 6 Z"
+              fill="rgb(14 165 233)"
+            />
+          </Badge>
         ),
       });
     default:
