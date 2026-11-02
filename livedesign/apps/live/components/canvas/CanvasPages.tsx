@@ -86,7 +86,6 @@ export function CanvasPages({
   zoom,
   bare = false,
   placing = false,
-  onOpenTheme,
 }: {
   view: PagesModeView;
   zoom: number;
@@ -95,9 +94,6 @@ export function CanvasPages({
   // A palette tile is armed (tap to drop or drag to draw): the page is where it will land, so the in-page layout
   // card steps aside until the tool is put down.
   placing?: boolean;
-  // Opens the Tab Style popover, from the Layout popover's Change Theme; absent where the session
-  // may not restyle the tab.
-  onOpenTheme?: (() => void) | undefined;
 }) {
   const { pages, focusPage } = view;
   const edit = bare ? undefined : view.edit;
@@ -369,8 +365,6 @@ export function CanvasPages({
                     page={page}
                     labelled={labelled}
                     onApply={(layout) => void edit.applyLayout(page.id, layout)}
-                    // A wireframe is drawn in wireframe greys: the theme is no choice of its layouts.
-                    onChangeTheme={page.kind === 'wireframe' ? undefined : onOpenTheme}
                     onPreview={(layout) =>
                       view.setLayoutPreview(layout ? { pageId: page.id, layout } : null)
                     }
