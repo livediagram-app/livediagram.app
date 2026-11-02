@@ -290,7 +290,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
   },
   // Registered before its launch (HELD_APP_SITES): the index and the services know its items, and no Explorer lists
   // it until launch. Forked from livediagram, so its addresses are livediagram's; a person reads "Space"
-  // (livehuddle/docs/specs/005-project-roadmap/open-decisions.md D6). No offline items, Community or imports in v1.
+  // (livehuddle/docs/specs/005-project-roadmap/open-decisions.md D6). No imports in v1.
   livehuddle: {
     site: 'livehuddle.app',
     noun: 'Space',
@@ -298,14 +298,14 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     apiNoun: 'document',
     itemPath: '/document/',
     newPath: '/new',
-    offlinePath: null,
-    offlineConversions: false,
+    offlinePath: '/explorer/offline',
+    offlineConversions: true,
     sharePath: '/document/shared?s=',
     imagesPath: '/api/images',
     shapeLibrariesPath: null,
     imports: [],
     importPath: null,
-    share: shareOf(itemTabsPath('documents'), 'livehuddle tab'),
+    share: shareOf(itemTabsPath('documents'), 'livehuddle tab', itemCommunityPath('documents')),
   },
 };
 

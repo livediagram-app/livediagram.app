@@ -44,9 +44,10 @@ describe('a held app (livehuddle)', () => {
       noun: 'Space',
       nouns: 'Spaces',
       apiNoun: 'document',
-      offlinePath: null,
-      offlineConversions: false,
+      offlinePath: '/explorer/offline',
+      offlineConversions: true,
     });
+    expect(APP_ITEMS.livehuddle.share.communityPath).toBe('/api/documents/:id/community');
     expect(APP_NAMES).toEqual(['livediagram', 'liveplanner', 'livedocuments', 'livedesign']);
     expect(isAppName('livehuddle')).toBe(false);
     expect(isAppName('livedesign')).toBe(true);

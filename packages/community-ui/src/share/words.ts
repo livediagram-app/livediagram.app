@@ -36,4 +36,11 @@ export const COMMUNITY_APP_WORDS: Record<CommunityApp, CommunityWords> = {
     showcases: 'designs',
     cover: 'first page',
   },
+  'livehuddle.app': {
+    product: 'livehuddle',
+    noun: 'space',
+    nouns: 'spaces',
+    showcase: 'space',
+    showcases: 'spaces',
+  },
 };

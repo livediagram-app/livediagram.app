@@ -213,12 +213,58 @@ export const COMMUNITY_APP_CATEGORIES = {
     },
     OTHER,
   ],
+  // A meetings and workshops product (livehuddle/docs/specs/025-community/community.md "Categories").
+  'livehuddle.app': [
+    {
+      id: 'offices',
+      label: 'Offices & Spaces',
+      blurb: 'Virtual offices, team pods, coworking floors',
+      type: 'Offices',
+    },
+    {
+      id: 'meetings',
+      label: 'Meetings',
+      blurb: 'Stand-ups, agendas, town halls, all-hands',
+      type: 'Meetings',
+    },
+    {
+      id: 'retrospectives',
+      label: 'Retrospectives',
+      blurb: 'Retros, lessons learned, health checks',
+      type: 'Retrospectives',
+    },
+    {
+      id: 'workshops',
+      label: 'Workshops',
+      blurb: 'Brainstorms, crazy eights, lean coffee, ideas',
+      type: 'Workshops',
+    },
+    {
+      id: 'decisions',
+      label: 'Votes & Decisions',
+      blurb: 'Dot votes, polls, estimates, priorities',
+      type: 'Decisions',
+    },
+    {
+      id: 'games',
+      label: 'Quizzes & Games',
+      blurb: 'Quizzes, icebreakers, team games',
+      type: 'Games',
+    },
+    {
+      id: 'learning',
+      label: 'Learning & Teaching',
+      blurb: 'Classes, training, lessons',
+      type: 'Learning',
+    },
+    OTHER,
+  ],
 } as const satisfies Record<CommunityApp, readonly CommunityCategoryDef[]>;
 
 type AppCategories = typeof COMMUNITY_APP_CATEGORIES;
 
 // Every app's category ids, together: what a stored or queried category can be. Spelled out, not derived from the
-// four lists: livediagram's OpenAPI schemas are generated from these types, and the generator can't read an indexed
+// five lists: livediagram's OpenAPI schemas are generated from these types, and the generator can't read an indexed
 // access over a union of tuples. categories.test.ts checks the two agree.
 export type CommunityCategory =
   | 'architecture'
@@ -227,18 +273,22 @@ export type CommunityCategory =
   | 'budgets'
   | 'dashboards'
   | 'data'
+  | 'decisions'
   | 'decks'
   | 'design'
   | 'events'
   | 'flows'
   | 'forms'
+  | 'games'
   | 'guides'
   | 'illustrations'
   | 'infographics'
   | 'learning'
   | 'logos'
+  | 'meetings'
   | 'mindmaps'
   | 'newsletters'
+  | 'offices'
   | 'other'
   | 'personal'
   | 'photos'
@@ -246,6 +296,7 @@ export type CommunityCategory =
   | 'posters'
   | 'projects'
   | 'proposals'
+  | 'retrospectives'
   | 'roadmaps'
   | 'social'
   | 'trackers'
@@ -253,7 +304,7 @@ export type CommunityCategory =
   | 'workflows'
   | 'workshops';
 
-/** The ids the four lists hold, for the check that CommunityCategory names exactly them. */
+/** The ids the five lists hold, for the check that CommunityCategory names exactly them. */
 export type CommunityAppCategoryId = AppCategories[CommunityApp][number]['id'];
 
 // One app's categories, in display order.
