@@ -32,7 +32,7 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 - **Community** at `/community` is the public gallery of shared documents: browse, like and copy what people publish ([Community](docs/specs/025-community/community.md)).
 - **MCP** at `mcp.livehuddle.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth, on its own host rather than a router path.
 - **Router** stitches the five web apps (marketing, editor, help, community, api) under one hostname.
-- **CLI** (`apps/cli`) is `livehuddle`, the command line agents and scripts read, lint and change documents with, published on npm as `@livehuddle/cli`. It also links a repository to its diagrams and opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Repositories](docs/specs/027-repositories/README.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
+- **CLI** (`apps/cli`) is `livehuddle`, the command line agents and scripts read, lint and change documents with, published on npm as `@livehuddle/cli`. It also opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
 
 The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR, no Next.js API routes.
 
@@ -49,6 +49,6 @@ Found a vulnerability? Please report it privately through [GitHub's advisory for
 
 ## License
 
-[MIT](LICENSE). A free hosted version runs at [livehuddle.app](https://livehuddle.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional (the liveworkspace accounts Worker for sign-in, Cloudflare Email Service for transactional email, gated on its `send_email` binding, and a vision model for reading sticky-note photos, Google AI Studio or any OpenAI-compatible endpoint, gated on its key), and the editor runs fully without any of them: without a key, the photo import reads notes with a model in the browser.
+[MIT](LICENSE). A free hosted version runs at [livehuddle.app](https://livehuddle.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional (the liveworkspace accounts Worker for sign-in and Cloudflare Email Service for transactional email, gated on its `send_email` binding), and the editor runs fully without any of them.
 
 Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://livehuddle.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

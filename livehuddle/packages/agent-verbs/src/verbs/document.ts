@@ -6,17 +6,17 @@ import { listAllDocuments, type FoundDocument } from '../find-documents';
 import { shortestUniquePrefixes } from '@liveworkspace/agent-verbs/refs';
 import { columns, day, documentOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, moreLine } from './shared';
 
-export const listedDocument = z.object({
+const listedDocument = z.object({
   ref: z.string(),
   id: z.string(),
   name: z.string(),
   library: z.string(),
   updated: z.string(),
 });
-export type ListedDocument = z.infer<typeof listedDocument>;
+type ListedDocument = z.infer<typeof listedDocument>;
 
-// The rows `document ls` prints, shared with `link ls`: each document's ref, name, library and last saved day.
-export function documentRows(
+// The rows `document ls` prints: each document's ref, name, library and last saved day.
+function documentRows(
   found: readonly FoundDocument[],
   refs: ReadonlyMap<string, string>,
 ): ListedDocument[] {
@@ -30,7 +30,7 @@ export function documentRows(
 }
 
 // A document list as compact lines: an empty list says so, a cut one says how many more.
-export function documentListText({
+function documentListText({
   documents,
   more,
   query,
@@ -40,7 +40,7 @@ export function documentListText({
   query?: string;
 }): string[] {
   return [
-    ...(documents.length === 0 ? [query ? `no documents match "${query}"` : 'no documents'] : []),
+    ...(documents.length === 0 ? [query ? `no Spaces match "${query}"` : 'no Spaces'] : []),
     ...columns(documents.map((d) => [d.ref, JSON.stringify(d.name), d.library, d.updated])),
     ...(more > 0 ? [moreLine(documents.length, more, LIST_MAX_LIMIT, 'narrow with a query')] : []),
   ];
@@ -48,12 +48,12 @@ export function documentListText({
 
 export const documentLs = defineVerb({
   id: 'document.ls',
-  summary: 'Documents in the personal library and joined teams, newest first',
+  summary: 'Spaces in the personal library and joined teams, newest first',
   description:
-    'Lists the documents the token can reach: the personal library and every joined team, newest saved first. A query keeps the documents whose name contains it.',
+    'Lists the Spaces the token can reach: the personal library and every joined team, newest saved first. A query keeps the Spaces whose name contains it.',
   behaviour: 'read',
   input: z.object({
-    query: z.string().optional().describe('Keep documents whose name contains this'),
+    query: z.string().optional().describe('Keep Spaces whose name contains this'),
     limit: z.coerce
       .number()
       .int()
@@ -84,7 +84,7 @@ export const documentLs = defineVerb({
   cli: {
     positionals: ['query'],
     examples: ['livehuddle document ls', 'livehuddle document ls auth --limit 5'],
-    prints: 'one document a line: ref, name, library, last saved',
+    prints: 'one Space a line: ref, name, library, last saved',
   },
 });
 
@@ -92,7 +92,7 @@ export const documentView = defineVerb({
   id: 'document.view',
   summary: 'The overview: one line per tab',
   description:
-    'Prints the overview view of a document: one line per tab with its counts and revision.',
+    'Prints the overview view of a Space: one line per tab with its counts and revision.',
   behaviour: 'read',
   input: z.object({ doc: z.string().describe('A name, id prefix or livehuddle URL') }),
   output: z.object({ text: z.string() }),

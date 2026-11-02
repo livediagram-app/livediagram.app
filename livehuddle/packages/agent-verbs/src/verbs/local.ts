@@ -188,7 +188,7 @@ export const waitFor = defineVerb({
   id: 'wait',
   summary: 'Block until a comment or a change arrives, then print it',
   description:
-    'Listens on the document\u2019s room until a comment is added, or until something changes and settles (a burst of edits is one change); prints it and exits 0. --timeout exits 0 with a line saying nothing came; Ctrl-C exits 1.',
+    'Listens on the Space\u2019s room until a comment is added, or until something changes and settles (a burst of edits is one change); prints it and exits 0. --timeout exits 0 with a line saying nothing came; Ctrl-C exits 1.',
   behaviour: 'read',
   local: true,
   input: z.object({
@@ -215,7 +215,7 @@ export const watch = defineVerb({
   id: 'watch',
   summary: 'Stream comments and changes as they happen',
   description:
-    'Listens on the document\u2019s room and prints a line for each changeset, element change, comment and tab or document change, until Ctrl-C (exit 0).',
+    'Listens on the Space\u2019s room and prints a line for each changeset, element change, comment and tab or Space change, until Ctrl-C (exit 0).',
   behaviour: 'read',
   local: true,
   input: z.object({
@@ -238,9 +238,9 @@ export const watch = defineVerb({
 export const pull = defineVerb({
   id: 'pull',
   files: true,
-  summary: 'Write a document to a file, to edit and push back',
+  summary: 'Write a Space to a file, to edit and push back',
   description:
-    'Writes <slug>.livehuddle.json: the document, every tab and each tab\u2019s revision, in the format the editor imports. --svg adds a drawing per tab. Prints the paths written.',
+    'Writes <slug>.livehuddle.json: the Space, every tab and each tab\u2019s revision, in the format the editor imports. --svg adds a drawing per tab. Prints the paths written.',
   behaviour: 'read',
   local: true,
   input: z.object({
@@ -296,13 +296,13 @@ export const EXPORT_FORMATS = ['json', 'svg', 'png', 'mermaid', 'md'] as const;
 export const exportAll = defineVerb({
   id: 'export',
   files: true,
-  summary: 'Every document to files, for backups and docs',
+  summary: 'Every Space to files, for backups and docs',
   description:
-    'Writes every document the token can read: <slug>.livehuddle.json (json, the default), and per tab <slug>/<tab-slug>.svg, .png, .mmd or .md. Prints the paths written, then the totals.',
+    'Writes every Space the token can read: <slug>.livehuddle.json (json, the default), and per tab <slug>/<tab-slug>.svg, .png, .mmd or .md. Prints the paths written, then the totals.',
   behaviour: 'read',
   local: true,
   input: z.object({
-    all: z.boolean().optional().describe('Every document; required'),
+    all: z.boolean().optional().describe('Every Space; required'),
     to: z.string().describe('The directory to write to'),
     format: z
       .string()

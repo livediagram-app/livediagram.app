@@ -21,7 +21,7 @@ import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 const ICON = 18;
 // Written out rather than read from @livehuddle/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 72;
+export const TEMPLATE_COUNT = 71;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 14;
 
@@ -143,7 +143,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What can I make with it?',
-        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas and Sankey diagrams.',
+        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas and Sankey diagrams.',
       },
       {
         q: 'How many templates and themes are there?',
@@ -441,19 +441,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Is there a command-line tool?',
         a: 'Yes. Install it from npm as @livehuddle/cli (or run it with npx). It signs in through your browser and can read, edit, create, share and export canvases from your terminal, which makes it handy for scripts and coding agents.',
       },
-      {
-        q: 'Can I keep my diagrams next to my code?',
-        a: (
-          <>
-            Yes. Link a repository to a folder of canvases with the CLI, and it keeps a snapshot of
-            each one in the repository, so coding agents find your diagrams by name and read them as
-            text. livehuddle stays the home of every canvas. See{' '}
-            <a href="/help/developers/repositories/">diagrams in your repository</a>.
-          </>
-        ),
-        aText:
-          'Yes. Link a repository to a folder of canvases with the CLI, and it keeps a snapshot of each one in the repository, so coding agents find your diagrams by name and read them as text. livehuddle stays the home of every canvas. See diagrams in your repository.',
-      },
     ],
   },
   {
@@ -473,10 +460,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       {
         q: 'Can I move my boards over from another tool?',
         a: 'Yes. Import draw.io diagrams (a tab per page, a whole folder at a time if you like), Excalidraw scenes (a .excalidraw file, or a PNG or SVG exported with the scene embedded) and Microsoft Whiteboard boards, and they land as editable content. Markdown and JSON import too.',
-      },
-      {
-        q: 'Can I turn a photo of sticky notes into a board?',
-        a: 'Yes, on an event storming board. Take a photo of the wall and livehuddle finds the sticky notes and places them on the canvas for you to tidy up.',
       },
       {
         q: 'Can I keep a copy in my own Google Drive?',

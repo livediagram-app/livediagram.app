@@ -80,7 +80,6 @@ describe('create_document intent', () => {
   it.each([
     ['retrospective', { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' }],
     ['four-ls', { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' }],
-    ['event-storming', { mode: 'workshop', tabKind: 'event-storming' }],
     ['incident-postmortem', { mode: 'workshop', tabKind: 'diagram' }],
     ['lean-coffee', { mode: 'workshop', tabKind: 'diagram' }],
     ['whiteboard', { mode: 'workshop', tabKind: 'diagram' }],

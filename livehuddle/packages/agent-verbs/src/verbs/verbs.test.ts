@@ -46,11 +46,11 @@ describe('document ls', () => {
   it('says when nothing is there, or nothing matches', async () => {
     const ctx = contextOf(fakeApi({ '/documents': { documents: [] }, '/teams': { teams: [] } }));
     expect(documentLs.text!(await documentLs.run!(ctx, documentLs.input.parse({})))).toEqual([
-      'no documents',
+      'no Spaces',
     ]);
     expect(
       documentLs.text!(await documentLs.run!(ctx, documentLs.input.parse({ query: 'x' }))),
-    ).toEqual(['no documents match "x"']);
+    ).toEqual(['no Spaces match "x"']);
   });
 
   it('refuses a limit out of range', () => {

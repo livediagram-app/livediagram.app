@@ -24,8 +24,8 @@ export function tabListOf(tabs: readonly { id: string; name: string; orderIndex:
 
 export const tabLs = defineVerb({
   id: 'tab.ls',
-  summary: "The document's tabs",
-  description: 'Lists the tabs of a document in order: position, ref and name.',
+  summary: "The Space's tabs",
+  description: 'Lists the tabs of a Space in order: position, ref and name.',
   behaviour: 'read',
   input: z.object({ doc: z.string().describe('A name, id prefix or livehuddle URL') }),
   output: z.object({
@@ -147,9 +147,9 @@ export const tabView = defineVerb({
 
 export const tabLint = defineVerb({
   id: 'tab.lint',
-  summary: 'The diagram lint: what is wrong with how the tab is drawn',
+  summary: 'The lint: what is wrong with how the tab is drawn',
   description:
-    'Prints the diagram lint of a tab: a summary line, then one finding a line, each ending with a fix as edit operations. Exits 1 when a finding is an error.',
+    'Prints the lint of a tab: a summary line, then one finding a line, each ending with a fix as edit operations. Exits 1 when a finding is an error.',
   behaviour: 'read',
   input: z.object({
     doc: z.string().describe('A name, id prefix or livehuddle URL'),

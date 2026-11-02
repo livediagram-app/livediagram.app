@@ -79,16 +79,16 @@ const quietId = ({ id }: { id: string }) => [id];
 
 export const documentCreate = defineVerb({
   id: 'document.create',
-  summary: 'Create a document, empty or from a graph, Mermaid, elements or a template',
+  summary: 'Create a Space, empty or from a graph, Mermaid, elements or a template',
   description:
-    'Creates a document with one tab, compiled by the api from -f (a graph, Mermaid or elements) or --template; empty without either. Prints its ref, name and link.',
+    'Creates a Space with one tab, compiled by the api from -f (a graph, Mermaid or elements) or --template; empty without either. Prints its ref, name and link.',
   behaviour: 'write',
   input: z.object({
-    name: z.string().min(1).describe('The new document\u2019s name'),
+    name: z.string().min(1).describe('The new Space\u2019s name'),
     tab: z
       .string()
       .optional()
-      .describe('The first tab\u2019s name; the document\u2019s name by default'),
+      .describe('The first tab\u2019s name; the Space\u2019s name by default'),
     ...sourceFlags,
   }),
   output: lineOutput,
@@ -126,8 +126,8 @@ export const documentCreate = defineVerb({
 
 export const documentRename = defineVerb({
   id: 'document.rename',
-  summary: 'Rename a document',
-  description: 'Gives a document a new name.',
+  summary: 'Rename a Space',
+  description: 'Gives a Space a new name.',
   behaviour: 'write',
   input: z.object({ doc: docArg, name: z.string().min(1).describe('The new name') }),
   output: lineOutput,
@@ -158,7 +158,7 @@ export const documentShare = defineVerb({
   id: 'document.share',
   summary: 'Make a share link',
   description:
-    'Creates a share link to a document: participate (default) lets people comment, add stickies, write and vote without reshaping it, view lets them only open and read it, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
+    'Creates a share link to a Space: participate (default) lets people comment, add stickies, write and vote without reshaping it, view lets them only open and read it, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
   behaviour: 'write',
   input: z.object({
     doc: docArg,
@@ -200,8 +200,8 @@ export const documentShare = defineVerb({
 
 export const documentRm = defineVerb({
   id: 'document.rm',
-  summary: `Move a document to the Trash for ${TRASH_RETENTION_DAYS} days`,
-  description: `Moves a document to the Trash, where it can be restored for ${TRASH_RETENTION_DAYS} days.`,
+  summary: `Move a Space to the Trash for ${TRASH_RETENTION_DAYS} days`,
+  description: `Moves a Space to the Trash, where it can be restored for ${TRASH_RETENTION_DAYS} days.`,
   behaviour: 'destructive',
   input: z.object({ doc: docArg }),
   output: lineOutput,
@@ -224,11 +224,11 @@ export const documentRm = defineVerb({
 
 export const documentRestore = defineVerb({
   id: 'document.restore',
-  summary: 'Bring a document back from the Trash',
+  summary: 'Bring a Space back from the Trash',
   description:
-    'Restores a document from the Trash to its folder, or the root of its space when that folder is gone.',
+    'Restores a Space from the Trash to its folder, or the root of its library when that folder is gone.',
   behaviour: 'write',
-  input: z.object({ doc: z.string().describe('A name or id prefix of a document in the Trash') }),
+  input: z.object({ doc: z.string().describe('A name or id prefix of a Space in the Trash') }),
   output: lineOutput,
   run: async (ctx, input) => {
     const { trash } = await ctx.api.json<{ trash: TrashedDocument[] }>('/trash');
@@ -272,7 +272,7 @@ export const tabAdd = defineVerb({
   id: 'tab.add',
   summary: 'Add a tab, empty or from a graph, Mermaid, elements or a template',
   description:
-    'Adds a tab to a document as one changeset on a new tab, filled from -f (a graph, Mermaid or elements) or --template; empty without either. Prints the tab, the result lines and the tab rm that undoes it.',
+    'Adds a tab to a Space as one changeset on a new tab, filled from -f (a graph, Mermaid or elements) or --template; empty without either. Prints the tab, the result lines and the tab rm that undoes it.',
   behaviour: 'write',
   input: z.object({
     doc: docArg,
@@ -372,7 +372,7 @@ export const tabRename = defineVerb({
 export const tabRm = defineVerb({
   id: 'tab.rm',
   summary: 'Delete a tab',
-  description: 'Deletes one tab of a document; the other tabs stay.',
+  description: 'Deletes one tab of a Space; the other tabs stay.',
   behaviour: 'destructive',
   input: z.object({ doc: docArg, tab: z.string().describe('The tab, by name or id prefix') }),
   output: lineOutput,

@@ -72,7 +72,7 @@ function checkScope(input: { doc?: string; workspace?: boolean; tab?: string; fo
   const workspace = input.workspace === true;
   if (workspace === (input.doc !== undefined))
     throw usageRefusal(
-      'name a document, or --workspace',
+      'name a Space, or --workspace',
       `livehuddle workbench open --workspace --origin ${EXAMPLE_ORIGIN}`,
     );
   if (workspace && input.tab !== undefined)
@@ -104,15 +104,15 @@ const originFlag = z
 
 export const workbenchOpen = defineVerb({
   id: 'workbench.open',
-  summary: 'A link that opens a document live inside a workbench',
+  summary: 'A link that opens a Space live inside a workbench',
   description:
-    'Mints a link that opens your document in the editor, or with --workspace your whole workspace in the Explorer (on Home, or the --folder), signed in as you, inside the workbench at --origin. The link works once, within a minute. A workbench the token is not paired with for that scope exits 4, naming workbench pair.',
+    'Mints a link that opens your Space in the editor, or with --workspace your whole workspace in the Explorer (on Home, or the --folder), signed in as you, inside the workbench at --origin. The link works once, within a minute. A workbench the token is not paired with for that scope exits 4, naming workbench pair.',
   behaviour: 'write',
   input: z.object({
     doc: z
       .string()
       .optional()
-      .describe('A name, id prefix or livehuddle URL of your own document; or --workspace'),
+      .describe('A name, id prefix or livehuddle URL of your own Space; or --workspace'),
     workspace: z.boolean().optional().describe('The whole workspace, in the Explorer'),
     folder: z
       .string()
@@ -151,7 +151,7 @@ export const workbenchOpen = defineVerb({
         what: 'document',
         input: input.doc,
         candidates: [],
-        message: 'a workbench opens your own documents, not a share link',
+        message: 'a workbench opens your own Spaces, not a share link',
         hint: 'livehuddle document ls',
       });
     }
@@ -234,7 +234,7 @@ export const workbenchPair = defineVerb({
     workspace: z
       .boolean()
       .optional()
-      .describe('Ask for the whole workspace, not one document at a time'),
+      .describe('Ask for the whole workspace, not one Space at a time'),
   }),
   output: z.object({
     status: z.literal('paired'),

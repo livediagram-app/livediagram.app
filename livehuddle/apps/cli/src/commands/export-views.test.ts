@@ -197,23 +197,6 @@ describe('a pull file read offline', () => {
     return cli(argv, () => undefined, io);
   };
 
-  it('dates a mirror file without pulledAt by its newest tab (RL10)', async () => {
-    const { pulledAt: _p, ...sync } = file.livehuddleSync;
-    const tabs = [
-      { ...flow, updatedAt: Date.UTC(2026, 9, 3) },
-      { id: 'other-01', name: 'Other', elements: [], updatedAt: Date.UTC(2026, 9, 4) },
-    ];
-    const mirror = { ...file, document: { ...file.document, tabs }, livehuddleSync: sync };
-    const overview = await offline(
-      ['document', 'view', 'shop.livehuddle.json'],
-      JSON.stringify(mirror),
-    );
-    expect(overview.out).toContain('edited 1d ago');
-    const bare = { ...file, document: { ...file.document, tabs: [] }, livehuddleSync: sync };
-    const old = await offline(['document', 'view', 'shop.livehuddle.json'], JSON.stringify(bare));
-    expect(old.out).toContain('edited 1970-01-01');
-  });
-
   it('lists its tabs and prints its overview, with the pulled revisions', async () => {
     const ls = await offline(['tab', 'ls', 'shop.livehuddle.json']);
     expect(ls.code).toBe(0);

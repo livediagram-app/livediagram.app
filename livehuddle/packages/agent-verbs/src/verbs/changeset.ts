@@ -26,7 +26,7 @@ export const changesetLs = defineVerb({
   id: 'changeset.ls',
   summary: 'Recent changesets, newest first',
   description:
-    'Lists the recent changesets of a document, or of one tab with --tab: who, what, when, and its counts.',
+    'Lists the recent changesets of a Space, or of one tab with --tab: who, what, when, and its counts.',
   behaviour: 'read',
   input: z.object({
     doc: z.string().describe('A name, id prefix or livehuddle URL'),

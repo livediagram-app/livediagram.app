@@ -21,12 +21,7 @@ const GROUPED_ROWS = [
   {
     words: ['pull', 'push'],
     after: 'graph',
-    summary: 'one document to a file and back; export --all',
-  },
-  {
-    words: ['sync'],
-    after: 'link',
-    summary: "mirror a link's documents into the repo",
+    summary: 'one Space to a file and back; export --all',
   },
 ] as const;
 const NAMED_ONLY = [
@@ -59,7 +54,7 @@ export function topHelp(): string {
   );
   const pad = (s: string) => s.padEnd(width + 2);
   return [
-    'livehuddle: read, build, edit and discuss canvases.',
+    'livehuddle: read, build, edit and discuss Spaces, the boards a team meets on.',
     'Usage: livehuddle <resource> <verb> [args] [flags]',
     '',
     ...rows.flatMap((r) => [
@@ -75,9 +70,9 @@ export function topHelp(): string {
     'Exit 0 done, 1 refused, 2 usage, 3 not found, 4 auth, 5 conflict, 6 rate limit, 7 network.',
     '',
     'Start',
-    '  livehuddle document ls auth        find a document',
-    '  livehuddle tab view "Auth flow"    its first tab, as an outline',
-    '  livehuddle tab lint "Auth flow"    what is wrong with how it is drawn',
+    '  livehuddle document ls retro       find a Space',
+    '  livehuddle tab view "Sprint retro" its first tab, as an outline',
+    '  livehuddle tab lint "Sprint retro" what is wrong with how it is drawn',
     '  livehuddle guide edit              change a tab with edit operations',
     '',
     'Sign in: LIVEHUDDLE_TOKEN, or auth login --with-token. Never prompts.',

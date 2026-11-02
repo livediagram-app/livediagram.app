@@ -13,33 +13,33 @@ import { lucideGlyph } from '@livehuddle/ui';
 const CAPABILITIES = [
   {
     icon: lucideGlyph(lucideWorkflow, 20),
-    title: 'Diagrams from a sentence',
-    body: 'Flowcharts, architecture, org charts, mind maps and state machines. Your AI names the boxes and links; livehuddle lays them out. Mermaid works too.',
+    title: 'Sessions from a sentence',
+    body: 'Stand-ups, workshops, offices and processes. Your AI names the boxes and links; livehuddle lays them out. Mermaid works too.',
   },
   {
     icon: lucideGlyph(lucideSquareKanban, 20),
     title: 'Boards and templates',
-    body: 'Retros, roadmaps, SWOT, Gantt charts and more from the template library, filled in with your own content.',
+    body: 'Retros, agendas, lean coffee, quizzes and more from the template library, filled in with your own content.',
   },
   {
     icon: lucideGlyph(lucideTrash2, 20),
     title: 'Tidy up',
-    body: 'Renames canvases, moves the ones you no longer need to the Trash, and restores them again if you change your mind.',
+    body: 'Renames Spaces, moves the ones you no longer need to the Trash, and restores them again if you change your mind.',
   },
   {
     icon: lucideGlyph(lucideSearch, 20),
     title: 'Find and read',
-    body: 'Searches your canvases and your teams’, and reads any tab back as an outline and a picture.',
+    body: 'Searches your Spaces and your teams’, and reads any tab back as an outline and a picture.',
   },
   {
     icon: lucideGlyph(lucideShare2, 20),
     title: 'Share links',
-    body: 'Turns a canvas into a link for your team, as a Participant link unless you ask for another role.',
+    body: 'Turns a Space into a link for your team, as a Participant link unless you ask for another role.',
   },
   {
     icon: lucideGlyph(lucideUndo2, 20),
     title: 'Live, and undoable',
-    body: 'Changes land on an open canvas as they happen, outlined so you can see them, with Undo one click away. Your agent shows as its own avatar on the tab it is working on.',
+    body: 'Changes land on an open Space as they happen, outlined so you can see them, with Undo one click away. Your agent shows as its own avatar on the tab it is working on.',
   },
 ];
 
