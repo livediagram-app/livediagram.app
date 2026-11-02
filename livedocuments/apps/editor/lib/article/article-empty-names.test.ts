@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import { articleSchema as s } from './article-schema';
 import { emptyNameDecorations } from './article-plugins';
@@ -45,8 +46,6 @@ describe('empty headings and header cells', () => {
       {},
       Array.from({ length: 5000 }, (_, i) => para(i % 10 === 0 ? 'h1' : 'body', i % 3 ? 'x' : '')),
     );
-    const start = performance.now();
-    emptyNameDecorations(doc, true);
-    expect(performance.now() - start).toBeLessThan(50);
+    expect(cpuMsOf(() => emptyNameDecorations(doc, true))).toBeLessThan(cpuBudgetMs(50));
   });
 });
