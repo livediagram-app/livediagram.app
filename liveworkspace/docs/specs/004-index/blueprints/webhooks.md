@@ -9,13 +9,15 @@ Scope, by file:
 | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/index/migrations/0008_webhooks.sql`   | `webhooks` and `webhook_deliveries`                                                                                                                                                                                                                                          |
 | `liveworkspace/apps/index/src/webhooks/routes.ts`         | `handleWebhooks` (the person routes), `pushCardMoves` (`PUT /app/items/:id/card-moves`), `webhookOf`                                                                                                                                                                         |
-| `liveworkspace/apps/index/src/webhooks/outbox.ts`         | `webhookOutboxStatement`, `cardMovesStatement`, `pingStatement`, `isListened`, `queuedCount`, `kickWebhooks`                                                                                                                                                                 |
+| `liveworkspace/apps/index/src/webhooks/outbox.ts`         | `webhookOutboxStatement`, `cardMovesStatement`, `formResponseStatement`, `mentionsStatement`, `pingStatement`, `isListened`, `queuedCount`, `kickWebhooks`                                                                                                                   |
+| `liveworkspace/apps/index/src/webhooks/mentions.ts`       | `mentionedAccounts`, `listeningScopesStatement`, `linkReadersStatement`, `freshMentions`, `mentionDeliveries`: who a collab push just mentioned, and which webhooks may hear it                                                                                              |
+| `liveworkspace/apps/index/src/collab-push.ts`             | `pushCollab` reads the probes and queues the mentions in its batch; `pushForm` queues a form's new responses before storing its count                                                                                                                                        |
 | `liveworkspace/apps/index/src/webhooks/dispatch.ts`       | `dispatch`: one alarm's sends, retries, give-ups and pauses                                                                                                                                                                                                                  |
 | `liveworkspace/apps/index/src/webhooks/durable-object.ts` | `WebhookDispatcher`: `kick`, `alarm`                                                                                                                                                                                                                                         |
 | `liveworkspace/apps/index/src/webhooks/address.ts`        | `parseWebhookUrl`, `isPrivateAddress`, `resolvesPublic`, `dohResolve`                                                                                                                                                                                                        |
 | `liveworkspace/apps/index/src/webhooks/messages.ts`       | `summaryOf`, `jsonBodyOf`, `slackBodyOf`, `teamsBodyOf`, `bodyFor` (the 16 KiB cap)                                                                                                                                                                                          |
 | `liveworkspace/apps/index/src/webhooks/sign.ts`           | `newSigningSecret`, `signatureOf`                                                                                                                                                                                                                                            |
-| `liveworkspace/apps/index/src/webhooks/access.ts`         | `accountsAdminTeams`: the teams a person is an admin of now                                                                                                                                                                                                                  |
+| `liveworkspace/apps/index/src/webhooks/access.ts`         | `accountsAdminTeams`: the teams a person is an admin of now; `accountsPersonTeams`: every team they are in now                                                                                                                                                               |
 | `liveworkspace/apps/index/src/webhooks/purge.ts`          | `webhookPurgeStatements`: a closed account's webhooks                                                                                                                                                                                                                        |
 | `liveworkspace/apps/index/src/webhooks/config.ts`         | the delivery numbers                                                                                                                                                                                                                                                         |
 | `packages/index-client/src/webhooks.ts`                   | the events, kinds, labels, limits, headers and wire shapes; the client's webhook and card-move calls                                                                                                                                                                         |
@@ -27,15 +29,15 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term     | Identifier                                                       | Meaning                                                                                                         |
-| -------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| Webhook  | `webhooks` row, id a UUID                                        | one destination for one scope's events                                                                          |
-| Kind     | `json`, `slack`, `teams`                                         | signed JSON, a Slack incoming webhook, a Teams Workflows webhook                                                |
-| Scope    | `p:<person>`, `t:<team>`                                         | whose items it hears about: the item's own `items.scope` when the event is recorded                             |
-| Event    | `WEBHOOK_EVENTS`                                                 | `created`, `renamed`, `moved`, `trashed`, `shared`, `commented`, `action_assigned`, `action_done`, `card_moved` |
-| Delivery | `webhook_deliveries` row, `UNIQUE (webhook_id, event_id)`        | the outbox row, then a recent delivery                                                                          |
-| Event id | the Timeline event's id; `cmv:<item>:<card>:<at>`; `ping:<uuid>` | the same on every retry: `X-Liveworkspace-Delivery`                                                             |
-| Pause    | `paused`, `creator_left`, `failing`, `gone`                      | why nothing is sent                                                                                             |
+| Term     | Identifier                                                                                                                                       | Meaning                                                                                                                                     |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Webhook  | `webhooks` row, id a UUID                                                                                                                        | one destination for one scope's events                                                                                                      |
+| Kind     | `json`, `slack`, `teams`                                                                                                                         | signed JSON, a Slack incoming webhook, a Teams Workflows webhook                                                                            |
+| Scope    | `p:<person>`, `t:<team>`                                                                                                                         | whose items it hears about: the item's own `items.scope` when the event is recorded                                                         |
+| Event    | `WEBHOOK_EVENTS`                                                                                                                                 | `created`, `renamed`, `moved`, `trashed`, `shared`, `commented`, `action_assigned`, `action_done`, `card_moved`, `form_response`, `mention` |
+| Delivery | `webhook_deliveries` row, `UNIQUE (webhook_id, event_id)`                                                                                        | the outbox row, then a recent delivery                                                                                                      |
+| Event id | the Timeline event's id; `cmv:<item>:<card>:<at>`; `frm:<item>:<tab>:<responses>`; `mn:<item>:<tab>:<thread>:<comments>:<person>`; `ping:<uuid>` | the same on every retry: `X-Liveworkspace-Delivery`                                                                                         |
+| Pause    | `paused`, `creator_left`, `failing`, `gone`                                                                                                      | why nothing is sent                                                                                                                         |
 
 ## Behaviour and state
 
@@ -49,6 +51,25 @@ Scope, by file:
   time are copied in; `next_at` is now.
 - `cardMovesStatement`: the same over a plan's moves, `type` `card_moved`, `actor_id` null, the item's own title, the
   detail `{cardId, cardKey, card, from, to}`.
+- `formResponseStatement` (`pushForm`, when the pushed count is above 0): `INSERT OR IGNORE … SELECT` from the held
+  `collab_forms` row joined to `items` and the scope's listening webhooks, kept when the pushed `responses` is above
+  the held one; one batch with the upsert that stores the new count, the delivery first. `type` `form_response`, no
+  actor, the detail `{form, responses, total}` (the heading, the rise and the new count, as text), `occurred_at` the
+  form's `latestAt` (at most now). No held row (a form never pushed, or published again after `form: null`): nothing.
+- Mentions (`pushCollab`): `mentionedAccounts` collects the `user_…` ids in the threads' `mentionedIds`. With none,
+  nothing more. With some, the push's first read batch also runs `listeningScopesStatement` (the `p:<id>` scopes of
+  those people, and the item's `t:` scope, with a live webhook whose events hold `mention`, through
+  `webhooks_scope_live`) and `linkReadersStatement` (those people's `shared_with` rows on the item whose
+  `share_links` row is live and has no tab or this tab, the item not in the Trash). When some scope listens,
+  `freshMentions` takes each thread whose `commentCount` rose and whose `latestAt` is no earlier than the item,
+  and each account in its `mentionedIds` that the held row's `mentioned_ids` lacked, never its `latestAuthorId`, at
+  most `MENTIONS_PER_PUSH_MAX` (10). `mentionDeliveries` then keeps, per mention, `p:<person>` when it listens and
+  the person owns the (personal) item, holds such a link, or is in its team; and `t:<team>` when it listens and the
+  person is in the team. "In the team" is `accountsPersonTeams` (accounts' `/api/account/index/teams`), asked once
+  per person a push and only where it decides something; null (accounts down, no key) is "no". `mentionsStatement`
+  writes them in the push's write batch: `INSERT OR IGNORE … SELECT` from `json_each(rows)` joined to the item and the
+  row's scope's listening webhooks, under the pending cap and the hour. `type` `mention`, the actor the thread's latest
+  author, the detail `{text, on, mentionedId}`.
 - `pingStatement`: a `ping` for one webhook, `app` `liveworkspace`, no item, its title the webhook's name.
 - Each statement built adds one to the isolate's `queuedCount`. The Worker's `fetch` compares it before and after a
   request and, when it moved, `waitUntil(kickWebhooks(env))`: one read on `webhook_deliveries_due`
@@ -140,7 +161,10 @@ deleted, its others' pending rows failed (`paused`), and they paused `creator_le
 ## Performance and limits
 
 - An event write: one more statement in its batch, an index probe of `webhooks_scope_live` that writes nothing when
-  no webhook listens. A request that built one: one indexed read after answering, and one Durable Object call only
+  no webhook listens. A form push with responses: the same, in a batch of two in place of one write. A collab push
+  that mentions an account: two more indexed reads in its existing read batch (no extra round trip), and, only
+  when a `mention` webhook could hear it, at most one accounts ask per mentioned person (10 at most) and one
+  statement in its write batch; never a query per mention or per webhook. A request that built one: one indexed read after answering, and one Durable Object call only
   when something is due.
 - A run: at most 50 sends, 6 at a time, each at most 10 s; one D1 read, one batch per webhook, one `MIN` read.
 - A webhook holds at most 500 pending and 20 finished deliveries; a scope at most 10 webhooks.
@@ -154,24 +178,25 @@ deleted, its others' pending rows failed (`paused`), and they paused `creator_le
 
 ## Testing
 
-| Test                                                     | Pins                                                                                                                                                                                                                                   |
-| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/webhooks/routes.test.ts`   | who may add one (own, team admins checked now, never a guest, delegate, Drive or link Editor), sealing, the checks, the limit, pause and resume, delete, test, deliveries                                                              |
-| `liveworkspace/apps/index/src/webhooks/outbox.test.ts`   | what queues (own items, team items, collab events once, not paused, not stale, the pending cap), card moves, waking after the answer and from the cron                                                                                 |
-| `liveworkspace/apps/index/src/webhooks/dispatch.test.ts` | the signed POST, Slack, retries and give-ups, each status, timeouts, 410, failing, private and unresolved hosts, unreadable seals, a team creator who left, accounts down, the batch, the trim, the Durable Object, closing an account |
-| `liveworkspace/apps/index/src/webhooks/address.test.ts`  | the URL rules, each blocked range, resolving                                                                                                                                                                                           |
-| `liveworkspace/apps/index/src/webhooks/messages.test.ts` | each sentence, each body, the cap, the signature                                                                                                                                                                                       |
-| `packages/index-client/src/webhooks.test.ts`             | the contract and the client's calls                                                                                                                                                                                                    |
-| `packages/api-kit/src/sealed.test.ts`                    | sealing                                                                                                                                                                                                                                |
-| `packages/index-app/src/outbox.test.ts`                  | the `card_moved` kind                                                                                                                                                                                                                  |
-| `liveplanner/apps/api/src/db/item-history.test.ts`       | a card's status change queues a move                                                                                                                                                                                                   |
+| Test                                                     | Pins                                                                                                                                                                                                                                                     |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/webhooks/routes.test.ts`   | who may add one (own, team admins checked now, never a guest, delegate, Drive or link Editor), sealing, the checks, the limit, pause and resume, delete, test, deliveries                                                                                |
+| `liveworkspace/apps/index/src/webhooks/outbox.test.ts`   | what queues (own items, team items, collab events once, not paused, not stale, the pending cap), card moves, form responses, waking after the answer and from the cron                                                                                   |
+| `liveworkspace/apps/index/src/webhooks/mentions.test.ts` | who a mention reaches (the mentioned person's own, owner, team member, link holder, the team's) and who it never does (the owner's, another team's, a non-member, a link to another tab, accounts down, the author), once each, the cap, the query count |
+| `liveworkspace/apps/index/src/webhooks/dispatch.test.ts` | the signed POST, Slack, retries and give-ups, each status, timeouts, 410, failing, private and unresolved hosts, unreadable seals, a team creator who left, accounts down, the batch, the trim, the Durable Object, closing an account                   |
+| `liveworkspace/apps/index/src/webhooks/address.test.ts`  | the URL rules, each blocked range, resolving                                                                                                                                                                                                             |
+| `liveworkspace/apps/index/src/webhooks/messages.test.ts` | each sentence, each body, the cap, the signature                                                                                                                                                                                                         |
+| `packages/index-client/src/webhooks.test.ts`             | the contract and the client's calls                                                                                                                                                                                                                      |
+| `packages/api-kit/src/sealed.test.ts`                    | sealing                                                                                                                                                                                                                                                  |
+| `packages/index-app/src/outbox.test.ts`                  | the `card_moved` kind                                                                                                                                                                                                                                    |
+| `liveplanner/apps/api/src/db/item-history.test.ts`       | a card's status change queues a move                                                                                                                                                                                                                     |
 
 ## Constants and configuration
 
 `WEBHOOK_FRESH_MS` 1 h, `DELIVERY_TIMEOUT_MS` 10 s, `RETRY_DELAYS_MS` 1 min, 5 min, 30 min, 2 h, 6 h, 12 h,
 `DISPATCH_BATCH` 50, `DISPATCH_CONCURRENCY` 6, `FAILING_PAUSE_AFTER` 20, `ACCESS_RETRY_MS` 1 min, `DISPATCHER_NAME`
 `deliveries` (`config.ts`); `KICK_SLACK_MS` 500 ms (`durable-object.ts`); `DELIVERIES_LISTED` 40 (`routes.ts`);
-`DETAIL_TEXT_MAX` 500, `CHAT_TEXT_MAX` 300 (`messages.ts`); `WEBHOOKS_PER_SCOPE_MAX` 10, `WEBHOOK_NAME_MAX` 80,
+`DETAIL_TEXT_MAX` 500, `CHAT_TEXT_MAX` 300 (`messages.ts`); `MENTIONS_PER_PUSH_MAX` 10 (`mentions.ts`); `WEBHOOKS_PER_SCOPE_MAX` 10, `WEBHOOK_NAME_MAX` 80,
 `WEBHOOK_URL_MAX` 2,048, `WEBHOOK_PAYLOAD_MAX_BYTES` 16,384, `WEBHOOK_DELIVERIES_KEPT` 20, `WEBHOOK_PENDING_MAX` 500,
 `CARD_MOVES_MAX` 100 (`packages/index-client`). Secret `WEBHOOK_KEY`; binding `WEBHOOKS` (`WebhookDispatcher`,
 migration tag `v1`, `new_sqlite_classes`).
@@ -184,3 +209,5 @@ migration tag `v1`, `new_sqlite_classes`).
 - `IDX18`: accounts unreachable holds a team webhook's deliveries a minute, counting no try.
 - `IDX19`: a card move dated more than 5 minutes ahead is dated now + 5 minutes; its texts are cut to 200.
 - `IDX20`: a webhook's deliveries list answers at most 40, newest first.
+- `IDX21`: a tab's push hands on at most 10 mentions; a mention when accounts can't say who is in a team is not sent
+  where that decides it.

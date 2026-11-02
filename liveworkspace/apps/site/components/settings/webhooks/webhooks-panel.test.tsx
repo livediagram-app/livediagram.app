@@ -249,15 +249,19 @@ describe('Settings › Webhooks', () => {
     type(field('HTTPS Address'), 'https://hooks.example.com/in');
     act(() => choice('Design').click());
     // What it sends: every event to begin with; Clear, Select All and one unticked.
-    expect(form.textContent).toContain('9 of 9');
+    expect(form.textContent).toContain('11 of 11');
+    // The two that came after card moves: a mention, and a liveplanner form's responses.
+    expect(form.textContent).toContain('Mentioned');
+    expect(form.textContent).toContain('Form Response');
+    expect(form.textContent).toContain('Actions, Cards and Forms');
     expect(button('Select All', form).disabled).toBe(true);
     await press('Clear', form);
-    expect(form.textContent).toContain('0 of 9');
+    expect(form.textContent).toContain('0 of 11');
     expect(form.textContent).toContain('Pick at least one thing to send.');
     expect(submit.disabled).toBe(true);
     await press('Select All', form);
     act(() => choice('Item Created').click());
-    expect(form.textContent).toContain('8 of 9');
+    expect(form.textContent).toContain('10 of 11');
     expect(submit.disabled).toBe(false);
     await press('Add Webhook', form);
     const post = calls.find((c) => c.method === 'POST' && c.url.endsWith('/webhooks'))!;
@@ -268,7 +272,7 @@ describe('Settings › Webhooks', () => {
       teamId: 'teamA',
     });
     expect((post.body as { events: string[] }).events).not.toContain('created');
-    expect((post.body as { events: string[] }).events).toHaveLength(8);
+    expect((post.body as { events: string[] }).events).toHaveLength(10);
     expect(container.textContent).toContain('whsec_abc');
     await press('Done');
     expect(container.textContent).not.toContain('whsec_abc');
@@ -503,6 +507,8 @@ describe('words', () => {
     expect(deliveryLine({ ...DELIVERY, state: 'pending', status: null })).toBe('Retrying');
     expect(eventName('ping')).toBe('Test');
     expect(eventName('card_moved')).toBe('Card Moved');
+    expect(eventName('form_response')).toBe('Form Response');
+    expect(eventName('mention')).toBe('Mentioned');
     expect(webhookError('something_new')).toMatch(/Something went wrong/);
     expect(webhookError('webhook_url_invalid', 'teams')).toContain('logic.azure.com');
     expect(webhookError('offline')).toBe('Couldn’t connect. Check your connection and try again.');

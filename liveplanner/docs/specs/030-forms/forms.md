@@ -632,6 +632,10 @@ board settings, for switching back.
   Form tab when it has none). Unseen is counted by response number: opening the Form tab marks every response so far
   seen for that reader, and publishing marks them seen for the publisher. The Inbox's own badge still counts only
   what is assigned to the reader.
+- **Webhooks**: a liveworkspace webhook listening for **Form Response** posts each response as it lands ("A new
+  response to “Bug Report” on “Triage”"), for the project's own scope (its owner's, or its team's): the form's name
+  and how many new responses, never the answers, which stay on the board or sheet
+  ([Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md)).
 - **Email**: the project's owner gets "New response to Bug Report", naming the card's title and its project, with
   **Open the board**. At most one email per form per 15 minutes: the next one sent says "And 4 more responses have
   arrived since the last email." Turned off with **Someone Fills In My Form** in Settings' email notifications;

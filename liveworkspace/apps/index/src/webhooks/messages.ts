@@ -60,6 +60,15 @@ export function summaryOf(event: DeliveryEvent): string {
       return `${who} finished ${quoted(d.action ?? '')} on ${item}`;
     case 'card_moved':
       return `${who} moved ${quoted(d.card ?? '')} from ${d.from ?? '?'} to ${d.to ?? '?'} on ${item}`;
+    case 'form_response': {
+      const count = Number(d.responses) || 1;
+      const form = quoted(d.form ?? '');
+      return `${count === 1 ? 'A new response' : `${count} new responses`} to ${form} on ${item}`;
+    }
+    case 'mention':
+      return d.text
+        ? `${who} mentioned someone on ${item}: ${cut(d.text, CHAT_TEXT_MAX)}`
+        : `${who} mentioned someone on ${item}`;
     case 'ping':
       return `Test from liveworkspace: “${event.title}” is set up and working.`;
   }

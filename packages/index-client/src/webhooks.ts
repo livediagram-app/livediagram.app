@@ -1,7 +1,8 @@
 // Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): what a person's or a team's items do, sent to another tool
 // as it happens. The names, limits and wire shapes the index, the Settings panel and liveplanner's card moves agree on.
 
-/** The events a webhook can listen for: the Timeline's item events, and liveplanner's card moves. */
+/** The events a webhook can listen for: the Timeline's item events, liveplanner's card moves and form responses, and
+ *  @-mentions in any app's comments. */
 export const WEBHOOK_EVENTS = [
   'created',
   'renamed',
@@ -12,6 +13,8 @@ export const WEBHOOK_EVENTS = [
   'action_assigned',
   'action_done',
   'card_moved',
+  'form_response',
+  'mention',
 ] as const;
 export type WebhookEvent = (typeof WEBHOOK_EVENTS)[number];
 
@@ -32,6 +35,8 @@ export const WEBHOOK_EVENT_LABELS: Record<WebhookDeliveryType, string> = {
   action_assigned: 'Action or Card Assigned',
   action_done: 'Action or Card Done',
   card_moved: 'Card Moved (liveplanner)',
+  form_response: 'Form Response (liveplanner)',
+  mention: 'Mentioned',
   ping: 'Test',
 };
 

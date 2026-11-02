@@ -112,11 +112,16 @@ export const EVENT_GROUPS: readonly {
     events: [
       { event: 'shared', label: 'Share Link Made', hint: 'Someone makes a link to share it' },
       { event: 'commented', label: 'Comment Added', hint: 'Someone comments or replies' },
+      {
+        event: 'mention',
+        label: 'Mentioned',
+        hint: 'Someone @-mentions you, or a teammate on the team’s items',
+      },
     ],
   },
   {
     id: 'work',
-    label: 'Actions and Cards',
+    label: 'Actions, Cards and Forms',
     events: [
       {
         event: 'action_assigned',
@@ -125,6 +130,7 @@ export const EVENT_GROUPS: readonly {
       },
       { event: 'action_done', label: 'Action or Card Done', hint: 'An action or card is done' },
       { event: 'card_moved', label: 'Card Moved', hint: 'A card moves to another column' },
+      { event: 'form_response', label: 'Form Response', hint: 'Someone fills in a form' },
     ],
   },
 ];
@@ -132,6 +138,7 @@ export const EVENT_GROUPS: readonly {
 // The events only one app sends, which name it by its logo.
 export const EVENT_APP: Partial<Record<WebhookEvent, 'liveplanner'>> = {
   card_moved: 'liveplanner',
+  form_response: 'liveplanner',
 };
 
 const EVENT_NAMES = new Map(EVENT_GROUPS.flatMap((g) => g.events.map((e) => [e.event, e.label])));

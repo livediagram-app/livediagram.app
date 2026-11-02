@@ -2,6 +2,9 @@
 // event), written by a statement that rides the batch recording the event, so no write path can forget one and none
 // waits on the network. After the response the request wakes the dispatcher (durable-object.ts), whose alarm sends.
 //
+// A mention is the one event not handed to its item's scope: each row names the webhook scope it may go to (the
+// mentioned person's own, or the item's team's), worked out by mentions.ts before the batch.
+//
 // Each statement reads the event's item scope and the scope's live webhooks through indexes: with none listening it
 // writes nothing. `queuedCount` moves on whenever a statement is built, so a request knows (by comparing before and
 // after) whether it might have queued something and is worth a wake; a concurrent request in the same isolate can only
@@ -19,10 +22,13 @@ export const isListened = (type: string) => LISTENED.has(type);
 let queued = 0;
 export const queuedCount = () => queued;
 
-// The scope's live webhooks listening for `type`, under their pending cap. `w` and the event's columns come from the
-// statement around it.
-const LISTENING = `JOIN webhooks w ON w.scope = i.scope AND w.paused_at IS NULL
-  WHERE instr(w.events, ',' || %TYPE% || ',') > 0
+// The live webhooks of `scope` (the item's, by default) listening for `type`, under their pending cap. `w` and the
+// event's columns come from the statement around it; `?4` is WEBHOOK_PENDING_MAX.
+const listening = (
+  type: string,
+  scope = 'i.scope',
+) => `JOIN webhooks w ON w.scope = ${scope} AND w.paused_at IS NULL
+  WHERE instr(w.events, ',' || ${type} || ',') > 0
     AND (SELECT COUNT(*) FROM (SELECT 1 FROM webhook_deliveries p
          WHERE p.webhook_id = w.id AND p.state = 'pending' LIMIT ?4)) < ?4`;
 
@@ -41,7 +47,7 @@ export function webhookOutboxStatement(
        FROM json_each(?2) j
        JOIN timeline_events e ON e.id = j.value
        JOIN items i ON i.id = e.item_id
-       ${LISTENING.replace('%TYPE%', 'e.type')}
+       ${listening('e.type')}
          AND e.occurred_at >= ?1 - ?3`,
     )
     .bind(now, JSON.stringify(eventIds), WEBHOOK_FRESH_MS, WEBHOOK_PENDING_MAX);
@@ -78,10 +84,90 @@ export function cardMovesStatement(
        SELECT w.id, j.value ->> '$.id', 'card_moved', i.app, i.id, i.title, NULL, j.value ->> '$.name',
               j.value ->> '$.detail', j.value ->> '$.at', ?1
        FROM items i JOIN json_each(?2) j
-       ${LISTENING.replace('%TYPE%', "'card_moved'")}
+       ${listening("'card_moved'")}
          AND i.id = ?5 AND (j.value ->> '$.at') >= ?1 - ?3`,
     )
     .bind(now, JSON.stringify(rows), WEBHOOK_FRESH_MS, WEBHOOK_PENDING_MAX, itemId);
+}
+
+/** A form's new responses as the plan pushes them (`PUT /app/items/:id/forms/:tabId`). */
+export type FormResponses = { heading: string; responses: number; latestAt: number };
+
+/**
+ * The statement queuing a live form's new responses for its plan's scope's webhooks: one delivery for the rise from
+ * the count the index holds to `form.responses`, nothing when it didn't rise or the form was never pushed. It reads
+ * the held count, so it goes before the statement that stores the new one, in the same batch. The detail is the
+ * form's heading and the counts, never an answer.
+ */
+export function formResponseStatement(
+  db: D1Database,
+  itemId: string,
+  tabId: string,
+  form: FormResponses,
+  now = Date.now(),
+): D1PreparedStatement {
+  queued++;
+  return db
+    .prepare(
+      `INSERT OR IGNORE INTO webhook_deliveries
+         (webhook_id, event_id, type, app, item_id, title, actor_id, actor_name, detail, occurred_at, next_at)
+       SELECT w.id, 'frm:' || ?2 || ':' || ?5 || ':' || CAST(?6 AS INTEGER), 'form_response', i.app, i.id, i.title,
+              NULL, NULL,
+              json_object('form', ?7, 'responses', CAST(CAST(?6 - f.responses AS INTEGER) AS TEXT),
+                          'total', CAST(CAST(?6 AS INTEGER) AS TEXT)),
+              ?8, ?1
+       FROM collab_forms f JOIN items i ON i.id = f.item_id
+       ${listening("'form_response'")}
+         AND f.item_id = ?2 AND f.tab_id = ?5 AND ?6 > f.responses AND ?8 >= ?1 - ?3`,
+    )
+    .bind(
+      now,
+      itemId,
+      WEBHOOK_FRESH_MS,
+      WEBHOOK_PENDING_MAX,
+      tabId,
+      form.responses,
+      form.heading,
+      Math.min(form.latestAt, now),
+    );
+}
+
+/** One mention's delivery to the webhooks of one scope (mentions.ts decides which scopes may hear it). */
+export type MentionDelivery = {
+  // `mn:<item>:<tab>:<element>:<comments>:<person>`: the same however often the push is sent.
+  id: string;
+  scope: string;
+  actorId: string | null;
+  actorName: string | null;
+  detail: { text: string; on: string; mentionedId: string };
+  at: number;
+};
+
+/** The statement queuing a collab push's mentions, each for the live webhooks of the scope it names. */
+export function mentionsStatement(
+  db: D1Database,
+  itemId: string,
+  rows: readonly MentionDelivery[],
+  now = Date.now(),
+): D1PreparedStatement {
+  queued++;
+  return db
+    .prepare(
+      `INSERT OR IGNORE INTO webhook_deliveries
+         (webhook_id, event_id, type, app, item_id, title, actor_id, actor_name, detail, occurred_at, next_at)
+       SELECT w.id, j.value ->> '$.id', 'mention', i.app, i.id, i.title, j.value ->> '$.actorId',
+              j.value ->> '$.actorName', j.value ->> '$.detail', j.value ->> '$.at', ?1
+       FROM items i JOIN json_each(?2) j
+       ${listening("'mention'", "(j.value ->> '$.scope')")}
+         AND i.id = ?5 AND (j.value ->> '$.at') >= ?1 - ?3`,
+    )
+    .bind(
+      now,
+      JSON.stringify(rows.map((r) => ({ ...r, detail: JSON.stringify(r.detail) }))),
+      WEBHOOK_FRESH_MS,
+      WEBHOOK_PENDING_MAX,
+      itemId,
+    );
 }
 
 /** Send Test's `ping`, due now. */

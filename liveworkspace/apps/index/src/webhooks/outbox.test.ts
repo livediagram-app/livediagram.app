@@ -248,6 +248,89 @@ describe('card moves', () => {
   });
 });
 
+describe('form responses', () => {
+  const pushForm = (itemId: string, responses: number, extra: Record<string, unknown> = {}) =>
+    asApp(`/app/items/${itemId}/forms/f1`, {
+      form: { heading: 'Bug Report', boardTabId: null, responses, latestAt: Date.now(), ...extra },
+    });
+
+  it("queues the rise in a form's responses for its plan's scope, once, never the answers", async () => {
+    const ada = await person('user_wf1');
+    await addWebhook(ada.auth, { events: ['form_response'] });
+    const bo = await person('user_wf2');
+    await addWebhook(bo.auth, { events: ['form_response'] });
+    const plan = await makeItem(ada.auth, { title: 'Triage' });
+    // Published with none, then one response, the same push again, then two more at once.
+    expect((await pushForm(plan.id, 0, { code: 'abc123' })).status).toBe(204);
+    expect((await pushForm(plan.id, 1)).status).toBe(204);
+    await pushForm(plan.id, 1);
+    await pushForm(plan.id, 3);
+    const rows = deliveries();
+    expect(rows.map((d) => [d.type, d.title, d.actor_id, d.actor_name])).toEqual([
+      ['form_response', 'Triage', null, null],
+      ['form_response', 'Triage', null, null],
+    ]);
+    expect(rows.map((d) => JSON.parse(d.detail as string))).toEqual([
+      { form: 'Bug Report', responses: '1', total: '1' },
+      { form: 'Bug Report', responses: '2', total: '3' },
+    ]);
+    // Bo's webhook is not the plan's scope's.
+    expect(new Set(rows.map((d) => d.webhook_id)).size).toBe(1);
+    // Nothing on the Timeline.
+    const timeline = await body<{ events: { type: string }[] }>(
+      await call('/timeline', { auth: ada.auth }),
+    );
+    expect(timeline.events.map((e) => e.type)).toEqual(['created']);
+  });
+
+  it('queues nothing for a form never pushed, or published again, or for a webhook not listening', async () => {
+    const ada = await person('user_wf3');
+    const { webhook } = await addWebhook(ada.auth, { events: ['created'] });
+    const plan = await makeItem(ada.auth);
+    h.db.sql.prepare('DELETE FROM webhook_deliveries').run();
+    await pushForm(plan.id, 2);
+    await pushForm(plan.id, 4);
+    expect(deliveries()).toEqual([]);
+    await call(`/webhooks/${webhook.id}`, {
+      method: 'PATCH',
+      auth: ada.auth,
+      body: { events: ['form_response'] },
+    });
+    // Taken off, then published again with the count it had: not news.
+    await asApp(`/app/items/${plan.id}/forms/f1`, { form: null });
+    await pushForm(plan.id, 4);
+    expect(deliveries()).toEqual([]);
+    await pushForm(plan.id, 5);
+    expect(deliveries().map((d) => d.type)).toEqual(['form_response']);
+  });
+
+  it('costs a form push one round trip', async () => {
+    const ada = await person('user_wf4');
+    await addWebhook(ada.auth, { events: ['form_response'] });
+    const plan = await makeItem(ada.auth);
+    await pushForm(plan.id, 1);
+    let trips = 0;
+    const db = h.db.env.INDEX_DB;
+    const env = {
+      ...h.db.env,
+      INDEX_DB: {
+        prepare: (q: string) => db.prepare(q),
+        batch: (s: D1PreparedStatement[]) => (trips++, db.batch(s)),
+      } as unknown as D1Database,
+    };
+    await call(`/app/items/${plan.id}/forms/f1`, {
+      method: 'PUT',
+      auth: 'lp-key',
+      headers: { 'X-Index-App': 'liveplanner' },
+      body: { form: { heading: 'Q', boardTabId: null, responses: 2, latestAt: Date.now() } },
+      env,
+    });
+    expect(trips).toBe(1);
+    // The first push held no count; the second queued its rise.
+    expect(deliveries()).toHaveLength(1);
+  });
+});
+
 // What the outbox costs an event write (the card's performance note): the statement rides in the event's own batch, so
 // the measure is the request's time with no webhook listening against one that queues a delivery per rename. Budgets
 // are CPU-time generous so a loaded machine never fails them; the numbers are logged for the PR.

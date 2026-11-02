@@ -22,8 +22,9 @@ a shared item are about that item's content and give no say over webhooks.
 
 ## What it sends
 
-The events, each a Timeline event the index records in the same batch as the change
-([one-explorer-contracts.md "Timeline"](one-explorer-contracts.md#timeline)), plus liveplanner's card moves:
+The events: the Timeline's item events, each recorded by the index in the same batch as the change
+([one-explorer-contracts.md "Timeline"](one-explorer-contracts.md#timeline)), plus three that are not on the
+Timeline: liveplanner's card moves and form responses, and @-mentions in any app's comments:
 
 | Event             | When                                                                     |
 | ----------------- | ------------------------------------------------------------------------ |
@@ -36,20 +37,49 @@ The events, each a Timeline event the index records in the same batch as the cha
 | `action_assigned` | an action or an open card gets a new assignee                            |
 | `action_done`     | an action or card is turned done                                         |
 | `card_moved`      | a liveplanner card moves from one status (board column) to another       |
+| `form_response`   | a liveplanner form takes one or more responses                           |
+| `mention`         | a comment @-mentions someone (see who hears it, below)                   |
 | `ping`            | Send Test, from Settings: proves the endpoint and the signature, no item |
 
-A webhook picks any of the first nine (at least one). It hears an event only when the event's item is in its scope
-at the time: a person's webhook hears about the items that person owns, a team's about the team's items. That is
-what the Timeline shows the scope's people, so a payload never carries more than someone in the scope could already
-read there: the item's id, app, name and link, who did it (the name an app reported, or none), when, and the event's
-Timeline detail (a comment's opening words, an action's name and assignee's name, a card's title and statuses). An
-event about no item (a team's, a token's) is never sent, nor an event older than an hour when it is recorded (a
-merge, a migration or a resent push replaying history).
+A webhook picks any of the first eleven (at least one). Apart from a mention, it hears an event only when the
+event's item is in its scope at the time: a person's webhook hears about the items that person owns, a team's about
+the team's items. That is what the Timeline shows the scope's people, so a payload never carries more than someone
+in the scope could already read there: the item's id, app, name and link, who did it (the name an app reported, or
+none), when, and the event's Timeline detail (a comment's opening words, an action's name and assignee's name, a
+card's title and statuses). An event about no item (a team's, a token's) is never sent, nor an event older than an
+hour when it is recorded (a merge, a migration or a resent push replaying history).
 
 A **card move** is liveplanner's: a card's status changing between two statuses, neither the Trash, recorded by
 the plan beside the card's history and pushed to the index with the plan's other pushes
 (`PUT /app/items/:id/card-moves`, [one-explorer-contracts.md "What an item pushes"](one-explorer-contracts.md#what-an-item-pushes)).
 It is not a Timeline event; the index only hands it to the plan's scope's webhooks.
+
+A **form response** is liveplanner's too: a live form's response count going up, which the plan pushes to the index
+as each response lands (`PUT /app/items/:id/forms/:tabId`, the Inbox's form push). The index compares the count with
+the one it held, in the batch that stores the new one, and hands the plan's scope's webhooks one event for the rise:
+the form's heading, how many new responses and the total, never what anyone answered (those stay in the plan, as a
+card or a row its scope's people open there). A push that doesn't raise the count (a resend, a form published
+again) sends nothing.
+
+A **mention** is any app's: a comment that @-mentions someone, read from the comment threads every app already
+pushes for the Inbox (`PUT /app/items/:id/collab/:tabId`; each thread's `mentionedIds`, the people its comments
+mention, as the apps' phone notifications read them). When a thread gains comments and names someone it didn't
+before, that person was just mentioned. Unlike every other event, a mention is about a person, so it never goes to
+the item's scope as such. It goes only to webhooks the mentioned person, or their team, can read the item through:
+
+- **the mentioned person's own webhooks** (`p:<them>`), when they can read the item now: they own it, they are one of
+  its team's people (asked of accounts at the time, as a team webhook's sending is), or a live share link they
+  opened reaches it, the whole item or the tab the comment is on;
+- **the item's team's webhooks** (`t:<team>`), when the item is the team's and the mentioned person is one of its
+  people.
+
+Anyone else's webhook hears nothing of it: not the item's owner's (unless they are the one mentioned), not another
+team the mentioned person is in, and not the mentioned person's own when their only link reaches another tab. Only
+an account is mentioned this way (a guest or a team member with no account has no webhooks), never the comment's own
+author, at most ten mentions a tab's push, and when accounts can't say who is in the team, a check that needs it
+sends nothing. A person mentioned again later in the same thread is not news. The payload is what the mentioned
+person could already read: the item, who commented, the comment's opening words and where it is (`{text, on,
+mentionedId}`).
 
 ## Destinations
 
@@ -62,7 +92,8 @@ It is not a Timeline event; the index only hands it to the plan's scope's webhoo
   more than five minutes old, so a captured delivery can't be replayed. The id is the same on every retry of one
   delivery, for de-duplicating.
 - **Slack**: an incoming-webhook URL (`https://hooks.slack.com/services/…`), whose channel Slack fixed when it was
-  made. Messages arrive as one sentence ("Ada moved “Fix sign-in” from Doing to Done on “Sprint 4”") with an
+  made. Messages arrive as one sentence ("Ada moved “Fix sign-in” from Doing to Done on “Sprint 4”", "Ada mentioned
+  someone on “Roadmap”: …", "3 new responses to “Bug Report” on “Triage”") with an
   **Open in liveplanner** link and the app and event beneath.
 - **Microsoft Teams**: a Workflows webhook URL (the "Post to a channel when a webhook request is received" flow,
   on `*.logic.azure.com` or `*.powerplatform.com`), taking an Adaptive Card: the same sentence, the app and event,
