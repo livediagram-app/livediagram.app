@@ -25,3 +25,4 @@ One row per default applied where a spec is silent. Each code is cited in its bl
 | IDX18 | webhooks        | accounts unreachable holds a team webhook's deliveries a minute, counting no try.                                                            |
 | IDX19 | webhooks        | a card move dated more than 5 minutes ahead is dated now + 5 minutes; its texts are cut to 200.                                              |
 | IDX20 | webhooks        | a webhook's deliveries list answers at most 40, newest first.                                                                                |
+| IDX21 | webhooks        | a tab's push hands on at most 10 mentions; when accounts can't say who is in a team, a mention that needs it is not sent.                    |

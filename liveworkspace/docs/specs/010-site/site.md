@@ -570,8 +570,9 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     option tiles: Slack, Microsoft Teams, Your Own Service), the address (labelled for the choice, with the steps
     to get one from Slack or Teams written out), a **Name**, **Whose Items** (your own, or each team you run, as
     option tiles; none to choose when you run no team) and **What Should It Send?**: the events as checkable
-    tiles, each with a line saying when it fires, grouped under Items, Sharing and Comments, and Actions and
-    Cards (Card Moved carries liveplanner's logo), with Select All and Clear. All events start chosen. Add Webhook
+    tiles, each with a line saying when it fires, grouped under Items, Sharing and Comments (with **Mentioned**:
+    "Someone @-mentions you, or a teammate on the team’s items"), and Actions, Cards and Forms (Card Moved and
+    **Form Response** carry liveplanner's logo), with Select All and Clear. All events start chosen. Add Webhook
     waits for a name, an address and one event. A plain webhook's signing secret then shows once, with how to
     check a signature; a Slack or Teams one is ready, with a note to send a test.
   - With none yet, the empty state ("No Webhooks Yet", a line on what they do, **Add Webhook**). Loading shows the

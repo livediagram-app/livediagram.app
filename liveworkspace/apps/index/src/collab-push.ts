@@ -11,6 +11,11 @@
 // anything dated before the item was made (a copy's threads) is not news. A deleted comment's words leave the
 // Timeline with it (retractedComments): a thread with fewer comments than it held drops the `commented` events past
 // its count, and one that is gone drops its `commented` and `comment_resolved` events too.
+//
+// Webhooks' mentions come from the same comparison (webhooks/mentions.ts): a thread that gained comments and names an
+// account it didn't before queues a `mention` for the webhooks that person, or their team, can read the item through,
+// in the batch that replaces the tab. A form push that raises its response count queues a `form_response` the same
+// way (webhooks/outbox.ts formResponseStatement).
 
 import {
   COLLAB_EVENTS_MAX,
@@ -26,6 +31,16 @@ import { isId, isPartId } from './codec';
 import type { Env } from './env';
 import { badRequest, json, noContent, notFound, readObject } from './http';
 import { bulkEventStatements, type BulkEvent } from './timeline';
+import { accountsPersonTeams } from './webhooks/access';
+import {
+  freshMentions,
+  linkReadersStatement,
+  listeningScopesStatement,
+  mentionDeliveries,
+  mentionedAccounts,
+  type HeldMentions,
+} from './webhooks/mentions';
+import { formResponseStatement, mentionsStatement } from './webhooks/outbox';
 
 const LABEL_MAX = 200;
 const TEXT_MAX = 500;
@@ -228,12 +243,20 @@ export async function pushCollab(
 
   const db = env.INDEX_DB;
   const key = [app, itemId, tabId];
-  // What the tab held, to tell what changed: one round trip of three primary-key ranges.
-  const [itemRead, threadRead, actionRead] = await db.batch<Record<string, unknown>>([
-    db.prepare('SELECT title, scope, created_at FROM items WHERE id = ?').bind(itemId),
+  const now = Date.now();
+  // The accounts the threads mention, whose webhooks a mention might reach (none, usually: no probes).
+  const mentioned = mentionedAccounts(threads.values());
+  // What the tab held, to tell what changed: one round trip of three primary-key ranges, and, when the threads
+  // mention anyone, the two indexed probes a mention's webhooks need.
+  const [itemRead, threadRead, actionRead, listeningRead, linkRead] = await db.batch<
+    Record<string, unknown>
+  >([
+    db
+      .prepare('SELECT title, scope, created_at, owner_id, team_id FROM items WHERE id = ?')
+      .bind(itemId),
     db
       .prepare(
-        `SELECT element_id, resolved, comment_count FROM collab_threads
+        `SELECT element_id, resolved, comment_count, mentioned_ids FROM collab_threads
          WHERE app = ? AND item_id = ? AND tab_id = ?`,
       )
       .bind(...key),
@@ -243,8 +266,14 @@ export async function pushCollab(
          WHERE app = ? AND item_id = ? AND tab_id = ?`,
       )
       .bind(...key),
+    ...(mentioned.length > 0
+      ? [
+          listeningScopesStatement(db, itemId, mentioned),
+          linkReadersStatement(db, itemId, tabId, mentioned, now),
+        ]
+      : []),
   ]);
-  const item = itemRead?.results[0] as HeldItem | undefined;
+  const item = itemRead?.results[0] as (HeldItem & MentionRow) | undefined;
   const events = item
     ? collabEvents(
         { app, itemId, tabId, ...item },
@@ -252,9 +281,24 @@ export async function pushCollab(
         (actionRead?.results ?? []) as HeldAction[],
         [...threads.values()],
         [...actions.values()],
-        Date.now(),
+        now,
       )
     : [];
+  const mentions =
+    item && listeningRead?.results.length
+      ? await mentionDeliveries(
+          { itemId, tabId, ...item },
+          freshMentions(
+            { itemId, tabId, ...item },
+            (threadRead?.results ?? []) as HeldMentions[],
+            threads.values(),
+            now,
+          ),
+          new Set(listeningRead.results.map((r) => r.scope as string)),
+          new Set((linkRead?.results ?? []).map((r) => r.person_id as string)),
+          accountsPersonTeams(env),
+        )
+      : [];
   const retracted =
     item && threads.size < COLLAB_MAX_THREADS
       ? retractedComments(itemId, tabId, (threadRead?.results ?? []) as HeldThread[], threads)
@@ -262,6 +306,7 @@ export async function pushCollab(
   await db.batch([
     ...bulkEventStatements(db, events),
     ...(retracted.length > 0 ? [retractStatement(db, itemId, retracted)] : []),
+    ...(mentions.length > 0 ? [mentionsStatement(db, itemId, mentions, now)] : []),
     db
       .prepare('DELETE FROM collab_threads WHERE app = ? AND item_id = ? AND tab_id = ?')
       .bind(...key),
@@ -346,6 +391,7 @@ function retractStatement(db: D1Database, itemId: string, pairs: [string, number
 }
 
 type HeldItem = { title: string; scope: string; created_at: number };
+type MentionRow = { owner_id: string; team_id: string | null };
 type HeldThread = { element_id: string; resolved: number; comment_count: number };
 type HeldAction = {
   element_id: string;
@@ -480,7 +526,7 @@ export async function pushForm(
     ]);
     return noContent();
   }
-  await db
+  const store = db
     .prepare(
       `INSERT INTO collab_forms (app, item_id, tab_id, heading, board_tab_id, responses, latest_at, code)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -498,8 +544,10 @@ export async function pushForm(
       form.responses,
       form.latestAt,
       form.code ?? null,
-    )
-    .run();
+    );
+  // A count above none can be news to a webhook: its statement reads the held count, so it goes first, in one batch.
+  if (form.responses > 0) await db.batch([formResponseStatement(db, itemId, tabId, form), store]);
+  else await store.run();
   return noContent();
 }
 

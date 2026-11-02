@@ -46,6 +46,24 @@ describe('summaryOf', () => {
     ],
     [{ type: 'card_moved', detail: {} }, 'Ada moved “Untitled” from ? to ? on “Sprint 4”'],
     [
+      {
+        type: 'form_response',
+        actorName: null,
+        detail: { form: 'Bug Report', responses: '1', total: '4' },
+      },
+      'A new response to “Bug Report” on “Sprint 4”',
+    ],
+    [
+      { type: 'form_response', detail: { form: 'Bug Report', responses: '3', total: '9' } },
+      '3 new responses to “Bug Report” on “Sprint 4”',
+    ],
+    [{ type: 'form_response', detail: {} }, 'A new response to “Untitled” on “Sprint 4”'],
+    [
+      { type: 'mention', detail: { text: 'Bo, can you look?', mentionedId: 'user_bo' } },
+      'Ada mentioned someone on “Sprint 4”: Bo, can you look?',
+    ],
+    [{ type: 'mention' }, 'Ada mentioned someone on “Sprint 4”'],
+    [
       { type: 'ping', title: 'Team chat' },
       'Test from liveworkspace: “Team chat” is set up and working.',
     ],

@@ -29,6 +29,8 @@ describe('the webhooks contract', () => {
       expect(isWebhookEvent(event)).toBe(true);
       expect(WEBHOOK_EVENT_LABELS[event]).toBeTruthy();
     }
+    expect(isWebhookEvent('form_response')).toBe(true);
+    expect(isWebhookEvent('mention')).toBe(true);
     expect(isWebhookEvent('ping')).toBe(false);
     expect(isWebhookEvent('edited')).toBe(false);
     for (const kind of WEBHOOK_KINDS) expect(isWebhookKind(kind)).toBe(true);

@@ -382,7 +382,8 @@ actions: [{elementId, actionId, elementLabel, name, description?, status, assign
 assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push makes the Timeline's
   collaboration events (below); the optional ids say who wrote, resolved or closed. The comment text itself stays in the content, beside what it is about; the index
   keeps what the Inbox needs: the latest comment's opening, the action's note, and the names on it. Shown text
-  is cut to length rather than refused.
+  is cut to length rather than refused. A thread that gains comments and newly names an account in `mentionedIds`
+  also queues a webhook `mention` for that person's or their team's webhooks ([webhooks.md](webhooks.md)).
 - Cards and their threads go under the tab id `~cards` (`COLLAB_CARDS_TAB`): each card assigned to someone is an
   action whose `elementId` is the card's id, and each of a card's comment threads a thread whose `elementId` is the
   thread's own id (unique across every item) and `elementLabel` its title, both with `card: {id?, key, type,
@@ -400,7 +401,8 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is
   deleted or renamed. `PUT /app/items/:id/forms/:tabId/seen`: `{personId, seen}`: that person has seen the
   first `seen` responses (a count only grows). Opening the form marks every response so far seen; publishing
   marks them seen for the publisher. `code` is the live link's public code, sent when the link is published
-  (before anyone is given it); a push without one keeps the code held, and `null` drops it with the row.
+  (before anyone is given it); a push without one keeps the code held, and `null` drops it with the row. A push
+  that raises the held count queues a webhook `form_response` for the item's scope ([webhooks.md](webhooks.md)).
 - `GET /app/forms/:code`: `{itemId, tabId}`: the item and tab a live form's code names, for the app that pushed
   it (404 otherwise), so the app's Worker routes a public form request to its item without a table of its own
   (`@liveworkspace/index-app` `createFormPlaces` caches the answer a minute). `GET
