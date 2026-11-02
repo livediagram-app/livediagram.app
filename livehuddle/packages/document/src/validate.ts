@@ -21,7 +21,7 @@ import type { Element, ShapeKind, Tab } from './index';
 import { ALL_ANCHORS } from './arrow-types';
 import { isPenColourName } from './pen-colours';
 import { ADDER_KEY_LENGTH } from '@liveworkspace/model-core/adder';
-import { ENTITY_MAX_FIELDS, PAGE_HEADING_MAX } from './data-shapes';
+import { PAGE_HEADING_MAX } from './data-shapes';
 import { isQuickSwatchSlot } from './quick-swatches';
 import { isImageCredit } from './image-credit';
 import { isBendDelta, isCurvePoints, MAX_CURVE_POINTS } from './malformed-bends';
@@ -104,12 +104,8 @@ export const SHAPE_KINDS = new Set<string>([
   // prose into. Named 'page' internally because the flowchart output symbol
   // above already owns 'document'.
   'page',
-  // Mind node (docs/specs/009-elements/mind-node.md).
-  'mind-node',
   // Lane (docs/specs/009-elements/lane.md).
   'lane',
-  // Record (docs/specs/009-elements/entity.md).
-  'entity',
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md).
   'banner',
   'callout',
@@ -119,14 +115,7 @@ export const SHAPE_KINDS = new Set<string>([
   'pointer-note',
   'diagram-key',
   'stack',
-  'sequence',
   'boundary',
-  'layer-stack',
-  'pyramid',
-  'cycle',
-  'hub',
-  'onion',
-  'chevrons',
   'stat-row',
   'process',
   'site-header',
@@ -185,13 +174,6 @@ export const SHAPE_KINDS = new Set<string>([
   'star',
   'speech-bubble',
   'frame',
-  'browser',
-  'monitor',
-  'laptop',
-  'phone',
-  'tablet',
-  'foldable',
-  'smartwatch',
   'progress-bar',
   'progress-ring',
   'timeline-rail',
@@ -202,7 +184,6 @@ export const SHAPE_KINDS = new Set<string>([
   'code-block',
   'checklist',
   'legend',
-  'sankey',
   'focus-button',
   'icon',
   'sticker',
@@ -266,13 +247,7 @@ function endpointRule(ep: unknown): string | null {
     case 'free':
       return isNum(ep.x) && isNum(ep.y) ? null : 'a free end: finite x and y';
     case 'pinned':
-      if (!isNonEmptyStr(ep.elementId) || !ANCHORS.has(ep.anchor as string)) return PINNED_RULE;
-      return ep.field === undefined ||
-        (Number.isInteger(ep.field) &&
-          (ep.field as number) >= 0 &&
-          (ep.field as number) < ENTITY_MAX_FIELDS)
-        ? null
-        : `a pinned end's field: a whole number from 0 to ${ENTITY_MAX_FIELDS - 1}`;
+      return isNonEmptyStr(ep.elementId) && ANCHORS.has(ep.anchor as string) ? null : PINNED_RULE;
     case 'on-arrow':
       return isNonEmptyStr(ep.arrowId) && isNum(ep.t) ? null : 'an on-arrow end: arrowId and t';
     // LEGACY (docs/specs/009-elements/web-components-and-no-groups.md): groups are gone and no

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { timelineLayout } from './concept-timeline';
 
-// docs/specs/009-elements/concept-graphics.md "Timeline"
+// docs/specs/009-elements/timeline.md
 describe('timelineLayout', () => {
   const l = timelineLayout(720, 240, 4);
 

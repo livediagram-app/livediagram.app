@@ -7,8 +7,7 @@
 //   - The flow's direction is read from how most arrows run, not from their summed lengths, which
 //     long loop arrows tipped sideways.
 //   - Flow layouts rank with side steps and drawn-order loops (auto-layout-tidy-rank.ts) and route
-//     every arrow square (auto-layout-route.ts); the tree routes square too, the mindmap keeps its
-//     straight spokes.
+//     every arrow square (auto-layout-route.ts); the tree routes square too.
 //   - The block starts where the nodes were (not where the title above them starts) and is then
 //     nudged the shortest way clear of the boxes it does not move: a title, a key, a note.
 //
@@ -24,7 +23,6 @@ import {
 import {
   COMPONENT_GAP,
   components,
-  reanchorArrow,
   type Edge,
   type PlacedComponent,
   type Pt,
@@ -32,7 +30,6 @@ import {
 } from './auto-layout-shared';
 import type { AutoLayoutOptions, LayoutDirection } from './auto-layout';
 import { positionTreeComponent } from './auto-layout-tree';
-import { positionMindmapComponent } from './auto-layout-mindmap';
 import { positionTidyFlowComponent } from './auto-layout-tidy-flow';
 import { rankTidyComponent } from './auto-layout-tidy-rank';
 import { routeTidyArrows, type RouteRequest } from './auto-layout-route';
@@ -73,18 +70,6 @@ export function tidyDirection(
   }
   if (down !== across) return down > across ? 'TB' : 'LR';
   return vx > vy ? 'LR' : 'TB';
-}
-
-// A mindmap is branches around a centre: every node reached one way only. On a graph that loops
-// back on itself (a flowchart's retry, an org chart's dotted line) the spokes cross the map and read
-// as nothing, so the style is not offered there.
-export function tidyMindmapFits(elements: Element[], lockedIds?: ReadonlySet<ElementId>): boolean {
-  const { rects, edges } = tidyGraph(elements, lockedIds);
-  const pairs = new Set(
-    edges.map((e) => (e.from < e.to ? `${e.from}|${e.to}` : `${e.to}|${e.from}`)),
-  );
-  const comps = components([...rects.keys()], edges);
-  return rects.size > 2 && pairs.size === rects.size - comps.length;
 }
 
 // The editor's Tidy Up (docs/specs/008-canvas/layout-cleanup.md "Tidy Up keeps a flowchart a
@@ -137,8 +122,7 @@ export function tidyLayoutElements(
       // A loop's way back is not a parent link: hang the tree off the edges that run with the flow.
       const { forward } = rankTidyComponent({ ids: comp, edges, centers, size, dir, isDecision });
       placed = positionTreeComponent(comp, forward, size, centers);
-    } else if (style === 'mindmap') placed = positionMindmapComponent(comp, edges, size, centers);
-    else {
+    } else {
       const flow = positionTidyFlowComponent(comp, edges, size, centers, dir, isDecision, labelOf);
       for (const id of flow.side.keys()) sideSteps.add(id);
       for (const [key, xs] of flow.lanes)
@@ -249,13 +233,7 @@ export function tidyLayoutElements(
   );
   const placedById = new Map(placed.map((e) => [e.id, e]));
   const portRect = (id: ElementId): Rect => placedById.get(id) as Rect;
-  let rerouted: Map<ElementId, ArrowElement>;
-  if (style === 'mindmap') {
-    const finalCenters = new Map<ElementId, Pt>();
-    for (const el of placed)
-      if (isBoxed(el)) finalCenters.set(el.id, { x: el.x + el.width / 2, y: el.y + el.height / 2 });
-    rerouted = new Map(routable.map((a) => [a.id, reanchorArrow(a, finalCenters)]));
-  } else {
+  {
     const laneShift = dir === 'TB' ? dx : dy;
     const requests: RouteRequest[] = routable.map((a) => {
       const fromEl = (a.from as { elementId: ElementId }).elementId;
@@ -275,7 +253,7 @@ export function tidyLayoutElements(
     const decisions = new Set(
       elements.filter((e) => e.type === 'shape' && e.shape === 'diamond').map((e) => e.id),
     );
-    rerouted = routeTidyArrows({
+    const rerouted = routeTidyArrows({
       dir,
       nodes: finalRect,
       obstacles,
@@ -283,8 +261,8 @@ export function tidyLayoutElements(
       decisions,
       requests,
     });
+    return placed.map((el) => rerouted.get(el.id) ?? el);
   }
-  return placed.map((el) => rerouted.get(el.id) ?? el);
 }
 
 // The translation nearest (dx0, dy0) that keeps every rect a clearance away from every obstacle.

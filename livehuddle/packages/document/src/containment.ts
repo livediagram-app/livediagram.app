@@ -2,7 +2,6 @@
 // the one rule views, edit-operation membership reports, the lint and the editor's frame drag read.
 import type { Element, ElementId } from './index';
 import type { Point } from '@liveworkspace/model-core/geometry-primitives';
-import { isMindNode } from './mind-map';
 
 export type Box = { x: number; y: number; width: number; height: number };
 
@@ -53,43 +52,9 @@ export function isContainerKind(kind: string): boolean {
 
 const isContainerShape = (el: Boxed) => el.type === 'shape' && isContainerKind(el.shape);
 
-// Each mind node's parent link, with links to anything but a mind node in `elements` dropped and every
-// loop broken at its node with the lowest array index.
-function mindParents(elements: readonly Element[]): Map<ElementId, ElementId> {
-  const index = new Map<ElementId, number>();
-  elements.forEach((el, i) => {
-    if (isMindNode(el) && !index.has(el.id)) index.set(el.id, i);
-  });
-  const links = new Map<ElementId, ElementId>();
-  for (const el of elements) {
-    if (isMindNode(el) && el.mindParentId && index.has(el.mindParentId)) {
-      links.set(el.id, el.mindParentId);
-    }
-  }
-  const settled = new Set<ElementId>();
-  for (const start of index.keys()) {
-    const chain: ElementId[] = [];
-    const onChain = new Set<ElementId>();
-    let node: ElementId | undefined = start;
-    while (node !== undefined && !settled.has(node) && !onChain.has(node)) {
-      chain.push(node);
-      onChain.add(node);
-      node = links.get(node);
-    }
-    if (node !== undefined && onChain.has(node)) {
-      const loop = chain.slice(chain.indexOf(node));
-      const lowest = loop.reduce((a, b) => (index.get(a)! <= index.get(b)! ? a : b));
-      links.delete(lowest);
-    }
-    for (const id of chain) settled.add(id);
-  }
-  return links;
-}
-
-// The container of every non-arrow element: its mind map parent, else the smallest frame or lane of
-// strictly greater area holding its centre (earlier on a tie), else null for the root.
+// The container of every non-arrow element: the smallest frame or lane of strictly greater area holding its
+// centre (earlier on a tie), else null for the root.
 export function deriveContainers(elements: readonly Element[]): Map<ElementId, ElementId | null> {
-  const parents = mindParents(elements);
   const byArea = elements
     .filter(hasGeometry)
     .filter(isContainerShape)
@@ -98,11 +63,6 @@ export function deriveContainers(elements: readonly Element[]): Map<ElementId, E
   for (const el of elements) {
     if (el.type === 'arrow') continue;
     const id = el.id;
-    const parent = parents.get(id);
-    if (parent !== undefined) {
-      result.set(id, parent);
-      continue;
-    }
     if (!hasGeometry(el)) {
       result.set(id, null);
       continue;
@@ -146,7 +106,7 @@ export function containerContents(
   const holders = known ?? deriveContainers(elements);
   const carried = new Map<ElementId, boolean>();
   // Whether the chain of holders from `id` reaches a moved container. Chains end: each holder is
-  // strictly larger, and mind-map loops are broken (deriveContainers).
+  // strictly larger (deriveContainers).
   const reachesMoved = (id: ElementId): boolean => {
     if (moved.has(id)) return true;
     const known = carried.get(id);

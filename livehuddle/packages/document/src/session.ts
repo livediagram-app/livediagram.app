@@ -200,7 +200,6 @@ const NON_VOTABLE_SHAPES = new Set([
   'pie-chart',
   'bar-chart',
   'line-chart',
-  'sankey',
   'legend',
   'diagram-key',
   // A checklist is a to-do list, a task like the action panel, not a candidate.

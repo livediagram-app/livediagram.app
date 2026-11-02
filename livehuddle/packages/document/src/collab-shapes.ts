@@ -316,8 +316,7 @@ export const CHAIR_SITTER_FACING: Readonly<Record<ChairFacing, ChairSitterFacing
 // free-flowing label sized to the box ran under the status chip and over the
 // drivers. Drawing the card itself is what makes the collision impossible.
 //
-// The chair is NOT here — it renders furniture under an ordinary label, the
-// way the record box (docs/specs/009-elements/entity.md) renders its rows under its title.
+// The chair is NOT here — it renders furniture under an ordinary label.
 // Done check (docs/specs/012-collaboration/done-check.md): a room-response card like the rest of this family,
 // so it takes the same panel chrome and the same viewer context.
 function isDoneCheckShape(kind: ShapeKind): boolean {
@@ -369,9 +368,7 @@ export function hasOwnFace(kind: ShapeKind): boolean {
 // Edit Quiz dialog owns, and editing it inline would print the hidden question
 // over the closed disc for anybody who double-clicked the card.
 export function opensInlineLabelEditor(kind: ShapeKind): boolean {
-  // A sequence diagram's words are its rows, written in its dialog (docs/specs/009-elements/sequence-diagram.md); its
-  // box keeps its border controls, so it is not self-drawing, but a click never opens a label editor on it.
-  return !isSelfDrawingShape(kind) && !isQuizShape(kind) && kind !== 'sequence';
+  return !isSelfDrawingShape(kind) && !isQuizShape(kind);
 }
 
 // Whether text alignment does anything on this kind: not a self-drawing kind

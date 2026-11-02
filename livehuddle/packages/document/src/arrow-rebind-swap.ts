@@ -18,11 +18,9 @@ const SIDES: readonly Side[] = ['n', 'e', 's', 'w'];
 
 type End = { arrowId: ElementId; end: 'from' | 'to' };
 
-// A field-pinned end (docs/specs/009-elements/entity.md "Field to field") sits where its field is, not where
-// its anchor is, so trading anchors would move nothing: it takes no part.
 const anchorOf = (index: Map<ElementId, Element>, e: End): Anchor | null => {
   const ep = (index.get(e.arrowId) as ArrowElement)[e.end];
-  return ep.kind === 'pinned' && ep.field === undefined ? ep.anchor : null;
+  return ep.kind === 'pinned' ? ep.anchor : null;
 };
 
 const withAnchor = (arrow: ArrowElement, end: 'from' | 'to', anchor: Anchor): ArrowElement => {

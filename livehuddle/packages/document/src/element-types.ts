@@ -21,23 +21,12 @@ import type { CardMedia } from './card';
 import type { ChipLook } from './chip';
 import type { AttachPoint } from './attachment';
 import type { BoundaryStyle } from './boundary';
-import type { ConceptAnim, ConceptRow, PyramidVariant } from './concept';
+import type { ConceptAnim, ConceptRow } from './concept';
 import type { PenColourName } from './pen-colours';
 import type { QuickSwatchSlot } from './quick-swatches';
 import type { CodeThemeId } from '@liveworkspace/model-core/code-themes';
-import type { MindFlow, MindSpacing } from './mind-flow';
-import type { FlowchartDirection } from './flowchart';
 import type { ChartPaletteId } from './chart-palettes';
 import type { ChartVariant } from './chart-types';
-import type {
-  SankeyAlign,
-  SankeyLeftover,
-  SankeyAnim,
-  SankeyFlow,
-  SankeyLinkColor,
-  SankeyNodeStyle,
-  SankeyValueLabel,
-} from './sankey-model';
 import type { PickerSource, SelectionMode, SessionButtonConfig } from './selection-mode';
 import type { IconSize } from '@liveworkspace/model-core/icon-size';
 import type { IconWeight } from '@liveworkspace/model-core/icon-weight';
@@ -56,7 +45,6 @@ import type {
 import type {
   AnimationSpeed,
   ChecklistItem,
-  EntityField,
   LegendItem,
   Reaction,
   CodeLanguage,
@@ -79,8 +67,6 @@ import type {
   TextSizePreset,
 } from './index';
 import type { KeyRow } from './diagram-key';
-import type { MindLook } from './person-node';
-import type { SequenceElementMessage, SequenceElementParticipant } from './sequence-element';
 import type { StackAlign, StackDirection } from './stack';
 
 // Where a chart's legend sits relative to the plot (docs/specs/009-elements/pie-chart.md). 'off' is modelled
@@ -345,7 +331,7 @@ export type ShapeElement = {
   quizStartedAt?: number;
   quizLockedAt?: number;
   quizRevealed?: boolean;
-  // A timeline rail saved before the Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): its point count
+  // A timeline rail saved before the Timeline (docs/specs/009-elements/timeline.md): its point count
   // and labels, read once to make its milestones (element-normalise railToTimeline) and never written again.
   railCount?: number;
   railLabels?: string[];
@@ -381,20 +367,6 @@ export type ShapeElement = {
   // Legend (docs/specs/009-elements/pie-chart.md): the colour-coded rows. Only meaningful on the 'legend'
   // kind; bounded in validate.ts.
   legendItems?: LegendItem[];
-  // Sankey diagram (docs/specs/009-elements/sankey.md): the flows (by node name), the nodes somebody
-  // recoloured, and how the diagram draws. Only meaningful on the 'sankey' kind; bounded in validate.ts.
-  // Absent options read as their defaults: bands blended, end nodes to the right, amounts shown, no unit.
-  sankeyFlows?: SankeyFlow[];
-  sankeyNodes?: SankeyNodeStyle[];
-  sankeyLinkColor?: SankeyLinkColor;
-  sankeyAlign?: SankeyAlign;
-  sankeyValueLabel?: SankeyValueLabel;
-  sankeyUnit?: string;
-  sankeyLeftover?: SankeyLeftover;
-  sankeyLeftoverName?: string;
-  sankeyAnim?: SankeyAnim;
-  sankeyAnimSpeed?: AnimationSpeed;
-  sankeyAnimRepeat?: boolean;
   // Chart palette (docs/specs/009-elements/pie-chart.md): which categorical ramp the slices / series take
   // when they carry no colour of their own. Only meaningful on the chart
   // kinds; absent = the tab theme's palette, as before.
@@ -412,34 +384,9 @@ export type ShapeElement = {
   // the card is usually narrower than the code someone pastes into it. Set
   // false to keep long lines on one line (and off the card).
   codeWrap?: boolean;
-  // Record (docs/specs/009-elements/entity.md): the rows of a UML class / ER entity box. Only
-  // meaningful on the 'entity' kind; bounded in validate.ts. The element's
-  // `label` is the record's TITLE, so a record needs no extra name field.
-  entityFields?: EntityField[];
   // Reaction pad (docs/specs/009-elements/reaction-pad.md): which burst this pad throws. Absent falls back to
   // REACTION_DEFAULT at render, so a pad from an older file still works.
   reaction?: Reaction;
-  // Mind node (docs/specs/009-elements/mind-node.md): which node owns this one. Absent = a root.
-  //
-  // A child pointer rather than a `children[]` array: single-valued, so it
-  // cannot disagree with itself, and deleting a parent leaves a dangling id
-  // (which reads as "this is a root now") rather than a corrupt tree.
-  mindParentId?: ElementId;
-  // The shape the map grows in (docs/specs/009-elements/mind-node.md). Read off the tree's ROOT and
-  // applied to the whole tree; absent = 'tree', the one arrangement growth
-  // shipped with, so every map already drawn keeps its shape.
-  mindFlow?: MindFlow;
-  // How far apart the map's nodes sit (docs/specs/009-elements/mind-node.md "Spacing"). Read off the ROOT like
-  // `mindFlow`; absent = 'comfortable', the gaps every map had before, so no map moves.
-  mindSpacing?: MindSpacing;
-  // Flowchart (docs/specs/009-elements/flowchart.md): the chart this step or lane belongs to, minted as the
-  // id of its first step. The ONLY thing that makes a shape a step: a diamond without it is a diamond.
-  flowchartId?: string;
-  // Which way the chart flows, written to every step together so no single delete loses it. Absent =
-  // down, or right once the chart has lanes.
-  flowDirection?: FlowchartDirection;
-  // The chart's lane this step sits in. Absent, or naming a lane that is gone, reads as the first lane.
-  flowLaneId?: ElementId;
   // Page masthead (docs/specs/009-elements/page-element.md): the fixed heading + subtitle above the body.
   // Meaningful on the 'page' kind, and reused by two web components
   // (docs/specs/009-elements/web-components-and-no-groups.md) for the same job — a single-line heading beside the
@@ -477,26 +424,14 @@ export type ShapeElement = {
   stackGap?: number;
   stackPadding?: number;
   stackColumns?: number;
-  // A sequence diagram's rows, Numbered and Play (docs/specs/009-elements/sequence-diagram.md).
-  sequenceParticipants?: SequenceElementParticipant[];
-  sequenceMessages?: SequenceElementMessage[];
-  sequenceNumbered?: boolean;
-  sequenceAnim?: 'play';
-  sequenceAnimSpeed?: AnimationSpeed;
-  sequenceAnimRepeat?: boolean;
-  // A mind node drawn as a person (docs/specs/009-elements/org-chart.md); absent = an ordinary mind node.
-  mindLook?: MindLook;
   // A boundary's look (docs/specs/009-elements/boundary.md); absent = Tab.
   boundaryStyle?: BoundaryStyle;
-  // Concept graphics (docs/specs/009-elements/concept-graphics.md): the rows (a layer, tier or step each, with an
-  // optional note), a pyramid's variant (absent = pyramid) and the Concept animation with its speed and repeat.
+  // The Timeline (docs/specs/009-elements/timeline.md): its milestones (a name and a when each) and its animation
+  // with its speed and repeat.
   conceptRows?: ConceptRow[];
-  pyramidVariant?: PyramidVariant;
   conceptAnim?: ConceptAnim;
   conceptAnimSpeed?: AnimationSpeed;
   conceptAnimRepeat?: boolean;
-  // A hub's spokes (docs/specs/009-elements/concept-graphics.md); absent = drawn, `false` = off.
-  hubSpokes?: boolean;
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md), bounded in validate.ts: a stat row's KPI
   // cards, a process's step captions (one circle each, numbered by position)
   // and a header's nav links. Each only meaningful on its own kind.

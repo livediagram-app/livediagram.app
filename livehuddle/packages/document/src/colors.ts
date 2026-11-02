@@ -567,13 +567,6 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   // Badge and Step number (docs/specs/009-elements/badge.md): the face paints the pill / disc in its look.
   'badge',
   'step',
-  // Concept graphics (docs/specs/009-elements/concept-graphics.md): rows, tiers and discs, no box.
-  'layer-stack',
-  'pyramid',
-  'cycle',
-  'hub',
-  'onion',
-  'chevrons',
   'icon',
   // A sticker paints its own plate, shadow and content (docs/specs/010-palette/stickers.md).
   'sticker',
@@ -595,8 +588,6 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'checklist',
   // Legend (docs/specs/009-elements/pie-chart.md): LegendView paints its own card and rows.
   'legend',
-  // Sankey (docs/specs/009-elements/sankey.md): nodes and bands, coloured per node; no box to stroke.
-  'sankey',
   // Behaviour elements (docs/specs/009-elements/portal-element.md, /106): the ring / cover IS the element.
   'portal',
   'reveal',
@@ -667,17 +658,15 @@ export function positionsInlineIcon(element: Element): boolean {
   return acceptsInlineIcon(element) && !SELF_PLACED_ICON_SHAPES.has(element.shape);
 }
 
-// The kinds whose own face never draws an inline icon: a badge or step number (chip.ts, its number or text), a concept
-// graphic (its rows), a sequence diagram, a Diagram key, and a mind node drawn as a person (its initials).
+// The kinds whose own face never draws an inline icon: a badge or step number (chip.ts, its number or text), a
+// Timeline (its rows) and a Diagram key.
 // The chip kinds are named here rather than read from chip.ts, which imports this file.
 function drawsNoInlineIcon(element: ShapeElement): boolean {
   return (
     element.shape === 'badge' ||
     element.shape === 'step' ||
     isConceptShape(element.shape) ||
-    element.shape === 'sequence' ||
-    element.shape === 'diagram-key' ||
-    (element.shape === 'mind-node' && element.mindLook === 'person')
+    element.shape === 'diagram-key'
   );
 }
 
@@ -698,38 +687,31 @@ export function acceptsInlineIcon(element: Element): element is ShapeElement {
 }
 
 // Whether an element exposes a user-adjustable corner radius. Only the
-// free-corner rectangles qualify: the plain square and the browser
-// frame, both of which render as a CSS rounded rectangle so a real
-// pixel radius applies. Every other shape either bakes its rounding
-// into the silhouette (circle / stadium / cloud / actor) or is an SVG
-// outline (diamond / cylinder / hexagon / document / parallelogram and
-// the monitor / laptop / phone / tablet device frames) where a corner
-// radius is meaningless, so the Radius control is hidden for them.
+// free-corner rectangles qualify: the plain square, which renders as a
+// CSS rounded rectangle so a real pixel radius applies. Every other shape
+// either bakes its rounding into the silhouette (circle / stadium / cloud /
+// actor) or is an SVG outline (diamond / cylinder / hexagon / document /
+// parallelogram) where a corner radius is meaningless, so the Radius control
+// is hidden for them.
 //
 // The web components with a rectangular surface (docs/specs/009-elements/web-components-and-no-groups.md) take it too: the
 // banner and header bar, the callout card, and each of a stat row's cards.
-//
-// So does a mind node (docs/specs/009-elements/mind-node.md "Round nodes"): a CSS box like the
-// square, whose corner the canvas and the export both read from `borderRadius`.
 export function supportsBorderRadius(element: Element): element is ShapeElement {
   return element.type === 'shape' && RADIUS_SHAPES.has(element.shape);
 }
 const RADIUS_SHAPES = new Set<string>([
   'square',
-  'browser',
   'banner',
   'callout',
   'card',
   'site-header',
   'stat-row',
-  'mind-node',
 ]);
 
 // The corner preset the Radius control highlights: the element's own, else the preset nearest
-// its kind's default corner (docs/specs/008-canvas/corner-radius.md). A mind node's 12 px default
-// is Medium; every other kind shows Small, as before.
+// its kind's default corner (docs/specs/008-canvas/corner-radius.md): Small.
 export function shownBorderRadius(element: ShapeElement): BorderRadius {
-  return element.borderRadius ?? (element.shape === 'mind-node' ? 'md' : 'sm');
+  return element.borderRadius ?? 'sm';
 }
 
 // Default arrow stroke colour when the element has no explicit one set.

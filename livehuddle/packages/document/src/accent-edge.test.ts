@@ -20,7 +20,7 @@ const square = (over: Partial<ShapeElement> = {}): ShapeElement => ({
 
 describe('accent edge (docs/specs/008-canvas/accent-edge.md)', () => {
   it('is offered on the box shapes only', () => {
-    for (const shape of ['square', 'stadium', 'card', 'mind-node'])
+    for (const shape of ['square', 'stadium', 'card'])
       expect(supportsAccentEdge({ type: 'shape', shape }), shape).toBe(true);
     for (const shape of ['circle', 'diamond', 'cylinder', 'frame'])
       expect(supportsAccentEdge({ type: 'shape', shape }), shape).toBe(false);

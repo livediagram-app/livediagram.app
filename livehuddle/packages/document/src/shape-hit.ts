@@ -22,7 +22,6 @@ import { defaultFillColor } from './colors';
 import { rotatePoint, type Point } from '@liveworkspace/model-core/geometry-primitives';
 import type { Element, ShapeElement } from './index';
 import {
-  BROWSER_CHROME,
   SHAPE_GEOMETRY_KINDS,
   shapeGeometry,
   type ShapePart,
@@ -53,7 +52,6 @@ const CSS_OUTLINE_KINDS: ReadonlySet<ShapeKind> = new Set<ShapeKind>([
   'square',
   'circle',
   'stadium',
-  'browser',
   'page',
 ]);
 const DRAWN_KINDS: ReadonlySet<ShapeKind> = new Set(SHAPE_GEOMETRY_KINDS);
@@ -180,7 +178,7 @@ export function partLines(part: ShapePart, seg: OutlineSegments = HIT_SEGMENTS):
 
 // A drawn kind: every part of its table geometry, fitted into the box as drawn.
 function drawnOutline(el: ShapeElement, filled: boolean): Omit<ShapeHitOutline, 'halfWidth'> {
-  const geometry = shapeGeometry(el.shape, el.width / el.height);
+  const geometry = shapeGeometry(el.shape);
   if (!geometry) return { lines: [], fills: [] };
   const area =
     el.shape === 'actor' ? actorFigureRect(el) : { x: 0, y: 0, width: el.width, height: el.height };
@@ -216,17 +214,6 @@ function cssOutline(el: ShapeElement, filled: boolean): Omit<ShapeHitOutline, 'h
     ring = roundedRectRing(inset, inset, w, h, r, r);
   }
   const lines: HitLine[] = [{ closed: true, points: ring }];
-  // The browser's chrome strip ends in a 1px rule (boxed-element-overlays.tsx BrowserChrome).
-  const rule = 2 * inset + BROWSER_CHROME.heightPx - 0.5;
-  if (el.shape === 'browser' && rule < el.height) {
-    lines.push({
-      closed: false,
-      points: [
-        { x: 2 * inset, y: rule },
-        { x: el.width - 2 * inset, y: rule },
-      ],
-    });
-  }
   return { lines, fills: filled ? [ring] : [] };
 }
 

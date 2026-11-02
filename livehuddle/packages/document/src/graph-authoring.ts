@@ -19,9 +19,6 @@ import type { ErShape } from './er-heads';
 import { SHAPE_DEFAULT_SIZE } from './factories';
 import { ARROW_THICKNESS_PX } from './arrow-style';
 import { coerceShapeKind } from './validate';
-import { ENTITY_MAX_FIELDS, ENTITY_MAX_TEXT, type EntityField } from './data-shapes';
-import { entityHeight } from './entity-geometry';
-import { ENTITY_KEY_LABELS } from './entity-fields';
 // `Element` is defined on the barrel (index.ts); a type-only import back into
 // it is erased at runtime, so the cycle is harmless — the package's sanctioned
 // pattern (auto-layout.ts does the same).
@@ -42,10 +39,6 @@ export type GraphNode = {
   // Optional detail behind the heading: becomes the element's note, which the
   // editor shows on the element (docs/specs/015-api/mcp-server.md §4.7).
   note?: string;
-  // Field rows: the node becomes an entity (docs/specs/009-elements/entity.md), a titled record box, with
-  // `label` as its title. What an ER import makes of each table
-  // (docs/specs/020-import-export/mermaid.md).
-  fields?: EntityField[];
   // A person's role: the node draws as the org-chart template's person card, the label (the name) in bold over it,
   // with a person glyph unless the node names its own icon.
   role?: string;
@@ -69,9 +62,6 @@ export type GraphEdge = {
   // The ER ends (docs/specs/020-import-export/mermaid.md "ER diagram coverage"): each table's cardinality where the
   // line meets it, its start's and its end's. Set, they take over from `head`.
   er?: { from: ErShape; to: ErShape };
-  // Turned round for the layout only (er-hub-first.ts): the arrow it lays out is turned back after, so the stored
-  // relationship reads as written.
-  turned?: true;
 };
 
 // A named cluster of nodes (docs/specs/020-import-export/mermaid.md: a Mermaid subgraph). Rendered as a
@@ -234,45 +224,6 @@ function lookBoxSize(
   return { width, height };
 }
 
-// An entity node: title-aligned top-left (the title otherwise sits centred over
-// the rows), wide enough for its longest row, tall enough for every row.
-function entityNode(n: GraphNode, raw: EntityField[]): Element {
-  // Within the validator's budget (UTF-16 units), never ending on half an emoji.
-  const clip = (t: string) => t.slice(0, ENTITY_MAX_TEXT).replace(/[\uD800-\uDBFF]$/, '');
-  const fields = raw.slice(0, ENTITY_MAX_FIELDS).map((f) => ({
-    name: clip(f.name),
-    ...(f.type ? { type: clip(f.type) } : {}),
-    ...(f.key ? { key: f.key } : {}),
-  }));
-  // A key takes the room its words took when they were written into the type (`uuid PK`): the gutter's
-  // glyphs are about as wide, and the layout keeps the widths it was tuned on.
-  const widest = Math.max(
-    glyphUnits(n.label ?? ''),
-    ...fields.map(
-      (f) =>
-        glyphUnits(f.name) +
-        glyphUnits(f.type ?? '') +
-        (f.key ? glyphUnits(` ${ENTITY_KEY_LABELS[f.key]}`) : 0) +
-        2,
-    ),
-  );
-  return {
-    id: n.id,
-    type: 'shape' as const,
-    shape: 'entity' as const,
-    x: 0,
-    y: 0,
-    width: Math.round(Math.min(360, Math.max(200, widest * CHAR_PX + PAD_PX))),
-    height: entityHeight(fields.length, 'sm'),
-    textSize: 'sm' as const,
-    textAlignX: 'left' as const,
-    textAlignY: 'top' as const,
-    ...(n.label !== undefined ? { label: n.label } : {}),
-    entityFields: fields,
-    ...(n.note ? { note: n.note } : {}),
-  };
-}
-
 // A node's link becomes a URL other viewers follow, so only a web or mail address is kept (the link picker's
 // normaliseUrl, @liveworkspace/workbench/lib/url-safety, guards typed links the same way): a Mermaid
 // `click A "javascript:..."` or a graph node's link from the API is dropped, never stored as a dead link badge.
@@ -291,7 +242,6 @@ export function graphToElements(
     // junction. Drawn at the default circle size it read as an empty box
     // waiting for text. Solid in the theme's accent via the preset binding,
     // which a theme walk resolves (docs/specs/020-import-export/mermaid.md).
-    if (n.fields) return entityNode(n, n.fields);
     // A final state is its bullseye, a little larger than the start's dot so the ring reads.
     if ((shape === 'circle' || shape === 'final-state') && !(n.label ?? '').trim()) {
       const size = shape === 'final-state' ? FINAL_STATE_SIZE : DOT_SIZE;

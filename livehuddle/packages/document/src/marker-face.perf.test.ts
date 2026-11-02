@@ -1,14 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { MARKER_FACE_MAX_PARTS } from './marker-face';
-import { createShape } from './shape-factory';
-import { svgBoxed } from './svg-render';
 import { svgMarkerFace } from './svg-render-face-finish';
 
 // docs/specs/008-canvas/finish.md "Performance": a face drawn in marker draws at most MARKER_FACE_MAX_PARTS parts, each
 // a marker part (markerFacePart) about the cost of a Marker body. The worst face, every part a coloured-in band, stays
 // under 12 ms (x10 for CI and coverage), so one settle of the canvas pass (useFaceFinishPass) on a busy face fits a
-// frame budget's worth of idle time; an ordinary concept graphic stays under 2 ms. CPU time, fastest of rounds.
+// frame budget's worth of idle time; an ordinary Timeline stays under 2 ms. CPU time, fastest of rounds.
 const fastest = (fn: () => void, rounds = 3, perRound = 5): number => {
   fn();
   let best = Infinity;
@@ -31,15 +29,5 @@ describe('marker face budgets', { timeout: PERF_TEST_TIMEOUT_MS }, () => {
     ).join('');
     const face = { width: 2000, height: 4000 };
     expect(fastest(() => svgMarkerFace(markup, 'budget', face))).toBeLessThan(cpuBudgetMs(120));
-  });
-
-  it('a concept graphic stays under 2 ms (x10 for CI and coverage)', () => {
-    for (const kind of ['layer-stack', 'pyramid', 'chevrons', 'cycle', 'hub', 'onion'] as const) {
-      const el = { ...createShape(kind, 0, 0), id: 'budget' };
-      expect(
-        fastest(() => svgBoxed(el, { tabFinish: 'marker' }), 3, 10),
-        kind,
-      ).toBeLessThan(cpuBudgetMs(20));
-    }
   });
 });

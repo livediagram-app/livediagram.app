@@ -51,15 +51,12 @@ describe('every kind with a body draws one', () => {
     'pie-chart',
     'bar-chart',
     'line-chart',
-    'sankey',
     'progress-bar',
     'progress-ring',
     'rating',
     'timeline-rail',
-    'entity',
     'page',
     'lane',
-    'browser',
     'chair',
     'portal',
     'reveal',
@@ -139,13 +136,6 @@ describe('a self-painting element gets no box drawn round it', () => {
       tabOf([{ ...createShape('pie-chart', 0, 0), width: 200, height: 160 }]),
     );
     expect(hasElementRect(svg)).toBe(false);
-  });
-
-  it('still frames a record, which is a real box with rows in it', () => {
-    const svg = renderElementsToSvg(
-      tabOf([{ ...createShape('entity', 0, 0), width: 200, height: 160 }]),
-    );
-    expect(hasElementRect(svg)).toBe(true);
   });
 });
 

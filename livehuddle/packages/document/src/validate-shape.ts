@@ -4,7 +4,6 @@
 
 import { isChartCategory, isChartSeries, isChartSlice } from './malformed-chart-rows';
 import { isRoomDoor } from './office';
-import { isFlowchartDirection } from './flowchart';
 import { CHART_VARIANTS, isChartVariant } from './chart-types';
 import { EMBED_PROVIDERS } from './youtube';
 import { SELECTION_MODES, isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
@@ -30,9 +29,6 @@ import {
 import {
   CHECKLIST_MAX_ITEMS,
   PAGE_HEADING_MAX,
-  ENTITY_KEYS,
-  ENTITY_MAX_FIELDS,
-  ENTITY_MAX_TEXT,
   CHECKLIST_MAX_TEXT,
   LEGEND_MAX_ITEMS,
   LEGEND_MAX_TEXT,
@@ -46,9 +42,7 @@ import { isChipLook } from './chip';
 import { isAttachPoint } from './attachment';
 import { isPointerTip } from './pointer-note';
 import { isBoundaryStyle } from './boundary';
-import { isPyramidVariant } from './concept';
 import { isChartPaletteId } from './chart-palettes';
-import { isMindFlow, isMindSpacing } from './mind-flow';
 import {
   type ElementValidationIssue,
   type FieldCheck,
@@ -63,18 +57,6 @@ import {
   stringRule,
 } from '@liveworkspace/model-core/validate-primitives';
 import { isRecord } from '@liveworkspace/model-core/is-record';
-import {
-  SANKEY_ALIGNS,
-  SANKEY_LEFTOVERS,
-  SANKEY_ANIMS,
-  SANKEY_LINK_COLORS,
-  SANKEY_MAX_FLOWS,
-  SANKEY_MAX_NODES,
-  SANKEY_NAME_MAX,
-  SANKEY_UNIT_MAX,
-  SANKEY_VALUE_LABELS,
-  SANKEY_VALUE_MAX,
-} from './sankey-model';
 
 // railLabels / lineCategories / pieSlices / lineSeries / pickerOptions / session options.
 const MAX_DATA_ARRAY = 5_000;
@@ -126,13 +108,6 @@ export const ATTACH_POINTS_RULE = [
 const flag = (field: string): FieldCheck => ({ field, valid: isBool, rule: 'a boolean' });
 const finite = (field: string): FieldCheck => ({ field, valid: isNum, rule: 'a finite number' });
 
-// Record (docs/specs/009-elements/entity.md): rows of { name, type? }.
-const isEntityField = (f: unknown) =>
-  isRecord(f) &&
-  isStrUpTo(ENTITY_MAX_TEXT)(f.name) &&
-  isOptionalStrUpTo(f.type, ENTITY_MAX_TEXT) &&
-  (f.key === undefined || (ENTITY_KEYS as readonly unknown[]).includes(f.key));
-
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md). The
 // one-per-participant rule is `setResponse`'s on write, not a load check: a duplicate from an older
 // client renders as the first entry rather than failing the tab.
@@ -170,27 +145,6 @@ const isRollCallEntry = (entry: unknown) =>
 
 const isChecklistItem = (item: unknown) =>
   isRecord(item) && isStrUpTo(CHECKLIST_MAX_TEXT)(item.text) && isBool(item.done);
-
-// Sankey (docs/specs/009-elements/sankey.md): a zero or negative amount is stored (the Flows dialog names
-// why it is not drawn), but not one past SANKEY_VALUE_MAX, nor a name past SANKEY_NAME_MAX.
-const isSankeyFlow = (item: unknown) =>
-  isRecord(item) &&
-  isStrUpTo(SANKEY_NAME_MAX)(item.from) &&
-  isStrUpTo(SANKEY_NAME_MAX)(item.to) &&
-  isNum(item.value) &&
-  Math.abs(item.value) <= SANKEY_VALUE_MAX;
-
-const isSankeyNode = (item: unknown) =>
-  isRecord(item) &&
-  isStrUpTo(SANKEY_NAME_MAX)(item.name) &&
-  (item.color === undefined || isStrUpTo(64)(item.color)) &&
-  (item.leftover === undefined || item.leftover === false);
-
-const oneOf = (field: string, values: readonly string[]): FieldCheck => ({
-  field,
-  valid: (v) => values.includes(v as string),
-  rule: oneOfRule(values),
-});
 
 const isLegendItem = (item: unknown) =>
   isRecord(item) &&
@@ -239,8 +193,6 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     rule: oneOfRule(CODE_LANGUAGES),
   },
   { field: 'codeTheme', valid: (v) => isCodeThemeId(v as string), rule: 'a code theme id' },
-  { field: 'mindFlow', valid: (v) => isMindFlow(v as string), rule: 'a mind flow' },
-  { field: 'mindSpacing', valid: (v) => isMindSpacing(v as string), rule: 'a mind spacing' },
   {
     field: 'chartVariant',
     valid: isChartVariant,
@@ -256,10 +208,6 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: (v) => (EMBED_PROVIDERS as readonly unknown[]).includes(v),
     rule: oneOfRule(EMBED_PROVIDERS),
   },
-  { field: 'mindParentId', valid: (v) => typeof v === 'string', rule: 'an element id' },
-  { field: 'flowchartId', valid: isNonEmptyStr, rule: 'a flowchart id' },
-  { field: 'flowDirection', valid: isFlowchartDirection, rule: 'a flowchart direction' },
-  { field: 'flowLaneId', valid: isNonEmptyStr, rule: 'an element id' },
   { field: 'pageTitle', valid: isHeadingStr, rule: stringRule(PAGE_HEADING_MAX) },
   { field: 'pageSubtitle', valid: isHeadingStr, rule: stringRule(PAGE_HEADING_MAX) },
   // Card slots (docs/specs/009-elements/card.md).
@@ -277,8 +225,6 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: (v: unknown) => isPointerTip(v),
     rule: 'an { x, y } of finite numbers within ±4000',
   },
-  // A person node (docs/specs/009-elements/org-chart.md).
-  { field: 'mindLook', valid: (v: unknown) => v === 'person', rule: oneOfRule(['person']) },
   // A stack's arrangement (docs/specs/009-elements/stack.md).
   {
     field: 'stackDirection',
@@ -328,41 +274,9 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
       Object.entries(v).every(([k, t]) => k.length <= 48 && isStrUpTo(60)(t)),
     rule: 'at most 24 row meanings of at most 60 characters',
   },
-  flag('hubSpokes'),
-  // A sequence diagram's rows (docs/specs/009-elements/sequence-diagram.md); Play is cosmetic and lenient.
-  {
-    field: 'sequenceParticipants',
-    valid: (v: unknown) =>
-      Array.isArray(v) &&
-      v.length >= 2 &&
-      rowsOf(
-        12,
-        (p) =>
-          isRecord(p) &&
-          isNonEmptyStr(p.id) &&
-          isStrUpTo(24)(p.id) &&
-          isStrUpTo(40)(p.label) &&
-          (p.actor === undefined || isBool(p.actor)),
-      )(v),
-    rule: 'an array of 2 to 12 { id, label, actor? } participants (24 and 40 characters)',
-  },
-  {
-    field: 'sequenceMessages',
-    valid: rowsOf(
-      60,
-      (m) =>
-        isRecord(m) &&
-        isStrUpTo(24)(m.from) &&
-        isStrUpTo(24)(m.to) &&
-        isStrUpTo(80)(m.label) &&
-        (m.kind === 'call' || m.kind === 'async' || m.kind === 'reply'),
-    ),
-    rule: 'an array of at most 60 { from, to, label, kind: call | async | reply } messages',
-  },
-  flag('sequenceNumbered'),
   // Boundary (docs/specs/009-elements/boundary.md).
   { field: 'boundaryStyle', valid: isBoundaryStyle, rule: oneOfRule(['tab', 'inset', 'c4']) },
-  // Concept graphics (docs/specs/009-elements/concept-graphics.md): the rows are content; the animation is
+  // A Timeline (docs/specs/009-elements/timeline.md): the rows are content; the animation is
   // cosmetic and lenient, like every element animation.
   {
     field: 'conceptRows',
@@ -370,22 +284,9 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     rule: 'an array of at most 8 { label, note? } rows (60 and 40 characters)',
   },
   {
-    field: 'pyramidVariant',
-    valid: isPyramidVariant,
-    rule: oneOfRule(['pyramid', 'inverted', 'funnel']),
-  },
-  {
     field: 'tags',
     valid: rowsOf(CARD_TAGS_MAX, isStrUpTo(CARD_TAG_MAX)),
     rule: `an array of at most ${CARD_TAGS_MAX} strings of at most ${CARD_TAG_MAX} characters`,
-  },
-  {
-    field: 'entityFields',
-    valid: rowsOf(ENTITY_MAX_FIELDS, isEntityField),
-    rule: arrayRule(
-      ENTITY_MAX_FIELDS,
-      `{ name, type?, key? } rows of ${ENTITY_MAX_TEXT} characters, key one of ${ENTITY_KEYS.join(' ')}`,
-    ),
   },
   {
     field: 'stats',
@@ -475,31 +376,6 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: rowsOf(LEGEND_MAX_ITEMS, isLegendItem),
     rule: arrayRule(LEGEND_MAX_ITEMS, '{ label, color? } rows'),
   },
-  {
-    field: 'sankeyFlows',
-    valid: rowsOf(SANKEY_MAX_FLOWS, isSankeyFlow),
-    rule: arrayRule(
-      SANKEY_MAX_FLOWS,
-      `{ from, to, value } rows, names up to ${SANKEY_NAME_MAX} characters`,
-    ),
-  },
-  {
-    field: 'sankeyNodes',
-    valid: rowsOf(SANKEY_MAX_NODES, isSankeyNode),
-    rule: arrayRule(SANKEY_MAX_NODES, '{ name, color?, leftover?: false } rows'),
-  },
-  oneOf('sankeyLinkColor', SANKEY_LINK_COLORS),
-  oneOf('sankeyAlign', SANKEY_ALIGNS),
-  oneOf('sankeyValueLabel', SANKEY_VALUE_LABELS),
-  oneOf('sankeyAnim', SANKEY_ANIMS),
-  { field: 'sankeyUnit', valid: isStrUpTo(SANKEY_UNIT_MAX), rule: stringRule(SANKEY_UNIT_MAX) },
-  oneOf('sankeyLeftover', SANKEY_LEFTOVERS),
-  {
-    field: 'sankeyLeftoverName',
-    valid: isStrUpTo(SANKEY_NAME_MAX),
-    rule: stringRule(SANKEY_NAME_MAX),
-  },
-  flag('sankeyAnimRepeat'),
 ];
 
 // A shape's own issue, its box already checked: the kind is required, the rest optional.

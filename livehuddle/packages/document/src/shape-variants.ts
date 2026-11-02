@@ -1,5 +1,5 @@
 // Creation-time variants (docs/specs/009-elements/card.md "The Callout is a Card preset",
-// docs/specs/009-elements/concept-graphics.md "Palette"): one shape kind placed as a particular variant, because the
+// docs/specs/009-elements/timeline.md "Palette"): one shape kind placed as a particular variant, because the
 // palette offers a tile per variant ("the variant is the decision"). The tile's `variant` rides the draw intent and is
 // applied here to the factory's fresh element, so every placement path (tap, drag, drop, an article's Insert) lands
 // the same thing.
@@ -131,34 +131,7 @@ export function applyShapeVariant(el: ShapeElement, variant: string | undefined)
     const preset = cardPreset(el, variant);
     if (preset) return preset;
   }
-  // The org chart (docs/specs/009-elements/org-chart.md): a person root in the Downward flow.
-  if (el.shape === 'mind-node' && variant === 'org-chart')
-    return {
-      ...el,
-      width: 220,
-      height: 64,
-      mindLook: 'person',
-      mindFlow: 'downward',
-      label: 'Ana Kim',
-      pageSubtitle: 'Head of Engineering',
-      textAlignX: 'left',
-    };
   if (el.shape === 'badge' && Object.hasOwn(BADGE_PRESETS, variant))
     return { ...el, ...BADGE_PRESETS[variant] };
-  // The pyramid's variants (docs/specs/009-elements/concept-graphics.md): a Funnel starts from a conversion story.
-  if (el.shape === 'pyramid' && variant === 'funnel')
-    return {
-      ...el,
-      width: 340,
-      pyramidVariant: 'funnel',
-      conceptRows: [
-        { label: 'Visited', note: '12,400' },
-        { label: 'Signed up', note: '3,100' },
-        { label: 'Activated', note: '820' },
-        { label: 'Retained', note: '210' },
-      ],
-    };
-  if (el.shape === 'pyramid' && variant === 'inverted')
-    return { ...el, pyramidVariant: 'inverted' };
   return el;
 }

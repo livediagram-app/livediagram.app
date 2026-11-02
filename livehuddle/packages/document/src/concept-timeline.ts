@@ -1,4 +1,4 @@
-// The Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): milestones along one spine, read left to
+// The Timeline (docs/specs/009-elements/timeline.md): milestones along one spine, read left to
 // right toward its arrowhead. Each milestone is a dot on the spine with a stem out to its words, its when (the row's
 // note) nearest the dot and its name beyond, the milestones taking turns above and below the spine so each name has
 // two slots of room. PURE, so the canvas face and the headless renderer place every milestone from the same numbers.

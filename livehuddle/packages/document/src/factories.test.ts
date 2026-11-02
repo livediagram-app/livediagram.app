@@ -142,28 +142,6 @@ describe('duplicateElements', () => {
     ...overrides,
   });
 
-  // Element-to-element references on the copies. These were unmapped for a
-  // long time and the bug was quiet: the copy looked right and pointed at the
-  // original. A copied mind-map subtree re-parented itself onto the tree it
-  // came from; a copied portal pair stepped through to the originals.
-  it('re-parents a copied mind child onto its copied parent', () => {
-    const parent = shape('p');
-    const child = shape('c', { mindParentId: 'p' });
-    const { newElements, idMap } = duplicateElements([parent, child], new Set(['p', 'c']), 10, 10);
-    const dupChild = newElements.find((el) => el.id === idMap.get('c')) as ShapeElement;
-    expect(dupChild.mindParentId).toBe(idMap.get('p'));
-    expect(dupChild.mindParentId).not.toBe('p');
-  });
-
-  it('leaves a mind parent OUTSIDE the copied set alone', () => {
-    // Copying one child and pasting it back should still hang off that parent
-    // — only a reference whose target was itself copied follows the copy.
-    const parent = shape('p');
-    const child = shape('c', { mindParentId: 'p' });
-    const { newElements } = duplicateElements([parent, child], new Set(['c']), 10, 10);
-    expect((newElements[0] as ShapeElement).mindParentId).toBe('p');
-  });
-
   it('links a copied portal to its copied partner', () => {
     const a = shape('a', { shape: 'portal', portalTarget: 'b' });
     const b = shape('b', { shape: 'portal', portalTarget: 'a' });

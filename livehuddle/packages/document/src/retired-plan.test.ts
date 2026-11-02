@@ -6,7 +6,7 @@ import { tabKindOf } from './tab-kind';
 import { isValidTab } from './validate';
 import type { Tab } from './index';
 
-// Plan mode moved out to liveplanner: a Plan tab opens as an ordinary tab in Diagram with its ordinary elements.
+// Plan mode moved out to liveplanner: a Plan tab opens as an ordinary tab in Workshop with its ordinary elements.
 const square = { id: 'sq', type: 'shape', shape: 'square', x: 0, y: 0, width: 120, height: 80 };
 const text = { id: 'tx', type: 'text', x: 0, y: 200, width: 200, height: 40, label: 'Title' };
 const board = {
@@ -54,13 +54,13 @@ const planTab = (kind: string) =>
   }) as unknown as Tab;
 
 describe('dropRetiredPlan', () => {
-  it('opens every Plan tab kind as an ordinary tab in Diagram, keeping its ordinary elements', () => {
+  it('opens every Plan tab kind as an ordinary tab in Workshop, keeping its ordinary elements', () => {
     for (const kind of ['board', 'sheet', 'dashboard', 'form']) {
       const out = dropRetiredPlan(planTab(kind)) as unknown as Record<string, unknown>;
       expect('kind' in out).toBe(false);
       expect(tabKindOf(out)).toBe('diagram');
       expect('opensIn' in out).toBe(false);
-      expect(opensInOf(out)).toBe('diagram');
+      expect(opensInOf(out)).toBe('workshop');
       expect('dashboard' in out).toBe(false);
       expect('form' in out).toBe(false);
       expect(out.theme).toBe('ocean');
@@ -138,10 +138,10 @@ describe('isRetiredPlanElement', () => {
 });
 
 describe('a stored Plan tab on the way in', () => {
-  it('is read by the stored-tab migration as a valid Diagram tab', () => {
+  it('is read by the stored-tab migration as a valid Workshop tab', () => {
     const out = migrateStoredTab(planTab('board'));
     expect(tabKindOf(out)).toBe('diagram');
-    expect(opensInOf(out)).toBe('diagram');
+    expect(opensInOf(out)).toBe('workshop');
     expect(out.elements.map((e) => e.id)).toEqual(['sq', 'ch', 'tx']);
     expect(isValidTab(out)).toBe(true);
   });

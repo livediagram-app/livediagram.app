@@ -593,37 +593,6 @@ describe('cycle', () => {
   });
 });
 
-describe('mindmap', () => {
-  it('draws mind nodes: a bold round root, hued branches on both sides, connectors without heads', () => {
-    const els = lay({
-      style: 'mindmap',
-      nodes: [
-        { id: 'c', label: 'Launch' },
-        { id: 'a', label: 'Marketing' },
-        { id: 'b', label: 'Pricing' },
-        { id: 'd', label: 'Logistics' },
-        { id: 'a1', label: 'Instagram' },
-      ],
-      edges: [
-        { from: 'c', to: 'a' },
-        { from: 'c', to: 'b' },
-        { from: 'c', to: 'd' },
-        { from: 'a', to: 'a1' },
-      ],
-    });
-    const node = (id: string) =>
-      box(els, id) as BoxedElement & { shape?: string; mindParentId?: string };
-    expect(node('c').shape).toBe('mind-node');
-    expect((node('c') as { colorPreset?: string }).colorPreset).toBe('bold');
-    expect(node('a1').mindParentId).toBe('a');
-    const sides = ['a', 'b', 'd'].map((id) => Math.sign(midX(box(els, id)) - midX(box(els, 'c'))));
-    expect(new Set(sides).size).toBe(2);
-    const connector = arrowTo(els, 'c', 'a');
-    expect(connector.arrowEnds).toBe('none');
-    expect(connector.arrowStyle).toBe('curved');
-  });
-});
-
 describe('cycle tangents', () => {
   it('leaves and enters each stop along the ring, so every arc bows out alike', () => {
     const els = lay({
@@ -645,58 +614,6 @@ describe('cycle tangents', () => {
     expect(ends('e', 's')).toEqual(['s', 'e']);
     expect(ends('s', 'w')).toEqual(['w', 's']);
     expect(ends('w', 'n')).toEqual(['n', 'w']);
-  });
-});
-
-describe('mindmap sizes', () => {
-  const map = (rootLabel: string) =>
-    lay({
-      style: 'mindmap',
-      nodes: [
-        { id: 'r', label: rootLabel },
-        { id: 'b', label: 'Marketing' },
-        { id: 'l1', label: 'Instagram brewing reels' },
-        { id: 'l2', label: 'Founding-member waitlist for early subscribers who join' },
-        { id: 'l3', label: 'PR' },
-      ],
-      edges: [
-        { from: 'r', to: 'b' },
-        { from: 'b', to: 'l1' },
-        { from: 'b', to: 'l2' },
-        { from: 'b', to: 'l3' },
-      ],
-    });
-
-  it('gives every leaf of the map one height, across branches', () => {
-    const els = lay({
-      style: 'mindmap',
-      nodes: [
-        { id: 'r', label: 'Launch' },
-        { id: 'b', label: 'Marketing' },
-        { id: 'c', label: 'Pricing' },
-        { id: 'l1', label: 'Founding-member waitlist for early subscribers who join' },
-        { id: 'l2', label: 'PR' },
-        { id: 'l3', label: 'Tiers' },
-      ],
-      edges: [
-        { from: 'r', to: 'b' },
-        { from: 'r', to: 'c' },
-        { from: 'b', to: 'l1' },
-        { from: 'b', to: 'l2' },
-        { from: 'c', to: 'l3' },
-      ],
-    });
-    const heights = new Set(['l1', 'l2', 'l3'].map((id) => box(els, id).height));
-    expect(heights.size).toBe(1);
-  });
-
-  it('keeps a long root near the template size by stepping its text down', () => {
-    const short = box(map('Launch'), 'r');
-    expect(short.width).toBe(200);
-    expect(short).toMatchObject({ textSize: 'lg' });
-    const long = box(map('Coffee subscription product launch plan for the autumn'), 'r');
-    expect(long).toMatchObject({ textSize: 'md' });
-    expect(long.width).toBeLessThanOrEqual(320);
   });
 });
 

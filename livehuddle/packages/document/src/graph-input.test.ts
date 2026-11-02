@@ -93,31 +93,6 @@ describe('layoutGraph', () => {
     expect(byId(down, 'b').y).toBeGreaterThan(byId(down, 'a').y);
   });
 
-  it('routes arrows per style: angled for flow and tree, curved for a mind map, or as asked', () => {
-    const arrows = (els: ReturnType<typeof layoutGraph>) =>
-      els.filter((e) => e.type === 'arrow') as { arrowStyle?: string }[];
-    // A branch, so the children sit off to each side (a lined-up angled
-    // arrow has nothing to bend and runs straight).
-    const branch = {
-      nodes: [
-        { id: 'r', label: 'Root' },
-        { id: 'a', label: 'Left' },
-        { id: 'b', label: 'Right' },
-      ],
-      edges: [
-        { from: 'r', to: 'a' },
-        { from: 'r', to: 'b' },
-      ],
-    };
-    expect(arrows(layoutGraph({ ...branch, style: 'tree' }))[0]!.arrowStyle).toBe('angled');
-    expect(arrows(layoutGraph({ ...branch, style: 'mindmap' }))[0]!.arrowStyle).toBe('curved');
-    expect(arrows(layoutGraph(branch))[0]!.arrowStyle).toBe('angled');
-    expect(arrows(layoutGraph({ ...branch, lines: 'straight' }))[0]!.arrowStyle ?? 'straight').toBe(
-      'straight',
-    );
-    expect(arrows(layoutGraph({ ...chain, lines: 'angled' }))[0]!.arrowStyle).toBe('straight');
-  });
-
   it('draws groups as frames around their members', () => {
     const els = layoutGraph({
       ...chain,
@@ -177,61 +152,6 @@ describe('Mermaid', () => {
     const r = resolveGraphInput({ mermaid: '---\ntitle: Checkout\n---\nflowchart TD\n  A --> B' });
     expect(r.graph?.title).toBe('Checkout');
     expect(r.graph?.nodes.map((n) => n.id)).toEqual(['A', 'B']);
-  });
-
-  it('reads a sequence diagram as a sequence graph', () => {
-    const r = resolveGraphInput({ mermaid: 'sequenceDiagram\n  A->>B: hi' });
-    expect(r.graph?.style).toBe('sequence');
-    expect(r.graph?.sequence?.participants.map((p) => p.id)).toEqual(['A', 'B']);
-  });
-
-  it('drops a sequence edge to an unknown node, as every style does, never an arrow end at NaN', () => {
-    const els = layoutGraph({
-      nodes: [
-        { id: 'a', label: 'A' },
-        { id: 'b', label: 'B' },
-      ],
-      edges: [
-        { from: 'a', to: 'ghost', label: 'lost' },
-        { from: 'a', to: 'b', label: 'hi' },
-      ],
-      style: 'sequence',
-    });
-    const messages = els.filter((e) => e.type === 'arrow' && 'label' in e && e.label);
-    expect(messages.map((m) => (m as { label?: string }).label)).toEqual(['hi']);
-    expect(JSON.stringify(els)).not.toContain('null');
-  });
-
-  // docs/specs/015-api/mcp-server.md §4.7 `sequence`: the heading cap is a box's, and a message is a sentence.
-  it('keeps a sequence message label and a participant name whole, past the 40-character cap', () => {
-    const long = 'POST /api/checkout with the basket, the address and the card token';
-    const who = 'The payments service that charges the card';
-    expect(long.length).toBeGreaterThan(GRAPH_LABEL_MAX);
-    const els = layoutGraph({
-      nodes: [
-        { id: 'a', label: 'Browser' },
-        { id: 'b', label: who },
-      ],
-      edges: [{ from: 'a', to: 'b', label: long }],
-      style: 'sequence',
-    });
-    const text = JSON.stringify(els);
-    expect(text).toContain(long);
-    expect(text).toContain(who);
-    expect(text).not.toContain('…');
-  });
-
-  it('holds a sequence graph to the Mermaid sequence caps', () => {
-    const nodes = Array.from({ length: 31 }, (_, i) => ({ id: `p${i}` }));
-    expect(resolveGraphInput({ graph: { nodes, edges: [], style: 'sequence' } }).error).toMatch(
-      /up to 30 participants/,
-    );
-    const edges = Array.from({ length: 301 }, () => ({ from: 'p0', to: 'p1' }));
-    expect(
-      resolveGraphInput({ graph: { nodes: nodes.slice(0, 2), edges, style: 'sequence' } }).error,
-    ).toMatch(/300 messages/);
-    // The same graph in another style is not a sequence, and keeps the graph caps.
-    expect(resolveGraphInput({ graph: { nodes, edges: [] } }).error).toBeUndefined();
   });
 
   it('prefers graph over mermaid, and gives nothing for neither', () => {

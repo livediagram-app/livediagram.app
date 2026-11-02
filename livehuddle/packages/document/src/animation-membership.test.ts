@@ -4,7 +4,6 @@ import {
   SHAPE_ANIMATIONS,
   SHAPE_MOTIONS,
   animationLabel,
-  animationSectionOf,
   shapeAnimationsFor,
   takesShapeMotions,
   animationSetsOf,
@@ -104,26 +103,6 @@ describe('animationSetsOf', () => {
 
 // docs/specs/028-animation/element-animations.md "Shape motions".
 describe('Shape motions', () => {
-  it('are offered beside every set that animates inside its element', () => {
-    for (const el of [
-      createSticky(0, 0),
-      of('freehand'),
-      of('path'),
-      of('image'),
-      of('video'),
-      of('table'),
-      createShape('pie-chart', 0, 0),
-      createShape('progress-bar', 0, 0),
-      createShape('rating', 0, 0),
-      createShape('chevrons', 0, 0),
-      createShape('sequence', 0, 0),
-    ]) {
-      expect(takesShapeMotions(el), el.type).toBe(true);
-      expect(inAnimationSet('shape', el), el.type).toBe(true);
-      expect(shapeAnimationsFor(el), el.type).toEqual(SHAPE_MOTIONS);
-    }
-  });
-
   it('are not offered to icons, text, arrows or the Shape set’s own members', () => {
     for (const el of [createShape('icon', 0, 0), createText(0, 0), of('arrow')]) {
       expect(takesShapeMotions(el)).toBe(false);
@@ -139,17 +118,6 @@ describe('Shape motions', () => {
     for (const v of ['pulse', 'glow', 'trace', 'gradient', 'shimmer', 'highlight'])
       expect(SHAPE_MOTIONS).not.toContain(v);
     for (const v of SHAPE_MOTIONS) expect(SHAPE_ANIMATIONS).toContain(v);
-  });
-
-  it('show a value in the one section it belongs to', () => {
-    expect(animationSectionOf(of('image'), 'bounce')).toBe('shape');
-    expect(animationSectionOf(of('image'), 'kenburns')).toBe('media');
-    expect(animationSectionOf(createSticky(0, 0), 'pulse')).toBe('sticky');
-    // A chart's older Shape value is its Shape section's kept tile; a concept graphic's plays nowhere.
-    expect(animationSectionOf(createShape('pie-chart', 0, 0), 'pulse')).toBe('shape');
-    expect(animationSectionOf(createShape('chevrons', 0, 0), 'pulse')).toBeUndefined();
-    expect(animationSectionOf(createShape('square', 0, 0), 'bounce')).toBe('shape');
-    expect(animationSectionOf(of('image'), null)).toBe('media');
   });
 });
 

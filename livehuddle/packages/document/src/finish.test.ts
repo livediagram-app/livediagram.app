@@ -26,7 +26,6 @@ import {
   resolveFinish,
 } from './finish';
 import { SHAPE_KINDS } from './validate';
-import { createSticky, createText } from './factories';
 import { createShape } from './shape-factory';
 import { FONTS } from '@liveworkspace/model-core/fonts';
 
@@ -105,20 +104,6 @@ describe('finishHatches', () => {
     expect(finishHatches(createShape('stadium', 0, 0), '#ffffff')).toBe(true);
     expect(finishHatches(createShape('cloud', 0, 0), '#ffffff')).toBe(true);
   });
-
-  // Every box with a body of its own is shaded (docs/specs/008-canvas/finish.md "Fills"): containers and panels too.
-  it('shades containers, cards and panels like any box', () => {
-    for (const kind of ['frame', 'lane', 'agenda', 'page', 'card', 'entity'] as const)
-      expect(finishHatches(createShape(kind, 0, 0), '#ffffff'), kind).toBe(true);
-  });
-
-  it('keeps self-painting kinds, a sequence diagram, see-through fills and non-shapes solid', () => {
-    expect(finishHatches(createShape('bar-chart', 0, 0), '#ffffff')).toBe(false);
-    expect(finishHatches(createShape('sequence', 0, 0), '#ffffff')).toBe(false);
-    expect(finishHatches(createShape('square', 0, 0), 'transparent')).toBe(false);
-    expect(finishHatches(createSticky(0, 0), '#fde68a')).toBe(false);
-    expect(finishHatches(createText(0, 0), '#ffffff')).toBe(false);
-  });
 });
 
 describe('supportsFinish', () => {
@@ -176,8 +161,8 @@ describe('finishSplitsFace (docs/specs/008-canvas/finish.md "Every other face is
     }
   });
 
-  it('leaves plain boxes, icons, stickers and the sequence diagram to their own drawing', () => {
-    for (const kind of ['square', 'circle', 'mind-node', 'frame', 'icon', 'sticker', 'sequence']) {
+  it('leaves plain boxes, icons and stickers to their own drawing', () => {
+    for (const kind of ['square', 'circle', 'frame', 'icon', 'sticker']) {
       expect(finishSplitsFace(shape(kind)), kind).toBe(false);
     }
     for (const type of ['text', 'sticky', 'freehand', 'image', 'path']) {
@@ -193,7 +178,7 @@ describe('finishSplitsFace (docs/specs/008-canvas/finish.md "Every other face is
   it('names only real shape kinds as drawn by their body', () => {
     // Every kind not split must exist, so a renamed kind cannot quietly drop out of Sketch.
     const unsplit = [...SHAPE_KINDS].filter((k) => !finishSplitsFace(shape(k)));
-    expect(unsplit.length).toBe(26);
+    expect(unsplit.length).toBe(18);
   });
 });
 

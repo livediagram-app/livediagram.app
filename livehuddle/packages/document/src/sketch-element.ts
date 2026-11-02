@@ -10,7 +10,6 @@ import {
   BORDER_STROKE_PX,
   DEFAULT_BORDER_STYLE,
   DEFAULT_BOX_RADIUS_PX,
-  MIND_NODE_RADIUS_PX,
   cornerRadiusPx,
 } from '@liveworkspace/model-core/border-style';
 import {
@@ -137,7 +136,7 @@ function sketchElement(el: BoxedElement, o: SketchElementOptions): SketchDrawing
 export type HandDrawnOutline = { outline: SketchOutline; role: ShapePartRole; seed: number };
 
 /** The outlines a hand-drawn finish (Sketch, Marker) draws for a shape, in its own px box: each shape-table part
- *  fitted into the box, or a box kind's own outline (square, circle, stadium, mind node, the rectangular frames) as
+ *  fitted into the box, or a box kind's own outline (square, circle, stadium, the rectangular frames) as
  *  its main part. `inset` keeps a stroke inside the box. Null for a kind drawn as it is (a self-painting face). */
 export function handDrawnOutlines(
   el: BoxedElement & { type: 'shape' },
@@ -147,7 +146,7 @@ export function handDrawnOutlines(
   const seed = sketchSeed(el.id);
   const w = el.width;
   const h = el.height;
-  const geometry = shapeGeometry(el.shape, w / h);
+  const geometry = shapeGeometry(el.shape);
   if (geometry) {
     const area = el.shape === 'actor' ? actorFigureRect(el) : { x: 0, y: 0, width: w, height: h };
     const pad = geometry.strokeInside ? inset : 0;
@@ -188,7 +187,7 @@ export function sketchElementPaint(
   if (el.type === 'shape') {
     strokePx = BORDER_STROKE_PX[finishBorderStroke(el.strokeWidth, finish)];
     dash = BORDER_DASH_ARRAY[el.strokeStyle ?? DEFAULT_BORDER_STYLE];
-    const kindDefault = el.shape === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX;
+    const kindDefault = DEFAULT_BOX_RADIUS_PX;
     radiusPx = cornerRadiusPx(
       finishOwnCorner(el, finish),
       el.width,

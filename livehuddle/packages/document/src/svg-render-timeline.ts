@@ -1,4 +1,4 @@
-// A Timeline in the headless render (docs/specs/009-elements/concept-graphics.md "Timeline"), from the same layout the
+// A Timeline in the headless render (docs/specs/009-elements/timeline.md), from the same layout the
 // canvas face uses: the spine and its arrowhead in the accent, each milestone a dot in the accent ringed in the fill so
 // it sits clear of the spine, a stem out to its when (in the accent) and its name (in the ink). The rest frame.
 
