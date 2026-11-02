@@ -69,6 +69,10 @@ gated on the session's `can`:
 - An element someone else holds selected still opens the menu, without **Edit Text** (its words are theirs until they
   let go).
 - A multi-selection has no menu for a Participant or a Viewer.
+- An image with a picture shows its **Alt Text** under the rows ([Images](../009-elements/images.md#alt-text)): a field
+  for a Participant who may write it (the same gate as **Edit Text**), its words or "Not described yet" for a Viewer. So
+  a Viewer's right-click on a picture always opens the menu, to read its description. This part is livedocuments'
+  own, passed to the shared menu as its `children`.
 
 Every editor (livediagram, liveplanner, livedocuments, livedesign) opens the same menu
 (`ReadOnlyElementMenu` in `@liveworkspace/workbench`), with the same rows and gates.

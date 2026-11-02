@@ -26,7 +26,8 @@ type ImageElement = {
   // to natural size" affordance and for the aspect-lock default.
   naturalWidth?: number;
   naturalHeight?: number;
-  // Optional alt text (accessibility + future export-to-markdown).
+  // Optional alt text: the picture's description, its accessible name and its
+  // exports' description (see "Alt text" below).
   alt?: string;
   // Creator + licence credit of a picture picked from Image search
   // (image-search.md); absent for uploads.
@@ -152,6 +153,48 @@ there leaves placeholders and a count, never a failed import.
 ### Resize behaviour
 
 `naturalWidth` / `naturalHeight` are captured on load and kept on the element; no menu entry resizes to them. Aspect lock defaults to true on first paint (the user can unlock it with the Shape section's aspect-lock toggle, which works on an image the same way it works on shapes).
+
+### Alt text
+
+An image's **alt text** (`alt`) is the words that describe its picture to someone who cannot see it. Without it a
+screen reader hears only "Image".
+
+- **Where it is set.** An Editor sets it in the element menu's **Image** section, under Change Image and Remove
+  Image, in a field labelled **Alt Text** with the hint "Describes the picture for screen readers and exports." and
+  a count of what is used ("12 / 250"). The field shows only once the image has a picture: a placeholder has nothing
+  to describe. On a phone the element menu is a bottom sheet and the field is the same.
+- **Typing it.** The field keeps a draft while you type and writes it when you leave the field (Tab, a click
+  elsewhere, closing the menu) or press Enter. Escape puts the stored words back and leaves the field, and the menu
+  stays open; a second Escape closes it. Nothing is written when the words did not change, and "Saved" shows
+  briefly beside the count after a write that changed them.
+- **Its first words.** Attaching a picture sets `alt` to its file name when the element has none (D41), so an
+  Editor starts from something to correct rather than an empty field.
+- **Roles.** An **Editor** sets it in the element menu. A **Participant** may change an image's alt text, as it may
+  change any element's words ([Share roles](../013-workspace/share-roles.md) "What a Participant changes"; `alt` is in
+  `PARTICIPANT_TEXT_FIELDS`): its element menu shows the same **Alt Text** field under its rows, unless the image is
+  locked or someone else holds it. A **Viewer** only reads it: its element menu shows the alt text as words under an
+  **Alt Text** heading, or "Not described yet", and offers no field. The server keeps the rule: a Viewer's change is
+  refused, and a Participant's lands on `alt` and the other text fields only.
+- **Clean words.** The stored text is one line of at most `IMAGE_ALT_MAX` (250) characters, cut between whole
+  characters: bidi embeddings, overrides and isolates are removed, every run of white space (a pasted line break
+  included) is one space, and spaces and invisible characters at either end are trimmed (`cleanImageAlt`, on
+  `@liveworkspace/api-kit/typed-text`'s helpers). The editor cleans what it writes, and every element that reaches the
+  server (an Editor's op, a Participant's op, a save, an agent's change, an import) is cleaned by the same function, in
+  the stored-element migrations and the Participant merge, so a longer or dirtier `alt` from any path is stored clean.
+- **Empty means none.** Words that clean to nothing remove `alt`. The image then goes by the name it had before alt
+  text existed: `Image`, or `Image "<label>"` when it has a label.
+- **The canvas.** The image's accessible name is its alt text: the element's wrapper (`role="img"`, or a named
+  `group` when it shows indicator buttons) carries it as `aria-label`, and the `<img>` inside carries it as `alt`.
+- **Exports.** Every export with a place for a description uses the alt text:
+  - **SVG**: a `<title>` inside the picture's `<image>`, read by screen readers and shown as a tooltip.
+  - **PowerPoint**: the picture's `descr` (PowerPoint's Alt Text pane).
+  - **Word**: a drawn zone's `descr` on its `wp:docPr`, the alt texts of the pictures in the zone joined with "; ".
+  - **PNG, GIF and PDF** are pictures of the page and carry no per-element description, so the alt text is not in
+    them. There is no HTML export.
+- **Undo and sync.** Each write is one undoable step, and undo puts the previous words back (or none). It travels as
+  any other field change of the element, so a second client sees it as soon as the room relays it, and its canvas
+  name follows.
+- **Find and replace** does not search alt text ([Find and replace](../007-editor/find-and-replace.md)).
 
 ### Visual export (PNG / SVG / PDF)
 
