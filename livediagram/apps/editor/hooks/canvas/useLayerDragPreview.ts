@@ -7,6 +7,7 @@ import type { ArrowLabelRender, ArrowLabels } from '@/hooks/canvas/useArrowLabel
 import { sameArrowViewFrame, type ArrowViewFrame } from '@/components/canvas/arrow-view-frame';
 import {
   affectedArrows,
+  movedBoxesGrid,
   previewArrowGeometry,
   type ArrowLinks,
 } from '@/components/canvas/drag-affected-arrows';
@@ -160,6 +161,7 @@ export function createLayerPreviewStore(): LayerPreviewStore {
     for (const { el } of overlay.added) index.set(el.id, el);
     const grid = inputs.gridFor(drawnElements);
     const ids = affectedArrows(overlay, drawnElements, arrowLinks);
+    const moved = movedBoxesGrid(overlay);
     for (const { el } of overlay.added) if (el.type === 'arrow') ids.add(el.id);
     // The board as the preview shows it, which a moved label is laid out against; only built when
     // an affected arrow has a label.
@@ -169,7 +171,7 @@ export function createLayerPreviewStore(): LayerPreviewStore {
       if (!arrow || arrow.type !== 'arrow') continue;
       const entry: PreviewEntry = {
         element: arrow,
-        geometry: previewArrowGeometry(arrow, index, grid, overlay, inputs.tabFinish),
+        geometry: previewArrowGeometry(arrow, index, grid, overlay, moved, inputs.tabFinish),
       };
       if (arrow.label) {
         virtual ??= shownWithOverlay(inputs.ordered, overlay).map((o) => o.element);

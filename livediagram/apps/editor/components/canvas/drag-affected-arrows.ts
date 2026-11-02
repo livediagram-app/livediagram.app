@@ -3,11 +3,11 @@
 // a moved box crosses where it was or where it went (their route-behind gaps move).
 
 import {
+  buildElementGrid,
   buildElementIndex,
   endpointPosition,
   isBoxed,
   queryElementGrid,
-  rectsIntersect,
   routeBehindHoles,
   resolveFinish,
   routeBehindQueryRect,
@@ -19,12 +19,14 @@ import {
 } from '@livediagram/document';
 import type { DragOverlay } from '@/lib/drag-preview';
 import { deriveArrowViewFrame, type ArrowViewFrame } from './arrow-view-frame';
+import { buildRectGrid, eachRectMeeting, type RectGrid } from './rect-grid';
 
 export type ArrowLinks = {
   // Element id → the arrows with an end pinned to it, or riding on it (an arrow id).
   dependants: ReadonlyMap<string, readonly string[]>;
-  // Each arrow's route-behind query rect, where a box could cut it.
-  rects: ReadonlyMap<string, Rect>;
+  // Each arrow's route-behind query rect, where a box could cut it, bucketed so a moved box asks only its
+  // neighbourhood which arrows it crosses.
+  rects: RectGrid;
 };
 
 // Once per document change.
@@ -45,7 +47,7 @@ export function buildArrowLinks(elements: readonly Element[]): ArrowLinks {
       routeBehindQueryRect(endpointPosition(el.from, index), endpointPosition(el.to, index)),
     );
   }
-  return { dependants, rects };
+  return { dependants, rects: buildRectGrid(rects) };
 }
 
 export function affectedArrows(
@@ -69,28 +71,45 @@ export function affectedArrows(
     for (const box of [was, el]) if (box && isBoxed(box)) moved.push(box);
   }
   for (const id of overlay.removed) for (const dep of links.dependants.get(id) ?? []) add(dep);
-  if (moved.length) {
-    for (const [id, rect] of links.rects) if (moved.some((m) => rectsIntersect(m, rect))) add(id);
-  }
+  // Each moved box asks the arrow grid which arrows it meets: linear in what moved, not arrows × moved.
+  const crossed = new Set<string>();
+  for (const m of moved) eachRectMeeting(links.rects, m, crossed, add);
   // Arrows riding on an affected arrow follow it, transitively.
   while (queue.length) for (const dep of links.dependants.get(queue.shift()!) ?? []) add(dep);
   return out;
 }
 
+// The boxes a preview moved or added, where they are now, in a grid of their own: built once per preview
+// change, so each affected arrow asks it about its own rect instead of scanning every moved box.
+export function movedBoxesGrid(overlay: DragOverlay): ElementGrid {
+  const boxes: Element[] = [];
+  for (const el of overlay.changed.values()) if (isBoxed(el)) boxes.push(el);
+  for (const { el } of overlay.added) if (isBoxed(el)) boxes.push(el);
+  return buildElementGrid(boxes);
+}
+
 // An affected arrow's frame and holes while a preview lasts: ends resolved through `index` (the
 // document's index with the previewed elements over it), holes cut by the grid's candidates as the
-// document has them, minus what the gesture moved, plus the moved and added boxes where they are now.
+// document has them, minus what the gesture moved, plus the moved and added boxes where they are now
+// (`moved`, from movedBoxesGrid).
 export function previewArrowGeometry(
   arrow: ArrowElement,
   index: ElementIndex,
   grid: ElementGrid,
   overlay: DragOverlay,
+  moved: ElementGrid,
   tabFinish?: unknown,
 ): { frame: ArrowViewFrame; holes: Rect[] } {
   const frame = deriveArrowViewFrame(arrow, index, resolveFinish(arrow.finish, tabFinish));
-  const still = queryElementGrid(grid, routeBehindQueryRect(frame.from, frame.to)).filter(
+  const query = routeBehindQueryRect(frame.from, frame.to);
+  const still = queryElementGrid(grid, query).filter(
     (el) => !overlay.changed.has(el.id) && !overlay.removed.has(el.id),
   );
-  const moved = [...overlay.changed.values(), ...overlay.added.map((a) => a.el)].filter(isBoxed);
-  return { frame, holes: routeBehindHoles(arrow, frame.from, frame.to, [...still, ...moved]) };
+  return {
+    frame,
+    holes: routeBehindHoles(arrow, frame.from, frame.to, [
+      ...still,
+      ...queryElementGrid(moved, query),
+    ]),
+  };
 }
