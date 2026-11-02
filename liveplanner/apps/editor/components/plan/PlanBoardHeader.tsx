@@ -170,6 +170,8 @@ export function PlanBoardHeader({
                 now: today,
                 read: fieldWidgets.read,
                 canEdit,
+                quick,
+                onQuick,
                 onRemove: (gone) => onWidgets(removeWidget(widgets, gone)),
               }}
             />

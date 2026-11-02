@@ -107,7 +107,8 @@ export function searchFields(
     if (by === 'none') continue;
     out.push({ by, label: GROUPING_LABELS[by] ?? by });
   }
-  for (const f of laneFieldsOf(inPlay)) out.push({ by: 'field', field: f.id, label: f.label });
+  for (const f of laneFieldsOf(inPlay, true))
+    out.push({ by: 'field', field: f.id, label: f.label });
   return out.filter((f) => !filters.some((x) => sameField(x, f)));
 }
 
@@ -121,7 +122,16 @@ export function searchValues(
   items: Iterable<Item> = matching,
 ): { key: string; label: string; count: number }[] {
   const all = new Map(liveCards(items).map((c) => [c.id, c]));
-  const groups = laneGroups(field.by, field.field, matching, all, types, statusNames);
+  const groups = laneGroups(
+    field.by,
+    field.field,
+    matching,
+    all,
+    types,
+    statusNames,
+    undefined,
+    true,
+  );
   const counts = new Map<string, number>();
   for (const keys of groups.lanesOfItem.values())
     for (const key of keys) counts.set(key, (counts.get(key) ?? 0) + 1);
@@ -138,11 +148,39 @@ export function searchFilterLabel(
 ): { field: string; value: string } {
   const field =
     filter.by === 'field'
-      ? (laneFieldsOf(types).find((f) => f.id === filter.field)?.label ?? filter.field ?? '')
+      ? (laneFieldsOf(types, true).find((f) => f.id === filter.field)?.label ?? filter.field ?? '')
       : (GROUPING_LABELS[filter.by] ?? filter.by);
   const cards = liveCards(items);
   const value = searchValues(cards, filter, types, statusNames, cards).find(
     (v) => v.key === filter.key,
   );
   return { field, value: value?.label ?? (filter.key || 'Empty') };
+}
+
+// The filter a press on one value of a category field makes (a Breakdown's or Donut's): the field and the row that
+// value is, as the chips name them. A Person field's rows are keyed by person id, every other by the value itself.
+export function fieldValueFilter(
+  field: { id: string; kind: string },
+  value: string,
+): CardSearchFilter {
+  return {
+    by: 'field',
+    field: field.id,
+    key: field.kind === 'person' ? `f:p:${value}` : `f:${JSON.stringify(value)}`,
+  };
+}
+
+// `filters` with `filter` toggled: that value off when already there, else on. A field that holds one value (a Choice)
+// has its earlier value replaced, as two would match no card; one that holds several (`stack`: Labels, Multiple
+// Choice) keeps them. Unchanged, at the cap, when it cannot fit.
+export function toggleFieldFilter(
+  filters: readonly CardSearchFilter[],
+  filter: CardSearchFilter,
+  stack = false,
+): CardSearchFilter[] {
+  const same = (a: CardSearchFilter) => a.by === filter.by && a.field === filter.field;
+  if (filters.some((f) => same(f) && f.key === filter.key))
+    return filters.filter((f) => !(same(f) && f.key === filter.key));
+  const rest = stack ? [...filters] : filters.filter((f) => !same(f));
+  return rest.length >= CARD_SEARCH_FILTERS_MAX ? [...filters] : [...rest, filter];
 }

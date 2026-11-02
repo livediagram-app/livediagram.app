@@ -100,7 +100,7 @@ function toggle<K extends (typeof WIDGET_KEYS)[number]>(
 }
 
 // A part of a widget that narrows the board when pressed, pressed while it does.
-const PRESSABLE =
+export const PRESSABLE =
   'relative inline-flex items-center gap-1 rounded-md px-1 py-0.5 touch-target-y transition enabled:cursor-pointer enabled:hover:bg-black/5 dark:enabled:hover:bg-white/10';
 
 // The widget's glyph, small, in a colour that says what it is about.

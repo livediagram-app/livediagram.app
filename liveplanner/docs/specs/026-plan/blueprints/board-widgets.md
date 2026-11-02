@@ -82,6 +82,10 @@ apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObs
   `{ from?, to, doneStatus? }`, YYYY-MM-DD, both ends inclusive, the done status excluded, so a Due Soon count
   narrows to exactly the cards it counts) and `priority`; `quickFilterMatches` applies each.
   `toggle(quick, key, value)` sets one or clears it when equal (compared by value).
+- A Breakdown or Donut value is a `ValueButton` (FieldWidgetView.tsx): `fieldValueFilter` makes its chip
+  (`f:"value"`, `f:p:<id>` for a person), `toggleFieldFilter` adds, replaces or removes it on `quick.filters`
+  (packages/items card-search.ts). Labels and Multiple Choice match every value a card holds: `laneGroups`'
+  `everyValue`, set only by `cardsMatchingFilters` and `searchValues`, never a board's swimlanes.
 - Item Count while `narrowed(quick)`: a button "`shown` of `total` · Show all" that sets `{}`.
 - Completion with no done column (`doneColumnsOf(setup)` empty) and `canEdit`: "Set Done Column" flags the last
   column (`setColumnDone`, `DoneColumn`).
@@ -177,7 +181,8 @@ apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObs
 | Field shapes, views, keys, cap, boardFields, state, toggle    | packages/items/src/field-widgets.test.ts                       |
 | Each shape's summary, caching, fills, number text             | packages/plan-art/src/field-widget-stats.test.ts               |
 | 2,000 cards × 10 fields within the CPU budget                 | packages/plan-art/src/field-widget-stats.perf.test.ts          |
-| For You scores, reasons, cap, empty board                     | packages/plan-art/src/widget-suggestions.test.ts               |
+| For You scores, reasons, cap, empty board, plural names       | packages/plan-art/src/widget-suggestions.test.ts               |
+| Pressing a value: chips, roles, toggling, cap, 500-card cost  | FieldWidgetView.test.tsx, packages/items card-search.test.ts   |
 | Each view's pill, gone states, Remove by role                 | apps/editor/components/plan/widgets/FieldWidgetView.test.tsx   |
 | Gallery sections, rail, On Board, cap, search, keys, empty    | apps/editor/components/plan/widgets/BoardWidgetPicker.test.tsx |
 | labelOf, fields kept, Calculated reader, lazy previews        | apps/editor/components/plan/widgets/use-field-widgets.test.tsx |

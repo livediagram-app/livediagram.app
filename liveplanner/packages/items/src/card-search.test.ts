@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  fieldValueFilter,
   isCardSearchFilters,
   searchCards,
   searchFields,
   searchFilterLabel,
   searchValues,
+  toggleFieldFilter,
 } from './card-search';
 import { ITEM_TYPES } from './item-types';
 import { ALI, item } from './test-items';
@@ -116,5 +118,85 @@ describe('card search', () => {
     expect(isCardSearchFilters([{ by: 'status', field: 7, key: 'x' }])).toBe(false);
     expect(isCardSearchFilters([{ by: 'status', key: 'x'.repeat(201) }])).toBe(false);
     expect(isCardSearchFilters([null])).toBe(false);
+  });
+});
+
+// docs/specs/026-plan/board-widgets.md "Pressing a value".
+describe('field value filters', () => {
+  const custom = [
+    { id: 'f-sev', label: 'Severity', kind: 'choice', options: ['High', 'Low'] },
+    { id: 'f-team', label: 'Team', kind: 'labels' },
+    { id: 'f-tags', label: 'Tags', kind: 'multichoice', options: ['a', 'b', 'c'] },
+    { id: 'f-own', label: 'Owner', kind: 'person' },
+  ];
+  const types = [
+    {
+      id: 'feature',
+      label: 'Feature',
+      newTitle: 'New',
+      glyph: 'task',
+      color: '#2563eb',
+      fields: ['title', 'status', ...custom.map((c) => c.id)],
+      custom,
+    },
+  ] as never;
+  const make = (fields: Record<string, unknown>) => item(fields as never, { type: 'feature' });
+  const cs = [
+    make({
+      title: 'A',
+      'f-sev': 'High',
+      'f-team': ['Web', 'Ops'],
+      'f-tags': ['a', 'b'],
+      'f-own': ALI,
+    }),
+    make({ title: 'B', 'f-sev': 'Low', 'f-team': ['Web'], 'f-tags': ['b'] }),
+    make({ title: 'C', 'f-sev': 'High', 'f-team': ['Ops'] }),
+  ];
+  const titles = (f: ReturnType<typeof fieldValueFilter>) =>
+    searchCards(cs, [f], types).map((c) => c.fields['title']);
+
+  it('matches a Choice, a Person, and any value of Labels or Multiple Choice', () => {
+    expect(titles(fieldValueFilter({ id: 'f-sev', kind: 'choice' }, 'High'))).toEqual(['A', 'C']);
+    expect(titles(fieldValueFilter({ id: 'f-own', kind: 'person' }, ALI.id))).toEqual(['A']);
+    expect(titles(fieldValueFilter({ id: 'f-team', kind: 'labels' }, 'Ops'))).toEqual(['A', 'C']);
+    expect(titles(fieldValueFilter({ id: 'f-tags', kind: 'multichoice' }, 'b'))).toEqual([
+      'A',
+      'B',
+    ]);
+  });
+
+  it('offers Multiple Choice to Add Filter and names its chip', () => {
+    expect(searchFields(cs, [], types).map((f) => f.label)).toContain('Tags');
+    const f = fieldValueFilter({ id: 'f-tags', kind: 'multichoice' }, 'b');
+    expect(searchFilterLabel(f, cs, types)).toEqual({ field: 'Tags', value: 'b' });
+  });
+
+  it('toggles a value: off when on, replacing a one-value field, stacking a several-value one, capped', () => {
+    const high = fieldValueFilter({ id: 'f-sev', kind: 'choice' }, 'High');
+    const low = fieldValueFilter({ id: 'f-sev', kind: 'choice' }, 'Low');
+    expect(toggleFieldFilter([], high)).toEqual([high]);
+    expect(toggleFieldFilter([high], high)).toEqual([]);
+    expect(toggleFieldFilter([high], low)).toEqual([low]);
+    expect(toggleFieldFilter([high], low, true)).toEqual([high, low]);
+    expect(toggleFieldFilter([high, low], high, true)).toEqual([low]);
+    const full = Array.from({ length: 8 }, (_, i) => ({
+      by: 'field' as const,
+      field: `x${i}`,
+      key: 'k',
+    }));
+    expect(toggleFieldFilter(full, high)).toEqual(full);
+  });
+
+  it('filters a 500-card board by any value within a CPU budget', () => {
+    const many = Array.from({ length: 500 }, (_, i) =>
+      make({ title: `C${i}`, 'f-team': ['Web', 'Ops', `T${i % 20}`], 'f-tags': ['a', 'b'] }),
+    );
+    const f = fieldValueFilter({ id: 'f-team', kind: 'labels' }, 'T3');
+    const start = performance.now();
+    let found = 0;
+    for (let n = 0; n < 20; n++) found = searchCards(many, [f], types).length;
+    const each = (performance.now() - start) / 20;
+    expect(found).toBe(25);
+    expect(each).toBeLessThan(50);
   });
 });

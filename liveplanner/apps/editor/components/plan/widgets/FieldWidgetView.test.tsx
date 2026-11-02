@@ -4,12 +4,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   boardFields,
   presetSetup,
+  projectBoard,
   type CustomFieldDef,
   type FieldWidgetKey,
   type Item,
   type ItemTypeDef,
   type PlanBoardSetup,
 } from '@liveplanner/items';
+import { boardItems } from '@liveplanner/plan-art';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 import { planPalette } from '../plan-palette';
 import { FieldWidgetView, type FieldWidgetContext } from './FieldWidgetView';
@@ -84,13 +86,15 @@ function show(id: string, over: Partial<FieldWidgetContext> = {}) {
     palette: planPalette('light', {}),
     now: NOW,
     canEdit: true,
+    quick: {},
+    onQuick: vi.fn(),
     onRemove: vi.fn(),
     ...over,
   };
   render(<FieldWidgetView id={id as FieldWidgetKey} ctx={ctx} />);
   return ctx;
 }
-const pill = () => screen.getByRole('img');
+const pill = () => document.querySelector<HTMLElement>('[data-field-widget]')!;
 
 describe('FieldWidgetView', () => {
   it.each([
@@ -130,6 +134,77 @@ describe('FieldWidgetView', () => {
   it('names the first two values of a Breakdown and counts the rest', () => {
     show('field:breakdown:f-team');
     expect(pill().textContent).toContain('+1');
+  });
+
+  describe('pressing a value', () => {
+    const chip = (field: string, key: string) => ({ by: 'field', field, key });
+
+    it('presses a Breakdown value into a field chip, for a Viewer too', () => {
+      const onQuick = vi.fn();
+      show('field:breakdown:f-sev', { canEdit: false, onQuick });
+      expect(pill().getAttribute('role')).toBe('group');
+      const high = screen.getByRole('button', { name: 'Only Severity: High' });
+      expect(high.getAttribute('aria-pressed')).toBe('false');
+      fireEvent.click(high);
+      expect(onQuick).toHaveBeenCalledWith({ filters: [chip('f-sev', 'f:"High"')] });
+    });
+
+    it('shows the value pressed while its chip is on, and a second press takes it off', () => {
+      const onQuick = vi.fn();
+      show('field:breakdown:f-sev', {
+        quick: { text: 'x', filters: [chip('f-sev', 'f:"High"')] as never },
+        onQuick,
+      });
+      const high = screen.getByRole('button', { name: 'Only Severity: High' });
+      expect(high.getAttribute('aria-pressed')).toBe('true');
+      fireEvent.click(high);
+      expect(onQuick).toHaveBeenCalledWith({ text: 'x' });
+    });
+
+    it('replaces the other value of a one-value field, and stacks the values of Labels', () => {
+      const onQuick = vi.fn();
+      show('field:breakdown:f-sev', {
+        quick: { filters: [chip('f-sev', 'f:"High"')] as never },
+        onQuick,
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'Only Severity: Medium' }));
+      expect(onQuick).toHaveBeenCalledWith({ filters: [chip('f-sev', 'f:"Medium"')] });
+      cleanup();
+      show('field:breakdown:f-team', {
+        quick: { filters: [chip('f-team', 'f:"Web"')] as never },
+        onQuick,
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'Only Team: Design' }));
+      expect(onQuick).toHaveBeenLastCalledWith({
+        filters: [chip('f-team', 'f:"Web"'), chip('f-team', 'f:"Design"')],
+      });
+    });
+
+    it('presses a Donut value and a person by id', () => {
+      const onQuick = vi.fn();
+      show('field:donut:f-owner', { onQuick });
+      fireEvent.click(screen.getByRole('button', { name: 'Only Owner: Ana' }));
+      expect(onQuick).toHaveBeenCalledWith({ filters: [chip('f-owner', 'f:p:ana')] });
+    });
+
+    it('narrows the board to the cards holding the value', () => {
+      const f = { by: 'field' as const, field: 'f-team', key: 'f:"Web"' };
+      const board = projectBoard(
+        setup,
+        new Map(items.map((i) => [i.id, i])),
+        { filters: [f] },
+        types,
+      );
+      expect(boardItems(board)).toHaveLength(2);
+    });
+
+    it('disables a value that no longer fits at the chip cap', () => {
+      const full = Array.from({ length: 8 }, (_, i) => chip(`f-x${i}`, 'k')) as never;
+      show('field:breakdown:f-sev', { quick: { filters: full } });
+      expect(
+        screen.getByRole<HTMLButtonElement>('button', { name: 'Only Severity: High' }).disabled,
+      ).toBe(true);
+    });
   });
 
   it('says Nothing due when no date is close', () => {

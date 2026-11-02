@@ -95,8 +95,8 @@ function fieldSuggestions(
     const typesText = typeNamesText(f.types.map((t) => t.label));
     const reason =
       share >= 1
-        ? `Every ${typesText} card has ${withArticle(f.def.label)}`
-        : `${Math.max(1, Math.round(share * 100))}% of ${typesText} cards have ${withArticle(f.def.label)}`;
+        ? `Every ${typesText} card has ${withArticle(f.def.label)} field`
+        : `${Math.max(1, Math.round(share * 100))}% of ${typesText} cards have ${withArticle(f.def.label)} field`;
     out.push({
       id: fieldWidgetKey(f.def.id, viewsOfField(f.def)[0]!),
       score: share > 0.5 ? 1 + share : 0.4 + 0.5 * share,
