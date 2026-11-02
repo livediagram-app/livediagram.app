@@ -62,6 +62,21 @@ describe('ExportTabDialog, Pages', () => {
     expect(el.style.background).toBe('');
   });
 
+  // Bare, the preview SVG was named by every word on the page (a screen reader read the whole page out).
+  it('names its preview as one picture, of the page or the tab', async () => {
+    open();
+    fireEvent.click(screen.getByRole('button', { name: /^PNG/ }));
+    const page = await preview();
+    expect(page.getAttribute('role')).toBe('img');
+    expect(page.getAttribute('aria-label')).toBe('The page as it will download');
+    cleanup();
+    open(false);
+    fireEvent.click(screen.getByRole('button', { name: /^PNG/ }));
+    const whole = await preview();
+    expect(whole.getAttribute('role')).toBe('img');
+    expect(whole.getAttribute('aria-label')).toBe('The tab as it will download');
+  });
+
   it('offers no Hidden layers option', async () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: /^SVG/ }));
