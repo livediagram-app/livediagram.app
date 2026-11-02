@@ -75,6 +75,18 @@ No secrets: the site's Worker serves assets only. Pages read the session through
 Every page is prebuilt; first-load JavaScript is the cost to watch (each page's budget is in the products' perf
 rules).
 
+**Chunk split after the Webhooks rework (2026-11-02, Work Tracker #207).** Commit `ad24a3eec8` (Settings › Webhooks
+reworked) took first-load gzip on `/` from 209,145 to 210,152 B (+1,007 B) and on `/explorer` from 397,581 to 398,661 B
+(+1,080 B), and one more script request on each (9 to 10 and 17 to 18 files). Comparing the first-load chunks of the
+builds before and after, the same 45 modules sit in the changed chunks. One module grew: the vendored Lucide glyph
+table (`packages/icons/src/lucide.generated.ts`), by about 1.2 KB raw, because the panel's lazy chunk imports up to 13 more
+glyphs from it (`lucideBraces`, `lucideHash`, `lucideUsers`, `lucideSend`, `lucidePause`, `lucidePlay` and others).
+Turbopack keeps that table as one module, so every glyph any chunk uses is in the copy the first load fetches, and the
+largest shared chunk (62.9 KB) grew past the size Turbopack keeps a chunk under and was cut in two. No webhook code is in first-load;
+the cost is the glyphs' path data plus the extra chunk's framing. The split is Turbopack's own choice and is left as
+it is: the extra chunk is fetched in parallel, and a glyph added to the table will move the cut again. Watch the
+table's size when adding glyphs to a lazy panel.
+
 ## Presentation and UX
 
 The pages, their layout and their states are in [site.md](../site.md); the shared components come from
