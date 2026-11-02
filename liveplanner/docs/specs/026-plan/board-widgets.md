@@ -122,14 +122,17 @@ A team that opens the same slice every standup ("My Bugs", "Due This Week") save
   of the header and the gallery stays open, so several can be added in a row; picking one already on the board takes
   it off. The + pressed again, Escape or a press outside closes it.
 - **Reorder**: drag a widget left or right along the zone; the others make way at the bar, and it lands there.
-  From the keyboard, a focused widget moves with Alt+← and Alt+→.
+  From the keyboard, a focused widget moves with Alt+← and Alt+→, and the focus stays on it for the next move.
 - **Remove**: **Edit Widgets** puts the zone in **edit mode**: every widget shows a × at its top right, on any
   pointer and on any board (selected or not, on the canvas, maximised or filling its tab), and the pencil becomes
   **Done** (a check in the brand colour, named "Done Editing Widgets", pressed). A × takes its widget off at once and
   the zone stays in edit mode for the next; **Done**, Escape, a press anywhere outside the widget zone, or the last
   widget going ends it. Edit mode is this person's alone and never saved. Out of edit mode no widget shows a ×, so the
   header stays clean. Delete or Backspace still takes a focused widget off, in or out of edit mode.
-  Once one is taken off, nothing of it stays selected: no widget keeps the focus.
+  Once one is taken off, the keyboard focus moves on rather than dropping to the page: to the same control (its ×,
+  or the widget itself after Delete) on the widget that took its place, or on the one before when the last in the
+  row went. When no widget is left, edit mode has ended and Done has gone with it, so the focus goes to the zone's
+  **+**, which then shows for this person even on an unselected board, to add one back.
   (Before edit mode the × showed only while the board was selected, and then only on hover, keyboard focus or a tap;
   a board filling its tab is seldom selected, so on a desktop the × hardly ever appeared.)
 - Each placement, move and removal is one board edit: undoable, live for everyone, and saved with the board.
@@ -180,13 +183,14 @@ board, so each one can be a widget.
 - **A field gone** (taken off every type the board takes, or the board no longer taking its types) leaves its widget
   in place, quiet and dashed: "This field was removed", with **Remove** (a cross named "Remove widget") for someone
   who may edit. A field whose kind changed so the view no longer fits reads "This field changed kind", with the same
-  Remove.
+  Remove, even when no view reads its new kind (a Rating made Text is still on the board, so it has changed, not gone).
 - A board holds each field and view at most once, and at most **12** field widgets.
 
 ## The widget gallery
 
 **Add a Widget**, a 720 px popover (narrower in a narrower window), with the line "Live read-outs for this board’s
-header. Pick as many as you like." and a **Find a widget** search beside the title (focused on open).
+header. Pick as many as you like.", a **Find a widget** search beside the title (focused on open) and a close cross at
+the header's end. Its frame (header, rail, list) is shared with [Add Field](item-types.md#fields-and-tabs)'s gallery.
 
 - **The rail**: down its left, the gallery's sections, each with how many widgets it holds: **For You**, **Focus**,
   **Progress**, **People**, **Dates**, **Health**, then under a **Fields** heading one entry per card type the board
@@ -236,7 +240,8 @@ header. Pick as many as you like." and a **Find a widget** search beside the tit
 - **At the cap**: with 12 field widgets on the board, the field tiles not on it are disabled, their tooltip "A board
   holds up to 12 field widgets".
 - **Keyboard**: the arrow keys move between tiles (left and right one, up and down a row), Down from the search goes
-  to the first tile, Enter or Space presses one; Tab reaches the search, the rail and the tiles in turn.
+  to the first tile and Up from the top row back to it, Enter or Space presses one; Tab reaches the search, the close
+  cross, the rail and the tiles in turn.
 - **Share roles**: only someone who may change the board (an Editor) has the **+**, and so the gallery; a Participant
   and a Viewer see and read every widget, field widgets included, and never see Remove.
 - **Not on a phone**: the gallery hangs from the zone's **+**, and a phone shows no widgets (see "The header").

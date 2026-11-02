@@ -11,6 +11,7 @@ import {
   articlesOf,
   articleTocEntries,
   bandDate,
+  imageAltTextOf,
   articleTopMarginPx,
   legibleOn,
   nextArticleBlockId,
@@ -100,6 +101,7 @@ async function zoneImage(
   if (ids.size === 0) return null;
   const png = await drawer.region(page, ids, rect);
   if (!png) return null;
+  const descr = imageAltTextOf(input.tab.elements, ids);
   return {
     type: 'image',
     png,
@@ -107,6 +109,7 @@ async function zoneImage(
     heightPx: rect.height,
     wrap: block.wrap ?? 'inline',
     align: block.align ?? 'center',
+    ...(descr ? { descr } : {}),
   };
 }
 

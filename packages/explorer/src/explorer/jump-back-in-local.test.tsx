@@ -141,7 +141,9 @@ describe('a This Browser card in Jump Back In', () => {
     fireEvent.contextMenu(await card());
     const menu = await screen.findByRole('menu', { name: 'Actions for Local 1' });
     fireEvent.click(within(menu).getByRole('menuitem', { name: 'Delete Plan' }));
-    const dialog = await screen.findByRole('dialog', { name: 'Delete this plan?' });
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Delete this plan from this browser?',
+    });
     expect(remove).not.toHaveBeenCalled();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     expect(remove).toHaveBeenCalledWith(expect.objectContaining({ id: 'local-1' }));
@@ -154,7 +156,9 @@ describe('dragging a This Browser card', () => {
     const index = home({ remove });
     const dt = dragOnto(await card(), rowOf('Trash'));
     expect(dt.types).toEqual([THIS_BROWSER_DRAG_MIME]);
-    const dialog = await screen.findByRole('dialog', { name: 'Delete this plan?' });
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Delete this plan from this browser?',
+    });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     expect(remove).toHaveBeenCalledTimes(1);
     // The index never held it: nothing goes to its Trash.
@@ -165,7 +169,9 @@ describe('dragging a This Browser card', () => {
     home({});
     dragOnto(await card(), rowOf('Trash'));
     expect(
-      await screen.findByText('“Local 1” is kept only in this browser. Open it to delete it.'),
+      await screen.findByText(
+        '“\u2068Local 1\u2069” is kept only in this browser. Open it to delete it.',
+      ),
     ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Open' })).toBeTruthy();
     expect(screen.queryByRole('dialog')).toBeNull();
@@ -182,7 +188,7 @@ describe('dragging a This Browser card', () => {
       );
       dragOnto(await card(), await findRow('Specs'));
       const dialog = await screen.findByRole('dialog', {
-        name: 'Sync “Local 1” to your account?',
+        name: 'Sync “\u2068Local 1\u2069” to your account?',
       });
       expect(dialog.textContent).toContain('Specs');
       fireEvent.click(within(dialog).getByRole('button', { name: 'Sync Plan' }));
@@ -202,7 +208,9 @@ describe('dragging a This Browser card', () => {
     const sync = vi.fn(() => Promise.resolve());
     home({ sync }, index);
     dragOnto(await card(), await findRow('Specs'));
-    const dialog = await screen.findByRole('dialog', { name: 'Sync “Local 1” to your account?' });
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Sync “\u2068Local 1\u2069” to your account?',
+    });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Sync and Move' }));
     expect(sync).toHaveBeenCalledTimes(1);
     await waitFor(() =>
@@ -218,7 +226,7 @@ describe('dragging a This Browser card', () => {
     dragOnto(await card(), await findRow('Specs'));
     expect(
       await screen.findByText(
-        '“Local 1” is kept only in this browser. Sign in and sync it to your account to put it in a folder.',
+        '“\u2068Local 1\u2069” is kept only in this browser. Sign in and sync it to your account to put it in a folder.',
       ),
     ).toBeTruthy();
     expect(index.count('updateItem')).toBe(0);

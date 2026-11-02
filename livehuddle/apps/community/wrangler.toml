@@ -1,0 +1,42 @@
+name = "livehuddle-community"
+# The liveworkspace Cloudflare account, which also hosts livehuddle.app, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+compatibility_date = "2026-05-29"
+
+# Cloudflare Workers serves the Next.js static export from `./out`; the router worker forwards
+# `/community/*` here after stripping the prefix (see apps/router + docs/specs/016-platform/router-app.md).
+# A small script (worker/index.ts) runs first for just two paths, so crawlers and link previews see a
+# post's own title and address, and the sitemap lists every public post
+# (docs/specs/025-community/community.md "Search engines"). Every other path is served straight from the
+# assets without invoking it.
+main = "worker/index.ts"
+
+[assets]
+directory = "./out"
+binding = "ASSETS"
+not_found_handling = "404-page"
+run_worker_first = ["/post", "/post/", "/sitemap.xml"]
+
+# The post the page names and the sitemap's list come from the liveworkspace Community service
+# (liveworkspace/docs/specs/007-community/community.md), over HTTPS.
+[vars]
+COMMUNITY_URL = "https://www.liveworkspace.app/api/community"
+
+# Staging (docs/specs/016-platform/staging-environment.md): `wrangler deploy --env staging` deploys
+# the same static `./out` as `livehuddle-community-staging`. The build that fills `out/` is a
+# different one (staging bakes its own NEXT_PUBLIC_* values), so the two never share an artifact.
+#
+# `[assets]` is restated so this block reads as the complete description of the staging worker. The
+# name is explicit because the router's service bindings depend on this exact string.
+[env.staging]
+name = "livehuddle-community-staging"
+
+[env.staging.assets]
+directory = "./out"
+binding = "ASSETS"
+not_found_handling = "404-page"
+run_worker_first = ["/post", "/post/", "/sitemap.xml"]
+
+# Vars are not inherited: staging reads the staging Community service.
+[env.staging.vars]
+COMMUNITY_URL = "https://staging.liveworkspace.app/api/community"

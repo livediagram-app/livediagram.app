@@ -45,7 +45,8 @@ only the sweep direction differs).
 - **Header**: `graph`/`flowchart` + a direction (`TD`/`TB` → top-to-bottom,
   `LR`/`RL` → left-to-right; `BT` folds to TB). Missing header still parses as
   a top-down graph.
-- **Nodes**: a bare id (`A`) is a box labelled with its id; a bracketed def
+- **Nodes**: a bare id (`A`, letters and digits in any script and `_`, as Mermaid's own: `Ä`, `日本`) is a box
+  labelled with its id; a bracketed def
   sets the label + shape. Shape brackets map to the shape vocabulary:
   `["…"]` square · `(…)` / `([…])` stadium · `{…}` diamond · `((…))` /
   `(((…)))` circle · `[(…)]` cylinder · `{{…}}` hexagon · `[/…/]` `[\…\]`

@@ -63,6 +63,23 @@ describe('the first mirror', () => {
     });
   });
 
+  it('writes a livehuddle Space as its .livehuddle file, beside the other apps in the one folder tree', async () => {
+    const work = h.index.addFolder('Work');
+    const space = h.index.addItem({ name: 'Stand-up', app: 'livehuddle', folderId: work.id });
+    await connected();
+
+    const file = h.fileOf(space.id)!;
+    expect(file.name).toBe('Stand-up.livehuddle');
+    expect(file.mimeType).toBe('application/vnd.livehuddle+json');
+    expect(file.parents).toEqual([h.folderFileOf(work.id)!.id]);
+    expect(file.appProperties).toEqual({
+      lwItemId: space.id,
+      lwApp: 'livehuddle',
+      lwOrigin: ORIGIN,
+    });
+    expect(h.mirror.marks(PERSON).marks.find((m) => m.id === space.id)!.state).toBe('synced');
+  });
+
   it('writes in batches, with progress, and finishes in the next alarms', async () => {
     const total = DRIVE_PASS_MAX_WRITES + 5;
     for (let i = 0; i < total; i++) h.index.addItem({ name: `Item ${i}` });

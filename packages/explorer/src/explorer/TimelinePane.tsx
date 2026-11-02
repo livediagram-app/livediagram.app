@@ -22,6 +22,7 @@ import {
   type Item,
   type TimelineEvent,
 } from '@liveworkspace/index-client';
+import { DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { RENAME_INPUT } from '../ui/classes';
 import { DismissIcon } from '../ui/icons';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
@@ -47,6 +48,7 @@ import { EmptyPane } from './EmptyPane';
 import { ItemMenu } from './menus';
 import { PaneHeader } from './PaneHeader';
 import { useNamedEvents } from '../data/names';
+import { quoted } from '../quoted';
 
 // A link to one event looks this many pages back for it before giving up: a bounded walk, never the whole history.
 export const FOCUS_PAGES_MAX = 5;
@@ -214,7 +216,7 @@ export function renderTimelineEvent(
   let description: string | undefined;
   switch (event.type) {
     case 'renamed':
-      meta = detail.from ? `Was “${detail.from}” · ${by}` : by;
+      meta = detail.from ? `Was ${quoted(detail.from)} · ${by}` : by;
       break;
     case 'moved': {
       const place = detail.folderName ?? (detail.teamId ? ctx.teamName(detail.teamId) : 'My Work');
@@ -256,7 +258,7 @@ export function renderTimelineEvent(
     case 'share_link_expiring': {
       const links = Number(detail.links ?? '1') || 1;
       const when = Number(detail.expiresAt ?? event.occurredAt) || event.occurredAt;
-      const date = new Date(when).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+      const date = DAY_MONTH.format(when);
       meta = `${links > 1 ? `${links} share links stop` : 'A share link stops'} working on ${date} · Extend it in Share`;
       break;
     }

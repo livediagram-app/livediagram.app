@@ -230,19 +230,21 @@ class BodyWriter {
     this.media.push({ name, png: img.png });
     const rid = this.relId();
     this.rels.push({ id: rid, type: REL.image, target: `media/${name}` });
+    // Word's Alt Text for the picture, on the drawing and on the picture inside it.
+    const descr = img.descr ? ` descr="${xmlText(img.descr)}"` : '';
     const cx = Math.round(img.widthPx * DOCX_EMU_PER_PX);
     const cy = Math.round(img.heightPx * DOCX_EMU_PER_PX);
     const graphic =
       '<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">' +
       '<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
       '<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">' +
-      `<pic:nvPicPr><pic:cNvPr id="${n}" name="Picture ${n}"/><pic:cNvPicPr/></pic:nvPicPr>` +
+      `<pic:nvPicPr><pic:cNvPr id="${n}" name="Picture ${n}"${descr}/><pic:cNvPicPr/></pic:nvPicPr>` +
       `<pic:blipFill><a:blip r:embed="${rid}"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>` +
       `<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="${cx}" cy="${cy}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr>` +
       '</pic:pic></a:graphicData></a:graphic>';
     const common = `<wp:extent cx="${cx}" cy="${cy}"/><wp:effectExtent l="0" t="0" r="0" b="0"/>`;
     const docPr =
-      `<wp:docPr id="${n}" name="Picture ${n}"/>` +
+      `<wp:docPr id="${n}" name="Picture ${n}"${descr}/>` +
       '<wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr>';
     if (img.wrap === 'inline') {
       const drawing = `<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0">${common}${docPr}${graphic}</wp:inline></w:drawing></w:r>`;

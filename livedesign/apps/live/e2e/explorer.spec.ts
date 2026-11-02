@@ -49,6 +49,8 @@ const indexWrite = (page: Page, method: string, path: string) =>
       r.ok(),
   );
 
+// A toast names an item or a place inside isolates (U+2068 … U+2069, packages/explorer quoted.ts), so a name
+// holding a bidi override never turns the sentence around.
 const toast = (page: Page, text: string) =>
   page.getByRole('status').getByText(text, { exact: true });
 
@@ -128,20 +130,20 @@ test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a
   await move.getByRole('button', { name: 'Move Here' }).click();
   await expect(move).toBeHidden();
   await expect(row(page, 'Roadmap')).toBeHidden();
-  await expect(toast(page, 'Moved “Roadmap” to Q3.')).toBeVisible();
+  await expect(toast(page, 'Moved “\u2068Roadmap\u2069” to \u2068Q3\u2069.')).toBeVisible();
   await page.locator('main').getByText('Q3', { exact: true }).first().click();
   await expect(row(page, 'Roadmap')).toBeVisible();
 
   // Delete it: it goes to the Trash, and Restore brings it back.
   await rowAction(page, 'Roadmap', 'Delete Design');
   await expect(row(page, 'Roadmap')).toBeHidden();
-  await expect(toast(page, 'Moved “Roadmap” to the Trash.')).toBeVisible();
+  await expect(toast(page, 'Moved “\u2068Roadmap\u2069” to the Trash.')).toBeVisible();
   await showView(page, 'Trash');
   await expect(page.locator('main').getByText('Roadmap', { exact: true })).toBeVisible();
   // A Trash row has its own Restore button, no row menu.
   await page.locator('main').getByRole('button', { name: 'Restore Roadmap', exact: true }).click();
   await expect(page.locator('main').getByText('Roadmap', { exact: true })).toBeHidden();
-  await expect(toast(page, '“Roadmap” restored.')).toBeVisible();
+  await expect(toast(page, '“\u2068Roadmap\u2069” restored.')).toBeVisible();
   await openView(page, 'recent', 'Recent');
   await expect(row(page, 'Roadmap')).toBeVisible();
 

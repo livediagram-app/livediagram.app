@@ -102,6 +102,9 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['Space', 'drag'], label: 'Pan canvas (overrides current tool)' },
       { keys: ['Space'], label: 'Edit label of selected element' },
       { keys: ['Type'], label: 'Replace label of selected element' },
+      // A dot vote's keys (docs/specs/012-collaboration/session-tools.md "Casting from the keyboard").
+      { keys: ['+'], label: 'In an open vote: add one of your dots to the selected element' },
+      { keys: ['-'], label: 'In an open vote: take one of your dots back' },
       { keys: ['Escape'], label: 'Cancel current mode, or clear selection' },
       { keys: ['⌘', 'hold'], label: 'Show shortcut badges on palette' },
     ],

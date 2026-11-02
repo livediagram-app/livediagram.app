@@ -119,7 +119,9 @@ This implements the OAuth flow Manager Toolkit uses:
    (10-minute TTL, held by the browser in the flow); the response carries no
    token, code or PKCE material and does not consume the session, so answering
    grants a holder nothing it could not get by completing the flow. Client
-   **name** is never a trust signal either way (it is whatever was registered):
+   **name** is never a trust signal either way (it is whatever was registered, kept without bidi
+   controls or invisible characters at its ends and cut to 120 whole characters, "MCP client" when that leaves
+   nothing, so it can neither turn the screen's words around nor look blank):
    the host is the fact to check, which is why it must come from the server. A
    session that is unknown or expired is a blocking screen, never a screen with
    an approve button and a blank destination. See

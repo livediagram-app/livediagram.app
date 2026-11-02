@@ -22,11 +22,12 @@ Skip, Back and closing card, driven by the same engine. Where this spec is silen
 - **Never on its own.** The tour does not offer or start itself. Until 25 October 2026 it offered itself, once ever,
   the first time a person was in Workshop ("Getting started with Workshop?", **No** / **Yes**); the button replaced
   that offer.
-- **It stays on offer once taken.** Taken or skipped, the button still offers it; pressing again reruns it. A press
-  starts the first step; a press while another tour is on screen does nothing.
-- **Taken, on every device.** However a run ends, the synced `workshopTourSeen` user preference
-  ([User preferences](../007-editor/user-preferences.md)) records it, for Settings' row only: it does not hide the
-  button.
+- **Gone once taken, back from Settings.** A press starts the first step; a press while another tour is on screen
+  does nothing. Once started, and so taken or skipped, the tour is off the button
+  ([Diagram tour](../007-editor/editor-tour.md) "Where it appears") until its Settings switch is turned on again.
+- **Taken, on every device.** As a run starts and however it ends, the synced `workshopTourSeen` user preference
+  ([User preferences](../007-editor/user-preferences.md)) records it: Settings' row reads off and the button stops
+  offering it.
 - **Rerun from Settings**: the **Workshop Tour** switch in Settings' **Tours** category, beside **Diagram Tour** and
   built the same way (on means "not seen yet"). Turning it on from off and closing Settings runs the tour straight
   away when the person is in Workshop and it is on offer; otherwise the button is there when they get there.

@@ -1,0 +1,7 @@
+/* Right-to-left text in labels (docs/specs/008-canvas/canvas-and-palette.md "Labels"): each line takes its direction
+ * from its own first letter, so Arabic or Hebrew keeps its closing punctuation at the end it belongs instead of the
+ * page's left-to-right default stranding it on the right. On the block text containers only: a rich label's runs are
+ * inline spans, and isolating each would break a line that mixes them. Alignment is the label's own, unchanged. */
+[data-element-id] :is(div, p, li, td, th, textarea, [contenteditable], text) {
+  unicode-bidi: plaintext;
+}

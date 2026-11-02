@@ -16,14 +16,26 @@ import {
 const NOW = new Date(2026, 9, 25, 15, 0).getTime();
 const at = (daysAgo: number, hour = 12) => new Date(2026, 9, 25 - daysAgo, hour).getTime();
 
+// The reader's locale words a day; these say what it must hold, in whatever order the locale gives.
+const dayIn = (y: number, m: number, d: number, year = false) =>
+  new Intl.DateTimeFormat(undefined, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    ...(year ? { year: 'numeric' } : {}),
+  }).format(new Date(y, m - 1, d));
+
 describe('historyDayLabel', () => {
   it('says Today, Yesterday, the weekday within a week, then the date', () => {
     expect(historyDayLabel('2026-10-25', NOW)).toBe('Today');
     expect(historyDayLabel('2026-10-24', NOW)).toBe('Yesterday');
     expect(historyDayLabel('2026-10-21', NOW)).toBe('Wednesday');
     expect(historyDayLabel('2026-10-19', NOW)).toBe('Monday');
-    expect(historyDayLabel('2026-10-18', NOW)).toBe('Sun, 18 Oct');
-    expect(historyDayLabel('2025-12-30', NOW)).toBe('Tue, 30 Dec 2025');
+    expect(historyDayLabel('2026-10-18', NOW)).toBe(dayIn(2026, 10, 18));
+    expect(historyDayLabel('2025-12-30', NOW)).toBe(dayIn(2025, 12, 30, true));
+    // Never a forced locale: the reader's own words for the day.
+    expect(historyDayLabel('2025-12-30', NOW)).toMatch(/30/);
+    expect(historyDayLabel('2025-12-30', NOW)).toMatch(/2025/);
   });
 });
 

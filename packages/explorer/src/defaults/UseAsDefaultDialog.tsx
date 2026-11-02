@@ -13,6 +13,7 @@ import { Button } from '@liveworkspace/ui';
 import { Dialog, DialogCloseButton, DialogFooter, DialogHeader } from '../ui/Dialog';
 import { useExplorer } from '../explorer/context';
 import { SIDEBAR_LABELS } from '../views';
+import { quoted } from '../quoted';
 
 export function UseAsDefaultDialog({
   folderId,
@@ -32,9 +33,9 @@ export function UseAsDefaultDialog({
     return at !== undefined && folders.byId.has(at);
   };
   return (
-    <Dialog onClose={onClose} ariaLabel={`Use “${name}” as Default for`} size="sm">
+    <Dialog onClose={onClose} ariaLabel={`Use ${quoted(name)} as Default for`} size="sm">
       <DialogHeader
-        title={`Use “${name}” as Default for`}
+        title={`Use ${quoted(name)} as Default for`}
         subtitle={`New ${kind.lowerMany} you make without choosing a place are saved in your default folder.`}
       >
         <DialogCloseButton onClick={onClose} />

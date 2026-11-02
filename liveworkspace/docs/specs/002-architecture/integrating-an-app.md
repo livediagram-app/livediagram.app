@@ -201,15 +201,16 @@ person sees lists it.
 
 - **Accepted:** accounts takes its API resource, its OAuth client, its sign-in hand-off origins, its settings scope,
   its sign-ups and its phone devices; the index takes its items; media takes its uploads and previews; telemetry takes
-  its events and its Workers' key; its browser settings keys are known.
+  its events and its Workers' key; the Drive mirror writes its items' files (its format in `APP_FILE_FORMATS`, its
+  doors in the service's `DRIVE_KEY_<APP>` and `APP_ORIGIN_<APP>`); its browser settings keys are known.
 - **Held out of every list:** the site switcher, the sign-in pages' "one account for ..." line and the sign-in
   email's list of apps, the Explorer's apps (its New menu, filters, search and welcome), the telemetry dashboard's
-  app picker, the status page, the settings panel's apps, and liveworkspace.app's landing and legal pages.
+  app picker, the status page, the settings panel's apps, and liveworkspace.app's landing, legal and help pages.
 - **In code:** its site is in `SiteId` and `LOCAL_PORTS`, and its site row in `HELD_APP_SITES`
   (`@liveworkspace/sites`), not `APP_SITES`, which every list reads. Services that accept every app read
   `REGISTERED_APP_SITES` (both). Telemetry's held senders are `HELD_TELEMETRY_APPS` beside `TELEMETRY_APPS`.
 - **Secrets** (owner only) come with the app's first deploy: its accounts client, and its `INDEX_KEY_<APP>`,
-  `MEDIA_KEY_<APP>` and `TELEMETRY_KEY_<APP>`. Until each is set, that service refuses the app's Workers, as for any
+  `MEDIA_KEY_<APP>`, `TELEMETRY_KEY_<APP>` and `DRIVE_KEY_<APP>` (the same value as the app api's `DRIVE_KEY`). Until each is set, that service refuses the app's Workers, as for any
   app without its key.
 - **Launch** moves the row from `HELD_APP_SITES` into `APP_SITES` and the app from `HELD_TELEMETRY_APPS` into
   `TELEMETRY_APPS`; the sign-in email's line names it in the same change.

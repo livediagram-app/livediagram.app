@@ -338,6 +338,8 @@ const TEXT_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: (v) => isNum(v) && Math.abs(v) <= TEXT_ARC_MAX,
     rule: `a number from -${TEXT_ARC_MAX} to ${TEXT_ARC_MAX}`,
   },
+  // A template's note about its page (docs/specs/007-editor/logo-pages.md "Export"): set, or absent.
+  { field: 'templateNote', valid: (v) => v === true, rule: 'true' },
 ];
 
 // A path's normalised coordinate pair: finite, and never absurdly far outside its box.

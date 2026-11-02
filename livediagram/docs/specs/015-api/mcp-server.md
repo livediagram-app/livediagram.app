@@ -118,7 +118,9 @@ This implements the OAuth flow Manager Toolkit uses:
    (10-minute TTL, held by the browser in the flow); the response carries no
    token, code or PKCE material and does not consume the session, so answering
    grants a holder nothing it could not get by completing the flow. Client
-   **name** is never a trust signal either way (it is whatever was registered):
+   **name** is never a trust signal either way (it is whatever was registered, kept without bidi
+   controls or invisible characters at its ends and cut to 120 whole characters, "MCP client" when that leaves
+   nothing, so it can neither turn the screen's words around nor look blank):
    the host is the fact to check, which is why it must come from the server. A
    session that is unknown or expired is a blocking screen, never a screen with
    an approve button and a blank destination. See
@@ -576,9 +578,13 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 
 **Layout choices** (defaults in brackets):
 
-- `direction` (auto): `down` (ranks top to bottom) or `right` (left to right). Auto is `down` for a flowchart (it
-  reads down the page, as the template does) and for a graph of more than 150 nodes; any other flow is laid out
-  both ways and keeps the one whose aspect is nearer a landscape page (3:2).
+- `direction` (auto): `down` (ranks top to bottom) or `right` (left to right), for `flow` and `tree` alike. Auto is
+  `down` for a flowchart (it reads down the page, as the template does) and for a graph of more than 150 nodes; any
+  other flow is laid out both ways and keeps the one whose aspect is nearer a landscape page (3:2). A tree's auto is
+  `down`, the org chart; `right` puts its roots at the left and each generation in a column to the right of the one
+  before, every parent centred beside its own children, its angled lines bending across rather than down, and no
+  leaves stacked (across the page a family is already a column). The other styles have a shape of their own (a
+  ring, lanes left to right, a radial map, a board, lifelines) and take no direction.
 - `style` (`flow`): `flow` is the layered layout, `tree` the tidy tree (an org
   chart, a hierarchy; a parent below the root whose two or more children are all leaves stacks them in a column
   under it, indented, joined by a bus down its lower-left quarter, the compact org chart; its lines carry no

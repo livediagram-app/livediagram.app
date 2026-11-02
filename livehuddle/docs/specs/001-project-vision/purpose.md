@@ -83,7 +83,12 @@ The full list, with what each brings over from livediagram, is in [v1 scope](../
 A boundary nobody maintains is not a boundary. When one moves, it gets recorded here in the same change, with the
 spec that moved it.
 
-- None yet. livehuddle begins as livediagram cut down to Workshop, with Avatar mode made first-class.
+- livehuddle begins as livediagram cut down to Workshop, with Avatar mode made first-class.
+- **Diagram and Draw are cut** (build plan step 5.1, Work Tracker #182): the mode switch goes and every tab is
+  Workshop; flowcharts, mind maps and org charts, sequence diagrams, Sankey diagrams, entities, the concept graphics
+  but the Timeline, device frames, the Technology palette category, Draw's dock, the Fill and Path tools and the
+  templates built from them leave with it. Pencil, highlighter, arrow and line stay as Workshop's Draw category
+  ([Editor modes](../007-editor/editor-modes.md)).
 
 ## Why it matters
 

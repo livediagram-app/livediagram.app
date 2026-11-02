@@ -11,6 +11,7 @@ export function PageNotFound({
   homeLabel = 'Go to the Home Page',
   helpHref = '/help/',
   helpLabel = 'Help Centre',
+  inMain = false,
 }: {
   // Where the main way back leads: the site's own home (the help centre's front page, the Community gallery).
   homeHref?: string;
@@ -18,11 +19,16 @@ export function PageNotFound({
   // The second way on: the help centre, or (on the help centre itself) its troubleshooting guides.
   helpHref?: string;
   helpLabel?: string;
+  // The site's layout already holds its pages in a <main> (the help centre, Community): the card is its content, not a
+  // second main landmark inside the first.
+  inMain?: boolean;
 }) {
+  const Landmark = inMain ? 'div' : 'main';
   return (
-    <main className="mx-auto w-full max-w-2xl px-6 py-16 sm:py-24">
+    <Landmark className="mx-auto w-full max-w-2xl px-6 py-16 sm:py-24">
       <EmptyState
         icon={<SearchIcon />}
+        heading="h1"
         title="Page not found"
         description="There is no page at this address. It may have moved, or the link may have a typo."
       >
@@ -35,6 +41,6 @@ export function PageNotFound({
           </a>
         </div>
       </EmptyState>
-    </main>
+    </Landmark>
   );
 }

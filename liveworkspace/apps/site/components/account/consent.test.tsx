@@ -38,6 +38,15 @@ describe('Consent', () => {
     expect(container.querySelector('strong')?.className).toContain('break-all');
   });
 
+  it("isolates the client id, so an override in the address can't turn the sentence around", async () => {
+    window.history.replaceState(null, '', '/consent?client_id=%E2%80%AEevil&sig=s');
+    act(() => root.render(<Consent />));
+    expect(container.querySelector('strong > bdi')?.textContent).toBe('\u202Eevil');
+    expect(container.querySelector('h1')?.parentElement?.textContent).toContain(
+      'wants to use your liveworkspace account.',
+    );
+  });
+
   it('says the connection failed, not that the request expired, when nothing answers', async () => {
     vi.stubGlobal(
       'fetch',
@@ -56,5 +65,26 @@ describe('Consent', () => {
     act(() => root.render(<Consent />));
     await allow();
     expect(alertText()).toMatch(/That request has expired/);
+  });
+
+  it('keeps the keyboard on Allow while it answers, and answers once', async () => {
+    let finish: (r: Response) => void = () => {};
+    const fetch = vi.fn(() => new Promise<Response>((r) => (finish = r)));
+    vi.stubGlobal('fetch', fetch);
+    act(() => root.render(<Consent />));
+    const button = (name: string) =>
+      [...container.querySelectorAll('button')].find((b) => b.textContent === name)!;
+    button('Allow').focus();
+    await act(async () => button('Allow').click());
+    expect(button('Allow').getAttribute('aria-disabled')).toBe('true');
+    expect(button('Allow').disabled).toBe(false);
+    expect(document.activeElement).toBe(button('Allow'));
+    await act(async () => button('Allow').click());
+    await act(async () => button('Deny').click());
+    expect(fetch).toHaveBeenCalledTimes(1);
+    await act(async () => finish(new Response('{}', { status: 401 })));
+    await settle();
+    expect(alertText()).toMatch(/That request has expired/);
+    expect(document.activeElement).toBe(button('Allow'));
   });
 });

@@ -1,7 +1,7 @@
 // Add Field's catalogue and matching (docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field): one list of
-// field kinds in six groups, built-in and custom alike, each with a one-line description and a few everyday words it
-// is searched by; the built-in fields of each kind (offered as Ready to use) with what uses them; how a search
-// matches a kind; and what a new field still needs before it can be added.
+// field kinds in seven categories, built-in and custom alike, each with a one-line description and a few everyday
+// words it is searched by; the built-in fields of each kind (offered as Ready to use) with what uses them; how a
+// search matches a kind and narrows the categories; and what a new field still needs before it can be added.
 import {
   isFormulaField,
   isLookupField,
@@ -18,30 +18,91 @@ import {
 // fields"), each opening Shape.
 export type PickKind = CustomFieldKind;
 
-export type KindGroupId = 'text' | 'numbers' | 'choices' | 'people' | 'look' | 'cards';
+export type KindCategoryId =
+  'text' | 'numbers' | 'dates' | 'choices' | 'people' | 'links' | 'cards';
 
-export type KindGroup = { id: KindGroupId; label: string; kinds: readonly PickKind[] };
+// What the gallery shows: every category (All Fields), or one.
+export type CategoryChoice = KindCategoryId | 'all';
 
-// The groups, in order; the first opens to start.
-export const KIND_GROUPS: readonly KindGroup[] = [
-  { id: 'text', label: 'Text & links', kinds: ['text', 'longtext', 'link', 'email', 'phone'] },
+export type KindCategory = {
+  id: KindCategoryId;
+  label: string;
+  // Its line under its heading.
+  line: string;
+  kinds: readonly PickKind[];
+};
+
+// The categories, in the rail's order (after All Fields); every kind in exactly one.
+export const KIND_CATEGORIES: readonly KindCategory[] = [
+  {
+    id: 'text',
+    label: 'Text',
+    line: 'Words, from a title to pages of notes.',
+    kinds: ['text', 'longtext'],
+  },
   {
     id: 'numbers',
-    label: 'Numbers & dates',
-    kinds: ['number', 'currency', 'percent', 'duration', 'rating', 'date', 'datetime', 'daterange'],
+    label: 'Numbers and Money',
+    line: 'Counts, amounts, shares and scores.',
+    kinds: ['number', 'currency', 'percent', 'rating'],
   },
-  { id: 'choices', label: 'Choices', kinds: ['choice', 'multichoice', 'checkbox', 'labels'] },
+  {
+    id: 'dates',
+    label: 'Dates and Time',
+    line: 'Days, moments, spans and time spent.',
+    kinds: ['date', 'datetime', 'daterange', 'duration'],
+  },
+  {
+    id: 'choices',
+    label: 'Choices and Tags',
+    line: 'Pick from a list, tick a box or tag a card.',
+    kinds: ['choice', 'multichoice', 'checkbox', 'labels', 'colour'],
+  },
   {
     id: 'people',
-    label: 'People & teamwork',
+    label: 'People and Teamwork',
+    line: 'Who has it, what is left and what the team thinks.',
     kinds: ['person', 'checklist', 'comments', 'votes'],
   },
-  { id: 'look', label: 'Colour & images', kinds: ['colour', 'image'] },
-  { id: 'cards', label: 'Linked cards', kinds: ['card', 'calculated'] },
+  {
+    id: 'links',
+    label: 'Links and Media',
+    line: 'Web addresses, contact details and pictures.',
+    kinds: ['link', 'email', 'phone', 'image'],
+  },
+  {
+    id: 'cards',
+    label: 'Cards and Formulas',
+    line: 'Connect cards, and work values out from them.',
+    kinds: ['card', 'calculated'],
+  },
 ];
 
-export const groupOfKind = (kind: PickKind): KindGroupId =>
-  KIND_GROUPS.find((g) => g.kinds.includes(kind))?.id ?? KIND_GROUPS[0]!.id;
+export const ALL_FIELDS_LABEL = 'All Fields';
+
+export const categoryOfKind = (kind: PickKind): KindCategory =>
+  KIND_CATEGORIES.find((c) => c.kinds.includes(kind)) ?? KIND_CATEGORIES[0]!;
+
+// A category with the kinds a search leaves in it (all of them with no search).
+export type ShownCategory = KindCategory & { shown: readonly PickKind[] };
+
+/**
+ * Every category with the kinds that answer `key` (from searchKey), in order: a kind by its name (`labelOf`), its
+ * line, a word for it, or the name of one of its built-in fields (`builtInNamesOf`). A category's own name is
+ * not searched: "money" would find every kind under Numbers and Money.
+ */
+export function shownCategories(
+  key: string,
+  labelOf: (kind: PickKind) => string,
+  builtInNamesOf: (kind: PickKind) => readonly string[],
+): ShownCategory[] {
+  return KIND_CATEGORIES.map((c) => ({
+    ...c,
+    shown: key
+      ? c.kinds.filter((k) => kindMatches(k, labelOf(k), key, builtInNamesOf(k)))
+      : c.kinds,
+  }));
+}
 
 // What each kind holds, in plain words, one line.
 export const KIND_DESCRIPTIONS: Record<PickKind, string> = {

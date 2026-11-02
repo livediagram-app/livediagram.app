@@ -201,8 +201,8 @@ function ItemPanelContent({
   useTitleFocus(fieldId(item, 'title'), !mobile && canEdit, fresh);
   // When the panel opened: the meta line says how long ago the last change was from here.
   const [now] = useState(() => Date.now());
-  const repeat = useItemRepeat({ item, statuses, canSet: canRetire, now, onSave });
   const type = typeIn(types, item.type);
+  const repeat = useItemRepeat({ item, type, statuses, canSet: canRetire, now, onSave });
   const tabs = tabsOf(type);
   const offered = new Set<string>(type.fields);
   // The fields in no tab, then any built-in field the item holds a value in that its type does not

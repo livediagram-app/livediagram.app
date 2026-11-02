@@ -82,15 +82,22 @@ export function PagesTourHost() {
   const pages = Array.isArray(stored) && stored.length > 0 ? pagesOf(ctx.activeTab) : [];
   // A page whose kind is chosen: the first page's own kind choice is no page to tour yet.
   const anyChosen = pages.some((p) => !!p.kind);
+  // Taken: every kind chosen on the tab is in the synced record its Settings rows read, so the button leaves until
+  // one of them is switched back on (docs/specs/007-editor/pages-tour.md "Where it appears").
+  const seen = pages.every((p) => !p.kind || pagesKindSeen(ctx.userPreferences, p.kind));
 
-  const endTour = (outcome: TourOutcome) => {
-    // Onto the freshest preferences, not this render's: the whole blob is written.
+  // Records `kind` as taken, onto the freshest preferences, not this render's: the whole blob is written.
+  const markTaken = (kind: PageKind) => {
     const next = rebaseUserPreferences(
       ctx.userPreferences,
-      markPagesKindSeen(ctx.userPreferences, subject.kind),
+      markPagesKindSeen(ctx.userPreferences, kind),
     );
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
+  };
+
+  const endTour = (outcome: TourOutcome) => {
+    markTaken(subject.kind);
     debugLog('[pages-tour] end', { outcome, kind: subject.kind });
     track('UI', 'Ended', outcome === 'completed' ? 'PagesTourCompleted' : 'PagesTourSkipped');
   };
@@ -113,14 +120,15 @@ export function PagesTourHost() {
         setSubject(page);
         setSteps(shownPageTourSteps(page.kind, { pageId: page.pageId, ...PAGE_PANEL }, isOnScreen));
         engineRef.current.start();
+        // Taken as it starts, so a reload mid-tour does not put it back on the button.
+        if (!pagesKindSeen(prefsRef.current, page.kind)) markTaken(page.kind);
       })
       .finally(() => {
         loadingRef.current = false;
       });
   };
   const canStart = inPages && canWork && anyChosen;
-  // The footer's Start Tour button: offered whenever the tour could run here, taken or not (it is how it is taken
-  // again).
+  // The footer's Start Tour button: offered whenever the tour could run here, until every kind on the tab is taken.
   useOfferTour(
     'pages',
     canStart
@@ -129,6 +137,7 @@ export function PagesTourHost() {
           rank: TOUR_OFFER_RANK.mode,
           start,
           onShown: () => track('UI', 'Opened', 'PagesTourOffer'),
+          seen,
         }
       : null,
   );

@@ -1,0 +1,149 @@
+{
+  "graph": {
+    "style": "tree",
+    "direction": "down",
+    "title": "Startup Org Chart",
+    "subtitle": "Who reports to whom, from the CEO down.",
+    "nodes": [
+      {
+        "id": "maya",
+        "label": "Maya, CEO",
+        "tone": "strong",
+        "icon": "user"
+      },
+      {
+        "id": "ben",
+        "label": "Ben, CTO",
+        "tone": "soft"
+      },
+      {
+        "id": "sara",
+        "label": "Sara, CPO",
+        "tone": "soft"
+      },
+      {
+        "id": "tom",
+        "label": "Tom, COO",
+        "tone": "soft"
+      },
+      {
+        "id": "ali",
+        "label": "Ali, Eng Manager"
+      },
+      {
+        "id": "priya",
+        "label": "Priya, Eng Manager"
+      },
+      {
+        "id": "e1",
+        "label": "Jonas, Engineer"
+      },
+      {
+        "id": "e2",
+        "label": "Chloe, Engineer"
+      },
+      {
+        "id": "e3",
+        "label": "Marcus, Engineer"
+      },
+      {
+        "id": "e4",
+        "label": "Aiko, Engineer"
+      },
+      {
+        "id": "e5",
+        "label": "Diego, Engineer"
+      },
+      {
+        "id": "e6",
+        "label": "Fatima, Engineer"
+      },
+      {
+        "id": "pm1",
+        "label": "Leo, Product Manager"
+      },
+      {
+        "id": "pm2",
+        "label": "Nina, Product Manager"
+      },
+      {
+        "id": "des",
+        "label": "Omar, Designer"
+      },
+      {
+        "id": "fin",
+        "label": "Grace, Finance Lead"
+      },
+      {
+        "id": "ppl",
+        "label": "Sam, People Lead"
+      }
+    ],
+    "edges": [
+      {
+        "from": "maya",
+        "to": "ben"
+      },
+      {
+        "from": "maya",
+        "to": "sara"
+      },
+      {
+        "from": "maya",
+        "to": "tom"
+      },
+      {
+        "from": "ben",
+        "to": "ali"
+      },
+      {
+        "from": "ben",
+        "to": "priya"
+      },
+      {
+        "from": "ali",
+        "to": "e1"
+      },
+      {
+        "from": "ali",
+        "to": "e2"
+      },
+      {
+        "from": "ali",
+        "to": "e3"
+      },
+      {
+        "from": "priya",
+        "to": "e4"
+      },
+      {
+        "from": "priya",
+        "to": "e5"
+      },
+      {
+        "from": "priya",
+        "to": "e6"
+      },
+      {
+        "from": "sara",
+        "to": "pm1"
+      },
+      {
+        "from": "sara",
+        "to": "pm2"
+      },
+      {
+        "from": "sara",
+        "to": "des"
+      },
+      {
+        "from": "tom",
+        "to": "fin"
+      },
+      {
+        "from": "tom",
+        "to": "ppl"
+      }
+    ]
+  }
+}

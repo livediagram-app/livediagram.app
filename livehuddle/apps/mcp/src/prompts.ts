@@ -1,0 +1,85 @@
+// MCP prompts (docs/specs/015-api/mcp-server.md §4.10): pre-canned prompt templates the client can
+// surface (as slash commands / quick actions) so a user discovers what the
+// server is for without knowing the tool names. Each returns a single user
+// message that steers the model to the right tools + the graph-first path.
+// Pure text — no api calls, no auth needed to list them.
+
+import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { registerShowMyPrompt } from '@liveworkspace/mcp-kit/prompts';
+import { z } from 'zod';
+
+// What a clear diagram asks of its author (docs/specs/015-api/mcp-server.md §4.7). A prompt is a message
+// the USER sends, so unlike a tool description it can ask for this: short
+// headings in the boxes, the detail in each node's note, related nodes grouped,
+// a layout that fits the subject.
+const CONCISE =
+  'Keep each node label a short heading of a few words (a noun phrase like ' +
+  '"Orders service", not a sentence) and put any explanation in the node\'s "note". ' +
+  'Group related nodes with "groups", and pick "direction" / "style" to fit (a ' +
+  'hierarchy is a "tree"). Pick a fitting theme. Don\'t set element colours.';
+
+export function registerPrompts(server: McpServer): void {
+  server.registerPrompt(
+    'diagram_this',
+    {
+      title: 'Diagram this',
+      description: 'Turn a description into a new livehuddle diagram.',
+      argsSchema: {
+        description: z
+          .string()
+          .describe('What to diagram — a system, a process, a set of relationships.'),
+      },
+    },
+    ({ description }) => ({
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text:
+              `Create a livehuddle diagram of the following, then give me a link to open it:\n\n` +
+              `${description}\n\n` +
+              `Use the create_document tool. Prefer the "graph" input (nodes + edges by id, or ` +
+              `the same as "mermaid") so the server lays it out: you only need to express ` +
+              `which nodes exist and what connects to what. ${CONCISE}`,
+          },
+        },
+      ],
+    }),
+  );
+
+  server.registerPrompt(
+    'flowchart_from_steps',
+    {
+      title: 'Flowchart from steps',
+      description: 'Turn an ordered list of steps (with any branches) into a flowchart.',
+      argsSchema: {
+        steps: z.string().describe('The steps, one per line; note any decisions or branches.'),
+      },
+    },
+    ({ steps }) => ({
+      messages: [
+        {
+          role: 'user',
+          content: {
+            type: 'text',
+            text:
+              `Build a flowchart in livehuddle from these steps and give me a link:\n\n` +
+              `${steps}\n\n` +
+              `Use create_document with the "graph" input: one node per step (use shape ` +
+              `"diamond" for a decision, "stadium" for start/end, "square" otherwise) and ` +
+              `an edge for each transition, labelling branch edges (e.g. "yes"/"no"). ${CONCISE}`,
+          },
+        },
+      ],
+    }),
+  );
+
+  // @liveworkspace/mcp-kit's, every product's.
+  registerShowMyPrompt(server, {
+    product: 'livehuddle',
+    record: 'document',
+    shown: { one: 'canvas', many: 'canvases' },
+    called: 'document',
+  });
+}

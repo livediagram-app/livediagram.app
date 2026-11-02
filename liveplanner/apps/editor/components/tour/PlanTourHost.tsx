@@ -196,19 +196,27 @@ export function PlanTourHost() {
   ];
   const offerTrack =
     tracks.find((t) => !planTrackSeen(ctx.userPreferences, t)) ?? tracks[0] ?? null;
+  // Taken: every track with work on the tab is in the synced record its Settings rows read, so the button leaves
+  // until one is switched back on (docs/specs/026-plan/plan-tour.md "Where it appears").
+  const seen = tracks.every((t) => planTrackSeen(ctx.userPreferences, t));
 
-  const endTour = (outcome: TourOutcome) => {
-    apiRef.current.closeCard();
-    // The example card goes however the tour ended: the board is left as the person had it.
-    removeTourCard();
-    // Onto the freshest preferences, not this render's: the whole blob is written. The track shown is taken.
-    const answered: BoardSheetTrack[] = [tourTrack];
+  // Records `answered` as taken, onto the freshest preferences, not this render's: the whole blob is written.
+  const markTaken = (answered: BoardSheetTrack[]) => {
     const next = rebaseUserPreferences(
       ctx.userPreferences,
       markPlanTracksSeen(ctx.userPreferences, answered),
     );
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
+  };
+
+  const endTour = (outcome: TourOutcome) => {
+    apiRef.current.closeCard();
+    // The example card goes however the tour ended: the board is left as the person had it.
+    removeTourCard();
+    // The track shown is taken.
+    const answered: BoardSheetTrack[] = [tourTrack];
+    markTaken(answered);
     debugLog('[plan-tour] end', { outcome, answered });
     track('UI', 'Ended', outcome === 'completed' ? 'PlanTourCompleted' : 'PlanTourSkipped');
   };
@@ -224,10 +232,11 @@ export function PlanTourHost() {
     setSubject({ boardId, sheetId });
     setTourTrack(offerTrack);
     engineRef.current.start();
+    // Taken as it starts, so a reload mid-tour does not put it back on the button.
+    if (!planTrackSeen(ctx.userPreferences, offerTrack)) markTaken([offerTrack]);
   };
   const canStart = canWork && offerTrack !== null;
-  // The footer's Start Tour button: offered whenever the tour could run here, taken or not (it is how it is taken
-  // again).
+  // The footer's Start Tour button: offered whenever the tour could run here, until every track on the tab is taken.
   useOfferTour(
     'plan',
     canStart && offerTrack
@@ -236,6 +245,7 @@ export function PlanTourHost() {
           rank: TOUR_OFFER_RANK.mode,
           start,
           onShown: () => track('UI', 'Opened', 'PlanTourOffer'),
+          seen,
         }
       : null,
   );

@@ -51,4 +51,27 @@ describe('ReadOnlyElementMenu', () => {
     fireEvent.click(screen.getByRole('button', { name: 'View Note' }));
     expect(calls).toEqual(['close', 'note']);
   });
+
+  // A product's own part, under the rows (livedocuments: an image's Alt Text), stays in the menu while it is used.
+  it('draws a product part under the rows, kept open while it is used', () => {
+    const onClose = vi.fn();
+    render(
+      <ReadOnlyElementMenu
+        position={{ x: 10, y: 10 }}
+        title="Image"
+        items={[{ key: 'comment', label: 'Add Comment' }]}
+        onRun={vi.fn()}
+        onClose={onClose}
+      >
+        <label>
+          Alt Text
+          <textarea defaultValue="A cat" />
+        </label>
+      </ReadOnlyElementMenu>,
+    );
+    const field = screen.getByRole('textbox', { name: 'Alt Text' });
+    fireEvent.change(field, { target: { value: 'A dog' } });
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Add Comment' })).toBeTruthy();
+  });
 });

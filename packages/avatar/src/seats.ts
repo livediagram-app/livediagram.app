@@ -1,0 +1,190 @@
+// Seat geometry (livediagram's docs/specs/009-elements/chair.md "Seat point" and office.md "Meeting Table"): where a
+// character's feet go when it sits in a chair, desk, sofa or meeting table, and which way it then faces. Each piece
+// is drawn by its product (livediagram's seating.ts and office.ts); every drawing takes its grid and its seats from
+// here, so a seat and the cushion it is drawn on share one grid and cannot drift apart, and another product seats a
+// character without importing livediagram's document package. Pure: no React, no DOM.
+
+import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
+import type { SeatingKind } from './office-geometry';
+import type { AvatarFacing } from './walk';
+
+/** Where a piece's back is: 'n' at the top, so its sitter faces down the canvas. */
+export type SeatFacing = 'n' | 'e' | 's' | 'w';
+
+/** Which way somebody sitting in a piece looks: the seat points away from its back. */
+export const SEAT_SITTER_FACING: Readonly<Record<SeatFacing, AvatarFacing>> = {
+  n: 'down',
+  e: 'left',
+  s: 'up',
+  w: 'right',
+};
+
+// Where a new one's back is. A chair and a sofa face the reader; a desk is placed with its desk at the top and its
+// chair in front, so the sitter faces up, at the computer, with their back to you. The meeting table reads the same
+// from every side and does not turn.
+export const DEFAULT_SEATING_FACING: Readonly<Record<SeatingKind, SeatFacing>> = {
+  chair: 'n',
+  sofa: 'n',
+  desk: 's',
+  'meeting-table': 'n',
+};
+
+export function seatingFacing(el: { shape: SeatingKind; chairFacing?: SeatFacing }): SeatFacing {
+  return el.chairFacing ?? DEFAULT_SEATING_FACING[el.shape];
+}
+
+// A piece's three drawings: `front` with the sitter facing down the canvas ('n'), `back` facing up ('s'), `side`
+// facing left ('e'); facing right ('w') is the side drawing mirrored. Nothing is ever rotated.
+export type SeatView = 'front' | 'back' | 'side';
+
+/** Which drawing a facing shows, and whether it is the mirrored side. */
+export function facingView(facing: SeatFacing): { view: SeatView; mirrored: boolean } {
+  switch (facing) {
+    case 's':
+      return { view: 'back', mirrored: false };
+    case 'e':
+      return { view: 'side', mirrored: false };
+    case 'w':
+      return { view: 'side', mirrored: true };
+    default:
+      return { view: 'front', mirrored: false };
+  }
+}
+
+/** One drawing's grid and where a sitter's feet go on it, as fractions of the grid. */
+export type SeatGrid = {
+  width: number;
+  height: number;
+  seats: readonly { u: number; v: number }[];
+};
+
+// A chair: square enough to turn in place, so all three drawings share one grid.
+const CHAIR_SEATS: Record<SeatView, SeatGrid> = {
+  front: { width: 64, height: 72, seats: [{ u: 0.5, v: 0.62 }] },
+  back: { width: 64, height: 72, seats: [{ u: 0.5, v: 0.38 }] },
+  side: { width: 64, height: 72, seats: [{ u: 0.38, v: 0.5 }] },
+};
+
+// A desk with its chair: the sitter faces the computer.
+const DESK_SEATS: Record<SeatView, SeatGrid> = {
+  front: { width: 120, height: 112, seats: [{ u: 0.5, v: 0.26 }] },
+  back: { width: 120, height: 112, seats: [{ u: 0.5, v: 0.68 }] },
+  side: { width: 112, height: 120, seats: [{ u: 0.62, v: 0.52 }] },
+};
+
+// A two-seater sofa: two cushions side by side, stacked down it on its side.
+const SOFA_SEATS: Record<SeatView, SeatGrid> = {
+  front: {
+    width: 136,
+    height: 76,
+    seats: [
+      { u: 44 / 136, v: 0.58 },
+      { u: 92 / 136, v: 0.58 },
+    ],
+  },
+  back: {
+    width: 136,
+    height: 76,
+    seats: [
+      { u: 44 / 136, v: 0.27 },
+      { u: 92 / 136, v: 0.27 },
+    ],
+  },
+  side: {
+    width: 76,
+    height: 136,
+    seats: [
+      { u: 33 / 76, v: 44 / 136 },
+      { u: 33 / 76, v: 88 / 136 },
+    ],
+  },
+};
+
+/** Every seating kind that turns with its facing: its three drawings' grids and seats. */
+export const SEAT_GRIDS: Readonly<
+  Record<Exclude<SeatingKind, 'meeting-table'>, Readonly<Record<SeatView, SeatGrid>>>
+> = { chair: CHAIR_SEATS, desk: DESK_SEATS, sofa: SOFA_SEATS };
+
+/** A meeting table's seat, which also says which way its sitter faces: always toward the table. */
+export type TableSeat = { u: number; v: number; facing: AvatarFacing };
+
+const TW = 232;
+const TH = 168;
+
+// Six chairs round a table, every seat facing it: two beyond (their sitters face you), two in front (their backs to
+// you), one at each end in profile. The table never turns, so this one grid serves every facing.
+export const MEETING_TABLE_SEATS: { width: number; height: number; seats: readonly TableSeat[] } = {
+  width: TW,
+  height: TH,
+  seats: [
+    { u: 86 / TW, v: 40 / TH, facing: 'down' },
+    { u: 146 / TW, v: 40 / TH, facing: 'down' },
+    { u: 86 / TW, v: 116 / TH, facing: 'up' },
+    { u: 146 / TW, v: 116 / TH, facing: 'up' },
+    { u: 21 / TW, v: 72 / TH, facing: 'right' },
+    { u: 211 / TW, v: 72 / TH, facing: 'left' },
+  ],
+};
+
+/** A seating piece as the seat geometry reads it: its box, its kind and where its back is. */
+export type SeatedBox = Rect & { shape: SeatingKind; chairFacing?: SeatFacing };
+
+/** A seat's feet point in canvas coordinates; a meeting table's seat also says which way its sitter faces. */
+export type Seat = { x: number; y: number; facing?: AvatarFacing };
+
+/** Every seat's feet point, in canvas coordinates, from the drawing its facing shows. */
+export function seatPoints(el: SeatedBox): Seat[] {
+  if (el.shape === 'meeting-table') {
+    const drawn = drawnRect(el, MEETING_TABLE_SEATS);
+    return MEETING_TABLE_SEATS.seats.map(({ u, v, facing }) => ({
+      x: drawn.x + drawn.width * u,
+      y: drawn.y + drawn.height * v,
+      facing,
+    }));
+  }
+  const { view: name, mirrored } = facingView(seatingFacing(el));
+  const view = SEAT_GRIDS[el.shape][name];
+  const drawn = drawnRect(el, view);
+  return view.seats.map(({ u, v }) => ({
+    x: drawn.x + drawn.width * (mirrored ? 1 - u : u),
+    y: drawn.y + drawn.height * v,
+  }));
+}
+
+// Where the drawing actually lies in the box: every renderer fits its grid whole and centred (preserveAspectRatio
+// meet), so a box of other proportions (a quarter turn written without swapping the box, an aspect unlocked and
+// stretched) letterboxes it, and a seat measured on the whole box would miss the drawn cushion.
+function drawnRect(box: Rect, view: { width: number; height: number }): Rect {
+  const scale = Math.min(box.width / view.width, box.height / view.height);
+  const width = view.width * scale;
+  const height = view.height * scale;
+  return {
+    x: box.x + (box.width - width) / 2,
+    y: box.y + (box.height - height) / 2,
+    width,
+    height,
+  };
+}
+
+/** The seat nearest a point (where the character walked in), so a sofa seats you on your side. */
+export function nearestSeat(el: SeatedBox, from: { x: number; y: number }): Seat {
+  const seats = seatPoints(el);
+  let best = seats[0]!;
+  for (const seat of seats) {
+    if (Math.hypot(seat.x - from.x, seat.y - from.y) < Math.hypot(best.x - from.x, best.y - from.y))
+      best = seat;
+  }
+  return best;
+}
+
+/**
+ * Where a character walking in from `from` sits, and which way it faces: the nearest seat, facing the way that seat
+ * says (a meeting table's) or else away from the piece's back. What a product's chair arrival hands `sitOn`.
+ */
+export function seatFor(
+  el: SeatedBox,
+  from: { x: number; y: number },
+): { x: number; y: number; facing: AvatarFacing } {
+  const seat = nearestSeat(el, from);
+  return { x: seat.x, y: seat.y, facing: seat.facing ?? SEAT_SITTER_FACING[seatingFacing(el)] };
+}

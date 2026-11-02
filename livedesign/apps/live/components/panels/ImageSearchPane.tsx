@@ -88,7 +88,7 @@ export function ImageSearchPane({
           placeholder="Search openly licensed images"
           className="min-w-0 flex-1"
         />
-        <Button type="submit" size="sm" disabled={loading || picking}>
+        <Button type="submit" size="sm" busy={loading || picking}>
           Search
         </Button>
       </form>
@@ -149,7 +149,7 @@ export function ImageSearchPane({
           variant="secondary"
           size="xs"
           className="self-center"
-          disabled={loading || picking}
+          busy={loading || picking}
           onClick={search.loadMore}
         >
           Load more

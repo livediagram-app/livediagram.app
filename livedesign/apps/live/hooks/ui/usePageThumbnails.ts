@@ -36,6 +36,8 @@ export function usePageThumbnails(
   tab: PageThumbTab,
   pageIds: readonly string[],
   settleMs = 0,
+  // Each photo page's picture by page id (usePhotoThumbHrefs): a photo page is its picture.
+  photoHrefs: ReadonlyMap<string, string> = NO_PHOTOS,
 ): Map<string, PageThumb> {
   const iconsLoaded = useIconCatalogs();
   // The canvas's surface: a page with no fill is pictured on the paper as the canvas shows it.
@@ -83,7 +85,11 @@ export function usePageThumbnails(
       const elements = buckets.get(pageId) ?? [];
       const was = kept.get(pageId);
       let entry = was;
-      const hrefs = thumbImageIds(elements, page).map(resolveImageHref);
+      const hrefs = [
+        ...thumbImageIds(elements, page).map(resolveImageHref),
+        // A photo page's picture arriving (or changing) redraws that page.
+        photoHrefs.get(pageId),
+      ];
       if (
         !was ||
         !samePage(was.page, page) ||
@@ -95,7 +101,13 @@ export function usePageThumbnails(
         const thumb = pageThumbFor(
           pageId,
           { ...full, elements },
-          { iconsLoaded, surface, resolveImageHref, ...(labels ? { labels } : {}) },
+          {
+            iconsLoaded,
+            surface,
+            resolveImageHref,
+            photoHref: (id) => photoHrefs.get(id),
+            ...(labels ? { labels } : {}),
+          },
         );
         entry = { page, elements, hrefs, thumb };
       }
@@ -104,8 +116,10 @@ export function usePageThumbnails(
     }
     cache.current = { shared, pages: next };
     return out;
-  }, [drawn, laidOut, imageSource, iconsLoaded, surface]);
+  }, [drawn, laidOut, imageSource, iconsLoaded, surface, photoHrefs]);
 }
+
+const NO_PHOTOS: ReadonlyMap<string, string> = new Map();
 
 function sameList(a: readonly unknown[], b: readonly unknown[]): boolean {
   return a.length === b.length && a.every((v, i) => Object.is(v, b[i]));

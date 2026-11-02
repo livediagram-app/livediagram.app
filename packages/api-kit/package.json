@@ -27,6 +27,7 @@
     "./room-multiplayer": "./src/room-multiplayer.ts",
     "./sealed": "./src/sealed.ts",
     "./testing/unavailable-d1": "./src/testing/unavailable-d1.ts",
+    "./typed-text": "./src/typed-text.ts",
     "./unfurl": "./src/unfurl.ts",
     "./unfurl-fetch": "./src/unfurl-fetch.ts"
   },
@@ -42,12 +43,12 @@
     "@liveworkspace/sites": "workspace:*"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261007.1",
+    "@cloudflare/workers-types": "^5.20261023.1",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",
-    "oxlint": "^1.88.0",
+    "oxlint": "^1.90.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   }

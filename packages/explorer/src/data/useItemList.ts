@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore
 import type { Item } from '@liveworkspace/index-client';
 import { LIST_LIMIT_MAX } from '@liveworkspace/index-client';
 import type { ItemOverlay, ShownItem } from './overlay';
+import { IndexError } from '@liveworkspace/index-client';
 import { isAbort } from './errors';
 
 export const LIST_PAGE = LIST_LIMIT_MAX;
@@ -22,6 +23,8 @@ export type ItemListState = {
   loading: boolean;
   loadingMore: boolean;
   error: boolean;
+  // The read was refused as not found (404): a folder or team that is gone or out of reach, which no retry fixes.
+  missing: boolean;
   hasMore: boolean;
   loadMore: () => void;
   retry: () => void;
@@ -36,6 +39,7 @@ type Loaded = {
   items: Item[];
   cursor: string | null;
   error: boolean;
+  missing: boolean;
   done: boolean;
   moreError: boolean;
 };
@@ -87,6 +91,7 @@ export function useItemList({
           items: page.items,
           cursor: page.nextCursor,
           error: false,
+          missing: false,
           done: page.nextCursor === null,
           moreError: false,
         });
@@ -98,6 +103,7 @@ export function useItemList({
           items: [],
           cursor: null,
           error: true,
+          missing: error instanceof IndexError && error.status === 404,
           done: true,
           moreError: false,
         });
@@ -181,6 +187,7 @@ export function useItemList({
     loading: enabled && !current,
     loadingMore,
     error: current?.error ?? false,
+    missing: current?.missing ?? false,
     hasMore: current ? !current.done : false,
     loadMore,
     retry,

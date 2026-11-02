@@ -1,0 +1,39 @@
+import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
+import { TAB_DASHED_CLASS } from '@liveworkspace/workbench/components/chrome/tab-shape';
+import { TabNotSharedIcon } from '@/components/chrome/tab-bar-icons';
+import type { Participant } from '@/lib/identity';
+import { HoverCard } from '@livehuddle/ui';
+import type { AccessLevel } from '@livehuddle/api-schema';
+
+// A tab outside a tab-scoped share session's scope (docs/specs/013-workspace/tab-scoped-share-links.md). It
+// keeps its place in the bar so the visitor knows the document has more, but
+// shows no name (the server never sent one) and does nothing when pressed:
+// no switch, no menu, no drag. A dashed outline rather than a faded fill, so
+// the label keeps its contrast. Peers on that tab still stack their avatars
+// on it; an id is not content.
+export function OutOfScopeTabPill({
+  participants,
+  selfId,
+  selfRole,
+}: {
+  participants: Participant[];
+  selfId: string;
+  selfRole: AccessLevel;
+}) {
+  return (
+    <div draggable={false} className={TAB_DASHED_CLASS}>
+      <HoverCard title="Not shared" description="This tab isn't shared with you.">
+        <button
+          type="button"
+          aria-disabled="true"
+          tabIndex={-1}
+          className="flex cursor-not-allowed items-center gap-1.5 rounded-lg py-1 text-sm font-medium"
+        >
+          <TabNotSharedIcon />
+          Not shared
+        </button>
+      </HoverCard>
+      <TabPresenceStack participants={participants} selfId={selfId} selfRole={selfRole} />
+    </div>
+  );
+}

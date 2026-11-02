@@ -338,7 +338,7 @@ recurrence, in `@liveplanner/items` (`repeat.ts`): no other product repeats anyt
 - **In the item panel**: the ⋯ menu offers **Repeat** (an Editor's, on a plan in an account; **Edit Repeat** and
   **Stop Repeating** on a repeating card). It opens the **Repeat** dialog: **Every** (Day, Weekday, Week, Month),
   the week's days as toggles (Monday first) or the month's date, **Ends** (Never or On a date), **Lands In** (Starting
-  State, or one of the board's columns), and **Cancel** and **Repeat** (**Save** when editing; Stop Repeating too).
+  State, or one of the board's columns the card's type uses, as its Status picker offers), and **Cancel** and **Repeat** (**Save** when editing; Stop Repeating too).
   The Details column then shows the rule in words with the next day ("Repeats every week on Mon and Thu · Next Thu
   5 Nov"), and for an Editor **Edit** and **Stop** beside it.
 - **Where it runs**: from the plan's Durable Object alarm, never a sweep over every plan, so a plan without a
@@ -511,7 +511,8 @@ A card's history marks an agent's changes with the same sparkle, worded by what 
   ("Titled “Gentle Falcon: Basket empties…”", muted; it takes no room until there is text), and **Cancel** and
   **Start Thread** (off until there is text) on a row close under the field, spaced as the reply composer's.
   ⌘ Enter or Ctrl Enter starts it, Escape cancels; mentions work as in any composer. The new thread lands at the top,
-  open.
+  open, and the keyboard goes on into its reply box; Cancel or Escape puts it back on **New Thread** (never down to the
+  page, [Busy buttons](../004-interface-design/busy-buttons.md)).
 - **Open threads** come first, the most recently active at the top. Each is a rounded card (a hairline ring, a soft
   shadow when open) whose header row opens and closes it (a disclosure button, `aria-expanded`), drawn in the same
   language as the Activity timeline:

@@ -82,6 +82,8 @@ export type EditorContextMenuProps = {
   // clear the picked image back to a placeholder.
   onOpenImagePicker: (elementId: string) => void;
   onRemoveImage: (elementId: string) => void;
+  // Write an image's alt text, cleaned (docs/specs/009-elements/images.md "Alt text").
+  onSetImageAlt: (elementId: string, typed: string) => void;
   // Clear the link off the selected element (docs/specs/009-elements/link-cards.md link-card "Remove Link").
   onRemoveLink: () => void;
   onBringToFront: () => void;

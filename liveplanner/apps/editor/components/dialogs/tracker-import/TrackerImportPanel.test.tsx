@@ -274,7 +274,9 @@ describe('TrackerImportPanel: where it goes', () => {
     );
     // A new plan opens in this window: the dialog stays busy until it goes.
     expect(onDone).not.toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: 'Importing…' })).toHaveProperty('disabled', true);
+    expect(screen.getByRole('button', { name: 'Importing…' }).getAttribute('aria-busy')).toBe(
+      'true',
+    );
   });
 
   it('dims the tab choice when the plan’s cards never loaded', async () => {
@@ -327,7 +329,7 @@ describe('TrackerImportPanel: the import', () => {
       'Couldn’t import those cards. Try again.',
     );
     expect(onDone).not.toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: 'Import' })).toHaveProperty('disabled', false);
+    expect(screen.getByRole('button', { name: 'Import' }).hasAttribute('aria-busy')).toBe(false);
   });
 });
 

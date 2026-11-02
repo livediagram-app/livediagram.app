@@ -34,6 +34,7 @@ import { TrashNote, TrashPane } from './TrashPane';
 import { ListView } from './ListView';
 import { SharedList } from './SharedList';
 import { TeamPage } from './TeamPane';
+import { NotFoundCard } from './NotFoundCard';
 import { PaneHeader, type Crumb } from './PaneHeader';
 import { ImportToolbar } from '../library/ImportToolbar';
 import { useViewMode } from './useViewMode';
@@ -150,48 +151,54 @@ export function ItemsPane({ view, onOpenNav }: { view: ItemsView; onOpenNav?: ()
     onLoadMore: state.loadMore,
   };
 
-  const body = state.error ? (
-    <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
-      Couldn’t load this list.{' '}
-      <button type="button" className="font-semibold underline" onClick={state.retry}>
-        Try again
-      </button>
-    </div>
-  ) : state.loading && folderRows.length === 0 ? (
-    <SkeletonRows />
-  ) : view.kind === 'trash' ? (
-    <TrashPane
-      items={state.items}
-      hasMore={state.hasMore && !state.moreFailed}
-      loadingMore={state.loadingMore}
-      onLoadMore={state.loadMore}
-    />
-  ) : empty && lensOn ? (
-    <FilteredEmpty
-      issues={parsed.issues}
-      words={words}
-      onClear={() => ctx.navigate(withLens(view, ''), { replace: true })}
-    />
-  ) : empty && others ? (
-    <OtherAppsHere view={view} others={others} onCreate={createOwn} />
-  ) : empty ? (
-    <EmptyPane
-      view={view}
-      words={words}
-      onCreate={createItem}
-      createLabel={`New ${ctx.kind.one}`}
-    />
-  ) : view.kind === 'shared' ? (
-    <SharedList {...sharedProps} resetKey={list?.key ?? ''} />
-  ) : !layouts ? (
-    <ListView {...sharedProps} resetKey={list?.key ?? ''} />
-  ) : mode === 'card' ? (
-    <CardView {...sharedProps} resetKey={list?.key ?? ''} />
-  ) : mode === 'details' ? (
-    <DetailsView {...sharedProps} resetKey={list?.key ?? ''} />
-  ) : (
-    <ListView {...sharedProps} resetKey={list?.key ?? ''} />
-  );
+  const body =
+    state.error && state.missing && view.kind === 'folder' ? (
+      // A folder deleted or moved out of reach (a stale link, another tab): no retry brings it back.
+      <NotFoundCard title="Folder not found">
+        {`This folder was deleted, or it is somewhere you can’t reach. Head back to your own ${words.lowerMany}.`}
+      </NotFoundCard>
+    ) : state.error ? (
+      <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
+        Couldn’t load this list.{' '}
+        <button type="button" className="font-semibold underline" onClick={state.retry}>
+          Try again
+        </button>
+      </div>
+    ) : state.loading && folderRows.length === 0 ? (
+      <SkeletonRows />
+    ) : view.kind === 'trash' ? (
+      <TrashPane
+        items={state.items}
+        hasMore={state.hasMore && !state.moreFailed}
+        loadingMore={state.loadingMore}
+        onLoadMore={state.loadMore}
+      />
+    ) : empty && lensOn ? (
+      <FilteredEmpty
+        issues={parsed.issues}
+        words={words}
+        onClear={() => ctx.navigate(withLens(view, ''), { replace: true })}
+      />
+    ) : empty && others ? (
+      <OtherAppsHere view={view} others={others} onCreate={createOwn} />
+    ) : empty ? (
+      <EmptyPane
+        view={view}
+        words={words}
+        onCreate={createItem}
+        createLabel={`New ${ctx.kind.one}`}
+      />
+    ) : view.kind === 'shared' ? (
+      <SharedList {...sharedProps} resetKey={list?.key ?? ''} />
+    ) : !layouts ? (
+      <ListView {...sharedProps} resetKey={list?.key ?? ''} />
+    ) : mode === 'card' ? (
+      <CardView {...sharedProps} resetKey={list?.key ?? ''} />
+    ) : mode === 'details' ? (
+      <DetailsView {...sharedProps} resetKey={list?.key ?? ''} />
+    ) : (
+      <ListView {...sharedProps} resetKey={list?.key ?? ''} />
+    );
 
   return (
     <div data-explorer-view={view.kind}>

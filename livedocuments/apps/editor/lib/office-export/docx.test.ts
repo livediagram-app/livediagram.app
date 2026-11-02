@@ -130,6 +130,32 @@ describe('Word export', () => {
     expect(xml).toContain('<wp:wrapSquare wrapText="right"/>');
   });
 
+  // docs/specs/009-elements/images.md "Alt text": a zone's pictures describe it in Word's Alt Text.
+  it('writes a zone’s alt text as its descr, which the import reads back, and none without any', async () => {
+    const { tab, pages } = everyBlockArticle();
+    const described = {
+      ...tab,
+      elements: tab.elements.map((el) =>
+        el.type === 'image' ? { ...el, alt: 'Sales by quarter & "trend"' } : el,
+      ),
+    };
+    const doc = await buildDocx(
+      { tab: described, pages, title: 'Alt', themeAccent: '#d97706' },
+      fakeDrawer(),
+      {},
+    );
+    const bytes = writeDocx(doc, WHEN);
+    const xml = (await partsOf(bytes)).get('word/document.xml')!;
+    expect(xml).toContain(
+      '<wp:docPr id="1" name="Picture 1" descr="Sales by quarter &amp; &quot;trend&quot;"/>',
+    );
+    expect(xml).toContain('<pic:cNvPr id="1" name="Picture 1" descr="Sales by quarter');
+    // The second zone holds only a shape: no description.
+    expect(xml).toContain('<wp:docPr id="2" name="Picture 2"/>');
+    const read = await readDocx(await openOfficePackage(bytes, 'word'));
+    expect(read.pictures.map((p) => p.alt)).toEqual(['Sales by quarter & "trend"', undefined]);
+  });
+
   it('restarts numbering after anything but a list item, and keeps it through a nested one', () => {
     const look = docxLook(undefined, '#2563eb');
     const blocks: DocxBlock[] = [

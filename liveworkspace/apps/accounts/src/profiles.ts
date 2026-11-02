@@ -5,7 +5,7 @@
 // Google also has its Google picture ("Profile pictures"), which others see unless its switch is off.
 import { profilePictureOf } from '@liveworkspace/sites/picture';
 import { GUEST_ID, USER_ID } from './ids.ts';
-import { trimInvisible, withoutBidiControls } from './text.ts';
+import { trimInvisible, withoutBidiControls } from '@liveworkspace/api-kit/typed-text';
 
 // The most ids one read may name: a presence list's worth, in one query.
 export const MAX_PROFILE_IDS = 100;

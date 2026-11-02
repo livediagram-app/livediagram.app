@@ -270,3 +270,14 @@ describe('ImportTabDialog: a dropped file', () => {
     expect((await screen.findByRole('alert')).textContent).toBe(message);
   });
 });
+
+// A screen reader hears what the paste field is for, and why an import did not land.
+describe('ImportTabDialog for a screen reader', () => {
+  it('names the paste field and announces an error', async () => {
+    open({ tracker: NO_TRACKER, outcome: { status: 'error', error: 'Not a liveplanner tab.' } });
+    const field = screen.getByRole('textbox', { name: 'JSON to import' });
+    fireEvent.change(field, { target: { value: '{}' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    expect((await screen.findByRole('alert')).textContent).toBe('Not a liveplanner tab.');
+  });
+});

@@ -1,0 +1,79 @@
+import { describe, expect, it } from 'vitest';
+import { DOCUMENT_CONVERSION_HEADER, DOCUMENT_OPEN_HEADER } from '@livehuddle/api-schema';
+import { aiError, CORS_HEADERS, imagesUnavailable, json } from './responses';
+
+// The shared envelope and status codes are @liveworkspace/api-kit's, tested there. What is this api's own is its
+// CORS allow-list, which every response carries, and the answers only it gives.
+
+async function readJson(res: Response): Promise<unknown> {
+  return JSON.parse(await res.text());
+}
+
+describe('json', () => {
+  it("carries this api's CORS set on every response", () => {
+    // The CORS preflight only succeeds when these headers are on EVERY response, not just the OPTIONS preflight.
+    const res = json({ ok: true });
+    for (const [key, value] of Object.entries(CORS_HEADERS)) {
+      expect(res.headers.get(key), `missing ${key}`).toBe(value);
+    }
+  });
+});
+
+describe('imagesUnavailable', () => {
+  it('returns a 503 with the canonical { error: "images_unavailable" } envelope', async () => {
+    // Surfaced when the R2 binding is unset (a deployment without
+    // R2). The 503 lets clients fall back gracefully rather than
+    // treating it as a permanent server error.
+    const res = imagesUnavailable();
+    expect(res.status).toBe(503);
+    expect(await readJson(res)).toEqual({ error: 'images_unavailable' });
+  });
+});
+
+describe('aiError', () => {
+  it('returns a 502 with the canonical { error: "ai_error" } envelope', async () => {
+    const res = aiError();
+    expect(res.status).toBe(502);
+    expect(await readJson(res)).toEqual({ error: 'ai_error' });
+  });
+});
+
+describe('CORS_HEADERS', () => {
+  it('allows the four custom headers the editor needs to send', () => {
+    // Each of these headers must be in the Access-Control-Allow-
+    // Headers list or the browser silently rejects the preflight
+    // and the editor sees "Failed to fetch" with no other signal.
+    // Pinning each one explicitly catches the next "remove one
+    // accidentally" diff.
+    const allowHeaders = CORS_HEADERS['Access-Control-Allow-Headers'];
+    expect(allowHeaders).toContain('Authorization');
+    expect(allowHeaders).toContain('X-Index-Grant');
+    expect(allowHeaders).not.toContain('X-Owner-Id');
+    expect(allowHeaders).toContain('X-Share-Code');
+    expect(allowHeaders).toContain('X-Image-Sha256');
+    expect(allowHeaders).toContain('X-Image-Width');
+    expect(allowHeaders).toContain('X-Image-Height');
+    expect(allowHeaders).toContain('X-Image-Original-Name');
+    expect(allowHeaders).toContain('Content-Type');
+  });
+
+  it('allows the conversion header Take Offline and Sync Document send', () => {
+    // Missing, a cross-origin editor (dev on its own port, or a deployment
+    // with the api elsewhere) had both conversions fail at the preflight.
+    expect(CORS_HEADERS['Access-Control-Allow-Headers']).toContain(DOCUMENT_CONVERSION_HEADER);
+  });
+
+  it('allows the open marker the editor sends on its first tab read', () => {
+    // Missing, a cross-origin editor would fail the preflight of every document it opens.
+    expect(CORS_HEADERS['Access-Control-Allow-Headers']).toContain(DOCUMENT_OPEN_HEADER);
+  });
+
+  it('allows the five HTTP methods the live editor uses', () => {
+    const methods = CORS_HEADERS['Access-Control-Allow-Methods'];
+    expect(methods).toContain('GET');
+    expect(methods).toContain('POST');
+    expect(methods).toContain('PUT');
+    expect(methods).toContain('DELETE');
+    expect(methods).toContain('OPTIONS');
+  });
+});

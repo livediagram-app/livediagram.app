@@ -57,7 +57,9 @@ alignment. Nothing else can be put on it.
   **Bulleted list**, **Numbered list**, **To-do list**, **Quote**, **Code** and **Divider**. Never a page break, an
   image, a table, a chart, a drawing, a callout or a sticky note.
 - **Paste** keeps the text (headings, lists, quotes, code, links and the inline marks, as in an article); a pasted
-  picture and pasted canvas elements are dropped, and the paste says so once ("Flashcards hold text only.").
+  table (HTML, or tab-separated text) comes as a list, a row an item with its cells joined by " · ", as an agent's
+  does; a pasted picture, page break and canvas elements are dropped, and the paste says so once ("Flashcards hold
+  text only.").
 - **Nothing lands on a card**: an element drawn, dropped, pasted or placed so its centre lands on a card is not added,
   and one moved onto it goes back, with a short notice, "Flashcards hold text only.", shown at most once every few
   seconds (as a locked page's is). An element already on a card (made before this rule, or by an agent) stays where it
@@ -116,6 +118,8 @@ framed); the card changes.
   card that was in front. The same 420 ms, mirrored.
 - A flip to a card several places away is one flip, forward or back.
 - A second flip while one is under way finishes the first at once and starts the next.
+- **The card in front taken away** (an undo of the split that made it, a peer's delete): the card before its place
+  comes to the front (the first, when it was first), as a delete lands on the page before; never the stack's first card.
 - **Reduced motion**: no flip; the card in front changes at once.
 - The flip is drawn over the canvas, holding no presses; the new card in front is ready for the caret and presses at
   once.
@@ -158,6 +162,13 @@ picture (the card as it is, its writing included) and its name. A press flips to
   Each sits in the catalogue category of what it is for ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)):
   Conference Talk and Wedding Toast in Speeches and Talks (the toast also in Events and Celebrations), Product Pitch in
   Pitches and Launches and School Presentation in Lessons and Learning (both also in Speeches and Talks). Blank Flashcards is in the Start screen's Blank Pages group.
+
+  **Their previews tell apart at rest** (`packages/template-previews/src/template-preview-26.tsx`): each draws its stack
+  as the editor shows it (the front card with its title, lines and "1 of n" footer, the cards to come peeking out below),
+  with a mark of its own on a tinted badge in the front card's top right, drawn without a hover: a clock (Conference Talk,
+  indigo), a heart (Wedding Toast, rose), a rising arrow (Product Pitch, emerald) and a raindrop (School Presentation,
+  sky), so four stacks side by side in Speeches and Talks never look alike. On hover the lines write themselves and the
+  badge swells.
 
 ## Share roles
 

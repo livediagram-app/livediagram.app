@@ -110,6 +110,30 @@ describe('ImportTabDialog on a phone', () => {
   });
 });
 
+// A screen reader hears what the paste field is for, and why an import did not land.
+describe('ImportTabDialog for a screen reader', () => {
+  it('names the paste field for its format and announces an error', async () => {
+    const onImportText = vi.fn(async (): Promise<ImportOutcome> => ({
+      status: 'error',
+      error: 'No nodes found.',
+    }));
+    render(
+      <ImportTabDialog
+        tabName="Board"
+        onImportFile={vi.fn()}
+        onImportText={onImportText}
+        onImportFileFormat={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Markdown/ }));
+    const field = screen.getByRole('textbox', { name: 'Markdown to import' });
+    fireEvent.change(field, { target: { value: '# Notes' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    expect((await screen.findByRole('alert')).textContent).toBe('No nodes found.');
+  });
+});
+
 // docs/specs/020-import-export/office-import.md "How it's triggered": Word and PowerPoint open the file panel.
 describe('ImportTabDialog, Word and PowerPoint', () => {
   function openFile(card: RegExp, outcome: ImportOutcome) {

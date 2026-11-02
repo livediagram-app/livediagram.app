@@ -1,0 +1,67 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ExportMenu } from '@/components/illustrations/tabs';
+
+export const metadata = helpMetadata({
+  title: 'Exporting a Tab',
+  description:
+    'Export a tab or selection as PNG, SVG, PDF, JSON, Markdown, a Mermaid flowchart or Excalidraw scene, with isometric, background and hidden-layer options.',
+  path: '/help/tabs/export-tabs/',
+});
+
+<ArticleLayout
+  title="Exporting a Tab"
+  description="Take a tab out of livehuddle: download it as an image, a PDF, a Mermaid flowchart, a Markdown outline, an Excalidraw scene, or a JSON file you can import back."
+  categoryTitle="Tabs"
+  categorySlug="tabs"
+>
+
+**Export** downloads the active tab in the format you need, whether that is an image for a doc, a PDF to print, or a file to move the tab into another canvas.
+
+## Opening Export
+
+There are a few ways in, and they all open the same **Export Tab** dialog:
+
+- The tab's menu (the **⋯** button on the active tab, or right-click the tab): choose **Export**.
+- **Export…** in the [command palette](/help/search-panel/the-search-panel/command-palette/) (`Cmd` / `Ctrl` + `K`). This works on a view-only share link too, so viewers can download a copy.
+- **Export** in the ⋯ menu at the top of the [Explorer panel](/help/explorer/explorer-panel/).
+
+To export only part of a tab, select several elements and press the **Export** button on the toolbar that appears above the selection. The dialog is then headed **Export Selection** and covers just those elements.
+
+## Export formats
+
+The dialog shows a card per format:
+
+- **JSON**: a portable `.livehuddle-tab.json` snapshot that [imports](/help/tabs/import-tabs/) back with full fidelity.
+- **Mermaid**: the tab as [Mermaid](https://mermaid.js.org/) flowchart text (`.mmd`), which keeps every connection and its style, so it rebuilds the diagram; frames export as `subgraph` blocks.
+- **Markdown**: the tab's labelled elements and every connection between them as a Markdown outline (`.md`), a readable summary rather than a full copy: a flowchart reads as its flow, step to step.
+- **Excalidraw**: a `.excalidraw` scene you can open at [excalidraw.com](https://excalidraw.com/). Boxes, text, arrows (with their connections), and drawings carry over; element kinds Excalidraw doesn't have (charts, tables, device frames and so on) simplify to labelled boxes.
+- **PNG**: a high-resolution image, good for slides, docs and chat.
+- **SVG**: a crisp vector image that scales to any size and opens in design tools.
+- **PDF**: a single-page PDF of the tab, ready to print or share.
+
+The four **text** formats (JSON, Mermaid, Markdown, Excalidraw) each open an editor pre-filled with the tab in that format: tweak the text and press **Copy**, or download the file (**Download .json**, **Download .mmd** and so on). Your edits in that box never change the tab. The three **image** formats (PNG, SVG, PDF) open an options screen with a preview and a download button (see below). **All formats** at the top of either screen takes you back to the cards.
+
+Files are named after the canvas and the tab, for example `Roadmap - Overview.png`.
+
+<Figure caption="The Export Tab dialog has a card for every format: JSON, Mermaid, Markdown, Excalidraw, PNG, SVG and PDF.">
+  <ExportMenu />
+</Figure>
+
+## Image options
+
+The PNG, SVG, and PDF exports show the tab as it looks. After you pick one, the options screen offers:
+
+- **Isometric view** (off by default) tilts the export into the [isometric projection](/help/selection-modes/isometric-mode/).
+- **Background pattern** (on by default) paints the tab's grid, dots or texture behind the diagram. Switch it off for a plain background.
+- **Hidden layers** appears only when the tab has layers hidden and the [Layers panel](/help/canvas/layers/) is switched on in Settings, and chooses whether those layers are included. It is off by default, so what you hid stays out.
+
+Set them and press the download button (**Download PNG**, **Download SVG** or **Download PDF**), and what you get matches what you see. The JSON, Mermaid, Markdown, and Excalidraw exports capture the underlying content rather than the picture.
+
+<Tip>
+  Reach for **SVG** when the image might be resized or printed large: it stays sharp at any scale,
+  unlike a fixed-resolution PNG. For sharing a live, always-current view instead of a static file,
+  see [Sharing and Embeds](/help/collaboration/sharing/).
+</Tip>
+
+</ArticleLayout>

@@ -191,14 +191,19 @@ export function PortalMenu({
         : null;
 
   // Modal pickers replace the anchored box entirely (see the `view` note
-  // above); dismissing them dismisses the menu.
+  // above); dismissing them dismisses the menu. Focus goes back to the tab's ⋯: the row that opened the picker left
+  // with the anchored box, so the dialog had nothing to hand focus back to and it fell to the page.
+  const closePicker = () => {
+    onClose();
+    if (anchor?.isConnected) anchor.focus({ preventScroll: true });
+  };
   if (view === 'copyTo') {
     return (
       <AddTabToProjectDialog
         ownerId={selfId}
         otherProjects={otherProjects}
         onPick={onCopyTo}
-        onClose={onClose}
+        onClose={closePicker}
       />
     );
   }
@@ -209,7 +214,7 @@ export function PortalMenu({
         currentFolder={currentFolder}
         onMoveToFolder={onMoveToFolder}
         onRemoveFromFolder={onRemoveFromFolder}
-        onClose={onClose}
+        onClose={closePicker}
       />
     );
   }

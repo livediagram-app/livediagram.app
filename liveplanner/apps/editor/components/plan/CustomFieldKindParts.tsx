@@ -299,6 +299,23 @@ function SampleValue({
   }
 }
 
+// A kind's sample as it starts, before any setting is chosen: Add Field's gallery draws one on each kind's tile.
+export function KindSample({ kind }: { kind: CustomFieldKind }) {
+  return (
+    <SampleValue
+      kind={kind}
+      options={NO_OPTIONS}
+      linkLabel={undefined}
+      currency={undefined}
+      scale={undefined}
+      calculation={undefined}
+      showAs={undefined}
+    />
+  );
+}
+
+const NO_OPTIONS: readonly string[] = [];
+
 export function CustomFieldPreview({
   label,
   kind,

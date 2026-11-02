@@ -1,0 +1,58 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SearchTabsAndElements } from '@/components/illustrations/search-panel';
+
+export const metadata = helpMetadata({
+  title: 'Finding Tabs and Elements',
+  description:
+    'Inside a canvas, search also covers its tabs and every labelled element on them, including text inside table cells, on every tab.',
+  path: '/help/search-panel/the-search-panel/search-tabs-and-elements/',
+});
+
+<ArticleLayout
+  title="Finding Tabs and Elements"
+  description="The in-canvas scope of search: jump to any tab, or straight to an element by its label, even text buried in a table cell."
+  categoryTitle="Search Panel"
+  categorySlug="search-panel"
+  parentArticle={{ title: 'The Search Panel', slug: 'the-search-panel' }}
+  subArticles={getSubArticles('the-search-panel').filter(
+    (a) => a.slug !== 'search-tabs-and-elements',
+  )}
+>
+
+When you open the [search panel](/help/search-panel/the-search-panel/) from inside a canvas, its scope grows to include that canvas's own contents: its [tabs](/help/tabs/using-tabs/) and the elements on them. This is what turns search into a within-canvas jump tool, not just a way to open a different canvas. It works in view-only canvases too, since it only moves you around.
+
+## Tabs
+
+The **Tabs** group matches the canvas's tabs by name, and marks the one you are on with **current** so you can tell a jump from a no-op. Picking a tab switches to it. On a canvas with many tabs (or [tab folders](/help/tabs/tab-folders/)) this is quicker than scanning the tab bar.
+
+## Elements
+
+The **Elements** group matches elements by their label: the text on a shape, a sticky note, a text box, and so on. Each result shows which tab it is on ("on Payments"), and picking one switches to that tab and selects the element.
+
+Search covers **every tab**, not only the ones you have visited. Tabs load lazily as you open them, so when you open search from the **Search** button the editor fetches the rest of the canvas's tabs in the background; on a large canvas, matches from those tabs can join the list a moment later. On a link shared for a single tab, only that tab's elements are searched.
+
+### Text inside tables
+
+Tables do not have a single label, their text lives in the cells. So a table matches through its **cells**: the first cell whose text matches your query becomes the result's label, and picking it takes you to that table. That means you can find a value tucked inside a table without remembering which table, or which tab, it is on.
+
+<Figure caption="In-canvas scope: tabs and elements, each element tagged with the tab it is on, including text matched inside a table cell.">
+  <SearchTabsAndElements />
+</Figure>
+
+## What it does not search
+
+- **Unlabelled elements:** an element with no text (a bare shape, an arrow with no label, a drawing) has nothing to match, so it never appears.
+- **Comments, notes and links** on elements, and the names of people in the canvas.
+- **Other canvases' contents:** element text is only searched in the canvas you have open. From anywhere, other canvases are found by name.
+
+The Elements group lists up to 12 matches across the whole canvas. If the one you want is missing, type more of its label.
+
+<Tip>
+  This scope only appears inside a canvas. From the Explorer page, search covers your canvases,
+  canvases shared with you, folders, teams, settings and help instead, see [Finding Canvases and
+  Folders](/help/search-panel/the-search-panel/search-documents/).
+</Tip>
+
+</ArticleLayout>

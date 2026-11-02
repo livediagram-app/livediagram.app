@@ -8196,6 +8196,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "strokeColor": {
         "type": "string"
       },
+      "templateNote": {
+        "const": true,
+        "type": "boolean"
+      },
       "textAlignX": {
         "$ref": "#/components/schemas/TextAlignX"
       },

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   createFreehand,
+  createImage,
   createShape,
   createSticky,
   createText,
@@ -73,6 +74,16 @@ describe('elementAriaLabel', () => {
     expect(elementAriaLabel(square('  '))).toBe('Square');
     expect(elementAriaLabel(arrow('yes'))).toBe('Arrow "yes"');
     expect(elementAriaLabel(createSticky(0, 0))).toBe('Sticky note');
+  });
+
+  // docs/specs/009-elements/images.md "Alt text": a picture's accessible name is its alt text; without any it keeps
+  // the name it had.
+  it('names a picture by its alt text, and by its kind (and label) without any', () => {
+    const picture = { ...createImage(0, 0), imageId: 'img1' };
+    expect(elementAriaLabel({ ...picture, alt: '  A red bicycle  ' })).toBe('A red bicycle');
+    expect(elementAriaLabel(picture)).toBe('Image');
+    expect(elementAriaLabel({ ...picture, alt: '   ' })).toBe('Image');
+    expect(elementAriaLabel({ ...picture, alt: '', label: 'Hero' })).toBe('Image "Hero"');
   });
 });
 
@@ -167,5 +178,32 @@ describe('elementRole', () => {
         height: 1,
       } as unknown as Element),
     ).toBe('group');
+  });
+});
+
+// A face with controls of its own in any state is a named group, so a screen reader reaches them
+// (docs/specs/004-interface-design/canvas-accessibility.md "Names on elements").
+describe('elementRole for a face that shows controls', () => {
+  const face = (kind: string) =>
+    ({ id: 's', type: 'shape', shape: kind, x: 0, y: 0, width: 10, height: 10 }) as Element;
+  it('makes a table a group: its cells edit in place and it shows its column and row options', () => {
+    expect(
+      elementRole({
+        id: 't',
+        type: 'table',
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 40,
+        cells: [['a']],
+      }),
+    ).toBe('group');
+  });
+  it('makes any element showing indicator buttons a group', () => {
+    expect(elementRole(face('square'), true)).toBe('group');
+    expect(elementRole(face('square'), false)).toBe('img');
+  });
+  it('makes every kind with controls on its face a group', () => {
+    expect(elementRole(face('tab-window'))).toBe('group');
   });
 });

@@ -62,8 +62,9 @@ export function SyncDesignPrompt({
       </div>
       <Button
         onClick={() => void sync()}
-        disabled={busy || !ready}
-        aria-busy={busy}
+        // Keeps the keyboard while it syncs (busy-buttons.md); only a canvas not ready yet disables it.
+        disabled={!ready}
+        busy={busy}
         className="mt-1 shadow-sm"
       >
         {busy ? (

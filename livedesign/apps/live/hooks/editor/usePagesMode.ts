@@ -45,7 +45,7 @@ import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { lastPageKey } from '@/lib/last-page';
 import { setCurrentPageKind } from '@/lib/current-page-kind';
 import { useLastPage } from './useLastPage';
-import { usePageSnap } from './usePageSnap';
+import { textHasCaretIn, usePageSnap } from './usePageSnap';
 
 export type { PageEdits };
 
@@ -204,6 +204,9 @@ export function usePagesMode(deps: {
       glide.current = null;
     },
     suspended: deps.snapSuspended ?? (() => false),
+    // The caret is in text on the canvas: a label, cell or line being written on, which a phone's keyboard pans into
+    // sight (useKeyboardAvoidance).
+    writing: () => textHasCaretIn(deps.canvasMainRef.current, document.activeElement),
   });
   // The page you were last on, remembered as the view rests (docs/specs/007-editor/
   // pages-mode.md "Back to the page you were on").

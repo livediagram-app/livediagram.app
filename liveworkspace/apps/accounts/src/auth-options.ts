@@ -10,7 +10,7 @@ import { type MergeConfig, mergeGuestOnSignIn } from './guests.ts';
 import { handoffPlugin, type HandoffPluginConfig } from './handoff.ts';
 import { newUserId } from './ids.ts';
 import { ADMIN_HEADER, sameSecret } from './secrets.ts';
-import { cleanText } from './text.ts';
+import { cleanText } from '@liveworkspace/api-kit/typed-text';
 import { wwwTwin } from '@liveworkspace/sites/www';
 
 export const AUTH_BASE_PATH = '/api/auth';

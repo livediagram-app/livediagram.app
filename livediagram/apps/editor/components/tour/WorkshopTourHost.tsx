@@ -110,17 +110,23 @@ export function WorkshopTourHost() {
     !ctx.embedMode &&
     ctx.activeTab.locked !== true;
 
-  const endTour = (outcome: TourOutcome) => {
-    // The session elements it placed go however it ended: the canvas is left as the person had it.
-    demoRef.current = {};
-    ctx.tourSquare.remove();
-    // Onto the freshest preferences, not this render's: the whole blob is written.
+  // Taken (the synced workshopTourSeen, which Settings' Workshop Tour row reads): off the button until that row is on again.
+  const seen = ctx.userPreferences?.workshopTourSeen === true;
+  // Records the tour as taken, onto the freshest preferences, not this render's: the whole blob is written.
+  const markTaken = () => {
     const next = rebaseUserPreferences(ctx.userPreferences, {
       ...ctx.userPreferences,
       workshopTourSeen: true,
     });
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
+  };
+
+  const endTour = (outcome: TourOutcome) => {
+    // The session elements it placed go however it ended: the canvas is left as the person had it.
+    demoRef.current = {};
+    ctx.tourSquare.remove();
+    markTaken();
     debugLog('[workshop-tour] end', { outcome });
     track('UI', 'Ended', outcome === 'completed' ? 'WorkshopTourCompleted' : 'WorkshopTourSkipped');
   };
@@ -132,9 +138,11 @@ export function WorkshopTourHost() {
     setCanShare(findTour('share') !== null);
     debugLog('[workshop-tour] start');
     engineRef.current.start();
+    // Taken as it starts, so a reload mid-tour does not put it back on the button.
+    if (!seen) markTaken();
   };
-  // The footer's Start Tour button: offered whenever the tour could run here, taken or not (it is how it is taken
-  // again). The tour never starts on its own.
+  // The footer's Start Tour button: offered whenever the tour could run here, until it is taken (its Settings row puts
+  // it back). The tour never starts on its own.
   useOfferTour(
     'workshop',
     inWorkshop && canWork
@@ -143,6 +151,7 @@ export function WorkshopTourHost() {
           rank: TOUR_OFFER_RANK.mode,
           start,
           onShown: () => track('UI', 'Opened', 'WorkshopTourOffer'),
+          seen,
         }
       : null,
   );

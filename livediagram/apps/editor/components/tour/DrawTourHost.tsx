@@ -62,14 +62,20 @@ export function DrawTourHost() {
     !ctx.embedMode &&
     ctx.activeTab.locked !== true;
 
-  const endTour = (outcome: TourOutcome) => {
-    // Onto the freshest preferences, not this render's: the whole blob is written.
+  // Taken (the synced drawTourSeen, which Settings' Draw Tour row reads): off the button until that row is on again.
+  const seen = ctx.userPreferences?.drawTourSeen === true;
+  // Records the tour as taken, onto the freshest preferences, not this render's: the whole blob is written.
+  const markTaken = () => {
     const next = rebaseUserPreferences(ctx.userPreferences, {
       ...ctx.userPreferences,
       drawTourSeen: true,
     });
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
+  };
+
+  const endTour = (outcome: TourOutcome) => {
+    markTaken();
     debugLog('[draw-tour] end', { outcome });
     track('UI', 'Ended', outcome === 'completed' ? 'DrawTourCompleted' : 'DrawTourSkipped');
   };
@@ -80,9 +86,11 @@ export function DrawTourHost() {
     if (active || otherTour) return;
     debugLog('[draw-tour] start');
     engineRef.current.start();
+    // Taken as it starts, so a reload mid-tour does not put it back on the button.
+    if (!seen) markTaken();
   };
-  // The footer's Start Tour button: offered whenever the tour could run here, taken or not (it is how it is taken
-  // again). The tour never starts on its own.
+  // The footer's Start Tour button: offered whenever the tour could run here, until it is taken (its Settings row puts
+  // it back). The tour never starts on its own.
   useOfferTour(
     'draw',
     inDraw && canWork
@@ -91,6 +99,7 @@ export function DrawTourHost() {
           rank: TOUR_OFFER_RANK.mode,
           start,
           onShown: () => track('UI', 'Opened', 'DrawTourOffer'),
+          seen,
         }
       : null,
   );

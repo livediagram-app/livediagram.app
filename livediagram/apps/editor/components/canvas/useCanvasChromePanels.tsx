@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useStableCallbacks } from '@liveworkspace/workbench/hooks/ui/useStableCallbacks';
 import { participantKey } from '@/lib/identity';
+import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { loadLayersPanel } from '@/lib/editor-deferred-code';
@@ -43,6 +44,16 @@ const SessionPopover = dynamic(() => import('./SessionPopover').then((m) => m.Se
 const TidyUpPopover = dynamic(() => import('./TidyUpPopover').then((m) => m.TidyUpPopover), {
   ssr: false,
 });
+
+// A lazily loaded popover in a boundary of its own: one whose code cannot load (opened offline,
+// docs/specs/007-editor/load-recovery.md "Offline") closes, so its button lets go, and never takes the canvas with it.
+function LazyPopover({ onError, children }: { onError: () => void; children: ReactNode }) {
+  return (
+    <AreaErrorBoundary area="Popovers" onError={onError}>
+      {children}
+    </AreaErrorBoundary>
+  );
+}
 
 // Lazy for the same reason: the Actions panel (docs/specs/012-collaboration/assigned-actions.md) only mounts when
 // the active tab has at least one element with an OPEN assigned action.
@@ -401,30 +412,32 @@ export function useCanvasChromePanels({
   }, [sessionRunning, sessionSegment, closeDockPanel]);
   const sessionPopoverEl =
     !chromeHidden && sessionSegment && sessionTools && !sessionButtonGone ? (
-      <SessionPopover
-        segment={sessionSegment}
-        anchor={activeDockAnchor ?? undefined}
-        onClose={closeDockPanel}
-        session={sessionTools}
-        readOnly={!!readOnly}
-        canVote={!readOnly || !!takePart}
-        holdOpen={!isMobile}
-        voteSelfId={participantKey(selfParticipant)}
-        pollPanel={pollPanel}
-        vote={{
-          tabVote,
-          elements,
-          participantCount,
-          results: voteResults,
-          reviewIndex: voteReview ? voteReview.index : null,
-          onJumpToResult: onJumpToVoteResult,
-          isHost: isVoteHost,
-          review: voteReview,
-          onNextResult: onNextVoteResult,
-          onPrevResult: onPrevVoteResult,
-          onDoneReview: onDoneVoteReview,
-        }}
-      />
+      <LazyPopover onError={closeDockPanel}>
+        <SessionPopover
+          segment={sessionSegment}
+          anchor={activeDockAnchor ?? undefined}
+          onClose={closeDockPanel}
+          session={sessionTools}
+          readOnly={!!readOnly}
+          canVote={!readOnly || !!takePart}
+          holdOpen={!isMobile}
+          voteSelfId={participantKey(selfParticipant)}
+          pollPanel={pollPanel}
+          vote={{
+            tabVote,
+            elements,
+            participantCount,
+            results: voteResults,
+            reviewIndex: voteReview ? voteReview.index : null,
+            onJumpToResult: onJumpToVoteResult,
+            isHost: isVoteHost,
+            review: voteReview,
+            onNextResult: onNextVoteResult,
+            onPrevResult: onPrevVoteResult,
+            onDoneReview: onDoneVoteReview,
+          }}
+        />
+      </LazyPopover>
     ) : null;
 
   // Map of panel id → element for the docked-layout distribution.
@@ -446,12 +459,14 @@ export function useCanvasChromePanels({
     avatarPopoverEl: avatarEl,
     tidyUpPopoverEl:
       tidyUpOpen && tidyUp ? (
-        <TidyUpPopover
-          actions={tidyUp}
-          empty={elements.length === 0}
-          anchor={activeDockAnchor ?? undefined}
-          onClose={closeDockPanel}
-        />
+        <LazyPopover onError={closeDockPanel}>
+          <TidyUpPopover
+            actions={tidyUp}
+            empty={elements.length === 0}
+            anchor={activeDockAnchor ?? undefined}
+            onClose={closeDockPanel}
+          />
+        </LazyPopover>
       ) : null,
     layersEl,
     sessionPopoverEl,

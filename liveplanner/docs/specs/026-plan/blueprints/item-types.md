@@ -438,7 +438,7 @@ withTime, { local? })` (a list of two, or text split at `/` or " to ", each end 
     value rules), `DateRangeField` (`components/plan/DateRangeField.tsx`, From and To), `PhoneField`
     (`components/plan/PhoneField.tsx`, a `tel` box and its `tel:` link), each from `CustomFieldEditor`; samples in
     `CustomFieldKindParts` and `ItemTypeDisplay`; `IncludeTimeSwitch` in `ItemTypeFieldForms` (Add Field only);
-    `add-field-kinds.ts` places Phone in Text & links and Date and Time and Date Range in Numbers & dates, with the
+    `add-field-kinds.ts` places Phone in Links and Media and Date and Time and Date Range in Dates and Time, with the
     spec's words; the card face draws a past Date and Time or Date Range in red (`pastDue(field, value, now?, tz?)`
     in `date-range-fields.ts`), never on a done card; `CustomFieldEditor`'s `ZoneLine` (`dateTimeZones`) sits under
     a moment's box and a timed range's boxes. `formula-fields.ts` reads a Date and Time as `instantIso` text and a
@@ -552,39 +552,66 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   `ItemTypeLayoutEditor`). The tab's one panel scrolls (`overflow-y-auto`). Red-dot flags: a clashing name, a tab
   problem or a custom field problem flag `configuration`; a status list problem flags `statuses`.
 - **Add Field** (spec "Fields and Tabs": Add Field). `ItemTypeLayoutEditor` opens it in an `AnchoredPopover`
-  (`ADD_FIELD_POPOVER_PX` 384, `name="Add Field"`, `initialFocus` `'panel'` under `(pointer: coarse)` else
-  `'first'`, `onEscape` handed to the form), holding `NewFieldForm` (`NewFieldForm.tsx`), which keeps the step
-  (`{ step: 'pick' } | { step: 'shape', kind }`), the search text (kept across the steps) and the open group, and
-  answers Escape (`escape()`: shape → pick, then a typed search cleared, then false so the popover closes).
+  (`GALLERY_WIDTH` 720 from `apps/editor/components/plan/gallery/GalleryFrame.tsx`, `name="Add Field"`, `initialFocus` `'panel'` under
+  `(pointer: coarse)` else `'first'`, `onEscape` handed to the form), holding `NewFieldForm` (`NewFieldForm.tsx`),
+  which keeps the step (`field: NewField | null`), the search text (kept across the steps), the category shown
+  (`choice: CategoryChoice`, `'all'` to start), the field left by going back (`left`) and the kind to focus on
+  return (`focusKind`, set only by All Kinds or Escape, never by typing), and answers Escape (`escape()`: shape →
+  pick, then a typed search cleared, then false so the popover closes). It renders the galleries' shared frame
+  (below) with the rail (`AddFieldRail`) and, beside it, either `AddFieldPicker` or `AddFieldShape` in a bare
+  `GalleryList`.
+  - The galleries' shared pieces, in `components/plan/gallery/`, used by Add Field and Add a Widget alike
+    (board-widgets blueprint): `GalleryFrame` (an `@container` box, `max-h-[min(76vh,40rem)]`; header `h3` title,
+    its line, the search `input type="search"` with `aria-label` the search's label and a `Tooltip`-wrapped close
+    `button` "Close" when `onClose` is given; the rail slot and the list slot in a row, a column under 600 px; a
+    visually hidden `aria-live="polite"` line `said`), `GalleryList` (the scrolling list, `data-gallery-list`, padded
+    unless `bare`), `GallerySectionHeading` (`h4` with an optional brand icon, then its line, `data-group-line`),
+    `GalleryRail` (`nav` with `aria-label`; groups of entries `{ key, title, icon, count }`, a later group under a
+    small heading; an entry is a `button` with `data-rail-entry`, `aria-current="true"` when current, `CountBadge`
+    when its count is above 0, `opacity-55` at 0; `@min-[601px]:w-56`, chips under 600 px; at least 44 px under a
+    coarse pointer), `GalleryTile` (the strip, `aria-hidden` and `inert`, `FitWidth` scaling what is too wide;
+    glyph, name, line with an optional id; a badge at `TILE_BADGE_SPOT`; one overlay `button` with `aria-label`,
+    `aria-describedby`, `aria-pressed`, `aria-disabled`, wrapped in a `Tooltip` when disabled) and `gallery-keys.ts`
+    (`stepFrom(cards, at, key)`: ←/→ one, ↑/↓ the nearest tile in the next row by layout, two in reading order
+    with no layout, -1 for ↑ from the top row; `moveAmongTiles(e, tiles, search)`: arrows, Home and End, ↑ off the
+    top row to `search`).
   - Pure data and matching in `add-field-kinds.ts`. A **pick kind** (`PickKind`) is a `CustomFieldKind`, Comments
-    and Votes among them: each opens Shape, Ready to use offering its built-in while the type lacks it. `KIND_GROUPS`
-    (`{ id, label, kinds: PickKind[] }[]`: `text` "Text & links" text, longtext, link, email; `numbers` "Numbers &
-    dates" number, currency, percent, rating, date; `choices` "Choices" choice, multichoice, checkbox, labels; `people`
-    "People & teamwork" person, checklist, comments, votes; `look` "Colour & images" colour, image; `cards` "Linked
-    cards" card, calculated; every `CUSTOM_FIELD_KINDS` member once, test-locked), `KIND_DESCRIPTIONS` and
-    `KIND_ALIASES` (`Record<PickKind, …>`, the spec's words), `BUILT_INS_OF_KIND` (`Record<PickKind, ItemFieldId[]>`:
-    longtext description; choice priority; number estimate; date start, due; person assignee; labels labels; colour
-    color; checklist checklist; comments comments; votes votes), `BUILT_IN_ROLES` (`Partial<Record<ItemFieldId,
-string>>`, the Ready to use lines), `readyBuiltIns(kind, missing)` (the kind's built-ins the type lacks, in
-    `BUILT_INS_OF_KIND` order), `searchKey(q)` (trimmed, lower-cased, runs of spaces one), `kindMatches(kind, label,
-q)` (the whole query a substring of the label, the description, an alias or the name of a built-in of the kind,
-    else every word of it a substring of one of them) and
-    `kindReadiness(field)` (`null` when ready, else `'name' | 'options' | 'links'`, in that order) with
-    `READINESS_HINT`.
-  - Step 1 is `AddFieldPicker.tsx`: a `sticky top-0` header (search `type="search"`, `aria-label="Search fields"`, a
-    close `IconButton` "Close" calling `onCancel`), then one list (no Ready-made section, no "Your own field"
-    heading): `CUSTOM_MAX_NOTE` first when `canAddCustom` is false, then the groups. Each group is an `h4` holding the
-    header button (`aria-expanded`, `aria-controls` its list's id, its name, a count pill of the kinds it lists, a
-    chevron rotating 180° when open, `motion-safe:transition`), and the list a `ul` of kind buttons (`aria-label`
-    the kind's name, `aria-describedby` its description, `data-kind`; a **Ready to use** tag after the name when
-    `readyBuiltIns(kind, missing)` is not empty). Every kind is listed, and pressing one calls `onPick(kind)`. With
-    `canAddCustom` false a kind with nothing ready is `aria-disabled`, dimmed and not `data-pick`. Searching
-    (`searchKey(q)` non-empty), every group with a match renders open and the headers are not toggles
-    (`aria-expanded` true, `aria-disabled`); a group with none is not rendered. No match at all: the empty state,
-    `role="status"`. A visually hidden `aria-live="polite"` line says "N fields match" while searching. Arrow keys:
-    the root's `onKeyDown` takes ↑ ↓ Home End over its `[data-nav]` elements in DOM order (the search, the headers,
-    the kinds), `preventDefault`, focusing the next; Enter in the search with a query presses the first
-    `[data-pick]`.
+    and Votes among them: each opens Shape, Ready to use offering its built-in while the type lacks it.
+    `KIND_CATEGORIES` (`{ id: KindCategoryId, label, line, kinds: PickKind[] }[]`, the spec's table in its order:
+    `text` Text; `numbers` Numbers and Money; `dates` Dates and Time; `choices` Choices and Tags; `people` People and
+    Teamwork; `links` Links and Media; `cards` Cards and Formulas; every `CUSTOM_FIELD_KINDS` member once,
+    test-locked), `CategoryChoice` (`KindCategoryId | 'all'`), `ALL_FIELDS_LABEL` "All Fields", `categoryOfKind`,
+    `shownCategories(key, labelOf, builtInNamesOf)` (each category with `shown`, its kinds that `kindMatches`; all of
+    them for an empty key), `KIND_DESCRIPTIONS` and `KIND_ALIASES` (`Record<PickKind, …>`, the spec's words),
+    `BUILT_INS_OF_KIND` (`Record<PickKind, ItemFieldId[]>`: longtext description; choice priority; number estimate;
+    date start, due; person assignee; labels labels; colour color; checklist checklist; comments comments; votes
+    votes; image attachments), `BUILT_IN_ROLES` (`Partial<Record<ItemFieldId, string>>`, the Ready to use lines),
+    `readyBuiltIns(kind, missing)` (the kind's built-ins the type lacks, in `BUILT_INS_OF_KIND` order),
+    `searchKey(q)` (trimmed, lower-cased, runs of spaces one), `kindMatches(kind, label, q)` (the whole query a
+    substring of the label, the description, an alias or the name of a built-in of the kind, else every word of it a
+    substring of one of them; a category's name is never a haystack) and `kindReadiness(field)` (`null` when ready,
+    else `'name' | 'options' | 'links'`, in that order) with `READINESS_HINT`.
+  - `NewFieldForm` works out `shownCategories(searchKey(query), …)` in a `useMemo` keyed on the search key only, so a
+    re-render (the type editor's draft changing under it) never re-matches; the rail's counts and the said line ("N
+    fields match", "1 field matches") come from it. Typing a first character sets `choice` to `'all'`; typing while
+    shaping goes back to Pick (`back(false)`). The search's ↓ calls `focusFirstKind`; its Enter, with a key, presses
+    the first `[data-pick]` (`pickFirstKind`); both do nothing while shaping. The rail is not rendered when a search
+    matches nothing; while shaping its `choice` is `categoryOfKind(field.kind).id` and it is `@max-[600px]:hidden`.
+    Pressing an entry sets `choice` and goes back to Pick.
+  - Step 1 is `AddFieldPicker.tsx`: `AddFieldRail` (`GalleryRail` "Field categories": `all` "All Fields" with a
+    LayoutGrid glyph and the total shown, then each category with its first everyday kind's icon, `CATEGORY_ICONS`,
+    and its `shown` count) and `AddFieldPicker`, a `GalleryList` (`onKeyDown` `moveAmongTiles` over
+    `button[data-kind]`, ↑ off the top row to the search) holding `CUSTOM_MAX_NOTE` first (`role="note"`) when
+    `canAddCustom` is false, then a `section` (`aria-labelledby` its `GallerySectionHeading`) per category that is
+    chosen (or every one for `'all'`) and has a kind shown, its kinds in a two-column grid
+    (`@max-[460px]:grid-cols-1`); none: `NoMatches` (`things` "fields", or "{Category} fields" for one category,
+    hint "Try a word like money, date or parent."). A kind is a `GalleryTile`: the strip `KindSample` (the Preview's
+    `SampleValue` at its defaults, `CustomFieldKindParts.tsx`) in `FitWidth` at 13 px; root `data-kind-tile`; button
+    `data-kind`, `aria-label` the kind's name, `aria-describedby` its line's id and, when `readyBuiltIns` is not empty,
+    the **Ready to use** badge's id; `data-pick` unless dimmed. With `canAddCustom` false a kind with nothing ready is
+    `aria-disabled`, dimmed, its label "{Kind}: Remove a custom field to add another" and its tooltip
+    `AT_CAP_HINT`. On mount the `focusKind` tile takes focus; a change of `choice` or the search scrolls the list to
+    the top.
   - Step 2 is `AddFieldShape.tsx`, a `<form>` (`aria-label` "New {Kind} field"; `onSubmit` adds when ready, so Enter
     in Name submits; option rows and selects take their own Enter): a header with the back button (`ChevronLeft`,
     "All kinds") and the pill (`<span><span class="sr-only">Kind: </span>{label}</span>` with its icon); when
@@ -824,13 +851,20 @@ cards, children)` adds "{names} will keep a copy of its settings."
   when a Blocks field's value changed; the picker's `waitingOn` is one inversion and one walk per open list. Measured
   in `blocked-by.perf.test.ts`.
 
+- Add Field's gallery: 25 tiles, each a static sample (no data read), drawn on opening; the search's matching is
+  memoised on the search key (`shownCategories`, 25 kinds × a few dozen short strings, well under a millisecond);
+  measured in the browser at about 22 ms from the press to the second frame with every tile drawn. Each tile's
+  `FitWidth` holds one `ResizeObserver` (25 while open, disconnected on close).
+
 ## Accessibility and UX
 
 - Panel rows are focusable list items named "<Name>, N items"; Enter or Space opens the editor. Swatches and
   glyphs are radio groups with names ("Cyan", "Chat glyph"). The editor's problems are named in text beside
   Save. Copy: "Card Types", "+ Add Type", "Add Default Types", its confirm "Add {list} to this project’s card types? They go after the ones you have, and nothing you have changes." with "Add Types", "New Card Type", "Edit Card Type",
-  "+ Add Field", "Search fields", "Search fields, like money or date", "Ready to use", "Or make your own", the six
-  group names, the twenty descriptions, the nine Ready to use lines, "No matches for “…”", "Try a word like money, date or parent.",
+  "+ Add Field", "Search fields", "Search fields, like money or date", "Ready to use", "Or make your own", "Add Field",
+  "Pick what the new field holds.", "Close", "All Fields", the seven category names and lines, the twenty-five
+  descriptions, the Ready to use lines, "No fields match “…”", "No {Category} fields match “…”", "Try a word like
+  money, date or parent.", "N fields match", "Remove a custom field to add another",
   "This type holds the most custom fields it can (12). Remove one to add another.", "All kinds", "Kind: {Kind}",
   "Name", "Field name", "Options", "Add an option", "or paste a list", "Option {n}", "Remove option {n}", "Scale",
   "Currency", "Calculation", "Required", "Preview", "Example card", "Add {Name}", "Add {Kind} Field", "Name the
@@ -890,8 +924,8 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Holds Several: chips, card face, switch, drag, Link Existing                                                  | `apps/editor/components/plan/HoldsSeveral.test.tsx`                                                                                                                                                                                                                                                              |
 | Choice and Multiple Choice: chips, colours, list, keys, find, stale, Viewer                                   | `apps/editor/components/plan/ChoiceField.test.tsx`                                                                                                                                                                                                                                                               |
 | Card Type picker: the boards' types, one type a label, live                                                   | `apps/editor/components/plan/ItemTypePill.test.tsx`                                                                                                                                                                                                                                                              |
-| Add Field: groups, descriptions, aliases, readiness                                                           | `apps/editor/components/plan/add-field-kinds.test.ts`                                                                                                                                                                                                                                                            |
-| Add Field: search, accordion, Ready to use, keys, shape                                                       | `apps/editor/components/plan/NewFieldForm.test.tsx`                                                                                                                                                                                                                                                              |
+| Add Field: categories, descriptions, aliases, readiness                                                       | `apps/editor/components/plan/add-field-kinds.test.ts`                                                                                                                                                                                                                                                            |
+| Add Field: gallery, rail, search, Ready to use, keys, shape                                                   | `apps/editor/components/plan/NewFieldForm.test.tsx`                                                                                                                                                                                                                                                              |
 | Built-in kinds: store, text, CSV, agents                                                                      | `packages/items/src/built-in-field-kinds.test.ts`                                                                                                                                                                                                                                                                |
 | Built-in kinds and Image: panel, card face, required                                                          | `apps/editor/components/plan/ItemFieldEditor.kinds.test.tsx`                                                                                                                                                                                                                                                     |
 | Image fields: upload, read, roles, grants                                                                     | `apps/api/src/routes/images.test.ts`, `apps/api/src/plan-room/image-grants.test.ts`, `apps/editor/lib/api/images.test.ts`                                                                                                                                                                                        |

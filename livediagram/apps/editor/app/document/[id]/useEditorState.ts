@@ -70,6 +70,7 @@ import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { selectAllIds } from '@/lib/select-all-ids';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@liveworkspace/workbench/lib/announcer';
+import { voteKeyHandler } from '@/lib/vote-by-key';
 import { peerModeSwitchMessage } from '@/lib/peer-mode-switch';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
@@ -3137,6 +3138,19 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onBeginEditSelected: beginEdit,
     onNudgeSelection: nudgeSelection,
     onTypeIntoSelected: typeIntoSelected,
+    // Dot voting from the keyboard (docs/specs/012-collaboration/blueprints/vote-keys.md).
+    onVoteKey: voteKeyHandler(
+      {
+        elements: activeTab.elements,
+        vote: activeTab.vote,
+        layers: activeTab.layers,
+        selfId: voteSelfId,
+        canTakePart: participant.can.takePart,
+        cast: castVote,
+        retract: retractVote,
+      },
+      announce,
+    ),
     pendingDraw,
     onCancelDraw: cancelDrawShape,
     onDropDrawAtCentre: () => {

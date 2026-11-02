@@ -1,5 +1,5 @@
 {
-  "version": "1.52.0",
+  "version": "1.61.0",
   "glyphs": [
     "a-large-small",
     "align-center-horizontal",
@@ -43,6 +43,7 @@
     "bookmark",
     "bookmark-plus",
     "braces",
+    "briefcase",
     "bring-to-front",
     "brush",
     "brush-cleaning",

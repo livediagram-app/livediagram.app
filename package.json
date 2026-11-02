@@ -26,17 +26,18 @@
     "dev:drive": "turbo run dev --filter=@liveworkspace/drive-service",
     "dev:site": "turbo run dev --filter=@liveworkspace/site",
     "dev:design": "turbo run dev --filter=@livedesign/*",
-    "dev:documents": "turbo run dev --filter=@livedocuments/*"
+    "dev:documents": "turbo run dev --filter=@livedocuments/*",
+    "dev:huddle": "turbo run dev --filter=@livehuddle/*"
   },
   "devDependencies": {
     "@liveworkspace/prettier-config": "workspace:*",
     "esbuild": "^0.28.2",
-    "oxlint": "^1.88.0",
-    "oxlint-tsgolint": "^7.0.2004",
+    "oxlint": "^1.90.0",
+    "oxlint-tsgolint": "^7.0.2005",
     "prettier": "^3.9.9",
     "turbo": "^2.11.7",
     "typescript": "^7.0.2",
-    "wrangler": "^4.148.0"
+    "wrangler": "^4.152.0"
   },
   "engines": {
     "node": ">=22",

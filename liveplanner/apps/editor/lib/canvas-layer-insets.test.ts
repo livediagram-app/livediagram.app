@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import {
+  BAND_HYSTERESIS_PX,
+  type BandMemo,
   BAND_MID_MIN_PX,
   BAND_RIGHT_MIN_PX,
   MAX_INSET_SHARE,
@@ -185,7 +187,7 @@ describe('headerBand', () => {
 
   it('needs room for a title between the menu and the strip at the right', () => {
     // The strip's width that leaves exactly BAND_MID_MIN_PX.
-    const widest = stripRight - 124 - 24 - BAND_MID_MIN_PX;
+    const widest = stripRight - 124 - 24 - BAND_MID_MIN_PX - BAND_HYSTERESIS_PX;
     expect(headerBand(canvas, none, menu, box(200, 92, 200 + widest, 145), 0, END)).not.toBeNull();
     expect(headerBand(canvas, none, menu, box(200, 92, 201 + widest, 145), 0, END)).toBeNull();
     // A side panel taking the right of the canvas takes the room with it.
@@ -194,16 +196,29 @@ describe('headerBand', () => {
     expect(headerBand(canvas, none, menu, strip)!.stripEnd).toBe(12 + BAND_RIGHT_MIN_PX + 12);
   });
 
+  // Hysteresis: a band that is there keeps BAND_HYSTERESIS_PX less room, so a width on the threshold does not flip it.
+  it('keeps a band it has with BAND_HYSTERESIS_PX less room than it takes to lay one out', () => {
+    const room = (extra: number) =>
+      box(200, 92, 200 + stripRight - 124 - 24 - BAND_MID_MIN_PX - extra, 145);
+    // One px short of the room a new band needs: not laid out, but kept when there already.
+    const short = room(BAND_HYSTERESIS_PX - 1);
+    expect(headerBand(canvas, none, menu, short, 0, END, false)).toBeNull();
+    expect(headerBand(canvas, none, menu, short, 0, END, true)).not.toBeNull();
+    // At BAND_MID_MIN_PX itself a kept band holds; one px under it, it goes.
+    expect(headerBand(canvas, none, menu, room(0), 0, END, true)).not.toBeNull();
+    expect(headerBand(canvas, none, menu, room(-1), 0, END, true)).toBeNull();
+  });
+
   // "The name rides in the menu box": the room is judged without the name, the content starting after the box.
   it('judges the room from the menu box without the name riding in it', () => {
     const wide = box(200, 92, 200 + stripRight - 124 - 24 - BAND_MID_MIN_PX, 145);
     const withName = box(12, 92, 124 + 200, 145);
-    const band = headerBand(canvas, none, withName, wide, 200, END);
+    const band = headerBand(canvas, none, withName, wide, 200, END, true);
     expect(band).not.toBeNull();
     expect(band!.left).toBe(124 + 200 - 12 + 12);
     // The strip now starts before the box's end: the content has no room, never a negative one.
     expect(band!.mid).toBe(0);
-    expect(headerBand(canvas, none, withName, wide, 0, END)).toBeNull();
+    expect(headerBand(canvas, none, withName, wide, 0, END, true)).toBeNull();
   });
 
   it('measures off the page with the top inset given up to the header', () => {
@@ -240,6 +255,70 @@ describe('headerBand', () => {
     const controls = main!.querySelector<HTMLElement>('[data-band-controls]')!;
     Object.defineProperty(controls, 'offsetWidth', { value: 144 });
     expect(measureCanvasChrome(main!).band).toEqual(headerBand(canvas, none, menu, strip, 0, 160));
+  });
+});
+
+// A board's widgets ride in the controls card only in a band, so the card is wide in one and narrow out of one: the room
+// judged off a band must use the width it had in one, or the band alternates every frame (Work Tracker #271).
+describe('measureCanvasChrome settling', () => {
+  const rect = (r: { left: number; top: number; right: number; bottom: number }) => () =>
+    ({ ...r, x: r.left, y: r.top, width: r.right - r.left, height: r.bottom - r.top }) as DOMRect;
+
+  it('settles on a width where the controls card is wider in a band than out of one', () => {
+    document.body.innerHTML = `
+      <main data-canvas-a11y-root="">
+        <div data-canvas-cover=""><div style="padding-right: 1px"><span data-band-controls=""></span></div></div>
+      </main>
+      <div data-toolbar-menu=""></div>
+      <div data-toolbar-palette=""><div></div></div>`;
+    const [main, menuEl, stripEl] = [...document.body.children] as HTMLElement[];
+    const wide = { ...canvas, right: 680 };
+    main!.getBoundingClientRect = rect(wide);
+    menuEl!.getBoundingClientRect = rect(box(12, 92, 120, 145));
+    (stripEl!.firstElementChild as HTMLElement).getBoundingClientRect = rect(
+      box(200, 92, 260, 145),
+    );
+    const controls = main!.querySelector<HTMLElement>('[data-band-controls]')!;
+    // 32 px (the cog) out of a band; 426 px (the widgets and the cog) in one.
+    let banded = false;
+    Object.defineProperty(controls, 'offsetWidth', { get: () => (banded ? 426 : 32) });
+    const memo: BandMemo = { banded: false, endWidth: null };
+    const states: boolean[] = [];
+    for (let frame = 0; frame < 8; frame += 1) {
+      banded = measureCanvasChrome(main!, true, memo).band !== null;
+      states.push(banded);
+    }
+    // At most one flip (the first measure has not seen the band's controls yet), then it holds.
+    const flips = states.filter((b, i) => i > 0 && b !== states[i - 1]).length;
+    expect(flips).toBeLessThanOrEqual(1);
+    expect(states.slice(-4)).toEqual([states[7], states[7], states[7], states[7]]);
+  });
+
+  it('measures the controls again in a band, and keeps the last width out of one', () => {
+    document.body.innerHTML = `
+      <main data-canvas-a11y-root="">
+        <div data-canvas-cover=""><div style="padding-right: 0px"><span data-band-controls=""></span></div></div>
+      </main>
+      <div data-toolbar-menu=""></div>
+      <div data-toolbar-palette=""><div></div></div>`;
+    const [main, menuEl] = [...document.body.children] as HTMLElement[];
+    main!.getBoundingClientRect = rect(canvas);
+    menuEl!.getBoundingClientRect = rect(box(12, 92, 124, 145));
+    const controls = main!.querySelector<HTMLElement>('[data-band-controls]')!;
+    let width = 100;
+    Object.defineProperty(controls, 'offsetWidth', { get: () => width });
+    const memo: BandMemo = { banded: false, endWidth: null };
+    // The first measure sees the card as drawn out of a band: it keeps nothing of it.
+    expect(measureCanvasChrome(main!, true, memo).band).not.toBeNull();
+    expect(memo).toEqual({ banded: true, endWidth: null });
+    // Now drawn in a band: its width is kept, and kept when the band goes.
+    width = 300;
+    measureCanvasChrome(main!, true, memo);
+    expect(memo.endWidth).toBe(300);
+    width = 20;
+    memo.banded = false;
+    measureCanvasChrome(main!, true, memo);
+    expect(memo.endWidth).toBe(300);
   });
 });
 

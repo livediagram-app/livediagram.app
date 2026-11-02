@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import type { ShareLink } from '@liveworkspace/index-client';
 import { timeLeftCompact } from '../../time';
-import { ConfirmPopover, HoverCard, Select, Tooltip } from '@liveworkspace/ui';
+import { Button, ConfirmPopover, HoverCard, Select, Tooltip } from '@liveworkspace/ui';
 import { CheckIcon, CopyIcon, LinkIcon, LockIcon, TrashIcon } from '../../ui/icons';
 import { CopyMenu } from './CopyMenu';
 import { CodeGlyph, ImageGlyph, MarkdownGlyph, SmallClockGlyph } from './glyphs';
@@ -236,16 +236,18 @@ export function ActivePass({
             title="Revoke link"
             description="The link stops working at once for everyone holding it."
           >
-            <button
-              type="button"
+            <Button
+              variant="none"
               onClick={(e) => setRevokeAnchor(e.currentTarget)}
-              disabled={busy || exit.leaving}
+              // Busy while the row works: Revoke's popover hands the keyboard back here (busy-buttons.md).
+              disabled={exit.leaving}
+              busy={busy}
               aria-label="Revoke link"
               aria-expanded={revokeAnchor !== null}
               className={PASS_BIN}
             >
               <TrashIcon />
-            </button>
+            </Button>
           </HoverCard>
           {/* Revoking cuts off everyone holding the pass and can't be undone (a new pass is a new address), so it
               asks right beside the bin. */}

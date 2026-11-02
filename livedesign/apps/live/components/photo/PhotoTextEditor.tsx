@@ -53,6 +53,7 @@ export function PhotoTextEditor({
     <textarea
       ref={ref}
       aria-label="Text"
+      dir="auto"
       value={value}
       spellCheck={false}
       onChange={(e) => {
@@ -77,6 +78,7 @@ export function PhotoTextEditor({
         font: `${spec.italic ? 'italic ' : ''}${spec.weight} ${spec.size * k}px/${spec.lineHeight ?? 1.2} ${resolveFontStack(spec.font) ?? 'Inter, sans-serif'}`,
         letterSpacing: `${(spec.tracking ?? 0) * spec.size * k}px`,
         textAlign: spec.align === 'centre' ? 'center' : spec.align,
+        unicodeBidi: 'plaintext',
         color: 'transparent',
         caretColor: spec.colour,
         whiteSpace: spec.boxWidth ? 'pre-wrap' : 'pre',

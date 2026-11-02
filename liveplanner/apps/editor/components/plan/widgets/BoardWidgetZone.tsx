@@ -7,7 +7,7 @@
 // the + turns on) or Delete. The + at the zone's end opens the widget gallery (BoardWidgetPicker): a widget pressed
 // there is added at the end, or taken off when the board has it, and the gallery stays open. For You is worked out
 // as it opens (`suggest`).
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import {
   placeWidget,
   removeWidget,
@@ -127,12 +127,54 @@ export function BoardWidgetZone({
       document.removeEventListener('keydown', onKey, true);
     };
   }, [active]);
-  // Takes a widget off, leaving no focus on it. Edit mode stays on for the next, unless that was the last.
-  const remove = (kind: BoardWidgetId) => {
-    if (widgets.length === 1) setEditing(false);
+  // The last widget went by this person's hand: the empty zone shows its + to them, where the focus goes next.
+  // Until widgets come back: then a later emptying (a peer's) leaves an unselected board clean again.
+  const [emptied, setEmptied] = useState(false);
+  const [seen, setSeen] = useState(widgets);
+  if (seen !== widgets) {
+    setSeen(widgets);
+    if (emptied && widgets.length > 0) setEmptied(false);
+  }
+  // Takes a widget off. Edit mode stays on for the next, unless that was the last. The focus moves on to the same
+  // control of the widget that takes its place once the new list lands (board-widgets.md "Remove").
+  const remove = (kind: BoardWidgetId, control: 'remove' | 'widget') => {
+    if (widgets.length === 1) {
+      setEditing(false);
+      setEmptied(true);
+    }
+    refocus.current = { kind, at: widgets.indexOf(kind), control };
     (document.activeElement as HTMLElement | null)?.blur();
     onChange(removeWidget(widgets, kind));
   };
+  // Where the focus goes once `widgets` changes. A move (Alt+← or Alt+→): React moves the widget's node (or the board
+  // redraws it), which drops the focus, so it is put back on the widget (board-widgets.md "Reorder"). A removal: the
+  // same control on the widget now at its place, or the one before at the end; with none left, the zone's +.
+  const refocus = useRef<
+    | { kind: BoardWidgetId; moved: true }
+    | { kind: BoardWidgetId; at: number; control: 'remove' | 'widget' }
+    | null
+  >(null);
+  useLayoutEffect(() => {
+    const pending = refocus.current;
+    if (!pending) return;
+    const removed = !('moved' in pending);
+    // Another change landed first (a peer's): wait for this person's own.
+    if (removed && widgets.includes(pending.kind)) return;
+    refocus.current = null;
+    const wrappers = [...(zone.current?.querySelectorAll<HTMLElement>('[data-widget]') ?? [])];
+    let el: HTMLElement | null | undefined;
+    if (!removed) el = wrappers.find((w) => w.dataset.widget === pending.kind);
+    else if (wrappers.length === 0)
+      el = zone.current?.querySelector<HTMLElement>('button[aria-label="Add a widget"]');
+    else {
+      const next = wrappers[Math.min(pending.at, wrappers.length - 1)]!;
+      el =
+        pending.control === 'remove'
+          ? (next.querySelector<HTMLElement>('button[aria-label^="Remove "]') ?? next)
+          : next;
+    }
+    if (el && document.activeElement !== el) el.focus();
+  }, [widgets]);
   const suppressClick = useRef(false);
   // The + the widget picker hangs from, while it is open.
   const [pickerAt, setPickerAt] = useState<HTMLElement | null>(null);
@@ -154,7 +196,7 @@ export function BoardWidgetZone({
       size={size}
       palette={palette}
       aria-label="Add a widget"
-      aria-haspopup="menu"
+      aria-haspopup="dialog"
       aria-expanded={pickerAt !== null}
       onClick={(e) => {
         if (pickerAt) return setPickerAt(null);
@@ -224,7 +266,7 @@ export function BoardWidgetZone({
             Add widgets to this board
             {addButton('sm')}
           </span>
-        ) : canEdit && offerAdd ? (
+        ) : canEdit && (offerAdd || emptied) ? (
           addButton('md')
         ) : null}
         {picker}
@@ -280,11 +322,14 @@ export function BoardWidgetZone({
                 if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
                   e.preventDefault();
                   e.stopPropagation();
-                  onChange(nudgeWidget(widgets, kind, e.key === 'ArrowLeft' ? -1 : 1));
+                  const next = nudgeWidget(widgets, kind, e.key === 'ArrowLeft' ? -1 : 1);
+                  if (next.join() === widgets.join()) return;
+                  refocus.current = { kind, moved: true };
+                  onChange(next);
                 } else if (e.key === 'Delete' || e.key === 'Backspace') {
                   e.preventDefault();
                   e.stopPropagation();
-                  remove(kind);
+                  remove(kind, 'widget');
                 }
               }}
             >
@@ -302,7 +347,7 @@ export function BoardWidgetZone({
                   onPointerDown={(e) => e.stopPropagation()}
                   onClick={(e) => {
                     e.stopPropagation();
-                    remove(kind);
+                    remove(kind, 'remove');
                   }}
                 >
                   <CloseIcon size={9} />

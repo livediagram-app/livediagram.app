@@ -14,7 +14,7 @@ import {
   Portal,
   Tooltip,
 } from '@liveplanner/ui';
-import { useRef, useState, useCallback } from 'react';
+import { useId, useRef, useState, useCallback } from 'react';
 import type { ElementAction } from '@liveplanner/project';
 import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
 import { initialsOf } from '@/lib/identity';
@@ -65,6 +65,7 @@ export function ActionPopover({
 }: ActionPopoverProps) {
   const now = useRelativeNow();
   const ref = useRef<HTMLDivElement>(null);
+  const titleId = useId();
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   // Two-step delete: the first click arms, the second confirms. Kept
   // inline (no nested dialog over a popover) and disarmed on reopen.
@@ -106,12 +107,16 @@ export function ActionPopover({
       <div
         ref={ref}
         role="dialog"
+        aria-labelledby={titleId}
         onPointerDown={(e) => e.stopPropagation()}
         className="fixed z-[var(--z-overlay)] flex animate-fade-in flex-col rounded-lg border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
         style={{ left: pos.left, top: pos.top, width: WIDTH }}
       >
         <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
-          <h3 className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-100">
+          <h3
+            id={titleId}
+            className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 dark:text-slate-100"
+          >
             <span className="text-slate-400">
               <ClipboardIcon />
             </span>
@@ -132,7 +137,7 @@ export function ActionPopover({
               type="button"
               aria-label="Close action"
               onClick={onClose}
-              className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              className="relative touch-target-y cursor-pointer rounded p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
               <CloseIcon size={12} />
             </button>

@@ -59,6 +59,17 @@ describe('useFieldWidgets', () => {
     expect(suggest()[0]?.id).toBe('field:sum:f-budget');
   });
 
+  // board-widgets.md "A field gone": a field made a kind no view reads (Text) has changed kind, not been removed.
+  it('names a widget whose field became Text as changed, not removed', () => {
+    const notes = { id: 'f-budget', label: 'Budget', kind: 'text' } as CustomFieldDef;
+    const { result } = renderHook(() =>
+      useFieldWidgets({ setup, items: [item], types: [type([notes])], widgets: [], now: NOW }),
+    );
+    expect(result.current.fields).toEqual([]);
+    expect(result.current.everyField.map((f) => f.def.id)).toEqual(['f-budget']);
+    expect(result.current.labelOf('field:sum:f-budget')).toBe('Budget Sum');
+  });
+
   it('keeps the fields while the board’s types stand, and reads Calculated fields through the plan', () => {
     const types = [type([budget, kids])];
     const plan = {

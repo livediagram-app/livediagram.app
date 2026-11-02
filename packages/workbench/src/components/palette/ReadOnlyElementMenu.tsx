@@ -30,6 +30,7 @@ export function ReadOnlyElementMenu({
   items,
   onRun,
   onClose,
+  children,
 }: {
   position: { x: number; y: number };
   // The element's kind, as its menu header ("Square", "Sticky Note").
@@ -37,6 +38,9 @@ export function ReadOnlyElementMenu({
   items: readonly ReadOnlyElementMenuItem[];
   onRun: (key: ReadOnlyElementMenuKey) => void;
   onClose: () => void;
+  // A product's own part of the menu, under the rows: what this role may read or write on its own kinds (livedocuments
+  // shows an image's Alt Text here). It stays in the menu while it is used, unlike a row.
+  children?: ReactNode;
 }) {
   return (
     <ContextMenu position={position} label="Element menu" onClose={onClose}>
@@ -54,6 +58,7 @@ export function ReadOnlyElementMenu({
           }}
         />
       ))}
+      {children}
     </ContextMenu>
   );
 }

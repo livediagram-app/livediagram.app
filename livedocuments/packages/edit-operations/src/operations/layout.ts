@@ -68,10 +68,16 @@ export function layOut(
       ids.has(el.from.elementId) &&
       ids.has(el.to.elementId),
   );
-  const flow = direction ? DIRECTIONS[direction] : flowDirectionOf([...boxes, ...arrows]);
-  const how: LaidOut =
-    style === 'flow' ? { style, direction: flow === 'TB' ? 'down' : 'right' } : { style };
-  for (const el of laidOut(boxes, arrows, style, style === 'flow' ? flow : undefined)) {
+  // A flow detects its axis when none is asked; a tree runs down unless asked; a mindmap is radial (EO38).
+  const asked = direction ? DIRECTIONS[direction] : undefined;
+  const axis =
+    style === 'flow'
+      ? (asked ?? flowDirectionOf([...boxes, ...arrows]))
+      : style === 'tree'
+        ? asked
+        : undefined;
+  const how: LaidOut = axis ? { style, direction: axis === 'TB' ? 'down' : 'right' } : { style };
+  for (const el of laidOut(boxes, arrows, style, axis)) {
     if (el.type === 'arrow') putElement(state, el, operation);
     else moveElement(state, el, operation, 'laid out', { layout: how });
   }

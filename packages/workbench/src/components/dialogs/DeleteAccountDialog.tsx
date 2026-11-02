@@ -289,14 +289,14 @@ export function DeleteAccountDialog({
                   />
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
                     <span>Didn’t get it? Check your spam folder.</span>
-                    <button
-                      type="button"
+                    <Button
+                      variant="none"
                       onClick={() => void requestCode(true)}
-                      disabled={working}
+                      busy={working}
                       className="relative touch-target-y cursor-pointer font-medium text-slate-900 underline decoration-slate-300 underline-offset-2 transition hover:decoration-slate-500 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-100 dark:decoration-slate-600 dark:hover:decoration-slate-400"
                     >
                       {busy === 'resending' ? 'Sending…' : 'Resend Code'}
-                    </button>
+                    </Button>
                   </div>
                 </>
               )}
@@ -327,7 +327,8 @@ export function DeleteAccountDialog({
                 <Button
                   type="submit"
                   variant="primary"
-                  disabled={!emailsMatch || working}
+                  disabled={!emailsMatch}
+                  busy={working}
                   className="shadow-sm"
                 >
                   {busy === 'sending' ? 'Sending Code…' : 'Email Me a Code'}
@@ -336,7 +337,8 @@ export function DeleteAccountDialog({
                 <Button
                   type="submit"
                   variant="primary"
-                  disabled={code.length !== CODE_DIGITS || working}
+                  disabled={code.length !== CODE_DIGITS}
+                  busy={working}
                   className="shadow-sm"
                 >
                   {busy === 'deleting' ? 'Deleting…' : 'Delete Account'}

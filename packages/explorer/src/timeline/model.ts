@@ -3,6 +3,7 @@
 // kind of event gets, and whether it is new. No React here beyond the types, so each rule is tested on its own.
 
 import { isApp, type TimelineEvent, type TimelineEventType } from '@liveworkspace/index-client';
+import { dateFormat, MONTH_YEAR, TIME } from '@liveworkspace/ui/date-format';
 import type { MouseEvent, ReactNode } from 'react';
 import { kindWords } from '../words';
 
@@ -63,21 +64,25 @@ export function dateKey(at: number): string {
 
 /** Time of day in the reader's locale. */
 export function timeLabel(at: number): string {
-  return new Date(at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  return TIME.format(at);
 }
 
-/** "Tue, 5 Aug" and its year, assembled from parts so it reads the same on every ICU. */
-export function formatDay(key: string): { label: string; year: string } {
+// A day's heading in the reader's locale ("Tue 5 Aug" in the UK, "Tue, Aug 5" in the US), with its year when it
+// needs one (@liveworkspace/ui/date-format, one formatter each).
+const DAY_LABEL = dateFormat({ weekday: 'short', day: 'numeric', month: 'short' });
+const DAY_LABEL_YEAR = dateFormat({
+  weekday: 'short',
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+});
+
+/** A local day's heading, its year, and the heading with the year, in the reader's locale. */
+export function formatDay(key: string): { label: string; year: string; withYear: string } {
   const [y, m, d] = key.split('-').map(Number);
   const date = new Date(y!, m! - 1, d);
-  if (Number.isNaN(date.getTime())) return { label: key, year: '' };
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  }).formatToParts(date);
-  const part = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
-  return { label: `${part('weekday')}, ${part('day')} ${part('month')}`, year: String(y) };
+  if (Number.isNaN(date.getTime())) return { label: key, year: '', withYear: key };
+  return { label: DAY_LABEL.format(date), year: String(y), withYear: DAY_LABEL_YEAR.format(date) };
 }
 
 /** Newest-first events, one group per local day, by key rather than adjacency. */
@@ -130,10 +135,7 @@ export function shiftMonth(monthKey: string, delta: number): string {
 
 export function formatMonth(monthKey: string): string {
   const [year, month] = monthKey.split('-').map(Number);
-  return new Date(year!, month! - 1, 1).toLocaleDateString('en-GB', {
-    month: 'long',
-    year: 'numeric',
-  });
+  return MONTH_YEAR.format(new Date(year!, month! - 1, 1));
 }
 
 // ---------- What an event says ---------------------------------------------------------------------------------

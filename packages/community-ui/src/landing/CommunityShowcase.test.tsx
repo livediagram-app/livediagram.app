@@ -32,12 +32,17 @@ const showcase = (communityApi?: string) => (
   />
 );
 
+// A full showcase: the first is the Quarterly Report the tests look for.
+const six = () =>
+  Array.from({ length: 6 }, (_, i) =>
+    i === 0
+      ? communityPostFixture({ id: 'p1', title: 'Quarterly Report', shareCode: 'C1' })
+      : communityPostFixture({ id: `p${i + 1}`, title: `Post ${i + 1}`, shareCode: `C${i + 1}` }),
+  );
+
 describe('CommunityShowcase', () => {
   it("asks the service for the app's featured posts and shows them in its words", async () => {
-    featured = () =>
-      Response.json({
-        posts: [communityPostFixture({ id: 'p1', title: 'Quarterly Report', shareCode: 'C1' })],
-      });
+    featured = () => Response.json({ posts: six() });
     render(showcase('http://localhost:8791/api/community'));
     expect(screen.getByText(/^Documents people are proud of/)).toBeTruthy();
     expect(await screen.findByText('Quarterly Report')).toBeTruthy();
@@ -53,10 +58,29 @@ describe('CommunityShowcase', () => {
     expect(screen.getByRole('link', { name: 'How the Community Works' })).toBeTruthy();
   });
 
-  it('invites the first share in its words when the service cannot be reached', async () => {
+  it('holds six placeholder cards while the featured posts load', () => {
+    featured = () => new Promise<Response>(() => {});
+    const { container } = render(showcase());
+    expect(screen.getByText('From the Community')).toBeTruthy();
+    expect(container.querySelectorAll('li')).toHaveLength(6);
+  });
+
+  it('is not there while the Community has fewer than six to feature', async () => {
+    featured = () => Response.json({ posts: six().slice(0, 5) });
+    const { container } = render(showcase());
+    await waitFor(() => expect(container.firstChild).toBeNull());
+  });
+
+  it('is not there when nothing is featured', async () => {
+    featured = () => Response.json({ posts: [] });
+    const { container } = render(showcase());
+    await waitFor(() => expect(container.firstChild).toBeNull());
+  });
+
+  it('is not there when the service cannot be reached', async () => {
     featured = () => Promise.reject(new TypeError('offline'));
-    render(showcase());
-    expect(await screen.findByText(/Be one of the first to share a document\./)).toBeTruthy();
+    const { container } = render(showcase());
+    await waitFor(() => expect(container.firstChild).toBeNull());
     expect(vi.mocked(fetch).mock.calls[0]?.[0]).toBe(
       'https://www.liveworkspace.app/api/community/featured?app=livedocuments.app',
     );
@@ -64,8 +88,8 @@ describe('CommunityShowcase', () => {
 
   it('takes an unreadable answer as nothing to show', async () => {
     featured = () => new Response('nope', { status: 500 });
-    render(showcase());
-    expect(await screen.findByText(/The Community is just getting started/)).toBeTruthy();
+    const { container } = render(showcase());
+    await waitFor(() => expect(container.firstChild).toBeNull());
   });
 
   it('is not there at all while the Community is switched off', async () => {

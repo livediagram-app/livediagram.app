@@ -1,0 +1,102 @@
+// POST /api/documents/<id>/tabs/<tabId>/qa — one action on a Q&A board
+// (docs/specs/012-collaboration/qa-board.md).
+//
+// The board is the one element whose state the SERVER owns: every add, vote
+// and facilitator action, from every role, comes through here. That is what
+// lets a view-link audience take part (the comment endpoint is the precedent
+// for a view-role write, docs/specs/015-api/api.md) and what keeps one vote per person honest,
+// because the voter id is derived from the authenticated caller rather than
+// claimed by them.
+//
+// The write itself happens in the document's ROOM, not here: a room voting in
+// the same second is forty read-modify-writes of one row, and worker requests
+// run in parallel isolates, so the only place they can be put in single file
+// is the one object every request for this document reaches. The room applies
+// them one at a time (with a compare-and-swap as a second line against the
+// editors' tab autosave) and broadcasts each result as a sequenced system op,
+// so every peer, and the sender, converges on exactly what D1 holds.
+
+import { isParticipantQaAction, parseQaAction, qaVoterId, type QaNote } from '@livehuddle/document';
+import { getDocument } from '../db';
+import { getParticipant } from '../liveworkspace/profiles';
+import type { QaWriteRequest } from '../qa-board-write';
+import { badRequest, conflict, forbidden, json, notFound, payloadTooLarge } from '../responses';
+import { refuseGuestVoteOverCap } from '../vote-integrity';
+import {
+  gateEdit,
+  gateParticipate,
+  missingDocument,
+  readBody,
+  requireOwner,
+  type DocumentRouteContext,
+} from './context';
+
+export async function handleQaBoardRoute(ctx: DocumentRouteContext): Promise<Response | null> {
+  const { request, env, segments } = ctx;
+  if (!(
+    segments.length === 6 &&
+    segments[3] === 'tabs' &&
+    segments[5] === 'qa' &&
+    request.method === 'POST'
+  )) {
+    return null;
+  }
+  const id = segments[2]!;
+  const tabId = segments[4]!;
+  const owner = requireOwner(ctx);
+  if (owner instanceof Response) return owner;
+  const existing = await getDocument(env, id);
+  if (!existing) return missingDocument(ctx, id);
+
+  const body = await readBody(ctx);
+  if (body instanceof Response) return body;
+  const elementId = typeof body.elementId === 'string' ? body.elementId : null;
+  if (!elementId) return badRequest('missing elementId');
+  const action = parseQaAction(body.action);
+  if (!action) return badRequest('invalid action');
+
+  // The audience's two verbs are a Participant's (docs/specs/013-workspace/share-roles.md: a Viewer only looks);
+  // running the board needs edit rights. The facilitator baton is a
+  // client-side rule on top (docs/specs/012-collaboration/facilitator.md): this route can't see which socket
+  // holds it.
+  const allowed = isParticipantQaAction(action)
+    ? await gateParticipate(ctx, id, existing.ownerId, existing.teamId, tabId)
+    : await gateEdit(ctx, id, existing.ownerId, existing.teamId, tabId);
+  if (!allowed) return forbidden();
+  // A guest's upvote counts against its network's cap of guest voters (docs/specs/012-collaboration/vote-integrity.md);
+  // withdrawing never does.
+  if (action.type === 'vote' && action.on) {
+    const refused = await refuseGuestVoteOverCap(ctx, id, owner);
+    if (refused) return refused;
+  }
+
+  // Server-derived identity: the voter id from the authenticated owner, the
+  // author from their participant row (never from the request).
+  const voterId = await qaVoterId(owner, elementId);
+  const author =
+    action.type === 'add' && !action.anonymous
+      ? await getParticipant(env, owner).then((p) =>
+          p ? { name: p.name || 'Someone', color: p.color || '#94a3b8' } : null,
+        )
+      : null;
+
+  // Hand the write to the document's room, which runs board writes one at a
+  // time and broadcasts each result in order (DocumentRoom.handleQaWrite).
+  const stub = env.DOCUMENT_ROOM.get(env.DOCUMENT_ROOM.idFromName(id));
+  const res = await stub.fetch('https://room/qa', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      documentId: id,
+      tabId,
+      elementId,
+      action,
+      actor: { voterId, author, now: Date.now() },
+    } satisfies QaWriteRequest),
+  });
+  if (res.status === 404) return notFound();
+  if (res.status === 413) return payloadTooLarge();
+  if (!res.ok) return conflict('qa_busy');
+  const state = (await res.json()) as { notes: QaNote[]; rev: number };
+  return json({ ...state, voterId });
+}

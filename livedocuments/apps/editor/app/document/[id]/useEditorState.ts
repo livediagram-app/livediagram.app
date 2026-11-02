@@ -1983,6 +1983,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addImageFromGallery,
     applyImageToElement,
     removeImageFromElement,
+    setImageAlt,
     refreshRecentImages,
     closeImagePicker,
   } = useEditorImages({
@@ -1992,6 +1993,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Upload only in a workbench: no gallery read.
     galleryHidden: workbenchMode,
     getViewportCenter,
+    elements: () => activeTab.elements,
     commit,
     setSelectedId,
     documentId,
@@ -2856,6 +2858,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     remoteCursorRows,
     remoteSelectionsByElement,
     removeImageFromElement,
+    setImageAlt,
     renameTab,
     renameTabFolder,
     moveTabToFolder,

@@ -145,6 +145,18 @@ export function MakeSizesDialog({
     setFailed(null);
     sizeTicks.set({ ticked: order.filter((id) => next.has(id)), custom });
   };
+  // Select All and Clear each turn themselves off once pressed (all ticked, none ticked), which took the focus
+  // with them to the page. The focus moves to the other one, which undoes it.
+  const selectAllRef = useRef<HTMLButtonElement>(null);
+  const clearRef = useRef<HTMLButtonElement>(null);
+  const refocus = useRef<'all' | 'clear' | null>(null);
+  // After the render the press caused, once the other button is on.
+  useEffect(() => {
+    const to = refocus.current;
+    if (!to) return;
+    refocus.current = null;
+    (to === 'clear' ? clearRef : selectAllRef).current?.focus();
+  });
   const toggle = (id: SizeFormatId) => {
     const next = new Set(ticked);
     if (next.has(id)) next.delete(id);
@@ -225,8 +237,12 @@ export function MakeSizesDialog({
               <Button
                 variant="ghost"
                 size="sm"
+                ref={selectAllRef}
                 disabled={busy !== null || full}
-                onClick={() => keep(new Set(order.slice(0, room)))}
+                onClick={() => {
+                  keep(new Set(order.slice(0, room)));
+                  refocus.current = 'clear';
+                }}
               >
                 Select All
               </Button>
@@ -235,8 +251,12 @@ export function MakeSizesDialog({
               <Button
                 variant="ghost"
                 size="sm"
+                ref={clearRef}
                 disabled={busy !== null || !ticked.size}
-                onClick={() => keep(new Set())}
+                onClick={() => {
+                  keep(new Set());
+                  refocus.current = 'all';
+                }}
               >
                 Clear
               </Button>
@@ -301,7 +321,8 @@ export function MakeSizesDialog({
         </Button>
         <Button
           size="sm"
-          disabled={!n || busy !== null || !!customRefused}
+          disabled={!n || !!customRefused}
+          busy={busy !== null}
           onClick={() => void make()}
         >
           {busy !== null

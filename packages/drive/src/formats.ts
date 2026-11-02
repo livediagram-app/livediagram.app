@@ -11,7 +11,9 @@ export type AppFileFormat = {
   extension: string;
 };
 
-export type AppName = 'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign';
+// livehuddle is mirrored while it is still held from every list (liveworkspace/docs/specs/005-drive/drive.md "Who and
+// what"), so this is every registered app, not `@liveworkspace/sites`' listed `APP_NAMES`.
+export type AppName = 'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign' | 'livehuddle';
 
 export const APP_FILE_FORMATS: Record<AppName, AppFileFormat> = {
   livediagram: {
@@ -38,6 +40,12 @@ export const APP_FILE_FORMATS: Record<AppName, AppFileFormat> = {
     mimeType: 'application/vnd.livedesign+json',
     extension: '.livedesign',
   },
+  livehuddle: {
+    app: 'livehuddle',
+    kind: 'livehuddle.document',
+    mimeType: 'application/vnd.livehuddle+json',
+    extension: '.livehuddle',
+  },
 };
 
 export const APP_NAMES = Object.keys(APP_FILE_FORMATS) as AppName[];
@@ -59,7 +67,8 @@ export function formatOfKind(kind: unknown): AppFileFormat | null {
 }
 
 /** The Drive file name for an item: its name plus its app's extension. */
-export const driveFileName = (app: AppName, name: string) => `${name}${APP_FILE_FORMATS[app].extension}`;
+export const driveFileName = (app: AppName, name: string) =>
+  `${name}${APP_FILE_FORMATS[app].extension}`;
 
 /** The item name a Drive file name stands for: any app's extension dropped, trimmed, cut to `max`. Null when
  *  nothing is left, so an empty rename in Drive keeps the old name. */

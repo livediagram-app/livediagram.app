@@ -3,6 +3,7 @@
 // anti-aliased. Used by both renderers: the CPU composite (a rect of it) and the GPU's content cache
 // (the whole of it as tiles).
 import { resolveFontStack } from '@livedesign/design';
+import { bidiLine } from '@liveworkspace/model-core';
 import {
   createRaster,
   hexToBytes,
@@ -116,7 +117,9 @@ export function drawText(layer: TextLayer): { raster: Raster; x: number; y: numb
   const box = spec.boxWidth ?? widest;
   ctx.textAlign = spec.align === 'centre' ? 'center' : spec.align === 'right' ? 'right' : 'left';
   const x = spec.align === 'centre' ? box / 2 : spec.align === 'right' ? box : 0;
-  lines.forEach((line, i) => ctx.fillText(line, x, lineHeight * i + spec.size * 0.95));
+  // Each line takes its direction from its first strong letter, as the canvas labels do, so a Hebrew or Arabic
+  // line reads right to left with its punctuation at its end.
+  lines.forEach((line, i) => ctx.fillText(bidiLine(line), x, lineHeight * i + spec.size * 0.95));
   return { raster: read(), x: spec.at.x, y: spec.at.y };
 }
 

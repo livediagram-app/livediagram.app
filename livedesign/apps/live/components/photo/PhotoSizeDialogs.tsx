@@ -44,7 +44,7 @@ export function NumberField({
           onChange={(e) => onChange(Number(e.target.value))}
           className={FIELD}
         />
-        <span className="w-6 text-xs text-slate-500">{unit}</span>
+        <span className="w-6 text-xs text-slate-500 dark:text-slate-400">{unit}</span>
       </span>
     </label>
   );

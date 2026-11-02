@@ -1,0 +1,91 @@
+import { makeTestRouteContext } from './test-route-context';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+const { db } = vi.hoisted(() => ({
+  db: {
+    // The mint itself is tested in db/api-tokens.test.ts. Here it is a seam:
+    // this route's job is the client name, the read-only flag, and the two
+    // answers the mint can give.
+    mintApiToken: vi.fn(),
+  },
+}));
+vi.mock('../db', () => db);
+
+import type { RouteContext } from './context';
+import { handleOauthExchange } from './oauth';
+
+// Signed-in session context: signed in as 'user_1' unless overridden.
+const makeCtx = (
+  method: string,
+  path: string,
+  opts: { accountUserId?: string | null; body?: unknown } = {},
+): RouteContext => {
+  const accountUserId = opts.accountUserId === undefined ? 'user_1' : opts.accountUserId;
+  return makeTestRouteContext(method, path, {
+    body: opts.body,
+    accountUserId,
+    owner: accountUserId,
+    // A signed-in caller's bearer is their access token, which vouches for them at liveworkspace.
+    headers: { Authorization: 'Bearer jwt-user-1' },
+  });
+};
+
+beforeEach(() => {
+  for (const fn of Object.values(db)) if (typeof fn === 'function') fn.mockReset();
+  db.mintApiToken.mockResolvedValue({ secret: 'lwt_abc', id: 'tok_1', expiresAt: 123 });
+});
+
+describe('handleOauthExchange — signed-in gate', () => {
+  it('403s a guest (no account identity), minting nothing', async () => {
+    const res = await handleOauthExchange(
+      makeCtx('POST', '/api/oauth/exchange', { accountUserId: null, body: {} }),
+    );
+    expect(res.status).toBe(403);
+    expect(db.mintApiToken).not.toHaveBeenCalled();
+  });
+});
+
+describe('handleOauthExchange — mint', () => {
+  it('mints a client-named lwt_ token and returns the secret once', async () => {
+    const res = await handleOauthExchange(
+      makeCtx('POST', '/api/oauth/exchange', { body: { clientName: 'Claude (MCP)' } }),
+    );
+    expect(res.status).toBe(201);
+    const out = (await res.json()) as { token: string; id: string; name: string };
+    expect(out.token).toBe('lwt_abc');
+    expect(out.name).toBe('Claude (MCP)');
+    // Minted for the signed-in owner, under the client's name.
+    expect(db.mintApiToken).toHaveBeenCalledWith(
+      {},
+      { accessToken: 'jwt-user-1', name: 'Claude (MCP)', readOnly: false },
+    );
+  });
+
+  it('defaults the name when the client sent none', async () => {
+    const res = await handleOauthExchange(makeCtx('POST', '/api/oauth/exchange', { body: {} }));
+    const out = (await res.json()) as { name: string };
+    expect(out.name).toBe('MCP client');
+  });
+
+  it('409s when the mint refuses at the per-account cap', async () => {
+    db.mintApiToken.mockResolvedValue(null);
+    const res = await handleOauthExchange(makeCtx('POST', '/api/oauth/exchange', { body: {} }));
+    expect(res.status).toBe(409);
+    expect(await res.json<{ error: string }>()).toEqual({ error: 'token_limit_reached' });
+  });
+
+  it('passes the read-only flag through to the mint (docs/specs/015-api/mcp-server.md)', async () => {
+    await handleOauthExchange(makeCtx('POST', '/api/oauth/exchange', { body: { readOnly: true } }));
+    expect(db.mintApiToken).toHaveBeenCalledWith(
+      {},
+      { accessToken: 'jwt-user-1', name: 'MCP client', readOnly: true },
+    );
+  });
+
+  it('404s a non-exchange path or non-POST', async () => {
+    expect((await handleOauthExchange(makeCtx('GET', '/api/oauth/exchange'))).status).toBe(404);
+    expect(
+      (await handleOauthExchange(makeCtx('POST', '/api/oauth/other', { body: {} }))).status,
+    ).toBe(404);
+  });
+});

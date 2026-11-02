@@ -109,7 +109,7 @@ export function TeamFormDialog({
           <Button variant="secondary" size="sm" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" size="sm" disabled={busy || !name.trim() || unchanged}>
+          <Button type="submit" size="sm" disabled={!name.trim() || unchanged} busy={busy}>
             {mode === 'create' ? (busy ? 'Creating…' : 'Create Team') : busy ? 'Saving…' : 'Save'}
           </Button>
         </DialogFooter>

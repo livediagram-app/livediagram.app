@@ -48,8 +48,9 @@ Derived from [Office](../office.md).
   centred, `min(ROOM_DOOR_WIDTH, length - 2 · ROOM_WALL - 8)` wide, none if that is ≤ 0 or `door` is `'none'`.
 - **Destinations**: `elementUnderFeet` skips `isFloorShape`, `plant` and `bookshelf`. A meeting table and the
   machines remain destinations.
-- **Sitting at the table**: `seatPoints` returns the six `tableSeats` with their `facing`; `Canvas.onWalkIntoChair`
-  sits with `seat.facing ?? CHAIR_SITTER_FACING[seatingFacing(el)]`. `turnedSeatingBox` never turns a table.
+- **Sitting at the table**: `seatPoints` (`@liveworkspace/avatar/seats`) returns the six `MEETING_TABLE_SEATS` with
+  their `facing` (`MEETING_TABLE_VIEW.tableSeats` spreads them); `Canvas.onWalkIntoChair` sits with `seatFor`, which
+  takes `seat.facing ?? CHAIR_SITTER_FACING[seatingFacing(el)]`. `turnedSeatingBox` never turns a table.
 - **Drinks**: `arriveOn` calls `onWalkIntoDrink(el)` when `drinkFrom(el.shape)`. `Canvas` then calls
   `avatar.giveDrink(kind)`, bumps `machineAnswer` for that element, and tracks the use. `giveDrink` sets
   `holdingRef`, sets `drink = { kind, seq + 1 }` and publishes an idle snapshot; an effect keyed on `drink` puts

@@ -18,6 +18,7 @@ const PURE = [
   'reaction-bursts',
   'reactions',
   'scene',
+  'seats',
   'speech',
   'status',
   'walk',

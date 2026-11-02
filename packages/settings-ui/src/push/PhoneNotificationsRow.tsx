@@ -157,12 +157,7 @@ export function PhoneNotificationsRow({
         descriptionContent={copy.description}
         control={
           state === 'ready' ? (
-            <Button
-              size="xs"
-              onClick={() => void turnOn()}
-              disabled={busy}
-              aria-busy={busy || undefined}
-            >
+            <Button size="xs" onClick={() => void turnOn()} busy={busy}>
               {busy ? 'Turning On…' : 'Turn On'}
             </Button>
           ) : state === 'unreachable' ? (

@@ -38,6 +38,14 @@ describe('layout', () => {
     ).toBe(true);
   });
 
+  it('runs a tree across when asked right, down when asked down (EO38)', () => {
+    const right = run('layout type:square style=tree direction=right');
+    expect(lines(right).some((line) => line.endsWith('laid out (tree, right)'))).toBe(true);
+    const down = run('layout type:square style=tree direction=down');
+    expect(lines(down).some((line) => line.endsWith('laid out (tree, down)'))).toBe(true);
+    expect(applied(right).tab).not.toEqual(applied(down).tab);
+  });
+
   it('sweeps boxes no arrow joins into rows from the top-left (E9)', () => {
     const tab: Tab = {
       ...checkoutFlow(),

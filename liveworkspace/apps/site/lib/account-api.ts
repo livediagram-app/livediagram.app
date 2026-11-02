@@ -1,6 +1,7 @@
 // The account pages' side of the account API (liveworkspace/apps/accounts src/account-api.ts), on
 // this same origin under /api/account: the signed-in person's teams and API tokens.
 
+import { DAY_MONTH_YEAR } from '@liveworkspace/ui/date-format';
 import { pageApp } from './explorer/page-app';
 
 export const ACCOUNT_API = '/api/account';
@@ -110,8 +111,7 @@ export function errorMessage(error: string): string {
   return MESSAGES[error] ?? 'Something went wrong. Please try again.';
 }
 
-const DATE = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-
+/** "3 Nov 2026", in the reader's locale. */
 export function formatDate(ms: number): string {
-  return DATE.format(ms);
+  return DAY_MONTH_YEAR.format(ms);
 }

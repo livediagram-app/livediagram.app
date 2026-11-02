@@ -6,6 +6,7 @@
 import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@livedocuments/ui';
 import {
+  lucideBriefcase,
   lucideChartPie,
   lucideFileText,
   lucideGraduationCap,
@@ -17,7 +18,6 @@ import {
   lucideRocket,
   lucideSquareDashed,
   lucideStar,
-  lucideUser,
   lucideUsers,
 } from '@liveworkspace/icons/lucide';
 import type { TemplateKind } from '@livedocuments/templates';
@@ -39,7 +39,7 @@ const glyph = (icon: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(icon, 16)
 const RAIL_ICONS: Readonly<Record<string, ReturnType<typeof lucideGlyph>>> = {
   recommended: glyph(lucideStar),
   'blank-pages': glyph(lucideSquareDashed),
-  careers: glyph(lucideUser),
+  careers: glyph(lucideBriefcase),
   events: glyph(lucidePartyPopper),
   home: glyph(lucideHouse),
   learning: glyph(lucideGraduationCap),

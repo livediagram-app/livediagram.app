@@ -57,7 +57,9 @@ By kind:
   catalogue's), `size` (px, 4 to 2000), `weight` (400, 500, 700), `italic`, `colour`, `align` (**Left**, **Centre**,
   **Right**), `lineHeight` (0.8 to 3, absent 1.2), `tracking` (-0.2 to 1 em), `at` (its box's top-left, whole
   pixels) and `boxWidth` (absent is one line, wrapping at line breaks only; set by a dragged-out box). Drawn
-  anti-aliased into pixels when composited; edited as text with the Text tool.
+  anti-aliased into pixels when composited; edited as text with the Text tool. Each line takes its direction from its
+  first strong letter (a Hebrew or Arabic line reads right to left, its closing punctuation on its left), in the
+  drawn pixels and in the Text tool's box while typing.
 - **Group** (`layerKind: 'group'`): `collapsed` (the Layers tab shows its layers folded away). Its children are the
   layers whose `parent` is its id, in stack order.
 

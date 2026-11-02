@@ -36,6 +36,21 @@ type Chart = BoxedElement & { type: 'shape' };
 const AXIS = '#cbd5e1';
 const AXIS_FAINT = '#e2e8f0';
 
+// A key name cut to `room` px with an ellipsis, as the canvas key's `truncate` cuts it, so a long name never runs
+// past the chart. One pass over the characters, each measured once (text-advance.ts).
+export function fitLegendLabel(text: string, room: number, fontPx: number): string {
+  if (textAdvanceEm(text) * fontPx <= room) return text;
+  const limit = room - textAdvanceEm('…') * fontPx;
+  let used = 0;
+  let out = '';
+  for (const ch of text) {
+    used += textAdvanceEm(ch) * fontPx;
+    if (used > limit) break;
+    out += ch;
+  }
+  return `${out.trimEnd()}…`;
+}
+
 // The key: a swatch and a name per series, laid out in the strip chartFrame
 // left for it. Mirrors ChartLegend's own gates, so a legend too small to read
 // is omitted here exactly as it is on the canvas.
@@ -56,23 +71,28 @@ function svgChartLegend(
   const swatch = Math.round(fontPx * 0.8);
   const rowH = Math.round(fontPx * 1.3);
   const parts: string[] = [];
+  // Each name cut to the room its strip leaves beside the swatch (vertical) or in a row of its own (row).
+  const name = (item: PieSlice, room: number) =>
+    fitLegendLabel(item.label || '—', Math.max(0, room), fontPx);
   if (vertical) {
     // A column, centred in the strip.
     const top = el.y + legend.y + legend.h / 2 - (items.length * rowH) / 2;
     items.forEach((item, i) => {
       const y = top + i * rowH + rowH / 2;
       const x = el.x + legend.x + 6;
+      const label = name(item, legend.w - 6 - swatch - 4 - 2);
       parts.push(
         `<rect x="${r2(x)}" y="${r2(y - swatch / 2)}" width="${swatch}" height="${swatch}" rx="2" fill="${xmlEscape(colorAt(i, item))}"/>`,
-        `<text x="${r2(x + swatch + 4)}" y="${r2(y)}"${font} font-size="${fontPx}" fill="${xmlEscape(textColor)}" dominant-baseline="central">${xmlEscape(item.label || '—')}</text>`,
+        `<text x="${r2(x + swatch + 4)}" y="${r2(y)}"${font} font-size="${fontPx}" fill="${xmlEscape(textColor)}" dominant-baseline="central">${xmlEscape(label)}</text>`,
       );
     });
     return parts.join('');
   }
   // A row, wrapped and centred: each name's width estimated per character (text-advance.ts), since there is no DOM
   // to ask; a flat average ran short on wide letters and drew one name into the next swatch.
+  const rowName = (item: PieSlice) => name(item, legend.w - 4 - (swatch + 4) - 10);
   const itemW = (item: PieSlice) =>
-    swatch + 4 + Math.max(8, textAdvanceEm(item.label || '—') * fontPx) + 10;
+    swatch + 4 + Math.max(8, textAdvanceEm(rowName(item)) * fontPx) + 10;
   const rows: PieSlice[][] = [[]];
   let used = 0;
   for (const item of items) {
@@ -93,7 +113,7 @@ function svgChartLegend(
     for (const item of row) {
       parts.push(
         `<rect x="${r2(x)}" y="${r2(y - swatch / 2)}" width="${swatch}" height="${swatch}" rx="2" fill="${xmlEscape(colorAt(index, item))}"/>`,
-        `<text x="${r2(x + swatch + 4)}" y="${r2(y)}"${font} font-size="${fontPx}" fill="${xmlEscape(textColor)}" dominant-baseline="central">${xmlEscape(item.label || '—')}</text>`,
+        `<text x="${r2(x + swatch + 4)}" y="${r2(y)}"${font} font-size="${fontPx}" fill="${xmlEscape(textColor)}" dominant-baseline="central">${xmlEscape(rowName(item))}</text>`,
       );
       x += itemW(item);
       index += 1;

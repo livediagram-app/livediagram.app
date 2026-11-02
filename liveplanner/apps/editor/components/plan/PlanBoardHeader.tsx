@@ -163,7 +163,7 @@ export function PlanBoardHeader({
             <FieldWidgetView
               id={id}
               ctx={{
-                fields: fieldWidgets.fields,
+                fields: fieldWidgets.everyField,
                 items,
                 setup,
                 palette,

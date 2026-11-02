@@ -1,0 +1,77 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { ElementFontMenu, LookAndFeelFont } from '@/components/illustrations/canvas-basics';
+
+export const metadata = helpMetadata({
+  title: 'Choosing Fonts',
+  description:
+    'Set the typeface on a single element or as a tab-wide default from eleven curated fonts, and understand how the two levels combine.',
+  path: '/help/canvas/text-and-fonts/choosing-fonts/',
+});
+
+<ArticleLayout
+  title="Choosing Fonts"
+  description="Pick from eleven curated fonts on a single element or for a whole tab, and let elements inherit the tab default unless they override it."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  parentArticle={{ title: "Text and Fonts", slug: "text-and-fonts" }}
+  subArticles={getSubArticles("text-and-fonts").filter((a) => a.slug !== "choosing-fonts")}
+>
+
+livehuddle gives you a curated set of eleven typefaces so a diagram can read as crisp, friendly, formal, or hand-drawn without becoming a font free-for-all. You can apply a font to one element or set it as the default for a whole tab, and the two levels work together so you only set what you actually want to override.
+
+## The Eleven Fonts
+
+The set spans a deliberate spread of voices:
+
+- **Inter**: a clean, neutral sans-serif for everyday diagrams.
+- **Poppins**: a geometric sans with a modern feel.
+- **Nunito**: a rounded sans that reads as friendly.
+- **Oswald**: a condensed sans with headline presence.
+- **Space Grotesk**: a grotesque sans with a technical edge.
+- **Lora**: a serif for a more formal, editorial look.
+- **Abril Fatface**: a high-contrast display serif for bold statements.
+- **Roboto Slab**: a slab serif with extra weight and presence.
+- **Roboto Mono**: a monospace, handy for code or technical labels.
+- **Caveat**: a handwriting face for a sketched, informal feel.
+- **Permanent Marker**: a marker-pen face for loud, hand-drawn emphasis.
+
+Both pickers show each name in its own typeface, so you can see the voice before you choose it.
+
+## Setting a Font on One Element
+
+Right-click the element (or press the **More** button on its toolbar, which is the way in on a touch screen), open **Text**, and expand **Font**. Click a tile to set that typeface on the element alone; with a mouse, hovering a tile previews it on the canvas first. The **Text** section only appears once the element has a label, so type something first. Select several elements and the same section sets the font on all of them at once.
+
+<Figure caption="The element menu's Text section, with the Font tiles open and one typeface chosen for this element alone.">
+  <ElementFontMenu />
+</Figure>
+
+Arrows are the exception: an arrow's **Caption** section covers bold, italic, underline, strikethrough, size and colour, but offers no font picker, so an arrow's caption follows the tab's font.
+
+## Setting a Tab Default
+
+To set the typeface for everything on a tab at once, click the **Theme & canvas** button in the bottom-right corner of the editor to open the **Tab Style** dialog, and press **Text** under **Fine-tune** to open its panel. The **Tab Style** bar across the panel's top returns you to the dialog's home.
+
+<Figure caption="The Text panel of the Tab Style dialog: a preview, the typeface cards, and the four sizes of new text.">
+  <LookAndFeelFont />
+</Figure>
+
+- **Preview** at the top shows a small sample diagram in the tab's font, size and finish.
+- **Typeface** is a carousel of cards, six to a page, each showing its name in its own face. Picking one letters the whole tab in it at once: it becomes the tab's font, and any element that had its own font follows the tab again. **Editor default** clears the tab font, back to livehuddle's built-in face.
+- **Size of New Text** has the **Text Size** slider, from 6 to 48 pixels, with the **Scale** icon beside it. The preview follows the slider as you drag. Setting a size sets every label already on the tab to it, and each element you add from then on takes it too. A new canvas starts at Small, and a tab you add takes the font and size of the tab you added it from.
+
+Every pick is an ordinary edit, so undo takes it back.
+
+## How the Levels Combine
+
+Any piece of text resolves its font in order: an element's own font wins first, then the tab's default, then livehuddle's built-in face. (Notes on an [event storming board](/help/canvas/event-storming-boards/) are the one twist: they are written in a marker face unless you give them a font of your own.) Arrows follow the same rules: there is no font picker for them, so they normally use the tab default, but a font applied another way (for example with the [format painter](/help/selection-modes/format-painter/)) sticks to the arrow like any other override. This means you can set one tab-wide typeface and only override the few labels you want to stand out.
+
+Fonts travel with your work: exports to PNG, SVG and PDF carry the faces you used.
+
+<Tip>
+  Text stays visible in a fallback face while a font loads, so your diagram is always readable, even
+  offline or where Google Fonts is blocked.
+</Tip>
+
+</ArticleLayout>

@@ -4,6 +4,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { avatarFill, initials } from '@liveworkspace/account-menu/initials';
 import { presenceColour } from '@liveworkspace/settings/presence';
 import { buttonClassName, PictureDisc } from '@liveworkspace/ui';
+import { MONTH_YEAR } from '@liveworkspace/ui/date-format';
 
 // The Profile's header card (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"): who is signed in, as the old
 // livediagram Profile page opened with, richer. A banner in the app's brand tint, drawn as a canvas where the person's
@@ -38,7 +39,7 @@ function joinedText(joined: AccountIdentity['joined']): string | null {
   if (joined === null || joined === undefined || joined === '') return null;
   const date = joined instanceof Date ? joined : new Date(joined);
   if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
+  return MONTH_YEAR.format(date);
 }
 
 /** A colour's palette name ("Sky"), "Custom" for one off the palette, or "Automatic". */

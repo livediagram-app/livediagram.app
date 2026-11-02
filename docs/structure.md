@@ -83,9 +83,16 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 ├─ livedesign/                 forked from livedocuments in-tree (logo, wireframe and photo pages)
 │  ├─ apps/                    live (its editor), api, mcp, cli, marketing, help, community, router
 │  └─ packages/                @livedesign/*, with photo-engine of its own
-└─ livehuddle/                 planned, awaiting approval: its product spec only (meetings, workshops, Avatar mode)
-   └─ docs/specs               the spec and build plan; forked from livediagram in-tree once approved
+└─ livehuddle/                 forked from livediagram in-tree, held until launch (meetings, workshops, Avatar mode)
+   ├─ apps/                    the same set as livediagram's, for now
+   ├─ packages/                @livehuddle/*
+   └─ docs/specs               the spec and build plan
 ```
+
+livehuddle was forked from livediagram at monorepo `main` `fd73b2c921` on 2026-11-01 (livehuddle/.forked-from), with
+every name renamed, and is cut down to Workshop by the steps in
+livehuddle/docs/specs/005-project-roadmap/build-plan.md. It stays held until its launch: no Worker deploys, no list on
+the platform names it, and CI runs its suites only on changes to `livehuddle/` (docs/ci.md).
 
 livedocuments (first called livepages) was forked from livediagram `main` at `82e6ed79a` on 2026-10-22
 and cut down to Pages mode (livedocuments/plans/0001-livedocuments-fork.md); Phase 8 took Pages out of livediagram.
@@ -466,14 +473,14 @@ Each step is its own PR, and both products build and pass their tests after ever
    `@liveworkspace/avatar` (`packages/avatar`) holds the parts of Avatar mode that read no element union: the sprite
    and head, the Avatar panel's body, the walker, walking and the camera, speech bubbles and the composer, the action
    keys, Avatar Pad arrivals, the costume and its parser, and the pure office pieces (walls and doorways, fence and
-   footprint collision, chair seats, Avatar Pad placement). It reads a board through a structural contract
+   footprint collision, chair seats, the seat points of every seating kind, Avatar Pad placement). It reads a board through a structural contract
    (`scene.ts`: an element's `id` and `type`, a shape's `shape` and box) rather than a product's union, and each
    product binds its storage key prefix, telemetry and colour maths once with `configureAvatar` (livediagram's
    `lib/avatar-bindings.ts`). The wire shapes (`AvatarPresence`, the `avatar`, `avatar-push` and `avatar-say` ops and
    their parsers) moved to `@liveworkspace/api-schema`, and the segment distance the fence and the whiteboard share to
    `@liveworkspace/model-core/segment-geometry`. livediagram re-exports what it used to own, so its callers and
-   behaviour are unchanged. Still in livediagram: the Avatar panel's frame, the seat points drawn from its furniture,
-   the room connection and the tests that build livediagram elements.
+   behaviour are unchanged. Still in livediagram: the Avatar panel's frame, the furniture drawings (which take their seat
+   grids from the package), the room connection and the tests that build livediagram elements.
 
 ## One home
 

@@ -79,6 +79,8 @@ under the pointer as a category is switched.
 - **The keyboard:** Left and Right walk the bar (wrapping), and an open flyout follows the focus. Down, Enter or
   Space opens a category with its first tile focused. In a flyout the arrows walk the tiles by position across its
   groups, Home and End jump to the ends, Escape closes it and hands the focus back to its button.
+- **Screen readers:** a category button says it opens a dialog (`aria-haspopup="dialog"`, `aria-expanded`), and the
+  flyout is that dialog, named for its category ("Shapes").
 - **One menu at a time:** a flyout is a strip menu ("One menu at a time"); opening Search or the selection mode
   closes it. Using a tile closes it, so the canvas is clear.
 - **Above the canvas chrome:** while a flyout (or Search) is open the strip rises to the popover layer

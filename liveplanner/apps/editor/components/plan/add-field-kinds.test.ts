@@ -5,17 +5,18 @@ import {
   BUILT_IN_ROLES,
   KIND_ALIASES,
   KIND_DESCRIPTIONS,
-  KIND_GROUPS,
-  groupOfKind,
+  KIND_CATEGORIES,
+  categoryOfKind,
   kindMatches,
   kindReadiness,
   readyBuiltIns,
   searchKey,
+  shownCategories,
   type PickKind,
 } from './add-field-kinds';
 import { BUILT_IN_FIELD_LABELS, PICK_KIND_LABELS } from './ItemTypeFieldForms';
 
-// docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field's groups, lines, words and readiness.
+// docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field's categories, lines, words and readiness.
 const PICK_KINDS: readonly PickKind[] = CUSTOM_FIELD_KINDS;
 const found = (query: string): PickKind[] =>
   PICK_KINDS.filter((k) =>
@@ -27,22 +28,42 @@ const found = (query: string): PickKind[] =>
     ),
   );
 
-describe('the kinds’ groups', () => {
-  it('holds every kind once, built-in and custom alike, in six groups', () => {
-    expect(KIND_GROUPS.map((g) => g.label)).toEqual([
-      'Text & links',
-      'Numbers & dates',
-      'Choices',
-      'People & teamwork',
-      'Colour & images',
-      'Linked cards',
+const labelOf = (k: PickKind) => PICK_KIND_LABELS[k];
+const builtInNamesOf = (k: PickKind) =>
+  (BUILT_INS_OF_KIND[k] ?? []).map((id) => BUILT_IN_FIELD_LABELS[id]);
+
+describe('the kinds’ categories', () => {
+  it('holds every kind once, built-in and custom alike, in seven categories, each with a line', () => {
+    expect(KIND_CATEGORIES.map((c) => c.label)).toEqual([
+      'Text',
+      'Numbers and Money',
+      'Dates and Time',
+      'Choices and Tags',
+      'People and Teamwork',
+      'Links and Media',
+      'Cards and Formulas',
     ]);
-    const grouped = KIND_GROUPS.flatMap((g) => g.kinds);
-    expect([...grouped].sort()).toEqual([...PICK_KINDS].sort());
-    expect(new Set(grouped).size).toBe(grouped.length);
-    expect(KIND_GROUPS.find((g) => g.id === 'cards')!.kinds).toEqual(['card', 'calculated']);
-    expect(groupOfKind('rating')).toBe('numbers');
-    expect(groupOfKind('image')).toBe('look');
+    const placed = KIND_CATEGORIES.flatMap((c) => c.kinds);
+    expect([...placed].sort()).toEqual([...PICK_KINDS].sort());
+    expect(new Set(placed).size).toBe(placed.length);
+    for (const c of KIND_CATEGORIES) expect(c.line).toMatch(/^[A-Z].+\.$/);
+    expect(KIND_CATEGORIES.find((c) => c.id === 'cards')!.kinds).toEqual(['card', 'calculated']);
+    expect(categoryOfKind('rating').id).toBe('numbers');
+    expect(categoryOfKind('duration').id).toBe('dates');
+    expect(categoryOfKind('colour').id).toBe('choices');
+    expect(categoryOfKind('image').id).toBe('links');
+  });
+
+  it('leaves each category the kinds a search finds, every kind with none', () => {
+    expect(shownCategories('', labelOf, builtInNamesOf).map((c) => c.shown)).toEqual(
+      KIND_CATEGORIES.map((c) => c.kinds),
+    );
+    const dates = shownCategories('date', labelOf, builtInNamesOf);
+    expect(dates.find((c) => c.id === 'dates')!.shown).toEqual(['date', 'datetime', 'daterange']);
+    expect(dates.find((c) => c.id === 'text')!.shown).toEqual([]);
+    // A category's own name is not searched: money finds Currency alone.
+    const money = shownCategories('money', labelOf, builtInNamesOf).flatMap((c) => c.shown);
+    expect(money).toEqual(['currency']);
   });
 
   it('offers every built-in field a type can add under one kind, each with what uses it', () => {

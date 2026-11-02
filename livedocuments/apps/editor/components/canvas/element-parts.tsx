@@ -95,6 +95,20 @@ export function resizeCursor(handle: string, rotation: number): string {
 const HIT_PAD_CLASSES =
   "pointer-coarse:before:absolute pointer-coarse:before:-inset-[16px] pointer-coarse:before:content-['']";
 
+// The pad leans outward: toward the element it reaches only 4 px past the grip. Fanned out evenly it reached
+// 19 to 22 px into the element from every edge and corner, so on a phone a finger on a small element's body
+// grabbed a grip and resized it instead of moving it. Each pad is still at least 26 px across.
+export const HIT_PAD_INWARD: Record<HandlePosition | 'n' | 'e' | 's' | 'w', string> = {
+  n: 'pointer-coarse:before:bottom-[-4px]',
+  e: 'pointer-coarse:before:left-[-4px]',
+  s: 'pointer-coarse:before:top-[-4px]',
+  w: 'pointer-coarse:before:right-[-4px]',
+  nw: 'pointer-coarse:before:bottom-[-4px] pointer-coarse:before:right-[-4px]',
+  ne: 'pointer-coarse:before:bottom-[-4px] pointer-coarse:before:left-[-4px]',
+  sw: 'pointer-coarse:before:top-[-4px] pointer-coarse:before:right-[-4px]',
+  se: 'pointer-coarse:before:top-[-4px] pointer-coarse:before:left-[-4px]',
+};
+
 // The corner resize handle: the floating control in light mode, and in dark mode
 // (docs/specs/008-canvas/canvas-and-palette.md, Selection) a #60a5fa square with a #1e3a8a border
 // that holds its fill on hover (only the opacity lifts). The floating control's own dark plate
@@ -145,7 +159,7 @@ export function ResizeHandles({
             transformOrigin: 'center',
             cursor: resizeCursor(pos, rotation),
           }}
-          className={`pointer-events-auto absolute h-3 w-3 opacity-70 hover:opacity-100 ${RESIZE_HANDLE_CLASS} ${positionClasses[pos]} ${HIT_PAD_CLASSES}`}
+          className={`pointer-events-auto absolute h-3 w-3 opacity-70 hover:opacity-100 ${RESIZE_HANDLE_CLASS} ${positionClasses[pos]} ${HIT_PAD_CLASSES} ${HIT_PAD_INWARD[pos]}`}
         />
       ))}
     </>
@@ -207,7 +221,7 @@ export function UnionResizeHandles({
             // base angle alone picks the diagonal (rotation = 0).
             cursor: resizeCursor(pos, 0),
           }}
-          className={`pointer-events-auto absolute h-3 w-3 rounded-sm border border-brand-600 bg-white dark:border-brand-300 dark:bg-slate-900 ${positionClasses[pos]} ${HIT_PAD_CLASSES}`}
+          className={`pointer-events-auto absolute h-3 w-3 rounded-sm border border-brand-600 bg-white dark:border-brand-300 dark:bg-slate-900 ${positionClasses[pos]} ${HIT_PAD_CLASSES} ${HIT_PAD_INWARD[pos]}`}
         />
       ))}
     </div>
@@ -335,7 +349,7 @@ export function EdgeResizeHandle({
         // Rotation-aware cursor so it points the right way once turned.
         cursor: resizeCursor(anchor, rotation),
       }}
-      className={`pointer-events-auto absolute rounded-full border border-brand-400 bg-white opacity-80 shadow-sm transition hover:opacity-100 dark:border-brand-300 dark:bg-slate-900 ${HIT_PAD_CLASSES} ${
+      className={`pointer-events-auto absolute rounded-full border border-brand-400 bg-white opacity-80 shadow-sm transition hover:opacity-100 dark:border-brand-300 dark:bg-slate-900 ${HIT_PAD_CLASSES} ${HIT_PAD_INWARD[anchor]} ${
         vertical ? 'h-1.5 w-4' : 'h-4 w-1.5'
       }`}
     />

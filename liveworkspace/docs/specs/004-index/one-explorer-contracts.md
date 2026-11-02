@@ -21,10 +21,9 @@ side imports, so a change here is a change there.
 livehuddle (its kind `space`, a person's "Space") is registered before its launch
 ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)): the contracts
 and the service take it as an app, and no Explorer lists it (`APP_NAMES` in `@liveworkspace/sites` holds the listed
-apps). The `items` table's CHECK constraints still name the four apps and kinds, so the index refuses a livehuddle
-item until that table is rebuilt; it is the parent of a dozen tables that cascade on delete, and D1 can't turn
-foreign keys off inside a migration, so that rebuild is a migration of its own, rehearsed on a copy of the data,
-before livehuddle's first deploy. Until then livehuddle has no `INDEX_KEY_LIVEHUDDLE` either, so nothing can push one.
+apps). The `items` table takes `livehuddle` and `space` since its rebuild (`0009_items_livehuddle.sql`, rehearsed on
+a copy of the data before it deploys: [blueprints/items.md](blueprints/items.md#rebuilding-items)). Until livehuddle's
+launch it has no `INDEX_KEY_LIVEHUDDLE`, so nothing can push one.
 
 ## Reaching the index
 

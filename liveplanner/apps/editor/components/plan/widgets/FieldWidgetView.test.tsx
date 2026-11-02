@@ -119,6 +119,14 @@ describe('FieldWidgetView', () => {
     expect(pill().getAttribute('aria-label')).toBe(spoken);
   });
 
+  // The name and ": no values yet" share one run, so the pill's flex gap never opens before the colon.
+  it('keeps the colon against the name when a field has no values yet', () => {
+    show('field:sum:f-empty');
+    const run = screen.getByText(': no values yet').parentElement;
+    expect(run?.textContent).toBe('Hours: no values yet');
+    expect(run?.parentElement).toBe(pill());
+  });
+
   it('names the first two values of a Breakdown and counts the rest', () => {
     show('field:breakdown:f-team');
     expect(pill().textContent).toContain('+1');

@@ -14,6 +14,15 @@ const noon = new Date(2026, 9, 21, 12).getTime();
 const HOUR = 3_600_000;
 const by = (actorId: string | null, actorName: string | null = null) => ({ actorId, actorName });
 
+// The reader's locale words a day; these say what it must hold, in whatever order the locale gives.
+const dayIn = (y: number, m: number, d: number, year = false) =>
+  new Intl.DateTimeFormat(undefined, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    ...(year ? { year: 'numeric' } : {}),
+  }).format(new Date(y, m - 1, d));
+
 describe('What Happened’s rules', () => {
   it('keeps other people’s doings only, one group per item per day', () => {
     const groups = groupWhatHappened(
@@ -59,8 +68,8 @@ describe('What Happened’s rules', () => {
     expect(initials('A teammate')).toBeNull();
     expect(dayHeading('2026-10-21', noon)).toBe('Today');
     expect(dayHeading('2026-10-20', noon)).toBe('Yesterday');
-    expect(dayHeading('2026-10-14', noon)).toBe('Wed, 14 Oct');
-    expect(dayHeading('2025-10-14', noon)).toBe('Tue, 14 Oct 2025');
+    expect(dayHeading('2026-10-14', noon)).toBe(dayIn(2026, 10, 14));
+    expect(dayHeading('2025-10-14', noon)).toBe(dayIn(2025, 10, 14, true));
   });
 
   it('groups a full page under its days quickly', () => {

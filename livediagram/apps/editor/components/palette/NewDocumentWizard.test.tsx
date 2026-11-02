@@ -73,7 +73,7 @@ describe('NewDocumentWizard', () => {
 
   it('while creating, shows it, and creates nothing more nor backs out', () => {
     const p = wizard({ busy: true, initialMode: 'workshop' });
-    expect(screen.getByRole('button', { name: /Creating/ })).toHaveProperty('disabled', true);
+    expect(screen.getByRole('button', { name: /Creating/ }).getAttribute('aria-busy')).toBe('true');
     expect(
       screen
         .getByRole('button', { name: new RegExp(`^${editorModeLabel('workshop')}:`) })

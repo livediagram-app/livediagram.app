@@ -32,7 +32,8 @@ globs = ["**/*.ttf", "**/*.otf"]
 #   GOOGLE_APP_ID          optional: the Cloud project number, the Picker's app id.
 #   DRIVE_TOKEN_KEY        base64 of 32 random bytes: seals refresh tokens (AES-GCM); the consent state and the push
 #                          channel tokens are signed with keys derived from it (HKDF), never with it.
-#   DRIVE_KEY_LIVEDIAGRAM, DRIVE_KEY_LIVEPLANNER, DRIVE_KEY_LIVEDOCUMENTS, DRIVE_KEY_LIVEDESIGN
+#   DRIVE_KEY_LIVEDIAGRAM, DRIVE_KEY_LIVEPLANNER, DRIVE_KEY_LIVEDOCUMENTS, DRIVE_KEY_LIVEDESIGN,
+#   DRIVE_KEY_LIVEHUDDLE (livehuddle, held until launch: unset, its Spaces wait and retry)
 #                          each shared with that app's api Worker as DRIVE_KEY: its export (format=file, svg) and
 #                          import doors.
 #   DRIVE_KEY_INDEX        the index's DRIVE_KEY_INDEX: its change signal (POST /app/changes) carries it.
@@ -52,12 +53,13 @@ DRIVE_PUBLIC_URL = "https://liveworkspace.app"
 # The accounts origin: access tokens are checked against `${ACCOUNTS_URL}/api/auth`.
 ACCOUNTS_URL = "https://www.liveworkspace.app"
 # Every app's API resource: an access token addressed to any of them is let in (as the index does).
-INDEX_AUDIENCES = "https://livediagram.app/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api"
+INDEX_AUDIENCES = "https://livediagram.app/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api,https://livehuddle.app/api"
 # Where the service calls each app's export and import doors, and where an item opens.
 APP_ORIGIN_LIVEDIAGRAM = "https://www.livediagram.app"
 APP_ORIGIN_LIVEPLANNER = "https://www.liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://www.livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://www.livedesign.app"
+APP_ORIGIN_LIVEHUDDLE = "https://www.livehuddle.app"
 
 # The index: acting for a person, and their drive_mirrored flag (a Worker's fetch to another Worker's route on its
 # own zone isn't routed to it).
@@ -85,11 +87,12 @@ ENVIRONMENT = "staging"
 GOOGLE_CLIENT_ID = "75973480147-lpppg0shfk6tju1qn0mrg1o62a16siin.apps.googleusercontent.com"
 DRIVE_PUBLIC_URL = "https://staging.liveworkspace.app"
 ACCOUNTS_URL = "https://staging.liveworkspace.app"
-INDEX_AUDIENCES = "https://staging.livediagram.app/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api"
+INDEX_AUDIENCES = "https://staging.livediagram.app/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api,https://staging.livehuddle.app/api"
 APP_ORIGIN_LIVEDIAGRAM = "https://staging.livediagram.app"
 APP_ORIGIN_LIVEPLANNER = "https://staging.liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://staging.livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://staging.livedesign.app"
+APP_ORIGIN_LIVEHUDDLE = "https://staging.livehuddle.app"
 
 [[env.staging.services]]
 binding = "INDEX"

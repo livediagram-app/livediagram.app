@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  createImage,
   createShape,
   createText,
   layOutPages,
@@ -270,6 +271,34 @@ describe('PowerPoint export', () => {
     expect(place.emuPerPx).toBe(6350);
     expect(place.ox + classic!.rect.x * place.emuPerPx).toBe((12_192_000 - 9_144_000) / 2);
     expect(deckSize([])).toEqual({ cx: 12_192_000, cy: 6_858_000 });
+  });
+
+  // docs/specs/009-elements/images.md "Alt text": PowerPoint's Alt Text pane shows the image's alt text.
+  it('writes an image’s alt text as its picture’s descr, which the import reads back', async () => {
+    const picture = (id: string, x: number, alt?: string) => ({
+      ...createImage(0, 0),
+      id,
+      x,
+      y: 100,
+      imageId: `img-${id}`,
+      ...(alt === undefined ? {} : { alt }),
+    });
+    const { tab, pages } = slideTab((r) => [
+      picture('described', r.x + 100, 'A <bar> chart'),
+      picture('bare', r.x + 600),
+    ]);
+    const built = await buildDeck({ tab, pages, title: 'Alt' }, fakeDrawer(), {});
+    const pictures = built.slides[0]!.items.filter((i) => i.kind === 'picture');
+    expect(pictures.map((p) => p.kind === 'picture' && p.descr)).toEqual([
+      'A <bar> chart',
+      undefined,
+    ]);
+    const bytes = writePptx(built, new Date('2026-10-31T12:00:00Z'));
+    const slide = (await everyPart(bytes)).get('ppt/slides/slide1.xml')!;
+    expect(slide).toContain('descr="A &lt;bar&gt; chart"');
+    expect(slide.match(/descr=/g)).toHaveLength(1);
+    const read = await readPptx(await openOfficePackage(bytes, 'powerpoint'));
+    expect(read.pictures.map((p) => p.alt)).toEqual(['A <bar> chart', undefined]);
   });
 
   it('cuts a picture to the page and leaves out one wholly off it', () => {

@@ -1,0 +1,57 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { ShareLifetimes } from '@/components/illustrations/sharing';
+
+export const metadata = helpMetadata({
+  title: 'Share Link Expiry',
+  description:
+    'Give a share link a lifetime so it stops granting access after a week, a month, or six months.',
+  path: '/help/collaboration/sharing/share-link-expiry/',
+});
+
+<ArticleLayout title="Share Link Expiry" description="Set a share link to expire after a fixed time, then extend or delete it later." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "share-link-expiry")}>
+
+A share link is a standing invitation: anyone holding the URL keeps the link's role for as long as it lives. An expiry bounds that. You can give a link a lifetime when you create it, so it stops working on its own without you having to remember to revoke it. It complements the [share password](/help/collaboration/sharing/share-passwords/) as a second self-serve control.
+
+## Choosing a lifetime
+
+When you create a link in the **Share** dialog, the **Valid** control under the role picker sets its lifetime, right beside **Create Pass**. You can pick:
+
+- **Forever**, the default: the link lasts until you revoke it.
+- **1 week** (7 days)
+- **1 month** (30 days)
+- **6 months** (183 days)
+
+The countdown starts when you press **Create Pass**. Pick the shortest span that fits, like a week for a workshop group or a month for a project review. With the **Valid** control focused, the arrow keys move between the choices.
+
+<Figure caption="Valid sets a new pass's lifetime. An expiring pass counts down, and an expired one waits under Expired with Extend.">
+  <ShareLifetimes />
+</Figure>
+
+Passes with a deadline show a small countdown chip beside **Valid**, like "6d left" (or hours and minutes on the last day), so you can see at a glance how long each one has. Passes that never expire read **Forever**.
+
+## What happens when a link expires
+
+When a link's lifetime runs out, it stops granting access everywhere at once: the share URL, any [embed](/help/collaboration/sharing/embeds/) and [live image](/help/collaboration/sharing/live-image/) made from it, and the realtime room. Visitors see the same not-found page as for a revoked link.
+
+People who already have the canvas open are not thrown out at the exact moment it expires: they lose access the next time they load the page or their changes are saved. If you need someone out straight away, revoke the link instead.
+
+Once a link is within a week of expiring, a **Share Link Expiring** warning appears in the upcoming section at the top of your [Timeline](/help/explorer/timeline/), dated for when it runs out (the check runs once a day). Extending or revoking the link clears it. No email is sent.
+
+## Expired links: extend or delete
+
+Expired links do not vanish on their own. They move into an **Expired** section of the Share dialog, below your live passes, where each one is greyed out with an **Expired** stamp beside its struck-through URL. From there you can:
+
+- **Extend** it. The button is named for the lifetime the link was created with, like **Extend 1 week**, and gives it that much time again, counted from now. The link keeps its URL and moves back up to your live passes, so anyone who already has it can use it again.
+- **Delete** it for good with the bin. This happens straight away, without a confirmation.
+
+The Expired section only appears when there is something in it.
+
+<Tip>
+  A link's lifetime can't be changed once it is created, and a link set to **Forever** can't be
+  given an expiry later. To change either, revoke the link and create a new one with the lifetime
+  you want (the new pass has a new URL).
+</Tip>
+
+</ArticleLayout>

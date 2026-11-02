@@ -257,11 +257,12 @@ type UserPreferences = {
   // mode is on (lib/tour-tracks.ts); set with every track by Power user mode.
   planTourSeen?: boolean;
   // The Plan tour tracks (Boards, Sheets, Dashboards) taken (a run completed or skipped). It picks which track the footer's
-  // Start Tour button names and feeds Settings' rows; it never hides the button. Settings' Boards Tour, Sheets Tour and
+  // Start Tour button names and feeds Settings' rows; a track in it is off the button. Settings' Boards Tour, Sheets Tour and
   // Dashboards Tour rows each add or remove their own track.
   planTourTracks?: PlanTourTrack[];
-  // The Forms tour's record (docs/specs/030-forms/forms.md "The Forms tour"), written when a run ends; it feeds the
-  // Settings row only. Show Me Around in the form's cog panel reruns it. Missing / undefined === not seen.
+  // The Forms tour's record (docs/specs/030-forms/forms.md "The Forms tour"), written as a run starts and ends; it feeds
+  // the Settings row and, while true, keeps the tour off the Start Tour button. Show Me Around in the form's cog panel
+  // reruns it. Missing / undefined === not seen.
   formTourSeen?: boolean;
   // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the project's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
@@ -685,8 +686,8 @@ and the dialog stays as the one complete, browsable index of them.
   **Tours** is a category of its own: one switch per guided tour, **Plan Tours** (over **Boards Tour**,
   **Sheets Tour** and **Dashboards Tour**) and **Forms Tour**, each with a line saying where it runs and a
   **Learn more** to its article, under one **Offer Again** section note. Every tour is started from the footer's
-  Start Tour button, which stays on offer whether a tour is taken or not ([Editor tours](editor-tour.md) "Where it
-  appears"); the switches are the record of which have been taken. Switch one back on and close Settings to take it
+  Start Tour button, which offers a tour until it is taken ([Editor tours](editor-tour.md) "Where it appears"); the
+  switches are the record of which have been taken, and switching one back on puts its tour back on the button. Switch one back on and close Settings to take it
   again straight away when it is on offer where you are; otherwise nothing starts, and the button is there once it
   is. The switches sit in their own category, not inside Accessibility: a tour is not an accessibility setting. Every switch is inverted: on means "not taken yet", the preference records
   "already seen", and its telemetry tokens still describe the PREFERENCE (switching on is `...SeenOff`), so each

@@ -1,0 +1,47 @@
+/* A sideways scroller's edge fade (docs/specs/007-editor/toolbar-layout.md "On a phone"): the edge with more beyond it
+ * fades out over 20px, so a tile cut by the edge reads as "swipe for more" rather than a stray sliver of an icon; an
+ * edge with nothing beyond it stays sharp. Driven by the scroller's own scroll position, so it costs no script and no
+ * per-frame work of ours; a scroller with nothing to scroll has an inactive timeline and no fade. Where the browser
+ * has no scroll-driven animations it is simply off, as before. The custom properties do not inherit, so animating
+ * them restyles the scroller alone. */
+@property --edge-fade-start {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --edge-fade-end {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@keyframes scroll-edge-fade {
+  0% {
+    --edge-fade-start: 0px;
+    --edge-fade-end: 20px;
+  }
+  8% {
+    --edge-fade-start: 20px;
+  }
+  92% {
+    --edge-fade-end: 20px;
+  }
+  100% {
+    --edge-fade-start: 20px;
+    --edge-fade-end: 0px;
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  .scroll-edge-fade {
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 var(--edge-fade-start),
+      #000 calc(100% - var(--edge-fade-end)),
+      transparent 100%
+    );
+    animation: scroll-edge-fade linear both;
+    animation-timeline: scroll(self inline);
+  }
+}

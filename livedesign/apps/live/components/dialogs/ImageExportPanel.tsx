@@ -79,6 +79,9 @@ export function ImageExportPanel({
         {previewSvg ? (
           <div
             data-testid="export-preview"
+            // One picture with a name, as livedocuments' preview is: left bare, the SVG's every word was its name.
+            role="img"
+            aria-label={pageExport ? 'The page as it will download' : 'The tab as it will download'}
             className="flex max-h-full max-w-full items-center justify-center [&>svg]:max-h-[176px] [&>svg]:w-auto [&>svg]:max-w-full"
             style={checkerboard ? { background: PREVIEW_CHECKER } : undefined}
             dangerouslySetInnerHTML={{ __html: trustedHtml(previewSvg) }}
@@ -144,7 +147,7 @@ export function ImageExportPanel({
           variant="primary"
           size="md"
           onClick={() => onExport({ pattern, hiddenLayers })}
-          disabled={busy}
+          busy={busy}
         >
           {busy ? 'Exporting…' : `Download ${label}`}
         </Button>

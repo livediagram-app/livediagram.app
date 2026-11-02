@@ -112,9 +112,11 @@ export function decodeLabel(s: string): string {
 }
 
 // Read the id token at the front (letters, digits, _, made of the chars
-// Mermaid allows in a bare id). Returns null if none.
+// Mermaid allows in a bare id). Letters and digits in any script, as Mermaid's
+// own ids take them (`Ä --> Ö`, `开始 --> 结束`): ASCII only cut `node_é` to `node_`
+// and dropped its edge. Returns null if none.
 export function readId(s: string): { id: string; rest: string } | null {
-  const m = /^\s*([A-Za-z0-9_]+)/.exec(s);
+  const m = /^\s*([\p{L}\p{M}\p{N}_]+)/u.exec(s);
   return m ? { id: m[1]!, rest: s.slice(m[0].length) } : null;
 }
 

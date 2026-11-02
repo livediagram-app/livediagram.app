@@ -23,7 +23,6 @@ import { CheckIcon, ChevronRightIcon } from '@liveplanner/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 import { usePlan } from './PlanContext';
-import { BLOCKED_COLOUR } from './plan-card-parts';
 
 const CHIP =
   'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium leading-4 ring-1 ring-inset whitespace-nowrap';
@@ -104,10 +103,7 @@ function BlockedByGroup({
         <span className="rounded-full bg-slate-100 px-1.5 text-[11px] font-medium tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
           {cards.length}
         </span>
-        <span
-          className="text-[12px] font-medium"
-          style={open ? { color: BLOCKED_COLOUR } : undefined}
-        >
+        <span className={`text-[12px] font-medium ${open ? 'text-red-600 dark:text-red-400' : ''}`}>
           {open ? (
             `${open} open`
           ) : (

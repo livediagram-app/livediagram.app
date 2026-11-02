@@ -36,6 +36,20 @@ describe('FilterSearchBox', () => {
     expect(onClear).toHaveBeenCalledOnce();
   });
 
+  it('names its search landmark, so two on one page are told apart', () => {
+    render(
+      <FilterSearchBox
+        query=""
+        onQuery={vi.fn()}
+        chips={[]}
+        onClear={vi.fn()}
+        placeholder="Find"
+        ariaLabel="Find a card"
+      />,
+    );
+    expect(screen.getByRole('search', { name: 'Find a card' })).toBeTruthy();
+  });
+
   it('draws the compact header form in a surface’s own colours, with its own clear name', () => {
     const tone = { border: '#111111', text: '#222222', muted: '#333333', focus: '#ff0000' };
     const onQuery = vi.fn();

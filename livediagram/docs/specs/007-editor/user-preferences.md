@@ -269,9 +269,9 @@ type UserPreferences = {
   notifyInviteResponse?: boolean;
 
   // The Diagram tour's taken record (docs/specs/007-editor/editor-tour.md). True once a run has ended
-  // (completed or skipped). It does not hide the footer's Start Tour button: it only
-  // feeds Settings' Tours › "Diagram Tour" row (inverted); turning it on and closing
-  // Settings reruns the tour when it is on offer. Missing / undefined === not seen.
+  // (completed or skipped; written as a run starts too). While true the footer's Start Tour button
+  // does not offer the tour; Settings' Tours › "Diagram Tour" row (inverted) clears it, and turning
+  // it on and closing Settings reruns the tour when it could run. Missing / undefined === not seen.
   tourSeen?: boolean;
   // The Workshop tour's taken record (docs/specs/012-collaboration/workshop-tour.md), as `tourSeen`.
   // Surfaced in Settings as Tours › "Workshop Tour" (inverted). Missing / undefined === not seen.
@@ -754,9 +754,11 @@ and the dialog stays as the one complete, browsable index of them.
   and close Settings to take it again, straight away if it is on offer where you
   are, otherwise from the footer's Start Tour button when you get there. (Until
   25 October 2026 each tour offered itself once, and the switch decided whether
-  it would offer itself again; now every tour is on the Start Tour button whenever
-  it could run, taken or not, and the switch is a record of whether it was taken,
-  [Diagram tour](editor-tour.md) "Where it appears".) (The tours used
+  it would offer itself again; from then until 1 November 2026 every tour stayed
+  on the Start Tour button whenever it could run, taken or not. Now a taken tour
+  leaves the button, and its switch is what brings it back: on puts the tour back
+  on the button, off takes it away, [Diagram tour](editor-tour.md) "Where it
+  appears".) (The tours used
   to be an Onboarding Tutorials grid of five switches inside
   Accessibility, where nobody looked for them: a tour is not an accessibility
   setting.) Every switch is inverted: on means "not taken yet", the

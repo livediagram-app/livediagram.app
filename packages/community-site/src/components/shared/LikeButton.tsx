@@ -33,9 +33,10 @@ export function LikeButton({ like, size = 'sm' }: { like: LikeState; size?: 'sm'
         // The post page's heart is a chip in its action strip (PostActions' POST_CHIP); a card's is compact.
         large ? 'h-9 px-2.5 text-sm' : 'px-2 py-1 text-xs'
       } ${
+        // Rose-700 on the rose-50 wash: rose-600 there was 4.26:1, short of AA for the count and "likes".
         liked
-          ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400'
-          : 'text-slate-500 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-500/10 dark:hover:text-rose-400'
+          ? 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400'
+          : 'text-slate-500 hover:bg-rose-50 hover:text-rose-700 dark:text-slate-400 dark:hover:bg-rose-500/10 dark:hover:text-rose-400'
       }`}
     >
       <HeartIcon

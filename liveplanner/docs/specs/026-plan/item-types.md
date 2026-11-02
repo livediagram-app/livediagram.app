@@ -1112,52 +1112,79 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
     Up** and **Move Down** (the keyboard's way to reorder), **Move to {group}** for each other group (Details
     first, then the tabs) and **Remove** (absent for a field the type always keeps). Title has no menu.
   - Each group ends with **Add Field**, a full-width dashed row (as **Add Type** in the panel), which opens a
-    popover anchored to it (24 rem wide, over the editor, so it is never squeezed by the Details column; on a phone
-    the window's width less its margins; never taller than the room on its side, scrolling inside). It works in two
-    steps, **pick, then shape**, in the same popover (named "Add Field"); the field lands in that group (Votes
-    always on the card). (The owner's pick, 2026-10-28, from the design canvas's "B · Pick, then shape".)
-    - **Pick** (step 1), top to bottom:
-      - **Search fields** at the very top (a search field with a magnifier, its placeholder "Search fields, like
-        money or date", and a close cross at its end, which closes the popover). It takes focus on opening under a
-        mouse or a pen, never on a touch screen (no keyboard flies up); it stays at the top while the rest scrolls.
-        Typing filters the kinds: a kind by its name, its line, the built-in fields of its kind (**due** and
-        **start** find Date, **assignee** Person, **priority** Choice, **estimate** Number, **description** Long
-        Text), and a few everyday words for it (**money**, **price**, **budget** find Currency; **stars**,
-        **score** Rating; **yes/no**, **tick**, **toggle** Checkbox; **parent**, **epic**, **relation** Link to
-        Card; **percent**, **progress**, **complete** Percent; **formula**, **rollup** Calculated; **url**, **website** Link; **dropdown**,
-        **select**, **option** Choice; **tags**, **multi-select** Multiple Choice and Labels; **notes**,
-        **paragraph** Long Text; **deadline**, **day** Date; **time**, **meeting**, **appointment** Date and Time; **range**, **event**, **trip** Date Range; **mobile**, **tel**, **call** Phone; **count**, **points** Number; **time**, **hours**, **timer**, **tracking**, **billable** Duration; **mail** Email;
-        **owner**, **reviewer**, **people** Person; **color**, **swatch** Colour; **to-do**, **subtasks** Checklist;
-        **discussion**, **thread** Comments; **like**, **upvote** Votes; **picture**, **photo**, **screenshot**,
-        **attachment**, **cover** Image, whose Ready to use offers Attachments). With nothing matching it says **No matches for “…”** with "Try a word like money, date or
-        parent." under it. How many match is announced.
-      - **One list of kinds**, with no Ready-made section: every kind a field can be, built-in or not, each a row
-        with its icon on a soft tile, its name, and a one-line description in plain words, in six groups as an
-        **accordion**, one group open at a time (opening one closes the other; pressing the open one closes it; the
-        first open to start): **Text & links** (Text "A short line of text", Long Text "Paragraphs of notes", Link
-        "A web address", Email "An address that opens your mail app", Phone "A number that calls on a phone"), **Numbers & dates** (Number "Points, counts
-        and sizes", Currency "An amount, like £12,500", Percent "How far along, drawn as a bar", Duration "Hours and minutes, or time tracked with a timer", Rating "Stars out of 3 to 10", Date "A day on the
-        calendar", Date and Time "A day and a time, in each person's time zone", Date Range "From one day to another, with times if you like"), **Choices** (Choice "One option from a list", Multiple Choice "Several options from a list",
-        Checkbox "Yes or no, ticked or not", Labels "Short tags, coloured by name"), **People & teamwork** (Person
-        "Someone on the plan, like an owner or a reviewer", Checklist "To-dos ticked off one by one", Comments
-        "Threads to talk the card through", Votes "Thumbs up from the team"), **Colour & images** (Colour "A colour
-        to tell cards apart", Image "A picture, like a mock-up or a photo") and **Linked cards** (Link to Card
-        "Another card, like a parent or an epic", Calculated "Worked out from linked cards or a formula"). Each group's
-        header is a button (`aria-expanded`) with the group's name, how many kinds it lists and a chevron. While a
-        search is typed the accordion steps aside: every group with a match shows open, listing only its matches
-        (its count then the matches'), and a group with none is hidden; clearing the search brings the accordion
-        back as it was.
+    popover anchored to it: a **gallery** on the same frame as [Add a Widget](board-widgets.md#the-widget-gallery)
+    (720 px wide, over the editor, so it is never squeezed by the Details column; on a phone the window's width
+    less its margins; never taller than the room on its side, its list scrolling inside). It works in two steps,
+    **pick, then shape**, in the same popover (named "Add Field"); the field lands in that group (Votes always on
+    the card). (The owner's pick, 2026-10-28, from the design canvas's "B · Pick, then shape"; made a gallery like
+    Add a Widget at the owner's ask, 2026-11-02, Work Tracker #302.)
+    - **The frame**, as Add a Widget's: a header with the title **Add Field**, the line "Pick what the new field
+      holds.", **Search fields** beside them (a search field with a magnifier, its placeholder "Search fields, like
+      money or date") and a close cross at the header's end (closes the popover). The search takes focus on
+      opening under a mouse or a pen, never on a touch screen (no keyboard flies up). Under the header, the
+      **rail** down the left and the list beside it; in a gallery under 600 px wide the rail is a row of chips over
+      the list. The header and the rail stay through both steps (while shaping, the kind's category is marked, and
+      on a phone the rail steps aside for the form); pressing a rail entry while shaping goes back to Pick on that
+      category, and typing a search goes back to Pick with it.
+    - **Pick** (step 1):
+      - **The rail** names the categories, each with its icon and how many kinds it holds: **All Fields** first
+        (chosen on opening), then the seven categories below. Pressing one shows only that category; All Fields
+        shows them all, one after another, each under its heading and line. The chosen entry is marked current.
+      - **The categories**, in order, each with its line and kinds (every kind in exactly one):
+
+        | Category            | Line                                               | Kinds                                             |
+        | ------------------- | -------------------------------------------------- | ------------------------------------------------- |
+        | Text                | Words, from a title to pages of notes.             | Text, Long Text                                   |
+        | Numbers and Money   | Counts, amounts, shares and scores.                | Number, Currency, Percent, Rating                 |
+        | Dates and Time      | Days, moments, spans and time spent.               | Date, Date and Time, Date Range, Duration         |
+        | Choices and Tags    | Pick from a list, tick a box or tag a card.        | Choice, Multiple Choice, Checkbox, Labels, Colour |
+        | People and Teamwork | Who has it, what is left and what the team thinks. | Person, Checklist, Comments, Votes                |
+        | Links and Media     | Web addresses, contact details and pictures.       | Link, Email, Phone, Image                         |
+        | Cards and Formulas  | Connect cards, and work values out from them.      | Link to Card, Calculated                          |
+
+      - **Each kind is a tile**, two to a row (one in a gallery under 460 px), as a widget's tile is: a strip on top
+        drawing a sample value of the kind as the card's panel draws it (the samples of Preview, below), then its
+        icon, name and a one-line description in plain words: Text "A short line of text", Long Text "Paragraphs of
+        notes", Link "A web address", Email "An address that opens your mail app", Phone "A number that calls on a
+        phone", Number "Points, counts and sizes", Currency "An amount, like £12,500", Percent "How far along, drawn
+        as a bar", Duration "Hours and minutes, or time tracked with a timer", Rating "Stars out of 3 to 10", Date
+        "A day on the calendar", Date and Time "A day and a time, in each person's time zone", Date Range "From one
+        day to another, with times if you like", Choice "One option from a list", Multiple Choice "Several options
+        from a list", Checkbox "Yes or no, ticked or not", Labels "Short tags, coloured by name", Person "Someone on
+        the plan, like an owner or a reviewer", Checklist "To-dos ticked off one by one", Comments "Threads to talk
+        the card through", Votes "Thumbs up from the team", Colour "A colour to tell cards apart", Image "A picture,
+        like a mock-up or a photo", Link to Card "Another card, like a parent or an epic", Calculated "Worked out
+        from linked cards or a formula". The whole tile is one button: pressing it opens Shape. Tiles lift a pixel
+        on hover (not with reduced motion).
+      - A kind whose built-in field the type lacks carries a quiet **Ready to use** tag at its strip's top right
+        (Date while the type lacks Start Date or Due Date, Person while it lacks the Assignee, and so on).
       - **Comments** and **Votes** open Shape as every kind does: **Ready to use** offers the built-in while the
         type lacks it, then a field of your own takes only its name (Votes land on the card).
-      - A kind whose built-in field the type lacks carries a quiet **Ready to use** tag after its name (Date while
-        the type lacks Start Date or Due Date, Person while it lacks the Assignee, and so on).
+      - **Search**: typing filters the kinds: a kind by its name, its line, the built-in
+        fields of its kind (**due** and **start** find Date, **assignee** Person, **priority** Choice, **estimate**
+        Number, **description** Long Text), and a few everyday words for it (**money**, **price**, **budget** find
+        Currency; **stars**, **score** Rating; **yes/no**, **tick**, **toggle** Checkbox; **parent**, **epic**,
+        **relation** Link to Card; **percent**, **progress**, **complete** Percent; **formula**, **rollup**
+        Calculated; **url**, **website** Link; **dropdown**, **select**, **option** Choice; **tags**,
+        **multi-select** Multiple Choice and Labels; **notes**, **paragraph** Long Text; **deadline**, **day** Date;
+        **time**, **meeting**, **appointment** Date and Time; **range**, **event**, **trip** Date Range;
+        **mobile**, **tel**, **call** Phone; **count**, **points** Number; **time**, **hours**, **timer**,
+        **tracking**, **billable** Duration; **mail** Email; **owner**, **reviewer**, **people** Person; **color**,
+        **swatch** Colour; **to-do**, **subtasks** Checklist; **discussion**, **thread** Comments; **like**,
+        **upvote** Votes; **picture**, **photo**, **screenshot**, **attachment**, **cover** Image, whose Ready to use
+        offers Attachments). Starting a search shows All Fields, so a match in any category shows; the rail's counts
+        become each category's matches, a category with none dimmed, and pressing one narrows the matches to it.
+        With nothing matching, the rail steps aside (as Add a Widget's does) and it says **No fields match “…”**
+        with "Try a word like money, date or parent." under it. How many match is announced. Clearing the search keeps the category shown.
       - When the type holds the most custom fields it can (12), a note heads the list: "This type holds the most
         custom fields it can (12). Remove one to add another." A kind with a built-in field the type lacks stays
-        open (its Shape offers only that field); every other kind is shown dimmed and can't be pressed.
-      - **Keyboard**: ↓ from the search moves to the first result; ↑ and ↓ move through every result in order (the
-        group headers, the kinds), Home and End to the first and last, ↑ from the first back to the search; Enter
-        or Space presses the one focused; Enter in the search, with a search typed, picks the first match. Escape
-        in the search clears a typed search first, then closes the popover.
+        open (its Shape offers only that field); every other kind's tile is dimmed and can't be pressed, its
+        tooltip "Remove a custom field to add another".
+      - **Keyboard**: ↓ from the search moves to the first tile; the arrow keys move between tiles (left and right
+        one, up and down a row), ↑ from the top row back to the search, Home and End to the first and last tile;
+        Enter or Space presses the one focused; Enter in the search, with a search typed, picks the first match.
+        Tab reaches the search, the close cross, the rail and the tiles in turn. Escape clears a typed search
+        first, then closes the popover.
     - **Shape** (step 2, after a kind is picked): a header with **All kinds** (a left chevron; back to Pick with
       the search as it was, focus on the kind that was picked) and the kind as a pill (its icon and name, read as
       "Kind: Choice"); then, when the type lacks a built-in field of this kind, **Ready to use**: a row per such

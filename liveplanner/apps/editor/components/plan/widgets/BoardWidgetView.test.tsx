@@ -89,7 +89,9 @@ describe('BoardWidgetView', () => {
   it('filters and toggles Only Mine', () => {
     const c = ctx();
     draw('filter', c);
-    fireEvent.change(screen.getByLabelText('Filter this board'), { target: { value: 'pay' } });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Filter this board' }), {
+      target: { value: 'pay' },
+    });
     expect(c.onQuick).toHaveBeenCalledWith({ text: 'pay' });
     cleanup();
     draw('mine', c);

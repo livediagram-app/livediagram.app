@@ -7,7 +7,8 @@ import { PageNotFound } from './PageNotFound';
 describe('PageNotFound', () => {
   it('says the page is not there and links home and to the help centre', () => {
     render(<PageNotFound />);
-    expect(screen.getByRole('heading', { name: 'Page not found' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: 'Page not found' })).toBeTruthy();
+    expect(document.querySelectorAll('main')).toHaveLength(1);
     expect(screen.getByRole('link', { name: 'Go to the Home Page' }).getAttribute('href')).toBe(
       '/',
     );
@@ -19,5 +20,15 @@ describe('PageNotFound', () => {
     expect(screen.getByRole('link', { name: 'Back to Community' }).getAttribute('href')).toBe(
       '/community/',
     );
+  });
+
+  it("sits inside a site's own main landmark without adding a second", () => {
+    render(
+      <main>
+        <PageNotFound inMain homeHref="/help/" homeLabel="Browse Help Centre" />
+      </main>,
+    );
+    expect(document.querySelectorAll('main')).toHaveLength(1);
+    expect(screen.getByRole('heading', { level: 1, name: 'Page not found' })).toBeTruthy();
   });
 });

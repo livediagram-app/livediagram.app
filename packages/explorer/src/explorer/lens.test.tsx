@@ -147,7 +147,9 @@ describe('the filter lens', () => {
     const index = createFakeIndex({ items: [makeItem(1, { title: 'Road map' })] });
     renderRouted(index, { kind: 'all', q: 'zzz colour:red' });
     expect(await screen.findByText('No plans match these filters')).toBeTruthy();
-    expect(screen.getByText('“colour:red” isn’t a filter, so it’s searched as text.')).toBeTruthy();
+    expect(
+      screen.getByText('“\u2068colour:red\u2069” isn’t a filter, so it’s searched as text.'),
+    ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Clear Filters' }));
     await waitFor(() => expect(titles()).toEqual(['Road map']));
   });

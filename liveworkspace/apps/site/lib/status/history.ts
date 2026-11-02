@@ -2,6 +2,7 @@
 // the status Worker's `/api/status/history`, and what the page makes of it. Pure apart from `loadHistory`, which takes
 // its fetch, so tests drive it.
 
+import { dateFormat } from '@liveworkspace/ui/date-format';
 import {
   addDays,
   type CheckState,
@@ -88,17 +89,14 @@ export function dayView(
   };
 }
 
-const DAY_FORMAT = new Intl.DateTimeFormat('en-GB', {
+// The UTC day a bar counts, in the reader's locale (@liveworkspace/ui/date-format).
+const DAY_FORMAT = dateFormat({
   weekday: 'short',
   day: 'numeric',
   month: 'short',
   timeZone: 'UTC',
 });
-const LONG_DAY_FORMAT = new Intl.DateTimeFormat('en-GB', {
-  day: 'numeric',
-  month: 'long',
-  timeZone: 'UTC',
-});
+const LONG_DAY_FORMAT = dateFormat({ day: 'numeric', month: 'long', timeZone: 'UTC' });
 
 /** "Sat 25 Oct" (the UTC day the bar counts). */
 export function formatDay(day: string): string {

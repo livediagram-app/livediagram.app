@@ -27,9 +27,13 @@ it appears"), with liveplanner's tours on it:
   Forms tour on a Form tab). Between two of the same rank, the one published last wins.
 - **On offer whenever it could run**: to an Editor, once the editor is ready (hydrated, no welcome overlay), not
   read-only, not an embed. Each tour's spec says what else it needs.
-- **It stays on offer once taken.** Finishing or skipping a tour does not take the button away: pressing it again
-  is how the tour is taken again. What a run records (`planTourTracks`, `formTourSeen`,
-  [User preferences](user-preferences.md)) only feeds Settings' **Tours** rows.
+- **Gone once taken, back from Settings.** A tour taken is off the button: once the person starts it (and so
+  finishes or skips it), its host stops offering it, so the button makes room for a tour not yet taken, or is not
+  drawn at all. What a run records (`planTourTracks`, `formTourSeen`, [User preferences](user-preferences.md)) is
+  what the Settings **Tours** rows read, and turning a row back on puts its tour back on the button (and runs it on
+  closing Settings, if it could run right then). The rule lives once in the shared offer (`useOfferTour`'s `seen`,
+  `tour-offer.ts`), the same in every editor. Power user mode, which answers every tour, clears the button too.
+  Until 1 November 2026 a taken tour stayed on the button for good (Work Tracker #177).
 - **A press starts the first step.** There is no welcome card: the button already said what it starts. A press
   while another tour is on screen does nothing (one tour at a time). A run ends completed or skipped; there is no
   declining any more.

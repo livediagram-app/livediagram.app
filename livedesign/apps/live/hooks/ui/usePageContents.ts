@@ -12,6 +12,7 @@ import {
   type WireframeDeviceId,
 } from '@livedesign/design';
 import { usePageThumbnails, type PageThumbTab } from '@/hooks/ui/usePageThumbnails';
+import { usePhotoThumbHrefs } from '@/components/photo/usePhotoThumbHrefs';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import {
   contentsDropUnit,
@@ -23,6 +24,7 @@ import { pageTexts } from '@/lib/page-texts';
 import { track } from '@/lib/telemetry';
 import { useRowReorderDrag } from '@liveworkspace/workbench/hooks/ui/useRowReorderDrag';
 import {
+  focusRowAfterRemove,
   pageRowModel,
   type PageRowModel,
 } from '@liveworkspace/workbench/components/canvas/PageRowMenu';
@@ -98,11 +100,10 @@ export function usePageContents({
       observer.current?.observe(el);
     } else buttons.current.delete(id);
   };
-  const thumbs = usePageThumbnails(
-    tab,
-    pages.filter((p) => !seen || seen.has(p.id)).map((p) => p.id),
-    settleMs,
-  );
+  const drawnIds = pages.filter((p) => !seen || seen.has(p.id)).map((p) => p.id);
+  // A photo page's thumbnail is its picture (its preview), as the canvas and the exports show it.
+  const photoHrefs = usePhotoThumbHrefs(view.photo, drawnIds);
+  const thumbs = usePageThumbnails(tab, drawnIds, settleMs, photoHrefs);
   // A page just added: once it is in the list, it is here, and in view.
   const [added, setAdded] = useState<number | null>(null);
 
@@ -202,7 +203,15 @@ export function usePageContents({
       ...(edit.canMove(row.id, 1) ? { moveDown: () => edit.movePage(row.id, 1) } : {}),
       locked: row.locked,
       toggleLock: () => edit.setLocked(row.id, !row.locked),
-      ...(edit.removePage && !row.locked ? { remove: () => edit.removePage!(row.id) } : {}),
+      ...(edit.removePage && !row.locked
+        ? {
+            remove: () => {
+              const order = shown.map((r) => r.id);
+              edit.removePage!(row.id);
+              focusRowAfterRemove(order, row.id, (id) => buttons.current.get(id));
+            },
+          }
+        : {}),
     });
   };
   const focusFirst = () => {

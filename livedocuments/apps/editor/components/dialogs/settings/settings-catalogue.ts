@@ -1048,8 +1048,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
           label: 'Pages Tours',
           event: { category: 'UI', on: 'PagesTourSeenOff', off: 'PagesTourSeenOn' },
           keywords:
-            'tour walkthrough onboarding tutorial pages slides infographic article all replay',
-          description: 'Every Pages tour at once: slides, infographics and articles.',
+            'tour walkthrough onboarding tutorial pages slides infographic article flashcards all replay',
+          description: 'Every Pages tour at once: slides, infographics, articles and flashcards.',
           helpArticle: 'pagesTour',
         },
       ),
@@ -1073,6 +1073,15 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'tour walkthrough onboarding tutorial pages article document writing replay',
         description: 'On an article: writing, the page toolbar, its style and fonts.',
         helpArticle: 'pagesTour',
+      }),
+      // Its own row since a taken track leaves the Start Tour button (Work Tracker #177): without one, a taken
+      // Flashcards track had no switch to bring it back.
+      pagesTourTrackSwitch('flashcard', {
+        label: 'Flashcards Tour',
+        event: { category: 'UI', on: 'FlashcardsTourSeenOff', off: 'FlashcardsTourSeenOn' },
+        keywords: 'tour walkthrough onboarding tutorial pages flashcards cards study revise replay',
+        description: 'On a flashcard page: the cards, their toolbar and their style.',
+        helpArticle: 'flashcards',
       }),
       // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch for
       // them all over one per toured kind.

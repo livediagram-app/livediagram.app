@@ -1,0 +1,134 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { makeTestRouteContext } from './test-route-context';
+
+// The telemetry relay (docs/specs/017-telemetry/telemetry.md "The relay"). Everything here answers
+// 204 whatever happens — telemetry must never surface an error to the caller — so the assertions are
+// about what was passed on to the liveworkspace service, not the status code.
+
+const { sent } = vi.hoisted(() => ({ sent: { reportServerEvents: vi.fn() } }));
+vi.mock('../server-telemetry', () => sent);
+
+import type { Env } from '../types';
+import { handleEvents } from './events';
+
+const EVENT = { category: 'Mcp', action: 'Used', type: 'ReadDocument' };
+
+const makeCtx = (opts: { env?: Partial<Env>; headers?: Record<string, string> } = {}) =>
+  makeTestRouteContext('POST', '/api/events', {
+    body: { events: [EVENT] },
+    headers: opts.headers,
+    env: { TELEMETRY_ENABLED: 'true', ...opts.env } as Env,
+  });
+
+const limiter = (success: boolean) => {
+  const limit = vi.fn(() => Promise.resolve({ success }));
+  return { binding: { limit }, limit };
+};
+
+beforeEach(() => sent.reportServerEvents.mockReset());
+
+describe('handleEvents rate limiting', () => {
+  it('drops a batch when the per-IP limiter refuses', async () => {
+    const { binding, limit } = limiter(false);
+    const res = await handleEvents(makeCtx({ env: { EVENTS_RATE_LIMITER: binding } }));
+    expect(res.status).toBe(204);
+    expect(limit).toHaveBeenCalledTimes(1);
+    expect(sent.reportServerEvents).not.toHaveBeenCalled();
+  });
+
+  it('still ingests normally when the limiter allows', async () => {
+    const { binding, limit } = limiter(true);
+    await handleEvents(makeCtx({ env: { EVENTS_RATE_LIMITER: binding } }));
+    expect(limit).toHaveBeenCalledTimes(1);
+    expect(sent.reportServerEvents).toHaveBeenCalledTimes(1);
+  });
+
+  it('ingests nothing at all when telemetry is off', async () => {
+    await handleEvents(makeCtx({ env: { TELEMETRY_ENABLED: 'false' } }));
+    expect(sent.reportServerEvents).not.toHaveBeenCalled();
+  });
+});
+
+describe('handleEvents page views (docs/specs/017-telemetry/page-view-telemetry.md)', () => {
+  it('stores a normalised path and drops anything that is not one', async () => {
+    const ctx = makeTestRouteContext('POST', '/api/events', {
+      body: {
+        events: [
+          { category: 'Page', action: 'View', type: '/help/canvas/the-canvas' },
+          { category: 'Page', action: 'View', type: '/document' },
+          // A raw URL with a query, an un-normalised id, the old id placeholder
+          // and a bare token.
+          { category: 'Page', action: 'View', type: '/join?token=abc' },
+          { category: 'Page', action: 'View', type: '/Diagram/ABC' },
+          { category: 'Page', action: 'View', type: '/document/[id]' },
+          { category: 'Page', action: 'View', type: 'help' },
+        ],
+      },
+      env: { TELEMETRY_ENABLED: 'true' } as Env,
+    });
+    await handleEvents(ctx);
+    expect(sent.reportServerEvents).toHaveBeenCalledWith(expect.anything(), [
+      { category: 'Page', action: 'View', type: '/help/canvas/the-canvas' },
+      { category: 'Page', action: 'View', type: '/document' },
+    ]);
+  });
+});
+
+describe('handleEvents timings (docs/specs/017-telemetry/timing-telemetry.md)', () => {
+  it('stores a known metric and bucket, and drops anything else under Timing', async () => {
+    const ctx = makeTestRouteContext('POST', '/api/events', {
+      body: {
+        events: [
+          { category: 'Timing', action: 'Measured', type: 'DocumentLoad.Under1000ms' },
+          { category: 'Timing', action: 'Measured', type: 'Lcp.Community.Over10000ms' },
+          // A raw number, a bucket from another scale, an unknown metric, another action.
+          { category: 'Timing', action: 'Measured', type: 'DocumentLoad.812' },
+          { category: 'Timing', action: 'Measured', type: 'Save.Under200ms' },
+          { category: 'Timing', action: 'Measured', type: 'Secret.Under100ms' },
+          { category: 'Timing', action: 'Used', type: 'Save.Under100ms' },
+        ],
+      },
+      env: { TELEMETRY_ENABLED: 'true' } as Env,
+    });
+    await handleEvents(ctx);
+    expect(sent.reportServerEvents).toHaveBeenCalledWith(expect.anything(), [
+      { category: 'Timing', action: 'Measured', type: 'DocumentLoad.Under1000ms' },
+      { category: 'Timing', action: 'Measured', type: 'Lcp.Community.Over10000ms' },
+    ]);
+  });
+});
+
+describe('handleEvents server-emitted pairs (docs/specs/017-telemetry/telemetry.md)', () => {
+  it('drops the pairs the worker counts itself, keeping the rest of the batch', async () => {
+    // Session·SignedUp / SignedIn and Document·Joined moved server-side; an
+    // old cached editor bundle still posting them must not double count.
+    const ctx = makeTestRouteContext('POST', '/api/events', {
+      body: {
+        events: [
+          { category: 'Session', action: 'SignedUp' },
+          { category: 'Session', action: 'SignedIn' },
+          { category: 'Document', action: 'Joined', type: 'Edit' },
+          { category: 'Email', action: 'Sent', type: 'Welcome' },
+          { category: 'Session', action: 'SignedOut' },
+        ],
+      },
+      env: { TELEMETRY_ENABLED: 'true' } as Env,
+    });
+    await handleEvents(ctx);
+    expect(sent.reportServerEvents).toHaveBeenCalledWith(expect.anything(), [
+      { category: 'Session', action: 'SignedOut', type: null },
+    ]);
+  });
+});
+
+describe('handleEvents with an odd body', () => {
+  // The endpoint promises 204 whatever arrives; a JSON null used to 500.
+  it('answers 204 to a JSON null body', async () => {
+    const ctx = makeTestRouteContext('POST', '/api/events', {
+      body: null,
+      env: { TELEMETRY_ENABLED: 'true' } as Env,
+    });
+    expect((await handleEvents(ctx)).status).toBe(204);
+    expect(sent.reportServerEvents).not.toHaveBeenCalled();
+  });
+});

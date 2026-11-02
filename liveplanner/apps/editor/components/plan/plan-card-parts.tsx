@@ -324,15 +324,22 @@ export function RepeatMark({ color }: { color: string }) {
 // A blocked card's badge (docs/specs/026-plan/item-types.md "Blocked By"): a red link and how many of its blockers
 // are open, beside the flag on every size.
 export const BLOCKED_COLOUR = '#dc2626';
+// The lighter red a dark card takes: red-600 is about 3.7:1 on a dark card, under AA for the count beside the link.
+export const BLOCKED_COLOUR_ON_DARK = '#f87171';
+// The badge's red on a card's fill: whichever of the two reads better.
+export const blockedColourOn = (card: string): string =>
+  contrastRatio(BLOCKED_COLOUR_ON_DARK, card) > contrastRatio(BLOCKED_COLOUR, card)
+    ? BLOCKED_COLOUR_ON_DARK
+    : BLOCKED_COLOUR;
 const LinkGlyph = lucideGlyph(lucideLink, 12);
 
-export function BlockedMark({ count }: { count: number }) {
+export function BlockedMark({ count, card }: { count: number; card: string }) {
   return (
     <Tooltip label={blockedLabel(count)}>
       <span
         data-blocked-mark=""
         className="mt-0.5 inline-flex shrink-0 items-center gap-0.5 text-[11px] font-semibold leading-none"
-        style={{ color: BLOCKED_COLOUR }}
+        style={{ color: blockedColourOn(card) }}
         role="img"
         aria-label={blockedLabel(count)}
       >

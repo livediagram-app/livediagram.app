@@ -17,3 +17,6 @@ packages:
   - 'livedocuments'
   - 'livedocuments/apps/*'
   - 'livedocuments/packages/*'
+  - 'livehuddle'
+  - 'livehuddle/apps/*'
+  - 'livehuddle/packages/*'

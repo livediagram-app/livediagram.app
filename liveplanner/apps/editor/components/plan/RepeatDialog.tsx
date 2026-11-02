@@ -44,7 +44,8 @@ const segment = (active: boolean) =>
   `relative z-10 flex min-w-0 items-center justify-center rounded-md px-1.5 py-1.5 text-[12px] font-semibold transition-colors ${
     active
       ? 'text-white'
-      : 'cursor-pointer text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+      : // slate-600: slate-500 reads 4.3:1 on the slate-100 track, under AA for 12px text.
+        'cursor-pointer text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
   }`;
 
 export function RepeatDialog({

@@ -191,7 +191,8 @@ export function SlideDeckRow({
           <span
             className={`truncate font-medium ${roomy ? 'text-sm' : 'text-[11px]'} ${
               slide.hidden
-                ? 'text-slate-400 line-through dark:text-slate-400'
+                ? // Struck through and muted, still AA on the white panel (slate-400 read 2.6:1).
+                  'text-slate-500 line-through dark:text-slate-400'
                 : 'text-slate-800 dark:text-slate-100'
             }`}
           >

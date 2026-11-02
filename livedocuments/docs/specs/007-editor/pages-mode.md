@@ -199,8 +199,10 @@ one, choosing the first page's kind, the template picker and an AI tool's templa
 A tab with no pages stored starts with one page, its kind unchosen.
 
 **The first page's choice**: while a tab's only page is unchosen and empty, it offers the four kinds
-inside itself, for someone who may edit: a card centred on the page, held at one screen size,
-**What Is This Page For?** ("Choose now: every page of this tab will be this kind."), over three
+inside itself, for someone who may edit: a card centred on the page, held at one screen size (420 px
+wide, never wider than the screen less a 16 px gutter a side, so a phone shows all of it, and over the
+canvas's + after the page),
+**What Is This Page For?** ("Choose now: every page of this tab will be this kind."), over four
 cards:
 
 - **Infographic**: "A page to lay out: layouts, icons, charts and media."
@@ -1272,6 +1274,9 @@ Both show the same list:
     (not on a locked page), in the menu's own tones ([Destructive actions](../004-interface-design/destructive-actions.md)). Each does exactly what the page's title bar, cog or the Slide
     Deck does; none but Page Settings glides to the page. A Participant and a Viewer see no grip,
     no Delete and no ⋯, and a right-click or long press opens nothing.
+    A row's tools keep its arrows their own, but a Cmd or Ctrl chord (undo, redo, search) still
+    reaches the editor from them. Deleting a page from its row (its bin or its menu) moves focus to
+    the row before it (the next, when the first goes), never to the page's body.
   - A row's name carries the padlock on a locked page and a crossed eye (**Hidden in Slides**) on a
     page whose slide is hidden in the deck, so a skipped slide shows at a glance.
 - **Going there**: a press (or Enter) glides the canvas to the page, as the pages row's arrows do,
@@ -1516,9 +1521,10 @@ is while the rest of the tab is worked on.
   - **Whenever the view rests**: the same holds after anything else that moves the view (the zoom
     cluster's buttons, the Map, the arrow keys) once the view has rested 250 ms with no pointer
     held. Not while following someone (their view is the follow's, and a move of your own would
-    end it), and not while an article's writing has the caret: the view moves for the caret then
-    (kept in sight as it is written on, above a phone's keyboard, onto the next page), and snapping
-    back to the page would take the caret out of sight again. A pan or zoom by hand still lets go
+    end it), and not while text on the page has the caret (an article's writing, or a label, a cell
+    or a line being written on): the view moves for the caret then (kept in sight as it is written
+    on, above a phone's keyboard, onto the next page), and snapping back to the page would take the
+    caret out of sight again. A pan or zoom by hand still lets go
     onto a page.
   - For everyone who can see the pages, on a phone and a desktop alike; no setting.
 - **Back to the page you were on**: landing on a tab of pages (switching back to it, a reload) fits the page you were last on rather than the first, so moving between tabs

@@ -245,11 +245,9 @@ export function GoogleDriveRow({ cloudSync }: { cloudSync: CloudSync }) {
               <Button
                 variant="primary"
                 size="sm"
-                // aria-disabled, not disabled: a pressed button keeps focus.
-                aria-disabled={connecting || row.kind === 'checking'}
-                onClick={() => {
-                  if (row.kind !== 'checking') startConnect();
-                }}
+                // Busy, not disabled, while it connects or checks: a pressed button keeps focus (busy-buttons.md).
+                busy={connecting || row.kind === 'checking'}
+                onClick={startConnect}
               >
                 Connect
               </Button>
@@ -258,7 +256,8 @@ export function GoogleDriveRow({ cloudSync }: { cloudSync: CloudSync }) {
                 // Reversible, and the Drive files stay: a neutral action, with a neutral confirmation.
                 variant="secondary"
                 size="sm"
-                disabled={busy}
+                // Busy while it disconnects: the confirmation hands the keyboard back here.
+                busy={busy}
                 onClick={() => setConfirming(true)}
               >
                 Disconnect
@@ -283,7 +282,7 @@ export function GoogleDriveRow({ cloudSync }: { cloudSync: CloudSync }) {
               {problem.text}
             </p>
             {problem.action === 'reconnect' ? (
-              <Button variant="primary" size="sm" aria-disabled={connecting} onClick={startConnect}>
+              <Button variant="primary" size="sm" busy={connecting} onClick={startConnect}>
                 Reconnect
               </Button>
             ) : null}

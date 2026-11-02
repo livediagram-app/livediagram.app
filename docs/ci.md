@@ -17,9 +17,13 @@ change reaches the workspaces whose dependencies moved. It then groups them by p
 | liveplanner   | `liveplanner/`                | `@liveplanner/editor`   |
 | livedesign    | `livedesign/`                 | `@livedesign/live`      |
 | livedocuments | `livedocuments/`              | `@livedocuments/editor` |
+| livehuddle    | `livehuddle/`                 | `@livehuddle/editor`    |
 | platform      | `packages/`, `liveworkspace/` |                         |
 
-A group the change never reached runs no jobs. The base is the pull request's base, or for a push to
+A group the change never reached runs no jobs. livehuddle is **held** until its launch
+(livehuddle/docs/specs/005-project-roadmap/build-plan.md step 8, `held: true` in `ci-plan.mjs`): its group runs only
+when a change touches `livehuddle/` itself or everything runs, never because a shared package it uses changed; it has
+no E2E yet, and none of its Workers deploy. The base is the pull request's base, or for a push to
 `main` the commit before it. Everything runs when there is no base to compare with, or when the
 change touches something every workspace leans on without turbo seeing it as theirs: `.github/`, the
 root `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, `.npmrc` or the
@@ -81,6 +85,8 @@ result.
   JavaScript/TypeScript) on every pull request, every push to `main` and weekly on Mondays, so newly
   released queries also run against an unchanged `main`. It is an advanced setup, so the repository's
   CodeQL default setup stays off, or GitHub rejects the upload. The `main` ruleset requires its results.
+  The job may run for 60 minutes: since the livehuddle fork a full analysis takes 21 to over 30, and a run
+  cancelled at its limit leaves the PR's required CodeQL result missing until it runs again.
 
 - **MCP Registry** (`mcp-registry.yml`): only by hand (`workflow_dispatch`), never on a push. It publishes the
   chosen product's `server.json` (livediagram, liveplanner, livedocuments or livedesign) to the official MCP
@@ -102,7 +108,9 @@ what it measures) and times only the work under test.
 
 The Checks job's **Speed budgets use CPU time** step (`.github/scripts/cpu-budget-guard.mjs`, also in
 the pre-push hook) fails a change that adds `performance.now()` to a test file. Older budgets are left
-for a pass of their own. A line that truly needs the wall clock says why in a `wall-clock:` comment.
+for a pass of their own, and so is a copy of one: a line another product already has at the same path
+(a fork, such as livehuddle's of livediagram) isn't new. A line that truly needs the wall clock says why
+in a `wall-clock:` comment.
 
 ## Coverage report
 
@@ -168,7 +176,8 @@ each product's api, sites, MCP and router, and the platform's services and site.
 **Only what changed.** Each environment remembers the commit it last deployed in full, as the tag
 `deployed/staging` or `deployed/production`. A deploy asks Turborepo which workspaces changed since
 then, with everything depending on them, using the plan CI uses (`ci-plan.mjs`, `PLAN_MODE=deploy`).
-The Workers among them build and deploy, and the rest are left as they are. A Worker none of whose
+The Workers among them build and deploy, and the rest are left as they are; a held product's Workers (livehuddle's,
+until its launch) are never among them, even with **all**. A Worker none of whose
 files or dependencies changed is never rebuilt or redeployed. A change to `.github/` or the Prettier
 config alone deploys nothing. The tag moves only when every Worker in the deploy succeeded, so a
 failed one is retried by the next deploy. With no tag yet, everything deploys.

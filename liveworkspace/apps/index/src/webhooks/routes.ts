@@ -10,6 +10,7 @@
 //   POST   /webhooks/:id/test        202: queues a `ping`
 //   GET    /webhooks/:id/deliveries  {deliveries}: its newest, pending and finished
 
+import { trimInvisible, withoutBidiControls } from '@liveworkspace/api-kit/typed-text';
 import { importSealKey, seal } from '@liveworkspace/api-kit/sealed';
 import {
   isWebhookEvent,
@@ -70,9 +71,12 @@ type WebhookRow = {
   last: string | null;
 };
 
+// The newest finished delivery's time is its last try's; one given up untried (a pause gives up what waited) has
+// none, so it is when it was given up (next_at), never null (a null read as 1 January 1970 in Settings).
 const COLUMNS = `w.id, w.scope, w.kind, w.name, w.host, w.events, w.created_by, w.created_at, w.paused_at,
   w.paused_reason,
-  (SELECT json_object('state', d.state, 'status', d.status, 'at', d.last_at) FROM webhook_deliveries d
+  (SELECT json_object('state', d.state, 'status', d.status, 'at', COALESCE(d.last_at, d.next_at, d.occurred_at))
+    FROM webhook_deliveries d
     WHERE d.webhook_id = w.id AND d.state <> 'pending' ORDER BY d.id DESC LIMIT 1) AS last`;
 
 export function webhookOf(row: WebhookRow): Webhook {
@@ -93,9 +97,11 @@ export function webhookOf(row: WebhookRow): Webhook {
 // Events as stored: comma-wrapped, so one `instr` matches a type.
 const storedEvents = (events: readonly WebhookEvent[]) => `,${events.join(',')},`;
 
+// A name as the account names are kept (typed-text): no bidi control to turn the words around it backwards, and no
+// spaces or invisible characters at its ends to make it look blank. Longer than the limit is refused, as before.
 function readName(value: unknown): string | null {
   if (typeof value !== 'string') return null;
-  const name = value.trim();
+  const name = trimInvisible(withoutBidiControls(value));
   return name.length > 0 && name.length <= WEBHOOK_NAME_MAX ? name : null;
 }
 

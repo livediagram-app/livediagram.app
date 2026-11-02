@@ -359,7 +359,9 @@ function Choices({
       aria-labelledby={labelledBy}
       aria-describedby={describedBy}
       aria-invalid={invalid || undefined}
-      aria-required={q.required || undefined}
+      // A radiogroup may say it is required; a group of checkboxes may not (ARIA), and its prompt already says
+      // "(required)" to a screen reader.
+      aria-required={(!multi && q.required) || undefined}
       className="flex flex-col gap-2"
     >
       {hint ? <p className="text-[13px] text-slate-500 dark:text-slate-400">{hint}</p> : null}

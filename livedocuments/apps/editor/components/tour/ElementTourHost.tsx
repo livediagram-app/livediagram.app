@@ -11,6 +11,7 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import {
   canTourElement,
   elementTourKindOf,
+  elementTourSeen,
   markElementTourSeen,
   type ElementTourKind,
 } from '@/lib/element-tours';
@@ -176,8 +177,9 @@ export function ElementTourHost() {
   const offered =
     usable && !phone && element !== null && kind !== null && canTourElement(ctx.can, element, kind);
 
-  // The footer's Start Tour button, while the selected element is one with a tour, taken or not. One offer per kind, so
-  // the button counts each kind's first showing in this page load.
+  // The footer's Start Tour button, while the selected element is one with a tour not yet taken (a press records it,
+  // `answer`; its Settings › Show Me switch puts it back). One offer per kind, so the button counts each kind's first
+  // showing in this page load.
   const offerId = offered ? element.id : null;
   const offerKind = offered ? kind : null;
   useOfferTour(
@@ -192,6 +194,7 @@ export function ElementTourHost() {
             if (el) playRef.current(el, offerKind);
           },
           onShown: () => track('UI', 'Opened', `${ELEMENT_TOUR_DEFS[offerKind].token}Offer`),
+          seen: elementTourSeen(ctx.userPreferences, offerKind),
         }
       : null,
   );

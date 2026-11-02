@@ -4,6 +4,7 @@
 // This Form, which opens a short report in place: a reason, an optional note, Send. One report per browser per form,
 // the browser named by a random id kept in local storage (never the editor's identity).
 import { useId, useState } from 'react';
+import { Button } from '@liveplanner/ui';
 import { MadeWithLiveplanner } from './MadeWithLiveplanner';
 import {
   FORM_REPORT_NOTE_MAX,
@@ -102,9 +103,10 @@ export function FormFooter({ code }: { code: string }) {
                 >
                   Cancel
                 </button>
-                <button
-                  type="button"
-                  disabled={!reason || state === 'sending'}
+                <Button
+                  variant="none"
+                  disabled={!reason}
+                  busy={state === 'sending'}
                   onClick={() => {
                     if (!reason) return;
                     setState('sending');
@@ -115,7 +117,7 @@ export function FormFooter({ code }: { code: string }) {
                   className="h-9 cursor-pointer rounded-lg bg-red-600 px-4 font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {state === 'sending' ? 'Sending…' : 'Send Report'}
-                </button>
+                </Button>
               </div>
             </>
           )}

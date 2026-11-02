@@ -16,6 +16,7 @@ import {
   type MouseEvent,
   type ReactNode,
 } from 'react';
+import { Button } from '@liveworkspace/ui';
 import { CARD_GRID, CARD_PREVIEW, CARD_SHELL, SOLID_BRAND_DARK_CONTROL } from '../ui/classes';
 import { Chevron, eventIcon } from './icons';
 import {
@@ -286,9 +287,9 @@ const QUIET_BUTTON =
 function ShowMore({ loading, onClick }: { loading?: boolean; onClick?: () => void }) {
   return (
     <div className="pt-2 text-center">
-      <button type="button" disabled={loading} onClick={onClick} className={QUIET_BUTTON}>
+      <Button variant="none" busy={loading} onClick={onClick} className={QUIET_BUTTON}>
         {loading ? 'Loading…' : 'Show More'}
-      </button>
+      </Button>
     </div>
   );
 }

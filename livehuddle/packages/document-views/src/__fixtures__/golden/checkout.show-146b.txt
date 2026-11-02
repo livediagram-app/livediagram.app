@@ -1,0 +1,10 @@
+tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 frames, 11 arrows · threads 1 open/2 · rev 41
+square 146b "Orders service" in frame c991 "Services"
+  at 680,130 200x72
+  iconId: "server"
+  note: "Owns the order lifecycle and is the source of truth for order state. Calls Payments synchronously; publishes OrderPlaced."
+  textSize: "md"
+  ← 649c "API gateway" [111e]
+  → e4a8 "Payments service" label="charge" [c41d]
+  → d41e "Orders DB" [892e]
+  → 6406 "Event bus" label="OrderPlaced" [3462]

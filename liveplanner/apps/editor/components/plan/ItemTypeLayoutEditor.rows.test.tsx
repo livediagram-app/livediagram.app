@@ -106,13 +106,11 @@ describe('Add Field', () => {
   it('adds a built-in field from its kind’s Ready to use into the group it opened from, Details or a tab', () => {
     const onChange = editor();
     addFrom(0);
-    fireEvent.click(popover().getByRole('button', { name: /^Numbers & dates/ }));
     fireEvent.click(popover().getByRole('button', { name: 'Date' }));
     fireEvent.click(popover().getByRole('button', { name: /^Due Date/ }));
     expect(detailFields(onChange.mock.lastCall![0])).toContain('due');
     expect(screen.queryByRole('dialog', { name: 'Add Field' })).toBeNull();
     addFrom(1);
-    fireEvent.click(popover().getByRole('button', { name: /^Choices/ }));
     fireEvent.click(popover().getByRole('button', { name: 'Labels' }));
     fireEvent.click(popover().getByRole('button', { name: /^Labels/ }));
     expect(onChange.mock.lastCall![0].tabs[0]?.fields).toEqual(['description', 'labels']);
@@ -121,7 +119,6 @@ describe('Add Field', () => {
   it('adds a custom field with its own id, into the tab it opened from', () => {
     const onChange = editor();
     addFrom(1);
-    fireEvent.click(popover().getByRole('button', { name: /^Numbers & dates/ }));
     fireEvent.click(popover().getByRole('button', { name: 'Number' }));
     fireEvent.change(popover().getByRole('textbox', { name: 'Name' }), {
       target: { value: 'Story Points' },

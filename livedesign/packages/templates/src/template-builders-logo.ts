@@ -201,17 +201,21 @@ export function logoDesignPages(): Page[] {
 }
 
 // A lockup page: its number and name, the brand, the lockup centred in the room left, and where
-// the lockup gets used. The first page also says how to use the exploration.
+// the lockup gets used. The first page also says how to use the exploration. The words around the
+// lockup are the template's notes about the page, which the Logo Kit leaves out
+// (docs/specs/007-editor/logo-pages.md "Export").
 function boardPage(k: Kit, b: Board, i: number): Element[] {
   const { width: W, height: H } = k.box;
   const { u } = k;
+  const note = { templateNote: true } as const;
   const els: Element[] = [
     k.text(0, 0, W * 0.6, u * 6, `${String(i + 1).padStart(2, '0')} · ${b.name}`, {
       textSize: 'lg',
       textBold: true,
+      ...note,
     }),
-    k.text(W * 0.5, 0, W * 0.5, u * 6, `${BRAND} Roasters`, { textAlignX: 'right' }),
-    k.text(0, H - u * 6, W, u * 6, b.use),
+    k.text(W * 0.5, 0, W * 0.5, u * 6, `${BRAND} Roasters`, { textAlignX: 'right', ...note }),
+    k.text(0, H - u * 6, W, u * 6, b.use, note),
   ];
   if (i === 0) {
     els.push(
@@ -221,6 +225,7 @@ function boardPage(k: Kit, b: Board, i: number): Element[] {
         W * 0.9,
         u * 10,
         'Pick the lockup that fits, delete the other pages, then swap in your own mark and name.',
+        note,
       ),
     );
   }

@@ -9,7 +9,7 @@
 
 import { useMemo, useState, type ReactNode } from 'react';
 import { FOLDER_NAME_MAX } from '@liveworkspace/index-client';
-import { BackBar } from '@liveworkspace/ui';
+import { BackBar, Button } from '@liveworkspace/ui';
 import { compareNames } from '../data/name-order';
 import {
   ChevronRightIcon,
@@ -375,13 +375,14 @@ function NameField({
         aria-label={label}
         className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none dark:text-slate-100"
       />
-      <button
+      <Button
+        variant="none"
         type="submit"
-        disabled={busy}
+        busy={busy}
         className="text-sm font-semibold text-brand-700 disabled:opacity-60 dark:text-brand-300"
       >
         {busy ? 'Creating…' : 'Create'}
-      </button>
+      </Button>
       {error ? (
         <p role="alert" className="w-full text-xs text-rose-600 dark:text-rose-400">
           {error}

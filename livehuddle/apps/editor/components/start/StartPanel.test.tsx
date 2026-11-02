@@ -1,0 +1,74 @@
+// @vitest-environment jsdom
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { StartFromTemplates } from './StartFromTemplates';
+
+afterEach(() => {
+  cleanup();
+  localStorage.clear();
+});
+
+function workshop() {
+  const onTemplate = vi.fn();
+  render(<StartFromTemplates mode="workshop" tabId="t1" onTemplate={onTemplate} />);
+  const search = screen.getByRole('textbox', { name: 'Find a template' });
+  return { onTemplate, search };
+}
+
+// docs/specs/007-editor/start-diagramming.md "A title match leads" and "Keyboard": a template named as typed leads the
+// results, under Best Match, and the arrow keys move between the cards.
+describe('a start search, best match first', () => {
+  const sections = () =>
+    [...document.querySelectorAll('section[aria-label]')].map((s) => s.getAttribute('aria-label'));
+
+  it('leads with the template whose name is what was typed, and lists it once', () => {
+    const { search } = workshop();
+    fireEvent.change(search, { target: { value: 'sailboat' } });
+    const best = screen.getByRole('region', { name: 'Best Match' });
+    const first = best.querySelector('[data-start-card]')!.getAttribute('data-start-card');
+    expect(first).toBe('sailboat');
+    expect(document.querySelectorAll('[data-start-card="sailboat"]')).toHaveLength(1);
+    // Before the groups.
+    expect(sections()[0]).toBe('Best Match');
+    fireEvent.keyDown(search, { key: 'ArrowDown' });
+    expect(document.activeElement?.getAttribute('data-start-card')).toBe('sailboat');
+  });
+
+  it('has no Best Match when no name begins with the words', () => {
+    const { search } = workshop();
+    fireEvent.change(search, { target: { value: 'coffee' } });
+    expect(screen.queryByRole('region', { name: 'Best Match' })).toBeNull();
+  });
+
+  it('moves between the cards with the arrow keys, Up from the first back to the search', () => {
+    const { search } = workshop();
+    fireEvent.change(search, { target: { value: 'retro' } });
+    fireEvent.keyDown(search, { key: 'ArrowDown' });
+    const all = [...document.querySelectorAll<HTMLElement>('[data-start-card]')];
+    expect(all.length).toBeGreaterThan(2);
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(all[1]);
+    fireEvent.keyDown(document.activeElement!, { key: 'End' });
+    expect(document.activeElement).toBe(all[all.length - 1]);
+    fireEvent.keyDown(document.activeElement!, { key: 'Home' });
+    expect(document.activeElement).toBe(all[0]);
+    // jsdom lays nothing out: every card is in one row, so Up leaves the cards for the search.
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowUp' });
+    expect(document.activeElement).toBe(search);
+  });
+});
+
+// docs/specs/007-editor/start-diagramming.md "On a short window": a window under 500px tall (a phone held sideways, a
+// desktop zoomed to 200%) keeps the cards room. jsdom does no layout, so this holds the classes.
+describe('the start panel on a short window', () => {
+  it('clears only the strip and lies over the bottom cluster, whatever the pointer', () => {
+    workshop();
+    const panel = screen.getByRole('textbox', { name: 'Find a template' }).closest('section')!;
+    const wrapper = panel.parentElement!;
+    expect(wrapper.className).toContain('short-window:pt-16');
+    // Over the bottom cluster, but on the tab bar while it shows (the measured floor).
+    expect(wrapper.className).toContain('short-window:pb-[var(--start-floor)]');
+    expect(wrapper.className).toContain('short-window:z-[var(--z-overlay)]');
+    expect(wrapper.className).not.toContain('landscape-phone:');
+  });
+});

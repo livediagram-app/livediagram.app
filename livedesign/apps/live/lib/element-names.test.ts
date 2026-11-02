@@ -159,6 +159,7 @@ describe('elementRole', () => {
 
   it('makes an element with controls on its face a group', () => {
     expect(elementRole(shape('checklist'))).toBe('group');
+    expect(elementRole(shape('tab-window'))).toBe('group');
     expect(
       elementRole({
         id: 'i',
@@ -180,5 +181,52 @@ describe('elementRole', () => {
         height: 1,
       } as unknown as Element),
     ).toBe('group');
+  });
+});
+
+describe('elementRole while selected for editing', () => {
+  // Selected by an editor, a face's lines edit in place (focusable), a table shows its Column and Row options and a
+  // pointer note its tip: controls inside a picture are axe's nested-interactive, and unreachable.
+  const shape = (kind: string) =>
+    ({ id: 's', type: 'shape', shape: kind, x: 0, y: 0, width: 10, height: 10 }) as Element;
+  it('makes a selected face that edits in place a group', () => {
+    expect(elementRole(shape('layer-stack'), true)).toBe('group');
+    expect(elementRole(shape('pointer-note'), true)).toBe('group');
+    expect(
+      elementRole({ id: 't', type: 'table', x: 0, y: 0, width: 10, height: 10 } as Element, true),
+    ).toBe('group');
+  });
+  it('keeps a selected plain shape a picture, so it is still found and read as one', () => {
+    expect(elementRole(shape('square'), true)).toBe('img');
+  });
+  it('keeps it a picture otherwise', () => {
+    expect(elementRole(shape('layer-stack'), false)).toBe('img');
+  });
+});
+
+// A face with controls of its own in any state is a named group, so a screen reader reaches them
+// (docs/specs/004-interface-design/canvas-accessibility.md "Names on elements").
+describe('elementRole for a face that shows controls', () => {
+  const face = (kind: string) =>
+    ({ id: 's', type: 'shape', shape: kind, x: 0, y: 0, width: 10, height: 10 }) as Element;
+  it('makes a table a group: its cells edit in place and it shows its column and row options', () => {
+    expect(
+      elementRole({
+        id: 't',
+        type: 'table',
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 40,
+        cells: [['a']],
+      }),
+    ).toBe('group');
+  });
+  it('makes any element showing indicator buttons a group', () => {
+    expect(elementRole(face('square'), false, true)).toBe('group');
+    expect(elementRole(face('square'), false, false)).toBe('img');
+  });
+  it('makes every kind with controls on its face a group', () => {
+    expect(elementRole(face('page'))).toBe('group');
   });
 });

@@ -22,9 +22,13 @@ which is gone ([Coming from livediagram's mirror](#coming-from-livediagrams-mirr
   account access token; a guest token is refused (`401 sign_in_required`), and so is an API token, since a token
   that could mint Google access would outlive the person's attention to it.
 - **Their own work, in every app.** Everything the person owns outside a team, in livediagram, liveplanner,
-  livedocuments and livedesign: the index's personal items and the person's whole folder tree, which already holds
-  items from any app. Team items, items shared with them, and anything only in a browser (This Browser, Offline) are
-  not mirrored.
+  livedocuments, livedesign and livehuddle: the index's personal items and the person's whole folder tree, which
+  already holds items from any app. Team items, items shared with them (at any level: Editor, Participant or Viewer),
+  and anything only in a browser (This Browser, Offline) are not mirrored.
+- **A held app is mirrored too.** livehuddle, registered before its launch
+  ([Integrating an app](../002-architecture/integrating-an-app.md#registered-before-launch)), is one of the mirrored
+  apps from the start: its Spaces are written and its file opens like any other app's. Until it launches, nothing
+  liveworkspace.app shows names it (the Google Drive help page lists the launched apps).
 - **Everyone, free.** A deployment without a Google client (below) has no Cloud Sync section: absent, not broken.
 
 ## Principles
@@ -56,7 +60,7 @@ is a var on drive (wrangler.toml) and a secret on accounts. What the operator se
 | Redirect URIs       | `<liveworkspace origin>/drive/connected` and `<origin>/api/auth/callback/google` for each      |
 |                     | origin, plus each app's `/api/workspace/auth/callback/google` (sign-in on the app's address)   |
 | Drive UI Open URL   | `<liveworkspace origin>/drive/open` (production's)                                             |
-| Drive UI MIME types | the four in [The file](#the-file), each with its extension                                     |
+| Drive UI MIME types | the five in [The file](#the-file), each with its extension                                     |
 
 The origins are `https://www.liveworkspace.app`, `https://liveworkspace.app` (for the move to www.) and `https://staging.liveworkspace.app`, and each app's own domain. The Picker's origins (every app's) and its API key come with Show folder.
 
@@ -68,6 +72,7 @@ The origins are `https://www.liveworkspace.app`, `https://liveworkspace.app` (fo
 | liveplanner   | `.liveplanner`   | `application/vnd.liveplanner+json`   | `liveplanner.project` (`project-envelope.ts`)     |
 | livedocuments | `.livedocuments` | `application/vnd.livedocuments+json` | `livedocuments.document` (`document-envelope.ts`) |
 | livedesign    | `.livedesign`    | `application/vnd.livedesign+json`    | `livedesign.design` (`design-envelope.ts`)        |
+| livehuddle    | `.livehuddle`    | `application/vnd.livehuddle+json`    | `livehuddle.document` (`document-envelope.ts`)    |
 
 - **Name:** the item's name plus its extension. A name Drive would alter is stored as Drive holds it, and the next
   inbound rename is compared against that stored form.
@@ -447,7 +452,13 @@ secret, the service's `DRIVE_KEY_<APP>`) on exactly these two routes, alongside 
   envelope of another kind or that doesn't parse (`400 invalid_file`) and one past the app's item limits
   (`413 too_large`).
 
-`@liveworkspace/drive` holds the four kinds, MIME types and extensions (`APP_FILE_FORMATS`), so the service and every
+livehuddle's door is its api's `handleInternalItems` (`livehuddle/apps/api/src/routes/internal-items.ts`), as
+livediagram's is: `handlers.export` answers `format: 'file'` with a Space's whole `livehuddle.document` envelope
+(every tab with its tab folder, and the slide deck) from the Space's Durable Object, and `svg` with its first tab
+drawn; `handlers.import` makes a new Space from a `.livehuddle` file. A Space has no file of its own beyond that
+envelope, and no app folder: it sits in the person's one folder tree beside their other apps' items.
+
+`@liveworkspace/drive` holds the five kinds, MIME types and extensions (`APP_FILE_FORMATS`), so the service and every
 app name them from one place. The service makes these calls, and where an item opens, through
 `@liveworkspace/app-doors` (`createAppDoors`), the one client of the apps' internal doors, which the data export
 ([data-export.md](../003-accounts/data-export.md#the-apps)) uses too: each caller hands it its own origins and keys.

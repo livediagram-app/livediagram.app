@@ -46,6 +46,13 @@ const respond =
       headers: { 'Content-Type': type },
     });
 
+// The strip's words name the day in the reader's locale ("22 October", "October 22").
+const LONG_22_OCT = new Intl.DateTimeFormat(undefined, {
+  day: 'numeric',
+  month: 'long',
+  timeZone: 'UTC',
+}).format(Date.UTC(2026, 9, 22));
+
 describe('loadHistory', () => {
   it('reads the history from this origin, in one request', async () => {
     const seen: string[] = [];
@@ -102,7 +109,7 @@ describe('a day of the strip', () => {
 
   it('says the strip in words', () => {
     expect(stripSummary(h, 'livediagram:api')).toBe(
-      '99.17% up over 5 days; 1 day with incidents, the last on 22 October.',
+      `99.17% up over 5 days; 1 day with incidents, the last on ${LONG_22_OCT}.`,
     );
     expect(stripSummary(h, 'nope')).toBe('No checks stored for the last 5 days yet.');
   });
@@ -121,14 +128,23 @@ describe('a day of the strip', () => {
       services: { 'livediagram:api': { p: 99.17, w: 'ud-us', u: [[1, 958]] } },
     } as StatusHistory;
     expect(stripSummary(both, 'livediagram:api')).toBe(
-      '99.17% up over 5 days; 1 day with incidents, the last on 22 October.',
+      `99.17% up over 5 days; 1 day with incidents, the last on ${LONG_22_OCT}.`,
     );
   });
 });
 
 describe('formatting', () => {
   it('writes days, uptimes and durations briefly', () => {
-    expect(formatDay('2026-10-25')).toBe('Sun 25 Oct');
+    // The UTC day, in the reader's locale ("Sun 25 Oct", "Sun, Oct 25").
+    expect(formatDay('2026-10-25')).toBe(
+      new Intl.DateTimeFormat(undefined, {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        timeZone: 'UTC',
+      }).format(Date.UTC(2026, 9, 25)),
+    );
+    expect(formatDay('2026-10-25')).toMatch(/25/);
     expect(formatUptime(100)).toBe('100%');
     expect(formatUptime(99.9812)).toBe('99.98%');
     expect(formatDuration(45 * 60_000)).toBe('45 min');

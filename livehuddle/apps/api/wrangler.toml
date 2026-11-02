@@ -1,0 +1,388 @@
+name = "livehuddle-api"
+# The liveworkspace Cloudflare account, which also hosts livehuddle.app, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+main = "src/index.ts"
+compatibility_date = "2026-05-29"
+
+# Local dev port, off wrangler's 8787 default, which the liveworkspace accounts Worker holds, so
+# livehuddle's stack runs beside it (the router's API_ORIGIN and the docs name the same port).
+[dev]
+port = 9087
+
+# Plain (non-secret) vars. Everything here is every fork's default too, so
+# what only livehuddle.app runs with is NOT here: TELEMETRY_ENABLED and the
+# image gallery caps live in `hosted-vars.json`, which the deploy workflow adds
+# with `wrangler deploy --var` on livehuddle.app's own repository only, and
+# then verifies on the editor worker (docs/specs/016-platform/deployment.md
+# "Hosted profile"). A fork is therefore telemetry-off and uncapped until it
+# opts in, by declaring the var here. TELEMETRY_ENABLED gates the anonymous,
+# first-party product analytics this worker sends to the liveworkspace
+# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/specs/008-telemetry/telemetry.md):
+# "true" turns it on; anything else, or absent, keeps it fully off. TELEMETRY_URL
+# names that service per environment (hosted-vars.json); unset means
+# production's, https://www.liveworkspace.app/api/telemetry. Local dev sets
+# TELEMETRY_URL=http://localhost:8790/api/telemetry in .dev.vars.
+[vars]
+# The sender for this app's email (see EMAIL below). liveplanner.app until livehuddle.app moves to this
+# account and is onboarded to Email Service (liveworkspace/docs/specs/003-accounts/email.md "Senders until the domains move").
+EMAIL_FROM = "livehuddle <hello@liveplanner.app>"
+
+# Origin allow-list for POST /api/ai/read-notes (docs/specs/021-event-storming/note-reader.md). Stated HERE, not in the
+# Cloudflare dashboard, for the reason docs/specs/016-platform/staging-environment.md calls a known sharp edge: a
+# dashboard-only value is invisible to code review, so the repo read as though
+# this endpoint were locked down while production served it wide open. A probe
+# of production (an AI request with no Origin) got past the gate rather than
+# answering `403 origin_not_allowed`, which is only possible with this unset —
+# so the key behind `aiEnabled: true` was spendable from any page.
+#
+# BOTH hosts, and `www` is the one that matters: livehuddle.app 301-redirects
+# to www.livehuddle.app, so that is the origin a real browser sends. Listing
+# only the apex — which is what the Env comment in src/types.ts suggested, and
+# what staging does for its own single host — would 403 every genuine AI request
+# in the editor. The apex stays listed so dropping the redirect can't break it.
+#
+# Scope of the protection, honestly: this stops a third-party WEB PAGE spending
+# the key, because a browser sets Origin and cannot forge it. It does NOT stop a
+# non-browser caller, which can send any Origin it likes. Bounding the budget
+# against that needs AI_REQUIRE_SIGN_IN (deliberately NOT set here: the editor
+# offers AI to guests and /api/capabilities reports `aiEnabled` from the key's
+# presence alone, so requiring sign-in would leave guests a visible panel that
+# 401s — see the note in src/routes/capabilities.ts). AI_RATE_LIMITER (20/60s
+# per IP) remains the only other control.
+AI_ALLOWED_ORIGINS = "https://www.livehuddle.app,https://livehuddle.app"
+
+# The CLI signs in through the MCP worker's OAuth server (docs/specs/015-api/cli.md "Authentication"); the
+# api names it in /api/capabilities. CLI_MIN_VERSION (unset until a release needs a floor) refuses writes
+# from an older CLI.
+OAUTH_ISSUER = "https://mcp.livehuddle.app"
+
+# No bucket: images are liveworkspace's media service's (MEDIA_KEY below), and snapshots and share cards
+# its previews (liveworkspace/docs/specs/006-media/previews.md). The bytes uploaded before that move are still in the previous
+# Cloudflare account's livehuddle-images bucket, until they are migrated into the media service.
+
+# Per-owner rate limiter (Cloudflare Workers Rate Limiting API).
+# Caps writes at 300 / 60s per owner: a generous ceiling for normal
+# editing (autosave + comment posts + log appends) but well below
+# what a malicious bot would push through. The api worker calls
+# `env.WRITE_RATE_LIMITER.limit({ key })` at the top of every write
+# endpoint; over-limit requests get a 429. Namespace ids are
+# arbitrary local identifiers (Cloudflare scopes by binding name +
+# script). When this binding is absent the rate-limit
+# helper falls through to "allow" so deployments without the
+# feature still work.
+[[unsafe.bindings]]
+name = "WRITE_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 300, period = 60 }
+
+# Per-IP limiter for the anonymous telemetry relay (POST /api/events,
+# docs/specs/017-telemetry/telemetry.md "The relay"), which passes the CLI's counts on to the
+# liveworkspace service. Separate namespace from the write limiter so abuse of the
+# public events endpoint can never eat into a user's document-write
+# budget. 120 batches / 60s per IP is generous for a CLI (one event per
+# command) while bounding how fast one source can inflate the public dashboard.
+# Keyed on CF-Connecting-IP in src/index.ts. Absent binding → the
+# helper allows, so a deployment still works.
+[[unsafe.bindings]]
+name = "EVENTS_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1002"
+simple = { limit = 120, period = 60 }
+
+# The document's Durable Object (docs/specs/015-api/api.md "Storage"): one SQLite-backed instance per document
+# id, holding the document's content (tabs, the slide deck, changesets, image references) in its own SQLite and
+# running its realtime room (presence + ordered ops over hibernating WebSockets).
+[[durable_objects.bindings]]
+name = "DOCUMENT_ROOM"
+class_name = "DocumentRoom"
+
+# Each person's Durable Object (src/person-store/person-store.ts): one SQLite-backed instance per person id,
+# holding what livehuddle keeps for the person rather than for one canvas (their shape libraries).
+[[durable_objects.bindings]]
+name = "PERSON_STORE"
+class_name = "PersonStore"
+
+# livehuddle ships fresh on new infrastructure, so the classes start SQLite-backed with no history.
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["DocumentRoom", "PersonStore", "WorkbenchStore"]
+
+# Workbench pairings, tickets and sessions moved to liveworkspace's accounts Worker (liveworkspace/docs/specs/011-workbench/workbench.md),
+# so this Worker's per-person WorkbenchStore goes, with whatever it held.
+[[migrations]]
+tag = "v2"
+deleted_classes = ["WorkbenchStore"]
+
+# No scheduled jobs: each canvas keeps itself (its Durable Object's alarm: the index outbox, the Community check,
+# the daily upkeep) and each person's stores keep theirs. Teams, tokens and the Trash are liveworkspace's.
+
+# Per-IP rate limiter for the sticky-note reader (POST /api/ai/read-notes,
+# docs/specs/021-event-storming/note-reader.md). Separate namespace so AI abuse never eats into document-write
+# or telemetry budgets. 20 requests / 60s per IP is generous for a
+# real user session while bounding runaway model spend. Absent binding
+# → helper allows, so a deployment still works without this feature.
+[[unsafe.bindings]]
+name = "AI_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1003"
+simple = { limit = 20, period = 60 }
+
+# Per-IP limiter for share-code resolution (GET /api/share/<code>). That
+# read carries the optional share password and is otherwise unauthed +
+# exempt from the write limiter, so without this an attacker holding a
+# code could brute-force the password unbounded. 30 resolves / 60s per IP
+# is ample for legit visitors. Separate namespace. Absent binding → the
+# index.ts check is skipped, so a deployment still works.
+[[unsafe.bindings]]
+name = "SHARE_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1004"
+simple = { limit = 30, period = 60 }
+
+# Per-IP throttle for GET /api/unfurl (docs/specs/009-elements/link-cards.md): an unauthenticated outbound
+# page fetch for link-card previews. 60/60s is plenty for a user dropping
+# bookmark cards. Separate namespace. Absent binding → check skipped.
+[[unsafe.bindings]]
+name = "UNFURL_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1005"
+simple = { limit = 60, period = 60 }
+
+# Per-token read throttle for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5): an external
+# integration's reads, keyed on the token id, so one runaway script can't hammer
+# reads independently of the owner's app use. Token WRITES ride
+# WRITE_RATE_LIMITER (also keyed on the token id). Absent binding → allow.
+[[unsafe.bindings]]
+name = "API_TOKEN_READ_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1006"
+simple = { limit = 120, period = 60 }
+
+# The sticky-note photo reader (docs/specs/021-event-storming/note-reader.md) talks to ANY
+# OpenAI-compatible chat-completions endpoint, and WHICH provider is inferred
+# from which key is set — a key is provider-specific, so its name says whose it
+# is (see src/ai-provider.ts):
+#
+#   GOOGLE_AI_STUDIO_API_KEY -> Google, at its OpenAI-compatible endpoint
+#   AI_API_KEY               -> anything else, with AI_BASE_URL + AI_VISION_MODEL
+#
+# Both are SECRETS, provisioned out-of-band:
+#   Local dev: drop one into `apps/api/.dev.vars` (gitignored).
+#   Production: `wrangler secret put <NAME>`.
+#
+# Google outranks the generic key. AI_BASE_URL / AI_VISION_MODEL are plain
+# [vars]; AI_VISION_MODEL overrides the Google default (docs/specs/021-event-storming/note-reader.md).
+#
+# With no key the reader is hidden: GET /api/capabilities answers
+# { aiEnabled: false }, the editor shows no photo import, and the route
+# answers 503. That is the default when unset.
+
+# The image gallery's caps (100 images and 100 MB per person, across every app) are the media service's
+# (liveworkspace/docs/specs/006-media/media.md "Uploads"), not this worker's.
+
+# Transactional & lifecycle email (docs/specs/014-identity/transactional-email.md) goes out through
+# Cloudflare Email Service (liveworkspace/docs/specs/003-accounts/email.md). No API key: the `send_email` binding below is the
+# credential, and without it the whole email feature is inert — no sends, and the email_lifecycle table is
+# never touched, so a deployment with email off (a fork that drops the binding) does zero extra work:
+#
+#   - EMAIL: the `send_email` binding. `wrangler dev` simulates it, printing each email and saving it to a
+#     file, so nothing is sent locally.
+#   - EMAIL_FROM: [vars] From identity. Its domain must be onboarded to Email Service on this account;
+#     livehuddle.app isn't yet, so it sends from liveplanner.app until that domain moves.
+#   - APP_BASE_URL: optional [vars] public origin for links in emails (hosted-vars.json per environment).
+#     Defaults to "https://www.livehuddle.app".
+[[send_email]]
+name = "EMAIL"
+
+# Sign-in (docs/specs/014-identity/auth-and-guest-access.md) goes through the
+# liveworkspace accounts Worker. Four values, provisioned out-of-band so none
+# lands in the public repo (docs/specs/002-project-scope/secrets-policy.md):
+#
+#   ACCOUNTS_URL            the accounts Worker's origin
+#                           (https://www.liveworkspace.app)
+#   API_RESOURCE            this API's registered resource, the access
+#                           token's audience (https://livehuddle.app/api)
+#   ACCOUNTS_CLIENT_ID      this app's OAuth client id
+#   ACCOUNTS_CLIENT_SECRET  its client secret (the only real secret)
+#
+#   - Local dev: put them in `apps/api/.dev.vars` (gitignored), plus
+#     AUTH_ORIGIN=http://localhost:3500 so the callback comes back
+#     through the router. Wrangler reads it on the next `wrangler dev`.
+#   - Production: Cloudflare Worker secrets. The deploy workflow pulls
+#     each from the GitHub repo secret of the same name and pipes it into
+#     `wrangler secret put` on every deploy, so a value rotates by
+#     editing the GitHub secret. Secrets persist across deploys
+#     independently of this file.
+#
+# Guests are liveworkspace's too: the accounts Worker hands each browser a
+# guest token for this API (liveworkspace/docs/specs/003-accounts/accounts.md "Guests"), checked
+# with the same keys. With ACCOUNTS_URL or API_RESOURCE unset no caller has an
+# identity and only share-link visitors are served
+# (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md).
+# The client id and secret come from registering livehuddle with the
+# accounts Worker (liveworkspace/docs/specs/002-architecture/integrating-an-app.md).
+
+# TELEMETRY_KEY is livehuddle's secret on the liveworkspace telemetry service
+# (liveworkspace/docs/specs/008-telemetry/telemetry.md): sent as X-Telemetry-Key, it proves a batch with
+# no Origin (this worker's own events, the relay's, the mcp worker's) is livehuddle's.
+# Provisioned out-of-band like the two above; never in [vars] — it is secret material:
+#
+#   - Local dev: `TELEMETRY_KEY=dev-livehuddle-key` in `apps/api/.dev.vars`
+#     (gitignored), matching the local service's .dev.vars.
+#   - Production: `wrangler secret put TELEMETRY_KEY`, the SAME value on the mcp
+#     worker, and on the liveworkspace service as TELEMETRY_KEY_LIVEHUDDLE.
+#     Generate with `openssl rand -hex 32`.
+#
+# Unset = this worker sends no telemetry, which is what a deployment gets with no
+# configuration. A mismatch is silent (the service drops the batch), so check
+# `wrangler secret list` on all three if server-side counts look flat.
+
+# COMMUNITY_KEY is livehuddle's secret on the liveworkspace Community service
+# (liveworkspace/docs/specs/007-community/community.md), sent as a bearer token on its app routes, where
+# it proves a publish, a sync or a copy is livehuddle's. The service holds the same
+# value as COMMUNITY_KEY_LIVEHUDDLE. Never in [vars]:
+#
+#   - Local dev: `COMMUNITY_KEY=dev-livehuddle-community-key` and
+#     `COMMUNITY_URL=http://localhost:8791/api/community` in `apps/api/.dev.vars`.
+#   - Production and staging: the COMMUNITY_KEY / COMMUNITY_KEY_STAGING GitHub
+#     secrets, synced by the deploy workflow. COMMUNITY_URL comes from hosted-vars.json.
+#
+# Unset = no Community: publishing answers 404, and the sync does nothing.
+
+# MEDIA_KEY is livehuddle's secret on liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md,
+# src/media.ts), which keeps every app's uploaded images. The service holds the same value as
+# MEDIA_KEY_LIVEHUDDLE. Never in [vars]:
+#
+#   - Local dev: `MEDIA_KEY=dev-livehuddle-media-key` and
+#     `MEDIA_URL=http://localhost:8792/api/media` in `apps/api/.dev.vars`.
+#   - Production and staging: the MEDIA_KEY / MEDIA_KEY_STAGING GitHub secrets, synced by the
+#     deploy workflow. MEDIA_URL comes from hosted-vars.json.
+#
+# Unset = no images: the image endpoints answer 503 and the editor hides the Image entry.
+
+# DRIVE_KEY is livehuddle's secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md
+# "Contracts > The apps"); the service holds the same value as DRIVE_KEY_LIVEHUDDLE. It opens the
+# internal export door's `file` format and the import door, nothing else. Never in [vars]:
+#
+#   - Local dev: `DRIVE_KEY=dev-livehuddle-drive-key` in `apps/api/.dev.vars`.
+#   - Production and staging: `wrangler secret put DRIVE_KEY` (and `--env staging`).
+#
+# Unset = the mirror cannot export or import canvases (the two doors take only the index's key).
+
+
+# ---------------------------------------------------------------------------
+# Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livehuddle-api-staging` via
+# `wrangler deploy --env staging`.
+#
+# Everything below is restated ON PURPOSE. Wrangler does NOT inherit
+# bindings into a named environment: `vars`, `r2_buckets`,
+# `durable_objects`, `migrations` and `unsafe` are all non-inheritable, so a
+# block omitted here is a binding MISSING from the deployed staging worker,
+# with no warning. Only `main`, `compatibility_date`, `rules` and `triggers`
+# carry over from the production config above.
+#
+# The values that genuinely differ from production are the
+# R2 bucket, and the email/AI vars that name the public origin. Everything
+# else agreeing with production is the point: staging is a rehearsal.
+# ---------------------------------------------------------------------------
+
+# Named explicitly: wrangler would append "-staging" to the top-level
+# name on its own, but nothing in `--dry-run` prints the name it resolved,
+# and the router's service bindings depend on this exact string.
+[env.staging]
+name = "livehuddle-api-staging"
+
+# TELEMETRY_ENABLED, TELEMETRY_URL and the image caps come from `hosted-vars.json`, exactly as
+# for production (see the top of this file). Staging's events go to the STAGING telemetry
+# service (staging.liveworkspace.app/api/telemetry), never into production's published numbers.
+[env.staging.vars]
+# APP_BASE_URL comes from `hosted-vars.json` per environment, so staging's email and workbench links point
+# back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
+EMAIL_FROM = "livehuddle <hello@liveplanner.app>"
+
+# Lock the AI endpoint to the staging origin so the model key behind it
+# can't be spent from a third-party page (docs/specs/021-event-storming/note-reader.md). Production states the
+# equivalent in the top-level [vars] above, for the same reason: the
+# environment is reproducible from the repo alone — see docs/specs/016-platform/staging-environment.md "Known sharp
+# edge".
+AI_ALLOWED_ORIGINS = "https://staging.livehuddle.app"
+
+# The staging MCP worker's OAuth server, for the CLI against staging.
+OAUTH_ISSUER = "https://mcp-staging.livehuddle.app"
+# No AI_REQUIRE_SIGN_IN, matching production: the editor offers AI to guests, so
+# requiring sign-in here made staging refuse what production allows (the photo
+# reader stopped with "sign in required"), which is drift, not a staging test.
+
+# Rate limiters. Namespace ids deliberately MATCH production's: Cloudflare
+# scopes a namespace per script, and `livehuddle-api-staging` is a different
+# script, so these are already separate counters. Renumbering them would
+# imply the number carries meaning across workers, which it doesn't.
+[[env.staging.unsafe.bindings]]
+name = "WRITE_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 300, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "EVENTS_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1002"
+simple = { limit = 120, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "AI_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1003"
+simple = { limit = 20, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "SHARE_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1004"
+simple = { limit = 30, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "UNFURL_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1005"
+simple = { limit = 60, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "API_TOKEN_READ_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1006"
+simple = { limit = 120, period = 60 }
+
+# A different script is a different Durable Object namespace, so staging's
+# DOCUMENT_ROOM instances are separate from production's for free. The class
+# still needs its own migration tag in this environment.
+[[env.staging.durable_objects.bindings]]
+name = "DOCUMENT_ROOM"
+class_name = "DocumentRoom"
+
+[[env.staging.durable_objects.bindings]]
+name = "PERSON_STORE"
+class_name = "PersonStore"
+
+[[env.staging.migrations]]
+tag = "v1"
+new_sqlite_classes = ["DocumentRoom", "PersonStore", "WorkbenchStore"]
+
+[[env.staging.migrations]]
+tag = "v2"
+deleted_classes = ["WorkbenchStore"]
+
+# Email Service's binding, restated because bindings don't inherit. Staging sends real email, to the same
+# people production would (docs/specs/016-platform/staging-environment.md), from the same sender.
+[[env.staging.send_email]]
+name = "EMAIL"
+
+
+# The four ACCOUNTS_* / API_RESOURCE values and
+# TELEMETRY_KEY come from the
+# `_STAGING` GitHub secrets via the deploy workflow. The model key
+# (GOOGLE_AI_STUDIO_API_KEY) is provisioned by hand exactly as it is for production:
+#   cd apps/api && wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging
+# Worker secrets are per-environment, so staging's never collide with
+# production's.

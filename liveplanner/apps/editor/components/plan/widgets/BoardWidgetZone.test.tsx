@@ -85,13 +85,52 @@ describe('BoardWidgetZone Edit Widgets', () => {
     expect(screen.getByRole('button', { name: 'Edit Widgets' })).toBeTruthy();
   });
 
-  it('still takes a focused widget off with Delete, leaving no focus on it', () => {
+  it('still takes a focused widget off with Delete, moving the focus to the next widget', () => {
     const onChange = show(false);
     const widget = screen.getByRole('listitem', { name: 'Item Count widget' });
     widget.focus();
     fireEvent.keyDown(widget, { key: 'Delete' });
     expect(onChange).toHaveBeenCalledWith(['filter']);
     expect(document.activeElement).not.toBe(widget);
+    onChange.rerender(['filter']);
+    expect(document.activeElement).toBe(screen.getByRole('listitem', { name: 'Filter widget' }));
+  });
+
+  // board-widgets.md "Remove": the focus moves on to the same control, never dropping to the page.
+  it("moves the focus to the next widget's ×, or the one before at the end", () => {
+    const onChange = show(false, true, ['count', 'filter', 'progress']);
+    edit();
+    removeButton()!.focus();
+    fireEvent.click(removeButton()!);
+    onChange.rerender(['filter', 'progress']);
+    expect(document.activeElement).toBe(removeButton('Filter'));
+    const last = removeButton(labelOf('progress'))!;
+    last.focus();
+    fireEvent.click(last);
+    onChange.rerender(['filter']);
+    expect(document.activeElement).toBe(removeButton('Filter'));
+  });
+
+  it("waits for this person's own removal when a peer's change lands first", () => {
+    const onChange = show(false, true, ['count', 'filter', 'progress']);
+    edit();
+    fireEvent.click(removeButton()!);
+    onChange.rerender(['count', 'filter']);
+    expect(document.activeElement).toBe(document.body);
+    onChange.rerender(['filter']);
+    expect(document.activeElement).toBe(removeButton('Filter'));
+  });
+
+  it("moves the focus to the zone's + when the last widget goes, on an unselected board too", () => {
+    const onChange = show(false, true, ['count']);
+    edit();
+    fireEvent.click(removeButton()!);
+    onChange.rerender([]);
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Add a widget' }));
+    // Once widgets are back, a peer emptying the zone leaves the unselected board clean.
+    onChange.rerender(['count']);
+    onChange.rerender([]);
+    expect(screen.queryByRole('button', { name: 'Add a widget' })).toBeNull();
   });
 
   // docs/specs/013-workspace/share-roles.md: widgets are board structure, so only an Editor changes them (the editor's
@@ -153,6 +192,16 @@ describe('BoardWidgetZone +', () => {
     expect(screen.queryByRole('dialog', { name: 'Add a Widget' })).toBeNull();
   });
 
+  // The gallery is a dialog (a search, a rail and tiles), not a menu: a screen reader told "menu" expects menu items
+  // and arrow keys from the button.
+  it('says the + opens a dialog', () => {
+    show(true);
+    const add = screen.getByRole('button', { name: 'Add a widget' });
+    expect(add.getAttribute('aria-haspopup')).toBe('dialog');
+    fireEvent.click(add);
+    expect(screen.getByRole('dialog', { name: 'Add a Widget' })).toBeTruthy();
+  });
+
   it('works out For You only as the gallery opens', () => {
     const suggest = vi.fn(() => [
       { id: 'due' as const, score: 1, reason: '3 cards have due dates' },
@@ -188,13 +237,13 @@ describe('BoardWidgetZone +', () => {
   it('narrows the gallery to a search, and says when nothing matches', () => {
     show(true);
     fireEvent.click(screen.getByRole('button', { name: 'Add a widget' }));
-    fireEvent.change(screen.getByRole('textbox', { name: 'Find a widget' }), {
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Find a widget' }), {
       target: { value: 'votes' },
     });
     expect(screen.getByRole('button', { name: 'Add Top Voted' })).toBeTruthy();
     expect(screen.queryByRole('navigation', { name: 'Widget sections' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Add Completion' })).toBeNull();
-    fireEvent.change(screen.getByRole('textbox', { name: 'Find a widget' }), {
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Find a widget' }), {
       target: { value: 'zzz' },
     });
     expect(screen.getByRole('status').textContent).toMatch(/^No widgets match/);
@@ -258,5 +307,31 @@ describe('BoardWidgetZone, empty', () => {
   it('offers nothing to someone who may not edit', () => {
     empty({ offerAdd: true, canEdit: false });
     expect(screen.queryByRole('button', { name: 'Add a widget' })).toBeNull();
+  });
+});
+
+// board-widgets.md "Reorder": a focused widget moves with Alt+← and Alt+→, and the keyboard stays on it.
+describe('BoardWidgetZone keyboard reorder', () => {
+  const widget = (name: string) => screen.getByRole('listitem', { name: `${name} widget` });
+  it.each([
+    ['ArrowRight', ['count', 'filter', 'progress'], 'count', ['filter', 'count', 'progress']],
+    ['ArrowLeft', ['count', 'filter', 'progress'], 'filter', ['filter', 'count', 'progress']],
+  ] as const)('Alt+%s keeps the focus on the moved widget', (key, before, moved, after) => {
+    const onChange = show(false, true, [...before]);
+    const el = widget(labelOf(moved));
+    el.focus();
+    fireEvent.keyDown(el, { key, altKey: true });
+    expect(onChange).toHaveBeenCalledWith(after);
+    onChange.rerender([...after]);
+    expect(document.activeElement).toBe(widget(labelOf(moved)));
+  });
+
+  it('changes nothing at the end of the row, and keeps the focus there', () => {
+    const onChange = show(false, true, ['count', 'filter']);
+    const el = widget(labelOf('filter'));
+    el.focus();
+    fireEvent.keyDown(el, { key: 'ArrowRight', altKey: true });
+    expect(onChange).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(el);
   });
 });

@@ -1,0 +1,46 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { VotePanelProgress } from '@/components/illustrations/voting';
+
+export const metadata = helpMetadata({
+  title: 'The Vote Panel',
+  description:
+    'The panel that tracks how far through a vote the room has got: dots cast, people finished, and a row per voter with their dots left.',
+  path: '/help/collaboration/session-tools/voting/vote-panel/',
+});
+
+<ArticleLayout
+  title="The Vote Panel"
+  description="Knowing whether anyone is still deciding, which is what decides when to end a vote."
+  categoryTitle="Session Tools"
+  categorySlug="collaboration/session-tools"
+  parentArticle={{ title: 'Dot Voting', slug: 'voting' }}
+  subArticles={getSubArticles('voting').filter((a) => a.slug !== 'vote-panel')}
+>
+
+While a [vote](/help/collaboration/session-tools/voting/) is running, press the **Vote** button in the bottom bar to open the **Vote** panel above it. While casting is open the button counts the dots you have left; after that a dot on it means the vote is still on (amber during the results walkthrough). On a desktop the panel stays open while you vote on the canvas: press the button again to put it away, and it closes by itself when the vote is cleared.
+
+For an Editor, the top of the panel shows your own dots, like "2 of 3 dots left".
+
+## While voting is open
+
+It shows how far the room has got: how many people have finished ("2 of 5 finished"), dots cast against dots available with a progress bar, and a row per person who has started voting, with their spent dots as filled pips and the rest hollow, ending in how many they have left. Below them a line counts who hasn't started, like "1 person hasn't voted yet".
+
+<Figure caption="Filled pips are dots spent; a part-filled row is somebody still deciding.">
+  <VotePanelProgress />
+</Figure>
+
+The tally pills on the canvas tell you what is winning; this tells you whether anyone is still deciding, which is the thing that decides when to press **End vote**.
+
+The buttons at the bottom follow the vote along: **End vote** while it is open, then **Show results** or **Clear** once it has ended, then **Clear vote** after the reveal. They are only there for whoever started the vote (or the [facilitator](/help/collaboration/facilitator/)); everyone else sees "Only the person who started this vote, or the facilitator, can end it." in their place.
+
+## Why the rows have no names
+
+Voter rows aren't labelled with names. Dots aren't recorded against people in a way the app can turn back into a name, so the panel shows the shape of the room rather than a register: all-filled rows are done, part-filled rows are who you are waiting on.
+
+## After the reveal
+
+The panel switches to the [ranked list](/help/collaboration/session-tools/voting/vote-results/) the moment you choose **Show results**.
+
+</ArticleLayout>

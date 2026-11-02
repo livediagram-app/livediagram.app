@@ -14,6 +14,10 @@
  * panel here puts its dark classes in this sheet, after the light ones. */
 @source '../../components/settings';
 @source '../../../../../packages/settings-ui/src';
+/* The header's app logo ("Back to liveplanner" on an app's address), from @liveworkspace/brand: its dark accent
+ * (`dark:text-violet-400`) must sort after this sheet's own `text-brand-700`, or the logo's "live" stays at the
+ * light ink on the dark header (2.7:1). */
+@source '../../../../../packages/brand/src';
 /* The bottom bar's Appearance switch, so its wide-screen label's classes sort with this sheet's own. */
 
 /* The Explorer wears the colours of the app the person came from: its brand ramp, light and dark, as that app's

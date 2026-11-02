@@ -7,7 +7,12 @@
 import { useState } from 'react';
 import type { LaidOutPage, Tab } from '@livedesign/design';
 import { Button, Select, BackBar } from '@livedesign/ui';
-import { exportLogoKit, LOGO_KIT_PNG_SIZES, logoKitFileName } from '@/lib/export-logo-kit';
+import {
+  exportLogoKit,
+  LOGO_KIT_PNG_SIZES,
+  logoKitFileName,
+  logoKitTab,
+} from '@/lib/export-logo-kit';
 import { exportPageLabel } from '@/lib/export-pages';
 import { downloadBlob, loadTabImages, renderTabToSvg } from '@/lib/export-tab';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
@@ -45,7 +50,9 @@ export function LogoKitPanel({
   // Drawn on each render of the panel (a page draws in under a millisecond), which re-renders only
   // as its own choice, state or images change.
   const previewSvg =
-    page && imagesReady ? renderTabToSvg(tab, { images, page, transparentPaper: true }) : null;
+    page && imagesReady
+      ? renderTabToSvg(logoKitTab(tab), { images, page, transparentPaper: true })
+      : null;
   if (!page) return null;
 
   const download = async () => {
@@ -116,7 +123,7 @@ export function LogoKitPanel({
         </p>
       ) : null}
       <div className="flex justify-end">
-        <Button size="sm" onClick={() => void download()} disabled={busy}>
+        <Button size="sm" onClick={() => void download()} busy={busy}>
           {busy ? 'Making the kit…' : 'Download .zip'}
         </Button>
       </div>

@@ -80,4 +80,17 @@ describe('MovablePanel popover: height and scrim', () => {
     fireEvent.pointerDown(document.body);
     expect(onPopoverClose).toHaveBeenCalledTimes(1);
   });
+
+  it('is a region named by its title, as a panel at rest is', () => {
+    const { popover } = renderPopover();
+    expect(popover.getAttribute('role')).toBe('region');
+    expect(popover.getAttribute('aria-label')).toBe('Explorer');
+    cleanup();
+    const view = render(
+      <MovablePanel title="Layers" position={null} defaultCorner="top-left" onMoveTo={() => {}}>
+        <p>body</p>
+      </MovablePanel>,
+    );
+    expect(view.getByRole('region', { name: 'Layers' })).toBeTruthy();
+  });
 });

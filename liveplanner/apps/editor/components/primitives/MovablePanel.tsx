@@ -221,6 +221,10 @@ export function MovablePanel({
           ref={ref}
           data-floating-panel=""
           data-tour-id={dataTourId}
+          // Named by its title, so a screen reader moving into it hears which panel it is in
+          // (docs/specs/004-interface-design/canvas-accessibility.md "Panels are named regions").
+          role="region"
+          aria-label={title}
           // Panel opacity reaches every panel (docs/specs/007-editor/user-preferences.md), the
           // popovers included, unless it is `opaque`. The buttons that open them are not panels and
           // stay opaque.
@@ -309,6 +313,8 @@ export function MovablePanel({
       ref={ref}
       data-floating-panel=""
       data-tour-id={dataTourId}
+      role="region"
+      aria-label={title}
       data-layout-chrome={layoutChrome ? '' : undefined}
       // Marks the panel as opacity-controlled: globals.css applies the
       // user's --lvd-panel-opacity here (docs/specs/007-editor/user-preferences.md) and restores it to

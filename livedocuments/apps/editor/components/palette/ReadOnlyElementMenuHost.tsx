@@ -17,7 +17,9 @@ import {
   readOnlyElementMenuFacts,
   readOnlyElementMenuItems,
 } from '@liveworkspace/workbench/lib/read-only-element-menu';
+import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { ImageAltTextField } from '@/components/palette/ImageAltTextField';
 
 export function ReadOnlyElementMenuHost() {
   const {
@@ -31,6 +33,7 @@ export function ReadOnlyElementMenuHost() {
     openNote,
     followLink,
     beginEdit,
+    setImageAlt,
   } = useEditorContext();
   if (contextMenu?.mode !== 'element') return null;
   const target = activeTab.elements.find((el) => el.id === contextMenu.elementId);
@@ -44,8 +47,12 @@ export function ReadOnlyElementMenuHost() {
     writeText: can.writeText(target) && elementSupportsText(target) && !lockedByOther(target.id),
   });
   const items = readOnlyElementMenuItems(facts);
-  // Nothing this role may do here: the right-click only selected it.
-  if (items.length === 0) return null;
+  // A picture's alt text (docs/specs/009-elements/images.md "Alt text"): every role reads it here, and a Participant
+  // who may write the image's words writes it (alt is in PARTICIPANT_TEXT_FIELDS).
+  const picture = target.type === 'image' && target.imageId ? target : null;
+  const writesAlt = picture !== null && can.writeText(picture) && !lockedByOther(picture.id);
+  // Nothing this role may do or read here: the right-click only selected it.
+  if (items.length === 0 && !picture) return null;
   return (
     <ReadOnlyElementMenu
       key={target.id}
@@ -68,6 +75,16 @@ export function ReadOnlyElementMenuHost() {
             return void copyElementText(facts.text);
         }
       }}
-    />
+    >
+      {picture ? (
+        <>
+          {items.length > 0 ? <ContextMenuDivider /> : null}
+          <ImageAltTextField
+            value={picture.alt}
+            onCommit={writesAlt ? (typed) => setImageAlt(picture.id, typed) : undefined}
+          />
+        </>
+      ) : null}
+    </ReadOnlyElementMenu>
   );
 }

@@ -1,0 +1,160 @@
+/* ── Content, structure and motion card art (components/feature-art/content.tsx, structure.tsx, motion.tsx) ──
+   Each scene reads finished at rest; these move only an accent (a caret, a cursor, a packet, a
+   backdrop) so any frame of the loop is a good picture. Reduced motion settles them below. */
+
+/* A text caret blinking. */
+@keyframes fa-d-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.fa-d-blink {
+  animation: fa-d-blink 1s steps(1, end) infinite;
+}
+
+/* Typing: a run of text revealed left to right, held, then cleared for the next loop. */
+@keyframes fa-d-type {
+  0%,
+  12% {
+    transform: scaleX(0);
+  }
+  42%,
+  92% {
+    transform: scaleX(1);
+  }
+  100% {
+    transform: scaleX(0);
+  }
+}
+.fa-d-type {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: fa-d-type 6s ease-out infinite;
+}
+
+/* A teammate's cursor: from its start offset (--fx, --fy) to where it is drawn, held, back. */
+@keyframes fa-d-move {
+  0%,
+  10% {
+    transform: translate(var(--fx, 0px), var(--fy, 0px));
+  }
+  40%,
+  86% {
+    transform: none;
+  }
+  100% {
+    transform: translate(var(--fx, 0px), var(--fy, 0px));
+  }
+}
+.fa-d-move {
+  animation: fa-d-move 6s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+
+/* Something lands and stays most of the loop (it is part of the finished picture). */
+@keyframes fa-d-land {
+  0%,
+  4% {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.96);
+  }
+  14%,
+  96% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.96);
+  }
+}
+.fa-d-land {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fa-d-land 6s ease-out infinite;
+}
+
+/* A selection or focus ring that holds for most of the loop. */
+@keyframes fa-d-ring {
+  0%,
+  22% {
+    opacity: 0;
+  }
+  30%,
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.fa-d-ring {
+  animation: fa-d-ring 6s ease-in-out infinite;
+}
+
+/* Dots travelling a connector: a round-capped dash pattern sliding toward the target. */
+@keyframes fa-d-dots {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
+.fa-d-dots {
+  animation: fa-d-dots 0.9s linear infinite;
+}
+
+/* A signal packet racing along a straight connector (--dx long). */
+@keyframes fa-d-packet {
+  0% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  10%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(var(--dx, 40px));
+    opacity: 0;
+  }
+}
+.fa-d-packet {
+  transform-box: fill-box;
+  animation: fa-d-packet 1.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+/* The aurora backdrop: soft colour fields drifting slowly. */
+@keyframes fa-d-aurora {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(var(--ax, 18px), var(--ay, -6px)) scale(1.12);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+.fa-d-aurora {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fa-d-aurora 9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fa-d-blink,
+  .fa-d-type,
+  .fa-d-move,
+  .fa-d-land,
+  .fa-d-ring,
+  .fa-d-dots,
+  .fa-d-packet,
+  .fa-d-aurora {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

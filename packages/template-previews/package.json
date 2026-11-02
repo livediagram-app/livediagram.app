@@ -11,6 +11,7 @@
     "./motion": "./src/motion.ts",
     "./story-parts": "./src/story-parts.tsx",
     "./preview-fan": "./src/PreviewFan.tsx",
+    "./deferred-preview-fan": "./src/DeferredPreviewFan.tsx",
     "./testing": "./src/testing.tsx",
     "./preview-art-tile.css": "./src/preview-art-tile.css",
     "./preview-motion.css": "./src/preview-motion.css"
@@ -32,7 +33,7 @@
     "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "oxlint": "^1.88.0",
+    "oxlint": "^1.90.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "typescript": "^7.0.2",

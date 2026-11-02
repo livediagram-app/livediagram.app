@@ -1,4 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import {
+  isServerEmittedEvent as isLivehuddleServerEvent,
+  isValidTelemetryEvent as isLivehuddleEvent,
+} from '@livehuddle/api-schema';
 import { appKey } from './env';
 import { testEnv } from './test-env';
 import { VOCABULARIES } from './vocabularies';
@@ -15,16 +19,12 @@ describe('livehuddle in the telemetry service', () => {
     ).toBeUndefined();
   });
 
-  it("is checked against livediagram's vocabulary, which it is forked from, until its own lands", () => {
-    const created = { category: 'Document', action: 'Created' };
-    expect(VOCABULARIES['livehuddle.app'].isValid(created)).toBe(
-      VOCABULARIES['livediagram.app'].isValid(created),
-    );
-    expect(VOCABULARIES['livehuddle.app'].isValid({ category: 'Nope', action: 'Nope' })).toBe(
-      false,
-    );
-    expect(VOCABULARIES['livehuddle.app'].isServerOnly).toBe(
-      VOCABULARIES['livediagram.app'].isServerOnly,
-    );
+  it("is checked against livehuddle's own api-schema, not livediagram's", () => {
+    const vocabulary = VOCABULARIES['livehuddle.app'];
+    expect(vocabulary.isValid).toBe(isLivehuddleEvent);
+    expect(vocabulary.isServerOnly).toBe(isLivehuddleServerEvent);
+    expect(vocabulary.isValid).not.toBe(VOCABULARIES['livediagram.app'].isValid);
+    expect(vocabulary.isValid({ category: 'Document', action: 'Created' })).toBe(true);
+    expect(vocabulary.isValid({ category: 'Nope', action: 'Nope' })).toBe(false);
   });
 });

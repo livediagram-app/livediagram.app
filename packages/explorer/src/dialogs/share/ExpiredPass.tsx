@@ -49,7 +49,7 @@ export function ExpiredPass({
             variant="secondary"
             size="xs"
             onClick={onExtend}
-            disabled={busy}
+            busy={busy}
             className="whitespace-nowrap"
           >
             {extend}

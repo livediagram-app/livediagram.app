@@ -13,11 +13,12 @@ import {
 // The file each app's item becomes in Drive (liveworkspace/docs/specs/005-drive/drive.md "The file").
 
 describe('APP_FILE_FORMATS', () => {
-  it('names the four apps with the spec table’s kind, MIME type and extension', () => {
+  it('names the five apps (held livehuddle included) with the spec table’s kind, MIME type and extension', () => {
     expect(APP_NAMES.toSorted()).toEqual([
       'livedesign',
       'livediagram',
       'livedocuments',
+      'livehuddle',
       'liveplanner',
     ]);
     expect(APP_FILE_FORMATS).toEqual({
@@ -45,6 +46,12 @@ describe('APP_FILE_FORMATS', () => {
         mimeType: 'application/vnd.livedesign+json',
         extension: '.livedesign',
       },
+      livehuddle: {
+        app: 'livehuddle',
+        kind: 'livehuddle.document',
+        mimeType: 'application/vnd.livehuddle+json',
+        extension: '.livehuddle',
+      },
     });
   });
 
@@ -61,7 +68,7 @@ describe('APP_FILE_FORMATS', () => {
 });
 
 describe('isAppName', () => {
-  it('accepts the four apps', () => {
+  it('accepts the five apps', () => {
     for (const app of APP_NAMES) expect(isAppName(app)).toBe(true);
   });
 
@@ -86,6 +93,7 @@ describe('appNameOfSite', () => {
   it('drops the .app', () => {
     expect(appNameOfSite('livediagram.app')).toBe('livediagram');
     expect(appNameOfSite('liveplanner.app')).toBe('liveplanner');
+    expect(appNameOfSite('livehuddle.app')).toBe('livehuddle');
   });
 });
 
@@ -113,6 +121,7 @@ describe('driveFileName', () => {
     expect(driveFileName('liveplanner', 'Roadmap')).toBe('Roadmap.liveplanner');
     expect(driveFileName('livedocuments', 'Notes')).toBe('Notes.livedocuments');
     expect(driveFileName('livedesign', 'Logo')).toBe('Logo.livedesign');
+    expect(driveFileName('livehuddle', 'Stand-up')).toBe('Stand-up.livehuddle');
   });
 });
 

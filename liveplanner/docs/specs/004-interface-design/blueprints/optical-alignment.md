@@ -134,6 +134,11 @@ rounded-full leading-none [&>svg]:block`, `width` / `height` from `size` when gi
   `<span class="text-optical-line">`; elements pass through. Anchors styled with `buttonClassName` wrap
   their children in `ButtonContent` (help header and contact, `SiteHeader`, marketing `CtaLink` / `Hero`,
   the editor's toasts, sign-in prompts, team invites).
+- `variant="none"` is a button whose look is the caller's own class string: no base, variant or size
+  classes and no `ButtonContent`, only `aria-disabled:cursor-not-allowed aria-disabled:opacity-50` so `busy`
+  reads as disabled ([busy buttons](../busy-buttons.md)).
+- `busy`: `aria-disabled` and `aria-busy` set, `onClick` replaced by one that calls `preventDefault()` (so a
+  submit button does not submit), never `disabled`.
 - `optical-edges` sits on `buttonClassName`'s base, `Chip`, the
   timeline's view and filter buttons, and the help `CountPill`.
 - Invariant: a host with `optical-edges` holds its text in elements, never bare text nodes. CSS

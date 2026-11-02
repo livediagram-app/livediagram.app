@@ -297,7 +297,7 @@ export function CommunityPublishDialog({
             <Button variant="secondary" size="xs" onClick={onClose} disabled={busy}>
               Cancel
             </Button>
-            <Button type="submit" size="xs" disabled={busy}>
+            <Button type="submit" size="xs" busy={busy}>
               {busy ? 'Saving' : editing ? 'Save Changes' : 'Share to Community'}
             </Button>
           </DialogFooter>

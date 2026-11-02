@@ -43,6 +43,7 @@ export function EditorContextMenuHost() {
     removeIconFromElement,
     imageContext,
     removeImageFromElement,
+    setImageAlt,
     applyElementLink,
     commitInlineIcon,
     previewInlineIcon,
@@ -249,6 +250,7 @@ export function EditorContextMenuHost() {
       onRemoveIcon={removeIconFromElement}
       onOpenImagePicker={(id) => imageContext?.onOpenPicker?.(id)}
       onRemoveImage={removeImageFromElement}
+      onSetImageAlt={setImageAlt}
       onRemoveLink={() => applyElementLink(null)}
       onSetIconPosition={commitInlineIcon}
       onPreviewIconPosition={previewInlineIcon}

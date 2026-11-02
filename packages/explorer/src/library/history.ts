@@ -4,6 +4,7 @@
 
 import type { TimelineEvent } from '@liveworkspace/index-client';
 import { PRESENCE_COLOURS } from '@liveworkspace/settings/presence';
+import { WEEKDAY } from '@liveworkspace/ui/date-format';
 import {
   dateKey,
   eventCategory,
@@ -27,9 +28,9 @@ export function historyDayLabel(key: string, now: number): string {
   // Rounded, so a clock change inside the span does not shift a day.
   const ago = Math.round((midnight - day.getTime()) / DAY_MS);
   if (ago === 1) return 'Yesterday';
-  if (ago > 1 && ago < 7) return day.toLocaleDateString('en-GB', { weekday: 'long' });
-  const { label, year } = formatDay(key);
-  return year !== String(today.getFullYear()) ? `${label} ${year}` : label;
+  if (ago > 1 && ago < 7) return WEEKDAY.format(day);
+  const { label, year, withYear } = formatDay(key);
+  return year !== String(today.getFullYear()) ? withYear : label;
 }
 
 /** One entry on the rail: an event alone, or a run of one kind by one person (newest first). */

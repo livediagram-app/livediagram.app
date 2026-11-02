@@ -2,18 +2,21 @@
 
 // The Trash (livediagram's TrashPane): a note on how long things wait here, then the loaded items grouped
 // by whose Trash they are in (yours, then each team's by name), each group a card with its rows: the item,
-// when it was deleted and how long it has left, Restore, and Delete permanently. Your group's header empties
+// when it was deleted and how long it has left, Restore, and Delete Forever. Your group's header empties
 // your Trash. The list is the Trash view's own paged list, so nothing more is fetched.
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import { rowKeys, useFocusAfterRemoval } from '../ui/useFocusAfterRemoval';
 import type { ShownItem } from '../data/overlay';
 import { Button, ConfirmDialog } from '@liveworkspace/ui';
+import { DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { LIST_CARD, MUTED } from '../ui/classes';
 import { InfoIcon, ItemIcon } from '../ui/icons';
 import type { Words } from '../words';
 import { useExplorer } from './context';
 import { EmptyPane } from './EmptyPane';
 import { ThisBrowserTrashGroup, useThisBrowserTrashed } from './ThisBrowser';
+import { quoted } from '../quoted';
 
 export const TRASH_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -46,10 +49,7 @@ export function trashGroups(
 
 /** "Deleted 3 Oct", or why an empty item was tidied away. */
 export function trashedOnLabel(item: Pick<ShownItem, 'trashedAt' | 'trashReason'>): string {
-  const on = new Date(item.trashedAt ?? 0).toLocaleDateString(undefined, {
-    day: 'numeric',
-    month: 'short',
-  });
+  const on = DAY_MONTH.format(item.trashedAt ?? 0);
   return item.trashReason === 'empty' ? `Moved here ${on} because it was empty` : `Deleted ${on}`;
 }
 
@@ -90,11 +90,23 @@ export function TrashPane({
   const groups = useMemo(() => trashGroups(items, teamName, words), [items, teamName, words]);
 
   const localTrashed = useThisBrowserTrashed();
+  const list = useRef<HTMLDivElement>(null);
+  useFocusAfterRemoval(
+    list,
+    useMemo(
+      () =>
+        rowKeys(
+          [],
+          groups.flatMap((g) => g.rows),
+        ),
+      [groups],
+    ),
+  );
 
   if (groups.length === 0 && localTrashed === 0)
     return <EmptyPane view={{ kind: 'trash' }} words={words} />;
   return (
-    <div className="flex flex-col gap-5">
+    <div ref={list} className="flex flex-col gap-5">
       {groups.map((group) => (
         <section key={group.key} aria-labelledby={`trash-${group.key}`} className={LIST_CARD}>
           <header className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-700/60">
@@ -146,11 +158,13 @@ export function TrashPane({
                     </Button>
                     <button
                       type="button"
-                      aria-label={`Delete ${name} permanently`}
+                      // The menu's and the editors' panel's words; the name after them, so a voice command
+                      // saying what the button shows still finds it.
+                      aria-label={`Delete Forever: ${name}`}
                       onClick={() => setPurging(item)}
                       className="rounded-md px-2.5 py-1.5 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                     >
-                      Delete permanently
+                      Delete Forever
                     </button>
                   </div>
                 </li>
@@ -162,7 +176,7 @@ export function TrashPane({
       <ThisBrowserTrashGroup />
       {hasMore ? (
         <div className="flex justify-center">
-          <Button variant="secondary" size="sm" onClick={onLoadMore} disabled={loadingMore}>
+          <Button variant="secondary" size="sm" onClick={onLoadMore} busy={loadingMore}>
             {loadingMore ? 'Loading…' : 'Show more'}
           </Button>
         </div>
@@ -170,7 +184,7 @@ export function TrashPane({
       {purging ? (
         <ConfirmDialog
           open
-          title={`Delete “${purging.title || 'Untitled'}” for good?`}
+          title={`Delete ${quoted(purging.title || 'Untitled')} for good?`}
           message="This cannot be undone."
           confirmLabel="Delete permanently"
           onCancel={() => setPurging(null)}

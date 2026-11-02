@@ -102,7 +102,12 @@ change (D46).
    `pasted-<ms>.<ext>`, D43), then places.
 5. **Resize.** Constrained when `aspectLocked === true` or Shift is held; the ratio held is the
    box's ratio at drag start (`resolveBoxedResize` in `boxed-drag-resolve.ts`). `[QB2]`
-6. **Reset to natural size.** A context-menu action sets width and height to `naturalWidth` /
+6. **Alt text.** `setImageAlt(id, typed)` (`useEditorImages`) cleans `typed` with `cleanImageAlt`; no commit when
+   the element is not an image or the cleaned words equal its stored `alt` (absent reads as `''`); otherwise one
+   `commit` sets `alt`, or drops it when the cleaned words are `''`. The element menu's `ImageAltTextField` holds the
+   draft (D193) and calls it on blur, on Enter and on unmount with a changed draft; Escape (`preventDefault`, so the
+   control menu does not close) resets the draft and blurs without writing.
+7. **Reset to natural size.** A context-menu action sets width and height to `naturalWidth` /
    `naturalHeight` about the element's centre, disabled when either is absent. `[QB3]`
 
 ### Upload (`POST /api/images`)
@@ -188,6 +193,10 @@ This api sweeps no images of its own. A null or `data:` id references nothing
 - Client: `loadTabImages` takes the distinct ids of the tab, uses a `data:` id as is, otherwise
   `apiFetchImageDataUrl` with `documentId` and `shareCode`, decodes each to an
   `HTMLImageElement`, concurrently, with no budget (D45). A failure skips that id.
+- Alt text in exports: `svgImageShape` writes `<title>` (escaped) inside `<image>` when `el.alt` is non-empty; the
+  PowerPoint picture of an image element carries `descr` (`PptxPicture.descr`, `pictureXml`); a Word zone's
+  `DocxImage.descr` is `imageAltTextOf(elements, ids)`, the non-empty `alt` of the zone's image members in paint order
+  joined with `"; "`, written on `wp:docPr` and `pic:cNvPr`. PNG, GIF and PDF carry none.
 - `describeBoxedExport`: `radius = BORDER_RADIUS_PX[borderRadius]` or 4, `objectFit ??
 'contain'`, `href = resolveImageHref?.(imageId)`; the alt-text label only when `href` is
   absent. SVG: `svgImageShape`; PNG / PDF: `drawImageElement` in `export-tab-canvas-draw.ts`.
@@ -420,10 +429,23 @@ reads a 503 as `null`.
   deduped in flight on the client (`dedupeInFlight`).
 - Snapshot: at most `IMAGE_EMBED_BUDGET_BYTES` raw (about 4 MiB base64) per snapshot, read one
   at a time.
+- Alt text clean (`cleanImageAlts`, in every stored-element migration): no allocation when every `alt` is clean;
+  measured 1.6 ms for a 2,000-element tab with 1,000 full-length clean alts, 0.8 ms for 1,000 dirty alts that fit,
+  and about 70 us for each alt over the cap (the grapheme-safe cut), once, since it is then stored clean. Held by
+  `image-alt.perf.test.ts` with `cpuBudgetMs`.
 - Client export: every distinct image fetched concurrently and held as a data URL plus a decoded
   image for the export's duration.
 
 ## Presentation and UX
+
+- **Alt Text field** (`ImageAltTextField`, `apps/editor/components/palette/ImageAltTextField.tsx`): in the Image
+  section under the Change / Remove tiles, only when `imageId` is set; and under the rows of the Participant /
+  Viewer element menu (`ReadOnlyElementMenu` `children`) for an image with a picture. Label "Alt Text" (an
+  `<label>` tied to the field), hint "Describes the picture for screen readers and exports.", a `TextArea` (compact,
+  2 rows, `maxLength={IMAGE_ALT_MAX}`, placeholder "Describe the picture"), and a count "`n` / 250" that turns amber
+  within 20 of the cap, beside a `role="status"` that says "Saved" for 1.6 s after a write that changed the cleaned
+  words. Read-only (a Viewer, or a Participant who may not write it now): the label as a heading and
+  the words, or "Not described yet" in muted italics, with no field.
 
 - **Placeholder** (`ImageEmptyFace`): the empty state on the canvas: dashed outline, badge with
   the image glyph and two rings, "No image yet", "Upload one, or pick from your gallery.", a
@@ -449,6 +471,11 @@ reads a 503 as `null`.
 ## Accessibility
 
 - `<img alt={element.alt ?? ''}>`; `alt` defaults to the file name on attach (D41).
+- The wrapper's `aria-label` is `elementAriaLabel(el)`: the image's `alt` when non-empty after trimming, else
+  `Image` / `Image "<label>"`.
+- The Alt Text field is a native `<textarea>` with a `<label for>`, `aria-describedby` naming the hint and the count;
+  Enter writes, Shift+Enter is refused (one line), Escape resets. The count is `aria-live="polite"` only within 20 of
+  the cap, so a screen reader is not read every keystroke.
 - Picker is a labelled `Dialog` (`ariaLabel="Image picker"`); gallery tiles are buttons labelled
   "Use <name>", delete buttons "Delete <name>".
 - The Upload / Gallery switch is a `role="tablist"` with `aria-selected` tabs, and the delete
@@ -480,55 +507,68 @@ O6 to O9 exist; the cap, R2 and sweep failures are the service's own logs ([medi
 
 ## Testing
 
-| Rule                                                    | Test                                                      | File                                             |
-| ------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------ |
-| 503 without the service                                 | `503 without the media service…`                          | `apps/api/src/routes/images.test.ts`             |
-| Owner required                                          | `400 listing the gallery with no owner`                   | `apps/api/src/routes/images.test.ts`             |
-| Gallery from every app, remembered                      | `lists the gallery from every app…`                       | `apps/api/src/routes/images.test.ts`             |
-| Upload, dedupe, owner remembered; guest hashed          | `uploads to the service…`, `keeps a guest's id…`          | `apps/api/src/routes/images.test.ts`             |
-| Type and size refused before the service                | `refuses an unsupported type or an oversize file…`        | `apps/api/src/routes/images.test.ts`             |
-| Service refusals passed on                              | `passes the service's refusals on…`                       | `apps/api/src/routes/images.test.ts`             |
-| Hash shortcut only for the owner's editor (E4a)         | `the hash-only dedupe shortcut` suite                     | `apps/api/src/routes/images.test.ts`             |
-| Read: owner, unknown id remembered, document gate       | `the byte read` suite                                     | `apps/api/src/routes/images.test.ts`             |
-| Read of another app's upload through a document         | `serves an image uploaded in another app…`                | `apps/api/src/routes/images.test.ts`             |
-| Workbench session read                                  | `under a workbench session` suite                         | `apps/api/src/routes/images.test.ts`             |
-| Delete: owner, idempotent, forgotten here               | `DELETE` suite                                            | `apps/api/src/routes/images.test.ts`             |
-| A document's images pushed on save, link, unlink, purge | `a document's images` suite                               | `apps/api/src/media.test.ts`                     |
-| Account deletion and guest merge reach the service      | `the account` suite                                       | `apps/api/src/media.test.ts`                     |
-| Hosted profile points at the media service              | `turns telemetry on and points each environment…`         | `apps/api/src/hosted-vars.test.ts`               |
-| Sniff, strip, caps, dedupe, racing inserts              | the service's suites                                      | `liveworkspace/apps/media/src/*.test.ts`         |
-| Whitelist, cap, no SVG                                  | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES`                 | `packages/api-schema/src/image-limits.test.ts`   |
-| Usage from the media service                            | `usageOf`                                                 | `apps/api/src/routes/images.test.ts`             |
-| Reference index and its writers                         | [Image reference index](image-reference-index.md#testing) |                                                  |
-| Preview embeds, missing or unservable placeholder       | three `drawDocument` tests                                | `apps/api/src/thumbnail.test.ts`                 |
-| Embed budget in document order                          | `spends a total budget in document order…`                | `packages/api-schema/src/embed-images.test.ts`   |
-| Export embeds `<image>`, placeholder without href       | `image elements` suite                                    | `packages/document/src/svg-render.test.ts`       |
-| Client gate: type, size, empty, error mapping           | `uploadImageFile` suites                                  | `apps/editor/lib/upload-image.test.ts`           |
-| Upload headers, 503 → null                              | `apiUploadImage`, `apiListImages` suites                  | `apps/editor/lib/api-client.test.ts`             |
-| Placeholder factory, aspect lock on                     | `createImage drops a 200x150 placeholder…`                | `packages/document/src/factories.test.ts`        |
-| No colour controls                                      | `supportsColours covers … freehand; not image`            | `packages/document/src/geometry.test.ts`         |
-| Offline data-URI rewrite                                | `offline-images` suites                                   | `apps/editor/lib/offline/offline-images.test.ts` |
-| Palette hides without the service `[QB1]`               | none                                                      |                                                  |
-| Set / Cleared image log `[QB4]` (retired)               | n/a                                                       |                                                  |
-| Picker, placeholder states, paste, export in browser    | none (GB8)                                                |                                                  |
-| Escaped `href`, validated `imageId` (GB1)               | none                                                      |                                                  |
+| Rule                                                    | Test                                                                                           | File                                                                       |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| 503 without the service                                 | `503 without the media service…`                                                               | `apps/api/src/routes/images.test.ts`                                       |
+| Owner required                                          | `400 listing the gallery with no owner`                                                        | `apps/api/src/routes/images.test.ts`                                       |
+| Gallery from every app, remembered                      | `lists the gallery from every app…`                                                            | `apps/api/src/routes/images.test.ts`                                       |
+| Upload, dedupe, owner remembered; guest hashed          | `uploads to the service…`, `keeps a guest's id…`                                               | `apps/api/src/routes/images.test.ts`                                       |
+| Type and size refused before the service                | `refuses an unsupported type or an oversize file…`                                             | `apps/api/src/routes/images.test.ts`                                       |
+| Service refusals passed on                              | `passes the service's refusals on…`                                                            | `apps/api/src/routes/images.test.ts`                                       |
+| Hash shortcut only for the owner's editor (E4a)         | `the hash-only dedupe shortcut` suite                                                          | `apps/api/src/routes/images.test.ts`                                       |
+| Read: owner, unknown id remembered, document gate       | `the byte read` suite                                                                          | `apps/api/src/routes/images.test.ts`                                       |
+| Read of another app's upload through a document         | `serves an image uploaded in another app…`                                                     | `apps/api/src/routes/images.test.ts`                                       |
+| Workbench session read                                  | `under a workbench session` suite                                                              | `apps/api/src/routes/images.test.ts`                                       |
+| Delete: owner, idempotent, forgotten here               | `DELETE` suite                                                                                 | `apps/api/src/routes/images.test.ts`                                       |
+| A document's images pushed on save, link, unlink, purge | `a document's images` suite                                                                    | `apps/api/src/media.test.ts`                                               |
+| Account deletion and guest merge reach the service      | `the account` suite                                                                            | `apps/api/src/media.test.ts`                                               |
+| Hosted profile points at the media service              | `turns telemetry on and points each environment…`                                              | `apps/api/src/hosted-vars.test.ts`                                         |
+| Sniff, strip, caps, dedupe, racing inserts              | the service's suites                                                                           | `liveworkspace/apps/media/src/*.test.ts`                                   |
+| Whitelist, cap, no SVG                                  | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES`                                                      | `packages/api-schema/src/image-limits.test.ts`                             |
+| Usage from the media service                            | `usageOf`                                                                                      | `apps/api/src/routes/images.test.ts`                                       |
+| Reference index and its writers                         | [Image reference index](image-reference-index.md#testing)                                      |                                                                            |
+| Preview embeds, missing or unservable placeholder       | three `drawDocument` tests                                                                     | `apps/api/src/thumbnail.test.ts`                                           |
+| Embed budget in document order                          | `spends a total budget in document order…`                                                     | `packages/api-schema/src/embed-images.test.ts`                             |
+| Export embeds `<image>`, placeholder without href       | `image elements` suite                                                                         | `packages/document/src/svg-render.test.ts`                                 |
+| Client gate: type, size, empty, error mapping           | `uploadImageFile` suites                                                                       | `apps/editor/lib/upload-image.test.ts`                                     |
+| Upload headers, 503 → null                              | `apiUploadImage`, `apiListImages` suites                                                       | `apps/editor/lib/api-client.test.ts`                                       |
+| Alt text cleaned: bidi, white space, ends, cap, empty   | `cleanImageAlt` suite                                                                          | `packages/document/src/image-alt.test.ts`                                  |
+| Every stored path cleans `alt`; untouched list kept     | `cleanImageAlts` suite                                                                         | `packages/document/src/image-alt.test.ts`                                  |
+| Cleaning a large tab stays in budget                    | `alt text clean budgets` suite                                                                 | `packages/document/src/image-alt.perf.test.ts`                             |
+| A Participant's `alt` lands cleaned                     | `cleans a Participant's alt text…`                                                             | `packages/document/src/participant-content.test.ts`                        |
+| SVG `<title>` from alt                                  | `titles the picture with its alt text…`                                                        | `packages/document/src/svg-render.test.ts`                                 |
+| PowerPoint `descr`, Word zone `descr`                   | `writes an image’s alt text as its picture’s descr…`, `writes a zone’s alt text as its descr…` | `apps/editor/lib/office-export/pptx.test.ts`, `docx.test.ts`               |
+| Write, no-op on same, empty removes                     | `setImageAlt` suite                                                                            | `apps/editor/hooks/canvas/useEditorImages.test.ts`                         |
+| Field: draft, Enter, blur, Escape, read-only, count     | `ImageAltTextField` suite                                                                      | `apps/editor/components/palette/ImageAltTextField.test.tsx`                |
+| Editor's Image section offers it only with a picture    | `the Image section’s Alt Text` suite                                                           | `apps/editor/components/palette/EditorContextMenu.image-alt.test.tsx`      |
+| Viewer reads, Participant writes, in the role menu      | `ReadOnlyElementMenuHost alt text` suite                                                       | `apps/editor/components/palette/ReadOnlyElementMenuHost.alt-text.test.tsx` |
+| Canvas name is the alt text                             | `names a picture by its alt text…`                                                             | `apps/editor/lib/element-names.test.ts`                                    |
+| Placeholder factory, aspect lock on                     | `createImage drops a 200x150 placeholder…`                                                     | `packages/document/src/factories.test.ts`                                  |
+| No colour controls                                      | `supportsColours covers … freehand; not image`                                                 | `packages/document/src/geometry.test.ts`                                   |
+| Offline data-URI rewrite                                | `offline-images` suites                                                                        | `apps/editor/lib/offline/offline-images.test.ts`                           |
+| Palette hides without the service `[QB1]`               | none                                                                                           |                                                                            |
+| Set / Cleared image log `[QB4]` (retired)               | n/a                                                                                            |                                                                            |
+| Picker, placeholder states, paste, export in browser    | none (GB8)                                                                                     |                                                                            |
+| Escaped `href`, validated `imageId` (GB1)               | none                                                                                           |                                                                            |
 
 ## Constants and configuration
 
-| Name                          | Value                                     | Provenance / safe range                                      |
-| ----------------------------- | ----------------------------------------- | ------------------------------------------------------------ |
-| `MAX_IMAGE_BYTES`             | `10 * 1024 * 1024`                        | Spec per-file cap; below the 100 MB Workers body limit       |
-| `MAX_IMAGE_MB`                | `10`                                      | Derived, for copy                                            |
-| `ACCEPTED_IMAGE_TYPES`        | png, jpeg, webp, gif                      | Spec whitelist; SVG must never join                          |
-| `MAX_BODY_BYTES`              | `8 * 1024 * 1024`                         | Non-image write cap in `limits.ts`                           |
-| `MEDIA_URL`                   | `https://www.liveworkspace.app/api/media` | Client default; hosted per environment (`hosted-vars.json`)  |
-| `MEDIA_KEY`                   | secret                                    | Matches the service's `MEDIA_KEY_LIVEDOCUMENTS`; unset = off |
-| `MEDIA_APP`                   | `'livedocuments.app'`                     | The service's app name for this api                          |
-| `MEDIA_REFS_PER_DOCUMENT_MAX` | 1000                                      | `@liveworkspace/media`; ten times the gallery cap            |
-| `IMAGE_EMBED_BUDGET_BYTES`    | `3 * 1024 * 1024`                         | Spec; 1 to 8 MiB keeps snapshots streamable                  |
-| Read `Cache-Control`          | `private, max-age=86400`                  | Spec; `private` is load-bearing                              |
-| Sniff window                  | first 16 bytes, minimum 12                | Longest signature (WebP) needs 12                            |
-| Gallery placement size        | `240` px on the longer side               | D40; literal `max` in `addImageFromGallery`                  |
-| `createImage` size            | 200 × 150                                 | D49                                                          |
-| `WRITE_RATE_LIMITER`          | 300 per 60 s                              | `wrangler.toml`, namespace `1001`                            |
-| Buckets                       | none                                      | Previews are liveworkspace's                                 |
+| Name                          | Value                                     | Provenance / safe range                                                                                                       |
+| ----------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `MAX_IMAGE_BYTES`             | `10 * 1024 * 1024`                        | Spec per-file cap; below the 100 MB Workers body limit                                                                        |
+| `MAX_IMAGE_MB`                | `10`                                      | Derived, for copy                                                                                                             |
+| `ACCEPTED_IMAGE_TYPES`        | png, jpeg, webp, gif                      | Spec whitelist; SVG must never join                                                                                           |
+| `MAX_BODY_BYTES`              | `8 * 1024 * 1024`                         | Non-image write cap in `limits.ts`                                                                                            |
+| `MEDIA_URL`                   | `https://www.liveworkspace.app/api/media` | Client default; hosted per environment (`hosted-vars.json`)                                                                   |
+| `MEDIA_KEY`                   | secret                                    | Matches the service's `MEDIA_KEY_LIVEDOCUMENTS`; unset = off                                                                  |
+| `MEDIA_APP`                   | `'livedocuments.app'`                     | The service's app name for this api                                                                                           |
+| `MEDIA_REFS_PER_DOCUMENT_MAX` | 1000                                      | `@liveworkspace/media`; ten times the gallery cap                                                                             |
+| `IMAGE_EMBED_BUDGET_BYTES`    | `3 * 1024 * 1024`                         | Spec; 1 to 8 MiB keeps snapshots streamable                                                                                   |
+| Read `Cache-Control`          | `private, max-age=86400`                  | Spec; `private` is load-bearing                                                                                               |
+| `IMAGE_ALT_MAX`               | `250`                                     | One or two sentences; screen-reader guidance keeps alt short (about 150), longer descriptions belong in the page; 125 to 1000 |
+| `IMAGE_ALT_WARN_LEFT`         | `20`                                      | When the count turns amber and is announced; 10 to 50                                                                         |
+| Sniff window                  | first 16 bytes, minimum 12                | Longest signature (WebP) needs 12                                                                                             |
+| Gallery placement size        | `240` px on the longer side               | D40; literal `max` in `addImageFromGallery`                                                                                   |
+| `createImage` size            | 200 × 150                                 | D49                                                                                                                           |
+| `WRITE_RATE_LIMITER`          | 300 per 60 s                              | `wrangler.toml`, namespace `1001`                                                                                             |
+| Buckets                       | none                                      | Previews are liveworkspace's                                                                                                  |

@@ -1,0 +1,51 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { IdeaBoxCard } from '@/components/illustrations/palette-collaborate';
+
+export const metadata = helpMetadata({
+  title: 'Idea Boxes',
+  description:
+    'Anonymous submissions held until you open the box, then scattered to sticky notes you can arrange, move and dot-vote.',
+  path: '/help/palette/collaborate/idea-boxes/',
+});
+
+<ArticleLayout
+  title="Idea Boxes"
+  description="Anonymous submissions, held until you open the box."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Collaborate elements', slug: 'collaborate' }}
+  subArticles={getSubArticles('collaborate').filter((a) => a.slug !== 'idea-boxes')}
+>
+
+An idea box collects anonymous submissions and holds them until you open it. It sits in the palette's **Ask** category, one of Workshop mode's [Collaborate](/help/palette/collaborate/) categories. Its label is the prompt ("What might go wrong?"); double-click it to write your own.
+
+## While it is closed
+
+Editors and anyone on a Participant pass add an idea from the field at the bottom of the box, which is marked **Anonymous**, and presses Enter. No name is recorded against it: the element has nowhere to store one. An idea can be up to 500 characters, and a box holds up to 300.
+
+While it is closed the box shows a **count only**, sealed behind a lock, not the text, and not even to the person who wrote it. The count pops each time an idea lands, so the room can watch the box fill.
+
+<Figure caption="Closed, the box shows how many ideas are in it and nothing else.">
+  <IdeaBoxCard />
+</Figure>
+
+The anonymity is against the other people in the room. Someone inspecting the network traffic in their browser's developer tools could still work out who sent what, so it is not a secret ballot.
+
+## Opening it
+
+**Open the Box** shows every idea to the room, one row each, numbered in the order they arrived. There is no closing it again: the flag protects the writing round, it isn't a toggle. People can keep adding ideas after it is open.
+
+Once it is open, **Scatter to Sticky Notes** turns the ideas into ordinary [sticky notes](/help/palette/tools/sticky-notes/) beside the box, in rows of four, so you can arrange, move and [dot-vote](/help/collaboration/session-tools/voting/) them. The stickies carry no author either. Scattering is undoable like any other add.
+
+To reuse the box for another round, choose **Empty the Box** from its **…** menu. That clears every idea and closes the lid again.
+
+Opening, scattering and emptying belong to the [facilitator](/help/collaboration/facilitator/) while somebody holds that role, and to any editor otherwise.
+
+<Tip>
+  Use it for retro round one, pre-mortems, and anything where the honest answer needs the safety of
+  not being attributed.
+</Tip>
+
+</ArticleLayout>

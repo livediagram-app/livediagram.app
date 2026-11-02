@@ -19,7 +19,7 @@ import {
   useState,
 } from 'react';
 import { APP_KINDS } from '@liveworkspace/index-client';
-import { BackBar } from '@liveworkspace/ui';
+import { BackBar, Button } from '@liveworkspace/ui';
 import type { InboxComment, InboxTarget, InboxVerb, ItemPlace } from '../../types';
 import { relativeSince, useNow } from '../../time';
 import { CheckIcon, CommentIcon, OpenIcon, ReplyIcon, SendIcon, TeamIcon } from '../../ui/icons';
@@ -146,6 +146,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
   const titleId = useId();
   const titleRef = useRef<HTMLHeadingElement>(null);
   const replyRef = useRef<HTMLTextAreaElement>(null);
+  const sendRef = useRef<HTMLButtonElement>(null);
   const openRef = useRef<HTMLSpanElement>(null);
   const [busy, setBusy] = useState<InboxVerb | null>(null);
   const [failed, setFailed] = useState<InboxVerb | null>(null);
@@ -218,6 +219,8 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
       announce('Reply sent');
       // Sent, but the choice has moved on: the row on show keeps its own draft and thread.
       if (entryKeyRef.current !== from) return;
+      // The emptied draft disables Send: the keyboard goes back to the reply box rather than the page body.
+      if (document.activeElement === sendRef.current) replyRef.current?.focus();
       setDraft('');
       setSent((s) => [
         ...s,
@@ -316,11 +319,12 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
           </button>
         ) : null}
         {primaryVerb ? (
-          <button
-            type="button"
+          <Button
+            variant="none"
             className={canReply ? SECONDARY : PRIMARY}
             aria-keyshortcuts="e"
-            disabled={busy !== null}
+            // Keeps the keyboard while it works (busy-buttons.md); a failure's alert is then beside it.
+            busy={busy !== null}
             onClick={() => void run(primaryVerb)}
           >
             <CheckIcon size={15} />
@@ -334,7 +338,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
             <kbd className={KBD} aria-hidden>
               E
             </kbd>
-          </button>
+          </Button>
         ) : null}
         <Link
           href={href}
@@ -420,14 +424,17 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
                 to send
               </span>
             )}
-            <button
+            <Button
+              ref={sendRef}
               type="submit"
+              variant="none"
               className={PRIMARY}
-              disabled={busy !== null || draft.trim() === ''}
+              disabled={draft.trim() === ''}
+              busy={busy !== null}
             >
               <SendIcon size={14} />
               {busy === 'reply' ? 'Sending…' : 'Send'}
-            </button>
+            </Button>
           </div>
         </form>
       ) : null}

@@ -1,0 +1,71 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Templates',
+  description:
+    'Start a canvas from a ready-made template instead of a blank canvas, find one by name or category, and restyle it with any theme.',
+  path: '/help/canvas/templates/',
+});
+
+<ArticleLayout
+  title="Templates"
+  description="Begin a canvas from a ready-made starting point instead of an empty canvas, find the one you need, and adapt it to your needs."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  subArticles={getSubArticles("templates")}
+>
+
+A blank canvas is freeing, but sometimes you would rather start with structure already in place. Templates give you a ready-made canvas as a starting point, filled with believable example content, so you can begin from something shaped roughly like what you need and adapt it, instead of building every diagram from nothing.
+
+## Starting from a Template
+
+When you [create a new canvas](/new), the canvas is made there and then, saved where new canvases go (see [Default Folders](/help/explorer/folders/default-folders/)). The empty tab then opens on **Start a Workshop**: its **Recommended** templates first, then every template in groups beside them, with a search. Click a template and the tab fills with it; from there it is an ordinary canvas, to move, edit, add to and delete from as on any canvas.
+
+Every new tab, and every tab you empty, offers the same start. Close it with its **×** to begin from a blank canvas; while the tab is still empty, **Show Templates** in the strip under the palette brings it back.
+
+The search at the top of the start shows up to six matches, with **Show All** for the rest, and pressing the down arrow in the search box takes you to the first card it found.
+
+## What's in the Catalogue
+
+The templates are grouped by what they are for, in fourteen categories listed in alphabetical order, and a start skips a category that has nothing in it. A template lives in one category, and a few also appear in another where you would naturally look for them (a RACI Matrix is under both **People & Teams** and **Planning**), so they are listed under each:
+
+| Category                  | Templates                                                                                                                                                         | Also shown here                                                        |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| **Brainstorming**         | Affinity Map, Brainstorm Board, Crazy 8s, Idea Garden                                                                                                             | Concept Map                                                            |
+| **Decisions**             | Fishbone, Comparison Table, Prioritization Matrix, Risk Matrix, Pre-Mortem, Eisenhower Matrix                                                                     | Venn Diagram                                                           |
+| **Goals & Metrics**       | OKR Tree, Metric Tree, Objectives Planner                                                                                                                         | Opportunity Solution Tree                                              |
+| **Meetings & Workshops**  | Meeting Agenda, Workshop Board, [Lean Coffee and Town Hall Q&A](/help/palette/collaborate/qa-boards/)                                                             | Brainstorm Board, All-Hands Hall, Event Storming, Crazy 8s, Sketchnote |
+| **People & Teams**        | RACI Matrix, Family Tree, 30-60-90 Day Plan                                                                                                                       | Stakeholder Map                                                        |
+| **Planning**              | Timeline, Horizontal Milestone Timeline, Vertical Milestone Timeline, Gantt Chart, Roadmap                                                                        | RACI Matrix, User Story Map, Eisenhower Matrix, 30-60-90 Day Plan      |
+| **Processes & Workflows** | Value Stream Map                                                                                                                                                  | Data Flow Diagram, Event Storming, Service Blueprint                   |
+| **Product & UX**          | Venn Diagram, User Journey, User Story Map, Empathy Map, Opportunity Solution Tree, Service Blueprint, User Persona, Comic Strip, Paper Prototype, Journey Doodle | Affinity Map, Crazy 8s, Value Proposition Canvas                       |
+| **Quizzes & Games**       | Pub Quiz, Icebreaker Questions, Two Truths and a Lie, Would You Rather, Find Someone Who Bingo, Doodle Warm-Up                                                    |                                                                        |
+| **Retrospectives**        | Retrospective, Start, Stop, Continue, Mad, Sad, Glad, 4Ls Retrospective, Sailboat Retrospective                                                                   | Incident Postmortem, Pre-Mortem                                        |
+| **Software & IT**         | Data Flow Diagram, System Architecture, Cloud Architecture, State Machine, Event Storming, Incident Postmortem, Threat Model, Network Diagram                     |                                                                        |
+| **Strategy**              | SWOT, Business Model Canvas, Stakeholder Map, Wardley Map, Value Proposition Canvas, Rich Picture, PESTLE Analysis                                                | Roadmap, OKR Tree, Pre-Mortem                                          |
+| **Teaching & Learning**   | Sketchnote, KWL Chart, Concept Map                                                                                                                                | Timeline, Venn Diagram, Pub Quiz, Family Tree                          |
+| **Virtual Spaces**        | Virtual Office, Coworking Space, Team Pod, All-Hands Hall                                                                                                         |                                                                        |
+
+**Find a template** finds a template by its name, its description, its category, or the everyday words people use for it: try "1:1", "retro", "erd", "vsm", "pestel" or "onboarding". Every word you type has to match.
+
+**Blank Workshop** leads the **Popular** shelf, apart from the categories since starting from nothing is not a kind of diagram: an empty tab to run a retro, town hall or workshop with timers, votes and polls to hand (see [Workshop Mode](/help/canvas/workshop-mode/)). After it, Popular shows a few of the templates most people start from. **Blank Diagram** and **Blank Whiteboard** are empty canvases too, kept for links that name them; like every template they open as a Workshop tab.
+
+Each template arrives as real elements rather than a picture: a Gantt chart's bars are shapes you drag, a Sketchnote's strokes are drawings you can move or erase. Nothing in a template is locked or special.
+
+## Changing the Theme
+
+A new canvas starts on the Default theme, and a template picked on a start takes the tab's current theme. Once you are on the canvas, click the **Theme & canvas** button in the bottom-right corner to open the **Tab Style** dialog and try a different [theme](/help/canvas/themes/): it recolours the whole template at once.
+
+## Making It Your Own
+
+A template is just a head start, not a constraint. Everything in it is fully editable: rename and recolour the elements, restyle the whole thing with a different theme, or strip out the parts you do not need. Because the canvas works the same as any other, you can also add [tabs](/help/tabs/using-tabs/), invite others, and share it once you have shaped it into what you want.
+
+<Tip>
+  Templates pair naturally with themes: pick a layout that fits your content, then try a few themes
+  from the Tab Style dialog to find the look you want. Double-click a theme to apply it and close
+  the dialog in one go.
+</Tip>
+
+</ArticleLayout>

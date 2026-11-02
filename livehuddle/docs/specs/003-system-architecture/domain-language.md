@@ -1,0 +1,185 @@
+# Domain language
+
+## Mode, kind and template
+
+Three words describe how a document and its tabs differ. They answer different questions and are never
+interchangeable. These are design decisions, taken before any feature that uses them.
+
+| Term         | Answers                        | Values                                                      | Where it lives                             |
+| ------------ | ------------------------------ | ----------------------------------------------------------- | ------------------------------------------ |
+| **mode**     | How is a tab worked on?        | Workshop, the one mode (`EditorMode`)                       | Every tab; `Tab.opensIn` reads as Workshop |
+| **kind**     | What is a tab?                 | the general diagram tab, or Event Storming (`TabKind`)      | `Tab.kind`                                 |
+| **template** | What was a document made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation                 |
+
+### Mode
+
+- An **editor mode** is how a tab is worked on. livehuddle has one, **Workshop**, so every tab is in it and there is
+  no switch ([Editor modes](../007-editor/editor-modes.md)).
+- A mode is never a type of document or tab.
+- Whiteboarding is an activity. There is no whiteboard tab kind, mode or document type.
+- Running a session (a retro, a town hall) is what Workshop mode is for. A session is an activity, never a tab kind
+  or a stored thing; "Session" and "Collaborate" never name the mode, and neither does its old name, "Facilitate".
+- "Workshop" names the mode; a start's template group is never called Workshops (Workshop's is **Ideation**). The
+  template catalogue's **Workshops** category and the community's **Workshops** category stay: they say what a
+  template is for, as **Planning** does.
+
+### Kind
+
+- A **tab kind** is what a tab is. It is reserved for boards that do not follow the homogeneous environment of the
+  general diagram tab, with their own notation, rules and data.
+- The general diagram tab is the default kind. **Event Storming** is the only other kind. (Plan's Board, Sheet,
+  Dashboard and Form tabs went to liveplanner with Plan mode; a stored one reads as a general tab.)
+- A new kind is added only when the general tab cannot serve the use.
+- "Board type" means a kind. It never names a template or a mode.
+
+### Template
+
+- A **template** is what a document was made from. It shapes the starting content of a general diagram tab and
+  then has no further hold on it.
+- Templates group into **template families** where a family is meaningful to people, for example Retrospectives
+  (several retrospective formats).
+- A template or a template family is never a kind or a type: a retrospective is a general diagram tab made from a
+  retrospective template.
+
+### Using the three together
+
+- **Default folders** are keyed in the order kind, template family, then mode ([Default folders](../013-workspace/default-folders.md)).
+- **Explorer filters** offer them as separate chips: Opens in (mode), Kind and Template ([Explorer filters](../013-workspace/explorer-filters.md)).
+- Code, copy and specs use these words only in these meanings.
+
+## Diagram elements
+
+The words for the diagram-building elements ([The card](../009-elements/card.md), [The badge](../009-elements/badge.md),
+[The step number](../009-elements/step-number.md), [The boundary](../009-elements/boundary.md),
+[Timeline](../009-elements/timeline.md)).
+
+| Term                | Means                                                                                   | Never called                              |
+| ------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------- |
+| **Card**            | The diagram element (`card`) with a header band, media, title, meta line, body and tags | node card, info card                      |
+| **slot**            | One part of a Card a person switches on or off                                          | section, field (in copy)                  |
+| **Badge**           | The small pill element (`badge`)                                                        | tag (a tag is a chip inside a Card), pill |
+| **Step number**     | The numbered disc element (`step`)                                                      | marker (that is a shape's status mark)    |
+| **attachment**      | A badge or step number held on one of eight points of a host element                    | group, pin, dock                          |
+| **host**            | The element an attached badge or step number sits on                                    | parent                                    |
+| **Boundary**        | The titled, tinted container element (`boundary`)                                       | zone, group, frame (that is the Frame)    |
+| **concept graphic** | The Timeline: one element laying out its own rows                                       | SmartArt, diagram                         |
+| **row**             | One milestone of a concept graphic (`conceptRows`)                                      | item                                      |
+
+## Agents
+
+The words for a program working on documents for a person ([Agents](../024-agents/README.md)).
+
+| Term               | Means                                                                                                   | Never called                            |
+| ------------------ | ------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| **agent**          | A program acting as a person through their API token: an MCP client, a CLI caller, a script             | bot, AI user, assistant                 |
+| **changeset**      | One agent write to one tab: atomic, sequenced by the room, attributed, revertable                       | batch, commit, patch                    |
+| **edit operation** | One step in a changeset (`set`, `add`, `connect`, ...), compiled into element ops                       | op (that is a room op), action, command |
+| **view**           | A read-only text projection of a tab (outline, graph, layout, ...)                                      | mode, format                            |
+| **ref**            | The short name a view prints for an element: its id, or its shortest unique id prefix                   | handle (that is a mention), alias       |
+| **selector**       | An expression matching one or more elements (a ref, `type:sticky`, `in:f1`)                             | query, filter (that is the Explorer's)  |
+| **lint finding**   | One problem the diagram lint reports (`box-overlap`), with the refs involved                            | warning, issue                          |
+| **access level**   | What a share link, embed or token admits: Viewer, Participant or Editor (`view`, `participate`, `edit`) | permission, scope (the field is `role`) |
+| **ownership**      | The owner's powers over a document (sharing, delete, move), apart from any level                        | admin, edit level                       |
+
+- **Participant** is the access level; a person's name and colour (the `participants` table) are their
+  **display identity**.
+- An **element op** (`ElementOp`) stays the room's unit; an edit operation is the agent's, and compiles into them.
+- A CLI **command** and an MCP **tool** are the two front doors to one **verb** (`tab.view`, `element.set`).
+
+## Colours
+
+The words for choosing a colour ([Colour picker](../004-interface-design/colour-picker.md)).
+
+| Term                     | Means                                                                                             | Never called                        |
+| ------------------------ | ------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| **colour picker**        | The one control that chooses a colour, in any skin                                                | swatch picker, palette, colour well |
+| **standard colours**     | The ten named colours every picker offers (Ink or White, Grey, Red ... Pink)                      | stock colours, presets              |
+| **tone**                 | Which version of the standard colours a picker offers: `strong` (lines, text) or `soft` (fills)   | shade, variant, a drawing finish    |
+| **theme colours**        | The active theme's own colours, offered on the canvas only                                        | presets                             |
+| **Custom colours**       | The colours picked with + in the document, kept with its tabs                                     | custom swatches, recent colours     |
+| **custom colour editor** | The square, hue, hex and eyedropper panel that **Add a custom colour** (four coloured dots) opens | colour wheel, native picker         |
+| **skin**                 | Where and how a picker opens: inline, field, swatch button                                        | variant, mode                       |
+
+## Drawing
+
+The words for how elements are drawn, apart from their colours ([Finish](../008-canvas/finish.md)).
+
+| Term           | Means                                                                                           | Never called                   |
+| -------------- | ----------------------------------------------------------------------------------------------- | ------------------------------ |
+| **finish**     | The drawing style of a tab and its elements: Flexible (default), Professional, Sketch or Marker | tone, look, style, render mode |
+| **Follow Tab** | An element with no finish of its own, drawn in its tab's                                        | inherit, default               |
+
+## Repositories and workbenches
+
+The words for diagrams living beside code ([Repositories](../027-repositories/README.md),
+[Workbench embeds](../013-workspace/workbench-embeds.md)).
+
+| Term                    | Means                                                                                 | Never called                           |
+| ----------------------- | ------------------------------------------------------------------------------------- | -------------------------------------- |
+| **repository link**     | `livehuddle.toml`: binds a directory to the documents it **covers**                   | project, workspace, scope              |
+| **mirror level**        | How much of the covered documents a link writes: `none`, `index`, `files`             | sync mode                              |
+| **snapshot**            | A tab as a repository holds it, at a recorded revision                                | copy (that is Drive's), backup, cache  |
+| **sync**                | One pass of a link: read, merge, send, write                                          | refresh, update                        |
+| **base**                | The snapshot a local change was made from; the merge's common ancestor                | original, previous                     |
+| **lost local value**    | A field both sides changed, kept in the report and as a comment, never applied        | conflict (that is a changeset's 409)   |
+| **source**              | A diagram as text in a repository (a Mermaid file or fence), bound to a tab           | diagram file, code diagram             |
+| **bridge**              | One format's parser and serialiser, with the capabilities it expresses                | adapter, converter                     |
+| **compatibility**       | Whether a bound tab may hold residue: `relaxed` (default) or `strict`                 | mode (that is the editor's)            |
+| **residue**             | What a bound tab holds that its source's format cannot express                        | extras, unsupported                    |
+| **workbench**           | A developer tool that frames the editor beside an agent (an agent workbench, VS Code) | host (that is a profile's server), IDE |
+| **selection reference** | The text naming what was selected, attached to a person's message to their agent      | context, selection payload             |
+
+## Community
+
+The words for the public gallery of published documents ([Community](../025-community/community.md)).
+
+| Term               | Means                                                                                       | Never called                          |
+| ------------------ | ------------------------------------------------------------------------------------------- | ------------------------------------- |
+| **Community**      | The public gallery of published documents; the app at `/community`                          | Gallery, Showcase or Feed as its name |
+| **post**           | One document published to Community (`CommunityPost`); a document has at most one           | listing (in code), entry, submission  |
+| **author**         | The signed-in owner who published a post, shown by their display identity                   | creator, poster, publisher            |
+| **category**       | The one coarse subject of a post, from a closed set (`architecture`, `flows`, ...)          | type, kind (that is a tab's), section |
+| **tag**            | A normalised free-form word on a post, up to five                                           | label, keyword, topic                 |
+| **community link** | The view-role share link a post owns: never listed, never expires, no room, no comments     | public link, gallery link             |
+| **community key**  | The random per-browser key the Community app sends for likes and reports; never an owner id | voter id, device id                   |
+
+- **Edit Listing** names the act of changing a post's details in copy; the thing is still a post.
+
+## Animation
+
+- An **animation set** is the catalogue of animations one family of elements takes: Shape, Sticky, Drawing,
+  Media, Table, and Text for words ([Element animations](../028-animation/element-animations.md)). Icons, charts
+  and arrows keep sets of their own.
+- An element's **body set** animates the element; the **Text set** animates its words. A set is never a kind or a
+  mode.
+- A **reveal** brings an element or its words in; a **loop** repeats around the rest frame.
+
+## Canvas
+
+What people see a livehuddle item called is a **Canvas** (plural **canvases**), as the platform names it
+(liveworkspace's one-explorer spec: livehuddle makes Canvases, liveplanner Plans, livedocuments Documents and
+livedesign Designs). Copy follows the app's casing: **New Canvas**, **Share This Canvas**, "Untitled canvas", "your
+canvases". The shared Explorer takes the word from `KIND_WORDS` in `packages/explorer/src/words.ts`, never from copy
+of its own. Only what people see is renamed: code, types, API routes, URL paths (`/document/<id>`), MCP tool names
+(`create_document`), CLI commands (`document ls`), storage keys, telemetry events and database columns still say
+**document**, and specs that describe them do too. Search keywords keep "document" beside "canvas", so an old search
+still finds the command or article. Canvases stored as "Untitled document" still count as untitled. "Canvas" also
+stays the word for the drawing surface of a tab; a sentence that would say both reads as "your work" instead. The tab
+menu's item for putting a tab into another canvas is **Add to Another Canvas**, apart from the palette's **Add to
+canvas**, which puts an element on the drawing surface. The **Document** shape is a shape, not an item, and keeps its
+name.
+
+## This Browser
+
+**This Browser** is the one name for a canvas saved only in this browser ([Offline Mode](../006-document/offline-mode.md)):
+the place it lives (the Explorer's This Browser section, beside My Work and the teams), the pill and badge that
+mark it, and where a new guest's documents start. A document is **in This Browser**; it is never "Local Only",
+"Local Browser" or "offline" in copy. "Offline Mode" stays the name of the feature, and code may say `offline`.
+
+## Names in a sentence
+
+Copy that builds a phrase around a name (a field, a note, a template, a chart type, an element type in
+an agent's error) takes its article from the name: `withArticle` / `indefiniteArticle` in `@livehuddle/document`
+(re-exported by `@livehuddle/ui`). A vowel sound takes "an" ("Add an image",
+"Create an Org Chart", "is not an Estimate option"), and a vowel said "you" keeps "a" ("a User Persona", "a
+UML Class"). A fixed "a" before an interpolated name is how "Create a Org Chart" reached the marketing site.

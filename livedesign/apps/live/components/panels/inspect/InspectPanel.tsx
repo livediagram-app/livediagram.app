@@ -16,7 +16,7 @@ import {
   type LaidOutPage,
 } from '@livedesign/design';
 import { lucideDownload, lucideLink } from '@liveworkspace/icons/lucide';
-import { lucideGlyph, useCopiedFlash } from '@livedesign/ui';
+import { Button, lucideGlyph, useCopiedFlash } from '@livedesign/ui';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
@@ -251,16 +251,16 @@ export function InspectPanel({
                   />
                   <div className="grid grid-cols-2 gap-1.5">
                     {(['png', 'svg'] as const).map((format) => (
-                      <button
+                      <Button
+                        variant="none"
                         key={format}
-                        type="button"
-                        disabled={busy !== null}
+                        busy={busy !== null}
                         onClick={() => void exportAs(format)}
                         className="inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-slate-200 px-2 py-1.5 text-xs font-medium text-slate-700 transition hover:border-brand-300 hover:text-brand-700 focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-wait disabled:opacity-60 dark:border-slate-700 dark:text-slate-200 dark:hover:border-brand-400 dark:hover:text-brand-200"
                       >
                         <DownloadIcon />
                         {busy === format ? 'Exporting…' : format.toUpperCase()}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </div>
