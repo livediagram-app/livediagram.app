@@ -552,7 +552,7 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   `ItemTypeLayoutEditor`). The tab's one panel scrolls (`overflow-y-auto`). Red-dot flags: a clashing name, a tab
   problem or a custom field problem flag `configuration`; a status list problem flags `statuses`.
 - **Add Field** (spec "Fields and Tabs": Add Field). `ItemTypeLayoutEditor` opens it in an `AnchoredPopover`
-  (`GALLERY_WIDTH` 720 from `gallery/GalleryFrame.tsx`, `name="Add Field"`, `initialFocus` `'panel'` under
+  (`GALLERY_WIDTH` 720 from `apps/editor/components/plan/gallery/GalleryFrame.tsx`, `name="Add Field"`, `initialFocus` `'panel'` under
   `(pointer: coarse)` else `'first'`, `onEscape` handed to the form), holding `NewFieldForm` (`NewFieldForm.tsx`),
   which keeps the step (`field: NewField | null`), the search text (kept across the steps), the category shown
   (`choice: CategoryChoice`, `'all'` to start), the field left by going back (`left`) and the kind to focus on
