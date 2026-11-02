@@ -63,10 +63,10 @@ describe('CommunityShowcase', () => {
     );
   });
 
-  it('invites the first share when there is nothing to show', async () => {
-    featured = () => Response.json({ posts: [] });
-    render(<CommunityShowcase />);
-    expect(await screen.findByText(/The Community is just getting started/)).toBeTruthy();
+  it('is not there while the Community has fewer than six to feature', async () => {
+    featured = () => Response.json({ posts: [1, 2, 3, 4, 5].map(post) });
+    const { container } = render(<CommunityShowcase />);
+    await waitFor(() => expect(container.firstChild).toBeNull());
   });
 
   it('is not there at all while the Community is switched off', async () => {
