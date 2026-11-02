@@ -1,7 +1,7 @@
 // Document views (docs/specs/024-agents/document-views.md): the view names, the query the api's two
 // doors take, and every view's JSON form, shared by the api, the MCP, the CLI and
 // `@livehuddle/document-views` (docs/specs/024-agents/blueprints/document-views.md, VW49).
-import type { EditorMode, Finish, TabKind } from '@livehuddle/document';
+import type { Finish, TabKind } from '@livehuddle/document';
 
 // Every view. `lint` is answered by `@livehuddle/diagram-lint` (docs/specs/024-agents/diagram-lint.md), not
 // by `renderView`; it takes only `json`.
@@ -99,9 +99,8 @@ export type ViewHeader = {
   unknown: number;
   threads: { open: number; total: number };
   rev: number | null;
-  // The tab's mode when it is not Diagram, and its finish when one is set (docs/specs/024-agents/blueprints/
-  // document-views.md "The outline grammar"), so a reader knows a Draw tab or a sketch finish took.
-  mode?: EditorMode;
+  // The tab's finish when one is set (docs/specs/024-agents/blueprints/document-views.md "The outline grammar"),
+  // so a reader knows a sketch finish took.
   finish?: Finish;
 };
 
@@ -191,17 +190,7 @@ export type ShowView = {
 // `show` with `ref=selected`: each element as ShowView holds it, in tab order (VW67).
 export type ShowSelectedView = { header: ViewHeader; selected: Omit<ShowView, 'header'>[] };
 
-export const FIND_FIELDS = [
-  'label',
-  'note',
-  'edge',
-  'cell',
-  'field',
-  'item',
-  'node',
-  'code',
-  'comment',
-] as const;
+export const FIND_FIELDS = ['label', 'note', 'edge', 'cell', 'item', 'code', 'comment'] as const;
 export type FindField = (typeof FIND_FIELDS)[number];
 
 export type FindView = {

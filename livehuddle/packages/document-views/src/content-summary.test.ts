@@ -46,4 +46,13 @@ describe('contentSummaryOf (R14)', () => {
     expect(contentSummaryOf(shapeAt('square', 'x', 0, 0))).toBeNull();
     expect(contentSummaryOf(createText(0, 0))).toBeNull();
   });
+
+  it("lists a timeline's milestones in order, and a stack's direction", () => {
+    const rows = [{ label: 'Kick-off' }, {}, { label: 'a|b' }];
+    expect(contentSummaryOf(shape('timeline-rail', { conceptRows: rows }))).toBe(
+      'rows=Kick-off|?|a\\|b',
+    );
+    expect(contentSummaryOf(shape('stack', {}))).toBe('direction=row');
+    expect(contentSummaryOf(shape('stack', { stackDirection: 'column' }))).toBe('direction=column');
+  });
 });

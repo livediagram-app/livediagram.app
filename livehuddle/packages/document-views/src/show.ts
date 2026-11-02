@@ -16,7 +16,6 @@ import {
   boxOf,
   isObject,
   numberField,
-  stringField,
   textField,
   threadOf,
 } from '@liveworkspace/document-views/fields';
@@ -199,15 +198,6 @@ function blockLines(el: Element, fields: Record<string, unknown>): ViewLine[] {
         cellText(typeof c === 'string' ? c : ''),
       );
       lines.push({ text: `    | ${cells.join(' | ')} |`, noun: LINE });
-    }
-  }
-  const entityFields = arrayField(fields, 'entityFields').filter(isObject);
-  if (entityFields.length > 0) {
-    lines.push({ text: '  fields:', noun: LINE });
-    for (const field of entityFields) {
-      const type = stringField(field, 'type');
-      const name = cellText(stringField(field, 'name') ?? '');
-      lines.push({ text: `    - ${name}${type === null ? '' : ` ${cellText(type)}`}`, noun: LINE });
     }
   }
   const thread = threadOf(el);

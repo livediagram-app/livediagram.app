@@ -51,4 +51,9 @@ describe('buildViewModel', () => {
     const model = buildViewModel(tab, { tabIds: ['other'] });
     expect(model.facts.tab.ref).toBe('0b34');
   });
+
+  it('carries the finish only when one is set', () => {
+    expect(buildViewModel(tab).facts).not.toHaveProperty('finish');
+    expect(buildViewModel({ ...tab, finish: 'sketch' }).facts.finish).toBe('sketch');
+  });
 });

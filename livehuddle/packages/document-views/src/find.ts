@@ -37,16 +37,11 @@ function searchedTexts(el: Element): [FindField, string[]][] {
   const strings = (values: readonly unknown[]) =>
     values.filter((v): v is string => typeof v === 'string');
   const rows = arrayField(el, 'cells').flatMap(listOf);
-  const entityFields = arrayField(el, 'entityFields').filter(isObject);
   const thread = threadOf(el);
   return [
     ['label', strings([textField(el, 'label')])],
     ['note', strings([textField(el, 'note')])],
     ['cell', strings(rows)],
-    [
-      'field',
-      entityFields.flatMap((f) => strings([stringField(f, 'name'), stringField(f, 'type')])),
-    ],
     [
       'item',
       strings(
@@ -54,18 +49,6 @@ function searchedTexts(el: Element): [FindField, string[]][] {
           .filter(isObject)
           .map((i) => stringField(i, 'text')),
       ),
-    ],
-    [
-      'node',
-      [
-        ...new Set(
-          strings(
-            arrayField(el, 'sankeyFlows')
-              .filter(isObject)
-              .flatMap((f) => [stringField(f, 'from'), stringField(f, 'to')]),
-          ),
-        ),
-      ],
     ],
     ['code', strings([stringField(el, 'code')])],
     ['comment', strings((thread?.comments ?? []).map((c) => stringField(c, 'text')))],

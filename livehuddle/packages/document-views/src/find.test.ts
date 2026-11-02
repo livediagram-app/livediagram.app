@@ -63,4 +63,39 @@ describe('find on odd shapes', () => {
     expect(findView(model, 'needle').text.split('\n').slice(1, 2)).toEqual(['frame box']);
     expect(findView(model, 'needle').json.matches.map((m) => m.field)).toEqual(['cell']);
   });
+
+  it('searches items, code and comments, reprinting a chain only when it changes', () => {
+    const elements = [
+      shapeAt('frame', 'outer', 0, 0, 2000, 2000, { label: 'Outer' }),
+      shapeAt('frame', 'inner', 0, 0, 900, 900, { label: 'Inner' }),
+      shapeAt('checklist', 'list', 300, 10, 100, 50, {
+        checklistItems: [{ text: 'thread the needle', done: false }],
+      }),
+      shapeAt('code-block', 'code', 1000, 1000, 100, 50, { code: 'const needle = 1;' }),
+      shapeAt('square', 'talk', 3000, 0, 100, 50, {
+        commentThread: {
+          comments: [
+            { id: 'c', text: 'Needle?', createdAt: 0, authorName: 'A', authorColor: '#000' },
+          ],
+          resolved: false,
+        },
+      }),
+      {
+        ...arrowBetween('free', 'talk', 'talk', { label: 'needle' }),
+        from: { kind: 'free', x: 0, y: 0 },
+      },
+    ] as Element[];
+    const model = buildViewModel({ id: 't', name: 'T', elements });
+    const lines = findView(model, 'needle').text.split('\n').slice(1);
+    expect(lines.map((l) => /^ *\S+ ?\S*/.exec(l)![0])).toEqual([
+      'frame outer',
+      '  frame inner',
+      '    checklist list',
+      '  code-block code',
+      'square talk',
+      'arrow free',
+      '4 matches:',
+    ]);
+    expect(lines.at(-1)).toBe('4 matches: 1 edge, 1 item, 1 code, 1 comment');
+  });
 });

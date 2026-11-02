@@ -2050,7 +2050,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     type: 'object',
   },
   FindField: {
-    enum: ['label', 'note', 'edge', 'cell', 'field', 'item', 'node', 'code', 'comment'],
+    enum: ['label', 'note', 'edge', 'cell', 'item', 'code', 'comment'],
     type: 'string',
   },
   FindView: {
@@ -3255,9 +3255,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
           hidden: {
             type: 'number',
-          },
-          mode: {
-            $ref: '#/components/schemas/EditorMode',
           },
           outOfScope: {
             const: false,
@@ -6534,9 +6531,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       hidden: {
         type: 'number',
-      },
-      mode: {
-        $ref: '#/components/schemas/EditorMode',
       },
       rev: {
         type: ['number', 'null'],

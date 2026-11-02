@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ELEMENT_FIELD_NAMES, type Element } from '@livehuddle/document';
-import { shapeAt } from './__fixtures__/build';
+import { createTable, ELEMENT_FIELD_NAMES, type Element } from '@livehuddle/document';
+import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { CHECKOUT_IDS, CHECKOUT_REV, checkoutTab } from './__fixtures__/checkout-tab';
 import { golden } from './__fixtures__/golden-path';
 import { buildViewModel } from './model';
@@ -35,6 +35,46 @@ describe('showView (R17, VW34)', () => {
     const sticky = showView(model, elementOf(model, CHECKOUT_IDS.sticky)).text.split('\n');
     expect(sticky).toContain('  comments: open · 2');
     expect(sticky.at(-1)).toBe('  omitted: commentThread.comments[].authorId');
+  });
+
+  it("prints an arrow's ends, rotation and odd cells, and an element without geometry", () => {
+    const a = {
+      ...createTable(0, 0),
+      id: 'a',
+      width: 100,
+      height: 50,
+      cells: [['x|y', 3], 'row'],
+      rotation: 30,
+    };
+    const e = shapeAt('square', 'e', 0, 0, 100, 50, { label: 'Box' });
+    const odd = { id: 'odd', type: 'hologram', note: 'n' };
+    const arrow = {
+      ...arrowBetween('arr', 'a', 'e', { label: 'go' }),
+      from: { kind: 'free', x: 3, y: 4 },
+    };
+    const onArrow = {
+      ...arrowBetween('rider', 'e', 'e'),
+      to: { kind: 'on-arrow', arrowId: 'arr', t: 0.25 },
+    };
+    const model = buildViewModel({
+      id: 't',
+      name: 'T',
+      elements: [a, e, odd, arrow, onArrow] as unknown as Element[],
+    });
+    expect(showView(model, elementOf(model, 'a')).text.split('\n').slice(1, 3)).toEqual([
+      'table a',
+      '  at 0,0 100x50 r=30',
+    ]);
+    expect(showView(model, elementOf(model, 'a')).text).toContain('    | x\\|y |  |\n    |  |');
+    expect(showView(model, elementOf(model, 'odd')).text.split('\n').slice(1)).toEqual([
+      '? hologram odd',
+      '  note: "n"',
+    ]);
+    const arrowText = showView(model, elementOf(model, 'arr')).text.split('\n');
+    expect(arrowText[1]).toBe('arrow arr "go"');
+    expect(arrowText[2]).toBe('  3,4 → e.w');
+    expect(arrowText).toContain('  ← e "Box" [rider]');
+    expect(showView(model, elementOf(model, 'e')).text).toContain('  ← free label="go" [arr]');
   });
 
   it('fits a budget by whole lines', () => {
@@ -105,7 +145,6 @@ describe('show on malformed and mirrored fields', () => {
       actions: 'junk',
       responses: [[], 'x'],
       noteRich: [{ text: 'n' }],
-      entityFields: [{ type: 'int' }],
       commentThread: {
         comments: [{ id: 'c', text: 'ok', createdAt: 0, authorName: 'A', authorColor: '#000' }],
         resolved: true,
@@ -115,6 +154,6 @@ describe('show on malformed and mirrored fields', () => {
     const { text, json } = showView(model, el);
     expect(json.omitted).toEqual(['noteRich']);
     expect(json.fields).toMatchObject({ action: 'junk', actions: 'junk', responses: [[], 'x'] });
-    expect(text).toContain('  fields:\n    -  int\n  comments: resolved · 1');
+    expect(text).toContain('  comments: resolved · 1');
   });
 });

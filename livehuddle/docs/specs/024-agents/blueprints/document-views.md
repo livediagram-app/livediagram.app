@@ -32,7 +32,7 @@ Scope, by file:
 | `packages/document-views/src/tree.ts`                                     | `buildViewTree`: `deriveContainers`, then reading order per container                                                                                                                                               |
 | `../packages/document-views/src/reading-order.ts`                         | `readingOrder`, `rowsOf` over any element (shared); `packages/document-views/src/reading-order.ts` binds `Placed` to this product's `Element`                                                                       |
 | `../packages/document-views/src/freehand-runs.ts`                         | `freehandRuns`: consecutive bare strokes folded into one line (shared); `packages/document-views/src/freehand-runs.ts` binds `FreehandRun` to this product's `Placed`                                               |
-| `packages/document-views/src/content-summary.ts`                          | `contentSummaryOf`: entity, table, code block, charts, checklist, Sankey                                                                                                                                            |
+| `packages/document-views/src/content-summary.ts`                          | `contentSummaryOf`: table, code block, charts, checklist, timeline, stack                                                                                                                                           |
 | `packages/document-views/src/state-attribute.ts`                          | `stateAttributeOf`: the one state attribute of each content kind that has one                                                                                                                                       |
 | `packages/document-views/src/attributes.ts`                               | `attributesOf`: the ordered attribute list of one element                                                                                                                                                           |
 | `packages/document-views/src/style-attributes.ts`                         | `styleAttributesOf` for `style`                                                                                                                                                                                     |
@@ -275,7 +275,7 @@ Invariants:
 
 ```text
 header      := "tab" SP tabRef SP jsonString(name) " · " total " element" ["s"] [": " buckets]
-               [" · kind=" tabKind] [" · mode=" editorMode] [" · finish=" finish]
+               [" · kind=" tabKind] [" · finish=" finish]
                [" · " hidden " hidden"] [" · " unknown " unknown"]
                [" · threads " open " open/" threadTotal] [" · rev " rev]
 buckets     := bucket {", " bucket}                       (non-zero only, in the order boxes, frames, lanes, arrows)
@@ -292,8 +292,8 @@ style       := "~" (strokeStyle | "none" | "both" | "from")
 attribute   := key "=" attrValue | flag
 ```
 
-`kind=` prints only for a tab whose `tabKindOf` is not `diagram`; `mode=` only for a tab whose `opensInOf` is not
-`diagram`; `finish=` only when the tab sets one;
+`kind=` prints only for a tab whose `tabKindOf` is not `diagram` (every tab is worked in Workshop, so no mode prints);
+`finish=` only when the tab sets one;
 `threads` only when the tab has a thread; `rev`
 only when the context gives one (`VW8`). A blank label (after trim) prints nothing (`VW17`).
 
@@ -317,16 +317,15 @@ are escaped as `\;` and `\}` too.
 
 **Content summaries** (`contentSummaryOf`), printed after the label:
 
-| Element                           | Summary                                                                                                                      | Ledger |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------ |
-| `entity`                          | `{` first `ENTITY_FIELDS_SHOWN` fields as `name[ type]`, joined `; ` (`; +N` when more) `}`                                  | `VW19` |
-| `table`                           | `<rows>x<cols>` then the first row's cells joined `\|`; `0x0` when empty                                                     | `VW18` |
-| `code-block`                      | `lang=<codeLanguage, else plain> lines=<line count, 0 when empty>`                                                           | `VW20` |
-| `pie-chart`, `bar-chart`          | `slices=<pieSlices.length>`                                                                                                  | `VW21` |
-| `line-chart`                      | `series=<lineSeries.length> x=<lineCategories.length>`                                                                       | `VW21` |
-| `checklist`                       | `done=<done>/<total>`                                                                                                        |        |
-| `sankey`                          | `flows=<sankeyFlows.length> nodes=<distinct from / to names, trimmed and space-collapsed>`                                   |        |
-| `layer-stack`, `pyramid`, `cycle` | `rows=` then each row's `label` (`?` when it has none) as `cellText`, joined `\|`; then ` variant=<pyramidVariant>` when set |        |
+| Element                  | Summary                                                                                 | Ledger |
+| ------------------------ | --------------------------------------------------------------------------------------- | ------ |
+| `table`                  | `<rows>x<cols>` then the first row's cells joined `\|`; `0x0` when empty                | `VW18` |
+| `code-block`             | `lang=<codeLanguage, else plain> lines=<line count, 0 when empty>`                      | `VW20` |
+| `pie-chart`, `bar-chart` | `slices=<pieSlices.length>`                                                             | `VW21` |
+| `line-chart`             | `series=<lineSeries.length> x=<lineCategories.length>`                                  | `VW21` |
+| `checklist`              | `done=<done>/<total>`                                                                   |        |
+| `timeline-rail`          | `rows=` then each milestone's `label` (`?` when it has none) as `cellText`, joined `\|` |        |
+| `stack`                  | `direction=<stackDirection, else row>`                                                  |        |
 
 The table line prints its label first when it has one. Every text a summary prints from the document goes through
 `cellText` (JSON escapes, `|` escaped), so a newline in a column name can never forge a line of the view.
@@ -444,7 +443,6 @@ them with `all`; with `all` they print with `· resolved ·`. `authorId` never p
   at <x>,<y> <w>x<h> [r=<deg>]                (content-origin coordinates; arrows print their ends instead)
   <field>: <compact JSON value>                every remaining stored field, keys sorted by code unit
   cells:                                       a table: one "  | a | b |" line per row, cellText escaped
-  fields:                                      an entity: one "  - name type" line per field
   comments: <open|resolved> · <count>          then each comment as in the comments view
   ← <source ref> <source label> [label=<arrow label>] [<arrow ref>]
   → <target ref> <target label> [label=<arrow label>] [<arrow ref>]
@@ -474,12 +472,12 @@ reserved words of edit operations are (EO10); an element whose id is `selected` 
    (`VW67`). Its JSON is `ShowSelectedView`.
 
 **`find`** (`VW35`): `q` is NFKC-normalised and lower-cased; it matches a printed element's label, note, table
-cells, entity field names and types, checklist item text, a Sankey's node names (field `node`), code and comment text, and a printed arrow's label, each
+cells, checklist item text, code and comment text, and a printed arrow's label, each
 NFKC-normalised and lower-cased, as a substring. Each match prints its container chain (each ancestor as
 `<kindWord> <ref> <label>`, indented by depth, printed once for siblings) and then its own outline line; a matching
 arrow prints as an own-line arrow under its source's chain. The closing line (kept at any budget, before the
 elision line) is
-`<n> matches: <count> <field>[s], …` with fields `label`, `note`, `edge`, `cell`, `field`, `item`, `code`,
+`<n> matches: <count> <field>[s], …` with fields `label`, `note`, `edge`, `cell`, `item`, `code`,
 `comment`. No match prints `0 matches`.
 
 **`diff`** (`VW36`): `diffView(before, after)` compares by element id.
