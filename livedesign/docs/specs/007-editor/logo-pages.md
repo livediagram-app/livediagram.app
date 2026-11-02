@@ -367,6 +367,12 @@ clean, as one edit:
     `logo-192.png`, `logo-256.png`, `logo-512.png` and `logo-1024.png`, the artboard at each size;
   - `favicon.ico`, holding the 16, 32 and 48 px images.
 
+  Every file draws the logo alone: a template's notes about the page are left out of the kit and
+  of its preview. On the Logo Design template's lockup pages those are the lockup's number and name,
+  the brand line beside it, where the lockup gets used and, on the first, how to use the template.
+  Everything else on the page is in the kit as before, and the page's PNG, SVG and PDF exports keep
+  the notes, as they keep everything the page shows.
+
 ## Collaboration and agents
 
 - A logo page and everything on it sync like any page; the guides and mirror are each person's own
