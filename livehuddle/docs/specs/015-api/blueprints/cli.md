@@ -819,7 +819,7 @@ nothing else.
 - **E26** A render of a tab whose SVG fails to rasterise: exit 7 for the CLI's own failure, with the SVG still
   writable by `--svg`.
 - **E27** An unexpected exception: stderr `error: internal error (<ErrorName>)` and `hint: run again with
-LIVEHUDDLE_DEBUG=1 and report it at https://github.com/livediagram-app/livehuddle.app/issues`, exit 7 (CLI16).
+LIVEHUDDLE_DEBUG=1 and report it at https://github.com/livediagram-app/livediagram.app/issues`, exit 7 (CLI16).
 - **E28** Unknown keys in `config.toml`: ignored, logged under debug.
 - **E29** A read copy evicted between `wait` printing a revision and `tab diff`: E21.
 - **E30** `comment reply|resolve|reopen` on an element with no thread: exit 3 (CLI78).

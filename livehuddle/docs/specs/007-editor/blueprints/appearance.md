@@ -148,7 +148,7 @@ layout inlines the real string rather than a client-reference stub.
 - The control is a real `<button>` with an `aria-label` that states current and next setting.
 - Dark tokens, the Steel ramp and the solid-fill rule are the [dark palette blueprint](../../004-interface-design/blueprints/dark-palette.md);
   its contrast audit covers dark mode.
-- Light mode's brand ramp is settled ([#74](https://github.com/livediagram-app/livehuddle.app/issues/74)): solid
+- Light mode's brand ramp is settled ([#74](https://github.com/livediagram-app/livediagram.app/issues/74)): solid
   brand fills under white text and brand ink on white are both `brand-700` (5.9:1), guarded by
   `apps/editor/app/light-palette.test.ts`. Light muted text in the editor's chrome (`slate-400`) is not yet in line,
   so this category is not yet fully covered.
