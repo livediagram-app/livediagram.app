@@ -46,7 +46,7 @@ describe('landingFunnel', () => {
 
   it('orders surfaces busiest first and lists the quiet ones apart', () => {
     expect(funnel.surfaces.map((s) => s.surface)).toEqual(['Home', 'Feature', 'Compare']);
-    expect(funnel.quiet).toEqual(['Faq', 'Ai', 'Status', 'Dashboard', 'Help']);
+    expect(funnel.quiet).toEqual(['Faq', 'Ai', 'Status', 'Dashboard', 'Help', 'Community']);
   });
 
   it('keeps every slot, most arrivals first, unused ones in table order', () => {
@@ -80,7 +80,7 @@ describe('landingFunnel', () => {
     const empty = landingFunnel([]);
     expect(empty.surfaces).toEqual([]);
     expect(empty.total).toEqual({ views: 0, arrived: 0, created: 0 });
-    expect(empty.quiet).toHaveLength(8);
+    expect(empty.quiet).toHaveLength(9);
   });
 });
 

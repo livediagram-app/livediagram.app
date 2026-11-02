@@ -39,16 +39,12 @@ export function timelineTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTo
       'Add Milestone adds one at the end, up to eight.',
       'Add Milestone',
     ),
-    ...(ctx.hasMore
-      ? [
-          inTheMenu(
-            'rows',
-            'Reorder in the Menu',
-            'In its menu, Tools › Rows lets you rename, reorder or remove milestones.',
-            ['Tools', 'Rows'],
-          ),
-        ]
-      : []),
+    inTheMenu(
+      'rows',
+      'Reorder in the Menu',
+      'In its menu, Tools › Rows lets you rename, reorder or remove milestones.',
+      ['Tools', 'Rows'],
+    ),
     onGraphic(
       'animate',
       'Play It in Order',

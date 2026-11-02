@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  COMMUNITY_CATEGORIES,
   COMMUNITY_DESCRIPTION_MAX,
   COMMUNITY_MAX_OFFSET,
   COMMUNITY_TAGS_MAX,
@@ -103,6 +102,27 @@ describe('anonymous', () => {
     expect(off.ok && off.value.anonymous).toBe(false);
     const junk = validateCommunityPostInput({ ...valid, anonymous: 'no' });
     expect(junk.ok && junk.value.anonymous).toBe(true);
+  });
+});
+
+describe("an app's own categories", () => {
+  it("takes only the app's own category when the app is named", () => {
+    expect(validateCommunityPostInput(valid, 'livediagram.app').ok).toBe(true);
+    expect(validateCommunityPostInput(valid, 'livedesign.app')).toEqual({
+      ok: false,
+      error: 'invalid_category',
+    });
+    expect(validateCommunityPostInput({ ...valid, category: 'logos' }, 'livedesign.app').ok).toBe(
+      true,
+    );
+    expect(communityPostInputErrors({ ...valid, category: 'decks' }, 'liveplanner.app')).toEqual([
+      'invalid_category',
+    ]);
+  });
+
+  it("takes any app's category when none is named", () => {
+    expect(validateCommunityPostInput({ ...valid, category: 'budgets' }).ok).toBe(true);
+    expect(communityPostInputErrors({ ...valid, category: 'decks' })).toEqual([]);
   });
 });
 
@@ -246,14 +266,6 @@ describe('isCommunityKey', () => {
     expect(isCommunityKey('3F2B8C1E-9A4D-4E7F-8B21-0C5D6E7F8A9B')).toBe(false);
     expect(isCommunityKey('not-a-key')).toBe(false);
     expect(isCommunityKey(null)).toBe(false);
-  });
-});
-
-describe('COMMUNITY_CATEGORIES', () => {
-  it('has unique ids and PascalCase telemetry types', () => {
-    const ids = COMMUNITY_CATEGORIES.map((c) => c.id);
-    expect(new Set(ids).size).toBe(ids.length);
-    for (const c of COMMUNITY_CATEGORIES) expect(c.type).toMatch(/^[A-Z][A-Za-z]+$/);
   });
 });
 

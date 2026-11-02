@@ -8,7 +8,7 @@ import { sha256 } from '../sync/pull-file';
 // Scanning the mirror directory (docs/specs/027-repositories/blueprints/repository-link.md "Scanning the mirror
 // directory"): every *.livediagram.json under dir, classified in order.
 
-const HOST = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
+const HOST = 'https://www.livediagram.app';
 const link = parseLinkFile(
   '[covers]\nfolder = "f1"\n[mirror]\nlevel = "files"\n',
   '/repo/livediagram.toml',
@@ -103,7 +103,7 @@ describe('scanMirrorDir', () => {
 
   it('reads a www. host as the link’s', async () => {
     const www = parseLinkFile(
-      'host = "https://livediagram-router.liveworkspace-easing509.workers.dev"\n[covers]\nfolder = "f1"\n',
+      'host = "https://www.livediagram.app"\n[covers]\nfolder = "f1"\n',
       '/repo/livediagram.toml',
     );
     const io = fakeIo({

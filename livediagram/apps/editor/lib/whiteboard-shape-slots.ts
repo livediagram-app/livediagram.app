@@ -19,15 +19,22 @@ export const PINNED_SHAPES_MAX = 7;
 // The pinned side of a user who never changed it (docs/specs/023-draw-mode/draw-mode.md "Shape slots").
 export const DEFAULT_PINNED_SHAPES: readonly WhiteboardShapeKey[] = ['arrow', 'rectangle'];
 
-// A phone's dock keeps only the first pinned shape on the bar; the rest move to the top of the
-// Shapes flyout, so the bar fits the width (docs/specs/023-draw-mode/draw-mode.md "On a phone").
-const PHONE_BAR_PINS = 1;
+// A narrow dock keeps only the first pinned shape on the bar; the rest move to the top of the
+// Shapes flyout, so the bar fits the width (docs/specs/023-draw-mode/draw-mode.md "On a phone or a
+// tablet"). Narrow is a phone, or any window up to NARROW_DOCK_MAX_PX wide: a portrait tablet beside
+// the menu card, and a landscape one (1024 px) where the dock is centred with the card's clearance on
+// both sides. Measured with the default pins at the toolbar UI scale, the full bar fits centred from
+// about 1060 px; the rest is room for a longer tab name in the menu card.
+const NARROW_BAR_PINS = 1;
+export const NARROW_DOCK_MAX_PX = 1099;
+export const NARROW_DOCK_MEDIA_QUERY = `(max-width: ${NARROW_DOCK_MAX_PX}px)`;
 
-export function splitPhonePins(pinned: readonly WhiteboardShapeKey[]): {
-  onBar: WhiteboardShapeKey[];
-  inMenu: WhiteboardShapeKey[];
-} {
-  return { onBar: pinned.slice(0, PHONE_BAR_PINS), inMenu: pinned.slice(PHONE_BAR_PINS) };
+export function splitBarPins(
+  pinned: readonly WhiteboardShapeKey[],
+  narrow: boolean,
+): { onBar: WhiteboardShapeKey[]; inMenu: WhiteboardShapeKey[] } {
+  if (!narrow) return { onBar: [...pinned], inMenu: [] };
+  return { onBar: pinned.slice(0, NARROW_BAR_PINS), inMenu: pinned.slice(NARROW_BAR_PINS) };
 }
 
 // The Shapes flyout's two rows of slots, Most used and Recent: a Within reach set with N = 3

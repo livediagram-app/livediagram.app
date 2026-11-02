@@ -1,7 +1,7 @@
 // Walks the whole sign-in flow against a local `pnpm dev`, the way an app would:
 // redirect to /oauth2/authorize, register with a code and a name, swap the code for
 // tokens, verify them, sign in again without a code, refresh, give a nameless
-// account its name after the code, start a Google sign-in, and close an account.
+// account its name after the code, start a Google sign-in, and close an account with the code emailed for it.
 //
 //   pnpm dev   (in another terminal; .dev.vars from .dev.vars.example, with any
 //              GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET: Google itself is never called),
@@ -350,16 +350,18 @@ assert(
 );
 
 // 10. Closing the account: only an app's own server can ask (its client credentials and the
-// person's access token, both checked), and it takes the account with it everywhere.
+// person's access token, both checked), with the code emailed to the account, and it takes the account with it
+// everywhere.
 const closeUrl = `${ACCOUNTS}/api/auth/delete-account`;
-const close = (authorization: string | null, token: string) =>
+let deletionCode = '';
+const close = (authorization: string | null, token: string, code = deletionCode) =>
   fetch(closeUrl, {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
       ...(authorization && { authorization }),
     },
-    body: JSON.stringify({ token }),
+    body: JSON.stringify({ token, code }),
   });
 const basic = (id: string, secret: string) =>
   `Basic ${btoa(`${encodeURIComponent(id)}:${encodeURIComponent(secret)}`)}`;
@@ -390,10 +392,32 @@ assert(
     401,
   "another app can't close an account with a token it was not given",
 );
-const closed = await close(
-  basic(client.client_id, client.client_secret),
-  namelessTokens.accessToken,
+const appAuthorization = basic(client.client_id, client.client_secret);
+assert(
+  (await close(appAuthorization, namelessTokens.accessToken, '000000')).status === 403,
+  "the app can't close an account without the code emailed for it",
 );
+const logBeforeDeletionCode = readFileSync(devLog!, 'utf8').length;
+const askedForCode = await fetch(`${closeUrl}/code`, {
+  method: 'POST',
+  headers: { 'content-type': 'application/json', authorization: appAuthorization },
+  body: JSON.stringify({ token: namelessTokens.accessToken }),
+});
+assert(askedForCode.ok, `the app asks for a deletion code (${askedForCode.status})`);
+for (let i = 0; i < 20 && !deletionCode; i++) {
+  const log = readFileSync(devLog!, 'utf8').slice(logBeforeDeletionCode);
+  deletionCode =
+    log.match(/\b(\d{6}) is your code to delete your liveworkspace account/)?.[1] ?? '';
+  if (!deletionCode) await sleep(250);
+}
+assert(deletionCode, 'the deletion code email was sent');
+const checked = await fetch(`${closeUrl}/check`, {
+  method: 'POST',
+  headers: { 'content-type': 'application/json', authorization: appAuthorization },
+  body: JSON.stringify({ token: namelessTokens.accessToken, code: deletionCode }),
+});
+assert(checked.ok, `the deletion code checks out (${checked.status})`);
+const closed = await close(appAuthorization, namelessTokens.accessToken);
 assert(closed.ok, `the app closes the account (${closed.status} ${await closed.clone().text()})`);
 const afterClose = (await (await browser(`${ACCOUNTS}/api/auth/get-session`)).json()) as {
   user?: unknown;

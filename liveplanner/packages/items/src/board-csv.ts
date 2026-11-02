@@ -3,9 +3,20 @@
 import { byRank } from './apply';
 import { boardAddTypes, linkedCard, projectBoard, statusLabel, type PlanBoardSetup } from './board';
 import { builtInFieldOf } from './card-source';
+import { customFieldText } from './card-text';
+import { itemColourValue } from './item-colour';
+import { calculatedResultOf, hasResult } from './calculated-result';
+import { calculatedReaderOf, type IsDoneStatus } from './calculated-fields';
 import { PRIORITIES, PRIORITY_LABELS, isPriority, validateFields } from './fields';
 import type { Item, ItemCreate, ItemFieldValue, ItemFields, ItemPerson } from './item';
-import { itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
+import { isItemPerson, itemAssignee, itemLabels, itemStatus, itemTitle } from './item';
+import {
+  fieldCardIds,
+  fieldPeople,
+  holdsSeveral,
+  severalValue,
+  storedPeople,
+} from './several-values';
 import { isEmailAddress, ratingScaleOf, type CustomFieldDef, type ItemTypeDef } from './item-types';
 import {
   ITEM_DESCRIPTION_MAX,
@@ -16,6 +27,12 @@ import {
   ITEM_UNKNOWN_STRING_MAX,
 } from './limits';
 import { resolvedDefaultStatus, typeAllowsStatus, typeIn } from './type-catalogue';
+import { missingRequiredFields } from './required-fields';
+import { parsePercent } from './percent-fields';
+import { durationText, isTimeSpent, parseDuration } from './duration-fields';
+import { instantIso, parseDateTime } from './date-time-fields';
+import { isTimedRange, parseDateRange, rangeIso } from './date-range-fields';
+import { isPhoneNumber } from './phone-fields';
 
 // The built-in fields after Key, Title, Type and Status, in file order, each under its header.
 const BOARD_CSV_FIELDS = [
@@ -37,11 +54,21 @@ export function boardCsvFileName(title: string): string {
 
 const lower = (s: string) => s.trim().toLowerCase();
 
-// The custom fields of the board's types, one per label (the first type naming it wins), in catalogue order.
+// The custom fields of the board's types, one per label (the first type naming it wins), in catalogue order. A
+// Calculated field is left out: it holds no value of its own (docs/specs/026-plan/item-types.md "Calculated fields"),
+// but a Formula, Rollup or Lookup, worked out as its result, is written ("Formula fields", "Rollup and Lookup
+// fields"); so is an Image field left out, whose value
+// is a picture's id (docs/specs/026-plan/item-types.md "Image fields").
 function customColumns(types: readonly ItemTypeDef[]): string[] {
   const out = new Map<string, string>();
   for (const t of types)
-    for (const f of t.custom ?? []) if (!out.has(lower(f.label))) out.set(lower(f.label), f.label);
+    for (const f of t.custom ?? [])
+      if (
+        (f.kind !== 'calculated' || hasResult(f)) &&
+        f.kind !== 'image' &&
+        !out.has(lower(f.label))
+      )
+        out.set(lower(f.label), f.label);
   return [...out.values()];
 }
 
@@ -80,8 +107,11 @@ export function boardCsvRows(
   items: ReadonlyMap<string, Item>,
   types: readonly ItemTypeDef[],
   statusNames?: ReadonlyMap<string, string>,
+  // The boards' done rule, for a Rollup's Count Done (none without it).
+  isDone?: IsDoneStatus,
 ): string[][] {
   const shown = boardAddTypes(setup, types);
+  const calculated = calculatedReaderOf(items, types, isDone);
   const builtIns = BOARD_CSV_FIELDS.filter(([id]) => shown.some((t) => t.fields.includes(id)));
   const customs = customColumns(shown);
   const rows: string[][] = [
@@ -108,10 +138,34 @@ export function boardCsvRows(
         ...customs.map((label) => {
           const f = customByLabel(type, label);
           if (!f) return '';
-          if (f.kind === 'card') {
-            const linked = linkedCard(items, item.fields[f.id]);
-            return linked ? itemTitle(linked) : '';
+          // A worked-out value, written as its result kind's field would be ("2500", "2026-10-31").
+          if (f.kind === 'calculated') {
+            const v = calculated(f, item);
+            // A Duration result as a Duration field writes it ("2h 30m").
+            return calculatedResultOf(f) === 'duration' && typeof v === 'number'
+              ? durationText(v)
+              : cellOf(v);
           }
+          // Every linked card's title, and every person's name, of a field that holds several, joined by ", "
+          // (item-types.md "Holds Several").
+          if (f.kind === 'card')
+            return fieldCardIds(f, item.fields[f.id])
+              .map((id) => linkedCard(items, id))
+              .filter((c): c is Item => !!c)
+              .map(itemTitle)
+              .join(', ');
+          if (f.kind === 'person')
+            return fieldPeople(f, item.fields[f.id])
+              .map((p) => p.name)
+              .join(', ');
+          // A Checklist reads as its progress ("2/5") and a Votes field as its total, as the card shows them.
+          // A Duration as it reads ("2h 30m"), a Time Spent field its total (item-types.md "Duration").
+          if (f.kind === 'checklist' || f.kind === 'votes' || f.kind === 'duration')
+            return customFieldText(f, item.fields[f.id]) ?? '';
+          // ISO 8601: a moment as its UTC instant, a range as its interval "start/end" (item-types.md "Date and
+          // Time", "Date Range").
+          if (f.kind === 'datetime') return instantIso(item.fields[f.id]) ?? '';
+          if (f.kind === 'daterange') return rangeIso(item.fields[f.id]) ?? '';
           // An option may hold a comma, so a Multiple Choice's picks are kept apart by semicolons.
           if (f.kind === 'multichoice') {
             const v = item.fields[f.id];
@@ -166,10 +220,37 @@ export function multiChoiceOf(options: readonly string[], text: string): string[
 
 const TRUE_TEXT = new Set(['yes', 'y', 'true', '1', 'x', '✓', '✔']);
 
-function customValue(f: CustomFieldDef, text: string): ItemFieldValue | undefined {
+function customValue(
+  f: CustomFieldDef,
+  text: string,
+  people: readonly ItemPerson[],
+): ItemFieldValue | undefined {
   switch (f.kind) {
+    // Never read from a file: a Card field names a card by id, a Calculated field is worked out, an Image is a
+    // picture uploaded in the card panel, a Checklist's rows are not in its cell (only its progress is), and threads
+    // and votes are written by their own writes.
     case 'card':
+    case 'calculated':
+    case 'image':
+    case 'checklist':
+    case 'comments':
+    case 'votes':
       return undefined;
+    // The built-in fields' kinds read as those fields do: a person by name, labels by commas, a colour as #rrggbb.
+    // A Person field that holds several takes a comma list of names.
+    case 'person':
+      if (holdsSeveral(f)) {
+        const named = text
+          .split(',')
+          .map((name) => builtInValue('assignee', name, people))
+          .filter((p): p is ItemPerson => isItemPerson(p));
+        return severalValue(f, storedPeople(named));
+      }
+      return builtInValue('assignee', text, people);
+    case 'labels':
+      return builtInValue('labels', text, people);
+    case 'colour':
+      return itemColourValue(text);
     case 'number': {
       const n = Number(text);
       return text && Number.isFinite(n) ? n : undefined;
@@ -186,6 +267,12 @@ function customValue(f: CustomFieldDef, text: string): ItemFieldValue | undefine
       const n = Number(text);
       return Number.isInteger(n) && n >= 1 && n <= ratingScaleOf(f) ? n : undefined;
     }
+    // "40" or "40%", rounded; a cell outside 0 to 100 is skipped, as a Rating out of its scale is.
+    case 'percent':
+      return parsePercent(text);
+    // "2h 30m", "90m", "1.5h", "2:30" or minutes; a Time Spent field's entries are tracked, never read from a file.
+    case 'duration':
+      return isTimeSpent(f) ? undefined : parseDuration(text);
     // An amount, as the card stores it: a number of up to two decimals, "£12,500" read as 12500.
     case 'currency': {
       const n = Number(text.replace(/[^\d.-]/g, ''));
@@ -193,6 +280,16 @@ function customValue(f: CustomFieldDef, text: string): ItemFieldValue | undefine
     }
     case 'email':
       return isEmailAddress(text) ? text : undefined;
+    // As typed; a leading ' an older download (or a spreadsheet) put before a + is dropped (item-types.md "Phone").
+    case 'phone': {
+      const number = text.replace(/^'/, '').trim();
+      return isPhoneNumber(number) ? number : undefined;
+    }
+    // ISO 8601, or a time with no offset read in the importer's zone (item-types.md "Date and Time").
+    case 'datetime':
+      return parseDateTime(text, { local: true });
+    case 'daterange':
+      return parseDateRange(text, isTimedRange(f), { local: true, readDay: cardDateOf });
     default:
       return text.slice(0, ITEM_UNKNOWN_STRING_MAX);
   }
@@ -234,8 +331,11 @@ type BoardCsvRefusal = 'no_title_column' | 'no_types' | 'archive';
 
 interface BoardCsvImport {
   creates: ItemCreate[];
-  // Rows with a cell in them that add no card: no title, no status their type allows, past the room left.
+  // Rows with a cell in them that add no card: no title, no status their type allows, past the room left, a required
+  // field empty.
   skipped: number;
+  // Of those, the rows skipped for a required field left empty (docs/specs/026-plan/item-types.md "Required fields").
+  missingRequired?: number;
   refusal?: BoardCsvRefusal;
 }
 
@@ -278,6 +378,7 @@ export function boardCsvImport(
 
   const creates: ItemCreate[] = [];
   let skipped = 0;
+  let missingRequired = 0;
   for (const row of rows.slice(1)) {
     if (row.every((cell) => cell.trim() === '')) continue;
     const cell = (id: string) => {
@@ -318,7 +419,7 @@ export function boardCsvImport(
       if (at < 0 || [...builtIns.values()].includes(at)) continue;
       const text = (row[at] ?? '').trim();
       if (!text) continue;
-      const v = customValue(f, text);
+      const v = customValue(f, text, ctx.people);
       if (v !== undefined) fields[f.id] = v;
     }
     const valid = validateFields(fields, 'create');
@@ -326,25 +427,38 @@ export function boardCsvImport(
       skipped++;
       continue;
     }
+    if (missingRequiredFields(type, valid.fields).length > 0) {
+      skipped++;
+      missingRequired++;
+      continue;
+    }
     creates.push({ type: type.id, fields: valid.fields, place: { status } });
   }
-  return { creates, skipped };
+  return { creates, skipped, ...(missingRequired ? { missingRequired } : {}) };
 }
 
 // What the board says once an import is done (docs/specs/026-plan/plan-board.md "CSV").
 export function boardCsvMessage(result: {
   added: number;
   skipped: number;
+  missingRequired?: number;
   refusal?: BoardCsvRefusal;
 }): string {
   if (result.refusal === 'no_title_column') return 'No Title column in the file';
   if (result.refusal === 'no_types') return 'This board takes no card types';
   if (result.refusal === 'archive') return 'Cards cannot be imported onto an Archive board';
   const rows = (n: number) => `${n} ${n === 1 ? 'row' : 'rows'}`;
-  if (result.added === 0)
-    return result.skipped ? `No cards added; skipped ${rows(result.skipped)}` : 'No cards to add';
+  // "skipped 3 rows" or, when some lacked a required field, "skipped 3 rows, 2 missing a required field".
+  const required = result.missingRequired ?? 0;
+  const skipped =
+    required === 0
+      ? `skipped ${rows(result.skipped)}`
+      : required === result.skipped
+        ? `skipped ${rows(result.skipped)} missing a required field`
+        : `skipped ${rows(result.skipped)}, ${required} missing a required field`;
+  if (result.added === 0) return result.skipped ? `No cards added; ${skipped}` : 'No cards to add';
   const added = `Added ${result.added} ${result.added === 1 ? 'card' : 'cards'}`;
-  return result.skipped ? `${added}; skipped ${rows(result.skipped)}` : added;
+  return result.skipped ? `${added}; ${skipped}` : added;
 }
 
 // Whether this board takes an import at all (not an Archive board).

@@ -3,9 +3,17 @@
 // custom field id, a person, an item id). Unknown names are refused with what is there, never stored.
 import { withArticle } from './indefinite-article';
 import { isItemPerson, itemAssignee, type Item, type ItemPerson } from './item';
-import { isEmailAddress, ratingScaleOf, type ItemTypeDef } from './item-types';
+import {
+  builtInFieldOfKind,
+  isEmailAddress,
+  ratingScaleOf,
+  type CustomFieldDef,
+  type ItemTypeDef,
+} from './item-types';
+import { holdsSeveral } from './several-values';
 import { knownFieldKind, PRIORITIES, validDate, validateFields } from './fields';
 import {
+  FIELD_VALUES_MAX,
   ITEM_CHECKLIST_MAX,
   ITEM_LABEL_MAX,
   ITEM_LABELS_MAX,
@@ -15,8 +23,14 @@ import {
 import type { PlanStatusName } from './plan-outline';
 import { resolveItemRef } from './refs';
 import { statusKey } from './status-names';
+import { parsePercent, PERCENT_MAX, PERCENT_MIN } from './percent-fields';
+import { DURATION_HINT, isTimeSpent, parseDuration } from './duration-fields';
+import { parseDateTime } from './date-time-fields';
+import { isTimedRange, parseDateRange } from './date-range-fields';
+import { isPhoneNumber, PHONE_HINT } from './phone-fields';
 import { isBuiltInFieldId, PLAN_TYPE_COLOURS, slugOf } from './type-catalogue';
 import { itemSummary } from './views';
+import { REPEAT_FIELD } from './repeat';
 
 export type NameRefusalCode =
   | 'status_unknown'
@@ -161,6 +175,9 @@ export function choiceOption(options: readonly string[], value: string): string 
   return byKey.length === 1 ? byKey[0] : undefined;
 }
 
+export const REPEAT_REFUSAL =
+  "change_items doesn't set a repeat: an Editor sets one from the card's ⋯ menu (Repeat) in the editor.";
+
 // Fields as an agent writes them, for an item of `type`: built-in fields by id or interface name, custom fields
 // by id or name, a status by column name, an assignee by name, a parent or Card field by item number, a priority
 // or Choice option case aside. A key the type does not have is refused.
@@ -197,8 +214,15 @@ export function resolveFields(
   const out: Record<string, unknown> = {};
   for (const [rawKey, value] of Object.entries(input)) {
     const named = fieldKeyOf(rawKey, type);
+    // A repeat needs the setter's time zone, which an agent's call does not carry: an Editor sets it in the editor
+    // (docs/specs/026-plan/items.md "Repeating cards"). A custom field named Repeat is still that field.
+    if (!named.ok && statusKey(rawKey) === REPEAT_FIELD)
+      return refuse('value_invalid', REPEAT_REFUSAL);
     if (!named.ok) return named;
     const key = named.key;
+    // Pictures are uploaded in the card panel, never named (docs/specs/026-plan/items.md "Attachments").
+    if (key === 'attachments')
+      return refuse('value_invalid', 'Attachments are added in the card panel.');
     if (isBuiltInFieldId(key)) {
       const v = builtInValue(key, value, naming);
       if (!v.ok) return v;
@@ -208,6 +232,44 @@ export function resolveFields(
       continue;
     }
     const field = type.custom!.find((f) => f.id === key)!;
+    // The built-in fields' kinds take what those fields take (docs/specs/026-plan/item-types.md "Custom field kinds"):
+    // a person by name, labels by commas, a colour as #rrggbb, checklist rows.
+    // Threads and votes have writes of their own (docs/specs/026-plan/item-types.md "Comments and Votes fields").
+    if (field.kind === 'comments')
+      return refuse(
+        'value_invalid',
+        `${field.label} is a Comments field: start a thread in it with change_threads.`,
+      );
+    if (field.kind === 'votes')
+      return refuse(
+        'value_invalid',
+        `${field.label} is a Votes field: votes come from a session vote.`,
+      );
+    // Tracked time is a person's own record of their work (docs/specs/026-plan/item-types.md "Time Spent").
+    if (isTimeSpent(field))
+      return refuse(
+        'value_invalid',
+        `${field.label} is tracked: people add time in the card panel.`,
+      );
+    // A Person or Card field that holds several takes a comma list or a list (item-types.md "Holds Several").
+    if (holdsSeveral(field)) {
+      const v = severalNamed(field, value, naming);
+      if (!v.ok) return v;
+      out[key] = v.value;
+      continue;
+    }
+    const asBuiltIn = builtInFieldOfKind(field.kind);
+    if (asBuiltIn) {
+      const v = builtInValue(asBuiltIn, value, naming);
+      if (!v.ok) return v;
+      const checked = checkedBuiltIn(asBuiltIn, v.value, field.label);
+      if (!checked.ok) return checked;
+      out[key] = checked.value;
+      continue;
+    }
+    // A picture is uploaded in the card panel, never named (docs/specs/026-plan/item-types.md "Image fields").
+    if (field.kind === 'image')
+      return refuse('value_invalid', `${field.label} is an image: add one in the card panel.`);
     if (field.kind === 'choice' && typeof value === 'string') {
       const option = choiceOption(field.options ?? [], value);
       if (!option)
@@ -243,6 +305,28 @@ export function resolveFields(
           `${field.label} is a rating: give a whole number from 1 to ${scale}.`,
         );
       out[key] = n;
+    } else if (field.kind === 'percent') {
+      // A number or "40%", rounded to a whole share; outside 0 to 100 is refused, never quietly held.
+      const n = parsePercent(
+        typeof value === 'string' || typeof value === 'number' ? value : undefined,
+      );
+      if (n === undefined)
+        return refuse(
+          'value_invalid',
+          `${field.label} is a percent: give a number from ${PERCENT_MIN} to ${PERCENT_MAX}.`,
+        );
+      out[key] = n;
+    } else if (field.kind === 'duration') {
+      // "2h 30m", "90m", "1.5h" or a number of minutes (docs/specs/026-plan/item-types.md "Duration").
+      const n = parseDuration(
+        typeof value === 'string' || typeof value === 'number' ? value : undefined,
+      );
+      if (n === undefined)
+        return refuse(
+          'value_invalid',
+          `${field.label} is a duration: ${DURATION_HINT.charAt(0).toLowerCase()}${DURATION_HINT.slice(1)}.`,
+        );
+      out[key] = n;
     } else if (field.kind === 'number' && typeof value === 'string') {
       // A number written as text is read as the number, as a built-in Number's is.
       const n = value.trim() === '' ? NaN : Number(value.trim());
@@ -275,6 +359,36 @@ export function resolveFields(
       if (!isEmailAddress(address))
         return refuse('value_invalid', `"${value}" is not an email address for ${field.label}.`);
       out[key] = address;
+    } else if (field.kind === 'phone') {
+      if (!isPhoneNumber(value))
+        return refuse(
+          'value_invalid',
+          `"${String(value)}" is not a phone number for ${field.label}: ${PHONE_HINT.charAt(0).toLowerCase()}${PHONE_HINT.slice(1)}.`,
+        );
+      out[key] = value.trim();
+    } else if (field.kind === 'datetime') {
+      // ISO 8601 with its offset (docs/specs/026-plan/item-types.md "Date and Time"): an agent has no zone of its own.
+      const at = typeof value === 'string' ? parseDateTime(value) : undefined;
+      if (!at)
+        return refuse(
+          'value_invalid',
+          `"${String(value)}" is not a date and time for ${field.label}: give the time with its offset, such as 2026-10-31T17:00:00Z.`,
+        );
+      out[key] = at;
+    } else if (field.kind === 'daterange') {
+      // An ISO 8601 interval, "start/end", or a list of its two ends (item-types.md "Date Range").
+      const timed = isTimedRange(field);
+      const range = parseDateRange(value, timed);
+      if (!range)
+        return refuse(
+          'value_invalid',
+          `"${Array.isArray(value) ? value.join(', ') : String(value)}" is not a date range for ${field.label}: give ${
+            timed
+              ? 'two times with their offsets, such as 2026-10-31T09:00:00Z/2026-11-02T17:00:00Z'
+              : 'two dates, such as 2026-10-31/2026-11-02'
+          }.`,
+        );
+      out[key] = range;
     } else if (field.kind === 'card' && typeof value === 'string') {
       const linked = resolveItem(value, naming.items);
       if (!linked.ok) return linked;
@@ -284,6 +398,49 @@ export function resolveFields(
     }
   }
   return { ok: true, fields: out };
+}
+
+// A field that holds several, from "Sam, Ana" or ["Sam", "Ana"] (people by name, cards by number or "#12 Title"), or a
+// value of one: each resolved as one value of its kind is, each once, at most FIELD_VALUES_MAX.
+function severalNamed(
+  field: CustomFieldDef,
+  value: unknown,
+  naming: FieldNaming,
+): Named<{ value: unknown }> {
+  const parts = (
+    Array.isArray(value)
+      ? (value as unknown[])
+      : typeof value === 'string'
+        ? value.split(',')
+        : [value]
+  )
+    .map((p: unknown) => (typeof p === 'string' ? p.trim() : p))
+    .filter((p) => p !== '' && p !== null && p !== undefined);
+  if (parts.length === 0)
+    return refuse('value_invalid', `${field.label}: give at least one, or clear the field.`);
+  if (parts.length > FIELD_VALUES_MAX)
+    return refuse('value_invalid', `${field.label} holds up to ${FIELD_VALUES_MAX}.`);
+  if (field.kind === 'person') {
+    const people: ItemPerson[] = [];
+    for (const p of parts) {
+      const person = isItemPerson(p)
+        ? p
+        : typeof p === 'string'
+          ? personNamed(p, [...people, ...assignedPeople(naming.items)])
+          : undefined;
+      if (!person)
+        return refuse('value_invalid', `${field.label} takes people by name, such as "Sam, Ana".`);
+      if (!people.some((x) => x.id === person.id)) people.push(person);
+    }
+    return { ok: true, value: people };
+  }
+  const ids: string[] = [];
+  for (const p of parts) {
+    const linked = resolveItem(String(p), naming.items);
+    if (!linked.ok) return linked;
+    if (!ids.includes(linked.item.id)) ids.push(linked.item.id);
+  }
+  return { ok: true, value: ids };
 }
 
 function builtInValue(key: string, value: unknown, naming: FieldNaming): Named<{ value: unknown }> {
@@ -316,7 +473,11 @@ function builtInValue(key: string, value: unknown, naming: FieldNaming): Named<{
 // agent's change is refused here, naming the field and what it takes, rather than as a bare `field_value_invalid`
 // from the api (the production Error·Api·Http400.ItemChange.FieldValueInvalid). A number given as text ("5") is
 // read as the number.
-function checkedBuiltIn(key: string, value: unknown): Named<{ value: unknown }> {
+function checkedBuiltIn(
+  key: string,
+  value: unknown,
+  name = key.charAt(0).toUpperCase() + key.slice(1),
+): Named<{ value: unknown }> {
   const kind = knownFieldKind(key);
   if (!kind) return { ok: true, value };
   const given =
@@ -328,7 +489,7 @@ function checkedBuiltIn(key: string, value: unknown): Named<{ value: unknown }> 
       : value;
   const result = validateFields({ [key]: given }, 'patch');
   if (result.ok) return { ok: true, value: result.fields[key] };
-  const label = key.charAt(0).toUpperCase() + key.slice(1);
+  const label = name;
   const shown = typeof value === 'string' ? `"${value}"` : JSON.stringify(value);
   const takes: Partial<Record<string, string>> = {
     number: `a number from 0 to ${ITEM_NUMBER_MAX}`,

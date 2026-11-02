@@ -54,6 +54,7 @@ export type CommandHandlers = {
   redo: () => void;
   toggleZen: () => void;
   openExport: () => void;
+  // The one Import dialog, every import in it (docs/specs/026-plan/plan-tabs.md "The Import dialog").
   openImport: () => void;
   openSettings: () => void;
   openShortcuts: () => void;
@@ -160,7 +161,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   out.push({
     id: 'import',
     name: 'Import…',
-    keywords: 'import markdown upload load open file',
+    keywords: 'import upload load open file json csv trello asana jira linear board move migrate',
     run: h.openImport,
   });
   out.push({

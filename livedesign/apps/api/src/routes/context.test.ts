@@ -86,7 +86,12 @@ describe('the grant gates', () => {
     expect(await gateEdit(scoped, 'd1', undefined, undefined, 't1')).toBe(true);
     expect(await gateEdit(scoped, 'd1', undefined, undefined, 't2')).toBe(false);
     expect(await gateRead(scoped, 'd1')).toBe(false);
-    expect(await gateGrant(scoped, 'd1')).toEqual({ role: 'edit', tabScope: 't1', shareCode: null });
+    expect(await gateGrant(scoped, 'd1')).toEqual({
+      role: 'edit',
+      tabScope: 't1',
+      shareCode: null,
+      community: false,
+    });
   });
 
   it("cap a workbench session's grant at its own level", async () => {
@@ -122,9 +127,7 @@ describe('ownsDesign', () => {
     expect(await ownsDesign(makeCtx({ owner: 'user_b' }), { id: 'd1', ownerId: 'user_a' })).toBe(
       false,
     );
-    expect(await ownsDesign(makeCtx({ grant: null }), { id: 'd1', ownerId: 'user_a' })).toBe(
-      false,
-    );
+    expect(await ownsDesign(makeCtx({ grant: null }), { id: 'd1', ownerId: 'user_a' })).toBe(false);
   });
 });
 
@@ -147,9 +150,7 @@ describe('who the index is asked for', () => {
       code: 'C',
     });
     expect(
-      shareAccessOf(
-        makeCtx({ headers: { 'X-Share-Code': 'C', 'X-Share-Password': 'p' } }).request,
-      ),
+      shareAccessOf(makeCtx({ headers: { 'X-Share-Code': 'C', 'X-Share-Password': 'p' } }).request),
     ).toEqual({ code: 'C', password: 'p' });
     expect(shareAccessOf(makeCtx().request)).toBeNull();
   });

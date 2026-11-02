@@ -4,11 +4,8 @@ import {
   AVATAR_PAD_GRID,
   AVATAR_PAD_PARTS,
   AVATAR_PAD_TONES,
-  avatarPadArtRect,
-  avatarPadCore,
-  avatarPadFootprint,
-} from './avatar-pad';
-import { AVATAR_PALETTE } from './avatar-palette';
+} from '@liveworkspace/avatar/pad-art';
+import { AVATAR_PALETTE } from '@liveworkspace/avatar/palette';
 import { tint } from './colors';
 import { createShape } from './shape-factory';
 import { isFloorShape } from './office';
@@ -53,34 +50,6 @@ describe('the Avatar Pad drawing', () => {
     expect(AVATAR_PAD_TONES.ringLit).toBe(tint(AVATAR_PALETTE.shirt, 0.45));
     expect(AVATAR_PAD_TONES.core).toBe(tint(AVATAR_PALETTE.shirt, 0.72));
     expect(AVATAR_PAD_TONES.lamp).toBe(tint(AVATAR_PALETTE.shirt, 0.3));
-  });
-});
-
-describe('avatarPadArtRect', () => {
-  it('fills a box of the grid proportions exactly', () => {
-    expect(avatarPadArtRect(AVATAR_PAD_DEFAULT_SIZE)).toEqual({ x: 0, y: 0, scale: 4 });
-  });
-  it('scales whole and centres in a box of other proportions', () => {
-    expect(avatarPadArtRect({ width: 320, height: 80 })).toEqual({ x: 96, y: 0, scale: 4 });
-    expect(avatarPadArtRect({ width: 64, height: 200 })).toEqual({ x: 0, y: 80, scale: 2 });
-  });
-  it('draws nothing in a zero box', () => {
-    expect(avatarPadArtRect({ width: 0, height: 80 }).scale).toBe(0);
-  });
-});
-
-describe('avatarPadCore', () => {
-  const pad = { x: 100, y: 200, ...AVATAR_PAD_DEFAULT_SIZE };
-  it('is the bright core on the top face', () => {
-    expect(avatarPadCore(pad)).toEqual({ x: 164, y: 232 });
-  });
-  it('turns with the element about its centre', () => {
-    const turned = avatarPadCore({ ...pad, rotation: 180 });
-    expect(turned.x).toBeCloseTo(164);
-    expect(turned.y).toBeCloseTo(248);
-  });
-  it('sizes the footprint with the drawing', () => {
-    expect(avatarPadFootprint(pad)).toEqual({ rx: 60, ry: 28 });
   });
 });
 

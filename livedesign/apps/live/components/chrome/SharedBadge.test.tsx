@@ -83,7 +83,8 @@ describe('SharedBadge legend', () => {
     fireEvent.focus(screen.getByText('Private').closest('[tabindex]')!);
     const hero = document.querySelector('[data-legend-hero]')!;
     const blocks = [...hero.querySelectorAll('[class*="grid-area"]')];
-    expect(blocks).toHaveLength(4);
+    // One cell per audience on the scale, Public included.
+    expect(blocks).toHaveLength(5);
     const shown = blocks.filter((b) => !b.hasAttribute('aria-hidden'));
     expect(shown).toHaveLength(1);
     expect(shown[0]!.className).not.toContain('invisible');

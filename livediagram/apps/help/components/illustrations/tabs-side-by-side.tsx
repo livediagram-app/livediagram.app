@@ -1,4 +1,4 @@
-// Side by side tabs (docs/specs/007-editor/split-view.md, docs/specs/018-help/help-app.md): a tab pill
+// Side by side tabs (docs/specs/007-editor/split-view.md, docs/specs/018-help/help-app.md): a tab
 // dragged to the right edge with the drop ghost showing, and the open split, one header and one tab
 // bar across both panes, the editor's chrome in the pane being edited and the seam's two buttons.
 // Composed only from the shared primitives so the house style holds.
@@ -22,40 +22,35 @@ function Header({ title }: { title: string }) {
   );
 }
 
-/** The tab bar, across the whole window, with its pills. `beside` marks the tab in the other pane. */
+/** The tab bar, across the whole window: the open tab a card on its bottom edge, the others bare
+ *  names. `beside` marks the tab in the other pane with a dashed outline. */
 function Footer({
   tabs,
 }: {
   tabs: { label: string; x: number; w: number; active?: boolean; beside?: boolean }[];
 }) {
   const y = H - FOOTER;
+  const r = 5;
   return (
     <g>
-      <rect x={0} y={y} width={W} height={FOOTER} className="fill-slate-50 stroke-slate-200" />
+      <rect x={0} y={y} width={W} height={FOOTER} className="fill-slate-100" />
+      <path d={`M0 ${y} H${W}`} className="stroke-slate-200" strokeWidth={1} />
       {tabs.map((t) => (
         <g key={t.label}>
-          <rect
-            x={t.x}
-            y={y + 5}
-            width={t.w}
-            height={16}
-            rx={5}
-            className={
-              t.active
-                ? 'fill-white stroke-brand-400'
-                : t.beside
-                  ? 'fill-slate-100 stroke-brand-400'
-                  : 'fill-slate-100 stroke-transparent'
-            }
-            strokeWidth={1.2}
-            strokeDasharray={t.beside ? '3 2' : undefined}
-          />
+          {(t.active || t.beside) && (
+            <path
+              d={`M${t.x} ${y + FOOTER} V${y + 3 + r} a${r} ${r} 0 0 1 ${r} ${-r} H${t.x + t.w - r} a${r} ${r} 0 0 1 ${r} ${r} V${y + FOOTER}${t.active ? ' Z' : ''}`}
+              className={t.active ? 'fill-white stroke-slate-300' : 'fill-none stroke-brand-400'}
+              strokeWidth={1}
+              strokeDasharray={t.beside && !t.active ? '3 2' : undefined}
+            />
+          )}
           <Label
             x={t.x + t.w / 2}
-            y={y + 16}
+            y={y + 15}
             size={8.5}
-            weight={600}
-            tone={t.active ? 'accent' : 'muted'}
+            weight={t.active ? 650 : 500}
+            tone={t.active ? 'accent' : 'body'}
             anchor="middle"
           >
             {t.label}
@@ -103,7 +98,7 @@ function ChromeTopRow({ x, y, right }: { x: number; y: number; right: number }) 
   );
 }
 
-/** Dragging a tab pill toward the right edge: the drop zone's ghost shows the pane it will open. */
+/** Dragging a tab toward the right edge: the drop zone's ghost shows the pane it will open. */
 export function SideBySideDrag() {
   const ghostX = W * 0.52;
   return (
@@ -151,7 +146,7 @@ export function SideBySideDrag() {
           { label: 'Timeline', x: 64, w: 60 },
         ]}
       />
-      {/* The pill on its way, under the pointer. */}
+      {/* The tab on its way, under the pointer. */}
       <Arrow
         from={[96, H - FOOTER - 8]}
         to={[ghostX + 96, 140]}

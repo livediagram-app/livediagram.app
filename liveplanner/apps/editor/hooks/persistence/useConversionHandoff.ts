@@ -4,12 +4,15 @@ import { useConversionHandoff as useHandoff } from '@liveworkspace/explorer/conv
 import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
-import { offlineListProjects } from '@/lib/offline/offline-store';
+import { offlineDeleteProject, offlineListProjects } from '@/lib/offline/offline-store';
+import { markProjectDeleted } from '@/lib/project-tombstones';
+import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
+import { removeThisBrowserItem } from '@liveworkspace/workbench/lib/this-browser-remove';
 import { useOfflineConversions } from './useOfflineConversion';
 
-// Take Offline and Sync handed over by the Explorer on this app's address to the editor (ConversionHandoff), run by
-// the shared handoff (@liveworkspace/explorer/conversion-handoff) with this app's conversions, confirm, toast and
-// offline list (docs/specs/006-project/offline-mode.md).
+// Take Offline, Sync and Delete handed over by the Explorer on this app's address to the editor (ConversionHandoff),
+// run by the shared handoff (@liveworkspace/explorer/conversion-handoff) with this app's conversions, confirm, toast
+// and offline list (docs/specs/006-project/offline-mode.md).
 export function useConversionHandoff(ownerId: string | null, signedIn: boolean) {
   const toast = useToast();
   useHandoff({
@@ -22,5 +25,13 @@ export function useConversionHandoff(ownerId: string | null, signedIn: boolean) 
     toastError: toast.error,
     getItem: (id) => indexClient.getItem(id),
     listKept: offlineListProjects,
+    // Delete handed over by the Explorer page: the item is the one open here, so it is tombstoned, removed, and the
+    // editor goes back to This Browser's view it came from.
+    remove: (id) =>
+      removeThisBrowserItem(id, id, {
+        remove: offlineDeleteProject,
+        tombstone: markProjectDeleted,
+        leave: () => window.location.assign(explorerHref('offline')),
+      }),
   });
 }

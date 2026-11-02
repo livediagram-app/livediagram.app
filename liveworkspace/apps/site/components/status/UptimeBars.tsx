@@ -17,6 +17,7 @@ import {
   stateOfLetter,
   stripSummary,
 } from '@/lib/status/history';
+import { TIME } from '@liveworkspace/ui/date-format';
 import { STATE_LOOK } from './status-ui';
 
 // A service's last 90 days from the hourly checks (liveworkspace/docs/specs/010-site/site.md "Status"): a bar per day, oldest on the
@@ -175,7 +176,7 @@ function DayTip({
             <li key={started}>
               {worst === 'd' ? 'Down' : 'Slow'}{' '}
               {ended === null
-                ? `since ${new Date(started).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}, ongoing`
+                ? `since ${TIME.format(started)}, ongoing`
                 : `for ${formatDuration(ended - started)}`}
             </li>
           ))}

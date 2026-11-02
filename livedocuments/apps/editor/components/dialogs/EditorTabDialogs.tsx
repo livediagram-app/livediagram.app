@@ -23,10 +23,15 @@ const ImportTabDialog = dynamic(
   () => import('@/components/dialogs/ImportTabDialog').then((m) => m.ImportTabDialog),
   { ssr: false },
 );
-// The shared Explorer's Share dialog (@liveworkspace/explorer): links are the index's, managed there.
-const ShareDialog = dynamic(() => import('@liveworkspace/explorer').then((m) => m.ShareDialog), {
-  ssr: false,
-});
+// The shared Explorer's Share dialog (@liveworkspace/explorer), with livedocuments's Community tab
+// (docs/specs/025-community/community.md "Publishing"): links are the index's, managed there.
+const ShareDialog = dynamic(
+  () =>
+    import('@/components/dialogs/community/ShareDialogWithCommunity').then(
+      (m) => m.ShareDialogWithCommunity,
+    ),
+  { ssr: false },
+);
 const ShareOfflineGate = dynamic(
   () => import('@/components/dialogs/ShareOfflineGate').then((m) => m.ShareOfflineGate),
   { ssr: false },
@@ -52,6 +57,7 @@ export function EditorTabDialogs() {
     importOpen,
     importIntoActiveTab,
     importTextIntoActiveTab,
+    importFileIntoActiveTab,
     setImportOpen,
     shareDialogOpen,
     selfParticipant,
@@ -61,8 +67,10 @@ export function EditorTabDialogs() {
     setSelectedId,
     setMultiSelectedIds,
     accountUserId,
+    accountDisplayName,
     documentTeamId,
     setSelfParticipant,
+    slideDeck,
   } = useEditorContext();
   const toast = useToast();
   // The selection the export covers, read from the store while a selection export is open
@@ -102,6 +110,8 @@ export function EditorTabDialogs() {
           // In Pages mode the whole tab exports as its pages
           // (docs/specs/007-editor/pages-mode.md "Export").
           pages={exportScope === 'tab' ? pagesMode?.pages : undefined}
+          // The PowerPoint export's speaker notes and hidden slides (docs/specs/020-import-export/office-export.md).
+          deck={slideDeck?.deck}
           documentName={documentName}
           // A tab window draws the tab it shows (docs/specs/009-elements/tab-window.md "Exports").
           documentTabs={tabs}
@@ -120,6 +130,7 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
+          onImportFileFormat={importFileIntoActiveTab}
           onClose={() => setImportOpen(false)}
         />
       ) : null}
@@ -156,6 +167,19 @@ export function EditorTabDialogs() {
                   randomName,
                   onSave: (name) => setSelfParticipant((p) => ({ ...p, name })),
                 }
+          }
+          ownerId={selfParticipant.id}
+          documentName={documentName}
+          signedIn={!!accountUserId}
+          author={{
+            name: (accountUserId ? accountDisplayName : null) || selfParticipant.name,
+            color: selfParticipant.color,
+          }}
+          // Known only for the open tab (the editor holds its elements); another first tab, or a first page that is
+          // empty while a later one is not, is left to the server (docs/specs/025-community/community.md "Something
+          // to show").
+          firstTabEmpty={
+            !!activeTab && tabs[0]?.id === activeTab.id && activeTab.elements.length === 0
           }
           onClose={() => setShareDialogOpen(false)}
         />

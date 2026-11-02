@@ -5,7 +5,7 @@
 // publish check that fails (with Show). The status bar's Problems with this Form opens it.
 import {
   DESTINATION_PROBLEM_TEXT,
-  PUBLISH_PROBLEM_TEXT,
+  publishProblemText,
   type DestinationProblem,
   type PublishProblem,
 } from '@liveplanner/forms';
@@ -55,8 +55,9 @@ export function FormProblems({
         ) : null}
         {notReady.map((p, i) => (
           <li key={i} className="flex items-baseline justify-between gap-3">
-            <span>{PUBLISH_PROBLEM_TEXT[p.kind]}</span>
-            {onShow && p.kind !== 'no_questions' ? (
+            <span>{publishProblemText(p)}</span>
+            {/* Show for a question's or a section's problem: a form-level one has nothing to point at. */}
+            {onShow && ('questionId' in p || 'sectionId' in p) ? (
               <button type="button" onClick={() => onShow(p)} className={LINK}>
                 Show
               </button>

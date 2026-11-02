@@ -3,7 +3,6 @@
 // The item panel's field editors (docs/specs/026-plan/plan-board.md "Working on a board"), one per field
 // kind: text that saves on a pause in typing, and pickers that save at once. Each calls `onSave` with
 // the field's new value, or `undefined` to clear it.
-import { ChipField } from '@/components/primitives/ChipField';
 import {
   CheckIcon,
   CloseIcon,
@@ -20,9 +19,7 @@ import {
   ESTIMATE_POINTS,
   PRIORITIES,
   PRIORITY_LABELS,
-  isItemPerson,
   type ItemFieldValue,
-  type ItemPerson,
 } from '@liveplanner/items';
 
 // One undo step per pause in typing (blueprint DEFAULTS D8).
@@ -175,44 +172,6 @@ export function DebouncedText({
   );
 }
 
-export function PersonPicker({
-  id,
-  value,
-  people,
-  disabled,
-  onSave,
-}: {
-  id: string;
-  value: ItemFieldValue | undefined;
-  people: readonly ItemPerson[];
-  disabled: boolean;
-  onSave: Save;
-}) {
-  const current = isItemPerson(value) ? value : null;
-  const options =
-    current && !people.some((p) => p.id === current.id) ? [current, ...people] : people;
-  return (
-    <Select
-      id={id}
-      className="w-full"
-      selectClassName="text-[13px]"
-      disabled={disabled}
-      value={current?.id ?? ''}
-      onChange={(e) => {
-        const p = options.find((o) => o.id === e.target.value);
-        void onSave(p ? { ...p } : undefined);
-      }}
-    >
-      <option value="">No one</option>
-      {options.map((p) => (
-        <option key={p.id} value={p.id}>
-          {p.name}
-        </option>
-      ))}
-    </Select>
-  );
-}
-
 export function PriorityPicker({
   id,
   value,
@@ -245,78 +204,6 @@ export function PriorityPicker({
 
 // A label's colour: one of the Plan swatches, the same for the same label everywhere (label-colour.ts).
 export { labelColour } from './label-colour';
-import { labelColour } from './label-colour';
-
-export function LabelsEditor({
-  id,
-  value,
-  disabled,
-  suggestions = [],
-  onSave,
-}: {
-  id: string;
-  value: ItemFieldValue | undefined;
-  disabled: boolean;
-  // Labels other items of the project carry, offered as the field is typed in.
-  suggestions?: readonly string[];
-  onSave: Save;
-}) {
-  const labels = Array.isArray(value)
-    ? value.filter((l): l is string => typeof l === 'string')
-    : [];
-  const [draft, setDraft] = useState('');
-  const addLabels = (texts: readonly string[]) => {
-    const next = [...labels];
-    for (const t of texts) {
-      const l = t.trim().replace(/^#/, '');
-      if (l && !next.includes(l)) next.push(l);
-    }
-    if (next.length !== labels.length) void onSave(next);
-  };
-  const remove = (l: string) => {
-    const next = labels.filter((x) => x !== l);
-    void onSave(next.length ? next : undefined);
-  };
-  const offered = suggestions.filter((s) => !labels.includes(s));
-  return (
-    <ChipField
-      compact
-      id={id}
-      chips={labels}
-      chipColour={labelColour}
-      removeLabel={(l) => `Remove label ${l}`}
-      draft={draft}
-      onDraftChange={(value) => {
-        // A comma (typed or pasted) adds what comes before it.
-        if (!value.includes(',')) return setDraft(value);
-        const parts = value.split(',');
-        addLabels(parts.slice(0, -1));
-        setDraft(parts[parts.length - 1]!);
-      }}
-      onCommit={() => {
-        addLabels([draft]);
-        setDraft('');
-      }}
-      onBlur={() => {
-        addLabels([draft]);
-        setDraft('');
-      }}
-      onRemove={remove}
-      readOnly={disabled}
-      emptyText="None"
-      placeholder={labels.length ? 'Add…' : 'Add a label'}
-      list={offered.length ? `${id}-labels` : undefined}
-    >
-      {!disabled && offered.length ? (
-        <datalist id={`${id}-labels`}>
-          {offered.map((s) => (
-            <option key={s} value={s} />
-          ))}
-        </datalist>
-      ) : null}
-    </ChipField>
-  );
-}
 
 // An Estimate (docs/specs/026-plan/items.md "Fields"): picked from the story-point sizes, or None. A value a card
 // already holds that is not a size (set before, or by an agent) stays offered, so opening the card loses nothing.

@@ -88,11 +88,14 @@ The change feed: two keyset reads in one batch, `rev > ? OR (rev = ? AND id > ?)
 `team_rev_idx` and `team_member_rev_idx`; the cursor is `"<rev>:<id>,<rev>:<id>"` (one position per table, start
 `0:`); `more` when either page is full.
 
-### The daily invitation sweep (`sweepInvitations`)
+### The hourly invitation sweep (`sweepInvitations`)
 
 1. One batch: up to 500 open invitations whose clock started 28 days ago become `declined` with `expiredAt`.
 2. Reminders, latest stage first (21, 7, then 1 day after the clock started, each up to the next stage's age), up to
-   100 per stage, for invitations whose stage column is empty, whose team lives, with fewer than 3 failed sends.
+   100 per stage, for invitations whose stage column is empty, whose team lives, with fewer than 3 failed sends,
+   and whose invited address is inside the send window (`LEFT JOIN "user" r ON r.email = m.email` on the unique
+   address index, `r.timeZone` else the default zone; [email.md](email.md) "The send window"). No zone inside, no
+   reminder query. `null` for `send` (email off) only expires.
    Each gets a fresh decline token; sent, the stage is stamped, earlier skipped stages stamped `0`, attempts reset,
    the new hash kept (last 4); failed, `reminderAttempts + 1`.
 3. Logged `[teams] invitation sweep { expired, reminded, failed }`.
@@ -168,3 +171,4 @@ space-separated (default `''`); `reminder1SentAt`..`reminder3SentAt`, `reminderA
 - `ACC8`: the 50-team cap bounds the access token's `teams` claim.
 - `ACC9`: a reminder that fails three sends in a row leaves the queue; the invitation still expires at 28 days.
 - `ACC10`: a Timeline event the index refuses 96 times is dropped, and the outbox keeps at most 5,000 events.
+- `ACC19`: an invited address is timed by the zone of the account with that address, else the default.

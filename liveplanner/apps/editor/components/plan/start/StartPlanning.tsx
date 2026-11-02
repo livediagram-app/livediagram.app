@@ -24,7 +24,7 @@ import { TemplatePicture } from '@/components/start/template-card';
 import { suggestedDashboards, type SuggestedDashboard } from '@/lib/suggested-dashboards';
 import type { PlacedSheetStart } from '@/lib/sheet-seeds';
 import { usePlan } from '../PlanContext';
-import type { PlanPalette } from '../plan-palette';
+import { accentOn, type PlanPalette } from '../plan-palette';
 import { BoardPreview, SHEET_TILES, SheetPreview } from '../PlanBoardPicker';
 import { DashboardLayoutPicture } from '../DashboardLayoutPicture';
 import { VisualisationPreview } from '../dashboard/slot-previews';
@@ -128,7 +128,12 @@ function Chip({
       style={{ borderColor: palette.border, color: palette.muted }}
     >
       {dot ? (
-        <span aria-hidden className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: dot }} />
+        // Lifted on a dark card, as a card face lifts it: Project's black would not show (plan-mode.md).
+        <span
+          aria-hidden
+          className="h-1.5 w-1.5 rounded-full"
+          style={{ backgroundColor: accentOn(dot, { card: palette.surface }) }}
+        />
       ) : null}
       {/* The label centres on its cap band, keeping the chip one line tall (optical-alignment.md). */}
       <span className="text-optical-line">{children}</span>

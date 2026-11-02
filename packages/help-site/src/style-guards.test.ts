@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { checkMotionBudget, formatViolations } from '@liveworkspace/style-guards/motion-budget';
@@ -25,5 +27,14 @@ describe('help-site style guards', () => {
 
   it('positions every control that carries a touch-target pad', () => {
     expect(formatTouchTargetViolations(checkTouchTargets({ root }))).toBe('');
+  });
+
+  // touch-targets.md: the category link over an article's title is a 15px line of small capitals, a target of its
+  // own (not a link inside prose), so on a touch screen its tap area reaches 44px tall.
+  it("pads the article's category link on a touch screen", () => {
+    const shell = readFileSync(join(root, 'components', 'ArticleShell.tsx'), 'utf8');
+    const at = shell.indexOf('<Link href={category.href}');
+    expect(at).toBeGreaterThan(-1);
+    expect(shell.slice(at, shell.indexOf('>', at))).toContain('touch-target-y');
   });
 });

@@ -19,6 +19,7 @@ vi.mock('@/lib/api-client', () => ({
 const { useRoomConnection } = await import('./useRoomConnection');
 
 async function mount() {
+  room.handlers = null;
   const fn = new Proxy({} as Record<string, ReturnType<typeof vi.fn>>, {
     get: (t, k: string) => (t[k] ??= vi.fn()),
   });
@@ -50,10 +51,11 @@ async function mount() {
       setDesignName: vi.fn(),
       loadedTabIdsRef: { current: new Set(['loaded']) },
       markTabLoaded,
+      receiveComponent: fn.receiveComponent as unknown as (op: unknown) => void,
     }),
   );
   await waitFor(() => expect(room.handlers).not.toBeNull());
-  return { applyRemoteOp, markTabLoaded };
+  return { applyRemoteOp, markTabLoaded, fn };
 }
 
 const add = (tabId: string) =>
@@ -80,5 +82,22 @@ describe('useRoomConnection and tabs not fetched yet', () => {
       tab: { id: 'new', name: 'New', elements: [] },
     } as never);
     expect(markTabLoaded).toHaveBeenCalledWith('new');
+  });
+});
+
+// A main stored in the library (docs/specs/009-elements/components.md "Sharing, collaboration and storage"): taken
+// from the worker only, never from a peer's socket.
+describe('useRoomConnection and the component library', () => {
+  it("hands the worker's component op to the library and ignores a peer's", async () => {
+    const { fn } = await mount();
+    const op = {
+      kind: 'component',
+      component: { id: 'c', name: 'C', width: 1, height: 1, elements: [], updatedAt: 1 },
+      tabIds: [],
+    } as never;
+    room.handlers!.onOp('peer', op);
+    expect(fn.receiveComponent).not.toHaveBeenCalled();
+    room.handlers!.onOp('system', op);
+    expect(fn.receiveComponent).toHaveBeenCalledWith(op);
   });
 });

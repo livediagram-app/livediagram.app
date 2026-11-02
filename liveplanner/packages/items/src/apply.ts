@@ -11,9 +11,11 @@ import type {
   ItemPerson,
   ItemPlace,
 } from './item';
-import { itemStatus, itemVotes } from './item';
+import { STATUS_SINCE_FIELD, itemStatus, itemVotes } from './item';
 import { compareRank, rankBetween } from './rank';
 import { ITEM_VOTERS_MAX, ITEM_VOTES_PER_PERSON_MAX } from './limits';
+import { stampStatusSince, statusSinceUndo } from './status-since';
+import { isItemEdit } from './item-edit';
 
 export interface WriteContext {
   now: number;
@@ -123,7 +125,7 @@ export function makeItem(
     type: create.type,
     key: ctx.key,
     rank: 'rankFor' in ctx.items ? ctx.items.rankFor(place) : rankForPlace(ctx.items, place),
-    fields,
+    fields: stampStatusSince(undefined, fields, STATUS_SINCE_FIELD in fields, ctx.now),
     rev: 1,
     createdAt: ctx.now,
     updatedAt: ctx.now,
@@ -132,16 +134,30 @@ export function makeItem(
   };
 }
 
+// Last Edited, stamped only by an edit (docs/specs/026-plan/items.md "Created and Last Edited"; isItemEdit).
+function edited(
+  item: Item,
+  fields: ItemFields,
+  type: string,
+  write: { set?: ItemFields | undefined; clear?: readonly string[] | undefined },
+  ctx: WriteContext,
+): Pick<Item, 'updatedAt' | 'updatedBy'> {
+  const touched = [...Object.keys(write.set ?? {}), ...(write.clear ?? [])];
+  return isItemEdit(item, fields, type, touched)
+    ? { updatedAt: ctx.now, updatedBy: ctx.by }
+    : { updatedAt: item.updatedAt, updatedBy: item.updatedBy };
+}
+
 export function applyPatch(item: Item, patch: ItemPatch, ctx: WriteContext): Item {
   const fields: ItemFields = { ...item.fields, ...patch.set };
   for (const k of patch.clear ?? []) delete fields[k];
+  const type = patch.type ?? item.type;
   return {
     ...item,
-    type: patch.type ?? item.type,
-    fields,
+    type,
+    fields: stampStatusSince(item, fields, STATUS_SINCE_FIELD in (patch.set ?? {}), ctx.now),
     rev: item.rev + 1,
-    updatedAt: ctx.now,
-    updatedBy: ctx.by,
+    ...edited(item, fields, type, patch, ctx),
   };
 }
 
@@ -155,37 +171,37 @@ export function applyMove(
   const fields: ItemFields = { ...item.fields, ...move.set };
   for (const k of move.clear ?? []) delete fields[k];
   if (status !== undefined) fields['status'] = status;
+  const type = move.type ?? item.type;
   return {
     ...item,
-    type: move.type ?? item.type,
-    fields,
+    type,
+    fields: stampStatusSince(item, fields, STATUS_SINCE_FIELD in (move.set ?? {}), ctx.now),
     rank: rankForPlace(items, { status, after: move.after, before: move.before }, item.id),
     rev: item.rev + 1,
-    updatedAt: ctx.now,
-    updatedBy: ctx.by,
+    // A move within its column alone is no edit; isItemEdit always weighs the status.
+    ...edited(item, fields, type, move, ctx),
   };
 }
 
 // A session vote's tally added to a card's votes (docs/specs/026-plan/items.md "Tally"): each voter's dots added to
-// what they had, a voter's count capped at ITEM_VOTES_PER_PERSON_MAX, and no new voter past ITEM_VOTERS_MAX.
+// what they had, a voter's count capped at ITEM_VOTES_PER_PERSON_MAX, and no new voter past ITEM_VOTERS_MAX. The dots
+// land in `field`, the built-in `votes` unless the vote counts in a Votes field of the card's own (item-types.md
+// "Comments and Votes fields"; `tallyFieldOn` picks it).
 export function applyTally(
   item: Item,
   tally: Readonly<Record<string, number>>,
-  ctx: WriteContext,
+  // Kept for the writes' common shape; a tally stamps nothing.
+  _ctx: WriteContext,
+  field = 'votes',
 ): Item {
-  const votes = itemVotes(item);
+  const votes = itemVotes(item, field);
   for (const [personId, n] of Object.entries(tally)) {
     if (!(n > 0)) continue;
     if (!(personId in votes) && Object.keys(votes).length >= ITEM_VOTERS_MAX) continue;
     votes[personId] = Math.min(ITEM_VOTES_PER_PERSON_MAX, (votes[personId] ?? 0) + Math.floor(n));
   }
-  return {
-    ...item,
-    fields: { ...item.fields, votes },
-    rev: item.rev + 1,
-    updatedAt: ctx.now,
-    updatedBy: ctx.by,
-  };
+  // Not an edit (docs/specs/026-plan/items.md "Created and Last Edited"): Last Edited stays as it was.
+  return { ...item, fields: { ...item.fields, [field]: votes }, rev: item.rev + 1 };
 }
 
 // The patch that undoes `patch` on `before`: old values back, new keys cleared.
@@ -201,6 +217,12 @@ export function inversePatch(before: Item, patch: ItemPatch): ItemPatch {
   if (Object.keys(set).length) inv.set = set;
   if (clear.length) inv.clear = clear;
   if (patch.type !== undefined && patch.type !== before.type) inv.type = before.type;
+  // A status change's undo puts the card's old stamp back with its status (docs/specs/026-plan/items.md "Undo").
+  if (!touched.includes(STATUS_SINCE_FIELD) && touched.includes('status')) {
+    const next = patch.clear?.includes('status') ? undefined : patch.set?.['status'];
+    const since = statusSinceUndo(before, typeof next === 'string' ? next : undefined);
+    if (Object.keys(since).length) inv.set = { ...inv.set, ...since };
+  }
   return inv;
 }
 

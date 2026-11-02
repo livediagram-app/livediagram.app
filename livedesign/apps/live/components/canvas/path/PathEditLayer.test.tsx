@@ -75,3 +75,28 @@ describe('the path overlays stay on top (docs/specs/023-draw-mode/path-tool.md "
     expect(Number(draft.style.zIndex)).toBeGreaterThan(30);
   });
 });
+
+// docs/specs/023-draw-mode/path-tool.md "Combined paths": the other contours show dashed.
+describe('PathEditLayer, combined', () => {
+  it('outlines the contours not being edited', () => {
+    const view = {
+      frame: { x: 0, y: 0, width: 100, height: 100 },
+      anchors: [
+        { x: 0, y: 0, mode: 'corner' as const },
+        { x: 10, y: 0, mode: 'corner' as const },
+        { x: 10, y: 10, mode: 'corner' as const },
+      ],
+      closed: true,
+      selected: new Set<number>(),
+      box: null,
+      guides: null,
+      zoom: 1,
+    };
+    const { container, rerender } = render(<PathEditLayer {...view} others="M 50 50 L 60 50 Z" />);
+    expect(container.querySelector('[data-path-others]')?.getAttribute('d')).toBe(
+      'M 50 50 L 60 50 Z',
+    );
+    rerender(<PathEditLayer {...view} />);
+    expect(container.querySelector('[data-path-others]')).toBeNull();
+  });
+});

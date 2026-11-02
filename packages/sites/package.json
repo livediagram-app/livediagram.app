@@ -8,7 +8,8 @@
     "./workspace-proxy": "./src/workspace-proxy.ts",
     "./network": "./src/network.ts",
     "./picture": "./src/picture.ts",
-    "./www": "./src/www.ts"
+    "./www": "./src/www.ts",
+    "./security": "./src/security.ts"
   },
   "scripts": {
     "lint": "oxlint",
@@ -16,6 +17,7 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@liveworkspace/vitest-config": "workspace:^",
     "@types/node": "^26.6.4",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",

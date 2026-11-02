@@ -26,7 +26,7 @@ const PLACES: Partial<
     at: { x: 140, y: 108 },
     makes: 'Diagrams · whiteboards · mind maps',
     glow: 'top-[2%] left-[0%] bg-sky-400/25 dark:bg-sky-500/20',
-    cursor: { name: 'Ada', colour: '#0284c7', at: 'top-[32%] left-[18%]' },
+    cursor: { name: 'Ada', colour: '#0369a1', at: 'top-[32%] left-[18%]' },
   },
   'liveplanner.app': {
     at: { x: 460, y: 108 },

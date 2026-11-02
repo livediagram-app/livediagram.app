@@ -35,7 +35,7 @@ export function templatePage(
 
 /** A slide page of a template (docs/specs/007-editor/pages-mode.md "Page kinds"): `page-n`,
  *  landscape in a slide size (16:9 by default), so it offers the slide sizes and layouts and its
- *  deck button. */
+ *  place in the deck. */
 export function templateSlidePage(
   n: number,
   name: string,

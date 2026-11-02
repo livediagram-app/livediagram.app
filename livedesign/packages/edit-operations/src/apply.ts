@@ -9,6 +9,7 @@ import { diffToElementOps, invertElementOps, type ElementId, type Tab } from '@l
 import { finalise } from './finalise';
 import { applyAdd } from './operations/add';
 import { applyAddKind } from './operations/add-kind';
+import { applyDetach } from './operations/detach';
 import { applyConnect, applyRewire } from './operations/connect';
 import { applyInsert } from './operations/insert';
 import { applyLayout } from './operations/layout';
@@ -59,6 +60,8 @@ function applyOperation(
       return applyLayout(state, operation, index);
     case 'wrap':
       return applyWrap(state, operation, index);
+    case 'detach':
+      return applyDetach(state, operation, index);
   }
 }
 

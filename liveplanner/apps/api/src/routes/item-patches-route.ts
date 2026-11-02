@@ -17,15 +17,20 @@ import {
 import { badRequest, forbidden, json } from '../responses';
 import { readBody, type PlanRouteContext } from './context';
 import {
+  calculatedSet,
+  timeTracked,
+  clearedRequired,
   excludedStatus,
   forCaller,
   itemCaller,
   itemNotFound,
   isItemEditor,
-  retiresItem,
+  blockersRefused,
+  editorOnly,
   writer,
 } from './item-route-kit';
 import { writeItemsWithRetry } from './item-write-loop';
+import { historyTagOf } from './item-history-route';
 
 // A refusal that names the item it is about.
 function rejectedFor(id: string, error: ItemRejection, field?: string): Response {
@@ -75,13 +80,27 @@ export async function patches(ctx: PlanRouteContext, projectId: string): Promise
       for (const [id, next] of nexts) {
         if (excludedStatus(caller, next, stored.get(id)!, undo))
           return rejectedFor(id, 'status_excluded', 'status');
-        if (retiresItem(stored.get(id)!, next) && !(await isItemEditor(ctx, caller)))
+        const calculated = calculatedSet(caller, next, stored.get(id), undo);
+        if (calculated) return rejectedFor(id, 'field_calculated', calculated);
+        const timed = timeTracked(caller, next, stored.get(id));
+        if (timed) return rejectedFor(id, 'field_time_tracked', timed);
+        const cleared = clearedRequired(caller, next, stored.get(id)!, undo);
+        if (cleared) return rejectedFor(id, 'field_required', cleared);
+        if (editorOnly(stored.get(id)!, next) && !(await isItemEditor(ctx, caller)))
           return forbidden();
         const bound = fieldsWithinBounds(next.fields);
         if (bound) return rejectedFor(id, bound);
       }
+      // Blockers are an Editor's, and the batch never closes a loop (docs/specs/026-plan/item-types.md "Blocked By").
+      const blocked = await blockersRefused(
+        ctx,
+        caller,
+        [...nexts].map(([id, next]) => ({ before: stored.get(id)!, next })),
+      );
+      if (blocked) return blocked;
       return nexts;
     },
+    { tag: historyTagOf(ctx, undo) },
   );
   if (result instanceof Response) return result;
   console.info('[items] patched', { projectId, count: result.done.size });

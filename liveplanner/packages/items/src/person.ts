@@ -12,3 +12,8 @@ export async function itemPersonId(ownerId: string): Promise<string> {
   const digest = await sha256(bytes);
   return Array.from(digest.slice(0, 12), (b) => b.toString(16).padStart(2, '0')).join('');
 }
+
+// Whether a person id is one itemPersonId made, so a liveworkspace identity's (docs/specs/026-plan/items.md
+// "Accounts are marked"): never a custom assignee's `n-` slug or a template's `example-` person.
+const PERSON_ID = /^[0-9a-f]{24}$/;
+export const isIdentityPersonId = (id: string): boolean => PERSON_ID.test(id);

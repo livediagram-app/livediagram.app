@@ -6,6 +6,7 @@ import type { EditRejection } from '@livedesign/api-schema';
 import { ELEMENT_FIELD_NAMES, type Element } from '@livedesign/design';
 import { layerLockOf } from '../locks';
 import { idTaken, unknownField } from '../rejections';
+import { placedInstance } from '../instances';
 import { type EditState, isTaken, putElement, refuseLocked } from '../state';
 import type { AddElementOperation } from '../types';
 import { PROTOTYPE_KEYS } from '../vocabulary';
@@ -33,7 +34,13 @@ export function applyAdd(
     const holder = state.byId.get(id) ?? state.before.get(id)!;
     return idTaken(operation, holder, new Set([...state.before.keys(), ...state.byId.keys()]));
   }
-  const el = { ...raw, id } as Element;
+  let el = { ...raw, id } as Element;
+  if (el.type !== 'arrow') {
+    const given = { width: typeof raw.width === 'number', height: typeof raw.height === 'number' };
+    const checked = placedInstance(state, el, given, operation);
+    if ('rejection' in checked) return checked.rejection;
+    el = checked.el;
+  }
   const layerLock = layerLockOf(state.tab.layers, el.layerId);
   if (layerLock) return refuseLocked(state, 'add', operation, el, layerLock);
   putElement(state, el, operation);

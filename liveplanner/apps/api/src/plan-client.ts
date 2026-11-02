@@ -6,6 +6,8 @@
 // hop there.
 
 import type { Item } from '@liveplanner/items';
+import type { CardThread } from '@liveplanner/project';
+import type { ThreadOp, ThreadsRelay, ThreadWriteResult } from './plan-room/card-thread-store';
 import type { PlanCopy, PlanOutline } from './plan-room/plan-content';
 import type { RouteIdentity } from './plan-room/plan-route';
 import type { ProjectFileImport } from './plan-room/project-file';
@@ -35,6 +37,10 @@ export type PlanRoomClient = {
   hasTab(tabId: string): Promise<boolean>;
   // One card, by id (a mention email reads the comment from the card itself).
   item(itemId: string): Promise<Item | null>;
+  // Image fields (plan-room/image-grants.ts): a picture uploaded for this plan recorded as one it may serve, and
+  // whether it serves one now.
+  grantImage(imageId: string): Promise<void>;
+  servesImage(imageId: string): Promise<boolean>;
   // A copy's two halves (plan-content.ts).
   exportCopy(onlyTabId: string | null, redactAuthorsFor: string | null): Promise<PlanCopy | null>;
   importCopy(copy: PlanCopy): Promise<void>;
@@ -54,6 +60,12 @@ export type PlanRoomClient = {
   sharedTabCopy(tabId: string): Promise<SharedTabCopy | null>;
   shareJoined(tabId: string, member: string, seenUpdatedAt: number): Promise<boolean>;
   receiveShares(from: string, messages: ShareMessage[]): Promise<ShareAnswer[]>;
+  // A card's comment threads across plans (plan-room/card-thread-store.ts): on the home, the threads of `ids` that
+  // list a card of plan `via`, and one write on one made through `via`; on a plan holding a card, another plan's
+  // write relayed (answering the threads it holds no link to).
+  threadsFor(ids: string[], via: string): Promise<CardThread[]>;
+  threadWrite(threadId: string, op: ThreadOp, via: string): Promise<ThreadWriteResult>;
+  threadsRelayed(relay: ThreadsRelay): Promise<string[]>;
 };
 
 export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomClient {
@@ -69,6 +81,8 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     importFile: (file) => room.importFile(planId, file),
     hasTab: (tabId) => room.hasTab(planId, tabId),
     item: (itemId) => room.item(planId, itemId),
+    grantImage: (imageId) => room.grantImage(planId, imageId),
+    servesImage: (imageId) => room.servesImage(planId, imageId),
     exportCopy: (onlyTabId, redact) => room.exportCopy(planId, onlyTabId, redact),
     importCopy: (copy) => room.importCopy(planId, copy),
     importMigrated: (payload) => room.importMigrated(planId, payload),
@@ -79,6 +93,9 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     sharedTabCopy: (tabId) => room.sharedTabCopy(planId, tabId),
     shareJoined: (tabId, member, seen) => room.shareJoined(planId, tabId, member, seen),
     receiveShares: (from, messages) => room.receiveShares(planId, from, messages),
+    threadsFor: (ids, via) => room.threadsFor(planId, ids, via),
+    threadWrite: (threadId, op, via) => room.threadWrite(planId, threadId, op, via),
+    threadsRelayed: (relay) => room.threadsRelayed(planId, relay),
   };
 }
 
@@ -91,6 +108,8 @@ export type PlanRoomRpc = {
   importFile(planId: string, file: ProjectFileImport): Promise<void>;
   hasTab(planId: string, tabId: string): Promise<boolean>;
   item(planId: string, itemId: string): Promise<Item | null>;
+  grantImage(planId: string, imageId: string): Promise<void>;
+  servesImage(planId: string, imageId: string): Promise<boolean>;
   exportCopy(
     planId: string,
     onlyTabId: string | null,
@@ -110,5 +129,13 @@ export type PlanRoomRpc = {
     seenUpdatedAt: number,
   ): Promise<boolean>;
   receiveShares(planId: string, from: string, messages: ShareMessage[]): Promise<ShareAnswer[]>;
+  threadsFor(planId: string, ids: string[], via: string): Promise<CardThread[]>;
+  threadWrite(
+    planId: string,
+    threadId: string,
+    op: ThreadOp,
+    via: string,
+  ): Promise<ThreadWriteResult>;
+  threadsRelayed(planId: string, relay: ThreadsRelay): Promise<string[]>;
   fetch(request: Request): Promise<Response>;
 };

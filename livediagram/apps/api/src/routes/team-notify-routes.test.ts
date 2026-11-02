@@ -256,7 +256,30 @@ describe('POST notify-action', () => {
       assigneeCanOpen: true,
       actionName: 'Ship it',
       description: 'By Friday',
+      email: true,
+      push: { url: expect.stringMatching(/\/document\/team-doc$/), tag: 'team-doc:action' },
     });
+  });
+
+  it('passes the Email box and the action’s place on for the phone notification', async () => {
+    await assign({ email: false, tabId: 't1', elementId: 'e1' });
+    expect(room.notifyAction).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        email: false,
+        push: {
+          url: expect.stringMatching(/\/document\/team-doc#t=t1&el=e1&open=action$/),
+          tag: 'team-doc:e1',
+        },
+      }),
+    );
+    // A place id past the cap is no place: the canvas's own link.
+    await assign({ tabId: 't1', elementId: 'e'.repeat(201) });
+    expect(room.notifyAction).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        email: true,
+        push: { url: expect.stringMatching(/\/document\/team-doc$/), tag: 'team-doc:action' },
+      }),
+    );
   });
 
   it("falls back to the caller's email without a profile name, and takes the legacy diagramId", async () => {

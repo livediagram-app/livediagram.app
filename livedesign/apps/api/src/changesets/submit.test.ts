@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Element } from '@livedesign/design';
 import { getDesign } from '../db';
 import { seedTabs } from '../db/tabs';
+import * as componentStore from '../db/components';
+import { putComponent } from '../db/components';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { parseChangesetRequest } from './request';
@@ -70,7 +72,9 @@ function interleave(db: SqliteD1, times: number) {
   let left = times;
   db.env.DESIGN_DB.batch = async (statements: D1PreparedStatement[]) => {
     // Only a tab write meets the race: the design's reads (its outline, the outbox drain) batch too.
-    const writesTab = statements.some((st) => /INSERT INTO tabs\b/.test((st as unknown as { query: string }).query));
+    const writesTab = statements.some((st) =>
+      /INSERT INTO tabs\b/.test((st as unknown as { query: string }).query),
+    );
     if (writesTab && left > 0) {
       left -= 1;
       const row = db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!;
@@ -126,5 +130,43 @@ describe('submitChangeset', () => {
       '[changeset] relay-failed',
       expect.objectContaining({ designId: 'D' }),
     );
+  });
+});
+
+describe('submitChangeset with components', () => {
+  const nav = {
+    id: 'nav',
+    name: 'Nav',
+    width: 200,
+    height: 40,
+    updatedAt: 1,
+    elements: [box('bar', 'Home')],
+  };
+
+  it('reads the library for an instance placed or detached, and places it at its main’s frame', async () => {
+    const db = await setUp();
+    await putComponent(db.env, nav);
+    const read = vi.spyOn(componentStore, 'readComponents');
+    const placed = await submit(db, [
+      { op: 'add', kind: 'instance', id: 'hdr', fields: { componentId: 'nav' } },
+    ]);
+    expect(placed.status).toBe(200);
+    expect(read).toHaveBeenCalledTimes(1);
+    const detached = await submit(db, [{ op: 'detach', target: 'hdr' }]);
+    expect(detached.status).toBe(200);
+    expect(labels(db)).toEqual([
+      ['a', 'a'],
+      ['b', 'b'],
+      ['home', 'Home'],
+    ]);
+  });
+
+  it('reads no library for any other changeset', async () => {
+    const db = await setUp();
+    const read = vi.spyOn(componentStore, 'readComponents');
+    expect((await submit(db, [{ op: 'set', target: 'a', fields: { label: 'A' } }])).status).toBe(
+      200,
+    );
+    expect(read).not.toHaveBeenCalled();
   });
 });

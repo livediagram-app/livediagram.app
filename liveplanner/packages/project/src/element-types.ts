@@ -1235,8 +1235,9 @@ export function takesTypedLabel(el: { type: string; shape?: string }): boolean {
 
 // What a Plan card points at: one item of the project's item store (docs/specs/026-plan/items.md).
 // `size`: how much of the card shows (docs/specs/026-plan/plan-board.md "The Plan card"), as a board's Card Size;
-// absent is Detailed.
-export type PlanCardRef = { itemId: string; size?: 'minimal' | 'compact' | 'detailed' };
+// absent is Detailed. An older card may still store the retired `'compact'`, which reads as Detailed (items'
+// readCardSize), so read it through that, never compare it raw.
+export type PlanCardRef = { itemId: string; size?: 'minimal' | 'detailed' };
 
 // What a Sheet element frames: one sheet of the project's sheet store (docs/specs/029-sheets/sheet-store.md).
 // `copyOf` marks a copy not yet made (a duplicate, a paste, a duplicated tab): the Sheet makes its sheet from that
@@ -1303,6 +1304,12 @@ export type PlanViewRef = {
   filters?: CardSearchFilter[];
   // The statuses a chart counts (status ids; docs/specs/026-plan/plan-views.md "Statuses"); absent is every card.
   statuses?: string[];
+  // Fields by role (docs/specs/026-plan/plan-views.md "Dates", "Cards by Field"): the Date fields a Gantt chart or a
+  // calendar reads for its start and its due dates, and the Number field Cards by Field adds up; absent is Start, Due
+  // and counting cards.
+  startField?: string;
+  dueField?: string;
+  measure?: string;
   // Its own title in place of the view's name (a Visualisation tab's chart, named with its tab,
   // docs/specs/026-plan/plan-tabs.md "Names"); absent is the view's name.
   title?: string;

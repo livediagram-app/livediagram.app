@@ -20,6 +20,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'working-with-pages': '#e11d48',
   'logo-pages': '#0891b2',
   'wireframe-pages': '#7c3aed',
+  inspect: '#dc2626',
   'photo-pages': '#c026d3',
   articles: '#0d9488',
   'exporting-pages': '#9333ea',
@@ -78,6 +79,8 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'assigned-actions': '#22c55e',
   // Collaboration → Sharing guides
   'share-passwords': '#475569',
+  community: '#ec4899',
+  'finding-community-documents': '#8b5cf6',
   'share-link-expiry': '#f59e0b',
   'one-tab': '#14b8a6',
   embeds: '#6366f1',

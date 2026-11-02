@@ -9,6 +9,8 @@ export const ARTICLE_BLOCK_INSERT_EVENT = {
   pageBreak: 'ArticlePageBreak',
   quote: 'ArticleQuote',
   code: 'ArticleCode',
+  table: 'ArticleTable',
+  toc: 'ArticleContents',
 } as const;
 
 type ArticleBlockInsert = keyof typeof ARTICLE_BLOCK_INSERT_EVENT;

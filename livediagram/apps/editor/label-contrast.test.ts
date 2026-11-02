@@ -16,6 +16,8 @@ const DIRS = [
   'lib',
   // The editor code every editor shares (@liveworkspace/workbench) renders here too, so it is held to the rule as well.
   '../../../packages/workbench/src',
+  // Avatar mode's shared code (@liveworkspace/avatar) renders here too.
+  '../../../packages/avatar/src',
 ];
 // One class string: '...', "..." or `...` on one line.
 const CLASS_STRING = /(['"`])((?:(?!\1).)*?)\1/g;

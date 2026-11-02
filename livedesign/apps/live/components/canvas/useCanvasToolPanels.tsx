@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import dynamic from 'next/dynamic';
 import { loadToolPanels } from '@/lib/editor-deferred-code';
@@ -14,6 +14,9 @@ const SpotlightPanel = dynamic(() => loadToolPanels().then((m) => m.SpotlightPan
 });
 const EraserPanel = dynamic(() => loadToolPanels().then((m) => m.EraserPanel), { ssr: false });
 const FormatPanel = dynamic(() => loadToolPanels().then((m) => m.FormatPanel), { ssr: false });
+const InspectPanel = dynamic(() => loadToolPanels().then((m) => m.InspectPanel), { ssr: false });
+
+const NO_PAGES: readonly never[] = [];
 
 // The four tool-config panels (docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,
 // docs/specs/008-canvas/format-panel.md), lifted out of useCanvasChromePanels. They are siblings in
@@ -38,6 +41,7 @@ export function useCanvasToolPanels({
   spotlightEl: ReactNode;
   eraserEl: ReactNode;
   formatEl: ReactNode;
+  inspectEl: ReactNode;
 } {
   const {
     canvasTool,
@@ -80,6 +84,10 @@ export function useCanvasToolPanels({
   const formatWiring = panelWiringFor('format', formatPanelPosition ?? null, () =>
     onResetFormatPanel?.(),
   );
+  // Inspect's place is kept here (the chrome stays mounted across tools), so a panel moved aside comes back
+  // where it was the next time Inspect is turned on.
+  const [inspectPosition, setInspectPosition] = useState<{ x: number; y: number } | null>(null);
+  const inspectWiring = panelWiringFor('inspect', inspectPosition, () => setInspectPosition(null));
 
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen's settings, mounted only while the Laser
   // tool is active, available to view-role visitors too (the laser is theirs too).
@@ -142,5 +150,21 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  return { laserEl, spotlightEl, eraserEl, formatEl };
+  // Inspect panel (docs/specs/007-editor/wireframe-pages.md "The Inspect panel"): the selected wireframe
+  // element's measurements, mounted only while the Inspect tool is active, every role's.
+  const inspectEl =
+    !chromeHidden && canvasTool === 'inspect' ? (
+      <InspectPanel
+        elements={props.elements}
+        pages={props.pagesMode?.pages ?? NO_PAGES}
+        tabFont={props.tabFont}
+        tabFinish={props.tabFinish}
+        position={inspectWiring.position}
+        onMoveTo={(x, y) => setInspectPosition({ x, y })}
+        onReset={inspectWiring.onReset}
+        dock={inspectWiring.dock}
+      />
+    ) : null;
+
+  return { laserEl, spotlightEl, eraserEl, formatEl, inspectEl };
 }

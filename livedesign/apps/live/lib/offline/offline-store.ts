@@ -14,7 +14,7 @@
 import type { LiveDoc, DesignSummary, RecordedIntent, TabSummary } from '@livedesign/api-schema';
 import { utcDay } from '@livedesign/api-schema';
 import { drawnCount, migrateStoredTab, stampTabKind } from '@livedesign/design';
-import type { Tab } from '@livedesign/design';
+import type { DesignComponent, Tab } from '@livedesign/design';
 import { DesignTrashedError } from '../design-trashed';
 import {
   offlineBackend,
@@ -56,6 +56,9 @@ export type OfflineDesignRecord = {
   // This Browser's opens of the design (docs/specs/013-workspace/explorer-home.md "Opens"),
   // for Home's Jump Back In; see ./offline-opens.ts. Optional: a record never opened has none.
   opens?: StoredLocalOpens;
+  // The design's component library (docs/specs/009-elements/components.md "This Browser"). Optional: a record
+  // written before components, or a design with none, has none.
+  components?: DesignComponent[];
 };
 
 // A local design's opens, counted like the server's (docs/specs/013-workspace/explorer-home.md
@@ -270,6 +273,22 @@ async function writeLive(
       throw new OfflineDesignMissingError(id);
     }
   });
+}
+
+// The design's component library, archived mains included; [] for a record with none or no record.
+export async function offlineLoadComponents(id: string): Promise<DesignComponent[]> {
+  const rec = await offlineBackend().get(id);
+  return rec?.components ?? [];
+}
+
+// Makes or replaces one main in the record's library.
+export async function offlineSaveComponent(id: string, component: DesignComponent): Promise<void> {
+  // savedAt moves like any edit's, so a sync running meanwhile uploads again (offline-sync.ts uploadMark).
+  await writeLive(id, (rec) => ({
+    ...rec,
+    savedAt: Date.now(),
+    components: [...(rec.components ?? []).filter((c) => c.id !== component.id), component],
+  }));
 }
 
 // Live records only: a trashed one waits in the local Trash.

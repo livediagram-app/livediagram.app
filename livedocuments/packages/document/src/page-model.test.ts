@@ -14,6 +14,7 @@ import {
   elementIdsOnPage,
   elementsOnPage,
   elementPageSurfaces,
+  elementPageTones,
   legibleOn,
   pageFillTone,
   pageIsDark,
@@ -247,6 +248,12 @@ describe('page backgrounds', () => {
     const surfaces = elementPageSurfaces([onA, onB, off], pages);
     expect([...surfaces]).toEqual([['x', 'dark']]);
     expect(elementPageSurfaces([onA], layOutPages([pages[1]!])).size).toBe(0);
+    // And the page's tone, which a label with no fill of its own is read against.
+    const twin = box('w', 10, 10);
+    expect([...elementPageTones([onA, twin, onB, off], pages)]).toEqual([
+      ['x', '#0f172a'],
+      ['w', '#0f172a'],
+    ]);
   });
 });
 

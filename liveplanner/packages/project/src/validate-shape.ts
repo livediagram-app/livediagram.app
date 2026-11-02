@@ -3,7 +3,12 @@
 // check names its field and rule, so a refusal says which value to fix.
 
 import { isChartCategory, isChartSeries, isChartSlice } from './malformed-chart-rows';
-import { isPlanViewSettings, isValidItemId, normaliseBoardSetup } from '@liveplanner/items';
+import {
+  isPlanViewSettings,
+  isSavedBoardFilters,
+  isValidItemId,
+  normaliseBoardSetup,
+} from '@liveplanner/items';
 import { isPlanSheetRef } from './element-types';
 import { isFlowchartDirection } from './flowchart';
 import { isChartSource, isSheetAnchor } from './chart-source';
@@ -70,10 +75,13 @@ import {
 
 // railLabels / lineCategories / pieSlices / lineSeries / pickerOptions.
 const MAX_DATA_ARRAY = 5_000;
-// A Plan card's sizes (PlanCardRef.size): the same three as @liveplanner/items' CARD_SIZES, written out because
+// A Plan card's sizes (PlanCardRef.size): the same two as @liveplanner/items' CARD_SIZES, written out because
 // that package imports this one and its binding may be uninitialised at module load; plan-shapes.test.ts keeps
 // the two equal.
-export const PLAN_CARD_SIZES: readonly string[] = ['minimal', 'compact', 'detailed'];
+export const PLAN_CARD_SIZES: readonly string[] = ['minimal', 'detailed'];
+// The retired Compact size, still stored on older cards and sent by older prompts: valid, never refused, and read as
+// Detailed (docs/specs/026-plan/plan-board.md "The Plan card").
+const PLAN_CARD_RETIRED_SIZES: readonly string[] = ['compact'];
 
 const isStrUpTo = (max: number) => (v: unknown) => typeof v === 'string' && v.length <= max;
 // A web component's row text (docs/specs/009-elements/web-components-and-no-groups.md).
@@ -410,8 +418,13 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   },
   {
     field: 'planBoard',
-    valid: (v: unknown) => normaliseBoardSetup(v) !== null,
-    rule: 'a Plan board set-up: 1 to 12 columns, each an id and a status',
+    // Saved filters are refused when malformed rather than read past (docs/specs/026-plan/board-widgets.md "Saved
+    // filters"): at most 8, each an id, a name and what it narrows by.
+    valid: (v: unknown) =>
+      normaliseBoardSetup(v) !== null &&
+      ((v as { savedFilters?: unknown }).savedFilters === undefined ||
+        isSavedBoardFilters((v as { savedFilters?: unknown }).savedFilters)),
+    rule: 'a Plan board set-up: 1 to 12 columns, each an id and a status, and at most 8 saved filters',
   },
   {
     field: 'planCard',
@@ -422,15 +435,16 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
       ((v as { itemId: string }).itemId === '' ||
         isValidItemId((v as { itemId: string }).itemId)) &&
       ((v as { size?: unknown }).size === undefined ||
-        PLAN_CARD_SIZES.includes((v as { size: string }).size)),
-    rule: 'an object { itemId, size? } naming an item, size minimal, compact or detailed',
+        PLAN_CARD_SIZES.includes((v as { size: string }).size) ||
+        PLAN_CARD_RETIRED_SIZES.includes((v as { size: string }).size)),
+    rule: 'an object { itemId, size? } naming an item, size minimal or detailed',
   },
   {
     field: 'planView',
     // Called, not referenced: @liveplanner/items imports this package too, so at module load the binding
     // may not be initialised yet (a ReferenceError in the browser).
     valid: (v: unknown) => isPlanViewSettings(v),
-    rule: 'an object { view } naming a plan view, with an optional types (1 to 32 card type ids), swimlaneBy, swimlaneField, namesWidth (120 to 2000), rowOrder (up to 2000 card ids), filters (up to 8), statuses (1 to 64 status ids) and title (up to 80 characters)',
+    rule: 'an object { view } naming a plan view, with an optional types (1 to 32 card type ids), swimlaneBy, swimlaneField, namesWidth (120 to 2000), rowOrder (up to 2000 card ids), filters (up to 8), statuses (1 to 64 status ids), startField, dueField and measure (field ids, up to 64 characters each) and title (up to 80 characters)',
   },
   {
     field: 'chartSource',

@@ -23,6 +23,7 @@ import {
   lucideList,
   lucideMessageSquare,
   lucidePlus,
+  lucideTable,
   lucideType,
   lucideUnderline,
 } from '@liveworkspace/icons/lucide';
@@ -65,7 +66,14 @@ import {
 import { articleSchema } from '@/lib/article/article-schema';
 import { track } from '@/lib/telemetry';
 import { ARTICLE_BLOCK_INSERT_EVENT } from '@/lib/article/article-telemetry';
+import {
+  insertTable,
+  tableCommand,
+  tableCommandBlock,
+  type TableCommandName,
+} from '@/lib/article/article-table-commands';
 import { LinkField, ToolbarPopover } from './page-toolbar-menus';
+import { TablePanel } from './page-toolbar-table';
 import { usePageToolbarPlacement } from './page-toolbar-placement';
 import { useHoveredArticlePage, useOffPagePressClears } from './page-toolbar-presence';
 import {
@@ -95,6 +103,7 @@ const Plus = I(lucidePlus);
 const More = I(lucideEllipsis);
 const CommentIcon = I(lucideMessageSquare);
 const ActionIcon = I(lucideCircleCheck);
+const TableIcon = I(lucideTable);
 const TypeIcon = lucideGlyph(lucideType, 14);
 
 // The page toolbar's telemetry (docs/specs/007-editor/article-pages.md "Telemetry").
@@ -104,7 +113,7 @@ const FORMAT_EVENT = {
   link: 'ArticleLink',
 } as const;
 
-type Open = 'style' | 'list' | 'align' | 'colour' | 'link' | 'insert' | 'more' | null;
+type Open = 'style' | 'list' | 'align' | 'colour' | 'link' | 'insert' | 'table' | 'more' | null;
 
 export function PageToolbar({
   accent,
@@ -118,7 +127,8 @@ export function PageToolbar({
   // The article pages on the tab that may be written on, each with its article: what a hover or a
   // press is measured on. An article with a locked page is left out (it is read-only), so the
   // toolbar never shows for it, hovered or worked on.
-  articlePages: readonly { id: string; flow: string }[];
+  // `card`: a flashcard's, which holds text only (docs/specs/007-editor/flashcards.md "Text only").
+  articlePages: readonly { id: string; flow: string; card?: boolean }[];
   // The screen px of a page's top margin at the current zoom: the room the band sits in.
   topRoomOf: (pageId: string) => number;
   // The article's accent (the theme's when it has none of its own).
@@ -181,15 +191,18 @@ export function PageToolbar({
   // ⌘⌥M in the writing puts a comment on the selected text.
   const commentRequest = useArticleCommentRequest();
   const seenComment = useRef(commentRequest);
-  const noteNow = useRef({ active, onNote });
+  const noteNow = useRef({ active, onNote, articlePages });
   useLayoutEffect(() => {
-    noteNow.current = { active, onNote };
+    noteNow.current = { active, onNote, articlePages };
   });
   useEffect(() => {
     if (commentRequest === seenComment.current) return;
     seenComment.current = commentRequest;
-    const { active: a, onNote: note } = noteNow.current;
-    if (a?.selection.hasText) note?.(a.handle.flow, 'comment');
+    const { active: a, onNote: note, articlePages: pages } = noteNow.current;
+    // A card takes no margin notes.
+    const onCard = pages.some((p) => p.flow === a?.handle.flow && p.card === true);
+    // Nor does text in a table's cell (a note marks a block's own runs).
+    if (a?.selection.hasText && !a.selection.inTable && !onCard) note?.(a.handle.flow, 'comment');
   }, [commentRequest]);
   // A menu hangs where it opened: the view panning or zooming away from it closes it.
   const gesture = useCanvasGesture();
@@ -197,6 +210,8 @@ export function PageToolbar({
   if (!dock && (gesture === 'pan' || gesture === 'zoom') && open) setOpen(null);
   // A menu goes with the article.
   if (!shown && open) setOpen(null);
+  // The Table menu goes with the caret leaving the table.
+  if (open === 'table' && !shown?.selection.inTable) setOpen(null);
 
   const phone = useIsMobileViewport();
   const bar = usePageToolbarPlacement({
@@ -207,6 +222,8 @@ export function PageToolbar({
 
   if (!shown) return null;
   const { handle, selection } = shown;
+  // A card: no Insert, no margin notes (a note is an element in its margin).
+  const card = articlePages.some((p) => p.flow === handle.flow && p.card === true);
   const run = (command: Parameters<typeof handle.run>[0], event?: keyof typeof FORMAT_EVENT) => {
     handle.run(command);
     if (event) track('Element', 'Changed', FORMAT_EVENT[event]);
@@ -230,16 +247,24 @@ export function PageToolbar({
   const styleShown = phone ? (styleOption?.short ?? styleLabel) : styleLabel;
   const S = articleSchema;
   const insertBlock = (what: BlockInsert) => {
-    handle.insert(
-      what === 'divider'
-        ? [S.nodes.divider.create()]
-        : what === 'pageBreak'
-          ? [S.nodes.page_break.create(), S.nodes.paragraph.create()]
-          : what === 'quote'
-            ? [S.nodes.paragraph.create({ style: 'quote' })]
-            : [S.nodes.code_block.create()],
-    );
+    if (what === 'table') {
+      if (!handle.run(insertTable)) return;
+    } else
+      handle.insert(
+        what === 'toc'
+          ? [S.nodes.toc.create(), S.nodes.paragraph.create()]
+          : what === 'divider'
+            ? [S.nodes.divider.create()]
+            : what === 'pageBreak'
+              ? [S.nodes.page_break.create(), S.nodes.paragraph.create()]
+              : what === 'quote'
+                ? [S.nodes.paragraph.create({ style: 'quote' })]
+                : [S.nodes.code_block.create()],
+      );
     track('Element', 'Added', ARTICLE_BLOCK_INSERT_EVENT[what]);
+  };
+  const reshapeTable = (name: TableCommandName) => {
+    if (handle.run(tableCommand(name))) track('Element', 'Changed', 'ArticleTableShape');
   };
   const more = (action: MoreAction) => {
     if (action === 'style') {
@@ -371,32 +396,49 @@ export function PageToolbar({
       >
         <More />
       </Button>
-      <Divider />
-      <Button
-        label="Insert"
-        anchor="insert"
-        menu
-        expanded={open === 'insert'}
-        onPress={() => toggleOpen('insert')}
-      >
-        <Plus />
-      </Button>
-      <Divider />
-      <Button
-        label="Comment"
-        keys="Mod-Alt-m"
-        disabled={!selection.hasText || !onNote}
-        onPress={() => onNote?.(handle.flow, 'comment')}
-      >
-        <CommentIcon />
-      </Button>
-      <Button
-        label="Assign Action"
-        disabled={!selection.hasText || !onNote}
-        onPress={() => onNote?.(handle.flow, 'action')}
-      >
-        <ActionIcon />
-      </Button>
+      {card ? null : (
+        <>
+          <Divider />
+          <Button
+            label="Insert"
+            anchor="insert"
+            menu
+            expanded={open === 'insert'}
+            onPress={() => toggleOpen('insert')}
+          >
+            <Plus />
+          </Button>
+          {selection.inTable ? (
+            <Button
+              label="Table"
+              anchor="table"
+              menu
+              expanded={open === 'table'}
+              onPress={() => toggleOpen('table')}
+            >
+              <TableIcon />
+            </Button>
+          ) : null}
+          <Divider />
+          <Button
+            label="Comment"
+            keys="Mod-Alt-m"
+            disabled={!selection.hasText || selection.inTable || !onNote}
+            why={selection.inTable ? NO_NOTE_IN_TABLE : undefined}
+            onPress={() => onNote?.(handle.flow, 'comment')}
+          >
+            <CommentIcon />
+          </Button>
+          <Button
+            label="Assign Action"
+            disabled={!selection.hasText || selection.inTable || !onNote}
+            why={selection.inTable ? NO_NOTE_IN_TABLE : undefined}
+            onPress={() => onNote?.(handle.flow, 'action')}
+          >
+            <ActionIcon />
+          </Button>
+        </>
+      )}
     </div>
   );
 
@@ -466,9 +508,18 @@ export function PageToolbar({
           />
         </ToolbarPopover>
       ) : null}
+      {open === 'table' ? (
+        <ToolbarPopover anchor="table" menu onClose={close} label="Table" width={236}>
+          <TablePanel
+            header={selection.tableHeader}
+            blockedOf={(name) => tableCommandBlock(handle.state(), name)}
+            onCommand={(name) => choose(() => reshapeTable(name))}
+          />
+        </ToolbarPopover>
+      ) : null}
       {open === 'more' ? (
         <ToolbarPopover anchor="more" menu onClose={close} label="More Formatting" width={220}>
-          <MorePanel selection={selection} onAction={(a) => choose(() => more(a))} />
+          <MorePanel selection={selection} card={card} onAction={(a) => choose(() => more(a))} />
         </ToolbarPopover>
       ) : null}
     </>
@@ -478,6 +529,9 @@ export function PageToolbar({
 function Divider() {
   return <span aria-hidden className={TOOLBAR_DIVIDER} />;
 }
+
+// A margin note sits beside a line of the writing, never in a table's cell.
+const NO_NOTE_IN_TABLE = 'Not available in a table';
 
 function Button({
   label,
@@ -489,10 +543,13 @@ function Button({
   popup = 'menu',
   onPress,
   anchor,
+  why,
   children,
 }: {
   label: string;
   disabled?: boolean;
+  // Why it is unavailable, added to its tooltip while disabled.
+  why?: string;
   // What its menu opens: a menu, or a small dialog (the colours).
   popup?: 'menu' | 'dialog';
   keys?: string;
@@ -507,7 +564,7 @@ function Button({
 }) {
   const name = keys ? `${label} (${keyLabel(keys)})` : label;
   return (
-    <Tooltip label={name}>
+    <Tooltip label={disabled && why ? `${name}: ${why}` : name}>
       <button
         data-anchor={anchor}
         type="button"

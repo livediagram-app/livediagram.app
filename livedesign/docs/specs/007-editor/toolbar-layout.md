@@ -117,13 +117,16 @@ scrolling when long:
 
 ### A tile's side panel
 
-A tile with presets (Card, Badge: [Card presets](../009-elements/card.md)) or an opener opens a **side panel**: a
+A tile with presets (Card, Badge: [Card presets](../009-elements/card.md)), an opener, or a logo page's Fill tool
+(its colour, [Drawing tools](../023-draw-mode/drawing-tools.md) "The Fill tool") opens a **side panel**: a
 second popover beside the flyout, lined up with the tile, so the flyout stays open behind it as a submenu's parent
 does. It opens on the side of the tile's own column (a right-column tile to the flyout's right, a left-column one
-to its left), against the tile itself over the other column where the window has no room, and rises to stay inside
-the window. Resting on the tile for 150 ms opens it, a press opens it at once, a second press closes it, and
-resting on another tile closes it. On a phone it lies over the flyout. Its header names the tile and says what can
-change after a preset is placed; its presets are one column of cards, placing and dragging as any tile.
+to its left), against the tile itself over the other column where the window has no room, and rises so its foot
+stays no lower than the flyout's (and inside the window), measured at its full height, not the smaller box of its
+opening animation. Resting on the tile for 150 ms opens it, a press opens it at once (the Fill tool's press picks
+it up instead, save on a phone), a second press closes it, and resting on another tile closes it. On a phone it
+lies over the flyout. Its header names the tile and says what can change after a preset is placed; its presets are
+one column of cards, placing and dragging as any tile.
 
 ### Icons and Stickers: two panes
 
@@ -211,7 +214,7 @@ so a new page load starts on the page kind's landing.
 
 - On a desktop, the menu box (the Explorer button, top left) ends with the open tab's name, after a
   hairline. It is the chrome's ink, 14 px at regular weight (never bold), cut short
-  with an ellipsis past 16rem, and follows a rename at once. The box shows a name alone, never an icon beside it.
+  with an ellipsis past 16rem (sooner while the box heads Pages mode's Contents sidebar, [Pages mode](pages-mode.md) "Joined to the menu box"), and follows a rename at once. The box shows a name alone, never an icon beside it.
 - A click (a tap) on it renames the tab in place, for someone who may change the
   design's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
 - Not on a phone: the top row is the strip's there.
@@ -224,7 +227,8 @@ popover hanging under it, and closed again. It starts closed on every page and i
 reopened from a remembered state; pressing the button is the only thing that opens it. A press
 outside, Esc, the button again or opening an item closes it. The status screens (deleted,
 couldn't load, not found) have no menu button and no Explorer. The popover hangs from the
-button's left edge (`computeDockAnchor(..., 'button')`).
+button's left edge (`computeDockAnchor(..., 'button')`). The button has no hover card: it
+got in the way of the Explorer's app switcher, and the icon is plain. Its `aria-label` ("Explorer") names it.
 
 Collaborate and Contents open as **popovers over their bottom-row
 buttons** ([Live app](live-app.md)): they are not corner panels. Every

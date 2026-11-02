@@ -148,6 +148,21 @@ const wrap = (key: string, name: string): BodySchema => ({
   required: [key],
 });
 
+// The gallery's search parameters, shared by the public list and My Shares (docs/specs/025-community/community.md
+// "The gallery"): every filter can also be a word in `q` (`#tag`, `category:`, `sort:`, `is:mine`).
+const COMMUNITY_QUERY = [
+  {
+    name: 'q',
+    required: false,
+    description:
+      'Search words: plain terms (title, description, tags), `#tag`, `category:<id>`, `sort:loved|copied`.',
+  },
+  { name: 'category', required: false, description: 'One category id.' },
+  { name: 'tag', required: false, description: 'One tag.' },
+  { name: 'sort', required: false, description: '`new` (default), `loved` or `copied`.' },
+  { name: 'offset', required: false, description: 'From `nextOffset`.' },
+] as const;
+
 export const ROUTE_MANIFEST: RouteSpec[] = [
   // ---- Meta ----
   {
@@ -608,6 +623,28 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401, 403, 404, 405, 409, 410, 413],
   },
   {
+    method: 'POST',
+    path: '/documents/{id}/tabs/{tabId}/comments/{commentId}/react',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Add or take back your reaction (one of six emoji) on a comment, as a person; agents read reactions only.',
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      properties: {
+        emoji: {
+          type: 'string',
+          enum: ['thumbs-up', 'thumbs-down', 'laugh', 'hooray', 'heart', 'eyes'],
+        },
+        on: { type: 'boolean' },
+        key: { type: 'string' },
+      },
+      required: ['emoji', 'on', 'key'],
+    },
+    statuses: [204, 400, 401, 403, 404, 405, 409, 410, 413],
+  },
+  {
     method: 'GET',
     path: '/documents/{id}/tabs/{tabId}/render.svg',
     segment: 'documents',
@@ -669,7 +706,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      "Email a teammate that an action on this document was assigned to them (docs/specs/012-collaboration/assigned-actions.md). The caller has joined the team and can open the document; the assignee is one of the team's joined or invited people. Best-effort; the assignee may have turned these emails off.",
+      "Email a teammate that an action on this document was assigned to them (docs/specs/012-collaboration/assigned-actions.md). The caller has joined the team and can open the document; the assignee is one of the team's joined or invited people. Best-effort; the assignee may have turned these emails off. `email: false` sends only the phone notification, which links `tabId` and `elementId` when given.",
     auth: 'clerk',
     requestSchema: {
       type: 'object',
@@ -679,6 +716,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         assigneeMemberId: { type: 'string' },
         actionName: { type: 'string' },
         description: { type: 'string' },
+        email: { type: 'boolean' },
+        tabId: { type: 'string' },
+        elementId: { type: 'string' },
       },
       required: ['teamId', 'actionName'],
     },
@@ -732,6 +772,41 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['tabs'],
     },
     statuses: [200, 404],
+  },
+  {
+    method: 'GET',
+    path: '/documents/{id}/community',
+    segment: 'documents',
+    tag: 'Community',
+    summary: "The document's Community post, in any state, or null (owner only).",
+    auth: 'guest-or-clerk',
+    responseSchema: {
+      type: 'object',
+      properties: { post: { anyOf: [ref('CommunityOwnPost'), { type: 'null' }] } },
+      required: ['post'],
+    },
+    statuses: [200, 400, 401, 403, 404, 410, 502],
+  },
+  {
+    method: 'PUT',
+    path: '/documents/{id}/community',
+    segment: 'documents',
+    tag: 'Community',
+    summary:
+      'Publish the document to Community, or save its listing (signed-in owner; not a team document, not password protected).',
+    auth: 'clerk',
+    requestSchema: ref('CommunityPostInput'),
+    responseSchema: wrap('post', 'CommunityOwnPost'),
+    statuses: [200, 201, 400, 401, 403, 404, 409, 410, 502],
+  },
+  {
+    method: 'DELETE',
+    path: '/documents/{id}/community',
+    segment: 'documents',
+    tag: 'Community',
+    summary: 'Remove the document from Community (owner only).',
+    auth: 'guest-or-clerk',
+    statuses: [204, 400, 401, 403, 404, 409, 410, 502],
   },
   {
     method: 'POST',
@@ -886,6 +961,21 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401, 403, 404],
   },
 
+  // Every other Community read, and likes and reports, are the liveworkspace Community service's
+  // (liveworkspace/docs/specs/007-community/community.md), which the Community pages call directly.
+  {
+    method: 'GET',
+    path: '/community/mine',
+    segment: 'community',
+    tag: 'Community',
+    summary:
+      "My Shares: the signed-in author's own posts (hidden ones included) under the same search words, with their totals.",
+    auth: 'clerk',
+    query: [...COMMUNITY_QUERY],
+    responseSchema: ref('CommunityMineResponse'),
+    statuses: [200, 400, 401, 404, 502],
+  },
+
   // ---- Shared with you ----
   {
     method: 'GET',
@@ -901,6 +991,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         document: ref('Document'),
         role: ref('ShareRole'),
         tabId: { type: ['string', 'null'] },
+        community: ref('CommunityShareInfo'),
       },
       required: ['document', 'role', 'tabId'],
     },
@@ -1008,14 +1099,31 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
 
   // ---- Account ----
   {
+    method: 'POST',
+    path: '/account/deletion-code',
+    segment: 'account',
+    tag: 'Account',
+    summary:
+      'Email the signed-in account the 6-digit code that deleting it needs (10 minutes, 3 tries).',
+    auth: 'clerk',
+    responseSchema: { type: 'object', properties: { sent: { type: 'boolean' } } },
+    statuses: [200, 401, 429, 502, 503],
+  },
+  {
     method: 'DELETE',
     path: '/account',
     segment: 'account',
     tag: 'Account',
-    summary: 'Delete the signed-in account and all of its data (documents, tokens, ...).',
+    summary:
+      'With the code emailed to it, delete the signed-in account and all of its data (documents, tokens, ...).',
     auth: 'clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { code: { type: 'string' } },
+      required: ['code'],
+    },
     responseSchema: { type: 'object', properties: { deleted: { type: 'number' } } },
-    statuses: [204, 401],
+    statuses: [200, 400, 401, 403, 409, 429, 502, 503],
   },
 
   // ---- Teams ----

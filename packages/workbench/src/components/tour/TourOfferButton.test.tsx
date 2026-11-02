@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 // The footer's Start Tour button (docs/specs/007-editor/editor-tour.md "Where it appears"): the one way into a tour,
 // left of Search, offering the most relevant tour on offer, and absent with none.
+import { centreOffsetPx } from '@liveworkspace/icons/centring';
 import { act, cleanup, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
@@ -11,7 +12,12 @@ import {
   TOUR_OFFER_RANK,
   useOfferTour,
 } from './tour-offer';
-import { resetTourOfferButtonForTests, startTourLabel, TourOfferButton } from './TourOfferButton';
+import {
+  PLAY_GLYPH_SHIFT_PX,
+  resetTourOfferButtonForTests,
+  startTourLabel,
+  TourOfferButton,
+} from './TourOfferButton';
 
 afterEach(() => {
   cleanup();
@@ -55,6 +61,24 @@ describe('TourOfferButton', () => {
     const at = buttons.indexOf(button);
     expect(at).toBe(0);
     expect(buttons[at + 1]?.getAttribute('aria-label')).toBe('Search');
+  });
+
+  // The play triangle inks right of its viewBox centre by design; the glyph is moved back by a transform, so the two
+  // sit within 0.1px of the disc's centre (optical-alignment.md). A pixel of padding instead (pl-px) moved it a
+  // whole CSS px, the browser snapping the svg's box, and the editors' optical audits read it up to 1.4px off.
+  it('centres the play glyph in its disc', () => {
+    render(<Footer />);
+    act(() => publishTourOffer('draw', offer('draw', 'Draw', TOUR_OFFER_RANK.mode)));
+    const disc = screen.getByRole('button', { name: 'Start Draw Tour' }).querySelector('span')!;
+    expect(disc.className).not.toMatch(/\bp[lrx]-/);
+    const svg = disc.querySelector('svg')!;
+    const units = Number(/^0 0 ([\d.]+)/.exec(svg.getAttribute('viewBox')!)![1]);
+    const size = Number(svg.getAttribute('width'));
+    const stroke = Number(svg.getAttribute('stroke-width') ?? 0);
+    const off = centreOffsetPx(svg.outerHTML, { units, sizePx: size, strokeUnits: stroke })!;
+    const shift = parseFloat(svg.style.translate);
+    expect(shift).toBe(PLAY_GLYPH_SHIFT_PX);
+    expect(Math.abs(off.dx + shift)).toBeLessThanOrEqual(0.1);
   });
 
   it('starts the tour on a press, and stays to be pressed again', () => {

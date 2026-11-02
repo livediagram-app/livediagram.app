@@ -1,7 +1,14 @@
 'use client';
 
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { ExplorerPanel, explorerPath, type RenderAppLogo } from '@liveworkspace/explorer';
+import { memo, useCallback, useEffect, useMemo } from 'react';
+import {
+  EXPLORER_POPOVER_HEIGHT,
+  EXPLORER_POPOVER_WIDTH,
+  ExplorerPanel,
+  explorerPath,
+  useOpenItem,
+  type RenderAppLogo,
+} from '@liveworkspace/explorer';
 import { trackOrganise } from '@/lib/explorer-organise';
 import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
@@ -56,7 +63,11 @@ function ExplorerImpl({
   const { isSignedIn, authLoaded, accountUserId } = useAccountBootstrap();
   // The plans kept only in this browser, as the person (an account, or this browser's guest).
   const guestId = useSignedGuestId(authLoaded, accountUserId);
-  const thisBrowser = useThisBrowserHost(accountUserId ?? guestId, !!accountUserId);
+  const thisBrowser = useThisBrowserHost(
+    accountUserId ?? guestId,
+    !!accountUserId,
+    currentProjectId ?? null,
+  );
   const shareHost = useMemo(() => explorerShareHost(accountUserId ?? null), [accountUserId]);
   // A guest's too: their This Browser items' rows are theirs (lib/explorer-inbox-host.tsx).
   const inboxOwner = accountUserId ?? guestId ?? null;
@@ -84,21 +95,14 @@ function ExplorerImpl({
   const drive = useMemo(() => (isSignedIn ? cloudSyncHost() : null), [isSignedIn]);
 
   // The open plan as the index has it (its title, place and star), for the card on top.
-  const [current, setCurrent] = useState<Item | null>(null);
-  useEffect(() => {
-    if (!currentProjectId) return;
-    let live = true;
-    const share = currentShareCode
-      ? { code: currentShareCode, password: getSessionSharePassword() }
-      : null;
-    indexClient.getItem(currentProjectId, share).then(
-      ({ item }) => live && setCurrent(item),
-      () => live && setCurrent(null),
-    );
-    return () => {
-      live = false;
-    };
-  }, [currentProjectId, currentShareCode]);
+  // Null when the index has none for it (kept only in this browser): the panel then draws its card from This
+  // Browser's list (@liveworkspace/explorer ExplorerPanel).
+  const current = useOpenItem(
+    indexClient,
+    currentProjectId,
+    currentShareCode,
+    getSessionSharePassword,
+  );
 
   // Open, the panel reaches under the palette strip: the trays hanging from it step aside (PaletteTray).
   const shown = popoverOpen === true;
@@ -124,7 +128,12 @@ function ExplorerImpl({
       // Only ever the menu button's popover: never placed in a corner or dragged.
       position={null}
       defaultCorner="top-left"
-      popoverWidth="w-[38rem]"
+      // Roomy on a desktop or tablet: up to 64rem wide (kept 1rem inside the window) and 56rem tall (kept on the
+      // canvas below its button, 24px short of its edge), over a dimmed scrim on every screen size. Every editor's
+      // panel takes the one size from the package.
+      popoverWidth={EXPLORER_POPOVER_WIDTH}
+      popoverHeight={EXPLORER_POPOVER_HEIGHT}
+      popoverScrim
       // On a phone it opens as a sheet: edge to edge, down to the tab bar.
       popoverSheet={sheet}
       onMoveTo={NO_MOVE}

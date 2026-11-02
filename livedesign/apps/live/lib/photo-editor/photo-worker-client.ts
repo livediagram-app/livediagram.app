@@ -23,7 +23,9 @@ const newWorker = (): WorkerLike =>
 export type PhotoTaskHandle = { result: Promise<PhotoTaskResult>; cancel: () => void };
 
 export class PhotoWorkers {
-  private readonly workers: { w: WorkerLike; busy: number }[] = [];
+  // `answered`: the worker has loaded and replied once. Until then its tasks go as copies, so a worker
+  // that never loads (offline, a chunk gone after a deploy) leaves the page the buffers to run them with.
+  private readonly workers: { w: WorkerLike; busy: number; answered: boolean }[] = [];
   private readonly pending = new Map<number, Pending & { worker: WorkerLike }>();
   private next = 1;
   private broken = false;
@@ -48,7 +50,7 @@ export class PhotoWorkers {
         const w = this.create();
         w.addEventListener('message', (e) => this.answer(e.data as Record<string, unknown>));
         w.addEventListener('error', () => this.fail(w));
-        this.workers.push({ w, busy: 0 });
+        this.workers.push({ w, busy: 0, answered: false });
       } catch {
         this.broken = true;
         return null;
@@ -83,13 +85,15 @@ export class PhotoWorkers {
       p.progress?.(data.progress as number);
       return;
     }
+    const slot = this.workers.find((s) => s.w === p.worker);
+    if (slot) slot.answered = true;
     this.pending.delete(id);
     this.release(p.worker);
     if (data.ok) p.resolve(data.result as PhotoTaskResult);
     else p.reject(data.cancelled ? new FilterCancelled() : new Error(String(data.error)));
   }
 
-  /** A task run off the main thread where it can be. Its input buffers are moved, not copied. */
+  /** A task run off the main thread where it can be. Its input buffers are moved, not copied, once the worker has answered. */
   run(task: PhotoTask, progress?: (done: number) => void): PhotoTaskHandle {
     const w = this.worker();
     if (!w) {
@@ -108,7 +112,8 @@ export class PhotoWorkers {
         return runPhotoTask(task, undefined, progress);
       throw err;
     });
-    w.postMessage({ id, task }, transfersOf(task));
+    const answered = this.workers.find((s) => s.w === w)?.answered ?? false;
+    w.postMessage({ id, task }, answered ? transfersOf(task) : []);
     return { result, cancel: () => w.postMessage({ id, cancel: true }) };
   }
 

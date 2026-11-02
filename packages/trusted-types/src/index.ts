@@ -55,7 +55,8 @@ export function parseInert(source: string, type: DOMParserSupportedType): Docume
 /**
  * Whether a script URL may load: this app's own build, under its asset prefix (`/_next/` for marketing, `/live/_next/`,
  * `/help/_next/`, liveworkspace.app's `/_liveworkspace/_next/` and so on) on the page's origin, one on a named
- * third-party origin, or (for a worker alone) one of the page's own blob: URLs. Self-contained, because the boot
+ * third-party origin, (for a worker alone) one of the page's own blob: URLs, or (to register alone) the push-only
+ * service worker at /push-worker.js. Self-contained, because the boot
  * script inlines its source.
  */
 export function isAllowedScriptUrl(
@@ -76,6 +77,10 @@ export function isAllowedScriptUrl(
   if (parsed.protocol === 'blob:')
     return sink === 'Worker constructor' && parsed.origin === pageOrigin;
   if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false;
+  // The push-only service worker (liveworkspace/docs/specs/003-accounts/push.md): its one path on the page's own
+  // origin, registered and nothing else; any other service worker is refused.
+  if (sink === 'ServiceWorkerContainer register')
+    return parsed.origin === pageOrigin && parsed.pathname === '/push-worker.js' && !parsed.search;
   if (parsed.origin === pageOrigin && parsed.pathname.indexOf(assetPrefix + '/_next/') === 0)
     return true;
   return origins.indexOf(parsed.origin) >= 0;

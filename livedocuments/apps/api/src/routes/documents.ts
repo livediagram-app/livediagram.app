@@ -33,7 +33,12 @@ import {
 import { getDocument, readReorderEntries, reorderTabs, seedTabs } from '../db';
 import { badRequest, CORS_HEADERS, forbidden, json, notFound, payloadTooLarge } from '../responses';
 import { documentDates, isDocumentSource } from '@livedocuments/api-schema';
-import { redactDocumentForReader, redactDocumentForScope } from '../redact-document';
+import {
+  redactDocumentForCommunity,
+  redactDocumentForReader,
+  redactDocumentForScope,
+} from '../redact-document';
+import { handleCommunityOwnerRoutes } from './community-owner-routes';
 import { answerOverview, parseViewQuery } from './document-views-route';
 import { handleDocumentSharedTabs } from './document-shared-tabs-route';
 import { relayDocumentRename } from '../room-client';
@@ -51,11 +56,13 @@ import {
   setDocumentPresentation,
 } from '../document-room/document-content';
 import { identityOf } from '../document-room/document-route';
+import { readOwnerCommunityState } from '../document-room/community-post';
 import { documentRoom } from '../document-client';
 import { indexFor, indexService, linkCodeOf } from '../index-service';
 import { handleDocumentIndexRoutes, handleDocumentList } from './document-index-routes';
 import { resolveDocumentGrant } from './document-grant';
 import {
+  COMMUNITY_CONTENT,
   gateEdit,
   gateGrant,
   grantCallerOf,
@@ -103,6 +110,8 @@ async function forwardToDocument(ctx: RouteContext): Promise<Response> {
   let renamedTo: string | null = null;
   // Where the index filed an API client's create, for its answer.
   let filed: { folderId: string | null; teamId: string | null } | null = null;
+  // An API client's create that is a use of the document (docs/specs/015-api/api.md "Marking a document used").
+  let marksUse = false;
   if (segments.length === 2) {
     if (request.method !== 'POST') return notFound();
     const read = await readBody({ ...ctx, request: request.clone() });
@@ -134,7 +143,12 @@ async function forwardToDocument(ctx: RouteContext): Promise<Response> {
       );
       if (made instanceof Response) return made;
       grant = made?.grant ?? null;
-      if (made?.item) filed = { folderId: made.item.folderId, teamId: made.item.teamId };
+      // The index made the item now: a making (an id it already held is a re-commit, which is none).
+      if (made?.item) {
+        filed = { folderId: made.item.folderId, teamId: made.item.teamId };
+        const making = readMarkUsed(read.markUsed);
+        marksUse = making.ok && making.markUsed;
+      }
     }
   } else {
     if (!documentId || documentId.length > MAX_DOCUMENT_ID) return notFound();
@@ -147,6 +161,17 @@ async function forwardToDocument(ctx: RouteContext): Promise<Response> {
   }
   if (grant instanceof Response) return grant;
   const res = await documentRoom(ctx.env, documentId).route(request, identityOf({ ...ctx, grant }));
+  // Making it is a use for the caller, recorded at the index beside the create as the editor records its own open;
+  // never waited on. The room's 400 for a markUsed that is not a boolean made nothing, so it records nothing.
+  if (marksUse && res.status === 201) {
+    const client = indexFor(ctx.env, grantCallerOf(ctx));
+    if (client)
+      ctx.waitUntil?.(
+        client.recordOpen(documentId, null).catch((err: unknown) => {
+          console.warn('[documents] use not recorded', { documentId, error: String(err) });
+        }),
+      );
+  }
   if (renamedTo !== null && res.ok) {
     const title = capStoredName(renamedTo, null, 'document');
     const client = indexFor(ctx.env, grantCallerOf(ctx));
@@ -368,16 +393,26 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
       // guessed id can't probe existence.
       const view = parseViewQuery(new URL(request.url), 'document');
       if (view instanceof Response) return view;
-      const grant = await gateGrant(ctx, id);
+      const grant = await gateGrant(ctx, id, null, null, COMMUNITY_CONTENT);
       if (!grant) return notFound();
       const d = await startedDocument(ctx, id);
       if (!d) return missingDocument(ctx, id);
-      // Redacted for every non-owner (redact-document.ts); a tab-scoped visitor
+      // Redacted for every non-owner (redact-document.ts); a Community visitor sees the post's redactions
+      // (docs/specs/025-community/community.md); a tab-scoped visitor
       // (docs/specs/013-workspace/tab-scoped-share-links.md) sees the other tabs locked.
-      const reader = redactDocumentForReader(d, ctx.resolveOwner());
-      const liveDoc = redactDocumentForScope(reader, grant.tabScope);
+      // The owner's read carries their post's state, for the header's Public badge after a reload.
+      const caller = ctx.resolveOwner();
+      const own =
+        caller !== null && caller === d.ownerId
+          ? { ...d, communityState: await readOwnerCommunityState(ctx.env) }
+          : d;
+      const reader = redactDocumentForReader(own, caller);
+      const liveDoc = redactDocumentForScope(
+        grant.community ? redactDocumentForCommunity(reader) : reader,
+        grant.tabScope,
+      );
       // The overview view (docs/specs/024-agents/document-views.md), after the same gate and scope.
-      if (view) return answerOverview(ctx, view, liveDoc, grant.tabScope);
+      if (view) return answerOverview(ctx, view, liveDoc, grant.tabScope, grant.community);
       return json({ document: liveDoc });
     }
     if (request.method === 'PUT') {
@@ -432,6 +467,13 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
         ctx.waitUntil?.(relayDocumentRename(env, id, liveDoc.name, liveDoc.tabs));
       return json({ document: liveDoc ? redactDocumentForReader(liveDoc, owner) : liveDoc });
     }
+  }
+
+  // /api/documents/<id>/community: publish to, edit in or remove from Community
+  // (docs/specs/025-community/community.md).
+  {
+    const communityResp = await handleCommunityOwnerRoutes(ctx);
+    if (communityResp) return communityResp;
   }
 
   // /api/documents/<id>/shared-tabs — what a delete leaves behind in other

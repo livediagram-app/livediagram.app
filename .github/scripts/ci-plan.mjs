@@ -21,6 +21,7 @@
 
 import { execFileSync } from 'node:child_process';
 import { appendFileSync, existsSync, readFileSync } from 'node:fs';
+import { readersReached, repoReaders } from './ci-readers.mjs';
 
 // turbo without installing the workspace (it reads only the manifests and the lockfile). Locally:
 // TURBO_CMD='corepack pnpm exec turbo'.
@@ -109,9 +110,10 @@ function turboPackages(affected) {
 
 let reason;
 let all = noBase;
+const changed = noBase ? [] : changedFiles();
 if (noBase) reason = 'no base commit: everything';
 else {
-  const forcing = changedFiles().filter(
+  const forcing = changed.filter(
     (file) =>
       RUN_ALL.some((re) => re.test(file)) &&
       !(deployMode && DEPLOY_IGNORES.some((re) => re.test(file))),
@@ -123,6 +125,23 @@ else {
 }
 
 const packages = turboPackages(!all);
+
+// The suites that read another workspace's files (turbo.json's `$TURBO_ROOT$/…` test inputs, see
+// ci-readers.mjs) run when the change touches what they read, though turbo's graph never reaches them.
+// Deploys skip this: a test reading a Worker's files is no reason to redeploy it.
+if (!all && !deployMode) {
+  const missing = readersReached(repoReaders(), changed).filter(
+    (name) => !packages.some((p) => p.name === name),
+  );
+  if (missing.length) {
+    const every = turboPackages(false);
+    for (const name of missing) {
+      const found = every.find((p) => p.name === name);
+      if (found) packages.push(found);
+    }
+    reason += `, plus the suites reading it (${missing.join(', ')})`;
+  }
+}
 
 function scriptsOf(path) {
   try {

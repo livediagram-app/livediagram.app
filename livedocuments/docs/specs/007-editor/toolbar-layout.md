@@ -79,6 +79,8 @@ under the pointer as a category is switched.
 - **The keyboard:** Left and Right walk the bar (wrapping), and an open flyout follows the focus. Down, Enter or
   Space opens a category with its first tile focused. In a flyout the arrows walk the tiles by position across its
   groups, Home and End jump to the ends, Escape closes it and hands the focus back to its button.
+- **Screen readers:** a category button says it opens a dialog (`aria-haspopup="dialog"`, `aria-expanded`), and the
+  flyout is that dialog, named for its category ("Shapes").
 - **One menu at a time:** a flyout is a strip menu ("One menu at a time"); opening Search or the selection mode
   closes it. Using a tile closes it, so the canvas is clear.
 - **Above the canvas chrome:** while a flyout (or Search) is open the strip rises to the popover layer
@@ -195,8 +197,8 @@ still reopens on the group it was left on. Nothing about the bar is stored acros
 ## The tab's name
 
 - On a desktop, the menu box (the Explorer button, top left) ends with the open tab's name, after a
-  hairline. It is the chrome's ink, 14 px at regular weight (never bold), cut short
-  with an ellipsis past 16rem, and follows a rename at once. The box shows a name alone, never an icon beside it.
+  hairline, as in every editor (the one `TabNameInBox`, `@liveworkspace/workbench`). It is the chrome's ink, 14 px at regular weight (never bold), cut short
+  with an ellipsis past 16rem (sooner while the box heads Pages mode's Contents sidebar, [Pages mode](pages-mode.md) "Joined to the menu box"), and follows a rename at once. The box shows a name alone, never an icon beside it.
 - A click (a tap) on it renames the tab in place, for someone who may change the
   document's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
 - Not on a phone: the top row is the strip's there.
@@ -209,7 +211,8 @@ popover hanging under it, and closed again. It starts closed on every page and i
 reopened from a remembered state; pressing the button is the only thing that opens it. A press
 outside, Esc, the button again or opening an item closes it. The status screens (deleted,
 couldn't load, not found) have no menu button and no Explorer. The popover hangs from the
-button's left edge (`computeDockAnchor(..., 'button')`).
+button's left edge (`computeDockAnchor(..., 'button')`). The button has no hover card: it
+got in the way of the Explorer's app switcher, and the icon is plain. Its `aria-label` ("Explorer") names it.
 
 Collaborate, Slides and Contents open as **popovers over their bottom-row
 buttons** ([Editor app](editor-app.md)): they are not corner panels. Every

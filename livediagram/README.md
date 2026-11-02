@@ -45,7 +45,7 @@ The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps).
 
 ## Security
 
-Found a vulnerability? Please report it privately through [GitHub's advisory form](https://github.com/livediagram-app/livediagram.app/security/advisories/new), never in a public issue. See [`SECURITY.md`](SECURITY.md) and the [full policy](https://livediagram.app/help/policies/report-a-vulnerability/).
+Found a vulnerability? Please report it privately through [GitHub's advisory form](https://github.com/livediagram-app/livediagram.app/security/advisories/new), never in a public issue. See [`SECURITY.md`](SECURITY.md) and the [full policy](https://www.livediagram.app/help/policies/report-a-vulnerability/).
 
 ## License
 

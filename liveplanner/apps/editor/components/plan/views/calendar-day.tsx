@@ -5,7 +5,13 @@
 // "+N more". Pressing an entry opens its card; someone who may move cards drags it to another day, or moves it
 // with Alt+Arrows while it has focus (CalendarView's moveBy).
 import { memo } from 'react';
-import { CARD_FIELDS, itemTitle, type CalendarDay, type Item } from '@liveplanner/items';
+import {
+  CARD_FIELDS,
+  itemTitle,
+  timeOfDayText,
+  type CalendarDay,
+  type Item,
+} from '@liveplanner/items';
 import type { PlanPalette } from '../plan-palette';
 import { useGhostPoint, type CalendarGhostPosition } from './useCalendarDrag';
 import { PlanCardFace } from '../PlanCardFace';
@@ -89,11 +95,12 @@ export const DayCell = memo(function DayCell({
         </span>
       </span>
       <div className={`flex min-h-0 flex-col overflow-hidden ${asCards ? 'gap-1' : ''}`}>
-        {shown.map(({ item, done }) => (
+        {shown.map(({ item, done, at }) => (
           <CalendarEntry
             key={item.id}
             item={item}
             done={done}
+            at={at}
             day={cell.day}
             asCards={asCards}
             palette={palette}
@@ -154,22 +161,39 @@ export function CalendarGhost({
   );
 }
 
-// What an entry shows: a minimal card face, or a type dot and title. Shared by the lifted copy a drag carries.
+// What an entry shows: a minimal card face, or a type dot and title, a timed date's time of day before it (in the
+// viewer's zone; plan-views.md "Times and ranges"). Shared by the lifted copy a drag carries.
 export function CalendarEntryFace({
   item,
   done,
+  at,
   asCards,
   palette,
   colour,
 }: {
   item: Item;
   done: boolean;
+  at?: number | undefined;
   asCards: boolean;
   palette: PlanPalette;
   colour: string;
 }) {
+  const time = at === undefined ? null : timeOfDayText(at);
   if (asCards)
-    return <PlanCardFace item={item} palette={palette} fields={CARD_FIELDS} size="minimal" />;
+    return (
+      <>
+        <PlanCardFace item={item} palette={palette} fields={CARD_FIELDS} size="minimal" />
+        {time ? (
+          <span
+            aria-hidden
+            className="absolute right-1 top-1 rounded px-1 text-[10px] font-semibold tabular-nums"
+            style={{ color: palette.text, backgroundColor: palette.column }}
+          >
+            {time}
+          </span>
+        ) : null}
+      </>
+    );
   return (
     <>
       <span
@@ -177,6 +201,11 @@ export function CalendarEntryFace({
         className="h-1.5 w-1.5 shrink-0 rounded-full"
         style={{ backgroundColor: colour }}
       />
+      {time ? (
+        <span className="shrink-0 font-semibold tabular-nums" style={{ color: palette.muted }}>
+          {time}
+        </span>
+      ) : null}
       <span className={`min-w-0 truncate ${done ? 'line-through' : ''}`}>{itemTitle(item)}</span>
     </>
   );
@@ -184,12 +213,13 @@ export function CalendarEntryFace({
 
 const entryClass = (asCards: boolean, done: boolean) =>
   asCards
-    ? `block w-full min-w-0 shrink-0 cursor-pointer rounded-lg text-left ${done ? 'opacity-60' : ''}`
+    ? `relative block w-full min-w-0 shrink-0 cursor-pointer rounded-lg text-left ${done ? 'opacity-60' : ''}`
     : 'flex w-full min-w-0 shrink-0 cursor-pointer items-center gap-1 rounded px-0.5 text-left text-[10px] transition hover:bg-black/5 dark:hover:bg-white/10';
 
 function CalendarEntry({
   item,
   done,
+  at,
   day,
   asCards,
   palette,
@@ -199,6 +229,7 @@ function CalendarEntry({
 }: {
   item: Item;
   done: boolean;
+  at?: number | undefined;
   day: number;
   asCards: boolean;
   palette: PlanPalette;
@@ -217,7 +248,7 @@ function CalendarEntry({
         actions.draggingId === item.id ? 'opacity-40' : ''
       }`}
       style={asCards ? undefined : { height: ENTRY_H, color: done ? palette.muted : palette.text }}
-      aria-label={`#${item.key} ${itemTitle(item)}${done ? ', done' : ''}`}
+      aria-label={`#${item.key} ${itemTitle(item)}${at === undefined ? '' : `, at ${timeOfDayText(at)}`}${done ? ', done' : ''}`}
       {...(movable
         ? {
             'aria-keyshortcuts': 'Alt+ArrowLeft Alt+ArrowRight Alt+ArrowUp Alt+ArrowDown',
@@ -240,6 +271,7 @@ function CalendarEntry({
       <CalendarEntryFace
         item={item}
         done={done}
+        at={at}
         asCards={asCards}
         palette={palette}
         colour={colour}

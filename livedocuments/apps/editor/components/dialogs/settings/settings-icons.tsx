@@ -37,7 +37,8 @@ export type SettingsSubcategoryId =
   | 'collaborate'
   | 'quickStyle'
   | 'notifications'
-  | 'tokens';
+  | 'tokens'
+  | 'webhooks';
 
 // Every category, top-level and sub-category alike: each opens its own pane.
 export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
@@ -77,6 +78,7 @@ const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
   quickStyle: () => <QuickStyleSubGlyph />,
   notifications: () => <SettingsSharedGlyph id="notifications" />,
   tokens: () => <SettingsSharedGlyph id="tokens" />,
+  webhooks: () => <SettingsSharedGlyph id="webhooks" />,
 };
 
 /** A category's icon in the Settings list: its tile, or a sub-category's glyph. */

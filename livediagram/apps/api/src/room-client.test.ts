@@ -261,7 +261,7 @@ describe('agent presence in the room (docs/specs/024-agents/blueprints/agent-pre
     await refreshAgentPresence(env, refresh);
     expect(JSON.parse(stubFetch.mock.calls[0]![1]!.body as string)).toMatchObject({
       mode: 'refresh',
-      ttlMs: 30_000,
+      ttlMs: 180_000,
       status: null,
       focus: [],
     });

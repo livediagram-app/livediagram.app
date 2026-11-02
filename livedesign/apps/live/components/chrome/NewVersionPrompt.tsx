@@ -72,7 +72,7 @@ export function NewVersionPrompt({
       className={`fixed bottom-20 left-1/2 z-[var(--z-chrome)] flex w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 animate-toast-in items-center gap-3 border-slate-200 px-4 py-3 text-sm dark:border-slate-700 ${TOAST_SURFACE}`}
     >
       <p className="min-w-0 flex-1">{COPY[phase]}</p>
-      <Button size="sm" disabled={phase === 'saving'} onClick={() => void onReload()}>
+      <Button size="sm" busy={phase === 'saving'} onClick={() => void onReload()}>
         Reload
       </Button>
       <Button

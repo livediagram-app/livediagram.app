@@ -57,7 +57,9 @@ By kind:
   catalogue's), `size` (px, 4 to 2000), `weight` (400, 500, 700), `italic`, `colour`, `align` (**Left**, **Centre**,
   **Right**), `lineHeight` (0.8 to 3, absent 1.2), `tracking` (-0.2 to 1 em), `at` (its box's top-left, whole
   pixels) and `boxWidth` (absent is one line, wrapping at line breaks only; set by a dragged-out box). Drawn
-  anti-aliased into pixels when composited; edited as text with the Text tool.
+  anti-aliased into pixels when composited; edited as text with the Text tool. Each line takes its direction from its
+  first strong letter (a Hebrew or Arabic line reads right to left, its closing punctuation on its left), in the
+  drawn pixels and in the Text tool's box while typing.
 - **Group** (`layerKind: 'group'`): `collapsed` (the Layers tab shows its layers folded away). Its children are the
   layers whose `parent` is its id, in stack order.
 
@@ -119,7 +121,7 @@ The Photo panel's **Layers** tab ([Photo pages](photo-pages.md) "The Photo panel
   Duplicate, Link-free moves together); Alt+[ and Alt+] step the active layer down and up.
 - **Reordering**: dragging a row moves the layer (a line shows where it lands; onto the middle of a group's row puts
   it in the group), by the same pointer drag as the canvas's [Layers](../006-design/layers.md) panel, so it works by
-  touch too; Ctrl/Cmd+[ and Ctrl/Cmd+] move it down and up one; with Shift, to the bottom and top.
+  touch too (on a touch screen from a grip at the row's left, since a finger on the row scrolls the list); Ctrl/Cmd+[ and Ctrl/Cmd+] move it down and up one; with Shift, to the bottom and top.
 - **Under the list**: **New Layer** (a labelled button, Ctrl/Cmd+Shift+N), then icon buttons with tooltips: **New
   Group**, **Add Mask** (from the selection when there is one: reveal it; otherwise reveal all; Alt for hide all),
   **New Fill or Adjustment** (a menu: Solid Colour, Gradient, then the adjustments in the Adjust tab's sections),

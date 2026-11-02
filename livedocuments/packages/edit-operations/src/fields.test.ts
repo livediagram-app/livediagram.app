@@ -252,6 +252,15 @@ describe('writeFieldsOnto', () => {
     expect(refusal(square, { text: 12.5 }).details).toHaveLength(1);
   });
 
+  it('clears a re-fit or Shift scale with the size it writes (fonts.md "Text size")', () => {
+    const scaled = nextOf(write({ ...square, textScale: 0.46 } as Element, { text: 18 }));
+    expect(scaled.textSize).toBe(18);
+    expect(scaled).not.toHaveProperty('textScale');
+    expect(nextOf(write({ ...text, textScale: 2 } as Element, { text: 'md' }))).not.toHaveProperty(
+      'textScale',
+    );
+  });
+
   it("writes a stroke's former point fields", () => {
     const stroke = {
       id: 'f',

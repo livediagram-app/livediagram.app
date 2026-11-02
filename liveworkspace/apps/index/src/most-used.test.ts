@@ -1,6 +1,6 @@
-// Most Used: an open counts its UTC day once, days past the window are pruned, and Recent's first page can carry
-// the person's most used items (distinct days, ties to the latest open), as one bounded query on use_days' person
-// index, whatever the table holds.
+// Most Used: each open adds to its UTC day's count, days past the window are pruned, and Recent's first page can carry
+// the person's most used items (opens in the window, ties to the latest open), as one bounded query on use_days'
+// person index, whatever the table holds.
 import type { Item } from '@liveworkspace/index-client';
 import { MOST_USED_MAX, USE_WINDOW_DAYS } from '@liveworkspace/index-client';
 import type { SQLInputValue } from 'node:sqlite';
@@ -17,10 +17,10 @@ type Page = { items: Item[]; nextCursor: string | null; mostUsed?: Item[] };
 
 const recent = async (auth: string, query = 'used=4') =>
   body<Page>(await call(`/items?view=recent&${query}`, { auth }));
-const use = (personId: string, itemId: string, day: number) =>
+const use = (personId: string, itemId: string, day: number, opens = 1) =>
   h.db.sql
-    .prepare('INSERT OR IGNORE INTO use_days (person_id, item_id, day) VALUES (?, ?, ?)')
-    .run(personId, itemId, day);
+    .prepare('INSERT INTO use_days (person_id, item_id, day, opens) VALUES (?, ?, ?, ?)')
+    .run(personId, itemId, day, opens);
 const opened = (personId: string, itemId: string, at: number) =>
   h.db.sql
     .prepare('INSERT INTO opens (person_id, item_id, last_opened_at) VALUES (?, ?, ?)')
@@ -28,14 +28,14 @@ const opened = (personId: string, itemId: string, at: number) =>
 const daysOf = (personId: string) =>
   (
     h.db.sql
-      .prepare('SELECT item_id, day FROM use_days WHERE person_id = ? ORDER BY item_id, day')
-      .all(personId) as { item_id: string; day: number }[]
-  ).map((r) => `${r.item_id}@${r.day - TODAY}`);
+      .prepare('SELECT item_id, day, opens FROM use_days WHERE person_id = ? ORDER BY item_id, day')
+      .all(personId) as { item_id: string; day: number; opens: number }[]
+  ).map((r) => `${r.item_id}@${r.day - TODAY}x${r.opens}`);
 
 afterEach(() => vi.useRealTimers());
 
 describe('recording use days', () => {
-  it('counts an open once a day, and prunes days that left the window once a day', async () => {
+  it('counts every open on its day, and prunes days that left the window once a day', async () => {
     vi.useFakeTimers({ toFake: ['Date'], now: TODAY * DAY + 3_600_000 });
     const ada = await person('user_mu1');
     const item = await makeItem(ada.auth, { title: 'Roadmap' });
@@ -43,49 +43,57 @@ describe('recording use days', () => {
     use('user_mu1', item.id, TODAY - USE_WINDOW_DAYS + 1); // the window's first day
     const open = () => call(`/items/${item.id}/open`, { method: 'POST', auth: ada.auth });
     await open();
-    vi.setSystemTime(TODAY * DAY + 7_200_000);
+    // A second open past the minute's debounce counts again; one inside it does not.
+    vi.setSystemTime(TODAY * DAY + 3_600_000 + 120_000);
     await open();
-    expect(daysOf('user_mu1')).toEqual([`${item.id}@-89`, `${item.id}@0`]);
+    vi.setSystemTime(TODAY * DAY + 3_600_000 + 130_000);
+    await open();
+    expect(daysOf('user_mu1')).toEqual([`${item.id}@-${USE_WINDOW_DAYS - 1}x1`, `${item.id}@0x2`]);
     vi.setSystemTime((TODAY + 1) * DAY + 60_000);
     // A day on, with a fresh token.
     const later = await person('user_mu1');
     expect(
       (await call(`/items/${item.id}/open`, { method: 'POST', auth: later.auth })).status,
     ).toBe(204);
-    expect(daysOf('user_mu1')).toEqual([`${item.id}@0`, `${item.id}@1`]);
+    expect(daysOf('user_mu1')).toEqual([`${item.id}@0x2`, `${item.id}@1x1`]);
   });
 });
 
 describe('Most Used beside Recent', () => {
-  it('ranks by distinct days, ties to the latest open, live and reachable only', async () => {
+  it('ranks by opens in the window, ties to the latest open, live and reachable only', async () => {
     vi.useFakeTimers({ toFake: ['Date'], now: TODAY * DAY + 1000 });
     const ada = await person('user_mu2', { teams: [{ id: 'team1' }] });
-    const [a, b, c, d, gone] = await Promise.all(
-      ['A', 'B', 'C', 'D', 'Gone'].map((title) => makeItem(ada.auth, { title })),
+    const [a, b, c, d, e, gone] = await Promise.all(
+      ['A', 'B', 'C', 'D', 'E', 'Gone'].map((title) => makeItem(ada.auth, { title })),
     );
     const t = await makeItem(ada.auth, { title: 'Team', teamId: 'team1' });
     const eve = await person('user_mu_eve');
     const theirs = await makeItem(eve.auth, { title: 'Theirs' });
+    // A: five days, once each. B: one busy day, more opens than A's days (opens, not days, rank). C and E: six
+    // opens each, C opened last.
     for (let k = 0; k < 5; k++) use('user_mu2', a!.id, TODAY - k);
-    for (let k = 0; k < 3; k++) use('user_mu2', b!.id, TODAY - k);
-    for (let k = 0; k < 3; k++) use('user_mu2', c!.id, TODAY - 10 - k);
+    use('user_mu2', b!.id, TODAY - 1, 7);
+    for (let k = 0; k < 3; k++) use('user_mu2', c!.id, TODAY - 10 - k, 2);
+    use('user_mu2', e!.id, TODAY, 6);
+    use('user_mu2', a!.id, TODAY - USE_WINDOW_DAYS, 50); // outside the window: not counted
     use('user_mu2', t.id, TODAY);
     for (let k = 0; k < 9; k++) use('user_mu2', gone!.id, TODAY - k);
     for (let k = 0; k < 9; k++) use('user_mu2', theirs.id, TODAY - k); // no longer reachable
     for (let k = 0; k < 9; k++) use('user_mu2', d!.id, TODAY - USE_WINDOW_DAYS - k); // all outside the window
-    opened('user_mu2', b!.id, 2000);
+    opened('user_mu2', e!.id, 2000);
     opened('user_mu2', c!.id, 3000);
     await call(`/items/${gone!.id}`, { method: 'DELETE', auth: ada.auth });
 
-    const page = await recent(ada.auth);
-    expect(page.mostUsed!.map((i) => [i.title, i.useDays])).toEqual([
-      ['A', 5],
-      ['C', 3],
-      ['B', 3],
-      ['Team', 1],
+    const page = await recent(ada.auth, `used=${MOST_USED_MAX}`);
+    expect(page.mostUsed!.map((i) => [i.title, i.useOpens, i.useDays])).toEqual([
+      ['B', 7, 1],
+      ['C', 6, 3],
+      ['E', 6, 1],
+      ['A', 5, 5],
+      ['Team', 1, 1],
     ]);
     // Recent's own page is unchanged by it.
-    expect(page.items.map((i) => i.title)).toEqual(['C', 'B']);
+    expect(page.items.map((i) => i.title)).toEqual(['C', 'E']);
     expect((await recent(ada.auth, 'used=1&team=team1')).mostUsed!.map((i) => i.title)).toEqual([
       'Team',
     ]);
@@ -148,7 +156,7 @@ describe('the bound', () => {
     const page = await recent(big.auth, `used=${MOST_USED_MAX}`);
     const ms = performance.now() - started;
     expect(page.mostUsed).toHaveLength(MOST_USED_MAX);
-    expect(page.mostUsed!.every((i) => i.useDays === 9)).toBe(true);
+    expect(page.mostUsed!.every((i) => i.useOpens === 9 && i.useDays === 9)).toBe(true);
     console.info(`[most-used] 2,000 used items, ${ms.toFixed(1)} ms for Recent + Most Used`);
     expect(ms).toBeLessThan(250);
   });

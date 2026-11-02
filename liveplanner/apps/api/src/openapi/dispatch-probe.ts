@@ -180,6 +180,10 @@ export async function probeDispatch(
   const env = {
     TELEMETRY_ENABLED: 'true',
     INDEX_ORIGIN: 'https://index.probe',
+    // Image fields' pictures, which live in liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md);
+    // never reached.
+    MEDIA_URL: 'http://media.invalid/api/media',
+    MEDIA_KEY: 'probe-key',
   } as unknown as Env;
   const now = Math.floor(Date.now() / 1000);
   setGrantVerifierForTests(async () => ({

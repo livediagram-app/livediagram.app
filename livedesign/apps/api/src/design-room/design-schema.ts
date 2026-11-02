@@ -10,6 +10,7 @@
 // Made on first use, never on construction (design-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_design_schema`; a later change adds a step to STEPS, never edits one.
 
+import { COMMUNITY_POST_TABLE } from '@liveworkspace/community/app';
 import { migrationSchema, tabSharesSchema } from '@liveworkspace/index-app';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
@@ -243,7 +244,47 @@ const V2 = tabSharesSchema();
 // own step, appended: every statement is IF NOT EXISTS.
 const V3 = migrationSchema();
 
-const STEPS: readonly string[] = [V1, V2, V3];
+// The design's Community post (docs/specs/025-community/community.md), at most one: its link's share code (an
+// index share link; a grant through it is a content-only pass, routes/context.ts), its post at the liveworkspace
+// Community service, what the link's doors show of it, and the listing state last sent (community-post.ts; the
+// table is every app's, @liveworkspace/community/app). A post listed, hidden, moved or taken down changes whether
+// the design is public, which its summary says. Its own step, appended: every statement is IF NOT EXISTS.
+const V4 = `
+${COMMUNITY_POST_TABLE}
+CREATE TRIGGER IF NOT EXISTS outbox_community_insert AFTER INSERT ON community_post
+BEGIN
+  INSERT OR IGNORE INTO outbox (design_id, kind, key) SELECT id, 'summary', '' FROM design;
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_community_update AFTER UPDATE OF hidden_at, sent_state ON community_post
+  WHEN NEW.hidden_at IS NOT OLD.hidden_at OR NEW.sent_state IS NOT OLD.sent_state
+BEGIN
+  INSERT OR IGNORE INTO outbox (design_id, kind, key) SELECT id, 'summary', '' FROM design;
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_community_delete AFTER DELETE ON community_post
+BEGIN
+  INSERT OR IGNORE INTO outbox (design_id, kind, key) SELECT id, 'summary', '' FROM design;
+END;
+`;
+
+// The design's component library (docs/specs/009-elements/components.md "Sharing, collaboration and storage"):
+// one row per main, its JSON and when it was stored, and which mains each tab's instances use, kept from the tab
+// bodies in the same transaction as each write (db/components.ts), as image_refs is. No foreign keys: the delete
+// paths prune it. Its own step, appended: every statement is IF NOT EXISTS.
+const V5 = `
+CREATE TABLE IF NOT EXISTS components (
+  id         TEXT    PRIMARY KEY,
+  data       TEXT    NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS component_refs (
+  tab_id       TEXT NOT NULL,
+  component_id TEXT NOT NULL,
+  PRIMARY KEY (tab_id, component_id)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS component_refs_component ON component_refs (component_id);
+`;
+
+const STEPS: readonly string[] = [V1, V2, V3, V4, V5];
 
 export const DESIGN_SCHEMA_VERSION = STEPS.length;
 

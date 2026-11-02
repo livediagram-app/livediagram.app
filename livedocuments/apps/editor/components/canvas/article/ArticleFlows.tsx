@@ -8,6 +8,8 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import {
+  ARTICLE_TOP_MIN_PX,
+  articleHeaderBandPx,
   articleMarginPx,
   MAX_PAGES,
   articleTopMarginPx,
@@ -108,7 +110,12 @@ export function ArticleFlows({
     [reshape, flows, openByFlow, zoneId, zoneFlow, selectedIds, elements],
   );
   const articlePages = useMemo(
-    () => row.flatMap((p) => (p.flow && !held.has(p.flow) ? [{ id: p.id, flow: p.flow }] : [])),
+    () =>
+      row.flatMap((p) =>
+        p.flow && !held.has(p.flow)
+          ? [{ id: p.id, flow: p.flow, card: p.kind === 'flashcard' }]
+          : [],
+      ),
     [row, held],
   );
   const zoneDrag = useZoneDrag({
@@ -151,6 +158,12 @@ export function ArticleFlows({
     zoom,
     pagesOf: (flow) => byFlow.get(flow),
   });
+  // A too-long card's Split Onto a New Card, from its marker: an Editor's page edit.
+  const edit = view.edit;
+  const cardSplit = useMemo(
+    () => (edit ? { state: edit.cardSplitState, run: edit.splitCard } : undefined),
+    [edit],
+  );
   if (!articles || byFlow.size === 0) return null;
   const writable = (flow: string) => articles.editable && !held.has(flow);
   return (
@@ -207,6 +220,8 @@ export function ArticleFlows({
                 flow={flow}
                 pages={pages}
                 atPageLimit={row.length >= MAX_PAGES}
+                card={lead.kind === 'flashcard'}
+                split={lead.kind === 'flashcard' && writable(flow) ? cardSplit : undefined}
                 doc={doc}
                 editable={writable(flow)}
                 reshape={articles.reshape && writable(flow)}
@@ -223,6 +238,12 @@ export function ArticleFlows({
                 margin={articleMarginPx(
                   articles.stylePreview?.flow === flow ? articles.stylePreview.style : doc.style,
                 )}
+                topMin={
+                  ARTICLE_TOP_MIN_PX +
+                  articleHeaderBandPx(
+                    articles.stylePreview?.flow === flow ? articles.stylePreview.style : doc.style,
+                  )
+                }
                 onCommit={articles.onCommit}
                 onLayout={articles.onLayout}
                 onUndo={articles.undo}
@@ -249,7 +270,8 @@ export function ArticleFlows({
                 const doc = flow ? articles.flows[flow] : undefined;
                 const preview = articles.stylePreview;
                 const style = preview && preview.flow === flow ? preview.style : doc?.style;
-                return articleTopMarginPx(style) * zoom;
+                // The header's band sits under the toolbar's room, never under the card.
+                return (articleTopMarginPx(style) - articleHeaderBandPx(style)) * zoom;
               }}
               // For the article the toolbar shows for: the one worked on, or the one hovered.
               onInsert={articles.insertObject}

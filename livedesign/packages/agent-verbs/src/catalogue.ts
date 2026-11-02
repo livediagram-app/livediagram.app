@@ -46,6 +46,7 @@ import { tabLint, tabLs, tabView } from './verbs/tab';
 import { pagesVerbs } from './verbs/pages';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
 import { folderCreate, folderLs } from './verbs/folder';
+import { componentVerbs } from './verbs/component';
 
 export const VERBS: readonly Verb[] = [
   designLs,
@@ -64,6 +65,7 @@ export const VERBS: readonly Verb[] = [
   tabRename,
   tabRm,
   ...elementVerbs,
+  ...componentVerbs,
   ...pagesVerbs,
   changesetApply,
   changesetLs,
@@ -110,6 +112,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'folder', summary: 'Folders: their paths and ids, and a new one' },
   { name: 'tab', summary: 'Tabs: their views, their lint, and what changed' },
   { name: 'element', alias: 'el', summary: 'Elements: one edit operation a call' },
+  { name: 'component', summary: 'Components: list, make and change mains' },
   { name: 'page', summary: 'Pages: logos and wireframes' },
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },
   { name: 'comment', summary: 'Comment threads' },

@@ -8,10 +8,12 @@ import { useRef, useState } from 'react';
 import { useToday } from '@/hooks/ui/useToday';
 import { useKeepOnScreen } from '@/hooks/plan/useKeepOnScreen';
 import {
+  isFieldWidgetKey,
   itemTitle,
+  removeWidget,
   widgetsOf,
   type BoardProjection,
-  type BoardWidgetKind,
+  type BoardWidgetId,
   type Item,
   type ItemTypeDef,
   type PlanBoardSetup,
@@ -21,6 +23,8 @@ import { lucideGripVertical } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveplanner/ui';
 import { BoardWidgetView, type WidgetContext } from './widgets/BoardWidgetView';
 import { BoardWidgetZone } from './widgets/BoardWidgetZone';
+import { FieldWidgetView } from './widgets/FieldWidgetView';
+import { useFieldWidgets } from './widgets/use-field-widgets';
 import { BoardTitle } from './BoardTitle';
 import { useInHeaderBand, useMenuNameSlot } from './menu-name-slot';
 import { createPortal } from 'react-dom';
@@ -54,6 +58,9 @@ export function PlanBoardHeader({
   onRetry,
   onReveal,
   onMoveUnplaced,
+  planItems,
+  statusNames,
+  chips,
   end,
 }: {
   setup: PlanBoardSetup;
@@ -76,13 +83,19 @@ export function PlanBoardHeader({
   canRename?: boolean;
   // The widgets are shown: not on a phone, whose header has no room for them (phone-board.ts).
   showWidgets?: boolean;
-  onWidgets: (next: BoardWidgetKind[]) => void;
+  onWidgets: (next: BoardWidgetId[]) => void;
   // A set-up change a widget makes (Set Done Column), with its telemetry part.
   onSetup: (next: PlanBoardSetup, part: string) => void;
   onOpenItem: (itemId: string) => void;
   onRetry: () => void;
   onReveal: () => void;
   onMoveUnplaced: (item: Item, status: string) => void;
+  // Every card of the plan and its status names, for the Filter widget's chips.
+  planItems?: ReadonlyMap<string, Item>;
+  statusNames?: ReadonlyMap<string, string>;
+  // The card type chips after the title (BoardCardTypeChips). In a header band they lead the header itself, just after
+  // the menu box, so they give way to the widgets and controls rather than widening the box.
+  chips?: React.ReactNode;
   // What ends the header at its top right: Maximise Board / Restore Board (MaximisedPlanLayer).
   end?: React.ReactNode;
 }) {
@@ -105,7 +118,11 @@ export function PlanBoardHeader({
     canEdit,
     onSetup,
     onOpenItem,
+    planItems,
+    statusNames,
   };
+  // The field widgets' fields, reader, names and For You (use-field-widgets.ts).
+  const fieldWidgets = useFieldWidgets({ setup, items, types, widgets, now: today });
   const [renaming, setRenaming] = useState(false);
   // In a header band, the title and widgets ride in the menu box (menu-name-slot).
   const nameSlot = useMenuNameSlot();
@@ -126,7 +143,10 @@ export function PlanBoardHeader({
         onChange={(next) => {
           // Taking a widget off clears what it narrowed.
           const kept: QuickFilter = { ...quick };
-          if (!next.includes('filter')) delete kept.text;
+          if (!next.includes('filter')) {
+            delete kept.text;
+            delete kept.filters;
+          }
           if (!next.includes('mine')) delete kept.mine;
           if (!next.includes('types')) delete kept.type;
           if (!next.includes('due')) delete kept.due;
@@ -135,7 +155,28 @@ export function PlanBoardHeader({
           if (Object.keys(kept).length !== Object.keys(quick).length) onQuick(kept);
           onWidgets(next);
         }}
-        render={(kind) => <BoardWidgetView kind={kind} ctx={ctx} />}
+        labelOf={fieldWidgets.labelOf}
+        fields={fieldWidgets.fields}
+        suggest={fieldWidgets.suggest}
+        render={(id) =>
+          isFieldWidgetKey(id) ? (
+            <FieldWidgetView
+              id={id}
+              ctx={{
+                fields: fieldWidgets.fields,
+                items,
+                setup,
+                palette,
+                now: today,
+                read: fieldWidgets.read,
+                canEdit,
+                onRemove: (gone) => onWidgets(removeWidget(widgets, gone)),
+              }}
+            />
+          ) : (
+            <BoardWidgetView kind={id} ctx={ctx} />
+          )
+        }
       />
     </>
   );
@@ -199,7 +240,9 @@ export function PlanBoardHeader({
           )
         : null}
       <div className="flex min-w-0 max-w-[var(--plan-band-mid,none)] flex-1 items-center gap-3">
-        {inBox ? null : (
+        {inBox ? (
+          chips
+        ) : (
           <>
             <span data-board-title className="contents">
               <BoardTitle
@@ -213,6 +256,7 @@ export function PlanBoardHeader({
                 onDone={() => setRenaming(false)}
               />
             </span>
+            {chips}
             {/* No press guard here: a press on the zone's empty space selects and moves the board like the
                 rest of the header; each widget keeps its own presses. */}
             <div className="flex min-w-0 flex-1 items-center">

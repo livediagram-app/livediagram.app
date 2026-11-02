@@ -136,7 +136,7 @@ describe('Setup Board', () => {
         types={ITEM_TYPES}
         statusNames={NAMES}
         onSetUp={onSetUp}
-        layout={{ swimlaneBy: 'assignee', cardSize: 'compact', fillTab: true }}
+        layout={{ swimlaneBy: 'assignee', cardSize: 'minimal', fillTab: true }}
         initial={{
           columns: [{ kind: 'existing', status: 'todo', name: 'To Do' }],
           typeIds: ['task'],
@@ -150,16 +150,17 @@ describe('Setup Board', () => {
     expect(screen.getByRole('radio', { name: 'Assignee' }).getAttribute('aria-checked')).toBe(
       'true',
     );
-    expect(screen.getByRole('radio', { name: 'Compact' }).getAttribute('aria-checked')).toBe(
+    expect(screen.getByRole('radio', { name: 'Minimal' }).getAttribute('aria-checked')).toBe(
       'true',
     );
+    expect(screen.queryByRole('radio', { name: 'Compact' })).toBeNull();
     // No Fill Tab: a Board tab's board always fills it (docs/specs/026-plan/plan-tabs.md).
     expect(screen.queryByRole('switch', { name: /Fill Tab/ })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Save Board' }));
     expect(onSetUp).toHaveBeenCalledWith(
       [{ kind: 'existing', status: 'todo', name: 'To Do' }],
       ['task'],
-      { swimlaneBy: 'assignee', cardSize: 'compact', fillTab: true },
+      { swimlaneBy: 'assignee', cardSize: 'minimal', fillTab: true },
     );
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(onCancel).toHaveBeenCalled();

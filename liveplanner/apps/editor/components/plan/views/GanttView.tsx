@@ -6,12 +6,15 @@
 // lone date, and a line for today. Divs and CSS, so it stays crisp at any zoom. To someone who may edit, a
 // bar's ends and a diamond drag their dates (gantt-drag.tsx), and the names column resizes
 // (gantt-names-resize.tsx). Rows may sit in swimlanes, laid out top down in one pass (ganttLayout), in the chart's
-// own row order when it has one; a row's grip drags it to a new place (useGanttRowReorder).
+// own row order when it has one; a row's grip drags it to a new place (useGanttRowReorder). Blocked By links draw as
+// arrows from blocker to blocked (gantt-arrows.tsx).
 import { useMemo, useRef, useState } from 'react';
-import { useToday } from '@/hooks/ui/useToday';
+import { useMinute, useToday } from '@/hooks/ui/useToday';
 import { IDENTITY_FILL, identityVars } from '@liveplanner/ui';
 import {
   ITEM_TYPES,
+  blockingIndexOf,
+  donePhase,
   ganttAt,
   ganttLanes,
   ganttLayout,
@@ -21,6 +24,7 @@ import {
   ganttNamesWidth,
   itemColourOf,
   itemTitle,
+  viewDatesOf,
   typeIn,
   type GanttRow,
 } from '@liveplanner/items';
@@ -37,6 +41,8 @@ import { Mark } from './gantt-mark';
 import { GANTT_PILL_MIN_COLUMN_PX, GanttLaneHead, GanttNameRow, rowStatus } from './gantt-rows';
 import { GanttNamesResizer } from './gantt-names-resize';
 import { useGanttRowReorder } from './useGanttRowReorder';
+import { GanttArrows } from './gantt-arrows';
+import { planBlocking } from '../blocking';
 
 // A card's row: room for a 20 px bar and a two-line name pill.
 const ROW_H = 40;
@@ -66,19 +72,35 @@ export function GanttView({
   // "Card types").
   const accepted = ganttShownTypes(settings, types);
   const acceptedKey = accepted.join(',');
+  // The fields its bars run between: Start and Due unless picked (plan-views.md "Dates"), with their shapes, kept
+  // while the settings and types are so the model is too.
+  const dates = useMemo(() => viewDatesOf(settings, types), [settings, types]);
+  // A timed Due goes overdue to the minute (plan-views.md "Times and ranges"): the chart then reads the clock each
+  // minute; a chart of days never ticks.
+  const dueShape = dates.shapes?.due;
+  const minute = useMinute(dueShape === 'datetime' || dueShape === 'daterange-time');
   // Add Card under the last row (GanttAddCard): for someone who may add cards, with a type to add.
   // An Editor gets it with no type to draw yet too, for Add New Card Type.
   const canAdd = !!plan && !!plan.canEditCards && (accepted.length > 0 || !!plan.canEdit);
   // Recomputed when the cards, the phases, the accepted types or the day change.
   const model = useMemo(
-    () => ganttModel(items.values(), phases, new Date(dayKey), acceptedKey.split(',')),
-    [items, phases, dayKey, acceptedKey],
+    () =>
+      ganttModel(
+        items.values(),
+        phases,
+        minute > 0 && new Date(minute).toDateString() === dayKey
+          ? new Date(minute)
+          : new Date(dayKey),
+        acceptedKey.split(','),
+        dates,
+      ),
+    [items, phases, dayKey, acceptedKey, dates, minute],
   );
   // A card's own Colour draws its bar and diamond, else its card type's colour (docs/specs/026-plan/items.md
   // "Colour"); either is lifted on a dark surface like a type accent.
   const colourOf = (row: GanttRow) => {
-    const own = itemColourOf(row.item);
-    return accentOn(own ?? typeIn(types, row.item.type).color, palette);
+    const type = typeIn(types, row.item.type);
+    return accentOn(itemColourOf(row.item, type) ?? type.color, palette);
   };
   const n = model.rows.length;
   // The chart's own row order first (plan-views.md "Row order"), the rest in date order.
@@ -127,6 +149,7 @@ export function GanttView({
   const today = (ganttAt(view, model.today) + ganttAt(view, model.today + 1)) * 50;
   const drag = useGanttDrag({
     model: view,
+    dates,
     trackRef,
     onCommit: (itemId, patch) => {
       void plan?.patchItem(itemId, patch);
@@ -175,6 +198,13 @@ export function GanttView({
         }
       : undefined;
   const liftOf = (id: string) => (lifted?.itemId === id ? lifted.dy : undefined);
+  // The plan's Blocked By lookup (one per items change), for the arrows; a chart without the plan builds its own.
+  const blocking = useMemo(
+    () => (plan ? null : blockingIndexOf(items.values(), types, donePhase(phases))),
+    [plan, items, types, phases],
+  );
+  const shownOf = (row: GanttRow): GanttRow =>
+    preview?.itemId === row.item.id ? { ...row, from: preview.from, to: preview.to } : row;
   return (
     <ViewFrame
       title="Gantt Chart"
@@ -225,6 +255,7 @@ export function GanttView({
               plan={plan}
               types={types}
               shown={acceptedKey}
+              dates={dates}
               palette={palette}
               top={AXIS_H + layout.height}
               height={ROW_H}
@@ -297,6 +328,7 @@ export function GanttView({
                     view={view}
                     trackRef={trackRef}
                     colour={colourOf(row)}
+                    dates={dates}
                     onCommit={(itemId, patch) => {
                       void plan?.patchItem(itemId, patch);
                       track('Plan', 'Changed', 'GanttDrawn');
@@ -331,6 +363,18 @@ export function GanttView({
               </div>
             );
           })}
+          <GanttArrows
+            entries={layout.entries}
+            index={blocking ?? planBlocking(plan!)}
+            phases={phases}
+            view={view}
+            axisPx={axisPx}
+            top={AXIS_H}
+            rowH={ROW_H}
+            palette={palette}
+            shownOf={shownOf}
+            liftOf={liftOf}
+          />
           {dropLine !== null ? <DropLine top={dropLine} colour={palette.focus} /> : null}
           {/* Today. */}
           <span

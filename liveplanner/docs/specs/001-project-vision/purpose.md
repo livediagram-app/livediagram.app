@@ -93,6 +93,9 @@ never arrives.
   Sheet, Dashboard and Form tabs, and the core around them: sign-in, collaboration, comments, sharing, the Trash,
   settings, theming, the MCP server and the CLI, with the Explorer, teams and the Inbox as liveworkspace's platform
   services) and what is out.
+- **Distribution**: moved by [Community](../025-community/community.md). The community gallery was livediagram's
+  alone; a plan can now be published to liveplanner's own Community, every liveworkspace app's being on one
+  platform service.
 - **"Not an offline-first desktop app"**: narrowed by [Offline Mode](../006-project/offline-mode.md). Still not
   a desktop app, and cloud is still the default, but a project can be kept only in this browser's IndexedDB and
   converted back and forth.

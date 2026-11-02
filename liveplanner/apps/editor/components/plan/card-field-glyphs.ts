@@ -14,5 +14,12 @@ export const FIELD_GLYPHS: Record<CardField, string> = {
   checklist: 'action',
   comments: 'chat',
   description: 'note',
+  attachments: 'link',
+  cover: 'page',
   parent: 'project',
+  age: 'hourglass',
+  createdAt: 'clock',
+  createdBy: 'person',
+  updatedAt: 'pencil',
+  updatedBy: 'person',
 };

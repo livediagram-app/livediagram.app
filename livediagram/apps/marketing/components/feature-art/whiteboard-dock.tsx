@@ -1,4 +1,5 @@
 // Feature illustration for Draw mode's dock (docs/specs/023-draw-mode/draw-mode.md): the drawing tools on their keys
+// (the Fill bucket among them, docs/specs/023-draw-mode/fill-tool.md)
 // and the shapes you pin beside them.
 
 import {
@@ -21,6 +22,10 @@ export function DrawDockArt() {
     ['3', 'M2 11 L9 4 L11 6 L4 13 Z'],
     ['T', 'M2 3 H11 M6.5 3 V12'],
     ['P', 'M2 12 C4 2 9 12 11 3'],
+    [
+      'F',
+      'M2 7 L6.5 2.5 L11 7 L6.5 11.5 Z M9.5 8 C10.6 9.6 10.6 10.6 9.5 10.6 C8.4 10.6 8.4 9.6 9.5 8',
+    ],
     ['E', 'M3 9 L7 4 L11 8 L8 12 H4 Z'],
   ] as const;
   const markers = ['#0f172a', '#0ea5e9', '#ec4899'];
@@ -56,15 +61,15 @@ export function DrawDockArt() {
         ))}
         <line
           className="stroke-slate-200 dark:stroke-slate-700"
-          x1="146"
-          x2="146"
+          x1="164"
+          x2="164"
           y1="11"
           y2="27"
           strokeWidth="0.8"
         />
         {/* Pinned shapes: an arrow, a rectangle, and the circle being pinned. */}
         <g
-          transform="translate(152 12)"
+          transform="translate(170 12)"
           className="stroke-slate-600 dark:stroke-slate-300"
           fill="none"
           strokeWidth="1.1"

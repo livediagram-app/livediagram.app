@@ -281,6 +281,64 @@ describe('changing items', () => {
     );
   });
 
+  // Created and Last Edited (docs/specs/026-plan/items.md "Created and Last Edited"): stamped by the api from the
+  // caller, never by what a client sends, and only an edit moves Last Edited.
+  it('stamps who made and last edited a card, and refuses a client naming a stamp', async () => {
+    expect(item.createdAt).toBeGreaterThan(0);
+    expect(item.createdBy.id).not.toBe('');
+    expect(item.updatedAt).toBe(item.createdAt);
+    for (const key of ['createdAt', 'createdBy', 'updatedAt', 'updatedBy']) {
+      expect(
+        (await call({ path: `/items/${item.id}`, body: { set: { [key]: 1 } } })).body,
+      ).toMatchObject({ error: 'field_key_invalid' });
+      expect((await add({ title: 'Forged', [key]: 1 })).body).toMatchObject({
+        error: 'field_key_invalid',
+      });
+    }
+    const edited = await call<ItemResponse>({
+      path: `/items/${item.id}`,
+      body: { set: { priority: 'high' } },
+    });
+    expect(edited.body.item).toMatchObject({
+      createdAt: item.createdAt,
+      createdBy: item.createdBy,
+    });
+    expect(edited.body.item.updatedAt).toBeGreaterThanOrEqual(item.updatedAt);
+    // A move within its own column is no edit.
+    const before = edited.body.item;
+    const kept = await call<ItemResponse>({
+      path: `/items/${item.id}/move`,
+      body: { status: 'todo', after: null },
+    });
+    expect(kept.body.item).toMatchObject({ updatedAt: before.updatedAt, rev: before.rev + 1 });
+  });
+
+  // When a card entered its status (docs/specs/026-plan/items.md "Fields"): stamped by the api's own writes.
+  it('stamps statusSince on a create and on each change of status, and keeps it otherwise', async () => {
+    const made = item.fields['statusSince'];
+    expect(typeof made).toBe('number');
+    const edited = await call<ItemResponse>({
+      path: `/items/${item.id}`,
+      body: { set: { priority: 'high' } },
+    });
+    expect(edited.body.item.fields['statusSince']).toBe(made);
+    const moved = await call<ItemResponse>({
+      path: `/items/${item.id}/move`,
+      body: { status: 'doing' },
+    });
+    expect(moved.body.item.fields['statusSince']).toBeGreaterThanOrEqual(made as number);
+    expect(moved.body.item.updatedAt).toBe(moved.body.item.fields['statusSince']);
+    // An undo names the old stamp, which the move keeps.
+    const undone = await call<ItemResponse>({
+      path: `/items/${item.id}/move`,
+      body: { status: 'todo', set: { statusSince: made }, undo: true },
+    });
+    expect(undone.body.item.fields).toMatchObject({ status: 'todo', statusSince: made });
+    expect(
+      (await call({ path: `/items/${item.id}`, body: { set: { statusSince: 'soon' } } })).body,
+    ).toMatchObject({ error: 'field_value_invalid' });
+  });
+
   it('moves between columns and sets or clears a swimlane field', async () => {
     const b = (await add({ title: 'B', status: 'done' })).body.item;
     const res = await call<ItemResponse>({
@@ -727,6 +785,24 @@ describe('statuses a type leaves out', () => {
     expect((await add({ title: 'N', status: 'done' }, { type: 'note' })).status).toBe(201);
   });
 
+  // docs/specs/026-plan/item-types.md "The statuses a type uses": a type with its ordered list refuses every
+  // status the list leaves out, a new one included.
+  it('refuses a move into a status a type’s ordered list leaves out', async () => {
+    const listed = {
+      version: 1,
+      types: [{ ...noDone.types[0]!, excludedStatuses: undefined, statuses: ['todo', 'done'] }],
+    };
+    expect(
+      (await call({ method: 'PUT', path: '/item-types', body: { itemTypes: listed } })).status,
+    ).toBe(200);
+    const t = (await add({ title: 'T', status: 'todo' })).body.item;
+    expect((await call({ path: `/items/${t.id}/move`, body: { status: 'done' } })).status).toBe(
+      200,
+    );
+    const fresh = await call({ path: `/items/${t.id}/move`, body: { status: 'brand-new' } });
+    expect(fresh.body).toEqual({ error: 'status_excluded', field: 'status' });
+  });
+
   it('lets a card already in one stay, be reordered there, and move out', async () => {
     await call({ method: 'PUT', path: '/item-types', body: { itemTypes: noDone } });
     const a = (await add({ title: 'A', status: 'done' })).body.item;
@@ -783,6 +859,166 @@ describe('statuses a type leaves out', () => {
     await call({ path: `/items/${t.id}/move`, body: { status: 'todo' } });
     const plain = await call({ path: `/items/${t.id}/move`, body: { status: 'done' } });
     expect(plain.body).toMatchObject({ error: 'status_excluded' });
+  });
+});
+
+// docs/specs/026-plan/item-types.md "Calculated fields".
+describe('calculated fields', () => {
+  const withCalc = {
+    version: 1,
+    types: [
+      {
+        id: 'project',
+        label: 'Project',
+        color: '#18181b',
+        glyph: 'project',
+        fields: ['f-kids', 'f-done'],
+        custom: [
+          { id: 'f-kids', label: 'Tasks', kind: 'calculated', calculation: 'childCount' },
+          { id: 'f-done', label: 'Progress', kind: 'calculated', calculation: 'childrenDone' },
+        ],
+      },
+      {
+        id: 'task',
+        label: 'Task',
+        color: '#71717a',
+        glyph: 'task',
+        fields: ['parent'],
+        custom: [{ id: 'parent', label: 'Parent', kind: 'card', linkType: 'project' }],
+      },
+    ],
+  };
+  const columns = async () =>
+    (
+      await call<{ boards: { columns: { status: string; done?: true }[] }[] }>({
+        method: 'GET',
+        path: '/plan',
+      })
+    ).body.boards[0]!.columns;
+
+  it('answers the values when asked, worked out from the children and the done columns', async () => {
+    expect(
+      (await call({ method: 'PUT', path: '/item-types', body: { itemTypes: withCalc } })).status,
+    ).toBe(200);
+    const cols = await columns();
+    const doneStatus = cols.find((c) => c.done)!.status;
+    const openStatus = cols.find((c) => !c.done)!.status;
+    const p = (await add({ title: 'Launch' }, { type: 'project' })).body.item;
+    const empty = (await add({ title: 'Empty' }, { type: 'project' })).body.item;
+    await add({ title: 'A', status: doneStatus, parent: p.id });
+    await add({ title: 'B', status: openStatus, parent: p.id });
+    const plain = await call<ItemsResponse>({ method: 'GET', path: '/items' });
+    expect(plain.body.calculated).toBeUndefined();
+    const asked = await call<ItemsResponse>({ method: 'GET', path: '/items?include=calculated' });
+    expect(asked.body.calculated).toEqual({
+      [p.id]: { 'f-kids': 2, 'f-done': 50 },
+      [empty.id]: { 'f-kids': 0, 'f-done': null },
+    });
+  });
+
+  it('answers none when no type has one, without reading the boards', async () => {
+    await add({ title: 'A' });
+    const asked = await call<ItemsResponse>({ method: 'GET', path: '/items?include=calculated' });
+    expect(asked.body.calculated).toBeUndefined();
+  });
+
+  it('refuses a value given to one, made alone, in bulk, patched or patched many', async () => {
+    await call({ method: 'PUT', path: '/item-types', body: { itemTypes: withCalc } });
+    const made = await add({ title: 'P', 'f-kids': 3 }, { type: 'project' });
+    expect(made.status).toBe(400);
+    expect(made.body).toEqual({ error: 'field_calculated', field: 'f-kids' });
+    const bulk = await call({
+      path: '/items/bulk',
+      body: { items: [{ type: 'project', fields: { title: 'P', 'f-done': 10 } }] },
+    });
+    expect(bulk.body).toEqual({ error: 'field_calculated', field: 'f-done' });
+    // A card put back keeps what it held.
+    const restored = await call({
+      path: '/items/bulk',
+      body: { items: [{ type: 'project', key: 40, fields: { title: 'P', 'f-done': 10 } }] },
+    });
+    expect(restored.status).toBe(201);
+    const p = (await add({ title: 'P' }, { type: 'project' })).body.item;
+    const patched = await call({ path: `/items/${p.id}`, body: { set: { 'f-kids': 9 } } });
+    expect(patched.body).toEqual({ error: 'field_calculated', field: 'f-kids' });
+    const many = await call<{ error: string; id: string; field: string }>({
+      path: '/items/patches',
+      body: { items: [{ id: p.id, set: { 'f-kids': 9 } }] },
+    });
+    expect(many.body).toMatchObject({ error: 'field_calculated', id: p.id, field: 'f-kids' });
+    // Anything else, and an undo, passes.
+    expect((await call({ path: `/items/${p.id}`, body: { set: { title: 'Q' } } })).status).toBe(
+      200,
+    );
+    expect(
+      (await call({ path: `/items/${p.id}`, body: { set: { 'f-kids': 9 }, undo: true } })).status,
+    ).toBe(200);
+  });
+});
+
+// docs/specs/026-plan/item-types.md "Storage and sync".
+// docs/specs/026-plan/item-types.md "Required fields".
+describe('required custom fields', () => {
+  const requiresSeverity = {
+    version: 1,
+    types: [
+      {
+        id: 'task',
+        label: 'Task',
+        color: '#71717a',
+        glyph: 'task',
+        fields: ['f-sev'],
+        custom: [{ id: 'f-sev', label: 'Severity', kind: 'text', required: true }],
+      },
+    ],
+  };
+  const setUp = () =>
+    call({ method: 'PUT', path: '/item-types', body: { itemTypes: requiresSeverity } });
+
+  it('refuses a new card without one, alone or in bulk, but not a restore', async () => {
+    expect((await setUp()).status).toBe(200);
+    expect((await add({ title: 'T' })).body).toEqual({ error: 'field_required', field: 'f-sev' });
+    expect((await add({ title: 'T', 'f-sev': '  ' })).status).toBe(400);
+    expect((await add({ title: 'T', 'f-sev': 'S1' })).status).toBe(201);
+    const bulk = await call({
+      path: '/items/bulk',
+      body: { items: [{ type: 'task', fields: { title: 'B' } }] },
+    });
+    expect(bulk.body).toEqual({ error: 'field_required', field: 'f-sev' });
+    // A card carried across with its number (a sync, an undo of a delete) is let through.
+    const restored = await call({
+      path: '/items/bulk',
+      body: { items: [{ type: 'task', fields: { title: 'Old' }, key: 40 }] },
+    });
+    expect(restored.status).toBe(201);
+    // Another type requires nothing.
+    expect((await add({ title: 'N' }, { type: 'note' })).status).toBe(201);
+  });
+
+  it('refuses a change emptying one, but leaves a card that was already empty alone', async () => {
+    await setUp();
+    const t = (await add({ title: 'T', 'f-sev': 'S1' })).body.item;
+    const cleared = await call({ path: `/items/${t.id}`, body: { clear: ['f-sev'] } });
+    expect(cleared.body).toEqual({ error: 'field_required', field: 'f-sev' });
+    const blanked = await call({ path: `/items/${t.id}`, body: { set: { 'f-sev': '' } } });
+    expect(blanked.status).toBe(400);
+    const items = [{ id: t.id, clear: ['f-sev'] }];
+    expect((await call({ path: '/items/patches', body: { items } })).body).toEqual({
+      error: 'field_required',
+      field: 'f-sev',
+      id: t.id,
+    });
+    // An undo is let through.
+    expect(
+      (await call({ path: `/items/${t.id}`, body: { clear: ['f-sev'], undo: true } })).status,
+    ).toBe(200);
+    // Now empty, it is moved and edited freely until someone fills it.
+    expect((await call({ path: `/items/${t.id}`, body: { set: { title: 'U' } } })).status).toBe(
+      200,
+    );
+    expect((await call({ path: `/items/${t.id}/move`, body: { status: 'done' } })).status).toBe(
+      200,
+    );
   });
 });
 
@@ -1054,7 +1290,7 @@ describe('changing many items at once', () => {
     ]);
     expect([...written.landed]).toEqual([a.id]);
     expect(written.rev).toBe(await db.getItemsRev(sql.env, 'd1'));
-    expect((await db.readItem(sql.env, 'd1', b.id))!.fields).toEqual({ title: 'B' });
+    expect((await db.readItem(sql.env, 'd1', b.id))!.fields).toEqual(b.fields);
   });
 });
 
@@ -1077,6 +1313,14 @@ describe('a vote’s tally', () => {
     expect(relayed).toHaveLength(1);
     await call({ path: '/items/tally', body: { items: [{ id: a.id, votes: { p1: 1 } }] } });
     expect((await db.readItem(sql.env, 'd1', a.id))!.fields['votes']).toEqual({ p1: 3, p2: 1 });
+  });
+
+  // A tally is not an edit (docs/specs/026-plan/items.md "Created and Last Edited").
+  it('leaves the card’s Last Edited as it was', async () => {
+    const a = (await add({ title: 'A' })).body.item;
+    await call({ path: '/items/tally', body: { items: [{ id: a.id, votes: { p1: 2 } }] } });
+    const after = (await db.readItem(sql.env, 'd1', a.id))!;
+    expect(after).toMatchObject({ updatedAt: a.updatedAt, updatedBy: a.updatedBy, rev: a.rev + 1 });
   });
 
   // A card that keeps changing fails the tally after the others landed: the refusal names the cards tallied, so the
@@ -1109,6 +1353,59 @@ describe('a vote’s tally', () => {
     expect((await db.readItem(sql.env, 'd1', b.id))!.fields['votes']).toBeUndefined();
   });
 
+  // docs/specs/012-collaboration/session-tools.md "Count In": the dots land in the vote's Votes field, and a card
+  // whose type lacks it takes them in the built-in Votes.
+  it('counts a tally in the Votes field it names, the built-in for a type without it', async () => {
+    const type = (id: string, custom: unknown[]) => ({
+      id,
+      label: id,
+      color: '#71717a',
+      glyph: 'task',
+      fields: ['description', 'votes', ...custom.map((c) => (c as { id: string }).id)],
+      custom,
+    });
+    const put = await call({
+      method: 'PUT',
+      path: '/item-types',
+      body: {
+        itemTypes: {
+          version: 1,
+          types: [
+            type('task', [{ id: 'f-priority', label: 'Priority Vote', kind: 'votes' }]),
+            type('note', []),
+          ],
+        },
+      },
+    });
+    expect(put.status).toBe(200);
+    const a = (await add({ title: 'A' })).body.item;
+    const b = (await add({ title: 'B' }, { type: 'note' })).body.item;
+    const res = await call<ItemsResponse>({
+      path: '/items/tally',
+      body: {
+        field: 'f-priority',
+        items: [
+          { id: a.id, votes: { p1: 2 } },
+          { id: b.id, votes: { p1: 1 } },
+        ],
+      },
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.items.map((i) => [i.fields['votes'], i.fields['f-priority']])).toEqual([
+      [undefined, { p1: 2 }],
+      [{ p1: 1 }, undefined],
+    ]);
+    for (const field of [3, 'title', 'f-'])
+      expect(
+        (
+          await call({
+            path: '/items/tally',
+            body: { field, items: [{ id: a.id, votes: { p: 1 } }] },
+          })
+        ).status,
+      ).toBe(400);
+  });
+
   it('refuses a malformed tally, and needs edit access', async () => {
     const a = (await add({ title: 'A' })).body.item;
     for (const items of [
@@ -1130,5 +1427,138 @@ describe('a vote’s tally', () => {
       ).status,
     ).toBe(403);
     expect((await call({ method: 'GET', path: '/items/tally' })).status).toBe(405);
+  });
+});
+
+// docs/specs/026-plan/items.md "Move many": a group lands together, in order, as one write.
+describe('moving many items at once', () => {
+  it('lands the cards together at the drop point, in order, with one rev raise and one room op', async () => {
+    const a = (await add({ title: 'A', status: 'todo' })).body.item;
+    const b = (await add({ title: 'B', status: 'todo' })).body.item;
+    await add({ title: 'X', status: 'done' });
+    const y = (await add({ title: 'Y', status: 'done' })).body.item;
+    const before = await db.getItemsRev(sql.env, 'd1');
+    relayed = [];
+    const res = await call<ItemsResponse>({
+      path: '/items/moves',
+      body: {
+        items: [
+          { id: b.id, status: 'done', before: y.id },
+          { id: a.id, status: 'done', after: b.id, set: { priority: 'high' } },
+        ],
+      },
+    });
+    expect(res.status).toBe(200);
+    expect(res.body.rev).toBe(before + 1);
+    expect(relayed).toHaveLength(1);
+    const done = (await db.listItems(sql.env, 'd1'))
+      .filter((i) => i.fields['status'] === 'done')
+      .sort((p, q) => (p.rank < q.rank ? -1 : p.rank > q.rank ? 1 : 0))
+      .map((i) => i.fields['title']);
+    expect(done).toEqual(['X', 'B', 'A', 'Y']);
+    expect((await db.readItem(sql.env, 'd1', a.id))!.fields['priority']).toBe('high');
+  });
+
+  it('refuses the whole request, naming the card, and checks the body', async () => {
+    const a = (await add({ title: 'A', status: 'todo' })).body.item;
+    expect(
+      await call({
+        path: '/items/moves',
+        body: {
+          items: [
+            { id: a.id, status: 'done' },
+            { id: 'missing-id', status: 'done' },
+          ],
+        },
+      }),
+    ).toEqual({ status: 404, body: { error: 'item_not_found' } });
+    expect(
+      (await call({ path: '/items/moves', body: { items: [{ id: a.id, set: { title: 'x' } }] } }))
+        .body,
+    ).toMatchObject({ error: 'place_invalid', id: a.id });
+    expect(
+      (
+        await call({
+          path: '/items/moves',
+          body: { items: [{ id: a.id, status: 'done', clear: ['title'] }] },
+        })
+      ).body,
+    ).toMatchObject({ error: 'title_required', id: a.id });
+    for (const items of [[], 'x', Array.from({ length: 201 }, () => ({ id: a.id }))])
+      expect((await call({ path: '/items/moves', body: { items } })).status).toBe(400);
+    expect(
+      (await call({ path: '/items/moves', body: { items: [{ status: 'done' }] } })).body,
+    ).toMatchObject({ message: 'each item needs its id' });
+    expect((await call({ method: 'GET', path: '/items/moves' })).status).toBe(405);
+    expect((await db.readItem(sql.env, 'd1', a.id))!.fields['status']).toBe('todo');
+  });
+
+  it('lets a Participant move cards, never archive them, and a Viewer neither', async () => {
+    const a = (await add({ title: 'A', status: 'todo' })).body.item;
+    const move = { items: [{ id: a.id, status: 'done' }] };
+    const as = (code: string, body: unknown) =>
+      call({ path: '/items/moves', code, owner: 'guest', body });
+    expect((await as('VIEW', move)).status).toBe(403);
+    expect((await as('PART', move)).status).toBe(200);
+    const archive = { items: [{ id: a.id, status: 'done', set: { archived: true } }] };
+    expect((await as('PART', archive)).status).toBe(403);
+    expect((await call({ path: '/items/moves', body: archive })).status).toBe(200);
+  });
+
+  it('refuses a status the type leaves out, unless it is an undo', async () => {
+    await call({
+      method: 'PUT',
+      path: '/item-types',
+      body: {
+        itemTypes: {
+          version: 1,
+          types: [
+            {
+              id: 'task',
+              label: 'Task',
+              color: '#71717a',
+              glyph: 'task',
+              fields: [],
+              excludedStatuses: ['done'],
+            },
+          ],
+        },
+      },
+    });
+    const t = (await add({ title: 'T', status: 'todo' })).body.item;
+    const items = [{ id: t.id, status: 'done' }];
+    expect((await call({ path: '/items/moves', body: { items } })).body).toEqual({
+      error: 'status_excluded',
+      field: 'status',
+      id: t.id,
+    });
+    expect((await call({ path: '/items/moves', body: { items, undo: true } })).status).toBe(200);
+  });
+
+  it('retries a card a racing write moved on, ranking it after the one that landed', async () => {
+    const a = (await add({ title: 'A', status: 'todo' })).body.item;
+    const b = (await add({ title: 'B', status: 'todo' })).body.item;
+    const real = db.updateItemsAtRev;
+    let first = true;
+    const racing = vi.spyOn(db, 'updateItemsAtRev').mockImplementation((env, doc, writes) => {
+      const keep = first ? writes.filter((w) => w.next.id !== b.id) : writes;
+      first = false;
+      return real(env, doc, keep);
+    });
+    const res = await call<ItemsResponse>({
+      path: '/items/moves',
+      body: {
+        items: [
+          { id: a.id, status: 'done', before: null },
+          { id: b.id, status: 'done', after: a.id },
+        ],
+      },
+    });
+    racing.mockRestore();
+    expect(res.status).toBe(200);
+    const ra = (await db.readItem(sql.env, 'd1', a.id))!;
+    const rb = (await db.readItem(sql.env, 'd1', b.id))!;
+    expect([ra.fields['status'], rb.fields['status']]).toEqual(['done', 'done']);
+    expect(ra.rank < rb.rank).toBe(true);
   });
 });

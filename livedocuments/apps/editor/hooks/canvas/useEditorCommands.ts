@@ -59,6 +59,7 @@ const INERT_HANDLERS: CommandHandlers = {
   openImport: noop,
   openSettings: noop,
   openShortcuts: noop,
+  openFind: noop,
   setTool: noop,
 };
 
@@ -117,7 +118,9 @@ export function useEditorCommands(open: boolean): {
     canvasTool,
     setCanvasTool,
     workbenchMode,
+    find,
   } = ctx;
+  const canReplace = find.canReplace;
 
   // Offline documents (docs/specs/006-document/offline-mode.md) have nothing on the server to share, so the
   // Share command is withheld the same way the header hides its button.
@@ -171,6 +174,7 @@ export function useEditorCommands(open: boolean): {
       canvasEmpty,
       isMobile,
       tabLocked,
+      canReplace,
     }),
     [
       isReadOnly,
@@ -191,6 +195,7 @@ export function useEditorCommands(open: boolean): {
       canvasEmpty,
       isMobile,
       tabLocked,
+      canReplace,
     ],
   );
 
@@ -267,6 +272,7 @@ export function useEditorCommands(open: boolean): {
       openSettingsOn('keyboard');
       track('UI', 'Opened', 'Shortcuts');
     },
+    openFind: (withReplace) => find.openBar(withReplace),
     // The context's setter, not the raw one: it carries the pressed-state
     // and telemetry the dropdown's onChange relies on.
     setTool: (tool) => setCanvasTool(tool as CanvasTool),

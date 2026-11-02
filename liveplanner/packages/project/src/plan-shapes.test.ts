@@ -60,6 +60,20 @@ describe('plan shapes', () => {
   it('validate their set-up and reference', () => {
     const board = createShape('plan-board', 0, 0);
     expect(elementValidationIssue(board)).toBeNull();
+    // Saved filters are refused when malformed (docs/specs/026-plan/board-widgets.md "Saved filters").
+    const saved = [{ id: 'sf-1', name: 'My Bugs', mine: true }];
+    expect(
+      elementValidationIssue({
+        ...board,
+        planBoard: { ...presetSetup('kanban'), savedFilters: saved },
+      }),
+    ).toBeNull();
+    expect(
+      elementValidationIssue({
+        ...board,
+        planBoard: { ...presetSetup('kanban'), savedFilters: [{ id: 'sf-1', name: '' }] },
+      }),
+    ).toMatchObject({ field: 'planBoard' });
     expect(elementValidationIssue({ ...board, planBoard: { columns: 'none' } })).toMatchObject({
       field: 'planBoard',
     });
@@ -69,13 +83,17 @@ describe('plan shapes', () => {
       field: 'planCard',
     });
     expect(elementValidationIssue({ ...card, planCard: 'x' })).toMatchObject({ field: 'planCard' });
-    // Its own Card Size: one of the board's three, or none (Detailed).
+    // Its own Card Size: one of the board's two, or none (Detailed).
     expect(PLAN_CARD_SIZES).toEqual([...CARD_SIZES]);
     for (const size of CARD_SIZES) {
       expect(
         elementValidationIssue({ ...card, planCard: { itemId: 'abcdef12', size } }),
       ).toBeNull();
     }
+    // An older card's retired Compact size is never refused: it reads as Detailed.
+    expect(
+      elementValidationIssue({ ...card, planCard: { itemId: 'abcdef12', size: 'compact' } }),
+    ).toBeNull();
     expect(
       elementValidationIssue({ ...card, planCard: { itemId: 'abcdef12', size: 'huge' } }),
     ).toMatchObject({ field: 'planCard' });

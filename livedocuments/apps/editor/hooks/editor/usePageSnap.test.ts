@@ -15,7 +15,8 @@ import {
   type ViewportStore,
 } from '@liveworkspace/workbench/lib/viewport-store';
 import { usePagesMode } from './usePagesMode';
-import { FLICK_WINDOW_MS, VIEW_REST_MS, flickVelocity } from './usePageSnap';
+import { FLICK_WINDOW_MS, VIEW_REST_MS, flickVelocity, textHasCaretIn } from './usePageSnap';
+import { setActiveArticle, type ActiveArticle } from '@/lib/article/article-editor-store';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // Glides land at once, so a test reads where the view ends.
@@ -37,8 +38,11 @@ const tab = {
 const row = layOutPages(pagesOf(tab));
 const fitOf = (pageId: string) => computeFitBelow(SIZE, row.find((p) => p.id === pageId)!.rect, 0);
 
-function mount(viewport: ViewportStore, opts: { suspended?: () => boolean } = {}) {
-  const canvas = document.createElement('main');
+function mount(
+  viewport: ViewportStore,
+  opts: { suspended?: () => boolean; canvas?: HTMLElement } = {},
+) {
+  const canvas = opts.canvas ?? document.createElement('main');
   Object.defineProperty(canvas, 'offsetWidth', { value: SIZE.width });
   Object.defineProperty(canvas, 'offsetHeight', { value: SIZE.height });
   return renderHook(() =>
@@ -182,6 +186,81 @@ describe('a view moved by anything else', () => {
     act(() => viewport.setView(loose));
     rest();
     expect(viewport.get()).toEqual(loose);
+  });
+
+  it("leaves a view moved for the writing's caret where it is", () => {
+    const viewport = createViewportStore(fitOf('p2').zoom);
+    mount(viewport);
+    act(() =>
+      setActiveArticle({
+        handle: { flow: 'f' },
+        pageId: 'p2',
+        focused: true,
+      } as unknown as ActiveArticle),
+    );
+    // The caret kept in sight: a short pan toward the next page, as a reveal makes it.
+    const revealed = pannedFromP2(300);
+    act(() => viewport.setView(revealed));
+    rest();
+    rest();
+    expect(viewport.get()).toEqual(revealed);
+    // A hand on the canvas still lets go onto a page.
+    act(() => viewport.setView(fitOf('p2')));
+    let end = () => {};
+    act(() => {
+      end = beginCanvasGesture('pan');
+    });
+    act(() => viewport.setView(pannedFromP2(60)));
+    act(() => {
+      vi.advanceTimersByTime(FLICK_WINDOW_MS + 20);
+    });
+    act(() => end());
+    nextFrame();
+    expect(viewport.get()).toEqual(fitOf('p2'));
+    act(() => setActiveArticle(null));
+  });
+});
+
+describe('text on the canvas with the caret', () => {
+  it("leaves a view moved for a label's caret where it is, above a phone's keyboard", () => {
+    const viewport = createViewportStore(fitOf('p2').zoom);
+    const canvas = document.createElement('main');
+    // A label being written on (jsdom has no isContentEditable, so a textarea stands in for it).
+    const label = document.createElement('textarea');
+    canvas.append(label);
+    document.body.append(canvas);
+    mount(viewport, { canvas });
+    label.focus();
+    // The keyboard rose and panned the label into sight: a pan up, off the page's rest.
+    const raised = {
+      ...fitOf('p2'),
+      offset: { ...fitOf('p2').offset, y: fitOf('p2').offset.y - 160 },
+    };
+    act(() => viewport.setView(raised));
+    rest();
+    rest();
+    expect(viewport.get()).toEqual(raised);
+    // Once the writing ends, the view rests on the page again.
+    label.blur();
+    act(() =>
+      viewport.setView({ ...raised, offset: { ...raised.offset, y: raised.offset.y - 1 } }),
+    );
+    rest();
+    expect(viewport.get()).toEqual(fitOf('p2'));
+    canvas.remove();
+  });
+
+  it('reads the caret as in text only for a text field inside the canvas', () => {
+    const canvas = document.createElement('main');
+    const field = document.createElement('input');
+    const button = document.createElement('button');
+    canvas.append(field, button);
+    const outside = document.createElement('textarea');
+    expect(textHasCaretIn(canvas, field)).toBe(true);
+    expect(textHasCaretIn(canvas, button)).toBe(false);
+    expect(textHasCaretIn(canvas, outside)).toBe(false);
+    expect(textHasCaretIn(null, field)).toBe(false);
+    expect(textHasCaretIn(canvas, null)).toBe(false);
   });
 });
 

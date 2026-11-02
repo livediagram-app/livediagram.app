@@ -8,11 +8,12 @@ const VIEW_PAD_PX = 12;
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n));
 
-// Card Search: a grid of cards, Detailed where a column of at least 240 px fits and the view is tall enough for a
-// Detailed card (about 200 px with the filter bar), else Compact; as many columns as fit, 12 px apart.
+// Card Search: a grid of cards, Detailed where the view is tall enough for a Detailed card (about 200 px with the
+// filter bar) and at least one 200 px column fits, in as many columns at least 240 px wide as fit (one narrower
+// column filling the view below that); else Minimal, one line a card, in columns at least 200 px wide. 12 px apart.
 export const CARD_SEARCH_GAP_PX = 12;
 export const CARD_SEARCH_DETAILED_MIN_PX = 240;
-const CARD_SEARCH_COMPACT_MIN_PX = 200;
+const CARD_SEARCH_NARROW_MIN_PX = 200;
 const CARD_SEARCH_DETAILED_MIN_HEIGHT_PX = 260;
 // The most cards drawn at once, as the card finder caps its rows (CARD_FINDER_ROWS_MAX): a Detailed face is a few
 // dozen nodes, so thousands would stall a render. The rest are counted under the grid.
@@ -21,13 +22,13 @@ export const CARD_SEARCH_SHOWN_MAX = 200;
 export function cardSearchLayout(
   width: number,
   height: number,
-): { size: 'detailed' | 'compact'; columns: number } {
+): { size: 'detailed' | 'minimal'; columns: number } {
   const inner = width - 2 * VIEW_PAD_PX;
   const size =
-    inner >= CARD_SEARCH_DETAILED_MIN_PX && height >= CARD_SEARCH_DETAILED_MIN_HEIGHT_PX
+    inner >= CARD_SEARCH_NARROW_MIN_PX && height >= CARD_SEARCH_DETAILED_MIN_HEIGHT_PX
       ? 'detailed'
-      : 'compact';
-  const min = size === 'detailed' ? CARD_SEARCH_DETAILED_MIN_PX : CARD_SEARCH_COMPACT_MIN_PX;
+      : 'minimal';
+  const min = size === 'detailed' ? CARD_SEARCH_DETAILED_MIN_PX : CARD_SEARCH_NARROW_MIN_PX;
   const columns = Math.max(
     1,
     Math.floor((inner + CARD_SEARCH_GAP_PX) / (min + CARD_SEARCH_GAP_PX)),

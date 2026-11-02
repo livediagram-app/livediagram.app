@@ -16,7 +16,7 @@ import { useMenuItemProps } from './menu-item-props';
 // header, or a plain verb row) and the floating panel that holds its contents.
 
 export const sectionTriggerClass = (open: boolean) =>
-  `flex w-full cursor-pointer items-center justify-between px-3 py-2.5 text-[10px] font-semibold uppercase tracking-wider transition ${
+  `flex w-full cursor-pointer items-center justify-between px-3 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider transition ${
     open
       ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
       : // Slate 500, as MenuAccordionSection's: slate 400 read at 2.6:1 on the white menu.
@@ -24,7 +24,7 @@ export const sectionTriggerClass = (open: boolean) =>
   }`;
 
 export const plainTriggerClass = (open: boolean) =>
-  `flex w-full cursor-pointer items-center justify-between gap-2 px-3 py-2 text-[13px] transition ${
+  `flex w-full cursor-pointer items-center justify-between gap-2 px-3 py-2 text-left text-[13px] transition ${
     open
       ? 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-100'
       : 'text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800'

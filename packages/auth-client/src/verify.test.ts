@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { createPersonVerifier, createVerifier } from './verify';
 
 const ISSUER = 'https://liveworkspace.app/api/auth';
-const AUDIENCE = 'https://livediagram-router.liveworkspace-easing509.workers.dev/api';
+const AUDIENCE = 'https://livediagram.app/api';
 
 let privateKey: CryptoKey;
 let verify: ReturnType<typeof createVerifier>;

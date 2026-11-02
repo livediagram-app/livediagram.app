@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  AGENT_PRESENCE_ACTIVITY_TTL_MS,
   AGENT_PRESENCE_MAX_TTL_MS,
   AGENT_PRESENCE_ROOM_MAX,
+  AGENT_PRESENCE_STAMP_MS,
 } from '@liveworkspace/api-schema/agent-presence';
 import {
   agentPresenceKey,
@@ -85,6 +87,61 @@ describe('RoomAgentPresence', () => {
       status: null,
       focus: [],
     });
+  });
+
+  it('shows an agent on the last tab it used only, broadcasting the move', async () => {
+    const { presence, stored } = setup();
+    await presence.write(write());
+    await presence.write(write({ tokenId: 'tok_2' }));
+    expect(await presence.write(write({ tabId: 't2', mode: 'refresh' }))).toMatchObject({
+      created: true,
+      broadcast: true,
+    });
+    expect(presence.live().map((r) => [r.tokenId, r.tabId])).toEqual([
+      ['tok_2', 't1'],
+      ['tok_1', 't2'],
+    ]);
+    expect(stored.has(agentPresenceKey('tok_1', 't1'))).toBe(false);
+  });
+
+  it('writes a refresh that moves the expiry less than a stamp nowhere, and the next one through', async () => {
+    const { presence, clock, storage } = setup();
+    let puts = 0;
+    const put = storage.put;
+    storage.put = async (k, v) => {
+      puts += 1;
+      await put(k, v);
+    };
+    const refresh = write({ mode: 'refresh', status: null, focus: [], ttlMs: 180_000 });
+    await presence.write(refresh);
+    expect(puts).toBe(1);
+    // A burst of reads inside the stamp: one storage write, no frame.
+    for (let i = 0; i < 50; i += 1) {
+      clock.now += 100;
+      expect(await presence.write(refresh)).toEqual({
+        ok: true,
+        expiresAt: 1_000 + AGENT_PRESENCE_ACTIVITY_TTL_MS,
+        created: false,
+        broadcast: false,
+      });
+    }
+    expect(puts).toBe(1);
+    clock.now = 1_000 + AGENT_PRESENCE_STAMP_MS;
+    expect(await presence.write(refresh)).toMatchObject({
+      expiresAt: clock.now + AGENT_PRESENCE_ACTIVITY_TTL_MS,
+      broadcast: false,
+    });
+    expect(puts).toBe(2);
+    // A changed level always writes and broadcasts.
+    expect(await presence.write({ ...refresh, role: 'view' })).toMatchObject({ broadcast: true });
+    expect(puts).toBe(3);
+  });
+
+  it('lets a refresh last the activity window and caps a set at the PUT limit', async () => {
+    const { presence } = setup();
+    expect(
+      await presence.write(write({ mode: 'refresh', ttlMs: AGENT_PRESENCE_ACTIVITY_TTL_MS * 10 })),
+    ).toMatchObject({ expiresAt: 1_000 + AGENT_PRESENCE_ACTIVITY_TTL_MS });
   });
 
   it('caps the ttl and the number of entries a room holds', async () => {

@@ -39,6 +39,9 @@ export type PaletteTileActions = {
   addTechIcon: (iconId: string) => void;
   // Picks up one of the markers (a logo page's Draw, the Toolbar strip's Search, palette-marker-tiles).
   beginMarker: (penId: WhiteboardPenId, once?: boolean) => void;
+  // Picks up the Fill tool in a colour (a logo page's Draw in the category flyout); absent outside an
+  // editor, where its tile does nothing.
+  beginFill?: (fill: string) => void;
   // Puts the armed tool down (its tile pressed again).
   cancelDraw?: () => void;
   // Whether image uploads are available (the editor supplied onAddImage);
@@ -78,6 +81,11 @@ export function tileHandler(
       return actions.beginPolygon;
     case 'path':
       return actions.beginPath;
+    case 'fill': {
+      // Picked up in the colour the tile carries (FillToolRow's row presses itself).
+      const begin = actions.beginFill;
+      return begin ? () => begin(a.fill) : () => {};
+    }
     case 'arrow':
       // The Arrow tile's pointer, or the Line tile's none (canvas-and-palette.md "Arrows and lines").
       return () => actions.addArrow(a.ends);

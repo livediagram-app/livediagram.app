@@ -30,6 +30,18 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 describe('the tab render route', () => {
+  // docs/specs/009-elements/components.md "Exports, thumbnails and agents": an instance draws its main.
+  it("draws an instance as its main's elements, and a missing main as the missing frame", async () => {
+    sql.sql.exec(`
+      INSERT INTO tabs (id, name, data, updated_at) VALUES ('t4', 'Uses', '{"elements":[{"id":"i1","type":"shape","shape":"instance","componentId":"c1","x":0,"y":0,"width":200,"height":80},{"id":"i2","type":"shape","shape":"instance","componentId":"gone","x":0,"y":100,"width":50,"height":50}]}', 1);
+      INSERT INTO design_tabs (design_id, tab_id, order_index, added_at) VALUES ('d1', 't4', 3, 1);
+      INSERT INTO components (id, data, updated_at) VALUES ('c1', '{"id":"c1","name":"Nav","width":100,"height":40,"elements":[{"id":"e1","type":"shape","shape":"square","x":0,"y":0,"width":100,"height":40,"label":"Main nav"}],"updatedAt":1}', 1);
+    `);
+    const svg = await (await call('t4/render.svg')).text();
+    expect(svg).toContain('Main nav');
+    expect(svg).toContain('stroke-dasharray="6 5"');
+  });
+
   it('draws a tab as SVG, never cached', async () => {
     const res = await call('t1/render.svg');
     expect(res.status).toBe(200);

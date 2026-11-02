@@ -1,98 +1,11 @@
+import type { CommunityApp } from './apps';
 import type { CommunityAuthor } from './authors';
+import { isCommunityCategory, isCommunityCategoryOf, type CommunityCategory } from './categories';
 
 // Community (liveworkspace/docs/specs/007-community/community.md; the product spec is livediagram/docs/specs/025-community/community.md):
 // the vocabulary, limits, validation and wire shapes shared by liveworkspace's Community service, each app's
 // Workers, its editor's publish dialog and its Community pages, so none of them can disagree on what a valid
 // post, tag or query is.
-
-// ---------------------------------------------------------------------
-// Categories
-// ---------------------------------------------------------------------
-
-// The closed set, in display order (spec "Categories"). `id` is stored, `label` is shown, `type` is the
-// telemetry value (PascalCase, never content).
-export const COMMUNITY_CATEGORIES = [
-  {
-    id: 'architecture',
-    label: 'Architecture',
-    blurb: 'Systems, cloud, infrastructure, software',
-    type: 'Architecture',
-  },
-  {
-    id: 'flows',
-    label: 'Flows & Processes',
-    blurb: 'Flowcharts, processes, journeys, state',
-    type: 'Flows',
-  },
-  {
-    id: 'planning',
-    label: 'Planning',
-    blurb: 'Roadmaps, kanban, timelines, gantt',
-    type: 'Planning',
-  },
-  {
-    id: 'workshops',
-    label: 'Workshops',
-    blurb: 'Retrospectives, event storming, brainstorming',
-    type: 'Workshops',
-  },
-  {
-    id: 'mindmaps',
-    label: 'Mind Maps',
-    blurb: 'Mind maps, concept maps, notes',
-    type: 'Mindmaps',
-  },
-  {
-    id: 'design',
-    label: 'Design & Wireframes',
-    blurb: 'Wireframes, mockups, layouts',
-    type: 'Design',
-  },
-  {
-    id: 'data',
-    label: 'Data & Databases',
-    blurb: 'Entity diagrams, schemas, tables',
-    type: 'Data',
-  },
-  {
-    id: 'learning',
-    label: 'Learning & Teaching',
-    blurb: 'Explainers, lessons, study notes',
-    type: 'Learning',
-  },
-  {
-    id: 'infographics',
-    label: 'Infographics',
-    blurb: 'Pages and articles',
-    type: 'Infographics',
-  },
-  { id: 'art', label: 'Drawing & Art', blurb: 'Sketches, illustrations, Draw mode', type: 'Art' },
-  {
-    id: 'other',
-    label: 'Something Else',
-    blurb: 'Anything that fits nowhere above',
-    type: 'Other',
-  },
-] as const;
-
-// Each category's telemetry type (`Community·Shared|Changed·<Type>`), as a list.
-export const COMMUNITY_CATEGORY_TYPES: readonly string[] = COMMUNITY_CATEGORIES.map((c) => c.type);
-
-export type CommunityCategory = (typeof COMMUNITY_CATEGORIES)[number]['id'];
-
-const CATEGORY_IDS: ReadonlySet<string> = new Set(COMMUNITY_CATEGORIES.map((c) => c.id));
-
-export function isCommunityCategory(value: unknown): value is CommunityCategory {
-  return typeof value === 'string' && CATEGORY_IDS.has(value);
-}
-
-export function communityCategoryLabel(id: CommunityCategory): string {
-  return COMMUNITY_CATEGORIES.find((c) => c.id === id)!.label;
-}
-
-export function communityCategoryType(id: CommunityCategory): string {
-  return COMMUNITY_CATEGORIES.find((c) => c.id === id)!.type;
-}
 
 // ---------------------------------------------------------------------
 // Report reasons
@@ -227,7 +140,9 @@ type Checked = {
 // Trims the title and description and collapses runs of three or more newlines to two; tags are
 // normalised and de-duplicated, and any tag that does not survive normalisation fails the tags field
 // rather than vanishing silently.
-function checkCommunityPostInput(input: unknown): Checked {
+// With an app, the category must be one of that app's (the service checks it for the app that publishes); without one,
+// any app's (a form that only offers its own app's chips).
+function checkCommunityPostInput(input: unknown, app?: CommunityApp): Checked {
   const body = (input ?? {}) as Record<string, unknown>;
   const errors: CommunityInputError[] = [];
   const title = typeof body.title === 'string' ? body.title.trim().replace(/\s+/g, ' ') : '';
@@ -247,7 +162,10 @@ function checkCommunityPostInput(input: unknown): Checked {
   ) {
     errors.push('invalid_description');
   }
-  const category = isCommunityCategory(body.category) ? body.category : null;
+  const known = app
+    ? isCommunityCategoryOf(app, body.category)
+    : isCommunityCategory(body.category);
+  const category = known ? (body.category as CommunityCategory) : null;
   if (!category) errors.push('invalid_category');
   const tags: string[] = [];
   let tagsOk = Array.isArray(body.tags);
@@ -261,14 +179,20 @@ function checkCommunityPostInput(input: unknown): Checked {
 }
 
 // Every failing field's code, in field order; empty when the input is valid.
-export function communityPostInputErrors(input: unknown): CommunityInputError[] {
-  return checkCommunityPostInput(input).errors;
+export function communityPostInputErrors(
+  input: unknown,
+  app?: CommunityApp,
+): CommunityInputError[] {
+  return checkCommunityPostInput(input, app).errors;
 }
 
 // What publish and Edit Listing accept (blueprint §4): the normalised input, or the first failing
 // field's code (the worker answers one code per request).
-export function validateCommunityPostInput(input: unknown): CommunityInputResult {
-  const { title, description, category, tags, errors } = checkCommunityPostInput(input);
+export function validateCommunityPostInput(
+  input: unknown,
+  app?: CommunityApp,
+): CommunityInputResult {
+  const { title, description, category, tags, errors } = checkCommunityPostInput(input, app);
   if (errors.length > 0 || !category) return { ok: false, error: errors[0] ?? 'invalid_category' };
   const anonymous = (input as { anonymous?: unknown } | null)?.anonymous !== false;
   return { ok: true, value: { title, description, category, tags, anonymous } };

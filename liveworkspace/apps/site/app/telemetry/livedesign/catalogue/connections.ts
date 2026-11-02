@@ -83,6 +83,11 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Change Pages',
     'Adding, changing, laying out, moving or deleting pages: slides, logos, infographics.',
   ),
+  mcpTool(
+    'ChangeComponents',
+    'Change Components',
+    'Making a component, changing its main, or detaching an instance.',
+  ),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {

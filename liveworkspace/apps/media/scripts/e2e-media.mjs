@@ -18,11 +18,24 @@ export const e2eMediaKey = (app) => `e2e-media-key-${app}`;
 // `livediagram.app` → MEDIA_KEY_LIVEDIAGRAM (src/env.ts).
 const keyVar = (app) => `MEDIA_KEY_${app.replace(/\.app$/, '').toUpperCase()}`;
 
+// `livediagram.app` → APP_ORIGIN_LIVEDIAGRAM (src/env.ts): where the app answers its export door.
+const originVar = (app) => `APP_ORIGIN_${app.replace(/\.app$/, '').toUpperCase()}`;
+
 /**
  * Applies the media migrations to a fresh local D1 under `state`, then starts the Worker on `port` (its inspector on
  * port + 1000). Returns the service's API URL for the api's MEDIA_URL. Wait on `port` before the api's first upload.
+ * Given `indexUrl` and each app's `appOrigins` (its api, where its export door is), previews run end to end too
+ * (liveworkspace/docs/specs/006-media/previews.md): the stack's index decides who sees one, its api draws it.
  */
-export async function startE2EMedia({ run, waitForExit, port, state, apps }) {
+export async function startE2EMedia({
+  run,
+  waitForExit,
+  port,
+  state,
+  apps,
+  indexUrl,
+  appOrigins = {},
+}) {
   rmSync(state, { recursive: true, force: true });
   console.log('[e2e] applying the media local D1 migrations…');
   await waitForExit(
@@ -58,6 +71,11 @@ export async function startE2EMedia({ run, waitForExit, port, state, apps }) {
       state,
       // Only this stack's keys, never what a developer's .dev.vars names.
       ...apps.flatMap((app) => ['--var', `${keyVar(app)}:${e2eMediaKey(app)}`]),
+      ...(indexUrl ? ['--var', `INDEX_URL:${indexUrl}`] : []),
+      ...Object.entries(appOrigins).flatMap(([app, origin]) => [
+        '--var',
+        `${originVar(app)}:${origin}`,
+      ]),
     ],
     { cwd: MEDIA_DIR },
   );

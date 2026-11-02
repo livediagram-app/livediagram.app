@@ -98,7 +98,7 @@ describe('wwwRedirect', () => {
     }
   });
 
-  it('never redirects www., staging, stand-in or local hosts, so it cannot loop or leave staging', () => {
+  it('never redirects www., staging, workers.dev or local hosts, so it cannot loop or leave staging', () => {
     for (const host of [
       'www.liveplanner.app',
       'staging.liveplanner.app',

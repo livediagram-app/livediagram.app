@@ -8,6 +8,10 @@
 
 import { cleanup, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+// The silent sign-in's second look (liveworkspace/docs/specs/003-accounts/accounts.md "A hint that outlived its session").
+const retrySilentSignIn = vi.hoisted(() => vi.fn());
+vi.mock('@liveworkspace/auth-client/silent', () => ({ retrySilentSignIn }));
 import type { DeferredAuthState } from '@liveworkspace/workbench/components/providers/deferred-auth';
 
 vi.mock('@/lib/recent-diagrams-snapshot', () => ({ forgetRecentDiagrams: vi.fn(async () => {}) }));
@@ -72,6 +76,19 @@ describe('AccountsBridge', () => {
     );
   });
 
+  it('lets the silent sign-in look again when the first answer finds the hinted session gone, and only then', async () => {
+    retrySilentSignIn.mockClear();
+    fetchMock.mockResolvedValue(new Response('{"signedIn":false}', { status: 401 }));
+    await mount();
+    expect(retrySilentSignIn).toHaveBeenCalledTimes(1);
+    cleanup();
+    resetAccountsSessionForTests();
+    retrySilentSignIn.mockClear();
+    fetchMock.mockResolvedValue(signedIn('access-1'));
+    expect(await mount()).toMatchObject({ isSignedIn: true });
+    expect(retrySilentSignIn).not.toHaveBeenCalled();
+  });
+
   it('settles as a guest when the api cannot be reached', async () => {
     fetchMock.mockRejectedValue(new TypeError('Failed to fetch'));
     expect(await mount()).toMatchObject({ authLoaded: true, isSignedIn: false });
@@ -116,13 +133,43 @@ describe('AccountsBridge', () => {
     fetchMock.mockResolvedValueOnce(new Response('{"signedIn":false}'));
     await state.signOut({ redirectUrl: '/explorer' });
     expect(fetchMock).toHaveBeenLastCalledWith(
-      '/api/auth/sign-out',
+      '/api/auth/sign-out?return=%2Fexplorer',
       expect.objectContaining({ method: 'POST' }),
     );
     expect(assign).toHaveBeenCalledWith('/explorer');
     // The held token went with the session.
     fetchMock.mockResolvedValueOnce(new Response('{"signedIn":false}', { status: 401 }));
     expect(await state.getToken()).toBeNull();
+  });
+
+  // liveworkspace/docs/specs/003-accounts/accounts.md "Signing out".
+  it("takes the accounts site's hop when the api answers one, so every app is signed out", async () => {
+    fetchMock.mockResolvedValueOnce(signedIn('access-1'));
+    const state = await mount();
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+    const hop = 'https://www.liveworkspace.app/api/auth/end-session?ticket=t';
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ signedIn: false, next: hop })));
+    await state.signOut();
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      '/api/auth/sign-out?return=%2F',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(assign).toHaveBeenCalledWith(hop);
+  });
+
+  it('ends the session after the account is deleted, without leaving the page', async () => {
+    fetchMock.mockResolvedValueOnce(signedIn('access-1'));
+    const state = await mount();
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+    fetchMock.mockResolvedValueOnce(new Response('{"signedIn":false,"next":null}'));
+    await state.deleteAccount?.();
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      '/api/auth/sign-out?return=%2F',
+      expect.objectContaining({ method: 'POST' }),
+    );
+    expect(assign).not.toHaveBeenCalled();
   });
 });
 

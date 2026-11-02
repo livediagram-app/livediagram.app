@@ -126,7 +126,7 @@ await writeFile(
         'THIRD_PARTY_LICENSES',
       ],
       engines: { node: '>=22' },
-      homepage: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+      homepage: 'https://www.livediagram.app',
       repository: {
         type: 'git',
         url: 'git+https://github.com/livediagram-app/livediagram.app.git',

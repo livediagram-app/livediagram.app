@@ -6,8 +6,6 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { layOutPages, newSlidePage } from '@livedocuments/document';
 import { SLIDE_LAYOUTS } from '@livedocuments/templates';
-import { EmptyPageInvite } from '@liveworkspace/workbench/components/canvas/EmptyPageInvite';
-import { LayoutGalleryDialog } from '../LayoutGalleryDialog';
 import { LayoutGallery } from './LayoutGallery';
 
 afterEach(() => cleanup());
@@ -74,25 +72,6 @@ describe('LayoutGallery', () => {
     expect(onApply).not.toHaveBeenCalled();
     const picked = onSurprise.mock.calls[0]![0];
     expect(SLIDE_LAYOUTS.find((l) => l.id === picked)!.category).toBe('slide-pictures');
-  });
-});
-
-describe('Choose a Layout', () => {
-  it('opens the gallery on its own', () => {
-    const onOpen = vi.fn();
-    render(<EmptyPageInvite pageId="s" zoom={0.5} onOpen={onOpen} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Choose a Layout' }));
-    expect(onOpen).toHaveBeenCalled();
-  });
-
-  it('places a layout from the dialog and closes it', () => {
-    const onApply = vi.fn();
-    const onClose = vi.fn();
-    render(<LayoutGalleryDialog page={slide!} onApply={onApply} onClose={onClose} />);
-    expect(screen.getByRole('heading', { name: 'Start From a Layout' })).not.toBeNull();
-    fireEvent.click(document.querySelector('[data-layout-tile="slide-title"]')!);
-    expect(onApply).toHaveBeenCalledWith('slide-title');
-    expect(onClose).toHaveBeenCalled();
   });
 });
 

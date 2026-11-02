@@ -14,6 +14,7 @@ import {
 import { HoverCard, lucideGlyph } from '@livedocuments/ui';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
+import { MenuJoinBand } from '@liveworkspace/workbench/components/canvas/menu-join';
 import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { usePageContents } from '@/hooks/ui/usePageContents';
@@ -41,6 +42,8 @@ export function PageContentsSidebar({
   side,
   onMoveToSide,
   onMinimise,
+  joined = false,
+  onDraggingChange,
 }: {
   view: PagesModeView;
   tab: PageThumbTab;
@@ -50,6 +53,11 @@ export function PageContentsSidebar({
   side: ContentsSide;
   onMoveToSide: (side: ContentsSide) => void;
   onMinimise: () => void;
+  // Joined to the menu box above it (docs/specs/007-editor/pages-mode.md "Joined to the menu box"): it rises to the
+  // canvas's top and its first `top` px are the menu box's row, so its header stays where it is.
+  joined?: boolean;
+  // A drag across starts (true) and ends (false): the menu box is its own card again meanwhile.
+  onDraggingChange?: (dragging: boolean) => void;
 }) {
   const scale = useUiScale('panels');
   const px = (v: number) => toSurfacePx(v, scale);
@@ -73,7 +81,6 @@ export function PageContentsSidebar({
     tab,
     here,
     settleMs: CONTENTS_SIDEBAR_SETTLE_MS,
-    slidesTool: false,
   });
 
   // The page in view followed as the view moves on (a pan, a zoom, the pages row's arrows): marked,
@@ -114,6 +121,10 @@ export function PageContentsSidebar({
     return clientX < canvas.left + canvas.width / 2 ? 'left' : 'right';
   };
   const MinimiseIcon = side === 'left' ? MinimiseLeftIcon : MinimiseRightIcon;
+  const dragTo = (dragging: boolean) => onDraggingChange?.(dragging);
+  // Gone mid-drag (a tab switch remounts it), the menu box is not left waiting for the drag's end.
+  const dragEnded = useEffectEvent(() => onDraggingChange?.(false));
+  useEffect(() => () => dragEnded(), []);
 
   return (
     <>
@@ -142,7 +153,7 @@ export function PageContentsSidebar({
         style={{
           ...uiScaleStyle(scale),
           [side]: 0,
-          top: px(top),
+          top: joined ? 0 : px(top),
           width: CONTENTS_SIDEBAR_WIDTH,
           ...(drag ? { translate: `${px(drag.dx)}px 0` } : {}),
         }}
@@ -154,12 +165,14 @@ export function PageContentsSidebar({
             : 'rounded-tl-2xl border-l shadow-[-4px_0_16px_-8px_rgb(15_23_42/0.12)] motion-safe:starting:translate-x-3'
         } ${drag ? 'opacity-90 shadow-xl' : 'motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:opacity-0'}`}
       >
+        {joined ? <MenuJoinBand height={px(top)} /> : null}
         <div
           data-contents-handle=""
           onPointerDown={(e) => {
             if (e.button !== 0 || (e.target as HTMLElement).closest('button')) return;
             e.currentTarget.setPointerCapture(e.pointerId);
             setDrag({ from: e.clientX, dx: 0, to: side });
+            dragTo(true);
           }}
           onPointerMove={(e) => {
             if (!drag) return;
@@ -169,9 +182,13 @@ export function PageContentsSidebar({
             if (!drag) return;
             const to = sideAt(e.clientX);
             setDrag(null);
+            dragTo(false);
             if (to !== side) onMoveToSide(to);
           }}
-          onPointerCancel={() => setDrag(null)}
+          onPointerCancel={() => {
+            setDrag(null);
+            dragTo(false);
+          }}
           className={`flex touch-none items-center gap-2 px-3 pb-2 pt-2.5 ${drag ? 'cursor-grabbing' : 'cursor-grab'}`}
         >
           <span

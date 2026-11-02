@@ -11,7 +11,15 @@ import type { RouteContext } from './context';
 // always read (index-adapters.ts): each is one index request per page, as the caller (an API token's account,
 // with this app's key).
 
-const ENV = { INDEX_ORIGIN: 'https://index.test', INDEX_KEY: 'k' } as unknown as Env;
+// A design with no Community post: the share resolve asks its room (routes/share.ts).
+const ENV = {
+  INDEX_ORIGIN: 'https://index.test',
+  INDEX_KEY: 'k',
+  DESIGN_ROOM: {
+    idFromName: (name: string) => name,
+    get: () => ({ community: async () => null }),
+  },
+} as unknown as Env;
 
 const item = (id: string, over: Record<string, unknown> = {}) => ({
   id,

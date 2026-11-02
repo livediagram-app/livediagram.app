@@ -1,9 +1,11 @@
 name: Deploy Staging
 
-# Staging follows main (docs/ci.md "Deploys"): each push whose CI passes deploys what it changed. A run
-# for a commit main has already moved past is skipped; the newer commit's run deploys both, since the
-# plan diffs against what staging last deployed. Runs queue rather than cancel, so a deploy is never cut
-# off halfway.
+# Staging follows main (docs/ci.md "Deploys"): each push whose CI passes deploys the newest commit on
+# main whose CI passed, whichever run finished, since a steady stream of merges means main's tip
+# rarely has a finished run. A run is skipped only when staging already runs that commit or a newer
+# one; the plan diffs against what staging last deployed, so one deploy covers every green commit
+# since. Runs queue rather than cancel, so a deploy is never cut off halfway, and a queued run a newer
+# one replaces loses nothing.
 on:
   workflow_run:
     workflows: [CI]
@@ -24,39 +26,62 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  tip:
-    name: Still main's tip
+  newest:
+    name: Newest green commit
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 2
     outputs:
-      ref: ${{ steps.tip.outputs.ref }}
+      ref: ${{ steps.newest.outputs.ref }}
     steps:
-      - id: tip
+      - id: newest
         env:
           GH_TOKEN: ${{ github.token }}
-          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          SHA: ${{ github.sha }}
         run: |
           set -euo pipefail
-          tip="$(gh api "repos/${GITHUB_REPOSITORY}/commits/main" --jq .sha)"
-          if [ "${GITHUB_EVENT_NAME}" = 'workflow_dispatch' ] || [ "${tip}" = "${SHA}" ]; then
+          # By hand: the head of the branch it was started on, whatever staging runs.
+          if [ "${GITHUB_EVENT_NAME}" = 'workflow_dispatch' ]; then
             echo "ref=${SHA}" >> "${GITHUB_OUTPUT}"
-          else
-            echo "[deploy-staging] skipped ${SHA}: main is at ${tip}, whose own CI run deploys it"
+            exit 0
           fi
+          repo="repos/${GITHUB_REPOSITORY}"
+          # Pushes to main land in order, so the newest successful push run is the newest green commit.
+          green="$(gh api "${repo}/actions/workflows/ci.yml/runs?branch=main&event=push&status=success&per_page=1" \
+            --jq '.workflow_runs[0].head_sha // empty')"
+          if [ -z "${green}" ]; then
+            echo "::error::No successful CI run on main to deploy"
+            exit 1
+          fi
+          # A commit force-pushed off main is never deployed.
+          on_main="$(gh api "${repo}/compare/main...${green}" --jq .status)"
+          if [ "${on_main}" != 'identical' ] && [ "${on_main}" != 'behind' ]; then
+            echo "::error::${green} is not on main (${on_main})"
+            exit 1
+          fi
+          deployed="$(gh api "${repo}/git/ref/tags/deployed/staging" --jq .object.sha 2>/dev/null || true)"
+          if [ -n "${deployed}" ]; then
+            since="$(gh api "${repo}/compare/${deployed}...${green}" --jq .status)"
+            if [ "${since}" = 'identical' ] || [ "${since}" = 'behind' ]; then
+              echo "[deploy-staging] skipped: staging runs ${deployed}, which has ${green}"
+              exit 0
+            fi
+          fi
+          echo "[deploy-staging] deploying ${green} (main's newest green commit; staging runs ${deployed:-nothing})"
+          echo "ref=${green}" >> "${GITHUB_OUTPUT}"
 
   deploy:
     name: Staging
-    needs: tip
-    if: needs.tip.outputs.ref != ''
+    needs: newest
+    if: needs.newest.outputs.ref != ''
     permissions:
       contents: write
     uses: ./.github/workflows/deploy.yml
     with:
       environment: staging
-      ref: ${{ needs.tip.outputs.ref }}
+      ref: ${{ needs.newest.outputs.ref }}
       all: ${{ inputs.all || false }}
     secrets:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

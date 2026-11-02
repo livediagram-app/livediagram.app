@@ -45,10 +45,7 @@ function makeEnv(previewsOrigin?: string) {
 }
 
 const get = (path: string, env: never) =>
-  worker.fetch(
-    new Request(`https://livediagram-router.liveworkspace-easing509.workers.dev${path}`),
-    env,
-  );
+  worker.fetch(new Request(`https://www.livediagram.app${path}`), env);
 
 let asked: string[];
 beforeEach(() => {
@@ -84,7 +81,7 @@ describe('editor worker: the share page', () => {
     expect(edits.title).toBe('Payments flow');
     expect(edits['meta[name="description"]']).toBe(SHARE_PITCH);
     expect(edits['meta[property="og:image"]']).toBe(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/api/previews/share/CODE1234/image.png',
+      'https://www.livediagram.app/api/previews/share/CODE1234/image.png',
     );
     expect(edits['meta[property="og:image:alt"]']).toBe('Payments flow, drawn in livediagram');
   });

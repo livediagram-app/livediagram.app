@@ -28,6 +28,9 @@ import { useThisBrowserHost } from '@/hooks/persistence/useThisBrowserHost';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { explorerShareHost } from '@/lib/explorer-share-host';
+import { explorerCommunity } from '@/lib/explorer-community-host';
+import { API_BASE } from '@/lib/api-client';
+import { useCommunityEnabled } from '@liveworkspace/community-ui';
 import { explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
 import { arrivedTrashed } from '@/lib/document-delete-undo';
@@ -111,11 +114,22 @@ export function ExplorerHost({
   children?: (chrome: ExplorerChrome) => ReactNode;
 }) {
   const router = useAppNavigation();
-  const { isSignedIn, authLoaded, accountUserId } = useAccountBootstrap();
+  const { isSignedIn, authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
   const guestId = useSignedGuestId(authLoaded, accountUserId);
   const teams = useTokenTeams(isSignedIn);
   const viewerId = accountUserId ?? guestId;
-  const shareHost = useMemo(() => explorerShareHost(viewerId ?? null), [viewerId]);
+  // The Community tab for a signed-in account's own documents (lib/explorer-community-host.ts).
+  const communityOn = useCommunityEnabled(API_BASE, !!accountUserId);
+  const shareHost = useMemo(
+    () => ({
+      ...explorerShareHost(viewerId ?? null),
+      community: explorerCommunity(
+        accountUserId ? { id: accountUserId, name: accountDisplayName } : null,
+        communityOn,
+      ),
+    }),
+    [viewerId, accountUserId, accountDisplayName, communityOn],
+  );
   const inboxHost = useMemo(() => explorerInboxHost(viewerId ?? null), [viewerId]);
   // This Browser: the documents kept only in this browser, which the index never sees, as a view of the Explorer.
   const thisBrowser = useThisBrowserHost(viewerId ?? null, !!accountUserId);

@@ -10,8 +10,8 @@
 // hooks/canvas/editor-shortcut-keys.ts. The test pins the two together.
 
 import { EDITOR_MODES, editorModeLabel, REACTION_LABEL, REACTIONS } from '@livediagram/document';
-import { AVATAR_BEHAVIOUR_KEYS, AVATAR_BURST_KEYS } from '@/lib/avatar-action-keys';
-import { AVATAR_REACTIONS } from '@/lib/avatar-reactions';
+import { AVATAR_BEHAVIOUR_KEYS, AVATAR_BURST_KEYS } from '@liveworkspace/avatar/action-keys';
+import { AVATAR_REACTIONS } from '@liveworkspace/avatar/reactions';
 
 // The mode key's row names the modes it moves through, from the mode catalogue so a new mode cannot go missing.
 const CYCLED_MODES = EDITOR_MODES.map(editorModeLabel).join(', ');
@@ -102,6 +102,9 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['Space', 'drag'], label: 'Pan canvas (overrides current tool)' },
       { keys: ['Space'], label: 'Edit label of selected element' },
       { keys: ['Type'], label: 'Replace label of selected element' },
+      // A dot vote's keys (docs/specs/012-collaboration/session-tools.md "Casting from the keyboard").
+      { keys: ['+'], label: 'In an open vote: add one of your dots to the selected element' },
+      { keys: ['-'], label: 'In an open vote: take one of your dots back' },
       { keys: ['Escape'], label: 'Cancel current mode, or clear selection' },
       { keys: ['⌘', 'hold'], label: 'Show shortcut badges on palette' },
     ],

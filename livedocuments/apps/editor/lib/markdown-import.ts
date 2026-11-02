@@ -18,10 +18,8 @@ import {
   type ArticleBlock,
   type Tab,
 } from '@livedocuments/document';
-import type { ImportOutcome } from './import-tab';
 
-export type MarkdownImportResult =
-  { ok: true; tab: Tab; tables: number } | { ok: false; error: string };
+export type MarkdownImportResult = { ok: true; tab: Tab } | { ok: false; error: string };
 
 /** The tab a Markdown file imports as: one article holding its writing. */
 export function buildTabFromMarkdown(
@@ -68,22 +66,5 @@ export function buildTabFromMarkdown(
   };
   // A blank tab's one page always offers the choice, so the article takes it.
   const chosen = withPageKindChosen(blank, pagesOf(blank)[0]!.id, 'article', flow)!;
-  return { ok: true, tab: withArticleFlow(chosen, flow, { blocks }), tables: read.tables };
-}
-
-/**
- * The Import dialog's outcome for a Markdown import: the report says when tables were written as
- * lists, since an article's text holds no tables.
- */
-export function markdownImportOutcome(tables: number): ImportOutcome {
-  if (tables <= 0) return { status: 'done' };
-  return {
-    status: 'done',
-    failures: [
-      {
-        title: 'Markdown',
-        message: `${tables.toLocaleString('en-GB')} ${tables === 1 ? 'table was' : 'tables were'} written as lists: an article's text holds no tables.`,
-      },
-    ],
-  };
+  return { ok: true, tab: withArticleFlow(chosen, flow, { blocks }) };
 }

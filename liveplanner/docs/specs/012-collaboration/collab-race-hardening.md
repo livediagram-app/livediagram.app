@@ -253,6 +253,93 @@ Residual, stated plainly: two people changing the SAME field of the same column 
 do) in the same moment still each see the other's value, exactly as a same-element collision on
 any shape does; the next change to that field from either side settles it.
 
+## A Dashboard's layout travels as deltas
+
+A [Dashboard tab](../026-plan/plan-tabs.md#dashboard-tab) keeps its whole layout (rows, slots, spans, heights, what
+each slot shows, the background) in one tab field, `dashboard`, edited from handles and cogs that select nothing.
+It used to travel whole in the `tab-meta` patch, which each receiver spread over its own tab, and the tab PUT stored
+it whole too. So when one Editor pressed Arrow Down on a row's resize handle while another, at the same moment,
+pressed Arrow Left on a divider, each screen ended up showing only the other's change, the store kept whichever save
+landed last (one change lost for good), and the second Editor's Undo did nothing, since the peer's whole layout had
+been folded into every one of their undo snapshots. (Found by a browser bug hunt; the owner chose this design.)
+
+So the layout moves the way a board's set-up does:
+
+- **A `dashboard-delta` op carries the change, not the layout.** `{ kind: 'dashboard-delta', tabId, patch }`, a
+  mutation (sequenced, logged for catch-up, recorded in the ledger) that only an Editor may send: the room drops it
+  from a Viewer's socket and from a Participant's, like every mutation that is not taking part, and from a tab-scoped
+  session for any other tab. `dashboardPatch(before, after)` (`packages/project/src/dashboard-patch.ts`) names only
+  what changed:
+  - the layout's own fields set or cleared (`background`);
+  - each row's changed fields, by row id (`height`, `fill`);
+  - each slot's changed fields, by slot id: `span`, and what it shows: its `content` whole when it was filled,
+    cleared or now shows another kind of thing, else each changed field of the content (`content.name`,
+    `content.style`, `content.text`, and so on) on its own;
+  - rows added (whole, with their slots) and removed (by id); slots added (whole, with the row they join) and
+    removed (by id);
+  - a row's slot ids in order, when a slot joined, left or moved within it; the row order, when a row moved or was
+    added.
+- **Applying one** (`applyDashboardPatch`), in this order:
+  1. **A removal wins.** Removed rows and slots go first, and a change to a row or slot someone removed is dropped;
+     a slot moved or added into a row someone removed goes with that row.
+  2. **Placement.** A row's slot list puts the slots it names in that order, taking a slot out of whichever row it
+     was in; a slot the list does not name but the row holds (one added there meanwhile by somebody else) stays
+     beside the slot it followed. An added row arrives whole; an added slot joins its row where the row's list puts
+     it, else at the row's right end. The row order follows its list the same way.
+  3. **Fields by id.** Changes to different fields, rows or slots commute, so every screen lands on the same layout
+     whatever order they arrive in.
+  4. **Nothing is normalised in the apply.** Spans are kept as written and a read (`readDashboard`, which every
+     screen, export and thumbnail draws through) fits them to twelve, so two screens holding the same fields draw the
+     same layout. A row left with no slots is gone. A malformed patch is dropped whole.
+- **The same field: the last writer wins, on every screen.** As with
+  [Same-element edits](realtime-conflict-resolution.md#same-element-edits-converge): from a save's snapshot until the
+  room confirms its delta, the fields the delta sets are **held** (`own-element-writes.ts`), and a peer's change to a
+  held field, which reached this screen first and so was ordered first, is left out of the screen and the save
+  baseline; the rest of that peer's patch applies. Every other screen applies both in room order, so all of them end
+  on the later value. Two people pressing the same row's handle at once both see the later press.
+- **Derived in the autosave, so every path sends it.** `tabBroadcastOps` emits one `dashboard-delta` for a tab whose
+  layout changed, on the granular and the bulk (whole-tab) path alike: every handle, cog and drag, a slot filled from
+  the palette, Duplicate, Clear and Remove, and undo or redo. A whole layout replaced in the editor (Start Over From a
+  Layout, a Dashboard imported into its tab) is a patch too: the old rows removed, the new ones added, so a peer's
+  change to an old row at that moment is dropped (a removal wins).
+- **Whole values only where there is no layout to merge.** The `tab-meta` patch carries `dashboard` only when the
+  tab gains one (Start Planning makes a Dashboard) or loses one (it becomes a Board or Sheet tab); a receiver takes
+  that whole. A whole `tab` op from this editor (a bulk change) says `dashboardDeltas: true`, and a receiver that
+  has a layout keeps its own through it, as it keeps a board's set-up.
+- **The room has the delta before the save is written**, exactly as the board delta: a save sends its
+  `dashboard-delta` first, waits for the room's confirmation, then PUTs, so a peer's save landing after it merges it
+  from the ledger.
+- **The ledger records it.** One entry per tab (`ledger:<tabId>:dash`, `packages/project/src/dashboard-ledger.ts`):
+  the latest value of each layout, row and slot field, each row and slot added or removed, each row's latest slot
+  list and the latest row order, each with the seq that set it. A save merges in only the entries the saver had not
+  seen ([The store keeps multi-writer fields](#the-store-keeps-multi-writer-fields)), through the same apply, so the
+  store keeps both people's changes. A row or slot removed keeps only the seq of its removal. A `content` set whole
+  drops that slot's earlier per-field entries. At most 512 rows and slots are tracked per tab: past that the oldest
+  removals are forgotten first, then new ones are not tracked (the save then carries itself, as before).
+- **A whole layout from elsewhere is a reset.** An agent's `update_project` with a `dashboard` rebuilds the layout
+  as one changeset ([Agent changesets](../024-agents/agent-changesets.md#what-the-room-does)). Its `changeset` op now
+  carries the rebuilt layout (`dashboard`) when the layout changed, so every open editor takes it whole, on screen
+  and in every undo and redo snapshot, where before an editor kept the old layout until a reload and its next save
+  wrote that back. The ledger records it, and a `tab-meta` carrying a whole layout, as a **reset**: every earlier
+  entry goes, and a save that had not seen it takes the reset layout plus every delta after it. A person's change
+  to the old layout made before the rebuild is gone (the rebuild says it rebuilds); one made after it lands on the
+  new layout wherever its rows and slots exist.
+- **Undo takes back only your own change.** A peer's delta is applied to every undo and redo snapshot as well as to
+  the screen ([Realtime conflict resolution](realtime-conflict-resolution.md#locked-decisions), "Undo is local"),
+  field by field, so a restored snapshot already holds the peer's change and undo puts back only the fields you
+  changed, as a delta like any other. A peer who changed the same field after you keeps their value through your
+  undo.
+- **Older editors and stored layouts.** The stored layout keeps its shape; nothing is added to it. An editor loaded
+  before this change still sends whole layouts (`tab-meta` patches, `tab` ops without the flag), and receivers take
+  those whole, as before. It does not know `dashboard-delta`, so until it reloads it shows a newer editor's layout
+  changes only after a reload, and a save from it can write its older copy of the layout back (the same window the
+  board delta had when it shipped).
+
+Residual, stated plainly: two people restructuring the SAME row at the same instant (each adding, removing or moving
+its slots) never lose or duplicate a slot, but in a rare interleaving the left-to-right order can differ between
+their two screens until either changes that row again; the store keeps the room's order. A content field edited in
+a slot whose content another person replaced whole at that instant can show on the first editor's screen only.
+
 ## Saves
 
 A tab's writes are queued per tab (`tab-save-queue.ts`): a save holding Plan ledger changes waits up to
@@ -268,8 +355,8 @@ then holds the saver's older copy of the peer's elements. Every screen showed th
 but a reload lost it, for good when nobody edited that tab again: in a two-person drag test it happened in five
 runs out of nine.
 
-So a save's window stays open `SAVE_RESAVE_GRACE_MS` (1.5 s) after it lands, and if a peer's element change (`el`,
-`tab` or `tab-meta`) to a tab it wrote arrived from its snapshot to the end of that window
+So a save's window stays open `SAVE_RESAVE_GRACE_MS` (1.5 s) after it lands, and if a peer's element or layout change (`el`,
+`tab`, `tab-meta` or `dashboard-delta`) to a tab it wrote arrived from its snapshot to the end of that window
 (`tabsChangedByPeersSince`), the tab is written again with what is on screen. The peer's change is already in the
 save baseline, so the second save sends no ops; it is the PUT alone. The grace covers a peer whose op left only after
 their own write landed, a round trip behind ours. A failed write again stays queued for the retry. It stops by itself:

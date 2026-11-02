@@ -21,7 +21,7 @@ const every: FormDefinition = {
     {
       id: 's-2',
       title: 'Later',
-      showIf: { questionId: 'q-6', anyOf: ['Option 1'] },
+      showIf: { questionId: `q-${QUESTION_TYPES.indexOf('single')}`, anyOf: ['Option 1'] },
       questions: [],
     },
   ],
@@ -30,7 +30,9 @@ const every: FormDefinition = {
 describe('formArt', () => {
   it('draws the heading, every question and the sections on the tab’s look', () => {
     const art = formArt(every, formLook({ theme: 'ocean' }));
-    expect(art.width).toBe(FORM_ART_WIDTH);
+    // One of every type runs on into the second column, nothing left out.
+    expect(art.width).toBe(FORM_ART_WIDTH * 2);
+    expect(art.svg).not.toContain('not drawn');
     for (const t of QUESTION_TYPES) expect(art.svg).toContain(`Q ${t}`);
     expect(art.svg).toContain('Every Type');
     // Its later section shows only sometimes, so no count is given.
@@ -104,6 +106,17 @@ describe('formArt', () => {
   });
 
   it('keeps a short form to one column', () => {
-    expect(formArt(every, formLook({})).width).toBe(FORM_ART_WIDTH);
+    const short = {
+      ...every,
+      sections: [{ ...every.sections[0]!, questions: every.sections[0]!.questions.slice(0, 6) }],
+    };
+    expect(formArt(short, formLook({})).width).toBe(FORM_ART_WIDTH);
+  });
+
+  it('hints the phone, date-and-time and date-range answers', () => {
+    const svg = formArt(every, formLook({})).svg;
+    expect(svg).toContain('>+44 20 7946 0958<');
+    expect(svg).toContain('>dd/mm/yyyy, --:--<');
+    expect(svg).toContain('>dd/mm/yyyy to dd/mm/yyyy<');
   });
 });

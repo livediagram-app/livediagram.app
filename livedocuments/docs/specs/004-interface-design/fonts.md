@@ -66,6 +66,10 @@ A label's size (`textSize`) is **Scale** or an **exact px**. It is chosen on one
 - a chart's key, a Legend card and a Sankey's labels (no Scale: a key has nothing to fit);
 - the Tab Style dialog's **Size of New Text** ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)).
 
+A size picked here is the size the words draw at: on a text or a shape carrying a `textScale` (a
+Shift-resized text box, or content a page re-fit scaled, [Pages mode](../007-editor/pages-mode.md)
+"Sizes") it drops the scale, in its preview as on commit, and an agent's `text` field does the same.
+
 The control:
 
 - **The slider** runs **6 to 48 px in whole px** (`TEXT_PX_MIN` / `TEXT_PX_MAX`), with labelled

@@ -104,7 +104,10 @@ export function GanttNameRow({
   lift?: number | undefined;
 }) {
   const kids = row.total ? `${row.done}/${row.total}` : '';
-  const own = itemColourOf(row.item);
+  const own = itemColourOf(
+    row.item,
+    plan?.types.find((t) => t.id === row.item.type),
+  );
   const lifted = lift !== undefined;
   return (
     <div

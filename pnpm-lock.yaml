@@ -49,7 +49,7 @@ importers:
         version: 7.0.2
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   livedesign:
     devDependencies:
@@ -79,7 +79,7 @@ importers:
         version: 7.0.2
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   livedesign/apps/api:
     dependencies:
@@ -110,6 +110,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/community':
+        specifier: workspace:^
+        version: link:../../../packages/community
       '@liveworkspace/drive':
         specifier: workspace:*
         version: link:../../../packages/drive
@@ -143,7 +146,10 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
+      '@liveworkspace/community-service':
+        specifier: workspace:^
+        version: link:../../../liveworkspace/apps/community
       '@liveworkspace/media-service':
         specifier: workspace:*
         version: link:../../../liveworkspace/apps/media
@@ -173,7 +179,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   livedesign/apps/cli:
     dependencies:
@@ -223,6 +229,88 @@ importers:
       oxlint:
         specifier: ^1.88.0
         version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  livedesign/apps/community:
+    dependencies:
+      '@livedesign/api-schema':
+        specifier: workspace:*
+        version: link:../../packages/api-schema
+      '@livedesign/telemetry-client':
+        specifier: workspace:*
+        version: link:../../packages/telemetry-client
+      '@livedesign/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@liveworkspace/community-site':
+        specifier: workspace:*
+        version: link:../../../packages/community-site
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../../../packages/community-ui
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
+      '@liveworkspace/sites':
+        specifier: workspace:^
+        version: link:../../../packages/sites
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../../../packages/ui
+      next:
+        specifier: ^16.4.1
+        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
+    devDependencies:
+      '@livedesign/tailwind-config':
+        specifier: workspace:*
+        version: link:../../packages/tailwind-config
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@tailwindcss/postcss':
+        specifier: ^4.3.3
+        version: 4.3.3
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      jsdom:
+        specifier: ^30.1.2
+        version: 30.1.3(@noble/hashes@2.4.0)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      tailwindcss:
+        specifier: ^4.3.3
+        version: 4.3.3
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -353,6 +441,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../../../packages/community-ui
       '@liveworkspace/explorer':
         specifier: workspace:*
         version: link:../../../packages/explorer
@@ -471,6 +562,9 @@ importers:
       '@livedesign/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../../../packages/community-ui
       '@liveworkspace/comparisons':
         specifier: workspace:*
         version: link:../../../packages/comparisons
@@ -483,6 +577,9 @@ importers:
       '@liveworkspace/marketing-site':
         specifier: workspace:*
         version: link:../../../packages/marketing-site
+      '@liveworkspace/sites':
+        specifier: workspace:*
+        version: link:../../../packages/sites
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -601,7 +698,7 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -625,7 +722,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   livedesign/apps/router:
     dependencies:
@@ -638,7 +735,7 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@livedesign/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
@@ -665,7 +762,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   livedesign/packages/agent-verbs:
     dependencies:
@@ -730,6 +827,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
+      '@liveworkspace/community':
+        specifier: workspace:^
+        version: link:../../../packages/community
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../../../packages/model-core
@@ -1103,6 +1203,9 @@ importers:
       '@liveworkspace/brand':
         specifier: workspace:*
         version: link:../../../packages/brand
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../../../packages/community-ui
       '@liveworkspace/icons':
         specifier: workspace:^
         version: link:../../../packages/icons
@@ -1190,7 +1293,7 @@ importers:
         version: 7.0.2
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   livediagram/apps/api:
     dependencies:
@@ -1218,6 +1321,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/community':
+        specifier: workspace:^
+        version: link:../../../packages/community
       '@liveworkspace/drive':
         specifier: workspace:*
         version: link:../../../packages/drive
@@ -1254,7 +1360,7 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@liveworkspace/community-service':
         specifier: workspace:*
         version: link:../../../liveworkspace/apps/community
@@ -1290,7 +1396,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   livediagram/apps/cli:
     dependencies:
@@ -1367,6 +1473,12 @@ importers:
       '@livediagram/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/community-site':
+        specifier: workspace:*
+        version: link:../../../packages/community-site
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../../../packages/community-ui
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../../../packages/icons
@@ -1473,6 +1585,12 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/avatar':
+        specifier: workspace:*
+        version: link:../../../packages/avatar
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../../../packages/community-ui
       '@liveworkspace/explorer':
         specifier: workspace:*
         version: link:../../../packages/explorer
@@ -1691,6 +1809,9 @@ importers:
       '@livediagram/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../../../packages/community-ui
       '@liveworkspace/comparisons':
         specifier: workspace:*
         version: link:../../../packages/comparisons
@@ -1703,6 +1824,9 @@ importers:
       '@liveworkspace/marketing-site':
         specifier: workspace:*
         version: link:../../../packages/marketing-site
+      '@liveworkspace/sites':
+        specifier: workspace:*
+        version: link:../../../packages/sites
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -1818,7 +1942,7 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -1842,7 +1966,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   livediagram/apps/router:
     dependencies:
@@ -1852,7 +1976,7 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@livediagram/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
@@ -1879,7 +2003,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   livediagram/packages/agent-verbs:
     dependencies:
@@ -2009,6 +2133,9 @@ importers:
 
   livediagram/packages/document:
     dependencies:
+      '@liveworkspace/avatar':
+        specifier: workspace:*
+        version: link:../../../packages/avatar
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../../../packages/icons
@@ -2322,9 +2449,6 @@ importers:
       '@livediagram/document':
         specifier: workspace:*
         version: link:../document
-      '@livediagram/help-registry':
-        specifier: workspace:*
-        version: link:../help-registry
       '@livediagram/telemetry-client':
         specifier: workspace:*
         version: link:../telemetry-client
@@ -2334,6 +2458,9 @@ importers:
       '@liveworkspace/brand':
         specifier: workspace:*
         version: link:../../../packages/brand
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../../../packages/community-ui
       '@liveworkspace/icons':
         specifier: workspace:^
         version: link:../../../packages/icons
@@ -2424,7 +2551,7 @@ importers:
         version: 7.0.2
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   livedocuments/apps/api:
     dependencies:
@@ -2452,6 +2579,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/community':
+        specifier: workspace:^
+        version: link:../../../packages/community
       '@liveworkspace/drive':
         specifier: workspace:*
         version: link:../../../packages/drive
@@ -2485,7 +2615,10 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
+      '@liveworkspace/community-service':
+        specifier: workspace:^
+        version: link:../../../liveworkspace/apps/community
       '@liveworkspace/media-service':
         specifier: workspace:*
         version: link:../../../liveworkspace/apps/media
@@ -2515,7 +2648,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   livedocuments/apps/cli:
     dependencies:
@@ -2572,6 +2705,88 @@ importers:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
+  livedocuments/apps/community:
+    dependencies:
+      '@livedocuments/api-schema':
+        specifier: workspace:*
+        version: link:../../packages/api-schema
+      '@livedocuments/telemetry-client':
+        specifier: workspace:*
+        version: link:../../packages/telemetry-client
+      '@livedocuments/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@liveworkspace/community-site':
+        specifier: workspace:*
+        version: link:../../../packages/community-site
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../../../packages/community-ui
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../../../packages/icons
+      '@liveworkspace/sites':
+        specifier: workspace:^
+        version: link:../../../packages/sites
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../../../packages/ui
+      next:
+        specifier: ^16.4.1
+        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
+    devDependencies:
+      '@livedocuments/tailwind-config':
+        specifier: workspace:*
+        version: link:../../packages/tailwind-config
+      '@liveworkspace/next-config':
+        specifier: workspace:*
+        version: link:../../../packages/next-config
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../../../packages/oxlint-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../../../packages/style-guards
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../../../packages/vitest-config
+      '@tailwindcss/postcss':
+        specifier: ^4.3.3
+        version: 4.3.3
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      jsdom:
+        specifier: ^30.1.2
+        version: 30.1.3(@noble/hashes@2.4.0)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      tailwindcss:
+        specifier: ^4.3.3
+        version: 4.3.3
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
   livedocuments/apps/editor:
     dependencies:
       '@jsquash/webp':
@@ -2604,6 +2819,9 @@ importers:
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
+      '@liveworkspace/community-ui':
+        specifier: workspace:^
+        version: link:../../../packages/community-ui
       '@liveworkspace/explorer':
         specifier: workspace:*
         version: link:../../../packages/explorer
@@ -2661,6 +2879,9 @@ importers:
       prosemirror-state:
         specifier: ^1.4.4
         version: 1.4.4
+      prosemirror-tables:
+        specifier: ^1.8.5
+        version: 1.8.5
       prosemirror-view:
         specifier: ^1.42.6
         version: 1.42.6
@@ -2828,6 +3049,9 @@ importers:
       '@livedocuments/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../../../packages/community-ui
       '@liveworkspace/comparisons':
         specifier: workspace:*
         version: link:../../../packages/comparisons
@@ -2840,6 +3064,9 @@ importers:
       '@liveworkspace/marketing-site':
         specifier: workspace:*
         version: link:../../../packages/marketing-site
+      '@liveworkspace/sites':
+        specifier: workspace:*
+        version: link:../../../packages/sites
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -2958,7 +3185,7 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -2982,7 +3209,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   livedocuments/apps/router:
     dependencies:
@@ -2995,7 +3222,7 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@livedocuments/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
@@ -3022,7 +3249,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   livedocuments/packages/agent-verbs:
     dependencies:
@@ -3084,6 +3311,9 @@ importers:
       '@liveworkspace/api-schema':
         specifier: workspace:*
         version: link:../../../packages/api-schema
+      '@liveworkspace/community':
+        specifier: workspace:^
+        version: link:../../../packages/community
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../../../packages/model-core
@@ -3424,6 +3654,9 @@ importers:
       '@liveworkspace/brand':
         specifier: workspace:*
         version: link:../../../packages/brand
+      '@liveworkspace/community-ui':
+        specifier: workspace:^
+        version: link:../../../packages/community-ui
       '@liveworkspace/icons':
         specifier: workspace:^
         version: link:../../../packages/icons
@@ -3511,7 +3744,7 @@ importers:
         version: 7.0.2
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   liveplanner/apps/api:
     dependencies:
@@ -3581,7 +3814,7 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -3608,7 +3841,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   liveplanner/apps/cli:
     dependencies:
@@ -3921,6 +4154,9 @@ importers:
       '@liveworkspace/marketing-site':
         specifier: workspace:*
         version: link:../../../packages/marketing-site
+      '@liveworkspace/sites':
+        specifier: workspace:*
+        version: link:../../../packages/sites
       next:
         specifier: ^16.4.1
         version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -4045,7 +4281,7 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -4069,7 +4305,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   liveplanner/apps/router:
     dependencies:
@@ -4082,7 +4318,7 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@liveplanner/api-schema':
         specifier: workspace:*
         version: link:../../packages/api-schema
@@ -4109,7 +4345,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   liveplanner/packages/agent-verbs:
     dependencies:
@@ -4709,9 +4945,15 @@ importers:
       '@liveworkspace/migration':
         specifier: workspace:^
         version: link:../../../packages/migration
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../../../packages/settings
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
       better-auth:
         specifier: 1.7.12
         version: 1.7.12(next@16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5)
@@ -4721,10 +4963,13 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@liveworkspace/api-kit':
         specifier: workspace:^
         version: link:../../../packages/api-kit
+      '@liveworkspace/vitest-config':
+        specifier: workspace:^
+        version: link:../../../packages/vitest-config
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5
@@ -4742,7 +4987,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   liveworkspace/apps/community:
     dependencies:
@@ -4752,10 +4997,13 @@ importers:
       '@liveworkspace/index-app':
         specifier: workspace:*
         version: link:../../../packages/index-app
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@liveworkspace/api-kit':
         specifier: workspace:^
         version: link:../../../packages/api-kit
@@ -4773,10 +5021,13 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   liveworkspace/apps/drive:
     dependencies:
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
       '@liveworkspace/auth-client':
         specifier: workspace:*
         version: link:../../../packages/auth-client
@@ -4795,13 +5046,13 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../../../packages/sites
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
-      '@liveworkspace/api-kit':
-        specifier: workspace:^
-        version: link:../../../packages/api-kit
+        version: 5.20261102.1
       '@liveworkspace/fake-google':
         specifier: workspace:*
         version: link:../../../packages/fake-google
@@ -4822,7 +5073,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   liveworkspace/apps/index:
     dependencies:
@@ -4844,13 +5095,16 @@ importers:
       '@liveworkspace/sites':
         specifier: workspace:^
         version: link:../../../packages/sites
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
       jose:
         specifier: ^6.2.12
         version: 6.2.13
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@liveworkspace/vitest-config':
         specifier: workspace:^
         version: link:../../../packages/vitest-config
@@ -4868,7 +5122,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   liveworkspace/apps/media:
     dependencies:
@@ -4884,10 +5138,13 @@ importers:
       '@liveworkspace/render-png':
         specifier: workspace:*
         version: link:../../../packages/render-png
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@liveworkspace/api-kit':
         specifier: workspace:^
         version: link:../../../packages/api-kit
@@ -4905,7 +5162,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   liveworkspace/apps/migrate:
     dependencies:
@@ -4967,7 +5224,7 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -4991,7 +5248,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   liveworkspace/apps/site:
     dependencies:
@@ -5034,6 +5291,12 @@ importers:
       '@liveworkspace/brand':
         specifier: workspace:*
         version: link:../../../packages/brand
+      '@liveworkspace/community':
+        specifier: workspace:*
+        version: link:../../../packages/community
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../../../packages/community-ui
       '@liveworkspace/drive':
         specifier: workspace:*
         version: link:../../../packages/drive
@@ -5160,7 +5423,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   liveworkspace/apps/status:
     dependencies:
@@ -5170,16 +5433,16 @@ importers:
       '@liveworkspace/index-app':
         specifier: workspace:*
         version: link:../../../packages/index-app
-      '@liveworkspace/sites':
-        specifier: workspace:^
-        version: link:../../../packages/sites
       '@liveworkspace/status':
         specifier: workspace:*
         version: link:../../packages/status
+      '@liveworkspace/telemetry':
+        specifier: workspace:*
+        version: link:../../../packages/telemetry
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../../../packages/oxlint-config
@@ -5197,7 +5460,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   liveworkspace/apps/telemetry:
     dependencies:
@@ -5228,7 +5491,7 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5
@@ -5243,7 +5506,7 @@ importers:
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
       wrangler:
         specifier: ^4.152.0
-        version: 4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5)
+        version: 4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5)
 
   liveworkspace/packages/status:
     dependencies:
@@ -5370,7 +5633,7 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../oxlint-config
@@ -5420,6 +5683,9 @@ importers:
 
   packages/auth-client:
     dependencies:
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../settings
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites
@@ -5433,6 +5699,70 @@ importers:
       oxlint:
         specifier: ^1.88.0
         version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/avatar:
+    dependencies:
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../icons
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../model-core
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../ui
+      '@liveworkspace/workbench':
+        specifier: workspace:*
+        version: link:../workbench
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../style-guards
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      '@vitest/coverage-v8':
+        specifier: ^5.0.3
+        version: 5.0.5(vitest@5.0.5)
+      jsdom:
+        specifier: ^30.1.2
+        version: 30.1.3(@noble/hashes@2.4.0)
+      next:
+        specifier: ^16.4.1
+        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5536,6 +5866,128 @@ importers:
         specifier: ^5.0.1
         version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
 
+  packages/community-site:
+    dependencies:
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
+      '@liveworkspace/community':
+        specifier: workspace:*
+        version: link:../community
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../community-ui
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../icons
+      '@liveworkspace/sites':
+        specifier: workspace:*
+        version: link:../sites
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../ui
+    devDependencies:
+      '@liveworkspace/oxlint-config':
+        specifier: workspace:*
+        version: link:../oxlint-config
+      '@liveworkspace/style-guards':
+        specifier: workspace:*
+        version: link:../style-guards
+      '@liveworkspace/vitest-config':
+        specifier: workspace:*
+        version: link:../vitest-config
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/node':
+        specifier: ^26.6.4
+        version: 26.6.5
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      jsdom:
+        specifier: ^30.1.2
+        version: 30.1.3(@noble/hashes@2.4.0)
+      next:
+        specifier: ^16.4.1
+        version: 16.4.2(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
+  packages/community-ui:
+    dependencies:
+      '@liveworkspace/api-schema':
+        specifier: workspace:*
+        version: link:../api-schema
+      '@liveworkspace/brand':
+        specifier: workspace:*
+        version: link:../brand
+      '@liveworkspace/community':
+        specifier: workspace:*
+        version: link:../community
+      '@liveworkspace/help-registry':
+        specifier: workspace:*
+        version: link:../help-registry
+      '@liveworkspace/icons':
+        specifier: workspace:*
+        version: link:../icons
+      '@liveworkspace/marketing-site':
+        specifier: workspace:*
+        version: link:../marketing-site
+      '@liveworkspace/model-core':
+        specifier: workspace:*
+        version: link:../model-core
+      '@liveworkspace/ui':
+        specifier: workspace:*
+        version: link:../ui
+    devDependencies:
+      '@liveworkspace/vitest-config':
+        specifier: workspace:^
+        version: link:../vitest-config
+      '@testing-library/react':
+        specifier: ^16.3.3
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      jsdom:
+        specifier: ^30.1.2
+        version: 30.1.3(@noble/hashes@2.4.0)
+      oxlint:
+        specifier: ^1.88.0
+        version: 1.89.0(oxlint-tsgolint@7.0.2004)
+      react:
+        specifier: ^19.3.1
+        version: 19.3.1
+      react-dom:
+        specifier: ^19.3.1
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ^7.0.2
+        version: 7.0.2
+      vitest:
+        specifier: ^5.0.1
+        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
+
   packages/comparisons:
     devDependencies:
       '@types/react':
@@ -5621,6 +6073,9 @@ importers:
 
   packages/drive:
     dependencies:
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../api-kit
       '@liveworkspace/sites':
         specifier: workspace:*
         version: link:../sites
@@ -5688,6 +6143,9 @@ importers:
       '@liveworkspace/brand':
         specifier: workspace:*
         version: link:../brand
+      '@liveworkspace/community-ui':
+        specifier: workspace:*
+        version: link:../community-ui
       '@liveworkspace/drive':
         specifier: workspace:*
         version: link:../drive
@@ -5704,6 +6162,9 @@ importers:
         specifier: workspace:*
         version: link:../ui
     devDependencies:
+      '@liveworkspace/icons':
+        specifier: workspace:^
+        version: link:../icons
       '@liveworkspace/vitest-config':
         specifier: workspace:^
         version: link:../vitest-config
@@ -5883,7 +6344,7 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@liveworkspace/api-kit':
         specifier: workspace:^
         version: link:../api-kit
@@ -5948,12 +6409,18 @@ importers:
 
   packages/marketing-site:
     dependencies:
+      '@liveworkspace/auth-client':
+        specifier: workspace:^
+        version: link:../auth-client
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../icons
       '@liveworkspace/licences':
         specifier: workspace:*
         version: link:../licences
+      '@liveworkspace/settings':
+        specifier: workspace:*
+        version: link:../settings
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../ui
@@ -6009,6 +6476,12 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.32.1
         version: 1.32.1(zod@4.6.7)
+      ajv:
+        specifier: ^8.17.1
+        version: 8.20.0
+      ajv-formats:
+        specifier: ^3.0.1
+        version: 3.0.1(ajv@8.20.0)
       hono:
         specifier: ^4.13.13
         version: 4.13.13
@@ -6018,7 +6491,7 @@ importers:
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^5.20261023.1
-        version: 5.20261023.1
+        version: 5.20261102.1
       '@liveworkspace/oxlint-config':
         specifier: workspace:*
         version: link:../oxlint-config
@@ -6208,6 +6681,9 @@ importers:
       '@liveworkspace/account-menu':
         specifier: workspace:^
         version: link:../account-menu
+      '@liveworkspace/brand':
+        specifier: workspace:^
+        version: link:../brand
       '@liveworkspace/drive':
         specifier: workspace:*
         version: link:../drive
@@ -6217,10 +6693,16 @@ importers:
       '@liveworkspace/settings':
         specifier: workspace:*
         version: link:../settings
+      '@liveworkspace/sites':
+        specifier: workspace:^
+        version: link:../sites
       '@liveworkspace/ui':
         specifier: workspace:^
         version: link:../ui
     devDependencies:
+      '@liveworkspace/vitest-config':
+        specifier: workspace:^
+        version: link:../vitest-config
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -6251,6 +6733,9 @@ importers:
 
   packages/sites:
     devDependencies:
+      '@liveworkspace/vitest-config':
+        specifier: workspace:^
+        version: link:../vitest-config
       '@types/node':
         specifier: ^26.6.4
         version: 26.6.5
@@ -6713,38 +7198,38 @@ packages:
       workerd:
         optional: true
 
-  '@cloudflare/workerd-darwin-64@1.20261019.1':
-    resolution: {integrity: sha512-5ZILbAta/fBQvhmAYeCE7dKMMYIr7N9wJEX50fEGLKSIwGtvT0HzSfHNIK/O7cBQ4gHQ2WfIiPClvwcye6E0fA==}
+  '@cloudflare/workerd-darwin-64@1.20261101.1':
+    resolution: {integrity: sha512-9ByDS2X/lN1csRkU2qTsnogwVA/ghYGHybznujH/EStiv9qU+01XPKagm3Zrk8AN3yQrFTmjMy6BrZWzoa+B5Q==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [darwin]
 
-  '@cloudflare/workerd-darwin-arm64@1.20261019.1':
-    resolution: {integrity: sha512-cww2Ab6lVMxpTiEEjKmPI58p5EMo0vYTZSH+3WkqXJdQgc3ES66GuL247+U2B2YWajhhu2tqj7jySrXneU749g==}
+  '@cloudflare/workerd-darwin-arm64@1.20261101.1':
+    resolution: {integrity: sha512-XNgl773dDMFecMG0mOtDgw15AIeRVn3yqbbUAqMVH6vgEf64F/J6Ej3FugQyogt+1NSjOx3pgEofbX7Cd9m0ug==}
     engines: {node: '>=16'}
     cpu: [arm64]
     os: [darwin]
 
-  '@cloudflare/workerd-linux-64@1.20261019.1':
-    resolution: {integrity: sha512-4++VRi9vkQROYqrpZYOixIJuVDmujkwrT4kszsxNFlvcmsX6Mr2GumvxIN3gIixS3vJUh3Umdtkthqj5X0S3Xw==}
+  '@cloudflare/workerd-linux-64@1.20261101.1':
+    resolution: {integrity: sha512-8C9vM51UVrmpavIC7z6anMsKPu8tjvJcwA2tCvzlwfL7odoX61ngBpN7pkYrmrwv5iS9aJ4xEzQc8QkZJKIulw==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [linux]
 
-  '@cloudflare/workerd-linux-arm64@1.20261019.1':
-    resolution: {integrity: sha512-75PVtJOwfjScQ53sbLtQXI7D8yP1c21t+WEUPaYbqkzaz4ZqfR5wAd+zuWs8G5Q7kOj2SQIvEfY5Sn8Y+UVrnA==}
+  '@cloudflare/workerd-linux-arm64@1.20261101.1':
+    resolution: {integrity: sha512-7NdTrbzPubhEBNiC8ftD0U3J3M8fNR/ATD3Deon6C9Z5SFTmOhQbT3jJPMGPoUzvicdTaaD/YNCwRh+JEoWaeQ==}
     engines: {node: '>=16'}
     cpu: [arm64]
     os: [linux]
 
-  '@cloudflare/workerd-windows-64@1.20261019.1':
-    resolution: {integrity: sha512-z49fvKTETMCnG6wnMcQwxx9CpryFceiKz04FRjq26EkhCyzRNJ6c3UXhyZz3r5f1CXnnBZc5DcU8ZouPkUJCqw==}
+  '@cloudflare/workerd-windows-64@1.20261101.1':
+    resolution: {integrity: sha512-nDRpV9VRhzdrNpJOJNfe6rjOTq5LXFGC6WFCeGR/LA+cNnou1fwF0AQm//zmSDOELPNoQFi6SqjUcloZvy1sKw==}
     engines: {node: '>=16'}
     cpu: [x64]
     os: [win32]
 
-  '@cloudflare/workers-types@5.20261023.1':
-    resolution: {integrity: sha512-jRaMsWUF/08dd0dWnX3zPGPOjakkkA2JPnK5vLsCQFmYC40kbMPZ02fvOPO8kqjqgljoMZrKsRiXpR1u1Lp0Qg==}
+  '@cloudflare/workers-types@5.20261102.1':
+    resolution: {integrity: sha512-rRNznLGla+8vRdToTN/5M+AzlopILSLLZ3qo2L5Ku/dY792iOlX/K9ZLkLnLYji1jycv7+FB12hiE+fFjVgMrw==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -8963,8 +9448,8 @@ packages:
     resolution: {integrity: sha512-Lbgzdk0h4juoQ9fCKXW4by0UJqj+nOOrI9MJ1sSj4nI8aI2eo1qmvQEie4VD1glsS250n15LsWsYtCugiStS5A==}
     engines: {node: '>=18'}
 
-  miniflare@5.20261019.2-beta:
-    resolution: {integrity: sha512-QNgCA/axizZ7kv7RV3nwbRoz+w4watBlwIsyXjwgYHw4eSw5BrR1F2152s3Kz+Bzy/YxjKFHrZl3LzBRbPgYoQ==}
+  miniflare@5.20261101.0-beta:
+    resolution: {integrity: sha512-31uZmP8PGue7S3fYMIRXNXxFGh5/SEmd4OGna/80RXcE1nngVub21h9GbcWajQ7625mEYBnexpI2ogGo9NUa6Q==}
     engines: {node: '>=22.0.0'}
 
   minimatch@10.2.6:
@@ -9146,10 +9631,6 @@ packages:
     resolution: {integrity: sha512-YUbWYCgErwnMAVkjUnYa+KlMBzGpHwiIt/DE7f0G33AuX2LH9UcTk6KgWxd3zRU+pN3u/C+Xl3EnMLM4Hea7Sg==}
     engines: {node: ^10 || ^12 || >=14}
 
-  postcss@8.5.32:
-    resolution: {integrity: sha512-LJlKCCAUFKOuZxipUdYw1NzIITEsPcgyOG9LkvRJvuKj/bRzbuRY0ARXvL0pWGpsZvn8jku+LMep2eU0seHp8g==}
-    engines: {node: ^10 || ^12 || >=14}
-
   prettier@3.9.10:
     resolution: {integrity: sha512-skGHTH1Yb9QvaTC4hWnRTzEYtCpApF0UMBPz+t/0ZPzP8ihefo/btKd+QA7pUE0fEwA1SbS/NmhyEcstdXOIdA==}
     engines: {node: '>=14'}
@@ -9179,6 +9660,9 @@ packages:
 
   prosemirror-state@1.4.4:
     resolution: {integrity: sha512-6jiYHH2CIGbCfnxdHbXZ12gySFY/fz/ulZE333G6bPqIZ4F+TXo9ifiR86nAHpWnfoNjOb3o5ESi7J8Uz1jXHw==}
+
+  prosemirror-tables@1.8.5:
+    resolution: {integrity: sha512-V/0cDCsHKHe/tfWkeCmthNUcEp1IVO3p6vwN8XtwE9PZQLAZJigbw3QoraAdfJPir4NKJtNvOB8oYGKRl+t0Dw==}
 
   prosemirror-transform@1.12.2:
     resolution: {integrity: sha512-PE/aY0HEY4zczvmqrilgkUK/WautF0chvMqkmM/iN5/aPHvwrCWaQZjS6CIZp+K84YrvPFqrL+YArrfJX8xX7g==}
@@ -9691,17 +10175,17 @@ packages:
     engines: {node: '>=20.11'}
     hasBin: true
 
-  workerd@1.20261019.1:
-    resolution: {integrity: sha512-UUYRUq/7DmeCl11YriNbcVbjUZVLtt8uuCXFu+nz77hGFf8d4DEVXoCYtnA+MlBatE4+wxoj47DVqzK3xGBAiw==}
+  workerd@1.20261101.1:
+    resolution: {integrity: sha512-qHUIS4cmvhpAE7k2TW0ZktXj9KGDeoUvvLuqi5cSalCM6el5Q6IPuaup9XAC6zQq/xJUPHMG29ML93HuSDY2RQ==}
     engines: {node: '>=16'}
     hasBin: true
 
-  wrangler@4.152.0:
-    resolution: {integrity: sha512-lmXTF1sCDEqBaEMpreGczvg/x3AIh1d/qxc4BN7utQ4jEDwdA4YG0L6kr3ev0TtVLHRb6QLySNAOAunwn+dHeA==}
+  wrangler@4.156.1:
+    resolution: {integrity: sha512-aZngeNRosSVly6wgxpaJAtFPtEoyM3hD8mLMMcHNXTnofMq4ZN+RMXOdHETyttNP+//+mfiD1hb5E8YFtiMMRQ==}
     engines: {node: '>=22.0.0'}
     hasBin: true
     peerDependencies:
-      '@cloudflare/workers-types': ^5.20261019.1
+      '@cloudflare/workers-types': ^5.20261101.1
     peerDependenciesMeta:
       '@cloudflare/workers-types':
         optional: true
@@ -9873,28 +10357,28 @@ snapshots:
 
   '@cloudflare/kv-asset-handler@0.5.0': {}
 
-  '@cloudflare/unenv-preset@2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261019.1)':
+  '@cloudflare/unenv-preset@2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261101.1)':
     dependencies:
       unenv: 2.0.0-rc.24
     optionalDependencies:
-      workerd: 1.20261019.1
+      workerd: 1.20261101.1
 
-  '@cloudflare/workerd-darwin-64@1.20261019.1':
+  '@cloudflare/workerd-darwin-64@1.20261101.1':
     optional: true
 
-  '@cloudflare/workerd-darwin-arm64@1.20261019.1':
+  '@cloudflare/workerd-darwin-arm64@1.20261101.1':
     optional: true
 
-  '@cloudflare/workerd-linux-64@1.20261019.1':
+  '@cloudflare/workerd-linux-64@1.20261101.1':
     optional: true
 
-  '@cloudflare/workerd-linux-arm64@1.20261019.1':
+  '@cloudflare/workerd-linux-arm64@1.20261101.1':
     optional: true
 
-  '@cloudflare/workerd-windows-64@1.20261019.1':
+  '@cloudflare/workerd-windows-64@1.20261101.1':
     optional: true
 
-  '@cloudflare/workers-types@5.20261023.1': {}
+  '@cloudflare/workers-types@5.20261102.1': {}
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -12035,12 +12519,12 @@ snapshots:
     dependencies:
       mime-db: 1.54.0
 
-  miniflare@5.20261019.2-beta(@types/node@26.6.5):
+  miniflare@5.20261101.0-beta(@types/node@26.6.5):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       sharp: 0.35.5(@types/node@26.6.5)
       undici: 7.30.1
-      workerd: 1.20261019.1
+      workerd: 1.20261101.1
       ws: 8.22.0
       youch: 4.1.0-beta.10
     transitivePeerDependencies:
@@ -12225,12 +12709,6 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.2
 
-  postcss@8.5.32:
-    dependencies:
-      nanoid: 3.3.20
-      picocolors: 1.1.1
-      source-map-js: 1.2.2
-
   prettier@3.9.10: {}
 
   pretty-format@27.5.1:
@@ -12271,6 +12749,14 @@ snapshots:
   prosemirror-state@1.4.4:
     dependencies:
       prosemirror-model: 1.25.12
+      prosemirror-transform: 1.12.2
+      prosemirror-view: 1.42.6
+
+  prosemirror-tables@1.8.5:
+    dependencies:
+      prosemirror-keymap: 1.2.3
+      prosemirror-model: 1.25.12
+      prosemirror-state: 1.4.4
       prosemirror-transform: 1.12.2
       prosemirror-view: 1.42.6
 
@@ -12792,7 +13278,7 @@ snapshots:
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.7
-      postcss: 8.5.32
+      postcss: 8.5.31
       rolldown: 1.2.15
       tinyglobby: 0.2.17
     optionalDependencies:
@@ -12858,26 +13344,26 @@ snapshots:
 
   why-is-node-running@3.2.1: {}
 
-  workerd@1.20261019.1:
+  workerd@1.20261101.1:
     optionalDependencies:
-      '@cloudflare/workerd-darwin-64': 1.20261019.1
-      '@cloudflare/workerd-darwin-arm64': 1.20261019.1
-      '@cloudflare/workerd-linux-64': 1.20261019.1
-      '@cloudflare/workerd-linux-arm64': 1.20261019.1
-      '@cloudflare/workerd-windows-64': 1.20261019.1
+      '@cloudflare/workerd-darwin-64': 1.20261101.1
+      '@cloudflare/workerd-darwin-arm64': 1.20261101.1
+      '@cloudflare/workerd-linux-64': 1.20261101.1
+      '@cloudflare/workerd-linux-arm64': 1.20261101.1
+      '@cloudflare/workerd-windows-64': 1.20261101.1
 
-  wrangler@4.152.0(@cloudflare/workers-types@5.20261023.1)(@types/node@26.6.5):
+  wrangler@4.156.1(@cloudflare/workers-types@5.20261102.1)(@types/node@26.6.5):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.5.0
-      '@cloudflare/unenv-preset': 2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261019.1)
+      '@cloudflare/unenv-preset': 2.16.2(unenv@2.0.0-rc.24)(workerd@1.20261101.1)
       blake3-wasm: 2.1.5
       esbuild: 0.28.2
-      miniflare: 5.20261019.2-beta(@types/node@26.6.5)
+      miniflare: 5.20261101.0-beta(@types/node@26.6.5)
       path-to-regexp: 6.3.0
       unenv: 2.0.0-rc.24
-      workerd: 1.20261019.1
+      workerd: 1.20261101.1
     optionalDependencies:
-      '@cloudflare/workers-types': 5.20261023.1
+      '@cloudflare/workers-types': 5.20261102.1
       fsevents: 2.3.3
     transitivePeerDependencies:
       - '@types/node'

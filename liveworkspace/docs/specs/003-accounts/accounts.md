@@ -76,15 +76,17 @@ replaced, is the same `404 invite_not_found`.
 ### Reminders and expiry
 
 An invitation nobody answers is followed up three times, then closes on its own. The accounts
-Worker's daily cron (`17 9 * * *`, `sweepInvitations` in `src/teams.ts`):
+Worker's hourly cron (`17 * * * *`, `sweepInvitations` in `src/teams.ts`):
 
 1. **Expires** every invitation still `invited` 28 days after its clock started (`clockStartedAt`,
    when it was sent): it becomes `declined` with `expiredAt` stamped, shown to the admins as
    expired. Nobody is emailed. At most 500 a run, oldest first, whether or not email is set up.
 2. **Reminds** the rest at 1, 7 and 21 days. The windows don't overlap, so an invitation hears at
    most one email a run: the latest it is due, with any it skipped stamped `0`. Each reminder
-   carries a fresh decline token. At most 100 per stage a run; a failed send is tried again the
-   next day, three times at most (`reminderAttempts`).
+   carries a fresh decline token. A reminder waits for the [send window](#the-send-window) of the
+   account at the invited address (London's for an address with no account), so it goes in the first
+   run inside it. At most 100 per stage a run; a failed send is tried again in the next run inside the
+   window, three times at most (`reminderAttempts`).
 
 Reminders stop the moment the row is no longer `invited`.
 
@@ -179,16 +181,18 @@ message, so it can't be turned off.
   expires, says what stops working when it lapses, and gives the three steps: make a fresh token,
   update whatever uses the old one, revoke the old one. Its button, "Manage your tokens", goes to
   `<BASE_URL>/explorer?settings=tokens` (the Settings panel on API Tokens). Tokens last six months, and this is the only reminder sent for each.
-- **Sending.** The daily cron (`17 9 * * *`) picks the live tokens (not revoked, not expired) that
-  expire within seven days and haven't been warned, whose owner has a verified address: at most 100
-  a run, the soonest to expire first, in one query on a partial index holding only those not yet
-  warned, each joined by primary key to its owner. The emails go one at a time, then one write
-  stamps every token whose email went (`api_token.expiryWarnedAt`), so none is warned twice. A failed
-  send isn't stamped, and the next day's run tries it again while the token is still in its week.
+- **Sending.** The hourly cron (`17 * * * *`) picks the live tokens (not revoked, not expired) that
+  expire within seven days and haven't been warned, whose owner has a verified address and is inside
+  the [send window](#the-send-window): at most 100 a run, the soonest to expire first, in one query on
+  a partial index holding only those not yet warned, each joined by primary key to its owner. The
+  emails go one at a time, then one write stamps every token whose email went
+  (`api_token.expiryWarnedAt`), so none is warned twice. A failed send isn't stamped, and the next run
+  inside the window tries it again while the token is still in its week. Waiting for the window costs
+  at most a weekend, so the warning still comes four days or more before the token lapses.
 - **Telemetry.** Each warning sent is counted as `Email·Sent·TokenExpiring`, the kind the apps used,
   under the app the token's owner signed up through, as the team emails are; an owner who signed up
   on liveworkspace.app, or before the sign-up app was recorded, isn't counted. The events go with the
-  daily run's one batch per app.
+  run's one batch per app.
 
 ## On the Timeline
 
@@ -330,7 +334,14 @@ quick bounce through the accounts site. The mechanism is shared, in `@liveworksp
    anything renders. With no session hint for this app, it marks the tab's `sessionStorage`, stops
    the page loading, so no signed-out page paints and no app code starts, lets the page follow the
    device's light or dark setting meanwhile, and goes to the app's
-   `GET /api/auth/silent?return=<path?query#hash>`.
+   `GET /api/auth/silent?return=<path?query#hash>`. That is the editors'. An app's **marketing pages**
+   (its landing page and the rest of its public site) run the same script with `afterPaint`
+   (`@liveworkspace/marketing-site/lib/silent-sign-in`): the page loads and paints as usual, and the
+   bounce goes once it has loaded and gone idle, and only while the visitor hasn't pressed, typed,
+   turned a wheel or touched it; someone who started using the page is left alone, and the next page
+   they open asks again. A guest's first look at a product paints at full speed, with the bounce out
+   of its Largest Contentful Paint. The page it lands back on is the same page loaded again, so the
+   script marks it (`<html data-silent-return>`) and its page view and Web Vitals aren't counted twice.
 2. **The app's Worker** (`startSilentSignIn`) sends it to `/api/auth/oauth2/authorize` with
    `prompt=none`, keeping its PKCE verifier and the return address in its own HttpOnly cookie (so a
    clicked sign-in in another tab is untouched) and setting a two-minute guard cookie.
@@ -348,14 +359,23 @@ goes to the app's fallback page instead (`safeReturnPath`).
 
 It never bounces:
 
-- more than once per tab (`sessionStorage`), nor again in any tab of the app within two minutes (the
-  guard cookie, `<prefix>silent`, which the route also refuses to bounce past, so it can't loop);
+- more than once per tab (`sessionStorage`) while the person can't have signed in anywhere else since,
+  nor again in any tab of the app within two minutes (the guard cookie, `<prefix>silent`, which the route
+  also refuses to bounce past, so it can't loop). The tab's mark is dropped when the tab comes back into
+  view after being hidden (the person was in another tab or app, where they may have signed in) and when
+  the page was opened from another site (the same tab may have been through a sign-in there), so the
+  tab's next full page load asks again. Without that, a tab that asked as a guest stayed a guest after
+  the person signed in on another app, however often it reloaded;
 - with a session in the app already (its hint cookie, `<prefix>signed_in=1`);
-- after the person signed out of that app. Signing out sets `<prefix>signed_out=1` (readable, the
+- after the person signed out of that app alone. Signing out ends the liveworkspace session and every
+  app's session in that browser ([Signing out](#signing-out)), so a bounce from any app finds no
+  session and needs no mark, and the next sign-in asks for an email code or Google. Only when that
+  fails (no refresh token, or the accounts site didn't answer) does the app sign out of itself alone
+  while the liveworkspace session may live on; then it sets `<prefix>signed_out=2` (readable, the
   whole site, 400 days), which the page and the route both respect, and the next sign-in to the app
-  clears it. Signing out of an app ends that app's session only, as before: the liveworkspace session
-  and the other apps stay signed in, so signing in to that app again is one click with no code;
-- inside a frame (embeds, the workbench), for a crawler (by user agent), or for an automated browser
+  clears it. A mark of `1`, which every sign-out set before signing out became global, means nothing
+  now: it would keep someone signed out of an app after they signed in again elsewhere;
+- inside a frame (embeds, the workbench), for a crawler or a Lighthouse audit (by user agent), or for an automated browser
   (`navigator.webdriver`), which also keeps the apps' own end-to-end suites unbounced;
 - on the sign-in pages, the guest hand-off's way back, embeds, a share link (`?s=`) or liveplanner's
   form links, so their own flows are never interrupted. The AI-tool consent and device pages (`/oauth/*`)
@@ -367,11 +387,25 @@ It never bounces:
 Whatever goes wrong on the way (no sign-in configured, rate limited, the accounts site down), the
 route and the callback go back to the page rather than to an error.
 
-**The cost.** One bounce per new tab for a person with no session in the app: four extra requests (the
+**A hint that outlived its session.** Signing out in one app ends every app's session but can't reach
+the other apps' cookies, so their hints still say `1` over sessions that are gone (as can a refresh
+token that ran out). Sign in again anywhere, then open one of those apps, and the page sees its hint,
+doesn't bounce, and finds out only from its first token answer (`POST /api/auth/token`), which clears
+the hint. So the page asks again there and then: the boot script leaves a function on the page
+(`retrySilentSignIn` calls it), which bounces when the hint said `1` as the page loaded and no longer
+does, under the same guards apart from the tab's mark (the session ending is news the mark predates).
+The editors' accounts bridge, the Explorer on an app's address and the marketing header's idle check
+call it after their first token answer, and never later, so a session that ends under an open page
+never reloads it; the marketing pages still leave a visitor who started using the page alone. A guest,
+whose hint was never `1`, never bounces this way.
+
+**The cost.** One bounce per new tab for a person with no session in the app, and one more on a tab's
+next full page load after it comes back into view or is opened from another site, never more than once
+in two minutes: four extra requests (the
 stopped page, the app's route, the accounts site, the callback, which for a signed-in person also
 swaps the code). Measured locally against the dev stacks (median of seven cold loads), it adds about
 85 ms to a signed-in person's first load and about 50 ms to a guest's; on the deployed apps each hop is
-a round trip to the edge, so it costs more. Later loads in the same tab add nothing, and a person
+a round trip to the edge, so it costs more. Later loads in a tab that stays in view add nothing, and a person
 already signed in to the app never bounces. FedCM and the Storage Access API could make this a
 background request one day, but neither works in every browser, so the bounce stays.
 
@@ -404,8 +438,85 @@ whole site, so its public pages can tell who is signed in without loading the se
 
 None holds a secret or authenticates anything. The marketing header's account menu reads them, so a
 signed-in visitor sees their menu with no request, and a visitor makes none at all: they see the Guest button
-([site.md](../010-site/site.md#the-header)), whose menu code is fetched only once the pointer or focus reaches it. Only a session from
-before the name cookie existed (the hint without the name) asks `POST /api/auth/token` once, which sets it.
+([site.md](../010-site/site.md#the-header)), whose menu code is fetched only once the pointer or focus reaches it. Signed in, the
+page checks once, when it is idle, with the app's `POST /api/auth/token`: signing out in another app ends this
+app's session too but can't reach this site's cookies, so the hint can outlive the session; the answer clears it
+and the menu turns to Guest, and the page then asks the accounts site once
+([A hint that outlived its session](#signing-in-without-a-click)), so someone signed in elsewhere since is signed in here. A session from before the name cookie existed (the hint without the name) asks at
+once instead, since the answer sets the name.
+
+## Signing out
+
+Signing out anywhere signs the person out everywhere in that browser. Sign out in livediagram, liveplanner,
+livedocuments, livedesign or on liveworkspace.app itself ends the liveworkspace session on the accounts site and every
+app's session that came from it, so the next Sign in, in any app, asks for an email code or Google and the person can
+pick another account. Other browsers and devices stay signed in, and so do API tokens and AI tools' connections, which
+belong to the account rather than to a browser. The accounts side is `src/end-session.ts`; an app's side is
+`endAccountsSession` and `endSessionUrl` in `@liveworkspace/auth-client`.
+
+**In an app.** The page asks its app's API, `POST /api/auth/sign-out?return=<path>`, which:
+
+1. Asks the accounts Worker to end the session its refresh token came from: `POST /api/auth/end-session` from the
+   app's Worker, with its client credentials (Basic, as for the token endpoint) and `{ token: <refresh token> }`. The
+   accounts Worker checks both through the provider's introspection, so a token alone ends nothing. It deletes every
+   access and refresh token issued on that session, every app's, then the session, and answers a **ticket**: the
+   client and the account, signed with the Worker's secret, good for five minutes.
+2. Clears its own cookies and answers `{ signedIn: false, next }`. With the session ended it clears any signed-out
+   mark and sets the two-minute silent guard, so the page it lands on spends no bounce learning there is no
+   session; without (`next` null) it sets the signed-out mark, since only this app signed out
+   ([Signing in without a click](#signing-in-without-a-click)).
+   `next` is the accounts site's
+   `GET /api/auth/end-session?client_id=…&post_logout_redirect_uri=<app origin><path>&ticket=…`, or null when there
+   was no refresh token to send or the accounts site didn't answer.
+3. The page goes to `next` (a full-page visit: the only way an app on another site reaches liveworkspace.app's
+   cookie), else straight to `<path>`.
+
+At `GET /api/auth/end-session` the accounts Worker:
+
+- refuses with a `400` that goes nowhere when the client is unknown or disabled, or `post_logout_redirect_uri` is not
+  an `http` or `https` address, with no user name or password, at most 2,000 characters, on the origin of one of the
+  client's registered redirect URIs. It never sends the browser anywhere else.
+- with a ticket that is valid, unexpired and this client's: ends the browser's own session when it belongs to the
+  ticket's account (its tokens for every app, then the session) and clears the session cookie. That catches a browser
+  whose liveworkspace session is newer than the one the app signed in with (the old one ran out and the person signed
+  in again elsewhere). A session already ended by step 1 just has its cookie cleared.
+- leaves a session alone without a valid ticket, or when it belongs to another account, so a link from another site
+  can't sign anyone out.
+- then answers `302` to `post_logout_redirect_uri`, `no-store`, `no-referrer`.
+
+The page lands back on the app with the silent guard set, so it doesn't bounce, and is a guest. Any other app the
+person opens afterwards may bounce once, finds no session, and stays a guest; open in a marketing page, its header
+turns to Guest at its idle check ([An app's signed-in cookies](#an-apps-signed-in-cookies)). Should the hop
+fail (the accounts site down), step 1 has already ended the session in every app.
+
+**On liveworkspace.app.** Its Sign out (Better Auth's `POST /api/auth/sign-out`, same site) first deletes every app's
+tokens issued on the session, then Better Auth deletes the session and its cookie. Settings › Security's Sign Out of
+another device and Sign Out Others (Better Auth's `revoke-session`, `revoke-other-sessions`, and `revoke-sessions`)
+do the same for the sessions they end, so that device's apps are signed out with it.
+
+**When it doesn't go.** A sign-out the server refuses, or one that never reaches it (offline), leaves the person
+signed in. The account menu stays open and its Sign Out item says "Couldn't sign out. Check your connection and try
+again." in place of its hint, read out to a screen reader too, until the menu closes (`@liveworkspace/account-menu`).
+
+**Deleted, not revoked.** The tokens are deleted rather than marked revoked: the provider takes a revoked refresh
+token shown again as a stolen one and deletes every refresh token that app holds for the account, on every device. A
+deleted one is only unknown (`invalid_grant`).
+
+**Another app's open tab.** It keeps the access token it holds, which lasts an hour from its last refresh, so it goes
+on working until then; its next refresh is refused, and the app clears its cookies and shows the person signed out. A
+reload of that tab asks for a refresh at once, so it loads signed out, as a guest: its silent bounce finds no
+liveworkspace session. A second tab of the app signed out from shares its cookies, so it is the same, and the
+Explorer on liveworkspace.app gets a guest's token at its next ask (within 15 minutes, or at once on a reload).
+
+**Guests.** Signing out leaves the browser's guest (`lw_guest`) and each app's stored guest token as they are, so
+afterwards the browser is the guest it was before signing in.
+
+**What it costs.** Only a sign-out pays: one request from the app's Worker to the accounts Worker (an introspection,
+one read and one batch of deletes in D1) and one extra full-page hop through liveworkspace.app (a read of the
+client, the session lookup, one batch). No other request changes.
+
+**What it can't reach.** An app with no refresh token to send (it had already lapsed) gets no ticket, so only its
+own cookies go; and a browser whose liveworkspace session is another account's than the app's keeps that session.
 
 ## Signing in on the app's own address
 
@@ -525,7 +636,7 @@ against this Worker's own keys, the bare issuer, an app audience, the asking cli
 named a host; CLI logins and MCP connectors, which hold those, keep working untouched.
 
 **Audiences stay as registered.** An audience is a name, not an address: each app's client is bound to its resource
-(`https://liveplanner.app/api`, and livediagram's stand-in), and every refresh token to the resources it was
+(`https://liveplanner.app/api`, `https://livediagram.app/api`), and every refresh token to the resources it was
 granted for. Asking for a `www.` resource with one of those refresh tokens is refused, which would sign everyone
 out, so `RESOURCES` and each app's `API_RESOURCE` stay as they are. Verification already accepts the `www.` twin, so
 a later move needs only the clients' resources re-bound.
@@ -571,8 +682,9 @@ Each setting is stored in one scope:
   (`packages/settings`): privacy and accessibility, notifications, the editors' chrome, your own
   colours, and every editor setting two or more apps have (`COMMON_SETTING_KEYS`, below). Its
   `splitSettings` and `joinSettings` turn an editor's flat preferences into the two scopes and back.
-- **an app's site id** (`livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`,
-  as `APP_SITES` in `@liveworkspace/sites` spells them): shown by that app only.
+- **an app's site id** (`livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`, and
+  `livehuddle.app`, registered before its launch, as `REGISTERED_APP_SITES` in `@liveworkspace/sites` spells them):
+  shown by that app only.
 
 An app reads its own scope and `all`, and shows only the settings that mean something to it. It
 decides which scope a setting belongs in. liveworkspace.app shows and changes `all` on its settings
@@ -776,11 +888,22 @@ per guest), and so does an app reading the guest's settings or writing its profi
 already knows is kept alive however it came by the id. A guest still using an app gets a fresh token before its year is up, so it is never
 more than a year unseen. Once a guest id has gone 400 days unseen its token has lapsed and browsers have
 dropped its cookie (Chrome keeps one at most 400 days), so no app can be handed it again, and the
-daily cron (`17 9 * * *`, `src/guest-sweep.ts`) deletes its settings and profile: up to 500 guests a
+daily run (the hourly cron's 09:17 UTC run, `src/guest-sweep.ts`) deletes its settings and profile: up to 500 guests a
 run, the longest unseen first, checked again in the deletes so a guest seen meanwhile keeps everything.
 Its items stay in the index, as every guest's do, until someone deletes them
 ([one-explorer-contracts.md](../004-index/one-explorer-contracts.md#guests)). Signing in removes the guest's stamp
 with the rest of the guest.
+
+## Names and other typed text
+
+Token names, team names and organisations, account names and display names are kept as typed, with three things
+taken out (`@liveworkspace/api-kit/typed-text`, which the index's webhook names and the MCP servers' client
+names go through too): the bidi embeddings, overrides and isolates (U+202A to U+202E, U+2066 to U+2069), which
+would turn the text drawn after a name around or make one name pass for another (right-to-left letters need none of
+them); spaces and invisible formatting characters (zero-width spaces and joiners, word joiners, byte order marks,
+soft hyphens) at either end, so no name can look blank; and anything past the field's limit, cut between whole characters, never half an
+emoji. An invitation's address with a control or invisible formatting character in it (a bidi override, a
+zero-width space) is turned down as `400 email_invalid`.
 
 ## Sign-ups and milestones per app
 
@@ -815,7 +938,17 @@ sign-off. The marks are transparent 64px PNGs at `/email/<name>-mark-64.png` on 
   (`check-verification-otp`, which checks a code without spending it and counts attempts in two steps, so guesses
   sent at once count as one; and the password, email-verification and email-change flows, which nothing here uses)
   are off (`UNUSED_CODE_PATHS` in `src/auth-options.ts`) and answer `404`.
+- **The deletion code** ([Closing an account](#closing-an-account)) is drawn the same way, in the brand of the app
+  that asked for it, and says what it is for: its subject is `123456 is your code to delete your liveworkspace
+account`, it says the code deletes the account and everything in it in every app, and that ignoring it keeps the
+  account as it is. It is sent to the account's own address and can't be turned off.
 - **The onboarding series** is liveworkspace's, whichever app it speaks for.
+- **The team emails and the token reminder** (an invitation and its reminders, an answer to an invitation, a token
+  about to expire) are liveworkspace's: they are about the account and its teams, which are the same in every app,
+  and their links go to liveworkspace.app. Each has a short heading over its own wording, its button in ink, and its
+  sign-off under the rule (why it came, and where to turn it off when it can be).
+- **Every email has a plain-text part** beside its HTML, with the same words and each link written out. Every value
+  a person chose (a name, a team's name, a token's name) is escaped wherever it lands in the HTML.
 
 ## Notification emails
 
@@ -824,6 +957,10 @@ mentioned you or assigned you an action; your tenth item and your first share li
 and accounts holds what they need: addresses, the switches, teams' people and the milestone claims. The
 rules every app keeps, and the two questions it asks before it writes, are shared in
 `@liveworkspace/auth-client` (`src/notify.ts`), so the apps send them the same way.
+
+Phone notifications are not the app's to send: the app decides who hears of what, and accounts delivers. It keeps
+the devices, the `push…` switches and the VAPID key, and sends what an app hands it on
+`POST /api/account/internal/push`, beside the reads above ([push.md](push.md)).
 
 - **Who gets one.** `notificationRecipients(credentials, { app, ids, setting, scope })` answers the
   verified addresses of those accounts who have not turned `setting` off, in two requests at once
@@ -891,13 +1028,15 @@ every other email it sends, with the same timings and tips each app's own series
   wouldn't move. A guest's is accepted and ignored. Until the first one the account counts as having
   made nothing.
 - **Sending.** The welcome goes from the request that made the account, in `waitUntil`; the
-  15-minute cron catches up one that failed, and the daily cron (`17 9 * * *`) runs every stage, up
-  to 100 accounts a stage, the longest-waiting first, one email at a time. Each stage is claimed
+  15-minute cron catches up one that failed. The hourly cron (`17 * * * *`) runs every stage, up to
+  100 accounts a stage, the longest-waiting first, one email at a time. Every stage after the welcome
+  waits for the recipient's [send window](#the-send-window); the welcome never waits. Each stage is claimed
   (stamped) before it is sent, so two runs can't both send it; a failed send takes the stamp back
   and counts against the row, and after three in a row the account leaves every list (a dead
   address). A success resets the count. Only a verified address is ever sent to.
 - **Each due list** is one query on a partial index holding only the accounts still owed that stage,
-  joined by primary key to the account, its `all` settings and its first app.
+  joined by primary key to the account, its `all` settings and its first app, and kept to the
+  accounts inside their send window.
 - **Telemetry.** Each email sent is counted as `Email·Sent·<kind>` (`Welcome`, `Activation`,
   `Week1`, `Week2`, `WinBack`, the kinds the apps' own series used) on the telemetry service
   ([telemetry.md](../008-telemetry/telemetry.md)), under the app the email speaks for (its links' app) with that app's
@@ -912,10 +1051,48 @@ every other email it sends, with the same timings and tips each app's own series
 An app's own one-time milestones (its tenth item, its first share link) stay that app's to send:
 [Sign-ups and milestones per app](#sign-ups-and-milestones-per-app).
 
+## The send window
+
+The emails that can wait, wait for the recipient's daytime, so nobody is woken by a tip at 4am. The
+window is **`SEND_WINDOW`: Monday to Friday, 09:00 to 21:00 in the recipient's own time zone**
+(`src/send-window.ts`). 09:00 is inside and 21:00 is not; Saturday and Sunday are outside all day.
+
+- **What waits:** the onboarding series after the welcome (activation, week 1, week 2, win-back),
+  [invitation reminders](#reminders-and-expiry) and the [token expiry warning](#expiry-warnings).
+  Everything else goes at once: the welcome, sign-in and deletion codes, an invitation itself, the
+  answer to one, and every app's own notifications (comments, mentions, assignments, joins,
+  milestones).
+- **The recipient's zone** is the IANA name kept on the account (`user.timeZone`,
+  `migrations/0016_user_time_zone.sql`). liveworkspace.app's pages send the browser's zone
+  (`Intl.DateTimeFormat().resolvedOptions().timeZone`) in an `X-Time-Zone` header on their
+  `GET /api/auth/get-session`: the sign-in page does at the end of every sign-in, whichever app it is
+  for, and the site's header on every page. When the session has an account, the Worker checks the
+  name (`parseTimeZone`: at most 64 characters, a zone the runtime knows, kept under the runtime's own
+  name for it, so `Asia/Calcutta` and `Asia/Kolkata` are kept as one) and writes it in the same round
+  trip as the session's colour read, only when it changed. A missing or unknown name is ignored and
+  leaves the stored zone as it was.
+- **No zone known:** an account with none stored, and an invited address with no account, are timed
+  by **`Europe/London`** (`DEFAULT_TIME_ZONE`).
+- **How a sweep keeps to it.** The windowed sweeps run hourly. Each run works out from the instant
+  which zones are inside the window (every zone the runtime knows, and `UTC`), and each due list's
+  query keeps only the recipients whose zone is one of them, bound as one JSON list; while London is
+  inside, the list is the zones outside instead, so a recipient with no zone, or one the runtime no
+  longer knows, is kept too. When no zone is inside (most of a weekend), the query isn't run. Someone
+  due outside their window stays on the list and goes in the first run inside it, and the claim or
+  stamp each sweep already keeps means it goes once. A weekend's emails go on Monday morning, local
+  time, up to each sweep's limit a run.
+- **Self-hosting.** `EMAIL_SEND_WINDOW` (a Worker var) sets the window as `<Day>-<Day> HH:00-HH:00`,
+  `Mon-Fri 09:00-21:00` by default (a day range may wrap, as `Sat-Mon`), or `always` to send at any
+  hour. `EMAIL_DEFAULT_TIME_ZONE` sets the zone used when none is known. A value that won't parse falls
+  back to the default and is logged. Without an `EMAIL` binding outside development, the windowed
+  sweeps send nothing and stamp nothing: they don't run (invitations still expire).
+
 ## Closing an account
 
-An app's server asks (`POST /api/auth/delete-account`, with its client credentials and the person's
-access token, `src/delete-account.ts`), and the account closes for every app at once:
+An app's server asks (`POST /api/auth/delete-account`, with its client credentials, the person's access token and the
+code emailed to them, `src/delete-account.ts`), and the account closes for every app at once. Without the right code
+nothing happens: the code is sent and checked first, by the same app's server
+([sign-in.md](sign-in.md#closing-an-account), `src/deletion-code.ts`). Then:
 
 1. It leaves every team: a team it ran alone is deleted, and one where it was the only admin passes to
    the longest-standing member. Then every `team_member` row it had (its own by `userId`, and those addressed to it that
@@ -1005,6 +1182,8 @@ the same token (`PUT /api/participants/:id`). Joining by link and tokens stay th
 | `PATCH /api/account/settings` `{ all }`                        | patches `all`; answers `{ all, updatedAt }`                                                                          |
 | `GET /api/account/settings/:app`                               | `all` and that app's own scope: `{ all, app, updatedAt }`                                                            |
 | `PATCH /api/account/settings/:app` `{ app }`                   | patches the app's own scope; answers `{ all, app, updatedAt }`                                                       |
+| `GET` / `POST /api/account/push/devices`                       | their phone devices and the VAPID public key / registers this browser ([push.md](push.md)); bearer too               |
+| `DELETE /api/account/push/devices/:id`                         | removes one of their devices; bearer too                                                                             |
 
 For an app's server, by its OAuth client credentials (`Authorization: Basic`, checked by the OAuth
 provider's own introspection and remembered per isolate for five minutes):
@@ -1029,6 +1208,7 @@ provider's own introspection and remembered per isolate for five minutes):
 | `POST /api/account/internal/milestones/claim`    | `{ userId, milestone }` → `{ claimed }`, for the client's own app                                                                |
 | `POST /api/account/internal/emails`              | `{ ids }` (up to 100 accounts) → `{ emails }`, verified addresses only                                                           |
 | `POST /api/account/internal/activity`            | `{ userId, at? }` → `{ ok }`: they saved something they own (a guest's is ignored)                                               |
+| `POST /api/account/internal/push`                | `{ notifications }` (up to 50) → 202 `{ accepted }`, sent after the answer ([push.md](push.md))                                  |
 | `POST /api/account/internal/workbench/session`   | `{ session }` → the workbench session for the client's app, or 404 `{ reason }`                                                  |
 | `POST /api/account/internal/workbench/rooms`     | `{ ownerId, sessionId, itemId }` → 204: a workspace session joined that item's room                                              |
 | `POST /api/account/internal/allowance`           | `{ personId, kind, max, windowMs, count }` → `{ taken }`, per the client's app                                                   |

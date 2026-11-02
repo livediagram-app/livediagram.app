@@ -44,6 +44,7 @@ export function templatePages(kind: TemplateKind): Page[] | undefined {
     case 'quarterly-review':
     case 'team-welcome':
     case 'workshop-kickoff':
+    case 'class-lesson':
       return layoutDeckPages(kind);
     default:
       return isDesignTemplate(kind) ? designTemplatePages(kind) : undefined;

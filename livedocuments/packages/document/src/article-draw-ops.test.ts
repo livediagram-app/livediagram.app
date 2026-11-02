@@ -68,4 +68,11 @@ describe('the writing as SVG', () => {
       '<tspan font-weight="700">Lead: </tspan><tspan font-weight="400" font-style="italic">rest</tspan>',
     );
   });
+
+  it('dots a line marked as a dash, its gaps twice its width', () => {
+    const svg = articleOpsToSvg([
+      { k: 'line', x1: 0, y1: 1, x2: 9, y2: 1, stroke: '#000', width: 1.5, dash: true },
+    ]);
+    expect(svg).toContain('stroke-dasharray="1.5 3"');
+  });
 });

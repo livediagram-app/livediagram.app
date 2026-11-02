@@ -4,7 +4,9 @@
 // first refusal stops them all and nothing is written.
 import type { PagesRefusal, PageBackgroundInput, PageChange } from '@livedocuments/api-schema';
 import {
+  articlesOf,
   elementIdsOnPage,
+  flashcardWordCount,
   pagesOf,
   layOutPages,
   nextArticleFlowId,
@@ -152,6 +154,11 @@ export function applyPageChanges(
       const placeOf = (id: string) => pages().findIndex((p) => p.id === id) + 1;
       const onPage = (id: string) =>
         elementIdsOnPage(current.elements, layOutPages(pages()), id).size;
+      // Whether a card holds any words: a card with writing is never a blank.
+      const written = (page: Page) => {
+        const doc = page.flow ? articlesOf(current)[page.flow] : undefined;
+        return doc !== undefined && flashcardWordCount(doc) > 0;
+      };
       const unitAt = (to: number) => {
         const ps = pages();
         const target = ps[Math.min(to, ps.length) - 1]!;
@@ -159,14 +166,17 @@ export function applyPageChanges(
       };
       const layOut = (page: Page, layout: string): string => {
         const kind = pageKindOf(page);
-        const offered = kind === 'article' ? [] : layoutCatalogueFor(kind).layouts;
+        const written = kind === 'article' || kind === 'flashcard';
+        const offered = written ? [] : layoutCatalogueFor(kind).layouts;
         const found = offered.find((l) => l.id === layout);
         if (!found)
           stop(
             'layout_unknown',
             kind === 'article'
               ? 'An article page takes no layout: write it with write_article.'
-              : `A ${kind} page takes the layouts ${offered.map((l) => l.id).join(', ')}.`,
+              : kind === 'flashcard'
+                ? 'A flashcard takes no layout: write it with write_article.'
+                : `A ${kind} page takes the layouts ${offered.map((l) => l.id).join(', ')}.`,
           );
         const laid = layOutPages(pages()).find((p) => p.id === page.id)!;
         const replaced = onPage(page.id);
@@ -220,10 +230,11 @@ export function applyPageChanges(
             !madeHere.has(first.id) &&
             first.kind === change.kind &&
             !first.name?.trim() &&
-            onPage(first.id) === 0
+            onPage(first.id) === 0 &&
+            !written(first)
           ) {
-            // A blank of that kind (the Blank Slide Deck's one empty slide) becomes the page asked for, so a deck made
-            // from it does not open on an empty slide.
+            // A blank of that kind (the Blank Slide Deck's one empty slide, the Blank Flashcards' one empty card)
+            // becomes the page asked for, so a deck made from it does not open on an empty slide.
             page = first;
             tookBlank.set(page.id, i + 1);
           } else {

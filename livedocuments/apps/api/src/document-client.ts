@@ -5,10 +5,12 @@
 // `localNamespace`), so code shared by the worker and the room (getDocument's outline, the room relays) costs no
 // hop there.
 
+import type { CommunityShareInfo } from '@livedocuments/api-schema';
 import type { DocumentCopy, DocumentOutline } from './document-room/document-content';
 import type { DocumentFileImport } from './document-room/document-file';
 import type { RouteIdentity } from './document-room/document-route';
 import type {
+  Copier,
   ExportQuery,
   ExportResult,
   ShareAnswer,
@@ -17,6 +19,12 @@ import type {
 } from '@liveworkspace/index-app';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
 import type { Env } from './types';
+
+// The source side of a copy, and whether it went through the document's open Community post's link.
+export type CopySource = { copy: DocumentCopy; community: boolean };
+
+// The Community post a visitor through its open link is told of: its id at the service and who it shows as author.
+export type CommunityListing = CommunityShareInfo;
 
 export type DocumentRoomClient = {
   // The tabs (no bodies) and slide deck a document read carries.
@@ -36,9 +44,9 @@ export type DocumentRoomClient = {
   // Whether the document places an image (on one tab, for a tab-scoped visitor) and may serve it: the byte
   // endpoint's share check.
   servesImage(imageId: string, onlyTabId: string | null): Promise<boolean>;
-  // A copy's two halves (document-content.ts).
-  // `copiedBy`: who copies; anyone but the owner takes other people's comment authors redacted.
-  exportCopy(onlyTabId: string | null, copiedBy: string | null): Promise<DocumentCopy | null>;
+  // A copy's two halves (document-content.ts): the source as `copier` may take it (anyone but the owner takes other
+  // people's comment authors redacted), and whether it went through the document's open Community post's link.
+  exportCopy(onlyTabId: string | null, copier: Copier | null): Promise<CopySource | null>;
   importCopy(copy: DocumentCopy): Promise<void>;
   // An old livediagram.app document's part, written with its own times (the migration door, docs/migration.md).
   importMigrated(payload: MigrationRoomPayload): Promise<MigrationDoorAnswer>;
@@ -46,6 +54,12 @@ export type DocumentRoomClient = {
   purge(): Promise<void>;
   // Share links revoked elsewhere (the index): their sessions end now.
   revokeCodes(codes: string[], reason?: 'revoked' | 'rescoped'): Promise<number>;
+  // The document's Community post's link (its code, and whether it opens the document now), or null for none.
+  community(): Promise<{ code: string; open: boolean } | null>;
+  // The post's title when `code` is its open link: what a copy through it is named.
+  communityPostTitle(code: string): Promise<string | null>;
+  // The post's id and author, for a visitor through its open link; null otherwise.
+  communityListing(code: string): Promise<CommunityListing | null>;
   // Someone opened the document through a share link for the first time (the index's notice): the owner's
   // "someone joined" email, sent from the room, which keeps its once-per-window claim.
   joined(personId: string): Promise<void>;
@@ -74,11 +88,14 @@ export function documentRoom(
     importFile: (file) => room.importFile(documentId, file),
     hasTab: (tabId) => room.hasTab(documentId, tabId),
     servesImage: (imageId, onlyTabId) => room.servesImage(documentId, imageId, onlyTabId),
-    exportCopy: (onlyTabId, copiedBy) => room.exportCopy(documentId, onlyTabId, copiedBy),
+    exportCopy: (onlyTabId, copier) => room.exportCopy(documentId, onlyTabId, copier),
     importCopy: (copy) => room.importCopy(documentId, copy),
     importMigrated: (payload) => room.importMigrated(documentId, payload),
     purge: () => room.purge(documentId),
     revokeCodes: (codes, reason) => room.revokeCodes(documentId, codes, reason),
+    community: () => room.community(documentId),
+    communityPostTitle: (code) => room.communityPostTitle(documentId, code),
+    communityListing: (code) => room.communityListing(documentId, code),
     joined: (personId) => room.joined(documentId, personId),
     anonymise: (personId) => room.anonymise(documentId, personId),
     sharedTabCopy: (tabId) => room.sharedTabCopy(documentId, tabId),
@@ -99,8 +116,8 @@ export type DocumentRoomRpc = {
   exportCopy(
     documentId: string,
     onlyTabId: string | null,
-    copiedBy: string | null,
-  ): Promise<DocumentCopy | null>;
+    copier: Copier | null,
+  ): Promise<CopySource | null>;
   importCopy(documentId: string, copy: DocumentCopy): Promise<void>;
   importMigrated(documentId: string, payload: MigrationRoomPayload): Promise<MigrationDoorAnswer>;
   purge(documentId: string): Promise<void>;
@@ -109,6 +126,9 @@ export type DocumentRoomRpc = {
     codes: string[],
     reason?: 'revoked' | 'rescoped',
   ): Promise<number>;
+  community(documentId: string): Promise<{ code: string; open: boolean } | null>;
+  communityPostTitle(documentId: string, code: string): Promise<string | null>;
+  communityListing(documentId: string, code: string): Promise<CommunityListing | null>;
   joined(documentId: string, personId: string): Promise<void>;
   anonymise(documentId: string, personId: string): Promise<number>;
   sharedTabCopy(documentId: string, tabId: string): Promise<SharedTabCopy | null>;

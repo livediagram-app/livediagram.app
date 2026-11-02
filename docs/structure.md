@@ -8,9 +8,10 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ account-menu             the signed-in account menu, for liveworkspace.app and every app
 │  ├─ agent-verbs              the parts of every product's CLI and MCP verbs that read no element union: addressing, refusals, argv lines
 │  ├─ api-client               a product's api as its MCP and CLI call it (fetch, timeouts, ApiError)
-│  ├─ api-kit                  the api Workers' plumbing and the protocol helpers their MCPs and CLIs share: responses and CORS, rate-limit keys, link unfurls, refusal logs, bearer and loopback reads, base64, the API-token shape, OAuth device codes and PKCE, and D1's compound-SELECT limit (`unionAll`, and the test databases' guard)
+│  ├─ api-kit                  the api Workers' plumbing and the protocol helpers their MCPs and CLIs share: responses and CORS, rate-limit keys, link unfurls, refusal logs, the realtime room's element-op gate, the answer to a request that threw (a storage outage 503, else a 500) for every Worker that owns storage, bearer and loopback reads, base64, the API-token shape, OAuth device codes and PKCE, and D1's compound-SELECT limit (`unionAll`, and the test databases' guard)
 │  ├─ api-schema               the wire shapes every product's api, MCP and CLI agree on: access levels, presence, API tokens, build ids
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check, the one return-path check
+│  ├─ avatar                   Avatar mode's parts that read no element union: walker, sprite, walking, speech, action keys, pads, fences, office walls; each product binds its storage prefix and telemetry
 │  ├─ brand                    every app's logo drawn once: the Living Prism and wordmark, as React and as SVG strings
 │  ├─ cli-kit                  a product CLI's shared modules: the io shape, exit codes and errors, config.toml, XDG paths, debug lines, credentials and the keychain, OAuth sign-in, the api transport, PNG pictures; each product binds its names
 │  ├─ help-registry            a help centre's article shapes, links, grouping, search and telemetry ids; each product binds its catalogue
@@ -20,6 +21,8 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ index-client             the One Explorer index contract: types, a client, the grant check
 │  ├─ index-app                the server side of an app on the index: grants, internal doors, purge, outbox
 │  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes
+│  ├─ community-ui             the Community's pieces in every app: the post tile, the Share dialog's Community tab, the landing section
+│  ├─ community-site           every app's Community pages (gallery, post) and their Worker; each product binds its own
 │  ├─ comparisons              every app's comparison pages, built once; each app's marketing hosts its own
 │  ├─ diagram-lint             the numbers and line formats livediagram's and livedocuments' diagram lint judge by
 │  ├─ document-views           the agent views of a document that read no element union (budgets, elision, fields), for livediagram and livedocuments
@@ -48,7 +51,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ telemetry                the telemetry contract: apps, batch format, dashboard summary
 │  ├─ telemetry-client         the browser side of telemetry, which each product binds to its app
 │  ├─ trusted-types            the Trusted Types policies, boot script and header every app's pages share
-│  ├─ ui                       the design system: buttons, fields, dialogs, menus, hints, optical primitives, hooks,
+│  ├─ ui                       the design system: buttons, fields, dialogs, menus, the back bar, hints, optical primitives, hooks,
 │  │                           chrome icons, appearance, browser repair and the site chrome a product binds
 │  ├─ vitest-config            the Vitest defaults and test helpers every workspace extends
 │  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives, menus, dialogs, tour shell
@@ -72,11 +75,13 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/                    the same set minus community
 │  └─ packages/                @liveplanner/*
 ├─ livedocuments/              forked from livediagram in-tree (Pages mode only)
-│  ├─ apps/                    the same set minus community
+│  ├─ apps/                    the same set as livediagram's
 │  └─ packages/                @livedocuments/*
-└─ livedesign/                 forked from livedocuments in-tree (logo, wireframe and photo pages)
-   ├─ apps/                    live (its editor), api, mcp, cli, marketing, help, router
-   └─ packages/                @livedesign/*, with photo-engine of its own
+├─ livedesign/                 forked from livedocuments in-tree (logo, wireframe and photo pages)
+│  ├─ apps/                    live (its editor), api, mcp, cli, marketing, help, community, router
+│  └─ packages/                @livedesign/*, with photo-engine of its own
+└─ livehuddle/                 planned, awaiting approval: its product spec only (meetings, workshops, Avatar mode)
+   └─ docs/specs               the spec and build plan; forked from livediagram in-tree once approved
 ```
 
 livedocuments (first called livepages) was forked from livediagram `main` at `82e6ed79a` on 2026-10-22
@@ -452,6 +457,19 @@ Each step is its own PR, and both products build and pass their tests after ever
        types. About 4,600 lines of copies went; tool names, prompt text, CLI output and wire formats are unchanged.
      - Still per product: the lint and test configs (a few lines each), the CLI's version, png and io bindings,
        `room-scope.ts` (its op kinds are the product's) and `person-tag.ts`.
+
+6. **Avatar mode out of livediagram's editor**, so a second product (livehuddle) can walk the same characters.
+   `@liveworkspace/avatar` (`packages/avatar`) holds the parts of Avatar mode that read no element union: the sprite
+   and head, the Avatar panel's body, the walker, walking and the camera, speech bubbles and the composer, the action
+   keys, Avatar Pad arrivals, the costume and its parser, and the pure office pieces (walls and doorways, fence and
+   footprint collision, chair seats, Avatar Pad placement). It reads a board through a structural contract
+   (`scene.ts`: an element's `id` and `type`, a shape's `shape` and box) rather than a product's union, and each
+   product binds its storage key prefix, telemetry and colour maths once with `configureAvatar` (livediagram's
+   `lib/avatar-bindings.ts`). The wire shapes (`AvatarPresence`, the `avatar`, `avatar-push` and `avatar-say` ops and
+   their parsers) moved to `@liveworkspace/api-schema`, and the segment distance the fence and the whiteboard share to
+   `@liveworkspace/model-core/segment-geometry`. livediagram re-exports what it used to own, so its callers and
+   behaviour are unchanged. Still in livediagram: the Avatar panel's frame, the seat points drawn from its furniture,
+   the room connection and the tests that build livediagram elements.
 
 ## One home
 

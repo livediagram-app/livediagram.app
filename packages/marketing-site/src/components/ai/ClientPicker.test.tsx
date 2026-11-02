@@ -7,7 +7,7 @@ import { ClientPicker } from './ClientPicker';
 // docs/specs/019-marketing/build-with-ai.md "The clients".
 const clients = aiClients({
   name: 'livediagram',
-  mcpUrl: 'https://livediagram-mcp.liveworkspace-easing509.workers.dev/mcp',
+  mcpUrl: 'https://mcp.livediagram.app/mcp',
 });
 const wide = (matches: boolean) =>
   vi.stubGlobal('matchMedia', () => ({

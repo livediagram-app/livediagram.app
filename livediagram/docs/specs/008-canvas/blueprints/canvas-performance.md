@@ -225,7 +225,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   render draws no picture (a server render shows it: `Minimap.test.tsx`), so opening a board mounts
   the board in its first task and the Map's picture is built in a background render after it.
 - `Canvas` keeps the chair sitters by value (`useByValue(sittersByChair(...), sameSitters)`,
-  `lib/chair-sitters.ts`): presence rebuilds the peers' list after opening, and a new map handed every
+  `../packages/avatar/src/chair-sitters.ts`): presence rebuilds the peers' list after opening, and a new map handed every
   element view a new `chairSitters` and rendered all of them again.
 
 ### Opening animates nothing across the board

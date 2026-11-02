@@ -23,6 +23,7 @@ import {
   type OutboxRow,
   reportOwnerActivity,
 } from '@liveworkspace/index-app';
+import { COMMUNITY_LISTED_QUERY } from '@liveworkspace/community/app';
 import type { CollabPush, IndexAppClient, ItemSummary } from '@liveworkspace/index-client';
 import { designStatsSql } from '../db/tab-stats';
 import { isEmptyCount, type ContentSummary } from '../db/content-summary';
@@ -98,7 +99,7 @@ export async function readContentSummary(
   env: DesignEnv,
   designId: string,
 ): Promise<{ summary: ContentSummary; savedAt: number; ownerId: string | null }> {
-  const [tabs, stats, design] = await env.DESIGN_DB.batch([
+  const [tabs, stats, design, community] = await env.DESIGN_DB.batch([
     env.DESIGN_DB.prepare(
       `SELECT dt.tab_id, t.element_count
          FROM design_tabs dt JOIN tabs t ON t.id = dt.tab_id
@@ -106,6 +107,9 @@ export async function readContentSummary(
     ).bind(designId),
     env.DESIGN_DB.prepare(`SELECT ${designStatsSql('?1')}`).bind(designId),
     env.DESIGN_DB.prepare('SELECT saved_at, owner_id FROM design WHERE id = ?').bind(designId),
+    // Listed in the Community (community-post.ts): a post not hidden after reports, whose design the listing last
+    // heard was public (nothing heard yet, just after publishing, counts).
+    env.DESIGN_DB.prepare(COMMUNITY_LISTED_QUERY),
   ]);
   const tabRows = (tabs?.results ?? []) as { tab_id: string; element_count: number | null }[];
   const tabCounts: Record<string, number> = {};
@@ -123,6 +127,7 @@ export async function readContentSummary(
       tabCounts,
       stats: rawStats ? (JSON.parse(rawStats) as ContentSummary['stats']) : null,
       hasContent,
+      communityListed: (community?.results?.length ?? 0) > 0,
     },
     savedAt: (design?.results?.[0] as { saved_at?: number } | undefined)?.saved_at ?? 0,
     ownerId: (design?.results?.[0] as { owner_id?: string | null } | undefined)?.owner_id ?? null,
@@ -141,6 +146,8 @@ export function itemSummaryOf(summary: ContentSummary): ItemSummary {
     // Whether anything is on any tab: false, the index's daily empty clean-up moves the item to the Trash once it has
     // sat unchanged for 30 days (docs/specs/013-workspace/empty-design-cleanup.md).
     hasContent: summary.hasContent,
+    // Listed in the public Community: the Explorer's Public badge (@liveworkspace/explorer VisibilityBadge).
+    ...(summary.communityListed ? { public: true } : {}),
   };
 }
 

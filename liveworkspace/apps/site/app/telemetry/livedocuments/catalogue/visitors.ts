@@ -256,6 +256,7 @@ const SHOW_ME_SURFACES = [
   { token: 'SlideTour', title: 'Slide', where: 'a slide page’s panel' },
   { token: 'InfographicTour', title: 'Infographic', where: 'an infographic page’s panel' },
   { token: 'ArticleTour', title: 'Article', where: 'an article page’s panel' },
+  { token: 'FlashcardTour', title: 'Flashcard', where: 'a flashcard page’s panel' },
   { token: 'SankeyFlowsTour', title: 'Sankey Flows', where: 'a Sankey’s Flows dialog' },
   { token: 'TabStyleTour', title: 'Tab Style', where: 'the Tab Style dialog' },
 ] as const;

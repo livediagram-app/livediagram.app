@@ -20,10 +20,13 @@ import {
   type ItemMove,
   type ItemPatch,
   type ItemPatchOf,
+  type ItemMoveOf,
   type ItemPerson,
   type BoardStatusTypes,
+  settleDoneColumns,
   type PlanBoardSetup,
   type StatusPhase,
+  type TimeOp,
 } from '@liveplanner/items';
 
 const NO_PHASES: ReadonlyMap<string, StatusPhase> = new Map();
@@ -36,10 +39,11 @@ import type {
 } from '@/components/plan/PlanContext';
 import { titleCaseType, track } from '@/lib/telemetry';
 import type { PlanItems } from './usePlanItems';
-import type { ItemCommentAction } from '@/lib/api/items';
 import type { ItemTypesSlice } from './useItemTypes';
 import { planBoardTarget } from './plan-board-targets';
 import { useTypeForBoard } from './useTypeForBoard';
+import { usePlanPeople } from './usePlanPeople';
+import { useRequiredFieldsGate } from './useRequiredFieldsGate';
 import { tabNamedForBoard, tabNamedForView } from '@/lib/tab-named-plan';
 import type { StatusBoard } from './usePlanStatusNames';
 
@@ -85,6 +89,8 @@ export function usePlanSlice(opts: {
   newFormFor?: (boardElementId: string) => void;
   // The Actions board's links (useLinkedActionCards); stable callbacks, placeOf changes with the tabs.
   linkedActions?: PlanContextValue['linkedActions'];
+  // A card's address for Copy Card Link; read when pressed, so it may change every render.
+  cardLink?: (itemId: string) => string;
 }) {
   const { planItems, itemTypes, canEdit, canVote, presence } = opts;
   const canEditCards = opts.canEditCards ?? canEdit;
@@ -95,6 +101,12 @@ export function usePlanSlice(opts: {
   const selectRef = useLatest(opts.select);
   const announceRef = useLatest(opts.announce);
   const publishRef = useLatest(opts.publishPresence);
+  const cardLinkRef = useLatest(opts.cardLink);
+  const hasCardLink = opts.cardLink !== undefined;
+  const cardLink = useCallback(
+    (itemId: string) => cardLinkRef.current?.(itemId) ?? '',
+    [cardLinkRef],
+  );
   const commit = useCallback(
     (mapElements: (els: Element[]) => Element[]) => commitRef.current(mapElements),
     [commitRef],
@@ -165,18 +177,16 @@ export function usePlanSlice(opts: {
     [setTypeForBoard],
   );
 
-  const people = useMemo(() => {
-    const byId = new Map<string, ItemPerson>();
-    const self = planItems.self;
-    if (self) byId.set(self.id, self);
-    // Your teams' members only (docs/specs/026-plan/items.md "Who may do what"); a card's current assignee
-    // who is not among them still shows in its own picker.
-    for (const p of opts.teamPeople) if (!byId.has(p.id)) byId.set(p.id, p);
-    return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
-  }, [planItems.self, opts.teamPeople]);
+  // You, your teams' members and the plan's custom assignees (usePlanPeople); a card's current assignee who is
+  // not among them still shows in its own picker.
+  const people = usePlanPeople(planItems.self, opts.teamPeople, planItems.items);
 
   const write = planItems.write;
 
+  // A card whose type requires a field it lacks waits for the New {Type} dialog (docs/specs/026-plan/item-types.md
+  // "Required fields"); any other is written at once, as before.
+  const requiredGate = useRequiredFieldsGate(itemTypes.types);
+  const fillRequired = requiredGate.fill;
   const addItem = useCallback(
     (input: {
       type: string;
@@ -185,26 +195,32 @@ export function usePlanSlice(opts: {
       after: string | null;
       before?: string | null;
       id?: string;
-    }) => {
-      const made = write({
-        kind: 'create',
-        creates: [
-          {
-            ...(input.id ? { id: input.id } : {}),
-            type: input.type,
-            fields: input.fields,
-            place: {
-              status: input.status,
-              ...(input.after ? { after: input.after } : {}),
-              ...(input.before ? { before: input.before } : {}),
+    }): Promise<boolean> => {
+      const made = (fields: Item['fields']) => {
+        const done = write({
+          kind: 'create',
+          creates: [
+            {
+              ...(input.id ? { id: input.id } : {}),
+              type: input.type,
+              fields,
+              place: {
+                status: input.status,
+                ...(input.after ? { after: input.after } : {}),
+                ...(input.before ? { before: input.before } : {}),
+              },
             },
-          },
-        ],
-      });
-      track('Plan', 'Added', titleCaseType(input.type));
-      return made;
+          ],
+        });
+        track('Plan', 'Added', titleCaseType(input.type));
+        return done;
+      };
+      const fields = fillRequired(input.type, input.fields);
+      return fields instanceof Promise
+        ? fields.then((filled) => (filled ? made(filled) : false))
+        : made(fields);
     },
-    [write],
+    [write, fillRequired],
   );
 
   // Many new cards as one write and one undo step (a board's Import CSV, docs/specs/026-plan/plan-board.md "CSV").
@@ -222,8 +238,34 @@ export function usePlanSlice(opts: {
     [write],
   );
 
+  // Many cards moved together (a group's drag, a selection's Move To): one write and one undo step, a single move for
+  // one card.
+  const moveItems = useCallback(
+    (moves: readonly ItemMoveOf[]) => {
+      if (moves.length === 0) return;
+      void write(
+        moves.length === 1
+          ? { kind: 'move', id: moves[0]!.id, move: moves[0]!.move }
+          : { kind: 'moves', moves: [...moves] },
+      );
+    },
+    [write],
+  );
+
   const patchItem = useCallback(
     (itemId: string, patch: ItemPatch) => write({ kind: 'patch', id: itemId, patch }),
+    [write],
+  );
+
+  // A time write to a card's Time Spent field (docs/specs/026-plan/item-types.md "Time Spent"): an undo step only for
+  // Add Time and an entry's removal (inverseItemWrites decides).
+  const trackTime = useCallback(
+    (itemId: string, field: string, op: TimeOp) => {
+      if (op.op === 'start') track('Plan', 'Started', 'Timer');
+      else if (op.op === 'stop') track('Plan', 'Ended', 'Timer');
+      else if (op.op === 'add') track('Plan', 'Added', 'TimeEntry');
+      return write({ kind: 'time', id: itemId, field, op });
+    },
     [write],
   );
 
@@ -311,12 +353,6 @@ export function usePlanSlice(opts: {
     })();
   }, [planItems.items, writeQuiet]);
 
-  const commentFn = planItems.comment;
-  const commentItem = useCallback(
-    (itemId: string, action: ItemCommentAction) => void commentFn(itemId, action),
-    [commentFn],
-  );
-
   const updateBoard = useCallback(
     (boardId: string, setup: PlanBoardSetup) => {
       // The board's title before this change: only a change of title renames the tab, so any other setting (a column,
@@ -328,7 +364,9 @@ export function usePlanSlice(opts: {
           els.map((el) => {
             if (el.id !== boardId || el.type !== 'shape' || el.shape !== 'plan-board') return el;
             before = el.planBoard?.title;
-            return { ...el, planBoard: setup };
+            // Each column flagged as it counts (docs/specs/026-plan/plan-board.md "Done columns"): a column it had
+            // counts as it did, a new one by its name.
+            return { ...el, planBoard: settleDoneColumns(el.planBoard, setup) };
           }),
         // A Board tab and its board share one name (docs/specs/026-plan/plan-tabs.md "Names"): renamed, the tab follows.
         (tab) => (before === setup.title ? tab : tabNamedForBoard(tab, setup.title)),
@@ -351,7 +389,10 @@ export function usePlanSlice(opts: {
           changed = true;
           return {
             ...el,
-            planBoard: { ...setup, columns: setup.columns.filter((c) => c.status !== status) },
+            planBoard: settleDoneColumns(setup, {
+              ...setup,
+              columns: setup.columns.filter((c) => c.status !== status),
+            }),
           };
         });
         return changed ? next : els;
@@ -515,14 +556,17 @@ export function usePlanSlice(opts: {
       openItem,
       openNewItem,
       openItemId,
+      ...(hasCardLink ? { cardLink } : {}),
       addItem,
       addItems,
       moveItem,
+      moveItems,
       patchItem,
+      trackTime,
       deleteItem,
-      commentItem,
       notify,
       ownerId: planItems.ownerId,
+      itemsScope: planItems.scope ?? null,
       updateBoard,
       removeStatusColumns,
       updateView,
@@ -559,14 +603,18 @@ export function usePlanSlice(opts: {
       openItem,
       openNewItem,
       openItemId,
+      hasCardLink,
+      cardLink,
       addItem,
       addItems,
       moveItem,
+      moveItems,
       patchItem,
+      trackTime,
       deleteItem,
-      commentItem,
       notify,
       planItems.ownerId,
+      planItems.scope,
       updateBoard,
       removeStatusColumns,
       updateView,
@@ -604,6 +652,9 @@ export function usePlanSlice(opts: {
     // A write with no undo step, for the card the Plan tour makes and takes away itself.
     writeQuiet,
     editingType,
+    // A new card waiting for its required fields (RequiredFieldsDialog), and its answer.
+    requiredFields: requiredGate.request,
+    settleRequiredFields: requiredGate.settle,
     typeTemplateId,
     typeForBoard: forBoard.typeForBoard,
     addTypeToBoard: forBoard.addTypeToBoard,

@@ -29,6 +29,39 @@ export const COMMENTS_DELETED = chart(
   { rising: 'neutral' },
 );
 
+// A Plan card's comment threads (liveplanner docs/specs/026-plan/items.md "Telemetry").
+export const THREADS_STARTED = chart(
+  'Comment',
+  'Created',
+  'Threads Started',
+  'A new comment thread started on a Plan card.',
+  { types: ['Thread'] },
+);
+
+export const COMMENTS_EDITED = chart(
+  'Comment',
+  'Changed',
+  'Comments Edited',
+  'A comment on a Plan card edited by its author.',
+  { rising: 'neutral' },
+);
+
+export const THREADS_RENAMED = chart(
+  'Comment',
+  'Renamed',
+  'Threads Renamed',
+  'A comment thread given a title of its own.',
+  { types: ['Thread'], rising: 'neutral' },
+);
+
+export const THREADS_ADDED_TO_CARDS = chart(
+  'Comment',
+  'Linked',
+  'Threads Added to Cards',
+  'A comment thread added to another card, in the same plan or another one.',
+  { types: ['Thread', 'ThreadOtherPlan'] },
+);
+
 export const COMMENTS_REOPENED = chart(
   'Comment',
   'Unresolved',
@@ -670,7 +703,8 @@ export const EMBEDS_AND_WORKBENCH: MetricStack = {
 export const DISCUSSION: MetricStack = {
   stack: true,
   title: 'Discussion',
-  blurb: 'Comments left on elements, opened to read or reply, and resolved.',
+  blurb:
+    'Comments left on elements and Plan cards, opened to read or reply, and resolved; threads started, renamed and added to other cards.',
   members: [
     COMMENTS_ADDED,
     COMMENT_POPOVERS_OPENED,
@@ -678,6 +712,10 @@ export const DISCUSSION: MetricStack = {
     COMMENTS_MENTIONED,
     COMMENTS_REOPENED,
     COMMENTS_DELETED,
+    THREADS_STARTED,
+    COMMENTS_EDITED,
+    THREADS_RENAMED,
+    THREADS_ADDED_TO_CARDS,
   ],
   headline: COMMENTS_ADDED,
 };

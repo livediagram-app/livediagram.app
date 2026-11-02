@@ -25,6 +25,13 @@ export {
   type TextInputProps,
 } from './TextInput';
 export {
+  CODE_DIGITS,
+  CodeDigits,
+  EMPTY_CODE,
+  type CodeDigitsHandle,
+  type CodeDigitsProps,
+} from './CodeDigits';
+export {
   DATE_YEAR_MIN,
   DateInput,
   dateCommit,
@@ -44,6 +51,8 @@ export { HoverCard, type HoverCardProps } from './HoverCard';
 export { placeHint, type HintLayout, type HintPlacement } from './hint/place-hint';
 export { Dialog, type DialogProps } from './dialog/Dialog';
 export { DialogHeader } from './dialog/DialogHeader';
+// The one way back out of a drill-in, and the one breadcrumb (BackBar.tsx).
+export { BackBar } from './BackBar';
 export { DialogFooter } from './dialog/DialogFooter';
 export { ConfirmDialog, type ConfirmDialogProps } from './dialog/ConfirmDialog';
 export { ConfirmPopover, splitConfirmMessage } from './ConfirmPopover';
@@ -63,8 +72,10 @@ export { CONTRIBUTORS } from './contributors';
 export { formatRelativeTime, formatRelativeTimeShort, relativeSince } from './relative-time';
 export * from './random-uuid-boot';
 export { useMediaQuery, PREFERS_REDUCED_MOTION } from './useMediaQuery';
+export { prefersReducedMotion } from './motion-preference';
 export { useCopiedFlash } from './useCopiedFlash';
 export { useClickOutside } from './useClickOutside';
+export { useNearViewport } from './useNearViewport';
 export { useEscape } from './useEscape';
 export { useFocusTrap, type FocusTrapInitial } from './useFocusTrap';
 export {

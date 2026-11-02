@@ -188,6 +188,26 @@ export async function claimResponseNumber(
   return row ? row.responses : null;
 }
 
+// A claimed number given back when its response could not be written (docs/specs/030-forms/forms.md "Responses to a
+// Sheet": a counted response is never lost), so the count never grows for a response that made nothing. Only while
+// the count still reads that number: inside the plan's room nothing claims between, but a later claim keeps its own.
+export async function releaseResponseNumber(
+  env: PlanEnv,
+  code: string,
+  number: number,
+): Promise<boolean> {
+  const row = await env.PLAN_DB.prepare(
+    `UPDATE form_links
+        SET responses = responses - 1,
+            hour_count = MAX(hour_count - 1, 0)
+      WHERE code = ? AND responses = ?
+      RETURNING responses`,
+  )
+    .bind(code, number)
+    .first<{ responses: number }>();
+  return !!row;
+}
+
 // --- Reports -------------------------------------------------------------------------------------------------
 
 // A report, once per browser; then how many distinct browsers on distinct networks have reported the link.

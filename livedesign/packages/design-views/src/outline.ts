@@ -17,6 +17,7 @@ import {
 } from './elision';
 import { textField } from './fields';
 import { headerLine, viewHeader } from './header';
+import { instanceSummaryOf } from './instance-summary';
 import type { ViewModel } from './model';
 import { stateAttributeOf } from './state-attribute';
 import { styleAttributesOf, styleBaselines, type StyleBaselines } from './style-attributes';
@@ -76,6 +77,13 @@ function nodeAttributes(
   return [...stateAttributeOf(el), ...attributesOf(el, { tabRefOf: model.tabRefOf, style })];
 }
 
+// A content kind's summary, dropped with the attributes; an instance's main, which names what it is, never dropped.
+function summaryAt(model: ViewModel, el: Element, level: Level): string | null {
+  const instance = instanceSummaryOf(el, model.componentOf);
+  if (instance !== null) return instance;
+  return level === 2 ? null : contentSummaryOf(el);
+}
+
 function attributesAt(attributes: readonly ViewAttribute[], level: Level): ViewAttribute[] {
   if (level === 2) return attributes.filter(isOpenCommentsAttribute);
   return level === 1 ? attributes.filter((a) => a.key !== 'note') : [...attributes];
@@ -95,7 +103,7 @@ function nodeLine(
   style: StyleBaselines | null,
 ): string {
   const label = textField(node.el, 'label');
-  const summary = level === 2 ? null : contentSummaryOf(node.el);
+  const summary = summaryAt(model, node.el, level);
   const attributes = attributesAt(nodeAttributes(model, node.el, style), level);
   const edges = model.edges.bySource.get(node.el.id) ?? [];
   const parts = [
@@ -317,7 +325,7 @@ function nodeJson(
     kind: model.kindOf(node.el),
     unknown: !isKnownElement(node.el),
     label,
-    summary: level === 2 ? null : contentSummaryOf(node.el),
+    summary: summaryAt(model, node.el, level),
     attributes: attributesAt(nodeAttributes(model, node.el, style), level).map(
       ({ key, value }) => ({ key, value }),
     ),

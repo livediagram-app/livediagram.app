@@ -3,7 +3,8 @@ import type { ShapeKind } from '@livedesign/design';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTint } from '@/components/palette/palette-controls';
 
-export type CanvasTool = 'pan' | 'select' | 'laser' | 'spotlight' | 'eraser' | 'format';
+// `inspect` is a wireframe tab's Inspect (docs/specs/007-editor/wireframe-pages.md "Inspect"): a press selects to read.
+export type CanvasTool = 'pan' | 'select' | 'laser' | 'spotlight' | 'eraser' | 'format' | 'inspect';
 
 // The palette strip's inputs (docs/specs/007-editor/toolbar-layout.md): the canvas tool, the add
 // handlers every tile calls, and the tab's state the tiles read.

@@ -257,10 +257,13 @@ function readEdgeOp(s: string): { op: EdgeOp; rest: string } | null {
 const SKIP_RE = /^\s*(?:classDef|class|style|linkStyle|%%|direction)\b/i;
 const STATE_HEADER_RE = /^\s*stateDiagram(?:-v2)?\b/i;
 const ER_HEADER_RE = /^\s*erDiagram\b/i;
+// Every other diagram type Mermaid draws, by its header. The newer types' headers end in `-beta` (or stand alone on
+// their line, as `kanban` does): read as a headerless flowchart, `block-beta` imported boxes named "block" and
+// "columns", and `gitGraph` or `C4Context` were told to add a flowchart header.
 const UNSUPPORTED_RE =
-  /^\s*(sequenceDiagram|classDiagram|gantt|pie|journey|mindmap|timeline|quadrantChart)\b/i;
+  /^\s*(?:(?:sequenceDiagram|classDiagram|gantt|pie|journey|mindmap|timeline|quadrantChart|gitGraph|requirementDiagram|zenuml|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b|(?:xychart|sankey|block|packet|architecture|radar|treemap)-beta\b|(?:kanban|xychart|sankey|block|packet|architecture|radar|treemap)\s*$)/i;
 export const MERMAID_UNSUPPORTED_ERROR =
-  'Only Mermaid flowcharts (graph / flowchart), state diagrams (stateDiagram), and ER diagrams (erDiagram) are supported — not sequence / class / gantt / etc.';
+  'Only Mermaid flowcharts (graph / flowchart), state diagrams (stateDiagram) and ER diagrams (erDiagram) are supported, not sequence, class, gantt or other diagram types.';
 
 // Whether the first meaningful line is a header the importer reads as a graph: a flowchart, a state diagram or an
 // ER diagram. The CLI tells a Mermaid file from edit operations by it (docs/specs/015-api/blueprints/cli.md CLI71).
@@ -312,6 +315,8 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
   const implicit = new Set<string>();
   const edges: GraphEdge[] = [];
   const clusters: GraphCluster[] = [];
+  // The clusters by id, for a subgraph opened again (a scan per subgraph was quadratic in them).
+  const clusterById = new Map<string, GraphCluster>();
   let currentCluster: GraphCluster | null = null;
   let subgraphDepth = 0;
   // Subgraphs inside another, folded into it: said back to an agent rather than dropped silently.
@@ -362,7 +367,7 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
   // read past it, so the edge after it still lands.
   const readStyledNodeRef = (s: string): { id: string; rest: string } | null => {
     const ref = readNodeRef(s);
-    return ref ? { id: ref.id, rest: ref.rest.replace(/^:::[A-Za-z0-9_-]+/, '') } : null;
+    return ref ? { id: ref.id, rest: ref.rest.replace(/^:::[\p{L}\p{M}\p{N}_-]+/u, '') } : null;
   };
 
   // A `&`-fanned group of node references: `A & B & C`.
@@ -401,7 +406,7 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
 
     // `click A "https://…"` (or `click A href "…"`) links the node; the
     // callback form has no code to call, so it's skipped.
-    const click = /^click\s+([A-Za-z0-9_]+)\s+(?:href\s+)?"([^"]+)"/i.exec(line);
+    const click = /^click\s+([\p{L}\p{M}\p{N}_]+)\s+(?:href\s+)?"([^"]+)"/iu.exec(line);
     if (click) {
       touch(click[1]!).link = click[2]!;
       continue;
@@ -414,7 +419,7 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
     if (sub) {
       subgraphDepth += 1;
       const spec = sub[1]!.trim();
-      const idTitle = /^([A-Za-z0-9_-]+)\s*\[(.*)\]$/.exec(spec);
+      const idTitle = /^([\p{L}\p{M}\p{N}_-]+)\s*\[(.*)\]$/u.exec(spec);
       const subId = idTitle ? idTitle[1]! : spec;
       if (subgraphDepth > 1) {
         folded += 1;
@@ -428,8 +433,11 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
           : { id: subId, label: decodeLabel(spec), members: [] };
         // A subgraph opened again by its id carries on the first: two clusters of one id became two frames under
         // one element id, and the second (with its members' frame) was lost.
-        const reopened = clusters.find((c) => c.id === cluster.id);
-        if (!reopened) clusters.push(cluster);
+        const reopened = clusterById.get(cluster.id);
+        if (!reopened) {
+          clusters.push(cluster);
+          clusterById.set(cluster.id, cluster);
+        }
         currentCluster = reopened ?? cluster;
       }
       continue;
@@ -499,8 +507,7 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
     // one, so neither is lost to the other's element id.
     if (!nodes.has(c.id)) return c;
     let id = `${c.id}_subgraph`;
-    for (let n = 2; nodes.has(id) || clusters.some((o) => o.id === id); n += 1)
-      id = `${c.id}_subgraph${n}`;
+    for (let n = 2; nodes.has(id) || clusterById.has(id); n += 1) id = `${c.id}_subgraph${n}`;
     return { ...c, id };
   });
   const frameId = new Map(framed.map((c, i) => [c.id, realClusters[i]!.id]));

@@ -1,4 +1,9 @@
-import type { RoomElementOp } from '@liveplanner/project';
+import {
+  dashboardPatchFields,
+  withoutDashboardFields,
+  type DashboardPatch,
+  type RoomElementOp,
+} from '@liveplanner/project';
 import type { RoomOp } from '@liveplanner/api-schema';
 
 // This editor's element writes the room has not sequenced yet (docs/specs/012-collaboration/realtime-conflict-resolution.md
@@ -50,6 +55,42 @@ export function holdOwnWrites(
       else writes.held.delete(key);
     }
   };
+}
+
+// A Dashboard's layout fields work the same way (docs/specs/012-collaboration/collab-race-hardening.md "A
+// Dashboard's layout travels as deltas"): the fields a save's `dashboard-delta` sets are held until the room confirms
+// it, and a peer's change to a held field, ordered before ours, is left out; the rest of their patch applies.
+const dashboardKeyOf = (tabId: string, field: string) => `${tabId}␟dash␟${field}`;
+
+/** Holds the layout fields `patch` writes on `tabId`; the returned function releases them, once. */
+export function holdOwnDashboardWrites(
+  writes: OwnElementWrites,
+  tabId: string,
+  patch: DashboardPatch,
+): () => void {
+  const keys = dashboardPatchFields(patch).map((field) => dashboardKeyOf(tabId, field));
+  for (const key of keys) writes.held.set(key, (writes.held.get(key) ?? 0) + 1);
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    for (const key of keys) {
+      const n = (writes.held.get(key) ?? 0) - 1;
+      if (n > 0) writes.held.set(key, n);
+      else writes.held.delete(key);
+    }
+  };
+}
+
+/** A peer's op without the layout fields this editor is writing (ordered before our write, so ours wins); null
+ *  when nothing of it is left. Any other op is returned as it is. */
+export function withoutOwnDashboardWrites(writes: OwnElementWrites, op: RoomOp): RoomOp | null {
+  if (op.kind !== 'dashboard-delta' || writes.held.size === 0) return op;
+  const patch = withoutDashboardFields(op.patch, (field) =>
+    writes.held.has(dashboardKeyOf(op.tabId, field)),
+  );
+  if (patch === op.patch) return op;
+  return patch ? { ...op, patch } : null;
 }
 
 /** Whether a peer's op is a whole-element update of an element this editor is writing, ordered before our write. */

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import type { Item } from '@liveworkspace/index-client';
-import { act } from 'react';
+import { act, Profiler } from 'react';
 import { createRoot } from 'react-dom/client';
 
 vi.mock('./token', () => ({ workspaceToken: async () => 'tok' }));
@@ -37,10 +37,12 @@ beforeEach(() => {
 
 describe('previews on liveworkspace.app', () => {
   it('asks one address on the page’s own origin for every app, cache-busted by its version', () => {
-    expect(previewUrl(item())).toBe('/api/previews/items/p1?v=5');
+    expect(previewUrl(item())).toBe('/api/previews/items/p1?v=5&appearance=light');
     expect(previewUrl(item({ app: 'livedocuments', id: 'd 1' }))).toBe(
-      '/api/previews/items/d%201?v=5',
+      '/api/previews/items/d%201?v=5&appearance=light',
     );
+    // In the reader’s appearance (previews.md): the other half is its own address.
+    expect(previewUrl(item(), 'dark')).toBe('/api/previews/items/p1?v=5&appearance=dark');
     expect(renderPreview(item({ app: 'livedocuments' }), 'card')).not.toBeNull();
     expect(renderPreview(item({ summary: { empty: true } }), 'card')).toBeNull();
     expect(loadPreview(item({ summary: { empty: true } }))).toBeNull();
@@ -112,11 +114,26 @@ describe('previews on liveworkspace.app', () => {
     expect(previewCacheSize()).toBeLessThanOrEqual(PREVIEW_CACHE_CEILING);
     view.unmount();
   }, 20_000);
+
+  // Each box listens to its own picture, so a grid filling in redraws each box a few times, not once per picture
+  // (which was N redraws per arrival, N squared in all, and timed this file out on a busy machine).
+  it('redraws only the box whose picture arrived', async () => {
+    const fetch = vi.fn(async () => new Response('<svg/>', { status: 200 }));
+    vi.stubGlobal('fetch', fetch);
+    const items = Array.from({ length: 40 }, (_, i) => item({ id: `r${i}` }));
+    let commits = 0;
+    const view = mountPreviews(items, () => commits++);
+    await until(() => fetch.mock.calls.length >= items.length);
+    await act(() => new Promise((r) => setTimeout(r, 20)));
+    expect(view.images()).toBe(items.length);
+    expect(commits).toBeLessThan(items.length * 4);
+    view.unmount();
+  });
 });
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
-function mountPreviews(items: Item[]) {
+function mountPreviews(items: Item[], onCommit?: () => void) {
   const host = document.createElement('div');
   document.body.append(host);
   const root = createRoot(host);
@@ -124,7 +141,9 @@ function mountPreviews(items: Item[]) {
     root.render(
       <div>
         {items.map((it) => (
-          <span key={it.id}>{renderPreview(it, 'card')}</span>
+          <Profiler key={it.id} id={it.id} onRender={() => onCommit?.()}>
+            <span>{renderPreview(it, 'card')}</span>
+          </Profiler>
         ))}
       </div>,
     ),

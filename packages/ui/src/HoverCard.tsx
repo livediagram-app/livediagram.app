@@ -27,6 +27,8 @@ export type HoverCardProps = {
   // Keeps the card from showing (while the control's own popover is open, which the card would sit over). The
   // wrapper stays, so the control is never re-parented: unwrapping it remounted the button and dropped its focus.
   disabled?: boolean;
+  // A touch long press opens the card even though the control shows text (useHint `pressWithText`).
+  pressWithText?: boolean;
   children: ReactNode;
 };
 
@@ -41,9 +43,12 @@ export function HoverCard({
   className,
   style,
   disabled = false,
+  pressWithText = false,
   children,
 }: HoverCardProps) {
-  const { open, attach, anchor, triggerProps, surfaceProps } = useHint('hover-card');
+  const { open, attach, anchor, triggerProps, surfaceProps } = useHint('hover-card', {
+    pressWithText,
+  });
   // The card is drawn only while open, so assistive technology reads its description from a hidden copy the control
   // is described by (its title is the name the control already carries): one control element is described
   // directly; anything else, through the wrapper.

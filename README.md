@@ -11,6 +11,7 @@ livediagram/     livediagram.app
 liveplanner/     liveplanner.app
 livedocuments/   livedocuments.app: articles, slides and infographics
 livedesign/      livedesign.app: logos, wireframes and photos
+livehuddle/      livehuddle.app (planned): meetings and workshops; its product spec only, awaiting approval
 docs/            how this repo is laid out, CI and deploys, and the move from the historical livediagram.app
 ```
 
@@ -47,6 +48,13 @@ Each product folder keeps its own scripts (`cd livediagram && corepack pnpm test
 livediagram's tests), its own docs, and its own AGENTS.md for product-specific rules. The lint,
 format, test and Next.js settings are shared (`packages/oxlint-config`, `prettier-config`,
 `vitest-config`, `next-config`), so a rule changes once for every product.
+
+## Security
+
+Found a vulnerability in liveworkspace.app or any app? Please report it privately through
+[GitHub's advisory form](https://github.com/livediagram-app/livediagram.app/security/advisories/new), never in a public
+issue. [SECURITY.md](SECURITY.md) has the policy, and the specs are in
+[Vulnerability disclosure](liveworkspace/docs/specs/001-platform-scope/vulnerability-disclosure.md).
 
 ## Deploys
 

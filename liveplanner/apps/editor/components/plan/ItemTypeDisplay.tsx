@@ -19,6 +19,9 @@ import { createPortal } from 'react-dom';
 import {
   CARD_FIELDS,
   CARD_SIZES,
+  COMMENTS_FIELD,
+  commentsFieldsOf,
+  fromLocalInput,
   CARD_SLOTS,
   CARD_SLOT_LABELS,
   cardDisplayFields,
@@ -30,16 +33,19 @@ import {
   typeOffersCardField,
   customCardFields,
   isCustomCardField,
+  STATUS_SINCE_FIELD,
   type CustomFieldDef,
   type CardDisplay,
   type CardField,
+  AUTOMATIC_CARD_FIELDS,
   type CardLayout,
   type CardSize,
   type CardSlot,
   type Item,
   type ItemTypeDef,
 } from '@liveplanner/items';
-import { Button, CloseIcon, PlusIcon } from '@liveplanner/ui';
+import { Button, CloseIcon, PlusIcon, lucideGlyph } from '@liveplanner/ui';
+import { lucideImage } from '@liveworkspace/icons/lucide';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObservedSize';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
@@ -53,12 +59,16 @@ import { dayKey } from './day-label';
 import { planPalette } from './plan-palette';
 import { useCardFieldDrag } from './useCardFieldDrag';
 import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
+import { fieldCountKey } from '@liveplanner/project';
+import { createThreadStore, type ThreadStore } from '@/hooks/plan/thread-store';
+import { ThreadCountsProvider } from './threads/CardThreadsContext';
+
+const PicturesGlyph = lucideGlyph(lucideImage, 14);
 
 export type CardDisplayDraft = CardDisplay;
 
 const SIZE_LABELS: Record<CardSize, string> = {
   minimal: 'Minimal',
-  compact: 'Compact',
   detailed: 'Detailed',
 };
 // The card's width in the editor (wider than a board's 300, so a long title has room), and how much larger it is
@@ -77,6 +87,7 @@ export function cardZoomFor(width: number | undefined): number {
 }
 
 const SAMPLE_PERSON = { id: 'sample-person', name: 'Sam Rivera', color: '#0d9488' };
+const SAMPLE_REVIEWER = { id: 'sample-reviewer', name: 'Ana Silva', color: '#7c3aed' };
 
 // A card with something in every field, so each placed field shows.
 function sampleCard(type: ItemTypeDef): Item {
@@ -91,6 +102,9 @@ function sampleCard(type: ItemTypeDef): Item {
       priority: 'high',
       due: dayKey(3),
       start: dayKey(-2),
+      // Four days in its column, so a placed Age reads "4d".
+      status: 'In Progress',
+      [STATUS_SINCE_FIELD]: Date.now() - 4 * 86_400_000,
       labels: ['Design'],
       estimate: 3,
       checklist: [
@@ -103,15 +117,38 @@ function sampleCard(type: ItemTypeDef): Item {
       description: 'A short description of the work, as its first lines read on a card.',
       votes: { 'sample-person': 3 },
       comments: { comments: [{}, {}] },
+      // Three pictures, so the Attachments chip reads 3; the cover draws as its placeholder (CardCover's `sample`).
+      attachments: ['a', 'b', 'c'].map((n) => ({
+        id: `sample-${n}`,
+        name: `${n}.png`,
+        size: 1024,
+        type: 'image/png',
+      })),
       // A sample value for each of the type's custom fields, so a placed one shows.
       ...Object.fromEntries((type.custom ?? []).flatMap((c) => sampleCustom(c))),
     },
     rev: 1,
-    createdAt: 0,
-    updatedAt: 0,
+    // Made two days ago and edited today, so placed stamps read as a real card's.
+    createdAt: Date.now() - 2 * 86_400_000,
+    updatedAt: Date.now(),
     createdBy: SAMPLE_PERSON,
     updatedBy: SAMPLE_PERSON,
   };
+}
+
+// The sample's open comments: two in each of the type's Comments fields, so each placed one's chip shows.
+function sampleThreadStore(type: ItemTypeDef, itemId: string): ThreadStore {
+  const fields = commentsFieldsOf(type);
+  const store = createThreadStore();
+  store.setCounts(
+    new Map([
+      [itemId, 2 * fields.length],
+      ...fields
+        .filter((f) => f !== COMMENTS_FIELD)
+        .map((f) => [fieldCountKey(itemId, f), 2] as const),
+    ]),
+  );
+  return store;
 }
 
 // A custom field's sample value, by its kind (none for a Link to Card: the chip then reads its name).
@@ -121,17 +158,70 @@ function sampleCustom(c: CustomFieldDef): [string, unknown][] {
       return [[c.id, 5]];
     case 'date':
       return [[c.id, dayKey(7)]];
+    // A week away at 17:00 in the viewer's zone; a range of that day to two days later, 09:00 to 17:00 with times.
+    case 'datetime':
+      return [[c.id, fromLocalInput(`${dayKey(7)}T17:00`) ?? dayKey(7)]];
+    case 'daterange':
+      return [
+        [
+          c.id,
+          c.withTime
+            ? [fromLocalInput(`${dayKey(7)}T09:00`), fromLocalInput(`${dayKey(9)}T17:00`)]
+            : [dayKey(7), dayKey(9)],
+        ],
+      ];
+    case 'phone':
+      return [[c.id, '+44 20 7946 0958']];
     case 'checkbox':
       return [[c.id, true]];
     case 'link':
       return [[c.id, 'https://example.com']];
     case 'currency':
       return [[c.id, 12500]];
+    case 'percent':
+      return [[c.id, 40]];
+    // 2h 30m; a Time Spent field as one entry of it (docs/specs/026-plan/item-types.md "Duration").
+    case 'duration':
+      return [
+        [
+          c.id,
+          c.timeSpent
+            ? {
+                people: { sample: { name: 'Sam', color: '#7c3aed' } },
+                entries: [{ id: 'sample-entry', by: 'sample', minutes: 150, at: 0 }],
+                running: [],
+              }
+            : 150,
+        ],
+      ];
     case 'email':
       return [[c.id, 'sam@example.com']];
     case 'choice':
       return c.options?.[0] ? [[c.id, c.options[0]]] : [];
+    // A built-in kind's sample is its built-in field's; an Image has none to fetch, so it reads its name, and a
+    // Comments field's chip counts the sample's threads (sampleThreadStore).
+    case 'person':
+      return [[c.id, SAMPLE_REVIEWER]];
+    case 'labels':
+      return [[c.id, ['Urgent']]];
+    case 'colour':
+      return [[c.id, '#0d9488']];
+    case 'checklist':
+      return [
+        [
+          c.id,
+          [
+            { id: 'a', text: 'One', done: true },
+            { id: 'b', text: 'Two', done: false },
+          ],
+        ],
+      ];
+    // A Votes field reads its ▲ count, as the built-in Votes' sample does.
+    case 'votes':
+      return [[c.id, { 'sample-person': 2 }]];
     case 'card':
+    case 'image':
+    case 'comments':
       return [];
     default:
       return [[c.id, c.label || 'Sample']];
@@ -149,6 +239,13 @@ const fieldIcon = (type: ItemTypeDef, f: CardField, size = 14) => {
     return (
       <span className="flex" style={{ width: size, height: size }}>
         <span className="flex [&_svg]:h-full [&_svg]:w-full">{CUSTOM_KIND_ICONS[custom.kind]}</span>
+      </span>
+    );
+  // Attachments draws its picture glyph, as on the card.
+  if (f === 'attachments')
+    return (
+      <span className="flex [&_svg]:h-full [&_svg]:w-full" style={{ width: size, height: size }}>
+        <PicturesGlyph />
       </span>
     );
   return f === 'key' ? (
@@ -178,7 +275,7 @@ export function ItemTypeDisplay({
   display: CardDisplayDraft;
   onChange: (next: CardDisplayDraft) => void;
 }) {
-  const [size, setSize] = useState<CardSize>('compact');
+  const [size, setSize] = useState<CardSize>('detailed');
   const drafted = useMemo(() => ({ ...type, display }), [type, display]);
   const layout = typeCardLayout(drafted, size);
   const placed = cardLayoutFields(size, layout);
@@ -186,8 +283,12 @@ export function ItemTypeDisplay({
   const available = [...cardDisplayFields(size), ...customCardFields(type)].filter(
     (f) => typeOffersCardField(type, f) && !placed.includes(f),
   );
+  // The fields a person fills in, then those filled in automatically (Age and the stamps), each group under its head.
+  const automatic = available.filter((f) => AUTOMATIC_CARD_FIELDS.includes(f));
+  const filledIn = available.filter((f) => !AUTOMATIC_CARD_FIELDS.includes(f));
   const isDefault = sameCardLayout(size, layout, typeDefaultCardLayout(type, size));
   const sample = useMemo(() => sampleCard(type), [type]);
+  const sampleThreads = useMemo(() => sampleThreadStore(type, sample.id), [type, sample.id]);
   const palette = planPalette(useCanvasSurface());
   const setLayout = (next: CardLayout) => onChange({ ...display, [size]: next });
 
@@ -241,6 +342,35 @@ export function ItemTypeDisplay({
       card.current?.querySelector<HTMLElement>(`[data-chip="${field}"]`)?.focus(),
     );
   };
+  // A group of Available Fields' chips: drag one onto the card, or press it to choose where it goes.
+  const fieldChips = (fields: readonly CardField[]) => (
+    <ul className="flex flex-wrap gap-1.5">
+      {fields.map((f) => (
+        <li key={f}>
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            aria-expanded={placing?.field === f}
+            {...dragProps(f, (el) => setPlacing({ field: f, anchor: el }))}
+            onKeyDown={(e) => {
+              if (e.key !== 'Enter' && e.key !== ' ') return;
+              e.preventDefault();
+              setPlacing({ field: f, anchor: e.currentTarget });
+            }}
+            className={`inline-flex cursor-grab touch-none select-none items-center gap-1.5 rounded-lg border border-slate-200 bg-white py-1 pl-1.5 pr-2.5 text-[12px] font-medium text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50/60 active:cursor-grabbing dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-500/50 dark:hover:bg-brand-500/10 ${
+              drag?.moving && drag.field === f ? 'opacity-40' : ''
+            }`}
+          >
+            <span className="flex h-5 w-5 items-center justify-center rounded bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+              {fieldIcon(type, f, 12)}
+            </span>
+            {fieldLabel(type, f)}
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+
   const slotOf = (field: CardField) =>
     CARD_SLOTS[size].find((s) => (layout[s] ?? []).includes(field))!;
 
@@ -258,9 +388,7 @@ export function ItemTypeDisplay({
           aria-label={label}
           className={`flex flex-wrap items-center gap-1 rounded-md border border-dashed px-1 py-0.5 transition ${
             bits.length === 0 ? 'min-h-6 min-w-10' : 'min-h-7'
-          } ${
-            slot === 'head' || slot === 'body' || slot === 'foot' || slot === 'row' ? 'flex-1' : ''
-          } ${
+          } ${slot === 'head' || slot === 'body' || slot === 'foot' ? 'flex-1' : ''} ${
             lit
               ? 'border-brand-500 bg-brand-50/70 dark:border-brand-400 dark:bg-brand-500/15'
               : takes
@@ -319,7 +447,7 @@ export function ItemTypeDisplay({
       <div
         role="radiogroup"
         aria-label="Card size"
-        className="relative grid grid-cols-3 self-start rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800"
+        className="relative grid grid-cols-2 self-start rounded-lg bg-slate-100 p-0.5 dark:bg-slate-800"
       >
         {/* The selection slides to the picked size, as the Share dialog's Valid does. */}
         <SegmentSlider
@@ -358,14 +486,16 @@ export function ItemTypeDisplay({
             className="shrink-0"
             style={{ width: CARD_PX, zoom }}
           >
-            <PlanCardFace
-              item={sample}
-              palette={palette}
-              fields={CARD_FIELDS}
-              size={size}
-              typeOverride={drafted}
-              edit={edit}
-            />
+            <ThreadCountsProvider value={sampleThreads}>
+              <PlanCardFace
+                item={sample}
+                palette={palette}
+                fields={CARD_FIELDS}
+                size={size}
+                typeOverride={drafted}
+                edit={edit}
+              />
+            </ThreadCountsProvider>
           </div>
         </div>
         <div className="flex min-w-0 flex-col gap-3">
@@ -396,31 +526,15 @@ export function ItemTypeDisplay({
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
                   Drag one onto the card, or press it to choose where it goes.
                 </p>
-                <ul className="flex flex-wrap gap-1.5">
-                  {available.map((f) => (
-                    <li key={f}>
-                      <button
-                        type="button"
-                        aria-haspopup="dialog"
-                        aria-expanded={placing?.field === f}
-                        {...dragProps(f, (el) => setPlacing({ field: f, anchor: el }))}
-                        onKeyDown={(e) => {
-                          if (e.key !== 'Enter' && e.key !== ' ') return;
-                          e.preventDefault();
-                          setPlacing({ field: f, anchor: e.currentTarget });
-                        }}
-                        className={`inline-flex cursor-grab touch-none select-none items-center gap-1.5 rounded-lg border border-slate-200 bg-white py-1 pl-1.5 pr-2.5 text-[12px] font-medium text-slate-700 shadow-sm transition hover:border-brand-300 hover:bg-brand-50/60 active:cursor-grabbing dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-500/50 dark:hover:bg-brand-500/10 ${
-                          drag?.moving && drag.field === f ? 'opacity-40' : ''
-                        }`}
-                      >
-                        <span className="flex h-5 w-5 items-center justify-center rounded bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                          {fieldIcon(type, f, 12)}
-                        </span>
-                        {fieldLabel(type, f)}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                {filledIn.length > 0 ? fieldChips(filledIn) : null}
+                {automatic.length > 0 ? (
+                  <>
+                    <h5 className="mt-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                      Filled In Automatically
+                    </h5>
+                    {fieldChips(automatic)}
+                  </>
+                ) : null}
               </>
             )}
           </section>

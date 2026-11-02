@@ -23,6 +23,7 @@ import {
 } from '@livedocuments/ui';
 import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
 import { PanelSection } from '../page-panel-sections';
+import { ArticleBandsSection } from './ArticleBandsSection';
 import { ColourPicker } from '@/components/colour/ColourPicker';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
@@ -38,7 +39,11 @@ export function ArticleStyleSection({
   themeAccent,
   onChange,
   onPreview,
+  card = false,
 }: {
+  // A flashcard's style: its section is the Card's, and a card has no page numbers (it says its
+  // place in the stack, docs/specs/007-editor/flashcards.md "Card number and speaking time").
+  card?: boolean;
   // Which of the panel's two article tabs: Style (looks, accent, the page), or Text (fonts, size,
   // spacing, lines under the text).
   part: 'style' | 'text';
@@ -99,7 +104,7 @@ export function ArticleStyleSection({
               onChange={(v) => onChange({ patch: { accentHeadings: v } })}
             />
           </PanelSection>
-          <PanelSection title="Page">
+          <PanelSection title={card ? 'Card' : 'Page'}>
             <Segmented
               label="Margins"
               value={r.margins}
@@ -111,12 +116,22 @@ export function ArticleStyleSection({
               onChange={(v) => onChange({ patch: { margins: v } })}
               onHover={(v) => preview({ margins: v })}
             />
-            <Toggle
-              label="Page Numbers"
-              on={r.pageNumbers}
-              onChange={(v) => onChange({ patch: { pageNumbers: v } })}
-            />
+            {card ? null : (
+              <Toggle
+                label="Page Numbers"
+                on={r.pageNumbers}
+                onChange={(v) => onChange({ patch: { pageNumbers: v } })}
+              />
+            )}
           </PanelSection>
+          {/* A card has no header or footer (docs/specs/007-editor/flashcards.md). */}
+          {card ? null : (
+            <ArticleBandsSection
+              style={style}
+              onChange={(patch) => onChange({ patch })}
+              onPreview={onPreview}
+            />
+          )}
         </>
       ) : (
         <>

@@ -18,7 +18,7 @@ import {
   type Sheet,
   type Workbook,
 } from '@liveplanner/sheets';
-import { cardSourceOf } from '@liveplanner/items';
+import { cardSourceOf, donePhase } from '@liveplanner/items';
 import { templateChartElements } from '@liveplanner/templates/template-sheets';
 import { chartsInSheet, type ShapeElement } from '@liveplanner/project';
 import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
@@ -268,11 +268,18 @@ export function useSheetModel(
   const items = plan?.items;
   const types = plan?.types;
   const statusNames = plan?.statusNames;
+  const statusPhases = plan?.statusPhases;
   const usesCards = useMemo(() => workbook.usesCards(), [workbook, version]); // oxlint-disable-line react/exhaustive-deps
   useEffect(() => {
     if (!usesCards || !items || !types) return;
-    store.setCards(cardSourceOf(items.values(), types, { statusNames, version: Date.now() }));
-  }, [usesCards, items, types, statusNames, store]);
+    store.setCards(
+      cardSourceOf(items.values(), types, {
+        statusNames,
+        version: Date.now(),
+        ...(statusPhases ? { isDone: donePhase(statusPhases) } : {}),
+      }),
+    );
+  }, [usesCards, items, types, statusNames, statusPhases, store]);
 
   // Tell the main bundle whether this sheet holds a card table (Plan's strip shows for one).
   const sheet = sheetId ? store.sheet(sheetId) : undefined;

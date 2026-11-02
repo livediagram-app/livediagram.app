@@ -1,15 +1,23 @@
 // The item routes' shared parts (item-routes.ts, item-patches-route.ts, item-comment-routes.ts): who the caller is
 // and what they reach, the refusals, the writer's signature and the room relay. A body is read by @liveplanner/items'
 // write checks (write-checks.ts), which an offline project runs too.
-import { isSafeColourValue, itemForRoom, itemForViewer } from '@liveplanner/project';
+import { isSafeColourValue, withoutLegacyThread } from '@liveplanner/project';
 import {
   isArchived,
   isTrashed,
   itemIdsShownOnTab,
   tabShowsEveryCard,
   itemPersonId,
+  calculatedWritten,
+  timeSpentWritten,
+  requiredClearedBy,
   statusExcluded,
+  repeatChanged,
   typesOf,
+  blocksValueChanged,
+  blockingCycleOf,
+  blockingLoopMessage,
+  type BlockingChange,
   type Item,
   type ItemPerson,
   type ItemRejection,
@@ -65,12 +73,74 @@ export function excludedStatus(
 ): boolean {
   return statusExcluded(typesOf(caller.doc?.itemTypes), next, before, undo);
 }
+// A Calculated field given a value (docs/specs/026-plan/item-types.md "Calculated fields"): calculatedWritten
+// against the project's types, its id or null. An undo never is: it puts back what was there.
+export function calculatedSet(
+  caller: ItemCaller,
+  next: Pick<Item, 'type' | 'fields'>,
+  before?: Item,
+  undo = false,
+): string | null {
+  return undo ? null : calculatedWritten(typesOf(caller.doc?.itemTypes), next, before);
+}
+
+// A Time Spent field a card write sets, clears or changes (docs/specs/026-plan/item-types.md "Time Spent"): its id, or
+// null. Its entries change only through time writes (item-time-route.ts), an undo's included.
+export function timeTracked(
+  caller: ItemCaller,
+  next: Pick<Item, 'type' | 'fields'>,
+  before?: Item,
+): string | null {
+  return timeSpentWritten(typesOf(caller.doc?.itemTypes), next, before);
+}
+
+// A required custom field the change empties (docs/specs/026-plan/item-types.md "Required fields"): its id, or null.
+export function clearedRequired(
+  caller: ItemCaller,
+  next: Item,
+  before: Item,
+  undo: boolean,
+): string | null {
+  return requiredClearedBy(typesOf(caller.doc?.itemTypes), next, before, undo);
+}
+// A write changing a Blocked By field (docs/specs/026-plan/item-types.md "Blocked By"): only an Editor sets blockers
+// (403 otherwise), and a link that would close a loop is refused (400 `blocks_cycle`, its sentence). The project's
+// items are read only when a Blocks value changed, so an ordinary card write pays for nothing. Null when it passes.
+export async function blockersRefused(
+  ctx: PlanRouteContext,
+  caller: ItemCaller,
+  changes: readonly BlockingChange[],
+): Promise<Response | null> {
+  const types = typesOf(caller.doc?.itemTypes);
+  const field = changes
+    .map((c) => blocksValueChanged(types, c.before, c.next))
+    .find((f) => f !== null);
+  if (!field) return null;
+  if (!(await isItemEditor(ctx, caller))) {
+    console.info('[items] items.blocks.refused', { projectId: caller.projectId });
+    return forbidden();
+  }
+  const loop = blockingCycleOf(await listItems(ctx.env, caller.projectId), types, changes);
+  if (!loop) return null;
+  console.info('[items] items.blocks.cycle', { projectId: caller.projectId, id: loop.itemId });
+  return json(
+    { error: 'blocks_cycle', id: loop.itemId, field, message: blockingLoopMessage(loop.chain) },
+    { status: 400 },
+  );
+}
+
 // A Participant works with cards but never deletes one (docs/specs/013-workspace/share-roles.md "What a
 // Participant changes"): moving a card into or out of the Trash or the Archive, and restoring one whole (its votes,
 // thread and key, an Editor's undo), needs an Editor. Asked only when a write does that, so an ordinary card edit
 // pays for no second gate.
 export function retiresItem(before: Item, next: Item): boolean {
   return isTrashed(before) !== isTrashed(next) || isArchived(before) !== isArchived(next);
+}
+
+// What only an Editor may do to a card: retire it (above), or set, change or stop its repeat
+// (docs/specs/026-plan/items.md "Repeating cards").
+export function editorOnly(before: Item, next: Item): boolean {
+  return retiresItem(before, next) || repeatChanged(before, next);
 }
 
 export async function isItemEditor(ctx: PlanRouteContext, caller: ItemCaller): Promise<boolean> {
@@ -153,13 +223,13 @@ export function relay(
   ctx.waitUntil?.(
     relayItems(ctx.env, projectId, {
       kind: 'items',
-      upserts: upserts.map(itemForRoom),
+      upserts: upserts.map(withoutLegacyThread),
       removed,
       rev,
     }),
   );
 }
 
-// What a caller is answered with: their own comment author ids, nobody else's.
-export const forCaller = (caller: ItemCaller, items: Item[]) =>
-  items.map((i) => itemForViewer(i, caller.owner));
+// What a caller is answered with. A card holds no comments (its threads are their own, card-thread-routes.ts); an old
+// single thread a row still carried (moved by the plan's schema, plan-room/card-thread-schema.ts) never leaves.
+export const forCaller = (_caller: ItemCaller, items: Item[]) => items.map(withoutLegacyThread);

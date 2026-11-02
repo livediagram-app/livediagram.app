@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { BackBar } from '@liveworkspace/workbench/components/primitives/BackBar';
-import { Button } from '@livediagram/ui';
+import { Button, BackBar } from '@livediagram/ui';
 import { pickExport, readDrop } from '@/lib/pick-folder';
 import { ImportChecklist } from '@liveworkspace/workbench/components/dialogs/ImportChecklist';
 import { ImportDropZone } from './ImportDropZone';

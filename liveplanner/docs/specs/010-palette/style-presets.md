@@ -217,9 +217,14 @@ ink leaning toward it and always 4.5:1 on its fill.
 The pick is stored as its id (`colorPreset: 'plan-<hue>'`) and drawn **for the
 surface it is on** (`planPalette` resolves it over the colours it also wrote),
 so the same board is quiet paper on a light canvas and a quiet tint on a dark
-one, and follows a switch between them, a theme change included. The tiles are
+one, and follows a switch between them. The tiles are
 drawn for the canvas surface they will be seen on. Hand-setting a colour clears
-the binding, as for a shape. A multi-selection of only boards and sheets shows
+the binding, as for a shape. **Picking a tab style (a theme) overrides the
+preset**: the board or sheet drops its `colorPreset` and the fill, border and
+text colours the preset wrote, so it follows the new tab style at once; a preset
+chosen afterwards wins again, over the style. (Only a preset-bound board or sheet:
+a colour set by hand survives a theme pick, as it does for a shape. A template
+painted with a theme keeps its boards' presets.) A multi-selection of only boards and sheets shows
 this grid; one mixing them with shapes shows the shape looks. Maximised, the
 element's hue also tints the chrome in its header band (Plan board "The header
 holds the top row"). Defined in `@liveplanner/project` `plan-presets.ts`.

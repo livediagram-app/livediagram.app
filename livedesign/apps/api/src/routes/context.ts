@@ -76,6 +76,10 @@ export type RouteContext = {
   // the X-Index-Grant the request carried, checked, or one the worker fetched for it (routes/designs.ts). It is
   // the whole of who may do what to a design; null or for another design, nothing.
   grant?: DesignGrant | null;
+  // The design's Community post's link as the design's room holds it (design-room/community-post.ts): a grant
+  // through `code` is a content-only pass while the post is `open`, and no pass at all otherwise (grantOn). Unset
+  // outside a design's own routes, and null for a design with no post.
+  community?: { code: string; open: boolean } | null;
   // Schedule background work that may outlive the response (docs/specs/014-identity/transactional-email.md email
   // sends). Forwards to the fetch handler's ExecutionContext.waitUntil.
   // Optional so unit tests can build a RouteContext without a real
@@ -104,17 +108,42 @@ export function grantCallerOf(ctx: RouteContext): GrantCaller {
 // What a caller holds on a design (docs/specs/013-workspace/share-roles.md): a level, the one tab it is confined to
 // (docs/specs/013-workspace/tab-scoped-share-links.md), and the share code that granted it. All of it is the
 // index's grant, read here; a workbench session holds no more than its own level.
+//
+// `community` marks a grant through the design's Community post's link (docs/specs/025-community/community.md
+// "Viewing a post's design"): read-only like any view link, and a content-only pass: no realtime room and no
+// comments.
 export type DesignAccess = {
   role: ShareRole;
   tabScope: string | null;
   shareCode: string | null;
+  community: boolean;
 };
 
-export function grantOn(ctx: RouteContext, designId: string): DesignAccess | null {
+// A Community post's link is refused unless the door passes `COMMUNITY_CONTENT` (docs/specs/025-community/
+// community.md "Viewing a post's design"): the link is a content-only pass, so the design and its tabs serve it,
+// and comments, history, the timeline and any door added later do not. Fail closed, like the tab scope.
+export const COMMUNITY_CONTENT = { community: true } as const;
+type GateOptions = { community?: boolean };
+
+export function grantOn(
+  ctx: RouteContext,
+  designId: string,
+  opts: GateOptions = {},
+): DesignAccess | null {
   const grant = ctx.grant;
   if (!grant || grant.item !== designId) return null;
+  const post = ctx.community ?? null;
+  const community = grant.shareCode !== null && post !== null && grant.shareCode === post.code;
+  // A post hidden after reports, off the Community, or no longer its author's own opens nothing through its link.
+  if (community && (!post.open || !opts.community)) return null;
   const role = ctx.workbench ? capWorkbenchRole(grant.level, ctx.workbench.level) : grant.level;
-  return { role, tabScope: grant.tab, shareCode: grant.shareCode };
+  // A Community post's link opens to view, whatever the index's link says.
+  return {
+    role: community ? 'view' : role,
+    tabScope: grant.tab,
+    shareCode: grant.shareCode,
+    community,
+  };
 }
 
 // The ladder (docs/specs/013-workspace/share-roles.md): every level holds everything below it. `tabId` names the
@@ -125,8 +154,9 @@ function holds(
   designId: string,
   needs: AccessLevel,
   tabId: string | undefined,
+  opts: GateOptions = {},
 ): boolean {
-  const grant = grantOn(ctx, designId);
+  const grant = grantOn(ctx, designId, opts);
   if (!grant || !levelAtLeast(grant.role, needs)) return false;
   return grant.tabScope === null || grant.tabScope === tabId;
 }
@@ -139,8 +169,9 @@ export async function gateRead(
   _designOwnerId?: string,
   _designTeamId?: string | null,
   tabId?: string,
+  opts: GateOptions = {},
 ): Promise<boolean> {
-  return holds(ctx, designId, 'view', tabId);
+  return holds(ctx, designId, 'view', tabId, opts);
 }
 
 // The Participant gate (docs/specs/013-workspace/share-roles.md): every write a Participant may make beside an
@@ -168,14 +199,16 @@ export async function gateEdit(
 
 // The caller's grant on a design, scope included, for the doors that narrow
 // what they return to a scoped visitor's tab rather than refuse them
-// (docs/specs/013-workspace/tab-scoped-share-links.md). Null = no access.
+// (docs/specs/013-workspace/tab-scoped-share-links.md). Null = no access. A Community post's link answers null
+// unless the door passes `COMMUNITY_CONTENT`.
 export async function gateGrant(
   ctx: RouteContext,
   designId: string,
-  _designOwnerId?: string,
+  _designOwnerId?: string | null,
   _designTeamId?: string | null,
+  opts: GateOptions = {},
 ): Promise<DesignAccess | null> {
-  return grantOn(ctx, designId);
+  return grantOn(ctx, designId, opts);
 }
 
 // The resolved caller id, or the 400 to return when no token identifies the caller.
@@ -184,7 +217,7 @@ export function requireOwner(ctx: RouteContext): string | Response {
 }
 
 // Is `ctx` the design's owner, as the design knows it? Only the doors that show the owner more (comment authors,
-// the owner's own notices) ask; who may change or share the design is the index's.
+// the owner's own notices, publishing to the Community) ask; who may change or share the design is the index's.
 export async function ownsDesign(
   ctx: RouteContext,
   liveDoc: Pick<DesignDTO, 'id' | 'ownerId'>,

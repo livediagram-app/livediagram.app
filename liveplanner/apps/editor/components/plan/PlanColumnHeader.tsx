@@ -3,7 +3,8 @@
 // A column's head on a Plan board (docs/specs/026-plan/plan-board.md "What the board shows"): its colour
 // bar, name, count (against its WIP limit), and, for someone who may edit, a cog at the far right that
 // opens the column's settings (PlanColumnPopover). The cog shows on hover and focus, and always on a
-// touch screen. A column just added from another column's settings opens its own, its name selected.
+// touch screen. Collapse Column (CollapsedColumn.tsx) sits before the cog (both always shown), for everyone, where the board offers it
+// (docs/specs/026-plan/plan-board.md "Collapse Column"); the cog's toolbar has it too. A column just added from another column's settings opens its own, its name selected.
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { PlanBoardSetup, ProjectedColumn } from '@liveplanner/items';
 import { CountBadge, SettingsIcon } from '@liveplanner/ui';
@@ -15,6 +16,8 @@ import {
 import type { PlanPalette } from './plan-palette';
 import { COLUMN_ATTR } from './column-move-flip';
 import { plural } from '@liveplanner/project';
+import { CollapseColumnButton } from './CollapsedColumn';
+import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
 
 export function PlanColumnHeader({
   col,
@@ -26,6 +29,7 @@ export function PlanColumnHeader({
   onTrashCards,
   onDeleteStatus,
   onFrame,
+  onCollapse,
 }: {
   col: ProjectedColumn & { count: number; overLimit: boolean };
   setup: PlanBoardSetup;
@@ -37,6 +41,8 @@ export function PlanColumnHeader({
   onDeleteStatus?: ((status: string) => void) | undefined;
   // A tap on the header (a phone): the view frames this column, given the header. Absent, a tap does nothing.
   onFrame?: ((header: HTMLElement) => void) | undefined;
+  // Collapse Column, for this person alone; absent where the board offers none (a phone).
+  onCollapse?: (() => void) | undefined;
 }) {
   const [open, setOpen] = useState(false);
   // Opened for a column just added: its name is selected, ready to type over.
@@ -57,8 +63,7 @@ export function PlanColumnHeader({
   return (
     <div
       {...{ [COLUMN_ATTR]: column.id }}
-      // snap-start: on a phone the columns snap into view by their heads (phone-board.ts).
-      className="group sticky top-0 z-[1] snap-start rounded-t-lg px-3 pb-1.5 pt-2"
+      className="group sticky top-0 z-[1] rounded-t-lg px-3 pb-1.5 pt-2"
       style={{ backgroundColor: palette.column }}
       onClick={
         onFrame
@@ -76,7 +81,9 @@ export function PlanColumnHeader({
         aria-hidden
       />
       <div className="flex items-center gap-2">
-        <span className="truncate text-[13px] font-semibold">{column.name}</span>
+        <span className="truncate text-[13px] font-semibold" style={PLAN_HEADING_STYLE}>
+          {column.name}
+        </span>
         <span className="ml-auto flex">
           <CountBadge
             size="md"
@@ -91,6 +98,9 @@ export function PlanColumnHeader({
             {column.wipLimit ? `${col.count} / ${column.wipLimit}` : col.count}
           </CountBadge>
         </span>
+        {onCollapse ? (
+          <CollapseColumnButton column={column} palette={palette} onCollapse={onCollapse} />
+        ) : null}
         {canEdit ? (
           <button
             ref={cog}
@@ -130,6 +140,7 @@ export function PlanColumnHeader({
           onMoveCards={onMoveCards}
           onTrashCards={onTrashCards}
           onDeleteStatus={onDeleteStatus}
+          onCollapse={onCollapse}
           onClose={(restoreFocus) => {
             setOpen(false);
             setFresh(false);

@@ -174,6 +174,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
+      },
       "fillColor": {
         "type": "string"
       },
@@ -290,6 +293,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "arrowheadStartShape": {
         "$ref": "#/components/schemas/ArrowheadShape"
+      },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
       },
       "curveOffset": {
         "additionalProperties": false,
@@ -687,6 +693,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "minVersion"
         ],
         "type": "object"
+      },
+      "communityEnabled": {
+        "type": "boolean"
       },
       "designFormat": {
         "type": "number"
@@ -1101,6 +1110,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "reactions": {
+        "items": {
+          "$ref": "#/components/schemas/CommentReaction"
+        },
+        "type": "array"
+      },
       "text": {
         "type": "string"
       },
@@ -1142,6 +1157,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "handle"
     ],
     "type": "object"
+  },
+  "CommentReaction": {
+    "additionalProperties": false,
+    "properties": {
+      "by": {
+        "type": "string"
+      },
+      "emoji": {
+        "$ref": "#/components/schemas/CommentReactionId"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "emoji",
+      "by",
+      "name"
+    ],
+    "type": "object"
+  },
+  "CommentReactionId": {
+    "enum": [
+      "thumbs-up",
+      "thumbs-down",
+      "laugh",
+      "hooray",
+      "heart",
+      "eyes"
+    ],
+    "type": "string"
   },
   "CommentThread": {
     "additionalProperties": false,
@@ -1233,6 +1279,369 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "CommunityAuthor": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "picture": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "name",
+      "color",
+      "picture"
+    ],
+    "type": "object"
+  },
+  "CommunityCategory": {
+    "enum": [
+      "architecture",
+      "art",
+      "articles",
+      "budgets",
+      "dashboards",
+      "data",
+      "decks",
+      "design",
+      "events",
+      "flows",
+      "forms",
+      "guides",
+      "illustrations",
+      "infographics",
+      "learning",
+      "logos",
+      "mindmaps",
+      "newsletters",
+      "other",
+      "personal",
+      "photos",
+      "planning",
+      "posters",
+      "projects",
+      "proposals",
+      "roadmaps",
+      "social",
+      "trackers",
+      "wireframes",
+      "workflows",
+      "workshops"
+    ],
+    "type": "string"
+  },
+  "CommunityMinePost": {
+    "additionalProperties": false,
+    "properties": {
+      "anonymous": {
+        "type": "boolean"
+      },
+      "author": {
+        "$ref": "#/components/schemas/CommunityAuthor"
+      },
+      "category": {
+        "$ref": "#/components/schemas/CommunityCategory"
+      },
+      "copyCount": {
+        "type": "number"
+      },
+      "description": {
+        "type": "string"
+      },
+      "documentId": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "likeCount": {
+        "type": "number"
+      },
+      "liked": {
+        "type": "boolean"
+      },
+      "publishedAt": {
+        "type": "number"
+      },
+      "shareCode": {
+        "type": "string"
+      },
+      "state": {
+        "$ref": "#/components/schemas/CommunityPostState"
+      },
+      "tags": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "anonymous",
+      "author",
+      "category",
+      "copyCount",
+      "description",
+      "documentId",
+      "id",
+      "likeCount",
+      "liked",
+      "publishedAt",
+      "shareCode",
+      "state",
+      "tags",
+      "title",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "CommunityMineResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "nextOffset": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "posts": {
+        "items": {
+          "$ref": "#/components/schemas/CommunityMinePost"
+        },
+        "type": "array"
+      },
+      "totals": {
+        "$ref": "#/components/schemas/CommunityMineTotals"
+      }
+    },
+    "required": [
+      "posts",
+      "nextOffset",
+      "totals"
+    ],
+    "type": "object"
+  },
+  "CommunityMineTotals": {
+    "additionalProperties": false,
+    "properties": {
+      "copies": {
+        "type": "number"
+      },
+      "likes": {
+        "type": "number"
+      },
+      "posts": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "posts",
+      "likes",
+      "copies"
+    ],
+    "type": "object"
+  },
+  "CommunityOwnPost": {
+    "additionalProperties": false,
+    "properties": {
+      "anonymous": {
+        "type": "boolean"
+      },
+      "author": {
+        "$ref": "#/components/schemas/CommunityAuthor"
+      },
+      "category": {
+        "$ref": "#/components/schemas/CommunityCategory"
+      },
+      "copyCount": {
+        "type": "number"
+      },
+      "description": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "likeCount": {
+        "type": "number"
+      },
+      "liked": {
+        "type": "boolean"
+      },
+      "publishedAt": {
+        "type": "number"
+      },
+      "shareCode": {
+        "type": "string"
+      },
+      "state": {
+        "$ref": "#/components/schemas/CommunityPostState"
+      },
+      "tags": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "anonymous",
+      "author",
+      "category",
+      "copyCount",
+      "description",
+      "id",
+      "likeCount",
+      "liked",
+      "publishedAt",
+      "shareCode",
+      "state",
+      "tags",
+      "title",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "CommunityPostInput": {
+    "additionalProperties": false,
+    "properties": {
+      "anonymous": {
+        "type": "boolean"
+      },
+      "category": {
+        "$ref": "#/components/schemas/CommunityCategory"
+      },
+      "description": {
+        "type": "string"
+      },
+      "tags": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "title",
+      "description",
+      "category",
+      "tags",
+      "anonymous"
+    ],
+    "type": "object"
+  },
+  "CommunityPostState": {
+    "enum": [
+      "listed",
+      "hidden"
+    ],
+    "type": "string"
+  },
+  "CommunityShareInfo": {
+    "additionalProperties": false,
+    "properties": {
+      "author": {
+        "$ref": "#/components/schemas/CommunityAuthor"
+      },
+      "postId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "postId",
+      "author"
+    ],
+    "type": "object"
+  },
+  "ComponentMember": {
+    "additionalProperties": false,
+    "description": "An element of an open edit session: the instance it is editing and the main element it stands for.",
+    "properties": {
+      "elementId": {
+        "type": "string"
+      },
+      "instanceId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "instanceId",
+      "elementId"
+    ],
+    "type": "object"
+  },
+  "ComponentOverride": {
+    "additionalProperties": false,
+    "description": "What an instance changes about one element of its main, without detaching.",
+    "properties": {
+      "fillColor": {
+        "type": "string"
+      },
+      "iconId": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "textColor": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
+  "ComponentResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "component": {
+        "$ref": "#/components/schemas/DesignComponent"
+      }
+    },
+    "required": [
+      "component"
+    ],
+    "type": "object"
+  },
+  "ComponentsResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "components": {
+        "items": {
+          "$ref": "#/components/schemas/DesignComponent"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "components"
+    ],
+    "type": "object"
+  },
   "ConceptAnim": {
     "enum": [
       "build",
@@ -1308,6 +1717,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Design": {
     "additionalProperties": false,
     "properties": {
+      "communityState": {
+        "enum": [
+          "listed",
+          "hidden",
+          null
+        ],
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "createdAt": {
         "type": "number"
       },
@@ -1440,6 +1860,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               },
               "type": "array"
             },
+            "reactions": {
+              "items": {
+                "$ref": "#/components/schemas/ReactionSummary"
+              },
+              "type": "array"
+            },
             "text": {
               "type": "string"
             },
@@ -1488,6 +1914,45 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "label",
       "resolved",
       "comments"
+    ],
+    "type": "object"
+  },
+  "DesignComponent": {
+    "additionalProperties": false,
+    "description": "A main: a name, a frame (its own box, top-left at 0, 0) and the elements it is made of, in the frame's space.",
+    "properties": {
+      "archived": {
+        "type": "boolean"
+      },
+      "elements": {
+        "items": {
+          "$ref": "#/components/schemas/Element"
+        },
+        "type": "array"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      },
+      "width": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "name",
+      "width",
+      "height",
+      "elements",
+      "updatedAt"
     ],
     "type": "object"
   },
@@ -2353,6 +2818,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
+      },
       "fillColor": {
         "type": "string"
       },
@@ -2863,6 +3331,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
+      },
       "credit": {
         "$ref": "#/components/schemas/ImageCredit"
       },
@@ -3351,6 +3822,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
+      },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
       },
       "fillColor": {
         "type": "string"
@@ -4838,6 +5312,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
+      },
       "fillColor": {
         "type": "string"
       },
@@ -5248,6 +5725,33 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "rock"
     ],
     "type": "string"
+  },
+  "ReactionSummary": {
+    "additionalProperties": false,
+    "properties": {
+      "by": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "count": {
+        "type": "number"
+      },
+      "emoji": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "emoji",
+      "name",
+      "count",
+      "by"
+    ],
+    "type": "object"
   },
   "RefCandidate": {
     "additionalProperties": false,
@@ -5865,6 +6369,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "componentEditBy": {
+        "type": "string"
+      },
+      "componentId": {
+        "type": "string"
+      },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
+      },
+      "componentOverrides": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/ComponentOverride"
+        },
+        "type": "object"
+      },
       "conceptAnim": {
         "$ref": "#/components/schemas/ConceptAnim"
       },
@@ -6193,6 +6712,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "textItalic": {
         "type": "boolean"
       },
+      "textScale": {
+        "type": "number"
+      },
       "textSize": {
         "$ref": "#/components/schemas/TextSize"
       },
@@ -6260,6 +6782,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "process",
       "site-header",
       "tab-window",
+      "instance",
       "stadium",
       "cloud",
       "triangle",
@@ -6623,6 +7146,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
+      },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
       },
       "fillColor": {
         "type": "string"
@@ -7134,6 +7660,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
+      },
       "fillColor": {
         "type": "string"
       },
@@ -7590,6 +8119,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
+      },
       "fillColor": {
         "type": "string"
       },
@@ -8014,6 +8546,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "commentThread": {
         "$ref": "#/components/schemas/CommentThread"
       },
+      "componentMember": {
+        "$ref": "#/components/schemas/ComponentMember"
+      },
       "embedProvider": {
         "$ref": "#/components/schemas/EmbedProvider"
       },
@@ -8362,7 +8897,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "find",
       "diff",
       "lint",
-      "pages"
+      "pages",
+      "components"
     ],
     "type": "string"
   },

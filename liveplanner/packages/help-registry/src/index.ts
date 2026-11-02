@@ -102,7 +102,7 @@ export const categories: Category[] = [
     title: 'Plan',
     description:
       'Run the work: boards of cards, sheets with real formulas, forms that fill a board, and dashboards drawn from it all.',
-    articleCount: 11,
+    articleCount: 13,
     kind: 'feature',
     groups: ['Getting Going', 'Boards and Cards', 'Sheets', 'Forms and Dashboards'],
   },
@@ -646,7 +646,7 @@ export const articles: Article[] = [
     description:
       'How planning works: a plan of Board, Sheet, Dashboard and Form tabs, Start Planning, cards you move together, and Plan templates.',
     keywords:
-      'planning board boards kanban scrum sprint agile retro retrospective roadmap now next later bug triage weekly planner jira trello asana linear backlog to do in progress done column columns swimlane swimlanes rows wip limit work in progress card cards ticket tickets task tasks story stories issue issues drag drop move card assign label priority estimate story points vote voting dot vote hide writing private reveal facilitator set up board settings plan card keyboard shift arrow undo templates project planner gantt daily standup bug tracker okrs key results product launch feedback board budget planner timesheet contact list task tracker spreadsheet templates hiring onboarding tabs dashboard trash archive flag finder types view only phone',
+      'planning board boards kanban scrum sprint agile retro retrospective roadmap now next later bug triage weekly planner jira trello asana linear backlog to do in progress done column columns swimlane swimlanes rows wip limit work in progress card cards ticket tickets task tasks story stories issue issues drag drop move card assign label priority estimate story points vote voting dot vote hide writing private reveal facilitator set up board settings plan card keyboard shift arrow undo templates project planner gantt daily standup bug tracker okrs key results product launch feedback board budget planner timesheet contact list task tracker spreadsheet templates hiring onboarding event planner sales crm deals help desk tickets meeting agenda personal goals study planner template categories tabs dashboard trash archive flag finder types view only phone',
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Getting Going',
@@ -666,9 +666,9 @@ export const articles: Article[] = [
     slug: 'boards',
     title: 'Boards',
     description:
-      'Plan boards: pick one, set up its columns, swimlanes and widgets, and what cards it takes.',
+      'Plan boards: pick one, set up its columns, swimlanes and widgets, collapse columns, save filters, and what cards it takes.',
     keywords:
-      'board boards plan board kanban sprint retro roadmap bug triage week weekly all cards archive blank column columns swimlane swimlanes rows wip limit width done counts as done widget widgets completion filter people points priorities unassigned top voted stale card size minimal compact detailed new cards card types move handle grip start with a board reveal hide writing votes left vote budget planner csv import csv download csv spreadsheet export cards',
+      'board boards plan board kanban sprint retro roadmap bug triage week weekly all cards archive blank column columns swimlane swimlanes rows wip limit width done counts as done widget widgets completion filter people points priorities unassigned top voted stale card size minimal compact detailed new cards card types move handle grip start with a board reveal hide writing votes left vote budget planner csv import csv download csv spreadsheet export cards collapse column collapsed fold hide column expand saved filter saved filters save filter saved view bookmark filter chips add filter field filter',
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Boards and Cards',
@@ -677,9 +677,9 @@ export const articles: Article[] = [
     slug: 'cards',
     title: 'Cards',
     description:
-      'Plan cards: add, open and fill one in, child cards, comments, flags, find any card, and archive or trash it.',
+      'Plan cards: add, open and fill one in, attachments, child cards, comments, flags, find any card, and archive or trash it.',
     keywords:
-      'card cards ticket tickets plan card add card open card panel modal details tab tabs description rich text bullet list numbered list labels checklist steps parent open parent assignee team members comments comment thread resolve mention trash restore empty trash archive duplicate card size flag flagged child breadcrumb trail find search finder not on a board',
+      'card cards ticket tickets plan card add card open card panel modal details tab tabs description rich text bullet list numbered list labels checklist steps parent open parent assignee team members comments comment thread resolve mention trash restore empty trash archive duplicate card size flag flagged child breadcrumb trail find search finder not on a board maximise maximize full screen expand card attachment attachments attach file upload picture image photo screenshot cover image reaction emoji comment and resolve repeat',
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Boards and Cards',
@@ -687,9 +687,32 @@ export const articles: Article[] = [
   {
     slug: 'card-types',
     title: 'Card Types',
-    description: 'Your own kinds of card on Plan boards: name, colour, glyph and custom fields.',
+    description:
+      'Your own kinds of card on Plan boards: name, colour, glyph, custom fields and types built on a base type.',
     keywords:
-      'card type types item type types custom type kind kinds category ticket type issue type template fields custom field fields property properties attribute column choice dropdown select option options checkbox tick link url number date text long text show on card colour color glyph icon reorder delete restore built-in tabs details new cards can be limits',
+      'card type types item type types custom type kind kinds category ticket type issue type template fields custom field fields property properties attribute column choice dropdown select option options checkbox tick link url number date text long text show on card colour color glyph icon reorder delete restore built-in tabs details new cards can be limits percent progress bar duration hours minutes estimate time tracking track time timer time spent add time calculated calculation formula formulas rollup roll up lookup look up sum average child count children done currency money email rating stars multiple choice person image attachments cover image inherit inherits inherited inheritance base type parent type subtype extend detach blocked by blocks dependency',
+    category: 'Plan',
+    categorySlug: 'plan',
+    group: 'Boards and Cards',
+  },
+  {
+    slug: 'select-cards',
+    title: 'Select Several Cards',
+    description:
+      'Select cards on a board and move, assign, label, flag or trash them together, or drag them as a group.',
+    keywords:
+      'select multiple multi select multiselect several cards many cards bulk edit batch edit bulk move bulk assign selection bar cmd click ctrl click shift click range select mode group drag drag several move many change priority labels set field archive trash',
+    category: 'Plan',
+    categorySlug: 'plan',
+    group: 'Boards and Cards',
+  },
+  {
+    slug: 'card-activity',
+    title: 'Card Activity',
+    description:
+      'The Activity tab on every card: who made it, moved it and changed it, and when, agents and undos marked.',
+    keywords:
+      'activity history card history log audit trail changes changelog who moved who changed what changed timeline tab moved edited created by ai transitioned by ai agent undo version',
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Boards and Cards',
@@ -722,7 +745,7 @@ export const articles: Article[] = [
     description:
       'A Plan tab of rows and slots: boards, sheets, metrics, charts and notes side by side, live, arranged by dragging.',
     keywords:
-      'dashboard dashboards overview report summary page layout rows row slots slot grid tiles widgets metrics metric kpi kpis chart charts board boards sheet sheets tabs at a glance status home portal add to slot settings cog background tint clear dashboard start over sheet chart change chart sheet figure column summary trend move swap resize arrange drag rearrange',
+      'dashboard dashboards overview report summary page layout rows row slots slot grid tiles widgets metrics metric kpi kpis chart charts board boards sheet sheets tabs at a glance status home portal add to slot settings cog background tint clear dashboard start over sheet chart change chart sheet figure column summary trend move swap resize arrange drag rearrange utilities utility note title status on track at risk off track checklist key date countdown links',
     category: 'Plan',
     categorySlug: 'plan',
     group: 'Forms and Dashboards',
@@ -805,9 +828,9 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import a liveplanner tab exported as JSON into the active tab, by pasting it or picking the file.',
+      'One Import dialog for everything: a CSV, a tab’s JSON export, or a board from Trello, Asana, Jira or Linear.',
     keywords:
-      'import json file files paste upload load restore backup copy clipboard replace tab export round trip',
+      'import json csv file files paste drop upload load restore backup copy clipboard replace tab export round trip trello asana jira linear board migrate move',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -823,8 +846,9 @@ export const articles: Article[] = [
   {
     slug: 'comments',
     title: 'Comments',
-    description: 'Comment on cards and Sheet cells, and resolve threads.',
-    keywords: 'thread feedback reply resolve discussion note annotate mention',
+    description: 'Comment on cards and Sheet cells, react with an emoji, and resolve threads.',
+    keywords:
+      'thread threads feedback reply resolve comment and resolve discussion note annotate mention reaction reactions react emoji thumbs up like heart',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },

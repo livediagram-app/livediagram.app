@@ -22,7 +22,7 @@ a card is never dropped into one.
 - **Status phases** come from the project's boards, the open tab's first and then every other tab's in tab
   order (not All Cards or Archive boards), so a dashboard tab with no board reads the phases of the boards
   beside it ([Plan templates](plan-templates.md#hand-offs)): a board's first column is
-  Not Started, its done column and every column after it are Done, and the columns between are In Progress.
+  Not Started, its [done columns](plan-board.md#done-columns) are Done, and the rest are In Progress.
   A board without a done column has no Done. A status two boards name takes the phase the first board gives
   it. A card with no status, or one no board names, is Not Started.
 - **Done** is the Done phase: what a board would count as done.
@@ -81,7 +81,7 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 - Every visualisation (not a metric tile) has a **cog** at the end of its header, last after Maximise, for someone who
   may change the chart (an Editor; Participants and Viewers see no cog). It opens **Chart Settings**, a popover of
   collapsible sections like a board's Board Settings: **Card Types** for every view, **Group By** for Cards by Field
-  (open first there), **Statuses** for Cards by Field and Priority by Status, and **Swimlanes** and **Row Order** (its note, and **Sort by Date** while the chart has its own
+  (open first there), **Count By** for Cards by Field, **Dates** for a Gantt chart and the calendars, **Statuses** for Cards by Field and Priority by Status, and **Swimlanes** and **Row Order** (its note, and **Sort by Date** while the chart has its own
   order, closing the popover) for a Gantt chart. They are the same settings as the element menu's **View** flyout,
   and each change is one edit, tracked as there. In a Dashboard slot it holds the slot's **Slot** section last
   ([Dashboard tab](plan-tabs.md#dashboard-tab)); there, someone who may not change the chart sees the slot's own cog
@@ -94,7 +94,8 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   which fields a type needs to be listed: a Gantt chart needs Start and Due ("Only card types with Start and Due
   fields show here."), a Due Calendar Due, a Start Calendar Start, Priority by Status and the Priorities metric Priority, the People and
   Unassigned metrics Assignee, the Due Soon metric Due, the Points metric Estimate and the Top Voted metric Votes;
-  the rest list every type. At least one stays pressed.
+  the rest list every type. A view reading a picked field ([Dates](#dates), [Count By](#cards-by-field)) needs
+  that field instead, named by its label. At least one stays pressed.
 - A view other than the Gantt chart shows every type it can until told otherwise, stored as the `types` it names
   only when that is not every listed type; the Gantt chart keeps its own default (Project). A named type that has
   lost a needed field is not listed and drops out of the view, but stays named, so it comes back when the type has
@@ -166,6 +167,14 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   (either way), named above it as it grows (**6 Oct → 12 Oct**). It is one change (start and due together), after
   which the bar's ends and body drag as any bar's. A press on that row's timeline draws; it does not open the card
   (its name does). Escape or a cancelled pointer drops the draw. Telemetry: `Plan` · `Changed` · `GanttDrawn`.
+- **Dependency arrows**: the chart draws an arrow from each blocker's row to each row it blocks, through any
+  [Blocked By](item-types.md#blocked-by) field (both cards must be rows the chart shows, in an open lane, and both
+  must have a bar or diamond). It leaves the blocker's mark at its right end, at its row's middle, steps 8 px right,
+  then runs down or up to the blocked row and in to the left end of its mark, ending in a small arrowhead; when the
+  blocked mark starts before that step, the line turns back along the gap between the rows first. An open blocker's
+  arrow is drawn in the muted ink, a done one's fainter (40%); an arrow never takes a press (the bars under it do),
+  and it is hidden from assistive technology, where the item panel's Blocked By and Blocks lists say the same. A
+  dragged bar's arrows follow it. The image export draws the same arrows for the rows it fits.
 - A project not done whose due date has passed draws its bar or diamond in red (its edge; red wins over a
   project's Colour).
 - **Dragging dates** (to someone who may edit): each end of a bar is a handle. Dragged sideways it moves that
@@ -261,13 +270,44 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   edit; choosing exactly Project again leaves the default (the setting is dropped). Telemetry: `Plan` · `Changed` ·
   `GanttTypes`.
 
+#### Dates
+
+- A Gantt chart, a Due Calendar and a Start Calendar read their dates by role ([Fields by
+  role](item-types.md#fields-by-role)): Start and Due unless picked. Chart Settings' **Dates** section (the View
+  flyout's too) has, for a Gantt chart, **Starts On** and **Due On**; for a Due Calendar **Due On**; for a Start
+  Calendar **Starts On**. Each is an [option list](plan-board.md#option-lists) of the date fields the views' card
+  types offer: the built-in Start Date or Due Date first, then each custom Date, Date and Time and Date Range field
+  by its label, ticked when picked. Its note: "The date field this chart reads."
+- Stored on the element as `startField` and `dueField` (a custom field's id); the built-in is the default and
+  never stored. A picked field no shown type offers any more reads as the built-in again, and the setting stays.
+- Everything the chart does reads and writes the picked fields: its bars, the calendar's days, a drag or Alt+Arrow
+  move, the other date carried along, Add Card's first dates, the counts and an image of the chart. A type must
+  offer the picked fields to be listed under Card Types.
+- **Times and ranges** ([Date and Time](item-types.md#date-and-time-fields), [Date Range](item-types.md#date-range-fields)):
+  - A Date and Time is on the day it falls on in the viewer's own time zone, so a card due 00:30 on Saturday in
+    Tokyo is on Friday for a viewer in London. A plain Date is always its own day, whatever the viewer's zone.
+  - A Date Range picked for **Starts On** reads its start, for **Due On** its end: picked for both, the Gantt chart
+    draws the range as a bar; a Due Calendar places the card on the range's last day, a Start Calendar on its first.
+  - **On a calendar day** a timed card shows its time before its title ("17:00 Launch", in the viewer's clock), or in
+    its card's top corner where the day draws cards, and the day lists its timed cards by time, earliest first, after
+    its cards with no time.
+  - **Overdue** (a Gantt bar's red edge): a timed Due is overdue once its moment has passed, to the minute; a day
+    once the day has passed.
+  - **Moving** (a calendar drag, Alt+Arrows, a Gantt drag) moves a timed date by whole days and keeps its time of
+    day in the viewer's zone, across a clock change too (a 09:00 meeting dragged over the end of summer time is
+    still 09:00); a range's end moves as that end. A date written where there was none (a Gantt draw, Add Card's
+    first dates, a range's other end) is a day, or, on a Date and Time field or a timed range, that day at 09:00 in
+    the viewer's zone (`TIMED_DEFAULT_HOUR`).
+  - The Due Soon widget and its dashboard tile keep reading the built-in Due, which stays a day.
+- Telemetry: `Plan` · `Changed` · `ViewDates`.
+
 ### Due Calendar
 
 - The month opens on today's, weeks from Monday; **‹** and **›** step a month (each viewer's own, unsaved),
   and **Today** comes back. Today's day is ringed.
 - Each day lists its due cards as **minimal cards**, as a board draws them at Minimal size (the title, up to
   two lines, between its type dot and its fields; done ones faded), where a day has room for one (50 px: a maximised calendar, a
-  Visualisation tab, a tall slot); a calendar is a dense grid of narrow days, so it never draws Compact or Detailed
+  Visualisation tab, a tall slot); a calendar is a dense grid of narrow days, so it never draws Detailed
   faces. On a small calendar, as a
   type-coloured dot and title, done ones muted and struck through. As many as fit and then **+N more**; pressing one
   opens it.
@@ -312,8 +352,13 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
   field (Parent among them). The empty group ("No assignee", "No priority"...) is last. Each bar is as long as its cards against
   the fullest row, split into Not Started, In Progress and Done, with the total at its end.
 - Its element menu's **View** flyout has **Group By**, the board's Swimlanes grid without None, listing what the
-  view's card types offer (stored as `swimlaneBy` and `swimlaneField`; Assignee is the default, not stored).
-  Telemetry: `Plan` · `Changed` · `ViewGrouping`.
+  view's card types offer, custom Person and Labels fields among them (stored as `swimlaneBy` and
+  `swimlaneField`; Assignee is the default, not stored). Telemetry: `Plan` · `Changed` · `ViewGrouping`.
+- **Count By**: **Cards** (the default), or the **Estimate** or any custom Number field the view's types offer,
+  as an option list. Counting by a field, each bar is the sum of its cards' values (a card without one adds
+  nothing), split by phase as before, its total at its end, and the header reads `34 points` for Estimate or
+  `34 {field}` (`34 Story Points`); a group whose cards hold no value still shows, at 0. Stored as `measure` (the
+  field's id); absent counts cards. Telemetry: `Plan` · `Changed` · `ViewMeasure`.
 - Its header names what it groups by, "Cards by Assignee", "Cards by Severity" (a field gone reads "Cards by
   Field"), unless the view has a title of its own; images draw the same heading.
 - A legend names the three phases, at the top right. The header counts the cards: `14 cards`.
@@ -344,14 +389,15 @@ The **Visualisations** palette category charts the cards. Each is resizable (720
 
 - A filter bar along its top, then the matching cards in the project's order, each drawn as a board draws it at
   **Detailed** size, in a grid of as many columns at least 240 px wide as fit, 12 px apart, scrolling down. In a slot
-  too narrow for a 240 px column, or under 260 px tall, the cards are **Compact** (columns at least 200 px wide).
+  too narrow for a 240 px column but at least 200 px wide, one Detailed column fills it. Under 200 px wide, or
+  under 260 px tall (too short for a Detailed card), the cards are **Minimal** (columns at least 200 px wide).
   A done card is faded, as on a board. At most 200 are drawn, then "Showing 200 of 340. Add a filter to narrow the
   search." Pressing a card opens it as any view's entry does. The header counts them:
   `12 cards`.
 - A **filter** is a field and a value, shown as a chip ("Card Type: Project", "State: Done", "Assignee: No
   assignee") with a cross that removes it; a card must match every filter. A field is any of a board's groupings
-  (Card Type, State, Assignee, Priority) or lane fields (Labels, Estimate, Start Date, Due Date, any grouping
-  custom field, Parent among them), and a value is one of its lanes, named and ordered as a board's swimlanes are, the empty one ("No
+  (Card Type, State, Assignee, Priority) or lane fields (Labels, Estimate, Start Date, Due Date, Created At, Created
+  By, Last Edited At, Last Edited By, any grouping custom field, Parent among them), and a value is one of its lanes, named and ordered as a board's swimlanes are, the empty one ("No
   assignee") included. At most 8 filters.
 - **Add Filter** (a dashed pill with a plus) opens a popover drawn over the page, so it reads at its own size
   whatever the canvas zoom: first the fields still worth filtering, those the matching cards' types offer (all

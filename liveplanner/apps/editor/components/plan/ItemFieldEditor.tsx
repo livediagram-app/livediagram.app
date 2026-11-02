@@ -1,39 +1,50 @@
 'use client';
 
 // One field of an item, as the item panel edits it (docs/specs/026-plan/plan-board.md "Working on a
-// board"): a built-in field by its kind, a custom field by its kind, and the description as rich text.
+// board"): a built-in field by its kind, a custom field by its kind, and the description and Long Text fields as
+// rich text.
 // Each saves as it changes.
 import { Select } from '@liveplanner/ui';
 import {
   ITEM_TYPES,
+  builtInFieldOfKind,
   customFieldOf,
   isBuiltInFieldId,
   linkCandidates,
+  holdsSeveral,
+  isBlocksField,
+  isTimeSpent,
+  linkTypesOf,
+  requiredFieldEmptied,
+  richFieldOf,
   typeAllowsStatus,
+  typeStatusesOf,
   type Item,
   type ItemFieldId,
   type ItemFieldValue,
   type ItemPatch,
   type ItemPerson,
   type ItemTypeDef,
+  type LabelUse,
 } from '@liveplanner/items';
-import {
-  ChecklistEditor,
-  DateField,
-  LabelsEditor,
-  EstimateSelect,
-  PersonPicker,
-  PriorityPicker,
-} from './item-field-editors';
+import { ChecklistEditor, DateField, EstimateSelect, PriorityPicker } from './item-field-editors';
+import { LabelsEditor } from './LabelsEditor';
+import { ParagraphField } from './ParagraphField';
+import { PersonPicker } from './PersonPicker';
 import { CustomFieldEditor } from './CustomFieldEditor';
+import { CalculatedFieldValue } from './CalculatedFieldValue';
+import { calculatedFieldOutcome } from './calculated-values';
 import { LinkedCardField } from './LinkedCardField';
+import { ImageFieldControl } from './ImageField';
+import { AttachmentsField } from './AttachmentsField';
+import { TimeSpentField } from './time/TimeSpentField';
 import { usePlan } from './PlanContext';
 import { isHexColour } from '@liveplanner/project';
 import { ColourSelect } from './ColourSwatches';
 import { PHASE_COLOURS } from './views/view-frame';
 import { track } from '@/lib/telemetry';
 import { ItemDescription } from './ItemDescription';
-import { ItemComments, type ItemCommentsContext } from './ItemComments';
+import { CardThreads } from './threads/CardThreads';
 import type { ItemOpenVia } from './item-trail';
 
 const FIELD_LABELS: Partial<Record<ItemFieldId, string>> = {
@@ -46,6 +57,7 @@ const FIELD_LABELS: Partial<Record<ItemFieldId, string>> = {
   start: 'Start',
   due: 'Due',
   checklist: 'Checklist',
+  attachments: 'Attachments',
   description: 'Description',
   comments: 'Comments',
 };
@@ -54,14 +66,21 @@ export function fieldLabel(type: ItemTypeDef, f: string): string {
   return customFieldOf(type, f)?.label ?? FIELD_LABELS[f as ItemFieldId] ?? f;
 }
 
-// Fields whose editor is not one labelled control (a label `for` would point nowhere).
+// Fields whose editor is not one labelled control (a label `for` would point nowhere): a custom field of a built-in
+// kind as its built-in field.
 export function labelsItsControl(type: ItemTypeDef, f: string): boolean {
+  const kind = customFieldOf(type, f)?.kind;
+  const as = (kind && builtInFieldOfKind(kind)) ?? f;
   return (
-    f !== 'checklist' &&
-    f !== 'color' &&
-    f !== 'description' &&
-    f !== 'comments' &&
-    customFieldOf(type, f)?.kind !== 'checkbox'
+    as !== 'checklist' &&
+    as !== 'attachments' &&
+    as !== 'color' &&
+    as !== 'description' &&
+    as !== 'comments' &&
+    kind !== 'checkbox' &&
+    kind !== 'image' &&
+    kind !== 'longtext' &&
+    !isTimeSpent(customFieldOf(type, f))
   );
 }
 
@@ -71,15 +90,13 @@ export type ItemFieldContext = {
   statuses: readonly { status: string; name: string }[];
   people: readonly ItemPerson[];
   canEdit: boolean;
-  // Every label the project's items carry, offered while a label is typed.
-  labels: readonly string[];
+  // Every label the plan's cards carry, with how many carry it, most used first (labelUsage): the label menu's.
+  labels: readonly LabelUse[];
   // Whether the save landed (false: refused), so a text field can go back to what is saved.
   onSave: (field: string, value: ItemFieldValue | undefined) => void | Promise<boolean>;
   onPatch: (patch: ItemPatch) => void;
   // Opens another item in the panel (the parent), stepping the panel's card trail.
   onOpenItem: (itemId: string, via: ItemOpenVia) => void;
-  // The card's comments (docs/specs/026-plan/items.md "Comments"); absent, the field draws nothing.
-  comments?: ItemCommentsContext;
 };
 
 export const fieldId = (item: Item, f: string) => `item-${item.id}-${f}`;
@@ -97,44 +114,118 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
   const custom = customFieldOf(type, f);
   // A save fired from an event: only a text field waits for whether it landed.
   const save = (v: ItemFieldValue | undefined) => void onSave(f, v);
-  // A Card field (docs/specs/026-plan/item-types.md "Card fields"): one card of the type it links to.
-  if (custom?.kind === 'card' && custom.linkType) {
+  // A Card field (docs/specs/026-plan/item-types.md "Card fields"): one card of any of the types it links to.
+  const linkTypes = custom?.kind === 'card' ? linkTypesOf(custom) : [];
+  if (custom && linkTypes.length) {
+    // A Blocked By field's links are an Editor's to set (docs/specs/026-plan/item-types.md "Blocked By"): a
+    // Participant reads its chips.
+    const blocks = isBlocksField(custom);
     return (
       <LinkedCardField
         id={id}
         label={custom.label}
         value={value}
-        candidates={linkCandidates(items.values(), custom.linkType, item.id)}
+        candidates={linkCandidates(items.values(), linkTypes, item.id)}
         items={items}
         types={types}
-        disabled={disabled}
+        disabled={disabled || (blocks && plan?.canEdit === false)}
+        {...(blocks ? { blocksFor: item.id } : {})}
         onSave={save}
         onOpen={(target) => ctx.onOpenItem(target, 'Parent')}
+        multiple={holdsSeveral(custom)}
       />
     );
   }
-  if (custom) {
+  // A Calculated field (docs/specs/026-plan/item-types.md "Calculated fields"): worked out, read-only.
+  if (custom?.kind === 'calculated') {
+    return (
+      <CalculatedFieldValue
+        id={id}
+        field={custom}
+        outcome={plan ? calculatedFieldOutcome(plan, custom, item) : { ok: true, value: null }}
+      />
+    );
+  }
+  // A Time Spent field (docs/specs/026-plan/item-types.md "Time Spent"): its timers and entries, each one time write.
+  if (custom && isTimeSpent(custom)) {
+    const trackTime = plan?.trackTime;
+    return (
+      <TimeSpentField
+        id={id}
+        label={custom.label}
+        value={value}
+        self={plan?.self ?? null}
+        canTrack={!!trackTime && (plan?.canEditCards ?? false)}
+        canEditAll={!!trackTime && (plan?.canEdit ?? false)}
+        onTime={(op) => (trackTime ? trackTime(item.id, f, op) : Promise.resolve(false))}
+        announce={plan?.announce}
+      />
+    );
+  }
+  // An Image field (docs/specs/026-plan/item-types.md "Image fields"): one picture, uploaded into the media service.
+  if (custom?.kind === 'image') {
+    return (
+      <ImageFieldControl
+        id={id}
+        label={custom.label}
+        value={value}
+        disabled={disabled}
+        onSave={save}
+      />
+    );
+  }
+  // A Long Text field (docs/specs/026-plan/item-types.md "An item type"): rich text, as the description is.
+  if (custom?.kind === 'longtext') {
+    return (
+      <ParagraphField
+        item={item}
+        field={custom}
+        canEdit={canEdit}
+        onPatch={ctx.onPatch}
+        onEmpty={() => {
+          // A required field is refused by the host's own save, which says why; any other clears with its
+          // formatting.
+          if (requiredFieldEmptied(type, item.fields, f, undefined)) return save(undefined);
+          const clear = [f, richFieldOf(f)].filter((k) => k in item.fields);
+          if (clear.length) ctx.onPatch({ clear });
+        }}
+      />
+    );
+  }
+  // A custom field of a built-in kind (Person, Labels, Colour, Checklist) is edited as its built-in field is.
+  const asBuiltIn = custom ? builtInFieldOfKind(custom.kind) : undefined;
+  if (custom && !asBuiltIn) {
     return (
       <CustomFieldEditor id={id} field={custom} value={value} disabled={disabled} onSave={save} />
     );
   }
-  if (!isBuiltInFieldId(f)) return null;
-  switch (f) {
+  const as = asBuiltIn ?? f;
+  if (!isBuiltInFieldId(as)) return null;
+  switch (as) {
     case 'status': {
       // A state no board names any more reads as No status (docs/specs/026-plan/plan-board.md "A state no board
       // names"), never as its raw id; the card keeps it until another is picked.
       const raw = typeof value === 'string' ? value : '';
       const status = ctx.statuses.some((s) => s.status === raw) ? raw : '';
       const known = ctx.statuses;
-      // Only the statuses this card type uses (docs/specs/026-plan/item-types.md "An item type"); a card already
-      // in one it leaves out shows it, marked, and can move out of it but never back in.
-      const options = known
-        .filter((s) => typeAllowsStatus(type, s.status) || s.status === status)
-        .map((s) =>
-          typeAllowsStatus(type, s.status)
-            ? s
-            : { ...s, name: `${s.name} (not used by ${type.label})`, excluded: true },
-        );
+      // Only the statuses this card type uses, in its order (docs/specs/026-plan/item-types.md "The statuses a type
+      // uses"), the same on every tab; a card already in one it leaves out shows it last, marked, and can move out of
+      // it but never back in.
+      const byId = new Map(known.map((s) => [s.status, s]));
+      const options: { status: string; name: string; excluded?: true }[] = typeStatusesOf(
+        type,
+        byId.keys(),
+      ).flatMap((id) => {
+        const s = byId.get(id);
+        return s ? [s] : [];
+      });
+      const current = byId.get(status);
+      if (current && !typeAllowsStatus(type, status))
+        options.push({
+          ...current,
+          name: `${current.name} (not used by ${type.label})`,
+          excluded: true,
+        });
       // The status reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name.
       const phase = status ? (plan?.statusPhases?.get(status) ?? 'todo') : null;
       return (
@@ -166,7 +257,15 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
     }
     case 'assignee':
       return (
-        <PersonPicker id={id} value={value} people={ctx.people} disabled={disabled} onSave={save} />
+        <PersonPicker
+          id={id}
+          value={value}
+          people={ctx.people}
+          disabled={disabled}
+          onSave={save}
+          {...(custom ? { label: custom.label } : {})}
+          multiple={holdsSeveral(custom)}
+        />
       );
     case 'priority':
       return <PriorityPicker id={id} value={value} disabled={disabled} onSave={save} />;
@@ -189,7 +288,7 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
           value={isHexColour(value) ? value.toLowerCase() : undefined}
           onChange={(c) => {
             save(c);
-            track('Plan', 'Changed', 'ProjectColour');
+            if (!asBuiltIn) track('Plan', 'Changed', 'ProjectColour');
           }}
         />
       );
@@ -214,12 +313,16 @@ export function ItemFieldEditor({ f, ctx }: { f: string; ctx: ItemFieldContext }
       return <DateField id={id} value={value} disabled={disabled} onSave={save} />;
     case 'checklist':
       return <ChecklistEditor value={value} disabled={disabled} onSave={save} />;
+    case 'attachments':
+      return (
+        <AttachmentsField id={id} itemId={item.id} value={value} canEdit={canEdit} onSave={save} />
+      );
     case 'description':
       return <ItemDescription item={item} canEdit={canEdit} onPatch={ctx.onPatch} />;
     case 'comments':
-      return ctx.comments ? (
-        <ItemComments item={item} canEdit={canEdit} comments={ctx.comments} />
-      ) : null;
+      // The card's comment threads (docs/specs/026-plan/items.md "Comments"), from their own context.
+      // A custom Comments field draws the same, listing its own threads (item-types.md "Comments and Votes fields").
+      return <CardThreads item={item} type={type} field={f} />;
     default:
       return null;
   }

@@ -3,6 +3,7 @@
 
 import { PALETTE_TELEMETRY_TYPES, SHEET_CHANGE_KINDS } from '@liveplanner/api-schema';
 import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@liveplanner/forms';
+import { TRACKER_SOURCE_NAMES } from '@liveplanner/items';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
 import type { Metric, MetricStack } from '../../_shared/metric-series';
 import { chart } from '../../_shared/catalogue-helpers';
@@ -43,8 +44,8 @@ export const TAB_LOOKS_PICKED = chart(
   'Tab',
   'Changed',
   'Tab Looks',
-  'A look picked in Tab Style: theme, finish, font and canvas pattern set at once, a random Mashup rolled, or a seasonal look picked.',
-  { types: ['Look', 'Mashup', 'SeasonalLook'] },
+  'A look picked in Tab Style: theme, finish, font and canvas pattern set at once, a random Mashup rolled, a seasonal look picked, or one tab’s style applied to all tabs.',
+  { types: ['Look', 'Mashup', 'SeasonalLook', 'AllTabs'] },
 );
 
 export const TABS_ARRANGED = chart(
@@ -639,12 +640,21 @@ export const TAB_IMPORTS = chart(
   'A tab imported from a liveplanner JSON export.',
 );
 
+// A board imported from another tool (docs/specs/026-plan/tracker-import.md), by the tool it came from.
+export const PLAN_BOARDS_IMPORTED = chart(
+  'Plan',
+  'Imported',
+  'Boards Imported',
+  'A Board tab made from a Trello, Asana, Jira or Linear export in the Import dialog.',
+  { types: Object.values(TRACKER_SOURCE_NAMES) },
+);
+
 export const EXPORT_AND_IMPORT: MetricStack = {
   stack: true,
   title: 'Export & Import',
   blurb:
-    'Diagrams leaving liveplanner as files and text, and tabs coming back in from JSON exports.',
-  members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS],
+    'Diagrams leaving liveplanner as files and text, tabs coming back in from JSON exports, and boards from other tools.',
+  members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS, PLAN_BOARDS_IMPORTED],
   seeAlso: { section: 'editing', label: 'See Each Export Format in Features › Editing' },
 };
 
@@ -664,6 +674,14 @@ export const PLAN_ITEMS_MOVED = chart(
   'A card moved to another column, row or place on a Plan board, or to the archive (Archive).',
 );
 
+export const PLAN_CARDS_LINKED = chart(
+  'Plan',
+  'Linked',
+  'Cards Linked',
+  'An existing card linked to this one from a Linked as section (Link Existing), whether newly linked or moved from another card.',
+  { types: ['LinkedCard', 'LinkedCardMoved'] },
+);
+
 export const PLAN_ITEMS_RESTORED = chart(
   'Plan',
   'Restored',
@@ -676,7 +694,29 @@ export const PLAN_REMOVED = chart(
   'Plan',
   'Removed',
   'Filters Removed',
-  'A filter taken off a Card Search view.',
+  "A filter taken off a Card Search view, or one of a board's saved filters deleted.",
+  { rising: 'neutral' },
+);
+
+export const PLAN_CARDS_SELECTED = chart(
+  'Plan',
+  'Selected',
+  'Cards Selected',
+  'A selection of several cards started on a board, to move or change them together. Once per selection, not per card.',
+);
+
+export const PLAN_SAVED_FILTERS_USED = chart(
+  'Plan',
+  'Used',
+  'Saved Filters Applied',
+  "One of a board's saved filters applied by pressing its chip.",
+);
+
+export const PLAN_SAVED_FILTERS_RENAMED = chart(
+  'Plan',
+  'Renamed',
+  'Saved Filters Renamed',
+  "One of a board's saved filters renamed.",
   { rising: 'neutral' },
 );
 
@@ -737,12 +777,52 @@ export const PLAN_FILL_TAB = chart(
   { types: ['FillTabOn', 'FillTabOff', 'SheetFillTabOn', 'SheetFillTabOff'], rising: 'neutral' },
 );
 
+export const PLAN_CARD_ACTIVITY = chart(
+  'Plan',
+  'Toggled',
+  'Card Activity Opened',
+  "The Activity tab of a card's panel picked to read the card's history (before it, the Activity section opened).",
+  { types: ['ActivityOn'], rising: 'neutral' },
+);
+
+export const PLAN_CARD_REPEATS = chart(
+  'Plan',
+  'Toggled',
+  'Cards Repeating',
+  "A card set to repeat from its panel's menu (a fresh copy on each day its rule names), or stopped repeating.",
+  { types: ['RepeatOn', 'RepeatOff'], rising: 'neutral' },
+);
+
+export const PLAN_COLUMNS_COLLAPSED = chart(
+  'Plan',
+  'Toggled',
+  'Columns Collapsed',
+  "A board column folded to a narrow strip from its header, or opened again: each person's own view.",
+  { types: ['ColumnCollapsed', 'ColumnExpanded'], rising: 'neutral' },
+);
+
 export const PLAN_CARD_TYPES_DUPLICATED = chart(
   'Plan',
   'Duplicated',
   'Card Types Duplicated',
   'A new card type made by duplicating an existing one in the Card Types panel.',
   { rising: 'neutral' },
+);
+
+export const PLAN_CARD_TYPES_INHERITED = chart(
+  'Plan',
+  'Linked',
+  'Card Types Inherited',
+  'A card type saved inheriting its fields, tabs, states and display from another type.',
+  { types: ['CardTypeBase'], rising: 'neutral' },
+);
+
+export const PLAN_CARD_TYPES_DETACHED = chart(
+  'Plan',
+  'Unlinked',
+  'Card Types Detached',
+  'A card type saved detached from the type it inherited from, keeping a copy of its settings.',
+  { types: ['CardTypeBase'], rising: 'neutral' },
 );
 
 export const PLAN_SETUP_CHANGED = chart(
@@ -805,6 +885,31 @@ export const PLAN_CARD_STYLES = chart(
   'Dashboard Cards Styled',
   "A card on a Dashboard tab styled from its Slot Options' Style row: a preset, a colour, its border or its shadow. One per change.",
   { types: ['DashboardCardStyle'] },
+);
+
+// Time Spent fields (docs/specs/026-plan/item-types.md "Time Spent"): timers run on cards and time added by hand.
+export const PLAN_TIMERS_STARTED = chart(
+  'Plan',
+  'Started',
+  'Card Timers Started',
+  'A timer started on a card’s Time Spent field. Read against Card Timers Stopped to see how many get discarded.',
+  { types: ['Timer'] },
+);
+
+export const PLAN_TIMERS_STOPPED = chart(
+  'Plan',
+  'Ended',
+  'Card Timers Stopped',
+  'A card’s timer stopped, recording its time as an entry (one stopped in under half a minute records nothing).',
+  { types: ['Timer'] },
+);
+
+export const PLAN_TIME_ENTRIES = chart(
+  'Plan',
+  'Added',
+  'Time Added by Hand',
+  'Time someone worked typed into a card’s Time Spent field with Add Time, rather than timed.',
+  { types: ['TimeEntry'] },
 );
 
 export const SHEET_CHANGES = chart(
@@ -1024,19 +1129,31 @@ const PLAN_BOARDS_MEMBERS = [
   PLAN_TABS_CREATED,
   PLAN_ITEMS_ADDED,
   PLAN_ITEMS_MOVED,
+  PLAN_CARDS_LINKED,
   PLAN_ITEMS_OPENED,
   PLAN_ITEMS_DELETED,
   PLAN_ITEMS_RESTORED,
   PLAN_REMOVED,
+  PLAN_CARDS_SELECTED,
+  PLAN_SAVED_FILTERS_USED,
+  PLAN_SAVED_FILTERS_RENAMED,
   PLAN_FLAGS,
   PLAN_MAXIMISED,
   PLAN_FOCUSED,
   PLAN_FILL_TAB,
+  PLAN_CARD_ACTIVITY,
+  PLAN_CARD_REPEATS,
+  PLAN_COLUMNS_COLLAPSED,
   PLAN_SETUP_CHANGED,
   PLAN_CALENDAR_MOVES,
   PLAN_VIEW_STATUSES,
   PLAN_CARD_STYLES,
+  PLAN_TIMERS_STARTED,
+  PLAN_TIMERS_STOPPED,
+  PLAN_TIME_ENTRIES,
   PLAN_CARD_TYPES_DUPLICATED,
+  PLAN_CARD_TYPES_INHERITED,
+  PLAN_CARD_TYPES_DETACHED,
   PLAN_REVEALED,
   PLAN_CSV_IMPORTED,
   PLAN_CSV_EXPORTED,
@@ -1047,9 +1164,13 @@ export const PLAN_BOARDS: MetricStack = {
   title: 'Plan boards',
   blurb: 'Work on Plan boards: items made, moved, opened, voted on and deleted, and boards set up.',
   members: PLAN_BOARDS_MEMBERS,
-  // Calendar moves, chart statuses and card styles are slices of Boards Set Up (every Plan·Changed), so the head
-  // counts them once.
+  // Calendar moves, chart statuses and card styles are slices of Boards Set Up (every Plan·Changed), and time added
+  // by hand a slice of Items Added (every Plan·Added), so the head counts them once.
   headline: PLAN_BOARDS_MEMBERS.filter(
-    (m) => m !== PLAN_CALENDAR_MOVES && m !== PLAN_VIEW_STATUSES && m !== PLAN_CARD_STYLES,
+    (m) =>
+      m !== PLAN_CALENDAR_MOVES &&
+      m !== PLAN_VIEW_STATUSES &&
+      m !== PLAN_CARD_STYLES &&
+      m !== PLAN_TIME_ENTRIES,
   ),
 };

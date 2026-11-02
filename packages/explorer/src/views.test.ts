@@ -67,7 +67,13 @@ describe('views and their addresses', () => {
 
 describe('words', () => {
   it('names each app’s kind, and says item while every app shows', () => {
-    expect(APPS.map((a) => kindWords(a).one)).toEqual(['Canvas', 'Plan', 'Document', 'Design']);
+    expect(APPS.map((a) => kindWords(a).one)).toEqual([
+      'Canvas',
+      'Plan',
+      'Document',
+      'Design',
+      'Space',
+    ]);
     expect(kindWords('livediagram').many).toBe('Canvases');
     expect(listWords('liveplanner', 'all').lowerMany).toBe('files');
   });

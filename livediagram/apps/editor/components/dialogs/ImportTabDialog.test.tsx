@@ -109,3 +109,26 @@ describe('ImportTabDialog on a phone', () => {
     expect(keys.parentElement!.textContent).toMatch(/Undo \(⌘Z \/ Ctrl.Z\) brings it back\./);
   });
 });
+
+// A screen reader hears what the paste field is for, and why an import did not land.
+describe('ImportTabDialog for a screen reader', () => {
+  it('names the paste field for its format and announces an error', async () => {
+    const onImportText = vi.fn(async (): Promise<ImportOutcome> => ({
+      status: 'error',
+      error: 'No nodes found.',
+    }));
+    render(
+      <ImportTabDialog
+        tabName="Board"
+        onImportFile={vi.fn()}
+        onImportText={onImportText}
+        onClose={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Mermaid/ }));
+    const field = screen.getByRole('textbox', { name: 'Mermaid to import' });
+    fireEvent.change(field, { target: { value: 'graph TD' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Import' }));
+    expect((await screen.findByRole('alert')).textContent).toBe('No nodes found.');
+  });
+});

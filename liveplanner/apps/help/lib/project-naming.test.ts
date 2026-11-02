@@ -31,9 +31,10 @@ const DOM_DOCUMENT =
   /\bdocument\??\.[A-Za-z]|\bdocument\s*$|^\s*document\s*$|typeof document|instanceof Document|\(document[,)]|stubGlobal\('document'|spyOn\(document|defineProperty\(document|= document\b|: Document\b|Document(Timeline|Fragment|OrShadowRoot)|DOM `?document|(HTML|SVG|XML) documents?\b|\(document as\b|\| Document\b|: document;|const document = \{|\{ document \}|^\s*document,$|`document`|document (position|root|element)\b|\.document\b|document\?: \{ createElement|without a document rather than throwing|listener on the document\b/;
 
 // The platform's shared names, which say document for every app's item: an OpenAPI document, the
-// @liveworkspace/api-schema/document-* modules and the names this product re-exports from them as its own.
+// @liveworkspace/api-schema/document-* modules, the media service's X-Media-Document header, and the names this
+// product re-exports from them as its own.
 const SHARED_PLATFORM =
-  /OpenApiDocument|OpenAPI document|@liveworkspace\/api-schema\/document-|\b\w*([Dd]ocument|DOCUMENT)\w*\s+as\s+\w*([Pp]roject|PROJECT)|\bTrashedDocument in @liveworkspace\/|\(typeof DOCUMENT_SOURCES\)|\{ DOCUMENT_SOURCES \}/;
+  /OpenApiDocument|OpenAPI document|X-Media-Document|@liveworkspace\/api-schema\/document-|\b\w*([Dd]ocument|DOCUMENT)\w*\s+as\s+\w*([Pp]roject|PROJECT)|\bTrashedDocument in @liveworkspace\/|\(typeof DOCUMENT_SOURCES\)|\{ DOCUMENT_SOURCES \}/;
 
 // Every app's own items named together (closing an account deletes them all), and the documents of the old
 // livediagram.app that the migration brings over.
@@ -47,9 +48,9 @@ const PAGE_SEARCH_WORDS = /^\s*page: '[^']*\bdocument\b[^']*',$/;
 // "documentation" are taken out.
 const DOM_WORDS =
   /ownerDocument|contentDocument|documentElement|compareDocumentPosition|DOCUMENT_POSITION_\w+|createDocumentFragment|DocumentFragment|DocumentTimeline|DocumentOrShadowRoot|[Dd]ocumentation|[Uu]ndocumented|[Dd]ocumented|[Dd]ocumenting/g;
-// Another liveworkspace app's own address for its items (livediagram's and livedocuments' `/document/`), which the
+// Another liveworkspace app's own address for its items (livediagram's, livedocuments' and livehuddle's `/document/`), which the
 // shared Explorer opens on that app's site.
-const OTHER_APP_PATHS = /^\s*(livediagram|livedocuments): '\/document\/',$/;
+const OTHER_APP_PATHS = /^\s*(livediagram|livedocuments|livehuddle): '\/document\/',$/;
 // livedocuments, the liveworkspace app whose items are Documents, named as the app it is.
 const OTHER_APP_NAME = /\blivedocuments(\.app)?\b/g;
 // A line stating the rule itself.

@@ -162,6 +162,41 @@ describe('photo page edits', () => {
     expect(pageAdded(tab, 'photo', 'one-more')).toEqual({ refused: 'photo_limit' });
     expect(pageDuplicated(tab, 'p1', 'one-more')).toEqual({ refused: 'photo_limit' });
   });
+
+  it('adds Make Sizes pages after their source, named, with their photos, as one edit', async () => {
+    const { photoPagesAdded, photoOfPage, newPhotoPage } = await import('./index');
+    const base = {
+      elements: [],
+      pages: [newPhotoPage('a'), newPhotoPage('b')],
+    };
+    const post = { width: 1080, height: 1350, layers: [] };
+    const banner = { width: 1584, height: 396, layers: [] };
+    const out = photoPagesAdded(base, 'a', [
+      { id: 'n1', name: 'Instagram Post', photo: post },
+      { id: 'n2', name: 'LinkedIn Banner', photo: banner },
+    ]);
+    if (!('tab' in out)) throw new Error('refused');
+    expect(out.tab.pages.map((p) => p.id)).toEqual(['a', 'n1', 'n2', 'b']);
+    expect(out.tab.pages.find((p) => p.id === 'n1')).toMatchObject({
+      name: 'Instagram Post',
+      kind: 'photo',
+      orientation: 'portrait',
+      fit: { width: 1080, height: 1350 },
+    });
+    expect(photoOfPage(out.tab, 'n2')).toEqual(banner);
+    // Nothing to add is the same pages back.
+    expect(photoPagesAdded(base, 'b', [])).toEqual({ tab: base });
+    expect(photoPagesAdded(base, 'gone', [{ id: 'n', name: 'X', photo: post }])).toEqual({
+      refused: 'unknown_page',
+    });
+    // One past the ten photo pages refuses them all.
+    const many = Array.from({ length: 9 }, (_, i) => ({
+      id: `m${i}`,
+      name: 'X Post',
+      photo: post,
+    }));
+    expect(photoPagesAdded(base, 'a', many)).toEqual({ refused: 'photo_limit' });
+  });
 });
 
 describe('a photo page in exports', () => {

@@ -33,3 +33,16 @@ describe('indexable pages’ share metadata', () => {
       expect(metadata.twitter?.title).not.toBe(root.title);
     });
 });
+
+// A search result and a browser tab name the site as well as the page: `<page> · liveworkspace`, the same in the page's
+// <title> and its share cards, so "Status" or "Terms of Use" alone never stands for liveworkspace.
+describe('indexable pages’ titles', () => {
+  for (const [path, metadata] of Object.entries(PAGES))
+    it(`${path} names the page and the site`, () => {
+      expect(metadata.title).toMatch(/^\S.* · liveworkspace$/);
+      const og = metadata.openGraph as { title?: unknown; siteName?: unknown } | undefined;
+      expect(og?.title).toBe(metadata.title);
+      expect(og?.siteName).toBe('liveworkspace');
+      expect(metadata.twitter?.title).toBe(metadata.title);
+    });
+});

@@ -1,0 +1,186 @@
+{
+  "id": "65f1a2b3c4d5e6f708192a3b",
+  "name": "Website Relaunch",
+  "desc": "Everything for the spring relaunch.",
+  "closed": false,
+  "url": "https://trello.com/b/AbCdEf12/website-relaunch",
+  "prefs": { "permissionLevel": "private", "background": "blue" },
+  "labels": [
+    {
+      "id": "lab-design",
+      "idBoard": "65f1a2b3c4d5e6f708192a3b",
+      "name": "Design",
+      "color": "green"
+    },
+    { "id": "lab-bug", "idBoard": "65f1a2b3c4d5e6f708192a3b", "name": "Bug", "color": "red" },
+    { "id": "lab-high", "idBoard": "65f1a2b3c4d5e6f708192a3b", "name": "High", "color": "orange" },
+    { "id": "lab-purple", "idBoard": "65f1a2b3c4d5e6f708192a3b", "name": "", "color": "purple" }
+  ],
+  "lists": [
+    { "id": "list-done", "name": "Done", "closed": false, "pos": 65535 },
+    { "id": "list-backlog", "name": "Backlog", "closed": false, "pos": 1024 },
+    { "id": "list-doing", "name": "Doing", "closed": false, "pos": 16384 },
+    { "id": "list-review", "name": "In Review", "closed": false, "pos": 32768 },
+    { "id": "list-old", "name": "Old Ideas", "closed": true, "pos": 70000 }
+  ],
+  "members": [
+    { "id": "mem-ana", "fullName": "Ana Lopez", "username": "analopez" },
+    { "id": "mem-ben", "fullName": "Ben Okafor", "username": "benokafor" },
+    { "id": "mem-chen", "fullName": "", "username": "chenwei" }
+  ],
+  "cards": [
+    {
+      "id": "card-hero",
+      "name": "Design the new hero section",
+      "desc": "Use the **brand** palette.\n<script>alert('x')</script>\nSee Figma.",
+      "closed": false,
+      "idList": "list-doing",
+      "pos": 2048,
+      "due": "2026-11-14T17:00:00.000Z",
+      "start": "2026-11-03T09:00:00.000Z",
+      "idMembers": ["mem-ana", "mem-ben"],
+      "idLabels": ["lab-design", "lab-high"],
+      "labels": [
+        { "id": "lab-design", "name": "Design", "color": "green" },
+        { "id": "lab-high", "name": "High", "color": "orange" }
+      ],
+      "idChecklists": ["chk-hero-qa", "chk-hero-copy"],
+      "attachments": [
+        {
+          "id": "att-1",
+          "name": "hero-v2.png",
+          "url": "https://trello.com/1/cards/card-hero/attachments/att-1/download/hero-v2.png"
+        },
+        { "id": "att-2", "name": "notes", "url": "javascript:alert(1)" }
+      ],
+      "shortUrl": "https://trello.com/c/Hero1234"
+    },
+    {
+      "id": "card-login",
+      "name": "Login button does nothing on Safari\u0007",
+      "desc": "",
+      "closed": false,
+      "idList": "list-backlog",
+      "pos": 1024,
+      "due": null,
+      "start": null,
+      "idMembers": ["mem-chen"],
+      "idLabels": ["lab-bug", "lab-purple"],
+      "idChecklists": [],
+      "attachments": []
+    },
+    {
+      "id": "card-footer",
+      "name": "Footer links",
+      "desc": "Legal asked for the new privacy link.",
+      "closed": false,
+      "idList": "list-review",
+      "pos": 512,
+      "due": "2026-11-20T12:00:00.000Z",
+      "idMembers": [],
+      "labels": [],
+      "idChecklists": ["chk-footer"],
+      "attachments": []
+    },
+    {
+      "id": "card-launch",
+      "name": "Announce the launch",
+      "desc": "",
+      "closed": false,
+      "idList": "list-done",
+      "pos": 4096,
+      "idMembers": ["mem-ben"],
+      "labels": [],
+      "attachments": []
+    },
+    {
+      "id": "card-copy",
+      "name": "Rewrite pricing copy",
+      "desc": "",
+      "closed": false,
+      "idList": "list-backlog",
+      "pos": 512,
+      "idMembers": [],
+      "labels": [],
+      "attachments": []
+    },
+    {
+      "id": "card-archived",
+      "name": "Old banner",
+      "closed": true,
+      "idList": "list-doing",
+      "pos": 99
+    },
+    {
+      "id": "card-on-old-list",
+      "name": "Dark mode idea",
+      "closed": false,
+      "idList": "list-old",
+      "pos": 1
+    }
+  ],
+  "checklists": [
+    {
+      "id": "chk-hero-copy",
+      "idCard": "card-hero",
+      "name": "Copy",
+      "pos": 32768,
+      "checkItems": [
+        { "id": "ci-3", "name": "Headline signed off", "state": "incomplete", "pos": 1 }
+      ]
+    },
+    {
+      "id": "chk-hero-qa",
+      "idCard": "card-hero",
+      "name": "QA",
+      "pos": 16384,
+      "checkItems": [
+        { "id": "ci-2", "name": "Test on Safari", "state": "incomplete", "pos": 2 },
+        { "id": "ci-1", "name": "Test on Chrome", "state": "complete", "pos": 1 }
+      ]
+    },
+    {
+      "id": "chk-footer",
+      "idCard": "card-footer",
+      "name": "Checklist",
+      "pos": 1,
+      "checkItems": [
+        { "id": "ci-4", "name": "Privacy link", "state": "complete", "pos": 1 },
+        { "id": "ci-5", "name": "Cookie link", "state": "incomplete", "pos": 2 }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "act-3",
+      "type": "commentCard",
+      "date": "2026-10-29T15:20:00.000Z",
+      "data": {
+        "text": "Looks great. @benokafor can you check mobile?",
+        "card": { "id": "card-hero", "name": "Design the new hero section" }
+      },
+      "memberCreator": { "id": "mem-ana", "fullName": "Ana Lopez", "username": "analopez" }
+    },
+    {
+      "id": "act-2",
+      "type": "updateCard",
+      "date": "2026-10-28T10:00:00.000Z",
+      "data": { "card": { "id": "card-hero" }, "listAfter": { "id": "list-doing" } },
+      "memberCreator": { "id": "mem-ana", "fullName": "Ana Lopez" }
+    },
+    {
+      "id": "act-1",
+      "type": "commentCard",
+      "date": "2026-10-27T09:05:00.000Z",
+      "data": { "text": "First draft is in Figma.", "card": { "id": "card-hero" } },
+      "memberCreator": { "id": "mem-ben", "fullName": "Ben Okafor", "username": "benokafor" }
+    },
+    {
+      "id": "act-0",
+      "type": "commentCard",
+      "date": "2026-10-26T08:00:00.000Z",
+      "data": { "text": "Repro: click twice.", "card": { "id": "card-login" } },
+      "memberCreator": { "id": "mem-chen", "username": "chenwei" }
+    }
+  ]
+}

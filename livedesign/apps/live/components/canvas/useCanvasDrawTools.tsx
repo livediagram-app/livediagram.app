@@ -5,6 +5,9 @@ import { useCanvasDrawGesture } from '@/components/canvas/useCanvasDrawGesture';
 import { useCanvasPolygonGesture } from '@/components/canvas/useCanvasPolygonGesture';
 import { usePathTool } from '@/components/canvas/path/usePathTool';
 import { pageIdAtPress, pressIsOffPage } from '@/hooks/canvas/page-guard';
+import { useFillPress } from '@liveworkspace/workbench/hooks/canvas/useFillPress';
+import { useEditorPaintBucket } from '@/hooks/canvas/useEditorPaintBucket';
+import { isFillIntent } from '@/lib/draw-mode';
 
 type CanvasDrawToolsInput = {
   props: CanvasProps;
@@ -97,11 +100,25 @@ export function useCanvasDrawTools({
     props.onFormatPagePress(pageId);
     return true;
   };
+  // The Fill tool (docs/specs/023-draw-mode/drawing-tools.md "The Fill tool"), in front of every
+  // drawing gesture: while it is in hand a press is a fill, never a draw.
+  const paintBucket = useEditorPaintBucket(pendingDraw);
+  const { beginFillPress } = useFillPress({
+    armed: isFillIntent(pendingDraw),
+    wrapperRef,
+    viewportZoom,
+    isPinchingRef,
+    onPaintBucket: paintBucket,
+  });
   // In Pages mode a press off the page is claimed and dropped: nothing is made there.
   const offPage = (e: { clientX: number; clientY: number }) =>
     pressIsOffPage(props.pagesMode, e, wrapperRef, viewportZoom);
   const beginPendingDrawOrPolygon = (e: React.PointerEvent): boolean =>
-    offPage(e) || pathTool.beginPathPress(e) || beginPolygonPoint(e) || beginPendingDrawGesture(e);
+    offPage(e) ||
+    beginFillPress(e) ||
+    pathTool.beginPathPress(e) ||
+    beginPolygonPoint(e) ||
+    beginPendingDrawGesture(e);
   return {
     drawDrag,
     penPoints,

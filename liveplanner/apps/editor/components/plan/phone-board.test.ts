@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { PHONE_END_CLEARANCE, boardLook, shownQuick, type BoardPlace } from './phone-board';
+import {
+  CARD_HOLD_TO_DRAG_MS,
+  PHONE_END_CLEARANCE,
+  boardLook,
+  holdPhase,
+  shownQuick,
+  type BoardPlace,
+} from './phone-board';
 
 // docs/specs/026-plan/plan-board.md "On a phone", "Maximised board".
 const place = (over: Partial<BoardPlace>): BoardPlace => ({
@@ -19,7 +26,11 @@ describe('boardLook', () => {
       widgets: true,
       container: false,
       touch: 'touch-none',
+      cardTouch: 'touch-none',
+      holdToDrag: false,
+      swipe: false,
       snap: false,
+      overscroll: '',
       endClearance: '',
     });
   });
@@ -33,7 +44,7 @@ describe('boardLook', () => {
   });
 
   it('gives a covering desktop board five slots and a body that scrolls under a finger', () => {
-    const look = boardLook(place({ covering: true }), 'compact');
+    const look = boardLook(place({ covering: true }), 'minimal');
     expect(look).toMatchObject({ columns: 'maximised', container: true, snap: false });
     expect(look.touch).toBe('touch-pan-x touch-pan-y');
   });
@@ -42,6 +53,20 @@ describe('boardLook', () => {
     const look = boardLook(place({ inSlot: true }), undefined);
     expect(look).toMatchObject({ columns: 'canvas', container: false });
     expect(look.touch).toBe('touch-pan-x touch-pan-y');
+  });
+
+  it('draws a simplified slot board in compact columns with no widgets, one a screen on a phone', () => {
+    const look = boardLook(place({ simple: true }), 'detailed');
+    expect(look).toMatchObject({ columns: 'slot', widgets: false, cardSize: 'detailed' });
+    expect(look.touch).toBe('touch-pan-x touch-pan-y');
+    expect(boardLook(place({ simple: true, phone: true }), 'detailed')).toMatchObject({
+      columns: 'phone',
+      cardSize: 'minimal',
+    });
+    // Maximised from the slot, it is the whole board again.
+    expect(boardLook(place({ simple: true, covering: true }), 'detailed').columns).toBe(
+      'maximised',
+    );
   });
 
   it('draws Minimal cards and no widgets on a phone, even on the canvas', () => {
@@ -59,7 +84,47 @@ describe('boardLook', () => {
         columns: 'phone',
         container: true,
         snap: true,
-        touch: 'touch-pan-x touch-pan-y',
+        // Down natively, sideways only through the board's own swipe (phone-swipe.ts).
+        touch: 'touch-pan-y',
+        swipe: true,
+      });
+    }
+  });
+
+  it('runs the sideways swipe only on a phone board that shows one column a screen, in Plan mode', () => {
+    for (const where of [
+      { phone: true },
+      { covering: true },
+      { inSlot: true },
+      { phone: true, covering: true, interactive: false },
+    ]) {
+      expect(boardLook(place(where), undefined).swipe).toBe(false);
+    }
+  });
+
+  it('keeps a phone board scroll to itself: all of it covering, only sideways in a Dashboard slot', () => {
+    expect(boardLook(place({ phone: true, covering: true }), undefined).overscroll).toBe(
+      'overscroll-contain',
+    );
+    expect(boardLook(place({ phone: true, inSlot: true }), undefined).overscroll).toBe(
+      'overscroll-x-contain',
+    );
+    expect(boardLook(place({ covering: true }), undefined).overscroll).toBe('');
+  });
+
+  it('lets a finger on a phone board card scroll, the card picked up by a hold, and only there', () => {
+    expect(boardLook(place({ phone: true, covering: true }), undefined)).toMatchObject({
+      cardTouch: 'touch-pan-y',
+      holdToDrag: true,
+    });
+    for (const where of [
+      { phone: true },
+      { covering: true },
+      { phone: true, covering: true, interactive: false },
+    ]) {
+      expect(boardLook(place(where), undefined)).toMatchObject({
+        cardTouch: 'touch-none',
+        holdToDrag: false,
       });
     }
   });
@@ -80,5 +145,20 @@ describe('shownQuick', () => {
     const quick = { text: 'bug', mine: 'me' };
     expect(shownQuick(quick, false)).toBe(quick);
     expect(shownQuick(quick, true)).toEqual({});
+  });
+});
+
+describe('holdPhase', () => {
+  it('waits while the finger holds still, then carries once the hold is up', () => {
+    expect(holdPhase(CARD_HOLD_TO_DRAG_MS, 100, false)).toBe('wait');
+    expect(holdPhase(CARD_HOLD_TO_DRAG_MS, CARD_HOLD_TO_DRAG_MS, true)).toBe('carry');
+  });
+
+  it('takes a finger that moves before the hold is up as a scroll', () => {
+    expect(holdPhase(CARD_HOLD_TO_DRAG_MS, 100, true)).toBe('scroll');
+  });
+
+  it('holds for less than the long press that opens the menu', () => {
+    expect(CARD_HOLD_TO_DRAG_MS).toBeLessThan(500);
   });
 });

@@ -224,13 +224,19 @@ the server, which the rest of this spec covers.
   spending its one reload; the same failure reported once back online still
   recovers. The load-error card ships in the editor's bundle for the same
   reason, lazy-loading only its recovery tools, which show online only.
+- **Code not loaded yet waits for the connection.** A layout area whose code cannot load while offline says
+  "You're offline, so the canvas couldn't load. It comes back when you reconnect." with no Try Again (it could only
+  fail again), and comes back on its own when the browser is online again; an overlay that cannot load simply stays
+  closed until then.
 - No telemetry: events cannot leave while offline, and the reload on reconnect
   drops anything buffered.
 
 ## Out of scope
 
 - A request id on API responses for matching a report to a log line.
-- A service worker or any offline copy of the editor itself: without a
-  connection the editor still cannot start.
+- An offline copy of the editor itself: without a connection the editor still
+  cannot start. The one service worker, `/push-worker.js`, only shows phone
+  notifications: it has no fetch handler, so it caches and answers nothing
+  ([Installable app](../016-platform/installable-app.md)).
 - Timeouts on every API request. The watchdog bounds the load; requests after
   it are already reported when they fail.

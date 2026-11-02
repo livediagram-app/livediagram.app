@@ -1,16 +1,9 @@
 'use client';
 
-import { subscribeOfflineIds } from '@/lib/offline/offline-store';
+import { isOfflineIdSync, subscribeOfflineIds } from '@/lib/offline/offline-store';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ItemsRoomOp } from '@liveplanner/api-schema';
-import {
-  applyItemComment,
-  createComment,
-  keepOwnCommentAuthors,
-  type CommentMention,
-  type ItemCommentChange,
-} from '@liveplanner/project';
+import type { AccessLevel, ItemsRoomOp } from '@liveplanner/api-schema';
 import {
   EMPTY_ITEM_STORE,
   ITEM_TITLE_MAX,
@@ -28,17 +21,19 @@ import {
   type ItemStoreState,
   type ItemWrite,
 } from '@liveplanner/items';
-import {
-  fetchItems,
-  writeItem,
-  writeItemComment,
-  type ItemCommentAction,
-  type ItemWriteAnswer,
-  type ItemsScope,
-} from '@/lib/api/items';
-import { track } from '@/lib/telemetry';
+import { fetchItems, writeItem, type ItemWriteAnswer, type ItemsScope } from '@/lib/api/items';
 import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { getOnline } from '@liveworkspace/workbench/lib/online-status';
+import {
+  PLAN_QUEUE_FULL_MESSAGE,
+  nextSeq,
+  planQueue,
+  type QueuedChange,
+} from '@/lib/offline-queue/plan-queue';
+import { itemWriteMayWait } from '@/lib/offline-queue/queue-roles';
+import { isConnectionFailure } from '@/lib/offline-queue/reconnect';
 import type { ItemUndoStep } from './item-undo-journal';
+import { useItemQueue, withWaitingItems } from './useItemQueue';
 
 // A burst of revision gaps refetches once (blueprint item-store.md "Constants").
 const ITEM_REFETCH_DEBOUNCE_MS = 400;
@@ -60,11 +55,11 @@ export type PlanItems = {
   writeQuiet: (write: ItemWrite, opts?: { silent?: boolean }) => Promise<boolean>;
   receive: (op: ItemsRoomOp) => void;
   refetch: () => void;
-  // A card's comment change (docs/specs/026-plan/items.md "Comments"): applied now, sent, settled on the
-  // answer. Outside Undo, as the canvas's comments are.
-  comment: (itemId: string, action: ItemCommentAction) => Promise<boolean>;
   // This person's owner id: the author id their own comments carry (the delete-own check).
   ownerId: string;
+  // Who is asking for which project, and through which share link (an Image field's uploads and reads, docs/specs/
+  // 026-plan/item-types.md "Image fields"); null until the project is known.
+  scope?: ItemsScope | null;
 };
 
 // The project's item store in the editor (docs/specs/026-plan/items.md, blueprint item-store.md
@@ -85,11 +80,43 @@ export function refusalMessage(code: string): string {
       return 'That card has too many fields to save';
     case 'status_excluded':
       return 'That card’s type doesn’t use that state';
+    case 'field_required':
+      return 'That field is required on this card type';
     case 'field_value_invalid':
       return 'That value is too long or isn’t one this field takes';
+    // A Blocked By link that closes a loop (docs/specs/026-plan/item-types.md "Blocked By"); the card panel refuses
+    // it first, naming the chain, so this is a race or an undo.
+    case 'blocks_cycle':
+      return 'Those cards would block each other in a loop';
     default:
       return "Couldn't save that change";
   }
+}
+
+// What a failed or refused write says (a full plan, a named refusal, or the generic line).
+export function writeFailureMessage(err: unknown): string {
+  const code = (err as { code?: string } | null)?.code;
+  if (code === 'items_full') return 'This plan already holds the most items it can';
+  return code ? refusalMessage(code) : "Couldn't save that change";
+}
+
+// The undo of a card's delete carries the threads the card was on, as they were when it went.
+function withThreads(
+  undoes: ItemWrite[],
+  threadsOf: ((itemId: string) => readonly unknown[]) | undefined,
+): ItemWrite[] {
+  if (!threadsOf) return undoes;
+  return undoes.map((back) => {
+    if (back.kind !== 'create') return back;
+    let changed = false;
+    const creates = back.creates.map((c) => {
+      const threads = c.id ? threadsOf(c.id) : [];
+      if (threads.length === 0) return c;
+      changed = true;
+      return { ...c, threads };
+    });
+    return changed ? { ...back, creates } : back;
+  });
 }
 
 export function usePlanItems(opts: {
@@ -103,24 +130,21 @@ export function usePlanItems(opts: {
   tabScope: string | null;
   pushUndo: (step: ItemUndoStep) => void;
   onError: (message: string) => void;
-  // A card comment with mentions has landed: notify the mentioned people, as a canvas comment does
-  // (docs/specs/012-collaboration/comment-mentions.md "The email").
-  // `commentId` names the stored comment the mention email quotes (absent offline, where no email goes).
-  onMentioned?: (
-    text: string,
-    mentions: CommentMention[],
-    itemId: string,
-    commentId?: string,
-  ) => void;
+  // The comment threads a card is on, as the editor holds them: an undo of the card's delete carries them, so the
+  // card goes back on them (docs/specs/026-plan/items.md "Cards coming and going").
+  threadsOf?: (itemId: string) => readonly unknown[];
   // A person's own undoable write, with the store it applies to (docs/specs/026-plan/linked-boards.md "The link").
   onOwnWrite?: (write: ItemWrite, before: ItemStoreState) => void;
+  // This session's share role: which of its writes may wait for the connection (docs/specs/007-editor/
+  // offline-changes.md "Roles"). Absent: none wait.
+  level?: AccessLevel;
 }): PlanItems {
   const { projectId, ready, ownerId, name, color, shareCode, tabScope } = opts;
   // Handed over fresh each render: read at call time, so `send` and `write` keep their identity.
   const callbacks = useLatest({
     pushUndo: opts.pushUndo,
     onError: opts.onError,
-    onMentioned: opts.onMentioned,
+    threadsOf: opts.threadsOf,
     onOwnWrite: opts.onOwnWrite,
   });
   const [store, setStore] = useState<ItemStoreState>(EMPTY_ITEM_STORE);
@@ -155,6 +179,17 @@ export function usePlanItems(opts: {
     [ownerId, projectId, shareCode, tabScope],
   );
   const scopeRef = useLatest(scope);
+  const levelRef = useLatest(opts.level ?? 'view');
+  // The plan's queue of waiting changes; none for an Offline Mode project, which needs no connection.
+  const queueOf = useCallback(() => {
+    const s = scopeRef.current;
+    return s && !isOfflineIdSync(s.projectId) ? planQueue(s.projectId, s.ownerId) : null;
+  }, [scopeRef]);
+  // Who the waiting changes are laid over as, before this person's id is hashed (only this screen reads it).
+  const layBy = useCallback(
+    (): ItemPerson => selfRef.current ?? { id: '', name: '', color: '' },
+    [selfRef],
+  );
 
   // Whether the items have been asked for at all this session.
   const loadedRef = useRef(false);
@@ -168,13 +203,16 @@ export function usePlanItems(opts: {
       const fetched = await fetchItems(s);
       serverRevRef.current = fetched.rev;
       unconfirmed.forEach((id) => unconfirmedRef.current.delete(id));
-      setStore((prev) => refetchedItemStore(prev, fetched, unconfirmed));
+      // What waits for the connection is laid back over the server's copy.
+      setStore((prev) =>
+        withWaitingItems(refetchedItemStore(prev, fetched, unconfirmed), queueOf(), layBy()),
+      );
       setStatus('ready');
     } catch (err) {
       console.warn('[plan] plan.items.load-failed', { error: String(err) });
       setStatus((prev) => (prev === 'ready' ? prev : 'error'));
     }
-  }, [scopeRef]);
+  }, [scopeRef, queueOf, layBy]);
 
   useEffect(() => {
     if (!ready || !scope) return;
@@ -212,12 +250,7 @@ export function usePlanItems(opts: {
     (op: ItemsRoomOp) => {
       const gap = op.rev > serverRevRef.current + 1;
       serverRevRef.current = Math.max(serverRevRef.current, op.rev);
-      setStore((prev) => {
-        // The room's copy carries no comment author ids; ours keep the ones the api answered us with.
-        const byId = new Map(prev.items.map((i) => [i.id, i]));
-        const upserts = op.upserts.map((u) => keepOwnCommentAuthors(byId.get(u.id), u));
-        return mergeItemChanges(prev, upserts, op.removed, op.rev);
-      });
+      setStore((prev) => mergeItemChanges(prev, op.upserts, op.removed, op.rev));
       // A tab-scoped session hears the rev without the items; anyone may have missed one.
       if (gap || (op.upserts.length === 0 && op.removed.length === 0)) {
         debugLog('[items] items.refetch.gap', { rev: op.rev });
@@ -226,6 +259,34 @@ export function usePlanItems(opts: {
     },
     [refetch],
   );
+
+  // Folds an api answer in: a room op newer than it already landed, so an item that op removed stays removed.
+  const settle = useCallback((answer: ItemWriteAnswer) => {
+    const overtaken = answer.rev >= 0 && answer.rev < serverRevRef.current;
+    if (answer.rev >= 0) serverRevRef.current = Math.max(serverRevRef.current, answer.rev);
+    setStore((prev) => {
+      const held = new Set(prev.items.map((i) => i.id));
+      const upserts = overtaken ? answer.upserts.filter((u) => held.has(u.id)) : answer.upserts;
+      return mergeItemChanges(prev, upserts, answer.removed, answer.rev);
+    });
+  }, []);
+
+  // The waiting changes' replay (docs/specs/007-editor/offline-changes.md "Sending them"): a refusal is told and
+  // taken back, as one made online is.
+  const itemQueue = useItemQueue({
+    queueOf,
+    // A queue exists only once the scope does (queueOf).
+    send: (w) => writeItem(scopeRef.current!, w, layBy()),
+    landed: settle,
+    refused: (w, err) => {
+      console.warn('[offline-queue] items.replay-refused', { kind: w.kind, error: String(err) });
+      itemIdsOfWrite(w).forEach((id) => unconfirmedRef.current.add(id));
+      callbacks.current.onError(writeFailureMessage(err));
+    },
+    load,
+    refetch,
+    loaded: status === 'ready',
+  });
 
   // Applies, sends and settles one write; false when it was refused (the store is refetched). `made` is what the api
   // stored; a write refused after part of it landed (ItemWritePartlyLanded) is not ok, with the part in `made`.
@@ -241,18 +302,26 @@ export function usePlanItems(opts: {
         if (!silent) callbacks.current.onError(refusalMessage(local.error));
         return { ok: false, made: [] };
       }
+      // A write that may wait for the connection (docs/specs/007-editor/offline-changes.md "What waits"): it waits
+      // now when the browser is offline or older ones already wait, so nothing overtakes them.
+      const queue = queueOf();
+      const seq = nextSeq();
+      const change: QueuedChange | null =
+        queue && itemWriteMayWait(levelRef.current, write)
+          ? { id: `i${seq.toString(36)}`, seq, store: 'items', write }
+          : null;
+      if (queue && change && (!getOnline() || queue.count('items') > 0)) {
+        if (queue.add(change) === 'full') {
+          if (!silent) callbacks.current.onError(PLAN_QUEUE_FULL_MESSAGE);
+          return { ok: false, made: [] };
+        }
+        storeRef.current = local.state;
+        setStore(local.state);
+        itemQueue.kick();
+        return { ok: true, made: [] };
+      }
       storeRef.current = local.state;
       setStore(local.state);
-      // Folds an api answer in: a room op newer than it already landed, so an item that op removed stays removed.
-      const settle = (answer: ItemWriteAnswer) => {
-        const overtaken = answer.rev >= 0 && answer.rev < serverRevRef.current;
-        if (answer.rev >= 0) serverRevRef.current = Math.max(serverRevRef.current, answer.rev);
-        setStore((prev) => {
-          const held = new Set(prev.items.map((i) => i.id));
-          const upserts = overtaken ? answer.upserts.filter((u) => held.has(u.id)) : answer.upserts;
-          return mergeItemChanges(prev, upserts, answer.removed, answer.rev);
-        });
-      };
       try {
         const answer = await writeItem(s, write, by);
         settle(answer);
@@ -261,25 +330,22 @@ export function usePlanItems(opts: {
         console.warn('[items] items.write.failed', { kind: write.kind, error: String(err) });
         // ItemWritePartlyLanded carries what landed before the failure.
         const landed = (err as { landed?: ItemWriteAnswer } | null)?.landed ?? null;
+        // No answer at all: the change waits for the connection instead, still shown.
+        if (queue && change && !landed && isConnectionFailure(err) && queue.add(change) === 'ok') {
+          itemQueue.kick();
+          return { ok: true, made: [] };
+        }
         if (landed) settle(landed);
         const kept = new Set(landed?.upserts.map((u) => u.id));
         itemIdsOfWrite(write)
           .filter((id) => !kept.has(id))
           .forEach((id) => unconfirmedRef.current.add(id));
-        const code = (err as { code?: string }).code;
-        if (!silent)
-          callbacks.current.onError(
-            code === 'items_full'
-              ? 'This plan already holds the most items it can'
-              : code
-                ? refusalMessage(code)
-                : "Couldn't save that change",
-          );
+        if (!silent) callbacks.current.onError(writeFailureMessage(err));
         void load();
         return { ok: false, made: landed?.upserts ?? [] };
       }
     },
-    [load, callbacks, scopeRef, selfRef],
+    [load, settle, callbacks, scopeRef, selfRef, queueOf, levelRef, itemQueue],
   );
 
   const write = useCallback(
@@ -293,9 +359,10 @@ export function usePlanItems(opts: {
       if (!inverse) return result.ok;
       // Refused after part of it landed: the part that landed is still one undo step.
       const landedIds = new Set(result.made.map((m) => m.id));
-      const undoes = result.ok
-        ? inverse
-        : inverse.flatMap((back) => writeLimitedTo(back, landedIds) ?? []);
+      const undoes = withThreads(
+        result.ok ? inverse : inverse.flatMap((back) => writeLimitedTo(back, landedIds) ?? []),
+        callbacks.current.threadsOf,
+      );
       const done = result.ok ? w : writeLimitedTo(w, landedIds);
       if (!done || undoes.length === 0) return result.ok;
       // A redo makes the same items again, keys included.
@@ -327,62 +394,7 @@ export function usePlanItems(opts: {
     [send],
   );
 
-  const comment = useCallback(
-    async (itemId: string, action: ItemCommentAction): Promise<boolean> => {
-      const s = scopeRef.current;
-      const by = selfRef.current;
-      if (!s || !by) return false;
-      // Literal pairs, so the telemetry manifest test sees each one.
-      if (action.kind === 'add') track('Comment', 'Added', 'Item');
-      else if (action.kind === 'delete') track('Comment', 'Deleted', 'Item');
-      else if (action.resolved) track('Comment', 'Resolved', 'Item');
-      else track('Comment', 'Unresolved', 'Item');
-      // Shown at once; the api's answer (its own comment id, its stamp) replaces it.
-      const item = storeRef.current.items.find((i) => i.id === itemId);
-      const change: ItemCommentChange =
-        action.kind === 'add'
-          ? {
-              kind: 'add',
-              comment: createComment(action.text, { id: ownerId, name, color }, action.mentions),
-            }
-          : action.kind === 'delete'
-            ? { kind: 'remove', commentId: action.commentId }
-            : action;
-      const local = item ? applyItemComment(item, change, { now: Date.now(), by }) : null;
-      if (local?.ok) {
-        const next = {
-          ...storeRef.current,
-          items: storeRef.current.items.map((i) => (i.id === itemId ? local.item : i)),
-        };
-        storeRef.current = next;
-        setStore(next);
-      }
-      try {
-        const answer = await writeItemComment(s, itemId, action, { ownerId, by });
-        if (answer) {
-          if (answer.rev >= 0) serverRevRef.current = Math.max(serverRevRef.current, answer.rev);
-          setStore((prev) => mergeItemChanges(prev, answer.upserts, answer.removed, answer.rev));
-        }
-        // Only once the comment has landed, so a refused comment never emails anyone.
-        if (action.kind === 'add' && action.mentions?.length) {
-          callbacks.current.onMentioned?.(action.text, action.mentions, itemId, answer?.commentId);
-        }
-        return true;
-      } catch (err) {
-        console.warn('[items] items.comment.failed', { kind: action.kind, error: String(err) });
-        callbacks.current.onError(
-          (err as { code?: string }).code === 'comments_full'
-            ? 'This card holds the most comments it can'
-            : "Couldn't save that comment",
-        );
-        void load();
-        return false;
-      }
-    },
-    [load, callbacks, scopeRef, selfRef, ownerId, name, color],
-  );
-
   const items = useMemo(() => new Map(store.items.map((i) => [i.id, i])), [store.items]);
 
-  return { store, items, status, self, write, writeQuiet, receive, refetch, comment, ownerId };
+  return { store, items, status, self, write, writeQuiet, receive, refetch, ownerId, scope };
 }

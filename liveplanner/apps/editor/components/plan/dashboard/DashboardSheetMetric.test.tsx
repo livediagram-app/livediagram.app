@@ -90,6 +90,24 @@ describe('a figure from a Sheet', () => {
     expect(screen.getByText('60%')).toBeTruthy();
   });
 
+  // docs/specs/026-plan/plan-tabs.md "A slot's name".
+  it('shows its slot’s own name in place of the row’s, and before a source is chosen', () => {
+    read = budget();
+    show({
+      type: 'sheet-metric',
+      metric: 'figure',
+      sheetId: 'sheetAAAA',
+      cell: { r: 'row1a', c: 'colBa' },
+      name: 'Monthly rent',
+    });
+    expect(screen.getByRole('group', { name: /^Monthly rent: 1200/ })).toBeTruthy();
+    expect(screen.queryByText('Rent')).toBeNull();
+    cleanup();
+    read = { state: 'none' };
+    show({ type: 'sheet-metric', metric: 'figure', sheetId: '', name: 'Monthly rent' });
+    expect(screen.getByText('Monthly rent')).toBeTruthy();
+  });
+
   // docs/specs/026-plan/board-widgets.md: 100% only once the target is met, never a goal just short of it.
   it('reads 99%, not 100%, just short of its target', () => {
     read = budget(1991);

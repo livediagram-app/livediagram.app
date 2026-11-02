@@ -53,8 +53,8 @@ The container is a **document** everywhere:
   class; it holds each document's content ([API app, Storage](../015-api/api.md#storage)); the room ops are
   `document-meta` and `document-trashed`.
 - **Preferences** stored under older keys pass through `upgradeLegacyPreferences` where they are read, in the
-  browser's cache and the person's stored copy. A document is untitled while its name is "Untitled document"
-  (`isUntitledDocumentName`).
+  browser's cache and the person's stored copy. A document is untitled while its name is one a blank gives it
+  ("Untitled document", "Untitled Article" and the like: `isUntitledName`).
 
 Files that read older shapes on purpose are named `legacy-*` (`legacy-preferences.ts`, `legacy-stroke-points.ts`).
 <!-- /legacy-names -->

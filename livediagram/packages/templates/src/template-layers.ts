@@ -93,6 +93,17 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
       return layered('Quadrants', 'Notes');
     case 'sequence-diagram':
       return layered('Lifelines', 'Messages');
+    // The board grids (template-builders-board-grid.ts): panels, headers and prompts under the notes.
+    case 'eisenhower-matrix':
+      return layered('Matrix', 'Tasks');
+    case 'pestle-analysis':
+      return layered('Lenses', 'Notes');
+    case 'kwl-chart':
+      return layered('Chart', 'Notes');
+    case 'onboarding-plan':
+      return layered('Plan', 'Goals');
+    case 'network-diagram':
+      return layered('Tiers', 'Network');
     // Tier lanes stay put while components and their wiring move.
     case 'system-architecture':
       return layered('Tiers', 'Components');

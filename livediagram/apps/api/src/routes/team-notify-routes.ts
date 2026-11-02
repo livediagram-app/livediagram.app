@@ -16,6 +16,7 @@ import { documentRoom } from '../document-client';
 import { requestGrant, type ItemGrant } from '../index-service';
 import { legacyDocumentIdOf } from '../legacy-request-forms';
 import { getParticipant } from '../liveworkspace/profiles';
+import { documentUrl, elementActionUrl, pushTag } from '../liveworkspace/push';
 import { teamPeople } from '../liveworkspace/team-people';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import { resolveDocumentGrant } from './document-grant';
@@ -98,9 +99,11 @@ export async function handleTeamNotifyRoutes(
   const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
   const documentId = idOf(body?.documentId) || legacyDocumentIdOf(body) || '';
 
-  // POST /api/teams/<id>/notify-action {assigneeUserId? | assigneeMemberId?, documentId, actionName, description?}:
-  // email a teammate (joined, or invited: work gets divided while invites are in flight) about an action just
-  // assigned to them on a canvas element.
+  // POST /api/teams/<id>/notify-action {assigneeUserId? | assigneeMemberId?, documentId, actionName, description?,
+  // email?, tabId?, elementId?}: email a teammate (joined, or invited: work gets divided while invites are in flight)
+  // about an action just assigned to them on a canvas element. `email: false` (the dialog's Email box unticked)
+  // sends no email; the phone notification goes either way, to an assignee with an account who can open the canvas,
+  // linking `tabId` and `elementId` when given (docs/specs/014-identity/phone-notifications.md).
   if (route === 'notify-action') {
     const target: NotifyTarget = {
       userId: idOf(body?.assigneeUserId) || null,
@@ -109,6 +112,9 @@ export async function handleTeamNotifyRoutes(
     const actionName = typeof body?.actionName === 'string' ? body.actionName.trim() : '';
     const description =
       typeof body?.description === 'string' && body.description.trim() ? body.description : null;
+    const email = body?.email !== false;
+    const tabId = idOf(body?.tabId);
+    const elementId = idOf(body?.elementId);
     if ((!target.userId && !target.memberId) || !documentId || !actionName) {
       return badRequest('missing assigneeUserId/documentId/actionName');
     }
@@ -132,6 +138,14 @@ export async function handleTeamNotifyRoutes(
       assigneeCanOpen: canOpen,
       actionName,
       description,
+      email,
+      push: {
+        url:
+          tabId && elementId
+            ? elementActionUrl(ctx.env, documentId, tabId, elementId)
+            : documentUrl(ctx.env, documentId),
+        tag: pushTag(documentId, elementId || 'action'),
+      },
     });
     return sent ? json({ ok: true }, { status: 202 }) : notFound();
   }

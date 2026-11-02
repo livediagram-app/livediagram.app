@@ -2,6 +2,7 @@
 
 import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
 import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
+import { sessionToolsForSurface } from '@/components/canvas/SessionClusterStrip';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
 import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
@@ -182,6 +183,7 @@ export function EditorCanvasHost() {
     commitFreehand,
     commitPolygon,
     commitPath,
+    paintBucket,
     commitPathEdit,
     styleNewElement,
     commitLabel,
@@ -762,6 +764,7 @@ export function EditorCanvasHost() {
             onCommitFreehand={commitFreehand}
             onCommitPolygon={commitPolygon}
             onCommitPath={commitPath}
+            onPaintBucket={paintBucket}
             onCommitPathEdit={commitPathEdit}
             onDressPath={styleNewElement}
             settings={userPreferences}
@@ -778,7 +781,7 @@ export function EditorCanvasHost() {
             layers={layers}
             activeLayerId={activeLayerId}
             layerCounts={layerCounts}
-            sessionTools={sessionTools}
+            sessionTools={sessionToolsForSurface(sessionTools, embedMode)}
             pollPanel={
               // Results are for the host and for anyone who has responded
               // (docs/specs/012-collaboration/live-poll.md) — answering is what buys you the tally. A local
@@ -942,49 +945,46 @@ export function EditorCanvasHost() {
               setContextMenu(null);
             }}
             onSelect={selectElement}
-            onElementContextMenu={
-              isReadOnly
-                ? undefined
-                : (id, sx, sy) => {
-                    // Concurrent-selection lock (docs/specs/007-editor/editor-app.md): a peer holds this
-                    // element, so it can't be selected, dragged, or edited — don't
-                    // pop a dead context menu on it either. Same gate as
-                    // selectElement.
-                    //
-                    // The one exception is whoever is running the session
-                    // (docs/specs/012-collaboration/facilitator.md): for them a locked element has exactly one
-                    // available action, freeing it, and that gets its own small menu
-                    // rather than the element's real one, whose every other row
-                    // would be dead. See LockedElementMenu.
-                    if (lockedByOther(id)) {
-                      const holders = remoteSelectionsByElement.get(id);
-                      if (facilitator.canReleaseSelectionLock && holders?.length) {
-                        setLockedMenu({ elementId: id, at: { x: sx, y: sy }, holders });
-                      }
-                      return;
-                    }
-                    // Right-clicking the element that already owns the menu AT THE
-                    // SAME ANCHOR is a no-op: return the SAME state object so React
-                    // re-renders nothing. Re-opening would restart the entrance
-                    // animation and flash the selection popover in the gap, for a
-                    // gesture that asked for the menu already on screen.
-                    //
-                    // The anchor has to be part of that comparison: selectElement
-                    // runs first and retargets an open menu's elementId in place
-                    // (keeping the old x / y), so an id-only check would see 'same
-                    // element' for a right-click on a DIFFERENT one and strand the
-                    // menu at the previous element's position.
-                    setContextMenu((cur) =>
-                      cur &&
-                      cur.mode === 'element' &&
-                      cur.elementId === id &&
-                      cur.x === sx &&
-                      cur.y === sy
-                        ? cur
-                        : { mode: 'element', elementId: id, x: sx, y: sy },
-                    );
-                  }
-            }
+            onElementContextMenu={(id, sx, sy) => {
+              // Concurrent-selection lock (docs/specs/007-editor/editor-app.md): a peer holds this
+              // element, so it can't be selected, dragged, or edited — don't
+              // pop a dead context menu on it either. Same gate as
+              // selectElement. A Participant or a Viewer still opens its own menu there
+              // (comments, a link), less Edit Text (docs/specs/008-canvas/element-menu-quick-bar.md).
+              //
+              // The one exception is whoever is running the session
+              // (docs/specs/012-collaboration/facilitator.md): for them a locked element has exactly one
+              // available action, freeing it, and that gets its own small menu
+              // rather than the element's real one, whose every other row
+              // would be dead. See LockedElementMenu.
+              if (!isReadOnly && lockedByOther(id)) {
+                const holders = remoteSelectionsByElement.get(id);
+                if (facilitator.canReleaseSelectionLock && holders?.length) {
+                  setLockedMenu({ elementId: id, at: { x: sx, y: sy }, holders });
+                }
+                return;
+              }
+              // Right-clicking the element that already owns the menu AT THE
+              // SAME ANCHOR is a no-op: return the SAME state object so React
+              // re-renders nothing. Re-opening would restart the entrance
+              // animation and flash the selection popover in the gap, for a
+              // gesture that asked for the menu already on screen.
+              //
+              // The anchor has to be part of that comparison: selectElement
+              // runs first and retargets an open menu's elementId in place
+              // (keeping the old x / y), so an id-only check would see 'same
+              // element' for a right-click on a DIFFERENT one and strand the
+              // menu at the previous element's position.
+              setContextMenu((cur) =>
+                cur &&
+                cur.mode === 'element' &&
+                cur.elementId === id &&
+                cur.x === sx &&
+                cur.y === sy
+                  ? cur
+                  : { mode: 'element', elementId: id, x: sx, y: sy },
+              );
+            }}
             onMultiContextMenu={
               isReadOnly
                 ? undefined

@@ -114,25 +114,28 @@ same answer for 30 seconds.
 ## Deleting an account
 
 An app's Delete Account closes the person's liveworkspace account, for every app, not just
-the app's own data. In the app's Worker, delete the app's data first, then close the account
-with the access token the request came with:
+the app's own data. Being signed in is not enough: the account needs the 6-digit code emailed to
+it ([sign-in.md](../003-accounts/sign-in.md#closing-an-account)). The app's Worker has two routes,
+and `@liveworkspace/auth-client` makes their answers, so every app answers the same:
 
 ```ts
-import { closeAccount } from '@liveworkspace/auth-client';
+import { confirmDeletionCode, requestDeletionCode } from '@liveworkspace/auth-client';
 
+// POST /api/account/deletion-code: the code is emailed to the account.
+const sent = await requestDeletionCode(credentials, accessToken);
+return Response.json(sent.body, { status: sent.status });
+
+// DELETE /api/account { code }: checked before anything is deleted.
+const confirmed = await confirmDeletionCode(credentials, accessToken, body.code);
+if (!confirmed.ok) return Response.json(confirmed.answer.body, { status: confirmed.answer.status });
 await deleteAppData(env, userId);
-await closeAccount(
-  {
-    accountsUrl: env.ACCOUNTS_URL,
-    clientId: env.ACCOUNTS_CLIENT_ID,
-    clientSecret: env.ACCOUNTS_CLIENT_SECRET,
-  },
-  accessToken,
-);
+await confirmed.closeAccount(); // `closeAccount`, with the same code
 // then clear the refresh cookie: the refresh token died with the account
 ```
 
-In that order, a failure on the second step leaves a signed-in person who can try again; the
+`credentials` is `{ accountsUrl: env.ACCOUNTS_URL, clientId: env.ACCOUNTS_CLIENT_ID, clientSecret:
+env.ACCOUNTS_CLIENT_SECRET }`, or null where sign-in isn't set up (both routes then refuse). In that
+order, a failure on the last step leaves a signed-in person who can try again with the same code; the
 other way round, the app's data would be left with no account to reach it. The accounts Worker
 needs the app's client secret as well as the token, so it runs in the Worker.
 
@@ -189,3 +192,29 @@ Locally, against a development accounts Worker, the redirect is
 
 An app's anonymous product events go to liveworkspace too, not to its own API. See
 [telemetry.md](../008-telemetry/telemetry.md) for the batch format, the settings, and the steps for adding an app.
+
+## Registered before launch
+
+A new app is registered with every platform service before anyone can see it, so its build runs against the real
+services and its launch is one small change. Until then it is **held**: every service accepts it, and nothing a
+person sees lists it.
+
+- **Accepted:** accounts takes its API resource, its OAuth client, its sign-in hand-off origins, its settings scope,
+  its sign-ups and its phone devices; the index takes its items; media takes its uploads and previews; telemetry takes
+  its events and its Workers' key; its browser settings keys are known.
+- **Held out of every list:** the site switcher, the sign-in pages' "one account for ..." line and the sign-in
+  email's list of apps, the Explorer's apps (its New menu, filters, search and welcome), the telemetry dashboard's
+  app picker, the status page, the settings panel's apps, and liveworkspace.app's landing and legal pages.
+- **In code:** its site is in `SiteId` and `LOCAL_PORTS`, and its site row in `HELD_APP_SITES`
+  (`@liveworkspace/sites`), not `APP_SITES`, which every list reads. Services that accept every app read
+  `REGISTERED_APP_SITES` (both). Telemetry's held senders are `HELD_TELEMETRY_APPS` beside `TELEMETRY_APPS`.
+- **Secrets** (owner only) come with the app's first deploy: its accounts client, and its `INDEX_KEY_<APP>`,
+  `MEDIA_KEY_<APP>` and `TELEMETRY_KEY_<APP>`. Until each is set, that service refuses the app's Workers, as for any
+  app without its key.
+- **Launch** moves the row from `HELD_APP_SITES` into `APP_SITES` and the app from `HELD_TELEMETRY_APPS` into
+  `TELEMETRY_APPS`; the sign-in email's line names it in the same change.
+
+Held today: **livehuddle** (`livehuddle.app`, port block 3500, its item a **Space**, its index kind `space`), by
+[livehuddle's platform registration](../../../../livehuddle/docs/specs/016-platform/platform-registration.md).
+It ships no MCP server in its first version, so the status checks treat the MCP server as optional per app
+([status.md](../009-status/status.md#where-the-checks-go)).

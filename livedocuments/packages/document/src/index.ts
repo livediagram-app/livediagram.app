@@ -261,8 +261,13 @@ export * from './page-ink-ground';
 export * from './page-ink-rules';
 export * from './paginate';
 export * from './article-flow';
+export * from './article-table';
+export * from './article-toc';
+export * from './article-bands';
 export * from './article-flow-ops';
 export * from './article-pages';
+export * from './flashcards';
+export * from './flashcard-guard';
 export * from './article-style';
 export * from './article-zones';
 export * from './article-notes';
@@ -365,6 +370,8 @@ export * from './comment-thread';
 export * from './document-envelope';
 export * from './export-tab-text';
 export * from '@liveworkspace/model-core/comment-mentions';
+// Comment reactions (docs/specs/012-collaboration/comment-reactions.md): the six, the stored shape and the toggle.
+export * from '@liveworkspace/model-core/comment-reactions';
 // The shared plain-object guard for untrusted JSON.
 export * from '@liveworkspace/model-core/is-record';
 // The shared FNV-1a string hash for deterministic picks.
@@ -399,6 +406,7 @@ export * from './cell-colours';
 export * from './table-header-colours';
 export * from './progress-colours';
 export * from '@liveworkspace/model-core/icon-size';
+export * from '@liveworkspace/model-core/progress-label';
 export * from '@liveworkspace/model-core/icon-weight';
 
 // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md): the runs-as-delta model + pure
@@ -448,8 +456,10 @@ export * from './tab-builders';
 // Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
 // shared by the in-app export and the MCP worker's inline image render.
 export * from './svg-render';
+export { borderOf } from './svg-render-border';
 export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
+export { labelTextScale, withPickedTextSize } from './label-text-scale';
 export { SKETCH_ART_FILTER_ID, SKETCH_FACE_FILTER, svgSketchArtFilter } from './svg-render-sketch';
 export * from './svg-render-table';
 export { mixHex } from '@liveworkspace/model-core/color-wash';
@@ -543,6 +553,7 @@ export * from '@liveworkspace/model-core/fonts';
 // because the api and the MCP worker can answer the same questions.
 export * from './slide-deck';
 export * from './slide-deck-pages';
+export * from './slide-notes';
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/document-views.md):
 // how views, edit operations and the lint name and place elements alike.
 export * from './element-refs';

@@ -1,4 +1,5 @@
 import {
+  dashboardPatch,
   diffToElementOps,
   elementChangeIsDeltaOnly,
   mergeIncomingElement,
@@ -27,10 +28,28 @@ export const EL_OP_BROADCAST_LIMIT = 20;
 // so a content/meta edit can't clobber a concurrent folder move.
 export const META_SKIP: ReadonlySet<string> = new Set(['id', 'elements', 'folder']);
 
-// A whole tab as one op.
-function wholeTabOp(tab: Tab): RoomOp {
-  return { kind: 'tab', tabId: tab.id, tab };
+// A whole tab as one op. When both sides have a layout, it says the layout rides its own deltas (dashboardDeltaOps), so
+// the peer keeps its own layout through this copy.
+function wholeTabOp(tab: Tab, layoutByDelta = false): RoomOp {
+  return {
+    kind: 'tab',
+    tabId: tab.id,
+    tab,
+    ...(layoutByDelta ? { dashboardDeltas: true as const } : {}),
+  };
 }
+
+// A Dashboard's layout change as one delta (docs/specs/012-collaboration/collab-race-hardening.md "A Dashboard's
+// layout travels as deltas"), on every path, so a handle, a cog, a drag, the palette, undo and redo all reach peers
+// as only the rows and slots they touched. A layout appearing or going has none: it rides `tab-meta` whole.
+function dashboardDeltaOps(before: Tab, after: Tab): RoomOp[] {
+  if (before.dashboard === after.dashboard) return [];
+  const patch = dashboardPatch(before.dashboard, after.dashboard);
+  return patch ? [{ kind: 'dashboard-delta', tabId: after.id, patch }] : [];
+}
+
+// Does the layout travel as a delta here (both sides have one), rather than whole in the patch?
+const dashboardByDelta = (before: Tab, after: Tab) => !!before.dashboard && !!after.dashboard;
 
 // Is this `vote` change nothing but dots moving?
 //
@@ -69,6 +88,9 @@ function tabMetaPatch(before: Tab, after: Tab): Partial<Omit<Tab, 'elements'>> {
     // list, because JSON.stringify drops undefined-valued keys on the wire, so
     // a cleared field could never propagate as a patch value.
     if (JSON.stringify(b) === JSON.stringify(a)) continue;
+    // A layout both sides have travels as its own delta (dashboardDeltaOps): carried whole here, a receiver would
+    // take this copy over the change a peer made to another row at the same moment.
+    if (k === 'dashboard' && dashboardByDelta(before, after)) continue;
     // Dots are the one tab-meta field with many concurrent writers, and they
     // have their own op. See voteChangeIsDotsOnly.
     if (k === 'vote' && voteChangeIsDotsOnly(b, a)) continue;
@@ -121,8 +143,9 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
   // A receiver keeps its own board set-up through a whole-element or whole-tab copy, so the set-up's
   // change goes as its delta on both paths.
   const boardOps = boardDeltaOps(before, after);
+  const dashboardOps = dashboardDeltaOps(before, after);
   if (elOps.length > EL_OP_BROADCAST_LIMIT) {
-    return [wholeTabOp(after), ...boardOps];
+    return [wholeTabOp(after, dashboardByDelta(before, after)), ...boardOps, ...dashboardOps];
   }
 
   const ops: RoomOp[] = [];
@@ -143,7 +166,7 @@ export function tabBroadcastOps(before: Tab | undefined, after: Tab): RoomOp[] {
     });
   }
   for (const op of elOps) ops.push({ kind: 'el', tabId: after.id, op });
-  ops.push(...boardOps);
+  ops.push(...boardOps, ...dashboardOps);
   return ops;
 }
 
@@ -173,8 +196,16 @@ export function mergeRemoteVote(local: Tab['vote'], incoming: Tab['vote']): Tab[
 //
 // And the same for every element's delta-carried fields (answers, ideas,
 // ticks, comments: docs/specs/012-collaboration/collab-race-hardening.md), which reached us one delta at a time.
-export function mergeRemoteTab(local: Tab, incoming: Tab): Tab {
+//
+// And the Dashboard's layout, from a sender that says its layout changes ride `dashboard-delta` ops
+// (`dashboardDeltas`): ours already holds every delta that reached us. A layout appearing or going is taken.
+export function mergeRemoteTab(
+  local: Tab,
+  incoming: Tab,
+  opts: { dashboardDeltas?: boolean } = {},
+): Tab {
   const vote = mergeRemoteVote(local.vote, incoming.vote);
+  const keepLayout = opts.dashboardDeltas === true && !!local.dashboard && !!incoming.dashboard;
   const { vote: _incomingVote, ...rest } = incoming;
   const localById = new Map(local.elements.map((e) => [e.id, e]));
   const elements = incoming.elements.map((el) => {
@@ -187,5 +218,6 @@ export function mergeRemoteTab(local: Tab, incoming: Tab): Tab {
     elements,
     folder: local.folder,
     ...(vote !== undefined ? { vote } : {}),
+    ...(keepLayout ? { dashboard: local.dashboard } : {}),
   };
 }

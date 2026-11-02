@@ -51,6 +51,9 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
   takes (a `textSize` may also be a pixel number, as a Step number stores one), as the MCP's whole-element check does, so `textSize=xl` is never stored and drawn as tiny overlapping text.
 - **Locks.** A changeset on a locked tab is refused, and so is an operation that changes a locked element or an
   element on a locked layer (`element_locked`).
+- **Flashcards hold text only** ([Flashcards](../007-editor/flashcards.md) "Text only"). A changeset whose result
+  adds an element onto a flashcard, or moves one onto it, is refused (`text_only`); write a card's text with
+  `write_article`.
 
 ## Two forms, one model
 
@@ -182,6 +185,7 @@ nothing was applied
 | `arrow_exists`       | `connect a -> b` when an a→b arrow exists, without `again`                                                                                                                                                                                        | The existing arrow                     |
 | `not_connected`      | `insert between a b` with no a→b arrow                                                                                                                                                                                                            | The arrows touching a and b            |
 | `element_locked`     | The tab, a target or its layer is locked                                                                                                                                                                                                          | Each locked element or the tab         |
+| `text_only`          | An element added or moved onto a flashcard                                                                                                                                                                                                        | What it holds                          |
 | `test_failed`        | A `test` does not hold                                                                                                                                                                                                                            | Expected and actual                    |
 | `changeset_conflict` | A target changed since the base                                                                                                                                                                                                                   | Each element as read and as now        |
 | `elements_held`      | A target is selected by a person                                                                                                                                                                                                                  | Each element and who holds it          |

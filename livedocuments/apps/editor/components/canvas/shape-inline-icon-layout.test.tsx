@@ -62,4 +62,42 @@ describe('ShapeInlineIconLayout', () => {
     expect(layout.style.gap).toBe(`${inlineIconGap(iconSize, false)}px`);
     expect(getByText('Cloud')).toBeTruthy();
   });
+
+  // docs/specs/007-editor/pages-mode.md "Sizes": a re-fitted shape's words and glyph shrink together.
+  it("draws a re-fitted shape's label and its runs at its scale", () => {
+    const element = {
+      ...createShape('square', 0, 0),
+      width: 220,
+      height: 52,
+      iconId: 'cloud',
+      textSize: 16,
+      richText: [{ text: 'Big', size: 'lg' }, { text: ' cloud' }],
+    } as ShapeElement;
+    const sizes = (el: ShapeElement) => {
+      const { container } = render(
+        <ShapeInlineIconLayout
+          element={el}
+          position="left"
+          iconStroke="#000"
+          isEditing={false}
+          editor={null}
+          label="Big cloud"
+          textColor="#000"
+          textSize={16}
+          alignX="center"
+          alignY="middle"
+          padding={14}
+        />,
+      );
+      return [...container.querySelectorAll<HTMLElement>('span')].map((n) =>
+        parseFloat(n.style.fontSize),
+      );
+    };
+    const [label, run] = sizes(element);
+    expect(label).toBe(16);
+    expect(run).toBeGreaterThan(16);
+    const [halfLabel, halfRun] = sizes({ ...element, textScale: 0.5 });
+    expect(halfLabel).toBe(label! / 2);
+    expect(halfRun).toBe(run! / 2);
+  });
 });

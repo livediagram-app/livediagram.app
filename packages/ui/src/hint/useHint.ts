@@ -116,7 +116,11 @@ const stop = (e: React.SyntheticEvent) => e.stopPropagation();
 // One hint's behaviour: when it opens, when it closes, and what a touch long
 // press does. Transitions T1-T15 in
 // docs/specs/004-interface-design/blueprints/tooltips-hover-cards-popovers.md.
-export function useHint(kind: HintKind): HintState {
+// `pressWithText`: a touch long press opens the hint even on a control that shows text. Off by default (a labelled
+// control already says what it is); a comment's reaction chip sets it, since its text is an emoji and a count and
+// the card is the only way to learn who reacted on a phone.
+export function useHint(kind: HintKind, opts: { pressWithText?: boolean } = {}): HintState {
+  const pressWithText = opts.pressWithText === true;
   const [source, setSource] = useState<HintOpenSource | null>(null);
   const [token] = useState<HintToken>(() => ({}));
   const machine = useRef<Machine>(newMachine());
@@ -201,7 +205,7 @@ export function useHint(kind: HintKind): HintState {
       m.suppressClick = false;
       clearTimers(m, 'pressTimer');
       const target = anchor();
-      if (!target || hasVisibleText(target)) return;
+      if (!target || (!pressWithText && hasVisibleText(target))) return;
       m.pressStart = { x: e.clientX, y: e.clientY };
       m.pressTimer = setTimeout(() => {
         m.pressTimer = null;

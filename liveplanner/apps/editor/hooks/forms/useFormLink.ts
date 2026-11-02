@@ -14,9 +14,21 @@ import {
 } from '@/lib/api/forms';
 import { ApiError } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
+import { hasUnsavedWork } from '@liveworkspace/workbench/lib/unsaved-work';
 
 // How often an open Form tab rereads its count (a cheap read: three small queries). Safe range 15..120 s.
 const FORM_LINK_POLL_MS = 30_000;
+// How long Publish Form waits for this page's pending save (forms.md "Publishing and the form link"): the api checks
+// the stored form, so a question worded a moment ago must land first. Past it, the publish goes anyway.
+export const PUBLISH_SAVE_WAIT_MS = 5_000;
+const PUBLISH_SAVE_POLL_MS = 100;
+
+async function untilSaved(): Promise<void> {
+  const deadline = Date.now() + PUBLISH_SAVE_WAIT_MS;
+  while (hasUnsavedWork() && Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, PUBLISH_SAVE_POLL_MS));
+  }
+}
 
 export type FormLinkState = {
   link: FormLinkResponse | null;
@@ -113,7 +125,10 @@ export function useFormLink(input: {
     error,
     publish: async () => {
       if (!projectId) return false;
-      const ok = await run(() => apiPublishForm(ownerId, projectId, tabId, share), PUBLISH_ERRORS);
+      const ok = await run(async () => {
+        await untilSaved();
+        return apiPublishForm(ownerId, projectId, tabId, share);
+      }, PUBLISH_ERRORS);
       if (ok) track('Form', 'Shared', 'Link');
       return ok;
     },

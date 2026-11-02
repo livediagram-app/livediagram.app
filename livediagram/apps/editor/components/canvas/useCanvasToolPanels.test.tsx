@@ -2,7 +2,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { DEFAULT_AVATAR_CONFIG } from '@/lib/avatar-config';
+import { DEFAULT_AVATAR_CONFIG } from '@liveworkspace/avatar/config';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
 

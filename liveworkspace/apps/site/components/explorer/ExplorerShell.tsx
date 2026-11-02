@@ -13,8 +13,8 @@
 // lib/explorer/page-app.ts). There it is that app's Explorer: it asks as the app's session, shows the app's items kept
 // only in this browser (This Browser), keeps its links on the app's address and sends only what needs
 // liveworkspace.app's session (the profile, API tokens) there. Where the app supplies them (the sites registry), it also offers the
-// app's Take Offline and Sync (lib/explorer/offline-moves.tsx). Teams are made and run in place, here and there alike,
-// over liveworkspace's account API (createTeamsHost with accountFetch).
+// app's Take Offline, Sync and Delete (lib/explorer/offline-moves.tsx). Teams are made and run in place, here and
+// there alike, over liveworkspace's account API (createTeamsHost with accountFetch).
 //
 // Under it all, the bottom bar the apps' Explorers had (ExplorerBottomBar.tsx): Search, which opens the Search panel
 // (loaded only when first wanted), Settings and Appearance.
@@ -94,9 +94,15 @@ import { libraryHosts } from '@/lib/explorer/library';
 import { importsHost } from '@/lib/explorer/imports';
 import { trackExplorerDailyReturn } from '@/lib/explorer/daily-return';
 import { renewIdentity } from '@/lib/explorer/new-team';
-import { offlineHandOver, offlineItemMenu, offlineSyncHref } from '@/lib/explorer/offline-moves';
+import {
+  offlineHandOver,
+  offlineItemMenu,
+  offlineRemove,
+  offlineSyncHref,
+} from '@/lib/explorer/offline-moves';
 import { useExplorerSettings } from '@/lib/explorer/settings';
-import { shareHostFor } from '@/lib/explorer/share';
+import { communityShareAppsHere, shareHostFor } from '@/lib/explorer/share';
+import { useCommunityAppsOn } from '@/lib/explorer/community-apps';
 import {
   setExplorerSender,
   trackHome,
@@ -368,7 +374,21 @@ export function ExplorerShell() {
     }),
     [loaded, app, onFirstRun, signedIn, explorerSignInHref],
   );
-  const share = useMemo(() => shareHostFor(app), [app]);
+  // The Community tab, for the apps with one that this page can offer it for (APP_ITEMS[app].share.communityPath),
+  // for an account only. Each app is asked whether its Community is on the first time one of its items is shared.
+  const communityApps = useMemo(() => communityShareAppsHere(host), [host]);
+  const communityOn = useCommunityAppsOn(communityApps, signedIn);
+  const accountName = session.state === 'in' ? session.name : null;
+  const share = useMemo(
+    () =>
+      shareHostFor(
+        app,
+        signedIn && identity ? { id: identity.sub, name: accountName } : null,
+        communityOn,
+        explorerSignInHref,
+      ),
+    [app, signedIn, identity, accountName, communityOn, explorerSignInHref],
+  );
   // On the app's address, its This Browser rows too, for the person reading (lib/explorer/inbox.tsx).
   const viewerId = identity?.sub ?? null;
   const inbox = useMemo(
@@ -392,6 +412,7 @@ export function ExplorerShell() {
   const local = useThisBrowserList(host);
   const syncHref = useMemo(() => offlineSyncHref(host, signedIn), [host, signedIn]);
   const handOverHref = useMemo(() => offlineHandOver(host), [host]);
+  const remove = useMemo(() => offlineRemove(host), [host]);
   const thisBrowser: ThisBrowserHost | null = useMemo(
     () =>
       host
@@ -401,9 +422,10 @@ export function ExplorerShell() {
             helpHref: '/help/privacy-and-security/offline-mode/',
             ...(syncHref ? { syncHref } : {}),
             ...(handOverHref ? { handOverHref } : {}),
+            ...(remove ? { remove } : {}),
           }
         : null,
-    [host, local, syncHref, handOverHref],
+    [host, local, syncHref, handOverHref, remove],
   );
   // Take Offline on the app's own items, handed to the item in the app's editor.
   const itemMenu = useMemo(() => offlineItemMenu(host), [host]);

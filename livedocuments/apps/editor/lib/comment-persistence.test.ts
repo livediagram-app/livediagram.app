@@ -4,6 +4,7 @@ const api = vi.hoisted(() => ({
   apiAddComment: vi.fn(async () => ({ id: 'server-1' })),
   apiDeleteComment: vi.fn(async () => undefined),
   apiSetThreadResolved: vi.fn(async () => undefined),
+  apiReactToComment: vi.fn(async () => undefined),
 }));
 vi.mock('@/lib/api-client', () => api);
 
@@ -66,11 +67,27 @@ describe('commentPersisters', () => {
     expect(p.add('el', 'hi')).toBeUndefined();
     expect(p.remove('c1')).toBeUndefined();
     expect(p.threadState({ comments: [{ id: 'first' }] }, true)).toBeUndefined();
+    expect(p.react('c1', { emoji: 'eyes', on: true, key: 'k' })).toBeUndefined();
   });
 
   it('has nothing to resolve on an empty thread, nor any endpoint without a document', () => {
     expect(commentPersisters(session).threadState({ comments: [] }, true)).toBeUndefined();
     expect(commentPersisters(session).threadState(undefined, true)).toBeUndefined();
     expect(commentPersisters({ ...session, documentId: null }).add('el', 'hi')).toBeUndefined();
+  });
+});
+
+// docs/specs/012-collaboration/comment-reactions.md: a Participant's reaction goes through the comment endpoint.
+describe('commentPersisters, reactions', () => {
+  it('sends a read-only session’s reaction with its key', async () => {
+    await commentPersisters(session).react('c1', { emoji: 'eyes', on: true, key: 'k' })?.();
+    expect(api.apiReactToComment).toHaveBeenCalledWith(
+      'me',
+      'doc',
+      'tab',
+      'c1',
+      { emoji: 'eyes', on: true, key: 'k' },
+      'CODE',
+    );
   });
 });

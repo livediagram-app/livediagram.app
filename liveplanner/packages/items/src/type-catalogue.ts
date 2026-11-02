@@ -4,7 +4,12 @@
 // saves is one the api keeps.
 import { readCardDisplay } from './card-display';
 import { isPlanGlyphId } from './glyphs';
+import { isCalculation } from './calculated-fields';
+import { isAggregate } from './rollup-fields';
+import { FORMULA_MAX, FORMULA_RESULT_DEFAULT, isFormulaResult } from './formula/limits';
+import { canShowAsPercent } from './percent-fields';
 import {
+  CARD_LINK_TYPES_MAX,
   CURRENCY_CODE,
   RATING_FIELD_SCALE_DEFAULT,
   RATING_FIELD_SCALE_MAX,
@@ -20,10 +25,16 @@ import {
   type ItemFieldId,
   type ItemTypeDef,
   type ItemTypeTab,
+  linkTypesOf,
+  withLinkTypes,
 } from './item-types';
 import { ITEM_STATUS_MAX, ITEM_TYPE_PATTERN } from './limits';
+import { canBeRequired } from './required-fields';
+import { holdsSeveralKind } from './several-values';
 import { cutSlug, slugText, uniqueSlug } from './slug';
 import { statusNamed } from './status-names';
+import { REQUIRED_TYPE_FIELDS, TYPE_REQUIRED_FIELDS } from './type-required-fields';
+import { inheritanceProblem, withInheritance } from './type-inheritance';
 import { HEX_COLOUR, isObj } from './validate';
 
 export const ITEM_TYPES_MAX = 32;
@@ -45,8 +56,11 @@ export const ITEM_TYPE_CATALOGUE_VERSION = 1;
 export const ITEM_TYPE_TABS_MAX = 6;
 export const ITEM_TYPE_TAB_LABEL_MAX = 24;
 const ITEM_TYPE_TAB_ID_PATTERN = /^t-[a-z0-9-]{1,30}$/;
-// The most statuses a type can leave out (a board holds far fewer columns than this).
+// The most statuses a type stored before its ordered list could leave out (docs/specs/026-plan/item-types.md "The
+// statuses a type uses": a legacy type). Read only: nothing writes an exclusion list any more.
 export const ITEM_TYPE_EXCLUDED_STATUSES_MAX = 64;
+// The most statuses a type uses (its ordered list): ten boards of twelve columns, and the catalogue stays small.
+export const ITEM_TYPE_STATUSES_MAX = 128;
 // The one tab a type without its own shows.
 export const OVERVIEW_TAB_ID = 't-overview';
 
@@ -80,27 +94,19 @@ export const BUILT_IN_FIELD_IDS: readonly ItemFieldId[] = [
   'start',
   'due',
   'checklist',
+  'attachments',
   'comments',
   'votes',
 ];
 
-// Every type offers these, first, and they cannot be removed.
-export const REQUIRED_TYPE_FIELDS: readonly ItemFieldId[] = ['title', 'status'];
-
-// What a particular type always offers besides (docs/specs/026-plan/item-types.md "An item type"): a Project
-// is drawn on the Gantt chart from its Start and Due, so it always has both. They can move, never come off.
-const TYPE_REQUIRED_FIELDS: Readonly<Record<string, readonly ItemFieldId[]>> = {
-  project: ['start', 'due'],
-};
-
-// Every field a type can never lose: Title and Status, then the type's own.
-export function requiredFieldsOf(typeId: string | undefined): readonly string[] {
-  const own = typeId ? TYPE_REQUIRED_FIELDS[typeId] : undefined;
-  return own ? [...REQUIRED_TYPE_FIELDS, ...own] : REQUIRED_TYPE_FIELDS;
-}
+// Title and Status first in every type, and a type's own kept fields (type-required-fields.ts).
+export { REQUIRED_TYPE_FIELDS, requiredFieldsOf } from './type-required-fields';
 
 // A custom field's id: `f-` and a slug, or the reserved `parent` (PARENT_FIELD, a Card field).
 export const CUSTOM_FIELD_ID_PATTERN = /^(?:f-[a-z0-9-]{1,30}|parent)$/;
+// A field a Rollup or Lookup reads through or reads (docs/specs/026-plan/item-types.md "Rollup and Lookup fields"): a
+// custom field's id, a built-in field's, or every card's Number and Type.
+const READ_FIELD_PATTERN = /^(?:f-[a-z0-9-]{1,30}|[a-z]{1,20}|#key|#type)$/;
 
 // What is stored: the catalogue whole, with a version for later shapes.
 export interface ItemTypeCatalogue {
@@ -152,13 +158,22 @@ export function newCustomFieldId(label: string, taken: Iterable<string>): string
 
 // The fields a panel never files under a tab: the title heads it, and votes live on the card.
 const NEVER_IN_A_TAB = new Set(['title', 'votes']);
+// The same for a type's own Votes field, which lives on the card as the built-in does (item-types.md "Comments and
+// Votes fields").
+const neverInATab = (type: ItemTypeDef, f: string): boolean =>
+  NEVER_IN_A_TAB.has(f) || customFieldOf(type, f)?.kind === 'votes';
 
-// A field the default Overview tab holds: the long-form ones, and the comment thread.
+// A Comments field, the built-in or the type's own (item-types.md "Comments and Votes fields").
+const isCommentsField = (type: ItemTypeDef, f: string): boolean =>
+  f === 'comments' || customFieldOf(type, f)?.kind === 'comments';
+
+// A field the default Overview tab holds: the long-form ones, and the comment threads.
 function overviewField(type: ItemTypeDef, f: string): boolean {
   return (
     f === 'description' ||
     f === 'checklist' ||
-    f === 'comments' ||
+    f === 'attachments' ||
+    isCommentsField(type, f) ||
     customFieldOf(type, f)?.kind === 'longtext'
   );
 }
@@ -168,15 +183,19 @@ function overviewField(type: ItemTypeDef, f: string): boolean {
 export function tabsOf(type: ItemTypeDef): readonly ItemTypeTab[] {
   const offered = new Set(type.fields);
   if (type.tabs)
-    return type.tabs.map((t) => ({ ...t, fields: t.fields.filter((f) => offered.has(f)) }));
+    return type.tabs.map((t) => ({
+      ...t,
+      fields: t.fields.filter((f) => offered.has(f) && !neverInATab(type, f)),
+    }));
   return [
     {
       id: OVERVIEW_TAB_ID,
       label: 'Overview',
-      // The conversation ends the tab, after every long-form field (docs/specs/026-plan/items.md "Comments").
+      // The conversations end the tab, after every long-form field, in the type's order (docs/specs/026-plan/items.md
+      // "Comments").
       fields: type.fields
         .filter((f) => overviewField(type, f))
-        .sort((a, b) => Number(a === 'comments') - Number(b === 'comments')),
+        .sort((a, b) => Number(isCommentsField(type, a)) - Number(isCommentsField(type, b))),
     },
   ];
 }
@@ -190,7 +209,7 @@ export function detailsLabelOf(type: Pick<ItemTypeDef, 'detailsLabel'>): string 
 // The fields the panel's Details shows: the type's fields in no tab (never the title or votes).
 export function detailFieldsOf(type: ItemTypeDef): string[] {
   const tabbed = new Set(tabsOf(type).flatMap((t) => t.fields));
-  return type.fields.filter((f) => !NEVER_IN_A_TAB.has(f) && !tabbed.has(f));
+  return type.fields.filter((f) => !neverInATab(type, f) && !tabbed.has(f));
 }
 
 export function newTabId(label: string, taken: Iterable<string>): string {
@@ -277,14 +296,85 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
     // The type it links to; one the catalogue lacks is kept (the type may come back), never refused.
     const linkType = input['linkType'];
     if (typeof linkType !== 'string' || !ITEM_TYPE_PATTERN.test(linkType)) return `${at}.linkType`;
-    field.linkType = linkType;
+    // Several types (docs/specs/026-plan/item-types.md "Card fields"): read as linkTypesOf reads them, stored as
+    // withLinkTypes stores them.
+    const many = input['linkTypes'];
+    if (many !== undefined) {
+      if (
+        !Array.isArray(many) ||
+        many.length < 1 ||
+        many.length > CARD_LINK_TYPES_MAX ||
+        many.some((t) => typeof t !== 'string' || !ITEM_TYPE_PATTERN.test(t))
+      )
+        return `${at}.linkTypes`;
+    }
+    Object.assign(
+      field,
+      withLinkTypes(field, linkTypesOf({ linkType, linkTypes: many as string[] | undefined })),
+    );
   }
   if (kind === 'currency' && input['currency'] !== undefined) {
     const code = input['currency'];
     if (typeof code !== 'string' || !CURRENCY_CODE.test(code)) return `${at}.currency`;
     if (code !== CURRENCY_DEFAULT) field.currency = code;
   }
+  if (kind === 'calculated') {
+    // From the fixed menu (calculated-fields.ts): one this reader does not know is refused, as an unknown kind is.
+    const calculation = input['calculation'];
+    if (!isCalculation(calculation)) return `${at}.calculation`;
+    field.calculation = calculation;
+    if (calculation === 'rollup' || calculation === 'lookup') {
+      // Its settings (docs/specs/026-plan/item-types.md "Rollup and Lookup fields"): ids kept as written, even ones no
+      // type has any more (the field shows the problem), never a malformed one.
+      for (const k of ['through', 'source'] as const) {
+        const v = input[k];
+        if (v === undefined) continue;
+        if (typeof v !== 'string' || !READ_FIELD_PATTERN.test(v)) return `${at}.${k}`;
+        field[k] = v;
+      }
+      const aggregate = input['aggregate'];
+      if (calculation === 'rollup' && aggregate !== undefined) {
+        if (!isAggregate(aggregate)) return `${at}.aggregate`;
+        field.aggregate = aggregate;
+      }
+    }
+    if (calculation === 'rollup' || calculation === 'lookup' || calculation === 'formula') {
+      // The result kind, and a Currency result's currency, as a Currency field keeps it.
+      const result = input['result'];
+      if (result !== undefined) {
+        if (!isFormulaResult(result)) return `${at}.result`;
+        if (result !== FORMULA_RESULT_DEFAULT) field.result = result;
+      }
+      const code = input['currency'];
+      if (field.result === 'currency' && code !== undefined) {
+        if (typeof code !== 'string' || !CURRENCY_CODE.test(code)) return `${at}.currency`;
+        if (code !== CURRENCY_DEFAULT) field.currency = code;
+      }
+    }
+    if (calculation === 'formula') {
+      // Its expression as stored (docs/specs/026-plan/item-types.md "Formula fields"): kept as written, even one
+      // that no longer works (the field shows the problem); never more than FORMULA_MAX.
+      const formula = input['formula'] ?? '';
+      if (typeof formula !== 'string' || formula.length > FORMULA_MAX) return `${at}.formula`;
+      field.formula = formula;
+    }
+  }
+  // Kept only as 'percent', on a field whose result is a share (percent-fields.ts); anything else reads as text.
+  if (input['showAs'] === 'percent' && canShowAsPercent(field)) field.showAs = 'percent';
+  // Kept only as true, only on a Duration field (docs/specs/026-plan/item-types.md "Time Spent"); anything else reads off.
+  if (input['timeSpent'] === true && field.kind === 'duration') field.timeSpent = true;
+  // Kept only as true, on a Date Range (date-range-fields.ts); anything else is dropped, never refused.
+  if (input['withTime'] === true && field.kind === 'daterange') field.withTime = true;
   if (input['onCard'] === true) field.onCard = true;
+  // Kept only as true, and never on a Checkbox: anything else reads as optional rather than refusing the catalogue.
+  if (input['required'] === true && canBeRequired(field.kind) && !field.timeSpent)
+    field.required = true;
+  // Kept only as true, and only on a Person field.
+  if (input['notifies'] === true && field.kind === 'person') field.notifies = true;
+  // Kept only as true, and only on a Person or Card field (docs/specs/026-plan/item-types.md "Holds Several").
+  if (input['multiple'] === true && holdsSeveralKind(field.kind)) field.multiple = true;
+  // Kept only as true, and only on a Card field (docs/specs/026-plan/item-types.md "Blocked By").
+  if (input['blocks'] === true && field.kind === 'card') field.blocks = true;
   return field;
 }
 
@@ -336,9 +426,16 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     if (!d || d.length > ITEM_TYPE_TAB_LABEL_MAX) return `${at}.detailsLabel`;
     if (d !== DETAILS_LABEL_DEFAULT) detailsLabel = d;
   }
+  // The ordered list of the statuses it uses; a type stored before it (legacy) keeps what it left out, and a type
+  // with the list drops any exclusions, which it replaced.
+  let statuses: string[] | undefined;
   let excludedStatuses: string[] | undefined;
-  if (input['excludedStatuses'] !== undefined) {
-    const read = readExcludedStatuses(input['excludedStatuses']);
+  if (input['statuses'] !== undefined) {
+    const read = readStatusList(input['statuses'], ITEM_TYPE_STATUSES_MAX);
+    if (!read) return `${at}.statuses`;
+    statuses = read;
+  } else if (input['excludedStatuses'] !== undefined) {
+    const read = readStatusList(input['excludedStatuses'], ITEM_TYPE_EXCLUDED_STATUSES_MAX);
     if (!read) return `${at}.excludedStatuses`;
     if (read.length) excludedStatuses = read;
   }
@@ -351,6 +448,31 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
   }
   const display = readCardDisplay(input['display'], id);
   if (display === null) return `${at}.display`;
+  // The Card Colour: a custom Colour field of the type's own; anything else reads as the built-in Colour.
+  const colourIn = input['colourField'];
+  const colourField =
+    typeof colourIn === 'string' && custom.some((f) => f.id === colourIn && f.kind === 'colour')
+      ? colourIn
+      : undefined;
+  // Its base type (type-inheritance.ts), by id, and the fields of its own, kept only beside one; validateItemTypeCatalogue
+  // resolves it against the base once every type is read.
+  const inheritsIn = input['inherits'];
+  if (
+    inheritsIn !== undefined &&
+    (typeof inheritsIn !== 'string' || !ITEM_TYPE_PATTERN.test(inheritsIn))
+  )
+    return `${at}.inherits`;
+  let ownFields: string[] | undefined;
+  if (inheritsIn !== undefined && input['ownFields'] !== undefined) {
+    const own = input['ownFields'];
+    if (
+      !Array.isArray(own) ||
+      own.length > ITEM_TYPE_FIELDS_MAX ||
+      own.some((f) => typeof f !== 'string')
+    )
+      return `${at}.ownFields`;
+    ownFields = [...new Set(own as string[])].filter((f) => fields.includes(f));
+  }
   const newTitle =
     typeof input['newTitle'] === 'string' && input['newTitle'].trim()
       ? input['newTitle'].trim().slice(0, ITEM_TYPE_LABEL_MAX + 4)
@@ -365,17 +487,22 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     ...(custom.length ? { custom } : {}),
     ...(tabs ? { tabs } : {}),
     ...(detailsLabel ? { detailsLabel } : {}),
+    ...(statuses ? { statuses } : {}),
     ...(excludedStatuses ? { excludedStatuses } : {}),
     ...(defaultStatus ? { defaultStatus } : {}),
     ...(display ? { display } : {}),
+    ...(input['assigneeNotifies'] === false ? { assigneeNotifies: false } : {}),
+    ...(colourField ? { colourField } : {}),
+    ...(inheritsIn !== undefined ? { inherits: inheritsIn } : {}),
+    ...(ownFields ? { ownFields } : {}),
   };
 }
 
-// A type's left-out statuses as stored: status ids (trimmed, de-duplicated, in order), at most
-// ITEM_TYPE_EXCLUDED_STATUSES_MAX. An id no board names any more is kept, so the status keeps its exclusion if it
-// comes back. Null for anything else.
-function readExcludedStatuses(input: unknown): string[] | null {
-  if (!Array.isArray(input) || input.length > ITEM_TYPE_EXCLUDED_STATUSES_MAX) return null;
+// A type's status list as stored (the statuses it uses, or a legacy type's left-out ones): status ids
+// (non-blank, de-duplicated, in order), at most `max`. An id no board names any more is kept, so the status comes
+// back as it was. Null for anything else.
+function readStatusList(input: unknown, max: number): string[] | null {
+  if (!Array.isArray(input) || input.length > max) return null;
   const out: string[] = [];
   for (const s of input) {
     if (typeof s !== 'string' || !s.trim() || s.length > ITEM_STATUS_MAX) return null;
@@ -384,19 +511,24 @@ function readExcludedStatuses(input: unknown): string[] | null {
   return out;
 }
 
-// Whether a card of `type` may be in `status` (docs/specs/026-plan/item-types.md "An item type"). No status (an
-// unplaced card) is always allowed.
+// Whether a card of `type` may be in `status` (docs/specs/026-plan/item-types.md "The statuses a type uses"): one
+// its list holds, or for a legacy type (no list) one it does not leave out. No status (an unplaced card) is always
+// allowed.
 export function typeAllowsStatus(
-  type: Pick<ItemTypeDef, 'excludedStatuses'> | undefined,
+  type: TypeStatusesPart | undefined,
   status: string | null | undefined,
 ): boolean {
-  if (!status || !type?.excludedStatuses) return true;
-  return !type.excludedStatuses.includes(status);
+  if (!status || !type) return true;
+  if (type.statuses) return type.statuses.includes(status);
+  return !type.excludedStatuses?.includes(status);
 }
+
+// What says which statuses a type uses: its ordered list, or a legacy type's exclusions.
+export type TypeStatusesPart = Pick<ItemTypeDef, 'statuses' | 'excludedStatuses'>;
 
 // A type's Default State, or undefined: none set, or one the type has turned off (ignored, as if absent).
 export function defaultStatusOf(
-  type: Pick<ItemTypeDef, 'defaultStatus' | 'excludedStatuses'> | undefined,
+  type: (TypeStatusesPart & Pick<ItemTypeDef, 'defaultStatus'>) | undefined,
 ): string | undefined {
   const d = type?.defaultStatus;
   return d && typeAllowsStatus(type, d) ? d : undefined;
@@ -422,12 +554,14 @@ export const READY_MADE_DEFAULT_STATE_NAMES: Readonly<Record<string, string>> = 
   objective: 'Draft',
   'key-result': 'Not Started',
   'launch-check': 'Not Checked',
+  deal: 'Lead',
+  ticket: 'New',
 };
 
 // The built-in default's state in this project (`statusNames`: status id to name), or undefined: not a built-in
 // type, no state of that name, or one the type turns off.
 export function readyMadeDefaultStatus(
-  type: Pick<ItemTypeDef, 'id' | 'excludedStatuses'>,
+  type: TypeStatusesPart & Pick<ItemTypeDef, 'id'>,
   statusNames: Iterable<readonly [string, string]>,
 ): string | undefined {
   const name = READY_MADE_DEFAULT_STATE_NAMES[type.id];
@@ -438,7 +572,7 @@ export function readyMadeDefaultStatus(
 // The state a card of this type is made in outside a board, as the editor resolves it: its own Default State,
 // else its built-in one, else undefined.
 export function resolvedDefaultStatus(
-  type: Pick<ItemTypeDef, 'id' | 'defaultStatus' | 'excludedStatuses'>,
+  type: TypeStatusesPart & Pick<ItemTypeDef, 'id' | 'defaultStatus'>,
   statusNames: Iterable<readonly [string, string]>,
 ): string | undefined {
   return defaultStatusOf(type) ?? readyMadeDefaultStatus(type, statusNames);
@@ -482,7 +616,18 @@ export function validateItemTypeCatalogue(input: unknown): Result {
       return { ok: false, reason: `types[${i}].label` };
     types.push(type);
   }
-  const catalogue: ItemTypeCatalogue = { version: ITEM_TYPE_CATALOGUE_VERSION, types };
+  // Inherited types (docs/specs/026-plan/item-types.md "Inherited types"): one level only, each resolved against its
+  // base (a type whose base is gone detached), then held to the caps as resolved.
+  const chain = inheritanceProblem(types);
+  if (chain) return { ok: false, reason: chain };
+  const resolved = withInheritance(types);
+  for (const [i, t] of resolved.entries()) {
+    if (!t.inherits) continue;
+    if (t.fields.length > ITEM_TYPE_FIELDS_MAX) return { ok: false, reason: `types[${i}].fields` };
+    if (customFieldCount(t.custom ?? []) > ITEM_TYPE_CUSTOM_MAX)
+      return { ok: false, reason: `types[${i}].custom` };
+  }
+  const catalogue: ItemTypeCatalogue = { version: ITEM_TYPE_CATALOGUE_VERSION, types: resolved };
   if (new TextEncoder().encode(JSON.stringify(catalogue)).length > ITEM_TYPES_BYTES)
     return { ok: false, reason: 'too large' };
   return { ok: true, catalogue };

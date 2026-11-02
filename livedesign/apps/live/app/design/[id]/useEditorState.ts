@@ -25,6 +25,7 @@ import {
   useEffectEvent,
 } from 'react';
 import {
+  stampSessionMembers,
   stampTabKind,
   isBoxed,
   stampNewElementLayers,
@@ -77,11 +78,23 @@ import { useBurstCheckpoint } from '@liveworkspace/workbench/hooks/canvas/useBur
 import { useNudgeSelection } from '@/hooks/canvas/useNudgeSelection';
 import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
+import { useComponentLibrary } from './useComponentLibrary';
+import { useComponentSession } from './useComponentSession';
+import { MAKE_COMPONENT_REFUSAL, useComponentActions } from './useComponentActions';
+
+// No elements, one stable list (an empty design before its first tab).
+const NO_ELEMENTS: Element[] = [];
+// Said when a main could not be stored (docs/specs/009-elements/components.md "Sharing, collaboration and storage").
+const COMPONENT_SAVE_FAILED =
+  'Your component change could not be saved. Check your connection and try again.';
 import { commitUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
 import { track } from '@/lib/telemetry';
+import { useApplyStyleToAllTabs } from '@liveworkspace/workbench/hooks/editor/useApplyStyleToAllTabs';
+import { withStyleOfTab } from '@/lib/tab-theme-apply';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
+import { useCommentReactionScope } from '@/hooks/collab/useCommentReactionScope';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
 import { useEditorImages } from '@/hooks/canvas/useEditorImages';
 import { useEditorNotes } from '@/hooks/canvas/useEditorNotes';
@@ -98,7 +111,7 @@ import { useEditorKeyboardShortcuts } from '@/hooks/canvas/useEditorKeyboardShor
 import { useEditorViewport } from '@/hooks/canvas/useEditorViewport';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
-import type { Participant } from '@/lib/identity';
+import { participantKey, type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { apiNotifyActionAssigned, apiSaveSelf } from '@/lib/api-client';
 import { ROOM_FULL_NOTICE } from '@/lib/api/room';
@@ -197,6 +210,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Set once Pages mode's pages are known (below): the tab the lock guard applies to, and how
   // it says something was held back.
   const pageLockGuardRef = useRef<PageLockGuard | null>(null);
+  // The component edit sessions this screen opened, the only ones it derives live (useComponentSession).
+  const ownedComponentSessions = useRef(new Set<string>());
   // A tick (a drag landing, a nudge, a resize, a slider) passes the same lock guard as a commit.
   // Stable, as the history's own tick is: effects and loaders depend on its identity.
   const tickTabs = useCallback(
@@ -225,7 +240,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       // Locked pages (docs/specs/007-editor/pages-mode.md "Locking a page"): in Pages
       // mode nothing is added to, moved onto, changed on or taken off a locked page.
       // Badges and step numbers (docs/specs/009-elements/badge.md "Attachment"), after the commit moved their hosts.
-      const next = guardLockedPagesIn(ts, settleChipsInTabs(ts, mapped), pageLockGuardRef.current);
+      const guarded = guardLockedPagesIn(
+        ts,
+        settleChipsInTabs(ts, mapped),
+        pageLockGuardRef.current,
+      );
+      // An open component edit session (docs/specs/009-elements/components.md "Editing the main"): what this commit
+      // adds to a changed tab joins the session. stampSessionMembers returns the elements as they are with no session.
+      const next = guarded.map((t) => {
+        if (before.has(t)) return t;
+        const prev = ts.find((p) => p.id === t.id);
+        if (!prev) return t;
+        const els = stampSessionMembers(prev.elements, t.elements);
+        return els === t.elements ? t : { ...t, elements: els };
+      });
       const stamp = activeLayerStampRef.current;
       if (!stamp) return next;
       return next.map((t) => {
@@ -463,6 +491,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     selfParticipant,
     // Bound below, once the teams the mention list comes from have loaded.
     onMentioned: (text, mentions) => mentionNotifyRef.current(text, mentions),
+    // A Community visitor reads the design, never its conversation (docs/specs/025-community/community.md).
+    commentsOff: realtime.sessionCommunity !== null,
   });
   // Per-user editor preferences (docs/specs/007-editor/user-preferences.md): the state, the ref mirrors
   // the drag hook reads, and the localStorage read + D1 sync effects.
@@ -790,6 +820,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setSelfParticipant,
       setSessionRole,
       setSessionShareCode,
+      setSessionCommunity: realtime.setSessionCommunity,
       setSessionTabScope,
       setSharePasswordGate,
       setIdentityPromptOpen,
@@ -901,13 +932,24 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     send: (op) => roomRef.current?.send({ kind: 'op', op }),
   });
 
+  // The design's component library (docs/specs/009-elements/components.md "The library"), kept live by the room.
+  const componentLibrary = useComponentLibrary({
+    hydrated,
+    designId,
+    ownerId: selfParticipant.id,
+    shareCode: sessionShareCode,
+    elements: (tabs.find((t) => t.id === activeId) ?? tabs[0])?.elements ?? NO_ELEMENTS,
+    onSaveError: () => toast.error(COMPONENT_SAVE_FAILED),
+  });
+
   useRoomConnection({
     onAdderKey: participant.setAdderKey,
     hydrated,
     designId,
     designServerStored: realtime.designServerStored,
     // A workbench session that ended stops the room (blueprint "The workbench page" step 6).
-    enabled: !workbench?.ended,
+    // A Community visitor never joins the room: no cursors, no presence (docs/specs/025-community/community.md).
+    enabled: realtime.sessionCommunity === null && !workbench?.ended,
     onWorkbenchEnded: workbench ? () => workbench.end('revoked') : undefined,
     onRoomFull: () => toast.warning(ROOM_FULL_NOTICE),
     designTeamId,
@@ -939,6 +981,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     receiveDesignTrashed: () => designTrashed.setDesignTrashed(true),
     resyncFromServer,
     receiveChangeset: changesetFeed.receiveChangeset,
+    receiveComponent: componentLibrary.receiveComponent,
     receivePhotoPresence: photoPresence.receive,
     onRoomJoined: () => {
       void changesetFeed.checkSinceLoad();
@@ -998,6 +1041,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   useAssignRef(mentionNotifyRef, commentMentions.notifyMentioned);
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
+  // Comment reactions (docs/specs/012-collaboration/comment-reactions.md): whoever may comment may react, under
+  // the collab key this browser's hello publishes.
+  const commentReactions = useCommentReactionScope({
+    applyElementDelta,
+    activeTab,
+    selfKey: participantKey(selfParticipant),
+    selfName: selfParticipant.name,
+    canReact: participant.can.takePart,
+  });
   // The tab's editor mode (docs/specs/007-editor/pages-mode.md "One mode"): Pages, the one mode.
   const editorMode = useEditorMode(canEdit);
   // A colour picked with + joins the tab's custom colours, which every picker offers.
@@ -1234,6 +1286,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
         assigneeMemberId: input.assigneeMemberId,
         actionName: input.actionName,
         ...(input.description ? { description: input.description } : {}),
+        email: input.email,
+        tabId: input.tabId,
+        elementId: input.elementId,
       }).catch(() => {});
     },
   });
@@ -1395,6 +1450,28 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // never written back over.
     commitTabs(activeElementsCommit(activeId, mapElements));
   };
+
+  // Components (docs/specs/009-elements/components.md): an Editor's actions, and the edit session's derive.
+  const componentActions = useComponentActions({
+    canEdit: canEdit && !editsBlocked,
+    selfId: selfParticipant.id,
+    elements: activeTab.elements,
+    commit,
+    library: componentLibrary,
+    select: (ids) => {
+      setSelectedId(ids.length === 1 ? ids[0]! : null);
+      setMultiSelectedIds(new Set(ids.length > 1 ? ids : []));
+    },
+    viewCentre: getViewportCenter,
+    owned: ownedComponentSessions,
+  });
+  const componentSession = useComponentSession({
+    canEdit,
+    selfId: selfParticipant.id,
+    elements: activeTab.elements,
+    library: componentLibrary,
+    owned: ownedComponentSessions,
+  });
 
   // Tab-level history commit scoped to the ACTIVE tab, for mutations
   // that touch more than the elements array — the layer ops and the
@@ -1663,6 +1740,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tickTabs,
     checkpointBurst,
   });
+
+  // Apply to All Tabs (docs/specs/011-theme/canvas-and-theme-dialog.md): the open tab's style on every tab, as one
+  // undo step, an Editor's of the whole design only.
+  const { applyToAllTabs: applyStyleToAllTabs, applying: applyingStyleToAllTabs } =
+    useApplyStyleToAllTabs<Tab>({
+      canApply: !structureBlocked && !isStructureReadOnly,
+      activeId,
+      loadAllTabs,
+      isTabLoaded: (id) => loadedTabIdsRef.current.has(id),
+      commitTabs,
+      restyle: withStyleOfTab,
+      notify: (message) => toast.info(message),
+      onApplied: () => track('Tab', 'Changed', 'AllTabs'),
+    });
 
   // A checklist tick is a room press like an answer (docs/specs/012-collaboration/collab-race-hardening.md): applied here
   // and sent to the room as a delta, never undoable. Box ticks deliberately don't track: high-frequency, low-signal.
@@ -2014,7 +2105,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const quickStyleDeps: QuickStyleDeps = {
     activeTab,
     theme: activeTheme,
-    editsBlocked: structureBlocked,
+    // Inspect reads, never styles (docs/specs/007-editor/wireframe-pages.md "Inspect").
+    editsBlocked: structureBlocked || canvasTool === 'inspect',
     canStyle: participant.participating ? participant.can.recolour : undefined,
     liveElements: liveActiveElements,
     commit,
@@ -2246,6 +2338,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     applyFormatFromSource,
     formatToolActive,
     setFormatSourceId,
+    inspectToolActive: canvasTool === 'inspect',
     connectSourceId,
     connectArrowTo,
     tick,
@@ -2271,6 +2364,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   //.
   const canvasPointerRef = useRef<{ x: number; y: number } | null>(null);
   const { copySelection, pasteFromClipboard, dropBoardFile, hasClipboard } = useClipboard({
+    addMissingComponents: componentLibrary.addMissing,
     isReadOnly,
     createBlocked,
     explainCreateBlocked: layersState.explainCreateBlocked,
@@ -2306,12 +2400,25 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Z zen, z-order + fit-to-screen). The full keymap + rationale lives in
   // useEditorKeyboardShortcuts and is catalogued in docs/specs/008-canvas/canvas-and-palette.md.
   useEditorKeyboardShortcuts({
+    onMakeComponent: () => {
+      const { selectedId, multiSelectedIds } = readSelection();
+      const ids =
+        multiSelectedIds.size > 0 ? multiSelectedIds : new Set(selectedId ? [selectedId] : []);
+      const refusal = componentActions.makeRefusal(ids);
+      if (refusal) toast.info(MAKE_COMPONENT_REFUSAL[refusal]);
+      else componentActions.makeFromSelection(ids);
+    },
+    onDetachComponent: () => {
+      const { selectedId } = readSelection();
+      if (selectedId) componentActions.detach(selectedId);
+    },
     formatSourceId,
     setFormatSourceId,
     readSelection,
     editingId,
-    isReadOnly,
-    participant: participant.participating,
+    // While Inspect is on the keys act as a Viewer's (docs/specs/007-editor/wireframe-pages.md "Inspect").
+    isReadOnly: isReadOnly || canvasTool === 'inspect',
+    participant: participant.participating && canvasTool !== 'inspect',
     deleteSelected,
     deleteMultiSelected,
     undo,
@@ -2403,6 +2510,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   useWorkbenchEnd(workbench, designTrashed.trashed);
 
   return {
+    componentLibrary,
+    componentActions,
+    componentSession,
     surface,
     tourSquare,
     addCustomColour,
@@ -2524,6 +2634,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     releaseSelectionLock,
     setTabFinish,
     applyTabLook,
+    applyStyleToAllTabs,
+    applyingStyleToAllTabs,
+    canApplyStyleToAllTabs: !isStructureReadOnly,
     beginAnchorDrag,
     beginArrowCurveDrag,
     beginArrowCurvePointDrag,
@@ -2620,6 +2733,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     applyCellLink,
     activeTabLoadState,
     commentMentions,
+    commentReactions,
     // Bring an element into view (the Collaborate panel's jump to a card).
     scrollIntoView,
     livePresence,

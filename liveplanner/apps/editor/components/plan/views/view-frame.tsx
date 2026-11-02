@@ -212,7 +212,9 @@ export function PhaseLegend({ palette }: { palette: PlanPalette }) {
 }
 
 // A small header control (the calendar's month steps, the Gantt's scale and window): a quiet text or icon button
-// that keeps its press from the canvas, named by a tooltip. `active` presses it (the Gantt's scale).
+// that keeps its press from the canvas, named by a tooltip. `active` presses it (the Gantt's scale). It never shrinks
+// under its words: in a narrow header (a phone) the controls scroll sideways instead, where a shrunk Today ran its
+// letters under the title.
 export function ViewStepButton({
   label,
   onPress,
@@ -232,7 +234,7 @@ export function ViewStepButton({
         type="button"
         aria-label={label}
         aria-pressed={active || undefined}
-        className="flex h-6 min-w-6 cursor-pointer items-center justify-center rounded-md px-1.5 text-[11px] font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
+        className="flex h-6 min-w-6 shrink-0 cursor-pointer items-center justify-center whitespace-nowrap rounded-md px-1.5 text-[11px] font-medium transition hover:bg-black/5 dark:hover:bg-white/10"
         style={
           active
             ? { color: palette.text, backgroundColor: palette.column }

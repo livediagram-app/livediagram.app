@@ -9,7 +9,7 @@
 // omitted in the visual ones (PNG, PDF) where they have no natural
 // rendering.
 
-import type { Item, ItemTypeDef } from '@liveplanner/items';
+import type { IsDoneStatus, Item, ItemTypeDef } from '@liveplanner/items';
 import {
   arrowLabelFontStack,
   arrowLabelPass,
@@ -75,6 +75,9 @@ export type ImageExportOpts = {
   items?: ReadonlyMap<string, Item>;
   // And its item types (docs/specs/026-plan/item-types.md), so custom types keep their colour.
   itemTypes?: readonly ItemTypeDef[];
+  // The statuses the plan's boards count as done, for the blocked badge (docs/specs/026-plan/item-types.md
+  // "Blocked By").
+  itemsDone?: IsDoneStatus;
   // Each Sheet's window of cells by sheet id (docs/specs/029-sheets/sheet.md "Exports and images"), from the sheet
   // store (plan-export-sheets.ts). Without it a Sheet draws its frame and headers alone.
   sheets?: ReadonlyMap<string, SheetRenderModel>;
@@ -145,6 +148,9 @@ function svgToImage(svg: string): Promise<HTMLImageElement> {
 
 // The largest canvas side every browser draws (Safari and Firefox stop at 16384 px; Chrome 32767).
 export const MAX_EXPORT_CANVAS_SIDE = 16384;
+// How far past a whole pixel a size may be from float arithmetic alone (1024 x 2.0000000001) and still count as
+// that whole pixel when the canvas is sized.
+const PART_PIXEL_NOISE = 1e-6;
 
 /** The scale an image export draws at: `wanted`, lowered so neither side of a `w` x `h` drawing
  *  passes MAX_EXPORT_CANVAS_SIDE. */
@@ -190,8 +196,12 @@ export async function renderTabToCanvas(
   const w = (draw.w + pad * 2) * scale;
   const h = (draw.h + pad * 2) * scale;
   const canvas = document.createElement('canvas');
-  canvas.width = Math.max(1, Math.floor(w));
-  canvas.height = Math.max(1, Math.floor(h));
+  // A part pixel rounds up, so a part-pixel size (a box of 360.5 x 55.9 with its padding) keeps its last row
+  // and column; a hair under a whole one (float noise) stays whole, and no side passes the canvas limit.
+  const pixels = (n: number) =>
+    Math.max(1, Math.min(MAX_EXPORT_CANVAS_SIDE, Math.ceil(n - PART_PIXEL_NOISE)));
+  canvas.width = pixels(w);
+  canvas.height = pixels(h);
   renderedScale.set(canvas, scale);
   const ctx = canvas.getContext('2d');
   if (!ctx) return canvas;
@@ -278,6 +288,7 @@ export async function renderTabToCanvas(
         ...chartInk,
         items: opts.items,
         itemTypes: opts.itemTypes,
+        itemsDone: opts.itemsDone,
         sheets: opts.sheets,
         resolvePlanArt: opts.resolvePlanArt,
         resolveTabWindow: opts.resolveTabWindow,
@@ -430,6 +441,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
             ...chartInk,
             items: opts.items,
             itemTypes: opts.itemTypes,
+            itemsDone: opts.itemsDone,
             sheets: opts.sheets,
             resolvePlanArt: opts.resolvePlanArt,
             resolveTabWindow: opts.resolveTabWindow,

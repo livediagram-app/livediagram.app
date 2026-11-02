@@ -20,6 +20,8 @@ export * from './feature-art/versatility-more';
 // fact that presenting is yours alone.
 export * from './feature-art/present';
 export * from './feature-art/slide-layouts';
+// Flashcards (docs/specs/007-editor/flashcards.md): the stack, flipped one card at a time.
+export * from './feature-art/flashcards';
 // Infographic pages (docs/specs/007-editor/pages-mode.md): pages, layouts, backgrounds, export.
 export * from './feature-art/infographics';
 export * from './feature-art/infographics-export';
@@ -28,3 +30,6 @@ export * from './feature-art/pages-more';
 export * from './feature-art/article';
 export * from './feature-art/documents';
 export * from './feature-art/article-looks';
+// Tables, contents, headers and footers in an article's writing; Find and Replace; Word and PowerPoint import.
+export * from './feature-art/article-blocks';
+export * from './feature-art/writing-tools';

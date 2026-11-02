@@ -539,6 +539,59 @@ describe('DocumentRoom op-role enforcement', () => {
     return receivedOf(ws, 'op');
   }
 
+  // docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element".
+  it("refuses an editor's element op the validator refuses: not relayed or sequenced, answered and logged", () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const { room } = newRoom();
+      const editor = connect(room, 'editor', 'edit');
+      const other = connect(room, 'other', 'edit');
+      editor.ws.sent.length = 0;
+      other.ws.sent.length = 0;
+      const arrow = { id: 'r', type: 'arrow', from: 'a', to: { kind: 'free', x: 0, y: 0 } };
+      const op = { kind: 'el', tabId: 't', op: { kind: 'add', element: arrow } };
+
+      sendFrame(room, editor.ws, { kind: 'op', op, ref: 4 });
+
+      expect(opsReceived(other.ws)).toHaveLength(0);
+      expect(receivedOf(editor.ws, 'cursor')).toHaveLength(0);
+      expect(room.seq).toBe(0);
+      expect(receivedOf(editor.ws, 'op-refused')).toEqual([
+        {
+          kind: 'op-refused',
+          op: 'el',
+          reason: 'invalid-element',
+          tabId: 't',
+          elementId: 'r',
+          field: 'from',
+          ref: 4,
+        },
+      ]);
+      expect(warn).toHaveBeenCalledWith('[room] element op refused', {
+        op: 'el',
+        reason: 'invalid-element',
+        field: 'from',
+      });
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it("relays an editor's valid element op, and one of a kind the room does not know", () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const other = connect(room, 'other', 'edit');
+    other.ws.sent.length = 0;
+    const shape = { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 };
+    const add = (element: unknown) => ({ kind: 'el', tabId: 't', op: { kind: 'add', element } });
+
+    sendFrame(room, editor.ws, { kind: 'op', op: add(shape) });
+    sendFrame(room, editor.ws, { kind: 'op', op: add({ id: 'h', type: 'hologram', from: 'a' }) });
+
+    expect(opsReceived(other.ws)).toHaveLength(2);
+    expect(receivedOf(editor.ws, 'op-refused')).toHaveLength(0);
+  });
+
   it('relays an op from an edit-role session to peers', () => {
     const { room } = newRoom();
     const editor = connect(room, 'editor', 'edit');

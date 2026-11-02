@@ -48,6 +48,7 @@ import { articleLocked } from '@/lib/article/article-lock';
 import {
   clearArticleGrow,
   isArticleGrowPending,
+  isArticleSettleClaimed,
   markArticleGrow,
 } from '@/lib/article/article-grow-store';
 import { track } from '@/lib/telemetry';
@@ -164,6 +165,8 @@ export function useArticles(deps: {
   // An Editor: everything on the article. A Participant has `canWrite` alone: its writing.
   canEdit: boolean;
   canWrite: boolean;
+  // The writing of an article was accepted (its Title may name the document).
+  onWritten?: (flow: string, blocks: ArticleBlock[]) => void;
   commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
   tickTabs: (map: (ts: Tab[]) => Tab[]) => void;
   undo: () => void;
@@ -209,6 +212,7 @@ export function useArticles(deps: {
           return withArticleFlow(t, flow, doc.style ? { blocks, style: doc.style } : { blocks });
         }),
       );
+      d.onWritten?.(flow, blocks);
       debugLog('[article] writing committed', { tabId, flow, blocks: blocks.length });
       return true;
     },
@@ -253,7 +257,8 @@ export function useArticles(deps: {
   const onLayout = useCallback(
     (layout: FlowLayout) => {
       const d = latest.current;
-      if (!layout.local) {
+      // An article an import here just wrote is this editor's to settle, as its writer.
+      if (!layout.local && !isArticleSettleClaimed(tabId, layout.flow)) {
         growForAbsentWriter(layout);
         return;
       }

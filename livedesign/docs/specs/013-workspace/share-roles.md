@@ -15,11 +15,11 @@ add a sticky. The Participant level is the middle: take part in the design, neve
 
 ## The levels
 
-| Level           | Wire name     | May                                                                                                                                                                                                                                                       |
-| --------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Viewer**      | `view`        | Look only: open and read every tab it admits; pan, zoom, point, use the laser and spotlight, follow and be followed, appear in the presence stack, export. Writes nothing: no comment or reaction.                                                        |
-| **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; react; add, write and arrange stickies and text; place images and swap their pictures; write on any element, a table's cells included (see [What a Participant changes](#what-a-participant-changes)). |
-| **Editor**      | `edit`        | All of Participant; change anything on the pages, its tabs and its tools' configuration.                                                                                                                                                                  |
+| Level           | Wire name     | May                                                                                                                                                                                                                                                                           |
+| --------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Viewer**      | `view`        | Look only: open and read every tab it admits; pan, zoom, point, use the laser and spotlight, follow and be followed, appear in the presence stack, export, inspect a wireframe ([Inspect](../007-editor/wireframe-pages.md#inspect)). Writes nothing: no comment or reaction. |
+| **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; react; add, write and arrange stickies and text; place images and swap their pictures; write on any element, a table's cells included (see [What a Participant changes](#what-a-participant-changes)).                     |
+| **Editor**      | `edit`        | All of Participant; change anything on the pages, its tabs and its tools' configuration.                                                                                                                                                                                      |
 
 - **The levels are a ladder**: every level holds everything below it.
 - **A Viewer only looks.** A comment and a reaction are both taking
@@ -37,7 +37,7 @@ A Participant changes the design's **content**, never its **shape**.
 | Write on any element: change its text (a sticky's, a shape's label, a table's cells)                | Change any other field of an element it did not add: size, style, rotation, layer, lock                                                             |
 | Move and resize any sticky or image; recolour any sticky; swap any image's picture                  | Move, resize or restyle anything else, text boxes included; turn (rotate) anything someone else added                                               |
 | Delete anything it added itself                                                                     | Delete anything someone else added                                                                                                                  |
-| Change anything about what it added (size, style, text), so long as it stays something it could add | Reorder layers; group; lock                                                                                                                         |
+| Change anything about what it added (size, style, text), so long as it stays something it could add | Reorder layers; group; lock; make, place, override, detach or edit a component ([Components](../009-elements/components.md))                        |
 | Undo and redo its own changes (the room puts back any part it may not make)                         | Undo or redo anyone else's                                                                                                                          |
 | Nothing about tabs or pages                                                                         | Add, rename, reorder or delete tabs or pages; change a tab's theme, canvas or finish; change a page's size, background or layout; rename the design |
 
@@ -49,7 +49,11 @@ A Participant changes the design's **content**, never its **shape**.
 - **Nothing offers what a session cannot do.** A Participant or Viewer sees no page panel or page actions. Empty states describe
   instead of instructing: a comment thread invites only someone who may add. A Viewer's
   selection toolbar offers **Show Comments** on an element that has comments, to read them, and no comment button
-  on one that has none (a Participant's offers **Add Comment** everywhere).
+  on one that has none (a Participant's offers **Add Comment** everywhere). A right-click on an element (a long-press
+  on a touch screen) opens its element menu for every role, holding only what the role may do: an Editor's is the
+  full menu; a Participant's offers **Add Comment** (or **View Comments**), **Edit Text** on what it may write on, and
+  **Open Link**, **View Note** and **Copy Text** where the element has them; a Viewer's the same without **Edit Text**,
+  and **Show Comments** only on an element with comments ([Element menu for Participants and Viewers](../008-canvas/element-menu-quick-bar.md#element-menu-for-participants-and-viewers)).
 - **The server is the rule.** A Participant's content changes travel as element changes the server applies one by
   one against the stored tab: a permitted change lands, a forbidden field is left as stored, a forbidden add or
   delete is refused. A stale screen therefore never writes an old copy of a tab over a newer one.

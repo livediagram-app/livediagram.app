@@ -1,8 +1,8 @@
 'use client';
 
-// A Plan board's settings (docs/specs/026-plan/plan-board.md "The board set-up"), in five sections: in its element
+// A Plan board's settings (docs/specs/026-plan/plan-board.md "The board set-up"), in six sections: in its element
 // menu (which its own cog opens) a flyout row each, and in a Dashboard slot's cog one panel of collapsibles: **Board Setup** (title, Setup Board and
-// Fill Tab), **Swimlanes** (built in or by a field, in one grid), **Supported Cards** (the card types it shows and takes) and **Card Layout**
+// Fill Tab), **Swimlanes** (built in or by a field, in one grid), **Sort Cards** (up to two fields), **Supported Cards** (the card types it shows and takes) and **Card Layout**
 // (the card size; what a card shows is its type's Display). A column's own settings sit on the column, behind its
 // cog. Each change is one element edit, through PlanContext.
 import { useState, type ComponentProps, type ReactNode } from 'react';
@@ -17,6 +17,7 @@ import {
   lucideGlyph,
 } from '@liveplanner/ui';
 import {
+  lucideArrowUpDown,
   lucideClipboardList,
   lucideColumns3,
   lucideLayoutGrid,
@@ -30,6 +31,7 @@ import {
 import { usePlan } from '@/components/plan/PlanContext';
 import { BoardColumnsSection } from '@/components/plan/BoardColumnsSection';
 import { CardSizeOptions, MenuGroup, SwimlaneOptions, CardTypeOptions } from './plan-menu-parts';
+import { BoardSortOptions } from './BoardSortOptions';
 import { trackSetup } from '@/components/plan/track-board-setup';
 import { openSetup } from '@/lib/setup-dialog-store';
 import { usePlanTabKind } from '@/hooks/plan/plan-cover-store';
@@ -141,6 +143,26 @@ export function PlanSwimlaneSettings({ element }: { element: ShapeElement }) {
   );
 }
 
+// The Sort Cards section (docs/specs/026-plan/plan-board.md "The board set-up"): up to two fields, each with a
+// direction, offered by the card types the board shows.
+export function PlanSortCardsSettings({ element }: { element: ShapeElement }) {
+  const board = useBoard(element);
+  const plan = usePlan();
+  if (!board) return null;
+  const { setup, set } = board;
+  return (
+    <BoardSortOptions
+      sortBy={setup.sortBy}
+      types={plan?.types ? boardAddTypes(setup, plan.types) : []}
+      allTypes={plan?.types ?? []}
+      onChange={(next) => {
+        const { sortBy: _drop, ...rest } = setup;
+        set(next.length ? { ...rest, sortBy: next } : rest, 'BoardSort');
+      }}
+    />
+  );
+}
+
 // The Supported Cards section: the card types the board shows and lets you add (none on an Archive board, which
 // holds every type it archives).
 export function PlanSupportedCardsSettings({ element }: { element: ShapeElement }) {
@@ -188,6 +210,7 @@ function PlanCardLayoutSettings({ element }: { element: ShapeElement }) {
 }
 
 const RowsIcon = lucideGlyph(lucideRows2, 16);
+const SortIcon = lucideGlyph(lucideArrowUpDown, 16);
 const ColumnsIcon = lucideGlyph(lucideColumns3, 16);
 const LayoutIcon = lucideGlyph(lucideLayoutGrid, 16);
 const FormIcon = lucideGlyph(lucideClipboardList, 16);
@@ -195,7 +218,7 @@ const FormIcon = lucideGlyph(lucideClipboardList, 16);
 // The four sections, in order, for the element menu and the cog alike. `shows` leaves one out where it has nothing
 // (Supported Cards on an Archive board).
 const PLAN_BOARD_SECTIONS: readonly {
-  id: 'board-setup' | 'columns' | 'swimlanes' | 'supported-cards' | 'card-layout';
+  id: 'board-setup' | 'columns' | 'swimlanes' | 'sort-cards' | 'supported-cards' | 'card-layout';
   title: string;
   icon: ReactNode;
   Body: (props: {
@@ -225,6 +248,13 @@ const PLAN_BOARD_SECTIONS: readonly {
     title: 'Swimlanes',
     icon: <RowsIcon />,
     Body: PlanSwimlaneSettings,
+    shows: () => true,
+  },
+  {
+    id: 'sort-cards',
+    title: 'Sort Cards',
+    icon: <SortIcon />,
+    Body: PlanSortCardsSettings,
     shows: () => true,
   },
   {

@@ -13,6 +13,7 @@
 // image wants anyway.
 
 import { capBandBaselineY } from '@liveworkspace/icons';
+import { PROGRESS_LABEL_PX, progressRingLabelPx } from '@liveworkspace/model-core/progress-label';
 import { clampPercent, clampRating, RATING_DEFAULT, RATING_MAX } from './data-shapes';
 import type { BoxedElement } from './index';
 import { r2, xmlEscape } from './svg-render-primitives';
@@ -25,11 +26,10 @@ const MUTED_RULE = '#cbd5e1';
 const sans = (fontFamily?: string) =>
   ` font-family="${xmlEscape(fontFamily ?? 'system-ui, sans-serif')}"`;
 
-/** The percentage label's size, in px; the canvas view draws it at the same size (text-sm). */
-const PROGRESS_LABEL_PX = 14;
-
-/** The centred percentage every progress element carries, on its cap band (optical-alignment.md).
- *  `dx` / `dy` shift it into a nested viewport's own coordinates. */
+/** The centred percentage every progress element carries, on its cap band (optical-alignment.md),
+ *  at `px` (the bar's fixed size, or the ring's share of its diameter, docs/specs/009-elements/progress.md
+ *  "The percentage's size"; the canvas view draws the same). `dx` / `dy` shift it into a nested
+ *  viewport's own coordinates. */
 function progressLabel(
   el: Data,
   pct: number,
@@ -37,11 +37,12 @@ function progressLabel(
   fontFamily?: string,
   dx = 0,
   dy = 0,
+  px = PROGRESS_LABEL_PX,
 ): string {
-  const y = capBandBaselineY(el.y + el.height / 2, PROGRESS_LABEL_PX) - dy;
+  const y = capBandBaselineY(el.y + el.height / 2, px) - dy;
   return (
     `<text x="${r2(el.x + el.width / 2 - dx)}" y="${r2(y)}" text-anchor="middle"` +
-    `${sans(fontFamily)} font-size="${PROGRESS_LABEL_PX}" font-weight="600"` +
+    `${sans(fontFamily)} font-size="${px}" font-weight="600"` +
     ` fill="${xmlEscape(textColor)}">${pct}%</text>`
   );
 }
@@ -112,7 +113,8 @@ export function svgProgressRing(
         ` transform="rotate(-90 50 50)"/>`
       : '') +
     `</svg>`;
-  return ring + progressLabel(el, pct, textColor, fontFamily);
+  const px = progressRingLabelPx(el.width, el.height);
+  return ring + progressLabel(el, pct, textColor, fontFamily, 0, 0, px);
 }
 
 const STAR_PATH =

@@ -1,4 +1,6 @@
 import { useMemo, useState } from 'react';
+import { RemoteCursors } from '@liveworkspace/workbench/components/canvas/RemoteCursor';
+import { identityVars } from '@liveplanner/ui';
 import { participantKey } from '@/lib/identity';
 import { useStableHandlers } from '@liveworkspace/workbench/hooks/ui/useStableHandlers';
 import { idBound } from './element-layer-props';
@@ -32,7 +34,6 @@ import { AgentFocusOverlay } from '@/components/canvas/AgentFocusOverlay';
 import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
 import { useSheetChartRenderer, type BoxedShared } from '@/components/canvas/sheet-chart-renderer';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
-import { ZoomedRemoteCursor } from '@/components/canvas/view-readers';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { CardVoteProvider, type CardVote } from '@/components/plan/CardVoteContext';
 import {
@@ -492,9 +493,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           above the elements, beneath the remote cursors. */}
           <AgentFocusOverlay elements={elements} />
 
-          {remoteCursors.map((c) => (
-            <ZoomedRemoteCursor key={c.id} cursor={c} />
-          ))}
+          <RemoteCursors cursors={remoteCursors} paint={identityVars} />
 
           {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
           above the elements, below the selection chrome. */}

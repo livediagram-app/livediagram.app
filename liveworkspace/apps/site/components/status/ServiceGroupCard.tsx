@@ -43,7 +43,7 @@ export const ServiceGroupCard = memo(function ServiceGroupCard({
 }) {
   const app = listedApps().find((a) => a.id === group.site.id);
   const summary = summarise(group.services, views);
-  const ink = { '--lw-ink': group.site.deep, '--lw-ink-dark': group.site.accent } as CSSProperties;
+  const ink = { '--lw-ink': group.site.deep, '--lw-ink-dark': group.site.light } as CSSProperties;
   const groupState =
     summary.overall === 'operational'
       ? 'up'

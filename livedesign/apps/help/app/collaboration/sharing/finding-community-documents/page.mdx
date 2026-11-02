@@ -1,0 +1,73 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { CommunitySearchBox } from '@/components/illustrations/sharing';
+
+export const metadata = helpMetadata({
+  title: 'Finding Designs in the Community',
+  description:
+    'Search the Community by words, tags, category and sort, open a design read-only, like it, make your own copy, or report it.',
+  path: '/help/collaboration/sharing/finding-community-documents/',
+});
+
+<ArticleLayout title="Finding Designs in the Community" description="Search by words and tags, sort what you find, then make a design your own." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "finding-community-documents")}>
+
+The [Community](/community/) is a gallery of designs people have shared: logos, wireframes, photo edits, social posts, posters, icons and more. You don't need an account to browse it, like a design or make your own copy.
+
+## Searching
+
+One search box holds everything you are looking for, written as words:
+
+- **Plain words** search the title, description and tags, for example `cafe logo`.
+- **`#tag`** finds designs with that tag. Add several, like `#logo #minimal`, and a design has to have all of them.
+- **`category:wireframes`** keeps to one kind of design, such as Logos & Branding, Wireframes & Mockups or Photo Edits.
+- **`sort:loved`** puts the most liked designs first, and **`sort:copied`** the most copied. Without one, the newest come first.
+- **`is:mine`** shows only the designs you have shared (see [Your own shares](#your-own-shares)).
+
+You can type these yourself, or use the buttons inside the right of the search box, which write the same words for you:
+
+<Step n={1}>
+  Choose **Category** to keep to one kind of design, or **All Categories** to see everything again.
+</Step>
+<Step n={2}>
+  Choose **Tags** to see the most used tags. Pick one to add its `#tag` to your search; pick it
+  again to take it out.
+</Step>
+<Step n={3}>
+  Choose the sort button (it reads **Newest** to start) to order by **Most Loved** or **Most
+  Copied**.
+</Step>
+
+<Figure caption="One search box: words and #tags on the left, with My Shares, Category, Tags and the sort inside its right edge.">
+  <CommunitySearchBox />
+</Figure>
+
+On smaller screens the buttons show just their icons. The cross just after your text clears the words, tags and category you searched for; the sort and **My Shares** stay as they are. Your search stays in the page address, so you can bookmark it or send it to someone.
+
+<Tip>On a design's own page, choose any of its tags to search the gallery for that tag.</Tip>
+
+## Your own shares
+
+Signed in, choose **My Shares** in the search box to see only the designs you have shared. Above them, **Your Shares** adds up how many you have shared, and how many likes and copies they have had altogether, so you can see how they are doing. Each card shows its own likes and copies, and you can still search, filter and sort within them.
+
+A design taken out of the Community after reports shows here marked **Hidden**; only you can see it. Choose it to open the design in the editor.
+
+## Looking at a design
+
+Open a card to see the design's page: a live preview you can pan and page through, the author's description and its tags. **Open Design** shows it full screen. Designs in the Community are always read-only, and their comments are private.
+
+## Liking a design
+
+Choose the heart on a card or on a design's page to show the author you liked it. Choose it again to take your like back. Likes are kept per browser, and **Most Loved** sorts by them.
+
+## Making your own copy
+
+Choose **Make a Copy** on a design's page, or in the bar across the top of an open design. A copy of the whole design opens in the editor as your own design, with every tab and page, named after the post you chose. Change anything you like; the original never changes. Each person who copies a design counts once towards its copy count. You don't need an account: as a guest the copy belongs to this browser's guest identity, and it moves into your account if you [sign up](/help/getting-started/guest-vs-account/) later.
+
+A design's page also lists **More Like This**: other designs in the same category to look at next.
+
+## Reporting a design
+
+If a design is spam, offensive, shows someone's personal information or isn't the author's to share, choose **Report** on its page. Pick a reason (**Spam**, **Offensive**, **Personal Information**, **Copyright** or **Something Else**), add a note of up to 300 characters if it helps, and send it with **Send Report**. A design reported by three different people, on different networks, is hidden automatically, for good. Nobody reviews posts by hand: the reports decide.
+
+</ArticleLayout>

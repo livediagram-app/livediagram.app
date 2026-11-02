@@ -58,7 +58,11 @@ A Participant changes the board's **content**, never its **shape**.
   instead of instructing: an agenda, roll call or done check with nothing in it says who fills it, a mood meter
   asks only someone who may answer, a comment thread invites only someone who may add. A Viewer's
   selection toolbar offers **Show Comments** on an element that has comments, to read them, and no comment button
-  on one that has none (a Participant's offers **Add Comment** everywhere). A Participant
+  on one that has none (a Participant's offers **Add Comment** everywhere). A right-click on an element (a long-press
+  on a touch screen) opens its element menu for every role, holding only what the role may do: an Editor's is the
+  full menu; a Participant's offers **Add Comment** (or **View Comments**), **Edit Text** on what it may write on, and
+  **Open Link**, **View Note** and **Copy Text** where the element has them; a Viewer's the same without **Edit Text**,
+  and **Show Comments** only on an element with comments ([Element menu for Participants and Viewers](../008-canvas/element-menu-quick-bar.md#element-menu-for-participants-and-viewers)). A Participant
   writes on comment panels, as it may.
 - **The server is the rule.** A Participant's content changes travel as element changes the server applies one by
   one against the stored tab: a permitted change lands, a forbidden field is left as stored, a forbidden add or

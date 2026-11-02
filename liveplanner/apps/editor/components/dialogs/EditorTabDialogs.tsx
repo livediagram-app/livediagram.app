@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { tabAsSeen } from '@/lib/export-as-seen';
+import { intoTabOf } from '@/components/dialogs/import/into-tab';
 import { panelEnabled } from '@/lib/user-preferences';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { shareUrl } from '@/lib/explorer-host';
@@ -50,6 +51,7 @@ export function EditorTabDialogs() {
     importIntoActiveTab,
     importTextIntoActiveTab,
     setImportOpen,
+    trackerImport,
     shareDialogOpen,
     selfParticipant,
     projectId,
@@ -104,8 +106,10 @@ export function EditorTabDialogs() {
       {importOpen ? (
         <ImportTabDialog
           tabName={activeTab.name}
+          intoTab={intoTabOf(activeTab)}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
+          tracker={trackerImport}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

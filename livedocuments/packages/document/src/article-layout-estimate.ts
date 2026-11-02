@@ -6,8 +6,10 @@
 // and flowed down the article's pages, a page break starting the next. An estimate: a line may break a word earlier
 // or later than the browser would, so a long article can end a few lines off. Pure.
 import { articleListMarkers, articlesOf, type ArticleBlock, type ArticleRun } from './article-flow';
+import { articleBandsFor, bandDate } from './article-bands';
 import type { ArticleDrawOp } from './article-draw-ops';
 import {
+  ARTICLE_HEADER_BAND_PX,
   ARTICLE_LINE_HEIGHT,
   ARTICLE_PARAGRAPH_SPACE,
   ARTICLE_TEXT_SIZE_PX,
@@ -15,6 +17,8 @@ import {
   articleTopMarginPx,
   resolveArticleStyle,
 } from './article-style';
+import type { ArticleTableBlock } from './article-table';
+import { articleTocEntries, tocDepthOf } from './article-toc';
 import { isLightColor } from './colors';
 import { resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { legibleOn, pageFillTone } from './page-content';
@@ -186,18 +190,39 @@ export const ARTICLE_ESTIMATE_PAGES_MAX = 30;
 // Where an added page sits: far above the canvas, clear of every element.
 const ADDED_PAGE_Y = -1_000_000;
 
+// A table cell's padding (app/article-pages.css), and a contents entry's indent a level.
+const CELL_PAD_X = 10;
+const CELL_PAD_Y = 6;
+const TOC_INDENT = 20;
+
 // The article `flow`'s writing set on its pages (`pages`, every laid-out page of the tab, in order), in the tab
-// theme's accent `accent`.
+// theme's accent `accent`. A contents block's page numbers come from a first pass that sets the writing once to
+// see where each heading lands; only an article with a contents block takes the second.
 export function estimateArticle(
   tab: object,
   flow: string,
   pages: readonly LaidOutPage[],
   accent: string,
 ): EstimatedArticle {
+  const first = layoutOnce(tab, flow, pages, accent, null);
+  const doc = articlesOf(tab)[flow];
+  if (!doc?.blocks.some((b) => b.type === 'toc')) return first.estimate;
+  return layoutOnce(tab, flow, pages, accent, first.headingPages).estimate;
+}
+
+function layoutOnce(
+  tab: object,
+  flow: string,
+  pages: readonly LaidOutPage[],
+  accent: string,
+  tocPages: ReadonlyMap<string, number> | null,
+): { estimate: EstimatedArticle; headingPages: Map<string, number> } {
+  const headingPages = new Map<string, number>();
   const ops = new Map<string, ArticleDrawOp[]>();
   const doc = articlesOf(tab)[flow];
   const own = pages.filter((p) => p.flow === flow);
-  if (!doc || own.length === 0) return { ops, pagesUsed: 0, added: [], overflows: false };
+  if (!doc || own.length === 0)
+    return { estimate: { ops, pagesUsed: 0, added: [], overflows: false }, headingPages };
   const added: LaidOutPage[] = [];
   const lastOwn = own[own.length - 1]!;
   // The next page: the article's own, else one added like its last.
@@ -271,6 +296,20 @@ export function estimateArticle(
       first = true;
       continue;
     }
+    if (b.type === 'table') {
+      if (!first) y += 0.5 * line;
+      if (!placeTable(b)) break;
+      y += ARTICLE_PARAGRAPH_SPACE[style.paragraphSpacing] * line;
+      first = false;
+      continue;
+    }
+    if (b.type === 'toc') {
+      if (!first) y += line;
+      if (!placeToc(tocDepthOf(b))) break;
+      y += ARTICLE_PARAGRAPH_SPACE[style.paragraphSpacing] * line;
+      first = false;
+      continue;
+    }
     const set = setOf(b, ARTICLE_PARAGRAPH_SPACE[style.paragraphSpacing], style.rules);
     if (!first) y += set.above * line;
     const p = page();
@@ -337,6 +376,7 @@ export function estimateArticle(
       if (!room(lh) || overflows) return;
       const baseline = y + codePad + (lh - px) / 2 + px * 0.8;
       const x = page().rect.x + dx;
+      if (i === 0 && set.heading) headingPages.set(b.id, at + 1);
       if (i === 0 && b.type === 'list') {
         const marker = markers.get(b.id) ?? '';
         if (b.list === 'todo')
@@ -413,5 +453,173 @@ export function estimateArticle(
     y += codePad * 2 + set.below * line;
     first = false;
   }
-  return { ops, pagesUsed: at + 1, added, overflows };
+  // Each page's header and footer (and page number), as the page draws them (the document's name unknown here).
+  const date = bandDate();
+  own.slice(0, at + 1).forEach((p, index) => {
+    const bands = articleBandsFor(doc.style, style.pageNumbers, index, at + 1, '', date);
+    if (!bands) return;
+    const ink = inkOf(p);
+    const place = (band: typeof bands.header, baseline: number) => {
+      if (!band) return;
+      const parts = [
+        ['left', p.rect.x + margin, 'start'],
+        ['center', p.rect.x + p.rect.width / 2, 'middle'],
+        ['right', p.rect.x + p.rect.width - margin, 'end'],
+      ] as const;
+      for (const [part, x, anchor] of parts) {
+        const text = band[part];
+        if (!text) continue;
+        const list = ops.get(p.id) ?? [];
+        list.push({
+          k: 'text',
+          x,
+          y: baseline,
+          text,
+          family: body,
+          size: 12,
+          weight: '400',
+          style: 'normal',
+          color: ink.muted,
+          anchor,
+        });
+        ops.set(p.id, list);
+      }
+    };
+    place(bands.header, p.rect.y + top - ARTICLE_HEADER_BAND_PX / 2 + 4);
+    place(bands.footer, p.rect.y + p.rect.height - margin / 2 + 4);
+  });
+  return { estimate: { ops, pagesUsed: at + 1, added, overflows }, headingPages };
+
+  // A table set row by row, each row as tall as its tallest cell, moving whole to the next page; a header row
+  // keeps with the row after it and is set again at the top of every page the table continues onto. False past
+  // the last page.
+  function placeTable(t: ArticleTableBlock): boolean {
+    const width = page().rect.width - margin * 2;
+    const lefts: number[] = [];
+    let acc = 0;
+    for (const c of t.cols) {
+      lefts.push(acc * width);
+      acc += c.w;
+    }
+    const rows = t.rows.map((row, r) => {
+      const bold = !!t.header && r === 0;
+      const cells = row.cells.map((cell, c) =>
+        wrapEstimated(
+          runsText(cell),
+          width * t.cols[c]!.w - CELL_PAD_X * 2,
+          size,
+          bold || (cell.length > 0 && cell.every((run) => run.b)),
+        ),
+      );
+      return { cells, bold, h: Math.max(1, ...cells.map((l) => l.length)) * line + CELL_PAD_Y * 2 };
+    });
+    const draw = (r: (typeof rows)[number]) => {
+      const p = page();
+      const ink = inkOf(p);
+      const x0 = p.rect.x + margin;
+      if (r.bold) push({ k: 'rect', x: x0, y, w: width, h: r.h, fill: ink.code });
+      r.cells.forEach((cellLines, c) => {
+        cellLines.forEach((text, k) => {
+          if (!text) return;
+          push({
+            k: 'text',
+            x: x0 + lefts[c]! + CELL_PAD_X,
+            y: y + CELL_PAD_Y + k * line + (line - size) / 2 + size * 0.8,
+            text,
+            family: body,
+            size,
+            weight: r.bold ? '650' : '400',
+            style: 'normal',
+            color: ink.text,
+          });
+        });
+      });
+      // The hairlines: above and below the row, and either side of every cell.
+      const rule = (x1: number, y1: number, x2: number, y2: number) =>
+        push({ k: 'line', x1, y1, x2, y2, stroke: ink.rule, width: 1 });
+      rule(x0, y, x0 + width, y);
+      rule(x0, y + r.h, x0 + width, y + r.h);
+      for (const left of [...lefts, width]) rule(x0 + left, y, x0 + left, y + r.h);
+      y += r.h;
+    };
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i]!;
+      const keep = i === 0 && row.bold && rows[1] ? rows[1].h : 0;
+      const was = at;
+      if (!room(row.h + keep)) return false;
+      if (at !== was && t.header && i > 0) draw(rows[0]!);
+      draw(row);
+    }
+    return true;
+  }
+
+  // A contents block: "Contents" in the Heading 2 type, then a line per heading (indented by its level), a dotted
+  // leader and the page the first pass put it on. False past the last page.
+  function placeToc(depth: 1 | 2 | 3): boolean {
+    const titlePx = size * (22 / 16);
+    const titleH = titlePx * 1.25;
+    if (!room(titleH + line)) return false;
+    const width = page().rect.width - margin * 2;
+    push({
+      k: 'text',
+      x: page().rect.x + margin,
+      y: y + (titleH - titlePx) / 2 + titlePx * 0.8,
+      text: 'Contents',
+      family: headingFace,
+      size: titlePx,
+      weight: '650',
+      style: 'normal',
+      color: style.accentHeadings ? inkOf(page()).accent : inkOf(page()).text,
+    });
+    y += titleH + 0.3 * line;
+    for (const entry of articleTocEntries(doc!.blocks, depth)) {
+      if (!room(line)) return false;
+      const ink = inkOf(page());
+      const x = page().rect.x + margin + TOC_INDENT * (entry.level - 1);
+      const right = page().rect.x + margin + width;
+      const n = tocPages?.get(entry.id);
+      const numberW = n === undefined ? 0 : String(n).length * size * CHAR_EM + 8;
+      const text = wrapEstimated(entry.text, right - x - numberW - 16, size, false)[0] ?? '';
+      const baseline = y + (line - size) / 2 + size * 0.8;
+      push({
+        k: 'text',
+        x,
+        y: baseline,
+        text,
+        family: body,
+        size,
+        weight: '400',
+        style: 'normal',
+        color: ink.text,
+      });
+      if (n !== undefined) {
+        const from = x + text.length * size * CHAR_EM + 6;
+        if (right - numberW > from)
+          push({
+            k: 'line',
+            x1: from,
+            y1: baseline,
+            x2: right - numberW,
+            y2: baseline,
+            stroke: ink.muted,
+            width: 1,
+            dash: true,
+          });
+        push({
+          k: 'text',
+          x: right,
+          y: baseline,
+          text: String(n),
+          family: body,
+          size,
+          weight: '400',
+          style: 'normal',
+          color: ink.text,
+          anchor: 'end',
+        });
+      }
+      y += line;
+    }
+    return true;
+  }
 }

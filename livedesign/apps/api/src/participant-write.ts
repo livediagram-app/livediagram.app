@@ -6,7 +6,9 @@
 // compare-and-swap is the second line, against an editor's autosave and a linked tab's other room.
 
 import {
+  applyElementDelta,
   applyParticipantOp,
+  type ElementDelta,
   type ElementOp,
   type ParticipantOpResult,
   type Tab,
@@ -50,14 +52,7 @@ async function swapTab<T>(
     const nextData = JSON.stringify(rest);
     let swapped: boolean;
     try {
-      swapped = await swapTabData(
-        env,
-        designId,
-        tabId,
-        raw,
-        nextData,
-        tabStatsOf(rest, nextData),
-      );
+      swapped = await swapTabData(env, designId, tabId, raw, nextData, tabStatsOf(rest, nextData));
     } catch (error) {
       if (error instanceof TabTooLargeError) return { ok: false, status: 413 };
       throw error;
@@ -78,4 +73,26 @@ export async function writeParticipantOp(
   });
   if (!result.ok) return result;
   return { ok: true, outcome: result.answer };
+}
+
+// A Participant's comment reaction (docs/specs/012-collaboration/comment-reactions.md), as the room stamped it,
+// into the stored tab: applied to the element it names through `applyElementDelta`, as every receiver applies it.
+// Nothing is written when the element or the comment is not stored yet (an Editor's, inside its autosave, which
+// then carries the reaction itself through the room's ledger) or the reaction is already so.
+export async function writeParticipantReaction(
+  env: DesignEnv,
+  req: { designId: string; tabId: string; elementId: string; delta: ElementDelta },
+): Promise<{ ok: true; changed: boolean } | ParticipantWriteFailure> {
+  const result = await swapTab(env, req.designId, req.tabId, (tab) => {
+    let changed = false;
+    const elements = tab.elements.map((el) => {
+      if (el.id !== req.elementId) return el;
+      const next = applyElementDelta(el, req.delta);
+      if (next !== el) changed = true;
+      return next;
+    });
+    return { next: changed ? { ...tab, elements } : null, answer: changed };
+  });
+  if (!result.ok) return result;
+  return { ok: true, changed: result.answer };
 }

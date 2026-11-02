@@ -254,10 +254,12 @@ export function snapNodeDelta(
   dx: number,
   dy: number,
   radius: number,
+  // Further points to snap to: a combined path's other contours.
+  others: readonly Point[] = [],
 ): { dx: number; dy: number; guides: { x?: number; y?: number } } {
   const origin = anchors[pressed]!;
   const at = { x: origin.x + dx, y: origin.y + dy };
-  const candidates: Point[] = [origin, ...anchors.filter((_, i) => !moving.has(i))];
+  const candidates: Point[] = [origin, ...anchors.filter((_, i) => !moving.has(i)), ...others];
   const nearest = (axis: 'x' | 'y') => {
     let best: number | undefined;
     let bestD = radius;
@@ -380,7 +382,8 @@ export function toWorld(
 
 /**
  * The selected nodes dragged by `delta` from where the drag began: Shift holds it to 45° steps;
- * otherwise the pressed node snaps into line (snapNodeDelta) and the snapped axes show a guide.
+ * otherwise the pressed node snaps into line (snapNodeDelta, `others` too) and the snapped axes
+ * show a guide.
  */
 export function dragNodes(
   base: readonly PathAnchor[],
@@ -389,12 +392,13 @@ export function dragNodes(
   delta: Point,
   shift: boolean,
   snapRadius: number,
+  others: readonly Point[] = [],
 ): { anchors: PathAnchor[]; guides: { x?: number; y?: number } | null } {
   if (shift) {
     const d = constrain45({ x: 0, y: 0 }, delta);
     return { anchors: moveNodes(base, moving, d.x, d.y), guides: null };
   }
-  const snap = snapNodeDelta(base, moving, pressed, delta.x, delta.y, snapRadius);
+  const snap = snapNodeDelta(base, moving, pressed, delta.x, delta.y, snapRadius, others);
   const snapped = snap.guides.x !== undefined || snap.guides.y !== undefined;
   return {
     anchors: moveNodes(base, moving, snap.dx, snap.dy),

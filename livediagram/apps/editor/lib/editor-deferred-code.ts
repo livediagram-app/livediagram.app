@@ -12,7 +12,7 @@ import type { PresentationOverlay as PresentationOverlayComponent } from '@/comp
 // Speech bubbles and the composer (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): fetched once someone who
 // may speak enters Avatar mode, or when a bubble first arrives.
 export const loadAvatarSpeechLayer = () =>
-  import('@/components/canvas/AvatarSpeechLayer').then((m) => m.AvatarSpeechLayer);
+  import('@liveworkspace/avatar/components/AvatarSpeechLayer').then((m) => m.AvatarSpeechLayer);
 
 export const loadWhiteboardDock = () =>
   import('@/components/canvas/whiteboard/WhiteboardDock').then((m) => m.WhiteboardDock);

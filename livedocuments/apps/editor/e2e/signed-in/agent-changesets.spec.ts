@@ -10,6 +10,8 @@ import { freshUserId, installSession } from './session';
 
 test.use({ colorScheme: 'dark', viewport: { width: 1440, height: 860 } });
 
+// On the page, beside the API square: the tab's one A4 page is centred on the origin (its row anchor), and whatever
+// hangs off a page is cut off (docs/specs/007-editor/pages-mode.md, "Elements are cut off at the page edges").
 const paymentBox = {
   operations: [
     {
@@ -18,7 +20,7 @@ const paymentBox = {
         id: 'payments',
         type: 'shape',
         shape: 'square',
-        x: 520,
+        x: -300,
         y: 200,
         width: 220,
         height: 80,

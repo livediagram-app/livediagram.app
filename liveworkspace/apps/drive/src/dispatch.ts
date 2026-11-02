@@ -5,6 +5,9 @@ import { DRIVE_API_PATH } from '@liveworkspace/drive';
 import { under } from '@liveworkspace/index-app/worker-http';
 import { handleApp, handlePush } from './app-routes';
 import type { Env } from './env';
+import { json } from './http';
+import { guardRequest } from '@liveworkspace/api-kit/request-failure';
+import { createApiRouteLabel } from '@liveworkspace/telemetry/error-tokens';
 import { createIndexApi } from './index-api';
 import { handleBrowser, type MirrorApi, type RouteDeps } from './routes';
 
@@ -27,7 +30,46 @@ export function routeDeps(env: Env, ctx: ExecutionContext): RouteDeps {
   };
 }
 
-export async function handle(request: Request, env: Env, deps: RouteDeps): Promise<Response> {
+// The route words a failure is logged under (`Post.Drive.Open`). An app's doors at /app are Drive's too, so they are
+// named under its path (`Post.Drive.App.People.Adopt`); never an id.
+const routeLabel = createApiRouteLabel(
+  new Set(['drive']),
+  new Set([
+    'config',
+    'connection',
+    'state',
+    'connect',
+    'account-switch',
+    'check',
+    'marks',
+    'picker-token',
+    'adopt',
+    'open',
+    'import',
+    'push',
+    'app',
+    'changes',
+    'people',
+  ]),
+);
+const routeOf = (request: Request): string => {
+  const { pathname } = new URL(request.url);
+  return routeLabel(
+    request.method,
+    under(pathname, '/app') ? `${DRIVE_API_PATH}${pathname}` : pathname,
+  );
+};
+
+// One guard for the whole request (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails"): a
+// mirror's Durable Object out of reach is a retryable 503, anything else a 500.
+export function handle(request: Request, env: Env, deps: RouteDeps): Promise<Response> {
+  return guardRequest(
+    () => route(request, env, deps),
+    () => ({ route: routeOf(request), json }),
+  );
+}
+
+async function route(request: Request, env: Env, deps: RouteDeps): Promise<Response> {
   const url = new URL(request.url);
   if (under(url.pathname, DRIVE_API_PATH)) {
     const segments = splitPath(url.pathname.slice(DRIVE_API_PATH.length));

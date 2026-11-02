@@ -28,7 +28,8 @@ as a 36px list thumbnail and as a full-size embed: there is no separate
 
 ## Renders for the platform: the export door
 
-`GET /api/internal/items/:id/export?format=svg[&tab=<tabId>][&code=<shareCode>]`, on the index's key or the
+`GET /api/internal/items/:id/export?format=svg[&tab=<tabId>][&code=<shareCode>][&appearance=light|dark]`, on the
+index's key or the
 media service's (`MEDIA_KEY`), answered by `@liveworkspace/index-app`'s internal door and the document's Durable
 Object (`exportImage`):
 
@@ -45,6 +46,24 @@ data URL through `embedTabImages` (`@livediagram/api-schema`, shared with the MC
 [MCP server](../015-api/mcp-server.md) §5), in document order under a 3 MB total budget so a tab of large photos
 can't produce a multi-megabyte picture. An image past the budget, unknown to the media service, not one the
 document may serve, or not a recognised raster format keeps its placeholder box.
+
+### In the viewer's half
+
+A preview is the tab as the person looking at it would see it on opening it
+([Light and dark halves](../011-theme/light-and-dark.md)): a Default tab is on the dark canvas in dark chrome and on
+the light one in light chrome, whichever half the last save stored. Drawing what is stored made a new, imported or
+untouched document preview in its author's half (or the light one), and only come right once someone in the
+viewer's appearance opened and saved it.
+
+- The Explorer asks with `&appearance=`, the viewer's resolved appearance, part of its page cache's key, so
+  switching appearance asks for the other half and never shows the old one meanwhile. liveworkspace.app's Explorer
+  asks the same way.
+- The platform passes it to the door, stores each half on its own and refuses any other value
+  ([Previews](../../../../liveworkspace/docs/specs/006-media/previews.md)).
+- The door draws the tab through `tabAsSeen` (`@livediagram/document`, the one the editor's exports use): the
+  backdrop in that half of its theme (a colour someone picked stays), every theme colour mapped to the same slot in
+  that half, stock colours for that canvas, and labels re-inked where the half sank them.
+- With no `appearance` (the live image, the share card) it draws what is stored, as before.
 
 When `code` is the document's open Community post's code, the drawing is made from the redacted tab
 ([Community](../025-community/community.md) "Viewing a post's document"), so comment threads and the people on them
@@ -65,7 +84,7 @@ Purging a document (routes/internal-items.ts) asks the media service to drop its
 
 ## Where a picture is asked for
 
-- **Explorer thumbnail**: `GET /api/previews/items/:id?v=<version>` on this app's own address, which the router
+- **Explorer thumbnail**: `GET /api/previews/items/:id?v=<version>&appearance=<viewer's>` on this app's own address, which the router
   forwards to liveworkspace's previews (the editor's Explorer and Google Drive sync alike).
   The editor fetches it through the authenticated client (a native `<img>` can't send auth headers) and wraps the
   bytes in a blob URL; `?v=` only keys the browser's cache. Who may see it is the index's rule for the document

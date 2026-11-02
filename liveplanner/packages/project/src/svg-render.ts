@@ -8,7 +8,7 @@
 // Text measurement degrades to a char-width estimate when there's no DOM
 // (Workers / jsdom), so wrapping still works headless.
 
-import type { Item, ItemTypeDef } from '@liveplanner/items';
+import type { IsDoneStatus, Item, ItemTypeDef } from '@liveplanner/items';
 import { svgPlanSheet, type SheetRenderModel } from './svg-render-plan-sheet';
 import { svgPlanBoard, svgPlanCard, svgPlanView } from './svg-render-plan';
 import { svgTabWindow, type ResolveTabWindow } from './tab-window';
@@ -287,9 +287,9 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
     // a plan view as its labelled box (plan-views.md).
     const body =
       el.shape === 'plan-board'
-        ? svgPlanBoard(el, opts.items, surface, opts.itemTypes)
+        ? svgPlanBoard(el, opts.items, surface, opts.itemTypes, opts.itemsDone)
         : el.shape === 'plan-card'
-          ? svgPlanCard(el, opts.items, surface, opts.itemTypes)
+          ? svgPlanCard(el, opts.items, surface, opts.itemTypes, opts.itemsDone)
           : (opts.resolvePlanArt?.(el) ?? svgPlanView(el, surface));
     return `<g${opAttr}${rotAttr}${shadowAttr}>${body}</g>`;
   }
@@ -600,6 +600,9 @@ export function renderElementsToSvg(
     items?: ReadonlyMap<string, Item>;
     // The project's item types (docs/specs/026-plan/item-types.md).
     itemTypes?: readonly ItemTypeDef[];
+    // The statuses the plan's boards count as done, for the blocked badge (docs/specs/026-plan/item-types.md
+    // "Blocked By"); a board falls back on its own done columns.
+    itemsDone?: IsDoneStatus;
     // Each Sheet element's window of cells (docs/specs/029-sheets/sheet.md "Exports and images"), by sheet id,
     // worked out by the caller with the sheets engine. Without one a sheet draws its frame and headers.
     sheets?: ReadonlyMap<string, SheetRenderModel>;
@@ -667,6 +670,7 @@ export function renderElementsToSvg(
             chartPalette,
             items: opts.items,
             itemTypes: opts.itemTypes,
+            itemsDone: opts.itemsDone,
             sheets: opts.sheets,
             resolvePlanArt: opts.resolvePlanArt,
             resolveTabWindow: opts.resolveTabWindow,

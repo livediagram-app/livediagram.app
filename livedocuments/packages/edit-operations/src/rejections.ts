@@ -149,6 +149,15 @@ export function elementLocked(operation: number, el: Element, lock: LockReason):
   };
 }
 
+// An element added or moved onto a flashcard (docs/specs/007-editor/flashcards.md "Text only").
+export function textOnly(): EditRejection {
+  return {
+    code: 'text_only',
+    details: ['a flashcard holds text only: an element cannot be added or moved onto a card'],
+    hint: 'write on the card with write_article, or place it off the cards',
+  };
+}
+
 export function invalidResult(
   subject: string,
   kind: string | undefined,

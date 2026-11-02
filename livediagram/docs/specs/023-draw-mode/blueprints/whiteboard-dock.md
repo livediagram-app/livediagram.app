@@ -375,11 +375,15 @@ Keys come from a closed catalogue and are validated on read; telemetry carries f
   12 px from the edge ([UI scale blueprint](../../007-editor/blueprints/ui-scale.md)). Its flyouts
   are portalled out of the zoomed wrapper, so they draw at design size, like every menu opened
   from a scaled surface.
-- Wrapper at the **top** (the default): `top-3`; on a phone (`phone:`) `left-[4.125rem]` with
-  `max-w-[calc(100%-4.875rem)]`, 8 px after the Explorer menu card (12 + 46 px at the phone's fixed
-  100% UI scale) and 12 px from the right; on a tablet, below `lg`, `left-[7.5rem]` with
-  `max-w-[calc(100%-8.25rem)]`, room for the card at a raised UI scale; from `lg` centred with
-  `max-w-[calc(100%-15rem)]`, the same clearance both sides (D33). Top corner stacks drop to
+- Wrapper at the **top** (the default): `top-3`, `left-[var(--dock-clear,…)]` with
+  `max-w-[calc(100%-var(--dock-clear,…)-0.75rem)]` below `lg`, and from `lg` centred with
+  `max-w-[calc(100%-2*var(--dock-clear,7.5rem))]`, the same clearance both sides (D33). `--dock-clear` is
+  `useMenuCardClearance` (`components/canvas/whiteboard/useMenuCardClearance.ts`): the Explorer menu card's
+  (`[data-toolbar-menu]`) measured right edge from the dock's container plus `MENU_CARD_GAP_PX` (8), over the
+  toolbar UI scale, read in a layout effect and again from a `ResizeObserver` on the card. The card holds the
+  menu button, the editor mode switch and on a computer the tab's name, so its width is measured, not assumed
+  (12 + 98 px on a phone with the switch's icon). Until measured the fallbacks are the old guesses: 4.125rem on
+  a phone, 7.5rem on a tablet. Top corner stacks drop to
   68 px when it reaches them (D34); the top-centre stack starts at `top-[4.25rem]`, as under the strip.
 - Wrapper at the **bottom**: bottom centre, `bottom-4` from 1760 px wide (D9), lifted above the
   bottom-right cluster below it.

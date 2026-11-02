@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { isRepairClearable, REPAIR_KEPT_KEYS } from './kept-keys';
+import {
+  isRepairClearable,
+  OFFLINE_QUEUE_KEY_PREFIX,
+  REPAIR_KEPT_KEYS,
+  REPAIR_KEPT_PREFIXES,
+} from './kept-keys';
 import { repairBrowserStorage } from './repair';
 
 class MemoryStorage implements Storage {
@@ -40,6 +45,11 @@ describe('isRepairClearable', () => {
     ]) {
       expect(isRepairClearable(k), k).toBe(true);
     }
+  });
+
+  it('keeps every plan queue of waiting changes (offline-changes.md)', () => {
+    expect(isRepairClearable(`${OFFLINE_QUEUE_KEY_PREFIX}v1:plan-1:guest_abc`)).toBe(false);
+    expect(REPAIR_KEPT_PREFIXES).toContain(OFFLINE_QUEUE_KEY_PREFIX);
   });
 
   it('keeps identity and per-browser keys', () => {

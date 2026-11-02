@@ -74,6 +74,12 @@ export const VOCABULARIES: Record<TelemetrySender, Vocabulary> = {
     isValid: isLivedesignEvent as Vocabulary['isValid'],
     isServerOnly: isLivedesignServerEvent,
   },
+  // livehuddle, registered before its launch, is forked from livediagram and sends livediagram's events until its own
+  // api-schema lands with the fork (livehuddle/docs/specs/005-project-roadmap/build-plan.md step 3).
+  'livehuddle.app': {
+    isValid: isLivediagramEvent as Vocabulary['isValid'],
+    isServerOnly: isLivediagramServerEvent,
+  },
 };
 
 // What liveworkspace.app may report in an app's name besides the Explorer's events: a setting of the app's changed

@@ -27,7 +27,7 @@ const cases = [
     editor: (rows: PieSlice[]) => <PieDataEditor slices={rows} onChange={vi.fn()} />,
     rows: [{ label: 'Cats', value: 3 }],
     changed: [{ label: 'Dogs', value: 3 }],
-    input: () => screen.getByPlaceholderText('Label'),
+    input: () => screen.getByLabelText('Slice 1 label'),
     valueOf: (rows: PieSlice[]) => rows[0]!.label,
   } satisfies Case<PieSlice>,
   {
@@ -35,7 +35,7 @@ const cases = [
     editor: (rows: LegendItem[]) => <LegendDataEditor items={rows} onChange={vi.fn()} />,
     rows: [{ label: 'Cats' }],
     changed: [{ label: 'Dogs' }],
-    input: () => screen.getByPlaceholderText('Label'),
+    input: () => screen.getByLabelText('Legend row 1 label'),
     valueOf: (rows: LegendItem[]) => rows[0]!.label,
   } satisfies Case<LegendItem>,
   {
@@ -51,7 +51,7 @@ const cases = [
     editor: (rows: ChecklistItem[]) => <ChecklistRowsEditor items={rows} onChange={vi.fn()} />,
     rows: [{ text: 'Plan', done: false }],
     changed: [{ text: 'Ship', done: false }],
-    input: () => screen.getByPlaceholderText('Task'),
+    input: () => screen.getByLabelText('Row 1 task'),
     valueOf: (rows: ChecklistItem[]) => rows[0]!.text,
   } satisfies Case<ChecklistItem>,
 ] as const;
@@ -71,5 +71,38 @@ describe.each(cases)('$name', (c) => {
     fireEvent.change(c.input(), { target: { value: 'typed' } });
     rerender(editor(c.changed));
     expect(c.input().value).toBe((c.valueOf as (rows: unknown[]) => string)(c.changed));
+  });
+});
+
+describe('row names', () => {
+  it('names every pie slice control after its row', () => {
+    render(
+      <PieDataEditor
+        slices={[
+          { label: 'Cats', value: 3 },
+          { label: 'Dogs', value: 2 },
+        ]}
+        onChange={vi.fn()}
+      />,
+    );
+    expect(screen.getByLabelText('Slice 2 value')).toHaveProperty('value', '2');
+    expect(screen.getByRole('button', { name: 'Remove slice 2' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Slice 2 colour' })).toBeTruthy();
+  });
+
+  it('names every legend and checklist remove button after its row', () => {
+    render(<LegendDataEditor items={[{ label: 'A' }, { label: 'B' }]} onChange={vi.fn()} />);
+    expect(screen.getByRole('button', { name: 'Remove legend row 2' })).toBeTruthy();
+    cleanup();
+    render(
+      <ChecklistRowsEditor
+        items={[
+          { text: 'Plan', done: false },
+          { text: 'Ship', done: false },
+        ]}
+        onChange={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Remove row 2' })).toBeTruthy();
   });
 });

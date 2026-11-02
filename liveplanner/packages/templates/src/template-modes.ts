@@ -27,6 +27,12 @@ const PLAN_TEMPLATES: ReadonlySet<TemplateKind> = new Set<TemplateKind>([
   'guest-list',
   'grade-book',
   'habit-tracker',
+  'event-planner',
+  'sales-crm',
+  'help-desk',
+  'meeting-agenda',
+  'personal-goals',
+  'study-planner',
   // A form is started on a Plan tab (form-templates.ts).
   'blank-form',
   'bug-report-form',

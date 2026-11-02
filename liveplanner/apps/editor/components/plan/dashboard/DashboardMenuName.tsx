@@ -51,7 +51,7 @@ export function DashboardMenuName({
           type="button"
           aria-label={`Rename ${kindLabel} ${tab.name}`}
           onClick={() => setEditing(true)}
-          className={`${IN_BOX_TITLE_CLASS} cursor-text rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500`}
+          className={`${IN_BOX_TITLE_CLASS} cursor-text rounded-md text-left pointer-coarse:-my-3 pointer-coarse:py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500`}
         >
           {tab.name}
         </button>

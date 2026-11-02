@@ -9,7 +9,9 @@ import {
   SHAPE_PICKS_KEPT,
   shapeSlots,
   slotDropTarget,
-  splitPhonePins,
+  NARROW_DOCK_MAX_PX,
+  NARROW_DOCK_MEDIA_QUERY,
+  splitBarPins,
   unpinShape,
   type ShapePicks,
   type SlotLayout,
@@ -303,16 +305,32 @@ describe('dropIndicatorX', () => {
   });
 });
 
-describe('splitPhonePins', () => {
-  it("keeps the first pin on a phone's bar and moves the rest to the flyout", () => {
-    expect(splitPhonePins(DEFAULT_PINNED_SHAPES)).toEqual({
+describe('splitBarPins', () => {
+  it("keeps the first pin on a narrow dock's bar and moves the rest to the flyout", () => {
+    expect(splitBarPins(DEFAULT_PINNED_SHAPES, true)).toEqual({
       onBar: ['arrow'],
       inMenu: ['rectangle'],
     });
+    expect(splitBarPins(FULL, true)).toEqual({ onBar: ['star'], inMenu: FULL.slice(1) });
+  });
+
+  it('keeps every pin on a wide dock', () => {
+    expect(splitBarPins(DEFAULT_PINNED_SHAPES, false)).toEqual({
+      onBar: ['arrow', 'rectangle'],
+      inMenu: [],
+    });
+    expect(splitBarPins(FULL, false)).toEqual({ onBar: FULL, inMenu: [] });
   });
 
   it('copes with one pin or none', () => {
-    expect(splitPhonePins(['diamond'])).toEqual({ onBar: ['diamond'], inMenu: [] });
-    expect(splitPhonePins([])).toEqual({ onBar: [], inMenu: [] });
+    expect(splitBarPins(['diamond'], true)).toEqual({ onBar: ['diamond'], inMenu: [] });
+    expect(splitBarPins([], true)).toEqual({ onBar: [], inMenu: [] });
+    expect(splitBarPins([], false)).toEqual({ onBar: [], inMenu: [] });
+  });
+
+  it('counts every tablet width as narrow, a landscape tablet included', () => {
+    // Below sm is a phone; a portrait tablet (744 to 834) and a landscape one (1024) are narrow.
+    expect(NARROW_DOCK_MAX_PX).toBeGreaterThanOrEqual(1024);
+    expect(NARROW_DOCK_MEDIA_QUERY).toBe('(max-width: 1099px)');
   });
 });

@@ -381,7 +381,7 @@ Snapping during the drag considers every anchor each shape offers (sixteen on a 
   - Straight arrows have no middle handle; drag the line itself to bow one ([Bending arrows and the double-press rule](arrow-bending.md)).
 - **Drag the line** to bend the arrow where you grabbed it, and use the move frame to move a free arrow: see [Bending arrows and the double-press rule](arrow-bending.md).
 - **Add / remove bend points.** Curved and angled arrows can carry multiple bend points (`curvePoints`, deltas from the chord midpoint like `curveOffset`). Dragging the line inserts a point where it was grabbed, a single-bow curve's bow becoming the first point ([Bending arrows and the double-press rule](arrow-bending.md)); there is no "+" handle. Each point shows its own draggable `CurveHandle`; **right-clicking a point deletes it**. Deleting the **last** bend point leaves nothing to curve through, so the arrow reverts to a **plain straight line** (the `curvePoints`, `curveOffset`, `elbowOffset` and the curved/angled `arrowStyle` are all dropped) rather than snapping back to a single-handle bow the user didn't ask for.
-- **Touch targets.** The endpoint handles and the bend-point / elbow `CurveHandle`s are small fixed-size SVG marks: fine for a mouse, fiddly for a fingertip. On coarse-pointer (touch) devices each one carries an invisible larger hit circle (~44px diameter, the iOS HIG target) so it's reliably tappable, without enlarging the visible grip on desktop. The box resize handles do the same via a `pointer-coarse` hit pad (corner + N/S/E/W edge handles, `element-parts.tsx`).
+- **Touch targets.** The endpoint handles and the bend-point / elbow `CurveHandle`s are small fixed-size SVG marks: fine for a mouse, fiddly for a fingertip. On coarse-pointer (touch) devices each one carries an invisible larger hit circle (~44px diameter, the iOS HIG target) so it's reliably tappable, without enlarging the visible grip on desktop. The box resize handles do the same via a `pointer-coarse` hit pad (corner + N/S/E/W edge handles, `element-parts.tsx`), which leans outward: toward the element it reaches only 4px past the grip, so a finger on a small element's body moves it rather than catching a grip.
 - **Click the empty canvas** deselects.
 - The selection popover applies to arrows the same way it does to shapes (lock + delete). It floats clear of the arrow's label as well as its line ([Arrow labels](arrow-labels.md) "Selection").
 
@@ -501,7 +501,7 @@ type Element = ShapeElement | ArrowElement;
 
 ## Shape primitives
 
-Twenty general-purpose and device shape kinds are covered here, all rendered as absolutely positioned elements on the canvas. `ShapeKind` itself is larger because every later family of element reused the shape type rather than inventing its own: the web components (`banner`, `callout` (read-only, migrated to `card`), `stat-row`, `process`, `site-header`, [Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md)), the self-drawing data shapes (`progress-bar`, `progress-ring`, `timeline-rail`, `rating`, the three charts, `code-block`, `checklist`, `legend`), the [Sankey diagram](../009-elements/sankey.md) (`sankey`), the [Card](../009-elements/card.md) (`card`), the [Badge](../009-elements/badge.md) and [Step number](../009-elements/step-number.md) (`badge`, `step`), the [Pointer note](../009-elements/pointer-note.md) (`pointer-note`), the [Stack](../009-elements/stack.md) (`stack`), the [concept graphics](../009-elements/concept-graphics.md) (`layer-stack`, `pyramid`, `cycle`, `hub`, `onion`, `chevrons`) and `icon` / `sticker`. Each of those has its own spec; this section is the general-purpose set. The table below covers the seven general-purpose primitives the spec originally shipped with; the rest (general shapes (`stadium`, `cloud`, `triangle`, `trapezoid`, `star`, `speech-bubble`), the `frame` container, and seven UI device frames (`browser`, `monitor`, `laptop`, `phone`, `tablet`, `foldable`, `smartwatch`)) are documented under **Devices tab** in the Palette section above. The canonical list is `ShapeKind` in `@livedesign/design` (declared in `src/shape-kind.ts`).
+Twenty general-purpose and device shape kinds are covered here, all rendered as absolutely positioned elements on the canvas. `ShapeKind` itself is larger because every later family of element reused the shape type rather than inventing its own: the web components (`banner`, `callout` (read-only, migrated to `card`), `stat-row`, `process`, `site-header`, [Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md)), the self-drawing data shapes (`progress-bar`, `progress-ring`, `timeline-rail`, `rating`, the three charts, `code-block`, `checklist`, `legend`), the [Sankey diagram](../009-elements/sankey.md) (`sankey`), the [Card](../009-elements/card.md) (`card`), the [Badge](../009-elements/badge.md) and [Step number](../009-elements/step-number.md) (`badge`, `step`), the [Pointer note](../009-elements/pointer-note.md) (`pointer-note`), the [Stack](../009-elements/stack.md) (`stack`), the [concept graphics](../009-elements/concept-graphics.md) (`layer-stack`, `pyramid`, `cycle`, `hub`, `onion`, `chevrons`), the [Tab window](../009-elements/tab-window.md) (`tab-window`), the [component instance](../009-elements/components.md) (`instance`) and `icon` / `sticker`. Each of those has its own spec; this section is the general-purpose set. The table below covers the seven general-purpose primitives the spec originally shipped with; the rest (general shapes (`stadium`, `cloud`, `triangle`, `trapezoid`, `star`, `speech-bubble`), the `frame` container, and seven UI device frames (`browser`, `monitor`, `laptop`, `phone`, `tablet`, `foldable`, `smartwatch`)) are documented under **Devices tab** in the Palette section above. The canonical list is `ShapeKind` in `@livedesign/design` (declared in `src/shape-kind.ts`).
 
 | Kind            | Rendering                                                                                                                                                                                                                          | Aspect lock |
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
@@ -587,11 +587,37 @@ The catalogue (`packages/templates/src/templates.ts`, pinned by `template-catalo
 
 Every template opens on pages of its own. `templateCanvasOverrides(kind)` ships the tab's `pages` (ids `page-1`, `page-2`, ..., each already of its kind so the first-page kind choice is not offered, each named); `buildTemplate(kind)` builds the elements in page coordinates on exactly those pages, ignoring the centre it is given, with the page layouts' kit at page scale. The pages are declared once per template (`packages/templates/src/template-pages.ts`), so every application path lands the pages and the elements together:
 
-| Template        | Pages                                                                                                                    |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Logo design     | Logo pages, one per lockup (the App Icon on Crema), then the Palette.                                                    |
-| Wireframe flows | One wireframe page per screen of the flow (mobile app, website, dashboard, tablet app, watch app), at its device's size. |
-| Photo edit      | One unstarted photo page, showing its Start a Photo card ([Photo pages](../031-photo/photo-pages.md)).                   |
+| Template          | Pages                                                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Logo design       | Logo pages, one per lockup (the App Icon on Crema), then the Palette.                                                                                         |
+| Logo explorations | Logo pages, one per logo layout of a family (wordmarks, emblems, marks, lockups), each named for its layout ([Logo pages](../007-editor/logo-pages.md)).      |
+| Wireframe flows   | One wireframe page per screen of the flow, at its device's size, each laid out from a wireframe layout ([Wireframe pages](../007-editor/wireframe-pages.md)). |
+| Photo edit        | One unstarted photo page, showing its Start a Photo card ([Photo pages](../031-photo/photo-pages.md)).                                                        |
+
+### Template categories
+
+livedesign's categories are its own: they need not match the other products'. They are grouped by **what the
+design is for** (the use case), never by device or page kind, so a phone, a laptop and a browser flow for the same
+job sit together. Every template but the blanks has one primary category and may be cross-listed where people
+would genuinely look for it too (`packages/templates/src/template-categories.ts` holds both; a template does not compile until it
+has a home). Every picker shows them alphabetically by label.
+
+| Category               | Holds                                                                                            | Also lists             |
+| ---------------------- | ------------------------------------------------------------------------------------------------ | ---------------------- |
+| Branding               | Logo Design, Wordmark Explorations, Emblems and Badges, Marks and App Icons, Lockup Explorations |                        |
+| Health and Fitness     | Watch App Wireframe, Fitness Watch Wireframe                                                     |                        |
+| Music and Video        | Music App Wireframe, Video App Wireframe, Watch Music Wireframe                                  |                        |
+| Photos                 | Photo Edit                                                                                       |                        |
+| Shopping               | Mobile App Wireframe (a shopping app), Delivery App Wireframe                                    | Online Store Wireframe |
+| Sign Up and Onboarding | App Sign Up Wireframe                                                                            | Mobile App Wireframe   |
+| Social and Messaging   | Social App Wireframe, Tablet App Wireframe                                                       | Team Inbox Wireframe   |
+| Travel and Transport   | Travel App Wireframe, Ride App Wireframe                                                         |                        |
+| Websites               | Website Wireframe, Online Store Wireframe, Blog Wireframe, Company Site Wireframe                |                        |
+| Work and Productivity  | Web App Wireframe, Project Tool Wireframe, Team Inbox Wireframe                                  |                        |
+
+The blanks (Blank Illustration, Blank Logo and the five blank wireframes) are in no category: they lead Popular, the
+landing gallery's Blank Slate and the template start's Blank Pages group. A new template joins the category of the
+job it does; a category is added when a job has no home, rather than stretching one that reads wrong.
 
 ## Modifier hint banner
 
@@ -699,6 +725,18 @@ Result sections, in order, each capped (8 per section, 12 for elements, 10 for A
 9. **Settings**: rows from the settings catalogue (`lib/settings-search-items.ts`), matched on title and keywords (non-empty query only). Picking one opens the Settings dialog on that row. Both the editor and `/explorer` offer it.
 10. **Help**: help-centre articles (`lib/help-search.ts`), matched on title and keywords (non-empty query only), listed last so navigation and edit results keep the default Enter. Both the editor and `/explorer` offer it.
 
+**Every App** (Work Tracker #63). Typing also asks liveworkspace's index (`GET /api/index/items?view=search&q=…`,
+every app, up to 24, once the typing pauses for 200 ms, the request before cancelled) for everything the person can
+open: their own work, their teams' and what a live share link reaches, exactly as the index decides, never more. The
+results this panel already lists from its own lists (designs of this app's, shared and team ones) are left out, and up
+to 8 of the rest form an **Every App** group after Teams, in the index's order. Each row wears its app's logo in the
+app's colour (`AppMark`) and ends in the app's name in that colour (its deep shade on light, its accent on dark), so a
+plan, a canvas, a document and a design read apart at a glance. Picking one of this app's opens it here (with its
+share code when a link is how the person reaches it); picking another app's opens it in that app, at its own address.
+A failed or offline index read shows no group and no error: the panel's own groups still work. The hook and the
+helpers are shared (`@liveworkspace/explorer/item-search`: `useItemSearch`, `everyAppResults`, `AppMark`,
+`appLabel`), so the four editors' panels behave alike.
+
 Out of scope (deliberate): element text in **other** designs (issue #13: needs a server-side index), comments, notes, element links, and participant names.
 
 ## Comments
@@ -718,6 +756,7 @@ The popover is portal-rendered (it escapes the canvas transform), anchored to th
 
 - Header: "Comments (n)" + a **Resolve / Resolved** toggle + close button.
 - Scrolling list of comments (oldest first). Each row shows the author's circular initial badge (in their colour), their name, a relative timestamp ("3m ago"), and the text. Hovering a row reveals a delete button (disabled when the thread is resolved).
+- Under each comment's text, its **reactions** (👍 👎 😄 🎉 ❤️ 👀): a chip per emoji with its count, yours highlighted, toggled by a press, with an **Add Reaction** button in the row's actions that opens the six in place ([Comment Reactions](../012-collaboration/comment-reactions.md)).
 - Reply box at the bottom with a textarea + Comment button. **Cmd/Ctrl + Enter** submits.
 
 ### Resolve semantics
@@ -1109,12 +1148,11 @@ The tab bar sits at the bottom of the editor. Each tab represents one canvas wit
 - Click a tab to switch to it. Switching clears element selection, edit mode, and any active picker, AND **fit-to-screens** the new tab's content on load (so the user lands centred on whatever's there, not wherever the previous tab left the viewport). A fit pads the content by at least the Palette strip's reach into the canvas on every side (`topChromeInset`, a whole even number of px), so nothing lands under the strip or the bottom chrome and the content stays centred on whole pixels. Subsequent edits on the same tab don't re-fit, the first element on an empty tab included, because the gate is per tab id.
 - The **+** button at the right of the bar adds a fresh empty tab and switches to it. The new tab is **seeded from the active tab's visual context**: theme id, canvas backdrop (`backgroundColor`, `backgroundPattern`, `backgroundOpacity`, `patternColor`), font, and default text size all carry over, so a user mid-design doesn't land on a brand-default canvas. It opens on the Pages start ([Start Making Pages](../007-editor/start-diagramming.md)). Each tab stays independently styleable after creation (restyling the new tab never affects the source). The seed survives the new tab's template picker too: picking a template under the unchanged theme keeps the inherited backdrop (see [Templates](#templates)), and Skip leaves it untouched.
 
-### Tab pill styling
+### Tab styling
 
-Each tab pill colours itself from its tab's theme:
+A tab takes its colour from its tab's theme ([How a tab looks](../007-editor/live-app.md#how-a-tab-looks)):
 
-- Pill text colour uses `getTheme(tab.theme).elementStroke` (falls through to the brand sky for themes that don't override the stroke).
-- The active pill additionally tints its background to a 10% alpha of the same accent.
+- The open tab's name uses `getTheme(tab.theme).elementStroke` (the brand sky for themes that set no stroke), made legible (AA) on the open tab's white (slate-800 in dark) card. The other tabs keep neutral ink, whatever their theme.
 - A small **padlock icon** sits to the left of the name when `tab.locked === true`.
 - Per-tab **participant avatars** stack to the right of the name: one circle per remote participant whose `tab-focus` op points at this tab. Lets the user see at a glance who's working where.
 
@@ -1137,6 +1175,8 @@ The active tab carries a **`⋯` ellipsis button** to the right of its name. Cli
 - **Delete**: removes the tab and falls back to a neighbouring tab. Disabled when only one tab remains.
 
 The menu renders through a **portal** to `document.body` so it isn't clipped by the tab bar's horizontal scroll. It positions itself from the ellipsis button's bounding rect (tab surface) or at the cursor / footer-button point (canvas surface), clamping back on-screen at every viewport edge.
+
+**Closing.** The menu closes like every other menu: on Escape, on a primary press anywhere outside it (the canvas included, though the canvas stops its own pointer events), on a wheel scroll outside it, and when the window loses focus. All of it is one shared hook, `useMenuDismiss` (`packages/workbench/src/hooks/ui/useMenuDismiss.ts`): the press is heard on `pointerdown` in the capture phase, before the canvas can stop it, so a click on the canvas both dismisses the menu and does what it would have done. A press inside the menu, on the tab that opened it, or on a flyout, confirm popover or tour popover it opened never closes it; nor does a right press (its release re-opens the menu where it lands), nor a finger lifting within the first 400ms of the long press that opened it. Scrolling means the wheel, not the `scroll` event: the tab strip scrolls itself smoothly to reveal a tab just right-clicked, which would close the menu the moment it opened.
 
 ### Reordering
 

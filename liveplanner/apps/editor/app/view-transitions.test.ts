@@ -19,8 +19,8 @@ describe('View Transitions', () => {
     expect(globals).toMatch(/html\s*\{\s*view-transition-name:\s*none;\s*\}/);
   });
 
-  it('keep, and none with the chrome', () => {
-    expect([...classesIn(globals)]).toEqual([]);
+  it('keep the card panel resize with chrome, and none on the canvas', () => {
+    expect([...classesIn(globals)]).toEqual(['item-panel-resize']);
     expect([...classesIn(canvasMotion)]).toEqual([]);
   });
 

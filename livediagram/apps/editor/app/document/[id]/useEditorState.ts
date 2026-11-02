@@ -46,7 +46,11 @@ import {
 import { useWhiteboard } from '@/hooks/canvas/useWhiteboard';
 import { useSnapColours } from '@/hooks/canvas/useSnapColours';
 import { isPathEditing } from '@/lib/path-edit';
+import { dropsOnTap } from '@/lib/draw-mode';
 import { usePathCommits } from '@/hooks/canvas/usePathCommits';
+import { usePaintBucket } from '@/hooks/canvas/usePaintBucket';
+import { applySwatchOverrides } from '@/lib/swatch-overrides';
+import { quickSwatches } from '@livediagram/document';
 import { useCanvasEraser } from '@/hooks/canvas/useCanvasEraser';
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
@@ -66,6 +70,7 @@ import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { selectAllIds } from '@/lib/select-all-ids';
 import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@liveworkspace/workbench/lib/announcer';
+import { voteKeyHandler } from '@/lib/vote-by-key';
 import { peerModeSwitchMessage } from '@/lib/peer-mode-switch';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
@@ -103,11 +108,14 @@ import { commitUserPreferences, writeUserPreferences } from '@/lib/user-preferen
 import type { PollCandidate } from '@/lib/poll-collaborators';
 import { withoutAgentRows } from '@/lib/agent-presence-rows';
 import { track } from '@/lib/telemetry';
+import { useApplyStyleToAllTabs } from '@liveworkspace/workbench/hooks/editor/useApplyStyleToAllTabs';
+import { withStyleOfTab } from '@/lib/tab-theme-apply';
 import { pollResultElement } from '@/lib/poll-capture';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
 import { useLivePoll } from '@/hooks/collab/useLivePoll';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
+import { useCommentReactionScope } from '@/hooks/collab/useCommentReactionScope';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
 import { useNoteActions } from '@/hooks/canvas/useNoteActions';
 import { usePhotoPicker } from '@/hooks/canvas/usePhotoPicker';
@@ -388,6 +396,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const { canvasTool, setCanvasTool, selectCanvasTool, exitAvatarTool, toolBeforeCurrent } =
     useCanvasTool({
       defaultPan: embedMode,
+      tabId: activeId,
     });
   useDesktopOnlyToolExit(canvasTool, setCanvasTool);
   // Persistent Format painter tool (docs/specs/008-canvas/canvas-and-palette.md): the mode-boundary reset +
@@ -1171,6 +1180,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   useAssignRef(mentionNotifyRef, commentMentions.notifyMentioned);
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
+  // Comment reactions (docs/specs/012-collaboration/comment-reactions.md): whoever may comment may react, under
+  // the collab key their answers use; a Community visitor has no comments at all.
+  const commentReactions = useCommentReactionScope({
+    applyElementDelta,
+    activeTab,
+    selfKey: voteSelfId,
+    selfName: selfParticipant.name,
+    canReact: participant.can.takePart && realtime.sessionCommunity === null,
+  });
   // The tab's editor mode, the same for everyone on it (docs/specs/007-editor/editor-modes.md): every
   // tool and rule gate keys on it, never on what the tab is. A switch is one tab edit.
   const editorMode = useEditorMode(activeTab, {
@@ -1678,6 +1696,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
         documentId,
         actionName: input.actionName,
         ...(input.description ? { description: input.description } : {}),
+        email: input.email,
+        tabId: input.tabId,
+        elementId: input.elementId,
       }).catch(() => {});
     },
   });
@@ -2176,6 +2197,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     checkpointBurst,
   });
 
+  // Apply to All Tabs (docs/specs/011-theme/canvas-and-theme-dialog.md): the open tab's style on every tab, as one
+  // undo step, an Editor's of the whole document only.
+  const { applyToAllTabs: applyStyleToAllTabs, applying: applyingStyleToAllTabs } =
+    useApplyStyleToAllTabs<Tab>({
+      canApply: !structureBlocked && !isStructureReadOnly,
+      activeId,
+      loadAllTabs,
+      isTabLoaded: (id) => loadedTabIdsRef.current.has(id),
+      commitTabs,
+      restyle: withStyleOfTab,
+      notify: (message) => toast.info(message),
+      onApplied: () => track('Tab', 'Changed', 'AllTabs'),
+    });
+
   // Live session tools (docs/specs/012-collaboration/session-tools.md): facilitator timer + dot-voting handlers.
   // State lives on the tab (`activeTab.timer` / `activeTab.vote`), so the
   // UI reads it straight off the tab; these are just the mutators.
@@ -2501,6 +2536,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // The whiteboard dock (docs/specs/023-draw-mode/draw-mode.md): device-local pens, recognition and
   // eraser mode, and the dock presses turned into ordinary editor calls.
+  // The quick style panel's custom swatches (docs/specs/008-canvas/quick-style-panel.md), read by the
+  // panel and by the Fill tool's colours (docs/specs/023-draw-mode/fill-tool.md).
+  const swatchOverrides = useSwatchOverrides({
+    themeId: activeTab.theme ?? DEFAULT_SCHEME_ID,
+    userPreferences,
+    setUserPreferences,
+    writeUserPreferences,
+    ownerId: selfParticipant.id,
+  });
   const whiteboardDock = useWhiteboard({
     activeTab,
     drawMode,
@@ -2514,10 +2558,25 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     pathEditing: isPathEditing(activeTab.elements, editingId),
     leavePathEdit: () => setEditingId(null),
     snapColours,
+    fillSwatches: applySwatchOverrides(
+      quickSwatches(activeTheme, 'fill'),
+      swatchOverrides.overrides.fill,
+    ),
     userPreferences,
     setUserPreferences,
     writeUserPreferences,
     ownerId: selfParticipant.id,
+  });
+  // The Fill tool's press (docs/specs/023-draw-mode/fill-tool.md): what it fills, as one commit.
+  const { paintBucket } = usePaintBucket({
+    pendingDraw,
+    elements: () => activeTab.elements,
+    layers: activeTab.layers,
+    inertIds: layerInertIds,
+    editsBlocked: structureBlocked,
+    canRecolour: participant.can.recolour,
+    commit,
+    hint: toast.info,
   });
 
   // Eraser canvas tool (docs/specs/008-canvas/canvas-and-palette.md): press / drag to delete any element the
@@ -2667,13 +2726,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // The quick style panel (docs/specs/008-canvas/quick-style-panel.md): its view of the selection and one
   // action per choice. The panel itself decides where and whether it shows.
-  const swatchOverrides = useSwatchOverrides({
-    themeId: activeTab.theme ?? DEFAULT_SCHEME_ID,
-    userPreferences,
-    setUserPreferences,
-    writeUserPreferences,
-    ownerId: selfParticipant.id,
-  });
   // Every input of the Quick Style view but the selection, which QuickStyleHost reads from the store.
   const quickStyleDeps: QuickStyleDeps = {
     activeTab,
@@ -3086,8 +3138,27 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onBeginEditSelected: beginEdit,
     onNudgeSelection: nudgeSelection,
     onTypeIntoSelected: typeIntoSelected,
+    // Dot voting from the keyboard (docs/specs/012-collaboration/blueprints/vote-keys.md).
+    onVoteKey: voteKeyHandler(
+      {
+        elements: activeTab.elements,
+        vote: activeTab.vote,
+        layers: activeTab.layers,
+        selfId: voteSelfId,
+        canTakePart: participant.can.takePart,
+        cast: castVote,
+        retract: retractVote,
+      },
+      announce,
+    ),
     pendingDraw,
     onCancelDraw: cancelDrawShape,
+    onDropDrawAtCentre: () => {
+      if (!dropsOnTap(pendingDraw)) return false;
+      const centre = getViewportCenter();
+      commitDraw(pendingDraw, centre.x, centre.y, centre.x, centre.y);
+      return true;
+    },
     onToggleLock: () => {
       if (readSelection().multiSelectedIds.size > 0) {
         toggleLockMultiSelected();
@@ -3145,6 +3216,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
           pickText: whiteboardDock.pickText,
           pickShape: whiteboardDock.pickShape,
           pickPath: whiteboardDock.pickPath,
+          pickFill: whiteboardDock.pickFill,
           openShapes: whiteboardDock.openShapes,
         }
       : null,
@@ -3309,6 +3381,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     facilitator,
     setTabFinish,
     applyTabLook,
+    applyStyleToAllTabs,
+    applyingStyleToAllTabs,
+    canApplyStyleToAllTabs: !isStructureReadOnly,
     // Live session tools (docs/specs/012-collaboration/session-tools.md)
     startTimer,
     pauseTimer,
@@ -3380,6 +3455,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitFreehand,
     commitPolygon,
     commitPath,
+    paintBucket,
     commitPathEdit,
     styleNewElement: styleMemory.styleNewElement,
     commitLabel,
@@ -3434,6 +3510,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // nothing outside the panel and the overlay reads into it.
     slideDeck,
     commentMentions,
+    commentReactions,
     // Bring an element into view (the Collaborate panel's jump to a card).
     scrollIntoView,
     // What the presentation is showing, or null. The canvas renders THESE

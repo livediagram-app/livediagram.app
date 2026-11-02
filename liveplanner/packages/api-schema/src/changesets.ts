@@ -268,4 +268,8 @@ export type ChangesetRoomOp = {
   refetch?: true;
   tab?: Omit<Tab, 'elements'>;
   revertOf?: string;
+  // The rebuilt layout, when the changeset changed an existing Dashboard tab's (an agent's rebuild): every editor
+  // takes it whole, and the room's ledger records it as a reset (docs/specs/012-collaboration/collab-race-hardening.md
+  // "A Dashboard's layout travels as deltas").
+  dashboard?: Tab['dashboard'];
 };

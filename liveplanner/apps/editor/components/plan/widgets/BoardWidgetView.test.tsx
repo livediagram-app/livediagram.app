@@ -89,7 +89,9 @@ describe('BoardWidgetView', () => {
   it('filters and toggles Only Mine', () => {
     const c = ctx();
     draw('filter', c);
-    fireEvent.change(screen.getByLabelText('Filter this board'), { target: { value: 'pay' } });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Filter this board' }), {
+      target: { value: 'pay' },
+    });
     expect(c.onQuick).toHaveBeenCalledWith({ text: 'pay' });
     cleanup();
     draw('mine', c);
@@ -145,7 +147,12 @@ describe('BoardWidgetView', () => {
   });
 
   it('sets the last column as done from a board without one', () => {
-    const setup = { ...presetSetup('kanban'), voting: { on: false } };
+    const kanban = presetSetup('kanban');
+    const setup = {
+      ...kanban,
+      columns: kanban.columns.map((c) => ({ ...c, done: false })),
+      voting: { on: false },
+    };
     delete (setup as { doneColumnId?: string }).doneColumnId;
     const c = ctx({ setup });
     draw('progress', c);
@@ -154,13 +161,20 @@ describe('BoardWidgetView', () => {
       expect.objectContaining({ doneColumnId: setup.columns.at(-1)!.id }),
       'DoneColumn',
     );
+    const sent = (c.onSetup as ReturnType<typeof vi.fn>).mock.calls[0]![0] as typeof setup;
+    expect(sent.columns.at(-1)!.done).toBe(true);
   });
 
   it('filters by priority and the unassigned, and opens the top-voted card', () => {
     const top = item({ title: 'Ship it', status: 'todo', priority: 'urgent', votes: { x: 3 } });
     const c = ctx({ items: [top, item({ title: 'z', status: 'todo', assignee: SAM })] });
     draw('priorities', c);
-    fireEvent.click(screen.getByRole('button', { name: /Only Urgent priority/ }));
+    const urgent = screen.getByRole('button', { name: /Only Urgent priority/ });
+    // 22px tall: on a touch screen its tap area reaches 44px, vertically only (its neighbours sit 2px apart).
+    expect(urgent.className.split(' ')).toEqual(
+      expect.arrayContaining(['relative', 'touch-target-y']),
+    );
+    fireEvent.click(urgent);
     expect(c.onQuick).toHaveBeenLastCalledWith({ priority: 'urgent' });
     cleanup();
     draw('unassigned', c);
@@ -178,5 +192,43 @@ describe('BoardWidgetView', () => {
       }),
     );
     expect(screen.getByRole('img').getAttribute('aria-label')).toBe('2 of 5 points done');
+  });
+
+  // docs/specs/026-plan/board-widgets.md "Time".
+  it('adds up the board’s time and counts the timers running', () => {
+    const task = ITEM_TYPES.find((t) => t.id === 'task')!;
+    const timed = {
+      ...task,
+      fields: [...task.fields, 'f-spent'],
+      custom: [
+        ...(task.custom ?? []),
+        { id: 'f-spent', label: 'Time Spent', kind: 'duration' as const, timeSpent: true },
+      ],
+    };
+    const types = ITEM_TYPES.map((t) => (t.id === 'task' ? timed : t));
+    const spent = (minutes: number[], running: string[]) =>
+      ({
+        people: {},
+        entries: minutes.map((m, i) => ({ id: `entry${i}00`, by: 'sam', minutes: m, at: i })),
+        running: running.map((by, i) => ({ id: `timer${i}00`, by, start: 1 })),
+      }) as unknown as Item['fields'][string];
+    draw('time', ctx({ types, items: [item({ title: 'x' })] }));
+    expect(screen.getByText('No time yet')).toBeTruthy();
+    cleanup();
+    draw(
+      'time',
+      ctx({
+        types,
+        items: [
+          item({ title: 'a', 'f-spent': spent([600, 270], ['sam', 'ana']) }),
+          item({ title: 'b', 'f-spent': spent([], ['jo']) }),
+        ],
+      }),
+    );
+    expect(screen.getByRole('img').getAttribute('aria-label')).toBe(
+      '14 hours 30 minutes tracked, 3 timers running',
+    );
+    expect(screen.getByText('14h 30m')).toBeTruthy();
+    expect(screen.getByText(/3 running/)).toBeTruthy();
   });
 });

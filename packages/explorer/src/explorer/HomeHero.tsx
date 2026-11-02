@@ -3,8 +3,8 @@
 // Home's hero: the full-width band under the host's header on Home, its page header (livediagram's and
 // liveplanner's HomeHero, made app-agnostic). Status pills, the greeting by the reader's hour, the app's
 // question and lead, the search field drawn large with New inside it, and what the app makes (WorkKinds) on the
-// right from `lg`, under the field below that. The pills count from what the Explorer already reads: My Work's count (one small
-// request, only while the hero shows) and the Inbox the sidebar counts; a pill shows only once its count is
+// right from `lg`, under the field below that. The pills count from what the Explorer already reads: the count of every
+// space the person is in, My Work and each team (one small request, only while the hero shows) and the Inbox the sidebar counts; a pill shows only once its count is
 // known, never "0 plans" while it loads. Help and a close that hides the banner sit in its corner.
 
 import { useEffect, useState, type ReactNode } from 'react';
@@ -21,6 +21,7 @@ import { useFirstRun } from '../welcome/context';
 import { WelcomeSearch } from '../welcome/HomeWelcome';
 import { WELCOME_COPY } from '../welcome/types';
 import { HeroBackdrop, heroBackdropOf, heroHeadingFace } from '../hero/HeroBackdrop';
+import { LENS_VALUE_SEPARATOR, SPACE_TEAM_PREFIX } from '../lens/dimensions';
 
 const HEADING_ID = 'explorer-home-hero';
 
@@ -42,11 +43,20 @@ export type HeroPill = {
   view: ExplorerView;
 };
 
+/** Where the items pill leads: My Work, which is all it counts for someone in no team; for someone in teams, Search
+ *  results narrowed to their own space and each team's, the very items it counts. */
+export function spacesView(teams: readonly { id: string }[]): ExplorerView {
+  if (teams.length === 0) return { kind: 'all' };
+  const spaces = ['mine', ...teams.map((t) => `${SPACE_TEAM_PREFIX}${t.id}`)];
+  return { kind: 'search', q: `space:${spaces.join(LENS_VALUE_SEPARATOR)}` };
+}
+
 /** The status pills, each only once its count is known: never "0 plans" while the list loads, nor a clear
- *  Inbox that was never read. */
+ *  Inbox that was never read. The items pill counts every space the person is in (`teams` says which). */
 export function heroPills(
   input: { items: ItemCount | undefined; inbox: number | undefined },
   words: Words,
+  teams: readonly { id: string }[] = [],
 ): HeroPill[] {
   const pills: HeroPill[] = [];
   if (input.items) {
@@ -57,7 +67,7 @@ export function heroPills(
         ? `${count}+ ${words.lowerMany}`
         : `${count} ${count === 1 ? words.lowerOne : words.lowerMany}`,
       tone: 'emerald',
-      view: { kind: 'all' },
+      view: spacesView(teams),
     });
   }
   if (input.inbox !== undefined) {
@@ -114,6 +124,7 @@ export function HomeHero({
     onCreate,
     openNav,
     heroWords,
+    teams,
   } = useExplorer();
   const backdrop = heroBackdropOf(app, filter);
   const hour = useHour();
@@ -130,7 +141,7 @@ export function HomeHero({
             tone: 'sky' as const,
           },
         ].filter((p) => p.label)
-      : heroPills({ items, inbox: inboxTotal(inbox.data, viewerId) }, words);
+      : heroPills({ items, inbox: inboxTotal(inbox.data, viewerId) }, words, teams);
   const greeting = firstRun
     ? `Welcome to ${firstRun.manifest?.name ?? ''}.`
     : hour === null

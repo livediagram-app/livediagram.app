@@ -33,6 +33,8 @@ import { BottomSheet } from '@liveworkspace/workbench/components/primitives/Bott
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import type { PageEdits } from '@/hooks/editor/usePagesMode';
+import { useCardOverflow } from '@/lib/flashcard-overflow-store';
+import { cardSplitLabel } from '@/lib/flashcard-split';
 import type { ThemeBackgroundPreset } from '@/lib/page-paint';
 import { OrientationSection, SizeSection } from './page-panel-sections';
 import { ApplyBackgroundToAll } from './page-background-apply-all';
@@ -419,9 +421,21 @@ function PageActions({
   onClose: () => void;
 }) {
   const { duplicatePage, removePage } = edit;
-  const noun = page.flow ? 'article' : page.kind === 'slide' ? 'slide' : 'page';
+  const card = page.kind === 'flashcard';
+  const noun = card ? 'card' : page.flow ? 'article' : page.kind === 'slide' ? 'slide' : 'page';
+  // A too-long card offers Split Onto a New Card (docs/specs/007-editor/flashcards.md "Never flows").
+  const overflow = useCardOverflow(card ? page.flow : undefined);
+  const split = card && overflow && !locked ? edit.cardSplitState(page.id) : 'fits';
   return (
     <div className="mt-1 flex gap-1 border-t border-slate-100 px-2 pt-1.5 dark:border-slate-800">
+      {split !== 'fits' && (
+        <ActionButton
+          label={cardSplitLabel(split)}
+          onClick={split === 'ready' ? () => edit.splitCard(page.id) : undefined}
+        >
+          <SplitPagesIcon className="h-4 w-4" />
+        </ActionButton>
+      )}
       {page.size === 'fit' && (
         <ActionButton
           label="Split Into Pages"

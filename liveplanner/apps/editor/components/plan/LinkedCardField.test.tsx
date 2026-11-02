@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, type Item } from '@liveplanner/items';
-import { LINK_FILTER_FROM, LinkedCardField } from './LinkedCardField';
+import { LINK_FILTER_FROM, LINK_LIST_MIN_PX, LinkedCardField } from './LinkedCardField';
 
 // docs/specs/026-plan/item-types.md "Card fields": Parent and every Card field use one control.
 afterEach(cleanup);
@@ -147,14 +147,35 @@ describe('a long card title in the list', () => {
       .trim();
   const unbroken = 'x'.repeat(120);
 
-  it('wraps to three lines rather than cutting off, and names the whole card', () => {
+  it('wraps to two lines rather than cutting off, and names the whole card', () => {
     field(undefined, [card('a', 1, long), card('b', 2, unbroken)]);
     fireEvent.click(screen.getByRole('button', { name: 'Parent: None' }));
     const option = screen.getByRole('option', { name: `#1 ${long}` });
-    const title = option.querySelector('.line-clamp-3');
+    const title = option.querySelector('.line-clamp-2');
     expect(title?.textContent).toBe(long);
     expect(title?.className).toContain('[overflow-wrap:anywhere]');
     expect(option.className).not.toContain('truncate');
     expect(screen.getByRole('option', { name: `#2 ${unbroken}` })).toBeTruthy();
+  });
+
+  // docs/specs/026-plan/item-types.md "Card fields": over the page, never the narrow field's width.
+  it('opens over the page at least 20rem wide, wider with a wide field', () => {
+    field(undefined, [card('a', 1, long)]);
+    fireEvent.click(screen.getByRole('button', { name: 'Parent: None' }));
+    const list = screen.getByRole('dialog', { name: 'Choose Parent' });
+    expect(list.style.width).toBe(`min(${LINK_LIST_MIN_PX}px, -16px + 100vw)`);
+    // Portalled: not inside the field's own box.
+    expect(
+      screen.getByRole('button', { name: 'Parent: None' }).closest('[role=dialog]'),
+    ).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Parent: None' }));
+    expect(screen.queryByRole('listbox')).toBeNull();
+    const box = screen.getByRole('button', { name: 'Parent: None' }).parentElement!.parentElement!
+      .parentElement!;
+    Object.defineProperty(box, 'offsetWidth', { configurable: true, value: 480 });
+    fireEvent.click(screen.getByRole('button', { name: 'Parent: None' }));
+    expect(screen.getByRole('dialog', { name: 'Choose Parent' }).style.width).toBe(
+      'min(480px, -16px + 100vw)',
+    );
   });
 });

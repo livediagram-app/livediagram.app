@@ -5,8 +5,10 @@
     // Higher than the repo-wide ES2023 floor on purpose: this only ever runs on workerd's V8.
     "lib": ["ES2024"],
     "target": "ES2024",
-    "noEmit": true
+    "noEmit": true,
+    // The scripts run straight under Node's type stripping, which needs the `.ts` on imports.
+    "allowImportingTsExtensions": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "scripts/**/*.ts"],
   "exclude": ["node_modules", "dist", ".wrangler"]
 }

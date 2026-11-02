@@ -100,6 +100,8 @@ Grouped by priority; each links the keyed article.
   not picked a format yet. A format carries its own footnote (`note` on the
   `FORMATS` entry), so any other format can grow one the same way.
 - Team form / invite -> `team-roles-and-invites`
+- Find bar - the `?` before Close Find (desktop and tablet; a phone's row has no room) -> `findAndReplace`
+  ([Find and replace](../007-editor/find-and-replace.md) "The bar")
 
 **Medium priority**
 

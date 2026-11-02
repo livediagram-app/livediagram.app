@@ -2,18 +2,31 @@
 
 // The small parts a card face is built from (docs/specs/026-plan/plan-board.md "What the board shows"): the type
 // chip, the number on its type's colour, the priority's signal bars, the footer's pills (due, start, estimate, checklist, comments, votes),
-// label chips, the flag and the vote control. PlanCardFace lays them out per card size.
-import { PRIORITY_LABELS, itemCommentCount, type Item, type Priority } from '@liveplanner/items';
+// label chips, the flag, the blocked badge and the vote control. PlanCardFace lays them out per card size.
+import {
+  COMMENTS_FIELD,
+  PRIORITY_LABELS,
+  blockedLabel,
+  itemCommentCount,
+  threadFieldOn,
+  type Item,
+  type ItemTypeDef,
+  type Priority,
+} from '@liveplanner/items';
 import { contrastRatio } from '@liveplanner/project';
-import { CommentIcon } from '@liveplanner/ui';
+import { CommentIcon, Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { lucideLink } from '@liveworkspace/icons/lucide';
+import { useFieldThreadCount } from '@/hooks/plan/thread-store';
+import { useThreadStore } from './threads/CardThreadsContext';
 import { PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { FLAG_COLOUR } from './item-flag';
 import { labelColour } from './label-colour';
 import { dayKey, dayLabel } from './day-label';
 
-const LATE_COLOUR = '#dc2626';
-const SOON_COLOUR = '#d97706';
+// Late and due soon; Age's red and amber too (card-age.tsx).
+export const LATE_COLOUR = '#dc2626';
+export const SOON_COLOUR = '#d97706';
 // A due date this many days away or fewer (and not past) reads as due soon.
 export const DUE_SOON_DAYS = 2;
 
@@ -105,16 +118,19 @@ export function StartPill({ start, palette }: { start: string; palette: PlanPale
 export function ChecklistPill({
   progress,
   palette,
+  name = 'Checklist',
 }: {
   progress: { done: number; total: number };
   palette: PlanPalette;
+  // The field's name, for a Checklist field of the type's own.
+  name?: string;
 }) {
   const complete = progress.done === progress.total;
   return (
     <MetaPill
       palette={palette}
       {...(complete ? { tone: '#16a34a' } : {})}
-      label={`Checklist ${progress.done} of ${progress.total} done`}
+      label={`${name} ${progress.done} of ${progress.total} done`}
     >
       <PlanTypeGlyph glyph="task" size={11} />
       <span aria-hidden>
@@ -124,11 +140,51 @@ export function ChecklistPill({
   );
 }
 
-export function CommentsPill({ item, palette }: { item: Item; palette: PlanPalette }) {
-  const n = itemCommentCount(item);
-  if (n === 0) return null;
+// The votes a card has gathered from ended session votes, read-only: the built-in Votes, or a Votes field of the
+// type's own named `name` (item-types.md "Comments and Votes fields"). Not drawn with none.
+export function VotesPill({
+  total,
+  palette,
+  name,
+}: {
+  total: number;
+  palette: PlanPalette;
+  name?: string;
+}) {
+  if (total <= 0) return null;
+  const count = total === 1 ? '1 vote' : `${total} votes`;
   return (
-    <MetaPill palette={palette} label={n === 1 ? '1 comment' : `${n} comments`}>
+    <MetaPill palette={palette} label={name ? `${name}: ${count}` : count}>
+      <span aria-hidden>▲ {total}</span>
+    </MetaPill>
+  );
+}
+
+// The comments in the card's open threads (docs/specs/026-plan/items.md "Comments"), read from the thread store by
+// this card alone, so a thread write re-renders only the faces whose count it moved; an export's item carries its own
+// (the whole, drawn by the field threads naming no field show under). One Comments field's (`field`, named `name`; the
+// built-in when not given) counts only the threads that field lists (item-types.md "Comments and Votes fields").
+const ONLY_BUILT_IN: Pick<ItemTypeDef, 'fields'> = { fields: [COMMENTS_FIELD] };
+
+export function CommentsPill({
+  item,
+  palette,
+  type = ONLY_BUILT_IN,
+  field = COMMENTS_FIELD,
+  name,
+}: {
+  item: Item;
+  palette: PlanPalette;
+  type?: Pick<ItemTypeDef, 'fields' | 'custom'>;
+  field?: string;
+  name?: string;
+}) {
+  const live = useFieldThreadCount(useThreadStore(), item.id, type, field);
+  const n = live || (threadFieldOn({}, type) === field ? itemCommentCount(item) : 0);
+  if (n === 0) return null;
+  const count = n === 1 ? '1 comment' : `${n} comments`;
+  return (
+    <MetaPill palette={palette} label={name ? `${name}: ${count}` : count}>
       <CommentIcon size={11} />
       <span aria-hidden>{n}</span>
     </MetaPill>
@@ -252,5 +308,44 @@ export function FlagMark() {
     <span className="mt-0.5 shrink-0" role="img" aria-label="Flagged">
       <PlanTypeGlyph glyph="flag" size={13} color={FLAG_COLOUR} />
     </span>
+  );
+}
+
+// A repeating card's mark (docs/specs/026-plan/items.md "Repeating cards"), beside the flag on every size, in the
+// card's quiet text colour.
+export function RepeatMark({ color }: { color: string }) {
+  return (
+    <span className="mt-0.5 shrink-0" role="img" aria-label="Repeats">
+      <PlanTypeGlyph glyph="repeat" size={13} color={color} />
+    </span>
+  );
+}
+
+// A blocked card's badge (docs/specs/026-plan/item-types.md "Blocked By"): a red link and how many of its blockers
+// are open, beside the flag on every size.
+export const BLOCKED_COLOUR = '#dc2626';
+// The lighter red a dark card takes: red-600 is about 3.7:1 on a dark card, under AA for the count beside the link.
+export const BLOCKED_COLOUR_ON_DARK = '#f87171';
+// The badge's red on a card's fill: whichever of the two reads better.
+export const blockedColourOn = (card: string): string =>
+  contrastRatio(BLOCKED_COLOUR_ON_DARK, card) > contrastRatio(BLOCKED_COLOUR, card)
+    ? BLOCKED_COLOUR_ON_DARK
+    : BLOCKED_COLOUR;
+const LinkGlyph = lucideGlyph(lucideLink, 12);
+
+export function BlockedMark({ count, card }: { count: number; card: string }) {
+  return (
+    <Tooltip label={blockedLabel(count)}>
+      <span
+        data-blocked-mark=""
+        className="mt-0.5 inline-flex shrink-0 items-center gap-0.5 text-[11px] font-semibold leading-none"
+        style={{ color: blockedColourOn(card) }}
+        role="img"
+        aria-label={blockedLabel(count)}
+      >
+        <LinkGlyph weight={2} />
+        <span aria-hidden>{count}</span>
+      </span>
+    </Tooltip>
   );
 }

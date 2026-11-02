@@ -6,14 +6,19 @@ import {
   type TabLedger,
 } from '@liveplanner/project';
 import {
-  AGENT_PRESENCE_TTL_MS,
+  AGENT_PRESENCE_ACTIVITY_TTL_MS,
   ROOM_RELAY_TIMEOUT_MS,
   ROOM_SELECTIONS_TIMEOUT_MS,
   type ChangesetRoomOp,
   type RoomOp,
 } from '@liveplanner/api-schema';
 import type { AgentPresenceWrite } from '@liveworkspace/api-kit/room-agent-presence';
-import type { ItemsRoomOp, ItemTypesRoomOp, SheetsRoomOp } from '@liveplanner/api-schema';
+import type {
+  CardThreadsRoomOp,
+  ItemsRoomOp,
+  ItemTypesRoomOp,
+  SheetsRoomOp,
+} from '@liveplanner/api-schema';
 import type { Env } from './types';
 
 // The worker's calls into a project's realtime room (docs/specs/012-collaboration/collab-race-hardening.md): reading its
@@ -430,8 +435,8 @@ export async function deleteAgentPresence(
   return (await res.json<{ cleared: boolean }>()).cleared;
 }
 
-// A token's changeset refreshes its presence on the tab (spec "Presence"); a refresh that fails is logged and the
-// changeset stands (E7).
+// A token's changeset or read refreshes its presence on the tab for the activity window (spec "Presence"); a refresh
+// that fails is logged and the changeset or read stands (E7).
 export async function refreshAgentPresence(
   env: Env,
   write: Omit<AgentPresenceRoomWrite, 'mode' | 'status' | 'focus' | 'ttlMs'>,
@@ -441,7 +446,7 @@ export async function refreshAgentPresence(
       ...write,
       status: null,
       focus: [],
-      ttlMs: AGENT_PRESENCE_TTL_MS,
+      ttlMs: AGENT_PRESENCE_ACTIVITY_TTL_MS,
       mode: 'refresh',
     });
     if (!answer.ok)
@@ -474,6 +479,16 @@ export async function relayItemTypes(
 // broadcasts: the stored write is the change, and a client that missed it refetches on a rev gap.
 export async function relayItems(env: Env, projectId: string, op: ItemsRoomOp): Promise<void> {
   await broadcastOp(env, projectId, op, 'items', true);
+}
+
+// A card thread write (docs/specs/026-plan/items.md "Comments"), in the stream items ride in, to one plan the thread
+// is on. It carries no store rev: a session that missed one reads the threads again on its reconnect.
+export async function relayThreads(
+  env: Env,
+  projectId: string,
+  op: CardThreadsRoomOp,
+): Promise<void> {
+  await broadcastOp(env, projectId, op, 'threads', true);
 }
 
 // A sheet write the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"), ordered like items.

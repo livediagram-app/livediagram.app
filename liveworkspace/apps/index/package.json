@@ -24,6 +24,7 @@
     "@liveworkspace/index-client": "workspace:*",
     "@liveworkspace/migration": "workspace:^",
     "@liveworkspace/sites": "workspace:^",
+    "@liveworkspace/telemetry": "workspace:*",
     "jose": "^6.2.12"
   },
   "devDependencies": {

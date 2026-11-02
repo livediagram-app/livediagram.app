@@ -11,6 +11,8 @@
 // first load of every route stays free of it; it publishes the same distilled
 // DeferredAuthState the app tree already consumes.
 
+import { askSignOut } from '@liveworkspace/auth-client/sign-out';
+import { retrySilentSignIn } from '@liveworkspace/auth-client/silent';
 import { useEffect } from 'react';
 import { API_BASE } from '@liveworkspace/workbench/lib/api/base';
 import { forgetRecentDiagrams } from '@/lib/recent-diagrams-snapshot';
@@ -74,13 +76,14 @@ async function getToken(opts?: { skipCache?: boolean }): Promise<string | null> 
   return (await refresh())?.accessToken ?? null;
 }
 
-async function endSession(): Promise<void> {
+// Ends the session here and, with it, the liveworkspace one and every app's in this browser
+// (liveworkspace/docs/specs/003-accounts/accounts.md "Signing out"). Resolves the accounts site's hop, coming
+// back to `returnTo`, or null when there is none to take.
+async function endSession(returnTo = '/'): Promise<string | null> {
   current = null;
   setOwnPicture(null);
   await forgetRecentDiagrams();
-  await fetch(`${API_BASE}/auth/sign-out`, { method: 'POST', credentials: 'same-origin' }).catch(
-    () => {},
-  );
+  return (await askSignOut(returnTo, { apiBase: API_BASE })).next;
 }
 
 // The name the app shows: the account's own, split at its first space, else the email's local part.
@@ -125,12 +128,14 @@ function stateOf(session: Session | null): DeferredAuthState {
     getToken,
     // A full load, so nothing keeps the old session.
     signOut: async (opts) => {
-      await endSession();
-      window.location.assign(opts?.redirectUrl ?? '/');
+      const to = opts?.redirectUrl ?? '/';
+      window.location.assign((await endSession(to)) ?? to);
     },
     // The api has already deleted this account's livedocuments data and closed its liveworkspace
     // account (DeleteAccountDialog); what is left is this tab's session.
-    deleteAccount: endSession,
+    deleteAccount: async () => {
+      await endSession();
+    },
   };
 }
 
@@ -138,7 +143,14 @@ function stateOf(session: Session | null): DeferredAuthState {
 // it with it (lib/signed-in-hint.ts), so a browser without it has no session to find: a guest settles
 // at once, with no request on every page load. A stale hint only costs the one request it saves.
 async function initialSession(): Promise<Session | null> {
-  return readSignedInHint() ? refresh() : null;
+  if (!readSignedInHint()) return null;
+  const session = await refresh();
+  // A hint that outlived its session (it ended in another app): the answer cleared the hint, and the silent sign-in
+  // asks again, once, in case the person has signed in elsewhere since (liveworkspace/docs/specs/003-accounts/
+  // accounts.md "A hint that outlived its session"). Only here, on the page's first answer: a session ending under
+  // an open page never reloads it.
+  if (!session) retrySilentSignIn();
+  return session;
 }
 
 export function AccountsBridge({ onState }: { onState: (state: DeferredAuthState) => void }) {

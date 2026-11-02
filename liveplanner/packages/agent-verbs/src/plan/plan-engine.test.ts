@@ -47,7 +47,8 @@ const BOARD = (types: string[] | null = null) => ({
   types,
   columns: [
     { status: 'todo~x', name: 'To Do', wipLimit: 2 },
-    { status: 'done~x', name: 'Done' },
+    // The plan route's outline marks a done column (planOutline).
+    { status: 'done~x', name: 'Done', done: true as const },
   ],
 });
 const STATUSES = [
@@ -153,7 +154,8 @@ describe('planListing', () => {
       takes: 'every type',
       columns: [
         { name: 'To Do', wipLimit: 2, cards: ['#2', '#1'] },
-        { name: 'Done', cards: ['#3'] },
+        // Done counts as done by its name (docs/specs/026-plan/plan-board.md "Done columns").
+        { name: 'Done', done: true, cards: ['#3'] },
       ],
     });
     expect(listing.notOnBoard).toEqual(['#4']);
@@ -163,6 +165,26 @@ describe('planListing', () => {
       { id: 'f-sev', name: 'Severity', kind: 'choice', options: ['S1', 'S2'] },
     ]);
     expect(listing.hint).toBeUndefined();
+  });
+
+  it('lists a sorted board’s cards in its sort, naming it', async () => {
+    const sorted = { ...BOARD(), sortBy: [{ field: 'f-sev', dir: 'desc' as const }] };
+    const cards = [
+      item(1, 'aaa111', { title: 'Low', status: 'todo~x', 'f-sev': 'S1' }, 'bug', 'a'),
+      item(2, 'bbb222', { title: 'High', status: 'todo~x', 'f-sev': 'S2' }, 'bug', 'b'),
+    ];
+    const { api: a } = api(
+      { [`/projects/${D}/items`]: { items: cards, rev: 1 } },
+      { boards: [sorted], statuses: STATUSES, types: [...ITEM_TYPES, BUG] },
+    );
+    const listing = planListing(await readPlanState(a, D));
+    expect(listing.boards[0]).toMatchObject({
+      sortBy: ['Severity (Reverse Option Order)'],
+      columns: [
+        { name: 'To Do', cards: ['#2', '#1'] },
+        { name: 'Done', cards: [] },
+      ],
+    });
   });
 
   it('shows no card on a board that takes no type', async () => {
@@ -184,6 +206,281 @@ describe('planListing', () => {
       status: 'done~x',
       Severity: 'S2',
       'f-gone': 1,
+    });
+  });
+
+  // docs/specs/026-plan/item-types.md "Comments and Votes fields": a card's votes per Votes field, by name.
+  it('lists a card’s votes per Votes field, the built-in’s as before', async () => {
+    const POLL = {
+      ...BUG,
+      id: 'poll',
+      label: 'Poll',
+      fields: ['title', 'status', 'votes', 'f-pri'],
+      custom: [{ id: 'f-pri', label: 'Priority Vote', kind: 'votes' as const }],
+    };
+    const voted = [
+      item(8, 'ggg888', { title: 'Poll', votes: { p: 1 }, 'f-pri': { p: 2, q: 1 } }, 'poll'),
+    ];
+    const { api: a } = api(
+      { [`/projects/${D}/items`]: { items: voted, rev: 1 } },
+      { boards: [BOARD()], statuses: STATUSES, types: [...ITEM_TYPES, POLL] },
+    );
+    const listing = planListing(await readPlanState(a, D));
+    expect(listing.items[0]!.fields).toEqual({
+      title: 'Poll',
+      votes: { p: 1 },
+      'Priority Vote': { p: 2, q: 1 },
+    });
+    expect(listing.types.find((t) => t.id === 'poll')!.custom).toEqual([
+      { id: 'f-pri', name: 'Priority Vote', kind: 'votes' },
+    ]);
+  });
+
+  // docs/specs/026-plan/plan-agents.md: a Duration as it reads, and a Time Spent field's time by who and when.
+  it('lists durations as text and tracked time by name, read-only', async () => {
+    const WORK = {
+      ...BUG,
+      id: 'work',
+      label: 'Work',
+      fields: ['title', 'status', 'f-plan', 'f-spent'],
+      custom: [
+        { id: 'f-plan', label: 'Planned', kind: 'duration' as const },
+        { id: 'f-spent', label: 'Time Spent', kind: 'duration' as const, timeSpent: true },
+      ],
+    };
+    const spent = {
+      people: { 'n-sam': { name: 'Sam', color: '#2563eb' } },
+      entries: [{ id: 'entry001', by: 'n-sam', minutes: 90, at: Date.UTC(2026, 9, 30, 9) }],
+      running: [{ id: 'timer001', by: 'n-sam', start: Date.UTC(2026, 9, 31, 8) }],
+    };
+    const cards = [
+      item(9, 'hhh999', { title: 'Timed', 'f-plan': 150, 'f-spent': spent }, 'work'),
+      item(10, 'iii000', { title: 'Untimed', 'f-plan': 'soon' }, 'work'),
+    ];
+    const { api: a } = api(
+      { [`/projects/${D}/items`]: { items: cards, rev: 1 } },
+      { boards: [BOARD()], statuses: STATUSES, types: [...ITEM_TYPES, WORK] },
+    );
+    const listing = planListing(await readPlanState(a, D));
+    expect(listing.items[0]!.fields).toEqual({
+      title: 'Timed',
+      Planned: '2h 30m',
+      'Time Spent': '1h 30m',
+    });
+    expect(listing.items[0]!.time).toEqual({
+      'Time Spent': {
+        entries: [{ by: 'Sam', time: '1h 30m', at: '2026-10-30T09:00:00.000Z' }],
+        running: [{ by: 'Sam', since: '2026-10-31T08:00:00.000Z' }],
+      },
+    });
+    expect(listing.items[1]!.fields).toEqual({ title: 'Untimed', Planned: null });
+    expect(listing.items[1]).not.toHaveProperty('time');
+    expect(listing.types.find((t) => t.id === 'work')!.custom).toEqual([
+      { id: 'f-plan', name: 'Planned', kind: 'duration' },
+      { id: 'f-spent', name: 'Time Spent', kind: 'duration', timeSpent: true, readOnly: true },
+    ]);
+  });
+
+  // docs/specs/026-plan/item-types.md "Date and Time", "Date Range", "Phone": ISO 8601 and the number as typed.
+  it('lists a moment as its UTC instant, a range as an ISO 8601 interval, and a phone as typed', async () => {
+    const EVENT = {
+      ...BUG,
+      id: 'event',
+      label: 'Event',
+      fields: ['title', 'status', 'f-when', 'f-trip', 'f-slot', 'f-phone'],
+      custom: [
+        { id: 'f-when', label: 'When', kind: 'datetime' as const },
+        { id: 'f-trip', label: 'Trip', kind: 'daterange' as const },
+        { id: 'f-slot', label: 'Slot', kind: 'daterange' as const, withTime: true },
+        { id: 'f-phone', label: 'Phone', kind: 'phone' as const },
+      ],
+    };
+    const cards = [
+      item(
+        9,
+        'hhh999',
+        {
+          title: 'Launch',
+          'f-when': '2026-10-31T17:00:00Z[Europe/London]',
+          'f-trip': ['2026-10-31', '2026-11-02'],
+          'f-slot': ['2026-10-31T09:00:00Z', '2026-10-31T17:00:00Z'],
+          'f-phone': '+44 20 7946 0958',
+        },
+        'event',
+      ),
+      item(10, 'iii000', { title: 'Odd', 'f-when': 'soon', 'f-trip': 'later' }, 'event'),
+    ];
+    const { api: a } = api(
+      { [`/projects/${D}/items`]: { items: cards, rev: 1 } },
+      { boards: [BOARD()], statuses: STATUSES, types: [...ITEM_TYPES, EVENT] },
+    );
+    const listing = planListing(await readPlanState(a, D));
+    expect(listing.items[0]!.fields).toEqual({
+      title: 'Launch',
+      When: '2026-10-31T17:00:00Z',
+      Trip: '2026-10-31/2026-11-02',
+      Slot: '2026-10-31T09:00:00Z/2026-10-31T17:00:00Z',
+      Phone: '+44 20 7946 0958',
+    });
+    // A stray value is listed as stored.
+    expect(listing.items[1]!.fields).toEqual({ title: 'Odd', When: 'soon', Trip: 'later' });
+    expect(listing.types.find((t) => t.id === 'event')!.custom).toEqual([
+      { id: 'f-when', name: 'When', kind: 'datetime' },
+      { id: 'f-trip', name: 'Trip', kind: 'daterange' },
+      { id: 'f-slot', name: 'Slot', kind: 'daterange', withTime: true },
+      { id: 'f-phone', name: 'Phone', kind: 'phone' },
+    ]);
+  });
+
+  // docs/specs/026-plan/item-types.md "Holds Several": a comma list of names and cards, read and written back.
+  describe('a field that holds several', () => {
+    const SAM = { id: 'n-sam', name: 'Sam', color: '#2563eb' };
+    const ANA = { id: 'n-ana', name: 'Ana', color: '#16a34a' };
+    const TEAM = {
+      ...BUG,
+      id: 'team',
+      label: 'Team',
+      fields: ['title', 'status', 'f-rev', 'f-rel'],
+      custom: [
+        { id: 'f-rev', label: 'Reviewers', kind: 'person' as const, multiple: true },
+        { id: 'f-rel', label: 'Related', kind: 'card' as const, linkType: 'task', multiple: true },
+      ],
+    };
+    const cards = [
+      ...ITEMS.slice(0, 2),
+      item(
+        9,
+        'hhh999',
+        { title: 'T', 'f-rev': [SAM, ANA], 'f-rel': ['aaa111', 'bbb222', 'gone'] },
+        'team',
+      ),
+    ];
+    const plan = { boards: [BOARD()], statuses: STATUSES, types: [...ITEM_TYPES, TEAM] };
+
+    it('lists it as a comma list, and the switch on its type', async () => {
+      const { api: a } = api({ [`/projects/${D}/items`]: { items: cards, rev: 1 } }, plan);
+      const listing = planListing(await readPlanState(a, D));
+      expect(listing.items.find((i) => i.ref === '#9')!.fields).toMatchObject({
+        Reviewers: 'Sam, Ana',
+        Related: '#1 B, #2 A, gone',
+      });
+      expect(listing.types.find((t) => t.id === 'team')!.custom).toEqual([
+        { id: 'f-rev', name: 'Reviewers', kind: 'person', multiple: true },
+        {
+          id: 'f-rel',
+          name: 'Related',
+          kind: 'card',
+          linkType: 'task',
+          linkTypes: ['task'],
+          multiple: true,
+        },
+      ]);
+    });
+
+    it('reads back what a set stored, by name and number', async () => {
+      const { api: a } = api(
+        {
+          [`/projects/${D}/items`]: (r: Request) =>
+            r.method === 'GET' ? Response.json({ items: cards, rev: 1 }) : Response.json({}),
+          [`/projects/${D}/items/hhh999`]: () =>
+            Response.json({ item: { ...cards[2], rev: 2 }, rev: 2 }),
+        },
+        plan,
+      );
+      const result = await applyItemChanges(
+        a,
+        D,
+        [{ op: 'set', item: '#9', fields: { Reviewers: 'Sam, Ana', Related: ['#1', '#2'] } }],
+        await readPlanState(a, D),
+      );
+      expect(result.refusal).toBeUndefined();
+      expect(result.applied.join('\n')).toContain('Sam, Ana');
+      expect(result.applied.join('\n')).toContain('#1, #2');
+    });
+  });
+
+  // docs/specs/026-plan/item-types.md "Blocked By": blockers by card number, the blocked count and the mirror.
+  describe('a Blocked By field', () => {
+    const JOB = {
+      ...BUG,
+      id: 'job',
+      label: 'Job',
+      fields: ['title', 'status', 'f-blk'],
+      custom: [
+        {
+          id: 'f-blk',
+          label: 'Blocked By',
+          kind: 'card' as const,
+          linkType: 'job',
+          multiple: true,
+          blocks: true,
+        },
+      ],
+    };
+    const cards = [
+      item(1, 'jjj111', { title: 'Website', status: 'todo~x' }, 'job'),
+      item(2, 'jjj222', { title: 'Launch', status: 'done~x' }, 'job'),
+      item(3, 'jjj333', { title: 'Copy', status: 'todo~x', 'f-blk': ['jjj111', 'jjj222'] }, 'job'),
+    ];
+    const plan = { boards: [BOARD()], statuses: STATUSES, types: [...ITEM_TYPES, JOB] };
+    const writes: string[] = [];
+    const engine = () =>
+      api(
+        {
+          [`/projects/${D}/items`]: (r: Request) =>
+            r.method === 'GET'
+              ? Response.json({ items: cards, rev: 1 })
+              : (writes.push('add'), Response.json({ item: { ...cards[0], id: 'new' }, rev: 2 })),
+          [`/projects/${D}/items/jjj111`]: () => {
+            writes.push('set');
+            return Response.json({ item: cards[0], rev: 2 });
+          },
+        },
+        plan,
+      ).api;
+
+    it('lists the switch, the blockers, the open count and what each card blocks', async () => {
+      const listing = planListing(await readPlanState(engine(), D));
+      const copy = listing.items.find((i) => i.ref === '#3')!;
+      expect(copy.fields['Blocked By']).toBe('#1 Website, #2 Launch');
+      // Launch is done, so one blocker is open.
+      expect(copy.blocked).toBe(1);
+      expect(listing.items.find((i) => i.ref === '#1')!.blocks).toEqual(['#3 Copy']);
+      expect(listing.items.find((i) => i.ref === '#1')!.blocked).toBeUndefined();
+      expect(listing.types.find((t) => t.id === 'job')!.custom[0]).toMatchObject({ blocks: true });
+    });
+
+    it('stops a change that closes a loop before it writes, naming the chain', async () => {
+      writes.length = 0;
+      const a = engine();
+      const result = await applyItemChanges(
+        a,
+        D,
+        [{ op: 'set', item: '#1', fields: { 'Blocked By': '#3' } }],
+        await readPlanState(a, D),
+      );
+      expect(result.refusal).toEqual({
+        code: 'blocks_cycle',
+        message: "#3 Copy already waits on #1 Website, so it can't block it.",
+      });
+      expect(writes).toEqual([]);
+      // A link that closes nothing is written, and so is a new card blocked by one.
+      const fine = await applyItemChanges(
+        a,
+        D,
+        [
+          { op: 'set', item: '#1', fields: { 'Blocked By': '#2' } },
+          { op: 'add', title: 'Later', type: 'Job', fields: { 'Blocked By': '#3' } },
+        ],
+        await readPlanState(a, D),
+      );
+      expect(fine.refusal).toBeUndefined();
+      expect(writes).toEqual(['set', 'add']);
+    });
+
+    it('reads the api’s loop refusal in the same words', () => {
+      const refusal = apiRefusalOf(new ApiError(400, '{"error":"blocks_cycle"}'));
+      expect(refusal?.message).toContain('block each other in a loop');
     });
   });
 
@@ -465,9 +762,19 @@ describe('addBoard', () => {
     expect(body.base.rev).toBe(7);
     expect(body.operations[0]!.element.x).toBeGreaterThan(100);
     expect(body.operations[0]!.element.planBoard.addTypes).toEqual(['bug']);
-    // The project has Bug already: nothing is brought, nothing more is written.
+    // The project has Bug already: nothing is brought. Its new status joins Bug, the type the board takes, and no
+    // other (docs/specs/026-plan/item-types.md "The statuses a type uses"), the types first written in the new shape.
     expect(r.brought).toEqual([]);
-    expect(seen).toHaveLength(1);
+    expect(seen.map((s) => `${s.method} ${s.path}`)).toEqual([
+      `POST /projects/${D}/tabs/t1/changesets`,
+      `PUT /projects/${D}/item-types`,
+    ]);
+    const saved = (seen[1]!.body as { itemTypes: { types: { id: string; statuses?: string[] }[] } })
+      .itemTypes.types;
+    const ideas = r.columns[0]!.status;
+    expect(saved.find((t) => t.id === 'bug')!.statuses).toContain(ideas);
+    expect(saved.find((t) => t.id === 'task')!.statuses).not.toContain(ideas);
+    expect(saved.every((t) => Array.isArray(t.statuses))).toBe(true);
   });
 
   // docs/specs/026-plan/plan-agents.md "Adding a board": a preset brings the types the project lacks.
@@ -689,7 +996,7 @@ describe('changeBoard', () => {
       {
         board: 'Sprint',
         swimlanes: 'Severity',
-        cardSize: 'compact',
+        cardSize: 'minimal',
         cardFields: ['Number'],
         doneColumn: 'Done',
         renameColumns: { 'To Do': 'Ready' },
@@ -697,19 +1004,57 @@ describe('changeBoard', () => {
       'mcp',
     );
     if (!r.ok) throw new Error(r.message);
-    expect(r).toMatchObject({ cardSize: 'compact', cardFields: ['Number'] });
+    expect(r).toMatchObject({ cardSize: 'minimal', cardFields: ['Number'] });
     const setup = (
       seen[0]!.body as { operations: { fields: { planBoard: Record<string, unknown> } }[] }
     ).operations[0]!.fields.planBoard;
     expect(setup).toMatchObject({
       swimlaneBy: 'field',
       swimlaneField: 'f-sev',
-      cardSize: 'compact',
+      cardSize: 'minimal',
     });
+    expect(r.columns).toEqual([
+      { name: 'Ready', status: 'todo~x' },
+      { name: 'Done', status: 'done~x', done: true },
+    ]);
+    const picked = await changeBoard(a, D, { board: 'Sprint', doneColumns: ['To Do'] }, 'mcp');
+    expect(picked.ok && picked.columns).toEqual([
+      { name: 'To Do', status: 'todo~x', done: true },
+      { name: 'Done', status: 'done~x' },
+    ]);
     expect(await changeBoard(a, D, { board: 'Sprint', swimlanes: 'Mood' }, 'mcp')).toMatchObject({
       ok: false,
       code: 'board_invalid',
     });
+  });
+
+  it('sorts its cards by fields by name, an empty list turning it off', async () => {
+    const { api: a, seen } = api();
+    const r = await changeBoard(
+      a,
+      D,
+      {
+        board: 'Sprint',
+        sortBy: [{ field: 'Priority', direction: 'descending' }, { field: 'severity' }],
+      },
+      'mcp',
+    );
+    if (!r.ok) throw new Error(r.message);
+    expect(r.sortBy).toEqual(['Priority (Highest First)', 'Severity (In Option Order)']);
+    const setup = (
+      seen[0]!.body as { operations: { fields: { planBoard: Record<string, unknown> } }[] }
+    ).operations[0]!.fields.planBoard;
+    expect(setup['sortBy']).toEqual([
+      { field: 'priority', dir: 'desc' },
+      { field: 'f-sev', dir: 'asc' },
+    ]);
+    expect(await changeBoard(a, D, { board: 'Sprint', sortBy: [] }, 'mcp')).toMatchObject({
+      ok: true,
+      sortBy: [],
+    });
+    expect(
+      await changeBoard(a, D, { board: 'Sprint', sortBy: [{ field: 'Title' }] }, 'mcp'),
+    ).toMatchObject({ ok: false, code: 'board_invalid' });
   });
 
   it('refuses an unknown or ambiguous board, type or column list', async () => {
@@ -1030,5 +1375,82 @@ describe('a description written as Markdown', () => {
     expect(posted(seen)[0]).toEqual({ clear: ['description', 'descriptionRich'] });
     expect(r.applied[0]).toContain('cleared description');
     expect(r.applied[0]).not.toContain('descriptionRich');
+  });
+});
+
+// docs/specs/026-plan/plan-agents.md "Naming things as people do": a Long Text field takes Markdown as a description does.
+describe('a Long Text field written as Markdown', () => {
+  const NOTES = {
+    ...ITEM_TYPES[1],
+    id: 'repro',
+    label: 'Repro',
+    fields: ['title', 'status', 'f-steps'],
+    custom: [{ id: 'f-steps', label: 'Steps', kind: 'longtext' as const }],
+  };
+  const plan = { boards: [BOARD()], statuses: STATUSES, types: [...ITEM_TYPES, BUG, NOTES] };
+  const card = (fields: Item['fields']) => [
+    item(1, 'aaa111', { title: 'B', status: 'todo~x', ...fields }, 'repro'),
+  ];
+  const posted = (seen: { method: string; body: unknown }[]) =>
+    seen.filter((c) => c.method === 'POST').map((c) => c.body);
+
+  it('stores its plain text and its formatting, read back by name', async () => {
+    const { api: a, seen } = api({ [`/projects/${D}/items`]: { items: card({}), rev: 1 } }, plan);
+    const r = await applyItemChanges(
+      a,
+      D,
+      [{ op: 'set', item: '#1', fields: { Steps: '1. Open **Settings**' } }],
+      await readPlanState(a, D),
+    );
+    expect(posted(seen)[0]).toEqual({
+      set: {
+        'f-steps': '1. Open Settings',
+        'f-stepsRich': [{ text: '1. Open ' }, { text: 'Settings', bold: true }],
+      },
+    });
+    expect(r.applied[0]).toContain('set Steps = "1. Open Settings"');
+    expect(r.applied[0]).not.toContain('Rich');
+  });
+
+  it('keeps plain text plain, dropping formatting the card had', async () => {
+    const had = card({ 'f-steps': 'Old', 'f-stepsRich': [{ text: 'Old', italic: true }] });
+    const { api: a, seen } = api({ [`/projects/${D}/items`]: { items: had, rev: 1 } }, plan);
+    await applyItemChanges(
+      a,
+      D,
+      [{ op: 'set', item: '#1', fields: { Steps: 'Plain' } }],
+      await readPlanState(a, D),
+    );
+    expect(posted(seen)[0]).toEqual({ set: { 'f-steps': 'Plain' }, clear: ['f-stepsRich'] });
+  });
+
+  it('clears the formatting with the field', async () => {
+    const had = card({ 'f-steps': 'Old', 'f-stepsRich': [{ text: 'Old', italic: true }] });
+    const { api: a, seen } = api({ [`/projects/${D}/items`]: { items: had, rev: 1 } }, plan);
+    const r = await applyItemChanges(
+      a,
+      D,
+      [{ op: 'set', item: '#1', clear: ['Steps'] }],
+      await readPlanState(a, D),
+    );
+    expect(posted(seen)[0]).toEqual({ clear: ['f-steps', 'f-stepsRich'] });
+    expect(r.applied[0]).toContain('cleared Steps');
+  });
+
+  it('still formats the description on a type with no custom fields', async () => {
+    const { custom: _custom, ...base } = ITEM_TYPES[1];
+    const BARE = { ...base, id: 'bare', label: 'Bare', fields: ['title', 'status', 'description'] };
+    const bare = { ...plan, types: [...ITEM_TYPES, BUG, BARE] };
+    const items = [item(1, 'aaa111', { title: 'B', status: 'todo~x' }, 'bare')];
+    const { api: a, seen } = api({ [`/projects/${D}/items`]: { items, rev: 1 } }, bare);
+    await applyItemChanges(
+      a,
+      D,
+      [{ op: 'set', item: '#1', fields: { description: '**Now**' } }],
+      await readPlanState(a, D),
+    );
+    expect(posted(seen)[0]).toEqual({
+      set: { description: 'Now', descriptionRich: [{ text: 'Now', bold: true }] },
+    });
   });
 });

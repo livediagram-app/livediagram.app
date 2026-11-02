@@ -2,18 +2,30 @@
 // delete and restore changes applied in order to a project's catalogue, the way the type editor makes them. The
 // whole result is checked by validateItemTypeCatalogue before anything is saved; any refusal saves nothing.
 import { withArticle } from './indefinite-article';
+import { CALCULATION_LABELS } from './calculated-fields';
+import { isFormulaField } from './formula-fields';
+import { FORMULA_RESULTS, FORMULA_RESULT_DEFAULT } from './formula/limits';
+import { formulaScopeOf, storedFormula } from './formula/references';
+import { canShowAsPercent } from './percent-fields';
+import { isTimeSpent } from './duration-fields';
+import { isLookupField, isRollupField } from './calculated-result';
+import { Refused, invalid, type TypeChangeRefusal } from './type-change-refused';
+import { resolveRollups, withRollup, type PendingRollups } from './type-change-rollups';
 import { HEX_COLOUR } from './validate';
 import { PLAN_GLYPH_IDS, isPlanGlyphId, type PlanGlyphId } from './glyphs';
 import {
   COMMON_CURRENCIES,
   CURRENCY_CODE,
   CURRENCY_DEFAULT,
+  CALCULATIONS,
   CUSTOM_FIELD_KINDS,
   RATING_FIELD_SCALE_DEFAULT,
   RATING_FIELD_SCALE_MAX,
   RATING_FIELD_SCALE_MIN,
   type CustomFieldDef,
   type ItemTypeDef,
+  withLinkTypes,
+  type Calculation,
 } from './item-types';
 import type { PlanStatusName } from './plan-outline';
 import { fieldKeyOf, resolveStatus, resolveType, type NameRefusal } from './plan-names';
@@ -21,6 +33,7 @@ import { statusKey } from './status-names';
 import {
   ITEM_TYPE_CATALOGUE_VERSION,
   ITEM_TYPES_MAX,
+  ITEM_TYPE_STATUSES_MAX,
   PLAN_TYPE_COLOURS,
   REQUIRED_TYPE_FIELDS,
   defaultNewTitle,
@@ -33,6 +46,10 @@ import {
   type ItemTypeCatalogue,
 } from './type-catalogue';
 import { defaultTypesToAdd } from './brought-types';
+import { refuseInheritedEdits, withBase, withOwnFields } from './type-change-inherit';
+import { withInheritance } from './type-inheritance';
+import { canBeRequired } from './required-fields';
+import { holdsSeveralKind } from './several-values';
 import type { CardField } from './board';
 import type { CardLayout } from './card-display';
 import {
@@ -60,9 +77,37 @@ export interface CustomFieldInput {
   scale?: number;
   // A Card field's target card type, by id or name.
   linkType?: string;
+  // A Card field's target card types, by id or name (docs/specs/026-plan/item-types.md "Card fields"); merged after
+  // `linkType` when both are given.
+  linkTypes?: readonly string[];
   // A Currency field's ISO 4217 code; GBP when absent.
   currency?: string;
+  // A Calculated field's calculation, by id (`childCount`) or name ("Child Count").
+  calculation?: string;
+  // A Formula's expression, written with field names, and its result kind (docs/specs/026-plan/item-types.md
+  // "Formula fields").
+  formula?: string;
+  result?: string;
+  // A Rollup's or Lookup's settings by name (docs/specs/026-plan/item-types.md "Rollup and Lookup fields"): the Card
+  // field it reads through ("all" for a Rollup over every child), what a Rollup works out, and the field it reads.
+  through?: string;
+  aggregate?: string;
+  source?: string;
+  // A share drawn as a Percent field is ('percent'), or as text ('number', the default); only where
+  // canShowAsPercent allows it (docs/specs/026-plan/item-types.md "Percent").
+  showAs?: string;
+  // A Duration field that tracks time (docs/specs/026-plan/item-types.md "Time Spent"); set only when it is made.
+  timeSpent?: boolean;
+  // A Date Range whose ends carry a time (docs/specs/026-plan/item-types.md "Date Range"); set only when it is made.
+  withTime?: boolean;
   onCard?: boolean;
+  // Required (docs/specs/026-plan/item-types.md "Required fields"); never a checkbox.
+  required?: boolean;
+  // A Person field tells its person when a card is theirs (item-types.md "Notifies"); only a Person field.
+  notifies?: boolean;
+  // A Person or Card field holds several people or cards (item-types.md "Holds Several"); only those kinds.
+  multiple?: boolean; // A Card field whose cards block the card (item-types.md "Blocked By"); only a Card field. True holds several too.
+  blocks?: boolean;
 }
 
 // An existing custom field edited in place: renamed, its options replaced (a Choice field), drawn on the card or not.
@@ -71,8 +116,28 @@ export interface CustomFieldEdit {
   field: string;
   name?: string;
   options?: readonly string[];
+  // A Card field's card types, replaced whole, by id or name.
+  linkTypes?: readonly string[];
   currency?: string;
+  // A Calculated field's calculation, by id or name.
+  calculation?: string;
+  // A Formula's expression (field names) and result kind.
+  formula?: string;
+  result?: string;
+  // A Rollup's or Lookup's settings by name.
+  through?: string;
+  aggregate?: string;
+  source?: string;
+  // 'percent' draws its share as a Percent field is, 'number' as text again.
+  showAs?: string;
   onCard?: boolean;
+  // true makes it required, false optional again.
+  required?: boolean;
+  // A Person field: true tells its person when a card is theirs, false stops.
+  notifies?: boolean;
+  // A Person or Card field: true holds several, false holds one (the cards' values are kept as they are).
+  multiple?: boolean; // A Card field: true makes its cards block the card (and holds several), false stops (item-types.md "Blocked By").
+  blocks?: boolean;
 }
 
 // A type's card face and panel (type-change-face.ts), as `add` and `set` take them.
@@ -80,6 +145,12 @@ interface FaceInput {
   display?: DisplayInput;
   tabs?: readonly TabInput[];
   detailsLabel?: string;
+}
+
+// Whether the Assignee tells its person when a card is theirs (item-types.md "Notifies"), as `add` and `set` take it;
+// absent leaves it as it is.
+interface NotifyInput {
+  assigneeNotifies?: boolean;
 }
 
 export type CardTypeChange =
@@ -91,8 +162,12 @@ export type CardTypeChange =
       fields?: readonly string[];
       custom?: readonly CustomFieldInput[];
       defaultStatus?: string;
-      excludedStatuses?: readonly string[];
-    } & FaceInput)
+      // The statuses it uses, in order, by column name or status; absent, every status the boards name.
+      statuses?: readonly string[];
+      // Its base type, by name or id (docs/specs/026-plan/item-types.md "Inherited types").
+      inherits?: string;
+    } & FaceInput &
+      NotifyInput)
   | ({
       op: 'set';
       type: string;
@@ -106,16 +181,18 @@ export type CardTypeChange =
       removeCustom?: readonly string[];
       // A status, or null to clear the Default State.
       defaultStatus?: string | null;
-      excludedStatuses?: readonly string[];
-    } & FaceInput)
+      // The whole ordered list of the statuses it uses, by column name or status.
+      statuses?: readonly string[];
+      // A base type to inherit from, by name or id, or null to detach (docs/specs/026-plan/item-types.md "Inherited
+      // types").
+      inherits?: string | null;
+    } & FaceInput &
+      NotifyInput)
   | { op: 'delete'; type: string }
   // Any of the five default types the project lacks, after its types (docs/specs/026-plan/plan-agents.md); its
   // older name, `restore_built_ins`, does the same.
   | { op: 'add_default_types' }
   | { op: 'restore_built_ins' };
-
-type TypeChangeRefusal =
-  NameRefusal | { code: 'type_change_invalid' | 'display_invalid'; message: string };
 
 type TypeChangesResult =
   | {
@@ -128,16 +205,6 @@ type TypeChangesResult =
       deleted: string[];
     }
   | ({ ok: false; applied: string[] } & TypeChangeRefusal);
-
-class Refused extends Error {
-  readonly refusal: TypeChangeRefusal;
-  constructor(refusal: TypeChangeRefusal) {
-    super(refusal.message);
-    this.refusal = refusal;
-  }
-}
-
-const invalid = (message: string) => new Refused({ code: 'type_change_invalid', message });
 
 function face<T>(read: FaceRead<T>, code: 'type_change_invalid' | 'display_invalid'): T {
   if (!read.ok) throw new Refused({ code, message: read.message });
@@ -161,7 +228,19 @@ function withFace(type: ItemTypeDef, c: FaceInput): ItemTypeDef {
   return next;
 }
 
-function editedCustom(type: ItemTypeDef, edit: CustomFieldEdit): ItemTypeDef {
+// Card types named by id or name, as ids, each once: never more than the catalogue holds, so never past
+// CARD_LINK_TYPES_MAX.
+function cardTypeIds(names: readonly string[], types: readonly ItemTypeDef[]): string[] {
+  return [...new Set(names.map((n) => must(resolveType(n, types)).type.id))];
+}
+
+function editedCustom(
+  type: ItemTypeDef,
+  edit: CustomFieldEdit,
+  types: readonly ItemTypeDef[],
+  formulas: PendingFormulas,
+  rollups: PendingRollups,
+): ItemTypeDef {
   const key = must(fieldKeyOf(edit.field, type)).key;
   const field = (type.custom ?? []).find((f) => f.id === key);
   if (!field)
@@ -180,8 +259,19 @@ function editedCustom(type: ItemTypeDef, edit: CustomFieldEdit): ItemTypeDef {
       );
     next.options = edit.options.map((o) => o.trim());
   }
+  if (edit.linkTypes) {
+    if (field.kind !== 'card')
+      throw invalid(
+        `"${field.label}" is ${withArticle(field.kind)} field: only a card field links to card types.`,
+      );
+    if (edit.linkTypes.length === 0)
+      throw invalid(`"${field.label}" needs at least one card type to link to.`);
+    // Replaced whole: a list of one drops the stored list.
+    delete next.linkTypes;
+    Object.assign(next, withLinkTypes(next, cardTypeIds(edit.linkTypes, types)));
+  }
   if (edit.currency) {
-    if (field.kind !== 'currency')
+    if (field.kind !== 'currency' && !isFormulaField(field))
       throw invalid(
         `"${field.label}" is ${withArticle(field.kind)} field: only a currency field has a currency.`,
       );
@@ -189,8 +279,42 @@ function editedCustom(type: ItemTypeDef, edit: CustomFieldEdit): ItemTypeDef {
     if (code === CURRENCY_DEFAULT) delete next.currency;
     else next.currency = code;
   }
+  if (edit.calculation !== undefined) {
+    if (field.kind !== 'calculated')
+      throw invalid(
+        `"${field.label}" is ${withArticle(field.kind)} field: only a calculated field has a calculation.`,
+      );
+    next.calculation = calculationNamed(field.label, edit.calculation);
+  }
+  withFormula(next, edit, formulas, field.formula === undefined);
+  withRollup(next, edit, rollups, next.calculation !== field.calculation);
+  // A Child Count, or a Formula whose result is no longer a Percent, is no share: it stops showing as a Percent.
+  if (!canShowAsPercent(next)) delete next.showAs;
+  if (
+    edit.showAs !== undefined &&
+    (isRollupField(next) || isLookupField(next)) &&
+    rollups.has(key)
+  ) {
+    // Its result is known once its settings resolve (resolveRollups).
+    if (showAsWanted(edit.showAs)) rollups.set(key, { ...rollups.get(key), showAs: 'percent' });
+    else delete next.showAs;
+  } else if (edit.showAs !== undefined) {
+    if (showAsNamed(next, edit.showAs)) next.showAs = 'percent';
+    else delete next.showAs;
+  }
   if (edit.onCard === true) next.onCard = true;
   if (edit.onCard === false) delete next.onCard;
+  if (edit.required === true) next.required = requirable(field);
+  if (edit.required === false) delete next.required;
+  if (edit.notifies === true) next.notifies = notifiable(field);
+  if (edit.notifies === false) delete next.notifies;
+  if (edit.multiple === true) next.multiple = severalable(field);
+  if (edit.multiple === false) delete next.multiple;
+  if (edit.blocks === true) {
+    next.blocks = blockable(field);
+    next.multiple = true;
+  }
+  if (edit.blocks === false) delete next.blocks;
   const edited = { ...type, custom: (type.custom ?? []).map((f) => (f.id === key ? next : f)) };
   // Unticked, it leaves a Detailed Display of the type's own too.
   return edit.onCard === false ? withoutOnDetailed(edited, key) : edited;
@@ -259,11 +383,15 @@ function customOf(
   input: CustomFieldInput,
   type: ItemTypeDef,
   types: readonly ItemTypeDef[],
+  formulas: PendingFormulas,
+  rollups: PendingRollups,
 ): CustomFieldDef {
-  const kind = input.kind
+  const typed = input.kind
     .trim()
     .toLowerCase()
     .replace(/[\s_-]+/g, '');
+  // An American agent's "color" is the Colour kind.
+  const kind = typed === 'color' ? 'colour' : typed;
   const known = CUSTOM_FIELD_KINDS.find((k) => k === kind);
   if (!known)
     throw invalid(
@@ -291,16 +419,202 @@ function customOf(
     if (input.scale !== RATING_FIELD_SCALE_DEFAULT) field.scale = input.scale;
   }
   if (known === 'card') {
-    if (!input.linkType)
-      throw invalid(`The Card field "${name}" needs linkType: the card type it links to.`);
-    field.linkType = must(resolveType(input.linkType, types)).type.id;
+    const named = [...(input.linkType ? [input.linkType] : []), ...(input.linkTypes ?? [])];
+    if (named.length === 0)
+      throw invalid(
+        `The Card field "${name}" needs linkTypes: the card types it links to (or linkType, one).`,
+      );
+    Object.assign(field, withLinkTypes(field, cardTypeIds(named, types)));
   }
-  if (known === 'currency' && input.currency) {
+  if (known === 'calculated') field.calculation = calculationNamed(name, input.calculation);
+  else if (input.calculation !== undefined)
+    throw invalid(
+      `"${name}" is ${withArticle(known)} field: only a calculated field has a calculation.`,
+    );
+  withFormula(field, input, formulas, true);
+  withRollup(field, input, rollups, true);
+  if ((known === 'currency' || field.result === 'currency') && input.currency) {
     const code = currencyOf(input.currency);
     if (code !== CURRENCY_DEFAULT) field.currency = code;
   }
+  if (input.showAs !== undefined && rollups.has(field.id)) {
+    if (showAsWanted(input.showAs))
+      rollups.set(field.id, { ...rollups.get(field.id), showAs: 'percent' });
+  } else if (input.showAs !== undefined && showAsNamed(field, input.showAs))
+    field.showAs = 'percent';
+  if (input.timeSpent) {
+    if (known !== 'duration')
+      throw invalid(`"${name}" is ${withArticle(known)} field: only a duration field tracks time.`);
+    field.timeSpent = true;
+  }
+  if (input.withTime) {
+    if (known !== 'daterange')
+      throw invalid(
+        `"${name}" is ${withArticle(known)} field: only a date range field has times on its ends.`,
+      );
+    field.withTime = true;
+  }
   if (input.onCard) field.onCard = true;
+  if (input.required) field.required = requirable(field);
+  if (input.notifies) field.notifies = notifiable(field);
+  if (input.multiple) field.multiple = severalable(field);
+  if (input.blocks) {
+    field.blocks = blockable(field);
+    field.multiple = true;
+  }
   return field;
+}
+
+// Formulas written with names this change still has to store with ids, by field id: resolved once the type holds
+// every field the change adds (resolveFormulas), so a formula may name a field added after it.
+type PendingFormulas = Map<string, string>;
+
+const resultKey = (s: string) => s.trim().toLowerCase();
+
+// A Formula's settings from a change (docs/specs/026-plan/item-types.md "Formula fields"): its result kind and its
+// expression (queued for resolveFormulas); refused on a field that is no Formula, and a new Formula needs one.
+function withFormula(
+  field: { -readonly [K in keyof CustomFieldDef]: CustomFieldDef[K] },
+  input: { formula?: string; result?: string },
+  formulas: PendingFormulas,
+  needsFormula: boolean,
+): void {
+  const formula = isFormulaField(field);
+  if (!formula) {
+    if (input.formula !== undefined || input.result !== undefined)
+      throw invalid(
+        `"${field.label}" is no formula: only a calculated field whose calculation is formula has one.`,
+      );
+    delete field.formula;
+    // A Rollup's or Lookup's result is its own, taken from what it reads (resolveRollups).
+    if (!isRollupField(field) && !isLookupField(field)) {
+      delete field.result;
+      if (field.kind !== 'currency') delete field.currency;
+    }
+    return;
+  }
+  if (input.result !== undefined) {
+    const result = FORMULA_RESULTS.find((r) => r === resultKey(input.result!));
+    if (!result) throw invalid(`A formula's result is one of ${FORMULA_RESULTS.join(', ')}.`);
+    if (result === FORMULA_RESULT_DEFAULT) delete field.result;
+    else field.result = result;
+    if (result !== 'currency') delete field.currency;
+  }
+  if (input.formula !== undefined) formulas.set(field.id, input.formula);
+  else if (needsFormula)
+    throw invalid(
+      `The formula field "${field.label}" needs a formula, written with field names: "Budget - Spent".`,
+    );
+}
+
+// Each queued formula stored with ids against the type as the change leaves it; a field the change removed is
+// skipped, and a formula that can't be read is refused with its problem.
+function resolveFormulas(type: ItemTypeDef, formulas: PendingFormulas): ItemTypeDef {
+  if (formulas.size === 0) return type;
+  const scope = formulaScopeOf(type);
+  const custom = (type.custom ?? []).map((f) => {
+    const text = formulas.get(f.id);
+    if (text === undefined) return f;
+    const stored = storedFormula(text, scope, f.id);
+    if (!stored.ok) throw invalid(`The formula for "${f.label}" doesn't work: ${stored.error}.`);
+    return { ...f, formula: stored.formula };
+  });
+  formulas.clear();
+  return { ...type, custom };
+}
+
+// "a, b or c".
+const orList = (xs: readonly string[]) =>
+  xs.length > 1 ? `${xs.slice(0, -1).join(', ')} or ${xs[xs.length - 1]}` : xs.join('');
+
+// Whether `showAs` asks for a Percent, before the field's result is known (a Rollup's or Lookup's).
+function showAsWanted(named: string): boolean {
+  const key = named.toLowerCase().replace(/[^a-z]/g, '');
+  if (key === 'number' || key === 'text') return false;
+  if (key !== 'percent' && key !== 'percentbar')
+    throw invalid(`"${named}" is not a way to show a field: give percent or number.`);
+  return true;
+}
+
+// Whether `showAs` asks for a Percent: 'percent' (or "Percent Bar"), on a field whose result is a share; 'number'
+// asks for text. Anything else, or a Percent asked of a field that gives no share, is refused.
+function showAsNamed(
+  field: Pick<CustomFieldDef, 'kind' | 'calculation' | 'result' | 'label'>,
+  named: string,
+): boolean {
+  const key = named.toLowerCase().replace(/[^a-z]/g, '');
+  if (key === 'number' || key === 'text') return false;
+  if (key !== 'percent' && key !== 'percentbar')
+    throw invalid(`"${named}" is not a way to show a field: give percent or number.`);
+  if (!canShowAsPercent(field))
+    throw invalid(
+      `"${field.label}" can't show as a percent: only a share, like Children Done or a Percent formula, can.`,
+    );
+  return true;
+}
+
+// A calculation as an agent names it: its id (`childCount`) or its name ("Child Count"), any case or spacing.
+const calcKey = (s: string) => s.toLowerCase().replace(/[^a-z]/g, '');
+function calculationNamed(field: string, named: string | undefined): Calculation {
+  const key = calcKey(named ?? '');
+  const found = CALCULATIONS.find(
+    (c) => calcKey(c) === key || calcKey(CALCULATION_LABELS[c]) === key,
+  );
+  if (!found)
+    throw invalid(
+      `The calculated field "${field}" needs a calculation: ${orList(CALCULATIONS.map((c) => `${c} (${CALCULATION_LABELS[c]})`))}.`,
+    );
+  return found;
+}
+
+// `true`, for a field that can be required; a checkbox (unticked reads as empty) and a calculated field (the plan
+// works it out) are refused.
+function requirable(field: Pick<CustomFieldDef, 'kind' | 'label' | 'timeSpent'>): true {
+  if (isTimeSpent(field))
+    throw invalid(
+      `"${field.label}" tracks time: its entries are recorded, so it can't be required.`,
+    );
+  if (!canBeRequired(field.kind))
+    throw invalid(
+      field.kind === 'checkbox'
+        ? `"${field.label}" is a checkbox: a checkbox can't be required.`
+        : `"${field.label}" is calculated: the plan works it out, so it can't be required.`,
+    );
+  return true;
+}
+
+// `true`, for a Person field: no other kind names someone to tell.
+function notifiable(field: Pick<CustomFieldDef, 'kind' | 'label'>): true {
+  if (field.kind !== 'person')
+    throw invalid(
+      `"${field.label}" is ${withArticle(field.kind)} field: only a person field notifies.`,
+    );
+  return true;
+}
+
+// `true`, for a Person or Card field: no other kind holds several people or cards.
+function severalable(field: Pick<CustomFieldDef, 'kind' | 'label'>): true {
+  if (!holdsSeveralKind(field.kind))
+    throw invalid(
+      `"${field.label}" is ${withArticle(field.kind)} field: only a person or card field holds several.`,
+    );
+  return true;
+}
+
+// Blocks (item-types.md "Blocked By"): only a Card field's cards block the card.
+function blockable(field: Pick<CustomFieldDef, 'kind' | 'label'>): true {
+  if (field.kind !== 'card')
+    throw invalid(
+      `"${field.label}" is ${withArticle(field.kind)} field: only a card field blocks.`,
+    );
+  return true;
+}
+
+// The Assignee's Notifies switch: kept only as false, so a type that tells its assignee is stored as before.
+function withAssigneeNotifies(type: ItemTypeDef, on: boolean | undefined): ItemTypeDef {
+  if (on === undefined) return type;
+  const { assigneeNotifies: _was, ...rest } = type;
+  return on ? rest : { ...rest, assigneeNotifies: false };
 }
 
 // What a change's line adds when its Default State names a column no board has yet (docs/specs/026-plan/plan-agents.md
@@ -317,8 +631,28 @@ function defaultStatusOf(
   return named.ok ? { status: named.status } : { pending: DEFAULT_STATUS_PENDING(name) };
 }
 
+// A type's ordered status list by column names or statuses, each once (docs/specs/026-plan/item-types.md "The
+// statuses a type uses").
 function statusesOf(names: readonly string[], statuses: readonly PlanStatusName[]): string[] {
-  return names.map((n) => must(resolveStatus(n, statuses)).status);
+  const list = [...new Set(names.map((n) => must(resolveStatus(n, statuses)).status))];
+  if (list.length > ITEM_TYPE_STATUSES_MAX)
+    throw invalid(`A card type can use at most ${ITEM_TYPE_STATUSES_MAX} statuses.`);
+  return list;
+}
+
+// A type with `list` as the statuses it uses, in place of any legacy exclusions.
+function withStatusList(type: ItemTypeDef, list: readonly string[]): ItemTypeDef {
+  const next = { ...type, statuses: list };
+  delete next.excludedStatuses;
+  return next;
+}
+
+// A catalogue refusal with the type it names: "Bug: types[3].fields", so a base change that takes a type inheriting
+// from it past a cap says which.
+function namedReason(reason: string, types: readonly ItemTypeDef[]): string {
+  const at = /^types\[(\d+)\]/.exec(reason);
+  const type = at ? types[Number(at[1])] : undefined;
+  return type ? `${type.label}: ${reason}` : reason;
 }
 
 // The catalogue after `changes`, in order, each seeing the ones before it.
@@ -359,23 +693,33 @@ export function applyCardTypeChanges(
           const extra = c.fields.map((f) => builtInFieldOf(f, type));
           type = { ...type, fields: [...new Set([...REQUIRED_TYPE_FIELDS, ...extra])] };
         }
+        const formulas: PendingFormulas = new Map();
+        const rollups: PendingRollups = new Map();
         for (const input of c.custom ?? []) {
-          const field = customOf(input, type, types);
+          const field = customOf(input, type, types, formulas, rollups);
           type = {
             ...type,
             custom: [...(type.custom ?? []), field],
             fields: [...type.fields, field.id],
           };
         }
-        if (c.excludedStatuses)
-          type = { ...type, excludedStatuses: statusesOf(c.excludedStatuses, statuses) };
+        type = resolveRollups(resolveFormulas(type, formulas), [...types, type], rollups);
+        // A base type takes the place of the parts it gives: naming them too is refused, as on an inherited type.
+        const base = c.inherits === undefined ? null : typeNamed(c.inherits);
+        if (base) refuseInheritedEdits({ ...type, inherits: base.id }, c, [], [...types, type]);
+        // Every status the boards name when none are given, as the type editor's Add Type starts one.
+        const every = statuses.map((s) => s.status);
+        if (c.statuses) type = withStatusList(type, statusesOf(c.statuses, statuses));
+        else if (every.length <= ITEM_TYPE_STATUSES_MAX) type = withStatusList(type, every);
         const start = c.defaultStatus ? defaultStatusOf(c.defaultStatus, statuses) : null;
         if (start && 'status' in start) type = { ...type, defaultStatus: start.status };
         type = withFace(type, c);
+        type = withAssigneeNotifies(type, c.assigneeNotifies);
         type = withOnCardShown(
           type,
           (type.custom ?? []).filter((f) => f.onCard).map((f) => f.id),
         );
+        if (base) type = withBase(type, base, types);
         types = [...types, type];
         const made = (type.custom ?? []).map((f) => `${f.label} (${f.id})`);
         applied.push(
@@ -385,6 +729,22 @@ export function applyCardTypeChanges(
       } else if (c.op === 'set') {
         let type = typeNamed(c.type);
         const id = type.id;
+        if (c.inherits !== undefined)
+          type = withBase(type, c.inherits === null ? null : typeNamed(c.inherits), types);
+        // What an inherited type takes from its base can't change here (type-change-inherit.ts).
+        refuseInheritedEdits(
+          type,
+          c,
+          // A name not found yet (a field this change adds first) is left to the edit that reads it.
+          [
+            ...(c.removeFields ?? []),
+            ...(c.removeCustom ?? []),
+            ...(c.editCustom ?? []).map((e) => e.field),
+          ]
+            .map((f) => fieldKeyOf(f, type))
+            .flatMap((named) => (named.ok ? [named.key] : [])),
+          types,
+        );
         if (c.name !== undefined) {
           const name = c.name.trim();
           if (types.some((t) => t.id !== id && statusKey(t.label) === statusKey(name)))
@@ -406,8 +766,10 @@ export function applyCardTypeChanges(
         }
         // The fields this change ticks Show on Card, by id, so a rename in the same edit still finds them.
         const ticked: string[] = [];
+        const formulas: PendingFormulas = new Map();
+        const rollups: PendingRollups = new Map();
         for (const input of c.addCustom ?? []) {
-          const field = customOf(input, type, types);
+          const field = customOf(input, type, types, formulas, rollups);
           if (input.onCard) ticked.push(field.id);
           type = {
             ...type,
@@ -417,7 +779,7 @@ export function applyCardTypeChanges(
         }
         for (const edit of c.editCustom ?? []) {
           if (edit.onCard === true) ticked.push(must(fieldKeyOf(edit.field, type)).key);
-          type = editedCustom(type, edit);
+          type = editedCustom(type, edit, types, formulas, rollups);
         }
         for (const name of c.removeCustom ?? []) {
           const key = must(fieldKeyOf(name, type)).key;
@@ -434,8 +796,8 @@ export function applyCardTypeChanges(
               : {}),
           };
         }
-        if (c.excludedStatuses)
-          type = { ...type, excludedStatuses: statusesOf(c.excludedStatuses, statuses) };
+        type = resolveRollups(resolveFormulas(type, formulas), types, rollups);
+        if (c.statuses) type = withStatusList(type, statusesOf(c.statuses, statuses));
         if (c.defaultStatus === null) {
           const { defaultStatus: _gone, ...rest } = type;
           type = rest;
@@ -443,8 +805,10 @@ export function applyCardTypeChanges(
         const start = c.defaultStatus ? defaultStatusOf(c.defaultStatus, statuses) : null;
         if (start && 'status' in start) type = { ...type, defaultStatus: start.status };
         type = withFace(type, c);
-        // The fields this change ticked Show on Card: placed on a type whose Display is its own.
-        type = withOnCardShown(type, ticked);
+        type = withAssigneeNotifies(type, c.assigneeNotifies);
+        // The fields this change ticked Show on Card: placed on a type whose Display is its own (never an inherited
+        // type's: its Display is its base's).
+        type = type.inherits ? withOwnFields(type, types) : withOnCardShown(type, ticked);
         replace(type);
         applied.push(
           `~ ${type.label} (${type.id})` +
@@ -464,6 +828,8 @@ export function applyCardTypeChanges(
             : '= every default card type is here already',
         );
       }
+      // A base changed or deleted reaches the types inheriting from it before the next change reads them.
+      types = [...withInheritance(types)];
     }
   } catch (err) {
     if (err instanceof Refused) return { ok: false, applied, ...err.refusal };
@@ -475,7 +841,7 @@ export function applyCardTypeChanges(
       ok: false,
       applied,
       code: 'type_change_invalid',
-      message: `The card types would break a rule (${checked.reason}); nothing was saved.`,
+      message: `The card types would break a rule (${namedReason(checked.reason, types)}); nothing was saved.`,
     };
   // A project whose card types are not chosen, left with none: nothing to store.
   const none = stored == null && types.length === 0;

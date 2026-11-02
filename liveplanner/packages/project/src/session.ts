@@ -101,6 +101,9 @@ export type TabVote = {
   // stack freely, the classic dot-vote and the behaviour of every vote
   // persisted before this existed. Set once at start like the rest.
   onePerElement?: boolean;
+  // The Votes field the tally counts in when the host ends the vote (docs/specs/012-collaboration/session-tools.md
+  // "Count In"): a custom Votes field's id. Absent = the built-in Votes, as every vote before this. Set once at start.
+  voteField?: string;
   // Which rank the results walkthrough is currently on. SHARED, not local:
   // the host steps the room through the picks together and everyone else
   // follows. Absent until the host reveals results.
@@ -143,6 +146,8 @@ export type VoteSetup = VotePrivacy & {
   // Cap each participant at one dot per element instead of letting them
   // stack their budget on a favourite.
   onePerElement?: boolean;
+  // The Votes field the tally counts in (Count In); undefined = the built-in Votes.
+  voteField?: string;
 };
 
 // Should peer cursors be withheld right now? Only while

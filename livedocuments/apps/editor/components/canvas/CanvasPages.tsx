@@ -3,11 +3,6 @@
 import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import { lucideSettings } from '@liveworkspace/icons/lucide';
 import { FirstPageChoice } from './FirstPageChoice';
-import { layoutCardShows, layoutInviteShows, type LayoutCardContext } from './page-layout-card';
-import { EmptyPageLayouts } from './EmptyPageLayouts';
-import { EmptyPageInvite } from '@liveworkspace/workbench/components/canvas/EmptyPageInvite';
-import { LayoutGalleryDialog } from './LayoutGalleryDialog';
-import { PageDeckButton } from './PageDeckButton';
 import { PageLockButton } from '@liveworkspace/workbench/components/canvas/PageLockButton';
 import { PageBackgroundButton } from './PageBackgroundButton';
 import { PageLayoutsButton } from './PageLayoutsButton';
@@ -16,9 +11,7 @@ import { PageNotesButton } from './PageNotesButton';
 import { PageTidyUpButton } from './PageTidyUpButton';
 import { PageArticleButtons } from './PageArticleButtons';
 import { LABEL_MIN, titleBarFixedRoom, titleBarNamed } from './page-title-bar-room';
-import { track } from '@/lib/telemetry';
 import { isArticleLocked } from '@/lib/article/article-lock';
-import { GIF_OMIT_ATTR } from '@/lib/gif-export/gif-omit';
 import {
   articleBodyLinePx,
   articleMarginPx,
@@ -54,8 +47,12 @@ import {
 } from '@/components/tour/PageTour';
 import { useFollowPagePanelRequests } from '@/lib/page-panel-request';
 import { AddPageButton } from './AddPageButton';
+import { FlashcardFooter, FlashcardStackSheets } from './FlashcardStack';
+import { FLASHCARD_STACK_MAX } from '@/lib/flashcard-stack';
 import { ArticleStyleSection } from './article/ArticleStyleSection';
 import { useStylePanelRequest } from '@/lib/article/article-editor-store';
+import { pageBandLayout, useBandDocumentName } from '@/lib/article/article-band-layout';
+import { PageBands } from './article/PageBands';
 import {
   previewedBackground,
   setPageBackgroundPreview,
@@ -84,19 +81,11 @@ export function CanvasPages({
   view,
   zoom,
   bare = false,
-  placing = false,
-  onOpenTheme,
 }: {
   view: PagesModeView;
   zoom: number;
   // The sheets alone, without their title bars or the add button (zen, presenting).
   bare?: boolean;
-  // A palette tile is armed (tap to drop or drag to draw): the page is where it will land, so the in-page layout
-  // card steps aside until the tool is put down.
-  placing?: boolean;
-  // Opens the Tab Style popover, from the Layout popover's Change Theme; absent where the session
-  // may not restyle the tab.
-  onOpenTheme?: (() => void) | undefined;
 }) {
   const { pages, focusPage } = view;
   const articles = view.articles ?? null;
@@ -116,18 +105,18 @@ export function CanvasPages({
           top: articleTopMarginPx(articleStyleOf(page)),
         }
       : undefined;
-  // An article page's number, in its bottom margin, when its article has them.
-  const pageNumberOf = (page: LaidOutPage) => {
-    if (!page.flow || !articles?.flows[page.flow]) return null;
-    const style = resolveArticleStyle(articleStyleOf(page));
-    if (!style.pageNumbers) return null;
-    const own = pages.filter((p) => p.flow === page.flow);
-    return {
-      n: own.findIndex((p) => p.id === page.id) + 1,
-      bottom: articleMarginPx(articleStyleOf(page)) / 2 - 8,
-      font: resolveFontStack(style.bodyFont),
-    };
-  };
+  // An article page's header and footer (its page number among them), when its article has them. A card
+  // says its place in the stack instead (FlashcardFooter).
+  const documentName = useBandDocumentName();
+  const bandsOf = (page: LaidOutPage) =>
+    page.flow && articles?.flows[page.flow]
+      ? pageBandLayout(
+          articleStyleOf(page),
+          pages.filter((p) => p.flow === page.flow),
+          page,
+          documentName,
+        )
+      : null;
   const edit = bare ? undefined : view.edit;
   // The open panel's page and the tab it opened on. Its cog is looked up live (cogs), so a cog
   // remounted by zen or a role change is the one the panel hangs from.
@@ -183,35 +172,16 @@ export function CanvasPages({
   // The article toolbar's Style command opens the Style beside that page's cog (PageArticleButtons).
   const styleRequestFor = (pageId: string) =>
     styleRequest.pageId === pageId ? styleRequest.seq : 0;
-  // The pages whose in-page layout card was hidden, until the tab is next opened.
-  const [layoutsHidden, setLayoutsHidden] = useState<ReadonlySet<string>>(() => new Set());
-  // An empty infographic page shows its layouts inside itself (EmptyPageLayouts): never on the first
-  // page while it offers its kind, under its open panel, while a palette tile is armed to place something on it, or
-  // on a page too small on screen to hold the card.
-  const layoutCardContext = (page: LaidOutPage): LayoutCardContext => ({
-    editable: !!edit,
-    placing,
-    contentCount: edit ? edit.contentCount(page.id) : 0,
-    offersKind: offersPageKindChoice(pages, page.id, 0),
-    panelOpen: openId === page.id,
-    hidden: layoutsHidden.has(page.id),
-    zoom,
-  });
-  const showsLayoutCard = (page: LaidOutPage) => layoutCardShows(page, layoutCardContext(page));
-  // Where the card has no room on screen (a phone, a page zoomed out small): a Choose a Layout
-  // button in the page's middle instead (EmptyPageInvite), opening the gallery on its own.
-  const [galleryFor, setGalleryFor] = useState<string | null>(null);
-  const galleryPage = galleryFor ? pages.find((p) => p.id === galleryFor) : undefined;
-  const showsLayoutInvite = (page: LaidOutPage) => layoutInviteShows(page, layoutCardContext(page));
-  // The page a layout is previewed on: its panel's, or its in-page card's.
+  // The page a layout is previewed on: its panel's, or its Layout popover's.
   const previewed = view.layoutPreview
     ? pages.find((p) => p.id === view.layoutPreview!.pageId)
     : undefined;
   // An article's Style or Text sections (ArticleStyleSection), for the buttons beside an article page's cog.
-  const articleSection = (flow: string, part: 'style' | 'text') =>
+  const articleSection = (flow: string, part: 'style' | 'text', card: boolean) =>
     articles?.flows[flow] ? (
       <ArticleStyleSection
         part={part}
+        card={card}
         style={articles.flows[flow].style}
         themeAccent={view.themeAccent}
         onChange={(change) => articles.setStyle(flow, change)}
@@ -219,13 +189,22 @@ export function CanvasPages({
       />
     ) : null;
   const anchorOf = useCallback((id: string) => cogs.current.get(id), []);
+  // A stack of flashcards: the card in front's place, and the cards still to come behind it.
+  const stack = view.cardStack;
+  const row = view.rowPages ?? pages;
   return (
     <>
+      {stack && pages[0] ? (
+        <FlashcardStackSheets
+          card={pages[0]}
+          behind={row.slice(stack.index + 1, stack.index + 1 + FLASHCARD_STACK_MAX)}
+        />
+      ) : null}
       {pages.map((page) => {
         const background = previewedBackground(page, pages, preview);
         // No "Page n": the page navigator under the page says which it is.
         const label = pageLabel(page, page.index, 1);
-        const number = pageNumberOf(page);
+        const bands = bandsOf(page);
         // The label fits the page's on-screen width, less the title bar's buttons; too narrow, it
         // hides. The title bar's room on screen: the page's width at this zoom. The cog takes its
         // corner.
@@ -252,21 +231,15 @@ export function CanvasPages({
           !bare &&
           !locked &&
           offersPageKindChoice(pages, page.id, edit.contentCount(page.id));
-        // A slide page's deck button sits beside its cog (PageDeckButton); any other page shows it
-        // once the deck has a slide of it, so its eye is there wherever the page is presented.
-        const deckButton =
-          !!edit &&
-          !!view.deck &&
-          !mobile &&
-          (page.kind === 'slide' || !!view.deck.slideOf(page.id));
-        // Add Notes beside it once the deck has a slide of the page (PageNotesButton).
-        const notesButton = deckButton && !!view.deck!.slideOf(page.id);
-        // The title bar's fixed buttons (the cog, the lock, the deck button and an infographic or
-        // slide page's): the label has what they leave.
+        // Add Notes, first, once the deck has a slide of the page (PageNotesButton), on a phone too,
+        // so note cards can be written anywhere (docs/specs/012-collaboration/speaker-note-cards.md
+        // "Writing note cards"). Its place in the deck is in Contents' ⋯ menu (page-row-slides).
+        const notesButton = !!edit && !!view.deck && !!view.deck.slideOf(page.id);
+        // The title bar's fixed buttons (the cog, the lock, Add Notes and an infographic or slide
+        // page's): the label has what they leave.
         const buttons = {
           edit: !!edit,
           locked,
-          deck: deckButton,
           notes: notesButton,
           page: pageButtons,
           article: articleButtons,
@@ -351,11 +324,7 @@ export function CanvasPages({
                 className="absolute right-0 flex items-center gap-1"
                 style={{ bottom: '100%', marginBottom: 6 / zoom, ...steady(zoom, 'bottom right') }}
               >
-                {/* First, left of Layout and Background: this slide's place in the deck, and its
-                    notes once it is in it. */}
-                {deckButton && view.deck ? (
-                  <PageDeckButton pageId={page.id} deck={view.deck} labelled={labelled} />
-                ) : null}
+                {/* First, left of Layout and Background: this slide's notes once it is in the deck. */}
                 {notesButton && view.deck ? (
                   <PageNotesButton pageId={page.id} deck={view.deck} labelled={labelled} />
                 ) : null}
@@ -364,7 +333,7 @@ export function CanvasPages({
                   <PageArticleButtons
                     labelled={labelled}
                     styleRequest={styleRequestFor(page.id)}
-                    section={(part) => articleSection(page.flow!, part)}
+                    section={(part) => articleSection(page.flow!, part, page.kind === 'flashcard')}
                   />
                 ) : null}
                 {/* An infographic or slide page's Layouts (PageLayoutsButton). */}
@@ -373,7 +342,6 @@ export function CanvasPages({
                     page={page}
                     labelled={labelled}
                     onApply={(layout) => void edit.applyLayout(page.id, layout)}
-                    onChangeTheme={onOpenTheme}
                     onPreview={(layout) =>
                       view.setLayoutPreview(layout ? { pageId: page.id, layout } : null)
                     }
@@ -421,19 +389,15 @@ export function CanvasPages({
                 onChoose={(kind) => edit.choosePageKind(page.id, kind)}
               />
             ) : null}
-            {number ? (
-              <span
-                aria-hidden
-                data-page-number=""
-                className="pointer-events-none absolute inset-x-0 text-center text-[12px] tabular-nums"
-                style={{
-                  bottom: number.bottom,
-                  color: pageIsDark(page) ? 'rgb(255 255 255 / 0.55)' : 'rgb(71 85 105 / 0.8)',
-                  fontFamily: number.font,
-                }}
-              >
-                {number.n}
-              </span>
+            {bands ? <PageBands layout={bands} dark={pageIsDark(page)} /> : null}
+            {stack && page.flow ? (
+              <FlashcardFooter
+                card={page}
+                stack={stack}
+                flow={articles?.flows[page.flow]}
+                margin={articleMarginPx(articleStyleOf(page))}
+                font={resolveFontStack(resolveArticleStyle(articleStyleOf(page)).bodyFont)}
+              />
             ) : null}
           </div>
         );
@@ -449,64 +413,6 @@ export function CanvasPages({
           tabFont={view.tabFont}
           elements={view.elements}
           pages={view.pages}
-        />
-      ) : null}
-      {edit
-        ? pages.filter(showsLayoutCard).map((page) => (
-            <div
-              key={page.id}
-              // The in-page layout card is the editor's (lib/gif-export/gif-omit.ts).
-              {...{ [GIF_OMIT_ATTR]: '' }}
-              className="pointer-events-none absolute"
-              style={{
-                left: page.rect.x,
-                top: page.rect.y,
-                width: page.rect.width,
-                height: page.rect.height,
-              }}
-            >
-              <EmptyPageLayouts
-                page={page}
-                zoom={zoom}
-                onApply={(layout) => void edit.applyLayout(page.id, layout)}
-                onHide={() => {
-                  track('UI', 'Closed', 'EmptyPageLayouts');
-                  setLayoutsHidden((hidden) => new Set(hidden).add(page.id));
-                }}
-              />
-            </div>
-          ))
-        : null}
-      {edit
-        ? pages.filter(showsLayoutInvite).map((page) => (
-            <div
-              key={page.id}
-              // The page's invitation is the editor's (lib/gif-export/gif-omit.ts).
-              {...{ [GIF_OMIT_ATTR]: '' }}
-              className="pointer-events-none absolute"
-              style={{
-                left: page.rect.x,
-                top: page.rect.y,
-                width: page.rect.width,
-                height: page.rect.height,
-              }}
-            >
-              <EmptyPageInvite
-                pageId={page.id}
-                zoom={zoom}
-                onOpen={() => {
-                  track('UI', 'Opened', 'EmptyPageInvite');
-                  setGalleryFor(page.id);
-                }}
-              />
-            </div>
-          ))
-        : null}
-      {edit && galleryPage ? (
-        <LayoutGalleryDialog
-          page={galleryPage}
-          onApply={(layout) => void edit.applyLayout(galleryPage.id, layout)}
-          onClose={() => setGalleryFor(null)}
         />
       ) : null}
       {open && opened && edit ? (

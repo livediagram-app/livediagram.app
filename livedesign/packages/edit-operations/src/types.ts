@@ -4,7 +4,14 @@
 
 import type { EditLog } from '@liveworkspace/edit-operations/parse';
 import type { EditRejection, EditWarning, JsonValue, ResultLine } from '@livedesign/api-schema';
-import type { ElementId, ElementOp, Finish, Tab, ThemeDefinition } from '@livedesign/design';
+import type {
+  DesignComponent,
+  ElementId,
+  ElementOp,
+  Finish,
+  Tab,
+  ThemeDefinition,
+} from '@livedesign/design';
 import type { PlacementRelation } from './vocabulary';
 
 // A ref, a quoted label, or `key:value` terms joined by spaces, all of which must match.
@@ -93,6 +100,9 @@ export type LayoutOperation = {
 
 export type TestOperation = { op: 'test'; target: Selector; fields: Fields };
 
+// `detach <instance>` (docs/specs/024-agents/edit-operations.md "Components"): the instance becomes its main's elements.
+export type DetachOperation = { op: 'detach'; target: Selector };
+
 export type EditOperation =
   | AddOperation
   | SetOperation
@@ -105,7 +115,8 @@ export type EditOperation =
   | UnwrapOperation
   | OrderOperation
   | LayoutOperation
-  | TestOperation;
+  | TestOperation
+  | DetachOperation;
 
 export type ParseOutcome = { operations: EditOperation[] } | { errors: EditRejection[] };
 
@@ -119,6 +130,9 @@ export type ApplyOptions = {
   // Ids no slug can name; default crypto.randomUUID.
   makeId?: () => string;
   log?: EditLog;
+  // The design's mains, for placing (`add instance`) and detaching an instance; absent when the caller did not read the
+  // library (`operationsNeedComponents` says when it must).
+  components?: readonly DesignComponent[];
 };
 
 // `themeId` names a created tab's theme by id; it wins over `theme`.

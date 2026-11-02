@@ -1,220 +1,30 @@
 'use client';
 
-// Account-deletion confirmation modal. Triggered from the
-// AuthControls dropdown's "Delete account" item. The user types
-// their primary email to confirm — a typo-resistant gate that's
-// harder to miss-click than a single "Are you sure?" button.
-//
-// Delete sequence:
-//
-//   1. DELETE /api/account — wipes the caller's documents + folders +
-//      participant row on the backend, then closes their liveworkspace
-//      account, which signs them in to every liveworkspace app. Returns
-//      the change counts on success.
-//   2. `deleteAccount()` — ends the livediagram session.
-//   3. Sign out + redirect — by the time the page reloads the editor
-//      lands as a fresh guest.
+// Delete Account (docs/specs/014-identity/auth-and-guest-access.md "Deleting an account"): every editor's dialog
+// (@liveworkspace/workbench), bound to livediagram's name, api and telemetry. The typed email, then the code emailed to the
+// account, which the api checks before anything is deleted.
 
-import { Button, useEscape, useFocusTrap, Portal } from '@livediagram/ui';
-import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
-import { useEffect, useRef, useState } from 'react';
-import { apiDeleteAccount } from '@/lib/api-client';
+import { DeleteAccountDialog as SharedDeleteAccountDialog } from '@liveworkspace/workbench/components/dialogs/DeleteAccountDialog';
+import { apiDeleteAccount, apiSendDeletionCode } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
-import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
-import { messageOf } from '@/components/chrome/auth-shared';
-import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 
-type Phase = 'idle' | 'submitting' | 'error';
+// The account-lifecycle counter for the dashboard's Account Activity stack (docs/specs/017-telemetry/telemetry.md):
+// anonymous, fired once the server data is gone but before sign-out, so the opt-out itself still reaches the wire.
+const trackDeleted = () => track('Session', 'Deleted', 'Account');
 
-export function DeleteAccountDialog({
-  open,
-  onClose,
-  onDeleted,
-}: {
+export function DeleteAccountDialog(props: {
   open: boolean;
   onClose: () => void;
   onDeleted: () => Promise<void> | void;
 }) {
-  // Silence the canvas shortcut/paste listeners behind the modal
-  // (see @liveworkspace/workbench/lib/modal-guard).
-  useModalGuard(open);
-  const { user, deleteAccount, confirmIdentity } = useDeferredAuth();
-  const expectedEmail = user?.email ?? '';
-
-  const [typed, setTyped] = useState('');
-  const [phase, setPhase] = useState<Phase>('idle');
-  const [errorMsg, setErrorMsg] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
-  useFocusTrap(dialogRef, open);
-
-  // Reset state every time the dialog opens (adjusted during render). Without this, a user
-  // who cancels mid-flow and re-opens it sees a stale typed value
-  // and possibly a stale error.
-  const [wasOpen, setWasOpen] = useState(open);
-  if (open !== wasOpen) {
-    setWasOpen(open);
-    if (open) {
-      setTyped('');
-      setPhase('idle');
-      setErrorMsg('');
-    }
-  }
-  useEffect(() => {
-    if (!open) return;
-    // Focus the input on next tick so the modal mount completes
-    // first — focusing during render is silently dropped.
-    const handle = window.setTimeout(() => inputRef.current?.focus(), 30);
-    return () => window.clearTimeout(handle);
-  }, [open]);
-
-  // Escape closes, same convention as other modals (ShareDialog).
-  // Disabled mid-submit so the user can't cancel a request that's
-  // already in flight.
-  useEscape(onClose, { enabled: open && phase !== 'submitting' });
-
-  if (!open) return null;
-
-  const emailsMatch =
-    expectedEmail.length > 0 && typed.trim().toLowerCase() === expectedEmail.toLowerCase();
-
-  const handleDelete = async () => {
-    if (!emailsMatch || phase === 'submitting' || !user || !deleteAccount) return;
-    setPhase('submitting');
-    setErrorMsg('');
-    // Step-up auth first, when the session has one (docs/specs/014-identity/auth-and-guest-access.md "Deleting an
-    // account"): asked AFTER the server data had gone, a cancelled prompt would leave an account with nothing in
-    // it. Confirmed here, nothing is deleted until the person has passed it.
-    if (confirmIdentity && !(await confirmIdentity())) {
-      setPhase('error');
-      setErrorMsg('Identity not confirmed, so nothing was deleted. Try again when you are ready.');
-      return;
-    }
-    const result = await apiDeleteAccount();
-    if (result === 'account_not_closed') {
-      // The data went; the account didn't. The session still works, so asking again finishes it.
-      setPhase('error');
-      setErrorMsg(
-        'Your livediagram data was deleted, but closing your liveworkspace account failed. Try again.',
-      );
-      return;
-    }
-    if (!result) {
-      setPhase('error');
-      setErrorMsg('Could not delete server-side data. Try again.');
-      return;
-    }
-    // Anonymous, no identifier: the account-lifecycle counter for the
-    // dashboard's Account Activity stack (docs/specs/017-telemetry/telemetry.md). Fired now, after the server data is
-    // gone but before sign-out, so the opt-out itself still reaches the wire.
-    track('Session', 'Deleted', 'Account');
-    try {
-      await deleteAccount();
-    } catch (err) {
-      // The data is already gone; only ending the session failed (a network blip). Signing out finishes it.
-      setPhase('error');
-      setErrorMsg(
-        `Your livediagram data was deleted, but signing you out failed: ${messageOf(err, 'unknown error')}. Sign out to finish.`,
-      );
-      return;
-    }
-    await onDeleted();
-  };
-
   return (
-    <Portal>
-      <div
-        onPointerDown={(e) => e.stopPropagation()}
-        className="pointer-events-none fixed inset-0 z-[var(--z-modal)] flex items-center justify-center"
-      >
-        <div
-          ref={dialogRef}
-          tabIndex={-1}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="delete-account-title"
-          className="pointer-events-auto flex w-[28rem] max-w-[92%] animate-fly-up-in flex-col rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/10 outline-none dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/40"
-        >
-          <div className="border-b border-slate-100 px-6 pt-6 pb-4 dark:border-slate-800">
-            <h2
-              id="delete-account-title"
-              className="text-lg font-semibold text-slate-900 dark:text-slate-100"
-            >
-              Delete Account
-            </h2>
-            {/* Closing the account deletes what the person owns in every app, not just this one
-                (docs/specs/014-identity/auth-and-guest-access.md "Deleting an account"), so it says so first. */}
-            <div className="mt-2 flex flex-col gap-2 text-sm text-slate-600 dark:text-slate-400">
-              <p>
-                This permanently deletes your liveworkspace account and{' '}
-                <strong className="font-semibold text-slate-900 dark:text-slate-100">
-                  everything you own in every liveworkspace app
-                </strong>
-                , not just livediagram:
-              </p>
-              <ul className="list-disc space-y-1 pl-5">
-                <li>
-                  every canvas, plan, document and design in livediagram, liveplanner, livedocuments
-                  and livedesign, including the Trash
-                </li>
-                <li>your folders, settings and API tokens</li>
-                <li>any team you run on your own</li>
-              </ul>
-              <p>
-                You will be signed out of every app.{' '}
-                <strong className="font-semibold text-slate-900 dark:text-slate-100">
-                  This can’t be undone.
-                </strong>{' '}
-                Canvases in This Browser stay on this device.
-              </p>
-            </div>
-          </div>
-
-          <div className="px-6 py-5">
-            <label
-              htmlFor="delete-confirm-email"
-              className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-            >
-              Type{' '}
-              <strong className="font-semibold text-slate-900 dark:text-slate-100">
-                {expectedEmail || 'your email address'}
-              </strong>{' '}
-              to confirm
-            </label>
-            <input
-              ref={inputRef}
-              id="delete-confirm-email"
-              type="email"
-              autoComplete="off"
-              value={typed}
-              onChange={(e) => setTyped(e.target.value)}
-              disabled={phase === 'submitting'}
-              className="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 transition focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-100 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-rose-500/20"
-              placeholder="you@example.com"
-            />
-
-            {phase === 'error' && errorMsg ? (
-              <div className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
-                {errorMsg}
-              </div>
-            ) : null}
-          </div>
-
-          <DialogFooter>
-            <Button variant="secondary" onClick={onClose} disabled={phase === 'submitting'}>
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => void handleDelete()}
-              disabled={!emailsMatch || phase === 'submitting'}
-              className="shadow-sm"
-            >
-              {phase === 'submitting' ? 'Deleting…' : 'Delete Account'}
-            </Button>
-          </DialogFooter>
-        </div>
-      </div>
-    </Portal>
+    <SharedDeleteAccountDialog
+      {...props}
+      appName="livediagram"
+      localItems="Canvases"
+      sendCode={apiSendDeletionCode}
+      deleteAccount={apiDeleteAccount}
+      onDataDeleted={trackDeleted}
+    />
   );
 }

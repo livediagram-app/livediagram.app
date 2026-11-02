@@ -23,7 +23,7 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
   {
     pattern:
       /imports? (?:a |an |your )?(?:mermaid|excalidraw|draw\.io|\.drawio|drawio|microsoft whiteboard)|(?:excalidraw|draw\.io|drawio|whiteboard) import|\.excalidraw in|paste an excalidraw/i,
-    why: 'the editor imports a livedocuments JSON export and a Markdown document (as an article) only (help: tabs/import-tabs)',
+    why: 'the editor imports a livedocuments JSON export, a Markdown or Word document (as an article) and a PowerPoint deck (as slides) only (help: tabs/import-tabs)',
   },
   {
     pattern: /no Figma integration/i,

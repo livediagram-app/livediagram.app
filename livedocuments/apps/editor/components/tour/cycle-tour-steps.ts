@@ -34,16 +34,12 @@ export function cycleTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTourA
       elementSelector(id, '[data-tour-part="concept-centre"]'),
     ),
     addRowStep('add', 'Add a Step', 'Add Step adds one to the loop, up to eight.', 'Add Step'),
-    ...(ctx.hasMore
-      ? [
-          inTheMenu(
-            'rows',
-            'Reorder in the Menu',
-            'In its menu, Tools › Rows lets you rename, reorder or remove steps.',
-            ['Tools', 'Rows'],
-          ),
-        ]
-      : []),
+    inTheMenu(
+      'rows',
+      'Reorder in the Menu',
+      'In its menu, Tools › Rows lets you rename, reorder or remove steps.',
+      ['Tools', 'Rows'],
+    ),
     onGraphic(
       'animate',
       'Set It Turning',

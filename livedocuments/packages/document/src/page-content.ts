@@ -24,6 +24,7 @@ import {
   type PageFill,
 } from './page';
 import { pageImageTone } from './page-image';
+import { TEXT_SCALE_MIN } from './validate';
 import { PAGE_INK_CONTRAST, PAGE_INK_FLOOR } from './page-ink-rules';
 import { isBoxed, type Element, type Endpoint, type ShapeElement, type Tab } from './index';
 
@@ -208,11 +209,30 @@ export function elementPageSurfaces(
   pages: readonly LaidOutPage[],
 ): Map<string, CanvasSurface> {
   const out = new Map<string, CanvasSurface>();
+  for (const [id, tone] of elementPageTones(elements, pages)) out.set(id, canvasSurface(tone));
+  return out;
+}
+
+/** The tone of the page with a fill of its own under every element, by element id: what a label
+ *  with no fill of its own is read against (docs/specs/011-theme/light-and-dark.md "A page's own
+ *  paper"). Elements on the paper, or on no page, are absent. Each page's tone is worked out once. */
+export function elementPageTones(
+  elements: Element[],
+  pages: readonly LaidOutPage[],
+): Map<string, string> {
+  const out = new Map<string, string>();
   if (!pages.some((p) => p.background?.fill)) return out;
+  const tones = new Map<LaidOutPage, string | null>();
   for (const el of elements) {
     const page = pageAt(pages, elementAnchorPoint(el, elements));
-    const surface = page && pageSurface(page);
-    if (surface) out.set(el.id, surface);
+    if (!page) continue;
+    let tone = tones.get(page);
+    if (tone === undefined) {
+      const fill = page.background?.fill;
+      tone = fill ? pageFillTone(fill) : null;
+      tones.set(page, tone);
+    }
+    if (tone) out.set(el.id, tone);
   }
   return out;
 }
@@ -260,8 +280,8 @@ export function legibleOn(color: string, tone: string, floor: number = PAGE_INK_
  * The tab with the given elements (a page's content from before a change of size or orientation)
  * fitted into that page's margin box as it now is (docs/specs/007-editor/pages-mode.md
  * "Sizes"): content that already fits stays its size, centred where the re-centring put it;
- * content that no longer fits is scaled down as one, about the page's centre, until it does. Text
- * scales with it (textScale), so a scaled page reads as the same page, smaller. Pinned arrows
+ * content that no longer fits is scaled down as one, about the page's centre, until it does. Words
+ * scale with it (textScale on texts and shapes), so a scaled page reads as the same page, smaller. Pinned arrows
  * follow their ends; a free end moves with the content.
  */
 export function withContentFittedToPage<T extends Pick<Tab, 'elements'>>(
@@ -329,8 +349,9 @@ export function withContentFittedToPage<T extends Pick<Tab, 'elements'>>(
         width: r(el.width * s),
         height: r(el.height * s),
       } as Element;
-      if (scaled && next.type === 'text') {
-        return { ...next, textScale: r((next.textScale ?? 1) * s) };
+      if (scaled && (next.type === 'text' || next.type === 'shape')) {
+        // Never under the smallest scale a stored element takes, however often it is turned.
+        return { ...next, textScale: Math.max(TEXT_SCALE_MIN, r((next.textScale ?? 1) * s)) };
       }
       return next;
     }

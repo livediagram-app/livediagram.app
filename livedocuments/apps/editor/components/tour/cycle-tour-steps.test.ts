@@ -16,7 +16,6 @@ const rows = [{ label: 'Plan' }, { label: 'Do' }, { label: 'Check' }, { label: '
 const ctxOf = (over: Partial<ConceptTourContext> = {}): ConceptTourContext => ({
   elementId: 'cy',
   rows,
-  hasMore: true,
   touch: false,
   ...over,
 });
@@ -33,7 +32,6 @@ describe('cycleTourSteps', () => {
       'animate',
       'outro',
     ]);
-    expect(cycleTourSteps(ctxOf({ hasMore: false })).map((s) => s.id)).not.toContain('rows');
   });
 
   it('points at the first step, the middle and Add Step, and counts the steps', () => {

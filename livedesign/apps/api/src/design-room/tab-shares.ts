@@ -10,15 +10,17 @@ import type { Tab } from '@livedesign/design';
 import { photoBlobIdsOf } from '@livedesign/photo-engine';
 import { imageRefIdsFromData } from '@liveworkspace/api-kit/image-refs';
 import { imageRefReplaceStatements } from '../db/image-refs';
+import { componentRefReplaceFromData } from '../db/components';
 import { servableImageIds } from '../db/image-grants';
 import { heldBlobs, markBlobsHeld, type PhotoBlobMeta } from '../db/photo-blobs';
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
 import { tabWriteStatements } from '../db/tabs';
 import type { DesignEnv } from '../types';
+import { sharedTabComponents, takeSharedTabComponents } from './component-share';
 
 export type { ShareAnswer, ShareMessage, SharedTabCopy } from '@liveworkspace/index-app';
 
-type ShareExtra = { images?: unknown; photos?: unknown };
+type ShareExtra = { images?: unknown; photos?: unknown; components?: unknown };
 
 // The photo blobs a body's photo layers name.
 function photoIdsOfData(data: string): string[] {
@@ -62,6 +64,7 @@ export const designShares = createTabShares<DesignEnv>({
       ),
       tabStatsStatement(env, tab.id, stats, now),
       ...imageRefReplaceStatements(env, tab.id, imageRefIdsFromData(tab.data)),
+      ...componentRefReplaceFromData(env, tab.id, tab.data),
       env.DESIGN_DB.prepare('UPDATE design SET saved_at = ? WHERE id = ?').bind(now, designId),
     ];
   },
@@ -71,7 +74,8 @@ export const designShares = createTabShares<DesignEnv>({
   //   not show;
   // - the photo blobs its photo layers name that the sending tab holds a ref to (docs/specs/031-photo/photo-store.md),
   //   recorded as the holder's own refs (its marker first), so a photo shows in every design holding the tab and its
-  //   bytes stay while any of them uses it.
+  //   bytes stay while any of them uses it;
+  // - the mains its instances use (component-share.ts), each upserted where the holder's copy is older or absent.
   extra: {
     read: async (env, designId, tab) => {
       const out: ShareExtra = {};
@@ -85,11 +89,15 @@ export const designShares = createTabShares<DesignEnv>({
         const photos = await heldBlobs(env, tab.id, named);
         if (photos.length > 0) out.photos = photos;
       }
-      return out.images || out.photos ? out : undefined;
+      const components = await sharedTabComponents(env, tab.data);
+      if (components.length > 0) out.components = components;
+      return out.images || out.photos || out.components ? out : undefined;
     },
     apply: async (env, designId, tab, extra, now) => {
-      const { images, photos } = extra as ShareExtra;
-      const statements: D1PreparedStatement[] = [];
+      const { images, photos, components } = extra as ShareExtra;
+      const statements: D1PreparedStatement[] = [
+        ...takeSharedTabComponents(env, tab.data, components),
+      ];
       const placed = new Set(imageRefIdsFromData(tab.data));
       const granted = (Array.isArray(images) ? images : []).filter(
         (id): id is string => typeof id === 'string' && placed.has(id),

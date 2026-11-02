@@ -2,6 +2,7 @@
 // (headings, lists by indent, to-dos, quotes, code fences, dividers; bold, italic, strikethrough,
 // inline code and links) becomes the blocks it means; other plain text becomes one paragraph per
 // line. Pure: text in, blocks out (ids fresh).
+import { tableFromGrid } from './article-table';
 import {
   isSafeArticleHref,
   nextArticleBlockId,
@@ -11,13 +12,61 @@ import {
   type ArticleRun,
 } from './article-flow';
 
-// Something that only Markdown writes: a heading, a list, a quote, a fence, a rule, emphasis or a link.
+// Something that only Markdown writes: a heading, a list, a quote, a fence, a rule, emphasis or a link. A link's text
+// holds no bracket and its address no parenthesis, so each `[` or `(` scans only to the next: linear on `[[[[`.
 const MARKDOWN_SIGNAL =
-  /^(#{1,6}\s|\s*([-*+]|\d+[.)])\s|>\s|```|(-{3,}|\*{3,}|_{3,})\s*$)|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\)|`[^`]+`/m;
+  /^(#{1,6}\s|\s*([-*+]|\d+[.)])\s|>\s|```|(-{3,}|\*{3,}|_{3,})\s*$|\[TOC(?: [12])?\]\s*$)|\*\*[^*]+\*\*|\[[^\][]+\]\([^()]+\)|`[^`]+`/m;
 
 export function looksLikeMarkdown(text: string): boolean {
-  return MARKDOWN_SIGNAL.test(text);
+  if (MARKDOWN_SIGNAL.test(text)) return true;
+  // A pipe table: a row of cells over its rule row.
+  const lines = text.split(/\r\n?|\n/);
+  return lines.some((line, i) => isTableRow(line) && isTableRule(lines[i + 1] ?? ''));
 }
+
+// A pipe table's lines (docs/specs/024-agents/pages-for-agents.md "write_article"): a row is a line
+// starting and ending in `|`; the rule row under the header holds `---` cells, colons allowed.
+const TABLE_ROW = /^\s*\|.*\|\s*$/;
+const RULE_CELL = /^:?-{3,}:?$/;
+export const isTableRow = (line: string): boolean => TABLE_ROW.test(line);
+// Checked cell by cell: one regex with `\s*` on both sides of each pipe backtracks quadratically on a
+// long run of spaces.
+export const isTableRule = (line: string): boolean => {
+  const cells = tableCells(line);
+  return cells.length > 0 && cells.every((cell) => RULE_CELL.test(cell));
+};
+
+/** A table row's cells, trimmed, split on the bars that are not escaped (`\|` is a literal bar,
+ *  kept escaped here for the cell's reader). */
+export function tableCells(row: string): string[] {
+  const inner = row.trim().replace(/^\|/, '');
+  const cells: string[] = [];
+  let cell = '';
+  for (let i = 0; i < inner.length; i++) {
+    const c = inner[i]!;
+    if (c === '\\' && inner[i + 1] === '|') {
+      cell += '\\|';
+      i++;
+    } else if (c === '|') {
+      cells.push(cell.trim());
+      cell = '';
+    } else cell += c;
+  }
+  // The closing bar leaves nothing after it; text after a last bar is a cell of its own.
+  if (cell.trim()) cells.push(cell.trim());
+  return cells;
+}
+
+// A line break inside a cell (`<br>`), held as a private-use character while the cell is read.
+const BREAK = '\ue010';
+
+/** One cell's Markdown as runs: inline marks and links, `\|` a bar, `<br>` a line break. */
+function cellRuns(cell: string): ArticleRun[] {
+  const text = cell.replace(/\\\|/g, '|').replace(/<br\s*\/?>/gi, BREAK);
+  return parseInline(text).map((r) => ({ ...r, text: r.text.replaceAll(BREAK, '\n') }));
+}
+
+const TOC_LINE = /^\[TOC(?: ([12]))?\]$/;
 
 // Bold and italic at once (`***x***`, `___x___`) first, so the two marks are read together rather than as bold inside
 // two literal stars.
@@ -126,6 +175,26 @@ export function parseMarkdownBlocks(text: string): ArticleBlock[] {
     }
     if (!line.trim()) {
       flush();
+      continue;
+    }
+    if (isTableRow(line) && isTableRule(lines[i + 1] ?? '')) {
+      flush();
+      const head = tableCells(line);
+      const body: string[][] = [];
+      for (i += 2; i < lines.length && isTableRow(lines[i]!); i++) body.push(tableCells(lines[i]!));
+      i -= 1;
+      // A header line of empty cells is no header row: the table starts with its first body row.
+      const header = head.some(Boolean);
+      const grid = (header ? [head, ...body] : body).map((row) => row.map(cellRuns));
+      const table = tableFromGrid(id(), grid.length ? grid : [head.map(cellRuns)], header);
+      if (table) blocks.push(table);
+      continue;
+    }
+    const toc = TOC_LINE.exec(line.trim());
+    if (toc) {
+      flush();
+      const depth = toc[1] === '1' ? 1 : toc[1] === '2' ? 2 : undefined;
+      blocks.push({ id: id(), type: 'toc', ...(depth ? { depth } : {}) });
       continue;
     }
     const heading = /^(#{1,6})\s+(.*)$/.exec(line);

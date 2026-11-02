@@ -1,12 +1,12 @@
 'use client';
 
+import { BackBar } from '@liveworkspace/ui';
 import { typeLabel } from './event-vocab';
 import type { Metric } from './metrics';
 
-// The Search view's breadcrumb (docs/specs/017-telemetry/telemetry.md). It shows over the word cloud while
-// drilling (All events › category › action) and stays over a charted metric,
-// ending in the metric itself, so any crumb steps straight back to that level
-// of the cloud to browse the metric's siblings.
+// The Search view's breadcrumb (docs/specs/017-telemetry/telemetry.md): the shared back bar. It shows over the
+// word cloud while drilling (All events, then a category, then an action) and stays over a charted metric, ending
+// in the metric itself, so Back steps up to the level of the cloud that holds the metric's siblings.
 
 // A cloud level: [] = categories, [category] = its actions,
 // [category, action] = its types.
@@ -34,33 +34,22 @@ export function MetricBreadcrumb({
   crumbs: Crumb[];
   onNavigate: (path: CloudPath) => void;
 }) {
+  // The shared back bar (docs/specs/004-interface-design/back-bar.md): the level above as where Back goes, this
+  // level as its chip. At the top (All events alone) it stands as a heading in the same shape.
+  const here = crumbs[crumbs.length - 1]!;
+  const up = crumbs.length > 1 ? crumbs[crumbs.length - 2]! : null;
   return (
-    <nav aria-label="Event levels" className="flex flex-wrap items-center gap-1.5 text-sm">
-      {crumbs.map((c, i) => (
-        <span key={i} className="flex items-center gap-1.5">
-          {i > 0 ? (
-            <span aria-hidden className="text-slate-300 dark:text-slate-600">
-              ›
-            </span>
-          ) : null}
-          {c.to === null ? (
-            <span
-              aria-current="page"
-              className="rounded-full bg-slate-900 px-3 py-1 text-xs font-semibold text-white dark:bg-slate-200 dark:text-slate-900"
-            >
-              {c.label}
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => onNavigate(c.to!)}
-              className="cursor-pointer rounded-full border border-slate-200 bg-white/70 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900/70 dark:text-slate-300 dark:hover:text-white dark:hover:border-slate-600"
-            >
-              {c.label}
-            </button>
-          )}
-        </span>
-      ))}
+    <nav aria-label="Event levels" className="min-w-0 flex-1 sm:max-w-md">
+      {up ? (
+        <BackBar
+          label={up.label}
+          current={here.label}
+          onClick={() => onNavigate(up.to ?? [])}
+          gap="none"
+        />
+      ) : (
+        <BackBar label={here.label} gap="none" />
+      )}
     </nav>
   );
 }

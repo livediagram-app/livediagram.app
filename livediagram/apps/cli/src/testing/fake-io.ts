@@ -89,7 +89,7 @@ export function fakeIo(options: FakeIoOptions & { links?: Record<string, string>
 // A host that has sign-in, at livediagram.app.
 export const capabilities = hostCapabilities({
   aiEnabled: false,
-  apiBase: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+  apiBase: 'https://www.livediagram.app/api',
   authEnabled: true,
   documentFormat: 2,
 });

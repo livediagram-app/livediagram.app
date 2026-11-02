@@ -16,6 +16,7 @@ function Publisher({ actions }: { actions: SheetActions }) {
     controller: useSheetController(),
     actions,
     onImportCsv: vi.fn(),
+    onImportCsvFile: vi.fn(),
   });
   return null;
 }

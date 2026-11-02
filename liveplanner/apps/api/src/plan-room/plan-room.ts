@@ -32,7 +32,7 @@ import {
   ROOM_PONG,
   type AccessLevel,
 } from '@liveplanner/api-schema';
-import { opForTheWire, stampCommentAuthor } from '@liveplanner/project';
+import { opForTheWire, stampCommentAuthor, withoutLegacyThread } from '@liveplanner/project';
 import { RoomParticipantWrites } from '../room-participant';
 import { RoomScopedStructure, cachedStoredTab } from '../room-scoped-structure';
 import { RoomLedgerStore } from '../room-ledger-store';
@@ -55,6 +55,8 @@ import {
 } from '../project-room-rules';
 import { opForScope } from '../room-scope';
 import { gateClientOp } from '../room-op-gate';
+import { ROOM_ELEMENT_RULES } from '../room-element-rules';
+import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
 import { answerInternal, type InternalRoom } from '../room-internal';
 import { rosterFrames, type RosterEntry } from '../room-roster';
 import {
@@ -70,15 +72,27 @@ import {
 
 import { CHANGESET_RETENTION_MS } from '@liveplanner/api-schema';
 import { deleteOldChangesets } from '../db/changesets';
+import { deleteOldItemHistory } from '../db/item-history';
 import { getTab, planHasTab } from '../db/tabs';
-import { tabShowsEveryCard } from '@liveplanner/items';
+import { ITEM_HISTORY_MAX_AGE_MS, tabShowsEveryCard } from '@liveplanner/items';
 import { readItem } from '../db/items';
 import type { Item } from '@liveplanner/items';
 import { runSheetExpiry } from '../sheet-sweep';
 import { drawPlan } from '../thumbnail';
 import { planShares, type ShareAnswer, type ShareMessage, type SharedTabCopy } from './tab-shares';
 import { planRoom } from '../plan-client';
+import type { CardThread } from '@liveplanner/project';
+import {
+  threadsForVia,
+  threadsRelayed,
+  writeThread,
+  type ThreadOp,
+  type ThreadsRelay,
+  type ThreadWriteResult,
+} from './card-thread-store';
 import { hasPlanSchema, migratePlanSchema } from './plan-schema';
+import { planServesImage, recordImageGrant } from './image-grants';
+import { forgetImageRefs } from './image-refs';
 import {
   exportPlanCopy,
   importPlanCopy,
@@ -90,10 +104,11 @@ import {
 import { notifyProjectJoin } from '../email/notifications';
 import { anonymisePlan } from './plan-anonymise';
 import { PLAN_OUTBOX, drainOutbox } from './plan-outbox';
+import { RepeatSchedule } from './card-repeats';
 import { exportProjectFile, importProjectFile, type ProjectFileImport } from './project-file';
 import { importMigratedPlan } from './plan-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
-import { answerPlanRequest, type RouteIdentity } from './plan-route';
+import { answerPlanRequest, isPlanCreate, type RouteIdentity } from './plan-route';
 
 // One SQLite-backed Durable Object per plan id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It is
 // two things at once:
@@ -177,6 +192,8 @@ export { FLUSH_IDLE_MS, FLUSH_MIN_GAP_MS } from '@liveworkspace/index-app';
 // The plan's own daily upkeep: unreferenced sheets expire, old changesets go (both used to be crons).
 export const MAINTENANCE_EVERY_MS = 24 * 60 * 60 * 1000;
 const MAINTENANCE_KEY = 'maintenance-at';
+// How long a repeat wake that failed as a whole waits before it tries again.
+const REPEAT_RETRY_MS = 60 * 1000;
 
 export class PlanRoom extends DurableObject<Env> {
   // The object's state under the name the room's code has always used for it (`this.ctx` is the same).
@@ -246,6 +263,12 @@ export class PlanRoom extends DurableObject<Env> {
   );
   private lastFlushAt = 0;
   private draining = false;
+  // Repeating cards (card-repeats.ts; docs/specs/026-plan/items.md "Repeating cards"): the wake their schedule asks
+  // for. A plan without one asks for none.
+  private readonly repeats = new RepeatSchedule(
+    () => this.state.storage.sql,
+    () => this.schemaReady,
+  );
   // Content writes so far (noteWrite), so route() can tell a request that wrote from one that didn't.
   private writes = 0;
   // The next daily upkeep (persisted, so a wake keeps the day).
@@ -276,7 +299,12 @@ export class PlanRoom extends DurableObject<Env> {
       onWrite: () => this.noteWrite(),
     });
     this.roomEnv = env
-      ? { ...env, PLAN_DB: this.db.asD1(), PLAN_ROOM: this.localNamespace(env.PLAN_ROOM) }
+      ? {
+          ...env,
+          PLAN_DB: this.db.asD1(),
+          PLAN_ROOM: this.localNamespace(env.PLAN_ROOM),
+          ROOM_PEOPLE: () => this.roomPeople(),
+        }
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage);
     this.head = createItemHeadSync({
@@ -366,6 +394,7 @@ export class PlanRoom extends DurableObject<Env> {
     if (typeof row?.id === 'string' && this.planId === null) this.planId = row.id;
     if (sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length > 0) this.flushAt = Date.now();
     this.shares.restore();
+    this.repeats.restore(Date.now());
   }
 
   // Every call names its plan; an object answers for one plan only.
@@ -405,6 +434,8 @@ export class PlanRoom extends DurableObject<Env> {
     }
     // A shared tab's holders get their copy on idle (tab-shares.ts).
     if (this.shares.noteWrite()) this.armAlarm();
+    // A rule set, changed or stopped, or its card trashed or restored, is settled on the next wake.
+    if (this.repeats.noteWrite(Date.now())) this.armAlarm();
     if (this.flushAt !== null) return;
     if (this.state.storage.sql.exec('SELECT 1 FROM outbox LIMIT 1').toArray().length === 0) return;
     const now = Date.now();
@@ -468,8 +499,34 @@ export class PlanRoom extends DurableObject<Env> {
     }
   }
 
+  // The copies of the plan's repeating cards that are due (card-repeats.ts), each relayed as an ordered `items` op. A
+  // wake that fails as a whole tries again a minute later.
+  private async runRepeats(now: number): Promise<void> {
+    const env = this.roomEnv;
+    const planId = this.planId;
+    if (!env || !planId || !this.schemaReady) {
+      this.repeats.clear();
+      return;
+    }
+    try {
+      const run = await this.repeats.run(env, planId, now, (items, rev) =>
+        this.broadcastOrderedSystemOp({
+          kind: 'items',
+          upserts: items.map(withoutLegacyThread),
+          removed: [],
+          rev,
+        }),
+      );
+      if (run.made > 0) console.info('[repeats] wake', { planId, made: run.made });
+    } catch (error) {
+      console.warn('[repeats] failed', { planId, error: String(error) });
+      this.repeats.at = now + REPEAT_RETRY_MS;
+    }
+  }
+
   // The plan's daily upkeep, once a day per plan with content: sheets unreferenced for 30 days expire
-  // (sheet-sweep.ts), and changesets past their retention go (CS28).
+  // (sheet-sweep.ts), changesets past their retention go (CS28), and so do card history entries past their age
+  // (db/item-history.ts).
   private async maintain(now: number): Promise<void> {
     const env = this.roomEnv;
     const planId = this.planId;
@@ -480,6 +537,8 @@ export class PlanRoom extends DurableObject<Env> {
       await runSheetExpiry(env, planId, now);
       const gone = await deleteOldChangesets(env, now - CHANGESET_RETENTION_MS);
       if (gone > 0) console.info('[changeset] retention', { planId, deleted: gone });
+      const aged = await deleteOldItemHistory(env, now - ITEM_HISTORY_MAX_AGE_MS);
+      if (aged > 0) console.info('[items] history.retention', { planId, deleted: aged });
     } catch (error) {
       console.warn('[plan-room] upkeep failed', { planId, error: String(error) });
     }
@@ -521,16 +580,19 @@ export class PlanRoom extends DurableObject<Env> {
       this.state.waitUntil(p),
     );
     // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
-    // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not.
+    // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not, nor is
+    // the create, the plan's making (isPlanCreate).
     if (response.ok && identity.owner && this.writes > writesBefore) {
-      const sql = this.state.storage.sql;
-      recordItemEditor(
-        (q, ...b) => sql.exec(q, ...b),
-        PLAN_OUTBOX,
-        planId,
-        identity.owner,
-        Date.now(),
-      );
+      if (!isPlanCreate(request)) {
+        const sql = this.state.storage.sql;
+        recordItemEditor(
+          (q, ...b) => sql.exec(q, ...b),
+          PLAN_OUTBOX,
+          planId,
+          identity.owner,
+          Date.now(),
+        );
+      }
       this.noteWrite();
     }
     return response;
@@ -583,6 +645,37 @@ export class PlanRoom extends DurableObject<Env> {
   async item(planId: string, itemId: string): Promise<Item | null> {
     this.bindPlan(planId);
     return readItem(this.requireEnv(), planId, itemId);
+  }
+
+  // Image fields (image-grants.ts; docs/specs/026-plan/item-types.md "Image fields"): a picture uploaded for this
+  // plan becomes one it may serve, and whether it serves one now (a grant and a card holding it). Neither is a
+  // content write, so nothing is pushed to the index; a purge drops the grants with the rest (deleteAll).
+  async grantImage(planId: string, imageId: string): Promise<void> {
+    this.bindPlan(planId);
+    this.ensureSchema();
+    recordImageGrant(this.state.storage.sql, planId, imageId, Date.now());
+  }
+
+  // The pictures last reported for this plan (image-refs.ts `media_refs`), null when none were or it has no schema.
+  private lastSentImages(): string | null {
+    try {
+      const sql = this.state.storage.sql;
+      if (!this.schemaReady && !hasPlanSchema((q) => sql.exec(q))) return null;
+      const row = sql.exec('SELECT images FROM media_refs LIMIT 1').toArray()[0];
+      return typeof row?.images === 'string' ? row.images : null;
+    } catch {
+      // A plan whose schema predates media_refs, or storage without SQLite, reported nothing.
+      return null;
+    }
+  }
+
+  // A plan never started serves nothing, and asking does not start it.
+  async servesImage(planId: string, imageId: string): Promise<boolean> {
+    const sql = this.state.storage.sql;
+    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q))) return false;
+    this.bindPlan(planId);
+    this.ensureSchema();
+    return planServesImage(sql, planId, imageId);
   }
 
   async exportCopy(
@@ -701,6 +794,41 @@ export class PlanRoom extends DurableObject<Env> {
       return messages.map(() => 'gone');
     this.bindPlan(planId);
     return planShares.receive(this.requireEnv(), planId, from, messages);
+  }
+
+  // ---------- RPC: a card's comment threads across plans (card-thread-store.ts) ------------------------------
+
+  // On the home: the threads of `ids` listing a card of `via`. A plan with nothing stored holds none.
+  async threadsFor(planId: string, ids: string[], via: string): Promise<CardThread[]> {
+    const sql = this.state.storage.sql;
+    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q))) return [];
+    this.bindPlan(planId);
+    return threadsForVia(this.requireEnv(), planId, ids, via);
+  }
+
+  // On the home: one write on a thread it stores, made through plan `via` (which checked the caller's role there).
+  async threadWrite(
+    planId: string,
+    threadId: string,
+    op: ThreadOp,
+    via: string,
+  ): Promise<ThreadWriteResult> {
+    const sql = this.state.storage.sql;
+    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q)))
+      return { ok: false, error: 'thread_not_found' };
+    this.bindPlan(planId);
+    return writeThread(this.requireEnv(), planId, threadId, op, via, (p) =>
+      this.state.waitUntil(p),
+    );
+  }
+
+  // Another plan's write on a thread on this plan's cards. A plan with nothing stored holds no link to any.
+  async threadsRelayed(planId: string, relay: ThreadsRelay): Promise<string[]> {
+    const sql = this.state.storage.sql;
+    if (this.planId === null && !hasPlanSchema((q) => sql.exec(q)))
+      return relay.upserts.map((t) => t.id);
+    this.bindPlan(planId);
+    return threadsRelayed(this.requireEnv(), planId, relay);
   }
 
   // A plan going for good tells the other holders of its shared tabs it left, so their copies stop counting it.
@@ -1014,13 +1142,24 @@ export class PlanRoom extends DurableObject<Env> {
     this.opLog = [];
     await this.leaveShares();
     await this.ledger.settled();
+    // What the media service last heard the plan's cards hold (image-refs.ts), read before it goes.
+    const sentImages = this.lastSentImages();
     await this.state.storage.deleteAlarm();
     await this.state.storage.deleteAll();
     this.schemaReady = false;
     this.planRowReady = false;
     this.flushAt = null;
     this.shares.clear();
+    this.repeats.clear();
     this.maintenanceAt = null;
+    // The purged plan holds no pictures now, so the media service's sweep may take those only it held. A failure
+    // keeps them (storage kept, never a broken picture) and does not stop the purge.
+    const env = this.roomEnv;
+    if (env && this.planId) {
+      await forgetImageRefs(env, this.planId, sentImages).catch((error: unknown) =>
+        console.warn('[media] refs not cleared for a purged plan', { error: String(error) }),
+      );
+    }
     console.info('[room] purged');
   }
 
@@ -1154,6 +1293,9 @@ export class PlanRoom extends DurableObject<Env> {
         );
         return;
       }
+      // An Editor's element op the validator refuses goes nowhere; its sender alone hears why
+      // (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
+      if (!gate.presence && this.refusesElementOp(ws, msg)) return;
       // A tab-scoped session's op keeps its tab's structure (room-scoped-structure.ts): checked, in order, before
       // it relays; everyone else's relays at once.
       if (session.tabScope && !gate.presence) {
@@ -1269,6 +1411,15 @@ export class PlanRoom extends DurableObject<Env> {
     }
   }
 
+  // The element gate (@liveworkspace/api-kit/room-element-ops, docs/specs/015-api/blueprints/room-element-ops.md):
+  // one per room instance, so its bounded log is per room. Answers a refused op to its sender alone.
+  private readonly elementGate = createRoomElementGate(ROOM_ELEMENT_RULES);
+  private refusesElementOp(ws: WebSocket, msg: { op: unknown; ref?: unknown }): boolean {
+    const refused = this.elementGate(msg.op, msg.ref);
+    if (refused) this.sendTo(ws, refused);
+    return refused !== null;
+  }
+
   /** Deliver one frame to one socket. */
   private sendTo(ws: WebSocket, payload: ServerMessage): void {
     try {
@@ -1279,13 +1430,14 @@ export class PlanRoom extends DurableObject<Env> {
   }
 
   // The room's one alarm, at the earliest of: an agent presence expiry (agent-presence I5, PR29), the outbox's
-  // next push, the plan's next upkeep. None when nothing is due.
+  // next push, the plan's next upkeep, a repeating card's next copy. None when nothing is due.
   private armAlarm(): void {
     const due = [
       this.agents.nextExpiry(),
       this.flushAt,
       this.shares.at,
       this.maintenanceAt,
+      this.repeats.at,
       this.nextGrantDue(),
     ].filter((t): t is number => t !== null);
     if (due.length === 0) void this.state.storage.deleteAlarm();
@@ -1299,6 +1451,7 @@ export class PlanRoom extends DurableObject<Env> {
     if (expired.length > 0) this.broadcastPresence();
     const now = Date.now();
     this.checkGrants(now);
+    if (this.repeats.due(now)) await this.runRepeats(now);
     if (this.flushAt !== null && this.flushAt <= now) await this.drainIndex();
     // A shared tab written while the push was in flight (its write armed nothing then).
     this.shares.noteWrite();
@@ -1341,6 +1494,15 @@ export class PlanRoom extends DurableObject<Env> {
     // runtime prunes it from getWebSockets(), it could otherwise still
     // appear in the roster of this very broadcast.
     this.broadcastPresence(ws);
+  }
+
+  // The person tags of the hello'd sessions: who is looking at the plan now, whom a phone notification skips
+  // (docs/specs/014-identity/phone-notifications.md).
+  private roomPeople(): Set<string> {
+    const tags = new Set<string>();
+    for (const session of this.liveSessions().values())
+      if (session.personTag) tags.add(session.personTag);
+    return tags;
   }
 
   // Every hello'd session with a live socket, by presence id: what the selection store answers

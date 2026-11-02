@@ -6,7 +6,7 @@
 // its group by its handle (or Move Up and Move Down in its ⋯ menu), to another group and off from that menu;
 // Title and Status stay. Each
 // group adds a field into itself. Edits a draft; the type editor saves it.
-import { useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { useHandleReorder } from '@/components/primitives/useHandleReorder';
 import { FieldRow } from './ItemTypeFieldRow';
@@ -21,6 +21,7 @@ import {
   ITEM_TYPE_TABS_MAX,
   REQUIRED_TYPE_FIELDS,
   requiredFieldsOf,
+  requiredCustomFieldsOf,
   newCustomFieldId,
   type ItemFieldId,
 } from '@liveplanner/items';
@@ -30,8 +31,9 @@ import {
   CustomFieldForm,
   DASHED_ADD_BUTTON,
   ICON_BUTTON,
-  NewFieldForm,
 } from './ItemTypeFieldForms';
+import { NewFieldForm } from './NewFieldForm';
+import { track } from '@/lib/telemetry';
 import {
   addField,
   addTab,
@@ -49,8 +51,11 @@ import {
   type LayoutDraft,
 } from './item-type-layout';
 
-// The Add Field popover: wide enough for a name and a kind side by side, whatever column it opens from.
+// The Add Field popover (24 rem): a kind's name and its line, and the Shape step's controls, whatever column it opens
+// from; on a phone, the window's width less its margins.
 const ADD_FIELD_POPOVER_PX = 384;
+// A touch screen opens it without focusing the search, so no keyboard flies up over the list (asked from the press).
+const coarsePointer = () => window.matchMedia?.('(pointer: coarse)').matches === true;
 const NAME_INPUT =
   'min-w-0 flex-1 rounded-md border bg-transparent px-1.5 py-0.5 text-[13px] font-semibold text-slate-900 placeholder:font-normal placeholder:text-slate-400 hover:border-slate-300 focus:border-brand-500 focus:bg-white focus:outline-none dark:text-slate-50 dark:hover:border-slate-600 dark:focus:bg-slate-900';
 const isRequired = (f: string) => (REQUIRED_TYPE_FIELDS as readonly string[]).includes(f);
@@ -62,6 +67,7 @@ export function ItemTypeLayoutEditor({
   detailsLabel,
   onDetailsLabel,
   removedSome,
+  inherited,
 }: {
   // The type being edited (undefined for a new one): a Project always keeps its Start and Due.
   typeId?: string | undefined;
@@ -72,13 +78,30 @@ export function ItemTypeLayoutEditor({
   onDetailsLabel: (label: string) => void;
   // A field has come off since the editor opened: say what happens to its values.
   removedSome: boolean;
+  // An inherited type (docs/specs/026-plan/item-types.md "Inherited types"): its base type's name and the fields it
+  // takes from it, locked here; its tabs and Details name are the base's, and its own fields go under Details.
+  inherited?: { from: string; ids: ReadonlySet<string> } | undefined;
 }) {
   // The group whose Add Field form is open (Details is `null`), and the custom field being edited.
   // The group whose Add Field popover is open, and the button it hangs from.
-  const [adding, setAdding] = useState<{ group: GroupId; anchor: HTMLElement } | null>(null);
+  const [adding, setAdding] = useState<{
+    group: GroupId;
+    anchor: HTMLElement;
+    touch: boolean;
+  } | null>(null);
+  // The open Add Field's own Escape (a step back, a search cleared), asked before the popover closes.
+  const addEscape = useRef<(() => boolean) | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const fields = orderedFields(draft.fields);
+  // What a Formula on this type may read as drafted (docs/specs/026-plan/item-types.md "Formula fields").
+  const formulaDraft = useMemo(
+    () => ({ typeId, fields: orderedFields(draft.fields), custom: draft.custom }),
+    [typeId, draft.fields, draft.custom],
+  );
   const kept = requiredFieldsOf(typeId);
+  const isInherited = (id: string) => !!inherited?.ids.has(id);
+  // Locked to the base: a tab, the Details name and Add Tab.
+  const lockedLayout = !!inherited;
   const customOf = (id: string) => draft.custom.find((f) => f.id === id);
   const labelOf = (id: string) =>
     customOf(id)?.label || BUILT_IN_FIELD_LABELS[id as ItemFieldId] || id;
@@ -88,11 +111,24 @@ export function ItemTypeLayoutEditor({
     ...draft.tabs.map((t) => ({ id: t.id, label: t.label.trim() || 'Untitled tab' })),
   ];
 
+  // The Assignee's Notifies switch (docs/specs/026-plan/item-types.md "Notifies"): on unless the type switched it off,
+  // stored only as off.
+  const assigneeNotifies = {
+    on: draft.assigneeNotifies !== false,
+    onChange: (on: boolean) => {
+      track('Plan', 'Changed', 'FieldNotifies');
+      const { assigneeNotifies: _was, ...rest } = draft;
+      onChange(on ? rest : { ...rest, assigneeNotifies: false });
+    },
+  };
+
   // The card's rows are fixed; a group's (Details or a tab) move within and between groups.
   const rowsOf = (home: 'card' | { group: GroupId }, list: readonly string[]) => {
     if (list.length === 0) return null;
     const group = home === 'card' ? undefined : home.group;
-    const movable = group === undefined ? [] : movableIn(draft, group);
+    // An inherited field never moves: only an inherited type's own fields, under Details, move among themselves.
+    const movable =
+      group === undefined ? [] : movableIn(draft, group).filter((f) => !isInherited(f));
     return (
       <ReorderableRows
         ids={movable}
@@ -102,16 +138,21 @@ export function ItemTypeLayoutEditor({
           list.map((id) => {
             const c = customOf(id);
             const at = movable.indexOf(id);
+            const locked = isInherited(id);
             return (
               <FieldRow
                 key={id}
                 id={id}
                 label={labelOf(id)}
                 icon={fieldIconOf(id, c)}
-                removable={!kept.includes(id) && !isRequired(id)}
+                removable={!locked && !kept.includes(id) && !isRequired(id)}
+                lockLabel={locked && inherited ? `Inherited from ${inherited.from}` : undefined}
+                required={!!c && requiredCustomFieldsOf({ fields: [id], custom: [c] }).length > 0}
                 editing={editing === id}
-                onEdit={c ? () => setEditing(editing === id ? null : id) : undefined}
-                moveTargets={group === undefined ? [] : groups.filter((g) => g.id !== group)}
+                onEdit={c && !locked ? () => setEditing(editing === id ? null : id) : undefined}
+                moveTargets={
+                  group === undefined || lockedLayout ? [] : groups.filter((g) => g.id !== group)
+                }
                 onMoveTo={(to) => onChange({ ...draft, tabs: fileField(draft.tabs, id, to) })}
                 handle={at >= 0 && movable.length > 1 ? drag.handleProps(id) : undefined}
                 dragging={drag.draggingId === id}
@@ -124,10 +165,12 @@ export function ItemTypeLayoutEditor({
                     : (by) => onChange(moveField(draft, group, id, by))
                 }
                 onRemove={() => onChange(removeField(draft, id))}
+                notifies={id === 'assignee' && !locked ? assigneeNotifies : undefined}
               >
                 {c && editing === id ? (
                   <CustomFieldForm
                     field={c}
+                    formulaDraft={formulaDraft}
                     className="mt-2"
                     onChange={(patch) =>
                       onChange({
@@ -155,7 +198,9 @@ export function ItemTypeLayoutEditor({
         className={`${DASHED_ADD_BUTTON} bg-white/60 dark:bg-slate-900/40`}
         onClick={(e) => {
           const anchor = e.currentTarget;
-          setAdding((open) => (open?.group === group ? null : { group, anchor }));
+          setAdding((open) =>
+            open?.group === group ? null : { group, anchor, touch: coarsePointer() },
+          );
         }}
       >
         <PlusIcon size={13} />
@@ -166,9 +211,13 @@ export function ItemTypeLayoutEditor({
           anchor={adding.anchor}
           name="Add Field"
           width={ADD_FIELD_POPOVER_PX}
+          initialFocus={adding.touch ? 'panel' : 'first'}
+          onEscape={() => addEscape.current?.() ?? false}
           onClose={() => setAdding(null)}
         >
           <NewFieldForm
+            escapeRef={addEscape}
+            formulaDraft={formulaDraft}
             missing={BUILT_IN_FIELD_IDS.filter((f) => !fields.includes(f))}
             canAddCustom={customFieldCount(draft.custom) < ITEM_TYPE_CUSTOM_MAX}
             onAddBuiltIn={(id) => {
@@ -209,6 +258,7 @@ export function ItemTypeLayoutEditor({
           title={
             <input
               aria-label="Details name"
+              readOnly={lockedLayout}
               className={`${NAME_INPUT} border-transparent`}
               value={detailsLabel}
               maxLength={ITEM_TYPE_TAB_LABEL_MAX}
@@ -230,7 +280,8 @@ export function ItemTypeLayoutEditor({
             title={
               <input
                 aria-label={`Tab ${i + 1} name`}
-                autoFocus={!t.label && t.fields.length === 0}
+                readOnly={lockedLayout}
+                autoFocus={!lockedLayout && !t.label && t.fields.length === 0}
                 className={`${NAME_INPUT} ${
                   !t.label.trim() && t.fields.length > 0
                     ? 'border-rose-400 dark:border-rose-500'
@@ -251,62 +302,68 @@ export function ItemTypeLayoutEditor({
             }
             tag="Tab"
             actions={
-              <>
-                <button
-                  type="button"
-                  className={ICON_BUTTON}
-                  aria-label={`Move ${t.label || 'tab'} up`}
-                  disabled={i === 0}
-                  onClick={() => onChange({ ...draft, tabs: moveTab(draft.tabs, i, -1) })}
-                >
-                  <ArrowUpIcon size={14} />
-                </button>
-                <button
-                  type="button"
-                  className={ICON_BUTTON}
-                  aria-label={`Move ${t.label || 'tab'} down`}
-                  disabled={i === draft.tabs.length - 1}
-                  onClick={() => onChange({ ...draft, tabs: moveTab(draft.tabs, i, 1) })}
-                >
-                  <ArrowDownIcon size={14} />
-                </button>
-                {isKeptTab(t) ? (
-                  // Overview stays: the slot keeps the headers' controls lined up.
-                  <span aria-hidden className="h-7 w-7 shrink-0" />
-                ) : (
+              lockedLayout ? undefined : (
+                <>
                   <button
                     type="button"
                     className={ICON_BUTTON}
-                    aria-label={`Remove ${t.label || 'tab'}`}
-                    onClick={() =>
-                      onChange({ ...draft, tabs: draft.tabs.filter((x) => x.id !== t.id) })
-                    }
+                    aria-label={`Move ${t.label || 'tab'} up`}
+                    disabled={i === 0}
+                    onClick={() => onChange({ ...draft, tabs: moveTab(draft.tabs, i, -1) })}
                   >
-                    <CloseIcon size={12} />
+                    <ArrowUpIcon size={14} />
                   </button>
-                )}
-              </>
+                  <button
+                    type="button"
+                    className={ICON_BUTTON}
+                    aria-label={`Move ${t.label || 'tab'} down`}
+                    disabled={i === draft.tabs.length - 1}
+                    onClick={() => onChange({ ...draft, tabs: moveTab(draft.tabs, i, 1) })}
+                  >
+                    <ArrowDownIcon size={14} />
+                  </button>
+                  {isKeptTab(t) ? (
+                    // Overview stays: the slot keeps the headers' controls lined up.
+                    <span aria-hidden className="h-7 w-7 shrink-0" />
+                  ) : (
+                    <button
+                      type="button"
+                      className={ICON_BUTTON}
+                      aria-label={`Remove ${t.label || 'tab'}`}
+                      onClick={() =>
+                        onChange({ ...draft, tabs: draft.tabs.filter((x) => x.id !== t.id) })
+                      }
+                    >
+                      <CloseIcon size={12} />
+                    </button>
+                  )}
+                </>
+              )
             }
-            footer={addForm(t.id)}
+            footer={lockedLayout ? undefined : addForm(t.id)}
             empty={
-              isKeptTab(t)
-                ? 'No fields yet. Add one, or move one here.'
-                : 'No fields yet. Add one, or move one here; an empty tab is dropped when you save.'
+              lockedLayout
+                ? 'No fields here.'
+                : isKeptTab(t)
+                  ? 'No fields yet. Add one, or move one here.'
+                  : 'No fields yet. Add one, or move one here; an empty tab is dropped when you save.'
             }
           >
             {rowsOf({ group: t.id }, t.fields)}
           </LayoutGroup>
         ))}
         <div className="flex flex-col gap-1.5">
-          <button
-            type="button"
-            disabled={draft.tabs.length >= ITEM_TYPE_TABS_MAX}
-            className={DASHED_ADD_BUTTON}
-            onClick={() => onChange({ ...draft, tabs: addTab(draft.tabs) })}
-          >
-            <PlusIcon size={13} />
-            Add Tab
-          </button>
+          {lockedLayout ? null : (
+            <button
+              type="button"
+              disabled={draft.tabs.length >= ITEM_TYPE_TABS_MAX}
+              className={DASHED_ADD_BUTTON}
+              onClick={() => onChange({ ...draft, tabs: addTab(draft.tabs) })}
+            >
+              <PlusIcon size={13} />
+              Add Tab
+            </button>
+          )}
           {removedSome ? (
             <p className="text-center text-[12px] text-slate-500 dark:text-slate-400">
               Items keep what they hold in a removed field.

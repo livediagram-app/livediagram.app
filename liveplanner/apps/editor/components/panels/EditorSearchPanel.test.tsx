@@ -3,6 +3,7 @@ import { render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // The panel itself is lazy (next/dynamic); a stub captures the props the editor wires.
+const opened = vi.hoisted(() => vi.fn());
 const panelProps = vi.hoisted(() => ({ current: null as Record<string, unknown> | null }));
 const editor = vi.hoisted(() => ({
   setActiveId: vi.fn(),
@@ -26,7 +27,7 @@ vi.mock('@/app/project/[id]/EditorContext', () => ({
     teamProjects: [],
     tabs: [],
     activeId: 't1',
-    openProject: vi.fn(),
+    openProject: opened,
     setActiveId: editor.setActiveId,
     setSelectedId: editor.setSelectedId,
     plan: { context: { items: new Map(), types: [], openItem: editor.openItem } },
@@ -82,5 +83,25 @@ describe('EditorSearchPanel', () => {
     render(<EditorSearchPanel />);
     expect(panelProps.current?.paletteItems).toBeUndefined();
     expect(panelProps.current?.onAddPaletteItem).toBeUndefined();
+  });
+
+  // Work Tracker #63: a result from every app opens in its own app; one of this app's opens here.
+  it("opens another app's item in that app, and one of its own here", () => {
+    const assign = vi.fn();
+    vi.stubGlobal('location', { origin: 'https://example.test', assign });
+    render(<EditorSearchPanel />);
+    const pick = panelProps.current?.onSelectWorkspaceItem as (item: {
+      id: string;
+      app: string;
+      sharedVia: string | null;
+    }) => void;
+    expect((panelProps.current?.workspace as { client: unknown } | undefined)?.client).toBeTruthy();
+    pick({ id: 'x 1', app: 'livedocuments', sharedVia: null });
+    expect(assign).toHaveBeenCalledWith(expect.stringContaining('x%201'));
+    expect(assign.mock.calls[0]![0]).toMatch(/^https:\/\/www\.livedocuments\.app\//);
+    pick({ id: 'own', app: 'liveplanner', sharedVia: 'code-1' });
+    expect(opened).toHaveBeenCalledWith('own', 'code-1');
+    pick({ id: 'mine', app: 'liveplanner', sharedVia: null });
+    expect(opened).toHaveBeenLastCalledWith('mine', undefined);
   });
 });

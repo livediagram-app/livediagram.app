@@ -24,49 +24,31 @@ function envWithLive() {
   return { env, urls };
 }
 const dispatch = (path: string, env: Env) =>
-  router.fetch(
-    new Request(`https://livediagram-router.liveworkspace-easing509.workers.dev${path}`),
-    env,
-  );
+  router.fetch(new Request(`https://www.livediagram.app${path}`), env);
 
 describe('legacyEditorRedirect', () => {
   it('permanently redirects /diagram/<id> to /document/<id>, keeping the query', () => {
     const res = legacyEditorRedirect(
-      new URL(
-        'https://livediagram-router.liveworkspace-easing509.workers.dev/diagram/abc-123?t=tab1',
-      ),
+      new URL('https://www.livediagram.app/diagram/abc-123?t=tab1'),
     )!;
     expect(res.status).toBe(308);
-    expect(res.headers.get('location')).toBe(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/document/abc-123?t=tab1',
-    );
+    expect(res.headers.get('location')).toBe('https://www.livediagram.app/document/abc-123?t=tab1');
   });
 
   it('redirects a share link and the bare segment', () => {
     expect(
       legacyEditorRedirect(
-        new URL(
-          'https://livediagram-router.liveworkspace-easing509.workers.dev/diagram/shared?s=CODE1234',
-        ),
+        new URL('https://www.livediagram.app/diagram/shared?s=CODE1234'),
       )!.headers.get('location'),
-    ).toBe(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/document/shared?s=CODE1234',
-    );
+    ).toBe('https://www.livediagram.app/document/shared?s=CODE1234');
     expect(
-      legacyEditorRedirect(
-        new URL('https://livediagram-router.liveworkspace-easing509.workers.dev/diagram'),
-      )!.headers.get('location'),
-    ).toBe('https://livediagram-router.liveworkspace-easing509.workers.dev/document');
+      legacyEditorRedirect(new URL('https://www.livediagram.app/diagram'))!.headers.get('location'),
+    ).toBe('https://www.livediagram.app/document');
   });
 
   it('leaves look-alike and current paths alone', () => {
     for (const path of ['/diagrams', '/diagramx/1', '/document/abc', '/help/diagram']) {
-      expect(
-        legacyEditorRedirect(
-          new URL(`https://livediagram-router.liveworkspace-easing509.workers.dev${path}`),
-        ),
-        path,
-      ).toBeNull();
+      expect(legacyEditorRedirect(new URL(`https://www.livediagram.app${path}`)), path).toBeNull();
     }
   });
 });
@@ -82,9 +64,7 @@ describe('router dispatch of the legacy editor route', () => {
   it('still serves the current editor route from the editor worker', async () => {
     const { env, urls } = envWithLive();
     await dispatch('/document/abc-123', env);
-    expect(urls).toEqual([
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/document/abc-123',
-    ]);
+    expect(urls).toEqual(['https://www.livediagram.app/document/abc-123']);
   });
 });
 
@@ -164,13 +144,9 @@ describe('legacyHelpRedirect', () => {
       ['/self-hosting/configuration/drive-and-mcp', '/help/'],
     ];
     for (const [from, to] of cases) {
-      const res = legacyHelpRedirect(
-        new URL(`https://livediagram-router.liveworkspace-easing509.workers.dev${from}`),
-      )!;
+      const res = legacyHelpRedirect(new URL(`https://www.livediagram.app${from}`))!;
       expect(res?.status, from).toBe(308);
-      expect(res.headers.get('location')).toBe(
-        `https://livediagram-router.liveworkspace-easing509.workers.dev${to}`,
-      );
+      expect(res.headers.get('location')).toBe(`https://www.livediagram.app${to}`);
     }
   });
 
@@ -185,12 +161,7 @@ describe('legacyHelpRedirect', () => {
       '/self-hostingx/',
       '/help/self-hostingx/',
     ]) {
-      expect(
-        legacyHelpRedirect(
-          new URL(`https://livediagram-router.liveworkspace-easing509.workers.dev${path}`),
-        ),
-        path,
-      ).toBeNull();
+      expect(legacyHelpRedirect(new URL(`https://www.livediagram.app${path}`)), path).toBeNull();
     }
   });
 
@@ -203,8 +174,7 @@ describe('legacyHelpRedirect', () => {
 });
 
 describe('legacyFormRedirect', () => {
-  const at = (path: string) =>
-    new URL(`https://livediagram-router.liveworkspace-easing509.workers.dev${path}`);
+  const at = (path: string) => new URL(`https://www.livediagram.app${path}`);
 
   it('sends an old form link to the same path on liveplanner, for good, keeping the query', () => {
     const res = legacyFormRedirect(at('/form/AbC123?embed=1'), undefined)!;

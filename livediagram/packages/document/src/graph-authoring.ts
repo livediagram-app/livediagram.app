@@ -273,6 +273,11 @@ function entityNode(n: GraphNode, raw: EntityField[]): Element {
   };
 }
 
+// A node's link becomes a URL other viewers follow, so only a web or mail address is kept (the link picker's
+// normaliseUrl, @liveworkspace/workbench/lib/url-safety, guards typed links the same way): a Mermaid
+// `click A "javascript:..."` or a graph node's link from the API is dropped, never stored as a dead link badge.
+const SAFE_LINK = /^(?:https?:|mailto:)/i;
+
 export function graphToElements(
   graph: DiagramGraph,
   makeEdgeId: () => string = () => crypto.randomUUID(),
@@ -340,7 +345,9 @@ export function graphToElements(
         : n.label !== undefined
           ? { label: n.label }
           : {}),
-      ...(n.link !== undefined ? { link: { kind: 'url' as const, url: n.link } } : {}),
+      ...(n.link !== undefined && SAFE_LINK.test(n.link.trim())
+        ? { link: { kind: 'url' as const, url: n.link.trim() } }
+        : {}),
       ...(n.note ? { note: n.note } : {}),
     };
   });

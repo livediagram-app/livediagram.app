@@ -40,14 +40,16 @@ Only people who can edit the plan see **Start Planning**. To get a new tab, pres
 - **Priority by Status** (its card in Start Planning is **Priority Matrix**): how many cards of each priority are not started, in progress and done.
 - **Card Search**: the cards that match the filters along its top, such as **Card Type: Project** or **Assignee: No assignee**, laid out as a board draws them. **Add Filter** offers only fields and values some of the remaining cards hold, so a filter never leaves you with nothing. The filters are saved with the chart, so everyone sees the same search.
 
-A card counts as done when its status is a board's done column. Press a row, bar or entry to open its card. On a Visualisation tab the chart fills the tab, and its name sits in the menu box at the top left: an editor can click it to rename the chart and the tab together.
+A card counts as done when its status is one of a board's done columns. Press a row, bar or entry to open its card. On a Visualisation tab the chart fills the tab, and its name sits in the menu box at the top left: an editor can click it to rename the chart and the tab together.
 
 ## Change What a Chart Shows
 
 Press the cog at the end of the chart's header to open **Chart Settings**. Its sections open one at a time:
 
 - **Card Types**: which card types the chart shows. Only types with the fields it reads are listed (a **Due** field for the Due Calendar, both **Start** and **Due** for the Gantt Chart), and at least one stays picked. Add those fields to a type in [Card Types](/help/plan/card-types/) to bring it onto the chart.
-- **Group By** (Cards by Field): the field it gives a bar to each value of.
+- **Group By** (Cards by Field): the field it gives a bar to each value of, a Person or Labels field of your own included.
+- **Count By** (Cards by Field): what each bar adds up. **Cards** counts them; **Estimate** or a Number field of your own (say **Story Points**) adds up their values, so the header reads `34 points`.
+- **Dates** (Gantt Chart and the calendars): the date field the chart reads. A Gantt chart has **Starts On** and **Due On**, a calendar the one it places cards by. Each starts on **Start Date** or **Due Date**; pick a Date field of your own (say **Kickoff**) and the chart draws, drags and adds cards by it instead.
 - **Statuses** (Cards by Field and Priority by Status): untick a status to leave its cards out.
 - **Swimlanes** (Gantt Chart): group the rows by **Assignee**, **Type**, **Priority**, **Status** or any field your card types have, or **None**. Each lane has a header with its name and count; click it to fold the lane away (just for you).
 - **Row Order** (Gantt Chart): rows run by start date until you drag them. Once you have, **Sort by Date** puts them back in date order.

@@ -78,3 +78,40 @@ describe('useEditorActions on an element', () => {
     expect(result.current.assignActionFor).toBeNull();
   });
 });
+
+describe('useEditorActions telling a teammate', () => {
+  it('asks for the notification on every new team assignee, the email only when the box is ticked', () => {
+    const box = createShape('square', 0, 0);
+    const { result, list, notify } = setup([box]);
+    const team = {
+      ...input('Ship it'),
+      assignee: { userId: 'u-bea', name: 'Bea' },
+      teamId: 'team1',
+    };
+    act(() => result.current.saveAction(box.id, team));
+    expect(notify).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        email: false,
+        tabId: 't',
+        elementId: box.id,
+        assigneeUserId: 'u-bea',
+      }),
+    );
+    // An edit that keeps the assignee asks nothing; a new assignee asks again, with the box ticked.
+    act(() => result.current.saveAction(box.id, team, list(box.id)[0]!.id));
+    expect(notify).toHaveBeenCalledTimes(1);
+    act(() =>
+      result.current.saveAction(
+        box.id,
+        { ...team, assignee: { userId: 'u-cy', name: 'Cy' }, notifyEmail: true },
+        list(box.id)[0]!.id,
+      ),
+    );
+    expect(notify).toHaveBeenLastCalledWith(
+      expect.objectContaining({ email: true, assigneeUserId: 'u-cy' }),
+    );
+    // A self-assignment has no team, and asks nothing.
+    act(() => result.current.saveAction(box.id, input('Mine'), list(box.id)[0]!.id));
+    expect(notify).toHaveBeenCalledTimes(2);
+  });
+});

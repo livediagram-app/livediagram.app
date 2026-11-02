@@ -16,7 +16,10 @@ import { SIGNED_IN_HINT_COOKIE } from '@livedesign/api-schema';
 //   GET  /api/auth/silent?return=/path       → the accounts site with prompt=none, and straight back:
 //                                              signed in, or a guest (liveworkspace/docs/specs/003-accounts/accounts.md
 //                                              "Signing in without a click")
-//   POST /api/auth/sign-out                  → drops the refresh cookie, and remembers the sign-out
+//   POST /api/auth/sign-out?return=/path     → ends the liveworkspace session too, drops the refresh cookie,
+//                                              remembers the sign-out, and answers the hop through the accounts
+//                                              site the page takes (liveworkspace/docs/specs/003-accounts/
+//                                              accounts.md "Signing out")
 //   GET  /api/auth/guest?state=              → the accounts site's guest handoff, which comes back to
 //                                              /auth/guest#guest_token=…&state=… (liveworkspace/docs/
 //                                              one-explorer-contracts.md "Guests")
@@ -33,11 +36,13 @@ import {
   isGuestHandoffState,
   randomState,
   refreshTokens,
+  signOutEverywhere,
   type TokenSet,
 } from '@liveworkspace/auth-client';
 import {
   finishSilentSignIn,
   signedOutCookie,
+  signOutSilentCookies,
   silentCookiesForHint,
   startSilentSignIn,
 } from '@liveworkspace/auth-client/silent';
@@ -383,14 +388,33 @@ function guest(request: Request, env: Env, config: Configured | null): Response 
   return redirect(to, []);
 }
 
-// Signing out of livedesign only: the accounts site keeps its own session, so signing in again
-// is one click with no code, as it is for every other liveworkspace app.
-// It is remembered (the signed-out mark) until the next sign-in here, so signing in without a click
-// never undoes it.
-function signOut(): Response {
+// Signing out everywhere in this browser (liveworkspace/docs/specs/003-accounts/accounts.md "Signing out"): the
+// accounts site ends the liveworkspace session this refresh token came from, and every app's session from it, and
+// answers the hop the page takes through liveworkspace.app, which clears its cookie there and comes back to
+// `?return=` on this site. `next` is null with no refresh token or no answer: then livedesign alone is signed out.
+// Signed out of this app alone (`next` null), that is remembered (the signed-out mark) until the next sign-in here, so
+// signing in without a click never undoes it. Signed out everywhere, nothing is: the next bounce finds no session.
+async function signOut(request: Request, env: Env, config: Configured): Promise<Response> {
+  const returnTo = safeReturnPath(new URL(request.url).searchParams.get('return'));
+  const next = await signOutEverywhere(
+    {
+      accountsUrl: config.accountsUrl,
+      clientId: config.clientId,
+      clientSecret: config.clientSecret,
+    },
+    {
+      refreshToken: readCookie(request, REFRESH_COOKIE),
+      postLogoutRedirectUri: `${appOrigin(env, request)}${returnTo}`,
+    },
+  );
   return json(
-    { signedIn: false },
-    { headers: noStore([...signedOutCookies(), signedOutCookie(SILENT_COOKIES, true)]) },
+    { signedIn: false, next },
+    {
+      headers: noStore([
+        ...signedOutCookies(),
+        ...signOutSilentCookies(SILENT_COOKIES, next !== null),
+      ]),
+    },
   );
 }
 
@@ -441,7 +465,7 @@ export async function handleAuth(
     case 'POST token':
       return token(request, config);
     case 'POST sign-out':
-      return signOut();
+      return signOut(request, env, config);
     default:
       return notFound();
   }

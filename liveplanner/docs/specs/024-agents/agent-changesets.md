@@ -85,6 +85,9 @@ editor that was offline when it landed.
   name and colour, the summary and the element ops.
 - When the element ops exceed `CHANGESET_RELAY_MAX_BYTES`, the op carries no element ops and editors re-fetch the
   tab in place, as a resync does ([Resync without reloading the page](../012-collaboration/resync-without-reload.md)).
+- When the changeset rebuilt a Dashboard tab's layout, the op carries the new layout (`dashboard`) and every editor
+  takes it whole; the room's ledger records it as a reset, so an editor's save that had not seen it writes the
+  rebuilt layout, not its own older one ([A Dashboard's layout travels as deltas](../012-collaboration/collab-race-hardening.md#a-dashboards-layout-travels-as-deltas)).
 - Answers the api's internal `GET /selections?tab=<tabId>`: every element each connected person has selected (the
   whole multi-selection), whatever their role, and which of those sessions are the agent owner's own (recognised by
   the [person tag](agent-presence.md)).

@@ -229,3 +229,13 @@ describe('answersAsSelf', () => {
     expect(answersAsSelf(null, 'k')).toBe(false);
   });
 });
+
+// docs/specs/012-collaboration/comment-reactions.md "How it is stored and travels": a reaction names its reactor.
+describe('answersAsSelf, comment reactions', () => {
+  const react = (by: unknown) => ({ kind: 'el-delta', delta: { kind: 'comment-react', by } });
+  it('admits its own reaction only', () => {
+    expect(answersAsSelf(react('k'), 'k')).toBe(true);
+    expect(answersAsSelf(react('other'), 'k')).toBe(false);
+    expect(answersAsSelf(react('k'), undefined)).toBe(false);
+  });
+});

@@ -17,6 +17,8 @@ const DIRS = [
   'src',
   // The editor code every editor shares (@liveworkspace/workbench) renders here too, so it is held to the rule as well.
   '../../../packages/workbench/src',
+  // Avatar mode's shared code (@liveworkspace/avatar) renders here too.
+  '../../../packages/avatar/src',
 ];
 const OLD_COPY = [
   /\b(?:New|Share|Delete|Rename|Sync|Open|Current|Duplicate|Existing|Your|This|My|Recent|Team|Community) Documents?\b/,

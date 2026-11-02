@@ -3,9 +3,9 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { AVATAR_PAD_PARTS, AVATAR_PALETTE } from '@livediagram/document';
-import { AvatarPadArrivals } from './AvatarPadArrivals';
+import { AvatarPadArrivals } from '@liveworkspace/avatar/components/AvatarPadArrivals';
 import { AvatarPadView } from './collab/AvatarPadView';
-import type { PadArrival } from '@/lib/avatar-pad';
+import type { PadArrival } from '@liveworkspace/avatar/pad';
 
 // docs/specs/009-elements/avatar-pad.md "The element" and "The arrival".
 const arrival = (over: Partial<PadArrival> = {}): PadArrival => ({

@@ -8,6 +8,7 @@
 // when not the usual, Hidden); a group's layers indented under it.
 import { useMemo, useState, type MouseEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import type { RowDropAt } from '@/components/primitives/useRowPointerDrag';
+import { GripIcon } from '@/components/panels/layers-panel-icons';
 import {
   lucideArrowDownToLine,
   lucideArrowUpToLine,
@@ -306,6 +307,18 @@ export function PhotoLayerRow({
           aria-hidden
           className={`pointer-events-none absolute inset-x-1 h-0.5 bg-brand-500 ${dropAt === 'above' ? 'top-0' : 'bottom-0'}`}
         />
+      ) : null}
+      {editable && drag ? (
+        // On a touch screen a finger dragging a row would scroll the list instead (the system takes the
+        // pointer), so a row restacks from its grip, which keeps the finger's travel for the drag
+        // (photo-layers.md "Reordering", as the canvas's Layers panel shows its grip on touch).
+        <span
+          aria-hidden
+          data-layer-grip=""
+          className="hidden h-10 w-5 shrink-0 cursor-grab touch-none items-center justify-center text-slate-500 pointer-coarse:flex dark:text-slate-400"
+        >
+          <GripIcon />
+        </span>
       ) : null}
       <button
         type="button"

@@ -282,14 +282,18 @@ function freehandIssue(el: Record<string, unknown>): ElementValidationIssue | nu
   return firstFieldIssue(el, FREEHAND_FIELD_CHECKS);
 }
 
+// The label's scale on a text and a shape (docs/specs/007-editor/pages-mode.md "Sizes").
+const TEXT_SCALE_CHECK: FieldCheck = {
+  field: 'textScale',
+  valid: (v) => isNum(v) && v >= TEXT_SCALE_MIN && v <= TEXT_SCALE_MAX,
+  rule: `a number from ${TEXT_SCALE_MIN} to ${TEXT_SCALE_MAX}`,
+};
+const SHAPE_SCALE_CHECKS: readonly FieldCheck[] = [TEXT_SCALE_CHECK];
+
 // A text box's sizing and Shift scale (docs/specs/006-document/document-structure.md).
 const TEXT_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'sizing', valid: (v) => v === 'fit' || v === 'wrap', rule: oneOfRule(['fit', 'wrap']) },
-  {
-    field: 'textScale',
-    valid: (v) => isNum(v) && v >= TEXT_SCALE_MIN && v <= TEXT_SCALE_MAX,
-    rule: `a number from ${TEXT_SCALE_MIN} to ${TEXT_SCALE_MAX}`,
-  },
+  TEXT_SCALE_CHECK,
   // Wordmark type (docs/specs/006-document/document-structure.md "Text type").
   {
     field: 'letterSpacing',
@@ -310,7 +314,7 @@ function boxedIssue(el: Record<string, unknown>): ElementValidationIssue | null 
   if (box) return box;
   switch (el.type) {
     case 'shape':
-      return shapeValidationIssue(el);
+      return shapeValidationIssue(el) ?? firstFieldIssue(el, SHAPE_SCALE_CHECKS);
     case 'table':
       return tableIssue(el);
     case 'image':

@@ -9,7 +9,8 @@
 
 import { memo, useCallback, useEffect, useId, useMemo, useState, type ReactNode } from 'react';
 import type { Item, TimelineEvent } from '@liveworkspace/index-client';
-import { EmptyState, PictureDisc } from '@liveworkspace/ui';
+import { Button, EmptyState, PictureDisc } from '@liveworkspace/ui';
+import { DAY_MONTH_YEAR } from '@liveworkspace/ui/date-format';
 import { usePersonPicture } from '../data/usePeople';
 import { useExtras } from '../explorer/extras';
 import { useExplorer, type ExplorerContextValue } from '../explorer/context';
@@ -27,6 +28,7 @@ import {
   eventLabel,
   eventTone,
   timeLabel,
+  TONE_INKS,
   toneColor,
   toneSoftColor,
   type TimelineCategory,
@@ -56,8 +58,7 @@ type RenderCtx = Parameters<typeof renderTimelineEvent>[1];
 const MUTED = 'text-slate-500 dark:text-slate-400';
 const BUTTON = `inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition duration-micro hover:border-brand-300 hover:text-brand-700 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-brand-500/50 dark:hover:text-brand-300 ${FOCUS_RING}`;
 
-const fullDate = (at: number) =>
-  new Date(at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+const fullDate = (at: number) => DAY_MONTH_YEAR.format(at);
 const iso = (at: number) => new Date(at).toISOString();
 
 export function HistoryDialog({ item, onClose }: { item: Item; onClose: () => void }) {
@@ -195,15 +196,14 @@ export function HistoryDialog({ item, onClose }: { item: Item; onClose: () => vo
                 Couldn’t load older events.
               </p>
             ) : null}
-            <button
-              type="button"
-              disabled={state.loading}
-              aria-busy={state.loading || undefined}
+            <Button
+              variant="none"
+              busy={state.loading}
               onClick={() => read(state.cursor)}
               className={BUTTON}
             >
               {state.loading ? 'Loading…' : state.failed ? 'Try again' : 'Show older events'}
-            </button>
+            </Button>
             <p className={`text-[11px] ${MUTED}`} aria-live="polite">
               {state.events.length} shown
             </p>
@@ -500,7 +500,7 @@ const HistoryEntry = memo(function HistoryEntry({
         className="relative z-[1] h-8 w-8 shrink-0 rounded-full bg-white ring-4 ring-white dark:bg-slate-900 dark:ring-slate-900"
       >
         <span
-          className="flex h-full w-full items-center justify-center rounded-full"
+          className={`flex h-full w-full items-center justify-center rounded-full ${TONE_INKS}`}
           style={{ background: toneSoftColor(tone), color: toneColor(tone) }}
         >
           {eventIcon(event.type, event.detail?.source)}

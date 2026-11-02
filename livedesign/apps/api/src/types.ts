@@ -59,6 +59,17 @@ export type Env = {
   OAUTH_ISSUER?: string;
   // The oldest CLI the api accepts writes from, x.y.z; unset for no floor.
   CLI_MIN_VERSION?: string;
+  // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"): false, 0 or off
+  // turns it off; unset leaves it on. See community-service.ts.
+  COMMUNITY_ENABLED?: string;
+  // The liveworkspace Community service (liveworkspace/docs/specs/007-community/community.md), which keeps every app's
+  // posts. Unset means production's, https://www.liveworkspace.app/api/community; staging and local development name
+  // their own.
+  COMMUNITY_URL?: string;
+  // livedesign's secret on that service (the same value as its COMMUNITY_KEY_LIVEDESIGN), sent as a bearer token
+  // on its app routes. A secret (wrangler secret put COMMUNITY_KEY); unset, this deploy has no Community: publishing
+  // answers 404 and the capabilities say it is off.
+  COMMUNITY_KEY?: string;
   // liveworkspace's media service (liveworkspace/docs/specs/006-media/media.md, src/media.ts), which keeps every app's uploaded
   // images. Unset means production's, https://www.liveworkspace.app/api/media; staging and local development name
   // their own.
@@ -137,4 +148,6 @@ export type Env = {
 // worker's bindings plus `DESIGN_DB`, the design's own SQLite behind the D1 surface the room builds.
 // Only the Durable Object can make one, so a content read or write the worker attempts is a type error:
 // the worker reaches content through the design's Durable Object instead.
-export type DesignEnv = Env & { DESIGN_DB: D1Database };
+// `ROOM_PEOPLE`: the person tags of the sessions in the design's room right now, so a phone notification skips
+// someone already looking at it (docs/specs/014-identity/phone-notifications.md).
+export type DesignEnv = Env & { DESIGN_DB: D1Database; ROOM_PEOPLE?: () => ReadonlySet<string> };

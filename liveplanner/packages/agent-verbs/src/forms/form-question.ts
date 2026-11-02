@@ -31,6 +31,8 @@ export interface QuestionInput {
   min?: number;
   max?: number;
   whole?: boolean;
+  // Date Range: each end a date and time.
+  withTime?: boolean;
   scale?: number;
   style?: 'stars' | 'numbers';
   lowLabel?: string;
@@ -50,8 +52,11 @@ const TYPE_SETTINGS: Readonly<Record<QuestionType, readonly Setting[]>> = {
   paragraph: TEXT_BOX,
   number: ['placeholder', 'min', 'max', 'whole'],
   email: TEXT_BOX,
+  phone: TEXT_BOX,
   link: TEXT_BOX,
   date: [],
+  datetime: [],
+  daterange: ['withTime'],
   single: ['options', 'other', 'dropdown'],
   multi: ['options', 'other', 'min', 'max'],
   rating: ['scale', 'style', 'lowLabel', 'highLabel'],
@@ -66,6 +71,7 @@ const SETTINGS: readonly Setting[] = [
   'min',
   'max',
   'whole',
+  'withTime',
   'scale',
   'style',
   'lowLabel',
@@ -135,7 +141,7 @@ export function applyQuestionSet(
     if (t.text) next[key] = t.text;
     else delete next[key];
   }
-  for (const key of ['required', 'other', 'dropdown', 'whole'] as const) {
+  for (const key of ['required', 'other', 'dropdown', 'whole', 'withTime'] as const) {
     if (set[key] === undefined) continue;
     if (set[key]) next[key] = true;
     else delete next[key];

@@ -8,6 +8,7 @@ import {
   IMAGE_HEIGHT_HEADER,
   IMAGE_NAME_HEADER,
   IMAGE_SHA256_HEADER,
+  MEDIA_DOCUMENT_HEADER,
   IMAGE_WIDTH_HEADER,
   MEDIA_API_URL,
   MEDIA_APP_HEADER,
@@ -34,6 +35,8 @@ export type MediaUpload = {
   originalName?: string | null;
   // Only for the owner's own editor (see IMAGE_SHA256_HEADER).
   sha256?: string | null;
+  // The document it is uploaded for, when the server holds that document (see MEDIA_DOCUMENT_HEADER).
+  document?: string | null;
 };
 
 // The bytes of an image, and whose it is.
@@ -81,6 +84,7 @@ export function createMediaClient({ app, key, url, fetch: doFetch = fetch }: Med
       if (input.originalName)
         headers.set(IMAGE_NAME_HEADER, encodeURIComponent(input.originalName));
       if (input.sha256) headers.set(IMAGE_SHA256_HEADER, input.sha256);
+      if (input.document) headers.set(MEDIA_DOCUMENT_HEADER, input.document);
       const res = await call(
         '/images',
         { method: 'POST', headers, body: input.bytes, duplex: 'half' } as RequestInit,

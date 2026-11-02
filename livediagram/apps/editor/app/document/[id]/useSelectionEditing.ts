@@ -1,6 +1,6 @@
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useRef, type Dispatch, type SetStateAction } from 'react';
-import { isUntitledDocumentName } from '@livediagram/templates';
+import { isUntitledName } from '@livediagram/api-schema';
 import {
   hasRichFormatting,
   isBoxed,
@@ -245,7 +245,7 @@ export function useSelectionEditing(opts: {
     // exists for: paste a paragraph into the welcome rectangle and the whole
     // paragraph used to become the document's name, newlines and all.
     const trimmed = truncateName(label);
-    if (isUntitledDocumentName(documentName)) {
+    if (isUntitledName(documentName)) {
       const firstTab = tabs[0];
       const firstEl = firstTab?.elements[0];
       if (firstEl && firstEl.id === elementId) {

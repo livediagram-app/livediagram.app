@@ -208,10 +208,27 @@ export function useMenu({
       };
       if (first && !element.contains(from)) retry = requestAnimationFrame(settle);
     }
+    // Whether focus is in the menu, kept as it moves: a menu drawn by a control that stays mounted
+    // (`open &&` around the surface, as the account menu does) leaves the page before this cleanup
+    // runs, so focus has already fallen to the body and ownsFocus can no longer see it was here.
+    const doc = element.ownerDocument;
+    let holding = element.contains(doc.activeElement);
+    const onFocusIn = () => {
+      holding = true;
+    };
+    const onFocusOut = (e: FocusEvent) => {
+      if (e.relatedTarget instanceof Node && !element.contains(e.relatedTarget)) holding = false;
+    };
+    element.addEventListener('focusin', onFocusIn);
+    element.addEventListener('focusout', onFocusOut);
     return () => {
       closed = true;
       cancelAnimationFrame(retry);
-      if (ownsFocus(element))
+      element.removeEventListener('focusin', onFocusIn);
+      element.removeEventListener('focusout', onFocusOut);
+      const dropped =
+        holding && !element.isConnected && (!doc.activeElement || doc.activeElement === doc.body);
+      if (ownsFocus(element) || dropped)
         returnFocusAfterCommit(element, returnTarget.current, latest.current.trigger);
     };
   }, [element, open, id]);

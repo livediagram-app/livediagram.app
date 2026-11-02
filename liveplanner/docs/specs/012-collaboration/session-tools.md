@@ -126,6 +126,10 @@ Plan has no voting of its own: a vote on a tab with Plan boards is this vote, ca
   (`votes`, per voter, as pseudonymous person ids), in one write by the host's editor; Top Voted, sorting and the
   card's ▲ count read it afterwards. Revealing does not write; clearing a vote that never ended writes nothing.
   Undo does not take a tally back.
+- **Count In**: when the tab's card types offer more than one Votes field (item-types.md "Comments and Votes
+  fields"), the Vote set-up lists them (the built-in **Votes** first, the default) and the tally lands in the
+  one picked (`voteField` on the vote, sent as `field` with the tally). A card whose type lacks it takes its
+  dots in the built-in Votes.
 
 ### Casting a dot: the one thing that is not plain tab state
 
@@ -271,7 +275,7 @@ Ending a vote persists the host's final state. Server-side merge of the map is
 ## The Session strip
 
 The running session tools live in **one strip in the bottom-right cluster**, the way Plan mode's
-New Card, Find a Card and Card Types share one strip. It sits **left of Layers** (or of the mode's
+the Trash, Find a Card and Card Types share one strip. It sits **left of Layers** (or of the mode's
 own strip: the Plan strip in Plan mode), right
 after Undo and Redo. **An editor always has both buttons** where the strip shows, running or not, so a session tool
 is one press away. Idle, a button is just its glyph and opens that tool's set-up pane, the same form a session
@@ -295,7 +299,7 @@ a timer or vote already running keeps its button so it can be stopped. Elsewhere
 tool runs (a session button on the canvas still starts one there). A popover whose button leaves (a tab switch)
 closes.
 
-Order, left to right: Timer, Vote. **On a phone** the strip stays in the cluster's one row, between Undo and Redo and Layers: the cluster's buttons share the row's width, each from 36px up to the usual 44px (always 44px tall to tap), with 6px gaps, so Undo, Redo, the two tools, Layers, the theme brush and Fit fill the row on a 375px screen and up. Beside the strip, on a phone, the Plan strip folds into one **More Card Tools** button (an ellipsis), whose menu holds **New Card**, **Find a Card**, **Card Types** and, for an editor, the **Trash**, each opening its panel above that button as its own button would; so a voting board at 390px still keeps the cluster in one row. On a narrower screen the cluster wraps from the right, so Undo is never pushed off the screen. Each segment opens its
+Order, left to right: Timer, Vote. **On a phone** the strip stays in the cluster's one row, between Undo and Redo and Layers: the cluster's buttons share the row's width, each from 36px up to the usual 44px (always 44px tall to tap), with 6px gaps, so Undo, Redo, the two tools, Layers, the theme brush and Fit fill the row on a 375px screen and up. Beside the strip, on a phone, the Plan strip folds into one **More Card Tools** button (an ellipsis), whose menu holds **Find a Card**, **Card Types** and, for an editor, the **Trash**, each opening its panel above that button as its own button would; so a voting board at 390px still keeps the cluster in one row. On a narrower screen the cluster wraps from the right, so Undo is never pushed off the screen. Each segment opens its
 panel as a **popover hanging above it** with an arrow at the button, and a second press closes
 it. **While a vote runs, on a desktop, nothing else closes its popover**: a press on the
 canvas (casting a dot) leaves it up, because whoever runs the vote watches turnout

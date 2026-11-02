@@ -1,7 +1,13 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createPath, pathAnchors, type Element, type PathAnchor } from '@livedesign/design';
+import {
+  createPath,
+  pathAnchors,
+  pathOfContours,
+  type Element,
+  type PathAnchor,
+} from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import { usePathCommits } from './usePathCommits';
 
@@ -128,5 +134,29 @@ describe('usePathCommits', () => {
     s.api.commitPathEdit(open.id, { anchors: pathAnchors(open), closed: true }, 'join');
     expect(s.els()[0]).toMatchObject({ closed: true });
     expect(track).toHaveBeenCalledWith('Element', 'Changed', 'PathJoin');
+  });
+
+  // docs/specs/023-draw-mode/path-tool.md "Combined paths".
+  it('reshapes one contour of a combined path, and drops the path with its last contour', () => {
+    const sq = (o: number, w: number) => [
+      corner(o, o),
+      corner(o + w, o),
+      corner(o + w, o + w),
+      corner(o, o + w),
+    ];
+    const ring = pathOfContours({ id: 'ring', type: 'path', closed: true }, [
+      sq(0, 100),
+      sq(25, 50),
+    ]);
+    const s = setup([ring]);
+    const hole = sq(25, 50).map((a) => ({ ...a, x: a.x + 5 }));
+    s.api.commitPathEdit('ring', { anchors: hole, closed: true }, 'edit', 1);
+    const next = s.els()[0] as typeof ring;
+    expect(next.subpaths![0]![0]).toMatchObject({ nx: 0.3, ny: 0.25 });
+    expect(next.nodes).toEqual(ring.nodes);
+    s.api.commitPathEdit('ring', { anchors: hole.slice(0, 1), closed: true }, 'edit', 1);
+    expect((s.els()[0] as typeof ring).subpaths).toBeUndefined();
+    s.api.commitPathEdit('ring', { anchors: [], closed: true }, 'edit', 0);
+    expect(s.els()).toHaveLength(0);
   });
 });

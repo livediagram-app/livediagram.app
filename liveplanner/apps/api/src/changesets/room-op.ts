@@ -23,6 +23,7 @@ type RoomOpInput = {
   agentKey?: string;
   tab?: Omit<Tab, 'elements'>;
   revertOf?: string | null;
+  dashboard?: Tab['dashboard'];
 };
 
 export function changesetRoomOp(input: RoomOpInput): ChangesetRoomOp {
@@ -43,6 +44,7 @@ export function changesetRoomOp(input: RoomOpInput): ChangesetRoomOp {
       : { refetch: true as const, touched: touchedIds(input.elementOps) }),
     ...(input.tab ? { tab: input.tab } : {}),
     ...(input.revertOf ? { revertOf: input.revertOf } : {}),
+    ...(input.dashboard ? { dashboard: input.dashboard } : {}),
   };
 }
 

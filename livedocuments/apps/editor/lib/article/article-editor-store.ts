@@ -5,7 +5,7 @@
 // formatted as, and a handle to run commands on it. One at a time; the page toolbar and the
 // palette read it, the writing (ArticleEditor) writes it.
 import { useSyncExternalStore } from 'react';
-import type { Command } from 'prosemirror-state';
+import type { Command, EditorState } from 'prosemirror-state';
 import type { Node as PMNode } from 'prosemirror-model';
 import type { ArticleSelectionState } from './article-commands';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
@@ -32,6 +32,13 @@ export type ArticleEditorHandle = {
   focus: () => void;
   // The caret's place on screen, for a popover under it (a link field).
   caretRect: () => DOMRect | null;
+  // Where a stretch of a block's text is, as a canvas rect (its first line's when it wraps), or null when the block
+  // is not laid out: the Find bar brings a match into view by it (docs/specs/007-editor/find-and-replace.md).
+  rangeRect: (
+    blockId: string,
+    from: number,
+    to: number,
+  ) => { x: number; y: number; w: number; h: number } | null;
   // A zone put into the writing at the block boundary nearest a canvas point (or after the block
   // the caret is in), the writing so far taken as written: its blocks, the zone's id, and where it
   // landed (its page by index among the article's pages, and its spot from that page's corner).
@@ -89,7 +96,22 @@ export type ArticleEditorHandle = {
   snapshot: () => import('./article-snapshot').ArticleDrawOp[];
   // The writing as soft bars, one per line (a thumbnail, the Map).
   bars: (ink: string) => import('./article-snapshot').ArticleDrawOp[];
+  // The editor's state now (the Table menu asks it which entries may run).
+  state: () => EditorState;
+  // Each heading's page as laid out now (1 the first page), by block id: a Word export's contents.
+  headingPages: () => ReadonlyMap<string, number>;
+  // The writing's link areas as laid out now, canvas rects: each contents entry to its heading's page
+  // (by index among the article's pages), each link in the text to its address (a PDF's annotations).
+  links: () => ArticleLinkArea[];
 };
+
+/** A link area in the writing: a canvas rect and where it goes. */
+export type ArticleLinkArea = {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+} & ({ page: number } | { href: string });
 
 // Every article's editor on the tab, by flow: what an insert into an article that is not being
 // written in reaches.

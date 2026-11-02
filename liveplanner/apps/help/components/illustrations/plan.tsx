@@ -566,7 +566,7 @@ function Arrow2({ from, to }: { from: [number, number]; to: [number, number] }) 
   );
 }
 
-/** The card panel: a breadcrumb back to the project, the type and number, the ⋯ menu and close;
+/** The card panel: the back bar to the card before, then the type and number, the ⋯ menu and close;
  *  the title over the type's tabs and description; Linked as Parent; Details on the right. */
 export function PlanCardPanelScene() {
   return (
@@ -580,29 +580,43 @@ export function PlanCardPanelScene() {
         className="fill-white stroke-slate-200"
         strokeWidth={2}
       />
-      {/* Header. */}
-      <rect x={20} y={20} width={8} height={14} rx={2} className={STRIPE.project} />
-      <Label x={32} y={28} size={10} tone="body">
+      {/* The breadcrumb: the back bar to the card before, this card's number as its chip. */}
+      <rect
+        x={18}
+        y={14}
+        width={384}
+        height={20}
+        rx={5}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1}
+      />
+      <rect x={22} y={17} width={14} height={14} rx={3} className="fill-slate-100" />
+      <Label x={29} y={25} size={10} anchor="middle" weight={700} tone="muted">
+        ‹
+      </Label>
+      <Label x={42} y={25} size={10} weight={700} tone="body">
         #2 Launch
       </Label>
-      <Label x={88} y={28} size={11} tone="muted">
-        ›
+      <rect x={370} y={17} width={28} height={14} rx={3} className="fill-slate-100" />
+      <Label x={384} y={25} size={9} anchor="middle" weight={700} tone="muted">
+        #11
       </Label>
-      <rect x={98} y={21} width={4} height={14} rx={1.5} className={STRIPE.task} />
-      <Label x={106} y={28} size={11} weight={700} tone="strong">
+      {/* Header. */}
+      <rect x={20} y={38} width={4} height={12} rx={1.5} className={STRIPE.task} />
+      <Label x={28} y={45} size={11} weight={700} tone="strong">
         Task
       </Label>
-      <Label x={136} y={28} size={11} tone="muted">
+      <Label x={58} y={45} size={11} tone="muted">
         #11
       </Label>
       {/* Help lives inside the ⋯ menu, not on the header. */}
-      <Label x={368} y={27} size={13} anchor="middle" weight={700} tone="muted">
+      <Label x={368} y={44} size={13} anchor="middle" weight={700} tone="muted">
         ⋯
       </Label>
-      <Label x={394} y={28} size={12} anchor="middle" tone="muted">
+      <Label x={394} y={45} size={12} anchor="middle" tone="muted">
         ✕
       </Label>
-      <line x1={10} y1={44} x2={410} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
+      <line x1={10} y1={53} x2={410} y2={53} className="stroke-slate-200" strokeWidth={1.5} />
 
       {/* Main column. */}
       <Label x={24} y={62} size={14} weight={700} tone="strong">
@@ -668,13 +682,13 @@ export function PlanCardPanelScene() {
         Created by Sam
       </Label>
       <Label x={288} y={230} size={10} tone="muted">
-        Edited by Alex
+        Last edited by Alex
       </Label>
     </Scene>
   );
 }
 
-/** Right-clicking a card: Open, Duplicate, Edit Card Type, a Move to row per column, Flag,
+/** Right-clicking a card: Open, Duplicate, Edit Card Type, a Move to row per column, Select, Flag,
  *  Archive, Trash. */
 export function PlanCardMenuScene() {
   return (
@@ -706,18 +720,20 @@ export function PlanCardMenuScene() {
           'Edit Card Type',
           'Move to In Progress',
           'Move to Review',
+          'Select',
           'Flag',
           'Archive',
           'Trash',
         ]}
       />
-      {/* The menu's header (the card's title), separators between its groups, and Trash in red. */}
+      {/* The menu's header (the card's title), separators between its groups, and Trash at the end. */}
       <rect x={154} y={24} width={172} height={21} rx={5} className="fill-white" />
       <Label x={162} y={35} size={10} weight={700} tone="muted">
         Write docs
       </Label>
       <line x1={156} y1={45} x2={324} y2={45} className="stroke-slate-200" />
-      <line x1={156} y1={129} x2={324} y2={129} className="stroke-slate-200" />
+      <line x1={156} y1={108} x2={324} y2={108} className="stroke-slate-200" />
+      <line x1={156} y1={150} x2={324} y2={150} className="stroke-slate-200" />
       <line x1={156} y1={171} x2={324} y2={171} className="stroke-slate-200" />
       <rect x={154} y={213} width={172} height={21} rx={5} className="fill-white" />
       <Label x={162} y={224} size={11} tone="body">
@@ -881,6 +897,115 @@ export function PlanItemTwoBoardsScene() {
         Item #12, one record
       </Label>
       <path d="M210 188 V 118" className="stroke-brand-300" strokeWidth={1.5} />
+    </Scene>
+  );
+}
+
+/** A card's comment threads (ItemPanel's Comments, CardThreads): the tally and New Thread, an open thread with its
+ *  people, comment count, last activity and the link chip of a thread on three cards, another open thread, and the
+ *  Resolved disclosure under them. */
+export function PlanCardThreadsScene() {
+  const faces = (x: number, y: number, fills: string[]) =>
+    fills.map((fill, i) => (
+      <circle
+        key={i}
+        cx={x + i * 9}
+        cy={y}
+        r={5.5}
+        className={`${fill} stroke-white`}
+        strokeWidth={1.5}
+      />
+    ));
+  const tile = (
+    y: number,
+    title: string,
+    meta: string,
+    fills: string[],
+    opts: { shared?: boolean; open?: boolean } = {},
+  ) => (
+    <g>
+      <rect
+        x={20}
+        y={y}
+        width={380}
+        height={opts.open ? 104 : 42}
+        rx={9}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1}
+      />
+      <circle cx={36} cy={y + 15} r={7} className="fill-brand-50" />
+      <rect x={32} y={y + 11} width={8} height={7} rx={2} className="fill-brand-500" />
+      <Label x={50} y={y + 16} size={10.5} weight={700} tone="strong">
+        {title}
+      </Label>
+      {faces(54, y + 30, fills)}
+      <Label x={58 + fills.length * 9} y={y + 31} size={9} tone="muted">
+        {meta}
+      </Label>
+      {opts.shared ? (
+        <g>
+          <rect x={318} y={y + 7} width={42} height={16} rx={8} className="fill-amber-50" />
+          <Label x={339} y={y + 16} size={9} anchor="middle" weight={600} tone="body">
+            3 cards
+          </Label>
+        </g>
+      ) : null}
+      <Label x={386} y={y + 16} size={11} anchor="middle" tone="muted">
+        ⋯
+      </Label>
+      {opts.open ? (
+        <g>
+          <line x1={20} y1={y + 44} x2={400} y2={y + 44} className="stroke-slate-100" />
+          <circle cx={38} cy={y + 60} r={7} className="fill-orange-500" />
+          <Label x={52} y={y + 58} size={9} weight={600} tone="strong">
+            Ada King
+          </Label>
+          <TextBar x={52} y={y + 64} w={230} />
+          <rect
+            x={40}
+            y={y + 78}
+            width={290}
+            height={18}
+            rx={5}
+            className="fill-white stroke-slate-200"
+          />
+          <Label x={48} y={y + 88} size={9} tone="muted">
+            Reply…
+          </Label>
+          <Label x={390} y={y + 88} size={9} anchor="end" weight={600} tone="accent">
+            ✓ Resolve
+          </Label>
+        </g>
+      ) : null}
+    </g>
+  );
+  return (
+    <Scene w={420} h={248}>
+      <Label x={20} y={22} size={12} weight={700} tone="strong">
+        Comments
+      </Label>
+      <Label x={20} y={40} size={10} tone="muted">
+        2 open · 1 resolved
+      </Label>
+      <Label x={400} y={40} size={10} anchor="end" weight={600} tone="accent">
+        + New Thread
+      </Label>
+      {tile(
+        52,
+        'Promo code vs free items',
+        '4 comments · 2h ago',
+        ['fill-emerald-500', 'fill-orange-500', 'fill-violet-500'],
+        {
+          shared: true,
+          open: true,
+        },
+      )}
+      {tile(164, 'Bo Lindqvist: Copy for the empty basket…', '2 comments · 1d ago', [
+        'fill-green-600',
+      ])}
+      <Label x={20} y={230} size={10} weight={600} tone="muted">
+        › Resolved · 1
+      </Label>
     </Scene>
   );
 }

@@ -86,7 +86,8 @@ function SheetMetricBody({
     // oxlint-disable-next-line react/exhaustive-deps
     [content, version, sheet],
   );
-  const name = SHEET_METRIC_NAMES[content.metric];
+  // The slot's own name, else the figure's (plan-tabs.md "A slot's name").
+  const name = content.name ?? SHEET_METRIC_NAMES[content.metric];
   const picker = pickerAt ? (
     <SheetMetricSource
       anchor={pickerAt}
@@ -138,7 +139,7 @@ function SheetMetricBody({
   return (
     <div
       role="group"
-      aria-label={`${shown.label}: ${shown.hero}${shown.progress ? ` of ${shown.progress.of}` : ''}`}
+      aria-label={`${content.name ?? shown.label}: ${shown.hero}${shown.progress ? ` of ${shown.progress.of}` : ''}`}
       className="relative flex h-full flex-col gap-2 overflow-hidden p-4"
     >
       <div className="flex min-w-0 items-center gap-2 pr-10">
@@ -151,7 +152,7 @@ function SheetMetricBody({
         <span
           className={`min-w-0 truncate text-[11px] font-semibold uppercase tracking-wider ${MUTED}`}
         >
-          {shown.label}
+          {content.name ?? shown.label}
         </span>
       </div>
       <div className="flex min-w-0 items-baseline gap-2">

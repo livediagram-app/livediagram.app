@@ -23,3 +23,29 @@ describe('accountCategories, API Tokens', () => {
     expect(tokensOf(base)).toBeUndefined();
   });
 });
+
+// Its Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): the same, beside API Tokens.
+const webhooksOf = (section: Parameters<typeof accountCategories>[0]) =>
+  accountCategories(section).find((c) => c.id === 'webhooks');
+
+describe('accountCategories, Webhooks', () => {
+  it('draws the host’s own webhooks in the panel when it has them, after API Tokens', () => {
+    const render = () => null;
+    const section = { ...base, renderTokens: render, renderWebhooks: render, webhooksHref: '/x' };
+    const row = webhooksOf(section)?.rows[0];
+    expect(row).toMatchObject({ kind: 'custom', key: 'webhooks', label: 'Webhooks' });
+    expect(row?.kind === 'custom' && row.render).toBe(render);
+    const ids = accountCategories(section).map((c) => c.id);
+    expect(ids.indexOf('webhooks')).toBe(ids.indexOf('tokens') + 1);
+  });
+
+  it('links to the webhooks where the host has none of its own, and leaves the category out with neither', () => {
+    expect(
+      webhooksOf({ ...base, webhooksHref: '/explorer?settings=webhooks' })?.rows[0],
+    ).toMatchObject({
+      kind: 'custom',
+      key: 'webhooks',
+    });
+    expect(webhooksOf(base)).toBeUndefined();
+  });
+});

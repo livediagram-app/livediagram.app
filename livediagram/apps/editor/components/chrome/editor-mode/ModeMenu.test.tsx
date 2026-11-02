@@ -62,6 +62,14 @@ describe('ModeMenu preview', () => {
     expect(description.className).not.toMatch(/(^| )sr-only( |$)/);
   });
 
+  it('keeps the shown description at AA on the row tint (slate-500 on slate-100 is 4.3:1)', () => {
+    open('diagram');
+    const shown = row('Diagram');
+    expect(shown.className).toMatch(/(^| )bg-slate-100( |$)/);
+    const description = document.getElementById(shown.getAttribute('aria-describedby')!)!;
+    expect(description.className).not.toMatch(/(^| )text-slate-(300|400|500)( |$)/);
+  });
+
   it('switches from a clicked row, and closes', () => {
     const { onChange } = open('diagram');
     fireEvent.pointerEnter(row('Draw'));

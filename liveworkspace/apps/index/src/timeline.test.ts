@@ -4,6 +4,7 @@
 import { APP_EVENTS_MAX, type TimelineEvent, type TimelinePage } from '@liveworkspace/index-client';
 import type { SQLInputValue } from 'node:sqlite';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import type { Person } from './auth';
 import { buildTimelineQuery } from './timeline';
 import { body, call, h, makeItem, person, useHarness } from './test-support';
@@ -314,16 +315,20 @@ describe('what apps report', () => {
       ['user_tl7c', null, (TODAY + 1) * DAY],
       ['user_tl7c', 'Cy', TODAY * DAY + 4000],
     ]);
+    // Each day counts as one open, however many edits it reports.
     const days = h.db.sql
-      .prepare('SELECT day FROM use_days WHERE person_id = ? AND item_id = ? ORDER BY day')
-      .all('user_tl7c', item.id) as { day: number }[];
-    expect(days.map((d) => d.day)).toEqual([TODAY, TODAY + 1]);
+      .prepare('SELECT day, opens FROM use_days WHERE person_id = ? AND item_id = ? ORDER BY day')
+      .all('user_tl7c', item.id) as { day: number; opens: number }[];
+    expect(days.map((d) => [d.day, d.opens])).toEqual([
+      [TODAY, 1],
+      [TODAY + 1, 1],
+    ]);
     // Cy's Most Used counts both.
     const cyNow = await person('user_tl7c', { teams: [{ id: 'team_tl7' }] });
-    const recent = await body<{ mostUsed: { id: string; useDays: number }[] }>(
+    const recent = await body<{ mostUsed: { id: string; useDays: number; useOpens: number }[] }>(
       await call('/items?view=recent&used=2', { auth: cyNow.auth }),
     );
-    expect(recent.mostUsed.map((i) => [i.id, i.useDays])).toEqual([[item.id, 2]]);
+    expect(recent.mostUsed.map((i) => [i.id, i.useOpens, i.useDays])).toEqual([[item.id, 2, 2]]);
   });
 
   it('refuses a bad report, and another app’s', async () => {
@@ -641,53 +646,63 @@ describe('the bound', () => {
     }
     db.exec('COMMIT');
     const big = await person('user_big', { teams: [{ id: 'team_a' }, { id: 'team_b' }] });
+    // Budgets are CPU time, not wall clock: a busy runner's wait for a core is not the query's cost.
     for (const query of ['', 'app=liveplanner']) {
-      const started = performance.now();
-      const first = await feed(big.auth, query);
-      const second = await feed(big.auth, `${query}&cursor=${first.nextCursor}`);
-      const ms = performance.now() - started;
+      let first!: TimelinePage;
+      let second!: TimelinePage;
+      const ms = await cpuMsOfAsync(async () => {
+        first = await feed(big.auth, query);
+        second = await feed(big.auth, `${query}&cursor=${first.nextCursor}`);
+      });
       expect(first.events).toHaveLength(30);
       expect(second.events[0]!.occurredAt).toBeLessThan(first.events.at(-1)!.occurredAt);
       console.info(
-        `[timeline] 10,000 own events, two pages (${query || 'all apps'}) in ${ms.toFixed(1)} ms`,
+        `[timeline] 10,000 own events, two pages (${query || 'all apps'}) in ${ms.toFixed(1)} ms of CPU`,
       );
-      expect(ms).toBeLessThan(250);
+      expect(ms).toBeLessThan(cpuBudgetMs(250));
     }
     // A team's activity: the team's scope alone, one index range however many teams the person is in.
     const member = await person('user_tm', {
       teams: [{ id: 'team_t' }, ...Array.from({ length: 11 }, (_, i) => ({ id: `team_m${i}` }))],
     });
     for (const query of ['team=team_t', 'team=team_t&app=liveplanner']) {
-      const started = performance.now();
-      const first = await feed(member.auth, query);
-      const second = await feed(member.auth, `${query}&cursor=${first.nextCursor}`);
-      const ms = performance.now() - started;
+      let first!: TimelinePage;
+      let second!: TimelinePage;
+      const ms = await cpuMsOfAsync(async () => {
+        first = await feed(member.auth, query);
+        second = await feed(member.auth, `${query}&cursor=${first.nextCursor}`);
+      });
       expect(first.events).toHaveLength(30);
       expect(second.events).toHaveLength(30);
-      console.info(`[timeline] a team's activity, two pages (${query}) in ${ms.toFixed(1)} ms`);
-      expect(ms).toBeLessThan(250);
+      console.info(
+        `[timeline] a team's activity, two pages (${query}) in ${ms.toFixed(1)} ms of CPU`,
+      );
+      expect(ms).toBeLessThan(cpuBudgetMs(250));
     }
     // The sidebar's count, with every one of them new and someone else's: it stops at 100 rows a scope.
     db.exec(`UPDATE timeline_events SET actor_id = 'user_x' WHERE actor_id = 'user_big'`);
     db.exec(`INSERT INTO timeline_scope_state (person_id, last_seen_at) VALUES ('user_big', 0)`);
-    let started = performance.now();
-    const counted = await body<{ timelineNew: number }>(await call('/inbox', { auth: big.auth }));
-    let ms = performance.now() - started;
+    let counted!: { timelineNew: number };
+    let ms = await cpuMsOfAsync(async () => {
+      counted = await body<{ timelineNew: number }>(await call('/inbox', { auth: big.auth }));
+    });
     expect(counted.timelineNew).toBe(100);
     console.info(
-      `[timeline] new count over 10,000 new events, with the Inbox, in ${ms.toFixed(1)} ms`,
+      `[timeline] new count over 10,000 new events, with the Inbox, in ${ms.toFixed(1)} ms of CPU`,
     );
-    expect(ms).toBeLessThan(250);
+    expect(ms).toBeLessThan(cpuBudgetMs(250));
     // A thousand removed at the top of the range: skipped in the index walk.
     db.exec(`INSERT INTO timeline_dismissals (person_id, event_id, created_at)
       SELECT 'user_big', id, 1 FROM timeline_events WHERE actor_id = 'user_x' AND occurred_at >= 9000`);
-    started = performance.now();
-    const after = await feed(big.auth);
-    ms = performance.now() - started;
+    let after!: TimelinePage;
+    ms = await cpuMsOfAsync(async () => {
+      after = await feed(big.auth);
+    });
     expect(after.events[0]!.occurredAt).toBeLessThan(9000);
-    console.info(`[timeline] a page past 1,000 removed events in ${ms.toFixed(1)} ms`);
-    expect(ms).toBeLessThan(250);
-  });
+    console.info(`[timeline] a page past 1,000 removed events in ${ms.toFixed(1)} ms of CPU`);
+    expect(ms).toBeLessThan(cpuBudgetMs(250));
+    // Seeding 110,000 rows outruns the 5s default on a busy runner; the budgets above time only the reads.
+  }, 30_000);
 
   it('writes a full batch of each new source in a few statements, within budget', async () => {
     tick();
@@ -706,15 +721,15 @@ describe('the bound', () => {
       latestAt: Date.now() + i,
     }));
     const statements = vi.spyOn(h.db.env.INDEX_DB, 'batch');
-    let started = performance.now();
-    await asApp(`/app/items/${item.id}/collab/tab1`, { threads, actions: [] });
-    let ms = performance.now() - started;
+    let ms = await cpuMsOfAsync(() =>
+      asApp(`/app/items/${item.id}/collab/tab1`, { threads, actions: [] }),
+    );
     const written = statements.mock.calls.at(-1)![0].length;
     console.info(
-      `[timeline] a 500-thread collab push (100 events kept) in ${ms.toFixed(1)} ms, ${written} statements`,
+      `[timeline] a 500-thread collab push (100 events kept) in ${ms.toFixed(1)} ms of CPU, ${written} statements`,
     );
     expect(written).toBeLessThan(12);
-    expect(ms).toBeLessThan(250);
+    expect(ms).toBeLessThan(cpuBudgetMs(250));
     // The newest 100 of them (and the item's making).
     const first = await feed(ada.auth, 'limit=100');
     const rest = await feed(ada.auth, `limit=2&cursor=${first.nextCursor}`);
@@ -728,14 +743,14 @@ describe('the bound', () => {
       at: Date.now(),
       scopes: ['t:team_w', `p:user_j${i}`],
     }));
-    started = performance.now();
-    await call('/internal/timeline', { method: 'POST', auth: 'merge-key', body: { events } });
-    ms = performance.now() - started;
+    ms = await cpuMsOfAsync(() =>
+      call('/internal/timeline', { method: 'POST', auth: 'merge-key', body: { events } }),
+    );
     console.info(
-      `[timeline] 100 account events in one call in ${ms.toFixed(1)} ms, ${statements.mock.calls.at(-1)![0].length} statements`,
+      `[timeline] 100 account events in one call in ${ms.toFixed(1)} ms of CPU, ${statements.mock.calls.at(-1)![0].length} statements`,
     );
     expect(statements.mock.calls.at(-1)![0]).toHaveLength(3);
-    expect(ms).toBeLessThan(250);
+    expect(ms).toBeLessThan(cpuBudgetMs(250));
     statements.mockRestore();
   });
 });

@@ -108,6 +108,8 @@ const SOURCES = ['apps', 'packages']
   .filter((dir) => statSync(dir).isDirectory())
   // The editor code every editor shares (@liveworkspace/workbench), which this product's editor renders too.
   .concat(`${REPO}../packages/workbench/src`)
+  // Avatar mode's shared code (@liveworkspace/avatar) renders here too.
+  .concat(`${REPO}../packages/avatar/src`)
   .flatMap((dir) => sourceFiles(dir))
   .map((path) => ({ path, text: readFileSync(path, 'utf8') }));
 

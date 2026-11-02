@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { parseMermaid, mermaidFromTab, startsWithMermaidHeader } from './mermaid';
+import {
+  MERMAID_UNSUPPORTED_ERROR,
+  parseMermaid,
+  mermaidFromTab,
+  startsWithMermaidHeader,
+} from './mermaid';
 import { graphToElements } from './graph-authoring';
 import { autoLayoutElements } from './auto-layout';
 import { layoutClusteredGraph } from './auto-layout-clusters';
@@ -24,6 +29,40 @@ describe('parseMermaid', () => {
       { from: 'A', to: 'B' },
       { from: 'B', to: 'C', label: 'yes' },
       { from: 'B', to: 'D', label: 'no' },
+    ]);
+  });
+
+  // Mermaid takes letters in any script in a bare id; ASCII-only reading cut `node_é` to `node_` and dropped its edge.
+  it('reads ids, subgraph ids, classes and click targets in any script', () => {
+    const res = parseMermaid(
+      [
+        'flowchart LR',
+        '  node_é --> b',
+        '  subgraph Küche[Kitchen]',
+        '    Ä[Über] --> Ö',
+        '  end',
+        '  Ö:::heiß --> 日本 --> नमस्ते',
+        '  click Ä "https://example.com"',
+      ].join('\n'),
+    );
+    if (!res.ok) throw new Error(res.error);
+    expect(res.graph.nodes.map((n) => [n.id, n.label])).toEqual([
+      ['node_é', 'node_é'],
+      ['b', 'b'],
+      ['Ä', 'Über'],
+      ['Ö', 'Ö'],
+      ['日本', '日本'],
+      ['नमस्ते', 'नमस्ते'],
+    ]);
+    expect(res.graph.edges.map((e) => `${e.from}>${e.to}`)).toEqual([
+      'node_é>b',
+      'Ä>Ö',
+      'Ö>日本',
+      '日本>नमस्ते',
+    ]);
+    expect(res.graph.nodes.find((n) => n.id === 'Ä')?.link).toBe('https://example.com');
+    expect(res.graph.clusters?.map((c) => [c.id, c.label, c.members])).toEqual([
+      ['Küche', 'Kitchen', ['Ä', 'Ö']],
     ]);
   });
 
@@ -299,6 +338,22 @@ describe('parseMermaid', () => {
     expect(byId.B!.link).toBe('https://example.com/app');
   });
 
+  it('keeps only a web or mail address as an element link', () => {
+    const r = parseMermaid(`flowchart TD
+  A --> B --> C
+  click A "javascript:alert(1)"
+  click B " JavaScript:alert(1)"
+  click C "mailto:team@example.com"`);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const links = graphToElements(r.graph).map((e) => e.link);
+    expect(links.slice(0, 3)).toEqual([
+      undefined,
+      undefined,
+      { kind: 'url', url: 'mailto:team@example.com' },
+    ]);
+  });
+
   it('tolerates a bare header and trailing semicolons', () => {
     const r = parseMermaid('flowchart\n  A --> B;');
     expect(r.ok).toBe(true);
@@ -312,6 +367,33 @@ describe('parseMermaid', () => {
     expect(r.ok).toBe(false);
     if (r.ok) return;
     expect(r.error).toMatch(/flowchart/i);
+  });
+
+  it('names the supported types for every other Mermaid diagram type, never importing its header as boxes', () => {
+    for (const text of [
+      'block-beta\n  columns 3\n  a b c\n  a --> b',
+      'gitGraph\n  commit\n  branch develop',
+      'C4Context\n  Person(a, "A")\n  Rel(a, b, "Uses")',
+      'architecture-beta\n  service db(database)[DB]\n  db:L -- R:server',
+      'requirementDiagram\n  a - satisfies -> b',
+      'xychart-beta\n  bar [1, 2]',
+      'sankey-beta\n  A,B,10',
+      'packet-beta\n  0-15: "Port"',
+      'kanban\n  todo\n    a --> b',
+      'radar-beta\n  axis a, b',
+      'treemap-beta\n  "A": 1',
+      'zenuml\n  A->B: hi',
+    ]) {
+      const r = parseMermaid(text);
+      expect(r.ok, text.split('\n')[0]).toBe(false);
+      if (!r.ok) expect(r.error).toBe(MERMAID_UNSUPPORTED_ERROR);
+    }
+  });
+
+  it('still reads a headerless edge list whose node is named like a diagram type', () => {
+    const r = parseMermaid('block --> packet\npacket --> kanban');
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.graph.nodes.map((n) => n.id)).toEqual(['block', 'packet', 'kanban']);
   });
 
   it('errors on empty / non-graph input', () => {

@@ -14,6 +14,7 @@ export const EDIT_OPERATION_NAMES = [
   'order',
   'layout',
   'test',
+  'detach',
 ] as const;
 export type EditOperationName = (typeof EDIT_OPERATION_NAMES)[number];
 
@@ -31,6 +32,7 @@ export const OPERATION_MEMBERS: Readonly<Record<EditOperationName, readonly stri
   order: ['op', 'target', 'to', 'above', 'below'],
   layout: ['op', 'target', 'style', 'direction'],
   test: ['op', 'target', 'fields'],
+  detach: ['op', 'target'],
 };
 
 // Where `add` and `move` put an element (docs/specs/024-agents/edit-operations.md "Placement").

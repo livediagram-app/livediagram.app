@@ -41,8 +41,8 @@ describe('a start search, best match first', () => {
     const first = best.querySelector('[data-start-card]')!.getAttribute('data-start-card');
     expect(first).toBe('slide-deck');
     expect(document.querySelectorAll('[data-start-card="slide-deck"]')).toHaveLength(1);
-    // Before the groups, Slides' Blank Slide Deck among them.
-    expect(sections().indexOf('Best Match')).toBeLessThan(sections().indexOf('Slides'));
+    // Before the groups, Blank Pages' Blank Slide Deck among them.
+    expect(sections().indexOf('Best Match')).toBeLessThan(sections().indexOf('Blank Pages'));
     fireEvent.keyDown(search, { key: 'ArrowDown' });
     expect(document.activeElement?.getAttribute('data-start-card')).toBe('slide-deck');
   });

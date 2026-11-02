@@ -330,6 +330,11 @@ export function connectRoom(
             if (msg.seq > lastSeq) lastSeq = msg.seq;
           }
           if (msg.ref !== undefined) awaitingRef.get(msg.ref)?.(true);
+        } else if (msg.kind === 'op-refused') {
+          // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An
+          // invalid element"): it reached nobody, so a save waiting on it stops waiting.
+          console.warn('[room] op refused', { op: msg.op, reason: msg.reason, field: msg.field });
+          if (msg.ref !== undefined) awaitingRef.get(msg.ref)?.(false);
         } else if (msg.kind === 'catchup') {
           if (msg.resync) {
             // Adopt the room's cursor first so we don't loop on the same

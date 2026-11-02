@@ -1,27 +1,37 @@
 'use client';
 
 // The type editor's field forms (docs/specs/026-plan/item-types.md "Editing a type"): a custom field's
-// name, options (Choice, Multiple Choice) and scale (Rating), and Add Field, which offers the built-in fields the type lacks
-// and a new custom field. The grouped field list is ItemTypeLayoutEditor.
-import { useState } from 'react';
+// name, options (Choice, Multiple Choice) and scale (Rating), and the settings Add Field's Shape step shares with it
+// (NewFieldForm). The grouped field list is ItemTypeLayoutEditor.
+import { useId, useState } from 'react';
 import {
   COMMON_CURRENCIES,
   CURRENCY_DEFAULT,
-  CUSTOM_CHOICE_OPTIONS_MAX,
-  CUSTOM_CHOICE_OPTION_MAX,
-  CUSTOM_FIELD_KINDS,
+  CALCULATIONS,
+  CALCULATION_LABELS,
   CUSTOM_FIELD_LABEL_MAX,
-  ITEM_TYPES,
   RATING_FIELD_SCALE_DEFAULT,
   RATING_FIELD_SCALE_MAX,
   RATING_FIELD_SCALE_MIN,
+  type Calculation,
+  canBeRequired,
+  isFormulaField,
+  isLookupField,
+  isRollupField,
+  canShowAsPercent,
   type CustomFieldDef,
   type CustomFieldKind,
   type ItemFieldId,
+  linkTypesOf,
+  withLinkTypes,
 } from '@liveplanner/items';
-import { Button, CloseIcon, PlusIcon, Select, TextArea, TextInput } from '@liveplanner/ui';
-import { CustomFieldKindTiles, CustomFieldPreview } from './CustomFieldKindParts';
-import { usePlan } from './PlanContext';
+import { Select, SwitchRow, TextArea, TextInput } from '@liveplanner/ui';
+import { hasOptions, type PickKind } from './add-field-kinds';
+import { optionsFrom } from './ChoiceOptionsEditor';
+import { LinksToPicker } from './LinksToPicker';
+import { FormulaEditor, type FormulaDraft } from './FormulaEditor';
+import { RollupEditor } from './RollupEditor';
+import { track } from '@/lib/telemetry';
 
 export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
   title: 'Title',
@@ -35,6 +45,7 @@ export const BUILT_IN_FIELD_LABELS: Record<ItemFieldId, string> = {
   start: 'Start Date',
   due: 'Due Date',
   checklist: 'Checklist',
+  attachments: 'Attachments',
   votes: 'Votes',
   comments: 'Comments',
   archived: 'Archived',
@@ -47,18 +58,35 @@ export const CUSTOM_KIND_LABELS: Record<CustomFieldKind, string> = {
   longtext: 'Long Text',
   number: 'Number',
   currency: 'Currency',
+  percent: 'Percent',
+  duration: 'Duration',
   date: 'Date',
+  datetime: 'Date and Time',
+  daterange: 'Date Range',
   checkbox: 'Checkbox',
   link: 'Link',
   email: 'Email',
+  phone: 'Phone',
   choice: 'Choice',
   multichoice: 'Multiple Choice',
   rating: 'Rating',
   card: 'Link to Card',
+  calculated: 'Calculated',
+  person: 'Person',
+  labels: 'Labels',
+  colour: 'Colour',
+  checklist: 'Checklist',
+  image: 'Image',
+  comments: 'Comments',
+  votes: 'Votes',
 };
 
-// The kinds with options (docs/specs/030-forms/forms.md "New card field kinds").
-const hasOptions = (kind: CustomFieldKind) => kind === 'choice' || kind === 'multichoice';
+// Add Field's kinds by name: every custom kind's, and the one-to-a-type built-in fields' (Comments, Votes).
+export const PICK_KIND_LABELS: Record<PickKind, string> = {
+  ...CUSTOM_KIND_LABELS,
+  comments: 'Comments',
+  votes: 'Votes',
+};
 
 // A full-width dashed "add" row (Add Type, Add Field, Add Tab): plain to spot, quiet until hovered.
 export const DASHED_ADD_BUTTON =
@@ -67,23 +95,8 @@ export const DASHED_ADD_BUTTON =
 export const ICON_BUTTON =
   'flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-500 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-800 disabled:opacity-30 dark:text-slate-400 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-slate-100';
 
-// Choice's options as typed, one a line, read back trimmed and without blanks or repeats.
-function optionsFrom(text: string): string[] {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  for (const raw of text.split('\n')) {
-    const o = raw.trim().slice(0, CUSTOM_CHOICE_OPTION_MAX);
-    if (o && !seen.has(o.toLowerCase())) {
-      seen.add(o.toLowerCase());
-      out.push(o);
-    }
-  }
-  return out.slice(0, CUSTOM_CHOICE_OPTIONS_MAX);
-}
-
-// A Card field's target (docs/specs/026-plan/item-types.md "Card fields"): which card type its card is.
 // A Currency field's currency: the common codes, GBP first, and the field's own when it is another.
-function CurrencySelect({
+export function CurrencySelect({
   value,
   onChange,
 }: {
@@ -113,7 +126,7 @@ function CurrencySelect({
 }
 
 // A Rating field's scale: 3 to 10 stars or points, 5 by default (stored as absent).
-function RatingScaleSelect({
+export function RatingScaleSelect({
   value,
   onChange,
 }: {
@@ -143,43 +156,334 @@ function RatingScaleSelect({
   );
 }
 
-function LinksToSelect({
+// What each calculation works out from, under the menu.
+const CALCULATION_LINES: Record<Calculation, string> = {
+  childCount:
+    'Worked out from the cards that link here with a Link to Card field. It can\u2019t be typed.',
+  childrenDone:
+    'Worked out from the cards that link here with a Link to Card field. Done means in a done column. It can\u2019t be typed.',
+  rollup:
+    'Worked out from one field of the cards that link here, totalled, averaged, counted or dated. It can\u2019t be typed.',
+  lookup: 'Shows a field of the card a Link to Card field links to. It can\u2019t be typed.',
+  formula: 'Worked out from this card\u2019s own fields by a formula. It can\u2019t be typed.',
+};
+
+// The patch picking a calculation makes: a Formula's settings go with any other (item-types.md "Formula fields").
+export function calculationPatch(calculation: Calculation): Partial<CustomFieldDef> {
+  // A new Formula gives a Number until its Result is picked, so it shows no share yet.
+  const settingsOff = { through: undefined, aggregate: undefined, source: undefined };
+  if (calculation === 'formula') {
+    track('Plan', 'Changed', 'FieldFormula');
+    return {
+      calculation,
+      showAs: undefined,
+      result: undefined,
+      currency: undefined,
+      ...settingsOff,
+    };
+  }
+  const off = {
+    calculation,
+    formula: undefined,
+    result: undefined,
+    currency: undefined,
+    ...settingsOff,
+  };
+  // A Child Count is no share, so it stops showing as a Percent.
+  return canShowAsPercent({ kind: 'calculated', calculation })
+    ? off
+    : { ...off, showAs: undefined };
+}
+
+// A Calculated field's calculation (docs/specs/026-plan/item-types.md "Calculated fields"): the fixed menu, with what
+// it works out from under it.
+export function CalculationSelect({
   value,
   onChange,
 }: {
-  value: string | undefined;
-  onChange: (linkType: string) => void;
+  value: Calculation | undefined;
+  onChange: (calculation: Calculation) => void;
 }) {
-  const types = usePlan()?.types ?? ITEM_TYPES;
+  const lineId = useId();
   return (
-    <Select
-      aria-label="Links To"
-      className="w-full"
-      selectClassName="text-[13px]"
-      value={value ?? ''}
-      onChange={(e) => onChange(e.target.value)}
-    >
-      <option value="" disabled>
-        Links To a Card Type…
-      </option>
-      {types.map((t) => (
-        <option key={t.id} value={t.id}>
-          Links To {t.label}
-        </option>
-      ))}
-    </Select>
+    <div className="flex flex-col gap-1">
+      <Select
+        aria-label="Calculation"
+        aria-describedby={lineId}
+        className="w-full"
+        selectClassName="text-[13px]"
+        value={value ?? CALCULATIONS[0]}
+        onChange={(e) => onChange(e.target.value as Calculation)}
+      >
+        {CALCULATIONS.map((c) => (
+          <option key={c} value={c}>
+            {CALCULATION_LABELS[c]}
+          </option>
+        ))}
+      </Select>
+      <p id={lineId} className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {CALCULATION_LINES[value ?? CALCULATIONS[0]]}
+      </p>
+    </div>
   );
 }
 
-// A custom field's name, options (Choice) and the type it links to (Card); where it shows on a card is the
-// Display tab's.
+// Required (docs/specs/026-plan/item-types.md "Required fields"): a switch, as a form question's; none for a
+// Checkbox, which reads unticked as empty, or a Calculated field, which nobody fills in.
+export function RequiredSwitch({
+  field,
+  onChange,
+}: {
+  field: Pick<CustomFieldDef, 'kind' | 'required'> & Partial<Pick<CustomFieldDef, 'timeSpent'>>;
+  onChange: (required: boolean | undefined) => void;
+}) {
+  // A Time Spent field's entries are recorded, never typed in (docs/specs/026-plan/item-types.md "Required fields").
+  if (!canBeRequired(field.kind) || field.timeSpent) return null;
+  return (
+    <SwitchRow
+      checked={field.required === true}
+      onChange={() => onChange(field.required ? undefined : true)}
+      layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
+      className="px-1 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+    >
+      Required
+    </SwitchRow>
+  );
+}
+
+// Show as Percent Bar (docs/specs/026-plan/item-types.md "Percent"): a switch on a worked-out share (a Children Done),
+// with its line under it; none for a field whose result is no share. Off is stored as absent.
+export const SHOW_AS_PERCENT_LINE = 'Draw the share as a bar, like a Percent field.';
+// A Duration field's Track Time switch (docs/specs/026-plan/item-types.md "Time Spent"): set when the field is made
+// (Add Field's Shape step), shown fixed in an existing field's form, as a kind is.
+export const TRACK_TIME_LINE = 'A start/stop timer on the card, adding up everyone’s time.';
+export function TrackTimeSwitch({
+  field,
+  onChange,
+  fixed = false,
+}: {
+  field: Pick<CustomFieldDef, 'kind'> & Partial<Pick<CustomFieldDef, 'timeSpent'>>;
+  onChange?: (patch: Pick<CustomFieldDef, 'timeSpent' | 'required'>) => void;
+  // An existing field: the switch shows how it was made and can't change.
+  fixed?: boolean;
+}) {
+  const lineId = useId();
+  if (field.kind !== 'duration') return null;
+  const on = field.timeSpent === true;
+  return (
+    <div className="flex flex-col">
+      <SwitchRow
+        checked={on}
+        disabled={fixed}
+        aria-describedby={lineId}
+        onChange={() =>
+          onChange?.(on ? { timeSpent: undefined } : { timeSpent: true, required: undefined })
+        }
+        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
+        className="px-1 text-[13px] font-medium text-slate-700 enabled:hover:bg-slate-100 dark:text-slate-200 dark:enabled:hover:bg-slate-800"
+      >
+        Track Time
+      </SwitchRow>
+      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {fixed ? `${TRACK_TIME_LINE} Set when the field is made.` : TRACK_TIME_LINE}
+      </p>
+    </div>
+  );
+}
+
+// A Date Range field's Include Time switch (docs/specs/026-plan/item-types.md "Date Range"): set when the field is made
+// (Add Field's Shape step), shown fixed in an existing field's form, as Track Time is.
+export const INCLUDE_TIME_LINE =
+  'Each end has a time of day too. Chosen once: it can’t change later.';
+export function IncludeTimeSwitch({
+  field,
+  onChange,
+  fixed = false,
+}: {
+  field: Pick<CustomFieldDef, 'kind'> & Partial<Pick<CustomFieldDef, 'withTime'>>;
+  onChange?: (patch: Pick<CustomFieldDef, 'withTime'>) => void;
+  // An existing field: the switch shows how it was made and can't change.
+  fixed?: boolean;
+}) {
+  const lineId = useId();
+  if (field.kind !== 'daterange') return null;
+  const on = field.withTime === true;
+  return (
+    <div className="flex flex-col">
+      <SwitchRow
+        checked={on}
+        disabled={fixed}
+        aria-describedby={lineId}
+        onChange={() => onChange?.({ withTime: on ? undefined : true })}
+        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
+        className="px-1 text-[13px] font-medium text-slate-700 enabled:hover:bg-slate-100 dark:text-slate-200 dark:enabled:hover:bg-slate-800"
+      >
+        Include Time
+      </SwitchRow>
+      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {INCLUDE_TIME_LINE}
+      </p>
+    </div>
+  );
+}
+
+export function ShowAsPercentSwitch({
+  field,
+  onChange,
+}: {
+  field: Pick<CustomFieldDef, 'kind' | 'calculation' | 'showAs'> &
+    Partial<Pick<CustomFieldDef, 'result'>>;
+  onChange: (showAs: 'percent' | undefined) => void;
+}) {
+  const lineId = useId();
+  if (!canShowAsPercent(field)) return null;
+  const on = field.showAs === 'percent';
+  return (
+    <div className="flex flex-col">
+      <SwitchRow
+        checked={on}
+        aria-describedby={lineId}
+        onChange={() => {
+          track('Plan', 'Changed', 'FieldShowAsPercent');
+          onChange(on ? undefined : 'percent');
+        }}
+        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
+        className="px-1 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        Show as Percent Bar
+      </SwitchRow>
+      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {SHOW_AS_PERCENT_LINE}
+      </p>
+    </div>
+  );
+}
+
+// Notifies (docs/specs/026-plan/item-types.md "Notifies"): what the switch on a Person field, and on the Assignee's
+// row menu, says it does.
+export const NOTIFIES_LINE =
+  'Tell the person when a card is theirs: the Inbox, emails and Only Mine.';
+
+// A Person field's Notifies switch, as Required's, with its line under it (the switch's description); none for any
+// other kind. Off is stored as absent.
+export function NotifiesSwitch({
+  field,
+  onChange,
+}: {
+  field: Pick<CustomFieldDef, 'kind' | 'notifies'>;
+  onChange: (notifies: boolean | undefined) => void;
+}) {
+  const lineId = useId();
+  if (field.kind !== 'person') return null;
+  return (
+    <div className="flex flex-col">
+      <SwitchRow
+        checked={field.notifies === true}
+        aria-describedby={lineId}
+        onChange={() => {
+          track('Plan', 'Changed', 'FieldNotifies');
+          onChange(field.notifies ? undefined : true);
+        }}
+        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
+        className="px-1 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        Notifies
+      </SwitchRow>
+      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {NOTIFIES_LINE}
+      </p>
+    </div>
+  );
+}
+
+// Holds Several (docs/specs/026-plan/item-types.md "Holds Several"): what the switch on a Person or Card field says.
+export const HOLDS_SEVERAL_LINES: Partial<Record<CustomFieldDef['kind'], string>> = {
+  person: 'Hold more than one person, such as reviewers or a pair.',
+  card: 'Link more than one card, such as related work.',
+};
+
+// A Person or Card field's Holds Several switch, as Notifies', with its line under it; none for any other kind. Off is
+// stored as absent, and turning it either way leaves every card's value as it is.
+export function HoldsSeveralSwitch({
+  field,
+  onChange,
+}: {
+  field: Pick<CustomFieldDef, 'kind' | 'multiple'>;
+  onChange: (multiple: boolean | undefined) => void;
+}) {
+  const lineId = useId();
+  const line = HOLDS_SEVERAL_LINES[field.kind];
+  if (!line) return null;
+  return (
+    <div className="flex flex-col">
+      <SwitchRow
+        checked={field.multiple === true}
+        aria-describedby={lineId}
+        onChange={() => {
+          track('Plan', 'Changed', 'FieldHoldsSeveral');
+          onChange(field.multiple ? undefined : true);
+        }}
+        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
+        className="px-1 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        Holds Several
+      </SwitchRow>
+      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {line}
+      </p>
+    </div>
+  );
+}
+
+// Blocked By (docs/specs/026-plan/item-types.md "Blocked By"): what the switch on a Card field says.
+export const BLOCKS_LINE = 'Its cards block this one: it shows as blocked until each is done.';
+
+// A Card field's Blocks switch, as Holds Several's, with its line under it; none for any other kind. On also turns
+// Holds Several on (a card can wait on several); off is stored as absent and leaves every card's value as it is.
+export function BlocksSwitch({
+  field,
+  onChange,
+}: {
+  field: Pick<CustomFieldDef, 'kind' | 'blocks'>;
+  onChange: (
+    patch: Pick<CustomFieldDef, 'blocks'> & Partial<Pick<CustomFieldDef, 'multiple'>>,
+  ) => void;
+}) {
+  const lineId = useId();
+  if (field.kind !== 'card') return null;
+  return (
+    <div className="flex flex-col">
+      <SwitchRow
+        checked={field.blocks === true}
+        aria-describedby={lineId}
+        onChange={() => {
+          track('Plan', 'Changed', 'FieldBlocks');
+          onChange(field.blocks ? { blocks: undefined } : { blocks: true, multiple: true });
+        }}
+        layout="flex min-h-8 items-center gap-2 rounded-md pointer-coarse:min-h-11"
+        className="px-1 text-[13px] font-medium text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+      >
+        Blocks
+      </SwitchRow>
+      <p id={lineId} className="px-1 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {BLOCKS_LINE}
+      </p>
+    </div>
+  );
+}
+
+// A custom field's name, options (Choice), the types it links to (Card) and its calculation (Calculated); where it
+// shows on a card is the Display tab's.
 export function CustomFieldForm({
   field,
   onChange,
+  formulaDraft,
   className = '',
 }: {
-  field: Omit<CustomFieldDef, 'id'>;
+  field: Omit<CustomFieldDef, 'id'> & Partial<Pick<CustomFieldDef, 'id'>>;
   onChange: (patch: Partial<CustomFieldDef>) => void;
+  // The type as drafted, for a Formula's names and preview (item-types.md "Formula fields").
+  formulaDraft?: FormulaDraft;
   className?: string;
 }) {
   const [optionsText, setOptionsText] = useState((field.options ?? []).join('\n'));
@@ -193,7 +497,14 @@ export function CustomFieldForm({
         onChange={(e) => onChange({ label: e.target.value })}
       />
       {field.kind === 'card' ? (
-        <LinksToSelect value={field.linkType} onChange={(linkType) => onChange({ linkType })} />
+        <LinksToPicker
+          value={linkTypesOf(field)}
+          onChange={(ids) => {
+            // Both keys always, so the patch clears a list a single type no longer needs.
+            const { linkType, linkTypes } = withLinkTypes(field, ids);
+            onChange({ linkType, linkTypes });
+          }}
+        />
       ) : null}
       {field.kind === 'currency' ? (
         <CurrencySelect value={field.currency} onChange={(currency) => onChange({ currency })} />
@@ -201,6 +512,32 @@ export function CustomFieldForm({
       {field.kind === 'rating' ? (
         <RatingScaleSelect value={field.scale} onChange={(scale) => onChange({ scale })} />
       ) : null}
+      {field.kind === 'calculated' ? (
+        <CalculationSelect
+          value={field.calculation}
+          onChange={(calculation) => onChange(calculationPatch(calculation))}
+        />
+      ) : null}
+      {isFormulaField(field) && formulaDraft ? (
+        <FormulaEditor
+          field={field}
+          draft={formulaDraft}
+          keepLastWorking
+          onChange={onChange}
+          currencySelect={
+            <CurrencySelect
+              value={field.currency}
+              onChange={(currency) => onChange({ currency })}
+            />
+          }
+        />
+      ) : null}
+      {(isRollupField(field) || isLookupField(field)) && formulaDraft ? (
+        <RollupEditor field={field} draft={formulaDraft} onChange={onChange} />
+      ) : null}
+      <ShowAsPercentSwitch field={field} onChange={(showAs) => onChange({ showAs })} />
+      <TrackTimeSwitch field={field} fixed />
+      <IncludeTimeSwitch field={field} fixed />
       {hasOptions(field.kind) ? (
         <TextArea
           aria-label="Options, one a line"
@@ -210,136 +547,15 @@ export function CustomFieldForm({
           value={optionsText}
           onChange={(e) => {
             setOptionsText(e.target.value);
-            onChange({ options: optionsFrom(e.target.value) });
+            onChange({ options: optionsFrom(e.target.value.split('\n')) });
           }}
         />
       ) : null}
+      <HoldsSeveralSwitch field={field} onChange={(multiple) => onChange({ multiple })} />
+      <BlocksSwitch field={field} onChange={onChange} />
+      <RequiredSwitch field={field} onChange={(required) => onChange({ required })} />
+      <NotifiesSwitch field={field} onChange={(notifies) => onChange({ notifies })} />
       {/* Where it shows on a card is the Display tab's: drag it onto the card there. */}
-    </div>
-  );
-}
-
-// Add Field: a built-in field the type lacks, or a new custom field (a name and a kind).
-export function NewFieldForm({
-  missing,
-  canAddCustom,
-  onAddBuiltIn,
-  onAddCustom,
-  onCancel,
-}: {
-  missing: readonly ItemFieldId[];
-  canAddCustom: boolean;
-  onAddBuiltIn: (id: ItemFieldId) => void;
-  onAddCustom: (field: Omit<CustomFieldDef, 'id'>) => void;
-  onCancel: () => void;
-}) {
-  const [custom, setCustom] = useState<Omit<CustomFieldDef, 'id'>>({ label: '', kind: 'text' });
-  const types = usePlan()?.types ?? ITEM_TYPES;
-  const ready =
-    custom.label.trim().length > 0 &&
-    (!hasOptions(custom.kind) || (custom.options?.length ?? 0) > 0) &&
-    (custom.kind !== 'card' || !!custom.linkType);
-  return (
-    <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-2.5 dark:border-slate-700 dark:bg-slate-900">
-      {missing.length > 0 ? (
-        <div>
-          <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            Built-In Fields
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {missing.map((id) => (
-              <button
-                key={id}
-                type="button"
-                className="rounded-full border border-slate-200 px-2.5 py-0.5 text-[12px] hover:border-brand-300 hover:bg-brand-50 dark:border-slate-700 dark:hover:border-brand-500/40 dark:hover:bg-brand-500/10"
-                onClick={() => onAddBuiltIn(id)}
-              >
-                {BUILT_IN_FIELD_LABELS[id]}
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : null}
-      {canAddCustom ? (
-        <div className="flex flex-col gap-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-            New Custom Field
-          </p>
-          <TextInput
-            aria-label="New field's name"
-            placeholder="Name"
-            compact
-            value={custom.label}
-            maxLength={CUSTOM_FIELD_LABEL_MAX}
-            onChange={(e) => setCustom({ ...custom, label: e.target.value })}
-          />
-          <CustomFieldKindTiles
-            kinds={CUSTOM_FIELD_KINDS}
-            value={custom.kind}
-            onChange={(kind) => setCustom({ ...custom, kind })}
-          />
-          {custom.kind === 'rating' ? (
-            <RatingScaleSelect
-              value={custom.scale}
-              onChange={(scale) => setCustom({ ...custom, scale })}
-            />
-          ) : null}
-          {hasOptions(custom.kind) ? (
-            <TextArea
-              aria-label="Options, one a line"
-              placeholder="Options, one a line"
-              compact
-              className="min-h-20"
-              onChange={(e) => setCustom({ ...custom, options: optionsFrom(e.target.value) })}
-            />
-          ) : null}
-          {custom.kind === 'currency' ? (
-            <CurrencySelect
-              value={custom.currency}
-              onChange={(currency) => setCustom({ ...custom, currency })}
-            />
-          ) : null}
-          {custom.kind === 'card' ? (
-            <LinksToSelect
-              value={custom.linkType}
-              onChange={(linkType) => setCustom({ ...custom, linkType })}
-            />
-          ) : null}
-          <CustomFieldPreview
-            label={custom.label}
-            kind={custom.kind}
-            options={custom.options ?? []}
-            linkLabel={types.find((t) => t.id === custom.linkType)?.label}
-            currency={custom.currency}
-            scale={custom.scale}
-          />
-        </div>
-      ) : null}
-      <div className="flex justify-end gap-2">
-        <Button variant="secondary" size="sm" onClick={onCancel}>
-          <CloseIcon size={12} />
-          Cancel
-        </Button>
-        {canAddCustom ? (
-          <Button
-            size="sm"
-            disabled={!ready}
-            onClick={() =>
-              onAddCustom({
-                ...custom,
-                label: custom.label.trim(),
-                ...(hasOptions(custom.kind) ? {} : { options: undefined }),
-                ...(custom.kind === 'rating' ? {} : { scale: undefined }),
-                ...(custom.kind === 'card' ? {} : { linkType: undefined }),
-                ...(custom.kind === 'currency' ? {} : { currency: undefined }),
-              })
-            }
-          >
-            <PlusIcon size={12} />
-            Add Custom Field
-          </Button>
-        ) : null}
-      </div>
     </div>
   );
 }

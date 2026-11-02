@@ -28,6 +28,7 @@ apps/index/src/merge.ts       a guest becoming an account (and the migration's l
 apps/index/src/migration-handoff.ts  the migration's handoff of a browser's Local only parts to another app
 apps/index/src/account-purge.ts  a closed account's purge, and the 15-minute cron
 apps/index/src/drive.ts       the Google Drive mirror's flag and change signal
+apps/index/src/webhooks/      webhooks: the routes, the outbox, the dispatcher (a Durable Object) and the messages
 ```
 
 ## Who calls it
@@ -120,21 +121,23 @@ apps/index/src/drive.ts       the Google Drive mirror's flag and change signal
 
 ## Secrets and settings
 
-| Name                          | What                                                                                                                     |
-| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `INDEX_KEY_<APP>`             | secret, per app (`LIVEDIAGRAM`, `LIVEPLANNER`, `LIVEDOCUMENTS`, `LIVEDESIGN`); the app's `INDEX_KEY`                     |
-| `GRANT_SIGNING_KEY`           | secret: the private ES256 JWK, with its `kid`. Development makes one per isolate if unset                                |
-| `MERGE_KEY`                   | secret: accounts' `INDEX_MERGE_KEY`                                                                                      |
-| `INDEX_KEY_DRIVE`             | secret: the Drive mirror's `INDEX_KEY_DRIVE`, with which it acts for a person and sets their flag                        |
-| `DRIVE_KEY_INDEX`             | secret: the Drive mirror's `DRIVE_KEY_INDEX`, carried by the change signal                                               |
-| `DRIVE`                       | service binding to `liveworkspace-drive` (`-staging`); without it the index sends no change signal                       |
-| `ACCOUNTS_URL`                | var: the accounts origin; tokens are checked as `${ACCOUNTS_URL}/api/auth`, grants issued as `${ACCOUNTS_URL}/api/index` |
-| `INDEX_AUDIENCES`             | var: every app's API resource, comma-separated                                                                           |
-| `APP_ORIGIN_<APP>`            | var: where each app's internal routes are                                                                                |
-| `INDEX_ENABLED`               | var: `off` answers every route as missing                                                                                |
-| `MIGRATION_LIMITER`           | rate limit binding: the migration's handoff, 60 a minute per person; absent (tests), not limited                         |
-| `SHARE_GUESS_VISITOR_LIMITER` | rate limit binding: share-password guesses, 10 a minute per visitor's network; absent (tests), not limited               |
-| `SHARE_GUESS_ITEM_LIMITER`    | rate limit binding: share-password guesses, 30 a minute per item from any network; absent (tests), not limited           |
+| Name                          | What                                                                                                                                                                 |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `INDEX_KEY_<APP>`             | secret, per app (`LIVEDIAGRAM`, `LIVEPLANNER`, `LIVEDOCUMENTS`, `LIVEDESIGN`); the app's `INDEX_KEY`                                                                 |
+| `GRANT_SIGNING_KEY`           | secret: the private ES256 JWK, with its `kid`. Development makes one per isolate if unset                                                                            |
+| `MERGE_KEY`                   | secret: accounts' `INDEX_MERGE_KEY`                                                                                                                                  |
+| `INDEX_KEY_DRIVE`             | secret: the Drive mirror's `INDEX_KEY_DRIVE`, with which it acts for a person and sets their flag                                                                    |
+| `DRIVE_KEY_INDEX`             | secret: the Drive mirror's `DRIVE_KEY_INDEX`, carried by the change signal                                                                                           |
+| `DRIVE`                       | service binding to `liveworkspace-drive` (`-staging`); without it the index sends no change signal                                                                   |
+| `ACCOUNTS_URL`                | var: the accounts origin; tokens are checked as `${ACCOUNTS_URL}/api/auth`, grants issued as `${ACCOUNTS_URL}/api/index`                                             |
+| `INDEX_AUDIENCES`             | var: every app's API resource, comma-separated                                                                                                                       |
+| `APP_ORIGIN_<APP>`            | var: where each app's internal routes are                                                                                                                            |
+| `INDEX_ENABLED`               | var: `off` answers every route as missing                                                                                                                            |
+| `WEBHOOK_KEY`                 | secret: base64 of 32 random bytes, the AES-GCM key webhooks' URLs and signing secrets are sealed with; without it the webhooks routes answer 503 and nothing is sent |
+| `WEBHOOKS`                    | Durable Object binding to `WebhookDispatcher` (one instance), whose alarm sends webhook deliveries                                                                   |
+| `MIGRATION_LIMITER`           | rate limit binding: the migration's handoff, 60 a minute per person; absent (tests), not limited                                                                     |
+| `SHARE_GUESS_VISITOR_LIMITER` | rate limit binding: share-password guesses, 10 a minute per visitor's network; absent (tests), not limited                                                           |
+| `SHARE_GUESS_ITEM_LIMITER`    | rate limit binding: share-password guesses, 30 a minute per item from any network; absent (tests), not limited                                                       |
 
 Without `GRANT_SIGNING_KEY` outside development, `/jwks` and grants answer 503 `grants_unavailable`, and
 nothing can be made (there would be no grant to open it with).
@@ -156,7 +159,7 @@ for the person (favourite, last opened, link access) is one D1 batch. `lists.tes
 list's query plan and times 2,000 of a person's items among 20,000 others' (each page a few
 milliseconds). Opens are written at most once a minute per person and item, in memory and in SQL. Comment
 pushes go in through `json_each`, one statement per table. Most Used rides Recent's first page as one more
-query on `use_days`' person index (`most-used.test.ts`: 14 ms beside 100,000 other rows). A Timeline page is
+query on `use_days`' person index, its opens summed per item over 14 days (`most-used.test.ts`: 14 ms beside 100,000 other rows). A Timeline page is
 one statement reading one index range of at most `limit + 1` rows per scope the person has (their own, and
 each team's), never the whole feed (`timeline.test.ts`: two pages from 10,000 of a person's events among
 100,000 others in about 15 ms); an event is recorded in the batch of the change it is about, two or three
@@ -170,7 +173,10 @@ A share-password guess adds two rate-limit checks, made at once, before the PBKD
 this isolate already found right (its bounded memory of 1,000) costs one SHA-256 and no check, so visitors already in
 add nothing per request. The migration's handoff is one rate-limit check, one batch (the item and its event), the app call, and on a
 failure one delete by primary key. Its body can be up to 32 MiB, parsed once and sent on once, so a request
-holds about three copies of it in memory at worst (well under a Worker's 128 MB at the cap).
+holds about three copies of it in memory at worst (well under a Worker's 128 MB at the cap). A webhook costs the write that records an event one
+more statement in its batch (an indexed probe of the scope's webhooks, usually none), and the request, after it
+answers, one indexed read and one Durable Object call only when that statement could have queued something; the
+deliveries themselves happen in the dispatcher's alarm, never in a request ([blueprints/webhooks.md](blueprints/webhooks.md)).
 
 ## Running it locally
 
@@ -198,6 +204,9 @@ Secrets are set once per environment with `wrangler secret put` and survive ever
 (made as above, a different one per environment), `MERGE_KEY` (the same value as accounts' `INDEX_MERGE_KEY`),
 `INDEX_KEY_<APP>` for each app (the same value as that app's `INDEX_KEY`), and for the Drive mirror
 `INDEX_KEY_DRIVE` and `DRIVE_KEY_INDEX` (the same values as the drive Worker's).
+
+`WEBHOOK_KEY` (made with `openssl rand -base64 32`, a different one per environment) seals webhooks' URLs and
+secrets ([webhooks.md](webhooks.md)); changing it makes every existing webhook unreadable, so it is set once.
 
 The daily cron purges the Trash and retries missed purges; the 15-minute one finishes closed accounts' purges and
 tells the apps what was purged.

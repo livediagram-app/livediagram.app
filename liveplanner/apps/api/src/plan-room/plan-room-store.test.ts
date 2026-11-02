@@ -7,10 +7,10 @@ import type { Element } from '@liveplanner/project';
 import worker from '../index';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { MAX_TAB_HOLDERS } from '@liveworkspace/index-app';
-import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
 import type { Env } from '../types';
 import { DRAIN_TABS } from './plan-outbox';
-import { MAINTENANCE_EVERY_MS, PlanRoom } from './plan-room';
+import { MAINTENANCE_EVERY_MS } from './plan-room';
+import { planNamespace, type Plan } from './test-plan-namespace';
 
 // Each plan's content in its own SQLite-backed Durable Object (docs/specs/015-api/api.md "Storage"), end to end:
 // the real worker resolves the caller and forwards to the plan's object, which answers from its own SQLite and
@@ -87,84 +87,6 @@ const box = (id: string, label = id): Element => ({
   height: 60,
   label,
 });
-
-type Plan = { room: PlanRoom; db: DatabaseSync; transactions: number };
-
-// The PLAN_ROOM namespace: one PlanRoom per name, each on its own database, with the calls the worker made.
-function planNamespace(envOf: () => Env) {
-  const plans = new Map<string, Plan>();
-  const calls: string[] = [];
-  const open = (name: string): Plan => {
-    const existing = plans.get(name);
-    if (existing) return existing;
-    const db = new DatabaseSync(':memory:');
-    db.exec('PRAGMA foreign_keys = ON');
-    const store = new Map<string, unknown>();
-    const transaction = nodeTransaction(db);
-    const plan = { db, transactions: 0 } as Plan;
-    const id = {
-      name,
-      equals: (other: { name?: string }) => other?.name === name,
-      toString: () => name,
-    };
-    const state = {
-      id,
-      storage: {
-        sql: nodeItemSql(db),
-        transactionSync: <T>(fn: () => T): T => {
-          plan.transactions += 1;
-          return transaction(fn);
-        },
-        get: async (key: string) => store.get(key),
-        put: async (key: string, value: unknown) => void store.set(key, value),
-        delete: async (key: string) => store.delete(key),
-        list: async ({ prefix }: { prefix: string }) =>
-          new Map([...store].filter(([key]) => key.startsWith(prefix))),
-        setAlarm: async () => {},
-        deleteAlarm: async () => {},
-        // The runtime's deleteAll drops the SQLite database with the key-value pairs.
-        deleteAll: async () => {
-          store.clear();
-          db.exec('PRAGMA foreign_keys = OFF');
-          const tables = db
-            .prepare(
-              "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
-            )
-            .all();
-          for (const t of tables) db.exec(`DROP TABLE IF EXISTS "${String(t.name)}"`);
-          db.exec('PRAGMA foreign_keys = ON');
-        },
-      },
-      sockets: [] as WebSocket[],
-      acceptWebSocket(ws: WebSocket) {
-        state.sockets.push(ws);
-      },
-      getWebSockets: () => [...state.sockets],
-      blockConcurrencyWhile: async (fn: () => Promise<void>) => fn(),
-      waitUntil: () => {},
-    };
-    plan.room = new PlanRoom(state as unknown as DurableObjectState, envOf());
-    plans.set(name, plan);
-    return plan;
-  };
-  const ns = {
-    idFromName: (name: string) => ({ name, equals: (o: { name?: string }) => o?.name === name }),
-    get: (id: { name: string }) => {
-      const { room } = open(id.name);
-      return new Proxy(room, {
-        get(target, prop, receiver) {
-          const value: unknown = Reflect.get(target, prop, receiver);
-          if (typeof value !== 'function') return value;
-          return (...args: unknown[]) => {
-            calls.push(String(prop));
-            return (value as (...a: unknown[]) => unknown).apply(target, args);
-          };
-        },
-      });
-    },
-  };
-  return { ns, plans, calls, open };
-}
 
 type World = {
   d1: SqliteD1;
@@ -317,6 +239,71 @@ describe("a plan's content lives in its own Durable Object", () => {
       'PUT /api/index/app/items/A/events',
       'PUT /api/index/app/items/A/summary',
     ]);
+  });
+
+  it('records no editor for the create: the making is no edit, so markUsed: false counts no use day', async () => {
+    const w = world({ INDEX_KEY: 'index-key' });
+    await createPlan(w, 'A');
+    const plan = w.plans.get('A')!;
+    const edits = () => plan.db.prepare("SELECT key FROM outbox WHERE kind = 'edit'").all();
+    expect(edits()).toEqual([]);
+    // A re-commit of its own id is the making again, not an edit.
+    await createPlan(w, 'A');
+    expect(edits()).toEqual([]);
+    indexCalls.length = 0;
+    await plan.room.drain();
+    expect(indexCalls).toContain('PUT /api/index/app/items/A/summary');
+    expect(indexCalls).not.toContain('PUT /api/index/app/items/A/events');
+    // Its first edit afterwards is a use like any other.
+    const saved = await w.send('PUT', '/api/projects/A/tabs/t1', {
+      id: 't1',
+      name: 'Board',
+      elements: [box('a'), box('b')],
+    });
+    expect(saved.status).toBe(200);
+    expect(edits()).toHaveLength(1);
+  });
+
+  it("records an API client's create as its use unless it says markUsed: false", async () => {
+    const w = world({ INDEX_KEY: 'index-key' });
+    // The index makes an API client's item and answers its grant; the rest as the suite's stand-in answers.
+    const indexFetch = globalThis.fetch;
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+      const req = new Request(input, init);
+      if (req.method === 'POST' && new URL(req.url).pathname === '/api/index/items') {
+        indexCalls.push('POST /api/index/items');
+        const { id } = (await req.json()) as { id: string };
+        return Response.json(
+          {
+            item: { id, folderId: null, teamId: null },
+            grant: { grant: grantOf(id), level: 'edit', tabId: null, expiresAt: 9e12 },
+          },
+          { status: 201 },
+        );
+      }
+      return indexFetch(input, init);
+    });
+    const apiCreate = async (id: string, extra: Record<string, unknown> = {}) => {
+      const res = await w.send(
+        'POST',
+        '/api/projects',
+        { id, name: id, tabs: [{ id: `${id}-t1`, name: 'Board', elements: [box('a')] }], ...extra },
+        { 'X-Index-Grant': '' },
+      );
+      expect(res.status).toBe(201);
+      // Told beside the create, never waited on.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    };
+
+    await apiCreate('used');
+    await apiCreate('batch', { markUsed: false });
+    expect(indexCalls).toContain('POST /api/index/items/used/open');
+    expect(indexCalls).not.toContain('POST /api/index/items/batch/open');
+
+    // An editor's create sends the index's grant and records its own open: nothing recorded here.
+    indexCalls.length = 0;
+    await createPlan(w, 'mine');
+    expect(indexCalls.filter((call) => call.endsWith('/open'))).toEqual([]);
   });
 
   it('records nothing for a read: no edit key, no outbox row, no push scheduled', async () => {

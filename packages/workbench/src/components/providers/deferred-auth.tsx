@@ -38,11 +38,6 @@ export type DeferredAuthState = {
   // Ends the session after the api has deleted the account's data
   // (DeleteAccountDialog). Null until the bridge publishes it / when disabled.
   deleteAccount: (() => Promise<void>) | null;
-  // Step-up auth ahead of anything irreversible: resolves true once the person has proved it is them
-  // again, false when it was cancelled or failed. Account deletion runs it BEFORE the server data goes, so
-  // a cancelled prompt deletes nothing. Absent when the session has no such step (the accounts Worker has
-  // none yet).
-  confirmIdentity?: () => Promise<boolean>;
 };
 
 // The "still loading" state, until the bridge publishes the session.

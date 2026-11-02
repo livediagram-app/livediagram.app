@@ -16,7 +16,7 @@ function address(href: string) {
 describe('takeTicketFromAddress', () => {
   it('reads the ticket and the document, and clears the fragment', () => {
     const { location, history } = address(
-      `https://livediagram-router.liveworkspace-easing509.workers.dev/embed/workbench?d=doc-1#ticket=${TICKET}`,
+      `https://www.livediagram.app/embed/workbench?d=doc-1#ticket=${TICKET}`,
     );
 
     expect(takeTicketFromAddress(location, history)).toEqual({
@@ -29,7 +29,7 @@ describe('takeTicketFromAddress', () => {
 
   it('reads no ticket when the fragment has none, and still clears it', () => {
     const { location, history } = address(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/embed/workbench?d=doc-1#x=1',
+      'https://www.livediagram.app/embed/workbench?d=doc-1#x=1',
     );
 
     expect(takeTicketFromAddress(location, history)).toEqual({
@@ -42,16 +42,14 @@ describe('takeTicketFromAddress', () => {
 
   it('reads a ticket of the wrong shape as none', () => {
     const { location, history } = address(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/embed/workbench?d=doc-1#ticket=short',
+      'https://www.livediagram.app/embed/workbench?d=doc-1#ticket=short',
     );
 
     expect(takeTicketFromAddress(location, history).ticket).toBeNull();
   });
 
   it('reads a reload, whose fragment is gone, as no ticket and touches nothing', () => {
-    const { location, history } = address(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/embed/workbench?d=doc-1',
-    );
+    const { location, history } = address('https://www.livediagram.app/embed/workbench?d=doc-1');
 
     expect(takeTicketFromAddress(location, history)).toEqual({
       ticket: null,
@@ -63,7 +61,7 @@ describe('takeTicketFromAddress', () => {
 
   it('reads no document when the address has none', () => {
     const { location, history } = address(
-      `https://livediagram-router.liveworkspace-easing509.workers.dev/embed/workbench#ticket=${TICKET}`,
+      `https://www.livediagram.app/embed/workbench#ticket=${TICKET}`,
     );
 
     expect(takeTicketFromAddress(location, history)).toEqual({
@@ -76,9 +74,9 @@ describe('takeTicketFromAddress', () => {
 
 describe('takeTicketFromAddress, workspace scope', () => {
   it.each([
-    'https://livediagram-router.liveworkspace-easing509.workers.dev/embed/workbench/explorer',
-    'https://livediagram-router.liveworkspace-easing509.workers.dev/embed/workbench/explorer/folder/f1',
-    'https://livediagram-router.liveworkspace-easing509.workers.dev/embed/workbench/document/doc-1',
+    'https://www.livediagram.app/embed/workbench/explorer',
+    'https://www.livediagram.app/embed/workbench/explorer/folder/f1',
+    'https://www.livediagram.app/embed/workbench/document/doc-1',
   ])('reads %s as the workspace scope, with no document', (href) => {
     const { location, history } = address(`${href}#ticket=${TICKET}`);
 
@@ -92,7 +90,7 @@ describe('takeTicketFromAddress, workspace scope', () => {
 
   it('reads the document page with a trailing slash as the document scope', () => {
     const { location, history } = address(
-      `https://livediagram-router.liveworkspace-easing509.workers.dev/embed/workbench/?d=doc-1#ticket=${TICKET}`,
+      `https://www.livediagram.app/embed/workbench/?d=doc-1#ticket=${TICKET}`,
     );
 
     expect(takeTicketFromAddress(location, history).scope).toBe('document');

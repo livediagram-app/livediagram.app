@@ -63,6 +63,17 @@ describe('a Dashboard’s name in the menu box', () => {
     );
   });
 
+  // touch-targets.md "Padding where a pad would be clipped": the name truncates, so it grows by padding (20px to 44px
+  // tall) on a touch screen, a negative margin keeping the line where it was.
+  it('is 44px tall to a finger without moving', () => {
+    mountSlot();
+    render(<DashboardMenuName tab={tab} onRename={vi.fn()} />);
+    const name = screen.getByRole('button', { name: 'Rename Dashboard Q3 Overview' });
+    expect(name.className.split(' ')).toEqual(
+      expect.arrayContaining(['pointer-coarse:py-3', 'pointer-coarse:-my-3']),
+    );
+  });
+
   it('is plain text to someone who may not edit', () => {
     mountSlot();
     render(<DashboardMenuName tab={tab} />);

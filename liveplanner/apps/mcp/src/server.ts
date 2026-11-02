@@ -4,19 +4,18 @@
 // each tool, so a fresh server per request carries no cross-request state.
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { Env } from '@liveworkspace/mcp-kit/env';
+import { serverIdentity } from '@liveworkspace/mcp-kit/listing';
 import {
   elementSchemaDoc,
   SCHEMA_RESOURCE_URI,
   SERVER_INSTRUCTIONS,
 } from '@liveplanner/agent-verbs/mcp';
+import { LISTING } from './listing';
 import { registerTools } from './tools';
 import { registerPrompts } from './prompts';
 
 export function buildServer(env: Env): McpServer {
-  const server = new McpServer(
-    { name: 'liveplanner', version: '0.1.0' },
-    { instructions: SERVER_INSTRUCTIONS },
-  );
+  const server = new McpServer(serverIdentity(LISTING), { instructions: SERVER_INSTRUCTIONS });
 
   server.registerResource(
     'element-schema',

@@ -155,6 +155,8 @@ export function useEditorCommands(open: boolean): {
   const canvasEmpty = activeTab.elements.length === 0;
   const tabHasSteps = activeTab.elements.some((el) => el.type === 'shape' && el.shape === 'step');
   const tabLocked = activeTab.locked === true;
+  // One kind a tab: its first page says whether it is a wireframe tab.
+  const wireframeTab = pagesMode?.pages[0]?.kind === 'wireframe';
   const cmdCtx = useMemo<CommandContext>(
     () => ({
       isReadOnly,
@@ -180,6 +182,7 @@ export function useEditorCommands(open: boolean): {
       canvasEmpty,
       isMobile,
       tabLocked,
+      wireframeTab,
     }),
     [
       isReadOnly,
@@ -202,6 +205,7 @@ export function useEditorCommands(open: boolean): {
       canvasEmpty,
       isMobile,
       tabLocked,
+      wireframeTab,
     ],
   );
 

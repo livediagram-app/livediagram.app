@@ -116,7 +116,12 @@ const CONTENT_KINDS =
   'top-left, or "attachedTo" + "attachAt" pins the tip to that point of a node. ' +
   'shape "stack": a container that lines up the elements whose centre is inside it; "stackDirection", ' +
   '"stackColumns" (2 to 6, grid), "stackGap" and "stackPadding" (0 to 64), "stackAlign"; place children ' +
-  'anywhere inside and the editor lays them out.';
+  'anywhere inside and the editor lays them out. ' +
+  // Components (docs/specs/024-agents/edit-operations.md "Components").
+  'shape "instance": a copy of one of the design\u2019s components; "componentId" names its main (read_design ' +
+  'view "components" lists them), and it takes the main\u2019s frame when no size is given. "componentOverrides" ' +
+  'is { <main element id>: { label?, fillColor?, strokeColor?, textColor?, iconId? } }: what this copy shows ' +
+  'differently; everything else follows the main.';
 
 // The style fields a box or arrow takes beyond its geometry, as facts (docs/specs/015-api/mcp-server.md §4.7a "Style
 // fields"): the closed vocabularies from the one list edit operations and the value check read, so they cannot drift.
@@ -348,13 +353,14 @@ export const readDesignShape = {
   designId: z.string().describe('The design id (from find_designs).'),
   tabId: z.string().optional().describe('Which tab to read; defaults to the first.'),
   view: z
-    .enum(TAB_VIEW_NAMES)
+    .enum([...TAB_VIEW_NAMES, 'components'])
     .optional()
     .describe(
       'How to read the tab. outline (default): one line per element with its ref, label and arrows, ' +
         'nested by frame. graph: what connects to what. layout: where things sit. comments: open threads ' +
         'in full. show: one element in full (needs ref). find: elements holding some text (needs q). ' +
-        "pages: a Pages tab's pages with their rectangles and the layouts on offer.",
+        "pages: a Pages tab's pages with their rectangles and the layouts on offer. components: the design's " +
+        'components (not one tab): each main with its id, frame and elements, the ids componentOverrides takes.',
     ),
   budget: z
     .number()
@@ -529,7 +535,7 @@ export const updateDesignShape = {
         '[all]; rm <sel> [all] [keep-arrows]; move <sel> <placement>|by=dx,dy; connect <a> -> <b> [label=…] ' +
         '[line=straight|angled|curved]; rewire <arrow> from=<x> to=<y>; insert <kind> key=value… between <a> <b> ' +
         '(puts a node on the a→b arrow and makes room); wrap <sel…> in frame [label=…] [tidy]; unwrap ' +
-        '<frame>; order <sel> front|back; layout <sel> [style=flow|tree|mindmap] [direction=down|right]. ' +
+        '<frame>; detach <instance> (a component instance becomes plain elements); order <sel> front|back; layout <sel> [style=flow|tree|mindmap] [direction=down|right]. ' +
         'Selectors: a ref or id, "Label text", type:sticky, shape:diamond, in:<frame>, a->b, from:<x>, to:<x>, ' +
         'downstream:<x>. Placement: right-of:<x> left-of:<x> above:<x> below:<x> [gap:<n>], after:<x>, ' +
         'inside:<frame>, align:<x>, at:x,y; inside:<frame> right-of:<x> places beside x in that frame. A box placed ' +

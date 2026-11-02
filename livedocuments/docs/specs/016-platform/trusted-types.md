@@ -7,7 +7,7 @@ injection then needs a policy's help, and every policy is small, named and liste
 ## The header
 
 - **Every HTML response carries** `Content-Security-Policy: require-trusted-types-for 'script'; trusted-types
-liveworkspace-markup nextjs ProseMirrorClipboard default`, enforced from the start, never
+liveworkspace-markup liveworkspace-inert-parse nextjs ProseMirrorClipboard default`, enforced from the start, never
   report-only.
 - **Where it is set**: the editor's worker (`apps/editor/src/worker.ts`) beside its other security headers; the four
   static apps (marketing, help, telemetry) in their `public/_headers`. The router adds nothing; it holds no
@@ -17,7 +17,7 @@ liveworkspace-markup nextjs ProseMirrorClipboard default`, enforced from the sta
 
 ## Our policies
 
-Both come from `@liveworkspace/trusted-types`, built once for every app and for liveworkspace.app, and
+All three come from `@liveworkspace/trusted-types`, built once for every app and for liveworkspace.app, and
 re-exported with this app's header by `@livedocuments/ui`'s `trusted-types`. Nothing else of ours creates a policy. Every
 app creates the same policies under the same names, so a page that renders another app's UI (liveworkspace.app's
 telemetry dashboard, the Explorer each app's router serves from liveworkspace.app) never needs another app's names
@@ -27,7 +27,9 @@ in its header.
   (`trustedTypesBootScript`), before any other script can reach a sink. It is what the browser calls for a sink
   given a plain string by code that has no policy. It allows a script URL on the page's own origin under the app's
   own `<asset prefix>/_next/` (`/_next/` for marketing, `/live/_next/`, `/help/_next/` and so on), one on an origin in
-  "Third parties", and a worker from the page's own `blob:` URL; it refuses everything else: HTML, script text, and
+  "Third parties", a worker from the page's own `blob:` URL, and the push-only service worker at exactly
+  `/push-worker.js` on the page's own origin, for `navigator.serviceWorker.register` alone
+  (liveworkspace/docs/specs/003-accounts/push.md); it refuses everything else: HTML, script text, and
   any other URL. A `blob:` URL can only be minted by script already running on the page, and a worker has no DOM.
   For HTML it allows exactly `<script></script>`, the empty script React DOM parses to create a `<script>` element on
   a client render (a script inserted through `innerHTML` never runs); any other HTML string is refused.
@@ -36,6 +38,9 @@ in its header.
   sticker and template SVG builders (`@liveworkspace/icons`, `@livedocuments/templates`), the headless tab renderer's
   thumbnails, the JSON-LD block, and the inline boot scripts in each layout. It does not sanitise; the trust is that
   the markup came from one of those builders, which is why nothing else may call it.
+- **`liveworkspace-inert-parse`** lets `DOMParser` read HTML pasted into an article (a table copied from a
+  spreadsheet, a web page or a document) through `parseInert(source, type)`. A parsed document is inert: nothing in
+  it runs; its cells are rebuilt as plain elements and handed back to ProseMirror's own paste parser.
 - **Outside the browser** (the static prerender, tests without Trusted Types) the helpers pass strings through.
 
 ### Server-rendered markup
@@ -54,14 +59,15 @@ file to this.
 
 ## Third parties
 
-| Code                                             | Needs                                                                           | Allowed by                                       |
-| ------------------------------------------------ | ------------------------------------------------------------------------------- | ------------------------------------------------ |
-| React DOM, rendering a `<script>` in the browser | `innerHTML = '<script></script>'` on a scratch element (an empty, inert script) | `default`, that exact string alone               |
-| Next.js and Turbopack's chunk loading            | Script URLs under `/_next/` (`/live/_next/` in the editor)                      | `default`                                        |
-| Next.js's own script helper                      | Its pass-through policy                                                         | The `nextjs` policy name                         |
-| ProseMirror (the article editor)                 | Parsing pasted HTML into an inert template                                      | The `ProseMirrorClipboard` policy name           |
-| Our web workers                                  | Their script URLs under `/_next/`                                               | `default`                                        |
-| Nothing today (Clerk's session timers did)       | A `Worker` from the page's own `blob:` URL; the rule is kept                    | `default`, for the Worker constructor sink alone |
+| Code                                             | Needs                                                                             | Allowed by                                       |
+| ------------------------------------------------ | --------------------------------------------------------------------------------- | ------------------------------------------------ |
+| React DOM, rendering a `<script>` in the browser | `innerHTML = '<script></script>'` on a scratch element (an empty, inert script)   | `default`, that exact string alone               |
+| Next.js and Turbopack's chunk loading            | Script URLs under `/_next/` (`/live/_next/` in the editor)                        | `default`                                        |
+| Next.js's own script helper                      | Its pass-through policy                                                           | The `nextjs` policy name                         |
+| ProseMirror (the article editor)                 | Parsing pasted HTML into an inert template                                        | The `ProseMirrorClipboard` policy name           |
+| Our web workers                                  | Their script URLs under `/_next/`                                                 | `default`                                        |
+| Nothing today (Clerk's session timers did)       | A `Worker` from the page's own `blob:` URL; the rule is kept                      | `default`, for the Worker constructor sink alone |
+| The push-only service worker                     | `/push-worker.js` on the page's own origin, to `navigator.serviceWorker.register` | `default`, for that sink and path alone          |
 
 Sign-in loads no third-party script: it is a full-page hand-off to the liveworkspace accounts site, so no third-party
 origin is allowed. When the editor signed in through Clerk, its script origin and Cloudflare Turnstile's (for sign-up

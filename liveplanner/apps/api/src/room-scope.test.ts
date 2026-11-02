@@ -79,6 +79,13 @@ describe('opForScope (what a scoped session receives)', () => {
     expect(scopedSenderMayRelay(op, SCOPE)).toBe(false);
   });
 
+  it('delivers card thread writes to a scoped session without their threads', () => {
+    const op = { kind: 'threads', upserts: [{ id: 'th-1' }], removed: ['th-2'] };
+    expect(opForScope(op, null)).toBe(op);
+    expect(opForScope(op, SCOPE)).toEqual({ kind: 'threads', upserts: [], removed: [] });
+    expect(scopedSenderMayRelay(op, SCOPE)).toBe(false);
+  });
+
   it('delivers the tab-less worker notices', () => {
     for (const kind of ['share-revoked', 'share-rescoped', 'project-trashed']) {
       const op = { kind };

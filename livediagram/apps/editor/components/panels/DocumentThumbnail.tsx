@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { MOTION_MS } from '@liveworkspace/style-guards/motion';
+import { useAppearance } from '@livediagram/ui';
 import { LocalPreview } from '@liveworkspace/explorer/local-preview';
 import {
   loadThumbnail,
@@ -75,11 +76,14 @@ export function DocumentThumbnail({
   const [visible, setVisible] = useState(false);
   // The latest outcome counts only for the inputs it was fetched for: anything else (a new version
   // still loading, no viewer yet) is idle, so an older version's picture is never shown.
+  // Drawn in the viewer's half (document-snapshots.md "In the viewer's half"): a switch of appearance is a new key.
+  const { appearance } = useAppearance();
   const fetchKey = thumbnailKey({
     ownerId: ownerId ?? '',
     documentId,
     version,
     shareCode: shareCode ?? null,
+    appearance,
   });
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   // Our own outcome first, else one the cache already holds for these
@@ -134,7 +138,7 @@ export function DocumentThumbnail({
     let cancelled = false;
     // The cache owns the blob URL (and revokes it on eviction), so there is
     // nothing to release when this thumbnail unmounts.
-    loadThumbnail({ ownerId, documentId, version, shareCode: shareCode ?? null })
+    loadThumbnail({ ownerId, documentId, version, shareCode: shareCode ?? null, appearance })
       .then((entry) => {
         if (!cancelled) setLoaded({ ...entry, key: fetchKey });
       })
@@ -144,7 +148,7 @@ export function DocumentThumbnail({
     return () => {
       cancelled = true;
     };
-  }, [offline, empty, visible, ownerId, documentId, version, shareCode, fetchKey]);
+  }, [offline, empty, visible, ownerId, documentId, version, shareCode, appearance, fetchKey]);
 
   // Offline Mode (docs/specs/006-document/offline-mode.md): the browser it lives in, on a wash of
   // the app's accent (the Explorer's LocalPreview, as its This Browser rows draw it), no fetch, no snapshot.

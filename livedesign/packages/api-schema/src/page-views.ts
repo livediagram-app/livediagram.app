@@ -23,7 +23,7 @@ export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
 ]);
 
 // Named after the apps (`apps/live` is the editor).
-export type PageViewApp = 'Marketing' | 'Live' | 'Help' | 'Dashboard';
+export type PageViewApp = 'Marketing' | 'Live' | 'Help' | 'Dashboard' | 'Community';
 
 const SEGMENT = /^[a-z0-9._-]{1,60}$/;
 const MAX_SEGMENTS = 6;
@@ -88,6 +88,7 @@ export function pageViewPath(pathname: string): string | null {
 const APP_SEGMENTS: ReadonlyMap<string, PageViewApp> = new Map<string, PageViewApp>([
   ['help', 'Help'],
   ['telemetry', 'Dashboard'],
+  ['community', 'Community'],
   ...[...LIVE_ROUTE_SEGMENTS].map((segment): [string, PageViewApp] => [segment, 'Live']),
 ]);
 

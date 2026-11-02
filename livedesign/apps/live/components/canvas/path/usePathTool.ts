@@ -3,12 +3,12 @@
 import { useEffect, useMemo, useRef, type RefObject } from 'react';
 import {
   continuedPath,
-  isCompoundPath,
   defaultFillColor,
   defaultStrokeColor,
   resolveStockColours,
   pathAnchors,
   pathGeometry,
+  reshapeContour,
   reshapePath,
   type Element,
   type PathAnchor,
@@ -22,6 +22,8 @@ import type { PathEditKind } from '@/hooks/canvas/usePathCommits';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePathDrawGesture, type PathCommit } from './usePathDrawGesture';
 import { usePathEditGesture } from './usePathEditGesture';
+import { usePathContour } from './usePathContour';
+import { isSimplifiable, simplifyContour } from '@/lib/path-simplify';
 import type { PathDraftView } from './PathDraftLayer';
 import type { PathEditView } from './PathEditLayer';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
@@ -78,6 +80,7 @@ export function usePathTool({
     id: string,
     next: { anchors: PathAnchor[]; closed: boolean },
     kind: PathEditKind,
+    contour?: number,
   ) => void;
   onDressPath?: <T extends Element>(el: T) => T;
   onLeaveEdit: () => void;
@@ -106,12 +109,11 @@ export function usePathTool({
     onBeginEdit(id);
   };
 
-  // Edit mode: the path being edited, while Select is in hand and it can be edited at all.
+  // Edit mode: the path being edited, while Select is in hand and it can be edited at all (a
+  // combined path one contour at a time, usePathContour).
   const pathOf = (id: string | null): PathElement | null => {
     const el = id ? elements.find((e) => e.id === id) : undefined;
-    return el?.type === 'path' && el.locked !== true && !inertIds?.has(el.id) && !isCompoundPath(el)
-      ? el
-      : null;
+    return el?.type === 'path' && el.locked !== true && !inertIds?.has(el.id) ? el : null;
   };
   const editable = canvasTool === 'select' && pendingDraw === null;
   const edited = pathOf(editingId);
@@ -119,28 +121,34 @@ export function usePathTool({
   // A tool picked, the path locked, out of reach or deleted (by a peer too): edit mode leaves.
   const stale =
     editingId !== null && elements.some((e) => e.id === editingId && e.type === 'path') && !editing;
-  // Edit mode asked of a combined shape, which has no points to edit one by one.
-  const askedCompound =
-    stale && elements.some((e) => e.id === editingId && e.type === 'path' && isCompoundPath(e));
   const lastEditedRef = useRef<string | null>(null);
   useEffect(() => {
     const vanished = !editing && editingId !== null && editingId === lastEditedRef.current;
     lastEditedRef.current = editing?.id ?? null;
     if (!stale && !vanished) return;
     debugLog(`[path] edit left: ${vanished && !stale ? 'path gone' : 'no longer editable'}`);
-    // A combined shape's points are not edited one by one (docs/specs/007-editor/logo-pages.md).
-    if (askedCompound) toast.info('Combined shapes edit as a whole.');
     onLeaveEdit();
-  }, [stale, editing, editingId, onLeaveEdit, askedCompound, toast]);
+  }, [stale, editing, editingId, onLeaveEdit]);
+  const contour = usePathContour({ editing, elements, wrapperRef, viewportZoom });
+  const contourIndex = contour.compound ? contour.index : undefined;
   const edit = usePathEditGesture({
-    element: editing,
+    // A combined path's contour as a path of its own; its edits land on that contour.
+    element: contour.element,
     selectedPathId: editingId === null ? (pathOf(soleSelectedPathId)?.id ?? null) : null,
     wrapperRef,
     viewportZoom,
-    onCommitPathEdit,
+    onCommitPathEdit: (id, next, kind) => {
+      // Closing and opening are the whole path's, never one contour's (J included).
+      if (contourIndex !== undefined && editing && next.closed !== editing.closed) return;
+      onCommitPathEdit(id, next, kind, contourIndex);
+    },
     onLeave: onLeaveEdit,
     onDeselect,
     onBeginEdit: openEdit,
+    contour: contour.index,
+    snapOthers: contour.others?.points,
+    snapToPage: snapPoint,
+    onEmptyPress: contour.pickAt,
   });
 
   const { draft } = draw;
@@ -171,12 +179,15 @@ export function usePathTool({
   const shownElements = useMemo(() => {
     if (continuingId) return elements.filter((el) => el.id !== continuingId);
     if (editingPathId && editDraft) {
-      return elements.map((el) =>
-        el.id === editingPathId && el.type === 'path' ? reshapePath(el, editDraft, el.closed) : el,
-      );
+      return elements.map((el) => {
+        if (el.id !== editingPathId || el.type !== 'path') return el;
+        return contourIndex === undefined
+          ? reshapePath(el, editDraft, el.closed)
+          : (reshapeContour(el, contourIndex, editDraft) ?? el);
+      });
     }
     return elements;
-  }, [elements, continuingId, editingPathId, editDraft]);
+  }, [elements, continuingId, editingPathId, editDraft, contourIndex]);
 
   const draftView: PathDraftView | null =
     draft && element
@@ -207,20 +218,23 @@ export function usePathTool({
           }
         : null;
 
-  const editView: PathEditView | null = editing
-    ? {
-        frame: editing,
-        anchors: editDraft ?? pathAnchors(editing),
-        closed: editing.closed,
-        selected: edit.selected,
-        box: edit.box,
-        guides: edit.guides,
-        zoom: viewportZoom,
-      }
-    : null;
+  const shape = contour.element;
+  const editView: PathEditView | null =
+    editing && shape
+      ? {
+          frame: editing,
+          anchors: editDraft ?? pathAnchors(shape),
+          closed: editing.closed,
+          others: contour.others?.d ?? null,
+          selected: edit.selected,
+          box: edit.box,
+          guides: edit.guides,
+          zoom: viewportZoom,
+        }
+      : null;
 
   // The edit toolbar: above the path, or above the node a long-press chose.
-  const toolbarAnchors = editing ? (editDraft ?? pathAnchors(editing)) : [];
+  const toolbarAnchors = shape ? (editDraft ?? pathAnchors(shape)) : [];
   const heldNode = editing && edit.toolbarAt !== null ? toolbarAnchors[edit.toolbarAt] : undefined;
   const heldAt = editing && heldNode ? toWorld(editing, heldNode) : null;
   const toolbar = editing
@@ -233,10 +247,31 @@ export function usePathTool({
           hasSelection: edit.selected.size > 0,
           closed: editing.closed,
           canOpen: edit.selected.size === 1,
+          // Closing and opening are the whole path's: a combined one offers neither.
+          canClose: !contour.compound,
+          shape: contour.compound ? { index: contour.index, count: contour.count } : null,
+          canSimplify: isSimplifiable(toolbarAnchors),
         },
         onSetType: edit.setNodeType,
         onDelete: edit.deleteSelected,
         onToggleClosed: edit.toggleClosed,
+        onNextShape: contour.step,
+        onSimplify: () => {
+          if (!shape) return;
+          const simpler = simplifyContour(pathAnchors(shape), shape.closed);
+          if (!simpler) {
+            toast.info('Already as simple as it gets.');
+            return;
+          }
+          edit.clearSelection();
+          onCommitPathEdit(
+            shape.id,
+            { anchors: simpler, closed: shape.closed },
+            'edit',
+            contourIndex,
+          );
+          debugLog(`[path] simplified ${toolbarAnchors.length} -> ${simpler.length}`);
+        },
         onDone: edit.done,
       }
     : null;
@@ -248,7 +283,12 @@ export function usePathTool({
     // The cursor a path in its edit mode owns (docs/specs/023-draw-mode/path-tool.md "Cursors in edit mode").
     cursor: edit.cursor ?? (draw.editPointer ? 'default' : null),
     beginPathPress: (e: React.PointerEvent) => !onToolbar(e) && draw.beginPathPress(e),
-    beginEditPress: (e: React.PointerEvent) => !onToolbar(e) && edit.beginEditPress(e),
+    beginEditPress: (e: React.PointerEvent) => {
+      if (onToolbar(e)) return false;
+      // Where a combined path is pressed picks the contour its edit mode opens on.
+      if (!editing) contour.notePress(e);
+      return edit.beginEditPress(e);
+    },
     handlePathDoubleClick: () => draw.handlePathDoubleClick() || editing !== null,
     elements: shownElements,
     draftView,

@@ -7,6 +7,7 @@ import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';
 import { visibleTiles, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
 import { CardList, InfoFooter } from './category-flyout-items';
 import { FlyoutHeader, onFlyoutArrowKey } from './CategoryFlyout';
+import { FillColourPicker } from './FillToolRow';
 
 // The category flyout's side panel (docs/specs/007-editor/toolbar-layout.md "The category bar"): what a tile
 // with presets (Card, Badge) or an opener holds, in a second popover beside the flyout, lined up with the tile that
@@ -14,6 +15,7 @@ import { FlyoutHeader, onFlyoutArrowKey } from './CategoryFlyout';
 // column (sidePlacement); on a phone it lies over the flyout. Its presets place and drag as any tile.
 
 const PRESETS_HINT = 'Start from a preset, then change any of it.';
+const FILL_HINT = 'Pick a colour to pick the bucket up in it.';
 // Its design width, and the gap it keeps from the flyout.
 export const SIDE_PX = 304;
 const SIDE_GAP_PX = 8;
@@ -77,9 +79,18 @@ export function CategoryFlyoutSide({
   // (8px clear), never above the strip's top. Measured once it has laid out, before it paints.
   const [lift, setLift] = useState(0);
   useLayoutEffect(() => {
-    const box = panelRef.current?.getBoundingClientRect();
-    if (!box) return;
-    const over = box.bottom - (window.innerHeight - 8);
+    const panel = panelRef.current;
+    if (!panel) return;
+    // Its laid-out height too, not only its box: it mounts scaled down for its opening animation,
+    // which measures it short and left its foot below the window. The larger never lifts too little.
+    // Its floor is the flyout's foot, which already stops above the bottom bar; else the window's.
+    const box = panel.getBoundingClientRect();
+    const flyout = panel
+      .closest('[data-toolbar-palette]')
+      ?.querySelector('[data-category-flyout]')
+      ?.getBoundingClientRect();
+    const floor = Math.min(window.innerHeight - 8, flyout?.bottom || Infinity);
+    const over = box.top + Math.max(box.height, panel.offsetHeight) - floor;
     setLift(over > 0 ? Math.min(over, side.top) : 0);
   }, [side.top]);
   const a = def.action;
@@ -103,7 +114,13 @@ export function CategoryFlyoutSide({
       <FlyoutHeader
         icon={def.icon}
         title={tileDisplayName(def)}
-        tagline={variants ? (def.variantsHint ?? PRESETS_HINT) : `Browse ${def.label}.`}
+        tagline={
+          variants
+            ? (def.variantsHint ?? PRESETS_HINT)
+            : a.type === 'fill'
+              ? FILL_HINT
+              : `Browse ${def.label}.`
+        }
         count={variants?.length}
       />
       <div ref={bodyRef} onKeyDown={(e) => onFlyoutArrowKey(e, bodyRef.current)}>
@@ -120,6 +137,11 @@ export function CategoryFlyoutSide({
           </div>
         ) : a.type === 'open' ? (
           <div className="px-2 py-2.5">{openBody(a.category, a.group ?? null)}</div>
+        ) : a.type === 'fill' ? (
+          // The one colour picker; a pick picks the bucket up in it (closing the flyout as any tool does).
+          <div className="px-3 py-2.5">
+            <FillColourPicker onPick={(fill) => actions.beginFill?.(fill)} />
+          </div>
         ) : null}
       </div>
       {variants ? <InfoFooter def={hovered} /> : null}

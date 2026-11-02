@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react';
+import type { App, IndexClient } from '@liveworkspace/index-client';
+import { appLabel, everyAppResults, useItemSearch } from '@liveworkspace/explorer/item-search';
 import { ThisBrowserPill } from '@liveworkspace/workbench/components/primitives/ThisBrowserPill';
 import { CloseIcon, NoMatches, SearchIcon, useEscape, useFocusTrap } from '@livedesign/ui';
 import type { Tab } from '@livedesign/design';
@@ -95,8 +97,17 @@ type SearchPanelProps = {
   // (zen / fit / export) rather than nothing.
   commandItems?: CommandSearchItem[];
   onRunCommand?: (id: string) => void;
+  // Every app's work (Work Tracker #63): the index the panel asks, once the typing pauses, for what the person can
+  // open in any app, listed under Every App with each app's mark; and what to do when one is picked (open it in its
+  // own app). Without it the panel finds only what its host lists.
+  workspace?: { client: IndexClient };
+  onSelectWorkspaceItem?: (item: { id: string; app: App; sharedVia: string | null }) => void;
   onClose: () => void;
 };
+
+// How many the index is asked for: more than the group shows, since this app's own designs (listed above) come back
+// too and are left out.
+const EVERY_APP_ASK = 24;
 
 // Result-grouping logic (matching, capping, fallbacks) lives in
 // `lib/search.ts`; the panel just renders.
@@ -124,9 +135,22 @@ export function SearchPanel({
   onSelectSetting,
   commandItems,
   onRunCommand,
+  workspace,
+  onSelectWorkspaceItem,
   onClose,
 }: SearchPanelProps) {
   const [query, setQuery] = useState('');
+  // Every app's finds for what is typed now: the index's answer for an older query is never shown.
+  const trimmed = query.trim();
+  const found = useItemSearch(workspace?.client ?? null, null, trimmed, EVERY_APP_ASK);
+  const workspaceItems = useMemo(() => {
+    if (!found || found.q !== trimmed) return undefined;
+    const shown = new Set<string>();
+    for (const d of liveDocs) shown.add(d.id);
+    for (const d of shared ?? []) shown.add(d.id);
+    for (const d of teamDesigns ?? []) shown.add(d.id);
+    return everyAppResults(found.items, shown);
+  }, [found, trimmed, liveDocs, shared, teamDesigns]);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchedRef = useRef(false);
   const openedRef = useRef(false);
@@ -185,6 +209,7 @@ export function SearchPanel({
         commandItems,
         helpItems,
         settingItems,
+        workspaceItems,
       }),
     [
       query,
@@ -200,6 +225,7 @@ export function SearchPanel({
       commandItems,
       helpItems,
       settingItems,
+      workspaceItems,
     ],
   );
 
@@ -240,6 +266,7 @@ export function SearchPanel({
       onSelectElement(item.tabId, item.elementId);
     else if (item.kind === 'palette' && onAddPaletteItem) onAddPaletteItem(item.add);
     else if (item.kind === 'command' && onRunCommand) onRunCommand(item.id);
+    else if (item.kind === 'workspace' && onSelectWorkspaceItem) onSelectWorkspaceItem(item);
     track('Search', 'Selected', titleCaseType(item.kind));
     onClose();
   };
@@ -409,6 +436,9 @@ export function SearchPanel({
                             in {item.team.name}
                           </span>
                         ) : null}
+                        {/* Which app it opens in: the app's name in its colour (its deep shade on light, its
+                            accent on dark), beside its logo. */}
+                        {item.kind === 'workspace' ? <AppWord app={item.app} /> : null}
                         {item.kind === 'tab' && item.isCurrent ? (
                           <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">
                             current
@@ -424,5 +454,18 @@ export function SearchPanel({
         </div>
       </div>
     </div>
+  );
+}
+
+/** The app a result from every app opens in, by name in the app's own colour. */
+function AppWord({ app }: { app: App }) {
+  const { name, accent, deep } = appLabel(app);
+  return (
+    <span
+      style={{ '--app-deep': deep, '--app-accent': accent } as CSSProperties}
+      className="shrink-0 text-[10px] font-semibold text-[var(--app-deep)] dark:text-[var(--app-accent)]"
+    >
+      {name}
+    </span>
   );
 }

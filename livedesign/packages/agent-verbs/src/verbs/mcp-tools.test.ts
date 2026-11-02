@@ -9,6 +9,7 @@ describe('the MCP tool verbs', () => {
   it('name each tool once, under an id of its own, with words and a behaviour', () => {
     expect(MCP_TOOL_VERBS.map((v) => v.mcp.tool)).toEqual([
       'change_pages',
+      'change_components',
       'list_images',
       'find_designs',
       'read_design',

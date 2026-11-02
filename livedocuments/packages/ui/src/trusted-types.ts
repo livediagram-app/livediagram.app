@@ -4,8 +4,9 @@
 
 export {
   isAllowedScriptUrl,
+  parseInert,
   resetTrustedTypesForTests,
   trustedHtml,
   trustedTypesBootScript,
 } from '@liveworkspace/trusted-types';
-export { MARKUP_POLICY, TRUSTED_TYPES_CSP } from './trusted-types-csp';
+export { INERT_PARSE_POLICY, MARKUP_POLICY, TRUSTED_TYPES_CSP } from './trusted-types-csp';

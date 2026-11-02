@@ -290,7 +290,7 @@ describe('a mention', () => {
     handle: 'x',
   });
 
-  it('a card comment emails each teammate it mentions, once, and opens the card', async () => {
+  it('a card thread’s comment emails each teammate it mentions, once, and opens the card on it', async () => {
     const item = (
       (await (
         await route('POST', '/api/projects/d1/items', {
@@ -298,13 +298,14 @@ describe('a mention', () => {
         })
       ).json()) as ItemResponse
     ).item;
-    const res = await route('POST', `/api/projects/d1/items/${item.id}/comments`, {
+    const res = await route('POST', `/api/projects/d1/items/${item.id}/threads`, {
       body: {
         text: '@bob @inv look',
         mentions: [mention(BOB), mention(null, 'm-inv'), mention('user_stranger'), mention(OWNER)],
       },
     });
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(201);
+    const threadId = (await res.json<{ thread: { id: string } }>()).thread.id;
     expect(
       sent()
         .map((e) => [e.to, e.kind])
@@ -313,7 +314,9 @@ describe('a mention', () => {
       ['bob@x.test', 'Mentioned'],
       ['inv@x.test', 'Mentioned'],
     ]);
-    expect(sent()[0]!.html).toContain(`#item=${encodeURIComponent(item.id)}`);
+    expect(sent()[0]!.html).toContain(
+      `#item=${encodeURIComponent(item.id)}&amp;thread=${threadId}`,
+    );
     expect(sent()[0]!.subject).toBe('Owen mentioned you in Roadmap');
   });
 

@@ -8,10 +8,7 @@ import { PRODUCTION_WORKSPACE_ORIGIN, statusPageUrl, statusRedirect } from './wo
 describe('statusRedirect', () => {
   it('sends /status and everything under it to the app’s group on liveworkspace’s page, permanently', () => {
     for (const path of ['/status', '/status/', '/status/anything?x=1']) {
-      const res = statusRedirect(
-        new URL(`https://livediagram-router.liveworkspace-easing509.workers.dev${path}`),
-        'livediagram',
-      );
+      const res = statusRedirect(new URL(`https://www.livediagram.app${path}`), 'livediagram');
       expect(res?.status).toBe(301);
       expect(res?.headers.get('Location')).toBe(
         `${PRODUCTION_WORKSPACE_ORIGIN}/status#livediagram`,
@@ -31,10 +28,7 @@ describe('statusRedirect', () => {
   it('leaves every other path alone', () => {
     for (const path of ['/', '/statuses', '/help/status', '/api/status']) {
       expect(
-        statusRedirect(
-          new URL(`https://livediagram-router.liveworkspace-easing509.workers.dev${path}`),
-          'livediagram',
-        ),
+        statusRedirect(new URL(`https://www.livediagram.app${path}`), 'livediagram'),
       ).toBeNull();
     }
   });

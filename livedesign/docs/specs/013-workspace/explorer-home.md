@@ -40,8 +40,10 @@ Its content sits in the Explorer's content width.
 Top to bottom, left column:
 
 - **Status pills**, two, each a link with a coloured dot:
-  - the person's designs: "1 design" / "N designs" (My Work, the person's own space, this browser's
-    designs in This Browser not counted), opening **My Work**; a green dot;
+  - the person's designs: "1 design" / "N designs" (every space the person is in: My Work and each of their
+    teams, each design counted once; not what was shared with them through a link, nor this browser's designs in
+    This Browser), opening **My Work**, or for someone in a team, Search results narrowed to those spaces
+    (`space:mine,team:…`); a green dot;
   - the Inbox: "Inbox is clear" when no open action is assigned to the person, else "N open in your Inbox", the
     sidebar's Inbox count ([Inbox](inbox.md)), opening the **Inbox**; a sky dot.
   - A pill is drawn once its count is known: never "0 designs" while the lists load or after the list failed to, nor "Inbox is clear" for an
@@ -137,17 +139,16 @@ them. It follows the share-role rule trivially: it is the person's own Home, wit
 ## Jump Back In
 
 Jump Back In is a **[Within reach](../004-interface-design/within-reach.md)** set of the person's designs:
-the **4 most used** and the **4 most recent**, no design twice.
+the **8 most used** and the **8 most recent**, no design twice.
 
-- **Most Used**: the designs the person used on the most days in the **last 90 days**. A **use day** is a UTC
-  day on which they opened the design ([Opens](#opens)), edited it (an edit needs an open, so the days before
-  opens were recorded still count, through their edits) or made it ([Making a design](#making-a-design)).
-  Equal counts go to the one used most recently.
+- **Most Used**: the designs the person opened in the **last 14 days**, the most opened first. Every open counts
+  ([Opens](#opens); at most one a minute), so a design used a lot over a few days ranks by how much it was used,
+  not by how many days. A day on which they only edited the design or made it
+  ([Making a design](#making-a-design)) counts as one open. A design not opened in 14 days drops off the list.
+  Equal counts go to the one opened most recently.
 - **Recent**: the designs the person used most recently, newest first: the latest of their last open, their last
   edit and their making of it. A design that is both shows under **Most Used**, and Recent takes the next most
   recent instead.
-- **Not empty on day one**: every day the person edited a design before opens were recorded counts as a day
-  they opened it, so Most Used reflects the work they already did.
 - **Making a design is a use** ([Making a design](#making-a-design)): what the person just made is in Jump
   Back In at once, opened or not.
 - Only designs the person can open now: never one in the Trash, nor one whose share link has lapsed or whose
@@ -159,7 +160,7 @@ the **4 most used** and the **4 most recent**, no design twice.
   The full name is its accessible name, and no tooltip repeats the name written under the picture; the quiet line is
   its description. Activating a card opens the
   design.
-  - A most used design's line counts its use days: "Used on 1 day", "Used on N days".
+  - A most used design's line counts its opens in the window: "Opened once", "Opened N times".
   - A recent design's line says when the person last used it: "Used 2 hours ago", "Used yesterday" (the
     Explorer's relative time).
 - **Each card has the design's ⋯ menu**, the same menu its row and card carry everywhere else in the Explorer
@@ -191,26 +192,27 @@ the **4 most used** and the **4 most recent**, no design twice.
 
 ### Desktop and tablet
 
-- **Most Used** first: up to 4 large cards (a white, rounded, hairline-bordered card; the thumbnail 128 px high
+- **Most Used** first: up to 8 large cards (a white, rounded, hairline-bordered card; the thumbnail 128 px high
   inside it, the name in semibold and the quiet line under it), most used first from the left.
-- **Recent** under it: up to 4 cards the size of Most Used's (the thumbnail above the name and the quiet line), newest first, so every card in Jump Back In reads, opens and drags alike.
-- Four across from the `lg` breakpoint; two across below it. Nothing scrolls sideways.
+- **Recent** under it: up to 8 cards the size of Most Used's (the thumbnail above the name and the quiet line), newest first, so every card in Jump Back In reads, opens and drags alike.
+- Four across from the `lg` breakpoint, so each full group is two rows of four; two across below it. Nothing
+  scrolls sideways.
 - A card lifts a little on hover (a rose edge and a soft rose shadow), within the motion budget.
 
 ### Phone
 
-- One **sideways-scrolling strip** of at most **8** thumbnails: most used, recent, most used, recent, and so on;
+- One **sideways-scrolling strip** of at most **8** thumbnails (This Browser's included): most used, recent, most used, recent, and so on;
   when one group runs out, the rest of the other follows. The strip interleaves the groups, so it carries no group
   labels and no quiet lines: each tile is its thumbnail and name.
 - The strip ends in a **See More** tile, the same size as a thumbnail, that opens the Recent page.
 - The strip scrolls sideways (touch, trackpad, Shift+wheel, and keyboard focus moving through it). Its trailing
   edge fades to say there is more, and only while there is more.
 
-### Fewer than 8 designs
+### Fewer designs
 
 - Only the designs that exist are drawn: no empty boxes. A short group leaves the rest of its row blank; a group
   with no design at all is not drawn, label included.
-- Jump Back In keeps both groups' height whatever lands in it, so nothing below moves when Home loads.
+- While it loads, each group's skeleton is two rows of cards (the phone's, one strip), the height of full groups.
 - With **no design at all** it looks as if it held one: a single slot the size and place of one most used card
   (the first column, a dashed edge), holding the empty state ("No designs yet", "The designs you use most and last
   will gather here."), and no group labels. Only then is Jump Back In shorter than its reserved height: What Happened
@@ -224,8 +226,8 @@ the **4 most used** and the **4 most recent**, no design twice.
   it a use, however they make it: `/new`, a duplicate, a copy of a
   design shared with them, or one an AI tool or an API client makes for them. So a design made without being
   opened is in Jump Back In at once.
-- **Once a day, as ever.** `/new` opens what it makes: the making and the first open fall on one day, which is
-  one use day, not two.
+- **Once a day, as ever.** `/new` opens what it makes: the making counts only on a day with no open yet, so a
+  design made and opened counts its opens, not one more.
 - **The create says so.** Creating a design says whether it counts as a use: `markUsed`, true unless the caller
   sends `false` ([API](../015-api/api.md), `POST /api/designs`). The editor never sends it; any API
   client may, and an AI tool's create may too ([MCP server](../015-api/mcp-server.md), `create_design`).
@@ -312,9 +314,9 @@ An **open** is the editor loading a design for a person to look at.
 
 - It counts for whoever opens it: the owner, a teammate, or a visitor through a share link. A visitor always has an
   identity (their guest id, or their account), so their open is theirs.
-- Its **day** is recorded **once per person per design per day** (UTC, the day boundary every coalesced event
-  uses), at the day's first open. Every open, the first of the day or not, moves the person's **last open** of the
-  design, which is what Recent reads.
+- It is **counted** on the person's row for the design and the UTC day (the day boundary every coalesced event
+  uses), at most once a minute, for Most Used; days older than 14 are dropped. Every open moves the person's
+  **last open** of the design, which is what Recent reads.
 - These are **not** opens: a snapshot or thumbnail, an embed ([Read-only embeds](embeds.md)), a duplicate, Take
   Offline, and any read through the public API or an AI tool.
 - Opens are **private**. Only the person who opened a design ever sees that they did: in their Jump Back In, never in What Happened, a design's
@@ -331,8 +333,8 @@ An **open** is the editor loading a design for a person to look at.
 
 - Guests have Home in full, keyed to their guest id.
 - Signing up moves a guest's opens to the account with the rest of their data ([Auth + guest access](../014-identity/auth-and-guest-access.md)).
-  A design opened under both identities keeps both histories: its use days are the days of either, and its last
-  open the later of the two.
+  A design opened under both identities keeps both histories: its opens on each day are the two counted together,
+  and its last open the later of the two.
 - Deleting the account deletes its opens. Deleting a design for good deletes everyone's opens of it; a design in
   the Trash only leaves Home until it is restored.
 - An open older than a year is forgotten, the Timeline's retention ([Timeline](timeline.md) §3.5).

@@ -154,6 +154,7 @@ export const ELEMENT_FIELD_NAMES = {
     'noteRich',
     'padding',
     'richText',
+    'textScale',
   ]),
   text: fieldsOf<TextElement>()([
     'id',

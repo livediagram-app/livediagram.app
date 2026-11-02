@@ -18,8 +18,13 @@ import {
 import { ITEM_STATUS_MAX } from './limits';
 import { isObj } from './validate';
 import type { ItemTypeDef } from './item-types';
-import { typeAllowsStatus, typeIn } from './type-catalogue';
+import { calculatedFieldsOf } from './calculated-fields';
+import { CUSTOM_FIELD_ID_PATTERN, customFieldOf, typeAllowsStatus, typeIn } from './type-catalogue';
+import { missingRequiredFields, requiredCleared } from './required-fields';
 import type { ItemWrite } from './store';
+import { isTimeSpent } from './duration-fields';
+import { readTimeOp } from './time-tracking';
+import { blockingCycleOf, blockingLoopMessage, type BlockingChange } from './blocked-by';
 
 export function readItemPlace(raw: unknown): ItemPlace | ItemRejection {
   if (raw === undefined) return {};
@@ -100,7 +105,9 @@ export function readItemMove(body: Record<string, unknown>): ItemMove | ItemReje
 // change of status into such a one is refused: making a card in any status is allowed (a type that leaves every
 // status out can still be made, it just never moves), a card already in one is never moved out by this, and a type
 // change that keeps its status is let through. Putting a change back is never refused either: a trashed card
-// restored to the status it was trashed from, and an undo or redo (`undo`: the body's `undo: true`).
+// restored to the status it was trashed from, and an undo or redo (`undo`: the body's `undo: true`). Nor is moving
+// a card to the Trash: the Trash is a status no type lists (a type's ordered statuses name its board states), so
+// without this every card of a type with a list could not be deleted.
 export function statusExcluded(
   types: readonly ItemTypeDef[],
   next: Item,
@@ -108,12 +115,79 @@ export function statusExcluded(
   undo: boolean,
 ): boolean {
   const status = itemStatus(next);
-  if (undo || !status || itemStatus(before) === status) return false;
+  if (undo || !status || itemStatus(before) === status || isTrashed(next)) return false;
   if (isTrashed(before) && before.fields[TRASHED_FROM_FIELD] === status) return false;
   return !typeAllowsStatus(typeIn(types, next.type), status);
 }
 
-type ItemWriteRefusal = { error: ItemRejection; id?: string };
+// A Calculated field given a value (docs/specs/026-plan/item-types.md "Calculated fields"): its id, else null. Only a
+// value that is new is refused: clearing an old one, or a change that leaves it as it was, passes.
+export function calculatedWritten(
+  types: readonly ItemTypeDef[],
+  next: Pick<Item, 'type' | 'fields'>,
+  before?: Pick<Item, 'fields'>,
+): string | null {
+  for (const f of calculatedFieldsOf(typeIn(types, next.type))) {
+    const v = next.fields[f.id];
+    if (v === undefined || v === null || v === '') continue;
+    if (!before || JSON.stringify(before.fields[f.id]) !== JSON.stringify(v)) return f.id;
+  }
+  return null;
+}
+
+// A Time Spent field a card write set, cleared or changed (docs/specs/026-plan/item-types.md "Time Spent"): its id,
+// else null. Its entries change only through time writes; a card put back (an undo of a delete, a sync) carries them.
+export function timeSpentWritten(
+  types: readonly ItemTypeDef[],
+  next: Pick<Item, 'type' | 'fields'>,
+  before?: Pick<Item, 'fields'>,
+): string | null {
+  const type = typeIn(types, next.type);
+  for (const f of type?.custom ?? []) {
+    if (!isTimeSpent(f) || !type.fields.includes(f.id)) continue;
+    const was = before ? JSON.stringify(before.fields[f.id] ?? null) : 'null';
+    if (JSON.stringify(next.fields[f.id] ?? null) !== was) return f.id;
+  }
+  return null;
+}
+
+// Why a time write can't land on `item`: its field is no Time Spent field its card type offers. Null when it can.
+export function timeWriteRefusal(
+  types: readonly ItemTypeDef[],
+  item: Pick<Item, 'type'>,
+  field: string,
+): 'time_invalid' | null {
+  const type = typeIn(types, item.type);
+  const def = type ? customFieldOf(type, field) : undefined;
+  return def && isTimeSpent(def) && type.fields.includes(field) ? null : 'time_invalid';
+}
+
+type ItemWriteRefusal = { error: ItemRejection; id?: string; field?: string; message?: string };
+
+// A new card missing a required custom field (docs/specs/026-plan/item-types.md "Required fields"): the first one,
+// or null. A create that restores a card (an undo, a sync or copy: it carries its number, votes or thread) is let
+// through, as the card it brings back was made before.
+export function createRefusal(
+  types: readonly ItemTypeDef[],
+  create: Pick<ItemCreate, 'type' | 'fields' | 'key' | 'votes' | 'comments'>,
+): { error: 'field_required'; field: string } | null {
+  if (create.key !== undefined || create.votes !== undefined || create.comments !== undefined)
+    return null;
+  const missing = missingRequiredFields(typeIn(types, create.type), create.fields)[0];
+  return missing ? { error: 'field_required', field: missing.id } : null;
+}
+
+// A change that empties a required field the item had a value for, its field id, or null; an undo or redo is never
+// refused.
+export function requiredClearedBy(
+  types: readonly ItemTypeDef[],
+  next: Item,
+  before: Item,
+  undo: boolean,
+): string | null {
+  if (undo) return null;
+  return requiredCleared(typeIn(types, next.type), before.fields, next.fields)?.id ?? null;
+}
 
 // `write` read as the api reads the request it is sent as: the write with its fields normalised as the api stores
 // them, or the refusal the api would answer.
@@ -141,31 +215,100 @@ export function readItemWrite(write: ItemWrite): ItemWrite | ItemWriteRefusal {
       }
       return { ...write, patches };
     }
+    case 'moves': {
+      const moves: { id: string; move: ItemMove }[] = [];
+      for (const m of write.moves) {
+        const move = readItemMove(m.move as Record<string, unknown>);
+        if (typeof move === 'string') return { error: move, id: m.id };
+        moves.push({ id: m.id, move });
+      }
+      return { ...write, moves };
+    }
     case 'move': {
       const move = readItemMove(write.move as Record<string, unknown>);
       return typeof move === 'string' ? { error: move, id: write.id } : { ...write, move };
+    }
+    case 'time': {
+      const op = readTimeOp(write.op);
+      if (typeof op === 'string' || !CUSTOM_FIELD_ID_PATTERN.test(write.field))
+        return { error: 'time_invalid', id: write.id };
+      return { ...write, op };
     }
     default:
       return write;
   }
 }
 
-// The items a patch, patches or move left, checked as the api checks them before it writes: a status the card's
-// type leaves out (statusExcluded), and the fields' size. Null when every one passes.
+// The items a write left, checked as the api checks them before it writes: a new card missing a required field
+// (createRefusal) or giving a Calculated field a value (calculatedWritten); for a patch, patches or move a status the
+// card's type leaves out (statusExcluded), a Calculated field given a value, a required field emptied
+// (requiredClearedBy), and the fields' size. Null when every one passes.
 export function writtenItemsRefusal(
   write: ItemWrite,
   before: readonly Item[],
   upserts: readonly Item[],
   types: readonly ItemTypeDef[],
 ): ItemWriteRefusal | null {
-  if (write.kind !== 'patch' && write.kind !== 'patches' && write.kind !== 'move') return null;
+  if (write.kind === 'create') {
+    for (const c of write.creates) {
+      const refused = createRefusal(types, c);
+      if (refused) return { ...refused, ...(c.id ? { id: c.id } : {}) };
+      // A card put back (a restore or sync carries its number, votes or thread) holds only what it held.
+      if (c.key !== undefined || c.votes !== undefined || c.comments !== undefined) continue;
+      const field = calculatedWritten(types, c);
+      if (field) return { error: 'field_calculated', field, ...(c.id ? { id: c.id } : {}) };
+      const timed = timeSpentWritten(types, c);
+      if (timed)
+        return { error: 'field_time_tracked', field: timed, ...(c.id ? { id: c.id } : {}) };
+    }
+    return loopRefusal(before, upserts, types, new Map());
+  }
+  if (write.kind === 'time') {
+    const next = upserts[0];
+    if (!next) return null;
+    if (timeWriteRefusal(types, next, write.field))
+      return { error: 'time_invalid', id: next.id, field: write.field };
+    const bound = fieldsWithinBounds(next.fields);
+    return bound ? { error: bound, id: next.id } : null;
+  }
+  if (
+    write.kind !== 'patch' &&
+    write.kind !== 'patches' &&
+    write.kind !== 'move' &&
+    write.kind !== 'moves'
+  )
+    return null;
   const had = new Map(before.map((i) => [i.id, i]));
   for (const next of upserts) {
     const was = had.get(next.id);
     if (was && statusExcluded(types, next, was, write.undo === true))
       return { error: 'status_excluded', id: next.id };
+    const field = write.undo === true ? null : calculatedWritten(types, next, was);
+    if (field) return { error: 'field_calculated', id: next.id, field };
+    const timed = timeSpentWritten(types, next, was);
+    if (timed) return { error: 'field_time_tracked', id: next.id, field: timed };
+    const cleared = was && requiredClearedBy(types, next, was, write.undo === true);
+    if (cleared) return { error: 'field_required', id: next.id, field: cleared };
     const bound = fieldsWithinBounds(next.fields);
     if (bound) return { error: bound, id: next.id };
   }
-  return null;
+  return loopRefusal(before, upserts, types, had);
+}
+
+// A write that closes a Blocked By loop (docs/specs/026-plan/item-types.md "Blocked By"): the card, and the sentence
+// naming the chain. Every write is checked, an undo's too, as the api checks it.
+function loopRefusal(
+  before: readonly Item[],
+  upserts: readonly Item[],
+  types: readonly ItemTypeDef[],
+  had: ReadonlyMap<string, Item>,
+): ItemWriteRefusal | null {
+  const changes: BlockingChange[] = upserts.map((next) => {
+    const was = had.get(next.id);
+    return was ? { before: was, next } : { next };
+  });
+  const loop = blockingCycleOf(before, types, changes);
+  return loop
+    ? { error: 'blocks_cycle', id: loop.itemId, message: blockingLoopMessage(loop.chain) }
+    : null;
 }

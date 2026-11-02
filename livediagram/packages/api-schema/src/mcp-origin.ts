@@ -2,7 +2,7 @@
 // reads it through (liveworkspace's, @liveworkspace/api-schema/mcp-origin, bound to it here).
 import { createMcpOriginResolver } from '@liveworkspace/api-schema/mcp-origin';
 
-export const DEFAULT_MCP_ORIGIN = 'https://livediagram-mcp.liveworkspace-easing509.workers.dev';
+export const DEFAULT_MCP_ORIGIN = 'https://mcp.livediagram.app';
 
 // The build-time NEXT_PUBLIC_MCP_ORIGIN, or the hosted default when it is unset or blank.
 export const resolveMcpOrigin = /* @__PURE__ */ createMcpOriginResolver(DEFAULT_MCP_ORIGIN);

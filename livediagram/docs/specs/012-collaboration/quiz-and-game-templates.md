@@ -17,11 +17,10 @@ Workshops beside the retros is hard to find. They get a category of their own.
 
 - **Quizzes & Games**, id `games`, "Quizzes, icebreakers and games for the room." (45 characters, in the
   category's 40 to 50 band). Search words: `quiz trivia icebreaker icebreakers warm up energiser fun team building`.
-- Primary home of the five templates below. **Doodle Warm-Up** (`doodle-warmup`, primary Brainstorm) is
-  cross-listed here: it is a drawn icebreaker game.
-- In Start a Workshop ([Templates by mode](../007-editor/templates-by-mode.md#workshop-templates)) the five
-  form their own group, **Quizzes & Games**, "Quizzes, icebreakers and games to warm up the room.", after
-  Meetings.
+- Primary home of the five templates below and of **Doodle Warm-Up** (`doodle-warmup`, a drawn icebreaker game).
+  **Pub Quiz** is cross-listed in **Teaching & Learning**: a class quiz is the same board.
+- In Start a Workshop ([Templates by mode](../007-editor/templates-by-mode.md#workshop-templates)) the five are its
+  **Quizzes & Games** group, the catalogue category, as every start's groups are.
 - **Pub Quiz** joins Workshop's Popular, after Crazy 8s.
 
 ## The templates

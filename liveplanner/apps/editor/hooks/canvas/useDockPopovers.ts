@@ -23,15 +23,13 @@ const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'plan-cards': 704,
   // CardTypesPanel's `sm:w-[34rem]`, two types to a row.
   'card-types': 544,
-  // NewCardPanel's `w-72`.
-  'plan-new-card': 288,
   // The Session strip's popovers, `w-72` each (docs/specs/012-collaboration/session-tools.md).
   'session-timer': 288,
   'session-vote': 288,
   // The Tidy Up popover's `w-80`: two tiles to a row (docs/specs/008-canvas/layout-cleanup.md).
   'tidy-up': 320,
-  // The Explorer's `w-[38rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
-  explorer: 608,
+  // The Explorer's `w-[60rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
+  explorer: 960,
 };
 
 // 'card-types': the Card Types panel over its cluster button in Plan mode (docs/specs/026-plan/item-types.md).
@@ -42,7 +40,6 @@ export type DockPanel =
   | 'card-types'
   | 'plan-trash'
   | 'plan-cards'
-  | 'plan-new-card'
   // The Session strip's Timer and Vote (docs/specs/012-collaboration/session-tools.md "The Session strip").
   | 'session-timer'
   | 'session-vote'

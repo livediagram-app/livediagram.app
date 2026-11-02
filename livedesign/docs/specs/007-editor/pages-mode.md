@@ -291,6 +291,10 @@ anything that named a deleted page can never find a new page under the old id.
   page the `logo` size only and no Size section ([Logo pages](logo-pages.md)), a **wireframe** page
   its device ([Wireframe pages](wireframe-pages.md)), a **photo** page its picture's size
   ([Photo pages](../031-photo/photo-pages.md)).
+- **One picture in many sizes** (social posts, banners, covers) is a photo page's **Make Sizes…**
+  ([Photo pages](../031-photo/photo-pages.md) "Making sizes"): a new photo page for each format ticked, the
+  picture scaled to fill it and cropped about the centre, each page its own afterwards. No other page kind
+  offers social sizes: a logo page keeps its artboard and a wireframe page its device.
 - A page is only ever given a size its kind offers; any other is refused. A page stored in a size
   livediagram had (US Letter, A3, Square, Post, Story) reads as A4.
 - **Fit to Content** (`fit`) is the page made around content that does not fit a paper size ("Into
@@ -309,9 +313,14 @@ anything that named a deleted page can never find a new page under the old id.
 - **Changing size or orientation re-fits the page's content**: everything on the page before the
   change stays on it. Content that still fits the new margin box keeps its size, re-centred (and
   nudged back inside the margins if it pokes out); content that no longer fits is scaled down as
-  one, about the page's centre, until it does: text elements' text scales with it (`textScale`)
-  and arrows' bends with their lines; a shape's own label keeps its size. Nothing is cut off. The
-  pages after it move along. One edit, one undo.
+  one, about the page's centre, until it does: the words scale with it (`textScale`), a text
+  element's text and a shape's own label alike (with the label's inline icon, which follows its
+  size), and arrows' bends with their lines, so a button's words stay inside the button. A shape
+  that draws its own face (a chart, a card, a web component) keeps its face's type. Nothing is cut
+  off. The pages after it move along. One edit, one undo.
+- **A picked size is the size**: choosing a Text Size for an element that carries a `textScale`
+  (a re-fitted shape or text, a Shift-resized text box) sets the size it draws at and drops the
+  scale, so the readout and the drawn words agree again.
 - The page label reads `<name> · <size label> · <Portrait|Landscape> · <Logo|Wireframe|Photo>`
   (`pageLabel`), the name where the page has one. Only A4 adds the orientation (a turned device
   says **Landscape**); a square and Fit to Content have none. The kind ends it where the size label
@@ -878,6 +887,18 @@ canvas's ink.
   corner panels' places are ([Panel docking](panel-docking.md)). It stays open while the person
   works; the cluster has no Contents button while it shows, and the corner panels and the
   bottom-right cluster on its side start past it.
+- **Joined to the menu box**: pinned left, the sidebar rises to the canvas's top and the menu box
+  (the menu button and the tab's name, top left) becomes its top row, so the two read as one panel
+  rather than a card floating over a sidebar. The box's own border, fill and shadow fade away
+  (200 ms, none under reduced motion) and the sidebar's surface carries it; the box reaches across
+  the sidebar (8 px short of its inner edge), the tab's name cut short to fit, then a hairline, then
+  the Contents header exactly where it sits without the join. The menu button itself never moves or
+  changes: the same glyph, size, hover and pressed look, and the Explorer still hangs under it. A
+  workspace frame's Back takes the row the same way. The palette strip keeps clear of the whole row
+  and centres in what shows beside the sidebar, as a page is framed beside it, so a laptop's strip
+  keeps its category names. Pinned right, while it is being dragged, minimised, and on a phone
+  (which has no sidebar), the box is its usual card. It is the same for every role: a Viewer's box
+  joins as an Editor's does.
 - **Minimised to its button**: the bottom-right cluster holds **Contents** (a list glyph, named
   beside it on a desktop), left of the Theme & canvas button. It opens the **Contents** popover
   above it, whose header adds **Dock as Sidebar** (a panel-open glyph; HoverCard "Dock as Sidebar",
@@ -913,13 +934,31 @@ Both show the same list:
   124 px tall for a portrait page, left-aligned with the name under it. The page in view is marked
   by its row's tint and its picture's accent ring (and, in the popover, an accent bar down the
   row's left edge).
-- **A page's actions** (an Editor's): in the sidebar, a small toolbar at the end of the name's
-  line, shown while the row is hovered, focused or marked: **Duplicate**, **Lock** or **Unlock**,
-  and **Delete** (not on a locked page), each a glyph with its Tooltip. In the popover, one **⋯**
-  button (shown on hover or focus) opens the same as a menu, a header naming the page, with Delete
-  last under its own separator.
-  Each does exactly what the page's title bar does; none glides to the page. A Participant and a
-  Viewer see neither.
+- **Pictures in the thumbnails**: an image element and a page painted with a picture show the
+  picture itself, as on the canvas, fetched from the image store with the same access the canvas
+  has (an Editor's, or a share link's for a Participant or Viewer), once per picture and shared
+  with the canvas's own copy. Only the rows drawn so far ask for theirs. Until a picture arrives,
+  or where it can't be read, its place shows the image placeholder (a page picture, its tone). A **photo page**
+  shows its picture, its preview ([Photo store](../031-photo/photo-store.md) "Previews") from the copy the canvas
+  shows unfocused photo pages with; until it has one, the checkerboard and a picture glyph.
+- **A page's actions** (an Editor's), down the row's left, so the picture and its name keep the
+  row's whole width:
+  - **In the sidebar** the column beside the picture stacks, under the page's number, the **grip**
+    (drag to reorder), **Delete** (a bin; not on a locked page) and **⋯** (the page's menu), each a
+    glyph with its Tooltip. They show while the row is hovered, focused or marked, or while its menu
+    is open, and always to a finger, where each keeps a 44 px tap area (the stack spaces itself out
+    under a coarse pointer).
+  - **In the popover** (a bottom sheet on a phone) the rows are compact, one line each: the **⋯**
+    sits under the page's number, and the grip stays at the row's right edge, where a thumb finds
+    it. Delete is in the menu.
+  - **The ⋯ menu** (also a right-click on the row, or a long press on it by a finger) is one menu for
+    the whole list, a header naming the page, then in groups: **Page Settings** (the cog: glides to
+    the page and opens its settings, where it is renamed and resized); **Duplicate** (while the copy
+    fits under the page limit), **Move Up** and **Move Down** (while the page has a neighbour that
+    way), **Lock** or **Unlock**; then, under its own separator, **Delete**, last (not on a locked
+    page), in the menu's own tones. Each does exactly what the page's title bar or cog does; none but
+    Page Settings glides to the page. A Participant and a Viewer see no grip, no Delete and no ⋯, and
+    a right-click or long press opens nothing.
 - **Going there**: a press (or Enter) glides the canvas to the page, as the pages row's arrows do,
   and marks it as here. On a desktop the popover stays open, so a reader can hop from page to page;
   on a phone the sheet closes so the page shows. Up and Down move between rows, Home and End to

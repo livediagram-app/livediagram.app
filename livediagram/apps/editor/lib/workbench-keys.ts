@@ -35,3 +35,6 @@ export const FORMAT_CONFIG_KEY = 'livediagram:v2:format-config';
 
 /** The localStorage key of the Spotlight panel's configuration (docs/specs/008-canvas/spotlight-panel.md). */
 export const SPOTLIGHT_CONFIG_KEY = 'livediagram:v2:spotlight-config';
+
+/** The localStorage key of the Hide Participant Cursors switch (docs/specs/012-collaboration/collaborator-enhancements.md). */
+export const HIDE_CURSORS_KEY = 'livediagram:v2:hide-cursors';

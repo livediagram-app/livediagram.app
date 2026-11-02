@@ -130,7 +130,7 @@ export function SetupDialog({
         closeOnEscape={!coveredByAnother}
         className="h-[min(40rem,calc(100dvh-2rem))] max-h-[calc(100dvh-2rem)] overflow-hidden"
       >
-        <header className="flex shrink-0 items-start gap-3.5 px-6 pt-6">
+        <div className="flex shrink-0 items-start gap-3.5 px-6 pt-6">
           <span
             aria-hidden
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
@@ -152,7 +152,7 @@ export function SetupDialog({
             <HelpArticleLink article={help} variant="icon" />
             <DialogCloseButton onClick={onClose} />
           </div>
-        </header>
+        </div>
         <div className="mt-5 shrink-0 border-b border-slate-100 px-6 pb-4 dark:border-slate-800">
           <SetupStepper
             steps={steps.map((x, i) => ({ id: String(i), label: x.label }))}

@@ -5,14 +5,16 @@ import type {
   LintReport,
 } from '@livedesign/api-schema';
 import { lintFooterPart } from '@livedesign/page-lint';
-import { migrateIncomingTab, type Tab } from '@livedesign/design';
+import { migrateIncomingTab, type DesignComponent, type Tab } from '@livedesign/design';
 import {
   applyEditOperations,
   applyReplace,
   formatResultFooter,
   formatResultLines,
+  operationsNeedComponents,
   type ApplySuccess,
 } from '@livedesign/edit-operations';
+import { readComponents } from '../db/components';
 import { rewriteCommentAuthors } from '../comments';
 import { lastChangesetRev } from '../db';
 import { capStoredName } from '../names';
@@ -59,6 +61,7 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
   if (tabId.length > TAB_ID_MAX) {
     return refusal(422, 'invalid_value', `a tab id holds at most ${TAB_ID_MAX} characters`);
   }
+  const components = await componentsFor(env, request);
   for (let attempt = 1; attempt <= SUBMIT_ATTEMPTS; attempt += 1) {
     const [stored, prevRev, selections] = await Promise.all([
       readStoredTab(env, design.id, tabId),
@@ -68,7 +71,7 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
     if (!stored) {
       if (request.body.kind !== 'replace') return { status: 404, body: { error: 'not_found' } };
     }
-    const compiled = compile(args, stored, selections);
+    const compiled = compile(args, stored, selections, components);
     if ('errors' in compiled) return rejected(args, stored, compiled.errors, where);
     const base = checkBase(
       request.base,
@@ -197,10 +200,23 @@ async function readSelections(
   return readRoomSelections(env, designId, tabId, await personTagFor(designId, ownerId));
 }
 
+// The design's mains, read only when an operation places or detaches a component instance
+// (docs/specs/024-agents/edit-operations.md "Components"); every other changeset costs no extra read.
+function componentsFor(
+  env: DesignEnv,
+  request: ParsedChangeset,
+): Promise<DesignComponent[] | null> {
+  const body = request.body;
+  if (body.kind === 'replace' || !operationsNeedComponents(body.operations))
+    return Promise.resolve(null);
+  return readComponents(env);
+}
+
 function compile(
   args: SubmitArgs,
   stored: StoredTab | null,
   selections: readonly RoomSelection[] | null,
+  components: readonly DesignComponent[] | null,
 ): ApplySuccess | { errors: EditRejection[] } {
   const options = {
     // What the owner has selected: what `selected` reads; null when the room was not read.
@@ -219,7 +235,10 @@ function compile(
   }
   if (!stored)
     return { errors: [{ code: 'target_not_found', details: ['the tab does not exist'] }] };
-  return applyEditOperations(stored.tab, body.operations, options);
+  return applyEditOperations(stored.tab, body.operations, {
+    ...options,
+    ...(components ? { components } : {}),
+  });
 }
 
 // The engine refused. When the base is behind, a conflict over what the agent read wins: that is

@@ -40,6 +40,13 @@ export function identityOf(ctx: RouteContext): RouteIdentity {
   };
 }
 
+// A canvas's create (`POST /api/documents`, a re-commit of its own id too) is its making, not an edit: whether making
+// it is a use is the create's `markUsed` (docs/specs/015-api/api.md "Marking a document used"), so the room records no
+// editor for it, which would count a use day for every document of a bulk import.
+export function isDocumentCreate(request: Request): boolean {
+  return request.method === 'POST' && new URL(request.url).pathname === '/api/documents';
+}
+
 // The room's side: the request answered as the worker would have answered it. `community` is the canvas's
 // Community post's link, as the room holds it (routes/context.ts grantOn).
 export async function answerDocumentRequest(

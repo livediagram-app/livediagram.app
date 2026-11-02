@@ -32,9 +32,7 @@ describe('emailEnabled', () => {
 
 describe('appBaseUrl', () => {
   it('defaults to livediagram.app', () =>
-    expect(appBaseUrl(noBinding)).toBe(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev',
-    ));
+    expect(appBaseUrl(noBinding)).toBe('https://www.livediagram.app'));
   it('uses + trims a trailing slash from APP_BASE_URL', () =>
     expect(appBaseUrl({ APP_BASE_URL: 'https://example.com/' } as unknown as Env)).toBe(
       'https://example.com',

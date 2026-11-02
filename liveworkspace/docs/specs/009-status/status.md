@@ -47,7 +47,9 @@ Nothing alerts anyone. That may come later; the incidents table is where it woul
 ## The read API
 
 Both are `GET` only, public and anonymous, cached for 2 minutes (`Cache-Control: public, max-age=120`, and the
-Worker's edge cache), and read one stored row. The page is on the same origin, so there is no CORS.
+Worker's edge cache), and read one stored row. The page is on the same origin, so there is no CORS. With the
+database itself down they answer `503 storage_unavailable`, never an empty status that would then be cached as the
+truth ([When a request fails](../002-architecture/architecture.md#when-a-request-fails)).
 
 **`GET /api/status`**: the latest run.
 
@@ -99,12 +101,15 @@ From the Worker, liveworkspace's own services are fetched at `PLATFORM_ORIGIN`, 
 has the `global_fetch_strictly_public` compatibility flag, which sends the request out to the internet and back in
 through the zone's routes, so the status Worker has that flag. Each app is fetched at its live address
 (`https://www.<app>`, `https://mcp.<app>/health`), or its `staging.` one from staging, where the MCP servers aren't
-checked. An app standing in on a `workers.dev` address on this account (`STAND_INS` in `@liveworkspace/sites`,
-livediagram until livediagram.app moves; livediagram/docs/specs/016-platform/stand-in-addresses.md) is reached the
-same way as liveworkspace's own services, through service bindings to its Workers: `LIVEDIAGRAM_ROUTER` for its router's
-address and `LIVEDIAGRAM_MCP` for its MCP server's. The bindings drop when the domain moves. Locally (`ENVIRONMENT =
-"development"`) everything is fetched on this machine's ports: the site on 3000 and
+checked. Every app, livediagram included, is on its own custom domains, so the Worker has no service bindings to
+any app. Locally (`ENVIRONMENT = "development"`) everything is fetched on this machine's ports: the site on 3000 and
 each app's router and MCP Worker.
+
+The MCP server is optional per app: an app is checked for one only when it ships one (it has an MCP Worker's local
+port in `MCP_DEV_PORTS`). An app without one has no MCP row at all, rather than a row that is always down or
+skipped. Every app listed today ships one; livehuddle, registered but held until launch
+([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)), ships none in
+its first version and is not on the page until it launches.
 
 ## The database
 

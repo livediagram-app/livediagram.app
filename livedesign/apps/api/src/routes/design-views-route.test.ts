@@ -6,6 +6,8 @@ import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { captureTelemetry, TELEMETRY_ON } from '@liveworkspace/telemetry/testing';
 import type { Env } from '../types';
 import { getDesign } from '../db/designs';
+import * as componentStore from '../db/components';
+import { putComponent } from '../db/components';
 import { answerOverview, parseViewQuery, type ParsedView } from './design-views-route';
 import { handleDesigns } from './designs';
 import { personTagFor } from '../person-tag';
@@ -400,7 +402,7 @@ describe('parseViewQuery (VW43)', () => {
     });
     expect(await refusal('view=outline', 'design')).toEqual({
       error: 'unknown_view',
-      message: 'view takes overview here',
+      message: 'view takes overview, components here',
     });
     expect(logged('[views] invalid request')).toEqual({ parameter: 'view', error: 'unknown_view' });
   });
@@ -525,5 +527,99 @@ describe('views behind the read gate (E22, E23, E25)', () => {
     ]);
     expect(logged('[views] overview')).toMatchObject({ batches: 1 });
   });
+});
 
+describe('components over REST', () => {
+  const nav = (id = 'nav', name = 'Nav bar') => ({
+    id,
+    name,
+    width: 200,
+    height: 40,
+    updatedAt: 1,
+    elements: [box('bar', 'Home', 0)],
+  });
+  const instance = (id: string, componentId: string): Element => ({
+    id,
+    type: 'shape',
+    shape: 'instance',
+    componentId,
+    x: 0,
+    y: 300,
+    width: 200,
+    height: 40,
+  });
+
+  async function withInstances() {
+    const db = await setUp();
+    await putComponent(db.env, nav());
+    await putComponent(db.env, nav('foot', 'Footer'));
+    const tabs = [{ id: 'ti', name: 'Screens', elements: [instance('top', 'nav')] }];
+    const created = await call(db, 'POST', '/api/designs', { id: 'E', name: 'App', tabs });
+    expect(created.status).toBe(201);
+    return db;
+  }
+
+  it('lists the library as the components view, as text and as JSON, and counts it', async () => {
+    quiet();
+    const db = await setUp();
+    await putComponent(db.env, nav());
+    const res = await docView(db, 'view=components');
+    expect(res.status).toBe(200);
+    expect((await res.text()).split('\n')).toEqual([
+      'doc D "Checkout" · 1 component',
+      'component nav "Nav bar" 200x40 · 1 element',
+      '  square bar "Home" takes=label,fillColor,strokeColor,textColor',
+    ]);
+    expect(logged('[views] components')).toMatchObject({ doc: 'D', components: 1, scoped: false });
+    const body = (await (await docView(db, 'view=components&json=1')).json()) as {
+      components: { id: string }[];
+    };
+    expect(body.components.map((c) => c.id)).toEqual(['nav']);
+    await settled();
+    expect(viewed()).toEqual(['Components', 'Components']);
+  });
+
+  it('refuses what the components view does not take', async () => {
+    quiet();
+    const db = await setUp();
+    expect((await docView(db, 'view=components&only=x')).status).toBe(400);
+    expect((await tabView(db, 'view=components')).status).toBe(400);
+  });
+
+  it('names an instance’s main in a tab view, reading only the mains that tab uses', async () => {
+    quiet();
+    const db = await withInstances();
+    const read = vi.spyOn(componentStore, 'readComponents');
+    const res = await call(db, 'GET', '/api/designs/E/tabs/ti?view=outline');
+    expect((await res.text()).split('\n')[1]).toBe('instance top instance of "Nav bar"');
+    expect(read).toHaveBeenCalledWith(expect.anything(), { tabIds: ['ti'] });
+  });
+
+  it('reads no library for a tab without an instance', async () => {
+    quiet();
+    const db = await setUp();
+    const read = vi.spyOn(componentStore, 'readComponents');
+    expect((await tabView(db, 'view=outline')).status).toBe(200);
+    expect(read).not.toHaveBeenCalled();
+  });
+
+  it('names the main by id when the library cannot be read', async () => {
+    quiet();
+    const db = await withInstances();
+    vi.spyOn(componentStore, 'readComponents').mockRejectedValueOnce(new Error('down'));
+    const res = await call(db, 'GET', '/api/designs/E/tabs/ti?view=outline');
+    expect(await res.text()).toContain('instance top instance of nav (main not loaded)');
+  });
+
+  it('gives a tab-scoped visitor only the mains its tab uses', async () => {
+    quiet();
+    const db = await withInstances();
+    testShareLink(db, 'E', 'SCOPED', 'view', 'never', 'ti');
+    const who = { owner: 'guest', headers: { 'X-Share-Code': 'SCOPED' } };
+    const read = vi.spyOn(componentStore, 'readComponents');
+    const res = await call(db, 'GET', '/api/designs/E?view=components', undefined, who);
+    expect(res.status).toBe(200);
+    expect(read).toHaveBeenCalledWith(expect.anything(), { tabIds: ['ti'] });
+    expect(logged('[views] components')).toMatchObject({ scoped: true });
+  });
 });

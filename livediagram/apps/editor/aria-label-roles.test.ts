@@ -18,6 +18,8 @@ const DIRS = [
   join(ROOT, '../../../packages/ui/src'),
   // The editor code every editor shares (@liveworkspace/workbench) renders here too, so it is held to the rule as well.
   join(ROOT, '../../../packages/workbench/src'),
+  // Avatar mode's shared code (@liveworkspace/avatar) renders here too.
+  join(ROOT, '../../../packages/avatar/src'),
 ];
 // An opening tag, attributes and all, allowing one level of nested braces inside an attribute's expression.
 const TAG = /<(span|div|p|i|b|em|strong|small)\b((?:[^<>{}]|\{(?:[^{}]|\{[^{}]*\})*\})*?)\/?>/g;

@@ -1,5 +1,6 @@
 'use client';
 
+import { DesignComponentsBand } from './component-tiles';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from './PaletteTileGrid';
 import { PaletteToolRows } from './PaletteToolRows';
@@ -93,6 +94,8 @@ export function PaletteMediaTab({ pendingDraw, actions, tiles: media }: TabProps
 export function PaletteComponentsTab({ pendingDraw, actions, tiles: components }: TabProps) {
   return (
     <div className="flex flex-col gap-0.5">
+      {/* The design's own components, made with Make Component (docs/specs/009-elements/components.md). */}
+      <DesignComponentsBand />
       <PaletteToolRows
         tiles={components.filter((t) => !t.tileGroup)}
         actions={actions}

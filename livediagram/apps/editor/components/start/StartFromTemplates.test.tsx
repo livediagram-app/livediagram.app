@@ -98,7 +98,7 @@ describe('StartFromTemplates, switching category', () => {
     mount('diagram');
     const scroller = document.querySelector('[data-start-card]')!.closest('.overflow-y-auto')!;
     scroller.scrollTop = 300;
-    fireEvent.click(document.querySelector('[data-rail="flowcharts"]')!);
+    fireEvent.click(document.querySelector('[data-rail="processes"]')!);
     expect(scroller.scrollTop).toBe(0);
   });
 });

@@ -14,6 +14,11 @@ export interface Env {
   // Cloudflare Email Service's send_email binding. Required in staging and production; without it, development
   // logs each email.
   EMAIL?: SendEmail;
+  // The send window the onboarding series, invitation reminders and token warnings wait for (send-window.ts):
+  // `<Day>-<Day> HH:00-HH:00`, or `always` for none; unset, Mon-Fri 09:00-21:00. And the zone of a recipient whose
+  // zone isn't known; unset, Europe/London. For self-hosting: neither is set in wrangler.toml.
+  EMAIL_SEND_WINDOW?: string;
+  EMAIL_DEFAULT_TIME_ZONE?: string;
   // Both set turns on "Continue with Google"; either missing leaves email codes only.
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
@@ -44,6 +49,13 @@ export interface Env {
   TELEMETRY_KEY_LIVEPLANNER?: string;
   TELEMETRY_KEY_LIVEDOCUMENTS?: string;
   TELEMETRY_KEY_LIVEDESIGN?: string;
+  TELEMETRY_KEY_LIVEHUDDLE?: string;
+
+  // Phone notifications' VAPID key pair (push/web-push.ts, liveworkspace/docs/specs/003-accounts/push.md), base64url: the
+  // uncompressed P-256 public key and the 32-byte private scalar (scripts/generate-vapid-keys.ts makes a pair). Either
+  // unset, phone notifications are off: devices can't register and nothing is sent.
+  VAPID_PUBLIC_KEY?: string;
+  VAPID_PRIVATE_KEY?: string;
 
   AUTH_DB: D1Database;
   // Workbench pairings, tickets and sessions (liveworkspace/docs/specs/011-workbench/workbench.md): one store per person, and the limit

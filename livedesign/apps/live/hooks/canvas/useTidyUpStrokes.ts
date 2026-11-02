@@ -32,10 +32,11 @@ export function useTidyUpStrokes({
   const canTidyUp = () =>
     !blocked() && tidyableSelection(activeTab.elements, currentSelectionIds()).length > 0;
 
-  const tidyUpSelected = () => {
-    if (blocked()) return;
+  // True when it tidied something (Edit Points on a stroke opens the path it made).
+  const tidyUpSelected = (): boolean => {
+    if (blocked()) return false;
     const ids = currentSelectionIds();
-    if (tidyableSelection(activeTab.elements, ids).length === 0) return;
+    if (tidyableSelection(activeTab.elements, ids).length === 0) return false;
     const align = guides?.() ?? null;
     // Tidied here, before the commit, so the count is known when it is tracked (a commit's
     // updater may run later, at render).
@@ -44,9 +45,10 @@ export function useTidyUpStrokes({
       const path = tidyUpStroke(el, align);
       if (path) paths.set(el.id, path);
     }
-    if (paths.size === 0) return;
+    if (paths.size === 0) return false;
     commit((els) => els.map((el) => paths.get(el.id) ?? el));
     track('Element', 'Changed', 'StrokesTidiedUp');
+    return true;
   };
 
   return { canTidyUp, tidyUpSelected };

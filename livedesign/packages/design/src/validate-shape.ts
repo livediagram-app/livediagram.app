@@ -18,6 +18,7 @@ import { NAV_LINKS_MAX, PROCESS_MAX_STEPS, STATS_MAX, WEB_TEXT_MAX } from './web
 import { isCodeThemeId } from '@liveworkspace/model-core/code-themes';
 import { CARD_TAG_MAX, CARD_TAGS_MAX, isCardMedia } from './card';
 import { isChipLook } from './chip';
+import { INSTANCE_FIELD_CHECKS } from './component-fields';
 import { isAttachPoint } from './attachment';
 import { isPointerTip } from './pointer-note';
 import { isPyramidVariant } from './concept';
@@ -149,6 +150,8 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   },
   // A tab id that is gone is legal too: the window says its tab is not available.
   { field: 'windowTabId', valid: isNonEmptyStr, rule: 'a tab id' },
+  // An instance (docs/specs/009-elements/components.md): a main that is gone is legal; it draws as missing.
+  ...INSTANCE_FIELD_CHECKS,
   { field: 'code', valid: isStrUpTo(CODE_MAX_LENGTH), rule: stringRule(CODE_MAX_LENGTH) },
   {
     field: 'codeLanguage',

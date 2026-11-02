@@ -265,6 +265,9 @@ export * from './tab-stats';
 export * from './page';
 export * from './wireframe-device';
 export * from './wireframe-page';
+// Inspect (docs/specs/007-editor/wireframe-pages.md "Inspect"): a wireframe element's measurements and spacing.
+export * from './inspect-element';
+export * from './inspect-spacing';
 export {
   wireframeFrameOverSvg,
   wireframeFrameTheme,
@@ -294,6 +297,13 @@ export * from './pages-edits';
 export * from './photo-pages';
 export * from './pages-background-copy';
 export * from './tab-window';
+export * from './components';
+export * from './component-resolve';
+export * from './component-make';
+export * from './component-session';
+export * from './component-patch';
+export * from './component-fields';
+export * from './component-validate';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
 
@@ -388,6 +398,8 @@ export * from './comment-thread';
 export * from './design-envelope';
 export * from './export-tab-text';
 export * from '@liveworkspace/model-core/comment-mentions';
+// Comment reactions (docs/specs/012-collaboration/comment-reactions.md): the six, the stored shape and the toggle.
+export * from '@liveworkspace/model-core/comment-reactions';
 // The shared plain-object guard for untrusted JSON.
 export * from '@liveworkspace/model-core/is-record';
 // The shared FNV-1a string hash for deterministic picks.
@@ -422,6 +434,7 @@ export * from './cell-colours';
 export * from './table-header-colours';
 export * from './progress-colours';
 export * from '@liveworkspace/model-core/icon-size';
+export * from '@liveworkspace/model-core/progress-label';
 export * from '@liveworkspace/model-core/icon-weight';
 
 // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md): the runs-as-delta model + pure
@@ -434,6 +447,7 @@ export * from './segment-geometry';
 export * from './duplicate';
 export * from './polyline';
 export * from './pen-stroke';
+export * from './stroke-loop-fill';
 export * from '@liveworkspace/model-core/stroke-points';
 export * from './stroke-fit';
 export * from '@liveworkspace/model-core/stroke-points-cache';
@@ -477,6 +491,8 @@ export * from './tab-builders';
 export * from './svg-render';
 export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
+export { labelTextScale, withPickedTextSize } from './label-text-scale';
+export { borderOf } from './svg-render-border';
 export { SKETCH_ART_FILTER_ID, SKETCH_FACE_FILTER, svgSketchArtFilter } from './svg-render-sketch';
 export * from './svg-render-table';
 export { mixHex } from '@liveworkspace/model-core/color-wash';

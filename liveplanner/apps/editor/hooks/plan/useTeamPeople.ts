@@ -1,11 +1,12 @@
 'use client';
 
-// Who a card can be assigned to (docs/specs/026-plan/items.md "Who may do what"): the joined members of the teams
-// you are part of (the teams your token names, liveworkspace/docs/specs/003-accounts/accounts.md "Teams"; their people from the api,
-// which reads them from liveworkspace). Named as items name people (hashed ids, docs/specs/026-plan/blueprints/
-// item-store.md "Security and trust"), so the person picked is the one the api signs their writes as. Fetched
-// once a plan has Plan content (docs/specs/026-plan/plan-mode.md "Cost"), and only when signed in: a guest has no
-// teams. One request per team, together; the same requests the assignee picker and mention list share.
+// Who a card can be assigned to (docs/specs/026-plan/items.md "Who may do what"): the joined members of the plan's
+// team, the team whose library holds it, when your token names that team (liveworkspace/docs/specs/003-accounts/
+// accounts.md "Teams"; its people from the api, which reads them from liveworkspace). Never your other teams: a plan
+// in My Work, This Browser or shared from someone's My Work has no team, so nobody is asked for. Named as items
+// name people (hashed ids, docs/specs/026-plan/blueprints/item-store.md "Security and trust"), so the person picked
+// is the one the api signs their writes as. Fetched once a plan has Plan content (docs/specs/026-plan/plan-mode.md
+// "Cost"), and only when signed in: a guest has no teams. The mention list (useCommentMentions) reads the same team.
 import { useEffect, useState } from 'react';
 import { itemPersonId, type ItemPerson } from '@liveplanner/items';
 import type { TeamMember } from '@liveplanner/api-schema';
@@ -26,25 +27,26 @@ export function useTeamPeople(
   ownerId: string,
   enabled: boolean,
   signedIn: boolean,
-  teams: readonly { id: string }[] = [],
+  teams: readonly { id: string }[],
+  projectTeamId: string | null,
 ): readonly ItemPerson[] {
-  const [people, setPeople] = useState<readonly ItemPerson[]>(NO_PEOPLE);
-  const teamKey = teams.map((t) => t.id).join(',');
+  const [people, setPeople] = useState<{ teamId: string; list: readonly ItemPerson[] } | null>(
+    null,
+  );
+  // The plan's team, only when the token names it (a team you have left reads nobody).
+  const teamId = projectTeamId && teams.some((t) => t.id === projectTeamId) ? projectTeamId : null;
   useEffect(() => {
-    if (!enabled || !signedIn || !ownerId || !teamKey) return;
+    if (!enabled || !signedIn || !ownerId || !teamId) return;
     let live = true;
     void (async () => {
       try {
-        const lists = await Promise.all(
-          teamKey.split(',').map((id) => apiTeamMembers(ownerId, id)),
-        );
+        const members = await apiTeamMembers(ownerId, teamId);
         const byId = new Map<string, ItemPerson>();
-        for (const members of lists)
-          for (const m of members) {
-            const p = await teamMemberPerson(m);
-            if (p && !byId.has(p.id)) byId.set(p.id, p);
-          }
-        if (live) setPeople([...byId.values()]);
+        for (const m of members) {
+          const p = await teamMemberPerson(m);
+          if (p && !byId.has(p.id)) byId.set(p.id, p);
+        }
+        if (live) setPeople({ teamId, list: [...byId.values()] });
       } catch (err) {
         // A failure leaves the list as it was.
         console.warn('[plan] plan.team-people.load-failed', { error: String(err) });
@@ -53,6 +55,7 @@ export function useTeamPeople(
     return () => {
       live = false;
     };
-  }, [ownerId, enabled, signedIn, teamKey]);
-  return signedIn && enabled ? people : NO_PEOPLE;
+  }, [ownerId, enabled, signedIn, teamId]);
+  // A list loaded for another team (the plan moved out of it) is never shown.
+  return signedIn && enabled && teamId && people?.teamId === teamId ? people.list : NO_PEOPLE;
 }

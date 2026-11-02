@@ -56,6 +56,10 @@ The example is abridged; a real outline prints every element.
   code block its language and line count, a chart its slice or series count, a checklist `done=2/5`.
 - **Live and structured kinds** carry one state attribute: a progress bar `progress=40`, and likewise for stat rows,
   process steps, legends, ratings, timelines and pages.
+- **Instances** ([Components](../009-elements/components.md)) print as one element, never as the main's elements:
+  `instance 6d2a instance of "Nav bar" overrides=2 fields=label,fillColor`, naming the main and, when it has any,
+  how many main elements its overrides touch and which fields. A main the reader was not given prints by id with
+  `(main not loaded)`; one the library does not hold, `(main missing)`. The `components` view lists the mains.
 - **Bare strokes** (freehand with no label, note, comment, link or arrow) that sit next to each other fold into one
   line, `freehand ×12 (3 closed)`; `layout` lists each one with its ref.
 - **Left out**: coordinates, sizes, colours, fonts, anchors and routing (the `layout` view and `--style` have them),
@@ -75,6 +79,7 @@ The example is abridged; a real outline prints every element.
 | `lint`         | Does the text fit?              | The [lint](page-lint.md) findings, refs first                                                                                                                  |
 | `diff --since` | What changed since I last read? | Added, removed, changed and moved elements since a revision                                                                                                    |
 | `pages`        | What pages does this tab have?  | Its pages and the layouts on offer ([Pages for agents](pages-for-agents.md#reading-the-pages-view))                                                            |
+| `components`   | What can I place and override?  | The design's component library: each main's id, name, frame, archived flag and its elements (id, kind, text); no tab                                           |
 
 Every view opens with a header line naming the tab, its counts and its `rev`, so a later write can carry it as a
 base. Every view takes `--json` for the same data as JSON; the stored tab itself is `--raw`.
@@ -83,6 +88,13 @@ base. Every view takes `--json` for the same data as JSON; the stored tab itself
 selector of [edit operations](edit-operations.md#selectors) reads: every selected element in full, in the tab's order,
 fitted by `--budget`. Nothing selected, or a selection that could not be read, is refused as edit operations refuse
 it. The api serves it; a pulled file has no live selection.
+
+`components` reads the design, not a tab ([Components](../009-elements/components.md)): one line per main,
+`component <id> "<name>" <w>x<h> [archived] · <n> elements`, then each of its elements indented, `<kind> <id>
+"<text>"`, the ids an instance's `componentOverrides` is keyed by and the fields each takes (`takes=label,fillColor,…`).
+A tab-scoped reader sees only the mains its tab uses. Views that measure or place (`layout`, the lint) treat an
+instance as its box; anything that draws a tab (a PNG preview) expands each instance into its main's elements first
+(`expandInstances`).
 
 `diff` is computed by the CLI: it keeps the last tab it read of each design and tab, with its revision, and
 compares that copy with the current tab. The api serves no diff.
@@ -100,11 +112,13 @@ compares that copy with the current tab. The api serves no diff.
 ## Where views are made
 
 - One package, `@livedesign/design-views`, holds every view as a pure function of a tab.
-- The api serves every view but `diff`: `GET /api/designs/:id/tabs/:tabId?view=<name>` answers `text/plain`, and
-  `GET /api/designs/:id?view=overview` the overview.
+- The api serves every view but `diff`: `GET /api/designs/:id/tabs/:tabId?view=<name>` answers `text/plain`,
+  `GET /api/designs/:id?view=overview` the overview and `GET /api/designs/:id?view=components` the library. A tab
+  view of a tab holding instances is rendered with the mains that tab uses (read only then).
 - The MCP's `read_design` returns a view, the outline by default, instead of element JSON: its text first, then one
   line of JSON naming the design, the tab, its revision and its link. It takes the view's arguments (`view`,
-  `budget`, `only`, ...), returns the elements with `format: "json"`, and attaches a PNG only with `image: true`.
+  `budget`, `only`, ...), returns the elements with `format: "json"`, and attaches a PNG only with `image: true`;
+  `view: "components"` reads the design's library.
 - The CLI uses the api's views online and the package for local files (`pull`). An element kind the renderer does
   not know prints as `? <type> <ref> "label"` and is counted in the header, never dropped.
 - Each view the api answers counts one anonymous `Agent·Viewed` event typed by the view's name

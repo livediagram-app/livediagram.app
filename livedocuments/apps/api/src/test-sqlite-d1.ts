@@ -237,6 +237,22 @@ function testDocumentRooms(
   rooms: DurableObjectNamespace | undefined,
 ): DurableObjectNamespace {
   type FakeId = DurableObjectId & { documentName: string; roomId: unknown };
+  // The document's Community post's link as the room reads it (document-room.ts communityOf).
+  const communityOf = async (documentId: string) => {
+    const cp = await import('./document-room/community-post');
+    const post = await cp.readCommunityPost(env);
+    if (!post) return null;
+    const meta = await (
+      await import('./document-room/document-content')
+    ).readDocumentMeta(env, documentId);
+    return { code: post.shareCode, open: cp.openCommunityCode(env, post, meta) === post.shareCode };
+  };
+  // The post when `code` is its open link (document-room.ts openPost).
+  const openPost = async (documentId: string, code: string) => {
+    const post = await communityOf(documentId);
+    if (!post || post.code !== code || !post.open) return null;
+    return (await import('./document-room/community-post')).readCommunityPost(env);
+  };
   const roomOf = (id: FakeId) =>
     rooms ? (rooms.get(id.roomId as DurableObjectId) as { fetch: typeof fetch }) : null;
   const ns = {
@@ -256,12 +272,13 @@ function testDocumentRooms(
       },
       outline: async (documentId: string) =>
         (await import('./document-room/document-content')).readDocumentOutline(env, documentId),
-      route: async (_documentId: string, request: Request, identity: unknown) =>
+      route: async (documentId: string, request: Request, identity: unknown) =>
         (await import('./document-room/document-route')).answerDocumentRequest(
           env,
           request,
           identity as never,
           () => {},
+          await communityOf(documentId),
         ),
       // The Drive file's two halves (document-room.ts exportFile and importFile).
       exportFile: async (documentId: string, query: { ifVersion: number | null }) =>
@@ -278,11 +295,15 @@ function testDocumentRooms(
         ),
       exportImage: async (
         documentId: string,
-        query: { tabId: string | null; ifVersion: number | null },
+        query: { tabId: string | null; ifVersion: number | null; code?: string | null },
       ) => {
         const content = await import('./document-room/document-content');
         const { meta, savedAt } = await content.readDocumentHead(env, documentId);
         if (!meta) return { status: 'not_found' };
+        // A Community post's link draws only while the post is open (document-room.ts exportImage).
+        const post = query.code ? await communityOf(documentId) : null;
+        const onPost = post !== null && post.code === query.code;
+        if (onPost && !post.open) return { status: 'not_found' };
         if (query.ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
         if (
           query.tabId !== null &&
@@ -292,7 +313,7 @@ function testDocumentRooms(
         }
         const svg = await (
           await import('./thumbnail')
-        ).drawDocument(env, { id: documentId, name: meta.name }, query.tabId);
+        ).drawDocument(env, { id: documentId, name: meta.name }, query.tabId, onPost);
         return svg === null
           ? { status: 'empty', version: savedAt }
           : {
@@ -309,13 +330,27 @@ function testDocumentRooms(
           await import('./db/image-refs')
         ).documentPlacesImage(env, documentId, imageId, onlyTabId)) &&
         (await import('./db/image-grants')).documentMayServeImage(env, documentId, imageId),
-      exportCopy: async (documentId: string, onlyTabId: string | null, copiedBy: string | null) =>
-        (await import('./document-room/document-content')).exportDocumentCopyFor(
-          env,
-          documentId,
-          onlyTabId,
-          copiedBy,
-        ),
+      exportCopy: async (
+        documentId: string,
+        onlyTabId: string | null,
+        copier: { by: string | null; code: string | null } | null,
+      ) => {
+        const post = copier?.code ? await communityOf(documentId) : null;
+        const community = post !== null && post.open && post.code === copier?.code;
+        const copy = await (
+          await import('./document-room/document-content')
+        ).exportDocumentCopyFor(env, documentId, onlyTabId, copier?.by ?? null, community);
+        return copy ? { copy, community } : null;
+      },
+      community: (documentId: string) => communityOf(documentId),
+      communityPostTitle: async (documentId: string, code: string) =>
+        (await openPost(documentId, code))?.title ?? null,
+      communityListing: async (documentId: string, code: string) => {
+        const stored = await openPost(documentId, code);
+        if (!stored) return null;
+        const cp = await import('./document-room/community-post');
+        return { postId: stored.postId, author: await cp.communityPostAuthor(env, stored) };
+      },
       joined: async (documentId: string, personId: string) => {
         const meta = await (
           await import('./document-room/document-content')

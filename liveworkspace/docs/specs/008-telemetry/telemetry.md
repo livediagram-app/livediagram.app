@@ -21,13 +21,13 @@ the apps' old `events` tables are no longer read or written.
 
 The same three fields as before, plus the app it came from:
 
-| Field      | What it is                                                                                                       |
-| ---------- | ---------------------------------------------------------------------------------------------------------------- |
-| `app`      | The app's site: `livediagram.app`, `liveplanner.app`, `livedocuments.app` or `livedesign.app` (`TELEMETRY_APPS`) |
-| `category` | The parent, such as `Document` or `Element`                                                                      |
-| `action`   | The verb, such as `Created` or `Added`                                                                           |
-| `type`     | Optional. One short reference token, such as `Square`; never user content                                        |
-| `ts`       | Stamped by the service when the batch arrives                                                                    |
+| Field      | What it is                                                                                                                                                                  |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `app`      | The app's site: `livediagram.app`, `liveplanner.app`, `livedocuments.app` or `livedesign.app` (`TELEMETRY_APPS`), or a held app's (`HELD_TELEMETRY_APPS`: `livehuddle.app`) |
+| `category` | The parent, such as `Document` or `Element`                                                                                                                                 |
+| `action`   | The verb, such as `Created` or `Added`                                                                                                                                      |
+| `type`     | Optional. One short reference token, such as `Square`; never user content                                                                                                   |
+| `ts`       | Stamped by the service when the batch arrives                                                                                                                               |
 
 There is no identity, IP address, owner id or document id. Each app keeps its own closed vocabulary
 in its own api-schema (`telemetry-schema.ts`), because its editors and its vocabulary change
@@ -254,6 +254,12 @@ Workers' `TELEMETRY_KEY`. The apps reach the service over HTTPS, not a service b
    `telemetry.css`.
 4. In the app, send batches as above, and allow `https://www.liveworkspace.app` in its CSP
    `connect-src`.
+
+An app registered before its launch ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch))
+goes in `HELD_TELEMETRY_APPS` instead of `TELEMETRY_APPS` for step 1: the service stores its events and takes its
+key, and the dashboard's app picker and All apps view, which read `TELEMETRY_APPS`, leave it out, so step 3 waits
+for its launch. livehuddle is held this way. Forked from livediagram, it is checked against livediagram's
+vocabulary until its own api-schema comes with its fork.
 
 ## Performance
 

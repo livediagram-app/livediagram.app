@@ -5,6 +5,7 @@
 import {
   articlesOf,
   newArticleFlow,
+  newFlashcardFlow,
   normaliseRuns,
   withFreshArticleBlockIds,
   type ArticleBlock,
@@ -17,6 +18,7 @@ import {
   MAX_PAGES,
   nextPageId,
   PAGE_NAME_MAX,
+  newFlashcardPage,
   newSlidePage,
   pageSizesFor,
   withPages,
@@ -208,7 +210,8 @@ export function withArticleDuplicated<T extends PagesTab>(
 export function withArticlePageCount<T extends PagesTab>(tab: T, flow: string, count: number): T {
   const pages = pagesOf(tab);
   const own = pages.filter((p) => p.flow === flow);
-  if (own.length === 0) return tab;
+  // A card never grows or shrinks for its writing (docs/specs/007-editor/flashcards.md "Never flows").
+  if (own.length === 0 || own[0]!.kind === 'flashcard') return tab;
   const want = Math.max(1, Math.min(count, own.length + (MAX_PAGES - pages.length)));
   if (want === own.length) return tab;
   if (want > own.length) {
@@ -255,8 +258,8 @@ export function offersPageKindChoice(
 }
 
 /** The tab with its first page's kind chosen: an infographic page (kept, now chosen), an article
- *  (the page becomes its first page, its writing a new Title and paragraph), or a slide (the page
- *  turned into a 16:9 landscape slide). Null when the page no longer offers the choice. */
+ *  (the page becomes its first page, its writing a new Title and paragraph), a slide (the page
+ *  turned into a 16:9 landscape slide), or a flashcard (the first card of a stack). Null when the page no longer offers the choice. */
 export function withPageKindChosen<T extends PagesTab>(
   tab: T,
   pageId: string,
@@ -276,6 +279,21 @@ export function withPageKindChosen<T extends PagesTab>(
         ...(name ? { name } : {}),
       },
     ]);
+  }
+  if (kind === 'flashcard') {
+    // The first card of a stack (docs/specs/007-editor/flashcards.md "Making flashcards").
+    const { name } = page;
+    return withArticleFlow(
+      withPages(tab, [
+        {
+          ...newFlashcardPage(page.id, flow),
+          ...(page.background ? { background: page.background } : {}),
+          ...(name ? { name } : {}),
+        },
+      ]),
+      flow,
+      newFlashcardFlow(),
+    );
   }
   // An article takes only the paper and screen sizes: a page in any other (the 16:9 slide the
   // unchosen page could be set to) becomes A4.

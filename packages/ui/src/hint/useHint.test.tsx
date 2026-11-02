@@ -18,13 +18,15 @@ function Harness({
   text,
   onClick,
   stopPresses,
+  pressWithText,
 }: {
   kind: HintKind;
   text?: string;
   onClick?: () => void;
   stopPresses?: boolean;
+  pressWithText?: boolean;
 }) {
-  const { open, source, attach, triggerProps, surfaceProps } = useHint(kind);
+  const { open, source, attach, triggerProps, surfaceProps } = useHint(kind, { pressWithText });
   return (
     <>
       <span data-testid="wrapper" ref={attach} {...triggerProps}>
@@ -347,6 +349,17 @@ describe('useHint, touch long press', () => {
     expect(tip()).toBeNull();
     fireEvent.click(button());
     expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens on a control with words when asked to (a reaction chip), and eats the click', () => {
+    const onClick = vi.fn();
+    render(<Harness kind="hover-card" text="👍 2" onClick={onClick} pressWithText />);
+    fireEvent.pointerDown(button(), touch);
+    advance(HINT_LONG_PRESS_MS);
+    expect(tip()?.dataset.source).toBe('touch');
+    fireEvent.pointerUp(button(), touch);
+    fireEvent.click(button());
+    expect(onClick).not.toHaveBeenCalled();
   });
 });
 

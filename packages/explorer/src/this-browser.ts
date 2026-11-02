@@ -233,12 +233,13 @@ export function thisBrowserPublisher<R extends OfflineRecordFields>(
 // This Browser view instead (`/explorer/offline?convert=…`, an older `/offline` link redirected) goes on to the
 // editor the same way. Every app that converts reads the same query through these, so the sides can't drift.
 
-export type ThisBrowserConversion = 'take-offline' | 'sync';
+// Delete rides the same hand-over: only the app's editor can remove a record from its offline store.
+export type ThisBrowserConversion = 'take-offline' | 'sync' | 'delete';
 
 export const THIS_BROWSER_CONVERT_PARAM = 'convert';
 export const THIS_BROWSER_ITEM_PARAM = 'item';
 
-const CONVERSIONS: readonly ThisBrowserConversion[] = ['take-offline', 'sync'];
+const CONVERSIONS: readonly ThisBrowserConversion[] = ['take-offline', 'sync', 'delete'];
 
 /** An address of the app's (the item's own, in its editor), asked to run one conversion on one item. */
 export function thisBrowserConvertHref(
@@ -272,4 +273,59 @@ export function dropThisBrowserConversion(): void {
   url.searchParams.delete(THIS_BROWSER_CONVERT_PARAM);
   url.searchParams.delete(THIS_BROWSER_ITEM_PARAM);
   window.history.replaceState(null, '', url);
+}
+
+// ---------- Deleting one ---------------------------------------------------------------------------------------------
+// Nothing else holds an item kept only in this browser, so Delete is for good and always asked first, in the same words
+// wherever it is asked: the Explorer's dialog (page and panel) and the editor's handed-over Delete.
+
+/** Delete's confirmation, for an item called `title` that the app calls a `kind` (lower case: 'plan'). */
+export function thisBrowserDeleteCopy(
+  kind: string,
+  title: string,
+): { title: string; message: string; confirmLabel: string } {
+  return {
+    title: `Delete this ${kind} from this browser?`,
+    message: `“${title || 'Untitled'}” is kept only in this browser. Deleting it removes this browser’s copy, the only one, for good. Nothing in your account changes.`,
+    confirmLabel: 'Delete',
+  };
+}
+
+// The page asks before it hands a Delete over to the editor; this note, in the tab's session storage (same origin,
+// this tab only, so no link from elsewhere can set it), tells the editor it was asked, so it doesn't ask again. The
+// editor takes it once, and only for the item it names.
+const DELETE_CONFIRMED_KEY = 'liveworkspace:this-browser-delete-confirmed';
+
+function session(): Storage | null {
+  try {
+    return typeof window === 'undefined' ? null : window.sessionStorage;
+  } catch {
+    return null;
+  }
+}
+
+/** The page asked, and the person said Delete: note it for the editor this tab is about to open. */
+export function markThisBrowserDeleteConfirmed(
+  id: string,
+  store: Storage | null = session(),
+): void {
+  try {
+    store?.setItem(DELETE_CONFIRMED_KEY, id);
+  } catch {
+    // Blocked: the editor asks again, which is safe.
+  }
+}
+
+/** Whether the page asked about deleting `id` (taken once: the note is gone after). */
+export function takeThisBrowserDeleteConfirmed(
+  id: string,
+  store: Storage | null = session(),
+): boolean {
+  try {
+    const noted = store?.getItem(DELETE_CONFIRMED_KEY) ?? null;
+    if (noted !== null) store?.removeItem(DELETE_CONFIRMED_KEY);
+    return noted === id;
+  } catch {
+    return false;
+  }
 }

@@ -47,8 +47,8 @@ export type ListSpec = ListFilters & {
   cursor?: Cursor;
   // Recent's first page only: also this many Most Used items, from the same request (Home's Jump Back In).
   used?: number;
-  // A first page only: also how many live items are the person's own (My Work, in the app asked), counted up to
-  // this many (Home's hero pill), and whether they can open anything at all there (Home's first run). Home's
+  // A first page only: also how many live items are in every space the person is in (My Work and each of their
+  // teams, in the app asked), counted up to this many (Home's hero pill), and whether they can open anything at all there (Home's first run). Home's
   // three reads in one request.
   mine?: number;
   any?: boolean;
@@ -60,10 +60,11 @@ const IN_JSON = 'IN (SELECT value FROM json_each(?))';
 const DAY_MS = 86_400_000;
 
 /**
- * Most Used: the items the person opened on the most distinct UTC days in the last USE_WINDOW_DAYS, ties to the
- * one opened last, then by id. Live, reachable items only, in the app and scopes asked. The person's window of
- * use_days is grouped first (read through use_days_person_day), so the cost is the rows they made in the window,
- * however many items or people the index holds; then at most `limit` items are joined.
+ * Most Used: the items the person opened in the last USE_WINDOW_DAYS UTC days, the most opens first, ties to the
+ * one opened last, then by id; an item with no open in the window is not there. Live, reachable items only, in the
+ * app and scopes asked. The person's window of use_days is grouped first (read through use_days_person_day), so the
+ * cost is the rows they made in the window, however many items or people the index holds; then at most `limit`
+ * items are joined.
  */
 export function buildMostUsedQuery(
   person: Person,
@@ -91,12 +92,13 @@ export function buildMostUsedQuery(
     args.push(spec.app);
   }
   args.push(spec.limit);
-  const sql = `SELECT ${ITEM_COLUMNS}, u.use_days, COALESCE(o.last_opened_at, 0) AS sort_at
-    FROM (SELECT item_id, COUNT(*) AS use_days FROM use_days WHERE person_id = ? AND day >= ? GROUP BY item_id) u
+  const sql = `SELECT ${ITEM_COLUMNS}, u.use_days, u.use_opens, COALESCE(o.last_opened_at, 0) AS sort_at
+    FROM (SELECT item_id, COUNT(*) AS use_days, SUM(opens) AS use_opens FROM use_days
+      WHERE person_id = ? AND day >= ? GROUP BY item_id) u
     JOIN items i ON i.id = u.item_id
     LEFT JOIN opens o ON o.person_id = ? AND o.item_id = u.item_id
     WHERE ${where.join(' AND ')}
-    ORDER BY u.use_days DESC, sort_at DESC, i.id DESC LIMIT ?`;
+    ORDER BY u.use_opens DESC, sort_at DESC, i.id DESC LIMIT ?`;
   return { sql, args };
 }
 
@@ -305,7 +307,7 @@ export async function listItems(env: Env, person: Person, spec: ListSpec): Promi
   const answers = await db.batch(statements);
   const [listed, usedRows] = [answers[0], withUsed ? answers[1] : undefined] as [
     D1Result<ItemRow & { sort_at: number }>,
-    D1Result<ItemRow & { use_days: number }> | undefined,
+    D1Result<ItemRow & { use_days: number; use_opens: number }> | undefined,
   ];
   const results = listed.results;
   const more = results.length > spec.limit;
@@ -324,7 +326,7 @@ export async function listItems(env: Env, person: Person, spec: ListSpec): Promi
   if (withUsed) {
     out.mostUsed = usedList.flatMap((r) => {
       const item = byId.get(r.id);
-      return item ? [{ ...item, useDays: r.use_days }] : [];
+      return item ? [{ ...item, useDays: r.use_days, useOpens: r.use_opens }] : [];
     });
   }
   if (withMine) {
@@ -344,8 +346,10 @@ export type ListAnswer = {
 };
 
 /**
- * My Work's count: the person's own live items (their personal scope, in the app asked), the same rows My Work's
- * first page of `limit` would list, counted in SQL rather than sent. One more than the cap says there are more.
+ * Home's pill: the live items in every scope the person has (their own and each joined team's, in the app asked;
+ * an item lives in one scope, so none counts twice, and nothing reached only through a link counts), the rows
+ * `view=all`'s first page of `limit` would list, counted in SQL rather than sent. One more than the cap says there
+ * are more.
  */
 export function buildMineCountQuery(
   person: Person,
@@ -353,11 +357,7 @@ export function buildMineCountQuery(
   limit: number,
   now = Date.now(),
 ): BuiltQuery {
-  const page = buildListQuery(
-    person,
-    { view: 'all', scopes: [personalScope(person.id)], limit, ...(app ? { app } : {}) },
-    now,
-  );
+  const page = buildListQuery(person, { view: 'all', limit, ...(app ? { app } : {}) }, now);
   return { sql: `SELECT COUNT(*) AS n FROM (${page.sql})`, args: page.args };
 }
 

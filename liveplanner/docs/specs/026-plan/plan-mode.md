@@ -18,7 +18,7 @@ drop it in a column) instead of a drawing. It never decides what the tab is: a t
 ## Plan's mark
 
 Its mark is a board: three columns, the middle one holding a raised card (`PlanIcon`, `EDITOR_MODE_ICONS.plan`). A
-general tab's pill leads with it; a Board, Sheet, Dashboard or Form tab shows its kind's glyph instead
+general tab is marked with it where tabs are listed with an icon; a Board, Sheet, Dashboard or Form tab shows its kind's glyph instead
 ([Plan tabs](plan-tabs.md#the-kinds)). There is no mode switch and no other mode
 ([Editor mode](../007-editor/editor-modes.md#other-mode-ids)).
 
@@ -118,8 +118,9 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
         The first takes the Overview layout's place in Recommended. A tab still on its default name takes the
         Dashboard's name. Archive and All Cards boards suggest nothing.
     - **Inspiration** ("Ready-made ways to run real work, from hiring to launches, set up across tabs for you."): the
-      Plan templates that set up boards, the most eye-opening first: Hiring Pipeline, Content Calendar, Product Launch,
-      OKRs, Feedback Board, Project Planner, Bug Tracker, Team Retro, Weekly Planner and Kanban, then Task Tracker
+      Plan templates that set up boards, the most eye-opening first: Hiring Pipeline, Content Calendar, Event Planner,
+      Sales CRM, Product Launch, OKRs, Help Desk, Feedback Board, Project Planner, Bug Tracker, Team Retro, Meeting
+      Agenda, Personal Goals, Weekly Planner, Study Planner and Kanban, then Task Tracker
       (Blank Plan left out, and a [spreadsheet template](plan-templates.md#spreadsheet-templates) that makes one tab
       too: it is one Sheet that **Spreadsheets** above already offers, so no choice shows twice; one that sets up more
       tabs, as Task Tracker's Sheet and Overview, stays; `INSPIRATION_TEMPLATES`), each its template preview and a badge of how many tabs it
@@ -128,7 +129,8 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
   - **A card**: a large picture (112 px tall) on a soft panel of the tab's column colour, then its name with a small
     badge of its kind (**Board**, **Sheet**, **Dashboard**, **Template**) where the grid mixes kinds (Recommended, a search), its line
     (two lines at most), and for a board the card types it takes, as chips with each type's colour (up to three, then
-    "+2"; a Blank board says **You Choose**, All Cards **Every Card**). On hover or focus it lifts and its border takes the
+    "+2"; a Blank board says **You Choose**, All Cards **Every Card**). A colour too dark to show on a dark card (a
+    Project's black) is lifted to 3:1, as a card face lifts it ([Item types](item-types.md#an-item-type)). On hover or focus it lifts and its border takes the
     brand colour. Choosing one acts at once: a board is placed, empty,
     in the middle of the view; a sheet as above; a layout makes the tab a Dashboard of it. Each choice makes the tab
     its kind ([Plan tabs](plan-tabs.md)).
@@ -182,7 +184,8 @@ used:
 
 - **Boards and Sheets**: Start Planning on an empty tab ([Starting a board](#starting-a-board)), its templates
   included.
-- **Cards**: a column's **Add card** ([Plan board](plan-board.md)), and the Plan strip's **New Card**.
+- **Cards**: a board's [card type chips](plan-board.md#card-type-chips) (a click, or a drag into a column and row)
+  and a column's **Add card** ([Plan board](plan-board.md)).
 - **Widgets**: the **+** at the end of a board's widgets ([Board widgets](board-widgets.md)).
 - **Card Types**: the **Card Types** button in the bottom-right cluster ([Item types](item-types.md)).
 - **Metrics, visualisations, notes and the written cards**: a Dashboard's **Add to Slot** and its slot menu's **Add a
@@ -231,7 +234,9 @@ board, so it opens on **Start Planning**.
 - **No participant cursors on any tab but a Dashboard**: a Board tab, a Sheet tab, or any other tab shows no one
   else's cursor: the board or Sheet covers the canvas a cursor would point at, and
   presence there is the avatars and each card's editing ring. A Dashboard (a Visualisation tab included) shows them,
-  as a diagram does (`planHidesCursors`).
+  as a diagram does (`planHidesCursors`). So the Hide Participant Cursors switch shows only on a Dashboard; on any
+  other tab it is absent from Settings, the Collaborators modal and search, its stored value kept
+  ([Collaborator enhancements](../012-collaboration/collaborator-enhancements.md#2-hide-participant-cursors)).
 
 ### Nothing attached to Plan items
 
@@ -262,7 +267,7 @@ deleted or migrated), but its indicators are not drawn, so nothing invites addin
 
 - There is no mode switch, Opens in or template mode filter, so nothing sends `ModePlan`, `OpensInPlan` or
   `TemplateModePlan` ([Editor mode](../007-editor/editor-modes.md#telemetry-telemetry)).
-- The `Plan` category: `Added` (the item type, or `Card` for a Plan card), `Moved` (`Board`), `Opened` (`Item` from a board or a list; `Parent`, `ChildCard` or `Breadcrumb` from inside the item panel), `Deleted` (the item type), `Changed` (the set-up part), `Toggled` (`FlagOn` / `FlagOff`)
+- The `Plan` category: `Added` (the item type, or `Card` for a Plan card), `Moved` (`Board`), `Opened` (`Item` from a board or a list; `Parent`, `ChildCard` or `Breadcrumb` from inside the item panel), `Deleted` (the item type), `Changed` (the set-up part), `Toggled` (`FlagOn` / `FlagOff`, and `ActivityOn` for a card panel's Activity tab picked)
   and `Revealed` (`Board`), never content. A board placed counts as `Element` · `Added` · `PlanBoard`, a plan view as `PlanView`.
 - The funnel slot `HeaderPlan` is a retired slot: nothing sends it ([Landing funnel](../019-marketing/landing-funnel.md)).
 

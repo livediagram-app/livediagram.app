@@ -23,7 +23,6 @@ const ctxOf = (over: Partial<SankeyElementTourContext> = {}): SankeyElementTourC
   elementId: 'sk1',
   band: 0,
   leftover: 4,
-  hasMore: true,
   touch: false,
   flows: { hasNodes: true, hasBalanceNotes: true },
   ...over,
@@ -68,11 +67,11 @@ describe('sankeyElementTourSteps', () => {
       ctxOf({
         band: null,
         leftover: null,
-        hasMore: false,
         flows: { hasNodes: false, hasBalanceNotes: false },
       }),
     ).map((s) => s.id);
     expect(ids).toEqual([
+      'style',
       'flows',
       'flows-add',
       'flows-text',

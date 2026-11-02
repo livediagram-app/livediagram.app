@@ -5,8 +5,10 @@
 // draws (the Brand, tinted or not), so the logo itself still links home.
 //
 // Opens three ways: hover on a pointer (CSS group-hover, the chevron fading in to say so), a tap on
-// the chevron on touch (always shown there, since nothing hovers), and the chevron as a menu button
-// from the keyboard (docs/specs/004-interface-design/menus.md). Links are plain <a> to each site's
+// the logo or the chevron on touch (the chevron always shown there, since nothing hovers), and the
+// chevron as a menu button from the keyboard (docs/specs/004-interface-design/menus.md). A tap on the
+// logo opens the card instead of following it, and the current site's row then leads where the logo
+// did, so home is two taps; a mouse click or Enter on the logo still follows it. Links are plain <a> to each site's
 // own origin: every site is a different one, at its home unless the header says where (`hrefFor`: the Explorer's
 // header keeps the person on the Explorer, @liveworkspace/sites explorerSwitchHref). Each product binds it to its app (its SiteSwitcher), whose
 // prism every row's mark is drawn in, tinted with that row's accent.
@@ -19,9 +21,17 @@ import {
   type Site,
   type SiteId,
 } from '@liveworkspace/sites';
-import { useRef, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
+import {
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+  type MouseEvent,
+  type ReactNode,
+} from 'react';
 import { ChevronDownIcon } from './icons/navigation';
 import { useMenu, useMenuButton } from './menu';
+import { isTouchTap } from './touch-tap';
 import { useClickOutside } from './useClickOutside';
 
 const subscribeNever = () => () => {};
@@ -30,6 +40,7 @@ const noHost = () => '';
 
 // The open menu's name. Given to useMenu: an aria-label on the surface itself is overwritten by its trigger's name.
 const MENU_LABEL = 'liveworkspace sites';
+const LOGO_SLOT: CSSProperties = { display: 'contents' };
 
 export function SiteSwitcher({
   app,
@@ -48,8 +59,10 @@ export function SiteSwitcher({
   children: ReactNode;
   className?: string;
 }) {
-  const { open, close, toggle, trigger, setTrigger, initialFocus, onTriggerKeyDown } =
+  const { open, openMenu, close, toggle, trigger, setTrigger, initialFocus, onTriggerKeyDown } =
     useMenuButton();
+  // Where the logo leads, kept once a tap on it opened the card: the current site's row goes there instead.
+  const [logoHref, setLogoHref] = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
   const { attach, surfaceProps } = useMenu({
     open,
@@ -62,11 +75,28 @@ export function SiteSwitcher({
   // The page's host, in the browser only: a staging page links each site's staging origin (siteHrefFrom). The server's
   // markup has none, since the static pages are built once for production and staging.
   const host = useSyncExternalStore(subscribeNever, pageHost, noHost);
-  const hrefOf = (site: Site) => siteHrefFrom(site, hrefFor ? hrefFor(site) : site.url, host);
+  const hrefOf = (site: Site) =>
+    site.id === current && logoHref !== null
+      ? logoHref
+      : siteHrefFrom(site, hrefFor ? hrefFor(site) : site.url, host);
+  // Captured before the logo's own handlers, so a framework link never starts its navigation. With the card open
+  // the tap is left alone and follows the logo.
+  const onLogoClick = (e: MouseEvent<HTMLElement>) => {
+    if (open || !isTouchTap(e.nativeEvent)) return;
+    const link = e.target instanceof Element ? e.target.closest('a[href]') : null;
+    if (!link || !e.currentTarget.contains(link)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setLogoHref(link.getAttribute('href'));
+    openMenu('checked');
+  };
 
   return (
     <div ref={ref} className={`group/sites relative flex items-center ${className}`}>
-      {children}
+      {/* No box of its own (an inline style, so no app's stylesheet has to generate it): the logo stays the flex item. */}
+      <span style={LOGO_SLOT} onClickCapture={onLogoClick}>
+        {children}
+      </span>
       <button
         ref={setTrigger}
         type="button"

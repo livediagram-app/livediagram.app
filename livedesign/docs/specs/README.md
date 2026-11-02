@@ -30,6 +30,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./020-import-export/README.md - when working on imported images or export fidelity
 - ./023-draw-mode/README.md - when working on the drawing tools logo pages use: the markers, shape recognition while drawing, and the Pen (the Path tool)
 - ./024-agents/README.md - when an agent reads, writes or comments on designs: changesets, presence, views, edit operations, lint
+- ./025-community/README.md - when working on the Community: publishing a design, the gallery, the community link, likes, reports, My Shares and the landing page's featured six
 - ./028-animation/README.md - when working on element animations: the animation set each element takes (Shape, Text, Sticky, Drawing, Media, Table), the per-set menu categories, reveals, loops and the quality bar
 - ./031-photo/README.md - when working on photo pages: the layer stack, the photo tools, adjustments and filters, and the photo blob store
 

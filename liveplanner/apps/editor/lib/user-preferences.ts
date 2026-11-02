@@ -156,6 +156,10 @@ export type UserPreferences = {
   // (docs/specs/007-editor/editor-app.md "Named on a wide desktop"). Missing === on; a phone never
   // names them, whatever this says. Read through useDockNames.
   dockButtonNames?: boolean;
+  // Maximise Card (docs/specs/026-plan/plan-board.md "Maximised"): the item panel opens filling the window on a
+  // desktop. Set by the panel's own button (hooks/plan/useCardPanelMaximised); missing === the usual size, and a
+  // phone ignores it.
+  cardPanelMaximised?: boolean;
   // Email notifications (docs/specs/014-identity/profile-and-email-notifications.md). Account-level settings flipped from the
   // Settings dialog; the api worker reads them server-side before
   // sending the matching transactional email (docs/specs/014-identity/transactional-email.md). Distinct from

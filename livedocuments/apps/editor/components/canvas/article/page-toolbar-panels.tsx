@@ -16,6 +16,7 @@ import {
   lucideList,
   lucideListOrdered,
   lucideListTodo,
+  lucideListTree,
   lucidePilcrow,
   lucideRemoveFormatting,
   lucideSeparatorHorizontal,
@@ -61,6 +62,7 @@ const PanelIcons = {
   pageBreak: I(lucidePilcrow),
   image: I(lucideImage),
   table: I(lucideTable),
+  toc: I(lucideListTree),
   chart: I(lucideChartColumn),
 };
 
@@ -341,9 +343,12 @@ export type MoreAction = 'strike' | 'code' | 'sup' | 'sub' | 'clear' | 'style';
 export function MorePanel({
   selection,
   onAction,
+  card = false,
 }: {
   selection: ArticleSelectionState;
   onAction: (action: MoreAction) => void;
+  // On a flashcard the style is the card's (docs/specs/007-editor/flashcards.md "Text only").
+  card?: boolean;
 }) {
   return (
     <div role="menu" aria-label="More Formatting" className="flex flex-col">
@@ -380,13 +385,17 @@ export function MorePanel({
         keys="Mod-\\"
         onPick={() => onAction('clear')}
       />
-      <Row label="Article style" icon={<PanelIcons.style />} onPick={() => onAction('style')} />
+      <Row
+        label={card ? 'Card style' : 'Article style'}
+        icon={<PanelIcons.style />}
+        onPick={() => onAction('style')}
+      />
     </div>
   );
 }
 
-export type BlockInsert = 'divider' | 'pageBreak' | 'quote' | 'code';
-export type ObjectInsert = 'image' | 'table' | 'chart' | 'drawing';
+export type BlockInsert = 'table' | 'toc' | 'divider' | 'pageBreak' | 'quote' | 'code';
+export type ObjectInsert = 'image' | 'chart' | 'drawing';
 
 // The Insert menu, dressed as the palette's rows (a glyph chip, the name, a line on what it is,
 // the slash menu's own: lib/article/article-slash-items.ts): the objects, then the blocks.
@@ -397,7 +406,6 @@ const INSERT_OBJECTS: readonly {
   icon: ReactNode;
 }[] = [
   { id: 'image', label: 'Image', blurb: 'A picture in the text', icon: <PanelIcons.image /> },
-  { id: 'table', label: 'Table', blurb: 'Rows and columns', icon: <PanelIcons.table /> },
   {
     id: 'chart',
     label: 'Bar Chart',
@@ -407,6 +415,18 @@ const INSERT_OBJECTS: readonly {
 ];
 const INSERT_BLOCKS: readonly { id: BlockInsert; label: string; blurb: string; icon: ReactNode }[] =
   [
+    {
+      id: 'table',
+      label: 'Table',
+      blurb: 'Rows and columns in the text',
+      icon: <PanelIcons.table />,
+    },
+    {
+      id: 'toc',
+      label: 'Table of Contents',
+      blurb: 'The headings, with their pages',
+      icon: <PanelIcons.toc />,
+    },
     {
       id: 'divider',
       label: 'Divider',

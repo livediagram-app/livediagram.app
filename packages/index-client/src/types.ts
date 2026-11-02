@@ -64,6 +64,8 @@ export type Item = {
   hasLinks?: boolean;
   // Most Used only: the distinct days in the window the person opened it.
   useDays?: number;
+  // Most Used only: how many times the person opened it in the window (what Most Used ranks by).
+  useOpens?: number;
 };
 
 export type Folder = {
@@ -128,6 +130,9 @@ export type CollabThreadInput = {
 /** A card in an item (a Plan card), as the Inbox lists it: its number, type and title, and the board that shows
  *  it, where its row opens it (null: no board shows it, and the row opens the item at the card). */
 export type CollabCard = {
+  // The card's id, when the row's `elementId` is not the card's own: one of its comment threads, whose element is the
+  // thread (one-explorer-contracts.md "What an item pushes").
+  id?: string;
   key: number | null;
   // The card type's id, and its name as the app shows it ("Task").
   type: string;
@@ -319,13 +324,13 @@ export type ItemListQuery = ItemFilters & {
   cursor?: string;
   // Recent's first page only: also up to this many (MOST_USED_MAX) Most Used items, as `mostUsed`.
   used?: number;
-  // A first page only, Home's other reads in the same request: My Work's live items (yours, in `app`) counted up to
-  // this many (LIST_LIMIT_MAX), as `mine`; and whether you can open anything at all in `app`, as `any`.
+  // A first page only, Home's other reads in the same request: the live items in every space you are in (My Work
+  // and each of your teams, in `app`) counted up to this many (LIST_LIMIT_MAX), as `mine`; and whether you can open anything at all in `app`, as `any`.
   mine?: number;
   any?: boolean;
 };
 
-/** My Work's count beside a first page (`mine`): up to the cap asked, and whether there are more. */
+/** The count of every space's items beside a first page (`mine`): up to the cap asked, and whether there are more. */
 export type MineCount = { count: number; more: boolean };
 
 export type SharedListQuery = ItemFilters & { app?: App; limit?: number; cursor?: string };

@@ -3,7 +3,8 @@
 // A search result for a design saved only in this browser carries the This Browser pill as a
 // plain label (docs/specs/006-design/offline-mode.md#this-browser-pill).
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import type { IndexClient, Item } from '@liveworkspace/index-client';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { THIS_BROWSER_DESCRIPTION } from '@liveworkspace/workbench/components/primitives/ThisBrowserPill';
 import { SearchPanel } from './SearchPanel';
@@ -79,5 +80,71 @@ describe('SearchPanel', () => {
     fireEvent.keyDown(field, { key: 'ArrowDown' });
     expect(field.getAttribute('aria-activedescendant')).toBe(screen.getAllByRole('option')[1]!.id);
     expect(screen.getByText('2 results')).toBeTruthy();
+  });
+
+  // Work Tracker #63: the index's finds in every app, each with its app's mark and name, never twice.
+  it('lists what the index finds in every app under Every App, and opens the one picked', async () => {
+    const found = (id: string, title: string, app: Item['app'], sharedVia: string | null = null) =>
+      ({ id, title, app, sharedVia, trashedAt: null }) as Item;
+    const listItems = vi.fn(async () => ({
+      items: [
+        found('own', 'Road trip', 'livedesign'),
+        found('x1', 'Roadmap', 'livediagram'),
+        found('x2', 'Road show', 'livedesign', 'code-1'),
+      ],
+      nextCursor: null,
+    }));
+    const onSelectWorkspaceItem = vi.fn();
+    render(
+      <SearchPanel
+        designs={[{ id: 'own', name: 'Road trip' }]}
+        folders={[]}
+        onSelectDesign={vi.fn()}
+        workspace={{ client: { listItems } as unknown as IndexClient }}
+        onSelectWorkspaceItem={onSelectWorkspaceItem}
+        onClose={vi.fn()}
+      />,
+    );
+    fireEvent.change(screen.getByRole('combobox', { name: 'Search' }), {
+      target: { value: ' road ' },
+    });
+    const group = await screen.findByRole('group', { name: 'Every App' });
+    // Every app (no app named), only what the person can open: the index's search view.
+    expect(listItems).toHaveBeenCalledWith(
+      { view: 'search', q: 'road', limit: 24 },
+      expect.objectContaining({ signal: expect.anything() }),
+    );
+    const rows = within(group).getAllByRole('option');
+    // The document this panel lists itself is not listed again.
+    expect(rows.map((r) => r.textContent)).toEqual([
+      expect.stringContaining('Roadmap'),
+      expect.stringContaining('Road show'),
+    ]);
+    expect(rows[0]!.textContent).toContain('livediagram');
+    expect(rows[0]!.querySelector('[data-app-mark="livediagram"]')).not.toBeNull();
+    fireEvent.click(rows[1]!);
+    expect(onSelectWorkspaceItem).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'x2', app: 'livedesign', sharedVia: 'code-1' }),
+    );
+  });
+
+  it('asks the index nothing without a client, and shows nothing when it fails', async () => {
+    const listItems = vi.fn(async () => {
+      throw new Error('offline');
+    });
+    render(
+      <SearchPanel
+        designs={[]}
+        folders={[]}
+        onSelectDesign={vi.fn()}
+        workspace={{ client: { listItems } as unknown as IndexClient }}
+        onClose={vi.fn()}
+      />,
+    );
+    fireEvent.change(screen.getByRole('combobox', { name: 'Search' }), {
+      target: { value: 'road' },
+    });
+    await vi.waitFor(() => expect(listItems).toHaveBeenCalled());
+    expect(screen.queryByRole('group', { name: 'Every App' })).toBeNull();
   });
 });

@@ -7,6 +7,7 @@
 import { memo, type MouseEvent } from 'react';
 import { BrandGlyph } from '@liveworkspace/brand';
 import type { App, Item } from '@liveworkspace/index-client';
+import { Chip } from '@liveworkspace/ui';
 import {
   FolderOutlineIcon,
   PrivateBadgeGlyph,
@@ -17,8 +18,9 @@ import {
 } from '../ui/icons';
 import { kindWords, siteOf } from '../words';
 
-const BADGE =
-  'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1';
+// A caps chip (optical-alignment.md): its word centres on its cap band, so "PRIVATE" no longer sits a pixel high,
+// and gives back its trailing tracking.
+const BADGE = 'px-2 py-0.5 text-[10px] font-semibold ring-1 [--optical-tracking:0.025em]';
 
 export function VisibilityBadge({
   item,
@@ -28,50 +30,54 @@ export function VisibilityBadge({
   // Public wins: listed where anyone can find it (livediagram's Community) is the widest audience there is.
   if (item.summary?.public === true) {
     return (
-      <span
+      <Chip
+        caps
         title="Public: anyone can find it, view it and make their own copy."
         data-visibility="public"
         className={`${BADGE} bg-pink-50 text-pink-700 ring-pink-200 dark:bg-pink-500/10 dark:text-pink-300 dark:ring-pink-500/30`}
+        icon={<SharedDotGlyph />}
       >
-        <SharedDotGlyph />
         Public
-      </span>
+      </Chip>
     );
   }
   if (item.sharedVia || item.hasLinks) {
     return (
-      <span
+      <Chip
+        caps
         title={
           item.sharedVia
             ? 'Shared: you reach it through a link.'
             : 'Shared: anyone with one of its links can open it.'
         }
         className={`${BADGE} bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30`}
+        icon={<SharedDotGlyph />}
       >
-        <SharedDotGlyph />
         Shared
-      </span>
+      </Chip>
     );
   }
   if (item.teamId) {
     return (
-      <span
+      <Chip
+        caps
         title="Team: every member of the team can open it."
         className={`${BADGE} bg-brand-50 text-brand-700 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30`}
+        icon={<TeamBadgeGlyph />}
       >
-        <TeamBadgeGlyph />
         Team
-      </span>
+      </Chip>
     );
   }
   return (
-    <span
+    <Chip
+      caps
       title="Private: only visible to you."
       className={`${BADGE} bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700`}
+      icon={<PrivateBadgeGlyph />}
     >
-      <PrivateBadgeGlyph />
       Private
-    </span>
+    </Chip>
   );
 }
 

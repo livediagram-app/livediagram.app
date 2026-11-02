@@ -87,7 +87,7 @@ case with dashes>` on a named one, so naming the page names the screen.
 - **Adding one**: the first page's choice offers a card, **Wireframe**: "A screen to wireframe,
   framed as a phone, tablet, laptop or browser." Choosing it turns the choice to **Choose a Device**:
   a tile per device, each a miniature of its frame over its name and screen size, grouped **Phones**,
-  **Tablets**, **Computers** and **Watch**, with **Back** to the kinds. The device last chosen in this
+  **Tablets**, **Computers** and **Watch**, under the [back bar](../004-interface-design/back-bar.md) to the kinds (**All kinds** then **Wireframe**). The device last chosen in this
   browser is ringed and focused first (the iPhone the first time). A tile shows the device's shorter
   name where it has one (**Android** under Phones and under Tablets). Arrow keys move between the
   tiles, Enter or a press makes the page that device's screen; Escape goes back to the kinds.
@@ -214,17 +214,39 @@ other kinds.
 
 ## Templates
 
-Start Making Pages ([Template start](start-diagramming.md)) holds a wireframe template per flow in its **Wireframes**
-category:
+Start Making Pages ([Template start](start-diagramming.md)) holds the blank wireframes in its **Blank Pages** group
+and each flow under the category of what it is for ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)):
 
 - **Blank wireframes**, one empty wireframe page in a device, its kind already chosen: **Blank Phone
   Wireframe** (iPhone), **Blank Tablet Wireframe** (iPad), **Blank Website Wireframe** (Browser),
   **Blank Laptop Wireframe** and **Blank Watch Wireframe**.
-- **Flows**, a row of wireframe pages, each named for its screen and laid out from a wireframe
-  layout: **Mobile App Wireframe** (iPhone: Onboarding, Sign In, Home, Product, Checkout),
-  **Website Wireframe** (Browser: Home, Pricing, Sign In), **Web App Wireframe** (Laptop: Overview,
-  Orders, Settings), **Tablet App Wireframe** (iPad: Discover, Messages, Profile) and **Watch App
-  Wireframe** (Watch: Glance, Today, Alert).
+- **Flows**, a row of wireframe pages, each named for its screen and laid out from a wireframe layout
+  (`WIREFRAME_FLOWS` in `packages/templates/src/wireframe-flow-data.ts`):
+
+| Template                | Device  | Screens                                               |
+| ----------------------- | ------- | ----------------------------------------------------- |
+| Mobile App Wireframe    | iPhone  | Onboarding, Sign In, Home, Product, Checkout          |
+| Social App Wireframe    | iPhone  | Feed, Stories, Post, New Post, Notifications, Profile |
+| Delivery App Wireframe  | iPhone  | Shop, Search, Item, Cart, Tracking                    |
+| Travel App Wireframe    | iPhone  | Search, Results, Boarding Pass, Explore               |
+| Ride App Wireframe      | iPhone  | Sign In, Where To, Your Ride, Updates                 |
+| Music App Wireframe     | iPhone  | Browse, Search, Now Playing, Podcast                  |
+| App Sign Up Wireframe   | iPhone  | Welcome, Sign Up, Verify, Permissions, Get Started    |
+| Website Wireframe       | Browser | Home, Pricing, Sign In                                |
+| Online Store Wireframe  | Browser | Shop, Product, Cart, Checkout                         |
+| Blog Wireframe          | Browser | Blog, Article, Contact                                |
+| Company Site Wireframe  | Browser | Home, Team, Help, Contact                             |
+| Web App Wireframe       | Laptop  | Overview, Orders, Settings                            |
+| Project Tool Wireframe  | Laptop  | Board, Tasks, Calendar, Team                          |
+| Team Inbox Wireframe    | Laptop  | Inbox, Conversation, Notifications, Settings          |
+| Tablet App Wireframe    | iPad    | Discover, Messages, Profile                           |
+| Video App Wireframe     | iPad    | Browse, Search, Watch, Profile                        |
+| Watch App Wireframe     | Watch   | Glance, Today, Alert                                  |
+| Fitness Watch Wireframe | Watch   | Workout, Heart Rate, Timer, Weather                   |
+| Watch Music Wireframe   | Watch   | Now Playing, Up Next                                  |
+
+A flow only uses layouts made for its device's form: the watch layouts on a watch, the rest on a phone, tablet,
+laptop or browser (`template-builders.test.ts` pins it).
 
 ## Export
 
@@ -233,6 +255,73 @@ category:
   device mockup is placed over other things); a PDF page stays white. Page thumbnails,
   the Minimap and agents' previews draw the frame too.
 
+## Inspect
+
+A wireframe is handed to the people who build it. **Inspect** is how they read it: click any element
+to see its size, position, the spacing round it, its colours, border, corners and text style, copy
+them as CSS or as plain values, and export a picture of it, with nothing on the page able to change.
+
+- **Where it is**: the **Inspect** button in the bottom-right cluster, joined after Contents in the
+  pages strip, while the tab is a wireframe tab (its pages are wireframe pages). It is a canvas tool:
+  pressed, it holds the canvas in Inspect until pressed again, Escape, or another tool (V, H). The
+  command palette offers it too (**Inspect Tool**). It is offered for every role and on a phone.
+- **A press selects, nothing else**: a press on an element selects it to inspect (a press on the
+  canvas clears it). It never moves, resizes, turns or edits it, for an Editor too: no handles, no
+  selection toolbars, a double-click opens no editor, and the keyboard acts as a Viewer's
+  ([Share roles](../013-workspace/share-roles.md)). Elements wear the plain pointer.
+- **Units**: points, the device's own (its CSS px, as [The devices](#the-devices) sizes them), so
+  a value reads as the screen would build it. A position is from the top-left of the screen of the
+  page the element is on; values are rounded to a tenth, a whole number written bare.
+
+### The measurements on the canvas
+
+- **Hover** outlines the element under the pointer.
+- **Spacing to its neighbours**: with nothing else hovered, the selected element shows a measured line
+  out from each side to the nearest edge on that side: the next element's facing edge (one that
+  overlaps it across that side), the inner edge of an element it sits in, or else the screen's edge.
+  Each line carries its distance in a pill.
+- **Spacing between two**: hovering another element while one is selected measures between them:
+  the gap across and the gap down when they stand apart, or the four insets when one sits within
+  the other.
+- Hovering with nothing selected shows the hovered element's spacing to its neighbours.
+- The lines are chrome drawn over the canvas, the same at every zoom, never part of the design or
+  an export; they are local, never sent to anyone.
+
+### The Inspect panel
+
+While Inspect is on, the **Inspect** panel is open: a mode panel ([Panel corner docking](panel-docking.md)),
+homed bottom-right like the Format and Laser panels, its header carrying the `?` to its help article
+([Contextual help links](../018-help/contextual-help-links.md)). With nothing selected it reads "Select an element
+to see its size, spacing, colours and type."; with several, "<n> elements selected. Select one to
+inspect it." With one, under the element's name (its kind, and its words when it has some):
+
+- **Layout**: **W**, **H**, **X**, **Y**, then **Rotation** when turned and **Opacity** when less
+  than 100%.
+- **Spacing**: **Top**, **Right**, **Bottom**, **Left**, the distances the canvas draws, each with
+  what it is measured to (an element's kind, or **Screen**).
+- **Colours**: **Fill** and **Border**, each a swatch and its hex, the colour the element is drawn in
+  (its own, or the theme's when it keeps none); a part with none reads **None**.
+- **Border**: its **Width**, **Style** and **Radius** (the corners as drawn, a pill's half its height).
+- **Text**, when it carries words: **Font**, **Size**, **Weight**, **Line Height**, **Colour** and
+  **Align**.
+- Every value copies on a press ("Copied" flashes on it). **Copy CSS** copies the element as CSS
+  (`width`, `height`, `left`, `top`, `transform`, `opacity`, `background`, `border`,
+  `border-radius`, `color`, `font-family`, `font-size`, `font-weight`, `line-height`,
+  `text-align`, in px); **Copy Values** copies every value above as lines of `Name: value`.
+- **Export**: **1x**, **2x**, **3x** and **PNG** / **SVG** download the element, with what sits
+  within it, as a picture on a clear ground cut to its own box, at that scale (an SVG keeps its
+  drawing and takes the scale as its size), named `<design> - <element>@<n>x.<ext>`.
+
+### A link that opens with Inspect
+
+- An editor address or share link carrying `inspect` (`/design/shared?s=<code>&inspect=1`) opens
+  with Inspect on when its tab is a wireframe tab; on any other tab it is ignored.
+- **Copy Inspect Link**, at the foot of the panel: a visitor copies the link they came in on, with
+  `inspect`. The owner (and anyone who may share the design) copies the design's live **Viewer** link
+  (one for every tab, or this tab's; never a Community post's public link) with `inspect`; with no
+  Viewer link yet the Share dialog opens so one can be made, with the note "Make a Viewer link, then
+  copy the Inspect link." A design kept in This Browser has no link to copy, so no button.
+
 ## Share roles
 
 A wireframe page is a page: an **Editor** chooses its device, orientation, frame look and system
@@ -240,6 +329,13 @@ bars, places layouts and edits what is on it; a **Participant** may change what 
 page and never the device; a **Viewer** sees it, never the Device button, the popover or the
 panel. Every control is gated on the session's `can` (`can.editPages` for the device), as every
 page control is.
+
+**Inspect** is every role's (`can.inspect`, true for all three): an Editor, a Participant and a Viewer
+alike may turn it on, select any element, read and copy its values and export its pictures (a
+Viewer's export, as [Share roles](../013-workspace/share-roles.md) grants it). It writes nothing, and
+while it is on an Editor's or Participant's presses and keys change nothing either. Copy Inspect Link
+copies a link the session already holds, or, for whoever may share, the design's Viewer link; it never
+makes a link.
 
 ## Collaboration and agents
 
@@ -259,11 +355,14 @@ page control is.
 `Tab · Changed ·` `WireframePageAdded`, `PageKindWireframe` (the first page's choice);
 `Tab · Changed · WireframeDevice<Iphone|IphoneDuo|Android|Ipad|AndroidTablet|Laptop|Desktop|Browser|Watch>`
 (a device chosen, on adding or after); `Tab · Changed · WireframeFrame<Theme|Dark|Light|Outline>`;
-`UI · Toggled · WireframeSystemBarsOn` / `WireframeSystemBarsOff`. Never a name or text.
+`UI · Toggled · WireframeSystemBarsOn` / `WireframeSystemBarsOff`. Inspect: `Canvas · Used · Inspect`
+(turned on); `UI · Copied · InspectCss` / `InspectValues` / `InspectValue` / `InspectLink`;
+`Document · Exported · InspectPng` / `InspectSvg`. Never a name or text.
 
 ## Non-goals
 
 - Clickable prototypes (linking a button to another screen).
+- Inspect generating platform code (SwiftUI, Compose, Tailwind) or measuring on other kinds of page.
 - A device catalogue per model year, or custom screen sizes (a blank page in Fit to Content
   is the free-size page).
 - Device photography or brand marks on the frame; the frames are drawn, generic and theme-neutral.

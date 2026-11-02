@@ -633,9 +633,9 @@ describe('grants', () => {
 describe('tokens', () => {
   it('accept any configured audience', async () => {
     const auth = await token('user_a', {
-      aud: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+      aud: 'https://livediagram.app/api',
     });
     expect((await call('/items', { auth })).status).toBe(200);
-    expect(AUDIENCE).not.toBe('https://livediagram-router.liveworkspace-easing509.workers.dev/api');
+    expect(AUDIENCE).not.toBe('https://livediagram.app/api');
   });
 });

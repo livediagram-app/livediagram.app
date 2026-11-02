@@ -5,6 +5,7 @@ import { PageNotFound } from '@livediagram/ui';
 export default function NotFound() {
   return (
     <PageNotFound
+      inMain
       homeHref="/help/"
       homeLabel="Browse Help Centre"
       helpHref="/help/troubleshooting/"

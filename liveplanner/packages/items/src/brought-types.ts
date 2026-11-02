@@ -1,5 +1,5 @@
 // Ready-made card types (docs/specs/026-plan/plan-templates.md "Ready-made card types"): the card types a board brings
-// into a project when it is made. The five default types live in item-types.ts; these are the ten more a template or
+// into a project when it is made. The five default types live in item-types.ts; these are the twelve more a template or
 // preset uses where none of the five fits the work: a Bug Triage board takes Bugs, a Hiring Pipeline's Pipeline board
 // Candidates. Making a board chooses or adds the project's card types (catalogueWithBoardTypes); a project that
 // already has a type (by id) keeps its own. Pure data, one catalogue the board presets and the Plan templates share.
@@ -12,6 +12,7 @@ import {
   type ItemTypeCatalogue,
 } from './type-catalogue';
 import { normaliseBoardSetup } from './board';
+import { boardTypeStatuses } from './type-statuses';
 
 const WORK = [
   'title',
@@ -242,6 +243,61 @@ const BROUGHT = [
     custom: [card('f-workstream', 'Workstream', 'project')],
     display: detailedWith(['f-workstream'], []),
   },
+  // An opportunity from lead to won (Sales CRM): its company and value on the card, Due its expected close.
+  {
+    id: 'deal',
+    label: 'Deal',
+    newTitle: 'New deal',
+    glyph: 'coin',
+    color: '#16a34a',
+    fields: [
+      'title',
+      'description',
+      'status',
+      'assignee',
+      'f-company',
+      'f-value',
+      'f-contact',
+      'f-source',
+      'due',
+      'checklist',
+      'labels',
+    ],
+    custom: [
+      text('f-company', 'Company'),
+      { id: 'f-value', label: 'Value', kind: 'currency', currency: 'GBP' },
+      text('f-contact', 'Contact'),
+      choice('f-source', 'Source', ['Inbound', 'Referral', 'Outbound', 'Event', 'Partner']),
+    ],
+    display: detailedWith(['f-company', 'f-value'], ['due']),
+  },
+  // A customer's question or problem (Help Desk): who asked and how, Due when it is promised by.
+  {
+    id: 'ticket',
+    label: 'Ticket',
+    newTitle: 'New ticket',
+    glyph: 'ticket',
+    color: '#2563eb',
+    fields: [
+      'title',
+      'description',
+      'status',
+      'assignee',
+      'priority',
+      'f-customer',
+      'f-email',
+      'f-channel',
+      'due',
+      'checklist',
+      'labels',
+    ],
+    custom: [
+      text('f-customer', 'Customer'),
+      { id: 'f-email', label: 'Email', kind: 'email' },
+      choice('f-channel', 'Channel', ['Email', 'Chat', 'Phone', 'Form']),
+    ],
+    display: detailedWith(['f-customer'], ['due']),
+  },
 ] as const satisfies readonly ItemTypeDef[];
 
 // Every type offers comments, last, as the default types do (docs/specs/026-plan/items.md "Comments").
@@ -251,7 +307,7 @@ const MORE_CARD_TYPES: readonly ItemTypeDef[] = BROUGHT.map((t) => ({
 }));
 
 // Every card type a board can bring (docs/specs/026-plan/plan-templates.md "Ready-made card types"): the five default
-// types, then the ten the templates and presets add. None is set apart from a type a person makes.
+// types, then the twelve the templates and presets add. None is set apart from a type a person makes.
 export const READY_MADE_CARD_TYPES: readonly ItemTypeDef[] = [...ITEM_TYPES, ...MORE_CARD_TYPES];
 
 const DEFAULT_TYPE_IDS: readonly string[] = ITEM_TYPES.map((t) => t.id);
@@ -332,5 +388,19 @@ export function catalogueWithBoardTypes(
   const room = ITEM_TYPES_MAX - types.length;
   const missing = boardTypesToAdd(elements, types).slice(0, Math.max(0, room));
   if (missing.length === 0) return null;
-  return { version: ITEM_TYPE_CATALOGUE_VERSION, types: [...types, ...missing] };
+  // Each brought type uses the statuses of the boards that bring it (docs/specs/026-plan/item-types.md "The
+  // statuses a type uses"); one only a Gantt chart brings starts as a type made anywhere else does.
+  const setups = elements.flatMap((el) =>
+    el.type === 'shape' && el.shape === 'plan-board' ? [el.planBoard] : [],
+  );
+  // Named against the whole catalogue it becomes, so a board naming only types the project has gives these none.
+  const given = boardTypeStatuses(
+    setups,
+    [...types, ...missing].map((t) => t.id),
+  );
+  const withStatuses = missing.map((t) => {
+    const statuses = given.get(t.id)!;
+    return statuses.length ? { ...t, statuses } : t;
+  });
+  return { version: ITEM_TYPE_CATALOGUE_VERSION, types: [...types, ...withStatuses] };
 }

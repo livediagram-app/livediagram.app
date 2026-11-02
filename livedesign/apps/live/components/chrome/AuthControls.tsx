@@ -3,7 +3,7 @@
 // Header sign-in / sign-out pill. Shows:
 //
 //   - signed out → "Sign in" link to /live/sign-in/
-//   - signed in  → account avatar (initial) + dropdown with "Profile" + "Sign out"
+//   - signed in  → account avatar (initial) + dropdown with "Profile" + "Sign Out"
 //
 // Mounted in EditorHeader (and any future header chrome that wants
 // auth controls). Pure presentational — it reads the deferred auth
@@ -178,7 +178,7 @@ export function AuthControls({ onOpenAccount }: AuthControlsProps) {
             }}
             className="block w-full rounded px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
           >
-            Sign out
+            Sign Out
           </button>
         </AccountMenu>
       ) : null}

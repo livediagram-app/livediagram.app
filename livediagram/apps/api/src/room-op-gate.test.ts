@@ -55,6 +55,20 @@ describe('gateClientOp', () => {
     ).toEqual(DROP);
   });
 
+  // docs/specs/012-collaboration/comment-reactions.md "Share roles": whoever may comment may react.
+  it('relays a comment reaction from an Editor and a Participant as itself, never from a Viewer', () => {
+    const react = (by: string) => ({
+      kind: 'el-delta',
+      tabId: 't',
+      elementId: 'e',
+      delta: { kind: 'comment-react', commentId: 'c', emoji: 'eyes', by, name: 'Me', on: true },
+    });
+    expect(gateClientOp(react('me'), as('edit'))).toEqual(relay(false));
+    expect(gateClientOp(react('me'), as('participate'))).toEqual(relay(false, true));
+    expect(gateClientOp(react('you'), as('participate'))).toEqual(DROP);
+    expect(gateClientOp(react('me'), as('view'))).toEqual(DROP);
+  });
+
   it("shows only an editor's drag preview", () => {
     expect(gateClientOp({ kind: 'drag-preview' }, as('edit'))).toEqual(relay(true));
     expect(gateClientOp({ kind: 'drag-preview' }, as('participate'))).toEqual(DROP);

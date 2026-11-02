@@ -1,6 +1,7 @@
 # The site switcher
 
-Every app's headers carry one way to move between liveworkspace's sites: **hover the logo**. A card
+Every app's headers carry one way to move between liveworkspace's sites: **hover the logo** (on a
+touch screen, tap it). A card
 drops down from it, with **liveworkspace** at the top and one row for each app below it
 (livediagram, liveplanner, livedocuments, livedesign). Each row names the site without ".app", with
 its one-line pitch under it, and is one click to that site. The app you're on is marked.
@@ -20,14 +21,20 @@ liveworkspace.app.
 - **Pointer**: hovering the logo opens the card; a chevron fades in beside the logo to say so.
   Clicking the logo itself still goes to the app's home, as before.
 - **Touch**: there is no hover, so the chevron is always shown, and a tap on it opens the card.
-  A tap outside closes it.
+  A tap on the logo or the app's name opens the card too, rather than going home: the logo is the
+  biggest thing in the corner, and the 20px chevron beside it was hard to hit. Going home is then
+  two taps: the card marks the site you're on, and once a tap on the logo has opened the card, that
+  row leads where the logo does (the editor's to its Explorer, the Explorer's to liveworkspace.app's home). A second
+  tap on the logo while the card is open follows the logo. A tap outside closes it. A tap is a
+  touch pointer; when the browser doesn't say which pointer clicked, a screen whose main pointer
+  is coarse counts as touch. A mouse or trackpad on a touch screen keeps the pointer behaviour.
 - **Keyboard**: the chevron is a menu button. Tab reaches it after the logo; Enter, Space or an
   arrow opens the card with focus on the first site, arrows move between sites, Escape closes it
-  and returns focus to the chevron.
+  and returns focus to the chevron. Enter on the logo still goes home.
 - Sites are plain links to each site's own origin (`https://www.livediagram.app`, …; app links always use `www.`), since every site
   is a different origin.
-- On staging (a page on `staging.<site>`, or on a staging stand-in on `workers.dev`), every link goes to that site's
-  staging origin instead (`https://staging.liveplanner.app`, the stand-in's own while a site has one), so staging
+- On staging (a page on `staging.<site>`), every link goes to that site's
+  staging origin instead (`https://staging.liveplanner.app`), so staging
   never sends you to production. `siteHrefFrom(site, href, host)` in `@liveworkspace/sites` does it, after the page
   has loaded (the pages are static, built once for both).
 
@@ -58,11 +65,14 @@ app whose address the page is on is the one marked; on liveworkspace.app it is l
 
 `@liveworkspace/sites` (`packages/sites`) holds the list: each site's name, URL, one-line pitch and
 accent colour. Every app's switcher reads it, so adding an app is one row there, not an edit in each
-app. It lists livediagram, liveplanner, livedocuments and livedesign.
+app. It lists livediagram, liveplanner, livedocuments and livedesign (`APP_SITES`). An app registered but not yet
+launched keeps its row in `HELD_APP_SITES` instead, which no switcher reads, so it has no row until its launch moves
+it ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)): livehuddle,
+whose row is ready (pitch "Meet and run workshops together", emerald `#10b981`, deep `#047857`, light `#34d399`).
 
 Running locally, every link between the sites stays on this machine: `siteUrl` gives each site its
 port block's first port (`LOCAL_PORTS`: liveworkspace 3000, livediagram 3100, liveplanner 3200,
-livedocuments 3300, livedesign 3400, as in the root AGENTS.md) whenever a dev server renders it
+livedocuments 3300, livedesign 3400, livehuddle 3500, as in the root AGENTS.md) whenever a dev server renders it
 (`NODE_ENV=development`), and its live address in a build. The switcher, the landing page, the app
 footers' liveworkspace links and the Explorer's cross-app items all read it.
 

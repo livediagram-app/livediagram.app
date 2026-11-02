@@ -13,7 +13,7 @@ import {
 
 type Call = { command: string; args: readonly string[]; input: string };
 const details = {
-  host: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+  host: 'https://www.livediagram.app',
   tokenId: 't1',
   accountName: 'Ada',
   role: 'full',
@@ -190,7 +190,7 @@ describe('stores across systems and logins', () => {
     const route = (_request: Request, url: URL) =>
       url.pathname === '/api/capabilities'
         ? Response.json({
-            apiBase: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+            apiBase: 'https://www.livediagram.app/api',
             authEnabled: true,
           })
         : url.pathname === '/api/tokens/current'

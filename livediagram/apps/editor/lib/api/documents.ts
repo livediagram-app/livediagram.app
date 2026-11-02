@@ -10,7 +10,7 @@ import {
   type SharedTabsSummary,
 } from '@livediagram/api-schema';
 import type { LiveDoc, DocumentResponse, DocumentSummary } from '@livediagram/api-schema';
-import type { Tab } from '@livediagram/document';
+import type { Appearance, Tab } from '@livediagram/document';
 import { IndexError } from '@liveworkspace/index-client';
 import { ITEM_GRANT_HEADER } from '@liveworkspace/index-client/browser';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
@@ -254,6 +254,11 @@ export async function apiCreateDocument(
   return liveDoc;
 }
 
+// What a preview is asked for with: `version` (the document's savedAt) keys the browser's cache, `shareCode`
+// authorises a shared row, `appearance` draws it in the viewer's half (document-snapshots.md "In the viewer's
+// half"; absent, it is drawn as stored).
+type ThumbnailFetch = { version?: number; shareCode?: string | null; appearance?: Appearance };
+
 // Fetch a document's cached SVG snapshot (docs/specs/006-document/document-snapshots.md) and return a blob URL
 // for an `<img src>` plus the document's background colour. Native `<img>`
 // can't send auth headers, so — like apiFetchImageBlobUrl — the bytes
@@ -266,7 +271,7 @@ export async function apiCreateDocument(
 export async function apiFetchDocumentThumbnailUrl(
   ownerId: string,
   documentId: string,
-  opts: { version?: number; shareCode?: string | null } = {},
+  opts: ThumbnailFetch = {},
 ): Promise<{ url: string; backgroundColor: string | null } | null> {
   const svg = await apiFetchDocumentThumbnailSvg(ownerId, documentId, opts);
   if (svg == null) return null;
@@ -284,10 +289,11 @@ export async function apiFetchDocumentThumbnailUrl(
 export async function apiFetchDocumentThumbnailSvg(
   ownerId: string,
   documentId: string,
-  opts: { version?: number; shareCode?: string | null } = {},
+  opts: ThumbnailFetch = {},
 ): Promise<string | null> {
   const params = new URLSearchParams();
   if (opts.version != null) params.set('v', String(opts.version));
+  if (opts.appearance) params.set('appearance', opts.appearance);
   const qs = params.toString();
   const url = `${API_BASE}/previews/items/${encodeURIComponent(documentId)}${qs ? `?${qs}` : ''}`;
   const headers = new Headers(await apiHeaders(ownerId, { share: opts.shareCode ?? null }));

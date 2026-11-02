@@ -12,6 +12,7 @@ export {
   SCHEMA_KIND_MAX_TOKENS,
 } from './element-format';
 export { applyEditOperations } from './apply';
+export { operationsNeedComponents } from './instances';
 export { applyReplace } from './replace';
 export { formatResultFooter, formatResultLines } from './format-results';
 export { formatRejections } from './rejections';
@@ -21,6 +22,7 @@ export type {
   AddKindOperation,
   AddOperation,
   ConnectOperation,
+  DetachOperation,
   Fields,
   InsertOperation,
   LayoutOperation,

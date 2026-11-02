@@ -7,7 +7,8 @@
     ".": "./src/index.ts",
     "./silent": "./src/silent.ts",
     "./account-name": "./src/account-name.ts",
-    "./return-path": "./src/return-path.ts"
+    "./return-path": "./src/return-path.ts",
+    "./sign-out": "./src/sign-out.ts"
   },
   "scripts": {
     "lint": "oxlint",
@@ -15,6 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@liveworkspace/settings": "workspace:*",
     "@liveworkspace/sites": "workspace:*",
     "jose": "^6.2.12"
   },

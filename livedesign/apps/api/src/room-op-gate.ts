@@ -8,6 +8,8 @@ type OpGate =
   | { kind: 'drop' }
   /** A Participant's `el` op: through the participant content rule, never relayed as sent. */
   | { kind: 'participant-content' }
+  /** A Participant's own comment reaction: stamped and relayed as an Editor's, then written by the room. */
+  | { kind: 'participant-reaction' }
   /** Relayed: unordered when `presence`. */
   | { kind: 'relay'; presence: boolean };
 
@@ -34,11 +36,21 @@ function keepsToItsTab(op: unknown): boolean {
   return true;
 }
 
-/** The sender as the gate needs it: its server-verified role and tab scope. */
+/** The sender as the gate needs it: its server-verified role, tab scope and the collab key its hello published. */
 export type GateSender = {
   role: unknown;
   tabScope: string | null;
+  key?: string;
 };
+
+// A comment reaction (docs/specs/012-collaboration/comment-reactions.md) naming its own sender: the one `el-delta`
+// a Participant may send, since reacting is taking part. The key is the one its hello claimed, so this stops a
+// Participant reacting in someone else's name in the same room.
+export function reactsAsSelf(op: unknown, key: string | undefined): boolean {
+  const o = op as { kind?: unknown; delta?: { kind?: unknown; by?: unknown } } | null;
+  if (o?.kind !== 'el-delta' || typeof o.delta !== 'object' || o.delta === null) return false;
+  return o.delta.kind === 'comment-react' && key !== undefined && o.delta.by === key;
+}
 
 export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // Presence ops (cursor / select / laser / tab-focus) are ephemeral
@@ -70,6 +82,9 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   if (level === 'view' && opKind === 'reaction') return DROP;
   if (!presence && level !== 'edit') {
     if (level === 'participate' && opKind === 'el') return { kind: 'participant-content' };
+    if (level === 'participate' && reactsAsSelf(op, sender.key)) {
+      return { kind: 'participant-reaction' };
+    }
     return DROP;
   }
   // A drag preview (docs/specs/008-canvas/drag-preview.md) is presence, but shows elements moving: only

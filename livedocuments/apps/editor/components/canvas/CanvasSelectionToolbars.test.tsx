@@ -47,11 +47,7 @@ function renderToolbars(multi: boolean) {
   return render(
     <SelectionStoreProvider store={store}>
       <ViewportStoreProvider store={createViewportStore(1)}>
-        <CanvasSelectionToolbars
-          props={props}
-          selectionInput={selectionInput}
-          quickRingOpen={false}
-        />
+        <CanvasSelectionToolbars props={props} selectionInput={selectionInput} />
       </ViewportStoreProvider>
     </SelectionStoreProvider>,
   );
@@ -63,30 +59,36 @@ const overlayOf = (container: HTMLElement) =>
 
 afterEach(() => resetCanvasGesturesForTests());
 
-describe('selection chrome while a selection moves', () => {
-  for (const multi of [false, true]) {
-    const which = multi ? 'multi-selection toolbar' : 'selection popover';
-
-    for (const kind of ['move', 'resize', 'reshape'] as CanvasGesture[]) {
-      it(`hides the ${which} during a ${kind} and shows it after`, () => {
-        const { container } = renderToolbars(multi);
-        expect(overlayOf(container).style.visibility).toBe('visible');
-        let end = () => {};
-        act(() => {
-          end = beginCanvasGesture(kind);
-        });
-        expect(overlayOf(container).style.visibility).toBe('hidden');
-        act(() => end());
-        expect(overlayOf(container).style.visibility).toBe('visible');
-      });
-    }
-
-    it(`keeps the ${which} during a pan`, () => {
-      const { container } = renderToolbars(multi);
+describe('the multi-selection toolbar while a selection moves', () => {
+  for (const kind of ['move', 'resize', 'reshape'] as CanvasGesture[]) {
+    it(`hides during a ${kind} and shows after`, () => {
+      const { container } = renderToolbars(true);
+      expect(overlayOf(container).style.visibility).toBe('visible');
+      let end = () => {};
       act(() => {
-        beginCanvasGesture('pan');
+        end = beginCanvasGesture(kind);
       });
+      expect(overlayOf(container).style.visibility).toBe('hidden');
+      act(() => end());
       expect(overlayOf(container).style.visibility).toBe('visible');
     });
   }
+
+  it('stays during a pan', () => {
+    const { container } = renderToolbars(true);
+    act(() => {
+      beginCanvasGesture('pan');
+    });
+    expect(overlayOf(container).style.visibility).toBe('visible');
+  });
+});
+
+// docs/specs/008-canvas/canvas-and-palette.md "Selection popover": a single selected element has no toolbar in
+// livedocuments, for any role; its actions are in the element menu.
+describe('a single selection', () => {
+  it('draws no toolbar over the element', () => {
+    const { container } = renderToolbars(false);
+    expect(container.querySelector('[role="toolbar"]')).toBeNull();
+    expect(container.innerHTML).toBe('');
+  });
 });

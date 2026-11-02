@@ -118,7 +118,9 @@ This implements the OAuth flow Manager Toolkit uses:
    (10-minute TTL, held by the browser in the flow); the response carries no
    token, code or PKCE material and does not consume the session, so answering
    grants a holder nothing it could not get by completing the flow. Client
-   **name** is never a trust signal either way (it is whatever was registered):
+   **name** is never a trust signal either way (it is whatever was registered, kept without bidi
+   controls or invisible characters at its ends and cut to 120 whole characters, "MCP client" when that leaves
+   nothing, so it can neither turn the screen's words around nor look blank):
    the host is the fact to check, which is why it must come from the server. A
    session that is unknown or expired is a blocking screen, never a screen with
    an approve button and a blank destination. See
@@ -576,9 +578,13 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 
 **Layout choices** (defaults in brackets):
 
-- `direction` (auto): `down` (ranks top to bottom) or `right` (left to right). Auto is `down` for a flowchart (it
-  reads down the page, as the template does) and for a graph of more than 150 nodes; any other flow is laid out
-  both ways and keeps the one whose aspect is nearer a landscape page (3:2).
+- `direction` (auto): `down` (ranks top to bottom) or `right` (left to right), for `flow` and `tree` alike. Auto is
+  `down` for a flowchart (it reads down the page, as the template does) and for a graph of more than 150 nodes; any
+  other flow is laid out both ways and keeps the one whose aspect is nearer a landscape page (3:2). A tree's auto is
+  `down`, the org chart; `right` puts its roots at the left and each generation in a column to the right of the one
+  before, every parent centred beside its own children, its angled lines bending across rather than down, and no
+  leaves stacked (across the page a family is already a column). The other styles have a shape of their own (a
+  ring, lanes left to right, a radial map, a board, lifelines) and take no direction.
 - `style` (`flow`): `flow` is the layered layout, `tree` the tidy tree (an org
   chart, a hierarchy; a parent below the root whose two or more children are all leaves stacks them in a column
   under it, indented, joined by a bus down its lower-left quarter, the compact org chart; its lines carry no
@@ -969,20 +975,43 @@ discouraging tool use, not encouraging it.
 
 The hosted server is listed in the official **MCP Registry**
 (`registry.modelcontextprotocol.io`), which other directories (PulseMCP among
-them) ingest from, so one listing reaches several catalogues.
+them) ingest from, so one listing reaches several catalogues. Directories that
+look at a server themselves (Smithery, Glama, a client's add-a-server screen)
+read its server card, because `/mcp` answers only a signed-in caller.
 
-- **Descriptor.** `server.json` at the repo root, under the registry's
-  `2025-12-11` schema. Name `io.github.livediagram-app/livediagram`: the
-  `io.github.<org>` namespace is proven by a GitHub sign-in, so publishing
-  needs no DNS record and no stored secret. One `remotes` entry,
-  `streamable-http` at `https://mcp.livediagram.app/mcp`, with no `headers`:
-  OAuth (§3) is discovered from the server's metadata, not configured by the
-  client. The icon is the 512px mark in `marketing/media/icons`.
-- **Publishing.** Listing is a manual step outside CI: after a change to
-  `server.json`, run `mcp-publisher login github` then `mcp-publisher publish`
-  from the repo root. The registry rejects a version it already
-  holds, so republishing means bumping `version` in `server.json`.
-- **Other hosts** are not listed: the descriptor names the hosted origin only.
+- **Descriptor.** `livediagram/server.json`, under the registry's `2025-12-11` schema.
+  Name `io.github.livediagram-app/livediagram`: every product lists under
+  `io.github.livediagram-app`, the GitHub organisation that owns the monorepo
+  (`livediagram-app/livediagram.app`, public), so a GitHub sign-in as one of its
+  members, or the repo's own GitHub OIDC token, proves the namespace: no DNS
+  record and no stored secret. `title` `livediagram`, a `description` of at most 100
+  characters, `websiteUrl` `https://www.livediagram.app`, `repository` the monorepo with
+  `subfolder` `livediagram/apps/mcp`, the 512px PNG mark the marketing site serves
+  (`https://www.livediagram.app/livediagram-icon-512.png`), and one `remotes` entry,
+  `streamable-http` at `https://mcp.livediagram.app/mcp` (the Worker's custom domain),
+  with no `headers`: OAuth (§3) is discovered from the server's metadata, not
+  configured by the client.
+- **One identity.** The listing is written once, in `apps/mcp/src/listing.ts`
+  (built with `@liveworkspace/mcp-kit/listing`). The `initialize` response's
+  `serverInfo` carries it (name `livediagram`, title, version, website and icon) beside
+  the server instructions, the server card is made from it, and a test checks
+  `server.json` against the registry's schema (vendored in mcp-kit) and against
+  that identity, so the descriptor, the handshake and the card cannot drift.
+- **Server card.** `GET /.well-known/mcp/server-card.json`, with no sign-in and
+  cacheable for an hour: `serverInfo`, the description, icon, website and
+  documentation (the help article Connect an AI Assistant), the transport
+  (`streamable-http` at this origin's `/mcp`), OAuth 2.1 as the required
+  authentication with the protected-resource metadata's address, the
+  instructions, and every tool, resource and prompt with its schema, read from
+  the same server `/mcp` builds, so it is never stale.
+- **Publishing** is manual, never on a push. By hand from `livediagram/`:
+  `mcp-publisher login github`, then `mcp-publisher publish`. Or the root
+  workflow `mcp-registry.yml`, started by hand (`workflow_dispatch`) with the
+  product to publish, which logs in with `github-oidc` and publishes
+  `livediagram/server.json`. The registry rejects a version it already holds, so
+  republishing means bumping `version` in `listing.ts` and `server.json` (the
+  test keeps them equal).
+- Only the hosted origin is listed: the descriptor names it alone.
 
 ### 4.17 Structured output and described parameters
 

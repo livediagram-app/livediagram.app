@@ -113,3 +113,44 @@ describe('wrapper logs', () => {
     expect(info).not.toHaveBeenCalled();
   });
 });
+
+// docs/specs/010-palette/style-presets.md "Boards and sheets": a tab style overrides a board's or sheet's preset.
+describe('a theme switch and a board or sheet style preset', () => {
+  type Styled = Element & {
+    colorPreset?: string;
+    strokeColor?: string;
+    textColor?: string;
+  };
+  const preset = (): Element => ({
+    ...createShape('square', 0, 0),
+    id: 'board',
+    colorPreset: 'plan-sky',
+    fillColor: '#f2f8fc',
+    strokeColor: '#5aa3c9',
+    textColor: '#3a566b',
+  });
+  const from = theme('brand');
+  const to = theme('rainbow');
+
+  it('clears the preset and the colours it wrote, so the board takes the tab style', () => {
+    const [out] = switchThemeElements([preset()], from, to) as Styled[];
+    expect(out!.colorPreset).toBeUndefined();
+    // Its colours are the new tab style's, as a plain board's are, not the preset's.
+    expect(fillOf([out!], 'board')).not.toBe('#f2f8fc');
+    expect(out!.strokeColor).not.toBe('#5aa3c9');
+    expect(out!.textColor).not.toBe('#3a566b');
+  });
+
+  it('leaves a hand-coloured shape, and a shape on a shape preset, to the preserve-customs rule', () => {
+    const hand: Element = { ...createShape('square', 0, 0), id: 'hand', fillColor: '#abcdef' };
+    const bold: Element = { ...createShape('square', 0, 0), id: 'bold', colorPreset: 'bold' };
+    const out = switchThemeElements([hand, bold], from, to);
+    expect(fillOf(out, 'hand')).toBe('#abcdef');
+    expect((out[1] as Styled).colorPreset).toBe('bold');
+  });
+
+  it('keeps the preset when a template is painted with a theme', () => {
+    const [out] = recolourElementsForTheme([preset()], to) as Styled[];
+    expect(out!.colorPreset).toBe('plan-sky');
+  });
+});

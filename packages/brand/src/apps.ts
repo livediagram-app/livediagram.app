@@ -3,7 +3,8 @@ import type { PrismPalette, PrismScheme } from './prism';
 // Each app's logo: the same Living Prism and `live` + name wordmark, in the app's own colours
 // (every product's docs/specs/004-interface-design/brand-mark.md). The class strings are literal so
 // Tailwind finds them when an app sources this package.
-export type BrandApp = 'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign';
+export type BrandApp =
+  'livediagram' | 'liveplanner' | 'livedocuments' | 'livedesign' | 'livehuddle';
 
 export type BrandIdentity = {
   // The wordmark after "live".
@@ -190,6 +191,49 @@ export const BRAND_APPS: Record<BrandApp, BrandIdentity> = {
       800: '#9f1239',
       900: '#881337',
       950: '#4c0519',
+    },
+  },
+  // Registered before its launch (liveworkspace/docs/specs/002-architecture/integrating-an-app.md): no page draws it
+  // until livehuddle's own editor and sites do (livehuddle/docs/specs/005-project-roadmap/open-decisions.md D5).
+  livehuddle: {
+    word: 'huddle',
+    // Emerald into teal.
+    palettes: {
+      light: {
+        light: '#34d399',
+        vivid: '#059669',
+        primary: '#0d9488',
+        deep: '#0f766e',
+        dark: '#042f2e',
+        highlight: '#d1fae5',
+      },
+      dark: {
+        light: '#34d399',
+        vivid: '#10b981',
+        primary: '#14b8a6',
+        deep: '#0f766e',
+        dark: '#0f172a',
+        highlight: '#a7f3d0',
+      },
+    },
+    lockup: {
+      light: { accent: '#047857', ink: INK.light },
+      dark: { accent: '#34d399', ink: INK.dark },
+    },
+    liveClass: 'text-brand-700 dark:text-emerald-400',
+    shineClass: 'dark:[--ldm-shine:#6ee7b7]',
+    ramp: {
+      50: '#ecfdf5',
+      100: '#d1fae5',
+      200: '#a7f3d0',
+      300: '#6ee7b7',
+      400: '#34d399',
+      500: '#10b981',
+      600: '#059669',
+      700: '#047857',
+      800: '#065f46',
+      900: '#064e3b',
+      950: '#022c22',
     },
   },
 };

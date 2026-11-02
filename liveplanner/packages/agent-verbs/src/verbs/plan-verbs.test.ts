@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ITEM_TYPES } from '@liveplanner/items';
 import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, fakeApi, library, tabsOfA } from '../testing/fake-api';
-import { boardAdd, boardSet } from './board';
+import { boardAdd, boardSet, sortLevels } from './board';
 import { typeApply, typeLs } from './card-type';
 
 // The board and card type verbs (docs/specs/026-plan/plan-agents.md; docs/specs/015-api/cli.md "Commands").
@@ -93,6 +93,39 @@ describe('type ls and apply', () => {
     expect(typeLs.text!(out)[1]).toMatch(/^task\s+"Task"/);
   });
 
+  // docs/specs/026-plan/item-types.md "Formula fields": a Formula lists with its expression by names.
+  it('lists a Formula with its expression, and one not written yet without', async () => {
+    const deal = {
+      ...ITEM_TYPES[0],
+      id: 'deal',
+      label: 'Deal',
+      fields: ['title', 'f-budget', 'f-twice', 'f-blank'],
+      custom: [
+        { id: 'f-budget', label: 'Budget', kind: 'number' as const },
+        {
+          id: 'f-twice',
+          label: 'Twice',
+          kind: 'calculated' as const,
+          calculation: 'formula' as const,
+          formula: '{f-budget} * 2',
+        },
+        {
+          id: 'f-blank',
+          label: 'Blank',
+          kind: 'calculated' as const,
+          calculation: 'formula' as const,
+        },
+      ],
+    };
+    const { ctx } = ctxWith('', {
+      [`/projects/${DOC_A}/plan`]: { ...PLAN, types: [deal] },
+    });
+    const out = await typeLs.run!(ctx, { project: DOC_A });
+    const line = typeLs.text!(out).join('\n');
+    expect(line).toContain('Twice:calculated=formula(Budget * 2) (f-twice)');
+    expect(line).toContain('Blank:calculated=formula (f-blank)');
+  });
+
   it('applies changes from a file, printing the ids it made', async () => {
     const { ctx, sent } = ctxWith(
       '[{"op":"add","name":"Bug","custom":[{"name":"Severity","kind":"text"}]}]',
@@ -127,7 +160,8 @@ describe('board set', () => {
         types: 'Task',
       }),
     );
-    expect(boardSet.text!(out)).toEqual(['~ board "Sprint": To Do · Done (takes Task)']);
+    // Done counts as done by its name (docs/specs/026-plan/plan-board.md "Done columns").
+    expect(boardSet.text!(out)).toEqual(['~ board "Sprint": To Do · Done ✓ (takes Task)']);
     expect(boardSet.quiet!(out)).toEqual(['b1']);
     expect(sent[0]).toMatchObject({ operations: [{ op: 'set', target: 'id:"b1"' }] });
     const every = await boardSet.run!(
@@ -138,6 +172,52 @@ describe('board set', () => {
     expect(boardSet.text!({ ...every, takes: [] })).toEqual([
       '~ board "S2": To Do (takes no type)',
     ]);
+    // --done names the done columns, whole; none turns them all off.
+    const done = await boardSet.run!(
+      ctx,
+      boardSet.input.parse({ project: DOC_A, board: 'b1', done: 'To Do' }),
+    );
+    expect(done.columns).toEqual([expect.objectContaining({ name: 'To Do', done: true })]);
+    const none = await boardSet.run!(
+      ctx,
+      boardSet.input.parse({ project: DOC_A, board: 'b1', done: 'none' }),
+    );
+    expect(none.columns[0]).not.toHaveProperty('done');
+  });
+
+  it('sorts the board from --sort, and prints the sort', async () => {
+    const { ctx, sent } = ctxWith();
+    const out = await boardSet.run!(
+      ctx,
+      boardSet.input.parse({ project: DOC_A, board: 'sprint', sort: 'Priority desc, Due Date' }),
+    );
+    expect(sent[0]).toMatchObject({
+      operations: [
+        {
+          fields: {
+            planBoard: {
+              sortBy: [
+                { field: 'priority', dir: 'desc' },
+                { field: 'due', dir: 'asc' },
+              ],
+            },
+          },
+        },
+      ],
+    });
+    expect(boardSet.text!(out)[0]).toContain(
+      ', sorted by Priority (Highest First), then Due Date (Earliest First)',
+    );
+  });
+
+  it('reads --sort levels, each direction optional, none as none', () => {
+    expect(sortLevels('Priority descending, Value ASC, Due Date')).toEqual([
+      { field: 'Priority', direction: 'descending' },
+      { field: 'Value', direction: 'ascending' },
+      { field: 'Due Date' },
+    ]);
+    expect(sortLevels(' None ')).toEqual([]);
+    expect(sortLevels(' , ')).toEqual([]);
   });
 
   it('refuses a board it cannot find', async () => {
@@ -169,13 +249,33 @@ describe('verb edges', () => {
       ...ITEM_TYPES[1],
       id: 'bug',
       label: 'Bug',
-      custom: [{ id: 'f-sev', label: 'Severity', kind: 'text' }],
+      custom: [
+        { id: 'f-sev', label: 'Severity', kind: 'text' },
+        { id: 'f-area', label: 'Area', kind: 'text', required: true },
+        { id: 'f-n', label: 'Subtasks', kind: 'calculated', calculation: 'childCount' },
+      ],
+      fields: [...ITEM_TYPES[1].fields, 'f-sev', 'f-area', 'f-n'],
     };
     const { ctx } = ctxWith('', {
       [`/projects/${DOC_A}/plan`]: { ...PLAN, types: [...ITEM_TYPES, custom] },
     });
     const ls = await typeLs.run!(ctx, { project: DOC_A });
-    expect(typeLs.text!(ls).at(-1)).toContain('Severity:text (f-sev)');
+    expect(typeLs.text!(ls).at(-1)).toContain(
+      'Severity:text (f-sev), Area*:text (f-area), Subtasks:calculated=childCount (f-n)',
+    );
+    // list_items and type ls mark a required field (docs/specs/026-plan/item-types.md "Required fields"), and a
+    // Calculated field names its calculation.
+    expect(ls.types.at(-1)!.custom).toEqual([
+      { id: 'f-sev', name: 'Severity', kind: 'text' },
+      { id: 'f-area', name: 'Area', kind: 'text', required: true },
+      {
+        id: 'f-n',
+        name: 'Subtasks',
+        kind: 'calculated',
+        calculation: 'childCount',
+        readOnly: true,
+      },
+    ]);
     const notJson = ctxWith('not json').ctx;
     await expect(typeApply.run!(notJson, { project: DOC_A, file: '-' })).rejects.toMatchObject({
       code: 'usage',

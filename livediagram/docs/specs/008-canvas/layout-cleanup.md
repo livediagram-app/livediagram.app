@@ -257,13 +257,13 @@ family of **styles**, all sharing the same pipeline (graph extraction → per-co
 positioning → origin pinning → arrow re-anchor → grid snap) and differing only in how
 a component's nodes are positioned:
 
-| Style                 | `AutoLayoutOptions`                  | Positioning                                                                                                                             |
-| --------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| **Smart** (default)   | `{}`                                 | The layered layout with direction auto-detected from the elements' current rough positions. What plain "Auto Layout" always did.        |
-| **Flowchart (down)**  | `{ style: 'flow', direction: 'TB' }` | Layered, direction forced top-to-bottom.                                                                                                |
-| **Flowchart (right)** | `{ style: 'flow', direction: 'LR' }` | Layered, direction forced left-to-right.                                                                                                |
-| **Tree**              | `{ style: 'tree' }`                  | Tidy tree / org chart: a spanning tree from the roots (in-degree 0), each parent centred over its subtree, depth = rank, top-to-bottom. |
-| **Mindmap**           | `{ style: 'mindmap' }`               | Radial: the highest-degree node sits at the centre, each subtree gets an angular wedge sized by its leaf count, depth = ring radius.    |
+| Style                 | `AutoLayoutOptions`                  | Positioning                                                                                                                                                                                                                                                |
+| --------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Smart** (default)   | `{}`                                 | The layered layout with direction auto-detected from the elements' current rough positions. What plain "Auto Layout" always did.                                                                                                                           |
+| **Flowchart (down)**  | `{ style: 'flow', direction: 'TB' }` | Layered, direction forced top-to-bottom.                                                                                                                                                                                                                   |
+| **Flowchart (right)** | `{ style: 'flow', direction: 'LR' }` | Layered, direction forced left-to-right.                                                                                                                                                                                                                   |
+| **Tree**              | `{ style: 'tree' }`                  | Tidy tree / org chart: a spanning tree from the roots (in-degree 0), each parent centred over its subtree, depth = rank, top-to-bottom; `direction: 'LR'` turns it left-to-right (graph input and the `layout` edit operation pass it; the tile does not). |
+| **Mindmap**           | `{ style: 'mindmap' }`               | Radial: the highest-degree node sits at the centre, each subtree gets an angular wedge sized by its leaf count, depth = ring radius.                                                                                                                       |
 
 - The style lives in `AutoLayoutOptions` on `autoLayoutElements`: importers and the
   MCP server keep calling it with no style and get Smart, unchanged.

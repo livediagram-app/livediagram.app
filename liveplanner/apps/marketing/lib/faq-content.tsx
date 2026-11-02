@@ -24,8 +24,10 @@ import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 
 const ICON = 18;
 // Written out rather than read from @liveplanner/templates: this module ships in the FAQ's client bundle, and the
-// catalogue is ~15 KB for one number. faq-content.test.tsx pins it to the listed Plan templates, blanks aside.
-export const TEMPLATE_COUNT = 28;
+// catalogue is ~15 KB for one number. faq-content.test.tsx pins it to the listed Plan templates, blanks aside, and the
+// category count to TEMPLATE_CATEGORIES.
+export const TEMPLATE_COUNT = 34;
+export const TEMPLATE_CATEGORY_COUNT = 11;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
@@ -178,7 +180,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What templates are there?',
-        a: `${TEMPLATE_COUNT} ready-made templates, each set up with its tabs: plans such as Project Planner, Kanban Board, Bug Tracker, Team Retro, Weekly Planner, Content Calendar, Hiring Pipeline, OKRs, Product Launch, Feedback Board and Task Tracker; spreadsheets such as a Budget Planner, Timesheet, Invoice, Expense Report, Sales Pipeline and Inventory; and forms such as a Bug Report, Feedback, Feature Request, Event RSVP, Job Application and Contact form. Or start from a blank board, sheet or form.`,
+        a: `${TEMPLATE_COUNT} ready-made templates in ${TEMPLATE_CATEGORY_COUNT} categories, by what the work is for, from Customer Support and Events to Personal and Sales, each set up with its tabs: plans such as Project Planner, Kanban Board, Bug Tracker, Team Retro, Content Calendar, Hiring Pipeline, OKRs, Event Planner, Sales CRM, Help Desk, Meeting Agenda, Personal Goals and Study Planner; spreadsheets such as a Budget Planner, Timesheet, Invoice, Expense Report, Sales Pipeline and Inventory; and forms such as a Bug Report, Feedback, Feature Request, Event RSVP, Job Application and Contact form. Or start from a blank board, sheet or form.`,
       },
     ],
   },

@@ -6,6 +6,7 @@ import {
   useImperativeHandle,
   useRef,
   type CSSProperties,
+  type KeyboardEvent,
   type ReactNode,
 } from 'react';
 import { CloseIcon, FIELD_INVALID } from '@liveplanner/ui';
@@ -46,6 +47,13 @@ type ChipFieldProps = {
   ariaDescribedBy?: string;
   // A datalist of suggestions, rendered as `children`.
   list?: string;
+  // The field as a combobox over a list of suggestions it drives (Plan's label menu): its state for assistive tech.
+  combobox?: { expanded: boolean; controls: string; activeId?: string | undefined };
+  // Keys the host takes first (a suggestion list's arrows and Enter); one it prevents is not the field's.
+  onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
+  onFocus?: () => void;
+  // The most characters one chip's text may be.
+  maxLength?: number;
   // Shown in place of the field when it is read-only and holds no chips.
   emptyText?: string;
   children?: ReactNode;
@@ -70,6 +78,10 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
     ariaLabel,
     ariaDescribedBy,
     list,
+    combobox,
+    onKeyDown,
+    onFocus,
+    maxLength,
     emptyText,
     children,
   },
@@ -125,7 +137,9 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
               }}
               data-remove-chip
               aria-label={removeLabel(chip)}
-              className={`flex h-4 w-4 items-center justify-center rounded-full transition ${
+              // 16px drawn, 24px to a finger (WCAG 2.5.8): a pad of 4px round it on a touch screen, no wider, so a
+              // tap on the chip's own name never removes it.
+              className={`relative flex h-4 w-4 items-center justify-center rounded-full transition pointer-coarse:before:absolute pointer-coarse:before:-inset-1 pointer-coarse:before:content-[''] ${
                 chipColour
                   ? 'hover:bg-black/10 dark:hover:bg-white/15'
                   : 'text-brand-700 hover:bg-brand-100 hover:text-brand-800 dark:text-brand-300 dark:hover:bg-brand-500/25 dark:hover:text-brand-100'
@@ -149,6 +163,8 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
           disabled={disabled}
           onChange={(e) => onDraftChange(e.target.value)}
           onKeyDown={(e) => {
+            onKeyDown?.(e);
+            if (e.defaultPrevented) return;
             if (e.key === 'Enter') {
               // Never submits a surrounding form: Enter here means "add this chip".
               e.preventDefault();
@@ -159,6 +175,17 @@ export const ChipField = forwardRef<ChipFieldHandle, ChipFieldProps>(function Ch
             }
           }}
           onBlur={onBlur}
+          onFocus={onFocus}
+          maxLength={maxLength}
+          {...(combobox
+            ? {
+                role: 'combobox',
+                'aria-expanded': combobox.expanded,
+                'aria-controls': combobox.controls,
+                'aria-autocomplete': 'list' as const,
+                'aria-activedescendant': combobox.activeId,
+              }
+            : {})}
           placeholder={placeholder}
           aria-label={ariaLabel}
           aria-describedby={ariaDescribedBy}

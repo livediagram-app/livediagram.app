@@ -42,6 +42,15 @@ describe('article writing: reading it', () => {
     expect(runs[0]!.text).toHaveLength(MAX_ARTICLE_BLOCK_TEXT);
   });
 
+  it('caps the runs at the count asked for, as a table cell does', () => {
+    const runs = normaliseRuns(
+      [{ text: 'a', b: true }, { text: 'b' }, { text: 'c', i: true }],
+      100,
+      2,
+    );
+    expect(runs.map((r) => r.text)).toEqual(['a', 'b']);
+  });
+
   it('caps the text of a block without cutting an emoji in half', () => {
     const runs = normaliseRuns([{ text: `x${'😀'.repeat(MAX_ARTICLE_BLOCK_TEXT)}` }]);
     const text = runs[0]!.text;

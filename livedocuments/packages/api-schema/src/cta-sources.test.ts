@@ -75,6 +75,11 @@ describe('CTA_SOURCES', () => {
       'Help.HeaderDraw',
       'Help.HeaderIllustration',
       'Help.HeaderSession',
+      'Community.Header',
+      'Community.HeaderBlank',
+      'Community.HeaderDraw',
+      'Community.HeaderIllustration',
+      'Community.HeaderSession',
     ]);
   });
 
@@ -149,6 +154,7 @@ describe('ctaSurfaceOfPath', () => {
     expect(ctaSurfaceOfPath('/')).toBe('Home');
     expect(ctaSurfaceOfPath('/features/present')).toBe('Feature');
     expect(ctaSurfaceOfPath('/alternatives')).toBe('Compare');
+    expect(ctaSurfaceOfPath('/community/post')).toBe('Community');
     expect(ctaSurfaceOfPath('/alternatives/miro')).toBe('Compare');
     expect(ctaSurfaceOfPath('/faq')).toBe('Faq');
     expect(ctaSurfaceOfPath('/ai')).toBe('Ai');

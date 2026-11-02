@@ -162,7 +162,6 @@ export function ElementTourHost() {
     debugLog('[element-tour] play', { kind: k });
     setSteps(
       d.steps(el, {
-        hasMore: document.getElementById('selection-more-actions') !== null,
         touch,
         elements: activeTabRef.current.elements,
       }),

@@ -37,7 +37,9 @@ A value is one of:
 - An error flows through: a formula reading an error shows it, except the functions that test for errors
   (`IFERROR`, `IFNA`, `ISERROR`, `ISNA`, `ERROR.TYPE`).
 - A **circular** formula (one that reads itself, directly or through others) shows `#REF!` in every cell of the
-  loop, and hovering says "Circular reference: B2 → C2 → B2". There is no iterative calculation.
+  loop, and hovering says "Circular reference: B2 → C2 → B2" (each cell with its sheet when the loop runs through
+  another sheet: "Circular reference: 'Sheet 1'!A1 → 'Q3 Costs'!A1 → 'Sheet 1'!A1"). There is no iterative
+  calculation.
 
 ## What a typed input becomes
 
@@ -72,7 +74,8 @@ as what it means, never as the text typed, so everyone reads it the same whateve
 - **A1 references**: `B4`; absolute parts with `$` (`$B$4`, `B$4`, `$B4`), which do not shift when the formula is
   copied, filled or pasted.
 - **Ranges**: `A1:C5`, whole columns `A:C`, whole rows `2:4`, and open ends of a filled column (`A2:A`).
-- A reference past the grid (`ZZ1` on a 26-column sheet) is `#REF!`.
+- A reference past the grid (`ZZ1` on a 26-column sheet) is `#REF!`: a typed one is kept as `#REF!` in the formula, as a
+  reference to a deleted cell is, and one `INDIRECT` reads (`INDIRECT("ZZ1")`) answers `#REF!`.
 - References are not case sensitive; they are stored upper case.
 
 ### Other sheets
@@ -115,7 +118,9 @@ the Trash), whatever board they are on, as a [plan view](../026-plan/plan-views.
   field's name. `fields` in `CARDS` is one text of names separated by commas (`"Number, Title, State"`).
 - A **value** matches as a criterion does in `COUNTIF` (`"Done"`, `">3"`, `"<>"`, `"*login*"`).
 - Values read as: State by its column name, Assignee by the person's name, Labels joined with `, `, dates as date
-  numbers, Type by the card type's name, Number as the number.
+  numbers, Type by the card type's name, Number as the number, a Date and Time as its UTC instant's text
+  (`2026-10-31T17:00:00Z`) and a Date Range as its ISO 8601 interval (`2026-10-31/2026-11-02`), as Export CSV
+  writes them.
 - An unknown field is `#NAME?` (hovering names it); a card number no card has is `#N/A`.
 - A sheet using these functions loads the project's items, as a board does; until they arrive the cells show
   **Loading…**. They recalculate as cards change, live for everyone.
@@ -233,4 +238,6 @@ optional. Each behaves as its Google Sheets namesake; where Sheets and Excel dif
   waiting show their last value, faded.
 - The engine bounds its work: a formula reading more than 1,000,000 cells, or a recalculation of more than
   5,000,000 cell reads, stops with `#NUM!` in the cells it did not reach and says "This sheet is too large to
-  recalculate at once".
+  recalculate at once". The 5,000,000 is the whole recalculation's total (everything worked out between one change
+  and the next, however many cells are read one by one), not each cell's: once the total passes it, every formula
+  worked out after that shows `#NUM!`, until the next change gives the recalculation a fresh budget.

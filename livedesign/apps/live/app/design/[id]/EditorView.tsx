@@ -25,6 +25,11 @@ import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/us
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
+import { useCommunityEnabled } from '@liveworkspace/community-ui';
+import { API_BASE } from '@/lib/api-client';
+import { useAutoCopyParam } from '@/hooks/canvas/useAutoCopyParam';
+import { designIsPublic } from '@/lib/community-public';
+import { useCommunityState } from '@/lib/community-state-store';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { WorkbenchOpenLink, WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
@@ -73,6 +78,11 @@ import { EditorStartPanels } from '@/components/start/EditorStartPanels';
 // Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open. Its code is
 // fetched once the editor is idle (EDITOR_SURFACE_CODE), so opening it does not wait.
 const EditorSearchPanel = dynamic(loadEditorSearchPanel, { ssr: false });
+// Only a Community link's view draws it, so it stays off every other open's first load.
+const CommunityBar = dynamic(
+  () => import('@/components/chrome/CommunityBar').then((m) => m.CommunityBar),
+  { ssr: false },
+);
 
 // How long a guest edits before the sign-in nudge appears (docs/specs/014-identity/sign-in-encouragement.md).
 // Long enough that it never greets someone the instant they open a
@@ -160,7 +170,27 @@ export function EditorView() {
     zenMode,
     openCollaborators,
     userPreferences,
+    sessionCommunity,
   } = ctx;
+  // The header badge follows the design's Community post (docs/specs/025-community/community.md "Publishing").
+  const communityState = useCommunityState(designId);
+  // The badge goes too while the Community is switched off. Asked only while there is a listed post to badge, and
+  // never in an embed, so other opens make no request.
+  const communityOn = useCommunityEnabled(API_BASE, communityState === 'listed' && appChrome);
+  // `?copy=1` from the Community's Make a Copy (docs/specs/025-community/community.md "Viewing a post's design").
+  useAutoCopyParam({
+    hydrated,
+    sessionShareCode,
+    // The author's own post copies nothing: their bar offers Edit Your Design instead.
+    community: sessionCommunity !== null && !sessionCommunity.ownDesignId,
+    makeCopy,
+  });
+  // Whether the design shows as public on the Community, for the header's share state.
+  const headerCommunity = designIsPublic({
+    communityOn,
+    ownPostState: communityState,
+    communitySession: sessionCommunity !== null,
+  });
   // Minimal chrome (docs/specs/007-editor/power-user-mode.md): one flag, read by every chrome surface.
   const minimalChrome = isMinimalChrome(userPreferences);
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, so a phone resolves to 1.
@@ -245,6 +275,7 @@ export function EditorView() {
             hideTitle={anyWelcomeOpen}
             showShare={canShareDesign && hydrated && !anyWelcomeOpen}
             shareable={designShareable}
+            community={headerCommunity}
             teamDesign={!!designTeamId}
             offline={isOffline}
             // Visitors see "Make a copy" instead of "Share": same slot (a joined
@@ -252,9 +283,9 @@ export function EditorView() {
             // different action. Hidden during the welcome flow so the
             // first-paint chrome stays minimal, and during hydration so
             // we don't render the button before we know whether the user
-            // is the owner.
+            // is the owner. A Community visitor gets it from the Community bar instead.
             onMakeCopy={
-              !canShareDesign && hydrated && !anyWelcomeOpen && designId
+              !canShareDesign && hydrated && !anyWelcomeOpen && designId && !sessionCommunity
                 ? () => void makeCopy()
                 : undefined
             }
@@ -427,13 +458,20 @@ export function EditorView() {
                               </div>
                             ) : null}
                             {headerInColumn}
+                            {sessionCommunity && appChrome && hydrated ? (
+                              <CommunityBar
+                                community={sessionCommunity}
+                                onMakeCopy={() => void makeCopy()}
+                                copying={copying}
+                              />
+                            ) : null}
                             <AreaErrorBoundary area="TabDialogs">
                               <EditorTabDialogs />
                             </AreaErrorBoundary>
                             <AreaErrorBoundary area="Collaborators">
                               <CollaboratorsHost />
                             </AreaErrorBoundary>
-                            {/* At the canvas's top edge, under the header. */}
+                            {/* At the canvas's top edge, under the header and any Community bar. */}
                             {landscapeBarsHandle}
                             <AreaErrorBoundary
                               area="Canvas"
@@ -445,7 +483,10 @@ export function EditorView() {
                                 {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
                                 <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
                                   {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
-                                  <CommentBadgesContext.Provider value={!(embedMode && isReadOnly)}>
+                                  {/* Nor for a Community visitor (docs/specs/025-community/community.md). */}
+                                  <CommentBadgesContext.Provider
+                                    value={!(embedMode && isReadOnly) && !sessionCommunity}
+                                  >
                                     {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
                                     <SuppressElementIndicators when={embedMode}>
                                       <EditorCanvasHost />

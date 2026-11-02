@@ -6,6 +6,7 @@ import { signInHref, signUpHref } from '@/lib/accounts';
 import { joinTokenFrom, memberCountLabel, teamPath, INVITES_PATH } from '@/lib/teams';
 import { Footer } from '../Footer';
 import { Header } from '../Header';
+import { Button } from '@liveworkspace/ui';
 import { BUTTON } from '../settings/account-ui';
 import { TeamAvatar } from './Avatars';
 
@@ -99,25 +100,29 @@ export function JoinPage() {
           <h1 className="mt-2 text-3xl font-semibold tracking-tight break-words text-slate-900 dark:text-white">
             {state.preview.teamName}
           </h1>
+          {/* The organisation is someone's typing, isolated so its direction never turns the count around. */}
           <p className="mt-2 text-slate-600 dark:text-slate-400">
-            {[state.preview.organisation, memberCountLabel(state.preview.memberCount)]
-              .filter(Boolean)
-              .join(' · ')}
+            {state.preview.organisation ? (
+              <>
+                <bdi>{state.preview.organisation}</bdi> ·{' '}
+              </>
+            ) : null}
+            {memberCountLabel(state.preview.memberCount)}
           </p>
           <p className="mt-4 max-w-sm text-sm text-slate-600 dark:text-slate-400">
             A team is the same in every liveworkspace app: its work shows up for everyone in it.
           </p>
           {state.preview.signedIn ? (
             <div className="mt-8 flex w-full flex-col gap-2 sm:w-auto sm:flex-row-reverse">
-              <button
-                type="button"
+              <Button
+                variant="none"
                 autoFocus
-                disabled={busy}
+                busy={busy}
                 className={`${BUTTON.primary} relative touch-target-y px-6 py-2.5`}
                 onClick={() => void join()}
               >
                 {busy ? 'Joining…' : `Join ${state.preview.teamName}`}
-              </button>
+              </Button>
               <a
                 href={INVITES_PATH}
                 className={`${BUTTON.secondary} relative touch-target-y py-2.5`}

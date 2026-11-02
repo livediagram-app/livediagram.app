@@ -112,9 +112,11 @@ export function decodeLabel(s: string): string {
 }
 
 // Read the id token at the front (letters, digits, _, made of the chars
-// Mermaid allows in a bare id). Returns null if none.
+// Mermaid allows in a bare id). Letters and digits in any script, as Mermaid's
+// own ids take them (`Ä --> Ö`, `开始 --> 结束`): ASCII only cut `node_é` to `node_`
+// and dropped its edge. Returns null if none.
 export function readId(s: string): { id: string; rest: string } | null {
-  const m = /^\s*([A-Za-z0-9_]+)/.exec(s);
+  const m = /^\s*([\p{L}\p{M}\p{N}_]+)/u.exec(s);
   return m ? { id: m[1]!, rest: s.slice(m[0].length) } : null;
 }
 
@@ -128,18 +130,20 @@ export function foldedEdgeEnds(
   nodes: Map<string, unknown>,
   clusters: GraphCluster[],
 ): Map<string, string> {
+  // Clusters by id, looked up rather than scanned: a scan per folded id was quadratic in the clusters.
+  const byId = new Map(clusters.map((c) => [c.id, c]));
   const strays = new Set<string>();
   for (const id of foldedInto.keys())
-    if (implicit.has(id) && nodes.has(id) && !clusters.some((c) => c.id === id)) strays.add(id);
+    if (implicit.has(id) && nodes.has(id) && !byId.has(id)) strays.add(id);
   const toFrame = new Map<string, string>();
   for (const id of strays) {
     const parent = foldedInto.get(id)!;
-    const outer = clusters.find((c) => c.id === parent);
+    const outer = byId.get(parent);
     if (!outer?.members.some((m) => !strays.has(m))) continue;
     toFrame.set(id, parent);
     nodes.delete(id);
   }
-  for (const c of clusters) c.members = c.members.filter((m) => !toFrame.has(m));
+  if (toFrame.size) for (const c of clusters) c.members = c.members.filter((m) => !toFrame.has(m));
   return toFrame;
 }
 
@@ -172,13 +176,18 @@ export function framedClusters(
   nodes: Map<string, { label?: string }>,
 ): GraphCluster[] {
   const surviving = new Set(clusters.filter((c) => c.members.length > 0).map((c) => c.id));
+  // The auto nodes that give way to their frames, taken out of every cluster in one pass at the end: a pass over
+  // every cluster for each one was quadratic, 20 s for 20,000 composite states each named by a transition.
+  const framedIds = new Set<string>();
   for (const c of clusters) {
     const auto = !surviving.has(c.id) && implicit.has(c.id) ? nodes.get(c.id) : undefined;
     if (auto && c.label) auto.label = c.label;
     if (surviving.has(c.id) && implicit.has(c.id) && nodes.has(c.id)) {
       nodes.delete(c.id);
-      for (const other of clusters) other.members = other.members.filter((m) => m !== c.id);
+      framedIds.add(c.id);
     }
   }
+  if (framedIds.size)
+    for (const c of clusters) c.members = c.members.filter((m) => !framedIds.has(m));
   return clusters.filter((c) => c.members.length > 0);
 }

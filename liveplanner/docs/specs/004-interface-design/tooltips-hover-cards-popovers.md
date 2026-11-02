@@ -155,6 +155,9 @@ under the keyboard the moment it was tapped. Every floating surface stays in vie
   of focus or the keyboard goes, it returns to where its placement puts it.
 - A panel anchored to a control (`AnchoredPopover`) never shrinks below 160 px of room on its side (or its own height,
   when less), however little the window leaves it, so a keyboard that shrinks the window cannot squeeze it to nothing.
+- An anchored panel focuses its first control on opening. One whose first control is a text field it should not
+  raise a keyboard for on a touch screen (Add Field's search) may ask to focus the panel itself instead
+  (`initialFocus: 'panel'`): focus is inside it, for Escape and assistive technology, and no keyboard rises.
 - A modal `Dialog` first fits itself to the visible area (editor-app.md "A dialog stays above the on-screen keyboard"),
   so it fits there and the move above has nothing left to do.
 - Under a mouse nothing listens: no keyboard rises over the page.

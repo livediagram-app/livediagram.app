@@ -18,11 +18,12 @@ export const BLANK_PAGE_TEMPLATE_KINDS = {
   'blank-slide-deck': 'slide',
   'blank-article': 'article',
   'blank-infographic': 'infographic',
+  'blank-flashcards': 'flashcard',
 } as const satisfies Partial<Record<TemplateKind, PageKind>>;
 
 type BlankPageTemplateKind = keyof typeof BLANK_PAGE_TEMPLATE_KINDS;
 
-// The blank article's flow id: the tab holds no other article, so a fixed id cannot collide.
+// The blank article's (or blank flashcard's) flow id: the tab holds no other writing, so a fixed id cannot collide.
 const BLANK_ARTICLE_FLOW = 'art-1';
 
 function isBlankPageTemplate(kind: TemplateKind): kind is BlankPageTemplateKind {
@@ -41,7 +42,7 @@ export function blankPageTemplateOverrides(kind: TemplateKind): Partial<Tab> | u
     BLANK_PAGE_TEMPLATE_KINDS[kind],
     BLANK_ARTICLE_FLOW,
   )!;
-  // An article page's writing (an empty Title and paragraph) comes with it.
+  // An article page's or a card's writing (an empty Title and paragraph) comes with it.
   const { articles } = chosen as Partial<Tab>;
   return { pages: chosen.pages, ...(articles ? { articles } : {}) };
 }

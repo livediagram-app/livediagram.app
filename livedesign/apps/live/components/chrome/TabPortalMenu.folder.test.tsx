@@ -51,4 +51,19 @@ describe('Organise in Tab Folder in the tab menu', () => {
     expect(within(dialog).getByRole('heading', { name: 'Organise in Tab Folder' })).toBeTruthy();
     expect(within(dialog).getByText('Drafts')).toBeTruthy();
   });
+
+  // A keyboard user closing the picker lands back on the tab's ⋯, not on the page.
+  it('gives focus back to the tab menu button when the dialog closes', () => {
+    const anchor = document.createElement('button');
+    document.body.appendChild(anchor);
+    const onClose = vi.fn();
+    const { unmount } = render(<PortalMenu {...props({ anchor, onClose })} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Organise in Tab Folder' }));
+    const dialog = screen.getByRole('dialog', { name: 'Organise in Tab Folder' });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
+    expect(onClose).toHaveBeenCalled();
+    unmount();
+    expect(document.activeElement).toBe(anchor);
+    anchor.remove();
+  });
 });

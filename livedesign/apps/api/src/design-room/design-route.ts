@@ -40,12 +40,21 @@ export function identityOf(ctx: RouteContext): RouteIdentity {
   };
 }
 
-// The room's side: the request answered as the worker would have answered it.
+// A design's create (`POST /api/designs`, a re-commit of its own id too) is its making, not an edit: whether making it
+// is a use is the create's `markUsed` (docs/specs/015-api/api.md "Marking a design used"), so the room records no
+// editor for it, which would count a use day for every design of a bulk import.
+export function isDesignCreate(request: Request): boolean {
+  return request.method === 'POST' && new URL(request.url).pathname === '/api/designs';
+}
+
+// The room's side: the request answered as the worker would have answered it. `community` is the design's
+// Community post's link, as the room holds it (routes/context.ts grantOn).
 export async function answerDesignRequest(
   env: DesignEnv,
   request: Request,
   identity: RouteIdentity,
   waitUntil: (promise: Promise<unknown>) => void,
+  community: { code: string; open: boolean } | null = null,
 ): Promise<Response> {
   const url = new URL(request.url);
   const ctx: DesignRouteContext = {
@@ -62,6 +71,7 @@ export async function answerDesignRequest(
     teams: identity.teams,
     bearer: identity.bearer,
     grant: identity.grant,
+    community,
     waitUntil,
   };
   // A throw crosses back to the worker, which logs it and answers 500 as for any route (index.ts).

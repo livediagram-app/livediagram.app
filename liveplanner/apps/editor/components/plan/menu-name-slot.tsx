@@ -19,11 +19,9 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  activeTabRenameId,
-  useActiveTabName,
-  useActiveTabRename,
-  type TabRename,
-} from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
+  IN_BOX_TITLE_CLASS,
+  TabNameInBox as SharedTabNameInBox,
+} from '@liveworkspace/workbench/components/chrome/TabNameInBox';
 import { NAME_MAX_LENGTH } from '@liveplanner/project';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
@@ -75,55 +73,11 @@ export function MenuNameSlot() {
 // desktop, as a board's name rides there: right after the slot, and hidden by CSS while the slot holds an element's
 // name (a board, Sheet or view filling the tab or maximised), so the box never shows two.
 export function TabNameInBox() {
-  const name = useActiveTabName();
-  const rename = useActiveTabRename();
-  if (!name) return null;
-  // Keyed by the tab it renames: another tab opening drops a draft begun on this one.
-  return <TabName key={rename?.tabId ?? ''} name={name} rename={rename} />;
-}
-
-function TabName({ name, rename }: { name: string; rename: TabRename | null }) {
-  const [draft, setDraft] = useState<string | null>(null);
-  const hide = '[[data-menu-name-slot]:not(:empty)+&]:hidden';
-  const frame = `ml-0.5 border-l border-slate-200 pl-2.5 pr-2 text-slate-800 dark:border-slate-700 dark:text-slate-100 ${hide}`;
-  if (draft !== null && rename) {
-    const save = () => {
-      const next = draft.trim();
-      setDraft(null);
-      // Saved only onto the tab it was begun on, should that tab no longer be the open one.
-      if (activeTabRenameId() !== rename.tabId) return;
-      if (next && next !== name) rename.rename(next);
-    };
-    return (
-      <span data-tab-name-in-box="" className={`flex items-center ${frame}`}>
-        <input
-          autoFocus
-          data-keeps-escape
-          aria-label="Tab name"
-          value={draft}
-          maxLength={NAME_MAX_LENGTH}
-          onFocus={(e) => e.currentTarget.select()}
-          onChange={(e) => setDraft(e.target.value)}
-          onBlur={save}
-          onKeyDown={(e) => {
-            e.stopPropagation();
-            if (e.key === 'Enter') save();
-            if (e.key === 'Escape') setDraft(null);
-          }}
-          className="w-48 rounded-md border border-brand-400 bg-transparent px-1.5 py-0.5 text-[14px] font-normal leading-tight outline-none"
-        />
-      </span>
-    );
-  }
   return (
-    <span
-      data-tab-name-in-box=""
-      // A click (a tap) renames the tab, for someone who may.
-      onClick={rename ? () => setDraft(name) : undefined}
-      className={`${frame} ${rename ? 'cursor-text' : ''} ${IN_BOX_TITLE_CLASS}`}
-    >
-      {name}
-    </span>
+    <SharedTabNameInBox
+      maxLength={NAME_MAX_LENGTH}
+      className="[[data-menu-name-slot]:not(:empty)+&]:hidden"
+    />
   );
 }
 
@@ -154,7 +108,5 @@ export function InMenuBox({ render }: { render: (inBox: boolean) => ReactNode })
   );
 }
 
-// The name's look in the box: the chrome's text at regular weight (never bold), a little smaller than a header's,
-// truncating.
-export const IN_BOX_TITLE_CLASS =
-  'min-w-0 max-w-[16rem] truncate text-[14px] font-normal leading-tight';
+// The name's look in the box (the shared tab name's), for an element's name riding there.
+export { IN_BOX_TITLE_CLASS };

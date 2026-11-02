@@ -233,6 +233,21 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   you have left shows on the [Session strip](#the-session-strip)'s Vote
   button as a count badge, and in words ("2 of 3 dots left") at the top of the
   Vote panel, for anyone who can cast.
+- **Casting from the keyboard** ([Canvas accessibility](../004-interface-design/canvas-accessibility.md#voting-from-the-keyboard)):
+  the stepper sits inside the canvas, where Tab walks elements, so Tab never reaches its buttons. Instead, with
+  one votable element selected (Tab walks to it), **`+`** (or `=`, the same key unshifted) casts one of your dots
+  on it and **`-`** takes one back, through the same `castVote` / `retractVote` and the same `canCastVote` the
+  plus reads, so the budget, the one-per-item rule, the layer scope and the open or ended state hold exactly as
+  for a press. Each key is answered in the canvas's polite live region with what happened and your dots left
+  (`Dot added to 'Idea'. 2 of 3 dots left.`, `Dot removed from 'Idea'. 3 of 3 dots left.`), or why nothing did
+  (`No dots left.`, `One dot each: 'Idea' already has yours.`, `No dot of yours on 'Idea'.`). The keys are the
+  vote's only while casting is open and the one selected element is votable in it; anywhere else they keep their
+  usual meaning (type-to-edit). Who may use them is who may press: an Editor or a Participant (`can.takePart`);
+  a Viewer's keys are left alone. The stepper's buttons name the keys (`aria-keyshortcuts`). The walk is
+  selection, so it keeps the [concurrent-selection lock](../007-editor/editor-app.md#concurrent-selection-lock):
+  an element another keyboard voter is sitting on is skipped until they move on or press Escape (a press of the
+  element still casts, as a pointer press never selects); the lock is not loosened for a vote, since a selection
+  also nudges, deletes and edits.
 - **Vote privacy**: two per-vote switches set before **Start vote** (see
   "Vote privacy" below); they live on the vote, not as a user preference.
 - **End vote** closes casting (tallies stay). **Show results** sets
@@ -299,8 +314,8 @@ button, so there is nothing to watch in it. So do an idle tool's popover and any
 phone (where it would cover the canvas being voted on). Asking a poll keeps the popover open: it becomes the Poll panel. They share the editor's one open-popover slot with Layers, Collaborate
 and the Explorer. Nothing opens on its own: a vote or poll somebody starts lights its button and
 leaves the canvas clear. The strip shows in Zen mode as well, because a session in progress is the one
-piece of chrome a facilitator still needs there; it is hidden only while presenting or in the
-welcome flow, with the rest of the cluster.
+piece of chrome a facilitator still needs there; it is hidden only while presenting, in the
+welcome flow or in a [read-only embed](../013-workspace/embeds.md) (which offers no session to run or join), with the rest of the cluster.
 
 ## The Vote panel
 

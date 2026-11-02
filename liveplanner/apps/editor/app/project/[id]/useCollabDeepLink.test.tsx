@@ -59,14 +59,19 @@ describe('useCollabDeepLink', () => {
   it('lands on a card’s board and opens the card', () => {
     const { calls } = arrive({ at: { tabId: 't1', elementId: 'b1' }, open: null, itemId: 'it1' });
     expect(calls.select).toHaveBeenCalledWith('b1');
-    expect(calls.openItem).toHaveBeenCalledWith('it1');
+    expect(calls.openItem).toHaveBeenCalledWith('it1', undefined);
     expect(calls.openActionPopover).not.toHaveBeenCalled();
     expect(calls.openComments).not.toHaveBeenCalled();
   });
 
+  it('opens a card on one of its comment threads (docs/specs/026-plan/items.md "Where it shows")', () => {
+    const { calls } = arrive({ at: null, open: null, itemId: 'it1', threadId: 'th-1' });
+    expect(calls.openItem).toHaveBeenCalledWith('it1', 'th-1');
+  });
+
   it('opens a card with no board on whichever tab the project opens on', () => {
     const { calls } = arrive({ at: null, open: null, itemId: 'it1' }, { activeId: 'other' });
-    expect(calls.openItem).toHaveBeenCalledWith('it1');
+    expect(calls.openItem).toHaveBeenCalledWith('it1', undefined);
     expect(calls.select).not.toHaveBeenCalled();
   });
 
@@ -113,6 +118,28 @@ describe('useCollabDeepLinkCapture', () => {
     });
     window.location.hash = '#t=t1';
     rerender();
+    expect(result.current.current?.itemId).toBe('it1');
+  });
+
+  // docs/specs/026-plan/plan-board.md "Its address": after hydration an open card rides in the address, and
+  // reading it back as a link would reopen a card closed since.
+  it('stops reading the address once the editor has hydrated', () => {
+    window.location.hash = '#t=t1';
+    const { result, rerender } = renderHook(
+      (hydrated: boolean) => useCollabDeepLinkCapture(hydrated),
+      {
+        initialProps: false,
+      },
+    );
+    rerender(true);
+    window.location.hash = '#t=t1&item=it1';
+    rerender(true);
+    expect(result.current.current).toBeNull();
+  });
+
+  it('reads a link on the hydration commit itself', () => {
+    window.location.hash = '#t=t1&item=it1';
+    const { result } = renderHook(() => useCollabDeepLinkCapture(true));
     expect(result.current.current?.itemId).toBe('it1');
   });
 

@@ -17,6 +17,8 @@ vi.mock('@/app/project/[id]/EditorContext', () => ({
   }),
 }));
 
+vi.mock('@/hooks/plan/useVoteCountIn', () => ({ useVoteCountIn: () => [] }));
+
 afterEach(cleanup);
 
 const junk = (config: Record<string, unknown>) => config as unknown as SessionButtonConfig;

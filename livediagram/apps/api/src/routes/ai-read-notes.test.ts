@@ -79,7 +79,7 @@ describe('the shared gate still guards this route', () => {
     const res = await handleAiReadNotes(
       makeCtx({
         env: {
-          AI_ALLOWED_ORIGINS: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+          AI_ALLOWED_ORIGINS: 'https://www.livediagram.app',
         },
         origin: 'https://evil.example',
       }),

@@ -16,7 +16,7 @@ export interface VerifierOptions {
   // The accounts Worker's issuer, e.g. `https://www.liveworkspace.app/api/auth`. Its bare or www. twin is accepted
   // too while the move to www. lasts (@liveworkspace/sites/www BARE_WWW_TRANSITION), and so is each audience's.
   issuer: string;
-  // The resource this app's API was registered as, e.g. `https://livediagram-router.liveworkspace-easing509.workers.dev/api`.
+  // The resource this app's API was registered as, e.g. `https://livediagram.app/api`.
   // A token minted for another app carries that app's audience and is refused here. A service
   // that serves every app (the One Explorer index) passes each app's resource.
   audience: string | string[];

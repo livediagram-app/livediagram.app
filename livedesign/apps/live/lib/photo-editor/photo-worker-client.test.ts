@@ -32,9 +32,11 @@ class FakeWorker {
     await import('./photo.worker');
     vi.unstubAllGlobals();
   }
-  postMessage(m: unknown): void {
-    this.posted.push(m);
-    if (this.mode === 'run') this.handler?.({ data: m });
+  // Like a browser: the transferred buffers leave the page (detached), the worker gets a copy.
+  postMessage(m: unknown, transfer: Transferable[] = []): void {
+    const sent = structuredClone(m, { transfer });
+    this.posted.push(sent);
+    if (this.mode === 'run') this.handler?.({ data: sent });
   }
   addEventListener(type: string, fn: Listener): void {
     if (type === 'message') this.onMessage.push(fn);
@@ -114,6 +116,24 @@ describe('the photo workers', () => {
     expect(create).toHaveBeenCalledTimes(1);
   });
 
+  it('keep a task’s buffers until the worker has answered, then move them', async () => {
+    const dead = await booted('silent');
+    const pool = new PhotoWorkers(() => dead as never, 1);
+    const task = encodeTask();
+    const a = pool.run(task);
+    dead.crash();
+    await expect(a.result).resolves.toMatchObject({ kind: 'encode' });
+
+    const w = await booted();
+    const live = new PhotoWorkers(() => w as never, 1);
+    const first = encodeTask();
+    await live.run(first).result;
+    expect(first.kind === 'encode' && first.data.byteLength).toBe(8);
+    const second = encodeTask();
+    await live.run(second).result;
+    expect(second.kind === 'encode' && second.data.byteLength).toBe(0);
+  });
+
   it('run on the page when a worker cannot start, or there is none', async () => {
     const pool = new PhotoWorkers(() => {
       throw new Error('blocked');
@@ -183,6 +203,11 @@ describe('the photo tasks', () => {
     hole[12 * 24 + 4] = 1;
     const filled = await runPhotoTask({ kind: 'fill', raster: pic, hole, seed: 3 });
     expect(filled.kind).toBe('fill');
+    // Make Sizes' resampling (image-ops.ts coverSize).
+    const resized = await runPhotoTask({ kind: 'resize', raster: pic, width: 6, height: 3 });
+    expect(resized.kind === 'resize' && [resized.raster.width, resized.raster.height]).toEqual([
+      6, 3,
+    ]);
   });
 
   it('name the buffers each can move', () => {
@@ -193,10 +218,11 @@ describe('the photo tasks', () => {
       { kind: 'decode', raster },
       { kind: 'filter', raster },
       { kind: 'fill', raster },
+      { kind: 'resize', raster },
       { kind: 'mask', mask: bytes },
       { kind: 'selection', selection: createMask({ x: 0, y: 0, width: 1, height: 1 }, 1) },
     ];
-    expect(results.map((r) => transfersOf(r).length)).toEqual([1, 1, 1, 1, 1, 0]);
+    expect(results.map((r) => transfersOf(r).length)).toEqual([1, 1, 1, 1, 1, 1, 0]);
     expect(transfersOf(encodeTask())).toHaveLength(1);
     expect(transfersOf({ kind: 'decode', bytes, type: 'image/png' })).toEqual([]);
   });

@@ -5,6 +5,7 @@
 
 import type { EditRejection } from '@livedesign/api-schema';
 import {
+  INSTANCE_SHAPE,
   SHAPE_DEFAULT_SIZE,
   SHAPE_KINDS,
   coerceShapeKind,
@@ -32,6 +33,7 @@ import { layerLockOf } from '../locks';
 import { growContainer, HOLD_PAD } from '../grow-container';
 import { resolvePlacement, type Placed } from '../placement';
 import { invalidValue } from '../rejections';
+import { placedInstance } from '../instances';
 import { type EditState, holdersOf, refuseLocked, writeFields } from '../state';
 import type { AddKindOperation, Fields } from '../types';
 
@@ -132,7 +134,13 @@ export function createKind(
   if ('code' in written) return { rejection: written };
   const named = spec.fields ?? {};
   let el = paint(written.next, state.theme);
-  if (el.type === 'shape' && !('width' in named) && !('height' in named)) {
+  if (el.type === 'shape' && el.shape === INSTANCE_SHAPE) {
+    // An instance draws its main: its box is the main's frame unless sized, never fitted to a label or its siblings.
+    const given = { width: 'width' in named, height: 'height' in named };
+    const checked = placedInstance(state, el, given, operation);
+    if ('rejection' in checked) return checked;
+    el = checked.el;
+  } else if (el.type === 'shape' && !('width' in named) && !('height' in named)) {
     // A new box matches its siblings (docs/specs/024-agents/edit-operations.md "Layout on edit"): the text size most
     // boxes of its shape on the tab wear, and at least their usual size, so a step added to a drawn flow is not a
     // small box whose label wraps mid-word beside the others.

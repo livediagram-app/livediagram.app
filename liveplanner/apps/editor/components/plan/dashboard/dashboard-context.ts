@@ -37,6 +37,12 @@ export type DashboardContextValue = {
 
 export const DashboardContext = createContext<DashboardContextValue | null>(null);
 
+// Whether this is drawn on a Dashboard tab (in a slot, or maximised from one): a board there is simplified
+// (docs/specs/026-plan/plan-tabs.md "A board in a slot is simplified").
+export function useInDashboard(): boolean {
+  return useContext(DashboardContext) !== null;
+}
+
 export function useDashboard(): DashboardContextValue {
   const v = useContext(DashboardContext);
   if (!v) throw new Error('useDashboard outside DashboardPage');

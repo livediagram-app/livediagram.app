@@ -21,9 +21,9 @@ import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 const ICON = 18;
 // Written out rather than read from @livedocuments/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 23;
+export const TEMPLATE_COUNT = 35;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
-export const TEMPLATE_CATEGORY_COUNT = 2;
+export const TEMPLATE_CATEGORY_COUNT = 10;
 // The slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
 export const SLIDE_LAYOUT_COUNT = 61;
 // The infographic page layouts, pinned the same way.
@@ -56,7 +56,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How do I start my first document?',
-        a: `Press Start and choose what you are making: an article, a slide deck or an infographic. Begin from a blank page or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
+        a: `Press Start and choose what you are making: an article, a slide deck, an infographic or flashcards. Begin from a blank page or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
       },
       {
         q: 'Does it work on my phone or tablet?',
@@ -150,7 +150,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How many templates and themes are there?',
-        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, and twenty-four themes that recolour every page in one click, including dark and multi-colour schemes. On top of the templates, a page starts from ${PAGE_LAYOUT_COUNT} infographic layouts or ${SLIDE_LAYOUT_COUNT} slide layouts. You can also build and save a colour scheme of your own.`,
+        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, grouped by what the document is for (reports, proposals, meetings, lessons, pitches, speeches, careers and more), and twenty-four themes that recolour every page in one click, including dark and multi-colour schemes. On top of the templates, a page starts from ${PAGE_LAYOUT_COUNT} infographic layouts or ${SLIDE_LAYOUT_COUNT} slide layouts. You can also build and save a colour scheme of your own.`,
       },
       {
         q: 'Can I write documents in it?',
@@ -158,13 +158,16 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             Yes. Write an article straight onto pages: Markdown shortcuts, a / menu for every block,
             and clean paste from web pages, Google Docs and Word. Writing flows onto new pages as it
-            grows, pictures, charts and tables sit in the text, and teammates comment on the words
-            themselves. Pick one of five looks, then export every page as a PDF. See{' '}
+            grows, tables run across pages with their header row repeated, pictures and charts sit
+            in the text, a table of contents keeps its page numbers up to date, and every page can
+            carry a header and footer. Find and Replace changes a word everywhere at once, and
+            teammates comment on the words themselves. Pick one of five looks, then export every
+            page as a PDF, or the article as a Word document to keep editing. See{' '}
             <a href="/help/pages/articles/">Articles</a>.
           </>
         ),
         aText:
-          'Yes. Write an article straight onto pages: Markdown shortcuts, a / menu for every block, and clean paste from web pages, Google Docs and Word. Writing flows onto new pages as it grows, pictures, charts and tables sit in the text, and teammates comment on the words themselves. Pick one of five looks, then export every page as a PDF. See Articles.',
+          'Yes. Write an article straight onto pages: Markdown shortcuts, a / menu for every block, and clean paste from web pages, Google Docs and Word. Writing flows onto new pages as it grows, tables run across pages with their header row repeated, pictures and charts sit in the text, a table of contents keeps its page numbers up to date, and every page can carry a header and footer. Find and Replace changes a word everywhere at once, and teammates comment on the words themselves. Pick one of five looks, then export every page as a PDF, or the article as a Word document to keep editing. See Articles.',
       },
       {
         q: 'Can I make and present a slide deck?',
@@ -390,11 +393,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export pages as PNG, SVG, one print-ready PDF or an animated GIF, and any tab as a portable JSON file to import back with full fidelity. Hidden layers stay out of image exports unless you switch them on.',
+        a: 'Yes. Export pages as PNG, SVG, one print-ready PDF or an animated GIF, a deck as an editable PowerPoint file, an article as an editable Word document, and any tab as a portable JSON file to import back with full fidelity. Hidden layers stay out of image exports unless you switch them on.',
       },
       {
         q: 'Can I bring in writing from elsewhere?',
-        a: 'Yes. Paste into an article from web pages, Google Docs and Word and it keeps its headings, lists and links. Through the MCP server, the CLI or the API, an AI assistant or a script can write an article from Markdown.',
+        a: 'Yes. Import a Word document as an article, or a PowerPoint deck as a tab of slides with its pictures and speaker notes; Google Docs and Google Slides come in through their own Word and PowerPoint downloads. Markdown imports as an article too. Paste into an article from web pages, Google Docs and Word and it keeps its headings, lists, links and tables. Through the MCP server, the CLI or the API, an AI assistant or a script can write an article from Markdown.',
       },
     ],
   },

@@ -1,6 +1,6 @@
 // Checking answers (docs/specs/030-forms/forms.md "Checking answers", blueprint §4): one set of rules for the
 // respondent page, the builder's Preview and the api, so a response the page lets through is one the api keeps.
-import { isEmailAddress } from '@liveplanner/items';
+import { isEmailAddress, isPhoneNumber, parseDateTime, readInstant } from '@liveplanner/items';
 import { OTHER_MAX, PARAGRAPH_MAX, SHORT_ANSWER_MAX } from './limits';
 import { shownQuestions } from './branching';
 import type { FormDefinition, FormQuestion } from './model';
@@ -17,6 +17,10 @@ export type AnswerError =
   | 'not_an_email'
   | 'not_a_link'
   | 'not_a_date'
+  | 'not_a_time'
+  | 'both_dates'
+  | 'end_before_start'
+  | 'not_a_phone'
   | 'not_an_option'
   | 'too_few'
   | 'too_many'
@@ -107,6 +111,17 @@ export function checkAnswer(q: FormQuestion, raw: unknown, other?: unknown): Ans
       return typeof raw === 'string' && isDateAnswer(raw)
         ? { value: raw }
         : { error: 'not_a_date' };
+    // A moment, sent with its offset and the respondent's zone, kept as a Date and Time field keeps it.
+    case 'datetime': {
+      const at = typeof raw === 'string' ? parseDateTime(raw) : undefined;
+      return at ? { value: at } : { error: 'not_a_time' };
+    }
+    case 'daterange':
+      return rangeAnswer(q, raw);
+    case 'phone': {
+      const t = typeof raw === 'string' ? raw.trim() : '';
+      return isPhoneNumber(t) ? { value: t } : { error: 'not_a_phone' };
+    }
     case 'single': {
       if (typeof raw !== 'string') return { error: 'not_an_option' };
       if (q.other && raw === OTHER_ANSWER) {
@@ -150,6 +165,21 @@ export function checkAnswer(q: FormQuestion, raw: unknown, other?: unknown): Ans
     case 'checkbox':
       return raw === true ? { value: true } : { error: 'must_tick' };
   }
+}
+
+// A Date Range answer: its two ends, days or (Include Time) moments, both given and in order.
+function rangeAnswer(q: FormQuestion, raw: unknown): AnswerCheck {
+  if (!Array.isArray(raw) || raw.length !== 2) return { error: 'both_dates' };
+  const ends = raw.map((e) => (typeof e === 'string' ? e.trim() : ''));
+  if (!ends[0] || !ends[1]) return { error: 'both_dates' };
+  const read = q.withTime
+    ? ends.map((e) => parseDateTime(e))
+    : ends.map((e) => (isDateAnswer(e) ? e : undefined));
+  if (!read[0] || !read[1]) return { error: q.withTime ? 'not_a_time' : 'not_a_date' };
+  const later = q.withTime
+    ? readInstant(read[0])!.ms > readInstant(read[1])!.ms
+    : read[0] > read[1];
+  return later ? { error: 'end_before_start' } : { value: [read[0], read[1]] };
 }
 
 // The value a respondent's Other option sends in place of an option name.
@@ -201,6 +231,14 @@ export function answerErrorMessage(q: FormQuestion, error: AnswerError): string 
       return 'Enter a web address like https://example.com';
     case 'not_a_date':
       return 'Enter a real date';
+    case 'not_a_time':
+      return 'Enter a real date and time';
+    case 'both_dates':
+      return 'Enter both dates';
+    case 'end_before_start':
+      return 'The end is before the start';
+    case 'not_a_phone':
+      return 'Enter a phone number like +44 20 7946 0958';
     case 'not_an_option':
       return 'Pick one of the options';
     case 'too_few':

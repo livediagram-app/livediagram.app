@@ -1,8 +1,8 @@
 'use client';
 
 import { isTrashed } from '@liveplanner/items';
-import { useState } from 'react';
-import { EllipsisIcon, PlanCardsIcon, PlusIcon, SearchIcon, TrashIcon } from '@liveplanner/ui';
+import { useState, type SyntheticEvent } from 'react';
+import { EllipsisIcon, PlanCardsIcon, SearchIcon, TrashIcon } from '@liveplanner/ui';
 import {
   MenuActionRow,
   PortalMenu,
@@ -12,18 +12,19 @@ import {
   ClusterStrip,
 } from '@liveworkspace/workbench/components/canvas/ClusterPopoverButton';
 import { TrashDropTarget, TrashSegment, usePlanCardDragging } from './TrashClusterButton';
-import { NewCardSegment } from './NewCardClusterButton';
 import { usePlan } from '@/components/plan/PlanContext';
+
+const stopPress = (e: SyntheticEvent) => e.stopPropagation();
 
 // Plan mode's buttons in the bottom-right cluster, one strip as Undo and Redo are, where Layers sits in the other
 // modes: the **Trash** on its left (docs/specs/026-plan/items.md "Trash"; given only off a phone, to an editor),
-// then **New Card** (an editor's +, items.md "New Card"), then **Find a Card** (items.md "Finding a card"), the search over every card in the project, then **Card
+// then **Find a Card** (items.md "Finding a card"), the search over every card in the project, then **Card
 // Types** (docs/specs/026-plan/item-types.md "The Card Types panel"). Each opens its own panel above it. While a
 // card is dragged the Trash steps out of the strip as a wide drop target beside it. With no card types
-// (item-types.md "The type catalogue") New Card and Find a Card would surface nothing, so only Card Types shows, and
+// (item-types.md "The type catalogue") Find a Card would surface nothing, so only Card Types shows, and
 // the Trash while it holds cards (deleting the last type sends its cards there, to restore once a type exists).
 // On a wide desktop each is named beside its icon (useDockNames), as the other strips' buttons are, in one short
-// word (Trash, New, Find, Types); the accessible names and hover cards keep the fuller labels, which contain them.
+// word (Trash, Find, Types); the accessible names and hover cards keep the fuller labels, which contain them.
 export function PlanCardsClusterStrip({
   finderOpen,
   onToggleFinder,
@@ -31,11 +32,10 @@ export function PlanCardsClusterStrip({
   onToggleTypes,
   typesButtonRef,
   trash,
-  newCard,
   folded = false,
 }: {
   // On a phone beside the Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip"): the
-  // strip folds into one More Card Tools button, whose menu holds New Card, Find a Card, Card Types and the Trash.
+  // strip folds into one More Card Tools button, whose menu holds Find a Card, Card Types and the Trash.
   folded?: boolean;
   finderOpen: boolean;
   onToggleFinder: (button: HTMLElement) => void;
@@ -45,30 +45,16 @@ export function PlanCardsClusterStrip({
   typesButtonRef?: React.Ref<HTMLButtonElement>;
   // The Trash button: its panel's state and toggle. Absent, the strip has none.
   trash?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
-  // New Card: its panel's state and toggle, for an editor. Absent, the strip has none.
-  newCard?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
 }) {
   const dragging = usePlanCardDragging();
   const plan = usePlan();
-  const canEdit = !!plan?.canEdit;
   const hasTypes = (plan?.types.length ?? 1) > 0;
   const showsTrash = !!trash && (hasTypes || hasTrashed(plan?.items.values()));
-  const showsNewCard = !!newCard && canEdit && hasTypes;
   const trashInStrip = showsTrash && !dragging;
   if (folded)
     return (
       <FoldedPlanStrip
         rows={[
-          ...(newCard && showsNewCard
-            ? [
-                {
-                  label: 'New Card',
-                  icon: <PlusIcon size={18} />,
-                  open: newCard.open,
-                  onPick: newCard.onToggle,
-                },
-              ]
-            : []),
           ...(hasTypes
             ? [
                 {
@@ -106,13 +92,10 @@ export function PlanCardsClusterStrip({
         {trash && trashInStrip ? (
           <TrashSegment popoverOpen={trash.open} onTogglePopover={trash.onToggle} />
         ) : null}
-        {newCard && showsNewCard ? (
-          <NewCardSegment divided={trashInStrip} open={newCard.open} onToggle={newCard.onToggle} />
-        ) : null}
         {hasTypes ? (
           <ClusterPopoverSegment
-            // A divider when a button sits to its left (the Trash, or an editor's New Card).
-            divided={trashInStrip || showsNewCard}
+            // A divider when the Trash sits to its left.
+            divided={trashInStrip}
             label="Find a Card"
             hoverTitle="Cards"
             hoverDescription="Every card in this plan: search them, find the ones on no board, and open any of them."
@@ -165,7 +148,7 @@ function FoldedPlanStrip({
         <ClusterPopoverSegment
           label="More card tools"
           hoverTitle="Cards"
-          hoverDescription="New Card, Find a Card, Card Types and the Trash."
+          hoverDescription="Find a Card, Card Types and the Trash."
           icon={<EllipsisIcon size={18} />}
           dataTourId="card-types"
           popoverOpen={menuOpen || !!panelOpen}
@@ -177,25 +160,30 @@ function FoldedPlanStrip({
         />
       </ClusterStrip>
       {menuOpen ? (
-        <PortalMenu
-          anchor={anchor}
-          placement="above"
-          onClose={() => setAnchor(null)}
-          initialFocus="first"
-        >
-          {rows.map((row) => (
-            <MenuActionRow
-              key={row.label}
-              plain
-              label={row.label}
-              icon={row.icon}
-              onClick={() => {
-                setAnchor(null);
-                row.onPick(anchor);
-              }}
-            />
-          ))}
-        </PortalMenu>
+        // A portal's events still bubble up the React tree, to the canvas under the cluster: a press on a row
+        // reached it, the canvas took the focus, and the menu shut before the row's click could open its panel.
+        // display: contents, so it lays out nothing; it only stops what bubbles out of the menu.
+        <div className="contents" onPointerDown={stopPress}>
+          <PortalMenu
+            anchor={anchor}
+            placement="above"
+            onClose={() => setAnchor(null)}
+            initialFocus="first"
+          >
+            {rows.map((row) => (
+              <MenuActionRow
+                key={row.label}
+                plain
+                label={row.label}
+                icon={row.icon}
+                onClick={() => {
+                  setAnchor(null);
+                  row.onPick(anchor);
+                }}
+              />
+            ))}
+          </PortalMenu>
+        </div>
       ) : null}
     </>
   );

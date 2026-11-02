@@ -94,3 +94,18 @@ describe('a dropdown that opens on hover', () => {
     expect(menu()).toBeNull();
   });
 });
+
+describe('the open menu', () => {
+  it('is a listbox named as its trigger', () => {
+    render(
+      <PaletteDropdown
+        ariaLabel="Toolbar category"
+        value="text"
+        options={options}
+        onChange={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Toolbar category' }));
+    expect(screen.getByRole('listbox', { name: 'Toolbar category' })).toBeTruthy();
+  });
+});

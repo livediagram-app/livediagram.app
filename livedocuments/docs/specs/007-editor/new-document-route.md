@@ -191,8 +191,8 @@ page), logging `[new] restored, back out <target>`.
 ### The empty-canvas hint
 
 There is no empty-canvas card or backdrop. An Editor gets the
-tab's start ([Template start](start-diagramming.md)), and an empty page offers its layouts ([Pages
-mode](pages-mode.md) "An empty page offers its layouts"); a Viewer or Participant sees the empty page.
+tab's start ([Template start](start-diagramming.md)), and an empty page offers nothing on itself ([Pages
+mode](pages-mode.md) "An empty page offers nothing on itself"); a Viewer or Participant sees the empty page.
 
 ## Start Blank
 

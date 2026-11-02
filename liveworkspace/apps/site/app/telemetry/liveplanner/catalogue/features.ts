@@ -437,6 +437,14 @@ export const LANDSCAPE_BARS = chart(
   { types: ['LandscapeBarsOn', 'LandscapeBarsOff'], rising: 'neutral' },
 );
 
+export const CARD_MAXIMISED = chart(
+  'UI',
+  'Toggled',
+  'Card Maximised',
+  'The open card filled the screen with Maximise Card, or went back to its panel.',
+  { types: ['CardMaximisedOn', 'CardMaximisedOff'], rising: 'neutral' },
+);
+
 export const PANELS_DOCKED = chart(
   'UI',
   'Moved',
@@ -458,8 +466,8 @@ export const EDITOR_CHROME: MetricStack = {
   stack: true,
   title: 'Editor Chrome',
   blurb:
-    'Getting around and arranging the workspace: zoom, zen mode, the bars on a phone held sideways, panel layout, the Explorer’s view.',
-  members: [CANVAS_ZOOMS, ZEN_MODE, LANDSCAPE_BARS, PANELS_DOCKED, EXPLORER_VIEW],
+    'Getting around and arranging the workspace: zoom, zen mode, the bars on a phone held sideways, a maximised card, panel layout, the Explorer’s view.',
+  members: [CANVAS_ZOOMS, ZEN_MODE, LANDSCAPE_BARS, CARD_MAXIMISED, PANELS_DOCKED, EXPLORER_VIEW],
 };
 
 // Dialogs and panels opened (UI·Opened), split by what was opened.

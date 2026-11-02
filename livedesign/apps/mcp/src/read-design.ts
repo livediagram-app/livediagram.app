@@ -18,7 +18,7 @@ import { deepLink, errorResult, textResult, viewResult, type ToolResult } from '
 type ReadDesignArgs = {
   designId: string;
   tabId?: string;
-  view?: TabViewName;
+  view?: TabViewName | 'components';
   budget?: number;
   only?: string;
   ref?: string;
@@ -104,6 +104,7 @@ export async function readDesign(
     return errorResult(
       `No tab "${tabId}" in this design. Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
     );
+  if (view === 'components') return componentsResult(env, token, design, tabs, budget);
   const tabPath = `/designs/${encodeURIComponent(design.id)}/tabs/${encodeURIComponent(tabId)}`;
   const auth = { env, token, designId: design.id };
 
@@ -148,6 +149,35 @@ export async function readDesign(
   const page = pageAsked(plain.tab, args.page);
   if (typeof page === 'string') return errorResult(page);
   return { ...result, content: [...result.content, ...(await tabPreview(plain.tab, auth, page))] };
+}
+
+// The components view (docs/specs/024-agents/design-views.md): the design's mains, not one tab, so the answer names
+// the design and its tabs and carries the view's text as `components`.
+async function componentsResult(
+  env: Env,
+  token: string,
+  design: { id: string; name: string },
+  tabs: { id: string; name: string }[],
+  budget: number,
+): Promise<ToolResult> {
+  const query = new URLSearchParams({ view: 'components', door: 'mcp', budget: String(budget) });
+  let text: string;
+  try {
+    ({ text } = await apiText(
+      env,
+      token,
+      `/designs/${encodeURIComponent(design.id)}?${query.toString()}`,
+    ));
+  } catch (err) {
+    const refused = refusedView(err);
+    if (refused) return refused;
+    throw err;
+  }
+  const meta = { id: design.id, name: design.name, tabs, url: deepLink(env, design.id) };
+  return {
+    content: [{ type: 'text', text: `${text}\n${JSON.stringify(meta)}` }],
+    structuredContent: { ...meta, components: text },
+  };
 }
 
 // The page `page` names on the tab, laid out; undefined when none is asked for; a refusal in words when the

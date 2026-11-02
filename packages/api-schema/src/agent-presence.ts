@@ -7,6 +7,12 @@ import type { AccessLevel as ShareRole } from './access-levels';
 
 export const AGENT_PRESENCE_TTL_MS = 30_000;
 export const AGENT_PRESENCE_MAX_TTL_MS = 120_000;
+// How long an agent stays on a tab after it last read or changed it: a few minutes, so a person sees the agent that
+// is working through their document between its commands.
+export const AGENT_PRESENCE_ACTIVITY_TTL_MS = 180_000;
+// Reads refresh presence at most once per agent, document and tab in this window (PR38): a read inside it, on the
+// tab the agent already shows on, changes nothing, so a burst of reads costs one room write.
+export const AGENT_PRESENCE_STAMP_MS = 30_000;
 // One second: below it an entry cannot reach a screen (PR5).
 export const AGENT_PRESENCE_MIN_TTL_MS = 1_000;
 export const AGENT_PRESENCE_STATUS_MAX = 80;

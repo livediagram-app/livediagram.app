@@ -50,15 +50,19 @@ tools are where they belong.
 
 - **Draw**, which the palette opens on: **Pens** (the **Pen**, the Path tool, click for corners
   and drag for curves, [Path tool](../023-draw-mode/path-tool.md); the **Freehand Pencil**; the **Shape
-  Pen**), **Outlines** (the **Polygon**) and **Markers** (three, **Marker 1**, **Marker 2**, **Marker 3**,
-  each in the colour and width the person gave it, [Drawing tools](../023-draw-mode/drawing-tools.md)).
+  Pen**), **Outlines** (the **Polygon**), **Markers** (three, **Marker 1**, **Marker 2**, **Marker 3**,
+  each in the colour and width the person gave it, [Drawing tools](../023-draw-mode/drawing-tools.md))
+  and **Fill** (the **Fill** tool, a paint bucket in the colour the person gave it,
+  [Drawing tools](../023-draw-mode/drawing-tools.md) "The Fill tool").
 - **Shapes**, every one; **Write**, **Text** for a wordmark and a **Sticky Note** for a comment on
   the design; **Icons**, a glyph to start from; and **Media**, an **Image** to trace
   or set the mark beside.
 - No charts, blocks, device frames, stickers or embeds: a logo has no use for them.
 
 Each tool puts itself down after one use and selects what it drew, as the pencil does, a marker
-included (a marker picked up from the Toolbar strip's Search stays in hand as before). A marker
+included (a marker picked up from the Toolbar strip's Search stays in hand as before). The Fill
+tool is the exception: it stays in hand until another tool or Escape puts it down, so a mark's parts
+fill one after another, and pressed again while held it opens its colour. A marker
 lines up as the pencil does: its first point snaps to nearby alignments (the dot shows before the
 press) and its stroke shows alignment guides as it grows. In the palette a held marker pressed
 again opens its flyout below its tile (colour and width); its changes are the marker's everywhere
@@ -166,6 +170,14 @@ layout says so.
 Twenty-five in all, in four categories: **Lockups**, **Wordmarks**, **Emblems** and **Marks**.
 Text sits on the paper or inside an outline, never on a theme fill, so it reads in every theme.
 The placeholder name is **Brand**, its initials **BR**, the tagline **Your tagline here**.
+
+Each category is also a template, a **logo exploration** (`LOGO_EXPLORATIONS` in
+`packages/templates/src/logo-exploration-data.ts`, in the **Branding** category): one logo page per
+layout of the family, named for its layout, so a designer compares the whole family side by side, keeps the one
+that fits and deletes the rest. **Lockup Explorations** (the seven lockups), **Wordmark Explorations** (the six
+wordmarks), **Emblems and Badges** (the six emblems) and **Marks and App Icons** (the six marks). Unlike Logo
+Design, which shows one made-up brand worked up in full, they use the layouts' placeholder name, so they read as a
+family of starts rather than a finished brand.
 
 ## Construction guides
 
@@ -312,9 +324,12 @@ its range is refused by the design's validation, as any malformed field is.
   no edit, and a toast says "Nothing left: these shapes don't overlap."
 - **Too detailed**: a result of more than 5,000 points (`MAX_PATH_NODES`) is not made; a toast says
   "That combination is too detailed to keep as one shape."
-- A path with more than one contour moves, resizes, rotates and restyles as a whole; its points are
-  not edited one by one (its point editing offers none, and says "Combined shapes edit as a
-  whole.").
+- A path with more than one contour moves, resizes, rotates and restyles as a whole, and its points
+  are edited **one contour at a time** with the Path tool's point editing
+  ([Path tool](../023-draw-mode/path-tool.md) "Combined paths").
+- Combine keeps its result exact, so a curve comes out as many corner points (a combined circle has
+  dozens). Point editing offers **Simplify** for such a contour: it keeps the points the shape
+  needs and makes the curves smooth nodes again, never moving the outline more than half a pixel.
 
 ## Tidy
 
@@ -375,7 +390,8 @@ clean, as one edit:
 ## Non-goals
 
 - Text converted to outlines (it needs a font parser; wordmarks stay live text).
-- Editing a combined path's points one by one; a mirror axis or centre anywhere but the artboard's
+- Keeping a shape's curves as curves through Combine (the result is traced; Simplify brings curves
+  back on request); a mirror axis or centre anywhere but the artboard's
   centre lines and centre; Mirror Copy across any line but the vertical centre line;
   linked twins that follow each other's edits.
 - Combining on pages other than logo pages.

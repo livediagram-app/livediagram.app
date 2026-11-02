@@ -128,6 +128,12 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Comment|Mentioned|': 'A comment was sent that @-mentioned at least one teammate.',
   'Comment|Resolved|': 'A comment thread was marked resolved.',
   'Comment|Unresolved|': 'A resolved comment thread was reopened.',
+  'Comment|Created|Thread': 'Someone started a new comment thread on a Plan card.',
+  'Comment|Changed|Item': 'Someone edited one of their own comments on a Plan card.',
+  'Comment|Renamed|Thread': 'Someone renamed a comment thread on a Plan card.',
+  'Comment|Linked|Thread': 'Someone added a comment thread to another card in the same plan.',
+  'Comment|Linked|ThreadOtherPlan':
+    'Someone added a comment thread to a card in another plan, sharing it there.',
   'Project|Created|Cloud': 'A brand-new project was created.',
   'Project|Created|Offline': 'A brand-new project was created.',
   'Project|Deleted|': 'A project was deleted.',
@@ -650,6 +656,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Form|Added|Email': 'Someone added an Email question to a form.',
   'Form|Added|Link': 'Someone added a Link question to a form.',
   'Form|Added|Date': 'Someone added a Date question to a form.',
+  'Form|Added|DateTime': 'Someone added a Date and Time question to a form.',
+  'Form|Added|DateRange': 'Someone added a Date Range question to a form.',
+  'Form|Added|Phone': 'Someone added a Phone question to a form.',
   'Form|Added|SingleChoice': 'Someone added a Single Choice question to a form.',
   'Form|Added|MultipleChoice': 'Someone added a Multiple Choice question to a form.',
   'Form|Added|Rating': 'Someone added a Rating question to a form.',
@@ -690,6 +699,31 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Sheet|Opened|Find': 'Someone opened Find on a Sheet, to search its cells.',
   'Sheet|Searched|Function':
     'Someone searched the functions a Sheet formula can use, from the toolbar’s function picker.',
+  'Plan|Selected|Cards':
+    'Someone started selecting several cards on a board, to change them together. Counted once per selection, not per card.',
+  'Plan|Moved|Cards':
+    'Someone moved several selected cards at once, by dragging them as a group, a keyboard move or Move To.',
+  'Plan|Changed|Cards':
+    'Someone changed several selected cards at once from the selection bar (assign, priority, labels, a field, flag, archive or trash).',
+  'Plan|Used|SavedFilter': "Someone applied one of a board's saved filters by pressing its chip.",
+  'Plan|Added|SavedFilter': "Someone saved the board's current filter as a named saved filter.",
+  'Plan|Renamed|SavedFilter': 'Someone renamed one of a board’s saved filters.',
+  'Plan|Changed|SavedFilter':
+    'Someone updated a saved filter to the filters showing on the board now.',
+  'Plan|Removed|SavedFilter': 'Someone deleted one of a board’s saved filters.',
+  'Plan|Started|Timer': 'Someone started a timer on a card’s Time Spent field.',
+  'Plan|Ended|Timer':
+    'Someone stopped a timer on a card’s Time Spent field, recording its time as an entry.',
+  'Plan|Added|TimeEntry':
+    'Someone added time they worked to a card’s Time Spent field by hand (Add Time).',
+  'Plan|Linked|CardTypeBase':
+    'Someone saved a card type that now inherits its fields, tabs, states and display from another type.',
+  'Plan|Unlinked|CardTypeBase':
+    'Someone detached a card type from the type it inherited from, keeping a copy of its settings.',
+  'Plan|Linked|LinkedCard':
+    'Someone linked an existing card to this one from a Linked as section (Link Existing).',
+  'Plan|Linked|LinkedCardMoved':
+    'Someone moved an existing card’s link to this one from a Linked as section (Link Existing), after confirming the move.',
   'Plan|Created|BoardTab':
     'Someone started a Board tab from Start Planning: one board filling the tab.',
   'Plan|Created|SheetTab':
@@ -872,6 +906,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone picked a look in Tab Look & Feel, setting the tab's theme, finish, font and canvas pattern at once.",
   'Tab|Changed|SeasonalLook':
     "Someone picked a seasonal look (New Year, Easter, Halloween or Christmas) behind the Seasonal toggle in Tab Style, setting the tab's theme, finish, font and canvas pattern at once.",
+  'Tab|Changed|AllTabs':
+    "Someone pressed Apply to All Tabs in Tab Style, putting the open tab's style on every other tab at once.",
   'Tab|Changed|Finish':
     "Someone changed a tab's finish (Flexible, Professional, Sketch or Marker) from Tab Look & Feel.",
   'Tab|Changed|DefaultTextSize':
@@ -1568,6 +1604,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned on Plan mode, in Settings > Experimental. No longer recorded: Plan mode is always offered.',
   'UI|Toggled|ReduceMotionOff': 'Someone turned off reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ReduceMotionOn': 'Someone turned on reduced motion, in Settings > Accessibility.',
+  'UI|Toggled|HideCursorsOff':
+    "Someone turned off Hide Participant Cursors, in Settings > Collaborate or the Collaborators window, so other people's cursors show on their screen again.",
+  'UI|Toggled|HideCursorsOn':
+    "Someone turned on Hide Participant Cursors, in Settings > Collaborate or the Collaborators window, so other people's cursors stop showing on their screen.",
   'UI|Toggled|ShortcutsOff': 'Someone turned off keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|ShortcutsOn': 'Someone turned on keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|SkipLocationStepOff':
@@ -2258,6 +2298,10 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Comment|Mentioned': 'A comment was sent that @-mentioned at least one teammate.',
   'Comment|Resolved': 'A comment thread was marked resolved.',
   'Comment|Unresolved': 'A resolved comment thread was reopened.',
+  'Comment|Created': 'Someone started a new comment thread on a Plan card.',
+  'Comment|Changed': 'Someone edited one of their own comments.',
+  'Comment|Renamed': 'Someone renamed a comment thread.',
+  'Comment|Linked': 'Someone added a comment thread to another card.',
   'Project|Created': 'A brand-new project was created.',
   'Project|Deleted': 'A project was deleted.',
   'Project|Exported': 'Someone exported a tab, a selection or a page to a file or the clipboard.',
@@ -2379,6 +2423,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Tab|Ended': 'Someone ended a live activity on a tab, such as a poll or a timer.',
   'Tab|Imported': 'Someone imported a tab from a file.',
   'Tab|Linked': 'A tab was linked into another project.',
+  'Plan|Linked': 'An existing card was linked to another card from its Linked as section.',
+  'Plan|Unlinked': 'A card type was detached from the type it inherited from.',
   'Tab|Loaded':
     "A tab's content was fetched for viewing (the first tab when a project opens, then each tab switched to).",
   'Tab|Locked': 'A tab was locked (read-only).',
@@ -2417,7 +2463,13 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Plan|Moved':
     'Someone moved a card on a Plan board to another column, row or place, or archived it (Archive).',
   'Plan|Restored': 'Someone brought an archived card back onto the boards.',
-  'Plan|Removed': 'Someone took a filter off a Card Search view.',
+  'Plan|Started': 'Someone started something running on a plan, like a card’s timer.',
+  'Plan|Ended': 'Someone stopped something running on a plan, like a card’s timer.',
+  'Plan|Removed':
+    "Someone took a filter off a Card Search view, or deleted one of a board's saved filters.",
+  'Plan|Selected': 'Someone started selecting several cards on a board, to change them together.',
+  'Plan|Used': "Someone applied one of a board's saved filters.",
+  'Plan|Renamed': "Someone renamed one of a board's saved filters.",
   'Plan|Toggled':
     'Someone flagged a card for attention or took its flag off, or maximised a board, view or sheet or restored it (the value says which).',
   'Sheet|Changed':

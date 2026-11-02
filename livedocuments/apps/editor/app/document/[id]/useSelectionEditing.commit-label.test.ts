@@ -11,7 +11,13 @@ vi.mock('@/components/canvas/text-hug-measure', () => ({
 // docs/specs/008-canvas/canvas-and-palette.md "Rich text labels": a label is saved without
 // whitespace at either end, so neither the display nor the editor shows a dangling line.
 
-function setup(el: Element, tabLocked = false, editingId: string | null = null) {
+function setup(
+  el: Element,
+  tabLocked = false,
+  editingId: string | null = null,
+  documentName = 'My document',
+) {
+  const setDocumentName = vi.fn();
   let elements: Element[] = [el];
   const setEditingId = vi.fn();
   const setSelectedId = vi.fn();
@@ -25,7 +31,7 @@ function setup(el: Element, tabLocked = false, editingId: string | null = null) 
       adoptLayerName: vi.fn(),
       formatSourceId: null,
       formatToolActive: false,
-      documentName: 'My document',
+      documentName,
       tabs: [tab],
       activeTab: tab,
       editingId,
@@ -42,12 +48,13 @@ function setup(el: Element, tabLocked = false, editingId: string | null = null) 
         setEditingId,
         setEditCursorAtEnd: vi.fn(),
         setMultiSelectedIds: vi.fn(),
-        setDocumentName: vi.fn(),
+        setDocumentName,
         setContextMenu: vi.fn(),
       },
     }),
   );
   return {
+    setDocumentName,
     setEditingId,
     setSelectedId,
     editing: result.current,
@@ -58,6 +65,22 @@ function setup(el: Element, tabLocked = false, editingId: string | null = null) 
 
 describe('commitLabel', () => {
   const cylinder = createShape('cylinder', 0, 0);
+
+  // docs/specs/006-document/document-structure.md "The first label names the document, in every mode".
+  it.each(['Untitled Whiteboard', 'Untitled Illustration', 'Untitled Plan', 'Untitled Session'])(
+    'names a document still called %s after its first element',
+    (name) => {
+      const s = setup(cylinder, false, null, name);
+      s.editing.commitLabel(cylinder.id, 'Launch plan');
+      expect(s.setDocumentName).toHaveBeenCalledWith('Launch plan');
+    },
+  );
+
+  it('keeps a name someone gave the document', () => {
+    const s = setup(cylinder);
+    s.editing.commitLabel(cylinder.id, 'Launch plan');
+    expect(s.setDocumentName).not.toHaveBeenCalled();
+  });
 
   it('saves a label without newlines or spaces at either end', () => {
     const s = setup(cylinder);

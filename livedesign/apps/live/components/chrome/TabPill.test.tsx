@@ -22,6 +22,7 @@ function ctx(over: Partial<TabPillCtx> = {}): TabPillCtx {
     reorderDrag: {
       caretFor: () => null,
       handlersFor: () => ({}),
+      isDragging: () => false,
     } as unknown as TabPillCtx['reorderDrag'],
     participantsByTab: new Map(),
     selfId: 'me',
@@ -65,7 +66,7 @@ describe('TabPill out of scope', () => {
   });
 });
 
-// docs/specs/004-interface-design/touch-targets.md: the 28px pill reaches a 44px-tall tap area on a
+// docs/specs/004-interface-design/touch-targets.md: the tab's name reaches a 44px-tall tap area on a
 // touch screen, vertically only, since the tabs sit side by side.
 describe('TabPill tap area', () => {
   it('carries the vertical touch pad on a positioned button', () => {

@@ -44,7 +44,7 @@ const ALL = [
   'assignee',
 ] as const;
 
-function face(item: Item, size?: 'compact' | 'detailed', muted?: boolean) {
+function face(item: Item, size?: 'minimal' | 'detailed', muted?: boolean) {
   render(
     <PlanCardFace
       item={item}
@@ -57,6 +57,59 @@ function face(item: Item, size?: 'compact' | 'detailed', muted?: boolean) {
 }
 
 describe('the card face', () => {
+  // docs/specs/026-plan/items.md "Repeating cards": the repeat glyph beside the flag, at every size.
+  it('marks a repeating card at every size, beside its flag, and a plain card not at all', () => {
+    const repeat = { every: 'day', from: '2026-11-02', timeZone: 'Europe/London' };
+    for (const size of ['minimal', 'detailed'] as const) {
+      face(card({ repeat, flagged: true }), size);
+      expect(screen.getByRole('img', { name: 'Repeats' })).toBeTruthy();
+      expect(screen.getByRole('img', { name: 'Flagged' })).toBeTruthy();
+      cleanup();
+    }
+    render(
+      <PlanCardFace
+        item={card({ repeat })}
+        palette={planPalette('light', {})}
+        fields={ALL}
+        size="minimal"
+        stacked
+      />,
+    );
+    expect(screen.getByRole('img', { name: 'Repeats' })).toBeTruthy();
+    cleanup();
+    face(card({}));
+    expect(screen.queryByRole('img', { name: 'Repeats' })).toBeNull();
+  });
+
+  // docs/specs/026-plan/plan-tabs.md "A board in a slot is simplified": a narrow slot column's Minimal card.
+  it('stacks a Minimal card in a slot: the title on its own, its bits in a row under it', () => {
+    render(
+      <PlanCardFace
+        item={card({ assignee: PERSON, due: dayKey(3) }, 'request')}
+        palette={planPalette('light', {})}
+        fields={ALL}
+        size="minimal"
+        stacked
+      />,
+    );
+    const bits = document.querySelector('[data-card-bits]');
+    expect(bits).toBeTruthy();
+    expect(bits?.textContent).not.toContain('A card');
+    expect(screen.getByText('A card')).toBeTruthy();
+    cleanup();
+    render(
+      <PlanCardFace
+        item={card({})}
+        palette={planPalette('light', {})}
+        fields={[]}
+        size="minimal"
+        stacked
+      />,
+    );
+    expect(document.querySelector('[data-card-bits]')).toBeNull();
+    expect(screen.getByText('A card')).toBeTruthy();
+  });
+
   it('heads a Detailed card with its type, number and priority, and ends it with pills', () => {
     face(
       card({
@@ -79,6 +132,16 @@ describe('the card face', () => {
     expect(screen.getByText('Frontend')).toBeTruthy();
   });
 
+  // A title of one long word (an API's, a pasted URL) wraps inside its lines instead of running off the card.
+  it('breaks a long unbroken title onto its lines, at every size', () => {
+    const word = 'Supercalifragilistic'.repeat(25);
+    for (const size of ['minimal', 'detailed'] as const) {
+      face(card({ title: word }), size);
+      expect(screen.getByText(word).className).toContain('[overflow-wrap:anywhere]');
+      cleanup();
+    }
+  });
+
   it('shows four labels and counts the rest', () => {
     face(card({ labels: ['a', 'b', 'c', 'd', 'e', 'f'] }));
     expect(screen.getByText('+2')).toBeTruthy();
@@ -96,13 +159,10 @@ describe('the card face', () => {
     expect(document.querySelector('span[aria-label]:not([role])')).toBeNull();
   });
 
-  it('puts an item’s own colour beside its type, on Detailed and Compact cards', () => {
+  it('puts an item’s own colour beside its type on a Detailed card', () => {
     face(card({ color: '#0d9488' }, 'project'));
     expect(screen.getByRole('img', { name: 'Teal colour' })).toBeTruthy();
     expect(screen.getByText('Project')).toBeTruthy();
-    cleanup();
-    face(card({ color: '#0d9488' }, 'project'), 'compact');
-    expect(screen.getByRole('img', { name: 'Teal colour' })).toBeTruthy();
     cleanup();
     face(card({ color: 'not-a-swatch' }, 'project'));
     expect(screen.queryByRole('img', { name: /colour$/ })).toBeNull();

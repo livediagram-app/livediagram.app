@@ -27,7 +27,12 @@ import {
 import { getDesign, readReorderEntries, reorderTabs, seedTabs } from '../db';
 import { badRequest, CORS_HEADERS, forbidden, json, notFound, payloadTooLarge } from '../responses';
 import { designDates, isDesignSource } from '@livedesign/api-schema';
-import { redactDesignForReader, redactDesignForScope } from '../redact-design';
+import {
+  redactDesignForCommunity,
+  redactDesignForReader,
+  redactDesignForScope,
+} from '../redact-design';
+import { handleCommunityOwnerRoutes } from './community-owner-routes';
 import { answerOverview, parseViewQuery } from './design-views-route';
 import { handleDesignSharedTabs } from './design-shared-tabs-route';
 import { relayDesignRename } from '../room-client';
@@ -43,11 +48,13 @@ import {
   renameDesign,
 } from '../design-room/design-content';
 import { identityOf } from '../design-room/design-route';
+import { readOwnerCommunityState } from '../design-room/community-post';
 import { designRoom } from '../design-client';
 import { indexFor, indexService, linkCodeOf } from '../index-service';
 import { handleDesignIndexRoutes, handleDesignList } from './design-index-routes';
 import { resolveDesignGrant } from './design-grant';
 import {
+  COMMUNITY_CONTENT,
   gateEdit,
   gateGrant,
   grantCallerOf,
@@ -95,6 +102,8 @@ async function forwardToDesign(ctx: RouteContext): Promise<Response> {
   let renamedTo: string | null = null;
   // Where the index filed an API client's create, for its answer.
   let filed: { folderId: string | null; teamId: string | null } | null = null;
+  // An API client's create that is a use of the design (docs/specs/015-api/api.md "Marking a design used").
+  let marksUse = false;
   if (segments.length === 2) {
     if (request.method !== 'POST') return notFound();
     const read = await readBody({ ...ctx, request: request.clone() });
@@ -126,7 +135,12 @@ async function forwardToDesign(ctx: RouteContext): Promise<Response> {
       );
       if (made instanceof Response) return made;
       grant = made?.grant ?? null;
-      if (made?.item) filed = { folderId: made.item.folderId, teamId: made.item.teamId };
+      // The index made the item now: a making (an id it already held is a re-commit, which is none).
+      if (made?.item) {
+        filed = { folderId: made.item.folderId, teamId: made.item.teamId };
+        const making = readMarkUsed(read.markUsed);
+        marksUse = making.ok && making.markUsed;
+      }
     }
   } else {
     if (!designId || designId.length > MAX_DESIGN_ID) return notFound();
@@ -139,6 +153,17 @@ async function forwardToDesign(ctx: RouteContext): Promise<Response> {
   }
   if (grant instanceof Response) return grant;
   const res = await designRoom(ctx.env, designId).route(request, identityOf({ ...ctx, grant }));
+  // Making it is a use for the caller, recorded at the index beside the create as the editor records its own; never
+  // waited on. The room's 400 for a markUsed that is not a boolean made nothing, so it records nothing.
+  if (marksUse && res.status === 201) {
+    const client = indexFor(ctx.env, grantCallerOf(ctx));
+    if (client)
+      ctx.waitUntil?.(
+        client.recordOpen(designId, null).catch((err: unknown) => {
+          console.warn('[designs] use not recorded', { designId, error: String(err) });
+        }),
+      );
+  }
   if (renamedTo !== null && res.ok) {
     const title = capStoredName(renamedTo, null, 'design');
     const client = indexFor(ctx.env, grantCallerOf(ctx));
@@ -369,16 +394,26 @@ export async function handleDesignRequest(ctx: DesignRouteContext): Promise<Resp
       // guessed id can't probe existence.
       const view = parseViewQuery(new URL(request.url), 'design');
       if (view instanceof Response) return view;
-      const grant = await gateGrant(ctx, id);
+      const grant = await gateGrant(ctx, id, null, null, COMMUNITY_CONTENT);
       if (!grant) return notFound();
       const d = await startedDesign(ctx, id);
       if (!d) return missingDesign(ctx, id);
-      // Redacted for every non-owner (redact-design.ts); a tab-scoped visitor
+      // Redacted for every non-owner (redact-design.ts); a Community visitor sees the post's redactions
+      // (docs/specs/025-community/community.md); a tab-scoped visitor
       // (docs/specs/013-workspace/tab-scoped-share-links.md) sees the other tabs locked.
-      const reader = redactDesignForReader(d, ctx.resolveOwner());
-      const liveDoc = redactDesignForScope(reader, grant.tabScope);
+      // The owner's read carries their post's state, for the header's Public badge after a reload.
+      const caller = ctx.resolveOwner();
+      const own =
+        caller !== null && caller === d.ownerId
+          ? { ...d, communityState: await readOwnerCommunityState(ctx.env) }
+          : d;
+      const reader = redactDesignForReader(own, caller);
+      const liveDoc = redactDesignForScope(
+        grant.community ? redactDesignForCommunity(reader) : reader,
+        grant.tabScope,
+      );
       // The overview view (docs/specs/024-agents/design-views.md), after the same gate and scope.
-      if (view) return answerOverview(ctx, view, liveDoc, grant.tabScope);
+      if (view) return answerOverview(ctx, view, liveDoc, grant.tabScope, grant.community);
       return json({ design: liveDoc });
     }
     if (request.method === 'PUT') {
@@ -421,6 +456,13 @@ export async function handleDesignRequest(ctx: DesignRouteContext): Promise<Resp
         ctx.waitUntil?.(relayDesignRename(env, id, liveDoc.name, liveDoc.tabs));
       return json({ design: liveDoc ? redactDesignForReader(liveDoc, owner) : liveDoc });
     }
+  }
+
+  // /api/designs/<id>/community: publish to, edit in or remove from Community
+  // (docs/specs/025-community/community.md).
+  {
+    const communityResp = await handleCommunityOwnerRoutes(ctx);
+    if (communityResp) return communityResp;
   }
 
   // /api/designs/<id>/shared-tabs — what a delete leaves behind in other

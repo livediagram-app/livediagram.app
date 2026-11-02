@@ -1,3 +1,6 @@
+import { useThreadStore } from '@/components/plan/threads/CardThreadsContext';
+import { itemsWithCounts } from '@/hooks/plan/thread-store';
+import { donePhase } from '@liveplanner/items';
 import { usePlan } from '@/components/plan/PlanContext';
 import { tabCsvText } from '@/lib/export-plan/tab-csv';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -169,12 +172,28 @@ export function ExportTabDialog({
   // Plan boards and cards export with their items (docs/specs/026-plan/plan-board.md).
   const plan = usePlan();
   // Keyed on the items and types alone: the context value also changes with presence and the open item.
-  const planItems = plan?.items;
+  // Each card with its comment count, which its threads hold (docs/specs/026-plan/items.md "Comments").
+  const threadStore = useThreadStore();
+  const storedItems = plan?.items;
+  const planItems = useMemo(
+    () =>
+      storedItems && threadStore ? itemsWithCounts(storedItems, threadStore.counts()) : storedItems,
+    [storedItems, threadStore],
+  );
   const planTypes = plan?.types;
   const planCatalogue = plan?.itemTypes.catalogue ?? null;
+  // The plan-wide done columns, for the blocked badge (docs/specs/026-plan/item-types.md "Blocked By").
+  const planPhases = plan?.statusPhases;
   const planOpts = useMemo(
-    () => (planItems ? { items: planItems, itemTypes: planTypes } : {}),
-    [planItems, planTypes],
+    () =>
+      planItems
+        ? {
+            items: planItems,
+            itemTypes: planTypes,
+            ...(planPhases ? { itemsDone: donePhase(planPhases) } : {}),
+          }
+        : {},
+    [planItems, planTypes, planPhases],
   );
   // The text formats' view of the same (docs/specs/026-plan/items.md "Copies and exports").
   const planData = useMemo<TabPlanData | undefined>(

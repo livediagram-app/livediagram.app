@@ -36,8 +36,6 @@ import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // What the steps may know about where the tour runs, read when Play is pressed.
 type ElementTourEnv = {
-  // The selection toolbar's More button is showing (not for a power user on a desktop, who right-clicks).
-  hasMore: boolean;
   // A touch screen: taps where a mouse clicks.
   touch: boolean;
   // The tab's elements, for a tour that reads past its own element (a stack's children).
@@ -71,7 +69,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
       sankeyElementTourSteps({
         elementId: el.id,
         ...sankeyTourParts(el as ShapeElement),
-        hasMore: env.hasMore,
         touch: env.touch,
         flows: sankeyFlowsContextOf(el as ShapeElement),
       }),
@@ -139,7 +136,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
       chartTourSteps({
         elementId: el.id,
         type: chartTypeOf(el as ShapeElement) ?? 'column',
-        hasMore: env.hasMore,
         touch: env.touch,
       }),
     onDone: (api) => api.closeChartData(),
@@ -153,7 +149,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
         elementId: el.id,
         direction: stackSettingsOf(el as ShapeElement).direction,
         firstChildId: stackChildren(env.elements, el as ShapeElement)[0]?.id ?? null,
-        hasMore: env.hasMore,
         touch: env.touch,
       }),
   },
@@ -165,7 +160,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
       tabWindowTourSteps({
         elementId: el.id,
         chosen: inDom(elementSelector(el.id, '[data-tab-window-open]')),
-        hasMore: env.hasMore,
         touch: env.touch,
       }),
   },

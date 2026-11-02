@@ -2,17 +2,19 @@
 
 import type { ReactNode } from 'react';
 // One item's card face (docs/specs/026-plan/plan-board.md "What the board shows"), shared by the board's
-// cards and the Plan card element, at the board's card size: Minimal (the title), Compact (the type's glyph and
-// title over one row of pills) or Detailed (the type chip, number and priority signal; the title; the project;
-// the description; custom fields; label chips; then a footer of pills and who has it). The type's colour fills
+// cards and the Plan card element, at the board's card size: Minimal (the title) or Detailed (the type chip,
+// number and priority signal; the title; the project; the description; custom fields; label chips; then a footer
+// of pills and who has it). The type's colour fills
 // the card's number (a dot on Minimal, which shows none); the card lifts a little under the pointer. Face-down while its board hides writing;
 // ringed in someone's colour while they drag or read it. The parts live in plan-card-parts.tsx.
 import { NewResponseMark } from '@/components/forms/NewResponseMark';
 import { useFreshResponse } from '@/components/forms/fresh-responses';
 import {
   isFlagged,
+  hasRepeat,
   isPriority,
   itemAssignee,
+  itemStatus,
   itemLabels,
   itemTitle,
   ITEM_TYPES,
@@ -21,6 +23,8 @@ import {
   itemColourOf,
   linkedCard,
   cardFieldsAt,
+  fieldCardIds,
+  holdsSeveral,
   type CardField,
   type CardSize,
   type Item,
@@ -29,28 +33,51 @@ import {
   typeCardLayout,
   type CardSlot,
   isCustomCardField,
+  calculatedText,
+  FORMULA_ERROR_TEXT,
+  percentShown,
+  showsAsPercent,
+  attachmentCover,
+  itemAttachments,
+  itemHasStamp,
+  runningOnCard,
+  pastDue,
 } from '@liveplanner/items';
+import { RunningTimerPill } from './time/TimerReadouts';
+import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
 import { finishFaceShadows } from '@liveplanner/project';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { usePlan, type PlanCardPresence } from './PlanContext';
+import { planBlocking } from './blocking';
 import { customFieldText } from './custom-field-text';
+import { calculatedFieldOutcome } from './calculated-values';
 import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
+import { customKindPill, isBuiltInKindPill } from './CustomKindPill';
+import { PercentChip } from './PercentBar';
+import { LinkedNumbersPill } from './SeveralValuesPills';
 import { accentOn, type PlanPalette } from './plan-palette';
 import { PersonDisc, PresenceTag } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ColourDot } from './ColourSwatches';
+import { AttachmentsPill, CardCover } from './CardCover';
+import { AgePill } from './card-age';
+import { StampBit } from './card-stamps';
 import {
   ChecklistPill,
   CommentsPill,
   DuePill,
+  BlockedMark,
   FlagMark,
+  RepeatMark,
   KeyTag,
+  LATE_COLOUR,
   LabelChips,
   MetaPill,
   PrioritySignal,
   StartPill,
   TypeChip,
   TypeDot,
+  VotesPill,
   checklistProgress,
 } from './plan-card-parts';
 
@@ -69,6 +96,12 @@ type PlanCardFaceProps = {
   // editor. Each slot is drawn even when empty, through `slot` (a dotted box to drop into), and each field's bit
   // through `bit` (a chip that drags and comes off).
   edit?: CardFaceEdit;
+  // A slot board's narrow column (docs/specs/026-plan/plan-tabs.md "A board in a slot is simplified"): a Minimal card's
+  // title on its own lines, full width, and its bits in a row under it rather than beside it.
+  stacked?: boolean;
+  // A control at the far end of a Detailed card's header row, inside the card (the Cards panel's ⋯,
+  // docs/specs/026-plan/items.md "Finding a card"); the row is drawn for it even when the card has no header bits.
+  headAction?: ReactNode;
 };
 
 export type CardFaceEdit = {
@@ -76,13 +109,21 @@ export type CardFaceEdit = {
   bit: (field: CardField, node: ReactNode) => ReactNode;
 };
 
-// How far the Display editor's dotted box (1 px border, 2 px padding) and chip (2 px padding) lower a chip's
-// middle: a Compact title beside them drops as much, so its first line stays level with them.
-const EDIT_CHIP_INSET_PX = 5;
+// The title in the tab's face (docs/specs/004-interface-design/fonts.md "On boards and cards"); the rest of the face
+// keeps the board's UI face. `contents`, so the title stays the row's flex item.
+const cardHeading = (title: ReactNode) => (
+  <span className="contents" style={PLAN_HEADING_STYLE}>
+    {title}
+  </span>
+);
 
 // The card's frame: rounded, a hairline border and a soft shadow that deepens under the pointer.
 const FRAME =
-  'group/card relative flex h-full overflow-hidden rounded-xl border transition-[box-shadow,transform] duration-150 hover:-translate-y-px hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0';
+  'group/card relative flex h-full overflow-hidden rounded-xl border transition-[box-shadow,transform] duration-150';
+// The lift under the pointer. Left off a face that carries a headAction: its host draws the hover, since a transform
+// would make the face a stacking context and sink the action under the host's own press target.
+const LIFT =
+  'hover:-translate-y-px hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0';
 const REST_SHADOW = '0 1px 2px rgba(15,23,42,0.06), 0 1px 3px rgba(15,23,42,0.04)';
 
 export function PlanCardFace({
@@ -95,6 +136,8 @@ export function PlanCardFace({
   presence,
   typeOverride,
   edit,
+  stacked = false,
+  headAction,
 }: PlanCardFaceProps) {
   const plan = usePlan();
   const faceFinish = useFaceFinish();
@@ -110,6 +153,12 @@ export function PlanCardFace({
   const ring = presence ? `0 0 0 2px ${presence.color}` : undefined;
   // A response's card is New until opened (docs/specs/030-forms/forms.md "Hearing about responses").
   const fresh = useFreshResponse(item);
+  // While anyone's timer runs on the card it shows, at every size, whatever the Display (docs/specs/026-plan/
+  // item-types.md "Time Spent"); never on the Display's example card.
+  const runs = edit ? null : runningOnCard(item, type);
+  const running = runs ? (
+    <RunningTimerPill people={runs.people} start={runs.start} border={palette.cardBorder} />
+  ) : null;
   if (faceDown) {
     return (
       <div
@@ -140,14 +189,19 @@ export function PlanCardFace({
   const start = item.fields['start'];
   const description = item.fields['description'];
   // An item's own colour (docs/specs/026-plan/items.md "Colour"): a dot beside the type, never replacing it.
-  const ownColour = itemColourOf(item);
+  const ownColour = itemColourOf(item, type);
   const progress = checklistProgress(item);
   const votes = itemVoteTotal(item);
   const title = itemTitle(item) || 'Untitled';
+  // Its open blockers (docs/specs/026-plan/item-types.md "Blocked By"), from the plan's one lookup; never on the
+  // Display's example card.
+  const blocked = plan && !edit ? (planBlocking(plan).open.get(item.id) ?? 0) : 0;
   const flag = (
     <>
       {fresh ? <NewResponseMark /> : null}
+      {blocked > 0 ? <BlockedMark count={blocked} card={palette.card} /> : null}
       {isFlagged(item) ? <FlagMark /> : null}
+      {hasRepeat(item) ? <RepeatMark color={palette.muted} /> : null}
     </>
   );
   const frame = {
@@ -189,21 +243,49 @@ export function PlanCardFace({
         ) : null;
       case 'checklist':
         return progress ? <ChecklistPill key={f} progress={progress} palette={palette} /> : null;
+      // How long it has sat in its column; never on a done card (a done column draws it muted).
+      case 'age': {
+        const status = itemStatus(item);
+        return muted || status === undefined ? null : (
+          <AgePill
+            key={f}
+            item={item}
+            statusName={plan?.statusNames.get(status) ?? status}
+            palette={palette}
+          />
+        );
+      }
+      // Who made it and last edited it, and when (docs/specs/026-plan/items.md "Created and Last Edited").
+      case 'createdAt':
+      case 'createdBy':
+      case 'updatedAt':
+      case 'updatedBy':
+        return itemHasStamp(item, f) ? (
+          <StampBit key={f} item={item} field={f} palette={palette} />
+        ) : null;
       case 'comments':
-        return <CommentsPill key={f} item={item} palette={palette} />;
+        return <CommentsPill key={f} item={item} palette={palette} type={type} />;
       // The votes the card has gathered from ended session votes, read-only.
       case 'votes':
-        return votes > 0 ? (
-          <MetaPill key={f} palette={palette} label={votes === 1 ? '1 vote' : `${votes} votes`}>
-            <span aria-hidden>▲ {votes}</span>
-          </MetaPill>
-        ) : null;
+        return <VotesPill key={f} total={votes} palette={palette} />;
       case 'assignee':
         return assignee ? (
           <PersonDisc key={f} person={assignee} label={`Assigned to ${assignee.name}`} />
         ) : null;
       case 'labels':
         return labels.length > 0 ? <LabelChips key={f} labels={labels} /> : null;
+      case 'attachments': {
+        const count = itemAttachments(item).length;
+        return count > 0 ? <AttachmentsPill key={f} count={count} palette={palette} /> : null;
+      }
+      // The cover is drawn across the top of the card (below), never in a row; the Display's editor shows its chip.
+      case 'cover':
+        return edit ? (
+          <MetaPill key={f} palette={palette} label="Cover Image">
+            <PlanTypeGlyph glyph="page" size={11} />
+            <span aria-hidden>Cover</span>
+          </MetaPill>
+        ) : null;
       case 'description':
         return typeof description === 'string' && description.trim() ? (
           <p
@@ -217,18 +299,94 @@ export function PlanCardFace({
       default: {
         // A custom field the type's Display places: its kind's glyph (a linked card's own, in its colour) and value.
         const def = isCustomCardField(f) ? (type.custom ?? []).find((c) => c.id === f) : undefined;
-        const text = def ? customFieldText(def, item.fields[def.id], plan?.items) : null;
+        // A Comments field counts its own open threads, as the built-in's chip (item-types.md "Comments and Votes fields").
+        if (def?.kind === 'comments')
+          return (
+            <CommentsPill
+              key={f}
+              item={item}
+              palette={palette}
+              type={type}
+              field={f}
+              name={def.label}
+            />
+          );
+        // A field of a built-in kind draws as its built-in field does, an Image as its thumbnail.
+        if (def && isBuiltInKindPill(def)) return customKindPill(def, item.fields[def.id], palette);
+        // A Calculated field's value is worked out (docs/specs/026-plan/item-types.md "Calculated fields"); a Formula
+        // that can't be on this card reads "Error", its problem spoken with it and shown in the panel ("Formula
+        // fields").
+        const outcome =
+          def?.kind === 'calculated' && plan ? calculatedFieldOutcome(plan, def, item) : null;
+        // A Percent field, or a share shown as one, draws its bar (docs/specs/026-plan/item-types.md "Percent").
+        if (def && showsAsPercent(def) && outcome?.ok !== false) {
+          const share = percentShown(
+            def,
+            def.kind === 'calculated'
+              ? outcome?.ok && typeof outcome.value === 'number'
+                ? outcome.value
+                : null
+              : item.fields[def.id],
+          );
+          return share === undefined ? null : (
+            <PercentChip key={f} name={def.label} value={share} palette={palette} />
+          );
+        }
+        // A Card field that holds several reads its linked cards' numbers (item-types.md "Holds Several").
+        if (def?.kind === 'card' && holdsSeveral(def))
+          return plan ? (
+            <LinkedNumbersPill
+              key={f}
+              label={def.label}
+              ids={fieldCardIds(def, item.fields[def.id])}
+              items={plan.items}
+              types={plan.types}
+              palette={palette}
+            />
+          ) : null;
+        if (def && outcome && !outcome.ok)
+          return (
+            <MetaPill
+              key={f}
+              palette={palette}
+              tone={LATE_COLOUR}
+              label={`${def.label}: ${FORMULA_ERROR_TEXT}. ${outcome.error}`}
+            >
+              <span className="flex [&_svg]:h-[11px] [&_svg]:w-[11px]">
+                {CUSTOM_KIND_ICONS[def.kind]}
+              </span>
+              <span aria-hidden>{FORMULA_ERROR_TEXT}</span>
+            </MetaPill>
+          );
+        const text = !def
+          ? null
+          : def.kind === 'calculated'
+            ? outcome?.ok
+              ? calculatedText(def, outcome.value)
+              : null
+            : customFieldText(def, item.fields[def.id], plan?.items);
         if (!def || !text) return null;
-        const linkedType =
-          def.kind === 'card' && def.linkType
-            ? typeIn(plan?.types ?? ITEM_TYPES, def.linkType)
-            : undefined;
-        // A linked card with its own Colour shows it (a Parent project's colour), else its type's glyph.
+        // A linked card with its own Colour shows it (a Parent project's colour), else its own type's glyph (a field
+        // may link to several types), the field's first type's while the card is missing.
         const linked =
-          def.kind === 'card' && plan ? linkedCard(plan.items, item.fields[def.id]) : undefined;
-        const linkedColour = linked ? itemColourOf(linked) : undefined;
+          def.kind === 'card' && plan
+            ? linkedCard(plan.items, fieldCardIds(def, item.fields[def.id])[0])
+            : undefined;
+        const linkedTypeId = def.kind === 'card' ? (linked?.type ?? def.linkType) : undefined;
+        const linkedType = linkedTypeId
+          ? typeIn(plan?.types ?? ITEM_TYPES, linkedTypeId)
+          : undefined;
+        const linkedColour = linked ? itemColourOf(linked, linkedType) : undefined;
+        // A Date and Time or Date Range that has passed draws red, as an overdue Due does, never on a done card
+        // (item-types.md "Past due").
+        const late = !muted && pastDue(def, item.fields[def.id]);
         return (
-          <MetaPill key={f} palette={palette} label={`${def.label}: ${text}`}>
+          <MetaPill
+            key={f}
+            palette={palette}
+            {...(late ? { tone: LATE_COLOUR } : {})}
+            label={`${def.label}: ${text}${late ? ', overdue' : ''}`}
+          >
             {linkedColour ? (
               <ColourDot colour={linkedColour} />
             ) : linkedType ? (
@@ -260,72 +418,55 @@ export function PlanCardFace({
       .filter(Boolean);
   // A slot as drawn: its bits, or, in the editor, its dotted box (drawn even when empty).
   const zone = (slot: CardSlot, bits: ReactNode[]) => (edit ? edit.slot(slot, bits) : bits);
-  // `lineHeight` matches the 20 px chips beside a Compact title, so its first line shares their middle; `inset`
-  // lowers it by as much as the editor's dotted box and chip padding raise the chips (EDIT_CHIP_INSET_PX).
-  const titleText = (lines: 2 | 3, px: number, lineHeight?: number, inset = 0) => (
+  const titleText = (lines: 2 | 3, px: number) => (
     <span
-      className={`${lines === 2 ? 'line-clamp-2' : 'line-clamp-3'} min-w-0 flex-1 font-semibold ${lineHeight ? '' : 'leading-snug'}`}
-      style={{
-        color: palette.text,
-        fontSize: px,
-        ...(lineHeight ? { lineHeight: `${lineHeight}px` } : {}),
-        ...(inset ? { paddingTop: inset } : {}),
-      }}
+      className={`${lines === 2 ? 'line-clamp-2' : 'line-clamp-3'} min-w-0 flex-1 font-semibold leading-snug [overflow-wrap:anywhere]`}
+      style={{ color: palette.text, fontSize: px }}
     >
       {title}
     </span>
   );
 
-  // Minimal: one line, the title between its Before and After slots.
+  // Minimal: one line, the title between its Before and After slots; stacked, the title first and its bits under it.
+  if (size === 'minimal' && stacked) {
+    const bits = [...slotBits('lead'), ...slotBits('trail'), ...(running ? [running] : [])];
+    return (
+      <div className={`${FRAME} ${LIFT} flex-col gap-1.5 px-2.5 py-2`} style={frame}>
+        {presenceTag}
+        <div className="flex items-start gap-1.5">
+          <span className="mt-[5px] flex shrink-0">
+            <TypeDot accent={accent} />
+          </span>
+          {cardHeading(titleText(2, 12.5))}
+          {flag}
+        </div>
+        {bits.length ? (
+          <div
+            data-card-bits
+            className="flex min-w-0 flex-wrap items-center gap-1.5 pl-3 text-[11px] font-medium"
+            style={{ color: palette.muted }}
+          >
+            {bits}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
   if (size === 'minimal') {
     return (
-      <div className={`${FRAME} items-center gap-2 px-3 py-2.5`} style={frame}>
+      <div className={`${FRAME} ${LIFT} items-center gap-2 px-3 py-2.5`} style={frame}>
         {presenceTag}
         <TypeDot accent={accent} />
         {zone('lead', slotBits('lead'))}
-        {titleText(2, 13)}
+        {cardHeading(titleText(2, 13))}
         {flag}
         <span
           className="flex shrink-0 items-center gap-1.5 text-[11px] font-medium"
           style={{ color: palette.muted }}
         >
           {zone('trail', slotBits('trail'))}
+          {running}
         </span>
-      </div>
-    );
-  }
-
-  // Compact: the title with its Beside slot, over one row (Below the Title).
-  if (size === 'compact') {
-    const row = slotBits('row');
-    // The Bottom Right slot: the row's far end (the assignee, by default).
-    const trail = slotBits('trail');
-    return (
-      <div className={`${FRAME} flex-col gap-1.5 px-3 py-2`} style={frame}>
-        {presenceTag}
-        <div className="flex items-start gap-1.5">
-          {edit
-            ? zone('lead', slotBits('lead'))
-            : slotBits('lead').map((bit, i) => (
-                <span key={i} className="flex">
-                  {bit}
-                </span>
-              ))}
-          {ownColour ? <ColourDot colour={ownColour} className="mt-1.5" /> : null}
-          {titleText(2, 13, 20, edit ? EDIT_CHIP_INSET_PX : 0)}
-          {flag}
-        </div>
-        {row.length || trail.length || edit ? (
-          <div
-            className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium"
-            style={{ color: palette.muted }}
-          >
-            {zone('row', row)}
-            {trail.length || edit ? (
-              <span className="ml-auto flex items-center gap-1.5">{zone('trail', trail)}</span>
-            ) : null}
-          </div>
-        ) : null}
       </div>
     );
   }
@@ -337,23 +478,33 @@ export function PlanCardFace({
   const foot = slotBits('foot');
   // The Bottom Right slot: the footer's far end (the assignee, by default).
   const footEnd = slotBits('footEnd');
+  // The cover (docs/specs/026-plan/items.md "Attachments"): when the type's Display holds Cover Image and the card
+  // has one; the Display's editor draws a placeholder in its place.
+  const coverPlaced = (layout.head ?? []).includes('cover') && show('cover');
+  const cover = coverPlaced ? (attachmentCover(item) ?? null) : null;
   return (
-    <div className={`${FRAME} flex-col gap-2 px-3 py-2.5`} style={frame}>
+    <div className={`${FRAME} ${headAction ? '' : LIFT} flex-col gap-2 px-3 py-2.5`} style={frame}>
       {presenceTag}
-      {head.length || headEnd.length || ownColour || edit ? (
+      {cover || (coverPlaced && edit) ? (
+        <CardCover cover={cover} palette={palette} sample={!!edit} />
+      ) : null}
+      {head.length || headEnd.length || ownColour || edit || headAction ? (
         <div
           className="flex items-center gap-1.5 text-[11px] font-medium"
           style={{ color: palette.muted }}
         >
           {zone('head', head)}
           {ownColour ? <ColourDot colour={ownColour} /> : null}
-          {headEnd.length || edit ? (
-            <span className="ml-auto flex items-center gap-1.5">{zone('headEnd', headEnd)}</span>
+          {headEnd.length || edit || headAction ? (
+            <span className="ml-auto flex items-center gap-1.5">
+              {zone('headEnd', headEnd)}
+              {headAction}
+            </span>
           ) : null}
         </div>
       ) : null}
       <div className="flex items-start gap-1.5">
-        {titleText(3, 14)}
+        {cardHeading(titleText(3, 14))}
         {flag}
       </div>
       {body.length || edit ? (
@@ -364,11 +515,14 @@ export function PlanCardFace({
           {zone('body', body)}
         </div>
       ) : null}
-      {foot.length || footEnd.length || edit ? (
+      {foot.length || footEnd.length || edit || running ? (
         <div className="mt-auto flex flex-wrap items-center gap-1 pt-0.5 text-[11px] font-medium">
           {zone('foot', foot)}
-          {footEnd.length || edit ? (
-            <span className="ml-auto flex items-center gap-1">{zone('footEnd', footEnd)}</span>
+          {footEnd.length || edit || running ? (
+            <span className="ml-auto flex items-center gap-1">
+              {zone('footEnd', footEnd)}
+              {running}
+            </span>
           ) : null}
         </div>
       ) : null}

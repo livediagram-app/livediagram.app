@@ -17,7 +17,13 @@ import type { DocumentSource } from '@liveworkspace/api-schema/document-source';
 import type { EditorMode, Tab } from '@livediagram/document';
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
 
-export type { AvatarClothing, AvatarConfig, AvatarGender, AvatarHair, AvatarSize } from './avatar';
+export type {
+  AvatarClothing,
+  AvatarConfig,
+  AvatarGender,
+  AvatarHair,
+  AvatarSize,
+} from '@liveworkspace/api-schema/avatar';
 
 // ---------------------------------------------------------------------
 // Documents
@@ -221,6 +227,8 @@ export { embedTabImages, tabImageIds, type EmbedImageSource } from './embed-imag
 // telemetry action / type enums). One definition so the live editor and
 // the telemetry dashboard can't drift (see @liveworkspace/api-schema/title-case).
 export { headlineCase, titleCase } from '@liveworkspace/api-schema/title-case';
+// The names a mode's blank gives a document: one light list the editor and the template catalogue share.
+export { isUntitledName, UNTITLED_DOCUMENT_NAMES } from '@liveworkspace/api-schema/untitled-names';
 export { objectOrEmpty } from '@liveworkspace/api-kit/request-body';
 // The document format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
 export { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER, parseDocumentFormat } from './document-format';
@@ -309,7 +317,7 @@ export * from './lens-modes';
 // Explorer Home: the open marker and the use window (docs/specs/013-workspace/explorer-home.md).
 export * from './home';
 export * from './drag-preview';
-export * from './avatar-say';
+export * from '@liveworkspace/api-schema/avatar-say';
 // Within reach: N most used plus N recent (docs/specs/004-interface-design/within-reach.md).
 export * from '@liveworkspace/api-schema/within-reach';
 // Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md).
@@ -331,6 +339,7 @@ export * from '@liveworkspace/api-schema/agent-presence';
 // The Community's shared contract is liveworkspace's (liveworkspace/docs/specs/007-community/community.md); re-exported so the
 // editor, the Community pages and the api read it from here as before.
 export * from '@liveworkspace/community';
+export * from './community-categories';
 export * from './community-paths';
 export * from './document-paths';
 export * from '@liveworkspace/api-schema/http-errors';

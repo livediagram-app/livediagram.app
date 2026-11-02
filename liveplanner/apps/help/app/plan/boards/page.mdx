@@ -9,7 +9,7 @@ import {
 export const metadata = helpMetadata({
   title: 'Boards',
   description:
-    'Set up Plan boards for Kanban, to-do lists, sprints, bug triage, retros and roadmaps: columns, swimlanes, WIP limits, widgets, card types and CSV import.',
+    'Set up Plan boards for Kanban, sprints, bug triage, retros and roadmaps: columns, swimlanes, WIP limits, widgets, saved filters, card types and CSV import.',
   path: '/help/plan/boards/',
 });
 
@@ -52,11 +52,11 @@ A board placed from the picker starts **empty**: its columns are its own, so car
 
 Add a column from the board's cog (**Columns**, below) or from a column's own **+ Add Column After**. Either way the picker lists under **Existing Statuses** every status your plan already has that this board lacks: the ones other boards use, and any your cards are in. Each shows its colour, the boards it is on, and how many of its cards would appear on this board. Pick one (or press **Add All**) and the cards already in it show straight away. Type to narrow the list, use the arrow keys and Enter, or type a new name and press **Add Column** (**Add** in the board's cog): if the name matches a status you already have, that status is used rather than a near-duplicate, and you are told so. When the board already has every status your plan knows, **Suggested Statuses** offers the common ones it still lacks (Backlog, To Do, In Progress, In Review, Done) to add with one press.
 
-Hover a column's head and press its cog (always there on a touch screen). Along the top, a toolbar holds **Move Left** and **Move Right** on the left and **Remove** on the right. Below it you can:
+Hover a column's head and press its cog (always there on a touch screen). Along the top, a toolbar holds **Move Left**, **Move Right** and **Collapse Column** on the left and **Remove** on the right. Below it you can:
 
 - **Rename** it and give it a **colour** (none, one of ten, or a custom colour).
 - Set a **WIP Limit**: the count turns amber when the column holds more. It warns; it never refuses a card.
-- Make it **Counts as Done**, so its cards fill the board's Completion and count as done in charts.
+- Turn **Counts as Done** on or off, so its cards fill the board's Completion and count as done in charts. Any number of columns can count as done, and a column named like a closing state (Done, Won't Do, Cancelled, Closed, Shipped and the like) counts on its own until you switch it off.
 - Set its **Width**: one, two or three slots across the board.
 - **Add Column After** this one.
 
@@ -66,15 +66,24 @@ Hover a column's head and press its cog (always there on a touch screen). Along 
 
 A board holds up to 12 columns. A new Blank board opens **Set up your board** over the editor (for you only; anyone else sees the board marked “Not set up yet”): first choose which **Card Types** go on it, then its **Columns**, picking existing states (so their cards show) or naming new ones, in the order you want (on a new plan, with no states yet, **Suggested States** offers Backlog, To Do, In Progress, In Review and Done, each added with one press, or all with **Add All**), then its **Layout**: its **Swimlanes** and its **Card Display**. The Layout step starts as the board is now, so you can press straight through it. **Create Board** sets it all up in one step, and everything can change later from the board's cog. Press **Not now** (or Escape) to leave it for later: the board shows **Set up board**, which opens it again where you left off. Enter moves on to the next step.
 
+### Collapse a Column
+
+Press the chevron at the right of a column's head (**Collapse Column**; it's in the cog's toolbar too) to fold the column into a thin strip, its colour bar on top, then its count and its name written down it (the name shows only when it fits whole). The other columns take the room it leaves. Press the strip, or its **Expand Column** chevron, to open it again.
+
+- **Drop cards on it:** drag a card onto a collapsed column and let go: it moves to the end of that column (in that swimlane's row, on a board with swimlanes), and the column stays collapsed. A column the card's type can't go in turns red and won't take it.
+- **Just for you:** collapsing changes nothing for anyone else and isn't undone with Undo. This browser remembers it for the board, so a reload or a maximised board keeps it. Everyone can collapse columns, Viewers included.
+- **Not on a phone**, and not on the smaller board inside a Dashboard slot: there every column shows open. Exports always draw every column open.
+
 ## The Board's Own Settings
 
-Press the cog at the top right of the board (**Board Settings**) to open the board's menu. It lists the board's five settings, each a row that opens its own panel to the side (an Archive board has no **Supported Cards**, and an All Cards or Archive board no **Setup Board** or **Columns**):
+Press the cog at the top right of the board (**Board Settings**) to open the board's menu. It lists the board's six settings, each a row that opens its own panel to the side (an Archive board has no **Supported Cards**, and an All Cards or Archive board no **Setup Board** or **Columns**):
 
 - **Board Setup:** the board's name, **Setup Board**, which opens the setup dialog again filled in with the board as it is, so you can change its card types, columns and layout in one go (**Save Board** keeps each kept column's settings).
-- **Columns:** the board's columns, left to right, each with its colour and any WIP limit, and a **Done** tag on the done column. Press one to open its own settings. Under them, add a column: pick one of your **Existing Statuses** or type a new name and press **Add**. New columns go at the end, before **Done** when the board ends with it, and you can add several in a row.
-- **Swimlanes:** **Group Rows By**, one list: **None**, **Assignee**, **Type** or **Priority**, then a row per field (**Parent** among them, a row per project): pick any field your card types have, your own included (say a **Customer** you added to Plans), or Labels, Estimate, Start Date or Due Date. A choice field gets a row per option, a checkbox a **Yes** and a **No** row, numbers and dates run lowest first, and text runs A to Z; cards without a value sit in the last row. Dropping a card into a row sets that field (into a label's row, that label moves to the front of the card's labels). If the field is later taken off its type, the board simply shows no rows until it comes back. There is no Status row grouping on a board, since its columns already are its statuses (an All Cards board, which has one column, groups its rows by status).
+- **Columns:** the board's columns, left to right, each with its colour and any WIP limit, and a **Done** tag on each column that counts as done. Press one to open its own settings. Under them, add a column: pick one of your **Existing Statuses** or type a new name and press **Add**. New columns go at the end, before the done columns when the board ends with them, and you can add several in a row.
+- **Swimlanes:** **Group Rows By**, one list: **None**, **Assignee**, **Type** or **Priority**, then a row per field (**Parent** among them, a row per project): pick any field your card types have, your own included (say a **Customer** you added to Plans), or Labels, Estimate, Start Date or Due Date, or who created or last edited a card and on which day (**Created By**, **Created At**, **Last Edited By**, **Last Edited At**). A choice field gets a row per option, a checkbox a **Yes** and a **No** row, a Person field a row per person (with their picture), numbers and dates run lowest first, and text runs A to Z; cards without a value sit in the last row. Dropping a card into a row sets that field (into a label's row, that label moves to the front of the card's labels), except the four created and edited rows, which nobody can change: the card stays in its own row. If the field is later taken off its type, the board simply shows no rows until it comes back. There is no Status row grouping on a board, since its columns already are its statuses (an All Cards board, which has one column, groups its rows by status).
+- **Sort Cards:** **Sort By** orders every column's cards by a field, such as **Priority**, **Estimate**, **Start Date**, **Due Date**, **Created At**, **Last Edited At** or one of your own number, currency, date, rating or choice fields (a choice field in its options' order), lowest or highest first. **Then By** breaks ties with a second field. Cards without a value go last. While a board is sorted you can still drag a card to another column or row, but not up or down within its own: choose **None** to order cards by hand again.
 - **Supported Cards:** its **Card Types**, the types the board shows and takes (a retro shows Notes and Ideas; a sprint shows Stories, Tasks and Bugs; a card of a type you turn off is hidden, not deleted, and comes back when you turn it on again). You can turn them all off, then add one with **Add New Card Type** under any column's **+ Add card**. A board whose chosen types have all since been deleted shows every type again.
-- **Card Layout:** the **Card Size** (**Minimal**, **Compact** or **Detailed**). What a card shows at each size is set per card type, in its [Display](/help/plan/card-types/) tab.
+- **Card Layout:** the **Card Size** (**Minimal** or **Detailed**). What a card shows at each size is set per card type, in its [Display](/help/plan/card-types/) tab.
 
 A board takes no comments, actions, links or notes of its own, and nor does a chart or a sheet, so its menu has no buttons for them. Talk on the cards instead, each with its own comments.
 
@@ -95,16 +104,28 @@ To rename a board, double-click its title, type the new name and press **Enter**
 - **Every board shows every card whose status is one of its columns and whose type is one of its Card Types.** There is no per-board filter by label; a card of a type the board doesn't show is hidden there, never moved.
 - **Not on this board:** add the **Not on Board** widget and the header counts the cards whose status no column holds ("3 not on board"); open the count to move each to a column.
 - **Columns fill the board:** they run to the bottom of the screen, and a column with more cards than fit scrolls inside itself.
-- **Card sizes:** **Minimal** is the smallest face, **Compact** adds a line of details, and **Detailed** (the default) shows the most, down to a description excerpt and checklist progress. Exactly which fields each size shows is set per card type, in its [Display](/help/plan/card-types/) tab: a built-in type's Minimal card is its title alone, your own types' Minimal cards add the number and assignee, and a Compact Note or Idea shows its votes and comments.
+- **Card sizes:** **Minimal** is the smallest face, one line, and **Detailed** (the default) shows the most, down to a description excerpt and checklist progress. Exactly which fields each size shows is set per card type, in its [Display](/help/plan/card-types/) tab: a built-in type's Minimal card is its title alone, and your own types' Minimal cards add the number and assignee. A board that used the older **Compact** size now shows its cards Detailed.
 
 ## Widgets
 
-The header holds **widgets**: Item Count, Completion, Filter, Only Mine, People, Not on Board, Card Types, WIP Alerts, Due Soon, Points, Priorities, Unassigned, Top Voted and Stale Cards. Each board type starts with the ones that suit it.
+The header holds **widgets**: Item Count, Completion, Filter, Only Mine, People, Not on Board, Card Types, WIP Alerts, Due Soon, Points, Time, Priorities, Unassigned, Top Voted and Stale Cards, plus widgets for your own card fields. Each board type starts with the ones that suit it.
 
-- **Add one:** press the **+** at the end of the board's header and pick a widget from the list. It lists only the widgets the board doesn't have yet, and adds the one you pick at the end of the header.
-- **Arrange them:** drag left or right, or focus one and press **Alt+←** or **Alt+→**. Take one off with its **×**, or focus it and press **Delete**.
-- **Narrow the board:** press a person in People, a type in Card Types, a priority, Unassigned or the overdue count; press again to see everything. Item Count reads "3 of 14 · Show all" while the board is narrowed. **Filter** and **Only Mine** are yours alone and aren't saved.
+- **Add one:** press the **+** at the end of the board's header to open **Add a Widget**. Every widget shows as a live preview drawn from this board's own cards, grouped down the left: **For You** (picked for this board, each saying why), **Focus**, **Progress**, **People**, **Dates**, **Health**, then the fields of each card type. Press a widget to add it at the end of the header; it shows **On Board**, and pressing it again takes it off. The gallery stays open so you can add several, and **Find a widget** searches by name, field or card type.
+- **Widgets for your own fields:** every Number, Currency, Duration, Percent, Rating, Choice, Multiple Choice, Labels, Person, Checkbox, Checklist and Date field on the board's card types has its own widgets: a **Sum**, **Average**, **Range** or **Spread** of a number, **Average Stars** for a rating, a **Breakdown** or **Donut** of choices, how many are **Ticked**, and what is **Upcoming** or on the **Timeline** for a date. Each is named with its field and card types ("Budget Sum, on Feature cards"), keeps up as cards change, and follows its field when it is renamed. If the field is deleted, or changes to a kind the widget can't show, the widget says so and offers **Remove**. A board holds up to 12 field widgets.
+- **Arrange them:** drag left or right, or focus one and press **Alt+←** or **Alt+→**.
+- **Take one off:** press **Edit Widgets** (the pencil after the **+**) and every widget shows an **×**; press one to take that widget off. Press **Done** (the check), Escape or anywhere outside the widgets when you're finished. Or focus a widget and press **Delete**.
+- **Narrow the board:** press a person in People, a type in Card Types, a priority, Unassigned or the overdue count; press again to see everything. Item Count reads "3 of 14 · Show all" while the board is narrowed (**Show all** clears every narrowing). **Filter** and **Only Mine** are yours alone and aren't saved, unless you save them (below).
+- **Filter by a field:** type in **Filter** to narrow by words, or press **Add Filter** (the plus inside it) to add a chip for any field the board's cards have, **Card Type** included: pick the field, then one of its values, each with how many cards have it ("Card Type: Bug"). A card must match every chip; add up to eight. A chip's cross takes it off, and so does Backspace in the empty box.
 - **Stale Cards** counts cards not done that nobody has changed in 14 days. **Due Soon** counts overdue cards and those due in the next 7 days.
+
+### Saved Filters
+
+A team that opens the same slice of a board every morning (**My Bugs**, **Due This Week**) can save it once, on the board.
+
+- **Save one:** while something narrows the board, an Editor sees **Save Filter** (a bookmark with a plus) after the Filter widget. Give it a **Name** and press **Save** (or Enter). It keeps the words, the field chips, **Only Mine** and any widget you pressed, and shows as a chip with a small bookmark beside the Filter.
+- **Apply one:** press its chip to swap whatever you had for it; press it again to clear it. Applying it is just for you: nobody else's board changes. **Only Mine** means the cards of whoever applies it, and **Overdue** or **Due Soon** count from today, not from the day it was saved.
+- **Change one:** an Editor's chips end in a small chevron (**Saved Filter Options**): **Rename**, **Update to Current Filters** (keeps what the board shows now under that name) and **Delete**. Saving, changing and deleting are undone with **Undo** like any board change.
+- A board holds up to eight saved filters, each named once. Everyone who sees the board's widgets sees and applies them; only Editors save, rename, update and delete. They aren't shown on a phone or in a Dashboard slot.
 
 A board holds each widget once. Only people who can edit the plan add, move or remove widgets; everyone can use them.
 
@@ -114,16 +135,20 @@ To vote on cards, start a vote on the tab with the **Vote** button in the bottom
 
 On a board that hides writing, everyone else's cards show face down (and take no dots) until someone who can edit presses **Reveal** in the header. Hiding is a facilitation aid, not privacy: it hides the card's face, not its data. It has no menu control: it comes with the board.
 
+## Change Several Cards at Once
+
+Cmd-click (Ctrl-click on Windows) or Shift-click cards, or choose **Select** in a card's right-click menu, and a bar under the header moves, assigns, prioritises, labels, flags, archives or trashes them all in one step; drag one of them and they all come. See [Select Several Cards](/help/plan/select-cards/).
+
 ## Archive and All Cards
 
 **Archive** a card (right-click it) to take it off every board without deleting it; the **Archive** board shows them all, and **Restore** brings one back (or drag it onto another board). The **All Cards** board shows every other card with a row per status: the place to find a card no board shows, and give it a status a board has. To search every card instead, use the **Find a Card** button in the bottom-right corner (see [Cards](/help/plan/cards/#find-a-card)).
 
 ## Import and Export CSV
 
-On a **Board tab**, the tab's menu (the **⋯** on its tab, or right-click the tab) holds **Import CSV…** and **Export**. **Export** opens the [Export dialog](/help/tabs/export-tabs/#formats-for-each-kind-of-tab) with the board's picture (PNG, SVG or PDF), its Markdown outline and its **CSV**:
+On a **Board tab**, the tab's menu (the **⋯** on its tab, or right-click the tab) holds **Import…** and **Export**. **Export** opens the [Export dialog](/help/tabs/export-tabs/#formats-for-each-kind-of-tab) with the board's picture (PNG, SVG or PDF), its Markdown outline and its **CSV**:
 
 - **CSV** in the Export dialog gives a row per card the board shows, column by column: Key, Title, Type and Status, then the fields its card types have (Assignee, Priority, Start, Due, Estimate, Labels, Description) and your custom fields by name. Anyone who can see the board can download it.
-- **Import CSV…** reads a `.csv` or `.tsv` file and adds each row as a new card. The first row names the columns, in any order and any case; only **Title** is required. **Type** picks one of the board's card types by name (else its first), **Status** a column by name (else the first column), and **Assignee** a person by name. Dates can be `2026-10-11` or day-first like `11/10/2026`. Columns it doesn't know, and values that don't fit, are left out. The import is one step, so a single **Undo** takes every new card back, and the board tells you how many cards were added and how many rows were skipped.
+- **Import…** opens the [Import dialog](/help/tabs/import-tabs/): its **CSV** row reads a `.csv` or `.tsv` file (or drop the file on the dialog) and adds each row as a new card. The first row names the columns, in any order and any case; only **Title** is required. **Type** picks one of the board's card types by name (else its first), **Status** a column by name (else the first column), and **Assignee** a person by name. Dates can be `2026-10-11` or day-first like `11/10/2026`. Columns it doesn't know, and values that don't fit, are left out. The import is one step, so a single **Undo** takes every new card back, and the board tells you how many cards were added and how many rows were skipped.
 
 Importing adds cards, so it is for people who can edit or take part; on a view-only link it is greyed out, as it is on an Archive board.
 

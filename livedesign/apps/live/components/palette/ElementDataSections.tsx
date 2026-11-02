@@ -20,6 +20,7 @@ import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSect
 import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
 import { StackMenuSection } from '@/components/palette/StackMenuSection';
 import { TabWindowMenuSection } from '@/components/palette/TabWindowMenuSection';
+import { ComponentMenuSection } from '@/components/palette/ComponentMenuSection';
 import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
 import {
   isChipShape,
@@ -402,6 +403,9 @@ export function ElementDataSections({
           ) : null}
         </MenuFlyoutSection>
       ) : null}
+      {/* Components (docs/specs/009-elements/components.md "The menu"): an instance's main, its overrides and
+          Detach; Make Component on anything else. Its own category, never folded into Tools. */}
+      <ComponentMenuSection target={target} sectionProps={sectionProps} onClose={props.onClose} />
       {/* Animation (docs/specs/028-animation/element-animations.md): one category per animation set the
             element takes, such as Shape Animation and Text Animation for a labelled shape. */}
       <AnimationSections

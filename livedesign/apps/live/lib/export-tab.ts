@@ -23,6 +23,7 @@ import {
   type BoxedElement,
   type Element,
   type LaidOutPage,
+  type CanvasSurface,
   type ResolveTabWindow,
   type Tab,
 } from '@livedesign/design';
@@ -94,6 +95,14 @@ export type ImageExportOpts = {
   // animation class and custom properties, as the canvas mounts them, so the page's own motion stylesheets play it.
   // Only a tab window passes it (an inline SVG on the page); every file export is a still.
   motion?: SvgMotion;
+  // An element exported on its own from Inspect (docs/specs/007-editor/wireframe-pages.md "The Inspect panel"):
+  // `scale` (a PNG's pixels per px, an SVG's size), `padding` round the content (absent: EXPORT_PADDING),
+  // `transparent` leaves the ground clear, and `surface` is the paper its unpainted parts take their ink from (the
+  // page it came off, rather than the tab's backdrop). A page export ignores all but `scale`.
+  scale?: number;
+  padding?: number;
+  transparent?: boolean;
+  surface?: CanvasSurface;
 };
 
 // How an element moves in a live inline SVG: the wrapper class + inline style for a boxed element, and the moving
@@ -109,6 +118,7 @@ export { loadTabImages } from './export-tab-images';
 
 // Webfont embedding for downloads (docs/specs/004-interface-design/fonts.md) — the bytes travel with the file.
 import { embeddedFontFaceCss } from './export-fonts';
+import { expandForExport } from './component-registry';
 // Default backdrop pattern colour when a tab leaves it unset (matches the
 // editor's fallback).
 export const EXPORT_PATTERN_COLOR = '#cbd5e1'; // slate-300
@@ -155,6 +165,9 @@ function svgToImage(svg: string): Promise<HTMLImageElement> {
 
 // The largest canvas side every browser draws (Safari and Firefox stop at 16384 px; Chrome 32767).
 export const MAX_EXPORT_CANVAS_SIDE = 16384;
+// How far past a whole pixel a size may be from float arithmetic alone (1024 x 2.0000000001) and still count as
+// that whole pixel when the canvas is sized.
+const PART_PIXEL_NOISE = 1e-6;
 
 /** The scale an image export draws at: `wanted`, lowered so neither side of a `w` x `h` drawing
  *  passes MAX_EXPORT_CANVAS_SIDE. */
@@ -173,9 +186,11 @@ export function renderedExportScale(canvas: HTMLCanvasElement): number {
 }
 
 export async function renderTabToCanvas(
-  tab: Tab,
-  opts: { scale?: number } & ImageExportOpts = {},
+  source: Tab,
+  opts: ImageExportOpts = {},
 ): Promise<HTMLCanvasElement> {
+  // Each instance drawn as its main's elements (docs/specs/009-elements/components.md "How an instance draws").
+  const tab = expandForExport(source);
   const frame = opts.page
     ? pageExportFrame(opts.page, {
         transparentPaper: opts.transparentPaper,
@@ -205,7 +220,7 @@ export async function renderTabToCanvas(
     fontFamilyOf: (a) => arrowLabelFontStack(a, tab.font, tab.finish),
   });
   const bounds = frame ? frame.bounds : contentBounds(els, labels, tab.elements);
-  const pad = frame ? 0 : EXPORT_PADDING;
+  const pad = frame ? 0 : (opts.padding ?? EXPORT_PADDING);
   const draw = bounds;
   // 2x for crisp output, lowered so no side passes the largest canvas every browser draws (a Fit to
   // Content page reaches 19200 px, docs/specs/007-editor/pages-mode.md "Sizes").
@@ -213,8 +228,12 @@ export async function renderTabToCanvas(
   const w = (draw.w + pad * 2) * scale;
   const h = (draw.h + pad * 2) * scale;
   const canvas = document.createElement('canvas');
-  canvas.width = Math.max(1, Math.floor(w));
-  canvas.height = Math.max(1, Math.floor(h));
+  // A part pixel rounds up, so an element cut to its own box (Inspect's export, 360.5 x 55.9) keeps its last row
+  // and column; a hair under a whole one (float noise) stays whole, and no side passes the canvas limit.
+  const pixels = (n: number) =>
+    Math.max(1, Math.min(MAX_EXPORT_CANVAS_SIDE, Math.ceil(n - PART_PIXEL_NOISE)));
+  canvas.width = pixels(w);
+  canvas.height = pixels(h);
   renderedScale.set(canvas, scale);
   const ctx = canvas.getContext('2d');
   if (!ctx) return canvas;
@@ -224,11 +243,12 @@ export async function renderTabToCanvas(
   // Elements that carry no colours of their own are drawn in the ink of the
   // paper being exported onto (docs/specs/007-editor/live-app.md), so a dark canvas exports dark-canvas
   // elements rather than pale ones.
-  const surface = frame ? frame.surface : canvasSurface(bgColor);
+  const surface = frame ? frame.surface : (opts.surface ?? canvasSurface(bgColor));
   // The paper under the content: a hollow arrowhead is filled with it, as on the canvas.
   const paper = frame ? EXPORT_PAPER : bgColor;
   ctx.fillStyle = paper;
-  if (!frame?.transparent) ctx.fillRect(0, 0, w / scale, h / scale);
+  if (!frame?.transparent && !(opts.transparent && !frame))
+    ctx.fillRect(0, 0, w / scale, h / scale);
   const bg = frame ? null : backgroundPatternDefs(tab, opts);
   if (frame) {
     const { x, y, w: fw, h: fh } = frame.bounds;
@@ -471,7 +491,9 @@ function withMotion(el: BoxedElement, motion: SvgMotion | undefined, svg: string
   return `<g class="lvd-svg-motion ${xmlEscape(m.className)}" style="${xmlEscape(m.style)}">${svg}</g>`;
 }
 
-export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
+export function renderTabToSvg(source: Tab, opts: ImageExportOpts = {}): string {
+  // Each instance drawn as its main's elements (docs/specs/009-elements/components.md "How an instance draws").
+  const tab = expandForExport(source);
   // Same hidden-layer + band-order + band-opacity rules as the canvas
   // renderer above; each band wraps in a <g opacity> when dimmed.
   const frame = opts.page
@@ -502,7 +524,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
       ? `<g opacity="${r2(layerOpacity)}">${inner.join('\n')}</g>`
       : inner.join('\n');
   const bounds = frame ? frame.bounds : contentBounds(els, labels, tab.elements);
-  const pad = frame ? 0 : EXPORT_PADDING;
+  const pad = frame ? 0 : (opts.padding ?? EXPORT_PADDING);
   const draw = bounds;
   const vbX = draw.x - pad;
   const vbY = draw.y - pad;
@@ -510,19 +532,21 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   const vbH = draw.h + pad * 2;
   const bgColor = tab.backgroundColor ?? EXPORT_BG;
   // See the PNG path: unpainted elements take the exported paper's ink.
-  const surface = frame ? frame.surface : canvasSurface(bgColor);
+  const surface = frame ? frame.surface : (opts.surface ?? canvasSurface(bgColor));
   // As the PNG path: a hollow head takes this paper, and an arrow breaks only
   // behind the boxes this export draws (`els`), never a hidden or off-page one.
   const paper = frame ? EXPORT_PAPER : bgColor;
   const parts: string[] = [];
+  // An SVG's scale is its size: the drawing (its viewBox) stays as it is.
+  const size = opts.scale ?? 1;
   parts.push(
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW)}" height="${r2(vbH)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(vbW * size)}" height="${r2(vbH * size)}" viewBox="${r2(vbX)} ${r2(vbY)} ${r2(vbW)} ${r2(vbH)}">`,
   );
-  parts.push(
-    frame
-      ? frame.backgroundSvg
-      : `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bgColor)}"/>`,
-  );
+  if (frame) parts.push(frame.backgroundSvg);
+  else if (!opts.transparent)
+    parts.push(
+      `<rect x="${r2(vbX)}" y="${r2(vbY)}" width="${r2(vbW)}" height="${r2(vbH)}" fill="${xmlEscape(bgColor)}"/>`,
+    );
   // Typefaces (docs/specs/004-interface-design/fonts.md): the real bytes when the caller pre-fetched them
   // (a download, which must stand alone), else a declaration of the Google
   // stylesheet (the live preview, where the page has the faces already).
@@ -600,7 +624,9 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
 
 // A downloaded SVG carries its own typefaces: the reader hasn't got
 // Permanent Marker installed, and an @import is dead in an offline viewer.
-export async function exportTabAsSvg(tab: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
+export async function exportTabAsSvg(source: Tab, opts: ImageExportOpts = {}): Promise<Blob> {
+  // Expanded first so the faces an instance's words write in are embedded too.
+  const tab = expandForExport(source);
   const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
   const fontCss =
     opts.fontCss ??

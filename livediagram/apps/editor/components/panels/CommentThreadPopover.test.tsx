@@ -42,6 +42,23 @@ describe('CommentThreadPopover', () => {
     expect(document.activeElement).toBe(screen.getByPlaceholderText('Add a comment…'));
   });
 
+  // Portalled to the body, its header was a second page banner, and the dialog had no name.
+  it('is a dialog named by its heading, with no banner landmark of its own', () => {
+    addAnchor('a');
+    renderPopover('a');
+    expect(screen.getByRole('dialog', { name: /^Comments/ })).toBeTruthy();
+    expect(screen.queryByRole('banner')).toBeNull();
+  });
+
+  it('has a Close that takes a finger tap height', () => {
+    addAnchor('a');
+    renderPopover('a');
+    // Close takes a finger's tap height (docs/specs/004-interface-design/touch-targets.md).
+    expect(screen.getByRole('button', { name: 'Close comments' }).className).toContain(
+      'touch-target-y',
+    );
+  });
+
   it('focuses the composer once an anchor that lands later places it', () => {
     renderPopover('late');
     expect(screen.queryByRole('dialog')).toBeNull();

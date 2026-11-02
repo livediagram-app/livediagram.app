@@ -17,18 +17,11 @@ const board = (id: string, addTypes?: string[]): Element => ({
 });
 
 describe('a type made from a board', () => {
-  it('starts with only the board’s statuses on', () => {
-    const t = newTypeForBoard({ boardId: 'b', statuses: ['went-well', 'improve'] }, [
-      'todo',
-      'went-well',
-      'improve',
-      'done',
-    ]);
-    expect(t.excludedStatuses).toEqual(['todo', 'done']);
+  it('starts with only the board’s statuses on, in its column order', () => {
+    const t = newTypeForBoard({ boardId: 'b', statuses: ['went-well', 'improve', 'went-well'] });
+    expect(t.statuses).toEqual(['went-well', 'improve']);
+    expect(t.excludedStatuses).toBeUndefined();
     expect(t.label).toBe('');
-    expect(
-      newTypeForBoard({ boardId: 'b', statuses: ['a'] }, ['a']).excludedStatuses,
-    ).toBeUndefined();
   });
 
   it('joins a board that takes chosen types, once', () => {

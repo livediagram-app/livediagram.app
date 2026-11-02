@@ -12,7 +12,8 @@
 // Rows are in ./inbox/InboxRows, the pane in ./inbox/InboxReader, the model in ./inbox/sections.
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { useMediaQuery } from '@liveworkspace/ui';
+import { createPortal } from 'react-dom';
+import { Select, useMediaQuery } from '@liveworkspace/ui';
 import { readStored, writeStored } from '../ui/storage';
 import { EMPTY_CTA, EmptyPane } from './EmptyPane';
 import { useExplorer } from './context';
@@ -54,13 +55,17 @@ const PANE_STATE = 'liveworkspaceInboxPane';
 const isPaneState = (state: unknown) =>
   Boolean(state && typeof state === 'object' && (state as Record<string, unknown>)[PANE_STATE]);
 
-// `compact`: inside the editor's Explorer panel, under the pane's own header, with the small empty state.
+// `compact`: inside the editor's Explorer panel, under the pane's own header, with the small empty state. There the
+// filter is a dropdown (not the chip bar), drawn into `filterSlot`, a node in the panel's header row (null while it
+// mounts: nothing yet); without a slot it sits in a row of its own above the list.
 export function InboxPane({
   onOpenNav,
   compact = false,
+  filterSlot,
 }: {
   onOpenNav?: () => void;
   compact?: boolean;
+  filterSlot?: HTMLElement | null;
 }) {
   const { inbox, inboxHost, viewerId, words, filter: appFilter } = useExplorer();
   const onTelemetry = inboxHost?.onTelemetry;
@@ -284,7 +289,11 @@ export function InboxPane({
   } else {
     const list = (
       <div className="flex min-h-0 min-w-0 flex-col" data-inbox-list="">
-        <FilterBar filter={filter} counts={counts} onChange={setFilter} compact={compact} />
+        {compact ? (
+          <FilterDropdown filter={filter} counts={counts} onChange={setFilter} slot={filterSlot} />
+        ) : (
+          <FilterBar filter={filter} counts={counts} onChange={setFilter} />
+        )}
         {visible.length === 0 ? (
           <div className="px-4 py-10 text-center">
             <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
@@ -435,23 +444,17 @@ function FilterBar({
   filter,
   counts,
   onChange,
-  compact,
 }: {
   filter: InboxFilter;
   counts: Record<InboxFilter, number>;
   onChange: (f: InboxFilter) => void;
-  compact: boolean;
 }) {
   return (
     <div
       role="group"
       aria-label="Inbox filters"
       data-inbox-filters=""
-      className={`flex min-w-0 shrink-0 gap-1.5 border-b border-slate-200 py-2 dark:border-slate-700 ${
-        compact
-          ? 'overflow-x-auto px-3 [scrollbar-width:none]'
-          : 'px-3 max-md:overflow-x-auto max-md:px-4 max-md:[scrollbar-width:none] md:flex-wrap'
-      }`}
+      className="flex min-w-0 shrink-0 gap-1.5 border-b border-slate-200 px-3 py-2 dark:border-slate-700 max-md:overflow-x-auto max-md:px-4 max-md:[scrollbar-width:none] md:flex-wrap"
     >
       {INBOX_FILTERS.map((f) => {
         const on = f === filter;
@@ -462,9 +465,7 @@ function FilterBar({
             aria-pressed={on}
             data-inbox-filter={f}
             onClick={() => onChange(f)}
-            className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[13px] font-medium transition-colors duration-micro focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600 motion-reduce:transition-none ${
-              compact ? 'min-h-11' : 'min-h-8 max-md:min-h-11'
-            } ${
+            className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[13px] font-medium transition-colors duration-micro focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600 max-md:min-h-11 motion-reduce:transition-none min-h-8 ${
               on
                 ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
                 : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-slate-50'
@@ -481,4 +482,42 @@ function FilterBar({
       })}
     </div>
   );
+}
+
+/** The panel's filter: the same five choices, each with its count, as one quiet native select (keyboard, the phone's
+ *  picker and a screen reader's name for free), drawn into the header row's slot, or above the list without one. */
+function FilterDropdown({
+  filter,
+  counts,
+  onChange,
+  slot,
+}: {
+  filter: InboxFilter;
+  counts: Record<InboxFilter, number>;
+  onChange: (f: InboxFilter) => void;
+  slot: HTMLElement | null | undefined;
+}) {
+  const select = (
+    <Select
+      aria-label="Inbox filter"
+      data-inbox-filters=""
+      size="sm"
+      className="min-w-0"
+      value={filter}
+      onChange={(e) => {
+        if (isInboxFilter(e.target.value)) onChange(e.target.value);
+      }}
+      selectClassName="max-sm:py-2"
+    >
+      {INBOX_FILTERS.map((f) => (
+        <option key={f} value={f}>
+          {INBOX_FILTER_LABEL[f]} ({counts[f]})
+        </option>
+      ))}
+    </Select>
+  );
+  if (slot === undefined) {
+    return <div className="flex justify-end px-3 pb-1 pt-2">{select}</div>;
+  }
+  return slot ? createPortal(select, slot) : null;
 }

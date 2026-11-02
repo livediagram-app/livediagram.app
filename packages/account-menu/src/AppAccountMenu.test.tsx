@@ -1,10 +1,11 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { renderToString } from 'react-dom/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AccountMenu } from './AccountMenu';
+import { AccountMenu, SIGN_OUT_REFUSED } from './AccountMenu';
 import { AppAccountMenu } from './AppAccountMenu';
 import { appAccountOf, appSignOut, resetAppAccount } from './app-account';
 import { avatarColour } from './initials';
+import { SILENT_RETRY_GLOBAL } from '@liveworkspace/auth-client/silent';
 import { AccountMenuPlaceholder, DeferredAccountMenu, type DeferredMenuProps } from './placeholder';
 
 const HINT = 'lp_signed_in';
@@ -104,7 +105,7 @@ describe('AppAccountMenu', () => {
     expect(renderToString(<AppAccountMenu hint={HINT} />)).toBe(placeholder);
   });
 
-  it("shows the signed-in person's menu from the cookies, with no request", () => {
+  it("shows the signed-in person's menu from the cookies, with no request on the way", () => {
     setCookies('lp_signed_in=1', 'lp_account=Ada%20Lovelace');
     render(<AppAccountMenu hint={HINT} />);
     const trigger = screen.getByRole('button', { name: 'Ada Lovelace, account menu' });
@@ -115,7 +116,7 @@ describe('AppAccountMenu', () => {
     const items = screen.getAllByRole('menuitem');
     expect(items.map((i) => i.textContent)).toEqual([
       'SettingsProfile, emails, API tokens',
-      'Sign out',
+      'Sign OutEvery app in this browser',
     ]);
     // A marketing page has no Settings panel: the app's own Explorer on this address opens it, never liveworkspace.app.
     expect(items[0]!.getAttribute('href')).toBe('/explorer?settings=all');
@@ -190,6 +191,92 @@ describe('AppAccountMenu', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
+  it('checks a named session once, when the page is idle, and turns to Guest if it ended elsewhere', async () => {
+    vi.useFakeTimers();
+    setCookies('lp_signed_in=1', 'lp_account=Ada');
+    // Signed out in another app: the session here ended with it, and the answer clears this app's cookies.
+    fetchMock.mockImplementation(async () => {
+      document.cookie = 'lp_signed_in=0; path=/';
+      return new Response('{"signedIn":false}', { status: 401 });
+    });
+    render(
+      <>
+        <AppAccountMenu hint={HINT} />
+        <AppAccountMenu hint={HINT} />
+      </>,
+    );
+    // Shown from the cookies at once; nothing asked during the page's own work.
+    expect(screen.getAllByRole('button', { name: 'Ada, account menu' })).toHaveLength(2);
+    expect(fetchMock).not.toHaveBeenCalled();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(200);
+    });
+    vi.useRealTimers();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0]![0]).toBe('/api/auth/token');
+    expect(screen.getAllByRole('button', { name: 'Guest, account menu' })).toHaveLength(2);
+  });
+
+  it('lets the silent sign-in look again after that answer, once', async () => {
+    // The function the silent sign-in's boot script leaves on the page (@liveworkspace/auth-client/silent).
+    const again = vi.fn();
+    vi.stubGlobal(SILENT_RETRY_GLOBAL, again);
+    vi.useFakeTimers();
+    setCookies('lp_signed_in=1', 'lp_account=Ada');
+    fetchMock.mockImplementation(async () => {
+      document.cookie = 'lp_signed_in=0; path=/';
+      return new Response('{"signedIn":false}', { status: 401 });
+    });
+    render(
+      <>
+        <AppAccountMenu hint={HINT} />
+        <AppAccountMenu hint={HINT} />
+      </>,
+    );
+    expect(again).not.toHaveBeenCalled();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(200);
+    });
+    vi.useRealTimers();
+    expect(again).toHaveBeenCalledTimes(1);
+  });
+
+  it('waits for an idle moment where the browser offers one, and keeps a live session as it is', async () => {
+    const idle: (() => void)[] = [];
+    vi.stubGlobal('requestIdleCallback', (fn: () => void) => void idle.push(fn));
+    setCookies('lp_signed_in=1', 'lp_account=Ada');
+    fetchMock.mockResolvedValue(new Response('{"signedIn":true}', { status: 200 }));
+    render(<AppAccountMenu hint={HINT} />);
+    expect(fetchMock).not.toHaveBeenCalled();
+    await act(async () => idle.shift()!());
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'Ada, account menu' })).toBeTruthy();
+  });
+
+  it('drops a check scheduled before a reset, so it never fires into what comes after', async () => {
+    const idle: (() => void)[] = [];
+    vi.stubGlobal('requestIdleCallback', (fn: () => void) => void idle.push(fn));
+    setCookies('lp_signed_in=1', 'lp_account=Ada');
+    const { unmount } = render(<AppAccountMenu hint={HINT} />);
+    unmount();
+    resetAppAccount();
+    await act(async () => idle.shift()!());
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('skips the check when the menu is gone by the idle moment, and schedules it again on the next', async () => {
+    const idle: (() => void)[] = [];
+    vi.stubGlobal('requestIdleCallback', (fn: () => void) => void idle.push(fn));
+    setCookies('lp_signed_in=1', 'lp_account=Ada');
+    fetchMock.mockResolvedValue(new Response('{"signedIn":true}', { status: 200 }));
+    render(<AppAccountMenu hint={HINT} />).unmount();
+    await act(async () => idle.shift()!());
+    expect(fetchMock).not.toHaveBeenCalled();
+    render(<AppAccountMenu hint={HINT} />);
+    await act(async () => idle.shift()!());
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('turns to Guest when the token says the session is gone', async () => {
     setCookies('lp_signed_in=1');
     fetchMock.mockImplementation(async () => {
@@ -220,6 +307,17 @@ describe('AppAccountMenu', () => {
 describe('AccountMenu signed in', () => {
   const signedIn = { name: 'Ada', onSignOut: async () => true };
 
+  it('gives focus back to its button on Escape, as every menu does', () => {
+    render(<AccountMenu {...signedIn} onOpenSettings={() => {}} />);
+    const trigger = screen.getByRole('button', { name: 'Ada, account menu' });
+    trigger.focus();
+    fireEvent.keyDown(trigger, { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(screen.getAllByRole('menuitem')[0]);
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
+
   it('opens Settings in place where the surface has the panel: preparing on approach, opening as the menu closes', () => {
     const onOpenSettings = vi.fn();
     const onPrepareSettings = vi.fn();
@@ -242,6 +340,31 @@ describe('AccountMenu signed in', () => {
     expect(screen.queryAllByRole('menuitem')).toHaveLength(0);
   });
 
+  it('says so when Sign Out is refused or never gets through, and keeps the menu open to try again', async () => {
+    const onSignOut = vi
+      .fn()
+      .mockResolvedValueOnce(false)
+      .mockRejectedValueOnce(new TypeError('offline'));
+    render(<AccountMenu name="Ada" onSignOut={onSignOut} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Ada, account menu' }));
+    for (let i = 0; i < 2; i++) {
+      await act(async () => {
+        fireEvent.click(screen.getByRole('menuitem', { name: /Sign Out/ }));
+      });
+      expect(screen.getByRole('menu')).toBeTruthy();
+      expect(screen.getByRole('menuitem', { name: /Sign Out/ }).textContent).toContain(
+        SIGN_OUT_REFUSED,
+      );
+      expect(screen.getByRole('status').textContent).toBe(SIGN_OUT_REFUSED);
+    }
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+    fireEvent.click(screen.getByRole('button', { name: 'Ada, account menu' }));
+    expect(screen.getByRole('menuitem', { name: /Sign Out/ }).textContent).toContain(
+      'Every app in this browser',
+    );
+    expect(screen.getByRole('status').textContent).toBe('');
+  });
+
   it('names the open menu "Account", not after its trigger', () => {
     render(<AccountMenu {...signedIn} />);
     fireEvent.click(screen.getByRole('button', { name: 'Ada, account menu' }));
@@ -255,7 +378,7 @@ describe('AccountMenu signed in', () => {
     expect(items.map((i) => i.textContent)).toEqual([
       'ExplorerYour work in every app',
       'SettingsProfile, emails, API tokens',
-      'Sign out',
+      'Sign OutEvery app in this browser',
     ]);
     expect(items[0]!.getAttribute('href')).toBe('/explorer');
     unmount();
@@ -360,21 +483,32 @@ describe('DeferredAccountMenu (a marketing page’s Guest button)', () => {
 });
 
 describe('appSignOut', () => {
-  it('signs out of the app and reloads as a visitor', async () => {
+  it('signs out of the app and comes back to this page as a visitor', async () => {
+    window.history.replaceState(null, '', '/pricing?x=1');
     fetchMock.mockResolvedValue(new Response('{}', { status: 200 }));
-    const reload = vi.fn();
-    expect(await appSignOut(reload)).toBe(true);
-    expect(fetchMock.mock.calls[0]![0]).toBe('/api/auth/sign-out');
+    const go = vi.fn();
+    expect(await appSignOut(go)).toBe(true);
+    expect(fetchMock.mock.calls[0]![0]).toBe('/api/auth/sign-out?return=%2Fpricing%3Fx%3D1');
     expect(fetchMock.mock.calls[0]![1]).toMatchObject({ method: 'POST' });
-    expect(reload).toHaveBeenCalledOnce();
+    expect(go).toHaveBeenCalledWith('/pricing?x=1');
+    window.history.replaceState(null, '', '/');
+  });
+
+  // liveworkspace/docs/specs/003-accounts/accounts.md "Signing out".
+  it("goes through the accounts site's hop when the API answers one", async () => {
+    const hop = 'https://www.liveworkspace.app/api/auth/end-session?ticket=t';
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ signedIn: false, next: hop })));
+    const go = vi.fn();
+    expect(await appSignOut(go)).toBe(true);
+    expect(go).toHaveBeenCalledWith(hop);
   });
 
   it('leaves everything as it was when the API refuses or is unreachable', async () => {
-    const reload = vi.fn();
+    const go = vi.fn();
     fetchMock.mockResolvedValueOnce(new Response('{}', { status: 500 }));
-    expect(await appSignOut(reload)).toBe(false);
+    expect(await appSignOut(go)).toBe(false);
     fetchMock.mockRejectedValueOnce(new TypeError('offline'));
-    expect(await appSignOut(reload)).toBe(false);
-    expect(reload).not.toHaveBeenCalled();
+    expect(await appSignOut(go)).toBe(false);
+    expect(go).not.toHaveBeenCalled();
   });
 });

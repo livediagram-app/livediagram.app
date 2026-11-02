@@ -87,6 +87,9 @@ import { buildMetricTree } from './template-builders-metric-tree';
 import { buildValuePropositionCanvas } from './template-builders-value-proposition';
 import { buildFamilyTree } from './template-builders-family-tree';
 import { buildValueStreamMap } from './template-builders-value-stream';
+import { buildBoardGrid } from './template-builders-board-grid';
+import { buildConceptMap } from './template-builders-concept-map';
+import { buildNetworkDiagram } from './template-builders-network';
 
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.
@@ -265,6 +268,16 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildPreMortem(cx, cy);
     case 'idea-garden':
       return buildIdeaGarden(cx, cy);
+    // The use-case batch: four board grids over data, the concept map and the network diagram.
+    case 'eisenhower-matrix':
+    case 'pestle-analysis':
+    case 'kwl-chart':
+    case 'onboarding-plan':
+      return buildBoardGrid(kind, cx, cy);
+    case 'concept-map':
+      return buildConceptMap(cx, cy);
+    case 'network-diagram':
+      return buildNetworkDiagram(cx, cy);
   }
 }
 

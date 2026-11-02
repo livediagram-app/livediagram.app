@@ -19,6 +19,7 @@
     "@livedocuments/document": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
+    "@liveworkspace/community": "workspace:^",
     "@liveworkspace/model-core": "workspace:*",
     "@liveworkspace/telemetry": "workspace:*"
   },

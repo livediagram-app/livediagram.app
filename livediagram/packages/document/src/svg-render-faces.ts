@@ -13,8 +13,8 @@
 // the canvas: a card is composed at its kind's default size and scaled to the
 // box, so a big one has bigger type rather than more padding.
 
-import { fenceParts, FENCE_RAIL_OPACITY } from './fence';
-import { avatarPadArtRect, AVATAR_PAD_PARTS } from './avatar-pad';
+import { fenceParts, FENCE_RAIL_OPACITY } from '@liveworkspace/avatar/fence';
+import { avatarPadArtRect, AVATAR_PAD_PARTS } from '@liveworkspace/avatar/pad-art';
 import {
   FURNITURE_ART,
   FURNITURE_FACE_SHADE,

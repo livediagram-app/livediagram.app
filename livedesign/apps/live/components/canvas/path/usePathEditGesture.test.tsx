@@ -20,16 +20,24 @@ afterEach(() => vi.restoreAllMocks());
 
 type Mods = { alt?: boolean; shift?: boolean };
 
-function setup(el: PathElement | null, selectedPathId: string | null = null) {
+type Extra = Pick<
+  Parameters<typeof usePathEditGesture>[0],
+  'snapOthers' | 'snapToPage' | 'onEmptyPress'
+>;
+
+function setup(el: PathElement | null, selectedPathId: string | null = null, extra: Extra = {}) {
   const wrapper = document.createElement('div');
   wrapper.getBoundingClientRect = () => ({ left: 0, top: 0 }) as DOMRect;
   const commits: { id: string; anchors: PathAnchor[]; closed: boolean; kind: string }[] = [];
   const onLeave = vi.fn();
   const onDeselect = vi.fn();
   const onBeginEdit = vi.fn();
+  const initialProps: { element: PathElement | null; contour?: number } = { element: el };
   const hook = renderHook(
-    (p: { element: PathElement | null }) =>
+    (p: { element: PathElement | null; contour?: number }) =>
       usePathEditGesture({
+        ...extra,
+        contour: p.contour,
         element: p.element,
         selectedPathId,
         wrapperRef: { current: wrapper },
@@ -39,7 +47,7 @@ function setup(el: PathElement | null, selectedPathId: string | null = null) {
         onDeselect,
         onBeginEdit,
       }),
-    { initialProps: { element: el } },
+    { initialProps },
   );
   const press = (x: number, y: number, mods: Mods = {}) => {
     let claimed = false;
@@ -382,5 +390,54 @@ describe('usePathEditGesture', () => {
     expect(e.defaultPrevented).toBe(true);
     expect(s.onBeginEdit).toHaveBeenCalledWith('p1');
     expect(s.press(0, 0)).toBe(false);
+  });
+
+  // docs/specs/023-draw-mode/path-tool.md "Combined paths" and "Snapping to the page".
+  it('snaps a dragged node to another contour’s nodes', () => {
+    const s = setup(open(), null, { snapOthers: [{ x: 500, y: 500 }] });
+    s.press(300, 300);
+    s.move(497, 330);
+    expect(s.hook.result.current.draft![2]).toMatchObject({ x: 500, y: 330 });
+    expect(s.hook.result.current.guides).toEqual({ x: 500 });
+    s.up(497, 330);
+  });
+
+  it('snaps a node that met no node to the page’s guides, an unrotated path only', () => {
+    const snapToPage = vi.fn((p: { x: number; y: number }) => ({
+      x: Math.round(p.x / 50) * 50,
+      y: p.y,
+    }));
+    const s = setup(open(), null, { snapToPage });
+    s.press(300, 300);
+    s.move(420, 330);
+    expect(s.hook.result.current.draft![2]).toMatchObject({ x: 400, y: 330 });
+    expect(s.hook.result.current.guides).toBeNull();
+    s.up(420, 330);
+    const turned = setup({ ...open(), rotation: 30 }, null, { snapToPage });
+    snapToPage.mockClear();
+    turned.press(300, 300);
+    turned.move(420, 330);
+    expect(snapToPage).not.toHaveBeenCalled();
+    turned.up(420, 330);
+  });
+
+  it('hands a press on nothing to another contour first, and starts afresh on a switch', () => {
+    const onEmptyPress = vi.fn(() => true);
+    const s = setup(open(), null, { onEmptyPress });
+    s.click(300, 100);
+    expect([...s.hook.result.current.selected]).toEqual([1]);
+    expect(s.press(150, 250)).toBe(true);
+    s.up(150, 250);
+    expect(onEmptyPress).toHaveBeenCalledWith({ x: 150, y: 250 }, false);
+    expect(s.onLeave).not.toHaveBeenCalled();
+    s.hook.rerender({ element: s.hook.result.current.editing ? open() : null, contour: 1 });
+    expect(s.hook.result.current.selected.size).toBe(0);
+  });
+
+  it('clears the selection when its nodes are replaced', () => {
+    const s = setup(open());
+    s.click(300, 100);
+    act(() => s.hook.result.current.clearSelection());
+    expect(s.hook.result.current.selected.size).toBe(0);
   });
 });

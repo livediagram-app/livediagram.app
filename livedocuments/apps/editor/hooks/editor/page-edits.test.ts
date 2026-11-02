@@ -188,6 +188,16 @@ describe('Page edits', () => {
     const title = onPage.find((e) => e.type === 'text') as { textScale?: number };
     expect(title.textScale).toBeLessThan(2);
   });
+
+  // pages-mode.md "Sizes".
+  it("scales a labelled shape's words with it when a turn shrinks it", () => {
+    const tall = { ...box('a', 60), label: 'Continue', textSize: 16, height: 1000 } as Element;
+    const h = harness({ ...twoPages(), elements: [tall] });
+    h.edits().setOrientation('page-1', 'landscape');
+    const [button] = h.tab().elements as { textScale?: number; height: number }[];
+    expect(button!.height).toBeLessThan(1000);
+    expect(button!.textScale).toBeCloseTo(button!.height / 1000, 2);
+  });
 });
 
 describe('Page edits: documents', () => {

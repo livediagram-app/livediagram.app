@@ -1,0 +1,70 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { ArticleTableScene } from '@/components/illustrations/article-blocks';
+
+export const metadata = helpMetadata({
+  title: 'Tables in Articles',
+  description:
+    'Put a table in an article: Tab through its cells, add rows and columns, resize them, and let it run across pages with its header row repeated.',
+  path: '/help/pages/articles/article-tables/',
+});
+
+<ArticleLayout
+  title="Tables in Articles"
+  description="A table that is part of the writing: it flows with the text, runs across pages and repeats its header row on each."
+  categoryTitle="Pages"
+  categorySlug="pages"
+  parentArticle={{ title: "Writing Articles", slug: "articles" }}
+  subArticles={getSubArticles("articles").filter((a) => a.slug !== "article-tables")}
+>
+
+A table in an article is part of the writing, like a paragraph: it moves with the text above it, splits between its rows when it reaches the foot of a page, and carries on at the top of the next one. Each cell holds text, with the same bold, italic, colours and links as the rest of the article.
+
+## Putting In a Table
+
+Choose **Table** from the page toolbar's **Insert** menu, or type **/** at the start of a line and pick **Table**. You get three columns and three rows, with the header row on and the caret in the first cell.
+
+The palette's table element is a different thing: it places a table freely, loose on a page or sitting in the writing as an object. Only **Insert** and the **/** menu make a table that is part of the text.
+
+## Typing in a Table
+
+- **Tab** moves to the next cell, along the row and then down; **Shift+Tab** goes back. **Tab** in the last cell adds a new row (for an Editor).
+- **Enter** starts a new line inside the cell.
+- **Up** and **Down** on a cell's first or last line move to the cell above or below, and out of the table past its first or last row.
+- **Drag across cells** to select them whole; **Backspace** or **Delete** then empties them, and a copy of them pastes into another table.
+
+<Figure caption="A table in an article, its header row tinted, with the page toolbar's Table menu open beside it.">
+  <ArticleTableScene />
+</Figure>
+
+## Rows, Columns and the Header Row
+
+While the caret is in a table, the page toolbar shows a **Table** menu:
+
+- **Insert Row Above** and **Insert Row Below**.
+- **Insert Column Left** and **Insert Column Right**.
+- **Delete Row** and **Delete Column**. Deleting a table's only row or column deletes the table.
+- **Header Row**: on, the first row is bold on a soft tint of the article's accent, and repeats at the top of every page the table continues onto. A new table starts with it on. **Insert Row Above** is unavailable in the header row, so it stays first.
+- **Delete Table**.
+
+A table holds up to 500 rows and 20 columns; at a limit, the menu's entry is greyed out and its tooltip says why.
+
+## Column Widths
+
+Columns share the width of the text, so a table always fits its page, whatever the margins or paper size. Hover the line between two columns and drag it to move width from one to the other. **Escape** during the drag puts the widths back.
+
+## Pasting Tables
+
+Copy a table from Google Sheets, Excel, Numbers, a web page, Word or Google Docs and paste it into the writing: it arrives as a table, its header row on when the source had one. Tab-separated text of at least two lines and two columns, and a Markdown table, paste as a table too. The columns share the width equally, merged cells are split, and rows past 500 or columns past 20 are left out.
+
+Paste cells copied from a table into another table's cells and they fill the cells from the caret onwards; anything else pasted into a cell goes in as its text.
+
+## Good to Know
+
+- **Comment** and **Assign Action** are not available inside a table: select words outside it to comment on them.
+- **Exports** draw the table as on screen, split across pages with the header row repeated, in a PDF, PNG or SVG. [Word export](/help/pages/exporting-pages/) writes it as a Word table, and [importing a Word document](/help/tabs/import-tabs/) brings its tables in as tables.
+- **Collaborators** each save their own cell, so two people typing in different cells never overwrite each other.
+- **Participants** can type in a table's cells, but not add or remove rows or columns, change the header row or widths, or put a table in. **Viewers** only read.
+
+</ArticleLayout>

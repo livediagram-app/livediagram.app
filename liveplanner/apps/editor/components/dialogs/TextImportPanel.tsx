@@ -10,16 +10,19 @@ type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 // Owns its own text / busy / error so the dialog stays simple.
 export function TextImportPanel({
   placeholder,
+  initialText = '',
   onImportText,
   onImportFile,
   onDone,
 }: {
   placeholder: string;
+  // Text already in hand (a file dropped on the Import dialog), shown in the box to import with a press.
+  initialText?: string;
   onImportText: (text: string) => Promise<ImportOutcome>;
   onImportFile: () => Promise<ImportOutcome>;
   onDone: (outcome: DoneOutcome) => void;
 }) {
-  const [text, setText] = useState('');
+  const [text, setText] = useState(initialText);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,6 +47,8 @@ export function TextImportPanel({
   return (
     <div>
       <textarea
+        // Named: the placeholder (a sample) is no name, and clears once anything is typed.
+        aria-label="JSON to import"
         value={text}
         onChange={(e) => setText(e.target.value)}
         spellCheck={false}
@@ -51,26 +56,31 @@ export function TextImportPanel({
         className="h-56 w-full resize-y rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-xs leading-relaxed text-slate-800 placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-200 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-600 dark:focus:ring-brand-500/30"
       />
       {error ? (
-        <p className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+        <p
+          // Announced when it appears: the Import button keeps focus, so a reader would never hear why nothing landed.
+          role="alert"
+          className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
+        >
           {error}
         </p>
       ) : null}
       <div className="mt-4 flex items-center justify-end gap-2">
-        <button
-          type="button"
+        <Button
+          variant="none"
           onClick={() => void run(onImportFile)}
-          disabled={busy}
+          busy={busy}
           className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition enabled:hover:border-brand-300 enabled:hover:bg-brand-50/40 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:enabled:hover:border-brand-500/60"
         >
           Import a file instead
-        </button>
+        </Button>
         <Button
           variant="primary"
           size="md"
           // Wide enough for "Importing…", so the label swap moves nothing.
           className="min-w-[7.5rem]"
           onClick={() => void run(() => onImportText(text))}
-          disabled={busy || text.trim().length === 0}
+          disabled={text.trim().length === 0}
+          busy={busy}
         >
           {busy ? 'Importing…' : 'Import'}
         </Button>

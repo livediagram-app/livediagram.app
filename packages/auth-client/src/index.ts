@@ -11,7 +11,6 @@ export {
 } from './verify';
 export {
   authorizeUrl,
-  closeAccount,
   createPkcePair,
   exchangeCode,
   GUEST_STATE_PATTERN,
@@ -19,12 +18,24 @@ export {
   isGuestHandoffState,
   randomState,
   refreshTokens,
+  signOutEverywhere,
   type AuthorizeUrlOptions,
   type ClientCredentials,
   type GuestHandoffOptions,
   type PkcePair,
   type TokenSet,
 } from './oauth';
+export {
+  checkDeletionCode,
+  closeAccount,
+  confirmDeletionCode,
+  isDeletionCode,
+  requestDeletionCode,
+  sendDeletionCode,
+  type ConfirmedDeletion,
+  type DeletionAnswer,
+  type DeletionCodeCheck,
+} from './close-account';
 export {
   accountEmails,
   claimLegacyGuest,
@@ -89,6 +100,8 @@ export {
   teamTargets,
   type NotifyTarget,
 } from './notify';
+export { sendPush } from './push';
+export type { PushKind, PushNotification } from '@liveworkspace/settings/push';
 export { appApiResources, audiencesFor, isExplorerRead } from './explorer-reads';
 export {
   createWorkbenchRoomNoter,

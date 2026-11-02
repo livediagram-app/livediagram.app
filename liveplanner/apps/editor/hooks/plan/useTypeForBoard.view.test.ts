@@ -5,9 +5,9 @@ import { newTypeForBoard, withTypeOnView } from './useTypeForBoard';
 // docs/specs/026-plan/plan-views.md "Gantt Chart": Add New Card Type from a Gantt chart.
 describe('a new card type made from a Gantt chart', () => {
   it('starts with Start and Due beside the new type’s own fields, every status on', () => {
-    const t = newTypeForBoard({ viewId: 'g', fields: ['start', 'due'] }, ['todo', 'done']);
+    const t = newTypeForBoard({ viewId: 'g', fields: ['start', 'due'] });
     expect(t.fields).toEqual(expect.arrayContaining(['title', 'start', 'due']));
-    expect(t.excludedStatuses).toBeUndefined();
+    expect(t.statuses).toBeUndefined();
   });
 
   it('joins a chart naming its own types, and leaves one drawing every type alone', () => {

@@ -14,6 +14,7 @@ import {
   SHORT_ANSWER_MAX,
   type PublicQuestion,
 } from '@liveplanner/forms';
+import { fromLocalInput, localInputValue } from '@liveplanner/items';
 import { RatingInput } from './RatingInput';
 
 type QuestionControlProps = {
@@ -43,6 +44,7 @@ export function placeholderHint(q: PublicQuestion): string {
   if (q.type === 'number') return numberHint(q);
   if (q.type === 'email') return 'name@example.com';
   if (q.type === 'link') return 'https://';
+  if (q.type === 'phone') return '+44 20 7946 0958';
   return 'Your answer';
 }
 const FIELD_BAD = 'border-red-500 dark:border-red-400';
@@ -144,6 +146,20 @@ export function QuestionControl({
           onChange={(e) => onChange(e.target.value)}
         />
       );
+    case 'phone':
+      return (
+        <input
+          {...common}
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          className={`${field} max-w-xs tabular-nums`}
+          value={text}
+          maxLength={32}
+          placeholder={q.placeholder ?? placeholderHint(q)}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      );
     case 'date':
       return (
         <input
@@ -152,6 +168,24 @@ export function QuestionControl({
           className={`${field} max-w-xs`}
           value={text}
           onChange={(e) => onChange(e.target.value)}
+        />
+      );
+    // A moment in the respondent's own zone, sent as its UTC instant with that zone (forms.md "Question types").
+    case 'datetime':
+      return (
+        <input
+          {...common}
+          type="datetime-local"
+          step={60}
+          className={`${field} max-w-xs tabular-nums`}
+          value={localInputValue(text)}
+          onChange={(e) => onChange(fromLocalInput(e.target.value) ?? '')}
+        />
+      );
+    case 'daterange':
+      return (
+        <RangeAnswer
+          {...{ q, value, onChange, onBlur, disabled, invalid, labelledBy, describedBy, controlId }}
         />
       );
     case 'single':
@@ -434,6 +468,69 @@ function Dropdown({
           onBlur={onBlur}
         />
       ) : null}
+    </div>
+  );
+}
+
+// A Date Range question's From and To: two date boxes, or two date-and-time boxes when it includes times. Sends the
+// two ends as a list, or nothing when both are empty; checking the answer says when one is missing or out of order.
+function RangeAnswer({
+  q,
+  value,
+  onChange,
+  onBlur,
+  disabled,
+  invalid,
+  labelledBy,
+  describedBy,
+  controlId,
+}: {
+  q: PublicQuestion;
+  value: unknown;
+  onChange: (value: unknown) => void;
+  onBlur?: () => void;
+  disabled: boolean;
+  invalid: boolean;
+  labelledBy: string;
+  describedBy?: string;
+  controlId: string;
+}) {
+  const ends: unknown[] = Array.isArray(value) ? value : [];
+  const end = (i: number): string => {
+    const v = ends[i];
+    return typeof v === 'string' ? v : '';
+  };
+  const timed = q.withTime === true;
+  const field = `${FIELD} ${invalid ? FIELD_BAD : FIELD_OK} tabular-nums`;
+  const set = (i: number, raw: string) => {
+    const v = timed ? (fromLocalInput(raw) ?? '') : raw;
+    const next = i === 0 ? [v, end(1)] : [end(0), v];
+    onChange(next[0] === '' && next[1] === '' ? [] : next);
+  };
+  const box = (i: number, word: string) => (
+    <label className="flex min-w-0 flex-1 basis-40 flex-col gap-1">
+      <span className="form-ink text-[13px] font-medium text-slate-600 dark:text-slate-300">
+        {word}
+      </span>
+      <input
+        id={i === 0 ? controlId : `${controlId}-to`}
+        type={timed ? 'datetime-local' : 'date'}
+        step={timed ? 60 : undefined}
+        disabled={disabled}
+        onBlur={onBlur}
+        aria-invalid={invalid || undefined}
+        aria-describedby={describedBy}
+        aria-required={q.required || undefined}
+        className={field}
+        value={timed ? localInputValue(end(i)) : end(i)}
+        onChange={(e) => set(i, e.target.value)}
+      />
+    </label>
+  );
+  return (
+    <div role="group" aria-labelledby={labelledBy} className="flex max-w-lg flex-wrap gap-3">
+      {box(0, 'From')}
+      {box(1, 'To')}
     </div>
   );
 }

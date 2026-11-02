@@ -8,28 +8,31 @@ repository root.
 
 Scope, by file:
 
-| File                                              | Role                                                                                                              |
-| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/items.ts`           | Filters and list specs; create, read, update, copy, open, grant; `insertItem`, use days, `sharedWithUpsert`       |
-| `liveworkspace/apps/index/src/lists.ts`           | `buildListQuery`, `filterClauses`, `buildMostUsedQuery`, `buildMineCountQuery`, `buildAnyQuery`, `listItems`      |
-| `liveworkspace/apps/index/src/rows.ts`            | `ItemRow`, `ITEM_COLUMNS`, `directAccess`, `toItem`, `LIVE_LINK`, `decorate`                                      |
-| `liveworkspace/apps/index/src/folders.ts`         | Folder routes, `reachableFolder`, `teamFilter`, `readName`                                                        |
-| `liveworkspace/apps/index/src/folder-previews.ts` | `GET /folders/previews`                                                                                           |
-| `liveworkspace/apps/index/src/personal.ts`        | Favourites, Hide from Recent (placement defaults: [default-folders.md](default-folders.md))                       |
-| `liveworkspace/apps/index/src/visitors.ts`        | Opened and Copied by a Visitor                                                                                    |
-| `liveworkspace/apps/index/src/notices.ts`         | `tellApp`, the first-visit check, `GET /app/people/:id/count`                                                     |
-| `packages/index-client/src/client.ts`             | `listItems`, `createItem`, `getItem`, `updateItem`, `copyItem`, `recordOpen`, `grant`, folder and favourite calls |
+| File                                                            | Role                                                                                                              |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/items.ts`                         | Filters and list specs; create, read, update, copy, open, grant; `insertItem`, use days, `sharedWithUpsert`       |
+| `liveworkspace/apps/index/src/lists.ts`                         | `buildListQuery`, `filterClauses`, `buildMostUsedQuery`, `buildMineCountQuery`, `buildAnyQuery`, `listItems`      |
+| `liveworkspace/apps/index/src/rows.ts`                          | `ItemRow`, `ITEM_COLUMNS`, `directAccess`, `toItem`, `LIVE_LINK`, `decorate`                                      |
+| `liveworkspace/apps/index/src/folders.ts`                       | Folder routes, `reachableFolder`, `teamFilter`, `readName`                                                        |
+| `liveworkspace/apps/index/src/folder-previews.ts`               | `GET /folders/previews`                                                                                           |
+| `liveworkspace/apps/index/src/personal.ts`                      | Favourites, Hide from Recent (placement defaults: [default-folders.md](default-folders.md))                       |
+| `liveworkspace/apps/index/src/visitors.ts`                      | Opened and Copied by a Visitor                                                                                    |
+| `liveworkspace/apps/index/src/notices.ts`                       | `tellApp`, the first-visit check, `GET /app/people/:id/count`                                                     |
+| `packages/index-client/src/client.ts`                           | `listItems`, `createItem`, `getItem`, `updateItem`, `copyItem`, `recordOpen`, `grant`, folder and favourite calls |
+| `liveworkspace/apps/index/migrations/0009_items_livehuddle.sql` | The items rebuild that let in livehuddle's Spaces ([Rebuilding items](#rebuilding-items))                         |
+| `liveworkspace/apps/index/scripts/items-rebuild-check.ts`       | `snapshot`, `compare`, `foreignKeyProblems`, `itemsDescendants`: what a rebuild must leave unchanged              |
+| `liveworkspace/apps/index/scripts/items-rebuild-counts.ts`      | The rehearsal CLI: `rehearse <export.sql>`, `snapshot`, `compare`                                                 |
 
 ## Domain and naming
 
-| Term    | Identifier                                                                           | Meaning                                                   |
-| ------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------- |
-| View    | `ITEM_VIEWS`: `all`, `recent`, `favourites`, `shared`, `trash`, `unsorted`, `search` | Which list                                                |
-| Filters | `ListFilters { apps, words, source, since, owner, intent, modes, space }`            | The Explorer's lens; values of one combine with or        |
-| Source  | `ITEM_SOURCES`: `person`, `ai`, `import`, `template`                                 | How it was made                                           |
-| Intent  | `<mode>:<kind>[:<family>]`, ≤ 100 chars                                              | What it was made as; its last word is the `intent` filter |
-| Use day | `use_days (person, item, day)`                                                       | A UTC day the person opened or edited it: Most Used       |
-| Open    | `opens (person, item, last_opened_at, hidden)`                                       | Recent; `hidden = 1` is Hide from Recent                  |
+| Term    | Identifier                                                                           | Meaning                                                                 |
+| ------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| View    | `ITEM_VIEWS`: `all`, `recent`, `favourites`, `shared`, `trash`, `unsorted`, `search` | Which list                                                              |
+| Filters | `ListFilters { apps, words, source, since, owner, intent, modes, space }`            | The Explorer's lens; values of one combine with or                      |
+| Source  | `ITEM_SOURCES`: `person`, `ai`, `import`, `template`                                 | How it was made                                                         |
+| Intent  | `<mode>:<kind>[:<family>]`, ≤ 100 chars                                              | What it was made as; its last word is the `intent` filter               |
+| Use day | `use_days (person, item, day, opens)`                                                | A UTC day the person opened or edited it, and how many opens: Most Used |
+| Open    | `opens (person, item, last_opened_at, hidden)`                                       | Recent; `hidden = 1` is Hide from Recent                                |
 
 `Item` on the wire: `{ id, app, kind, title, ownerId, teamId, folderId, source, intent, createdAt, updatedAt,
 trashedAt, trashReason, summary, access, favourite, lastOpenedAt, hiddenFromRecent, hasLinks, sharedVia }`.
@@ -57,7 +60,7 @@ trashedAt, trashReason, summary, access, favourite, lastOpenedAt, hiddenFromRece
 | `GET /items/:id`        | `view`           | `{ item, tabId, publicCode }` (the tab a link confines to; the public code when that is the way in)                                                                                                                                                                                                                                                               |
 | `PATCH /items/:id`      | `edit`           | `title` (trimmed ≤ 500); `folderId`, `teamId` only for owner or team (`403` through a link). Into or out of a team needs both teams joined; leaving one makes it the mover's own; changing team clears the folder. A rename moves `updated_at`; a move doesn't. Events: `renamed { from }`, `moved { folderName, teamId }` after moving its events' scopes.       |
 | `POST /items/:id/copy`  | `view`, a person | New row `"<title> (copy)"` (≤ 500) or `title`; own or team's stays in place, a link's lands in the root of the copier's space; `created { copiedFrom }`; then the app's `POST /items/:from/copy-to/:to { tabId, by, code, ip }`. The app failing deletes the row: `502 copy_failed`. Through a link: `copied_by_visitor` on the owner's Timeline. `201 { item }`. |
-| `POST /items/:id/open`  | `view`           | `204`. No person: nothing. Debounced per isolate (60 s, 5,000 keys) and in SQL (`opens` rewritten only after 60 s); a use day (`INSERT OR IGNORE`), pruned once a UTC day per person to the last 90 days. Through a non-public link: `shared_with` upserted and, the first time, the app told `{ type: 'joined', personId, level }`.                              |
+| `POST /items/:id/open`  | `view`           | `204`. No person: nothing. Debounced per isolate (60 s, 5,000 keys) and in SQL (`opens` rewritten only after 60 s); the day's open counted (`use_days` upserted, `opens + 1`), pruned once a UTC day per person to the last 14 days. Through a non-public link: `shared_with` upserted and, the first time, the app told `{ type: 'joined', personId, level }`.   |
 | `POST /items/:id/grant` | `view`           | `mintGrant` with `sub` the person or `link:<code>`, `trashed` and `link` set; `503` without a key; through a non-public link, `opened_by_visitor` once per visitor, item and UTC day                                                                                                                                                                              |
 
 `DELETE /items/:id` and `POST /items/:id/restore` are in [trash.md](trash.md).
@@ -85,8 +88,9 @@ person's folders (`LIKE` with `\` escapes); `apps`, `source`, `intent` (`intent 
 the list, the mode the item's app last reported, such as livediagram's `diagram`, `draw`, `workshop`; read from the
 row the page already holds, so no index); `since` (`updated_at >=`); `owner` `me`/`others`; `space` (`mine`, `shared`,
 `team:<id>`, teams joined now else `403 not_team_member`). The answer is `{ items, nextCursor }` plus, on a first
-page: `mostUsed` (items with `useDays`, by distinct days in 90, then last open, then id, hidden ones left out),
-`mine { count, more }` and `any`. One batch; the page and Most Used decorated together.
+page: `mostUsed` (items opened in the last 14 days with `useOpens` and `useDays`, by opens in the window, then last open,
+then id, hidden ones left out), `mine { count, more }` (the live items in every scope the person has: their own and
+each joined team's, each item in one scope so counted once) and `any`. One batch; the page and Most Used decorated together.
 
 ### Folders
 
@@ -111,18 +115,51 @@ Every folder route needs a folder the person can file into (their own scope or a
 
 ## Data and persistence
 
-| Table        | Key                         | Indexes                                                                                                                                                                                                                                                                                                                                   | Written by                                                         | Read by                             |
-| ------------ | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------- |
-| `items`      | `id`                        | `items_live (scope, updated_at DESC, id DESC) WHERE live`; `items_live_app (scope, app, …) WHERE live`; `items_trash … WHERE trashed`; `items_unsorted … WHERE live AND folder_id IS NULL`; `items_folder (folder_id, …) WHERE folder_id IS NOT NULL`; `items_trashed_at`; `items_empty (updated_at) WHERE live AND empty`; `items_owner` | create, update, delete, restore, copy, summary push, merge, purges | every list, access, Inbox, Timeline |
-| `folders`    | `id`                        | `folders_scope (scope, created_at, id)`; `folders_parent`; `folders_owner`                                                                                                                                                                                                                                                                | folder routes, merge, purge                                        | lists, search, defaults, previews   |
-| `favourites` | `(person_id, item_id)`      | `favourites_person_created (person_id, created_at DESC, item_id DESC)`; `favourites_item`                                                                                                                                                                                                                                                 | favourites, merge, purge                                           | `favourites` view, `decorate`       |
-| `opens`      | `(person_id, item_id)`      | `opens_recent (person_id, last_opened_at DESC, item_id DESC) WHERE hidden = 0`; `opens_item`                                                                                                                                                                                                                                              | open, Hide from Recent, merge                                      | `recent`, Most Used, `decorate`     |
-| `use_days`   | `(person_id, item_id, day)` | `use_days_person_day (person_id, day)`; `use_days_item`                                                                                                                                                                                                                                                                                   | open, `edited` reports, merge                                      | Most Used                           |
+| Table        | Key                         | Indexes                                                                                                                                                                                                                                                                                                                                   | Written by                                                          | Read by                             |
+| ------------ | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ----------------------------------- |
+| `items`      | `id`                        | `items_live (scope, updated_at DESC, id DESC) WHERE live`; `items_live_app (scope, app, …) WHERE live`; `items_trash … WHERE trashed`; `items_unsorted … WHERE live AND folder_id IS NULL`; `items_folder (folder_id, …) WHERE folder_id IS NOT NULL`; `items_trashed_at`; `items_empty (updated_at) WHERE live AND empty`; `items_owner` | create, update, delete, restore, copy, summary push, merge, purges  | every list, access, Inbox, Timeline |
+| `folders`    | `id`                        | `folders_scope (scope, created_at, id)`; `folders_parent`; `folders_owner`                                                                                                                                                                                                                                                                | folder routes, merge, purge                                         | lists, search, defaults, previews   |
+| `favourites` | `(person_id, item_id)`      | `favourites_person_created (person_id, created_at DESC, item_id DESC)`; `favourites_item`                                                                                                                                                                                                                                                 | favourites, merge, purge                                            | `favourites` view, `decorate`       |
+| `opens`      | `(person_id, item_id)`      | `opens_recent (person_id, last_opened_at DESC, item_id DESC) WHERE hidden = 0`; `opens_item`                                                                                                                                                                                                                                              | open, Hide from Recent, merge                                       | `recent`, Most Used, `decorate`     |
+| `use_days`   | `(person_id, item_id, day)` | `use_days_person_day (person_id, day)`; `use_days_item`                                                                                                                                                                                                                                                                                   | open (`opens + 1`), `edited` reports (the day only), merge (summed) | Most Used                           |
 
-`items` columns: `id`, `app` (CHECK the four), `kind` (CHECK the four), `owner_id`, `team_id`, `scope`, `folder_id`
-(`ON DELETE SET NULL`), `title`, `source` (CHECK), `intent`, `summary` (JSON ≤ 2 KB, default `'{}'`), `created_at`,
-`updated_at`, `trashed_at`, `trash_reason` (CHECK `deleted`/`empty`), `empty_swept_for`. Foreign keys from
-`favourites`, `opens`, `use_days` cascade.
+`items` columns: `id`, `app` (CHECK the five apps), `kind` (CHECK the five kinds, `space` livehuddle's), `owner_id`,
+`team_id`, `scope`, `folder_id` (`ON DELETE SET NULL`), `title`, `source` (CHECK), `intent`, `summary` (JSON ≤ 2 KB,
+default `'{}'`), `created_at`, `updated_at`, `trashed_at`, `trash_reason` (CHECK `deleted`/`empty`), `empty_swept_for`.
+Foreign keys from `favourites`, `opens`, `use_days` cascade.
+
+### Rebuilding items
+
+`items` is the parent of twelve tables that cascade on delete (`favourites`, `opens`, `use_days`, `timeline_events`,
+`share_links`, `share_passwords`, `shared_with`, `collab_threads`, `collab_thread_people`, `collab_actions`,
+`collab_forms`, `collab_form_reads`), and `timeline_events` of two more (`timeline_event_scopes`,
+`timeline_dismissals`). No table has a trigger, view or virtual table. SQLite can't change a CHECK in place, D1 keeps
+foreign keys on inside a migration and has no `writable_schema`, so the usual rebuild (make the new table, drop the
+old, rename) would cascade-delete every child row when the old table drops; renaming the old one aside first doesn't
+help, as SQLite rewrites the children's `REFERENCES` to follow it. A migration
+that changes `items`' columns or CHECKs (the first: `0009_items_livehuddle.sql`, which let in livehuddle) therefore,
+in one transaction:
+
+1. copies each of the fourteen children aside (`CREATE TABLE aside_<t> AS SELECT * FROM <t>`: no keys, nothing
+   references it);
+2. drops the children, leaf first, so no drop cascades;
+3. builds `items_next` with the new DDL, fills it with one `INSERT … SELECT`, drops `items` (nothing references it
+   now) and renames `items_next` to `items`, then makes its eight indexes;
+4. makes each child again with its DDL as it stands (columns added by later `ALTER TABLE`s kept last, where they
+   were), refills it from its copy with one `INSERT … SELECT`, parents before children, then makes its indexes;
+5. drops the copies.
+
+Every statement is a plain `INSERT … SELECT` or DDL: no compound SELECT, no bound parameters, so D1's five-term and
+100-parameter limits never apply. A new table that references `items` (or one of its children) joins the list:
+`livehuddle-migration.test.ts` fails until it does. Before such a migration deploys it is rehearsed on a copy of
+production: `wrangler d1 export liveworkspace-index --remote --output prod.sql` (which only reads), then
+`node scripts/items-rebuild-counts.ts rehearse prod.sql` in `apps/index`, which applies the migration to the copy as
+D1 would and compares every table's row count and rows (a SHA-256 in key order), columns, foreign keys, CHECKs and
+indexes before and after, checks `PRAGMA foreign_key_check`, and exits 1 on any difference. Its `snapshot` and
+`compare` commands do the same around wrangler's own local D1. The rebuild rewrites every row of the fifteen tables
+and holds the database for as long as it runs. Measured locally on a file database: 0.4 s for 10,000 items with
+89,000 child rows, 4.8 s for 100,000 with 886,000, 89 s for 1,000,000 with 8.9 million. The rehearsal prints the time
+on the real copy; one that runs far past 30 s is the sign to split the rebuild before it deploys.
 
 ## Errors and edge cases
 
@@ -143,22 +180,23 @@ A folder preview is two statements for up to 60 folders.
 
 ## Testing
 
-| Test                                                       | Pins                                                                                           |
-| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/items.test.ts` (35)          | who gets in; making and reading; renaming and moving; the Trash; copies; opens; grants; tokens |
-| `liveworkspace/apps/index/src/lists.test.ts` (17)          | views and filters (the `modes` lens included); search; query plans; at 2,000 items             |
-| `liveworkspace/apps/index/src/home-reads.test.ts` (5)      | Home's reads beside the first page, and their bound                                            |
-| `liveworkspace/apps/index/src/most-used.test.ts` (8)       | recording use days; Most Used beside Recent; the bound; Hide from Recent                       |
-| `liveworkspace/apps/index/src/personal.test.ts` (9)        | folders, tags, favourites, placement defaults                                                  |
-| `liveworkspace/apps/index/src/folder-previews.test.ts` (4) | `GET /folders/previews`                                                                        |
-| `liveworkspace/apps/index/src/visitors.test.ts` (2)        | visitors on the Timeline                                                                       |
-| `liveworkspace/apps/index/src/notices.test.ts` (6)         | notices; a person's count of items made                                                        |
+| Test                                                             | Pins                                                                                           |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/items.test.ts` (35)                | who gets in; making and reading; renaming and moving; the Trash; copies; opens; grants; tokens |
+| `liveworkspace/apps/index/src/lists.test.ts` (17)                | views and filters (the `modes` lens included); search; query plans; at 2,000 items             |
+| `liveworkspace/apps/index/src/livehuddle-migration.test.ts` (11) | the items rebuild keeps every row, index, key and cascade; Spaces go in, unknown apps don't    |
+| `liveworkspace/apps/index/src/home-reads.test.ts` (5)            | Home's reads beside the first page, and their bound                                            |
+| `liveworkspace/apps/index/src/most-used.test.ts` (8)             | recording use days; Most Used beside Recent; the bound; Hide from Recent                       |
+| `liveworkspace/apps/index/src/personal.test.ts` (9)              | folders, tags, favourites, placement defaults                                                  |
+| `liveworkspace/apps/index/src/folder-previews.test.ts` (4)       | `GET /folders/previews`                                                                        |
+| `liveworkspace/apps/index/src/visitors.test.ts` (2)              | visitors on the Timeline                                                                       |
+| `liveworkspace/apps/index/src/notices.test.ts` (6)               | notices; a person's count of items made                                                        |
 
 ## Constants and configuration
 
 `LIST_LIMIT_DEFAULT` 50, `LIST_LIMIT_MAX` 200, `TITLE_MAX` 500, `FOLDER_NAME_MAX` 500, `SEARCH_MAX` 200,
 `SEARCH_WORDS_MAX` 16, `FILTER_VALUES_MAX` 8, `INTENT_WORD` `/^[a-z0-9-]{1,32}$/`, `OPEN_DEBOUNCE_MS` 60 s,
-`USE_WINDOW_DAYS` 90, `MOST_USED_MAX` 8, `FOLDER_PREVIEW_IDS_MAX` 60, `FOLDER_PREVIEW_ITEMS` 4,
+`USE_WINDOW_DAYS` 14, `MOST_USED_MAX` 8, `FOLDER_PREVIEW_IDS_MAX` 60, `FOLDER_PREVIEW_ITEMS` 4,
 `FOLDER_PREVIEW_COUNT_CAP` 1000 (`packages/index-client/src/constants.ts`); `INTENT_MAX` 100, `ID_MAX` 128,
 `OPEN_MEMORY_MAX` 5,000 (`liveworkspace/apps/index/src/config.ts`); `DEFAULT_TITLE` `'Untitled'` (`items.ts`).
 

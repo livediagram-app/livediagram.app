@@ -23,6 +23,7 @@ import {
   computeViewportCenter,
 } from '@liveworkspace/workbench/lib/viewport';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { KEYBOARD_MARGIN_PX } from '@liveworkspace/workbench/hooks/canvas/useKeyboardAvoidance';
 import { glideViewport, type ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
 import { onMapShown } from '@liveworkspace/workbench/lib/fit-clear-of-panel';
 import { tabFitView } from '@/lib/tab-fit-view';
@@ -185,8 +186,14 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
       // Visible band (screen px) we keep the element within.
       const visLeft = rect.left + side;
       const visRight = rect.right - side;
-      const visTop = rect.top + VIEW_MARGIN_TOP;
-      const visBottom = rect.bottom - VIEW_MARGIN_BOTTOM;
+      // A phone's on-screen keyboard covers the canvas without resizing it: it shrinks the visual
+      // viewport only, so the band ends above it (its own margin, as useKeyboardAvoidance keeps).
+      // Writing that grows past the keyboard's top was revealed into the strip behind it.
+      const vv = window.visualViewport;
+      const seenTop = vv ? vv.offsetTop : -Infinity;
+      const seenBottom = vv ? vv.offsetTop + vv.height : Infinity;
+      const visTop = Math.max(rect.top, seenTop) + VIEW_MARGIN_TOP;
+      const visBottom = Math.min(rect.bottom - VIEW_MARGIN_BOTTOM, seenBottom - KEYBOARD_MARGIN_PX);
       const visW = Math.max(1, visRight - visLeft);
       const visH = Math.max(1, visBottom - visTop);
 

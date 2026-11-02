@@ -22,6 +22,9 @@ import {
 import { TOOL_ICONS } from './photo-icons';
 import { PhotoToolOptionsBody } from './PhotoToolOptionsBody';
 import { TransformOptionsBody } from './PhotoTransformOptions';
+import { TOOL_FLYOUT_INSIDE, useToolFlyoutDismiss } from './useToolFlyoutDismiss';
+
+const PHONE_SHEET_INSIDE = `${TOOL_FLYOUT_INSIDE}, [data-bottom-sheet]`;
 
 const TransformIcon = lucideGlyph(lucideScaling, 18);
 // The flyout's footer is pointer help; a phone has none to give.
@@ -70,7 +73,11 @@ export function PhotoPhoneOptionsSheet({ photo }: { photo: PhotoEditorView }) {
   const open = useToolFlyoutOpen();
   const { tool } = usePhotoTools();
   const transform = useFreeTransform();
-  if (!open || (!tool && !transform)) return null;
+  const shown = open && (!!tool || !!transform);
+  // As the desktop's card: a press outside the sheet (its grab handle is the sheet's own) or Escape closes it. Without
+  // this the sheet, over the lower half of the screen and the photo, could only be dragged away by its handle.
+  useToolFlyoutDismiss(shown, PHONE_SHEET_INSIDE);
+  if (!shown) return null;
   const name = transform ? 'Free Transform' : TOOL_NAMES[tool!];
   const Icon = transform ? TransformIcon : TOOL_ICONS[tool!];
   return (

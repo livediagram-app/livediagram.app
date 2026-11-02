@@ -39,16 +39,12 @@ export function layerStackTourSteps(ctx: ConceptTourContext): TourStepOf<Element
         ]
       : []),
     addRowStep('add', 'Add a Layer', 'Add Layer adds one at the bottom, up to eight.', 'Add Layer'),
-    ...(ctx.hasMore
-      ? [
-          inTheMenu(
-            'rows',
-            'Reorder in the Menu',
-            'In its menu, Tools › Rows lets you rename, reorder or remove layers.',
-            ['Tools', 'Rows'],
-          ),
-        ]
-      : []),
+    inTheMenu(
+      'rows',
+      'Reorder in the Menu',
+      'In its menu, Tools › Rows lets you rename, reorder or remove layers.',
+      ['Tools', 'Rows'],
+    ),
     onGraphic(
       'colours',
       'One Colour, a Whole Ramp',

@@ -112,7 +112,10 @@ export const pageSet = defineVerb({
     doc: docArg,
     tab: tabFlag,
     changes: z.string().optional().describe('A JSON file of page changes, or - for stdin'),
-    add: z.enum(['infographic', 'slide']).optional().describe('Add a page of this kind'),
+    add: z
+      .enum(['infographic', 'slide', 'flashcard'])
+      .optional()
+      .describe('Add a page of this kind'),
     page: z.string().optional().describe('The page to change: its id, place or name'),
     name: z.string().optional().describe('Name the page'),
     size: sizeArg,
@@ -174,7 +177,7 @@ async function changesFrom(ctx: VerbContext, source: string): Promise<PageChange
 }
 
 type ChangeFlags = {
-  add?: 'infographic' | 'slide';
+  add?: 'infographic' | 'slide' | 'flashcard';
   page?: string;
   name?: string;
   size?: string;

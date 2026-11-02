@@ -88,7 +88,7 @@ describe('the element verbs', () => {
     expect(requests).toEqual([{ operations: 'connect n1 -> n2 label="calls it"' }]);
   });
 
-  it('are seven, rm destructive, and every example parses', () => {
+  it('are eight, rm destructive, and every example parses', () => {
     expect(elementVerbs.map((v) => v.id)).toEqual([
       'element.add',
       'element.set',
@@ -97,6 +97,7 @@ describe('the element verbs', () => {
       'element.connect',
       'element.insert',
       'element.wrap',
+      'element.detach',
     ]);
     expect(elementVerbs.filter((v) => v.behaviour === 'destructive').map((v) => v.id)).toEqual([
       'element.rm',

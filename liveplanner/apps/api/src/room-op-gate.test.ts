@@ -40,6 +40,35 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ kind: 'tab', tabId: 't' }, as('participate'))).toEqual(DROP);
   });
 
+  // docs/specs/012-collaboration/comment-reactions.md "Share roles": whoever may comment may react.
+  it('relays a comment reaction from an Editor and a Participant as itself, never from a Viewer', () => {
+    const react = (by: string) => ({
+      kind: 'el-delta',
+      tabId: 't',
+      elementId: 'e',
+      delta: { kind: 'comment-react', commentId: 'c', emoji: 'eyes', by, name: 'Me', on: true },
+    });
+    expect(gateClientOp(react('me'), as('edit'))).toEqual(relay(false));
+    expect(gateClientOp(react('me'), as('participate'))).toEqual(relay(false, true));
+    expect(gateClientOp(react('you'), as('participate'))).toEqual(DROP);
+    expect(gateClientOp(react('me'), as('view'))).toEqual(DROP);
+  });
+
+  // docs/specs/012-collaboration/collab-race-hardening.md "A Dashboard's layout travels as deltas": a layout change
+  // is an Editor's alone, on its own tab when the link is scoped to one.
+  it('relays a Dashboard layout change from an Editor only', () => {
+    const delta = {
+      kind: 'dashboard-delta',
+      tabId: 't',
+      patch: { rows: { r1: { set: { height: 340 } } } },
+    };
+    expect(gateClientOp(delta, as('edit'))).toEqual(relay(false));
+    expect(gateClientOp(delta, as('participate'))).toEqual(DROP);
+    expect(gateClientOp(delta, as('view'))).toEqual(DROP);
+    expect(gateClientOp(delta, as('edit', { tabScope: 't' }))).toEqual(relay(false));
+    expect(gateClientOp(delta, as('edit', { tabScope: 'other' }))).toEqual(DROP);
+  });
+
   it("shows only an editor's drag preview", () => {
     expect(gateClientOp({ kind: 'drag-preview' }, as('edit'))).toEqual(relay(true));
     expect(gateClientOp({ kind: 'drag-preview' }, as('participate'))).toEqual(DROP);

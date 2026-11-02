@@ -115,6 +115,7 @@ describe('person ids (security)', () => {
     actions: [action],
     commentThread: { comments: [comment], resolved: false },
     addedBy: secret,
+    componentEditBy: secret,
   } as unknown as Element;
 
   it('never leaves through show, in text or JSON, and names every one omitted', () => {
@@ -133,6 +134,8 @@ describe('person ids (security)', () => {
       'imageId',
       // The tab a tab window shows (docs/specs/009-elements/tab-window.md).
       'windowTabId',
+      // The main an instance draws (docs/specs/009-elements/components.md).
+      'componentId',
     ]);
     const roots = new Set(PERSON_ID_FIELDS.map((p) => p.split(/[.[{]/)[0]));
     const idLike = Object.values(ELEMENT_FIELD_NAMES)

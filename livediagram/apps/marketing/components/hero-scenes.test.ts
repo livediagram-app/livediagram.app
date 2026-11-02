@@ -10,10 +10,7 @@ describe('hero scenes', () => {
   it.each(HERO_SCENES.map((s) => [s.key, s] as const))(
     '%s links to the mode its window shows',
     (_, scene) => {
-      const url = new URL(
-        scene.build,
-        'https://livediagram-router.liveworkspace-easing509.workers.dev',
-      );
+      const url = new URL(scene.build, 'https://www.livediagram.app');
       expect(url.pathname).toBe('/new');
       expect(url.searchParams.get('mode')).toBe(scene.mode);
     },
@@ -21,16 +18,10 @@ describe('hero scenes', () => {
 
   it.each(
     HERO_SCENES.filter((s) =>
-      new URL(
-        s.build,
-        'https://livediagram-router.liveworkspace-easing509.workers.dev',
-      ).searchParams.has('q'),
+      new URL(s.build, 'https://www.livediagram.app').searchParams.has('q'),
     ).map((s) => [s.key, s] as const),
   )('%s searches for a template that opens in its mode', (_, scene) => {
-    const q = new URL(
-      scene.build,
-      'https://livediagram-router.liveworkspace-easing509.workers.dev',
-    ).searchParams
+    const q = new URL(scene.build, 'https://www.livediagram.app').searchParams
       .get('q')!
       .toLowerCase();
     const match = TEMPLATES.filter(

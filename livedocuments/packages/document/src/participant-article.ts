@@ -31,6 +31,8 @@ const isWriting = (block: ArticleBlock | undefined): boolean =>
 /** Whether one op is writing, against the article as the ops before it left it. */
 function opIsWriting(flow: ArticleFlow, op: ArticleOp): boolean {
   if (op.kind === 'style') return false;
+  // A table cell's text is writing; the table's shape (a put of the table) is not.
+  if (op.kind === 'cell') return flow.blocks.some((b) => b.id === op.block && b.type === 'table');
   const id = op.kind === 'remove' ? op.id : op.block.id;
   const there = flow.blocks.find((b) => b.id === id);
   // A remove of a block that is not there changes nothing.

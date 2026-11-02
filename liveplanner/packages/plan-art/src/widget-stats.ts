@@ -1,6 +1,7 @@
 // The numbers the board widgets read (docs/specs/026-plan/board-widgets.md "Widget kinds"), from the
 // items the board shows (their status is one of its columns). Pure, so each rule is tested on its own.
 import {
+  CARD_AGE_ALERT_DAYS,
   DAY_MS,
   PRIORITIES,
   dayNumber,
@@ -9,6 +10,12 @@ import {
   itemStatus,
   itemVoteTotal,
   todayNumber,
+  durationMinutes,
+  isTimeSpent,
+  readTimeValue,
+  typeIn,
+  type CustomFieldDef,
+  type ItemTypeDef,
   type Priority,
   type BoardProjection,
   type Item,
@@ -18,8 +25,8 @@ import {
 
 // Days ahead that count as "due soon".
 export const DUE_SOON_DAYS = 7;
-// Days without a change before a card not yet done is stale.
-export const STALE_DAYS = 14;
+// Days without a change before a card not yet done is stale: the day a card's Age turns red too.
+export const STALE_DAYS = CARD_AGE_ALERT_DAYS;
 
 // The share done as a whole percent, for "73% done": rounded, except that it reads 100 only when every one is done
 // and 0 only when none is, so 199 of 200 is 99% and 1 of 300 is 1%, never a finished or untouched board that is not.
@@ -72,7 +79,7 @@ export function overWipColumns(projection: BoardProjection): number {
   return projection.columns.filter((c) => c.overLimit).length;
 }
 
-// Cards not yet done (before the done column, finishedStatuses) that are past due, and due within DUE_SOON_DAYS
+// Cards not yet done (in no done column, finishedStatuses) that are past due, and due within DUE_SOON_DAYS
 // (today included).
 export function dueCounts(
   setup: PlanBoardSetup,
@@ -93,16 +100,12 @@ export function dueCounts(
   return { overdue, soon };
 }
 
-function doneStatusOf(setup: PlanBoardSetup): string | undefined {
-  return setup.columns.find((c) => c.id === setup.doneColumnId)?.status;
-}
-
-// Estimate points on the board, and those in its done column.
+// Estimate points on the board, and those in its done columns.
 export function boardPoints(
   setup: PlanBoardSetup,
   items: readonly Item[],
 ): { done: number; total: number; estimated: number } {
-  const doneStatus = doneStatusOf(setup);
+  const finished = new Set(finishedStatuses(setup));
   let done = 0;
   let total = 0;
   let estimated = 0;
@@ -111,9 +114,42 @@ export function boardPoints(
     if (typeof e !== 'number') continue;
     estimated += 1;
     total += e;
-    if (doneStatus && itemStatus(it) === doneStatus) done += e;
+    if (isFinished(finished, it)) done += e;
   }
   return { done, total, estimated };
+}
+
+// The Duration field the Time widget reads on a card of `type` (docs/specs/026-plan/board-widgets.md "Time"): its
+// first Time Spent field, else its first Duration field; none for a type without one.
+export function timeFieldOf(type: ItemTypeDef | undefined): CustomFieldDef | undefined {
+  const offered = (type?.custom ?? []).filter(
+    (f) => f.kind === 'duration' && type!.fields.includes(f.id),
+  );
+  return offered.find((f) => isTimeSpent(f)) ?? offered[0];
+}
+
+// The board's hours: each card's time field (timeFieldOf) as minutes, how many cards hold one, and the timers
+// running in those fields now.
+export function boardTime(
+  items: readonly Item[],
+  types: readonly ItemTypeDef[],
+): { minutes: number; counted: number; running: number } {
+  let minutes = 0;
+  let counted = 0;
+  let running = 0;
+  const fieldOf = new Map<string, CustomFieldDef | undefined>();
+  for (const it of items) {
+    if (!fieldOf.has(it.type)) fieldOf.set(it.type, timeFieldOf(typeIn(types, it.type)));
+    const f = fieldOf.get(it.type);
+    if (!f) continue;
+    const m = durationMinutes(f, it.fields[f.id]);
+    if (m !== undefined) {
+      minutes += m;
+      counted += 1;
+    }
+    if (isTimeSpent(f)) running += readTimeValue(it.fields[f.id]).running.length;
+  }
+  return { minutes, counted, running };
 }
 
 // Cards per priority, most urgent first, leaving out the priorities nothing has.
@@ -142,7 +178,7 @@ export function topVoted(items: readonly Item[]): { item: Item; votes: number } 
   return best;
 }
 
-// Cards not yet done (before the done column) that nobody has changed in STALE_DAYS, stalest first.
+// Cards not yet done (in no done column) that nobody has changed in STALE_DAYS, stalest first.
 export function staleItems(setup: PlanBoardSetup, items: readonly Item[], now: Date): Item[] {
   const finished = new Set(finishedStatuses(setup));
   const before = now.getTime() - STALE_DAYS * DAY_MS;
@@ -155,7 +191,7 @@ export function staleCount(setup: PlanBoardSetup, items: readonly Item[], now: D
   return staleItems(setup, items, now).length;
 }
 
-// Whether a card sits in the done column or one after it.
+// Whether a card sits in a done column.
 function isFinished(finished: ReadonlySet<string>, it: Item): boolean {
   const status = itemStatus(it);
   return status !== undefined && finished.has(status);

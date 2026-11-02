@@ -25,6 +25,7 @@ import {
   dragNodes,
   insertNodeAt,
   moveHandle,
+  moveNodes,
   nodesInBox,
   pathEditCursor,
   pathEditHit,
@@ -76,6 +77,10 @@ export function usePathEditGesture({
   onLeave,
   onDeselect,
   onBeginEdit,
+  contour = 0,
+  snapOthers,
+  snapToPage,
+  onEmptyPress,
 }: {
   // The path in its edit mode, or null.
   element: PathElement | null;
@@ -91,6 +96,14 @@ export function usePathEditGesture({
   onLeave: () => void;
   onDeselect: () => void;
   onBeginEdit: (id: string) => void;
+  // Which contour of a combined path `element` is (usePathTool): a switch starts afresh.
+  contour?: number;
+  // Further nodes a dragged node snaps to, in the path's frame: a combined path's other contours.
+  snapOthers?: readonly Point[];
+  // Where a dragged node lands near the page's guides, in canvas px (null: no guide near).
+  snapToPage?: (p: Point) => Point | null;
+  // A press on no node, handle or segment: true when it was taken (another contour picked).
+  onEmptyPress?: (world: Point, touch: boolean) => boolean;
 }) {
   const editingId = element?.id ?? null;
   const [selected, setSelectedState] = useState<ReadonlySet<number>>(NO_NODES);
@@ -115,11 +128,14 @@ export function usePathEditGesture({
   const leaveRef = useLatest(onLeave);
   const deselectRef = useLatest(onDeselect);
   const beginEditRef = useLatest(onBeginEdit);
+  const snapOthersRef = useLatest(snapOthers);
+  const snapToPageRef = useLatest(snapToPage);
 
-  // A new path in edit mode (or none) starts with no nodes selected and no gesture.
-  const [seenId, setSeenId] = useState(editingId);
-  if (seenId !== editingId) {
-    setSeenId(editingId);
+  // A new path or contour in edit mode (or none) starts with no nodes selected and no gesture.
+  const sessionKey = editingId === null ? null : `${editingId}:${contour}`;
+  const [seenId, setSeenId] = useState(sessionKey);
+  if (seenId !== sessionKey) {
+    setSeenId(sessionKey);
     setSelectedState(NO_NODES);
     setDraft(null);
     setBox(null);
@@ -134,7 +150,7 @@ export function usePathEditGesture({
   });
   useEffect(() => {
     releaseGesture();
-  }, [editingId]);
+  }, [sessionKey]);
 
   const toCanvas = (clientX: number, clientY: number): Point | null => {
     const rect = wrapperRef.current?.getBoundingClientRect();
@@ -190,9 +206,13 @@ export function usePathEditGesture({
           { x: q.x - g.start.x, y: q.y - g.start.y },
           ev.shiftKey,
           PATH_SNAP_PX / zoomRef.current,
+          snapOthersRef.current,
         );
         setGuides(step.guides);
-        hold(g, step.anchors);
+        hold(
+          g,
+          step.guides || ev.shiftKey ? step.anchors : (onPage(g, step.anchors) ?? step.anchors),
+        );
         return;
       }
       case 'handle':
@@ -205,6 +225,17 @@ export function usePathEditGesture({
         setBox({ from: g.startWorld, to: world });
         return;
     }
+  };
+
+  // A node that snapped to no node snaps to the page's guides (an unrotated path only, whose
+  // frame is the canvas's): every moving node shifts by what the pressed one did.
+  const onPage = (g: Gesture & { kind: 'nodes' }, anchors: PathAnchor[]): PathAnchor[] | null => {
+    const snap = snapToPageRef.current;
+    if (!snap || (g.el.rotation ?? 0) % 360 !== 0) return null;
+    const p = anchors[g.pressed];
+    const to = p ? snap(p) : null;
+    if (!p || !to || (to.x === p.x && to.y === p.y)) return null;
+    return moveNodes(anchors, selectedRef.current, to.x - p.x, to.y - p.y);
   };
 
   const onUp = (ev: PointerEvent) => {
@@ -344,6 +375,8 @@ export function usePathEditGesture({
         start({ kind: 'segment', segment: hit.segment, t: hit.t });
         return true;
       case 'empty':
+        // Another contour of a combined path is picked instead (usePathTool).
+        if (!e.shiftKey && onEmptyPress?.(world, e.pointerType === 'touch')) return true;
         start({ kind: 'box', additive: e.shiftKey });
         return true;
     }
@@ -463,6 +496,8 @@ export function usePathEditGesture({
     setSelected(new Set([0]));
   };
   const done = () => leave('done');
+  // The nodes were replaced (Simplify): none of the old ones is selected.
+  const clearSelection = () => setSelected(NO_NODES);
 
   return {
     editing: element !== null,
@@ -472,6 +507,7 @@ export function usePathEditGesture({
     deleteSelected,
     toggleClosed,
     done,
+    clearSelection,
     selected: element ? selected : NO_NODES,
     draft: element ? draft : null,
     box: element ? box : null,

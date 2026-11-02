@@ -9,7 +9,9 @@
 // And the cloud copy must hold every card and sheet before the local one goes: a create that
 // resolves to an existing row (a retry after a half-finished sync) never re-seeds those stores.
 
-import { storeAsCreates } from '@liveplanner/items';
+import { storeAsCreates, type ItemCreate } from '@liveplanner/items';
+import { threadsOnCard, withoutLegacyThread } from '@liveplanner/project';
+import { recordThreads } from './offline-threads';
 import { PROJECT_CONVERSION_HEADER } from '@liveplanner/api-schema';
 import { apiCreateProject } from '@/lib/api-client';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
@@ -53,6 +55,16 @@ function uploadMark(rec: OfflineProjectRecord): string {
 // "Syncing in place").
 export type OfflineSyncResult = { id: string };
 
+// The creates, each carrying the threads its card is on.
+function withThreads(creates: ItemCreate[], rec: OfflineProjectRecord): ItemCreate[] {
+  const threads = recordThreads(rec);
+  if (threads.length === 0) return creates;
+  return creates.map((c) => {
+    const on = c.id ? threadsOnCard(threads, rec.id, c.id) : [];
+    return on.length ? { ...c, threads: on } : c;
+  });
+}
+
 // Uploads the record.
 async function upload(rec: OfflineProjectRecord, ownerId: string): Promise<void> {
   const tabs = rec.tabs;
@@ -70,7 +82,9 @@ async function upload(rec: OfflineProjectRecord, ownerId: string): Promise<void>
         folderId,
         createdAt: rec.createdAt,
         // The item store, in each column's order (docs/specs/026-plan/items.md "Offline projects").
-        items: storeAsCreates(rec.items ?? []),
+        // Each card with the comment threads it is on (docs/specs/026-plan/items.md "Offline projects"): the first
+        // card's create brings a thread up whole, each other's puts its card on it.
+        items: withThreads(storeAsCreates((rec.items ?? []).map(withoutLegacyThread)), rec),
         // And its type catalogue (docs/specs/026-plan/item-types.md "Storage and sync").
         itemTypes: rec.itemTypes ?? null,
         // The sheet store, whole (docs/specs/029-sheets/sheet-store.md "Offline projects").

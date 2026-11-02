@@ -4,8 +4,20 @@
 // has, docs/specs/012-collaboration/presentation-mode.md "Saved data") is never read or written: whatever a design
 // holds there stays as it is.
 
-import { remapTabLinks, type Element } from '@livedesign/design';
+import {
+  componentRefIdsFromData,
+  remapTabLinks,
+  type DesignComponent,
+  type Element,
+} from '@livedesign/design';
+import { redactTabDataForCommunity } from '@liveworkspace/community/app';
 import { redactTabDataAuthors } from '../comments';
+import { mainsForReader } from '../component-redact';
+import {
+  componentInsertStatements,
+  componentRefAddStatements,
+  readComponents,
+} from '../db/components';
 import { servableImageIds } from '../db/image-grants';
 import { imageRefAddStatements } from '../db/image-refs';
 import { blobRefsOfTabs, markBlobsHeld, type PhotoBlobMeta } from '../db/photo-blobs';
@@ -221,6 +233,9 @@ export type DesignCopy = {
   owners: [id: string, owner: string][];
   // Photo blobs the copied tabs hold, by the copy's tab id.
   blobs: (PhotoBlobMeta & { tabId: string })[];
+  // The component library (docs/specs/009-elements/components.md): every main, or for a one-tab copy the mains its
+  // instances use. Absent from a copy of a design without one.
+  components?: DesignComponent[];
 };
 
 // Every tab of the design (or one) with its body, in order: the read a copy makes, and the Drive file's
@@ -253,11 +268,14 @@ export async function readContentTabRows(
 
 // The source side of a copy. `onlyTabId`: a tab-scoped visitor's copy takes that tab only. `copierId`: who copies (null when the index did not say); anyone but the owner
 // copies the comments as the tab read serves them to them, every author id but their own blanked.
+// `community`: a copy through a Community post's open link (docs/specs/025-community/community.md) carries the
+// design without its comments or the people on its actions.
 export async function exportDesignCopy(
   env: DesignEnv,
   designId: string,
   onlyTabId: string | null,
   copierId: string | null,
+  community = false,
 ): Promise<DesignCopy | null> {
   const design = await env.DESIGN_DB.prepare(
     'SELECT opens_in, tab_kind, owner_id FROM design WHERE id = ?',
@@ -279,7 +297,11 @@ export async function exportDesignCopy(
       name: row.name,
       orderIndex: row.order_index,
       folder: row.folder,
-      data: redactAuthorsFor !== null ? redactTabDataAuthors(remapped, redactAuthorsFor) : remapped,
+      data: community
+        ? redactTabDataForCommunity(remapped).data
+        : redactAuthorsFor !== null
+          ? redactTabDataAuthors(remapped, redactAuthorsFor)
+          : remapped,
       // Link remapping rewrites ids inside elements, never their number, so the count carries over.
       elementCount: row.element_count,
     };
@@ -295,6 +317,9 @@ export async function exportDesignCopy(
     ...b,
     tabId: tabIdMap.get(b.tabId)!,
   }));
+  // Mains keep their ids (the copied instances name them), redacted for the copier as the tabs are.
+  const mains = await readComponents(env, onlyTabId === null ? {} : { tabIds: [onlyTabId] });
+  const components = mainsForReader(mains, { community, redactFor: redactAuthorsFor });
   return {
     opensIn: design?.opens_in ?? null,
     tabKind: design?.tab_kind ?? null,
@@ -302,6 +327,7 @@ export async function exportDesignCopy(
     grants,
     owners: owners.results.map((r): [string, string] => [r.id, r.owner_id]),
     blobs,
+    ...(components.length > 0 ? { components } : {}),
   };
 }
 
@@ -363,8 +389,10 @@ export async function importDesignCopy(
       tabStatsStatement(env, tab.id, tabStatsOfData(tab.data).stats, now),
       // After the link, so the reference triggers queue the copy's images for the media service.
       ...imageRefAddStatements(env, tab.id, imageRefIdsFromData(tab.data)),
+      ...componentRefAddStatements(env, tab.id, componentRefIdsFromData(tab.data)),
     );
   }
+  stmts.push(...componentInsertStatements(env, copy.components ?? []));
   if (copy.owners.length > 0) {
     stmts.push(
       db

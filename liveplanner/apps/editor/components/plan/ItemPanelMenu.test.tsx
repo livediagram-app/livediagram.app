@@ -77,6 +77,36 @@ describe('ItemPanelMenu', () => {
     fireEvent.click(screen.getByRole('menuitem', { name: 'Flag' }));
     expect(fns.onFlag).toHaveBeenCalledOnce();
   });
+
+  // docs/specs/026-plan/plan-board.md "Its address": Copy Card Link is every role's, before Help.
+  it.each([
+    ['an Editor', true, true],
+    ['a Participant', true, false],
+    ['a Viewer', false, false],
+  ])('offers %s Copy Card Link before Help, and copies', (_role, canEdit, canRetire) => {
+    const onCopyLink = vi.fn();
+    render(
+      <ItemPanelMenu
+        itemKey={7}
+        canEdit={canEdit}
+        canRetire={canRetire}
+        archived={false}
+        flagged={false}
+        onDuplicate={vi.fn()}
+        onFlag={vi.fn()}
+        onArchive={vi.fn()}
+        onTrash={vi.fn()}
+        onCopyLink={onCopyLink}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'More for #7' }));
+    const labels = screen.getAllByRole('menuitem').map((m) => m.textContent);
+    expect(labels[labels.indexOf('Help') - 1]).toBe('Copy Card Link');
+    if (!canEdit) expect(labels).toEqual(['Copy Card Link', 'Help']);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Copy Card Link' }));
+    expect(onCopyLink).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('menuitem')).toBeNull();
+  });
 });
 
 describe('duplicateItem', () => {
@@ -95,6 +125,75 @@ describe('duplicateItem', () => {
       after: 'item0001',
     });
     expect(plan.announce).toHaveBeenCalledWith('Card duplicated');
+  });
+
+  it('leaves tracked time behind but keeps a plain Duration', () => {
+    const custom = [
+      { id: 'spent', label: 'Time Spent', kind: 'duration', timeSpent: true },
+      { id: 'est', label: 'Estimate', kind: 'duration' },
+    ];
+    const plan = {
+      addItem: vi.fn(),
+      announce: vi.fn(),
+      itemTypes: { types: [{ id: 'task', fields: ['spent', 'est'], custom }] },
+    };
+    const item = {
+      id: 'item0001',
+      type: 'task',
+      fields: { title: 'Ship', spent: { people: {}, entries: [] }, est: 90 },
+    } as unknown as Item;
+    duplicateItem(plan as unknown as Parameters<typeof duplicateItem>[0], item);
+    expect(plan.addItem).toHaveBeenCalledWith(
+      expect.objectContaining({ fields: { title: 'Ship', est: 90 } }),
+    );
+  });
+});
+
+// docs/specs/026-plan/items.md "Repeating cards": Repeat, or Edit Repeat and Stop Repeating, for an Editor alone.
+describe('the Repeat rows', () => {
+  const fns = { onDuplicate: vi.fn(), onFlag: vi.fn(), onArchive: vi.fn(), onTrash: vi.fn() };
+  const menu = (repeating: boolean, canRetire = true, canEdit = true) => {
+    const repeat = { repeating, onRepeat: vi.fn(), onStopRepeat: vi.fn() };
+    render(
+      <ItemPanelMenu
+        itemKey={7}
+        canEdit={canEdit}
+        canRetire={canRetire}
+        archived={false}
+        flagged={false}
+        repeat={repeat}
+        {...fns}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'More for #7' }));
+    return repeat;
+  };
+  const rows = () => screen.getAllByRole('menuitem').map((m) => m.textContent);
+
+  it('offers an Editor Repeat on a plain card and opens the dialog', () => {
+    const repeat = menu(false);
+    expect(rows()).toContain('Repeat');
+    expect(rows()).not.toContain('Stop Repeating');
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Repeat' }));
+    expect(repeat.onRepeat).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('menuitem')).toBeNull();
+  });
+
+  it('offers Edit Repeat and Stop Repeating on a repeating card', () => {
+    const repeat = menu(true);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Stop Repeating' }));
+    expect(repeat.onStopRepeat).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole('button', { name: 'More for #7' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Edit Repeat' }));
+    expect(repeat.onRepeat).toHaveBeenCalledOnce();
+  });
+
+  it('offers a Participant and a Viewer no Repeat row', () => {
+    menu(true, false);
+    expect(rows().some((r) => r?.includes('Repeat'))).toBe(false);
+    cleanup();
+    menu(true, false, false);
+    expect(rows()).toEqual(['Help']);
   });
 });
 

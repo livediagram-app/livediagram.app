@@ -10,12 +10,13 @@ import { pushFormInbox } from '../forms/form-inbox';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
 import { handleTabForm } from './tab-form-route';
-import { handleChangesetRoutes } from './changesets';
+import { handleChangesetRoutes, refreshAfterRead } from './changesets';
 import { handleCommentRoutes } from './comment-routes';
 import { handleNotifyAction } from './notify-action-route';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
 import { handleItemRoutes } from './item-routes';
+import { handleThreadRoutes } from './card-thread-routes';
 import { handleSheetRoutes } from './sheet-routes';
 import { handleItemTypeRoutes } from './item-type-routes';
 import { handlePlanRoute } from './plan-route';
@@ -107,6 +108,8 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
       }
       const tab = await getTab(env, id, tabId);
       if (!tab) return notFound();
+      // An agent's read shows it on this tab (docs/specs/024-agents/agent-presence.md "Presence").
+      refreshAfterRead(ctx, existing, tabId, owner);
       // Blank other people's comment author ids before handing the tab
       // to a non-owner: a visitor should only ever see their OWN author
       // id (so they can delete-own), never another participant's owner
@@ -165,6 +168,9 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
   // The item store (docs/specs/026-plan/items.md).
   const items = await handleItemRoutes(ctx);
   if (items) return items;
+  // A card's comment threads (docs/specs/026-plan/items.md "Comments").
+  const threads = await handleThreadRoutes(ctx);
+  if (threads) return threads;
   // The sheet store (docs/specs/029-sheets/sheet-store.md).
   const sheets = await handleSheetRoutes(ctx);
   if (sheets) return sheets;

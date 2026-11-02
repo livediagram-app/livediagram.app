@@ -149,12 +149,19 @@ function revOf(result: D1Result | undefined): number {
 }
 
 // Inserts new items (their keys already chosen) and returns the store's new rev. Throws on a
-// primary-key or key collision; the caller maps it to 409.
-export async function insertItems(env: PlanEnv, projectId: string, items: Item[]): Promise<number> {
+// primary-key or key collision; the caller maps it to 409. `also` runs in the same batch, after the inserts (a repeat's
+// settled day, plan-room/card-repeats.ts), so it lands only with them.
+export async function insertItems(
+  env: PlanEnv,
+  projectId: string,
+  items: Item[],
+  also: D1PreparedStatement[] = [],
+): Promise<number> {
   const maxKey = Math.max(...items.map((i) => i.key));
   const results = await env.PLAN_DB.batch([
     bumpRev(env, projectId, maxKey + 1),
     ...items.map((i) => insertStatement(env, projectId, i)),
+    ...also,
   ]);
   return revOf(results[0]);
 }

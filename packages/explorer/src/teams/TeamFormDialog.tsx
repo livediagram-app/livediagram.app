@@ -87,7 +87,8 @@ export function TeamFormDialog({
               htmlFor={orgId}
               className="text-xs font-medium text-slate-700 dark:text-slate-300"
             >
-              Organisation <span className="font-normal text-slate-500">(optional)</span>
+              Organisation{' '}
+              <span className="font-normal text-slate-500 dark:text-slate-400">(optional)</span>
             </label>
             <input
               id={orgId}
@@ -108,7 +109,7 @@ export function TeamFormDialog({
           <Button variant="secondary" size="sm" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" size="sm" disabled={busy || !name.trim() || unchanged}>
+          <Button type="submit" size="sm" disabled={!name.trim() || unchanged} busy={busy}>
             {mode === 'create' ? (busy ? 'Creating…' : 'Create Team') : busy ? 'Saving…' : 'Save'}
           </Button>
         </DialogFooter>

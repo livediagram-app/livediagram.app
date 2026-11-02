@@ -22,6 +22,8 @@ import {
   ALL_TIMING_TYPES,
   pascalToken,
   isValidTelemetryEvent,
+  COMMUNITY_CATEGORY_TYPES,
+  COMMUNITY_REPORT_REASONS,
 } from '@livedocuments/api-schema';
 import { countedVerbs } from '@livedocuments/agent-verbs';
 import { MCP_TOOL_VERBS } from '@livedocuments/agent-verbs/mcp';
@@ -45,6 +47,15 @@ function tokensAfter(source: string, marker: string, close: string): string[] {
 }
 
 // The api's email templates: `export type EmailKind = 'Welcome' | ...;`.
+// ARTICLE_BLOCK_INSERT_EVENT's values (apps/editor/lib/article/article-telemetry.ts).
+const ARTICLE_BLOCK_INSERTS = [
+  'ArticleDivider',
+  'ArticlePageBreak',
+  'ArticleQuote',
+  'ArticleCode',
+  'ArticleTable',
+  'ArticleContents',
+];
 const EMAIL_KINDS = tokensAfter(read('api/src/email/templates.ts'), 'export type EmailKind', ';');
 
 // The verbs the CLI counts (packages/agent-verbs), as their `Cli·Used` types.
@@ -272,6 +283,11 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['Uncaught.Document.TypeError', 'UnhandledRejection.Explorer.Error'],
     open: 'a kind, the page it happened on, and the error name',
   },
+  // The Community's help deep links (docs/specs/025-community/blueprints/community.md "Help"): COMMUNITY_HELP's two ids.
+  'packages/ui/src/community/CommunityHelpLink.tsx UI·Opened': {
+    values: ['community', 'finding-community-documents'],
+    open: SLUG_WHY,
+  },
   'packages/ui/src/page-view-tracker.tsx Page·View': {
     values: ['/', '/document', '/explorer/timeline', '/help/canvas/links', '/telemetry'],
     open: 'the page path, ids and query strings stripped',
@@ -292,10 +308,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   // ARTICLE_BLOCK_INSERT_EVENT (apps/editor/lib/article/article-telemetry.ts): a block put into an
   // article from the page toolbar's Insert or the slash menu.
   'apps/editor/components/canvas/article/PageToolbar.tsx Element·Added': {
-    values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
+    values: ARTICLE_BLOCK_INSERTS,
   },
   'apps/editor/components/canvas/article/ArticleEditor.tsx Element·Added': {
-    values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
+    values: ARTICLE_BLOCK_INSERTS,
   },
   'apps/editor/app/document/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,
@@ -340,6 +356,20 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/app/embed/workbench/ExplorerHost.tsx Explorer·Selected': { values: LENS_FACETS },
   'apps/editor/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
   'apps/editor/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
+  // Publishing to the Community: the post's category, as communityCategoryType.
+  // Through the Share dialog's Community tab (@liveworkspace/community-ui), bound in lib/community-share-host.tsx.
+  'apps/editor/lib/community-share-host.tsx Community·Shared': { values: COMMUNITY_CATEGORY_TYPES },
+  'apps/editor/lib/community-share-host.tsx Community·Changed': {
+    values: COMMUNITY_CATEGORY_TYPES,
+  },
+  // The Community app (docs/specs/025-community/community.md "Telemetry"): a report's reason as its closed type, and
+  // the gallery filter kinds its CommunitySelection union names.
+  'apps/community/lib/telemetry.ts Community·Reported': {
+    values: COMMUNITY_REPORT_REASONS.map((r) => r.type),
+  },
+  'apps/community/lib/telemetry.ts Community·Selected': {
+    values: tokensAfter(read('community/lib/telemetry.ts'), 'export type CommunitySelection', ';'),
+  },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
   'apps/editor/app/new/useCtaAttribution.ts Cta·Opened': { values: ALL_CTA_SOURCES },
   'apps/editor/app/new/useCtaAttribution.ts Cta·Created': { values: ALL_CTA_SOURCES },
@@ -359,7 +389,17 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/editor/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
   'apps/editor/components/panels/SearchPanel.tsx Search·Selected': {
-    values: ['Document', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
+    values: [
+      'Document',
+      'Shared',
+      'Folder',
+      'Team',
+      'Tab',
+      'Element',
+      'Palette',
+      'Command',
+      'Workspace',
+    ],
   },
   'apps/editor/hooks/ui/useImageSearch.ts Error·Warning': {
     values: IMAGE_SEARCH_WARNINGS,

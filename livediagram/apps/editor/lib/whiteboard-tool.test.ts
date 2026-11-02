@@ -29,6 +29,7 @@ describe('activeWhiteboardTool', () => {
     ['select', pen, 'pen'],
     ['pan', pen, 'pen'],
     ['select', { type: 'path' }, 'path'],
+    ['select', { type: 'fill', fill: '#dbeafe' }, 'fill'],
     ['select', { type: 'sticky' }, 'sticky'],
     ['select', { type: 'text' }, 'text'],
     ['select', { type: 'shape', kind: 'circle' }, 'shape'],

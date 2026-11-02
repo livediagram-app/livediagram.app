@@ -10,12 +10,10 @@
 import { DEFAULT_CHAIR_FACING, type ChairFacing, type ChairSitterFacing } from './collab-shapes';
 import { MEETING_TABLE_ART, MEETING_TABLE_VIEW } from './office';
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
+import { isSeatingShape, type SeatingKind } from '@liveworkspace/avatar/office-geometry';
 
-export type SeatingKind = 'chair' | 'desk' | 'sofa' | 'meeting-table';
-
-export function isSeatingShape(kind: string): kind is SeatingKind {
-  return kind === 'chair' || kind === 'desk' || kind === 'sofa' || kind === 'meeting-table';
-}
+// Which kinds seat a character is the walk's question too, so it is @liveworkspace/avatar's.
+export { isSeatingShape, type SeatingKind } from '@liveworkspace/avatar/office-geometry';
 
 /** Whether a seating kind takes a facing: a chair, desk or sofa; a meeting table seats six all round and never
  *  turns (docs/specs/009-elements/office.md). */

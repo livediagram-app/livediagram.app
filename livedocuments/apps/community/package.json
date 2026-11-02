@@ -1,0 +1,44 @@
+{
+  "name": "@livedocuments/community",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node ../../scripts/next-dev.mjs --port 3305",
+    "build": "next build",
+    "lint": "oxlint",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .next .next-dev .next-analyze out node_modules .turbo"
+  },
+  "dependencies": {
+    "@livedocuments/api-schema": "workspace:*",
+    "@livedocuments/telemetry-client": "workspace:*",
+    "@livedocuments/ui": "workspace:*",
+    "@liveworkspace/community-site": "workspace:*",
+    "@liveworkspace/community-ui": "workspace:*",
+    "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/sites": "workspace:^",
+    "@liveworkspace/ui": "workspace:*",
+    "next": "^16.4.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@liveworkspace/next-config": "workspace:*",
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/style-guards": "workspace:*",
+    "@livedocuments/tailwind-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@testing-library/react": "^16.3.3",
+    "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "jsdom": "^30.1.2",
+    "oxlint": "^1.88.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

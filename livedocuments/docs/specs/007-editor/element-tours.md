@@ -62,8 +62,8 @@ switch over them all as **Show Me on Every Element**.
 
 ## Menu steps
 
-A step whose copy names a part of the element's own menu ("In its menu, Tools › Rows…", "More, then Tools ›
-Stack…") opens that menu on the element (`openElementMenu`, as a right-click does), opens each row of its path in
+A step whose copy names a part of the element's own menu ("In its menu, Tools › Rows…", "Right-click it, then
+Tools › Stack…") opens that menu on the element (`openElementMenu`, as a right-click does), opens each row of its path in
 turn (an accordion section, or a flyout such as **Tools**), highlights the part the last row opened, and closes the
 menu as the step ends, however it ends (`inTheMenu`, `menuStep`, `element-menu-tour.ts`). A path that cannot be
 followed (a row missing) highlights the deepest part it reached.
@@ -95,7 +95,7 @@ The steps, in order, each a line or two. The exact strings live in
    would. "Each band is as wide as its amount, so the biggest flows stand out."
 2. **What Is Left Over** (only when a leftover band is drawn): rings the largest leftover band, lifted. "What a node
    keeps back runs on to Leftover, in grey. It is worked out, never typed, so it follows the amounts."
-3. **Style It** (only while the selection toolbar's More button shows): rings More. "Under Sankey in the menu: band
+3. **Style It** opens the menu on Tools › Sankey. "Under Sankey in the menu: band
    colours, columns, labels, the unit, and an animation."
 4. **Write the Flows**: rings the whole diagram. "Double-click a Sankey (double-tap on a touch screen) to open its
    flows. Next opens them for you."
@@ -113,7 +113,7 @@ The lift and the readout in steps 1 and 2 are the tour's: they win over a pointe
 
 On the selected [layer stack](../009-elements/concept-graphics.md), each step a line or two. The strings live in
 `apps/editor/components/tour/layer-stack-tour-steps.ts`; the steps it is built from (a step on the graphic or a row, the
-"+" ring, the More button, the closing card) in `concept-element-tour-steps.ts`, shared by every concept graphic's
+"+" ring, the element menu, the closing card) in `concept-element-tour-steps.ts`, shared by every concept graphic's
 tour.
 
 1. **One Element, Many Layers**: rings the stack. Each band is a layer, top to bottom; a resize shares the height
@@ -124,7 +124,7 @@ tour.
    rule; with no notes the bands take the full width.
 4. **Add a Layer**: opens the first "+" on screen (below, else right, above, left) and rings its **Add Layer**; up to
    eight. The ring closes again on leaving the step.
-5. **Reorder in the Menu** (only while More shows): rings More. The Rows section (Tools) renames, notes, moves and
+5. **Reorder in the Menu** opens the menu. The Rows section (Tools) renames, notes, moves and
    removes layers, two at least.
 6. **One Colour, a Whole Ramp**: rings the bottom layer. The top takes the accent and each below steps toward the
    fill; a colour change carries every band, their words kept readable.
@@ -142,7 +142,7 @@ the variant: an Inverted pyramid's first tier is the widest, along the top, and 
    top); every tier is cut from one triangle, so the edges line up as one silhouette.
 2. **Type Over a Tier**: rings the first tier's name. A name too long for its tier is shortened, never spilling out.
 3. **Add a Tier**: the "+" ring open on **Add Tier**; a new tier at the base (Inverted: the point), up to six.
-4. **Pyramid, Inverted or Funnel** (only while More shows): rings More. Shape switches between the three, keeping every
+4. **Pyramid, Inverted or Funnel** opens the menu. Shape switches between the three, keeping every
    tier; Rows reorders them.
 5. **From the Accent Down**: rings the last tier. The apex (Inverted: the top) takes the accent, each tier after it
    steps toward the fill.
@@ -160,7 +160,7 @@ On the selected Funnel (a Pyramid in its Funnel variant), from `funnel-tour-step
 3. **A Number on Each Band** (only while a band has a value): rings the first value. Each band can carry its number
    beside its name; cleared, the name takes the whole band.
 4. **Add a Stage**: the "+" ring open on **Add Tier**; a new band at the bottom, up to six.
-5. **Funnel, Pyramid or Inverted** (only while More shows): rings More. Shape switches between the three, keeping
+5. **Funnel, Pyramid or Inverted** opens the menu. Shape switches between the three, keeping
    every band.
 6. **From the Accent Down**: rings the last band; the widest takes the accent.
 7. **Pour It In**: plays Build on it as a preview, from the top down.
@@ -176,7 +176,7 @@ On the selected Cycle, from `cycle-tour-steps.ts`.
 3. **Name the Loop**: rings the words in the middle (`data-tour-part="concept-centre"`, as on a Hub's hub);
    double-click (double-tap) to edit them.
 4. **Add a Step**: the "+" ring open on **Add Step**; a new step at the end, up to eight, spaced evenly again.
-5. **Reorder in the Menu** (only while More shows): rings More; Rows renames, moves and removes steps, three at least.
+5. **Reorder in the Menu** opens the menu; Rows renames, moves and removes steps, three at least.
 6. **Set It Turning**: plays **Flow**, the cycle's own loop, round its arrows as a preview while the step is up (a
    previewed loop keeps going; a previewed Build plays once).
 7. **That Is a Cycle**: the closing card.
@@ -190,7 +190,7 @@ On the selected Hub and spoke, from `hub-tour-steps.ts`.
 2. **Round It, Clockwise**: rings the graphic, counting its satellites, evenly round the hub from twelve o'clock.
 3. **Type Over a Satellite**: rings the first satellite's name.
 4. **Add a Satellite**: the "+" ring open on **Add Satellite**; up to eight, spread evenly again.
-5. **Spokes or None** (only while More shows): rings More. Spokes turns the lines off, leaving the satellites
+5. **Spokes or None** opens the menu. Spokes turns the lines off, leaving the satellites
    floating; Rows reorders them.
 6. **Light Them Up**: plays **Pulse** round the satellites as a preview while the step is up.
 7. **That Is a Hub and Spoke**: the closing card.
@@ -205,7 +205,7 @@ On the selected Onion, from `onion-tour-steps.ts`.
 3. **Outward From There**: rings the outermost ring's name; each ring after the core sits further out, its name along
    the top of its band.
 4. **Add a Ring**: the "+" ring open on **Add Ring**; a new ring round the outside, up to six.
-5. **Reorder in the Menu** (only while More shows): rings More; Rows from the core out, two at least.
+5. **Reorder in the Menu** opens the menu; Rows from the core out, two at least.
 6. **Ripple Outward**: plays **Pulse** from the core outward as a preview while the step is up.
 7. **That Is an Onion**: the closing card.
 
@@ -218,7 +218,7 @@ On the selected Timeline, from `timeline-tour-steps.ts`.
 2. **What Happens**: rings the first milestone's name; click (tap) to type over it.
 3. **And When**: rings the first milestone's when; click (tap) to change it.
 4. **Add a Milestone**: the "+" ring open on **Add Milestone**; one at the end, up to eight.
-5. **Reorder in the Menu** (only while More shows): rings More; Tools › Rows.
+5. **Reorder in the Menu** opens the menu; Tools › Rows.
 6. **Play It in Order**: plays **Build**, left to right, as a preview while the step is up.
 7. **That Is a Timeline**: the closing card.
 
@@ -242,9 +242,10 @@ the canvas, not in a Rows section.
 ## Menu steps on the chart and stack
 
 The chart and stack are edited mostly from their own section of the
-element menu (More, then **Tools**). Their tours keep that step for everyone: it rings **More** while More shows, and
-otherwise the element itself, with "Right-click it" in place of "More" (a power user on a desktop has no More button).
-The tour points at the section by name; it never opens the menu itself.
+element menu (a right-click, then **Tools**). Their tours keep that step for everyone, its words saying how the menu
+opens: "Right-click it" with a mouse, "Press and hold it" on a touch screen. There is no selection toolbar, so no More
+button to ring ([Selection popover](../008-canvas/canvas-and-palette.md#selection-popover)). The step opens
+the menu to that section, as every [menu step](#menu-steps) does.
 
 ## The Chart tour
 

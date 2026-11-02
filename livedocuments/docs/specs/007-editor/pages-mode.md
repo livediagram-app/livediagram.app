@@ -81,16 +81,16 @@ page is and offers; this section is the basics.
 
 ## Domain language
 
-| Term                | Means                                                                                                                                 |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| **page**            | One sheet of a tab (`Page`) , stored in `Tab.pages` in row order.                                                                     |
-| **page kind**       | What a page is for, fixed when it is made: an **infographic**, **article** or **slide** page. Every page of a tab is of one kind.     |
-| **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px, or Fit to Content's own sides.                               |
-| **row anchor**      | Where the row of pages sits on the canvas (`Page.rowAt`): the first page's centre.                                                    |
-| **orientation**     | Portrait (the long side upright) or landscape. A square page, and a slide size, has none.                                             |
-| **page background** | What the sheet is painted with (`PageBackground`): a solid colour, a two-stop gradient or a picture under an overlay, plus a pattern. |
-| **page layout**     | A ready-made arrangement of elements put onto one page (`PageLayoutId`), to start from and then edit.                                 |
-| **page panel**      | The page's settings, opened from the cog above its top-right corner.                                                                  |
+| Term                | Means                                                                                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **page**            | One sheet of a tab (`Page`) , stored in `Tab.pages` in row order.                                                                                |
+| **page kind**       | What a page is for, fixed when it is made: an **infographic**, **article**, **slide** or **flashcard** page. Every page of a tab is of one kind. |
+| **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px, or Fit to Content's own sides.                                          |
+| **row anchor**      | Where the row of pages sits on the canvas (`Page.rowAt`): the first page's centre.                                                               |
+| **orientation**     | Portrait (the long side upright) or landscape. A square page, and a slide size, has none.                                                        |
+| **page background** | What the sheet is painted with (`PageBackground`): a solid colour, a two-stop gradient or a picture under an overlay, plus a pattern.            |
+| **page layout**     | A ready-made arrangement of elements put onto one page (`PageLayoutId`), to start from and then edit.                                            |
+| **page panel**      | The page's settings, opened from the cog above its top-right corner.                                                                             |
 
 ## Selecting on a page
 
@@ -117,6 +117,8 @@ one category.
   formatting in place of the category bar: its page toolbar, docked ([Article pages](article-pages.md)
   "The page toolbar"). Search keeps the Design palette. Offered on an article page alone
   (anywhere else the strip would be empty).
+- **Flashcard** (flashcards): the strip holds the card's page toolbar, docked, as Article does, and
+  nothing else: no Search, whose tiles would place elements on a card ([Flashcards](flashcards.md) "Text only").
 
 The kind changes by itself as someone moves (see "Selecting on a page" for which page they are
 on): pressing on a page, going to one (its label, the page navigator, Contents), adding one, or a
@@ -129,7 +131,7 @@ nothing moves under reduced motion.
 
 ## Page kinds
 
-A page is one of three kinds (`Page.kind`), chosen when it is made and never changed
+A page is one of four kinds (`Page.kind`), chosen when it is made and never changed
 afterwards (the one exception: the first page's own choice, below). Every page of a tab is of
 one kind ("One kind a tab"):
 
@@ -142,10 +144,14 @@ one kind ("One kind a tab"):
   present. Always landscape, in a slide size (16:9, or the classic 4:3); it offers no orientation
   and no other size. It starts from the **slide layouts** rather than the infographic ones.
   Everything in this spec for infographic pages applies to it except where a rule says otherwise.
+- **Flashcard** (`kind: 'flashcard'`): one card of a stack to speak from, text only, its writing its own one-page
+  article that never flows ([Flashcards](flashcards.md)). Always **Flashcard (5:3)**, landscape. A tab of them shows
+  one card at a time, the rest stacked behind it, and moves between them by flipping. This spec applies to it as to an
+  article page except where [Flashcards](flashcards.md) says otherwise.
 
 ### One kind a tab
 
-A tab is a deck, an infographic or a set of articles, never a mix: **every page of a tab is of
+A tab is a deck, an infographic, a set of articles or a stack of flashcards, never a mix: **every page of a tab is of
 the tab's kind**, the kind of its first page (`tabPageKind`, `packages/document/src/page.ts`; an
 unchosen first page reads as infographic). A deck holds only slides, an infographic tab only
 infographic pages, an article tab only articles (one or more, each flowing over its own pages).
@@ -167,7 +173,7 @@ page), held at one screen size. It adds **another page like the last one**, at o
 shape (an infographic page's size and orientation, a slide's size, an article's paper for a new
 article). It carries the last page's background as every new page does, never its content. Its
 tooltip and name say what it adds: **Add Another Slide**, **Add Another Infographic Page**, **Add
-Another Article**. There is no way to choose another kind: the tab has one ("One kind a tab").
+Another Article**, **Add Another Card**. There is no way to choose another kind: the tab has one ("One kind a tab").
 
 The first page's own choice (below) shows the kinds as cards, two by two, arrow keys moving between them. A new
 infographic page takes the last infographic page's size and orientation (else A4 portrait; A4 in
@@ -192,7 +198,7 @@ one, choosing the first page's kind, the template picker and an AI tool's templa
 
 A tab with no pages stored starts with one page, its kind unchosen.
 
-**The first page's choice**: while a tab's only page is unchosen and empty, it offers the three kinds
+**The first page's choice**: while a tab's only page is unchosen and empty, it offers the four kinds
 inside itself, for someone who may edit: a card centred on the page, held at one screen size,
 **What Is This Page For?** ("Choose now: every page of this tab will be this kind."), over three
 cards:
@@ -200,14 +206,16 @@ cards:
 - **Infographic**: "A page to lay out: layouts, icons, charts and media."
 - **Article**: "A page to write on, flowing onto new pages as it grows."
 - **Slide**: "A slide for a deck: widescreen, ready to present."
+- **Flashcards**: "Cards to speak from: a title and a few lines each, flipped one at a time."
 
 **Infographic** keeps the page, now chosen (`kind: 'infographic'`), and the
 choice goes; **Article** makes it the first page of a new article, the caret in its title (a page set to a size
 an article does not offer, the 16:9 Slide, becomes A4);
-**Slide** turns it into a 16:9 landscape slide (`kind: 'slide'`), its slide layouts inviting. One
+**Slide** turns it into a 16:9 landscape slide (`kind: 'slide'`), its slide layouts inviting;
+**Flashcards** makes it the first card of a stack (`kind: 'flashcard'`, Flashcard (5:3)), the caret in its title. One
 edit each. Anything put on the page first (a layout, an element) is choosing Infographic by doing: the
 offer goes while the page has content, and comes back if it is emptied while still unchosen. The
-empty page's layout invitation waits until the choice is made. Not offered in zen,
+empty page offers nothing on itself, so the choice is the only card on it. Not offered in zen,
 nor on a second page (a page added from the + is of the tab's kind).
 The **Project Brief** template (kind `article`) in /new starts a tab with one article.
 
@@ -275,22 +283,24 @@ a slide of a deleted page can never find a new page under the old id.
 
 ## Sizes
 
-| Size id         | Label (portrait / landscape)               | Short x long side (px) | For                       |
-| --------------- | ------------------------------------------ | ---------------------- | ------------------------- |
-| `a4`            | A4                                         | 794 x 1123             | Print, the default        |
-| `letter`        | US Letter                                  | 816 x 1056             | Print in North America    |
-| `a3`            | A3                                         | 1123 x 1587            | Posters                   |
-| `square`        | Square                                     | 1080 x 1080            | Social posts              |
-| `social`        | Portrait post (4:5) / Landscape post (5:4) | 1080 x 1350            | Instagram and LinkedIn    |
-| `wide`          | Story (9:16) / Widescreen (16:9)           | 1080 x 1920            | Stories, and screens wide |
-| `slide`         | Slide (16:9)                               | 1080 x 1920            | Slides, landscape only    |
-| `slide-classic` | Classic slide (4:3)                        | 1080 x 1440            | Slides for 4:3 screens    |
-| `fit`           | Fit to Content                             | its own (`fit`)        | Content put onto a page   |
+| Size id         | Label (portrait / landscape)               | Short x long side (px) | For                        |
+| --------------- | ------------------------------------------ | ---------------------- | -------------------------- |
+| `a4`            | A4                                         | 794 x 1123             | Print, the default         |
+| `letter`        | US Letter                                  | 816 x 1056             | Print in North America     |
+| `a3`            | A3                                         | 1123 x 1587            | Posters                    |
+| `square`        | Square                                     | 1080 x 1080            | Social posts               |
+| `social`        | Portrait post (4:5) / Landscape post (5:4) | 1080 x 1350            | Instagram and LinkedIn     |
+| `wide`          | Story (9:16) / Widescreen (16:9)           | 1080 x 1920            | Stories, and screens wide  |
+| `slide`         | Slide (16:9)                               | 1080 x 1920            | Slides, landscape only     |
+| `slide-classic` | Classic slide (4:3)                        | 1080 x 1440            | Slides for 4:3 screens     |
+| `fit`           | Fit to Content                             | its own (`fit`)        | Content put onto a page    |
+| `card`          | Flashcard (5:3)                            | 540 x 900              | Flashcards, landscape only |
 
 - **Which sizes a page offers** depends on its kind. An **infographic** or **article** page: A4,
   US Letter, A3, Square, Post and Story (never a slide size: a deck is made of slide pages; an
   infographic page already on the Slide size keeps that tile until it moves off it). A **slide** page:
-  **Slide** (16:9) and **Classic** (4:3) only.
+  **Slide** (16:9) and **Classic** (4:3) only. A **flashcard**: **Flashcard (5:3)** only (`card`, landscape only,
+  [Flashcards](flashcards.md) "A card").
 - The **slide sizes** (`slide`, `slide-classic`) are **landscape only**: like a square they show no
   Portrait / Landscape choice, a page in one is always drawn landscape, and a turn is refused. An
   infographic page left on one keeps whatever orientation it had, so turning it back to a paper
@@ -315,9 +325,14 @@ a slide of a deleted page can never find a new page under the old id.
 - **Changing size or orientation re-fits the page's content**: everything on the page before the
   change stays on it. Content that still fits the new margin box keeps its size, re-centred (and
   nudged back inside the margins if it pokes out); content that no longer fits is scaled down as
-  one, about the page's centre, until it does: text elements' text scales with it (`textScale`)
-  and arrows' bends with their lines; a shape's own label keeps its size. Nothing is cut off. The
-  pages after it move along. One edit, one undo.
+  one, about the page's centre, until it does: the words scale with it (`textScale`), a text
+  element's text and a shape's own label alike (with the label's inline icon, which follows its
+  size), and arrows' bends with their lines, so a button's words stay inside the button. A shape
+  that draws its own face (a chart, a card, a web component) keeps its face's type. Nothing is cut
+  off. The pages after it move along. One edit, one undo.
+- **A picked size is the size**: choosing a Text Size for an element that carries a `textScale`
+  (a re-fitted shape or text, a Shift-resized text box) sets the size it draws at and drops the
+  scale, so the readout and the drawn words agree again.
 - The page label reads `<name> · <size label> · <Portrait|Landscape> · <Article|Slide>`,
   the name only where the page has one: never "Page n", which the page navigator shows.
   Only the paper sizes (A4, US Letter, A3) add the orientation: a square and Fit to Content have none, and the post,
@@ -327,7 +342,7 @@ a slide of a deleted page can never find a new page under the old id.
 
 ## Backgrounds
 
-Every page kind (infographic, article and slide) is painted the same way. The page panel's
+Every page kind (infographic, article, slide and flashcard) is painted the same way. The page panel's
 **Background** section sorts its fills into three **categories**, a row of tiles at its top read like the
 Pattern tiles: each a small sheet picturing what it makes (the page's own fill on its category's tile, else
 the theme's colour, a theme gradient, a sky over a meadow with a picture glyph), its name under it:
@@ -740,12 +755,9 @@ Pressing it is tracked as `Tab / Aligned / PageTidyUp`.
 
 A **layout** is placed onto one page from its panel's **Layouts** tab, by category.
 
-**Change Theme** sits at the top right of the title bar's Layout popover (never on the in-page
-Start From a Layout card, which keeps to its layouts), left of its X: it closes the picker and opens the Tab Style
-popover, as the dock's Theme button does, so a layout and the look it wears are chosen together.
-It shows wherever the session may restyle the tab (an Editor; never for a Participant or a Viewer,
-who see no layout picker anyway). On a phone the Layout sheet keeps Change Theme and closes by a
-swipe, with no X.
+The Layout popover keeps to its layouts: it has no **Change Theme** button (the Tab Style popover is
+the dock's Theme button and the tab's Style button, and a layout is placed in the tab's theme either
+way). On a phone the Layout sheet closes by a swipe, with no X.
 
 - **Ninety-two layouts**, each a complete, editable starting point in the tab's theme: a layout is built without
   colours where it means the theme's, and placing it (in the editor or by an agent) fills each of those from the
@@ -1118,8 +1130,7 @@ swipe, with no X.
     words afterwards, by element id.
 - Placed elements are ordinary elements. The selection is cleared (nothing replaced stays
   selected) and the panel closes, so the finished page reads clean.
-- **The layout gallery** is how every picker offers a page's layouts (the Layout popover, the empty
-  page's card, Choose a Layout's dialog), all of them at once:
+- **The layout gallery** is how every picker offers a page's layouts (the title bar's Layout popover), all of it at once:
   - Along the top, a **search** ("Search n layouts") and **Surprise Me**. The search narrows every
     category at once: each word typed must appear in a layout's name, its description or its
     category's name. Nothing matches: "No layouts match" with Clear Search.
@@ -1149,25 +1160,12 @@ swipe, with no X.
   Hovering a tile previews it on the page; pressing one places it (over anything there, at once)
   and closes the popover; closing it takes any preview away. Opening it is tracked as
   `UI / Opened / PageLayoutsButton`. These pages' panels hold no Layouts tab: the button is their
-  one way in, besides an empty page's own card.
-- **An empty page offers its layouts**: while an infographic or slide page is empty, on a tab
-  the viewer can edit, a **Start From a Layout** card sits centred on the page, held at its screen
-  size whatever the zoom, as large as the page on screen leaves room for inside a 16 px margin (at
-  most 900 by 660 px): a header (a sparkles badge where the card is 520 px or wider, **Start From a
-  Layout**, "n slide layouts in your theme. Pick one, then make it yours." naming the page's kind,
-  and Hide; no Change Theme, the card keeps to its layouts) over the layout gallery. Pressing a layout places it (the page is empty,
-  so at once, as one undo step); there is no hover preview here, since drawn over the page it
-  would cover the card's own tiles. The card goes as
-  soon as anything lands on the page, and **Hide** (in its corner) puts it away for that page until
-  the tab is next opened; the title bar's Layout button still opens the layouts. It
-  never shows while the first page offers its kind, while the page's panel is open, while a palette tile is armed
-  (tap to drop or drag to draw: the page is where the element will land, so the card steps aside and comes back when
-  the tool is put down with the page still empty), when presenting or in zen, or when the page is too small on
-  screen to hold it (less than 340 by 380 px inside its margin). There, a phone or a page zoomed out
-  small, the page shows a **Choose a Layout** button in its middle instead (brand-filled, a
-  sparkles icon, held at its screen size), which opens the layout gallery on its own: a bottom
-  sheet on a phone, a centred dialog on a desktop, headed like the card (no Change Theme either); a press or Surprise Me
-  places the layout and closes it. Opening it is tracked as `UI / Opened / EmptyPageInvite`.
+  one way in.
+- **An empty page offers nothing on itself**: no card, no Choose a Layout button. An empty page
+  is left alone to be drawn on, and a person who wants a layout presses the title bar's **Layout**
+  button (always there for an Editor, empty page or not). The earlier in-page **Start From a Layout**
+  card and its **Choose a Layout** fallback were retired on 2026-11-01 (Work Tracker #172): shown
+  unasked on every empty page they got in the way of people who meant to start blank.
 - **Hover previews the layout on the page**: while a tile is hovered (or focused) the page shows
   that layout as it would land, drawn over the whole sheet in the page's background, and the
   page's own content is hidden meanwhile (left out of the page clip), so the two never mix. The
@@ -1202,6 +1200,18 @@ canvas's ink; the Slide Deck's pictures the same.
   corner panels' places are ([Panel docking](panel-docking.md)). It stays open while the person
   works; the cluster has no Contents button while it shows, and the corner panels and the
   bottom-right cluster on its side start past it.
+- **Joined to the menu box**: pinned left, the sidebar rises to the canvas's top and the menu box
+  (the menu button and the tab's name, top left) becomes its top row, so the two read as one panel
+  rather than a card floating over a sidebar. The box's own border, fill and shadow fade away
+  (200 ms, none under reduced motion) and the sidebar's surface carries it; the box reaches across
+  the sidebar (8 px short of its inner edge), the tab's name cut short to fit, then a hairline, then
+  the Contents header exactly where it sits without the join. The menu button itself never moves or
+  changes: the same glyph, size, hover and pressed look, and the Explorer still hangs under it. A
+  workspace frame's Back takes the row the same way. The palette strip keeps clear of the whole row
+  and centres in what shows beside the sidebar, as a page is framed beside it, so a laptop's strip
+  keeps its category names. Pinned right, while it is being dragged, minimised, and on a phone
+  (which has no sidebar), the box is its usual card. It is the same for every role: a Viewer's box
+  joins as an Editor's does.
 - **Minimised to its button**: the bottom-right cluster holds **Contents** (a list glyph, named
   beside it on a desktop), left of the Theme & canvas button. It opens the **Contents** popover
   above it, whose header adds **Dock as Sidebar** (a panel-open glyph; HoverCard "Dock as Sidebar",
@@ -1237,13 +1247,33 @@ Both show the same list:
   124 px tall for a portrait page, left-aligned with the name under it. The page in view is marked
   by its row's tint and its picture's accent ring (and, in the popover, an accent bar down the
   row's left edge).
-- **A page's actions** (an Editor's): in the sidebar, a small toolbar at the end of the name's
-  line, shown while the row is hovered, focused or marked: **Duplicate**, **Lock** or **Unlock**,
-  and **Delete** (not on a locked page), each a glyph with its Tooltip. In the popover, one **⋯**
-  button (shown on hover or focus) opens the same as a menu, a header naming the page, with **Add
-  to Slides** first on a slide page not yet in the deck, and Delete last under its own separator.
-  Each does exactly what the page's title bar does; none glides to the page. A Participant and a
-  Viewer see neither.
+- **Pictures in the thumbnails**: an image element and a page painted with a picture show the
+  picture itself, as on the canvas, fetched from the image store with the same access the canvas
+  has (an Editor's, or a share link's for a Participant or Viewer), once per picture and shared
+  with the canvas's own copy. Only the rows drawn so far ask for theirs. Until a picture arrives,
+  or where it can't be read, its place shows the image placeholder (a page picture, its tone). The Slide Deck's pictures show them the same way.
+- **A page's actions** (an Editor's), down the row's left, so the picture and its name keep the
+  row's whole width:
+  - **In the sidebar** the column beside the picture stacks, under the page's number, the **grip**
+    (drag to reorder), **Delete** (a bin; not on a locked page) and **⋯** (the page's
+    menu), each a glyph with its Tooltip. They show while the row is hovered, focused or marked, or
+    while its menu is open, and always to a finger, where each keeps a 44 px tap area (the stack
+    spaces itself out under a coarse pointer).
+  - **In the popover** (a bottom sheet on a phone) the rows are compact, one line each: the **⋯**
+    sits under the page's number, and the grip stays at the row's right edge, where a thumb finds
+    it. Delete is in the menu.
+  - **The ⋯ menu** (also a right-click on the row, or a long press on it by a finger) is one menu for
+    the whole list, a header naming the page, then in groups: **Page Settings** (the cog: glides to
+    the page and opens its settings, where it is renamed and resized); the page's place in the
+    slide deck, **Add to Slides** on a slide page the deck has no slide of, else **Hide in Slides** or
+    **Show in Slides** on any page the deck has a slide of; **Duplicate** (while the copy fits under
+    the page limit), **Move Up** and **Move Down** (while the page's unit has a neighbour that way:
+    an article moves whole), **Lock** or **Unlock**; then, under its own separator, **Delete**, last
+    (not on a locked page), in the menu's own tones ([Destructive actions](../004-interface-design/destructive-actions.md)). Each does exactly what the page's title bar, cog or the Slide
+    Deck does; none but Page Settings glides to the page. A Participant and a Viewer see no grip,
+    no Delete and no ⋯, and a right-click or long press opens nothing.
+  - A row's name carries the padlock on a locked page and a crossed eye (**Hidden in Slides**) on a
+    page whose slide is hidden in the deck, so a skipped slide shows at a glance.
 - **Going there**: a press (or Enter) glides the canvas to the page, as the pages row's arrows do,
   and marks it as here. On a desktop the popover stays open, so a reader can hop from page to page;
   on a phone the sheet closes so the page shows. Up and Down move between rows, Home and End to
@@ -1403,7 +1433,7 @@ lies on; one between pages is on none.
 
 ## Locking a page
 
-Any page, of every kind (infographic, article, slide), can be **locked**, so it stays as it
+Any page, of every kind (infographic, article, slide, flashcard), can be **locked**, so it stays as it
 is while the rest of the tab is worked on.
 
 - **Where**: a padlock button in the page's title bar, before its cog, for someone who may edit: **Lock page** while open, **Unlock page** (pressed, the
@@ -1486,7 +1516,11 @@ is while the rest of the tab is worked on.
   - **Whenever the view rests**: the same holds after anything else that moves the view (the zoom
     cluster's buttons, the Map, the arrow keys) once the view has rested 250 ms with no pointer
     held. Not while following someone (their view is the follow's, and a move of your own would
-    end it).
+    end it), and not while text on the page has the caret (an article's writing, or a label, a cell
+    or a line being written on): the view moves for the caret then (kept in sight as it is written
+    on, above a phone's keyboard, onto the next page), and snapping back to the page would take the
+    caret out of sight again. A pan or zoom by hand still lets go
+    onto a page.
   - For everyone who can see the pages, on a phone and a desktop alike; no setting.
 - **Back to the page you were on**: landing on a tab of pages (switching back to it, a reload) fits the page you were last on rather than the first, so moving between tabs
   never loses your place. The page you are on is the one under the middle of the view (else the
@@ -1503,7 +1537,9 @@ is while the rest of the tab is worked on.
 The Export dialog exports **pages**, not the tab's content bounds.
 
 - **Formats**: **PDF**, **PNG**, **SVG** and **GIF** (an animated GIF of the pages, moving as they
-  move on the canvas: [Animated GIF export](../020-import-export/animated-gif-export.md)), plus **JSON** (the tab
+  move on the canvas: [Animated GIF export](../020-import-export/animated-gif-export.md)), **PowerPoint** for a
+  slide tab and **Word** for an article tab (editable `.pptx` and `.docx`:
+  [PowerPoint and Word export](../020-import-export/office-export.md)), plus **JSON** (the tab
   itself, a backup that imports back). Markdown is not offered: a page is not an outline.
 - **Pages**: every format asks **All pages** or **One page** (a segmented control), and with One
   page, which page (each by its label). PDF starts on All pages; PNG and SVG start on One page,
@@ -1527,8 +1563,10 @@ The Export dialog exports **pages**, not the tab's content bounds.
 
 ## Import
 
-The Import dialog offers **JSON** (a livedocuments tab, which may carry pages) and **Markdown**
-([Markdown import](../020-import-export/markdown-import.md)).
+The Import dialog offers **JSON** (a livedocuments tab, which may carry pages), **Markdown**
+([Markdown import](../020-import-export/markdown-import.md)), **Word** (a `.docx` as an article) and
+**PowerPoint** (a `.pptx` as slide pages, a page a slide, its speaker notes in the Slide Deck)
+([Word and PowerPoint import](../020-import-export/office-import.md)).
 
 ## Telemetry
 
@@ -1540,12 +1578,11 @@ The Import dialog offers **JSON** (a livedocuments tab, which may carry pages) a
 (and `ArticleAdded`, the article's add), `PageKindInfographic` / `PageKindArticle` / `PageKindSlide`
 (the first page's own choice);
 `Document · Exported · PagesPNG / PagesSVG / PagesPDF / PagesGIF` (one page) and
-`PagesPNGPages / PagesSVGPages / PagesPDFPages / PagesGIFPages` (all pages);
+`PagesPNGPages / PagesSVGPages / PagesPDFPages / PagesGIFPages` (all pages); `PagesPPTX / PagesDOCX` (a
+PowerPoint deck or a Word document);
 `UI · Added · PageSlide`; `UI · Opened · SlideDeck`; `UI · Used · PageSwipe` (a short pan or a flick
 turning to the neighbouring page, never the snap itself); `Tab · Aligned · PageTidyUp` (an infographic
-page's Tidy); `UI · Closed · EmptyPageLayouts` (the in-page
-**Start From a Layout** card's Hide); `UI · Opened · EmptyPageInvite` (Choose a Layout, where the
-card has no room). Never a colour, name or layout content.
+page's Tidy). Never a colour, name or layout content.
 
 ## Into pages
 
@@ -1637,23 +1674,23 @@ separate pages. It is explicit: never run on opening a tab.
 - Pressing a page slide's row switches to its tab and frames its page, as the page's label does.
   Its `…` menu has no Selection section (the slide is whatever is on its page), its delete confirm
   says "The page stays.", and a duplicate counts as `UI · Added · PageSlide`.
-- **A slide page's deck button**: first in its title bar, left of Layout and Background, for an
-  editor on a desktop, a slide page shows its place in the deck, named beside its icon while the
-  title bar has room. The deck always has a slide of a slide page, so the button
-  toggles that slide's visibility in the presentation: **Hide in Slides** (an
-  open eye) or **Show in Slides** (a crossed eye), the same as the slide's Visibility in the Slide
-  Deck. Telemetry as the Slide Deck's own (`UI · Added · PageSlide`, `UI · Toggled · SlideHidden /
-SlideShown`).
-- **Add Notes**: beside the deck button once the deck has a slide of the page, **Add Notes** (a
-  page glyph) opens a popover holding that slide's speaker notes, the deck slide's own: the same
-  notes the Slide Deck panel writes and the presenter view shows, never drawn on the slide. Once
-  the slide has notes the button reads **Notes**, pressed. Every keystroke writes the deck (one
-  `UI · Changed · SlideNotes` per opening, on the first keystroke); emptying the box removes the
-  notes. Telemetry `UI · Opened · PageNotesButton`. An Editor's alone, like the deck button.
-- **Any other page in the deck shows its eye too**: an infographic or article page offers no
-  Add to Slides in its title bar (the Slide Deck's page picker adds it), but once the deck has a
-  slide of it, the same eye sits beside its cog, so wherever a page is presented its visibility is
-  one press away.
+- **A page's place in the deck lives in Contents**: the page's title bar has no deck button. A
+  slide page the deck has no slide of offers **Add to Slides**, and any page the deck has a slide of
+  **Hide in Slides** (keeps the slide but skips it when presenting) or **Show in Slides**, in the
+  page's ⋯ menu in Contents (above), the same switch as the slide's Visibility in the Slide Deck.
+  Contents marks a hidden page's row with a crossed eye. Telemetry as the Slide Deck's own
+  (`UI · Added · PageSlide`, `UI · Toggled · SlideHidden / SlideShown`).
+- **Add Notes**: first in the title bar once the deck has a slide of the page, **Add Notes** (a
+  stack-of-cards glyph) opens a popover holding that slide's speaker notes as note cards, the deck
+  slide's own: the same cards the Slide Deck panel writes and the presenter view flips through,
+  never drawn on the slide ([Speaker note cards](../012-collaboration/speaker-note-cards.md)). Once
+  the slide has a card with words the button reads **Notes**, pressed. Every keystroke writes the
+  deck. Telemetry `UI · Opened · PageNotesButton`. An Editor's alone. It is
+  offered on a phone too (icon only, its popover a bottom sheet), so cards can be written anywhere.
+- **Any other page in the deck**: an infographic or article page offers no Add to Slides (the Slide
+  Deck's page picker adds it), but once the deck has a slide of it, its ⋯ menu in Contents holds
+  Hide in Slides or Show in Slides too, so wherever a page is presented its visibility is one menu
+  away.
 - **A page slide presents full screen**: it is fitted with no margin, the page edge to edge on the
   screen's limiting side, and everything round the sheet is black (a letterbox), so a 16:9 slide
   fills a 16:9 screen and any other shape sits between black bars, as a projector shows it.

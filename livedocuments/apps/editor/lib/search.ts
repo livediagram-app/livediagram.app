@@ -11,6 +11,7 @@
 // + the dynamic-import wrapping.
 
 // The palette ranking lives with the icon catalogues, so the api's icon search ranks alike.
+import type { App } from '@liveworkspace/index-client';
 import { matches, paletteRank } from '@liveworkspace/icons';
 import type { ShapeKind, Tab } from '@livedocuments/document';
 
@@ -148,7 +149,19 @@ type SettingItem = {
   categoryLabel: string;
 };
 
+// A result from every app (Work Tracker #63): an item the index found among everything the person can open, in any
+// app, that this panel's own lists do not hold. It carries its app (the row shows the app's logo and name in the app's
+// colour) and, reached through a link, its share code; picking it opens it in its own app.
+type WorkspaceItem = {
+  kind: 'workspace';
+  id: string;
+  name: string;
+  app: App;
+  sharedVia: string | null;
+};
+
 export type SearchResultItem =
+  | WorkspaceItem
   | DocumentItem
   | SharedItem
   | FolderItem
@@ -166,6 +179,7 @@ export type SearchGroup = {
     | 'shared'
     | 'folders'
     | 'teams'
+    | 'workspace'
     | 'tabs'
     | 'elements'
     | 'palette'
@@ -217,6 +231,9 @@ export type HelpSearchItem = {
 // from the function signature without needing the named type.
 type SearchInput = {
   query: string;
+  // The index's finds in every app for the query (its `search` view, so only what the person can open), already cut
+  // to the ones this panel does not list itself. Matched by the index; listed as they come.
+  workspaceItems?: readonly { id: string; title: string; app: App; sharedVia: string | null }[];
   documents: SearchInputDocument[];
   folders: SearchInputFolder[];
   // Documents shared with the current owner ("Shared with You").
@@ -346,6 +363,22 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
           team: { id: d.teamId, name: d.teamName },
         })),
       ],
+    });
+  }
+
+  // "Every App": what the index found everywhere the person can reach, after this app's own groups, each row marked
+  // with its app. A non-empty query only (the index is asked for nothing else).
+  if (q && input.workspaceItems && input.workspaceItems.length > 0) {
+    groups.push({
+      key: 'workspace',
+      label: 'Every App',
+      items: input.workspaceItems.map((i): WorkspaceItem => ({
+        kind: 'workspace',
+        id: i.id,
+        name: i.title || 'Untitled',
+        app: i.app,
+        sharedVia: i.sharedVia,
+      })),
     });
   }
 

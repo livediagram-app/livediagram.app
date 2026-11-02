@@ -274,6 +274,7 @@ const drawnFor = async (code: string) =>
       format: 'svg',
       tabId: null,
       code,
+      appearance: null,
       ifVersion: null,
     })
   ).status;
@@ -430,7 +431,7 @@ describe('My Shares', () => {
       method: 'PUT',
       headers: {
         'X-Community-Key': KEY,
-        Origin: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+        Origin: 'https://www.livediagram.app',
       },
     });
 
@@ -463,6 +464,22 @@ describe('My Shares', () => {
 });
 
 describe('keeping in step', () => {
+  it("carries the post's state on the owner's read of the document, for the header badge", async () => {
+    const stateOf = async () =>
+      (
+        await (
+          await handleDocuments(owner('GET', '/api/documents/d1'))
+        ).json<{
+          document: { communityState: string | null };
+        }>()
+      ).document.communityState;
+    expect(await stateOf()).toBeNull();
+    const post = await publish();
+    expect(await stateOf()).toBe('listed');
+    await hideOnService(post.id);
+    expect(await stateOf()).toBe('hidden');
+  });
+
   it('takes a trashed document’s post out of the gallery, and puts it back on restore', async () => {
     const post = await publish();
     index.trashed.add('d1');

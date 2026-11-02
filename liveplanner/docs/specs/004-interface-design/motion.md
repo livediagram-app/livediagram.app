@@ -96,6 +96,9 @@ A state change that swaps a whole surface animates as a React View Transition
   the rest of the page neither cross-fades nor freezes into a picture.
 - **Its animation classes** live beside the surface's other motion: the canvas's in `canvas-motion.css`, chrome's in
   `globals.css`, each on the `::view-transition-old(.<class>)` and `::view-transition-new(.<class>)` pseudo-elements.
+- **The card panel's Maximise and Minimise** is one (`item-panel-resize`, over `short`): the shared Dialog's
+  `resizeTransition` names its panel for that type alone, so the panel's box morphs and its old and new pictures
+  cross-fade, scaled to cover without stretching ([plan-board.md](../026-plan/plan-board.md) "Maximised").
 - **Reduced motion starts no View Transition at all.** The collapse rule above matches elements, not the
   `::view-transition-*` pseudo-elements, so the change itself runs without a transition and appears at once.
 

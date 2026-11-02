@@ -195,6 +195,10 @@ type UserPreferences = {
   // footer bar's and, on a wide desktop, the bottom-right cluster's (editor-app.md "Named on a wide
   // desktop"). Missing / true === shown; a phone never shows them. Read through useDockNames.
   dockButtonNames?: boolean;
+  // Maximise Card (docs/specs/026-plan/plan-board.md "Maximised"): whether the item panel opens filling the
+  // window on a desktop. Written by the panel's own Maximise / Minimise Card button, not a Settings row.
+  // Missing / false === the usual size; a phone ignores it.
+  cardPanelMaximised?: boolean;
 
   // Panel switches (the Panels sub-categories, see "Settings dialog"
   // below). Each defaults ON via `!== false`, so an existing user's editor
@@ -332,6 +336,10 @@ Missing key === undefined === default behaviour. Concretely:
   alone, each still named in its hover card. A phone shows icons alone
   whatever it says, so its Settings row is desktop only. Emits
   `UI`/`Toggled`/`DockButtonNames{On,Off}`.
+- `cardPanelMaximised` undefined / false → a card's item panel opens at its usual size (the default).
+  `true`, set by the panel's Maximise Card button, opens every card filling the window on a desktop until
+  Minimise Card clears it; a phone always opens its sheet whatever it says. Emits
+  `UI`/`Toggled`/`CardMaximised{On,Off}`, before the write.
 - `alignmentGuides` undefined → guides on (the default). Setting it
   to `false` hides the faint guide lines during a move / resize; the
   snap behaviour itself is unchanged.
@@ -524,7 +532,7 @@ and the dialog stays as the one complete, browsable index of them.
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
   collapsible groups), **Panels** (panel opacity; with the
-  sub-categories **Layers**, **Map**, **Collaborate** and
+  sub-categories **Layers**, **Map**, **Collaborate** (its panel switch, then the device-local Hide Participant Cursors switch, shown only while the tab draws other people's cursors, [Collaborator enhancements](../012-collaboration/collaborator-enhancements.md)) and
   **Quick Style**, one per panel),
   **Accessibility** (reduce motion, and a **UI Scale** link row that opens
   Appearance), **Tours** (one switch per guided tour, see **Tours** below),
@@ -558,6 +566,12 @@ and the dialog stays as the one complete, browsable index of them.
   kept, so every `?settings=notifications` / `?settings=tokens` deep link
   (email footers, the old `/explorer/profile` redirect) and every in-app
   link to them still opens the same pane.
+
+  **Webhooks** are an account's too, made and managed in liveworkspace's Settings
+  ([Webhooks](../../../../liveworkspace/docs/specs/004-index/webhooks.md#managing-them)). Signed in, the Account
+  section's **Webhooks** links there. A guest gets a **Webhooks** category under Account (id `webhooks`, so
+  `?settings=webhooks` opens it) holding one stand-in row, "Sign in to add webhooks." with the **Sign In** link,
+  the same shape as the email stand-in, so it reads the way API Tokens does for a guest. A workbench has neither.
 
   Panels holds Layers, Map, Collaborate and Quick Style,
   one per panel, each its own pane. Each opens with that panel's **Enable
@@ -725,7 +739,8 @@ and the dialog stays as the one complete, browsable index of them.
   and liveworkspace.app open. Its header carries a switch like the Explorer's filter: **liveplanner**
   (this app's logo and name) and **All** (liveworkspace's logo). liveplanner shows, signed in, the **Account** section and the **Common** settings this app has, then this app's
   own Settings (as above, less what those two hold): they shape this app as much as its own. Its own rows draw
-  at once and the rest join them when read; a guest sees this app's own Settings alone, asking the network
+  at once and the rest join them when read (a read that fails leaves this app's own rows, with a note and Try again
+  for the rest); a guest sees this app's own Settings alone, asking the network
   for nothing. All shows every setting the account
   has: first an **Account** section (Profile, Notifications, Privacy, Accessibility), then one set of categories
   merged across every app (liveworkspace/docs/specs/010-site/site.md "Settings", "All"): one Editor, one Tours, one Explorer and so

@@ -201,6 +201,10 @@ const TAGS = [
   },
   { name: 'Teams', description: 'Teams, members, invites, and shared libraries.' },
   { name: 'Participants', description: 'Display name and colour for a collaborator.' },
+  {
+    name: 'Images',
+    description: 'Pictures for Image fields on cards: upload, and read with access.',
+  },
   { name: 'Account', description: 'Account-level data, preferences, and migration.' },
   { name: 'Meta', description: 'Capabilities and this project.' },
   {

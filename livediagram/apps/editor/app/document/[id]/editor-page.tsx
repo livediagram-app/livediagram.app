@@ -26,6 +26,7 @@ import { useEditorState } from './useEditorState';
 import { takeAccessEnded } from '@/lib/access-notice';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { MentionContext } from '@/components/canvas/collab/comment/MentionContext';
+import { CommentReactionsProvider } from '@liveworkspace/workbench/components/comments/CommentReactionsContext';
 import { isEditorPath } from '@/lib/legacy-editor-path';
 
 const NotFound = dynamic(() => import('@/components/chrome/NotFound').then((m) => m.NotFound), {
@@ -199,11 +200,14 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     <EditorContext.Provider value={state}>
       {/* Who the comment composers can @-mention (docs/specs/012-collaboration/comment-mentions.md). */}
       <MentionContext.Provider value={state.commentMentions}>
-        {/* The owner's shape libraries, for the palette's My shapes
-            (docs/specs/013-workspace/shape-libraries.md). */}
-        <ShapeLibraryProvider ownerId={ownerId}>
-          <EditorView />
-        </ShapeLibraryProvider>
+        {/* Who reacts to comments, and how (docs/specs/012-collaboration/comment-reactions.md). */}
+        <CommentReactionsProvider value={state.commentReactions}>
+          {/* The owner's shape libraries, for the palette's My shapes
+              (docs/specs/013-workspace/shape-libraries.md). */}
+          <ShapeLibraryProvider ownerId={ownerId}>
+            <EditorView />
+          </ShapeLibraryProvider>
+        </CommentReactionsProvider>
       </MentionContext.Provider>
       {/* This browser's own store: an old livediagram.app guest's claim, its retired parts, and moving documents in
           This Browser after signing in (docs/specs/014-identity/auth-and-guest-access.md); never inside someone

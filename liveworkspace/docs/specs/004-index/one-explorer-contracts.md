@@ -9,14 +9,21 @@ side imports, so a change here is a change there.
 | Term   | Meaning                                                                                      |
 | ------ | -------------------------------------------------------------------------------------------- |
 | item   | One Canvas, Plan, Document or Design. Its id is a UUID the index gives it when it is made.   |
-| app    | `livediagram`, `liveplanner`, `livedocuments` or `livedesign`.                               |
-| kind   | `canvas`, `plan`, `document` or `design`: one per app, the word people see.                  |
+| app    | `livediagram`, `liveplanner`, `livedocuments`, `livedesign`, or `livehuddle` (held, below).  |
+| kind   | `canvas`, `plan`, `document`, `design` or `space`: one per app, the word people see.         |
 | person | Who is asking: an account (`user_…`) or a guest (`guest_…`). The same id in every app.       |
 | index  | The service at `liveworkspace.app/api/index` and its database. The only record of everything |
 |        | about an item except its content.                                                            |
 | grant  | A short-lived token, signed by the index, saying a person (or a link visitor) may open an    |
 |        | item at a level.                                                                             |
 | level  | `view` < `participate` < `edit`, as every app uses.                                          |
+
+livehuddle (its kind `space`, a person's "Space") is registered before its launch
+([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)): the contracts
+and the service take it as an app, and no Explorer lists it (`APP_NAMES` in `@liveworkspace/sites` holds the listed
+apps). The `items` table takes `livehuddle` and `space` since its rebuild (`0009_items_livehuddle.sql`, rehearsed on
+a copy of the data before it deploys: [blueprints/items.md](blueprints/items.md#rebuilding-items)). Until livehuddle's
+launch it has no `INDEX_KEY_LIVEHUDDLE`, so nothing can push one.
 
 ## Reaching the index
 
@@ -50,7 +57,9 @@ comma-separated, ≤ 50>`. Every person route then answers as that account, but 
   a team or make one there (403). Folders are the account's own tree. `X-Index-Teams` and `X-Share-Code` are
   ignored. A guest id is refused 403; a wrong key, a link or a malformed person 401.
 
-Errors are `{ "error": "<code>" }` with a 4xx status. Lists are paged with `limit` (≤ 200) and an opaque
+Errors are `{ "error": "<code>" }` with a 4xx status, save a request that threw: `503 storage_unavailable` (with
+`Retry-After: 5`) when the index's database is down, `500 internal_error` otherwise
+([When a request fails](../002-architecture/architecture.md#when-a-request-fails)). Lists are paged with `limit` (≤ 200) and an opaque
 `cursor`; a response carries `nextCursor` when there is more.
 
 ## Guests
@@ -134,37 +143,39 @@ every one is minted as a UUID, a `user_` or `guest_` id, a Clerk id or a hex has
 as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an element, an action) are any 1 to
 128 characters, because the apps' documents take any non-empty id there.
 
-| Call                           | Who                 | Does                                                                          |
-| ------------------------------ | ------------------- | ----------------------------------------------------------------------------- |
-| `GET /items`                   | person              | Lists. Filters: `app`, `view` (`all`, `recent`, `favourites`,                 |
-|                                |                     | `shared`, `trash`, `unsorted` (no folder: My Work's and a team's roots; the   |
-|                                |                     | Explorer has no Unsorted view), `search`: every live item the person can      |
-|                                |                     | open, links included), `folder` (`deep=1`: its subfolders too), `team`        |
-|                                |                     | and the lens's (below). Sorted by `updatedAt`, or by                          |
-|                                |                     | `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent` only, first           |
-|                                |                     | page) adds `mostUsed`: up to N items ranked by the days used in the last      |
-|                                |                     | 90, each with `useDays`, in the same response (Jump Back In). On any first    |
-|                                |                     | page, `mine=N` (1 to 200) adds `mine: {count, more}`, the person's own live   |
-|                                |                     | items in `app` counted up to N (Home's pill), and `any=1` adds `any`, whether |
-|                                |                     | they can open anything in `app` (Home's first run): Home's reads in one.      |
-| `POST /items`                  | person              | `{app, id?, title?, folderId?, teamId?, intent?, source?}` → 201              |
-|                                |                     | `{item, grant}`. The index makes the id unless the client names the one it    |
-|                                |                     | minted (409 `item_exists` when taken); the item's Durable Object              |
-|                                |                     | starts empty the first time it is opened with a grant.                        |
-| `GET /items/:id`               | person or link      | `{item, tabId, publicCode}`: the tab a link confines the caller to, and the   |
-|                                |                     | public link's code when that is their only way in (previews.md)               |
-| `PATCH /items/:id`             | editor              | `{title?, folderId?, teamId?}` → `{item}`. Moving into or out of a            |
-|                                |                     | team needs joined membership.                                                 |
-| `DELETE /items/:id`            | owner / team        | To the Trash; `?permanent=true` purges (below).                               |
-| `POST /items/:id/restore`      | owner / team        | `{item}`                                                                      |
-| `POST /items/:id/copy`         | anyone who can view | `{title?}` → 201 `{item}`. The index makes the row, then asks the             |
-|                                |                     | app to copy the content (`POST <app>/api/internal/items/:from/copy-to/:to`).  |
-| `POST /items/:id/open`         | person or link      | Records an open for Recent, and the day as a use day for Most Used            |
-|                                |                     | (`use_days`, kept 90 days). Debounced: at most one write a minute             |
-|                                |                     | per person and item.                                                          |
-| `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt}`. A link visitor sends                    |
-|                                |                     | `X-Share-Code` (and `X-Share-Password` when set).                             |
-| `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`; `?app=` empties that app's items only).                |
+| Call                           | Who                 | Does                                                                         |
+| ------------------------------ | ------------------- | ---------------------------------------------------------------------------- |
+| `GET /items`                   | person              | Lists. Filters: `app`, `view` (`all`, `recent`, `favourites`,                |
+|                                |                     | `shared`, `trash`, `unsorted` (no folder: My Work's and a team's roots; the  |
+|                                |                     | Explorer has no Unsorted view), `search`: every live item the person can     |
+|                                |                     | open, links included), `folder` (`deep=1`: its subfolders too), `team`       |
+|                                |                     | and the lens's (below). Sorted by `updatedAt`, or by                         |
+|                                |                     | `lastOpenedAt` for `recent`. `used=N` (1 to 8, `recent` only, first          |
+|                                |                     | page) adds `mostUsed`: up to N items opened in the last 14 days, ranked by   |
+|                                |                     | how many times (ties: opened last first), each with `useOpens` (and          |
+|                                |                     | `useDays`), in the same response (Jump Back In). On any first page,          |
+|                                |                     | `mine=N` (1 to 200) adds `mine: {count, more}`, the live items in `app` in   |
+|                                |                     | every space the person is in (their own and each team's; each item once)     |
+|                                |                     | counted up to N (Home's pill), and `any=1` adds `any`, whether               |
+|                                |                     | they can open anything in `app` (Home's first run): Home's reads in one.     |
+| `POST /items`                  | person              | `{app, id?, title?, folderId?, teamId?, intent?, source?}` → 201             |
+|                                |                     | `{item, grant}`. The index makes the id unless the client names the one it   |
+|                                |                     | minted (409 `item_exists` when taken); the item's Durable Object             |
+|                                |                     | starts empty the first time it is opened with a grant.                       |
+| `GET /items/:id`               | person or link      | `{item, tabId, publicCode}`: the tab a link confines the caller to, and the  |
+|                                |                     | public link's code when that is their only way in (previews.md)              |
+| `PATCH /items/:id`             | editor              | `{title?, folderId?, teamId?}` → `{item}`. Moving into or out of a           |
+|                                |                     | team needs joined membership.                                                |
+| `DELETE /items/:id`            | owner / team        | To the Trash; `?permanent=true` purges (below).                              |
+| `POST /items/:id/restore`      | owner / team        | `{item}`                                                                     |
+| `POST /items/:id/copy`         | anyone who can view | `{title?}` → 201 `{item}`. The index makes the row, then asks the            |
+|                                |                     | app to copy the content (`POST <app>/api/internal/items/:from/copy-to/:to`). |
+| `POST /items/:id/open`         | person or link      | Records an open for Recent, and counts it on the day's row for Most Used     |
+|                                |                     | (`use_days.opens`, kept 14 days). Debounced: at most one write a minute      |
+|                                |                     | per person and item.                                                         |
+| `POST /items/:id/grant`        | person or link      | `→ {grant, level, tabId, expiresAt}`. A link visitor sends                   |
+|                                |                     | `X-Share-Code` (and `X-Share-Password` when set).                            |
+| `GET /trash` / `DELETE /trash` | person              | List, empty (`?team=`; `?app=` empties that app's items only).               |
 
 **The lens's filters**, on `GET /items` and `GET /shared` (the Explorer's filter field and chips): `q`, words
 (at most 16), each in the title or the item's folder's name, taken literally; `apps`, the apps the items open in
@@ -216,6 +227,10 @@ holds for that person:
   `deleted` and the name kept beside it becomes "Deleted account" (`@liveworkspace/index-app`,
   `anonymiseJson`). The notices go when the app confirms. An app that answers anything else is asked
   again an hour later, and given up on after a week.
+
+Their webhooks ([webhooks.md](webhooks.md)) go too: those for their own items, and those of a team that closed with
+the account, are deleted; those of a team that outlives them are paused, their creator `deleted`, for another admin
+to resume.
 
 Their Google Drive mirror's flag (`drive_mirrored`, below) goes too; accounts tells the mirror's service itself.
 
@@ -369,10 +384,16 @@ assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push
   keeps what the Inbox needs: the latest comment's opening, the action's note, and the names on it. Shown text
   is cut to length rather than refused.
 - Cards and their threads go under the tab id `~cards` (`COLLAB_CARDS_TAB`): each card assigned to someone is an
-  action whose `elementId` is the card's id, and each card's thread a thread, both with `card: {key, type,
+  action whose `elementId` is the card's id, and each of a card's comment threads a thread whose `elementId` is the
+  thread's own id (unique across every item) and `elementLabel` its title, both with `card: {id?, key, type,
 typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is where the row opens it; null
-  when no board shows it). An app whose cards name people by a hash matches it to a person id before pushing
-  (`@liveworkspace/index-app` `cardsCollabPush`); a card whose assignee it cannot name is left out.
+  when no board shows it; `id` the card's id, given when the row's `elementId` is not the card's: a thread's). A
+  thread on several of an item's cards is pushed once, on the first; a thread shared between items (a card thread on
+  cards in two plans) is pushed by each, and the Inbox lists it once (below). An app whose cards name people by a hash matches it to a person id before pushing
+  (`@liveworkspace/index-app` `cardsCollabPush`); a card whose assignee it cannot name is left out. A card may
+  name several people to tell (liveplanner's notifying Person fields): one action a person, under the card's id as
+  `actionId` for its Assignee and `{card id}~{field id}` for another field (a person two fields name is told once,
+  by the first), so a card that names one person reads as before.
 - `PUT /app/items/:id/forms/:tabId`: `{form: {heading, boardTabId, responses, latestAt, code?} | null}`: a form's
   heading, the tab its responses land on, how many it has taken and when the last came; `null` takes it off the
   Inbox (deleted, or the tab gone). Pushed by the app's server when a response lands, the form is published,
@@ -388,12 +409,16 @@ typeLabel, title, board: {tabId, elementId, title, tabName} | null}` (`board` is
 
 - `PUT /app/items/:id/events`: `{events: [{type: 'edited', actorId, actorName?, at}]}`, up to 100: who
   wrote to the item and when, for the Timeline and Most Used. Each person's `edited` lands on one event per
-  item and UTC day (a later report moves its time on), and counts that day as one of their use days, as an
-  open does. liveplanner sends one per person who wrote since its last push, with the time of their latest
+  item and UTC day (a later report moves its time on), and counts that day as one of their use days (one open
+  when the day has none yet, so an item only edited still reaches Most Used; it never adds to a day's opens). liveplanner sends one per person who wrote since its last push, with the time of their latest
   write.
 - `PUT /app/people/events`: `{events: [{type: 'image_uploaded', actorId, at, count?}]}`, up to 100, from the
   app's server when a person uploads images (not a deduped re-upload): each adds `count` (default 1) to that
   person's one `image_uploaded` event for the app and UTC day, seen by them alone.
+- `PUT /app/items/:id/card-moves`: `{moves: [{cardId, cardKey, card, from, to, actorName?, at}]}`, up to 100: a
+  plan's cards that changed status (liveplanner), for its scope's webhooks only (`card_moved`,
+  [webhooks.md](webhooks.md)); nothing goes on the Timeline. Each is one delivery per webhook however often it is
+  sent (its id is made from the item, card and time). 204; 400 `invalid_moves`.
 
 ## The migration's handoff
 
@@ -489,6 +514,9 @@ by link are not on it.
   it out again at once; a daily pass (at most 2,000 items, the soonest first) catches links the week has since
   reached, and leaves one the owner removed from their Timeline removed.
 - Apps report `edited` and `image_uploaded` (above).
+- Each event the index records about an item (`created`, `renamed`, `moved`, `trashed`, `shared`, `commented`,
+  `action_assigned`, `action_done`) is also handed, in the same batch, to the webhooks of the item's scope that
+  listen for it ([webhooks.md](webhooks.md)).
 - liveworkspace accounts reports its teams' and API tokens' events, `POST /internal/timeline {events}` with
   its key (up to 100, each `{id, type, actorId, actorName?, title, detail?, at, scopes}`): `team_invite_sent`,
   `team_joined`, `team_declined`, `team_role_changed`, `team_member_removed` (`left` when they left),
@@ -539,9 +567,11 @@ The Explorer shows it as a list and a reading pane (`packages/explorer/src/explo
 component on the page and in every editor's panel:
 
 - **The list.** Every row newest first, under **Today**, **Earlier This Week** (the six days before) and **Older**.
+  A card thread read through two items (shared between plans) is one row: its newest copy.
   Each row is three lines: who is behind it (who assigned it, who it waits on, who wrote last; semibold when it asks
   something of me: mine to do, a mention, a thread on my item, new responses), with its age ("12m", "3h", "2d", then
-  the date); what it is (the action, the card's number and title, the element a thread is on, the form's heading);
+  the date); what it is (the action, the card's number and title, a card thread's title, the element a thread is
+  on, the form's heading);
   and why it is here as an icon and words (**To do**, **Waiting on Bo**, **Mentioned you**, **On your plan**,
   **Replied to you** or **You replied**, **6 new responses**), then the app's Living Prism (in the All filter) and
   the item's name, and the teal **This Browser** pill for an item only this browser holds. The chosen row has a
@@ -550,7 +580,10 @@ component on the page and in every editor's panel:
   **Assigned by Me** (waiting on others), **Comments** (mentions, threads on my items, threads I replied in) and
   **Form Responses**, each with its count. The choice is kept per viewer on this device
   (`liveworkspace:explorer-inbox-filter:<viewer id>`), as the Explorer keeps its other view choices, and sits beside
-  the header's app filter (this app or All), which still decides which rows are read. Each change is
+  the header's app filter (this app or All), which still decides which rows are read. In the editor's panel the bar
+  is a compact dropdown (`Select`, `@liveworkspace/ui`, a native select named **Inbox filter**) in the pane's header
+  row, on the right beside the app filter, each option reading its name and count ("My Actions (3)"), so the pane
+  keeps one quiet row of controls; it shows only while the list does. Each change is
   `Activity·Changed` (`All`, `MyActions`, `AssignedByMe`, `Comments`, `FormResponses`).
 - **The reading pane**, labelled by its title: where it is (the Living Prism, the team glyph, the item › the tab ›
   the element or board), the title, who and why in a sentence ("Priya mentioned you · 25 mins ago · Task"), the verbs
@@ -558,13 +591,14 @@ component on the page and in every editor's panel:
   the index once the choice has rested 200 ms and kept, at most 64), then the thread, the action's note or the
   form's responses, and a reply field where Reply is offered.
 - **The verbs.** Open in the app (↵) is always there, through the host's `itemHref` with an `ItemPlace`: the tab and
-  element, `open: 'action' | 'comments'` for the popover, and `cardId` for a card (`Activity·Selected`, by row kind).
+  element, `open: 'action' | 'comments'` for the popover, `cardId` for a card, and `threadId` for a card's thread
+  (`Activity·Selected`, by row kind).
   The rest come from the host's `InboxHost.actions` (`@liveworkspace/explorer/inbox-actions`), asked per row, so no
   page shows a verb it can't carry out:
   - **Reply** (r) and **Resolve** (e) on a thread, through the owning app's comment routes: an element's thread by
     `POST /api/<items>/:id/tabs/:tabId/comments` and `…/comments/:firstCommentId/resolve` (the thread named by its
     first comment, read from `GET /api/<items>/:id/comments?status=all`, which also gives the pane the whole thread),
-    a card's by `POST /api/projects/:id/items/:cardId/comments` and `…/comments/resolve`. On liveworkspace.app every
+    a card thread's by `POST /api/projects/:id/threads/:threadId/comments` and `…/threads/:threadId/resolve`. On liveworkspace.app every
     app's threads (the workspace token's audience is every app's api); on an app's own address and in its editor's
     panel that app's threads only (their token is their own api's). `Activity·Added` (`Reply`) and
     `Activity·Resolved` (`Thread`).
@@ -579,13 +613,13 @@ component on the page and in every editor's panel:
   opens the pane (where it stands in for the list), r replies, e resolves or marks done, Esc returns from the pane.
   The keys show on the buttons, except on a touch screen.
 - **Narrow.** Under 768 px, and always in the editor's panel, the list stands alone; choosing a row opens the pane in
-  its place (on a phone, full screen) with **Back to Inbox**. The browser's Back (Android's, an iPhone's swipe) and
+  its place (on a phone, full screen) under the shared back bar to **Inbox** (`BackBar`, `@liveworkspace/ui`). The browser's Back (Android's, an iPhone's swipe) and
   Esc return to the list: opening the pane adds one history entry, keeping the page's history state as it was. If the
   open row disappears (done elsewhere, gone from a re-read), the pane closes and steps back off that entry, so the
   next Back leaves the list; opening a row while the pane's entry is still on top replaces it rather than adding
   another. The
-  filter bar becomes a strip of chips that scrolls sideways within itself, so the page never does; chips, rows and
-  Back are at least 44 px tall; the page keeps its 16 px gutter.
+  filter bar becomes a strip of chips that scrolls sideways within itself, so the page never does (in the panel, the
+  header's dropdown instead); chips, rows and Back are at least 44 px tall (the dropdown 36 px); the page keeps its 16 px gutter.
 
 The sidebar's badge counts My Actions, 0 included once read. Coming back to the browser tab reads it again (at most
 every 30 seconds), keeping the list if that read fails. An app may add rows the index never sees (an app's items in

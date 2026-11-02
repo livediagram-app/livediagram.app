@@ -14,6 +14,7 @@ import {
   CARD_SLOTS,
   cardSlotFits,
   readCardDisplay,
+  RETIRED_CARD_SIZE,
   typeOffersCardField,
   type CardDisplay,
   type CardLayout,
@@ -32,7 +33,6 @@ import {
 // Each size's slots by the names an agent gives them, in reading order.
 const DISPLAY_SLOT_NAMES: Readonly<Record<CardSize, Readonly<Record<string, CardSlot>>>> = {
   minimal: { beforeTitle: 'lead', afterTitle: 'trail' },
-  compact: { besideTitle: 'lead', belowTitle: 'row', bottomRight: 'trail' },
   detailed: {
     header: 'head',
     headerEnd: 'headEnd',
@@ -74,13 +74,15 @@ function cardFieldOf(name: string, type: ItemTypeDef): CardField | null {
   return named.ok ? (named.key as CardField) : null;
 }
 
-// The type's Display after `input`: each size given replaces that size's layout, a size left out keeps its own.
+// The type's Display after `input`: each size given replaces that size's layout, a size left out keeps its own. A
+// layout for the retired Compact size (an older prompt's) is skipped, as a stored one is dropped.
 export function displayFrom(
   input: DisplayInput,
   type: ItemTypeDef,
 ): FaceRead<CardDisplay | undefined> {
   const next: Partial<Record<CardSize, CardLayout>> = { ...(type.display ?? {}) };
   for (const [sizeName, slots] of Object.entries(input)) {
+    if (statusKey(sizeName) === RETIRED_CARD_SIZE) continue;
     const size = CARD_SIZES.find((s) => s === statusKey(sizeName));
     if (!size) return no(`"${sizeName}" is not a card size. Sizes: ${CARD_SIZES.join(', ')}.`);
     const names = DISPLAY_SLOT_NAMES[size];

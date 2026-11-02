@@ -7,7 +7,14 @@
 // flyouts open on its board side; on a narrow screen the groups scroll sideways together. One
 // flyout at a time, and nothing moves under the pointer when a tool is picked.
 
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { WhiteboardDockModel } from '@/hooks/canvas/useWhiteboard';
 import type { WhiteboardDockPosition } from '@/lib/whiteboard-dock-prefs';
@@ -15,13 +22,15 @@ import { whiteboardShapeEntry } from '@/lib/whiteboard-shape-catalogue';
 import {
   pinFromMenu,
   resolveSlotDrop,
-  splitPhonePins,
+  NARROW_DOCK_MEDIA_QUERY,
+  splitBarPins,
   unpinShape,
   type SlotOutcome,
   type SlotSource,
 } from '@/lib/whiteboard-shape-slots';
 import {
   EraserFlyoutBody,
+  FillFlyoutBody,
   PenFlyoutBody,
   penFlyoutLabel,
   SettingsFlyoutBody,
@@ -36,8 +45,10 @@ import { SlotGhost } from './SlotGhost';
 import { useDockFlyout, type DockFlyout, type DockFlyoutApi } from './useDockFlyout';
 import { useShapeSlotDrag } from './useShapeSlotDrag';
 import { WhiteboardFlyout } from './WhiteboardFlyout';
+import { useMenuCardClearance } from './useMenuCardClearance';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { announceToastFloorChange } from '@liveworkspace/workbench/components/toast/toast-floor';
+import { useMediaQuery } from '@livediagram/ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
@@ -48,12 +59,12 @@ const HINT_MS = 4000;
 
 // Where the wrapper sits. At the top it keeps clear of the Explorer menu card (top-left): beside it on a phone or a
 // tablet, centred with the same clearance on both sides from lg (D33), so a tablet in portrait still shows the whole
-// dock. The dock is one card that scrolls inside itself, with no bleed. On a tablet it starts at 7.5rem, room for the
-// card at a raised UI scale; a phone draws at 100% (docs/specs/007-editor/ui-scale.md), where the card is 12 + 46 px,
-// so the dock starts 8 px after it at 4.125rem and keeps the 12 px margin on the right: at 7.5rem it left a gap
-// beside the card and pushed the Eraser off a 390 px phone.
+// dock. The dock is one card that scrolls inside itself, with no bleed. The clearance is the card's measured right
+// edge plus 8 px (`--dock-clear`, useMenuCardClearance): the card holds the menu button, the editor mode switch and
+// on a computer the tab's name, so its width varies. Until measured, the old guesses hold: 7.5rem on a tablet,
+// 4.125rem on a phone. The 12 px margin on the right is kept.
 const WRAPPER_PLACEMENT: Record<WhiteboardDockPosition, string> = {
-  top: 'top-3 left-[7.5rem] max-w-[calc(100%-8.25rem)] phone:left-[4.125rem] phone:max-w-[calc(100%-4.875rem)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-[calc(100%-15rem)]',
+  top: 'top-3 left-[var(--dock-clear,7.5rem)] max-w-[calc(100%-var(--dock-clear,7.5rem)-0.75rem)] phone:left-[var(--dock-clear,4.125rem)] phone:max-w-[calc(100%-var(--dock-clear,4.125rem)-0.75rem)] lg:left-1/2 lg:-translate-x-1/2 lg:max-w-[calc(100%-2*var(--dock-clear,7.5rem))]',
   bottom:
     'bottom-[4.25rem] left-1/2 -translate-x-1/2 max-w-[calc(100%-1.5rem)] min-[1760px]:bottom-4',
 };
@@ -74,12 +85,14 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
   // The dock is the Toolbar layout strip's twin, so it draws at the toolbar UI scale
   // (docs/specs/007-editor/ui-scale.md).
   const scale = useUiScale('toolbar');
-  // A phone's dock: one pinned shape on the bar, the rest in the Shapes flyout, and no dragging
-  // shapes on or off the bar (its drop targets would not match the pins it hides).
+  const wrapper = useRef<HTMLDivElement>(null);
+  const clear = useMenuCardClearance(wrapper, scale, model.position === 'top');
+  // A narrow dock (a phone or a tablet): one pinned shape on the bar, the rest in the Shapes flyout,
+  // and no dragging shapes on or off the bar (its drop targets would not match the pins it hides).
   const phone = useIsMobileViewport();
-  const pins = phone
-    ? splitPhonePins(model.pinnedShapes)
-    : { onBar: model.pinnedShapes, inMenu: [] };
+  const tablet = useMediaQuery(NARROW_DOCK_MEDIA_QUERY);
+  const narrow = phone || tablet;
+  const pins = splitBarPins(model.pinnedShapes, narrow);
   // The canvas the stock colours are drawn for (docs/specs/007-editor/editor-modes.md "One look").
   const appearance = useCanvasSurface();
   const fly = useDockFlyout();
@@ -186,6 +199,8 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
     switch (f.kind) {
       case 'eraser':
         return { label: 'Eraser', body: <EraserFlyoutBody model={model} /> };
+      case 'fill':
+        return { label: 'Fill', body: <FillFlyoutBody model={model} /> };
       case 'shapes':
         return {
           label: 'Shapes',
@@ -195,7 +210,7 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
               ink={ink}
               slots={model.slotShapes}
               menuPins={pins.inMenu}
-              canDrag={!phone}
+              canDrag={!narrow}
               slotDrag={slotDrag}
               onPin={(key) => chooseFromMenu({ key, from: 'flyout' })}
               onEngage={fly.stick}
@@ -242,7 +257,7 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
       <ShapesGroup
         model={model}
         pinned={pins.onBar}
-        canDrag={!phone}
+        canDrag={!narrow}
         fly={fly}
         slotDrag={slotDrag}
         refusing={refusing}
@@ -259,6 +274,7 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
   return (
     <div
       data-floating-panel=""
+      ref={wrapper}
       data-whiteboard-dock=""
       data-region="palette"
       data-dock-position={model.position}
@@ -267,15 +283,16 @@ export function WhiteboardDock({ model, ink, onDrawn }: WhiteboardDockProps) {
         e.preventDefault();
         e.stopPropagation();
       }}
-      style={
-        scale === 1
-          ? undefined
+      style={{
+        ...(clear === null ? {} : ({ '--dock-clear': `${clear}px` } as CSSProperties)),
+        ...(scale === 1
+          ? {}
           : {
               ...uiScaleStyle(scale),
               // Restated so the dock keeps its 12px from the edge however it is zoomed.
               ...(model.position === 'top' ? { top: toSurfacePx(12, scale) } : {}),
-            }
-      }
+            }),
+      }}
       className={`pointer-events-none absolute z-[var(--z-toolbar)] w-max ${WRAPPER_PLACEMENT[model.position]}`}
     >
       <DockBody below={below} hint={hint} fly={fly} open={open} groups={groups} />

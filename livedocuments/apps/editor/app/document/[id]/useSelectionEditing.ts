@@ -1,6 +1,6 @@
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useRef, type Dispatch, type SetStateAction } from 'react';
-import { isUntitledDocumentName } from '@livedocuments/templates';
+import { isUntitledName } from '@livedocuments/api-schema';
 import {
   hasRichFormatting,
   isBoxed,
@@ -226,7 +226,7 @@ export function useSelectionEditing(opts: {
     const trimmed = truncateName(label);
     // A Participant names nothing: the document, its tabs and its layers are an Editor's.
     if (isReadOnly) return;
-    if (isUntitledDocumentName(documentName)) {
+    if (isUntitledName(documentName)) {
       const firstTab = tabs[0];
       const firstEl = firstTab?.elements[0];
       if (firstEl && firstEl.id === elementId) {

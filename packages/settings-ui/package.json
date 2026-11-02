@@ -18,6 +18,7 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
+    "@liveworkspace/vitest-config": "workspace:^",
     "@testing-library/react": "^16.3.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -30,9 +31,11 @@
   },
   "dependencies": {
     "@liveworkspace/account-menu": "workspace:^",
+    "@liveworkspace/brand": "workspace:^",
     "@liveworkspace/drive": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/settings": "workspace:*",
+    "@liveworkspace/sites": "workspace:^",
     "@liveworkspace/ui": "workspace:^"
   }
 }

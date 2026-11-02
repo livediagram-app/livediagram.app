@@ -50,6 +50,27 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ kind: 'article', tabId: 't' }, as('view'))).toEqual(DROP);
   });
 
+  // docs/specs/012-collaboration/comment-reactions.md: an Editor's reaction rides the room; a Participant's goes
+  // through the comment endpoints (which relay it), so the room drops one sent directly, as it drops a Viewer's.
+  it("relays an Editor's comment reaction only", () => {
+    const react = {
+      kind: 'el-delta',
+      tabId: 't',
+      elementId: 'e',
+      delta: {
+        kind: 'comment-react',
+        commentId: 'c',
+        emoji: 'eyes',
+        by: 'me',
+        name: 'Me',
+        on: true,
+      },
+    };
+    expect(gateClientOp(react, as('edit'))).toEqual(relay(false));
+    expect(gateClientOp(react, as('participate'))).toEqual(DROP);
+    expect(gateClientOp(react, as('view'))).toEqual(DROP);
+  });
+
   it("shows only an editor's drag preview", () => {
     expect(gateClientOp({ kind: 'drag-preview' }, as('edit'))).toEqual(relay(true));
     expect(gateClientOp({ kind: 'drag-preview' }, as('participate'))).toEqual(DROP);

@@ -57,7 +57,11 @@ const nextConfig: NextConfig = {
           return [
             { source: '/api/auth/:path*', destination: `${ACCOUNTS_DEV}/api/auth/:path*` },
             { source: '/api/account/:path*', destination: `${ACCOUNTS_DEV}/api/account/:path*` },
-            { source: '/.well-known/:path*', destination: `${ACCOUNTS_DEV}/.well-known/:path*` },
+            // Only accounts' two discovery documents, as in production: security.txt is the site's own.
+            {
+              source: '/.well-known/:doc(openid-configuration|oauth-authorization-server)/:path*',
+              destination: `${ACCOUNTS_DEV}/.well-known/:doc/:path*`,
+            },
             {
               source: '/api/telemetry/:path*',
               destination: `${TELEMETRY_DEV}/api/telemetry/:path*`,

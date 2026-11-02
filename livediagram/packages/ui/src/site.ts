@@ -1,3 +1,4 @@
+import { PUBLIC_REPO_URL } from '@liveworkspace/sites/security';
 import type { Metadata, Viewport } from 'next';
 
 // The site-wide constants every public frontend shares. Before this each app
@@ -9,7 +10,7 @@ import type { Metadata, Viewport } from 'next';
 // the apps together by path (docs/specs/016-platform/router-app.md), so every app's metadataBase, JSON-LD
 // ids and share links resolve against this one value (docs/specs/019-marketing/marketing-site.md "SEO and
 // metadata").
-export const SITE_URL = 'https://livediagram-router.liveworkspace-easing509.workers.dev';
+export const SITE_URL = 'https://www.livediagram.app';
 
 // This site in liveworkspace's list of sites (@liveworkspace/sites), marked in the logo's switcher.
 export const SITE_ID = 'livediagram.app' as const;
@@ -31,13 +32,14 @@ export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.
 // The open-source repository (docs/specs/002-project-scope/open-source-and-business-model.md: the codebase is public + MIT), linked
 // from the footer, the FAQ, the status page, the help centre's contact page,
 // the editor's bottom bar and Explorer menu, and the `sameAs` JSON-LD.
-export const REPO_URL = 'https://github.com/livediagram-app/livediagram.app';
+// The one public repository, the monorepo every product lives in: its address lives in @liveworkspace/sites/security
+// (liveworkspace/docs/specs/001-platform-scope/vulnerability-disclosure.md), so a rename is one line there.
+export const REPO_URL = PUBLIC_REPO_URL;
 
 // The public contact form, the one way to reach the
 // team; no email address is published. Linked from the help centre's contact page, the FAQ, the status
 // page and the Terms and Privacy Policy.
-export const CONTACT_FORM_URL =
-  'https://livediagram-router.liveworkspace-easing509.workers.dev/form/90Bgj5sY9eTpVrjhx9tTZj';
+export const CONTACT_FORM_URL = 'https://www.liveplanner.app/form/90Bgj5sY9eTpVrjhx9tTZj';
 
 // Favicon set for the apps that serve their pages from the origin root (or
 // reference the root's assets): the SVG mark, a raster PNG fallback for

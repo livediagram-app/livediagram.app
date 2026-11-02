@@ -5,7 +5,8 @@
 // top (apps/live/lib/template-builders.ts), and the MCP worker
 // materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
-import { buildWireframeFlow } from './template-builders-wireframe-flows';
+import { buildWireframeFlow, isWireframeFlowKind } from './template-builders-wireframe-flows';
+import { buildLogoExploration, isLogoExplorationKind } from './template-builders-logo-explorations';
 import { settleChips, type Element } from '@livedesign/design';
 import type { TemplateKind } from './templates';
 import { buildLogoDesign } from './template-builders-logo';
@@ -20,6 +21,9 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
 }
 
 function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
+  // The flows and the logo explorations are data: each screen or layout on its own page.
+  if (isWireframeFlowKind(kind)) return buildWireframeFlow(kind);
+  if (isLogoExplorationKind(kind)) return buildLogoExploration(kind);
   switch (kind) {
     // Blank Tab is truly blank: no seeded element.
     case 'blank':
@@ -37,12 +41,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
     case 'blank-wireframe-watch':
     case 'photo-edit':
       return [];
-    case 'wireframe-mobile-app':
-    case 'wireframe-website':
-    case 'wireframe-dashboard':
-    case 'wireframe-tablet-app':
-    case 'wireframe-watch-app':
-      return buildWireframeFlow(kind);
   }
 }
 

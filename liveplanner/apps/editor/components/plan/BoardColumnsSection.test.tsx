@@ -75,10 +75,15 @@ function show(setup: PlanBoardSetup, overrides: Record<string, unknown> = {}) {
 }
 
 describe('columnsInsertAfter', () => {
-  it('adds after the last column, or before a done column that ends the board', () => {
-    expect(columnsInsertAfter({ ...kanban, doneColumnId: undefined })).toBe('done');
+  it('adds after the last column, or before the done columns that end the board', () => {
+    const noDone = { ...kanban, columns: kanban.columns.map((c) => ({ ...c, done: false })) };
+    expect(columnsInsertAfter(noDone)).toBe('done');
     expect(columnsInsertAfter(kanban)).toBe('doing');
-    expect(columnsInsertAfter({ ...kanban, doneColumnId: 'todo' })).toBe('done');
+    // Done and Won't Do both end it.
+    const wont = { ...kanban, columns: [...kanban.columns, statusColumn('wont', 'Won’t Do')] };
+    expect(columnsInsertAfter({ ...wont, doneColumnId: undefined })).toBe('doing');
+    // Every column done: after the first.
+    expect(columnsInsertAfter({ ...kanban, doneColumnId: 'todo' })).toBe('todo');
     expect(
       columnsInsertAfter({ columns: [statusColumn('done', 'Done')], doneColumnId: 'done' }),
     ).toBe('done');

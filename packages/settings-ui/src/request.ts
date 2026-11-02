@@ -8,7 +8,7 @@ export type SettingsApiResult<T> =
  *  `keepalive`: sent as the page goes (a name still waiting to be saved), so it outlives the page. */
 export type SettingsRequest = <T>(
   path: string,
-  method?: 'GET' | 'PATCH',
+  method?: 'GET' | 'PATCH' | 'POST' | 'DELETE',
   body?: unknown,
   options?: { keepalive?: boolean },
 ) => Promise<SettingsApiResult<T>>;
@@ -24,7 +24,7 @@ export function bearerSettingsRequest({
 }): SettingsRequest {
   return async <T>(
     path: string,
-    method: 'GET' | 'PATCH' = 'GET',
+    method: 'GET' | 'PATCH' | 'POST' | 'DELETE' = 'GET',
     body?: unknown,
     options?: { keepalive?: boolean },
   ) => {

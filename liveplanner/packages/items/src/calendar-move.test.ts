@@ -13,6 +13,7 @@ describe('calendarMove on a Due Calendar', () => {
     expect(calendarMove(item({ due: '2026-10-05' }), 'due', day('2026-10-14'))).toEqual({
       set: { due: '2026-10-14' },
       days: 9,
+      carried: false,
     });
   });
 
@@ -27,6 +28,7 @@ describe('calendarMove on a Due Calendar', () => {
     expect(calendarMove(card, 'due', day('2026-09-30'))).toEqual({
       set: { due: '2026-09-30', start: '2026-09-28' },
       days: -5,
+      carried: true,
     });
   });
 
@@ -63,6 +65,7 @@ describe('calendarMove on a Start Calendar', () => {
     expect(calendarMove(card, 'start', day('2026-10-06'))).toEqual({
       set: { start: '2026-10-06', due: '2026-10-08' },
       days: 5,
+      carried: true,
     });
   });
 

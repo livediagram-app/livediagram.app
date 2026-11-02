@@ -38,6 +38,7 @@ export function photoView(
     store: null,
     toast: (m: string) => toasts.push(m),
     writePhoto: vi.fn(),
+    photoRoom: 9,
     runtime: null,
     others: () => [],
     fitPhoto: vi.fn(),

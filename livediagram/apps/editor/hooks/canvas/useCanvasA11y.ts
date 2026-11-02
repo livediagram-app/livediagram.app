@@ -146,6 +146,11 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
       if (key === prevKey) return;
       const hadSelection = prevKey !== '';
       prevKey = key;
+      // A verb spoken since the change said what happened, and is not spoken over: a vote key pressed straight
+      // after Tab ("Dot added to 'Idea'") names the element itself, and "Selected 'Idea'" a frame later would be
+      // all the reader heard. Clearing has always followed this rule.
+      const spokenSince = getAnnouncementSnapshot().nonce !== heardAtChange;
+      if (spokenSince) return;
       const { elements } = ref.current;
       if (s.multiSelectedIds.size > 0) {
         const members = elements.filter((el) => s.multiSelectedIds.has(el.id));
@@ -159,7 +164,7 @@ export function useCanvasA11y(deps: CanvasA11yDeps): void {
       }
       // A clear that came with a verb which said what happened ("Deleted 'Login'") leaves its word standing:
       // "Selection cleared" spoken over it would be all the reader heard.
-      if (hadSelection && getAnnouncementSnapshot().nonce === heardAtChange) {
+      if (hadSelection) {
         announce('Selection cleared');
       }
     };

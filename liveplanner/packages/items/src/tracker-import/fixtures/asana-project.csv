@@ -1,0 +1,9 @@
+Task ID,Created At,Completed At,Last Modified,Name,Section/Column,Assignee,Assignee Email,Start Date,Due Date,Tags,Notes,Projects,Parent task,Blocked By (Dependencies),Blocking (Dependencies),Priority
+1206543210987001,2026-10-01,,2026-10-20,Plan the Q4 campaign,To Do,Ana Lopez,ana@example.com,2026-11-02,2026-11-21,"Marketing,Q4","Draft the brief.
+Share with sales first.",Marketing Calendar,,,,High
+1206543210987002,2026-10-02,,2026-10-21,Book venue for launch,In Progress,Ben Okafor,BEN@Example.com,,2026-11-10,Events,,Marketing Calendar,,,,Medium
+1206543210987003,2026-10-03,2026-10-25,2026-10-25,Order swag,In Progress,,,,,,"=HYPERLINK(""http://evil.example"",""click"")",Marketing Calendar,,,,
+1206543210987004,2026-10-04,,2026-10-22,Write the press release,Review,Dana Smith,,,31/12/2026,"PR, Marketing, PR",See https://docs.example.com/press,"Marketing Calendar, Press",,,,Low
+1206543210987005,2026-10-05,,2026-10-22,,To Do,,,,,,,,,,,
+,,,,,,,,,,,,,,,,
+1206543210987006,2026-10-06,,2026-10-23,Pick photographer,,carla@example.com,,,not a date,,,,,,,No priority

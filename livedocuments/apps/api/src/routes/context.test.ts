@@ -89,6 +89,7 @@ describe('the grant gates', () => {
       role: 'edit',
       tabScope: 't1',
       shareCode: null,
+      community: false,
     });
   });
 

@@ -78,7 +78,7 @@ describe('document create', () => {
       },
     ]);
     expect(documentCreate.text!(out)).toEqual([
-      '+ document new-1 "Shop" · 1 tab · https://livediagram-router.liveworkspace-easing509.workers.dev/document/new-1',
+      '+ document new-1 "Shop" · 1 tab · https://www.livediagram.app/document/new-1',
     ]);
     expect(documentCreate.quiet!(out)).toEqual(['new-1']);
   });
@@ -92,7 +92,7 @@ describe('document create', () => {
         ),
     });
     expect((await documentCreate.run!(contextOf(api), { name: 'X' })).text).toBe(
-      '+ document abcdef12 "X" · 2 tabs · https://livediagram-router.liveworkspace-easing509.workers.dev/document/abcdef1234',
+      '+ document abcdef12 "X" · 2 tabs · https://www.livediagram.app/document/abcdef1234',
     );
   });
 
@@ -160,8 +160,8 @@ describe('document rename, share, rm and restore', () => {
     );
     expect(seen[0]).toMatchObject({ method: 'POST', body: { role: 'edit', expiry: 'never' } });
     expect(out).toEqual({
-      text: 'https://livediagram-router.liveworkspace-easing509.workers.dev/document/shared?s=abc',
-      url: 'https://livediagram-router.liveworkspace-easing509.workers.dev/document/shared?s=abc',
+      text: 'https://www.livediagram.app/document/shared?s=abc',
+      url: 'https://www.livediagram.app/document/shared?s=abc',
       role: 'edit',
       expiresAt: null,
     });

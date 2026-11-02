@@ -10,6 +10,7 @@ import {
   dayParts,
   ganttDayShift,
   ganttDrag,
+  type ViewDates,
   type GanttEdge,
   type GanttModel,
   type GanttRow,
@@ -63,11 +64,14 @@ export function ganttPreviewLabel(preview: GanttPreview): string {
 
 export function useGanttDrag({
   model,
+  dates,
   trackRef,
   onCommit,
   onBegin,
 }: {
   model: Pick<GanttModel, 'from' | 'to'>;
+  // The fields the chart reads its dates from: a drag writes them (plan-views.md "Dates").
+  dates?: ViewDates;
   // The time axis, whose width turns pixels into days.
   trackRef: RefObject<HTMLElement | null>;
   onCommit: (itemId: string, patch: ItemPatch) => void;
@@ -93,7 +97,7 @@ export function useGanttDrag({
     const onMove = (ev: PointerEvent) => {
       const dx = ev.clientX - startX;
       if (Math.abs(dx) > DRAG_SLOP_PX) moved.current = true;
-      last = ganttDrag(row, edge, ganttDayShift(model, dx, width));
+      last = ganttDrag(row, edge, ganttDayShift(model, dx, width), dates);
       setPreview(
         last
           ? {

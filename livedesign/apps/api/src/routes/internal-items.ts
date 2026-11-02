@@ -17,6 +17,7 @@ import {
   handleInternalItems as handle,
 } from '@liveworkspace/index-app';
 import { MAX_TAB_BYTES } from '../limits';
+import { communityService } from '../community-service';
 import { notifyFirstShare } from '../email/notifications';
 import { deleteAccount } from '../db/account';
 import { mergeMediaOwner } from '../media';
@@ -59,9 +60,12 @@ export function handleInternalItems(
       // and their name off each design of someone else's that names them.
       personClosed: (personId) => deleteAccount(env, personId),
       // A guest who became an account (accounts merged them; the index tells each app): their images in
-      // liveworkspace's media service become the account's. A guest has no workbench (it needs a token), and their
-      // designs are the index's to move.
-      personMerged: (guestId, userId) => mergeMediaOwner(env, guestId, userId),
+      // liveworkspace's media service and their Community copies become the account's. A guest has no workbench (it
+      // needs a token), and their designs are the index's to move.
+      personMerged: async (guestId, userId) => {
+        await mergeMediaOwner(env, guestId, userId);
+        await communityService.mergeCopier(env, guestId, userId);
+      },
       anonymise: (id, personId) => designRoom(env, id).anonymise(personId),
       // A workbench pairing's access ended at liveworkspace: its sockets in this design's room close.
       // An old livediagram.app document's livedesign part, into its design's room (design-room/design-migration.ts). A tab
@@ -72,13 +76,24 @@ export function handleInternalItems(
       },
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
       copy: async (from, to, tabId, copier) => {
-        // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves them.
-        const copy = await designRoom(env, from).exportCopy(tabId, copier.by);
+        // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves them;
+        // through the design's Community post's link, without its comments or the people on its actions.
+        const source = await designRoom(env, from).exportCopy(tabId, copier);
         // No such design, or no such tab in it.
-        if (!copy || (tabId && copy.tabs.length === 0)) return 'not_found';
+        if (!source || (tabId && source.copy.tabs.length === 0)) return 'not_found';
+        const { copy } = source;
         // The target is a new design: a copy into one that already holds this content fails its keys, and nothing
         // is written (importCopy is one transaction); the kit answers that as a conflict.
         await designRoom(env, to).importCopy(copy);
+        // A copy through a Community post's link counts toward the post (docs/specs/025-community/community.md
+        // "Likes, reports and moderation"), once per copier and at most a few from one network: the copier's address
+        // as the index saw it (an Explorer's copy). The api's own copy door counted it first
+        // (routes/design-index-routes.ts), so this adds nothing then. An index that names no address counts the
+        // copier as their own network.
+        if (source.community && copier.by)
+          waitUntil(
+            communityService.countCopy(env, from, copier.by, copier.ip ?? `copier:${copier.by}`),
+          );
         return { tabs: copy.tabs.length, items: 0 };
       },
       // The design drawn, for liveworkspace's previews (design-room.ts `exportImage`), or its whole file, for the

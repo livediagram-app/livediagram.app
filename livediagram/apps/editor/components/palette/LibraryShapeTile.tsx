@@ -40,7 +40,7 @@ export function LibraryShapeTile({
         item={item}
         className="h-12 w-full rounded bg-white ring-1 ring-slate-200 dark:ring-slate-700"
       />
-      <span className="w-full truncate text-center text-[10px] leading-none">{title}</span>
+      <span className="w-full truncate text-center text-[10px] leading-tight">{title}</span>
     </button>
   );
 }

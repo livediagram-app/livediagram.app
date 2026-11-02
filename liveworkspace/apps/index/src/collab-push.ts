@@ -62,6 +62,8 @@ export function parseCard(value: unknown): CollabCard | null | undefined {
   const key = c.key === null || c.key === undefined ? null : c.key;
   if (type === null || typeLabel === null || title === null) return undefined;
   if (key !== null && !isCount(key)) return undefined;
+  // The card's own id, given when the row's element is not the card (one of its comment threads).
+  if (c.id !== undefined && !isPartId(c.id)) return undefined;
   let board: CollabCard['board'] = null;
   if (c.board !== null && c.board !== undefined) {
     const b = c.board as Record<string, unknown>;
@@ -72,7 +74,14 @@ export function parseCard(value: unknown): CollabCard | null | undefined {
     }
     board = { tabId: b.tabId, elementId: b.elementId, title: boardTitle, tabName };
   }
-  return { key, type, typeLabel, title, board };
+  return {
+    ...(c.id !== undefined ? { id: c.id as string } : {}),
+    key,
+    type,
+    typeLabel,
+    title,
+    board,
+  };
 }
 
 export function parseThread(value: unknown): CollabThreadInput | null {

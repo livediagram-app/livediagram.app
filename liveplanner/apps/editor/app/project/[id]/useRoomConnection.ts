@@ -15,6 +15,7 @@ import { noteAccessEnded } from '@/lib/access-notice';
 import type { Tab } from '@liveplanner/project';
 import {
   type AgentPresence,
+  type CardThreadsRoomOp,
   type ChangesetRoomOp,
   type ItemsRoomOp,
   type ItemTypesRoomOp,
@@ -42,7 +43,11 @@ import { keepUnsavedTabChanges } from './meta-keep-local';
 import { migrateRoomOp } from './room-op-migrate';
 import { roomOpIsWellFormed } from './room-op-shape';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
-import { isSupersededByOwnWrite, type OwnElementWrites } from './own-element-writes';
+import {
+  isSupersededByOwnWrite,
+  withoutOwnDashboardWrites,
+  type OwnElementWrites,
+} from './own-element-writes';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { shareLinkOpEffect } from './share-link-ops';
 import {
@@ -124,6 +129,8 @@ export function useRoomConnection(opts: {
   receiveChangeset: (op: ChangesetRoomOp) => void;
   // Item writes the api made (docs/specs/026-plan/items.md "Live for everyone"). System-only.
   receiveItems: (op: ItemsRoomOp) => void;
+  // A card comment thread's write (docs/specs/026-plan/items.md "Comments"), from any plan the thread is on.
+  receiveThreads: (op: CardThreadsRoomOp) => void;
   // A stored type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"). System-only.
   receiveItemTypes: (op: ItemTypesRoomOp) => void;
   // A peer's hands on a Plan card (docs/specs/026-plan/plan-board.md). Presence.
@@ -174,6 +181,7 @@ export function useRoomConnection(opts: {
     resyncFromServer,
     receiveChangeset,
     receiveItems,
+    receiveThreads,
     receiveItemTypes,
     receivePlanPresence,
     receiveSheets,
@@ -321,9 +329,17 @@ export function useRoomConnection(opts: {
   const roomOp = useEffectEvent(
     (
       from: Parameters<NonNullable<RoomHandlers['onOp']>>[0],
-      op: Parameters<NonNullable<RoomHandlers['onOp']>>[1],
+      received: Parameters<NonNullable<RoomHandlers['onOp']>>[1],
       presence: PresenceCoalescer,
     ) => {
+      // A peer's layout change without the fields this editor is writing, which the room ordered after it
+      // (collab-race-hardening.md "A Dashboard's layout travels as deltas"); nothing left of it, nothing to do.
+      const op = ownWrites ? withoutOwnDashboardWrites(ownWrites, received) : received;
+      if (op === null) {
+        markSeen(from);
+        debugLog('[room] peer layout change superseded by our pending write');
+        return;
+      }
       // Any op from a peer counts as "they're still here". Bumps
       // the idle timer used by the avatar's away/offline status
       // derivation. Cursor packets are the most frequent so this
@@ -334,6 +350,7 @@ export function useRoomConnection(opts: {
         op.kind === 'el' ||
         op.kind === 'vote' ||
         op.kind === 'el-delta' ||
+        op.kind === 'dashboard-delta' ||
         op.kind === 'tab-meta' ||
         op.kind === 'project-meta'
       ) {
@@ -348,7 +365,11 @@ export function useRoomConnection(opts: {
         // A tab not fetched yet is a placeholder: an element added to it would make it look edited, so
         // its fetch would be thrown away and the next save would write the placeholder over the real
         // tab. Its fetch brings the element. A whole tab from a peer is its content: loaded.
-        if (op.kind === 'el' && !loadedTabIdsRef.current.has(op.tabId)) return;
+        if (
+          (op.kind === 'el' || op.kind === 'dashboard-delta') &&
+          !loadedTabIdsRef.current.has(op.tabId)
+        )
+          return;
         if (op.kind === 'tab') markTabLoaded(op.tabId);
         // A dragger's real change has arrived: their live preview has done its job.
         endPeerDragPreview(from);
@@ -424,6 +445,10 @@ export function useRoomConnection(opts: {
         // Item writes (docs/specs/026-plan/items.md). System-only: items change only through the api,
         // and the room refuses this op from a client socket.
         if (from === 'system') receiveItems(op);
+      } else if (op.kind === 'threads') {
+        // Card comment threads (docs/specs/026-plan/items.md "Comments"). System-only: threads change only
+        // through the api.
+        if (from === 'system') receiveThreads(op);
       } else if (op.kind === 'item-types') {
         // The type catalogue (docs/specs/026-plan/item-types.md). System-only: it changes only through
         // the api.

@@ -141,7 +141,9 @@ describe('a This Browser card in Jump Back In', () => {
     fireEvent.contextMenu(await card());
     const menu = await screen.findByRole('menu', { name: 'Actions for Local 1' });
     fireEvent.click(within(menu).getByRole('menuitem', { name: 'Delete Plan' }));
-    const dialog = await screen.findByRole('dialog', { name: 'Delete this plan?' });
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Delete this plan from this browser?',
+    });
     expect(remove).not.toHaveBeenCalled();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     expect(remove).toHaveBeenCalledWith(expect.objectContaining({ id: 'local-1' }));
@@ -154,7 +156,9 @@ describe('dragging a This Browser card', () => {
     const index = home({ remove });
     const dt = dragOnto(await card(), rowOf('Trash'));
     expect(dt.types).toEqual([THIS_BROWSER_DRAG_MIME]);
-    const dialog = await screen.findByRole('dialog', { name: 'Delete this plan?' });
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Delete this plan from this browser?',
+    });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     expect(remove).toHaveBeenCalledTimes(1);
     // The index never held it: nothing goes to its Trash.

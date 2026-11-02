@@ -11,6 +11,7 @@ import {
   type ItemTypeCatalogue,
 } from './type-catalogue';
 import type { ItemTypeDef } from './item-types';
+import { withInheritance } from './type-inheritance';
 
 export type CatalogueChange = {
   before: ItemTypeCatalogue | null;
@@ -53,6 +54,7 @@ export function rebaseCatalogueChange(
   if (types.length === 0) return current;
   return {
     version: ITEM_TYPE_CATALOGUE_VERSION,
-    types: types.slice(0, Math.max(base.length, ITEM_TYPES_MAX)),
+    // A base changed here over someone's change to a type inheriting from it still reaches that type.
+    types: withInheritance(types.slice(0, Math.max(base.length, ITEM_TYPES_MAX))),
   };
 }

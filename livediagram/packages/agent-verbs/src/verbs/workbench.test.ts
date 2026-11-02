@@ -10,7 +10,7 @@ import { workbenchNameOf, workbenchOpen, workbenchOriginOf, workbenchPair } from
 
 const ORIGIN = 'https://127.0.0.1:5175';
 const minted = {
-  url: `https://livediagram-router.liveworkspace-easing509.workers.dev/embed/workbench?d=${DOC_A}#ticket=${'t'.repeat(22)}`,
+  url: `https://www.livediagram.app/embed/workbench?d=${DOC_A}#ticket=${'t'.repeat(22)}`,
   documentId: DOC_A,
   tabId: null,
   expiresAt: Date.UTC(2026, 9, 5, 8, 1),
@@ -115,7 +115,7 @@ describe('workbench open', () => {
     const api = fakeApi({});
     const logs: string[] = [];
     const err = await workbenchOpen.run!(contextOf(api, [], logs), {
-      doc: 'https://livediagram-router.liveworkspace-easing509.workers.dev/document/shared?s=abc',
+      doc: 'https://www.livediagram.app/document/shared?s=abc',
       origin: ORIGIN,
     }).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(AddressError);
@@ -235,7 +235,7 @@ describe('workbench open --workspace', () => {
     },
   };
   const workspaceMinted = {
-    url: `https://livediagram-router.liveworkspace-easing509.workers.dev/embed/workbench/explorer#ticket=${'t'.repeat(22)}`,
+    url: `https://www.livediagram.app/embed/workbench/explorer#ticket=${'t'.repeat(22)}`,
     scope: 'workspace' as const,
     folderId: null,
     expiresAt: Date.UTC(2026, 9, 5, 8, 1),

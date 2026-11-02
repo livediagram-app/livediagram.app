@@ -13,9 +13,21 @@
 // once per action. `event-explanation.test.ts` checks every event the code
 // can send gets a real sentence, free of code names and jargon.
 
+import { COMMUNITY_CATEGORIES, COMMUNITY_REPORT_REASONS } from '@livedesign/api-schema';
+
+// One sentence per Community category, read off the closed list so a new one reads by its own label the day it ships.
+const perCommunityCategory = (action: string, sentence: (label: string) => string) =>
+  Object.fromEntries(
+    COMMUNITY_CATEGORIES.map((c) => [`Community|${action}|${c.type}`, sentence(c.label)]),
+  );
+
 export const EXACT: Readonly<Record<string, string>> = {
+  'Draw|Changed|FillColour': "Someone changed the Fill tool's colour. Never the colour.",
+  'Draw|Changed|FillMissed':
+    'Someone pressed with the Fill tool where there was nothing it fills: the bare page, open ink or something locked.',
   'Draw|Changed|PenColour': 'Someone gave the second or third marker a new colour.',
   'Draw|Changed|PenWidth': 'Someone changed the width of one of the markers.',
+  'Draw|Toggled|Fill': 'Someone picked up the Fill tool, the paint bucket, on a logo page.',
   'Draw|Toggled|RecogniseOnceKey':
     'Someone pressed Alt (Option) while drawing to turn that one stroke into a clean shape at once.',
   'Draw|Toggled|RecogniseOnceChip':
@@ -84,6 +96,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched the canvas into Isometric view, which renders the canvas at an angle for a 3D-style look.',
   'Canvas|Used|Laser':
     "Someone switched on the Laser pointer, a trail visible to everyone that shows where they're pointing without leaving a mark.",
+  'Canvas|Used|Inspect':
+    'Someone switched on Inspect on a wireframe, to read an element’s size, spacing, colours and type.',
   'Canvas|Used|Spotlight':
     "Someone switched on Spotlight, which dims the rest of the canvas around wherever they're pointing.",
   'Canvas|Zoomed|DoubleTap':
@@ -252,6 +266,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|Nudge':
     'Someone nudged a selected element with the arrow keys. Counted once per burst of presses, not once per key press.',
   'Element|Changed|Padding': "Someone changed a selected element's internal padding.",
+  'Element|Changed|FillBucket':
+    'Someone filled a closed shape with the Fill tool, the paint bucket. Never the colour.',
+  'Element|Changed|FillLoop':
+    'Someone turned a marker loop on a logo page whose ends meet into a filled shape with the Fill tool. Never the colour.',
   'Element|Changed|PathEdit':
     'Someone reshaped a path in its edit mode: moved, added, removed or smoothed a point, or bent a curve. Counted once per change.',
   'Element|Changed|PathJoin':
@@ -347,6 +365,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone started a blank photo page, at a size and fill they chose.',
   'Tab|Changed|PhotoEditAsPhoto':
     "Someone made a new photo page from an image's picture (Edit as Photo).",
+  'Tab|Changed|PhotoMakeSizes':
+    'Someone copied a photo page into new pages of social sizes, such as an Instagram post or a page banner (Make Sizes).',
+  'Document|Exported|PhotoAllSizes':
+    'Someone downloaded every photo page of a tab in one zip, each file named by its page and size (All Sizes).',
   'Tab|Changed|PhotoImageSize': 'Someone resized a photo, every layer resampled (Image Size).',
   'Tab|Changed|PhotoCanvasSize':
     "Someone changed a photo's canvas size, its layers kept as they are.",
@@ -570,6 +592,35 @@ export const EXACT: Readonly<Record<string, string>> = {
     'An agent or a script checked how a tab is drawn: overlaps, crossings, hidden arrows.',
   'Agent|Opened|Toast':
     "Somebody pressed Show on the toast an agent's change raised, to see what it touched.",
+  ...perCommunityCategory(
+    'Shared',
+    (label) => `Someone shared a design to the Community, under ${label}.`,
+  ),
+  ...perCommunityCategory(
+    'Changed',
+    (label) => `Someone saved changes to their Community post, now listed under ${label}.`,
+  ),
+  'Community|Removed|Post':
+    'Someone took their own post down from the Community, with Remove From Community in the Share dialog.',
+  'Community|Opened|Post': "Someone opened a post's own page in the Community.",
+  'Community|Liked|Post': 'Someone liked a post in the Community.',
+  'Community|Unliked|Post': 'Someone took back a like they had given a post in the Community.',
+  'Community|Copied|Post':
+    'Someone pressed Make a Copy on a Community post, to start their own design from it.',
+  ...Object.fromEntries(
+    COMMUNITY_REPORT_REASONS.map((r) => [
+      `Community|Reported|${r.type}`,
+      `Someone reported a post in the Community, giving ${r.label} as the reason.`,
+    ]),
+  ),
+  'Community|Searched|Query':
+    'Someone searched the Community gallery. Counted once per search, never what they typed.',
+  'Community|Selected|Category': 'Someone filtered the Community gallery to one category.',
+  'Community|Selected|Tag': 'Someone filtered the Community gallery to one tag. Never which tag.',
+  'Community|Selected|Sort':
+    'Someone changed how the Community gallery is sorted: newest, most loved or most copied.',
+  'Community|Selected|Mine':
+    'Someone turned on My Shares, to see the designs they shared to the Community and how they are doing.',
   'Mcp|Used|AddTab': 'An AI tool connected over MCP added a new tab to a design.',
   'Mcp|Used|CreateDesign': 'An AI tool connected over MCP created a new design.',
   'Mcp|Used|FindDesigns': "An AI tool connected over MCP searched for one of the user's designs.",
@@ -659,6 +710,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone picked a look in Tab Look & Feel, setting the tab's theme, finish, font and canvas pattern at once.",
   'Tab|Changed|SeasonalLook':
     "Someone picked a seasonal look (New Year, Easter, Halloween or Christmas) behind the Seasonal toggle in Tab Style, setting the tab's theme, finish, font and canvas pattern at once.",
+  'Tab|Changed|AllTabs':
+    "Someone pressed Apply to All Tabs in Tab Style, putting the open tab's style on every other tab at once.",
   'Tab|Changed|Finish':
     "Someone changed a tab's finish (Flexible, Professional, Sketch or Marker) from Tab Look & Feel.",
   'Tab|Changed|DefaultTextSize':
@@ -1219,6 +1272,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned on Plan mode, in Settings > Experimental. No longer recorded: Plan mode is always offered.',
   'UI|Toggled|ReduceMotionOff': 'Someone turned off reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ReduceMotionOn': 'Someone turned on reduced motion, in Settings > Accessibility.',
+  'UI|Toggled|HideCursorsOff':
+    "Someone turned off Hide Participant Cursors, in Settings > Collaborate or the Collaborators window, so other people's cursors show on their screen again.",
+  'UI|Toggled|HideCursorsOn':
+    "Someone turned on Hide Participant Cursors, in Settings > Collaborate or the Collaborators window, so other people's cursors stop showing on their screen.",
   'UI|Toggled|ShortcutsOff': 'Someone turned off keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|ShortcutsOn': 'Someone turned on keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|SkipLocationStepOff':
@@ -1557,11 +1614,23 @@ export const EXACT: Readonly<Record<string, string>> = {
 };
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
+  'Community|Shared': 'Someone shared a design to the Community, the public gallery of designs.',
+  'Community|Changed': 'A Community post changed: its owner edited the listing.',
+  'Community|Removed': 'Someone took their own post down from the Community.',
+  'Community|Opened': "Someone opened a post's own page in the Community.",
+  'Community|Liked': 'Someone liked a post in the Community.',
+  'Community|Unliked': 'Someone took back a like they had given a post in the Community.',
+  'Community|Copied': 'Someone made their own copy of a Community post.',
+  'Community|Reported': 'Someone reported a post in the Community.',
+  'Community|Searched': 'Someone searched the Community gallery. Never what they typed.',
+  'Community|Selected':
+    'Someone narrowed or reordered the Community gallery: a category, a tag, a sort order or My Shares.',
   'Timing|Measured':
     'A key moment was timed: a design opening, a tab switch, a save, the live room connecting, or a page loading. Only the range it fell in is recorded, never the exact time.',
   'Element|Created': 'Someone made an element in a way other than placing it from the palette.',
-  'Draw|Changed': "Someone changed a marker's colour or width.",
-  'Draw|Toggled': 'Someone flipped the stroke they were drawing between ink and a shape.',
+  'Draw|Changed': "Someone changed a marker's colour or width, or the Fill tool's colour.",
+  'Draw|Toggled':
+    'Someone flipped the stroke they were drawing between ink and a shape, or picked up the Fill tool.',
   'Cta|Opened':
     'Someone followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Design page.',
   'Cta|Created':

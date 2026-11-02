@@ -13,7 +13,7 @@ liveplanner, livedocuments and livedesign have no data from before accounts move
 
 Related: [migrating-from-clerk.md](../liveworkspace/docs/specs/012-migrate/migrating-from-clerk.md),
 [livediagram/plans/0002-liveworkspace-accounts.md](../livediagram/plans/0002-liveworkspace-accounts.md),
-[stand-in-addresses.md](../livediagram/docs/specs/016-platform/stand-in-addresses.md).
+[deployment.md](../livediagram/docs/specs/016-platform/deployment.md#custom-domain).
 
 ## Rules that hold throughout
 
@@ -24,7 +24,7 @@ Related: [migrating-from-clerk.md](../liveworkspace/docs/specs/012-migrate/migra
   saved. A migration that read old tabs through livediagram's parser would lose every page and board. The
   splitter reads the stored JSON and the Plan tables itself.
 - **Nothing made on either side before the switch is lost.** The old site keeps taking work until the freeze
-  (step 7), and the new account's apps (livediagram on its stand-in, liveplanner, livedocuments, livedesign) may
+  (step 7), and the new account's apps (livediagram, liveplanner, livedocuments, livedesign) may
   take work too. The migration only adds to the new account: it never deletes, never overwrites a row it didn't
   write, and the final catch-up run picks up what the old site took since the last run. An imported row that would
   land on an id the new side already uses is reported and skipped, never written over.
@@ -90,7 +90,10 @@ the copy takes).
    reminder the old site had sent, and expires the invitation 28 days after its clock started, as the old site would
    have. A catch-up run leaves the stamps as the first run wrote them (the sweep's own stamps don't move `updatedAt`,
    so a rewrite could undo one). An old creator row may have no `email` (the old table allowed null, the new
-   `team_member.email` doesn't), so it takes the account's email. This replaces 0002's "teams are managed
+   `team_member.email` doesn't), so it takes the account's email. Old accounts merged into one (owner map, Clerk
+   matches) each held their own member row: the account keeps one membership per team, its first joined row, and
+   the report counts the rest as skipped. A joined member carries its account's email, which a merged account's old
+   rows don't. This replaces 0002's "teams are managed
    separately". Recreating writes no `team_*` Timeline events and sends no
    invitation emails at import time.
 5. **Carry over API tokens**, so scripts, the CLI and connected AI tools keep working (this replaces 0002's "old
@@ -118,7 +121,8 @@ the copy takes).
 6. Left behind: workbench pairings and sessions, and profile pictures (0002). Drive connections can't move (their
    tokens are sealed with the old `DRIVE_TOKEN_KEY` and the Google client changes). The new livediagram has no
    Drive mirror of its own: Google Drive sync is liveworkspace's, for every app (liveworkspace/docs/specs/005-drive/drive.md), so a
-   person connects there once; step 8's email says Drive sync is paused, not that it needs reconnecting.
+   person connects there once, at `https://www.liveworkspace.app/drive/connect`; step 8's email told everyone who had
+   connected Drive that it needs connecting again, once, and that nothing in their Drive was changed.
 
 ## 2. Copy documents into livediagram
 
@@ -198,7 +202,9 @@ Each product needs the same migration import door as step 2, and its own writes 
    through the owner map (a guest's as the media service keys guests, `guest:` + SHA-256 of
    `livediagram.app\n<guest id>`), app `livediagram.app`, its size, type, dimensions, `sha256` and name, and its old
    `created_at`. Keeping the ids means no tab's image references change. The media service's upload door always
-   makes a new id, so this goes in as SQL and R2 puts, not through it.
+   makes a new id, so this goes in as SQL and R2 puts, not through it. Each copy is checked before it is put: by
+   its SHA-256, except a JPEG, which the old site stored with its metadata stripped while keeping the hash of the
+   file as picked (what the media service's `sha256` means too), so a JPEG is checked by its size.
 2. Give a split part an `image_grants` row for each image it places that its owner didn't upload, and send each
    app's references (`POST /refs` with `complete: true`) straight after, so the media service's sweep of
    unreferenced images never sees an imported image as unplaced.
@@ -266,29 +272,24 @@ are none to carry.) The rehearsal should include a browser with a real old local
 2. **Freeze** the old site: a read-only banner, writes answer 503, at a quiet hour.
 3. **Final catch-up run** of steps 1–6 (only what changed since the last run, by `saved_at` and created times),
    then the checks in step 9.
-4. **Move the `livediagram.app` zone** to the liveworkspace account and run "When livediagram.app moves" in
-   [stand-in-addresses.md](../livediagram/docs/specs/016-platform/stand-in-addresses.md), and the email domain
-   move in [email.md](../liveworkspace/docs/specs/003-accounts/email.md).
+4. **Move the `livediagram.app` zone** to the liveworkspace account, where the router and mcp Workers carry its
+   hostnames as custom domains ([deployment.md](../livediagram/docs/specs/016-platform/deployment.md#custom-domain)),
+   and the email domain move in [email.md](../liveworkspace/docs/specs/003-accounts/email.md).
 5. Point the Google clients' redirect URIs at the real hosts, and the MCP server's OAuth at liveworkspace sign-in.
 6. **Rollback** until step 10: point the zone back at the old account and lift the freeze. Nothing there changed.
 
 ## 8. Email everyone (once)
 
-Sent at the end of the migration, once step 9's checks have passed, from `hello@livediagram.app` once that domain is onboarded:
+Sent on 2026-10-27, after step 9's checks had passed, to all 73 migrated accounts, from
+`liveworkspace <support@liveworkspace.app>`: one email per account, in liveworkspace's frame, subject "livediagram is
+now part of liveworkspace", with an **Open livediagram** button. Every person got what changed (livediagram is part
+of liveworkspace, nothing to do, same address and same sign-in) and the updated privacy page with the contact form.
+Only where it applied to them, it also had sections on their split documents (links built from `moved_parts`), their
+API tokens, their teams, reconnecting AI tools, and reconnecting Google Drive.
 
-- what changed: livediagram is part of liveworkspace, and sign-in is liveworkspace's, with the same email, by code
-  or Google; nothing to do to keep their work;
-- where their split documents went, as a short list of links built from `moved_parts`, for the people who had any;
-- their API tokens still work until they expire, and are managed in liveworkspace's Settings now; their teams
-  came across, managed in liveworkspace too;
-- connected AI tools (MCP) keep working, but some may need reconnecting, especially when their token comes up for
-  renewal: remove livediagram from the tool and add it again;
-- Google Drive sync is paused for now, and how they'll know when it is back;
-- the updated privacy page (Clerk is no longer a processor), and how to delete their account.
-
-Cloudflare Email Service is for transactional mail and includes 3,000 a month, with a daily quota that starts low;
-step 0's account count decides whether this goes in daily batches. A notice about someone's own account and data
-is a service message, so it goes to everyone, unsubscribed or not.
+It was a one-off: the accounts Worker's route that rendered and sent it, its sender, the `migrate notify` command,
+and the `migration_notice` table that kept each address so a re-run never emailed anyone twice were all removed after
+the send (the table by the accounts migration `0015_drop_migration_notice.sql`).
 
 ## 9. Check
 

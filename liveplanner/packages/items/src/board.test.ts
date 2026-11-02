@@ -4,8 +4,9 @@ import {
   namedStatus,
   cardIsFaceDown,
   columnForStatus,
-  finishedStatuses,
   normaliseBoardSetup,
+  readCardSize,
+  CARD_SIZES,
   projectBoard,
   type PlanBoardSetup,
 } from './board';
@@ -21,6 +22,40 @@ import { ALI, SAM, item } from './test-items';
 import type { Item } from './item';
 
 const map = (items: Item[]) => new Map(items.map((i) => [i.id, i]));
+
+describe('projectBoard with field chips', () => {
+  const { addTypes: _t, ...kanban } = presetSetup('kanban');
+  const setup: PlanBoardSetup = { ...kanban, swimlaneBy: 'none' };
+  const shown = (p: ReturnType<typeof projectBoard>) =>
+    p.columns.flatMap((c) => c.lanes.flatMap((l) => l.items.map((i) => i.fields['title'])));
+
+  it('keeps only the cards matching every chip, beside the words', () => {
+    const items = map([
+      item({ title: 'ui bug', status: 'todo', labels: ['ui'] }, { type: 'bug' }),
+      item({ title: 'api bug', status: 'todo', labels: ['api'] }, { type: 'bug' }),
+      item({ title: 'ui task', status: 'todo', labels: ['ui'] }),
+    ]);
+    const quick = {
+      filters: [
+        { by: 'type' as const, key: 't:bug' },
+        { by: 'field' as const, field: 'labels', key: 'f:"ui"' },
+      ],
+    };
+    expect(shown(projectBoard(setup, items, quick))).toEqual(['ui bug']);
+    expect(shown(projectBoard(setup, items, { ...quick, text: 'nothing' }))).toEqual([]);
+    expect(shown(projectBoard(setup, items, { filters: [] }))).toHaveLength(3);
+  });
+
+  it('filters an Archive board, whose cards are archived', () => {
+    const archive: PlanBoardSetup = { ...setup, archive: true };
+    const items = map([
+      item({ title: 'old bug', status: 'todo', archived: true }, { type: 'bug' }),
+      item({ title: 'old task', status: 'todo', archived: true }),
+    ]);
+    const p = projectBoard(archive, items, { filters: [{ by: 'type', key: 't:bug' }] });
+    expect(shown(p)).toEqual(['old bug']);
+  });
+});
 
 describe('projectBoard', () => {
   // A Kanban board naming no card types, so it shows every type (the type filter has its own test).
@@ -180,12 +215,12 @@ describe('projectBoard', () => {
 });
 
 describe('the To-do List preset (docs/specs/026-plan/plan-board.md "The To-do List board")', () => {
-  it('runs Actions from To Do to Done, on Compact cards, with Completion and Due Soon', () => {
+  it('runs Actions from To Do to Done, on Detailed cards, with Completion and Due Soon', () => {
     const todo = presetSetup('todo');
     expect(todo.columns.map((c) => c.name)).toEqual(['To Do', 'Done']);
     expect(todo.doneColumnId).toBe('done');
     expect(todo.addTypes).toEqual(['action']);
-    expect(todo.cardSize).toBe('compact');
+    expect(todo.cardSize).toBeUndefined();
     expect(todo.widgets).toEqual(['progress', 'due']);
     expect(isPlanBoardPresetId('todo')).toBe(true);
   });
@@ -254,14 +289,25 @@ describe('normaliseBoardSetup', () => {
     expect(columnForStatus(s!, 'done')?.id).toBe('c');
   });
 
-  it('keeps a Minimal or Compact card size, and reads anything else as Detailed', () => {
+  it('keeps a Minimal card size, and reads anything else as Detailed', () => {
     const cols = [{ id: 'a', status: 's', name: 'A' }];
-    expect(normaliseBoardSetup({ columns: cols, cardSize: 'compact' })?.cardSize).toBe('compact');
+    // A board stored with the retired Compact size reads as Detailed (docs/specs/026-plan/plan-board.md).
+    expect(normaliseBoardSetup({ columns: cols, cardSize: 'compact' })).not.toHaveProperty(
+      'cardSize',
+    );
     expect(normaliseBoardSetup({ columns: cols, cardSize: 'minimal' })?.cardSize).toBe('minimal');
     expect(normaliseBoardSetup({ columns: cols, cardSize: 'detailed' })).not.toHaveProperty(
       'cardSize',
     );
     expect(normaliseBoardSetup({ columns: cols, cardSize: 'huge' })).not.toHaveProperty('cardSize');
+  });
+
+  it('offers only Minimal and Detailed, reading the retired Compact (and anything else) as Detailed', () => {
+    expect(CARD_SIZES).toEqual(['minimal', 'detailed']);
+    expect(readCardSize('minimal')).toBe('minimal');
+    expect(readCardSize('compact')).toBe('detailed');
+    expect(readCardSize(undefined)).toBe('detailed');
+    expect(readCardSize(7)).toBe('detailed');
   });
 
   it('reads a set-up with no usable column as a board waiting for its first', () => {
@@ -294,24 +340,6 @@ describe('itemIdsShownOnTab', () => {
       ...itemIdsShownOnTab([{ shape: 'plan-card', planCard: { itemId: loose.id } }], [bug, loose]),
     ]).toEqual([loose.id]);
     expect(itemIdsShownOnTab([], [bug]).size).toBe(0);
-  });
-});
-
-describe('finishedStatuses', () => {
-  const columns = [
-    { id: 'c1', status: 'todo' },
-    { id: 'c2', status: 'done' },
-    { id: 'c3', status: 'wont' },
-  ];
-  it('is the done column’s status and every later column’s', () => {
-    expect(finishedStatuses({ columns, doneColumnId: 'c2' } as PlanBoardSetup)).toEqual([
-      'done',
-      'wont',
-    ]);
-  });
-
-  it('is none without a done column', () => {
-    expect(finishedStatuses({ columns, doneColumnId: undefined } as PlanBoardSetup)).toEqual([]);
   });
 });
 

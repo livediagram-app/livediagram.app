@@ -13,6 +13,8 @@ const BY_APP: Record<App, HeroBackdropKind> = {
   livediagram: 'blueprint',
   livedocuments: 'typesetter',
   livedesign: 'shapes',
+  // Registered before its launch, so no Explorer shows it yet: its own backdrop comes with its fork.
+  livehuddle: 'dots',
 };
 
 export function heroBackdropOf(app: App, filter: AppFilter): HeroBackdropKind {

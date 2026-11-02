@@ -231,6 +231,12 @@ describe('sizes', () => {
     expect(container.firstElementChild!.className).toContain('gap-3 text-2xl');
     expect(container.querySelector('svg')!.getAttribute('class')).toContain('size-10');
   });
+
+  it('sets the smallest logo inside a line of small text, its mark the height of the words', () => {
+    const { container } = render(<Brand app="liveplanner" size="xs" />);
+    expect(container.firstElementChild!.className).toContain('gap-1 text-[13px]');
+    expect(container.querySelector('svg')!.getAttribute('class')).toContain('size-4');
+  });
 });
 
 describe('every app', () => {

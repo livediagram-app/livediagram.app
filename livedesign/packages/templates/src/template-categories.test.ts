@@ -16,8 +16,19 @@ import { TEMPLATES, type TemplateKind } from './templates';
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
-  it('are the job-based categories Pages fills, alphabetical by label, Title Case, with even descriptions', () => {
-    expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual(['Logos', 'Photos', 'Wireframes']);
+  it('are the use-case categories livedesign has, alphabetical by label, Title Case, with even descriptions', () => {
+    expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
+      'Branding',
+      'Health and Fitness',
+      'Music and Video',
+      'Photos',
+      'Shopping',
+      'Sign Up and Onboarding',
+      'Social and Messaging',
+      'Travel and Transport',
+      'Websites',
+      'Work and Productivity',
+    ]);
     const labels = TEMPLATE_CATEGORIES.map((c) => c.label);
     expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'en')));
     expect(new Set(ids).size).toBe(ids.length);
@@ -44,9 +55,16 @@ describe('template categories', () => {
   it('pins the primary counts', () => {
     const counts = ids.map((id) => TEMPLATES.filter((t) => templateCategory(t.kind) === id).length);
     expect(Object.fromEntries(ids.map((id, i) => [id, counts[i]]))).toEqual({
-      logos: 1,
+      branding: 5,
+      health: 2,
+      media: 3,
       photos: 1,
-      wireframes: 5,
+      shopping: 2,
+      onboarding: 1,
+      social: 2,
+      travel: 2,
+      websites: 4,
+      work: 3,
     });
   });
 
@@ -59,10 +77,13 @@ describe('template categories', () => {
       expect(also, kind).not.toContain(templateCategory(kind as TemplateKind));
       expect(new Set(also).size, kind).toBe(also.length);
     }
-    expect(isInTemplateCategory('logo-design', 'logos')).toBe(true);
-    expect(isInTemplateCategory('wireframe-mobile-app', 'wireframes')).toBe(true);
+    expect(isInTemplateCategory('logo-design', 'branding')).toBe(true);
+    expect(isInTemplateCategory('wireframe-mobile-app', 'shopping')).toBe(true);
+    // Cross-listed: a store is a website and a shop.
+    expect(isInTemplateCategory('wireframe-online-store', 'websites')).toBe(true);
+    expect(isInTemplateCategory('wireframe-online-store', 'shopping')).toBe(true);
     expect(isInTemplateCategory('photo-edit', 'photos')).toBe(true);
-    expect(isInTemplateCategory('blank', 'logos')).toBe(false);
+    expect(isInTemplateCategory('blank', 'branding')).toBe(false);
   });
 
   it('leaves no category empty, every template in it opening in Pages', () => {
@@ -89,10 +110,19 @@ describe('template search words', () => {
       TEMPLATES.filter((t) => templateMatchesQuery(t, q)).map((t) => t.kind);
     expect(find('brand')).toEqual(expect.arrayContaining(['logo-design', 'blank-logo']));
     expect(find('iphone')).toEqual(expect.arrayContaining(['blank-wireframe-phone']));
-    expect(find('smartwatch')).toEqual(['blank-wireframe-watch', 'wireframe-watch-app']);
+    expect(find('smartwatch')).toEqual([
+      'blank-wireframe-watch',
+      'wireframe-watch-app',
+      'wireframe-fitness-watch',
+      'wireframe-watch-music',
+    ]);
     // A category label finds what is in it; every word must match.
-    expect(find('wireframes dashboard')).toContain('wireframe-dashboard');
-    expect(find('wireframes dashboard')).not.toContain('logo-design');
+    expect(find('productivity dashboard')).toContain('wireframe-dashboard');
+    expect(find('productivity dashboard')).not.toContain('logo-design');
+    expect(find('travel')).toEqual(
+      expect.arrayContaining(['wireframe-travel-app', 'wireframe-ride-app']),
+    );
+    expect(find('emblem')).toContain('logo-emblems');
     expect(find('logo zebra')).toEqual([]);
     expect(find('')).toHaveLength(TEMPLATES.length);
   });

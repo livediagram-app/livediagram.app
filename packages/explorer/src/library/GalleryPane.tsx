@@ -77,7 +77,7 @@ export function GalleryPane({
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<GalleryImage | null>(null);
   const grid = compact
-    ? 'grid grid-cols-3 gap-2.5'
+    ? 'grid grid-cols-3 gap-2.5 @2xl:grid-cols-5'
     : 'grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4';
   const usageOf = (id: string) => (loaded.status === 'ready' ? (loaded.usage[id] ?? []) : []);
 

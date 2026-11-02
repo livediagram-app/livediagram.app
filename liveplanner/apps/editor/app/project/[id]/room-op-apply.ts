@@ -1,4 +1,5 @@
 import {
+  applyDashboardPatch,
   settleTabFields,
   applyElementDelta,
   applyElementOp,
@@ -7,6 +8,7 @@ import {
   mergeIncomingElement,
   voteDeltaApplies,
   type ElementDelta,
+  type DashboardPatch,
   type ElementOp,
   type Tab,
 } from '@liveplanner/project';
@@ -25,6 +27,23 @@ import { META_SKIP, mergeRemoteTab, mergeRemoteVote } from './tab-broadcast-ops'
 // Returns `tabs` itself when the op changes nothing (an op for a tab we don't
 // have, an update for a removed element, a dot for a closed round), so callers
 // keep identity and the autosave sees no phantom change.
+// One peer's layout delta reaches the present and every undo and redo snapshot (historyApplyRemoteOp), which share
+// unchanged tabs. Remembering each tab's result for the delta's patch applies it once per distinct tab, not once per
+// snapshot, and keeps the snapshots sharing one result rather than holding up to 1,000 copies of the layout.
+const dashboardApplied = new WeakMap<DashboardPatch, WeakMap<Tab, Tab>>();
+
+function applyDashboardDelta(tab: Tab, patch: DashboardPatch): Tab {
+  if (!tab.dashboard) return tab;
+  let seen = dashboardApplied.get(patch);
+  if (!seen) dashboardApplied.set(patch, (seen = new WeakMap()));
+  const known = seen.get(tab);
+  if (known) return known;
+  const dashboard = applyDashboardPatch(tab.dashboard, patch);
+  const next = dashboard === tab.dashboard ? tab : { ...tab, dashboard };
+  seen.set(tab, next);
+  return next;
+}
+
 export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
   switch (op.kind) {
     case 'tab': {
@@ -33,7 +52,10 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
       // The tab keeps the id the op names: a payload naming another would renumber it here, and the next save
       // would write it over that other tab (the room drops such an op too, room-op-gate.ts).
       if (!tabs.some((t) => t.id === op.tabId)) return [...tabs, { ...op.tab, id: op.tabId }];
-      return updateTab(tabs, op.tabId, (tab) => ({ ...mergeRemoteTab(tab, op.tab), id: tab.id }));
+      return updateTab(tabs, op.tabId, (tab) => ({
+        ...mergeRemoteTab(tab, op.tab, { dashboardDeltas: op.dashboardDeltas === true }),
+        id: tab.id,
+      }));
     }
     case 'el':
       // ONE element, applied by id (docs/specs/012-collaboration/realtime-conflict-resolution.md). An op for a tab we don't have is
@@ -50,16 +72,27 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
       });
     case 'el-delta':
       return applyDeltaToTabs(tabs, op.tabId, op.elementId, op.delta);
+    case 'dashboard-delta':
+      // ONE change to a Dashboard's layout, by row and slot id (docs/specs/012-collaboration/collab-race-hardening.md
+      // "A Dashboard's layout travels as deltas"), so a peer's change to another row or slot merges with ours. Only
+      // onto a layout we have: a tab that is not a Dashboard here waits for the whole layout.
+      return updateTab(tabs, op.tabId, (tab) => applyDashboardDelta(tab, op.patch));
     case 'changeset': {
       // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"): a tab it
       // created is appended first, then each element op applies exactly as case `el` does. An op
       // relayed without its element ops (over the relay cap) brings only a created tab here: the
       // editor re-fetches the content.
       const ops = op.elementOps ?? [];
-      const withTab =
+      const created =
         op.tab && !tabs.some((t) => t.id === op.tabId)
           ? [...tabs, { ...op.tab, id: op.tabId, elements: [] }]
           : tabs;
+      // A Dashboard it rebuilt brings its new layout, taken whole (collab-race-hardening.md "A Dashboard's layout
+      // travels as deltas"): a reset, as the room's ledger records it.
+      const rebuilt = op.dashboard;
+      const withTab = rebuilt
+        ? updateTab(created, op.tabId, (tab) => ({ ...tab, dashboard: rebuilt }))
+        : created;
       if (ops.length === 0) return withTab;
       return updateTab(withTab, op.tabId, (tab) => {
         let elements = tab.elements;

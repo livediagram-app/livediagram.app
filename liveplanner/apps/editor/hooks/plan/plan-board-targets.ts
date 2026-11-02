@@ -31,6 +31,8 @@ export type PlanBoardTarget = {
   // Why a refused card cannot land, for the announcement ("This board shows bugs only").
   refusal: () => string;
   drop: (itemId: string, slot: PlanDropSlot) => void;
+  // A group of selected cards dropped together, in order (docs/specs/026-plan/plan-board.md "Several cards at once").
+  dropMany?: (itemIds: readonly string[], slot: PlanDropSlot) => void;
   hover: (incoming: PlanIncoming | null) => void;
   // A card from the palette (docs/specs/026-plan/plan-mode.md "The palette"): whether the board shows
   // that type, and a new item of it made at the slot (its row's field set).
@@ -39,6 +41,9 @@ export type PlanBoardTarget = {
   // A card moved to `slot`: the refusal when its type (or the type its swimlane gives it) leaves the slot's status
   // out (docs/specs/026-plan/item-types.md "An item type"), else null. Never a refusal for the status it is in.
   refuseAt: (item: Pick<Item, 'type' | 'fields'>, slot: PlanDropSlot) => string | null;
+  // A sorted board (docs/specs/026-plan/plan-board.md "The board set-up"): the slot where its sort puts the card, so
+  // the placeholder shows where it will land. Absent, or on a board in hand order, the slot as given.
+  place?: (itemId: string, slot: PlanDropSlot) => PlanDropSlot;
 };
 
 const targets = new Map<string, PlanBoardTarget>();

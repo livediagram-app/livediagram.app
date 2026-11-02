@@ -3,6 +3,8 @@
 // caller writes it as one element edit, undone like any other) and leaves the input untouched.
 import {
   PLAN_COLUMNS_MAX,
+  setColumnDone,
+  settleDoneColumns,
   statusTitleCase,
   type ColumnWidth,
   type PlanBoardSetup,
@@ -83,13 +85,10 @@ export function setWipLimit(
   });
 }
 
-// The column that counts as done (its cards make the board's progress), or none.
+// Counts as Done (docs/specs/026-plan/plan-board.md "Done columns"): a column turned on or off by hand, any number of
+// them, kept whatever its name.
 export function setDoneColumn(setup: PlanBoardSetup, id: string, done: boolean): PlanBoardSetup {
-  if (done) return { ...setup, doneColumnId: id };
-  if (setup.doneColumnId !== id) return setup;
-  const { doneColumnId: _old, ...rest } = setup;
-  void _old;
-  return rest;
+  return setColumnDone(setup, id, done);
 }
 
 export function moveColumn(setup: PlanBoardSetup, id: string, step: -1 | 1): PlanBoardSetup {
@@ -144,8 +143,9 @@ export function addColumnsAfter(
 // Removes a column (never the last); its cards are the caller's to move first.
 export function removeColumn(setup: PlanBoardSetup, id: string): PlanBoardSetup {
   if (setup.columns.length <= 1) return setup;
-  const next = { ...setup, columns: setup.columns.filter((c) => c.id !== id) };
-  return setup.doneColumnId === id ? setDoneColumn(next, id, false) : next;
+  // The rest keep what they counted as; the done column id follows the first done column left.
+  const { doneColumnId: _done, ...rest } = setup;
+  return settleDoneColumns(setup, { ...rest, columns: setup.columns.filter((c) => c.id !== id) });
 }
 
 // A column one, two or three slots wide; one is stored as absent.

@@ -2,9 +2,9 @@ import type { Page } from '@playwright/test';
 import { expect, expectNoPageErrors, test } from '../fixtures';
 import { freshUserId, installSession, type StubUser } from './session';
 
-// Making a project is a use (docs/specs/013-workspace/explorer-home.md "Making a project";
-// docs/specs/015-api/api.md "Marking a project used"), signed in, against the signed-in export:
-// a project an API client makes is in Jump Back In unopened; one it makes with markUsed: false is not.
+// Making a project is a use (docs/specs/015-api/api.md "Marking a project used"), signed in, against the signed-in
+// export: the api records an API client's create as its open, so the project is in Jump Back In unopened; one it
+// makes with markUsed: false is not.
 
 test.use({ colorScheme: 'dark', viewport: { width: 1280, height: 800 } });
 

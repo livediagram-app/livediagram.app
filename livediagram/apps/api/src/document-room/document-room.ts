@@ -52,6 +52,8 @@ import {
 import { followerIdsOf, followTargetOf } from '@liveworkspace/api-kit/room-follows';
 import { opForScope, scopedTabOp } from '../room-scope';
 import { gateClientOp } from '../room-op-gate';
+import { ROOM_ELEMENT_RULES } from '../room-element-rules';
+import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
 import { answerInternal, type InternalRoom } from '../room-internal';
 import { rosterFrames, type RosterEntry } from '../room-roster';
 import {
@@ -75,7 +77,8 @@ import { documentHasTab } from '../db/tabs';
 import { documentPlacesImage } from '../db/image-refs';
 import { documentMayServeImage } from '../db/image-grants';
 import { indexService } from '../index-service';
-import { notifyActionAssigned, notifyDocumentJoin, notifyMentioned } from '../email/notifications';
+import { notifyDocumentJoin, notifyMentioned } from '../email/notifications';
+import { actionNotices, type NoticeDocument } from '../liveworkspace/action-notices';
 import type { ActionNotice, MentionNotice } from '../document-client';
 import {
   checkCommunityPost,
@@ -112,7 +115,7 @@ import {
   type SharedTabCopy,
 } from './tab-shares';
 import { documentRoom } from '../document-client';
-import { answerDocumentRequest, type RouteIdentity } from './document-route';
+import { answerDocumentRequest, isDocumentCreate, type RouteIdentity } from './document-route';
 
 // One SQLite-backed Durable Object per document id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It
 // is two things at once:
@@ -313,6 +316,7 @@ export class DocumentRoom extends DurableObject<Env> {
           ...env,
           DOCUMENT_DB: this.db.asD1(),
           DOCUMENT_ROOM: this.localNamespace(env.DOCUMENT_ROOM),
+          ROOM_PEOPLE: () => this.roomPeople(),
         }
       : undefined;
     this.ledger = new RoomLedgerStore(state.storage);
@@ -603,16 +607,19 @@ export class DocumentRoom extends DurableObject<Env> {
       community,
     );
     // A request that wrote is an edit by whoever asked: their Timeline entry and a Most Used day
-    // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not.
+    // (@liveworkspace/index-app recordItemEditor). Reads, refusals and requests that changed nothing are not, nor is
+    // the create, the canvas's making (isDocumentCreate).
     if (response.ok && identity.owner && this.writes > writesBefore) {
-      const sql = this.state.storage.sql;
-      recordItemEditor(
-        (q, ...b) => sql.exec(q, ...b),
-        DOCUMENT_OUTBOX,
-        documentId,
-        identity.owner,
-        Date.now(),
-      );
+      if (!isDocumentCreate(request)) {
+        const sql = this.state.storage.sql;
+        recordItemEditor(
+          (q, ...b) => sql.exec(q, ...b),
+          DOCUMENT_OUTBOX,
+          documentId,
+          identity.owner,
+          Date.now(),
+        );
+      }
       this.noteWrite();
     }
     // A post published or removed by this request starts or stops its checks.
@@ -704,7 +711,7 @@ export class DocumentRoom extends DurableObject<Env> {
       env,
       { id: documentId, name: meta.name },
       query.tabId,
-      { defer: (p) => this.state.waitUntil(p) },
+      { defer: (p) => this.state.waitUntil(p), appearance: query.appearance },
       community,
     );
     return svg === null
@@ -827,9 +834,8 @@ export class DocumentRoom extends DurableObject<Env> {
   async notifyAction(documentId: string, input: ActionNotice): Promise<boolean> {
     const document = await this.noticeDocument(documentId);
     if (!document) return false;
-    this.state.waitUntil(
-      notifyActionAssigned(this.requireEnv(), { ...input, document }).catch(() => {}),
-    );
+    for (const work of actionNotices(this.requireEnv(), document, input))
+      this.state.waitUntil(work);
     return true;
   }
 
@@ -837,16 +843,21 @@ export class DocumentRoom extends DurableObject<Env> {
     const document = await this.noticeDocument(documentId);
     if (!document) return false;
     this.state.waitUntil(
-      notifyMentioned(this.requireEnv(), { ...input, document }).catch(() => {}),
+      notifyMentioned(this.requireEnv(), {
+        ...input,
+        document: { id: document.id, name: document.name },
+      }).catch(() => {}),
     );
     return true;
   }
 
-  private async noticeDocument(documentId: string): Promise<{ id: string; name: string } | null> {
+  private async noticeDocument(documentId: string): Promise<NoticeDocument | null> {
     this.bindDocument(documentId);
     if (!this.hasSchema()) return null;
     const meta = await readDocumentMeta(this.requireEnv(), documentId);
-    return meta ? { id: documentId, name: meta.name } : null;
+    return meta
+      ? { id: documentId, name: meta.name, ownerId: meta.ownerId, teamId: meta.teamId }
+      : null;
   }
 
   // A closed account's name off this canvas (document-anonymise.ts): the index's person purge, through the api.
@@ -1444,6 +1455,9 @@ export class DocumentRoom extends DurableObject<Env> {
         );
         return;
       }
+      // An Editor's element op the validator refuses goes nowhere; its sender alone hears why
+      // (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
+      if (!gate.presence && this.refusesElementOp(ws, msg)) return;
       if (gate.participantAnswers) {
         this.participantWrites.scheduleAnswers(
           session.documentId ?? null,
@@ -1583,6 +1597,15 @@ export class DocumentRoom extends DurableObject<Env> {
     } catch {
       this.opRates.delete(ws);
     }
+  }
+
+  // The element gate (@liveworkspace/api-kit/room-element-ops, docs/specs/015-api/blueprints/room-element-ops.md):
+  // one per room instance, so its bounded log is per room. Answers a refused op to its sender alone.
+  private readonly elementGate = createRoomElementGate(ROOM_ELEMENT_RULES);
+  private refusesElementOp(ws: WebSocket, msg: { op: unknown; ref?: unknown }): boolean {
+    const refused = this.elementGate(msg.op, msg.ref);
+    if (refused) this.sendTo(ws, refused);
+    return refused !== null;
   }
 
   /** Deliver one frame to one socket. */
@@ -1740,6 +1763,15 @@ export class DocumentRoom extends DurableObject<Env> {
     // runtime prunes it from getWebSockets(), it could otherwise still
     // appear in the roster of this very broadcast.
     this.broadcastPresence(ws);
+  }
+
+  // The person tags of the hello'd sessions: who is looking at the canvas now, whom a phone notification skips
+  // (docs/specs/014-identity/phone-notifications.md).
+  private roomPeople(): Set<string> {
+    const tags = new Set<string>();
+    for (const session of this.liveSessions().values())
+      if (session.personTag) tags.add(session.personTag);
+    return tags;
   }
 
   // Every hello'd session with a live socket, by presence id: what the selection store answers

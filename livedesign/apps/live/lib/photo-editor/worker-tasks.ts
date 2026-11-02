@@ -10,6 +10,7 @@ import {
   FilterCancelled,
   quickSelect,
   refineEdge,
+  resizeRaster,
   selectSubject,
   type FilterContext,
   type Mask8,
@@ -42,7 +43,9 @@ export type PhotoTask =
       subtract: boolean;
     }
   | { kind: 'refine'; raster: Raster; mask: Mask8; radius: number }
-  | { kind: 'fill'; raster: Raster; hole: Uint8Array; seed: number };
+  | { kind: 'fill'; raster: Raster; hole: Uint8Array; seed: number }
+  // A picture resampled (Bicubic) to a size: Make Sizes' layers (image-ops.ts coverSize).
+  | { kind: 'resize'; raster: Raster; width: number; height: number };
 
 export type PhotoTaskResult =
   | { kind: 'encode'; bytes: Uint8Array }
@@ -50,7 +53,8 @@ export type PhotoTaskResult =
   | { kind: 'filter'; raster: Raster }
   | { kind: 'mask'; mask: Uint8Array }
   | { kind: 'selection'; selection: Mask8 }
-  | { kind: 'fill'; raster: Raster };
+  | { kind: 'fill'; raster: Raster }
+  | { kind: 'resize'; raster: Raster };
 
 type Canvas2D = OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
 
@@ -157,6 +161,11 @@ export async function runPhotoTask(
         kind: 'fill',
         raster: contentAwareFill(task.raster, task.hole, { seed: task.seed }),
       };
+    case 'resize':
+      return {
+        kind: 'resize',
+        raster: resizeRaster(task.raster, task.width, task.height, 'bicubic'),
+      };
   }
 }
 
@@ -171,6 +180,7 @@ export function transfersOf(r: PhotoTaskResult | PhotoTask): Transferable[] {
       return 'raster' in r ? [r.raster.data.buffer as ArrayBuffer] : [];
     case 'filter':
     case 'fill':
+    case 'resize':
       return [r.raster.data.buffer as ArrayBuffer];
     case 'mask':
       return [r.mask.buffer as ArrayBuffer];

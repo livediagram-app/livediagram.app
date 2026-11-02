@@ -43,8 +43,9 @@ Three siblings, built the same way (`template-office-parts.ts`: rooms first, rug
 
 ## Where they are
 
-In the **Meetings** category of the template picker, and Start a Workshop's own **Spaces** group (Virtual Office,
-Coworking Space, Team Pod, All-Hands Hall), after Meetings. Extra templates (not defaults).
+In the **Virtual Spaces** category ("Offices and halls to walk round as an avatar."), on every start that shows
+Workshop templates and on the marketing gallery; All-Hands Hall is cross-listed in **Meetings & Workshops**. Extra
+templates (not defaults).
 
 ## Share roles
 

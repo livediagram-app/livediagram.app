@@ -1,5 +1,6 @@
 'use client';
 
+import { useFindReplace } from '@/hooks/editor/useFindReplace';
 import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
 import { setOwnPictureShown } from '@/lib/own-picture';
 import { pageStep } from '@liveworkspace/workbench/lib/page-step';
@@ -10,6 +11,10 @@ import { useTabRevisions } from './useTabRevisions';
 import { useWorkbenchEnd } from './useWorkbenchEnd';
 import { useWorkbenchMessages } from './useWorkbenchMessages';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
+import {
+  usePublishTabName,
+  usePublishTabRename,
+} from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { useModeDefaultTool } from '@/hooks/editor/useModeDefaultTool';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
@@ -51,6 +56,7 @@ import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { selectAllIds } from '@/lib/select-all-ids';
 import { currentPageIdNow } from '@/lib/current-page-kind';
 import { useArticles } from '@/hooks/editor/useArticles';
+import { articleTitleName } from '@/lib/article/article-document-name';
 import { usePagesMode } from '@/hooks/editor/usePagesMode';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
@@ -75,6 +81,8 @@ import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
 import { commitUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
 import { track } from '@/lib/telemetry';
+import { useApplyStyleToAllTabs } from '@liveworkspace/workbench/hooks/editor/useApplyStyleToAllTabs';
+import { withStyleOfTab } from '@/lib/tab-theme-apply';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
@@ -97,7 +105,7 @@ import { slideFitOptions } from '@/lib/presentation-config';
 import { pageDeckControls } from '@/lib/page-deck-controls';
 import { useCanvasPinchZoom } from '@/hooks/canvas/useCanvasPinchZoom';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
-import type { Participant } from '@/lib/identity';
+import { participantKey, type Participant } from '@/lib/identity';
 import { markNameConfirmed } from '@/lib/local-identity';
 import { apiNotifyActionAssigned, apiSaveDocumentMeta, apiSaveSelf } from '@/lib/api-client';
 import { ROOM_FULL_NOTICE } from '@/lib/api/room';
@@ -117,6 +125,7 @@ import { useAutosave } from './useAutosave';
 import { useDocumentTrashed } from './useDocumentTrashed';
 import { createRemoteOpJournal, type RemoteOpJournal } from './save-baseline';
 import { useElementDeltas } from '@/hooks/collab/useElementDeltas';
+import { useCommentReactionScope } from '@/hooks/collab/useCommentReactionScope';
 import { usePerTabLoad } from './usePerTabLoad';
 import { useRoomConnection } from './useRoomConnection';
 import { useRoomResync } from './useRoomResync';
@@ -144,6 +153,14 @@ import { useEditorPersistence } from './editor-persistence';
 import { useEditorRealtime } from './editor-realtime';
 import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { announcePageLocked, guardLockedPagesIn, type PageLockGuard } from '@/lib/page-lock-guard';
+import { announceTextOnly, guardFlashcardsIn, setTextOnlyToast } from '@/lib/flashcard-guard';
+
+// The guards every local edit of the active tab passes (Pages mode): locked pages, then text-only
+// flashcards (docs/specs/007-editor/flashcards.md "Text only"), each saying why after the commit.
+const guardPagesIn = (prev: readonly Tab[], next: Tab[], guard: PageLockGuard | null): Tab[] =>
+  guardFlashcardsIn(prev, guardLockedPagesIn(prev, next, guard), guard?.tabId ?? null, () =>
+    queueMicrotask(() => announceTextOnly()),
+  );
 import { usePageLockedIds } from '@/hooks/editor/usePageLockedIds';
 import { boundsOfElements } from '@/lib/changeset-reveals';
 import { useChangesetFeed } from './useChangesetFeed';
@@ -203,7 +220,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const tickTabs = useCallback(
     (mapTabs: (ts: Tab[]) => Tab[]) =>
       rawTickTabs((ts) =>
-        guardLockedPagesIn(ts, settleChipsInTabs(ts, mapTabs(ts)), pageLockGuardRef.current),
+        guardPagesIn(ts, settleChipsInTabs(ts, mapTabs(ts)), pageLockGuardRef.current),
       ),
     [rawTickTabs],
   );
@@ -220,7 +237,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       // Locked pages (docs/specs/007-editor/pages-mode.md "Locking a page"): in Pages
       // mode nothing is added to, moved onto, changed on or taken off a locked page.
       // Badges and step numbers (docs/specs/009-elements/badge.md "Attachment"), after the commit moved their hosts.
-      const next = guardLockedPagesIn(ts, settleChipsInTabs(ts, mapped), pageLockGuardRef.current);
+      const next = guardPagesIn(ts, settleChipsInTabs(ts, mapped), pageLockGuardRef.current);
       const stamp = activeLayerStampRef.current;
       if (!stamp) return next;
       return next.map((t) => {
@@ -468,6 +485,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     selfParticipant,
     // Bound below, once the teams the mention list comes from have loaded.
     onMentioned: (text, mentions) => mentionNotifyRef.current(text, mentions),
+    // A Community visitor reads the document, never its conversation (docs/specs/025-community/blueprints/community.md).
+    commentsOff: realtime.sessionCommunity !== null,
   });
   // Per-user editor preferences (docs/specs/007-editor/user-preferences.md): the state, the ref mirrors
   // the drag hook reads, and the localStorage read + D1 sync effects.
@@ -798,6 +817,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setSelfParticipant,
       setSessionRole,
       setSessionShareCode,
+      setSessionCommunity: realtime.setSessionCommunity,
       setSessionTabScope,
       setSharePasswordGate,
       setIdentityPromptOpen,
@@ -907,7 +927,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     documentId,
     documentServerStored: realtime.documentServerStored,
     // A workbench session that ended stops the room (blueprint "The workbench page" step 6).
-    enabled: !workbench?.ended,
+    // A Community visitor never joins the room: no cursors, no presence (blueprints/community.md).
+    enabled: realtime.sessionCommunity === null && !workbench?.ended,
     onWorkbenchEnded: workbench ? () => workbench.end('revoked') : undefined,
     onRoomFull: () => toast.warning(ROOM_FULL_NOTICE),
     documentTeamId,
@@ -995,6 +1016,19 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   useAssignRef(mentionNotifyRef, commentMentions.notifyMentioned);
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
+  // Comment reactions (docs/specs/012-collaboration/comment-reactions.md): whoever may comment may react, under
+  // the collab key their presence publishes; a session that may not edit sends them through the comment endpoints.
+  const commentReactions = useCommentReactionScope({
+    applyElementDelta,
+    activeTab,
+    selfKey: participantKey(selfParticipant),
+    selfName: selfParticipant.name,
+    canReact: participant.can.takePart,
+    readOnly: isReadOnly,
+    documentId,
+    selfId: selfParticipant.id,
+    shareCode: sessionShareCode,
+  });
   // The tab's editor mode (docs/specs/007-editor/pages-mode.md "One mode"): Pages, the one mode.
   const editorMode = useEditorMode(canEdit);
   // A colour picked with + joins the tab's custom colours, which every picker offers.
@@ -1397,6 +1431,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
         assigneeMemberId: input.assigneeMemberId,
         actionName: input.actionName,
         ...(input.description ? { description: input.description } : {}),
+        email: input.email,
+        tabId: input.tabId,
+        elementId: input.elementId,
       }).catch(() => {});
     },
   });
@@ -1478,6 +1515,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // Said after the commit: the guard runs inside a state update, where no toast may be set.
     onBlocked: () => queueMicrotask(() => announcePageLocked(toast.info)),
   });
+  // Where a card's "text only" notice goes (lib/flashcard-guard).
+  useEffect(() => {
+    setTextOnlyToast(toast.info);
+    return () => setTextOnlyToast(null);
+  }, [toast.info]);
 
   // A locked tab refuses every element mutation. Commit /
   // tick / element-add helpers all consult this early-return guard
@@ -1590,6 +1632,21 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? mapTab(t) : t)));
   };
 
+  // Find and replace on the open tab (docs/specs/007-editor/find-and-replace.md): a Replace All is one
+  // commitActiveTab, so one undo step, and a Participant's passes its guard.
+  const find = useFindReplace({
+    activeTab,
+    pages: pagesMode.pages,
+    can: participant.can,
+    standsAside: presenting || embedMode,
+    canvasMainRef,
+    getView: () => ({ zoom: zoomRef.current, offset: viewportOffsetRef.current }),
+    focusPage: pagesMode.focusPage,
+    scrollIntoView,
+    commitActiveTab,
+    notify: toast.info,
+  });
+
   // Style memory (docs/specs/008-canvas/quick-style-panel.md): what the panel or the context menu last
   // chose per element kind, applied to the next element the user draws. The
   // style hooks below get `commit` / `tickTabs` wrapped to record into it.
@@ -1679,6 +1736,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     canEdit: !isReadOnly,
     // A Participant writes in an article too (docs/specs/013-workspace/share-roles.md), each commit through its guard.
     canWrite: participant.participating && participant.can.writeArticle,
+    // An article's Title names a still-untitled document, as the first label does (a Participant names nothing).
+    onWritten: (flow, blocks) => {
+      if (isReadOnly) return;
+      const name = articleTitleName(documentName, tabs[0], flow, blocks);
+      if (name) setDocumentName(name);
+    },
     commitTabs: participant.participating ? guardedCommitTabs : commitTabs,
     tickTabs,
     undo,
@@ -1701,17 +1764,17 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const placeIntentAtRef = useRef<
     ((intent: Parameters<typeof placeIntentAt>[0], x: number, y: number) => void) | null
   >(null);
-  // A slide page's add-to-deck / hide-from-deck button reaches the deck (pageDeckControls).
+  // A page's Add to Slides / Hide in Slides (its Contents menu) and Add Notes reach the deck (pageDeckControls).
   // Memoised so the pages' view keeps its identity across renders where nothing changed.
-  const { deck: currentDeck, newPageSlide, toggleSlideHidden, setSlideNotes } = slideDeck;
+  const { deck: currentDeck, newPageSlide, toggleSlideHidden, setSlideNoteCards } = slideDeck;
   const pageDeck = useMemo(
     () =>
       pageDeckControls(currentDeck, activeId, !isReadOnly, {
         newPageSlide,
         toggleSlideHidden,
-        setSlideNotes,
+        setSlideNoteCards,
       }),
-    [currentDeck, activeId, isReadOnly, newPageSlide, toggleSlideHidden, setSlideNotes],
+    [currentDeck, activeId, isReadOnly, newPageSlide, toggleSlideHidden, setSlideNoteCards],
   );
   const pagesModeView = useMemo(
     () => ({ ...pagesMode, ...(articles ? { articles } : {}), deck: pageDeck }),
@@ -1751,6 +1814,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addTab,
     importIntoActiveTab,
     importTextIntoActiveTab,
+    importFileIntoActiveTab,
     toggleActiveTabLock,
     renameTab,
     linkActiveTabTo,
@@ -1776,10 +1840,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setFormatSourceId,
     setImportError,
     requestFit,
+    onSlidesImported: slideDeck.adoptImportedSlides,
     refreshDocumentList: () => refreshDocumentList(),
     confirm,
     toast,
   });
+  // The menu box shows the open tab's name, and renames it on a click (active-tab-name-store).
+  usePublishTabName(activeTab.name);
+  usePublishTabRename(activeId, renameTab, !isStructureReadOnly);
 
   // Tab-folder membership (docs/specs/006-document/tab-folders.md), kept separate from the busy
   // useTabActions. Menu-only: drag-reorder lives above.
@@ -1882,6 +1950,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tickTabs,
     checkpointBurst,
   });
+
+  // Apply to All Tabs (docs/specs/011-theme/canvas-and-theme-dialog.md): the open tab's style on every tab, as one
+  // undo step, an Editor's of the whole document only.
+  const { applyToAllTabs: applyStyleToAllTabs, applying: applyingStyleToAllTabs } =
+    useApplyStyleToAllTabs<Tab>({
+      canApply: !structureBlocked && !isStructureReadOnly,
+      activeId,
+      loadAllTabs,
+      isTabLoaded: (id) => loadedTabIdsRef.current.has(id),
+      commitTabs,
+      restyle: withStyleOfTab,
+      notify: (message) => toast.info(message),
+      onApplied: () => track('Tab', 'Changed', 'AllTabs'),
+    });
 
   // A checklist tick is a room press like an answer (docs/specs/012-collaboration/collab-race-hardening.md): applied here
   // and sent to the room as a delta, never undoable. Box ticks deliberately don't track: high-frequency, low-signal.
@@ -2648,6 +2730,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     releaseSelectionLock,
     setTabFinish,
     applyTabLook,
+    applyStyleToAllTabs,
+    applyingStyleToAllTabs,
+    canApplyStyleToAllTabs: !isStructureReadOnly,
     beginAnchorDrag,
     beginArrowCurveDrag,
     beginArrowCurvePointDrag,
@@ -2719,11 +2804,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     imagePickerOpenFor,
     importIntoActiveTab,
     importTextIntoActiveTab,
+    importFileIntoActiveTab,
     isPinchingRef,
     isReadOnly,
     // What this session may do (docs/specs/013-workspace/share-roles.md): a Participant's content gestures.
     can: participant.can,
     participating: participant.participating,
+    find,
     laserTrailRows,
     linkActiveTabTo,
     linkPickerOpenForId,
@@ -2739,6 +2826,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // outside the panel and the overlay reads into it.
     slideDeck,
     commentMentions,
+    commentReactions,
     // Bring an element into view (the Collaborate panel's jump to a card).
     scrollIntoView,
     // What the presentation is showing, or null. The canvas renders THESE

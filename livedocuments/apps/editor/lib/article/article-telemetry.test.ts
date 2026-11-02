@@ -13,6 +13,8 @@ describe('slash menu telemetry', () => {
     expect(eventOf('pageBreak')).toBe('ArticlePageBreak');
     expect(eventOf('quote')).toBe('ArticleQuote');
     expect(eventOf('code')).toBe('ArticleCode');
+    expect(eventOf('table')).toBe('ArticleTable');
+    expect(eventOf('toc')).toBe('ArticleContents');
   });
 
   it('leaves text styles, lists and object inserts to their own counts', () => {

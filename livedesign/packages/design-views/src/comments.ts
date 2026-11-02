@@ -33,9 +33,15 @@ export function readComment(c: object): ThreadComment {
   };
 }
 
-// `Sam 2026-09-27: "text"`: a comment as the comments and show views print it.
-export function commentText(c: ThreadComment): string {
-  return `${attrValue(c.authorName)} ${utcDay(c.createdAt)}: ${jsonString(c.text)}`;
+// A comment's reactions as a listing carries them (docs/specs/012-collaboration/comment-reactions.md).
+type ListedReactions = { reactions?: readonly { emoji: string; count: number }[] };
+
+// `Sam 2026-09-27: "text"`: a comment as the comments and show views print it, then its reactions when a listing
+// carries them (`👍 2 👀 1`).
+export function commentText(c: ThreadComment & ListedReactions): string {
+  const line = `${attrValue(c.authorName)} ${utcDay(c.createdAt)}: ${jsonString(c.text)}`;
+  if (!c.reactions?.length) return line;
+  return `${line} ${c.reactions.map((r) => `${r.emoji} ${r.count}`).join(' ')}`;
 }
 
 // An element's thread, as a list so an element without one adds nothing.
@@ -75,7 +81,7 @@ export function threadListingLines(thread: {
   label: string | null;
   resolved: boolean;
   tabName: string;
-  comments: readonly ThreadComment[];
+  comments: readonly (ThreadComment & ListedReactions)[];
 }): string[] {
   const label = thread.label === null ? '' : ` ${jsonString(thread.label, LABEL_CUT_CHARS)}`;
   const state = thread.resolved ? 'resolved' : 'open';

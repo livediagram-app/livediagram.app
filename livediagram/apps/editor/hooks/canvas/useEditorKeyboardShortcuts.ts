@@ -32,8 +32,9 @@ import {
 } from './editor-shortcut-keys';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { isTypingTarget, passesHistoryChords } from '@liveworkspace/workbench/lib/typing-target';
-import { avatarActionForKey } from '@/lib/avatar-action-keys';
+import { avatarActionForKey } from '@liveworkspace/avatar/action-keys';
 import { altGraphHeld } from '@liveworkspace/workbench/lib/composed-key';
+import { voteKeyDelta } from '@/lib/vote-by-key';
 
 // Re-exported so existing importers (the unit test) keep resolving.
 export { EDIT_KEYS, VIEW_TOOL_KEYS, type ShortcutAction } from './editor-shortcut-keys';
@@ -76,6 +77,23 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       // A closer handler already claimed this keystroke (e.g. the table's
       // selected-cell layer) — don't double-act on it.
       if (e.defaultPrevented) return;
+      // Enter drops an armed tile at the middle of the view, the keyboard's tap: a tile armed from the
+      // keyboard otherwise waited for a pointer it would never get (docs/specs/008-canvas/canvas-and-palette.md
+      // "Adding elements"). A focused control or a text field keeps its own Enter.
+      if (
+        e.key === 'Enter' &&
+        !e.repeat &&
+        !e.metaKey &&
+        !e.ctrlKey &&
+        !e.altKey &&
+        !e.shiftKey &&
+        liveRef.current.pendingDraw !== null &&
+        !isTypingTarget(e.target) &&
+        !isPressableControl(e.target)
+      ) {
+        if (liveRef.current.onDropDrawAtCentre()) e.preventDefault();
+        return;
+      }
       if (e.key === 'Escape') {
         const live = liveRef.current;
         // Claim the key when it cancelled something, so a later listener
@@ -324,6 +342,17 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         e.preventDefault();
         live.onFitToScreen();
         return;
+      }
+
+      // --- Dot voting (docs/specs/012-collaboration/session-tools.md "Casting from the keyboard") ---
+      // `+` / `-` on the one selected element while a vote is open: the stepper's buttons, which Tab never
+      // reaches inside the canvas. Before type-to-edit, which would otherwise seed the label with the key.
+      if (live.onVoteKey && selectedId !== null && multiSelectedIds.size === 0) {
+        const delta = voteKeyDelta(e);
+        if (delta !== null && live.onVoteKey(selectedId, delta)) {
+          e.preventDefault();
+          return;
+        }
       }
 
       // --- Type-to-edit (docs/specs/008-canvas/canvas-and-palette.md Labels) ---

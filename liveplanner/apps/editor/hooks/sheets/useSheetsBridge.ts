@@ -4,14 +4,18 @@
 // lives in the main bundle. It hands the lazily loaded sheet chunk what it needs from the editor (who is writing,
 // the project's scope, undo, toasts, presence) and routes the room's `sheets` and `sheet-presence` ops to the
 // chunk once it has attached. Before any Sheet is drawn nothing attaches and every op is dropped: the store
-// fetches what it needs when it loads.
-import { createContext, useCallback, useContext, useMemo, useRef } from 'react';
+// fetches what it needs when it loads. A store can hold tabs loaded while nothing was attached (a sheet form's
+// builder reads its sheet; a Sheet's tab left and shown again), so an op dropped then leaves them stale: attaching
+// after one was dropped reads every loaded tab again, as a rejoin does.
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import type { RoomOp, SheetPresenceOp, SheetsRoomOp } from '@liveplanner/api-schema';
 import type { SheetPerson } from '@liveplanner/sheets';
 import type { BoxedElement, Element } from '@liveplanner/project';
 import type { SheetsScope } from '@/lib/api/sheets';
 import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { isOfflineIdSync } from '@/lib/offline/offline-ids';
+import { planQueue } from '@/lib/offline-queue/plan-queue';
 
 export type SheetPeer = { id: string; name: string; color: string };
 
@@ -91,6 +95,8 @@ export function useSheetsBridge(opts: {
   sheetRetitled: (sheetId: string, title: string) => void;
 }) {
   const handlers = useRef<SheetsHandlers | null>(null);
+  // An op (or a rejoin's resync) reached no store since the last attach: the store's loaded tabs may be behind.
+  const missed = useRef(false);
   const pushUndo = useLatest(opts.pushUndo);
   const toast = useLatest(opts.toast);
   const notify = useLatest(opts.notify);
@@ -102,6 +108,10 @@ export function useSheetsBridge(opts: {
   const sheetRetitled = useLatest(opts.sheetRetitled);
   const attach = useCallback((h: SheetsHandlers) => {
     handlers.current = h;
+    if (missed.current) {
+      missed.current = false;
+      h.resync();
+    }
     return () => {
       if (handlers.current === h) handlers.current = null;
     };
@@ -150,14 +160,32 @@ export function useSheetsBridge(opts: {
       attach,
     ],
   );
+  // Sheet changes a reload kept waiting (docs/specs/007-editor/offline-changes.md "Kept across a reload") go as soon
+  // as the plan opens, before any Sheet is drawn: the sheet chunk loads only when some wait.
+  const bridgeRef = useLatest(bridge);
+  useEffect(() => {
+    if (!projectId || isOfflineIdSync(projectId)) return;
+    if (planQueue(projectId, ownerId).count('sheets') === 0) return;
+    void import('@/components/sheets/sheet-store-client')
+      .then((m) => m.sheetStoreOf(bridgeRef.current))
+      .catch(() => {
+        // The chunk did not load (offline): the changes still wait, and go when a Sheet is drawn.
+      });
+  }, [projectId, ownerId, bridgeRef]);
   return {
     bridge,
-    receiveSheets: useCallback((op: SheetsRoomOp) => handlers.current?.receive(op), []),
+    receiveSheets: useCallback((op: SheetsRoomOp) => {
+      if (handlers.current) handlers.current.receive(op);
+      else missed.current = true;
+    }, []),
     receiveSheetPresence: useCallback(
       (from: string, op: SheetPresenceOp) => handlers.current?.presence(from, op),
       [],
     ),
-    resync: useCallback(() => handlers.current?.resync(), []),
+    resync: useCallback(() => {
+      if (handlers.current) handlers.current.resync();
+      else missed.current = true;
+    }, []),
     // Before a Sheet has drawn nothing is attached: no title, and nothing to release (the sheet is kept, as a Cut's).
     sheetTitle: useCallback((id: string) => handlers.current?.title(id), []),
     releaseSheets: useCallback((ids: readonly string[]) => {

@@ -1,0 +1,155 @@
+import { fireEvent, render, screen } from '@testing-library/react';
+import { useState } from 'react';
+import { ConfirmDialog, Dialog } from '@liveworkspace/ui';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { MenuActionRow, PortalMenu, placeMenu } from './Menu';
+
+// A 1280 x 720 window, the e2e suite's Desktop Chrome, and a 224 px wide menu (w-56).
+const VIEW = { width: 1280, height: 720 };
+const trigger = (top: number) => ({ top, bottom: top + 28, right: 609 });
+
+describe('placeMenu', () => {
+  it('opens below its trigger, right edges aligned', () => {
+    expect(placeMenu(trigger(100), { width: 224, height: 300 }, VIEW)).toEqual({
+      left: 385,
+      top: 132,
+    });
+  });
+
+  it('opens upward when there is no room below', () => {
+    expect(placeMenu(trigger(600), { width: 224, height: 300 }, VIEW)).toEqual({
+      left: 385,
+      top: 296,
+    });
+  });
+
+  // The Explorer's flaky e2e: a card's 420 px menu from a trigger at 374 px ran off the bottom, so its last verb
+  // (Delete) could not be reached.
+  it('slides up over its trigger until its last row is on screen when it fits on neither side', () => {
+    const at = placeMenu({ top: 346, bottom: 374, right: 609 }, { width: 224, height: 420 }, VIEW);
+    expect(at).toEqual({ left: 385, top: 292 });
+    expect(at.top + 420).toBeLessThanOrEqual(VIEW.height - 8);
+  });
+
+  it('keeps to the window and scrolls when taller than it', () => {
+    expect(placeMenu(trigger(100), { width: 224, height: 900 }, VIEW)).toEqual({
+      left: 385,
+      top: 8,
+      maxHeight: 704,
+    });
+  });
+
+  it('stays inside the side margins, measuring 224 px before it has a width', () => {
+    expect(placeMenu({ top: 10, bottom: 38, right: 40 }, { width: 0, height: 0 }, VIEW)).toEqual({
+      left: 8,
+      top: 42,
+    });
+    expect(
+      placeMenu({ top: 10, bottom: 38, right: 2000 }, { width: 224, height: 0 }, VIEW).left,
+    ).toBe(1048);
+  });
+});
+
+describe('PortalMenu', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('scrolls a menu taller than the window', () => {
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(5000);
+    vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(224);
+    const anchor = document.createElement('button');
+    document.body.append(anchor);
+    render(
+      <PortalMenu anchor={anchor} onClose={() => {}} label="Actions">
+        <MenuActionRow label="Open" icon={null} onClick={() => {}} />
+      </PortalMenu>,
+    );
+    const menu = screen.getByRole('menu', { name: 'Actions' });
+    expect(menu.style.maxHeight).toBe(`${window.innerHeight - 16}px`);
+    expect(menu.style.overflowY).toBe('auto');
+    expect(menu.style.top).toBe('8px');
+    anchor.remove();
+  });
+
+  it('hands focus back to its trigger as an item closes it, so the dialog it opens returns there', () => {
+    function Card() {
+      const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+      const [asking, setAsking] = useState(false);
+      const [editing, setEditing] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={(e) => setAnchor(e.currentTarget)}>
+            Team options
+          </button>
+          {anchor ? (
+            <PortalMenu anchor={anchor} onClose={() => setAnchor(null)} label="Team options">
+              <MenuActionRow
+                label="Edit Team"
+                icon={null}
+                onClick={() => {
+                  setAnchor(null);
+                  setEditing(true);
+                }}
+              />
+              <MenuActionRow
+                label="Delete Team"
+                icon={null}
+                onClick={() => {
+                  setAnchor(null);
+                  setAsking(true);
+                }}
+              />
+            </PortalMenu>
+          ) : null}
+          <ConfirmDialog
+            open={asking}
+            title="Delete Team?"
+            message="It goes."
+            confirmLabel="Delete Team"
+            onConfirm={() => setAsking(false)}
+            onCancel={() => setAsking(false)}
+          />
+          {editing ? (
+            <Dialog open onClose={() => setEditing(false)} ariaLabel="Edit Team">
+              <input aria-label="Team name" autoFocus />
+              <button type="button" onClick={() => setEditing(false)}>
+                Close
+              </button>
+            </Dialog>
+          ) : null}
+        </>
+      );
+    }
+    render(<Card />);
+    const trigger = screen.getByRole('button', { name: 'Team options' });
+    trigger.focus();
+    fireEvent.click(trigger);
+    expect(document.activeElement?.textContent).toContain('Edit Team');
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Delete Team' }));
+    const dialog = screen.getByRole('dialog', { name: 'Delete Team?' });
+    expect(dialog.contains(document.activeElement)).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(document.activeElement).toBe(trigger);
+
+    // A dialog whose field takes focus as it opens (autoFocus) still returns it to the trigger.
+    fireEvent.click(trigger);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Edit Team' }));
+    expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Team name' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('places a menu that fits without a scroll', () => {
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(100);
+    const anchor = document.createElement('button');
+    document.body.append(anchor);
+    render(
+      <PortalMenu anchor={anchor} onClose={() => {}} label="Actions">
+        <MenuActionRow label="Open" icon={null} onClick={() => {}} />
+      </PortalMenu>,
+    );
+    const menu = screen.getByRole('menu', { name: 'Actions' });
+    expect(menu.style.top).toBe('4px');
+    expect(menu.style.maxHeight).toBe('');
+    anchor.remove();
+  });
+});

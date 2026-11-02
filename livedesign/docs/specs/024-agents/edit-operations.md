@@ -24,6 +24,7 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
 | `unwrap`  | `unwrap <frame>`                                                            | Removes the frame and keeps its members where they are                                        |
 | `order`   | `order <selector> front\|back\|above=<x>\|below=<x>`                        | Changes stacking; frames stay behind their contents                                           |
 | `layout`  | `layout <selector> [style=flow\|tree\|mindmap] [direction=down\|right]`     | Lays out only the selection, keeping its top-left corner                                      |
+| `detach`  | `detach <instance>`                                                         | Replaces a component instance with its main's elements as it draws them, fresh ids            |
 | `test`    | `test <selector> key=value…`                                                | Fails the changeset unless the element holds these values                                     |
 
 - **`replace`** is the other changeset body: a whole tab from `template` or `elements`, exactly
@@ -50,6 +51,18 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
   `accentEdge`, `cardMedia`, `chipLook`, `attachAt`, `pyramidVariant`;
   `ELEMENT_FIELD_VALUES` in `@livedesign/design`) refuses a value off it as `invalid_value`, naming the values it
   takes (a `textSize` may also be a pixel number, as a Step number stores one), as the MCP's whole-element check does: `textSize=xl` used to be stored and drawn as tiny overlapping text.
+- **Components** ([Components](../009-elements/components.md)). An instance is placed with an ordinary `add`:
+  `add instance componentId=<id> [width= height=] [<placement>]`, the main's frame its box when no size is given
+  (the [`components` view](design-views.md#the-views) lists the ids). A main the design does not hold is refused
+  (`invalid_value`, naming the mains). Its overrides are an ordinary field: `set <instance>
+componentOverrides={"<main element id>":{"label":"Home","fillColor":"#0ea5e9"}}` names every override (fields
+  `label`, `fillColor`, `strokeColor`, `textColor`, `iconId`), and `componentOverrides=` clears them. `detach`
+  replaces an instance, in its place in the stack, with the main's elements as that instance draws them (its
+  overrides, scale, rotation and layer), each with a fresh slug id; arrows pinned to it keep that end as a free
+  point. `detach` of an element that is not an instance, or whose main the design does not hold, is refused
+  (`invalid_value`). An edit session's fields (`componentEditBy`, `componentMember`) are a person's and refused.
+  Making a component and changing a main are not edit operations: they write the library
+  ([CLI](../015-api/cli.md) `component make` / `component set`, the MCP's `change_components`).
 - **Locks.** A changeset on a locked tab is refused, and so is an operation that changes a locked element or an
   element on a locked layer (`element_locked`).
 
@@ -206,4 +219,5 @@ One pure engine, `@livedesign/edit-operations`, on top of `@livedesign/design`:
   created.
 - Refs, slug ids, kind words, membership and the content origin come from `@livedesign/design`, shared with the
   views and the lint, as do the label cap and the MCP's normalisation.
-- The api runs it for every changeset; the CLI runs it only to parse and to print.
+- The api runs it for every changeset, handing it the design's mains (`components`) only when an operation places
+  or detaches an instance; the CLI runs it only to parse and to print.

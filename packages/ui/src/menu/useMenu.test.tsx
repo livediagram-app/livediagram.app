@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { useState, type ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { MenuTreeContext } from './menu-tree';
@@ -157,6 +157,62 @@ describe('useMenu', () => {
     key('Escape');
     expect(screen.queryByRole('menu')).toBeNull();
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Folder actions' }));
+  });
+
+  it('returns focus to the trigger when the hook stays mounted and only the surface goes', () => {
+    // The account menu's shape: useMenu lives in the control, the surface is drawn under `open &&`, so
+    // the surface has left the page (focus on the body) before the effect's cleanup runs.
+    function Kept() {
+      const [open, setOpen] = useState(false);
+      const [trigger, setTrigger] = useState<HTMLButtonElement | null>(null);
+      const { attach, surfaceProps } = useMenu({ open, onClose: () => setOpen(false), trigger });
+      return (
+        <>
+          <button ref={setTrigger} aria-label="Account" onClick={() => setOpen((o) => !o)}>
+            A
+          </button>
+          {open && (
+            <div ref={attach} {...surfaceProps}>
+              <button role="menuitem" tabIndex={-1}>
+                Settings
+              </button>
+            </div>
+          )}
+        </>
+      );
+    }
+    render(<Kept />);
+    const trigger = screen.getByRole('button', { name: 'Account' });
+    trigger.focus();
+    fireEvent.click(trigger);
+    expect(document.activeElement).toBe(screen.getByRole('menuitem', { name: 'Settings' }));
+    key('Escape');
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('leaves focus where a click outside put it, when the surface goes', () => {
+    function Kept() {
+      const [open, setOpen] = useState(true);
+      const { attach, surfaceProps } = useMenu({ open, onClose: () => setOpen(false) });
+      return (
+        <>
+          <input aria-label="Elsewhere" onFocus={() => setOpen(false)} />
+          {open && (
+            <div ref={attach} {...surfaceProps}>
+              <button role="menuitem" tabIndex={-1}>
+                Settings
+              </button>
+            </div>
+          )}
+        </>
+      );
+    }
+    render(<Kept />);
+    const elsewhere = screen.getByRole('textbox', { name: 'Elsewhere' });
+    act(() => elsewhere.focus());
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(document.activeElement).toBe(elsewhere);
   });
 
   it('closes on Tab and moves to the control after the trigger', () => {

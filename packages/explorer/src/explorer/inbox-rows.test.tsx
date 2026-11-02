@@ -1,6 +1,6 @@
 // The Inbox's one row at its two densities (the page's and the editor panel's): three lines of who, what, and why
 // and where; the skeleton that matches it while the Inbox reads, the empty state, and a This Browser row.
-import { act, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { shortAgo } from './inbox/InboxRows';
 import { describe, expect, it, vi } from 'vitest';
 import type { InboxAction, InboxThread } from '@liveworkspace/index-client';
@@ -58,7 +58,11 @@ const thread: InboxThread = {
 
 function renderPane(
   index: ReturnType<typeof createFakeIndex>,
-  { compact = false, filter = 'all' as const } = {},
+  {
+    compact = false,
+    filter = 'all' as const,
+    filterSlot,
+  }: { compact?: boolean; filter?: 'all'; filterSlot?: HTMLElement | null } = {},
 ) {
   return render(
     <ToastProvider>
@@ -73,7 +77,7 @@ function renderPane(
         onCreate={vi.fn()}
         viewerId="user_me"
       >
-        <InboxPane compact={compact} />
+        <InboxPane compact={compact} filterSlot={filterSlot} />
       </ExplorerProvider>
     </ToastProvider>,
   );
@@ -199,5 +203,61 @@ describe('an Inbox row', () => {
       expect(screen.queryByRole('option')).toBeNull();
       view.unmount();
     }
+  });
+});
+
+describe('the panel’s Inbox filter dropdown', () => {
+  const seeded = () => {
+    const index = createFakeIndex();
+    index.inbox.actions.push(action);
+    index.inbox.threads.push(thread);
+    return index;
+  };
+
+  it('is a named select with each count, in a row of its own without a slot, and filters the list', async () => {
+    const index = seeded();
+    const { container } = renderPane(index, { compact: true });
+    await settle();
+    expect(container.querySelector('[role="group"][aria-label="Inbox filters"]')).toBeNull();
+    const select = screen.getByRole('combobox', { name: 'Inbox filter' }) as HTMLSelectElement;
+    expect(
+      within(select)
+        .getAllByRole('option')
+        .map((o) => o.textContent),
+    ).toEqual([
+      'All (2)',
+      'My Actions (1)',
+      'Assigned by Me (0)',
+      'Comments (1)',
+      'Form Responses (0)',
+    ]);
+    expect(select.value).toBe('all');
+    fireEvent.change(select, { target: { value: 'comments' } });
+    expect(select.value).toBe('comments');
+    expect(screen.getAllByRole('option', { name: /Agreed|Ledger/ })).toHaveLength(1);
+    // A value the select cannot hold is ignored.
+    fireEvent.change(select, { target: { value: 'nonsense' } });
+    expect(select.value).toBe('comments');
+  });
+
+  it('is drawn into the header slot when the panel has one, and nowhere while the slot mounts', async () => {
+    const slot = document.createElement('div');
+    document.body.appendChild(slot);
+    const index = seeded();
+    const first = renderPane(index, { compact: true, filterSlot: null });
+    await settle();
+    expect(screen.queryByRole('combobox', { name: 'Inbox filter' })).toBeNull();
+    first.unmount();
+    renderPane(index, { compact: true, filterSlot: slot });
+    await settle();
+    expect(within(slot).getByRole('combobox', { name: 'Inbox filter' })).toBeTruthy();
+    slot.remove();
+  });
+
+  it('leaves the page’s chip bar alone', async () => {
+    renderPane(seeded());
+    await settle();
+    expect(screen.getByRole('group', { name: 'Inbox filters' })).toBeTruthy();
+    expect(screen.queryByRole('combobox')).toBeNull();
   });
 });

@@ -50,7 +50,7 @@ describe('Home’s requests', () => {
         welcome={{ manifest: MANIFEST, signedIn: true }}
       />,
     );
-    expect(await screen.findByRole('link', { name: '2 plans' })).toBeTruthy();
+    expect(await screen.findByRole('link', { name: '3 plans' })).toBeTruthy();
     await screen.findByRole('heading', { name: 'Shared With You Recently' });
     await waitFor(() => expect(index.count('timeline')).toBe(1));
 
@@ -67,8 +67,8 @@ describe('Home’s requests', () => {
     const items = index.calls.find((c) => c.method === 'listItems')!.args[0];
     expect(items).toEqual({
       view: 'recent',
-      limit: 8,
-      used: 4,
+      limit: 16,
+      used: 8,
       mine: LIST_LIMIT_MAX,
       any: true,
       app: 'liveplanner',
@@ -95,7 +95,7 @@ describe('the folding', () => {
     ]);
     expect(index.count('listItems')).toBe(1);
     expect(recent.items.map((i) => i.id)).toEqual(['item-1', 'item-2']);
-    expect(mine).toEqual({ count: 2, more: false });
+    expect(mine).toEqual({ count: 3, more: false });
     expect(any).toBe(true);
     // Another tick, another request; another scope, another request.
     await readMineCount(index.client, 'liveplanner', 'app', 1);
@@ -129,7 +129,7 @@ describe('the folding', () => {
     gone.abort();
     await expect(dropped).rejects.toMatchObject({ name: 'AbortError' });
     index.release();
-    expect(await kept).toEqual({ count: 2, more: false });
+    expect(await kept).toEqual({ count: 3, more: false });
     expect(index.count('listItems')).toBe(1);
 
     // Every asker gone before it went out: nothing is asked.
@@ -159,7 +159,7 @@ describe('the folding', () => {
         readAnyItem(bare, 'liveplanner', 'app'),
       ),
     ]);
-    expect(mine).toEqual({ count: 2, more: false });
+    expect(mine).toEqual({ count: 3, more: false });
     expect(any).toBe(true);
   });
 });

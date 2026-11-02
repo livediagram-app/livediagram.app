@@ -34,9 +34,10 @@ export function TitlePopoverButton({
   padded = true,
   onOpen,
   openRequest = 0,
+  onEscape,
   children,
 }: {
-  // The control's name: its label, tooltip ("<name>: on" while on) and the popover's name.
+  // The control's name: its label, its tooltip and the popover's name (on or off is aria-pressed).
   name: string;
   // Whether its tool is on for the page (`aria-pressed`); absent, it is a plain opener.
   on?: boolean;
@@ -52,6 +53,8 @@ export function TitlePopoverButton({
   onOpen?: () => void;
   // Opens the popover from elsewhere each time it changes (an article toolbar's Style command); 0 never does.
   openRequest?: number;
+  // Escape asked first: true when the body took it (an open note card closing), the popover then staying open.
+  onEscape?: () => boolean;
   // The popover's body, or a function of its close (a body that closes itself, Layouts).
   children: ReactNode | ((close: () => void) => ReactNode);
 }) {
@@ -67,7 +70,8 @@ export function TitlePopoverButton({
   const body = typeof children === 'function' ? children(close) : children;
   return (
     <>
-      <Tooltip label={on ? `${name}: on` : name}>
+      {/* Its name: whether it is on is aria-pressed and the pressed look. */}
+      <Tooltip label={name}>
         <button
           ref={setAnchor}
           type="button"
@@ -87,7 +91,7 @@ export function TitlePopoverButton({
         </button>
       </Tooltip>
       {open && mobile ? (
-        <TitleSheet name={name} onClose={close}>
+        <TitleSheet name={name} onClose={close} onEscape={onEscape}>
           {body}
         </TitleSheet>
       ) : open && anchor ? (
@@ -96,6 +100,7 @@ export function TitlePopoverButton({
           name={name}
           width={width}
           onClose={close}
+          {...(onEscape ? { onEscape } : {})}
           // A tour step opened it (docs/specs/007-editor/pages-tour.md): pressing the tour's card keeps it.
           keepOpenWithin={TOUR_CARD}
         >
@@ -117,10 +122,12 @@ export function TitlePopoverButton({
 function TitleSheet({
   name,
   onClose,
+  onEscape,
   children,
 }: {
   name: string;
   onClose: () => void;
+  onEscape?: (() => boolean) | undefined;
   children: ReactNode;
 }) {
   const sheet = useRef<HTMLDivElement>(null);
@@ -131,7 +138,12 @@ function TitleSheet({
     true,
     `[data-anchored-popover], [data-title-popover-trigger], ${TOUR_CARD}`,
   );
-  useEscape(onClose, { capture: true, stopPropagation: true });
+  useEscape(
+    () => {
+      if (!onEscape?.()) onClose();
+    },
+    { capture: true, stopPropagation: true },
+  );
   return (
     <BottomSheet
       ref={sheet}

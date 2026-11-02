@@ -1,27 +1,32 @@
-// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): nine,
-// grouped by the job a person is getting done rather than the artefact a template is. Every template but the three
-// blanks has exactly one primary category and may be cross-listed in others where people would genuinely look for it.
-// Read by the template step (Quick Start and /new), the marketing gallery and the agents' catalogue. Pure data plus
-// three lookups; a Record over every non-blank kind, so a new template does not compile until it has a home.
+// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): fourteen,
+// grouped by what a person is using the template for (the use case), never by the shape of artefact it is. Every
+// template but the three blanks has exactly one primary category and may be cross-listed in others where people would
+// genuinely look for it. Read by every template start (Diagram, Draw and Workshop), the marketing gallery and the
+// agents' catalogue. Pure data plus three lookups; a Record over every non-blank kind, so a new template does not
+// compile until it has a home.
 import type { TemplateKind } from './templates';
 
 export type TemplateCategory =
+  | 'ideas'
+  | 'decisions'
+  | 'goals'
   | 'meetings'
-  | 'mindmaps'
-  | 'timelines'
-  | 'flowcharts'
+  | 'people'
+  | 'planning'
+  | 'processes'
+  | 'product'
+  | 'games'
+  | 'retros'
+  | 'software'
   | 'strategy'
-  | 'hierarchies'
-  | 'design'
-  | 'technical'
-  | 'games';
+  | 'learning'
+  | 'spaces';
 
-// Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions are kept to a similar length (40 to 50 characters) so the folded
-// category tiles read as an even set. Ids survive where the meaning did (links, tests and the agents' catalogue name
-// them): `mindmaps` was Mind maps, `hierarchies` was Hierarchies. Planning, Finance, Spreadsheets and Forms went with
-// Plan mode to liveplanner.
-// `searchWords`: what a search also finds the category's templates by, the words a longer label once carried (Flowcharts
-// was Flowcharts and Processes), so shortening a label never loses a search.
+// Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions
+// are kept to a similar length (40 to 50 characters) so the folded category tiles read as an even set. No id is stored
+// anywhere, so ids follow the meaning. Kanban, Finance, Spreadsheets and Forms went with Plan mode to liveplanner.
+// `searchWords`: what a search also finds the category's templates by, beyond its label: the words the old,
+// artefact-shaped labels carried (Flowcharts, Org Charts, Technical), so the regroup never loses a search.
 type CategoryInfo = {
   id: TemplateCategory;
   label: string;
@@ -31,50 +36,52 @@ type CategoryInfo = {
 
 const CATEGORY_LIST: readonly CategoryInfo[] = [
   {
+    id: 'ideas',
+    label: 'Brainstorming',
+    searchWords: 'brainstorm ideation mind maps',
+    description: 'Mind maps and boards for getting ideas out.',
+  },
+  {
+    id: 'decisions',
+    label: 'Decisions',
+    searchWords: 'priorities prioritise prioritize risk',
+    description: 'Priorities, trade-offs, risks and root causes.',
+  },
+  {
+    id: 'goals',
+    label: 'Goals & Metrics',
+    searchWords: 'okrs kpis growth',
+    description: 'OKRs, metric trees, funnels and growth loops.',
+  },
+  {
     id: 'meetings',
-    label: 'Workshops',
-    searchWords: 'meetings',
-    description: 'Agendas, retros, Q&A and workshop formats.',
+    label: 'Meetings & Workshops',
+    searchWords: 'meeting workshop session facilitation',
+    description: 'Agendas, Q&A and formats for running a session.',
   },
   {
-    id: 'mindmaps',
-    label: 'Brainstorm',
-    description: 'Mind maps and sketches for getting ideas out.',
+    id: 'people',
+    label: 'People & Teams',
+    searchWords: 'org chart hr hiring onboarding structure hierarchies',
+    description: 'Org charts, roles, onboarding and family trees.',
   },
   {
-    id: 'timelines',
-    label: 'Timelines',
-    searchWords: 'roadmaps',
-    description: 'Timelines, Gantt charts, roadmaps and goals.',
+    id: 'planning',
+    label: 'Planning',
+    searchWords: 'timelines roadmaps project schedule',
+    description: 'Gantt charts, roadmaps and timelines of work.',
   },
   {
-    id: 'flowcharts',
-    label: 'Flowcharts',
-    searchWords: 'processes',
-    description: 'Step-by-step processes, flows and decisions.',
+    id: 'processes',
+    label: 'Processes & Workflows',
+    searchWords: 'flowcharts flowchart process',
+    description: 'Flowcharts and workflows for how work gets done.',
   },
   {
-    id: 'strategy',
-    label: 'Strategy',
-    searchWords: 'decisions',
-    description: 'Frameworks for analysis, priorities and risk.',
-  },
-  {
-    id: 'hierarchies',
-    label: 'Org Charts',
-    searchWords: 'org structure hierarchies',
-    description: 'Org charts, goal trees, sitemaps and pyramids.',
-  },
-  {
-    id: 'design',
-    label: 'Design',
-    searchWords: 'ux',
-    description: 'Prototypes, personas, journeys and research.',
-  },
-  {
-    id: 'technical',
-    label: 'Technical',
-    description: 'Architecture, schema and sequence diagrams.',
+    id: 'product',
+    label: 'Product & UX',
+    searchWords: 'design ux research discovery',
+    description: 'Prototypes, personas, journeys and discovery.',
   },
   {
     id: 'games',
@@ -82,9 +89,39 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     searchWords: 'quiz trivia icebreaker icebreakers warm up energiser fun team building',
     description: 'Quizzes, icebreakers and games for the room.',
   },
+  {
+    id: 'retros',
+    label: 'Retrospectives',
+    searchWords: 'retro retros look back lessons learned',
+    description: 'Look back as a team and agree what to change.',
+  },
+  {
+    id: 'software',
+    label: 'Software & IT',
+    searchWords: 'technical engineering developer devops infrastructure',
+    description: 'Architecture, data, networks and incidents.',
+  },
+  {
+    id: 'strategy',
+    label: 'Strategy',
+    searchWords: 'business analysis frameworks',
+    description: 'Frameworks for where the business stands and goes.',
+  },
+  {
+    id: 'learning',
+    label: 'Teaching & Learning',
+    searchWords: 'school classroom students teachers lesson education study',
+    description: 'Concept maps, KWL charts and visual notes.',
+  },
+  {
+    id: 'spaces',
+    label: 'Virtual Spaces',
+    searchWords: 'office avatar walk room',
+    description: 'Offices and halls to walk round as an avatar.',
+  },
 ];
 
-// The categories in the order every picker shows them (the Quick Start, /new and the marketing gallery): alphabetical
+// The categories in the order every picker shows them (every start, /new and the marketing gallery): alphabetical
 // by label, locale-aware, derived rather than hand-ordered (docs/specs/008-canvas/canvas-and-palette.md "Template
 // categories"). Popular is no category: it stays a shelf above them.
 // Its search words stay inside the package (templateCategorySearchWords): the list is what every picker and the
@@ -97,98 +134,109 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
 // Mirrors isBlankTemplate (BLANK_TEMPLATE_FOR_MODE); the categories test pins them together.
 type BlankKind = 'blank' | 'whiteboard' | 'blank-session';
 
-// Every non-blank template's primary category.
+// Every non-blank template's primary category: the job it is for.
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCategory> = {
-  // Meetings and Workshops: agendas, retros, live Q&A and the boards a team runs together.
+  // Brainstorming: getting ideas out of heads and into some order.
+  mindmap: 'ideas',
+  'mindmap-tree': 'ideas',
+  'mindmap-bubble': 'ideas',
+  brainstorm: 'ideas',
+  'idea-garden': 'ideas',
+  'affinity-map': 'ideas',
+  'crazy-eights': 'ideas',
+  // Decisions: what comes first, which option, what could go wrong and why it went wrong.
+  'prioritization-matrix': 'decisions',
+  'eisenhower-matrix': 'decisions',
+  'decision-tree': 'decisions',
+  'comparison-table': 'decisions',
+  'risk-matrix': 'decisions',
+  'pre-mortem': 'decisions',
+  fishbone: 'decisions',
+  // Goals and Metrics: what to aim at, and the numbers that say how it is going.
+  'okr-tree': 'goals',
+  'objectives-planner': 'goals',
+  'metric-tree': 'goals',
+  funnel: 'goals',
+  flywheel: 'goals',
+  sankey: 'goals',
+  // Meetings and Workshops: running a session with the room.
   'meeting-agenda': 'meetings',
-  'lean-coffee': 'meetings',
-  brainstorm: 'meetings',
   'workshop-board': 'meetings',
+  'lean-coffee': 'meetings',
   'town-hall': 'meetings',
-  retrospective: 'meetings',
-  'start-stop-continue': 'meetings',
-  'mad-sad-glad': 'meetings',
-  'four-ls': 'meetings',
-  sailboat: 'meetings',
-  'pre-mortem': 'meetings',
-  // The spaces to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
-  'virtual-office': 'meetings',
-  'coworking-space': 'meetings',
-  'team-pod': 'meetings',
-  'all-hands-hall': 'meetings',
-  // Brainstorm: getting ideas out of heads.
-  mindmap: 'mindmaps',
-  'mindmap-tree': 'mindmaps',
-  'mindmap-bubble': 'mindmaps',
-  sketchnote: 'mindmaps',
-  'idea-garden': 'mindmaps',
-  'affinity-map': 'mindmaps',
-  'crazy-eights': 'mindmaps',
-  'doodle-warmup': 'mindmaps',
-  // Timelines and Roadmaps: work laid out in time, and who owns it.
-  timeline: 'timelines',
-  'milestone-timeline': 'timelines',
-  'milestone-timeline-vertical': 'timelines',
-  gantt: 'timelines',
-  roadmap: 'timelines',
-  'objectives-planner': 'timelines',
-  'raci-matrix': 'timelines',
-  // Flowcharts and Processes.
-  flowchart: 'flowcharts',
-  swimlane: 'flowcharts',
-  'decision-tree': 'flowcharts',
-  'approval-workflow': 'flowcharts',
-  'data-flow': 'flowcharts',
-  // Strategy and Decisions: analysis frameworks, priorities and risk.
-  swot: 'strategy',
-  'business-model-canvas': 'strategy',
-  'prioritization-matrix': 'strategy',
-  'risk-matrix': 'strategy',
-  fishbone: 'strategy',
-  venn: 'strategy',
-  flywheel: 'strategy',
-  funnel: 'strategy',
-  sankey: 'strategy',
-  'comparison-table': 'strategy',
-  'stakeholder-map': 'strategy',
-  'rich-picture': 'strategy',
-  'wardley-map': 'strategy',
-  'value-proposition-canvas': 'strategy',
-  // Org and Structure: top-down structure.
-  orgchart: 'hierarchies',
-  pyramid: 'hierarchies',
-  'okr-tree': 'hierarchies',
-  sitemap: 'hierarchies',
-  'opportunity-solution-tree': 'hierarchies',
-  'metric-tree': 'hierarchies',
-  'family-tree': 'hierarchies',
-  // Design and UX: screens, research and the spaces people move through.
-  'paper-prototype': 'design',
-  journey: 'design',
-  'journey-doodle': 'design',
-  'user-persona': 'design',
-  'empathy-map': 'design',
-  'user-story-map': 'design',
-  'service-blueprint': 'design',
+  // People and Teams: who is who, who does what, and a new starter's first months.
+  orgchart: 'people',
+  'raci-matrix': 'people',
+  'onboarding-plan': 'people',
+  'family-tree': 'people',
+  // Planning: work laid out in time.
+  gantt: 'planning',
+  roadmap: 'planning',
+  timeline: 'planning',
+  'milestone-timeline': 'planning',
+  'milestone-timeline-vertical': 'planning',
+  // Processes and Workflows: how work gets done, step by step.
+  flowchart: 'processes',
+  swimlane: 'processes',
+  'approval-workflow': 'processes',
+  'value-stream-map': 'processes',
+  // Product and UX: screens, research, journeys and discovery.
+  'paper-prototype': 'product',
+  journey: 'product',
+  'journey-doodle': 'product',
+  'user-persona': 'product',
+  'empathy-map': 'product',
+  'user-story-map': 'product',
+  'service-blueprint': 'product',
+  sitemap: 'product',
+  'opportunity-solution-tree': 'product',
   // A comic strip tells a user's story in panels, as a storyboard does.
-  'comic-strip': 'design',
-  // Technical: developer diagrams.
-  'system-architecture': 'technical',
-  'cloud-architecture': 'technical',
-  'er-diagram': 'technical',
-  'sequence-diagram': 'technical',
-  'uml-class': 'technical',
-  'state-machine': 'technical',
-  'event-storming': 'technical',
-  'incident-postmortem': 'technical',
-  'threat-model': 'technical',
-  'value-stream-map': 'technical',
+  'comic-strip': 'product',
+  // The design-thinking lenses: is this idea worth building?
+  venn: 'product',
   // Quizzes and Games: the lighter end of running a room.
   'pub-quiz': 'games',
   'icebreaker-questions': 'games',
   'two-truths-and-a-lie': 'games',
   'would-you-rather': 'games',
   'people-bingo': 'games',
+  'doodle-warmup': 'games',
+  // Retrospectives: a team looking back to change what comes next.
+  retrospective: 'retros',
+  'start-stop-continue': 'retros',
+  'mad-sad-glad': 'retros',
+  'four-ls': 'retros',
+  sailboat: 'retros',
+  // Software and IT: the developer's and the IT team's diagrams.
+  'system-architecture': 'software',
+  'cloud-architecture': 'software',
+  'network-diagram': 'software',
+  'er-diagram': 'software',
+  'sequence-diagram': 'software',
+  'uml-class': 'software',
+  'state-machine': 'software',
+  'data-flow': 'software',
+  'event-storming': 'software',
+  'threat-model': 'software',
+  'incident-postmortem': 'software',
+  // Strategy: where the business stands and where it goes.
+  swot: 'strategy',
+  'pestle-analysis': 'strategy',
+  'business-model-canvas': 'strategy',
+  'value-proposition-canvas': 'strategy',
+  'wardley-map': 'strategy',
+  'rich-picture': 'strategy',
+  'stakeholder-map': 'strategy',
+  pyramid: 'strategy',
+  // Teaching and Learning: a topic taught, studied or taken notes on.
+  'concept-map': 'learning',
+  'kwl-chart': 'learning',
+  sketchnote: 'learning',
+  // Virtual Spaces: the spaces to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
+  'virtual-office': 'spaces',
+  'coworking-space': 'spaces',
+  'team-pod': 'spaces',
+  'all-hands-hall': 'spaces',
 };
 
 // Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.
@@ -196,29 +244,49 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
 export const TEMPLATE_ALSO_IN: Readonly<
   Partial<Record<TemplateKind, readonly TemplateCategory[]>>
 > = {
-  // Goals are strategy as much as tracking.
-  'okr-tree': ['strategy'],
+  // Run in a session as much as they are ways to get ideas out.
+  brainstorm: ['meetings'],
+  'crazy-eights': ['meetings', 'product'],
+  // Research synthesis is product work too.
+  'affinity-map': ['product'],
+  // A concept map is a map of ideas, as a mind map is.
+  'concept-map': ['ideas'],
+  // Visual notes are taken in meetings and talks.
+  sketchnote: ['meetings'],
+  // Event storming is a workshop, and maps a business process.
+  'event-storming': ['meetings', 'processes'],
+  // An all-hands is a meeting.
+  'all-hands-hall': ['meetings'],
+  // Looking back at an incident, or forward at a failure, is a retro's job.
+  'incident-postmortem': ['retros'],
+  'pre-mortem': ['retros', 'strategy'],
+  // Flows of a process, drawn as a tree, a DFD or a blueprint.
+  'decision-tree': ['processes'],
+  'data-flow': ['processes'],
+  'service-blueprint': ['processes'],
+  // Planned work: who does what, the release slices, a new starter's months, a week sorted.
+  'raci-matrix': ['planning'],
+  'user-story-map': ['planning'],
+  'onboarding-plan': ['planning'],
+  'eisenhower-matrix': ['planning'],
+  // Goals and a growth loop are strategy as much as tracking; a roadmap is strategy in time.
   roadmap: ['strategy'],
-  'pre-mortem': ['strategy'],
-  // Workshop formats.
-  'crazy-eights': ['meetings', 'design'],
-  'doodle-warmup': ['meetings', 'games'],
-  'event-storming': ['meetings'],
-  'incident-postmortem': ['meetings'],
-  // Research synthesis and site structure are design work too.
-  'affinity-map': ['design'],
-  sitemap: ['design'],
-  // Who does what is structure.
-  'raci-matrix': ['hierarchies'],
-  // A data-flow diagram is a developer's diagram.
-  'data-flow': ['technical'],
-  // A north star is a goal, like the OKR tree's.
-  'metric-tree': ['strategy'],
-  // A blueprint and a value stream are processes across lanes and steps.
-  'service-blueprint': ['flowcharts'],
-  'value-stream-map': ['flowcharts'],
+  'okr-tree': ['strategy'],
+  flywheel: ['strategy'],
+  // Discovery is aimed at an outcome.
+  'opportunity-solution-tree': ['goals'],
   // A value proposition is product design.
-  'value-proposition-canvas': ['design'],
+  'value-proposition-canvas': ['product'],
+  // Stakeholders are people.
+  'stakeholder-map': ['people'],
+  // Weighing an idea through three lenses is a decision, and the Venn is taught in class.
+  venn: ['decisions', 'learning'],
+  // What a class uses: mind maps, timelines, family trees and a quiz.
+  mindmap: ['learning'],
+  'mindmap-bubble': ['learning'],
+  timeline: ['learning'],
+  'family-tree': ['learning'],
+  'pub-quiz': ['learning'],
 };
 
 /** A template's primary category; null for the blanks, which are in none. */

@@ -274,6 +274,7 @@ export function SheetValidationEditor({
   const [why, setWhy] = useState<string | null>(null);
   const [advanced, setAdvanced] = useState(!!(existing?.warn || existing?.help));
   const [dragFrom, setDragFrom] = useState<number | null>(null);
+  const [focusKey, setFocusKey] = useState<number | null>(null);
   const set = (patch: Partial<Draft>) => {
     setWhy(null);
     setD((x) => ({ ...x, ...patch }));
@@ -284,7 +285,10 @@ export function SheetValidationEditor({
     if (d.opts.length >= DROPDOWN_OPTIONS_MAX) return;
     const at = key === undefined ? d.opts.length : d.opts.findIndex((o) => o.key === key) + 1;
     const next = [...d.opts];
-    next.splice(at, 0, { key: nextKey(), v: '', c: palette[d.opts.length % palette.length] });
+    const added = nextKey();
+    next.splice(at, 0, { key: added, v: '', c: palette[d.opts.length % palette.length] });
+    // The typing moves to the new option (data-validation.md "Making and changing rules").
+    setFocusKey(added);
     set({ opts: next });
   };
   const done = () => {
@@ -383,6 +387,7 @@ export function SheetValidationEditor({
                 />
                 <TextInput
                   aria-label={`Option ${i + 1}`}
+                  autoFocus={o.key === focusKey}
                   className="min-w-0 flex-1"
                   maxLength={DROPDOWN_OPTION_MAX}
                   value={o.v}

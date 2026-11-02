@@ -19,7 +19,8 @@ export type WelcomeFile = {
   popular: WelcomeStart[];
 };
 
-const FILES: Record<AppName, () => Promise<{ default: unknown }>> = {
+// A held app (livehuddle) has none until its fork brings its templates; no Explorer lists it before then.
+const FILES: Partial<Record<AppName, () => Promise<{ default: unknown }>>> = {
   livediagram: () => import('@livediagram/templates/welcome.json'),
   liveplanner: () => import('@liveplanner/templates/welcome.json'),
   livedocuments: () => import('@livedocuments/templates/welcome.json'),
@@ -48,9 +49,11 @@ const loaded = new Map<AppName, Promise<WelcomeManifest | null>>();
 
 /** The app's welcome, loaded once per page. */
 export function loadWelcome(app: AppName): Promise<WelcomeManifest | null> {
+  const file = FILES[app];
+  if (!file) return Promise.resolve(null);
   let pending = loaded.get(app);
   if (!pending) {
-    pending = FILES[app]()
+    pending = file()
       .then((m) => absoluteWelcome(app, m.default as WelcomeFile))
       .catch(() => {
         loaded.delete(app);

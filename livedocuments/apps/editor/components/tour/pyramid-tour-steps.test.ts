@@ -15,7 +15,6 @@ const rows = [{ label: 'Vision' }, { label: 'Strategy' }, { label: 'Daily work' 
 const ctxOf = (over: Partial<Parameters<typeof pyramidTourSteps>[0]> = {}) => ({
   elementId: 'py',
   rows,
-  hasMore: true,
   touch: false,
   inverted: false,
   ...over,
@@ -35,8 +34,8 @@ describe('pyramidTourSteps', () => {
     ]);
   });
 
-  it('leaves out the shapes step where More is not shown', () => {
-    expect(pyramidTourSteps(ctxOf({ hasMore: false })).map((s) => s.id)).not.toContain('shape');
+  it('keeps the shapes step in the menu for everyone', () => {
+    expect(pyramidTourSteps(ctxOf({})).map((s) => s.id)).toContain('shape');
   });
 
   it('points at the apex, the base, and the "+" ring\'s Add Tier', () => {

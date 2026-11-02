@@ -203,6 +203,7 @@ apps/
   marketing/    # static marketing site (Next.js, /)
   live/         # the Pages editor app (Next.js, clean routes)
   help/         # help centre (Next.js export + MDX, /help): its articles, catalogue and art, on @liveworkspace/help-site
+  community/    # public gallery of shared designs (Next.js export, /community), on @liveworkspace/community-site
   api/          # Cloudflare Worker REST + WebSocket API (Durable Objects + R2, no database of its own, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livedesign.app)
   router/       # Cloudflare Worker stitching the apps under one hostname

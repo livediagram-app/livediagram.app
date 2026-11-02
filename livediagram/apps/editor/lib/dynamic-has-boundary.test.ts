@@ -17,6 +17,8 @@ import { describe, expect, it } from 'vitest';
 const ROOT = fileURLToPath(new URL('../', import.meta.url));
 // The editor code every editor shares (@liveworkspace/workbench) is scanned beside this app's own.
 const WORKBENCH = join(ROOT, '../../../packages/workbench/src');
+// And Avatar mode's shared code (@liveworkspace/avatar).
+const AVATAR = join(ROOT, '../../../packages/avatar/src');
 const SKIP_DIRS = new Set([
   'node_modules',
   '.next',
@@ -56,7 +58,7 @@ function dynamicCalls(src: string): string[] {
 describe('next/dynamic imports', () => {
   it('each carry their own Suspense boundary (ssr: false or a loading component)', () => {
     const offenders: string[] = [];
-    for (const file of [ROOT, WORKBENCH].flatMap((dir) => sourceFiles(dir))) {
+    for (const file of [ROOT, WORKBENCH, AVATAR].flatMap((dir) => sourceFiles(dir))) {
       const src = readFileSync(file, 'utf8');
       if (!src.includes("from 'next/dynamic'")) continue;
       for (const call of dynamicCalls(src)) {

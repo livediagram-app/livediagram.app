@@ -1,5 +1,13 @@
 import { DARK_CANVAS_BACKGROUND_COLOR, DEFAULT_BACKGROUND_COLOR } from '@livedesign/design';
-import { expect, test, dismissQuickTour, expectNoPageErrors, paletteTile } from './fixtures';
+import {
+  expect,
+  test,
+  dismissQuickTour,
+  expectNoPageErrors,
+  onPage,
+  openBlankPage,
+  paletteTile,
+} from './fixtures';
 
 // Appearance (docs/specs/007-editor/live-app.md) end to end: the three settings on the real control, and
 // the thing the merge was for — a tab on the Default theme repainting
@@ -58,7 +66,8 @@ async function canvasColour(page: import('@playwright/test').Page): Promise<stri
 test.describe('Appearance', () => {
   test('opens on the device setting, then cycles', async ({ page, pageErrors }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
-    await startBlank(page);
+    // Its page chosen a Logo, so the square below has a page to land on (fixtures openBlankPage).
+    await openBlankPage(page);
 
     // A first-time visitor on a dark machine lands dark: System is the default
     // (docs/specs/007-editor/live-app.md), and the pre-hydration script resolves it before first paint.
@@ -73,7 +82,7 @@ test.describe('Appearance', () => {
     // depends on, and the thing a unit test can't see reach a memoised view.
     const square = page.getByRole('img', { name: 'Square', exact: true });
     await (await paletteTile(page, 'Add Square')).click();
-    await page.locator(CANVAS).click({ position: { x: 420, y: 300 } });
+    await page.locator(CANVAS).click({ position: await onPage(page, 0.3, 0.25) });
     await expect(square).toHaveCount(1);
     await expect
       .poll(async () => (await squareInk(page)).border, { message: 'element ink follows too' })

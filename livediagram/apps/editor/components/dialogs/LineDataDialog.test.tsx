@@ -13,6 +13,21 @@ afterEach(() => {
 const series = [{ name: 'Sales', values: [10, 20] }];
 
 describe('LineDataDialog', () => {
+  it('names each row and series control after its position, so no two share a name', () => {
+    render(
+      <LineDataDialog
+        categories={['Jan', 'Feb']}
+        series={[...series, { name: 'Costs', values: [5, 6] }]}
+        onCommit={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByLabelText('Series 2 name')).toHaveProperty('value', 'Costs');
+    expect(screen.getByLabelText('Category 1')).toHaveProperty('value', 'Jan');
+    expect(screen.getByRole('button', { name: 'Remove series 2' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Remove row 2' })).toBeTruthy();
+  });
+
   it('commits a typed value when Escape closes the dialog mid-edit', () => {
     const onCommit = vi.fn();
     const onClose = vi.fn();

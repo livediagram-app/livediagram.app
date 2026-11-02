@@ -4,6 +4,7 @@
 import type {
   Item,
   ItemCreate,
+  ItemHistoryEntry,
   ItemMove,
   ItemPatch,
   ItemTypeCatalogue,
@@ -18,6 +19,10 @@ export type {
   ItemCreate,
   ItemFields,
   ItemFieldValue,
+  ItemHistoryChange,
+  ItemHistoryEntry,
+  ItemHistoryTag,
+  ItemHistoryValue,
   ItemMove,
   ItemPatch,
   ItemPerson,
@@ -32,11 +37,22 @@ export type {
   PlanStatusName,
 } from '@liveplanner/items';
 
-// GET /api/projects/:id/items[?tabId=]: the store, or the items one tab shows.
-export type ItemsResponse = { items: Item[]; rev: number };
+// GET /api/projects/:id/items[?tabId=][&include=calculated]: the store, or the items one tab shows.
+export type ItemsResponse = {
+  items: Item[];
+  rev: number;
+  /** Asked for with include=calculated: each card's Calculated field values (a count, a whole percentage, a
+   *  Formula's number, text, true or false or ISO day, or null), by card id then field id; only cards whose type has
+   *  a Calculated field. Worked out as read, never stored. */
+  calculated?: Record<string, Record<string, number | string | boolean | null>>;
+};
 
 // One item as written: POST /items, PATCH /items/:itemId, POST .../move, POST .../vote.
 export type ItemResponse = { item: Item; rev: number };
+
+// GET /api/projects/:id/items/:itemId/history (docs/specs/026-plan/items.md "History"): the card's history, newest
+// first, grouped. An author is named by name and colour; `mine` marks the caller's own.
+export type ItemHistoryResponse = { entries: ItemHistoryEntry[] };
 
 // A card comment add's answer also names the comment it wrote, so the editor can point the mention email at
 // the stored comment (docs/specs/012-collaboration/comment-mentions.md "The email").
@@ -62,8 +78,34 @@ export type ItemsBulkRequest = { items: ItemCreate[] };
 // cards to the Trash), optionally marked as an undo or redo.
 export type ItemsPatchRequest = { items: (ItemPatch & { id: string })[] } & ItemUndoFlag;
 
-// POST /api/projects/:id/items/tally: a session vote's tally, up to 200 cards, added when its host ends it.
-export type ItemsTallyRequest = { items: { id: string; votes: Record<string, number> }[] };
+// POST /api/projects/:id/items/moves: up to 200 items moved in one write, in order (a group dragged on a board, a
+// selection's Move To; docs/specs/026-plan/items.md "Move many"), optionally marked as an undo or redo. A move may name
+// an item moved earlier in the list as its neighbour, so the group lands together.
+export type ItemsMoveRequest = { items: (ItemMove & { id: string })[] } & ItemUndoFlag;
+
+// POST /api/projects/:id/items/tally: a session vote's tally, up to 200 cards, added when its host ends it. `field` is
+// the Votes field it counts in (the built-in `votes` when absent, or a custom Votes field's id); a card whose type
+// does not offer it takes its dots in the built-in.
+export type ItemsTallyRequest = {
+  items: { id: string; votes: Record<string, number> }[];
+  field?: string;
+};
+
+// POST /api/projects/:id/items/:itemId/time (docs/specs/026-plan/item-types.md "Time Spent"): one time write to the
+// card's Time Spent field `field`: `start` (the caller's timer, with its id), `stop` (a timer, its time recorded as
+// entry `entry`), `add` (a manual entry of whole `minutes`), `remove` (an entry or a running timer, by id) or `put` (an
+// entry put back as it was, with its person; the undo of a remove). Answered with the card as stored.
+export type ItemTimeRequest = { field: string } & (
+  | { op: 'start'; timer: string }
+  | { op: 'stop'; timer: string; entry: string }
+  | { op: 'add'; entry: string; minutes: number }
+  | { op: 'remove'; entry: string }
+  | {
+      op: 'put';
+      entry: { id: string; by: string; minutes: number; at: number };
+      person: { id: string; name: string; color: string };
+    }
+);
 
 // The room op every item write sends (system kind). `upserts` and `removed` are empty for a
 // session scoped to one tab: it refetches the items its tab shows.

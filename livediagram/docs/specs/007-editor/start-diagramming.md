@@ -56,16 +56,17 @@ draws them.
 
 Recommended is the mode's Popular shelf (`popularKindsFor`, the picks the marketing gallery leads with), **its blank
 first**, less **Timeline**, which is left to its group. The groups (`components/start/start-template-items.ts`,
-`TEMPLATE_STARTS`):
+`TEMPLATE_STARTS`) are the catalogue's categories, the same in every mode ([Canvas and
+palette](../008-canvas/canvas-and-palette.md) "Template categories"): in the catalogue's order, alphabetical by label,
+each holding the mode's templates listed in it (primary or cross-listed), a category with none of the mode's left out.
+Diagram's rail reads Brainstorming, Decisions, Goals & Metrics and on; Draw's Brainstorming, Decisions, Meetings &
+Workshops, Product & UX, Quizzes & Games, Retrospectives, Strategy and Teaching & Learning; Workshop's runs from
+Brainstorming to Virtual Spaces. The categories are grouped by use case, so they already say which session a Workshop
+template runs and what a Draw template is for; a mode no longer keeps groups of its own, and a new template joins
+every start's rail with no change here.
 
-- **Diagram:** the catalogue's categories that hold a Diagram template ([Canvas and
-  palette](../008-canvas/canvas-and-palette.md) "Template categories"), in the catalogue's order, by their short names
-  (Flowcharts, Org Charts, Timelines and so on).
-- **Draw**, whose templates are drawn, by what each is for: **Visual Notes**, **Exercises**, **Prototypes**.
-- **Workshop**, whose templates nearly all share one category, by the session each runs: **Retrospectives**, **Meetings**, **Spaces** (offices and halls to walk round together in Avatar mode), **Quizzes & Games**, **Ideation**, **Planning** (goals, roadmaps and who does what), **Strategy** (the business, the people and the opportunities) and **Decisions** (the boards with a dot vote).
-
-A template of the mode in none of its groups is placed in the last group, so every listed template is reachable.
-The blank appears only in Recommended. Choosing the blank closes the panel, as the × does, since it leaves the tab empty.
+Every listed template of the mode has a primary category, so every one is reachable. The blank appears only in
+Recommended. Choosing the blank closes the panel, as the × does, since it leaves the tab empty.
 
 ## When it shows
 
@@ -107,8 +108,8 @@ tray read the same key and follow each other as it changes.
 ## Changing mode
 
 The rail is led by the editor's mode switch, named and full width (`StartModeSwitch`, `ModeMenuChip`), so a tab
-begun in the wrong mode changes before anything is made. It is the only switch: once a tab has content it keeps its
-mode, and the top chrome and the tab menu offer none. Its menu is the list of modes and the preview of one ([Editor modes](editor-modes.md) "The mode switch"), with the same rules. On a
+begun in the wrong mode changes before anything is made. It is the same switch as the one beside the menu button,
+which stays the way to change mode once the tab has content. Its menu is the list of modes and the preview of one ([Editor modes](editor-modes.md) "The mode switch"), with the same rules. On a
 phone its menu spans the row it opens from, each mode a roomy row with its description across the full width.
 
 A mode change swaps one start for another. The new one **turns in place**: the frame stays still and the old content

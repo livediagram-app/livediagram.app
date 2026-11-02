@@ -8,7 +8,7 @@ import {
   fetchCommunityEnabled,
   resetCommunityEnabledForTests,
   useCommunityEnabled,
-} from './useCommunityEnabled';
+} from '@liveworkspace/community-ui';
 
 // docs/specs/025-community/community.md "Turning the Community off".
 

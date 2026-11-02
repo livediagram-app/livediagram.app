@@ -236,7 +236,8 @@ function LookCard({
         <span className="text-[13px] font-semibold text-slate-800 dark:text-slate-100">
           {look.label}
         </span>
-        <span className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {/* slate-600: slate-500 read 4.46:1 on the picked card's brand-50 tint, under AA for 11px text. */}
+        <span className="text-[11px] leading-snug text-slate-600 dark:text-slate-300">
           {look.description}
         </span>
       </span>

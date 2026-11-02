@@ -45,25 +45,26 @@ through props: each editor's `lib/workbench-bindings.ts` calls `configureWorkben
 facts, and workbench code reads them through `workbench` (`workbench.track(…)`,
 `workbench.debugKey`), never through the product's own module.
 
-| Binding                    | What it is                                                                                              | Read by                                                                          |
-| -------------------------- | ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `debugKey`                 | the localStorage key of the debug flag (`<product>:debug`)                                              | `lib/debug-log`                                                                  |
-| `track`                    | the product's telemetry `track`, typed on the events workbench code sends                               | `lib/stale-build-navigation`, `hooks/canvas/useZoomControls`                     |
-| `reloadGuardKey`           | the sessionStorage key of the one reload guard (`<product>:stale-chunk-reloads`)                        | `lib/reload-guard`                                                               |
-| `appRecoveryFlag`          | the window flag the app's chunk recovery sets (`__<product>ChunkRecovery`)                              | `lib/stale-build-navigation`                                                     |
-| `formatLogScope`           | the fingerprint of the stored format (`document-format`, `project-format`, …)                           | `lib/reload-when-saved`                                                          |
-| `runningStaleBuild`        | whether this page runs an older build than the live one (the product's server-release)                  | `lib/stale-build-navigation`                                                     |
-| `readPreferences`          | the person's preferences, as far as workbench code reads them (`reduceMotion`)                          | `hooks/ui/useReduceMotion`                                                       |
-| `api`                      | the product's api transport: `fetch`, `headers`, `expectOk`, `expectOkVoid`, `currentBearer`            | `lib/api/oauth`, `lib/api/tokens`, `lib/index-client`, `lib/explorer-teams-host` |
-| `zoomMax`                  | the canvas's zoom ceiling now (livedesign raises it for a photo page)                                   | `lib/double-tap-zoom`, `hooks/canvas/useZoomControls`                            |
-| `openSettingsEvent`        | the window event asking the host to open Settings (`<product>:open-settings`)                           | `lib/open-settings`, `hooks/ui/useOpenSettingsRequests`                          |
-| `panelPresenceEvent`       | the window event a panel sends as it arrives or leaves (`<product>:panel-presence`)                     | `lib/panel-presence`, `hooks/ui/useQuickStylePlacement`                          |
-| `panelLayoutEvent`         | the window event the panel layout sends as it is written (its `PANEL_LAYOUT_CHANGED_EVENT`)             | `hooks/ui/useQuickStylePlacement`                                                |
-| `startQueryKey`            | the sessionStorage key of the search handed to the next start (`<product>:v2:start-query`)              | `components/start/start-query`                                                   |
-| `localMoveDismissedPrefix` | the localStorage prefix of the move prompt's Not Now (`<product>:v2:local-move-dismissed:`)             | `lib/offline/local-move-dismissal`                                               |
-| `emptyCardDismissedKey`    | optional: the localStorage list of closed empty-tab cards (`<product>:v2:empty-card-dismissed`)         | `components/canvas/empty-card-dismissed`                                         |
-| `formatConfigKey`          | optional: the localStorage key of the Format panel's configuration (`<product>:v2:format-config`)       | `lib/format-config`                                                              |
-| `spotlightConfigKey`       | optional: the localStorage key of the Spotlight panel's configuration (`<product>:v2:spotlight-config`) | `lib/spotlight-config`                                                           |
+| Binding                    | What it is                                                                                              | Read by                                                                                     |
+| -------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `debugKey`                 | the localStorage key of the debug flag (`<product>:debug`)                                              | `lib/debug-log`                                                                             |
+| `track`                    | the product's telemetry `track`, typed on the events workbench code sends                               | `lib/stale-build-navigation`, `hooks/canvas/useZoomControls`, `hooks/collab/useHideCursors` |
+| `reloadGuardKey`           | the sessionStorage key of the one reload guard (`<product>:stale-chunk-reloads`)                        | `lib/reload-guard`                                                                          |
+| `appRecoveryFlag`          | the window flag the app's chunk recovery sets (`__<product>ChunkRecovery`)                              | `lib/stale-build-navigation`                                                                |
+| `formatLogScope`           | the fingerprint of the stored format (`document-format`, `project-format`, …)                           | `lib/reload-when-saved`                                                                     |
+| `runningStaleBuild`        | whether this page runs an older build than the live one (the product's server-release)                  | `lib/stale-build-navigation`                                                                |
+| `readPreferences`          | the person's preferences, as far as workbench code reads them (`reduceMotion`)                          | `hooks/ui/useReduceMotion`                                                                  |
+| `api`                      | the product's api transport: `fetch`, `headers`, `expectOk`, `expectOkVoid`, `currentBearer`            | `lib/api/oauth`, `lib/api/tokens`, `lib/index-client`, `lib/explorer-teams-host`            |
+| `zoomMax`                  | the canvas's zoom ceiling now (livedesign raises it for a photo page)                                   | `lib/double-tap-zoom`, `hooks/canvas/useZoomControls`                                       |
+| `openSettingsEvent`        | the window event asking the host to open Settings (`<product>:open-settings`)                           | `lib/open-settings`, `hooks/ui/useOpenSettingsRequests`                                     |
+| `panelPresenceEvent`       | the window event a panel sends as it arrives or leaves (`<product>:panel-presence`)                     | `lib/panel-presence`, `hooks/ui/useQuickStylePlacement`                                     |
+| `panelLayoutEvent`         | the window event the panel layout sends as it is written (its `PANEL_LAYOUT_CHANGED_EVENT`)             | `hooks/ui/useQuickStylePlacement`                                                           |
+| `startQueryKey`            | the sessionStorage key of the search handed to the next start (`<product>:v2:start-query`)              | `components/start/start-query`                                                              |
+| `localMoveDismissedPrefix` | the localStorage prefix of the move prompt's Not Now (`<product>:v2:local-move-dismissed:`)             | `lib/offline/local-move-dismissal`                                                          |
+| `hideCursorsKey`           | the localStorage key of the Hide Participant Cursors switch (`<product>:v2:hide-cursors`)               | `hooks/collab/useHideCursors`                                                               |
+| `emptyCardDismissedKey`    | optional: the localStorage list of closed empty-tab cards (`<product>:v2:empty-card-dismissed`)         | `components/canvas/empty-card-dismissed`                                                    |
+| `formatConfigKey`          | optional: the localStorage key of the Format panel's configuration (`<product>:v2:format-config`)       | `lib/format-config`                                                                         |
+| `spotlightConfigKey`       | optional: the localStorage key of the Spotlight panel's configuration (`<product>:v2:spotlight-config`) | `lib/spotlight-config`                                                                      |
 
 The rules:
 

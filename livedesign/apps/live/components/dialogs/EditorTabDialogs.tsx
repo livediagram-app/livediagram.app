@@ -13,6 +13,7 @@ import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { shareUrl } from '@/lib/explorer-host';
 import { designHandOver, shareHelpHref, trackShare } from '@/lib/explorer-share-host';
 import { randomName } from '@/lib/identity';
+import { firstPageLooksEmpty } from '@/lib/community-first-page';
 import { useToast } from '@/hooks/ui/useToast';
 
 const ExportTabDialog = dynamic(
@@ -23,10 +24,15 @@ const ImportTabDialog = dynamic(
   () => import('@/components/dialogs/ImportTabDialog').then((m) => m.ImportTabDialog),
   { ssr: false },
 );
-// The shared Explorer's Share dialog (@liveworkspace/explorer): links are the index's, managed there.
-const ShareDialog = dynamic(() => import('@liveworkspace/explorer').then((m) => m.ShareDialog), {
-  ssr: false,
-});
+// The shared Explorer's Share dialog (@liveworkspace/explorer), with livedesign's Community tab
+// (docs/specs/025-community/community.md "Publishing"): links are the index's, managed there.
+const ShareDialog = dynamic(
+  () =>
+    import('@/components/dialogs/community/ShareDialogWithCommunity').then(
+      (m) => m.ShareDialogWithCommunity,
+    ),
+  { ssr: false },
+);
 const ShareOfflineGate = dynamic(
   () => import('@/components/dialogs/ShareOfflineGate').then((m) => m.ShareOfflineGate),
   { ssr: false },
@@ -59,6 +65,7 @@ export function EditorTabDialogs() {
     setShareDialogOpen,
     syncToCloud,
     accountUserId,
+    accountDisplayName,
     designTeamId,
     setSelfParticipant,
   } = useEditorContext();
@@ -150,6 +157,18 @@ export function EditorTabDialogs() {
                   randomName,
                   onSave: (name) => setSelfParticipant((p) => ({ ...p, name })),
                 }
+          }
+          ownerId={selfParticipant.id}
+          designName={designName}
+          signedIn={!!accountUserId}
+          author={{
+            name: (accountUserId ? accountDisplayName : null) || selfParticipant.name,
+            color: selfParticipant.color,
+          }}
+          // Known only for the open tab (the editor holds its elements); another first tab is left to the server
+          // (docs/specs/025-community/community.md "Something to show").
+          firstTabEmpty={
+            !!activeTab && tabs[0]?.id === activeTab.id && firstPageLooksEmpty(activeTab)
           }
           onClose={() => setShareDialogOpen(false)}
         />

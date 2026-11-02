@@ -400,6 +400,8 @@ export * from './comment-thread';
 export * from './document-envelope';
 export * from './export-tab-text';
 export * from '@liveworkspace/model-core/comment-mentions';
+// Comment reactions (docs/specs/012-collaboration/comment-reactions.md): the six, the stored shape and the toggle.
+export * from '@liveworkspace/model-core/comment-reactions';
 // The shared plain-object guard for untrusted JSON.
 export * from '@liveworkspace/model-core/is-record';
 // The shared FNV-1a string hash for deterministic picks.
@@ -435,10 +437,10 @@ export * from './agenda-current';
 export * from './quiz';
 export * from './shape-geometry';
 // Fence (docs/specs/009-elements/fence.md): the run, its posts and the line it blocks.
-export * from './fence';
+export * from '@liveworkspace/avatar/fence';
 // The avatar sprite's palette and the Avatar Pad drawn in it (docs/specs/009-elements/avatar-pad.md).
-export * from './avatar-palette';
-export * from './avatar-pad';
+export * from '@liveworkspace/avatar/palette';
+export * from '@liveworkspace/avatar/pad-art';
 // Seating (docs/specs/009-elements/chair.md): the chair, desk and sofa drawings and every seat's feet point.
 export * from './seating';
 export * from './office';
@@ -458,6 +460,7 @@ export * from './cell-colours';
 export * from './table-header-colours';
 export * from './progress-colours';
 export * from '@liveworkspace/model-core/icon-size';
+export * from '@liveworkspace/model-core/progress-label';
 export * from '@liveworkspace/model-core/icon-weight';
 
 // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md): the runs-as-delta model + pure
@@ -478,6 +481,7 @@ export * from './mermaid';
 export * from './duplicate';
 export * from './polyline';
 export * from './pen-stroke';
+export * from './stroke-loop-fill';
 export * from '@liveworkspace/model-core/stroke-points';
 export * from './stroke-fit';
 export * from '@liveworkspace/model-core/stroke-points-cache';
@@ -525,6 +529,7 @@ export * from './tab-builders';
 // Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
 // shared by the in-app export and the MCP worker's inline image render.
 export * from './svg-render';
+export { borderOf } from './svg-render-border';
 export {
   isSequenceDiagram,
   parseSequenceDiagram,
@@ -552,6 +557,8 @@ export * from './theme-graph';
 export * from './themes';
 export * from './theme-halves';
 export * from './label-backdrop';
+// A tab as one appearance sees it, for exports and the Explorer's previews.
+export * from './tab-as-seen';
 export * from './theme-presets';
 
 // Human-readable name for an element's kind ('Square', 'Table', 'Icon', ...),

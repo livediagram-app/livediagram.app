@@ -22,12 +22,12 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const shape = createShape('square', 100, 100);
 const other = createShape('square', 300, 100);
 
-function renderToolbars(multi: boolean) {
+function renderToolbars(multi: boolean, canvasTool = 'select') {
   const elements = [shape, other];
   const props = {
     elements,
     readOnly: false,
-    canvasTool: 'select',
+    canvasTool,
     onDuplicateSelected: vi.fn(),
     onToggleLockSelected: vi.fn(),
     onDeleteSelected: vi.fn(),
@@ -89,4 +89,12 @@ describe('selection chrome while a selection moves', () => {
       expect(overlayOf(container).style.visibility).toBe('visible');
     });
   }
+});
+
+// docs/specs/007-editor/wireframe-pages.md "Inspect": a selection made to read wears no editing toolbars.
+describe('selection chrome while inspecting', () => {
+  it('shows neither the popover nor the multi-selection toolbar', () => {
+    expect(overlayOf(renderToolbars(false, 'inspect').container)).toBeNull();
+    expect(overlayOf(renderToolbars(true, 'inspect').container)).toBeNull();
+  });
 });

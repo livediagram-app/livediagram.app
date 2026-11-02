@@ -1,5 +1,5 @@
 import { lucidePencilLine } from '@liveworkspace/icons/lucide';
-import { drawBannerMessage, isHeldPenIntent } from '@/lib/draw-mode';
+import { drawBannerMessage, isHeldToolIntent } from '@/lib/draw-mode';
 import { FormatPainterIcon, lucideGlyph } from '@livediagram/ui';
 import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
@@ -49,7 +49,7 @@ export function TopCenterChrome({
 }: TopCenterChromeProps) {
   // The palette strip, when it is on screen: the mode banners hang from it as its tray
   // (docs/specs/007-editor/toolbar-layout.md "Layout details"), and the stack starts below the tray.
-  const drawBanner = !!pendingDraw && !isHeldPenIntent(pendingDraw);
+  const drawBanner = !!pendingDraw && !isHeldToolIntent(pendingDraw);
   const modeBanner = canvasTool === 'format' || drawBanner;
   const strip = usePaletteStripBox(modeBanner);
   // The strip is on screen for an Editor and for a Participant's own palette (docs/specs/013-workspace/share-roles.md):

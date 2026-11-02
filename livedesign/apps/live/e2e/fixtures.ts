@@ -164,12 +164,57 @@ export async function startBlankDesign(page: Page): Promise<void> {
   await openStartBlank(page);
 }
 
+// A blank design on livedesign whose page is chosen as a Logo, so the page's choice is put away and the page takes
+// elements: for a spec that places elements by hand (onPage). The choice (What Is This Page For?,
+// docs/specs/007-editor/pages-mode.md "Page kinds") is centred on the unchosen page at one screen size, so on a
+// laptop-sized window it covers the whole page and a click meant for the page lands on it. On the server, because
+// the choice's own autosave is what it waits for, and a spec's seedTab writes after it.
+export async function openBlankPage(page: Page): Promise<void> {
+  await openStartBlank(page);
+  const choice = page.locator('[data-first-page-choice]');
+  const logo = choice.getByRole('button', { name: /^Logo/ });
+  await untilHydrated(logo);
+  // The choice is an edit: wait for its autosave, or a spec's own write (seedTab) races it and loses.
+  const saved = page.waitForResponse(
+    (r) => r.request().method() === 'PUT' && /\/api\/designs\/[^/]+\/tabs\//.test(r.url()),
+  );
+  await logo.click();
+  await choice.waitFor({ state: 'detached' });
+  await saved;
+}
+
+// A point on the first page as a fraction of its width and height (0..1), relative to the canvas: what a canvas
+// click's `position` takes. Elements are placed only on a page (a press off every page is ignored,
+// docs/specs/007-editor/pages-mode.md "The pages"), which sits small in the middle of a blank tab.
+export async function onPage(
+  page: Page,
+  fx: number,
+  fy: number,
+): Promise<{ x: number; y: number }> {
+  const sheet = await settledBox(page.locator('[data-page-id]').first());
+  const canvas = (await page.locator('[data-canvas-a11y-root]').boundingBox())!;
+  return {
+    x: Math.round(sheet.x + sheet.width * fx - canvas.x),
+    y: Math.round(sheet.y + sheet.height * fy - canvas.y),
+  };
+}
+
+// The same point on the first page in window coordinates: what `page.mouse` takes, for a spec that draws with a tool.
+export async function pagePoint(
+  page: Page,
+  fx: number,
+  fy: number,
+): Promise<{ x: number; y: number }> {
+  const sheet = await settledBox(page.locator('[data-page-id]').first());
+  return { x: Math.round(sheet.x + sheet.width * fx), y: Math.round(sheet.y + sheet.height * fy) };
+}
+
 // A /new address that makes the design on livedesign. A guest's own /new makes it in This Browser
 // (docs/specs/006-design/save-locations.md "The default depends on who is creating"), where the index holds no item
 // and so gives no grant (seedTab's grant request answers 404). A `?folder=` context names a place on the server, so
 // /new makes it there whoever is creating. The page becomes a minted guest (its token where the app keeps it, so /new
-// never leaves for the guest handoff), or keeps the guest a spec already gave it or its context (adoptGuest), and the
-// folder is one of theirs, made at the index.
+// never leaves for the guest handoff), or keeps the guest a spec already gave it or its context (adoptGuest), or the
+// account it is signed in as (adoptAccount), and the folder is one of theirs, made at the index.
 export async function serverNewUrl(page: Page, url = '/new'): Promise<string> {
   let owner = adoptedGuests.get(page) ?? adoptedGuests.get(page.context());
   if (!owner) {
@@ -265,6 +310,14 @@ export async function adoptGuest(target: Page | BrowserContext, owner: string): 
       // A page with no storage keeps none.
     }
   }, token);
+}
+
+// The page opens signed in as this account (signed-in/session.ts installSession puts the session where the app reads
+// it): serverNewUrl then makes its folder as the account, never as a guest it would mint, so the design is the
+// account's, on the server. A folder a minted guest made is refused to the account ("Couldn't file the design there").
+export function adoptAccount(page: Page, userId: string, token: string): void {
+  guestTokens.set(userId, token);
+  adoptedGuests.set(page, userId);
 }
 
 export function ownerHeaders(

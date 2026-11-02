@@ -31,7 +31,7 @@ import {
   withPageContentReplaced,
 } from './page-content';
 import { pagesInkFor, type InkMemory, type PageInk } from './page-ink';
-import { blankPhoto, photoOfPage, roomForPhotoPage, withPhoto } from './photo-pages';
+import { blankPhoto, photoOfPage, roomForPhotoPage, withPhoto, type Photo } from './photo-pages';
 import { sameFill, withBackgroundPatch } from './page-paint';
 import {
   WIREFRAME_DEVICES,
@@ -234,6 +234,29 @@ export function pageAdded<T extends PagesTab>(
       : newWireframePage(id, device ?? lastWireframe?.device, lastWireframe?.frameLook);
   if (carried) page = { ...page, background: carried };
   return { tab: withPages(tab, [...pages, page]) };
+}
+
+/**
+ * Make Sizes' new photo pages (docs/specs/031-photo/photo-pages.md "Making sizes"): each with its name
+ * and its photo, right after `afterId` in the order given, as one edit. Refused whole when any one would
+ * not fit (the page limit, ten photo pages) or `afterId` is not a page of the tab.
+ */
+export function photoPagesAdded<T extends PagesTab>(
+  tab: T,
+  afterId: string,
+  made: readonly { id: string; name: string; photo: Photo }[],
+): PageEdit<T> {
+  const at = pageUnits(pagesOf(tab)).findIndex((u) => u.pageIds.includes(afterId));
+  if (at < 0) return refused('unknown_page');
+  let out = tab;
+  for (const [i, m] of made.entries()) {
+    const added = pageAdded(out, 'photo', m.id, undefined, m.photo);
+    if ('refused' in added) return added;
+    // A new page is never locked and never out of place, so its name and its move always take.
+    out = (pageRenamed(withPhoto(added.tab, m.id, m.photo), m.id, m.name) as { tab: T }).tab;
+    out = (pageMovedTo(out, m.id, at + 1 + i) as { tab: T }).tab;
+  }
+  return { tab: out };
 }
 
 /**

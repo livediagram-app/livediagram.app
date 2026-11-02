@@ -1,0 +1,30 @@
+@import 'tailwindcss';
+@import '@livedesign/tailwind-config';
+/* The Community pages' own styles: the hero's wash and the heart's pop (@liveworkspace/community-site). */
+@import '@liveworkspace/community-site/community.css';
+
+/* Scan the shared UI package so utility classes used only inside its components (the <Brand> mark,
+ * the site header and footer) are generated here too. Tailwind v4 skips node_modules, where the
+ * workspace package is symlinked. */
+@source '../../../packages/ui/src';
+/* The design system every app shares (@liveworkspace/ui), which the product's ui re-exports. */
+@source '../../../../packages/ui/src';
+@source '../../../../packages/brand/src';
+/* The Community's pages (@liveworkspace/community-site), its cards and help links (@liveworkspace/community-ui's tile
+ * and help-link); its Share tab is not on these pages. */
+@source '../../../../packages/community-site/src';
+@source not '../../../../packages/community-site/src/**/*.test.*';
+@source '../../../../packages/community-ui/src/tile';
+@source '../../../../packages/community-ui/src/help-link';
+
+html,
+body {
+  background-color: #f8fafc; /* slate-50 */
+  color: #0f172a; /* slate-900 */
+  overflow-x: hidden;
+}
+.dark,
+.dark body {
+  background-color: var(--color-slate-950);
+  color: var(--color-slate-200);
+}

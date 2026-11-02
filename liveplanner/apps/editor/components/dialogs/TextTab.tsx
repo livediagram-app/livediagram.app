@@ -6,7 +6,7 @@
 // px from the slider, which the preview follows as it moves), and Apply to All Elements.
 
 import { useState } from 'react';
-import { FONTS, type Finish, type TextSize } from '@liveplanner/project';
+import { FONTS, PLANNER_FONTS, type Finish, type TextSize } from '@liveplanner/project';
 import { PagedCarousel } from '@liveworkspace/workbench/components/primitives/PagedCarousel';
 import { TextSizeControl } from '@/components/palette/TextSizeControl';
 import { TabStylePreview } from './TabStylePreview';
@@ -19,10 +19,11 @@ const FONTS_PER_PAGE = 6;
 
 type FontOption = { id: string | null; label: string; kind: string; stack: string | undefined };
 
-// "Editor default" first (no tab font: the editor's own face), then the catalogue.
+// "Editor default" first (no tab font: the editor's own face), then the faces liveplanner offers
+// (docs/specs/004-interface-design/fonts.md "Not offered in liveplanner").
 const FONT_OPTIONS: readonly FontOption[] = [
   { id: null, label: 'Editor default', kind: 'System', stack: undefined },
-  ...FONTS.map((f) => ({ id: f.id, label: f.label, kind: f.kind, stack: f.stack })),
+  ...PLANNER_FONTS.map((f) => ({ id: f.id, label: f.label, kind: f.kind, stack: f.stack })),
 ];
 
 export function TextTab({
@@ -47,7 +48,8 @@ export function TextTab({
   const size = defaultTextSize ?? 'md';
   // The slider's size while it is dragged or Scale is hovered, so the preview shows it before it is set.
   const [previewSize, setPreviewSize] = useState<TextSize | null>(null);
-  const fontLabel = FONT_OPTIONS.find((o) => o.id === font)?.label ?? 'Editor default';
+  // From the whole catalogue: a tab already set to a face no longer offered keeps its name.
+  const fontLabel = FONTS.find((f) => f.id === font)?.label ?? 'Editor default';
   return (
     <div className="flex flex-col gap-4">
       <TabStylePreview

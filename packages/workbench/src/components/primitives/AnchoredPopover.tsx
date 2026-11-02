@@ -3,7 +3,7 @@
 // A small panel anchored to the control that opened it (Add Field, for one), portal-rendered so a scrolling dialog body or a narrow column never clips or squeezes it. It opens under
 // its anchor, left-aligned, or above it when there is not room below, clamped on-screen. The side is chosen once:
 // as its content grows (a form growing a field) it grows away from the anchor, scrolling past the room it has, and
-// never flips; it follows the anchor as the page scrolls or resizes. Sits above the modal layer,
+// never flips; it follows the anchor as the page scrolls or resizes, or the anchor itself grows. Sits above the modal layer,
 // so it can open from inside a dialog: the dialog closes only on a press that starts on its own backdrop, so a
 // press in here never closes it. Escape (taken before the dialog's own) and a press outside close it; opening
 // focuses its first control and closing hands focus back to the anchor.
@@ -82,6 +82,7 @@ export function AnchoredPopover({
   onEscape,
   beside,
   keepOpenWithin,
+  initialFocus = 'first',
   children,
 }: {
   anchor: HTMLElement;
@@ -96,6 +97,10 @@ export function AnchoredPopover({
   // A press inside what this selector matches (a menu's flyout, a picker it opened, portalled elsewhere) is not a
   // press outside.
   keepOpenWithin?: string;
+  // What opening focuses: its first control (the default), or the panel itself, so a touch screen opens one whose
+  // first control is a text field without raising a keyboard, focus still inside it; or nothing, for a list a
+  // field drives as it is typed in (a combobox), focus staying in the field.
+  initialFocus?: 'first' | 'panel' | 'none';
   children: ReactNode;
 }) {
   const panel = useRef<HTMLDivElement>(null);
@@ -134,6 +139,8 @@ export function AnchoredPopover({
     place();
     const grow = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(place);
     if (panel.current) grow?.observe(panel.current);
+    // The anchor growing (a chip field wrapping to a second row) moves the panel with it.
+    grow?.observe(anchor);
     window.addEventListener('resize', place);
     window.addEventListener('scroll', place, true);
     return () => {
@@ -144,7 +151,11 @@ export function AnchoredPopover({
   }, [anchor, width, beside]);
 
   useEffect(() => {
-    panel.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+    if (initialFocus === 'none') return;
+    if (initialFocus === 'panel') panel.current?.focus();
+    else panel.current?.querySelector<HTMLElement>(FOCUSABLE)?.focus();
+    // Opening only.
+    // oxlint-disable-next-line react/exhaustive-deps
   }, []);
 
   // Escape closes this panel only, before the dialog's own Escape, and only while it is the top popover
@@ -173,9 +184,10 @@ export function AnchoredPopover({
         aria-label={name}
         // A host popover's outside-press check leaves this one alone.
         data-anchored-popover
+        tabIndex={initialFocus === 'panel' ? -1 : undefined}
         // Over its dialog, over a tour ring drawn on that dialog (TourStage layer="modal", one below), so a
         // menu opened mid-tour is never dimmed, and over a menu's flyout (z-popover) it opens from.
-        className="fixed z-[calc(var(--z-popover)+1)] overflow-y-auto overscroll-contain rounded-lg shadow-lg"
+        className="fixed z-[calc(var(--z-popover)+1)] overflow-y-auto overscroll-contain rounded-lg shadow-lg outline-none"
         style={{
           width: `min(${width}px, calc(100vw - ${2 * EDGE}px))`,
           left: pos?.left ?? -9999,

@@ -1,10 +1,12 @@
 // What a file dropped on the canvas is told when the canvas does not take it. The canvas lands only images where they
-// are released; a Markdown file or a livedocuments JSON export replaces the tab's content, so it goes through Import,
+// are released; a Markdown file, a livedocuments JSON export, a Word document or a PowerPoint deck replaces the tab's content, so it goes through Import,
 // and its refusal says so.
 
 const IMPORT_FORMATS: readonly { label: string; extensions: readonly string[] }[] = [
   { label: 'a Markdown file', extensions: ['.md', '.markdown'] },
   { label: 'a livedocuments export', extensions: ['.json'] },
+  { label: 'a Word document', extensions: ['.docx', '.docm', '.dotx'] },
+  { label: 'a PowerPoint deck', extensions: ['.pptx', '.pptm', '.ppsx', '.potx'] },
 ];
 
 /** The refusal for any other file dropped on the canvas. */

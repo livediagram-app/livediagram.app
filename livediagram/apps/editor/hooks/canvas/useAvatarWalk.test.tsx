@@ -3,9 +3,9 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { createShape, DRINK_HOLD_MS, type Element } from '@livediagram/document';
-import { DEFAULT_AVATAR_CONFIG } from '@/lib/avatar-config';
-import { FENCE_REACH } from '@/lib/avatar-fence';
-import { useAvatarWalk } from './useAvatarWalk';
+import { DEFAULT_AVATAR_CONFIG } from '@liveworkspace/avatar/config';
+import { FENCE_REACH } from '@liveworkspace/avatar/collision';
+import { useAvatarWalk } from '@liveworkspace/avatar/hooks/useAvatarWalk';
 
 // Leaving Avatar mode (docs/specs/008-canvas/avatar-mode.md) drops whatever the character was doing and
 // vacates its chair, and tells peers to drop it.

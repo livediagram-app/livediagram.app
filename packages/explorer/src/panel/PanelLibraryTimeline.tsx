@@ -5,6 +5,7 @@
 // view. The Timeline's card menus, filters and calendar are the Explorer page's.
 
 import { useMemo, useSyncExternalStore } from 'react';
+import { Button } from '@liveworkspace/ui';
 import { useExplorer } from '../explorer/context';
 import { renderTimelineEvent } from '../explorer/TimelinePane';
 import { useLibraryHost } from '../library/context';
@@ -104,14 +105,14 @@ export function PanelTimeline() {
         );
       })}
       {feed.hasMore ? (
-        <button
-          type="button"
+        <Button
+          variant="none"
           onClick={feed.loadMore}
-          disabled={feed.loadingMore}
+          busy={feed.loadingMore}
           className={`${PANE_LINK} self-center py-1`}
         >
           {feed.loadingMore ? 'Loading…' : 'Show more'}
-        </button>
+        </Button>
       ) : null}
     </div>
   );

@@ -1,7 +1,7 @@
 import { diffToElementOps, ledgerKey, type ElementOp, type Tab } from '@livedocuments/document';
 import { tabArticleOps, type RoomOp, type RoomOutgoing } from '@livedocuments/api-schema';
 import { tabBroadcastOps } from './tab-broadcast-ops';
-import { holdOwnWrites, type OwnElementWrites } from './own-element-writes';
+import { holdOwnRoomWrites, type OwnElementWrites } from './own-element-writes';
 
 // What one tab's save needs of the realtime room: read when it is used, since a reconnect replaces it.
 // `sequence` sends an op and resolves true once the room has sequenced it, false when it can't say.
@@ -33,8 +33,7 @@ export function prepareTabSave(
 ): PreparedTabSave {
   const ops = tabBroadcastOps(before, tab);
   if (!writes) return { ops, release: null };
-  const elementOps = ops.flatMap((op) => (op.kind === 'el' ? [op.op] : []));
-  return { ops, release: holdOwnWrites(writes, tab.id, elementOps) };
+  return { ops, release: holdOwnRoomWrites(writes, ops) };
 }
 
 export async function saveTabAndRelay<R>(
@@ -70,8 +69,8 @@ export async function saveTabAndRelay<R>(
   return saved;
 }
 
-// Sends the ops in order. Held element ops go through `sequence`, and the hold is released once the room has
-// answered for every one of them (sequenced, or unable to say).
+// Sends the ops in order. Held element and article ops go through `sequence`, and the hold is released once the
+// room has answered for every one of them (sequenced, or unable to say).
 function relay(ops: RoomOp[], live: SaveRoom | null, release: (() => void) | null): void {
   if (!live || !release) {
     for (const op of ops) live?.send({ kind: 'op', op });
@@ -80,7 +79,7 @@ function relay(ops: RoomOp[], live: SaveRoom | null, release: (() => void) | nul
   }
   const answers: Promise<boolean>[] = [];
   for (const op of ops) {
-    if (op.kind === 'el') answers.push(live.sequence(op));
+    if (op.kind === 'el' || op.kind === 'article') answers.push(live.sequence(op));
     else live.send({ kind: 'op', op });
   }
   void Promise.allSettled(answers).then(release);
@@ -105,13 +104,10 @@ export async function relayParticipantChanges(
   const live = room();
   if (!live) throw new Error('participant save: the room is not open');
   const ops = participantElementOps(before, tab);
-  const release = writes ? holdOwnWrites(writes, tab.id, ops) : null;
   // A tab first seen in this save has no writing of the Participant's in it yet: it never sends a whole article.
   const writing = before ? tabArticleOps(before, tab) : [];
-  relay(
-    [...ops.map((op): RoomOp => ({ kind: 'el', tabId: tab.id, op })), ...writing],
-    live,
-    release,
-  );
+  const roomOps = [...ops.map((op): RoomOp => ({ kind: 'el', tabId: tab.id, op })), ...writing];
+  const release = writes ? holdOwnRoomWrites(writes, roomOps) : null;
+  relay(roomOps, live, release);
   return null;
 }

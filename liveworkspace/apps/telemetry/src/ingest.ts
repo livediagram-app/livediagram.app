@@ -62,8 +62,9 @@ export async function handleIngest(request: Request, env: Env): Promise<Response
     .slice(0, TELEMETRY_BATCH_MAX);
   try {
     await insertEvents(env, app, valid, Date.now());
-  } catch {
-    // A transient D1 failure loses the batch; telemetry is fire-and-forget either way.
+  } catch (err) {
+    // A D1 failure loses the batch; telemetry is fire-and-forget either way, so the sender still hears 204.
+    console.error('[telemetry] batch lost', err);
   }
   return noop();
 }

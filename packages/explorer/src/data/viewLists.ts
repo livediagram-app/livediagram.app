@@ -225,23 +225,28 @@ export function viewList(
   }
 }
 
-// Jump Back In's groups: this many most used, then this many recent not among them (liveplanner's Within reach).
-export const JUMP_BACK_IN_PER_GROUP = 4;
+// Home's Jump Back In groups: this many most used, then this many recent not among them, each two rows of four on a
+// desktop (MOST_USED_MAX, the most the index sends).
+export const JUMP_BACK_IN_PER_GROUP = 8;
 
-/** Whether an item came to Jump Back In as one of the most used (only those carry their use days). */
-export const isMostUsed = (item: Pick<Item, 'useDays'>) => typeof item.useDays === 'number';
+/** Whether an item came to Jump Back In as one of the most used (only those carry their opens and use days). */
+export const isMostUsed = (item: Pick<Item, 'useDays' | 'useOpens'>) =>
+  typeof item.useOpens === 'number' || typeof item.useDays === 'number';
+
+/** How much a most used item was used: its opens in the window, or its days from an index that sends only those. */
+const usesOf = (item: Pick<Item, 'useDays' | 'useOpens'>) => item.useOpens ?? item.useDays ?? 0;
 
 /**
- * Jump Back In's set: the `n` most used (used on at least one day), then the `n + extra` most recent not among
- * them. Nothing is padded. Most used first, in their order (days, then the latest open), then recent.
+ * Jump Back In's set: the `n` most used (opened at least once in the window), then the `n + extra` most recent not
+ * among them. Nothing is padded. Most used first, in their order (opens, then the latest open), then recent.
  */
-export function jumpBackInSet<T extends Pick<Item, 'id' | 'useDays'>>(
+export function jumpBackInSet<T extends Pick<Item, 'id' | 'useDays' | 'useOpens'>>(
   mostUsed: readonly T[],
   recent: readonly T[],
   n = JUMP_BACK_IN_PER_GROUP,
   extra = 0,
 ): T[] {
-  const used = mostUsed.filter((i) => (i.useDays ?? 0) > 0).slice(0, n);
+  const used = mostUsed.filter((i) => usesOf(i) > 0).slice(0, n);
   const taken = new Set(used.map((i) => i.id));
   return [...used, ...recent.filter((i) => !taken.has(i.id)).slice(0, n + extra)];
 }
@@ -289,12 +294,14 @@ export function sharedRecentlyLoader(
 
 export type { Item };
 
-/** Why a card is there: "Used on 5 days" for a most used one; otherwise "Opened 2 hours ago" (or when it last
- * changed, for one never opened). */
+/** Why a card is there: "Opened 12 times" for a most used one (its opens in the window; "Used on 5 days" from an
+ * index that counts only days); otherwise "Opened 2 hours ago" (or when it last changed, for one never opened). */
 export function jumpBackInLine(
-  item: Pick<Item, 'useDays' | 'lastOpenedAt' | 'updatedAt'>,
+  item: Pick<Item, 'useDays' | 'useOpens' | 'lastOpenedAt' | 'updatedAt'>,
   now: number,
 ): string {
+  if (typeof item.useOpens === 'number')
+    return item.useOpens === 1 ? 'Opened once' : `Opened ${item.useOpens} times`;
   if (typeof item.useDays === 'number')
     return item.useDays === 1 ? 'Used on 1 day' : `Used on ${item.useDays} days`;
   const at = item.lastOpenedAt ?? item.updatedAt;

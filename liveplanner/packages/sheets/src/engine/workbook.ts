@@ -12,7 +12,7 @@ import { cellKey, type Sheet } from '../sheet';
 import { CARD_FUNCTION_NAMES } from '../formula/registry';
 import { callsOf, type Node } from '../formula/ast';
 import { safeHyperlink } from '../hyperlink';
-import { storedAst, type SheetHandle, type SheetsCtx } from '../formula/stored';
+import { quoteSheet, storedAst, type SheetHandle, type SheetsCtx } from '../formula/stored';
 import type { StoredFormula } from '../sheet';
 import {
   dims,
@@ -39,6 +39,7 @@ type WorkbookOptions = {
 };
 
 const DEPTH_MAX = 250;
+const NONE: ReadonlySet<string> = new Set();
 
 // Thrown when a read nests past DEPTH_MAX: the read settles that cell on its own, then starts again.
 class Deep extends Error {
@@ -79,8 +80,10 @@ export class Workbook {
   private readonly stack: string[] = [];
   private depth = 0;
   private reads = 0;
-  // Formulas worked out after one read ran past RECALC_READS_MAX: their value is that read's
-  // "too large" error, not their own, so the next read works them out afresh.
+  // Set by every change; the next top-level read then starts a new recalculation pass with a fresh read budget.
+  private newPass = true;
+  // Formulas worked out after the pass's reads ran past RECALC_READS_MAX: their value is the "too large" error,
+  // not their own, so the next pass works them out afresh.
   private readonly overBudget = new Set<string>();
   // Raised on every change, so views know to read again.
   version = 0;
@@ -111,6 +114,7 @@ export class Workbook {
     const before = this.sheets.get(sheet.id);
     this.sheets.set(sheet.id, sheet);
     this.version++;
+    this.newPass = true;
     if (!before || !keys || before.layout !== sheet.layout || before.title !== sheet.title) {
       this.resetAll();
       return;
@@ -129,12 +133,14 @@ export class Workbook {
   removeSheet(id: string): void {
     if (!this.sheets.delete(id)) return;
     this.version++;
+    this.newPass = true;
     this.resetAll();
   }
 
   setCards(cards: CardSource | null): void {
     this.cards = cards;
     this.version++;
+    this.newPass = true;
     this.invalidate([...this.cardReaders]);
   }
 
@@ -142,6 +148,7 @@ export class Workbook {
   tick(): void {
     if (this.volatileCells.size === 0) return;
     this.version++;
+    this.newPass = true;
     this.invalidate([...this.volatileCells]);
   }
 
@@ -192,9 +199,35 @@ export class Workbook {
     ast: Node,
     refs: StoredFormula['r'],
   ): Value {
+    // A rule or link is not part of a recalculation (nothing is kept, so reading it again costs again): it gets a
+    // budget of its own, and the formulas it cut short are forgotten, leaving the pass's budget as it was.
+    const top = this.depth === 0;
+    const passReads = this.reads;
+    const cutBefore = this.overBudget.size === 0 ? NONE : new Set(this.overBudget);
+    if (top) {
+      this.startRead();
+      this.reads = 0;
+    }
+    try {
+      return this.evaluateNodeIn(id, sheetId, r, c, ast, refs);
+    } finally {
+      if (top) {
+        this.reads = passReads;
+        if (this.overBudget.size > cutBefore.size) this.forgetOverBudget(cutBefore);
+      }
+    }
+  }
+
+  private evaluateNodeIn(
+    id: string,
+    sheetId: string,
+    r: number,
+    c: number,
+    ast: Node,
+    refs: StoredFormula['r'],
+  ): Value {
     for (;;) {
       try {
-        if (this.depth === 0) this.startRead();
         this.depth++;
         try {
           const frame = this.frame(id, sheetId, r, c);
@@ -212,16 +245,24 @@ export class Workbook {
     }
   }
 
-  // A fresh top-level read: its own budget, and the formulas the last one cut short forgotten.
+  // A top-level read. The read budget spans a whole recalculation (every read from one change to the next), so
+  // only the first read after a change starts a fresh budget and forgets the formulas the last pass cut short.
   private startRead(): void {
+    if (!this.newPass) return;
+    this.newPass = false;
     this.reads = 0;
-    if (this.overBudget.size === 0) return;
+    this.forgetOverBudget(null);
+  }
+
+  // Forget the formulas cut short by the budget (all, or those not in `keep`) so they are worked out afresh.
+  private forgetOverBudget(keep: ReadonlySet<string> | null): void {
     for (const id of this.overBudget) {
+      if (keep?.has(id)) continue;
+      this.overBudget.delete(id);
       this.vals.delete(id);
       // A spill it claimed goes with it, and its sheet's spills are worked out again.
       if (this.releaseClaim(id)) this.spillersReady.delete(id.slice(0, id.indexOf('|')));
     }
-    this.overBudget.clear();
   }
 
   // The whole array a formula gives (its spill), or its value.
@@ -615,8 +656,13 @@ export class Workbook {
     }
   }
 
+  // A loop through other sheets names each cell's sheet ('Q3 Costs'!A1 → 'Sheet 1'!A1), else "A1 → A1" reads as a
+  // cell reading itself; a loop on one sheet keeps the short form (B2 → C2 → B2).
   private describeLoop(path: string[], back: string): string {
-    const names = [...path, back].map((id) => {
+    const ids = [...path, back];
+    const sheetOf = (id: string) => id.slice(0, id.indexOf('|'));
+    const crossSheet = ids.some((id) => sheetOf(id) !== sheetOf(ids[0]!));
+    const names = ids.map((id) => {
       const bar = id.indexOf('|');
       const sheet = this.sheets.get(id.slice(0, bar));
       const key = id.slice(bar + 1);
@@ -625,7 +671,8 @@ export class Workbook {
       const ix = layoutIndex(sheet.layout);
       const r = ix.rowPos.get(key.slice(0, colon));
       const c = ix.colPos.get(key.slice(colon + 1));
-      return r === undefined || c === undefined ? '?' : formatA1(r, c);
+      if (r === undefined || c === undefined) return '?';
+      return crossSheet ? `${quoteSheet(sheet.title)}!${formatA1(r, c)}` : formatA1(r, c);
     });
     return names.join(' → ');
   }

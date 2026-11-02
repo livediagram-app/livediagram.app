@@ -195,6 +195,13 @@ describe('answersAsSelf', () => {
     expect(answersAsSelf(delta({ kind: 'check' }), 'k')).toBe(false);
     expect(answersAsSelf(null, 'k')).toBe(false);
   });
+  // docs/specs/012-collaboration/comment-reactions.md "How it is stored and travels": a reaction names its reactor.
+  it('admits its own comment reaction only', () => {
+    const react = (by: unknown) => delta({ kind: 'comment-react', by });
+    expect(answersAsSelf(react('k'), 'k')).toBe(true);
+    expect(answersAsSelf(react('other'), 'k')).toBe(false);
+    expect(answersAsSelf(react('k'), undefined)).toBe(false);
+  });
 });
 
 describe('helloPresence and the Google picture', () => {

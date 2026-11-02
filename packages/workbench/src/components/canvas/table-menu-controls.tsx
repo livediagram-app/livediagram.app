@@ -7,6 +7,7 @@ import {
   FLOATING_CONTROL_SIZE,
 } from '../chrome/floating-controls';
 import { SOLID_BRAND_DARK_CONTROL, Glyph } from '@liveworkspace/ui';
+import { useMenuItemProps } from '../primitives/menu-item-props';
 
 // Edge-menu UI primitives for TableView: the compact "⋯" trigger that
 // opens a column / row menu from the table's top / left edge, and the
@@ -37,6 +38,8 @@ export function Trigger({
       type="button"
       data-table-ui
       aria-label={vertical ? 'Row options' : 'Column options'}
+      aria-haspopup="menu"
+      aria-expanded={open}
       onPointerDown={(e) => e.stopPropagation()}
       onClick={(e) => {
         e.stopPropagation();
@@ -80,16 +83,20 @@ function MenuButton({
   onClick: () => void;
   children: ReactNode;
 }) {
+  // In the command menu (TableAxisMenuPortal) a row is a menu item, disabled by aria-disabled so the arrow keys
+  // still reach it; elsewhere it is a plain button.
+  const { inCommandMenu, itemProps } = useMenuItemProps({ disabled });
   return (
     <button
       type="button"
-      disabled={disabled}
+      {...itemProps}
+      disabled={inCommandMenu ? undefined : disabled}
       onPointerDown={(e) => e.stopPropagation()}
       onClick={(e) => {
         e.stopPropagation();
-        onClick();
+        if (!disabled) onClick();
       }}
-      className={`flex h-9 w-full items-center gap-2 whitespace-nowrap rounded-md px-2.5 text-left text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50 text-slate-700 hover:bg-brand-50 dark:text-slate-200 dark:hover:bg-slate-700`}
+      className={`flex h-9 w-full items-center gap-2 whitespace-nowrap rounded-md px-2.5 text-left text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50 aria-disabled:cursor-not-allowed aria-disabled:opacity-50 text-slate-700 hover:bg-brand-50 focus-visible:bg-brand-50 focus-visible:outline-none dark:text-slate-200 dark:hover:bg-slate-700 dark:focus-visible:bg-slate-700`}
     >
       <span className="shrink-0">{children}</span>
       {label}

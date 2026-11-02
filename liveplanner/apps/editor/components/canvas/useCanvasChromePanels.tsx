@@ -7,6 +7,7 @@ import { participantKey } from '@/lib/identity';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
+import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { stripSegmentGone, type SessionStripTools } from './SessionClusterStrip';
 import { useWithheldExplorerCloses } from '@liveworkspace/workbench/components/canvas/useWithheldExplorerCloses';
@@ -20,10 +21,6 @@ const CardFinderPanel = dynamic(
 const TrashPanel = dynamic(() => import('@/components/plan/TrashPanel').then((m) => m.TrashPanel), {
   ssr: false,
 });
-const NewCardPanel = dynamic(
-  () => import('@/components/plan/NewCardPanel').then((m) => m.NewCardPanel),
-  { ssr: false },
-);
 const CardTypesPanel = dynamic(
   () => import('@/components/plan/CardTypesPanel').then((m) => m.CardTypesPanel),
   { ssr: false },
@@ -47,6 +44,16 @@ const SessionPopover = dynamic(() => import('./SessionPopover').then((m) => m.Se
 
 // Lazy for the same reason: the Actions panel (docs/specs/012-collaboration/assigned-actions.md) only mounts when
 // the active tab has at least one element with an OPEN assigned action.
+
+// A lazily loaded popover in a boundary of its own: one whose code cannot load (opened offline,
+// docs/specs/007-editor/load-recovery.md "Offline") closes, so its button lets go, and never takes the board with it.
+function LazyPopover({ onError, children }: { onError: () => void; children: ReactNode }) {
+  return (
+    <AreaErrorBoundary area="Popovers" onError={onError}>
+      {children}
+    </AreaErrorBoundary>
+  );
+}
 
 // The floating panels as elements (docs/specs/007-editor/panel-docking.md), lifted out of CanvasChrome:
 // the stable handler bundles for the memo'd panels, the docking-aware
@@ -80,7 +87,6 @@ export function useCanvasChromePanels({
   // The Card Types panel over its cluster button (docs/specs/026-plan/item-types.md).
   cardTypesPopoverEl: ReactNode;
   trashPopoverEl: ReactNode;
-  newCardPopoverEl: ReactNode;
   cardFinderPopoverEl: ReactNode;
   // The Session strip's open popover (Timer or Vote), over its button.
   sessionPopoverEl: ReactNode;
@@ -174,7 +180,6 @@ export function useCanvasChromePanels({
   const cardTypesOpen = activeDockPanel === 'card-types';
   const trashOpen = activeDockPanel === 'plan-trash';
   const cardFinderOpen = activeDockPanel === 'plan-cards';
-  const newCardOpen = activeDockPanel === 'plan-new-card';
 
   // Mounted from its first opening on, never before (its code loads then), and kept mounted after so
   // the folders someone expanded stay expanded.
@@ -268,29 +273,31 @@ export function useCanvasChromePanels({
   }, [sessionRunning, sessionSegment, closeDockPanel]);
   const sessionPopoverEl =
     !chromeHidden && sessionSegment && sessionTools && !sessionButtonGone ? (
-      <SessionPopover
-        segment={sessionSegment}
-        anchor={activeDockAnchor ?? undefined}
-        onClose={closeDockPanel}
-        session={sessionTools}
-        readOnly={!!readOnly}
-        canVote={!readOnly || !!takePart}
-        holdOpen={!isMobile}
-        voteSelfId={participantKey(selfParticipant)}
-        vote={{
-          tabVote,
-          elements,
-          participantCount,
-          results: voteResults,
-          reviewIndex: voteReview ? voteReview.index : null,
-          onJumpToResult: onJumpToVoteResult,
-          isHost: isVoteHost,
-          review: voteReview,
-          onNextResult: onNextVoteResult,
-          onPrevResult: onPrevVoteResult,
-          onDoneReview: onDoneVoteReview,
-        }}
-      />
+      <LazyPopover onError={closeDockPanel}>
+        <SessionPopover
+          segment={sessionSegment}
+          anchor={activeDockAnchor ?? undefined}
+          onClose={closeDockPanel}
+          session={sessionTools}
+          readOnly={!!readOnly}
+          canVote={!readOnly || !!takePart}
+          holdOpen={!isMobile}
+          voteSelfId={participantKey(selfParticipant)}
+          vote={{
+            tabVote,
+            elements,
+            participantCount,
+            results: voteResults,
+            reviewIndex: voteReview ? voteReview.index : null,
+            onJumpToResult: onJumpToVoteResult,
+            isHost: isVoteHost,
+            review: voteReview,
+            onNextResult: onNextVoteResult,
+            onPrevResult: onPrevVoteResult,
+            onDoneReview: onDoneVoteReview,
+          }}
+        />
+      </LazyPopover>
     ) : null;
 
   // Map of panel id → element for the docked-layout distribution.
@@ -304,23 +311,26 @@ export function useCanvasChromePanels({
     // The cluster popovers, rendered beside the corner layer rather than in it (see panelEls).
     collaborateEl,
     cardTypesPopoverEl: cardTypesOpen ? (
-      <CardTypesPanel
-        popoverOpen
-        popoverAnchor={activeDockAnchor ?? undefined}
-        onPopoverClose={closeDockPanel}
-      />
+      <LazyPopover onError={closeDockPanel}>
+        <CardTypesPanel
+          popoverOpen
+          popoverAnchor={activeDockAnchor ?? undefined}
+          onPopoverClose={closeDockPanel}
+        />
+      </LazyPopover>
     ) : null,
     cardFinderPopoverEl: cardFinderOpen ? (
-      <CardFinderPanel
-        popoverAnchor={activeDockAnchor ?? undefined}
-        onPopoverClose={closeDockPanel}
-      />
-    ) : null,
-    newCardPopoverEl: newCardOpen ? (
-      <NewCardPanel popoverAnchor={activeDockAnchor ?? undefined} onPopoverClose={closeDockPanel} />
+      <LazyPopover onError={closeDockPanel}>
+        <CardFinderPanel
+          popoverAnchor={activeDockAnchor ?? undefined}
+          onPopoverClose={closeDockPanel}
+        />
+      </LazyPopover>
     ) : null,
     trashPopoverEl: trashOpen ? (
-      <TrashPanel popoverAnchor={activeDockAnchor ?? undefined} onPopoverClose={closeDockPanel} />
+      <LazyPopover onError={closeDockPanel}>
+        <TrashPanel popoverAnchor={activeDockAnchor ?? undefined} onPopoverClose={closeDockPanel} />
+      </LazyPopover>
     ) : null,
     sessionPopoverEl,
   };

@@ -23,12 +23,16 @@ packages/items/src/plan-view-gantt.ts   ganttModel, ganttAt, GANTT_* constants
 packages/items/src/plan-view-charts.ts  calendarModel, workloadModel, statusMixModel,
                                         priorityMatrixModel
 packages/items/src/calendar-move.ts     CalendarField, calendarFieldOf, calendarMove
+packages/items/src/view-fields.ts       ViewDates, BUILT_IN_DATES, viewDateOptions, viewDatesOf, viewDateName,
+                                        viewMeasureOptions, viewMeasureOf, measureValue, measureNumber,
+                                        measureCountLabel, isViewFieldId (fields by role)
 packages/project/src/svg-render-plan.ts svgPlanView (a labelled box)
 apps/editor/hooks/plan/usePlanStatusNames.ts usePlanStatusPhases -> PlanContext.statusPhases
 apps/editor/components/plan/views/        PlanViewView (router), view-frame (ViewFrame, openProps, viewState,
                                         PhaseLegend, PHASE_COLOURS), MetricView, GanttView, CalendarView,
                                         WorkloadView, StatusMixView, PriorityMatrixView; calendar-day
                                         (DayCell, CalendarEntryFace), useCalendarDrag (calendarDayAt)
+apps/editor/components/plan/views/ViewFieldSettings.tsx ViewDateOptions, ViewMeasureOptions (Dates, Count By)
 apps/editor/components/plan/plan-view-art.tsx           PlanViewArt (one Glyph per visualisation)
 apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spread through PLAN_TILES
 ```
@@ -45,9 +49,9 @@ apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spre
 
 ## Behaviour and state
 
-- `statusPhasesOf(boards)`: per board (not All Cards or Archive), first column `todo`, the done column and later
-  `done`, the rest `doing`; first board wins. `phaseOf` reads `todo` for a missing or unknown status.
-- `metricBoard(items, phases, types)`: three phase columns (`phase-todo` ...), the done one `doneColumnId` when any
+- `statusPhasesOf(boards)`: per board (not All Cards or Archive), each done column (`isDoneColumn`) `done`, else the
+  first column `todo`, the rest `doing`; first board wins. `phaseOf` reads `todo` for a missing or unknown status.
+- `metricBoard(items, phases, types)`: three phase columns (`phase-todo` ...), the done one flagged `done` (and `doneColumnId`) when any
   phase is done; live cards copied with their status mapped; `projectBoard` over them. `MetricView` builds a
   `WidgetContext` with no quick filter, `canEdit: false` and no-op set-up, and draws `BoardWidgetView`.
 - `ganttModel`: rows of live items of the chart's types, `mark` `bar | due | start | none`; a bar's ends are the min and max of
@@ -55,21 +59,49 @@ apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spre
   key, dateless last. Axis `from = min(dates, today) - 7`, `to = max(max(dates, today) + 7, from + 27)`; Monday
   ticks up to 120 days, else month starts (the first and each January with the year). Labels thin to one per
   52 px of axis.
-- Calendar: `calendarModel(items, phases, year, month, field)` (`field` from `calendarFieldOf(view)`: `due` for
-  `calendar`, `start` for `start-calendar`); the month offset is component state. A day shows
+- Fields by role: `viewDatesOf(settings, types)` maps the roles `start` and `due` to field ids, `startField` /
+  `dueField` while a type offers that custom Date field, else `start` / `due`. `ganttModel`, `ganttDrag`,
+  `calendarModel`, `calendarMove`, `ganttNewCardDates`, `ganttEligibleTypes` and `viewNeeds` take the map
+  (`BUILT_IN_DATES` by default). `viewMeasureOf` reads `measure` (Estimate or a custom Number field);
+  `breakdownModel(..., measure)` adds `measureValue` (positive numbers, else 0) in place of 1 and totals the rows.
+  The setters (`planViewSettingsModel.setDate`, `setMeasure`) drop the default rather than store it.
+- Times and ranges (spec "Dates", "Times and ranges"): `viewDatesOf` also takes custom `datetime` and `daterange`
+  fields and answers each role's shape (`ViewDates.shapes`: `date`, `datetime`, `daterange` or `daterange-time`;
+  absent for a built-in). Every reader goes through `roleValue(item, dates, role)`
+  (a range's start for `start`, its end for `due`) and `dayNumber(value, tz?)` (an instant's day in the viewer's
+  zone); every writer through `roleDays(item, dates, { start?, due? }, tz?)` (`view-dates-write.ts`), which keeps an
+  instant's wall-clock time (`instantOnDay`) and writes a range as one value. `ganttModel(..., dates)` marks a timed
+  Due overdue once `now` passes it, `GanttView` then reading the clock each minute (`useMinute`, one shared
+  interval, only while the Due is timed); `GanttDrawRow` and `ganttNewCardDates` (`GanttAddCard.tsx`) write through
+  `roleDays`; `calendarModel` sets `at` on a timed card and sorts a day's cards untimed first
+  (by key), then by `at`; `calendar-day.tsx` prints `at` before the title in the viewer's clock (`timeOfDayText`).
+- Calendar: `calendarModel(items, phases, year, month, field, dates)` (`field` from `calendarFieldOf(view)`: `due` for
+  `calendar`, `start` for `start-calendar`; read through `dates[field]`); the month offset is component state. A day shows
   `floor(((height - 62) / weeks - 20) / 16)` entries, the last line kept for "+N more" when more are due.
 - Calendar moves: `canMove = plan.planInput && plan.canEditCards`. `useCalendarDrag` starts on an entry's
   pointerdown (button 0), listens on window, and counts a drag past `CALENDAR_DRAG_SLOP_PX` (3 px, Euclidean);
   `calendarDayAt(gridBox, x, y, firstDay, weeks)` reads the day under the pointer from the grid's on-screen box
   (zoom included), and the ghost's place is scaled back by `offsetWidth / box.width`. Pointer-up commits when the
   day differs; Escape (capture-phase, stopped) and pointercancel drop; a moved press calls `swallowNextClick()`.
-  `calendarMove(item, field, toDay)` gives `{ set, days }` or null (no date, same day, not a whole day); the
+  `calendarMove(item, field, toDay, dates, tz?)` gives `{ set, days, carried }` (`carried` when the other date moved
+  too) or null (no date, same day, not a whole day); the
   other date shifts by `days` only when it would cross, clamped to the moved day. The view writes
   `patchItem(id, { set })`, tracks `('Plan', 'Changed', 'CalendarDue' | 'CalendarStart')` and announces. Alt+Arrow
   on an entry (`CALENDAR_MOVE_KEYS`: ±1, ±7) runs the same move, steps the month offset when the day leaves the
   grid, and refocuses `[data-calendar-item=id]` after render.
 - Opening: `openProps(plan, id)`: in Plan input a click opens and pointerdown is kept from the canvas; a
   double-click opens in any mode. "Add a start date" shows only when `plan.canEdit`.
+
+- A Dashboard slot's name (plan-tabs.md "A slot's name"): `name?: string` on the `element`, `sheet-metric` and
+  `form-metric` slot contents (`packages/project/src/slot-name.ts` and dashboard.ts, `DASHBOARD_SLOT_NAME_MAX` 80, read trimmed and
+  dropped when empty, kept through `remapDashboardElements`; `slotNameOf`, `withSlotName`). `SlotNameField`
+  (`components/plan/dashboard/SlotNameField.tsx`) in SlotSection, where `generatedSlotName(content, element)` is not null (a
+  `plan-view` element or either figure), saves through `actions.setSlotContent` (one step). `SlotElement` provides
+  `SlotName` (`components/plan/dashboard/slot-name-context.ts`) round a plan view: `PlanViewView` reads it before `planView.title` for `ViewTitle`
+  and passes it to `MetricView` as the tile's label; `DashboardSheetMetric` and `DashboardFormMetric` read
+  `content.name`. Exports: `dashboard-export.ts` places a named view with `planView.title` set to the name (a copy,
+  never stored), `metricArt` labels with the title, and the figures' art with the name. Agents: `charts[].name` in
+  `DashboardInput` (`dashboard-input.ts`) to `DashboardChartSpec.name` to the slot's content (`dashboardLayoutOf`).
 
 ## Interfaces and contracts
 
@@ -150,6 +182,15 @@ apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spre
   top), drawing `GanttLaneHead` and `GanttNameRow` (gantt-rows.tsx). Lane collapse is per person, component state keyed by lane key. Set from `PlanViewMenuSection` (a View
   flyout for a gantt plan view holding two `MenuAccordionSection`s, Card Types and Swimlanes, each with the
   scaffold's `sectionProps` id; the board menu's Swimlanes grid), tracking `('Plan', 'Changed', 'GanttSwimlanes')`.
+- Gantt dependency arrows (spec "Dependency arrows"): `ganttArrows(entries, index, isDone)` (items,
+  plan-view-gantt-arrows.ts) pairs each row entry's live blockers (`BlockingIndex.blockers`) that are row entries
+  too, both with a mark, `done` when the blocker's phase is done; `ganttArrowPath(from, to, rowH)` gives the path
+  (out `GANTT_ARROW_STEP` 8 px from the blocker's right end, down or up to the blocked row, in to its left end; back
+  along the row gap at `from.top + rowH` or `to.top` when the blocked mark starts left of the step) and the head
+  (`GANTT_ARROW_HEAD` 5 px). `GanttArrows` (views/gantt-arrows.tsx) draws them in one `aria-hidden`,
+  `pointer-events-none` SVG over the track, `axisPx` wide, x from `ganttAt(view, day) * axisPx`, the dragged row's
+  preview dates and lift applied; stroke `palette.muted` at 1.25 px, done at 40% opacity. The index is
+  `planBlocking(plan)`. The export (`ganttArt`) draws the same pairs among the rows it fits.
 - Gantt row order: `planView.rowOrder` (card ids), validated by `isPlanViewSettings` (an array of `isValidItemId`
   strings, none repeated, at most `GANTT_ROW_ORDER_MAX` (2000)). `ganttOrderRows(rows, order)` (gantt-row-order.ts)
   puts named rows first in the order's sequence and the rest after in their date order (stable). `ganttReorder(
@@ -177,6 +218,7 @@ rowIds, laneIds, id, toIndex)` returns the next full order: `id` taken out of th
 
 - Placing a plan view sends `Element · Added · PlanView` (`SHAPE_TOKENS`); `PlanView` is in
   `PALETTE_TELEMETRY_TYPES.shapes`.
+- `Plan · Changed · ViewDates` (a Dates pick) and `Plan · Changed · ViewMeasure` (a Count By pick).
 
 ## Performance and limits
 
@@ -186,20 +228,25 @@ rowIds, laneIds, id, toIndex)` returns the next full order: `id` taken out of th
 
 ## Testing
 
-| Rule                                           | Test                                                        |
-| ---------------------------------------------- | ----------------------------------------------------------- |
-| Ids, sizes, phases, metric board               | packages/items/src/plan-views.test.ts                       |
-| Gantt rows, marks, axis, ticks, drags, scales  | packages/items/src/plan-view-gantt.test.ts                  |
-| Calendar, workload, status, priority models    | packages/items/src/plan-view-charts.test.ts                 |
-| Calendar moves, Start Calendar model           | packages/items/src/calendar-move.test.ts                    |
-| Calendar drag, keyboard move, roles, Start Cal | apps/editor/components/plan/views/CalendarView.test.tsx     |
-| Element seed, validation, export box           | packages/project/src/plan-shapes.test.ts                    |
-| Rendering, empty and loading, opening, metrics | apps/editor/components/plan/views/PlanViewView.test.tsx     |
-| Gantt window pin, pan, slop, cleanup           | apps/editor/components/plan/views/useGanttWindow.test.ts    |
-| Gantt View flyout (card types, swimlanes)      | apps/editor/components/palette/PlanViewMenuSection.test.tsx |
-| Gantt row order (apply, reorder, validation)   | packages/items/src/gantt-row-order.test.ts                  |
-| Gantt row drag, keyboard move, lanes           | apps/editor/components/plan/views/GanttRowOrder.test.tsx    |
-| Palette categories and tiles                   | apps/editor/components/palette/palette-*.test.ts(x)         |
+| Rule                                                 | Test                                                                                                                                                                                                       |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ids, sizes, phases, metric board                     | packages/items/src/plan-views.test.ts                                                                                                                                                                      |
+| Gantt rows, marks, axis, ticks, drags, scales        | packages/items/src/plan-view-gantt.test.ts                                                                                                                                                                 |
+| Calendar, workload, status, priority models          | packages/items/src/plan-view-charts.test.ts                                                                                                                                                                |
+| Calendar moves, Start Calendar model                 | packages/items/src/calendar-move.test.ts                                                                                                                                                                   |
+| Calendar drag, keyboard move, roles, Start Cal       | apps/editor/components/plan/views/CalendarView.test.tsx                                                                                                                                                    |
+| Element seed, validation, export box                 | packages/project/src/plan-shapes.test.ts                                                                                                                                                                   |
+| Rendering, empty and loading, opening, metrics       | apps/editor/components/plan/views/PlanViewView.test.tsx                                                                                                                                                    |
+| Gantt window pin, pan, slop, cleanup                 | apps/editor/components/plan/views/useGanttWindow.test.ts                                                                                                                                                   |
+| Gantt View flyout (card types, swimlanes)            | apps/editor/components/palette/PlanViewMenuSection.test.tsx                                                                                                                                                |
+| Gantt row order (apply, reorder, validation)         | packages/items/src/gantt-row-order.test.ts                                                                                                                                                                 |
+| Gantt row drag, keyboard move, lanes                 | apps/editor/components/plan/views/GanttRowOrder.test.tsx                                                                                                                                                   |
+| Palette categories and tiles                         | apps/editor/components/palette/palette-*.test.ts(x)                                                                                                                                                        |
+| Slot name: read, cap, remap, set and clear           | packages/project/src/slot-name.test.ts                                                                                                                                                                     |
+| Slot name field: offered, save, Escape, clear, roles | apps/editor/components/plan/dashboard/SlotNameField.test.tsx                                                                                                                                               |
+| Slot name shown on a chart, metric and figures       | apps/editor/components/plan/views/PlanViewView.slot-name.test.tsx, apps/editor/components/plan/dashboard/DashboardSheetMetric.test.tsx, apps/editor/components/plan/dashboard/DashboardFormMetric.test.tsx |
+| Slot name in exports                                 | packages/plan-art/src/dashboard-export.test.ts, dashboard-card-art.test.ts, plan-view-art.test.ts                                                                                                          |
+| Agent chart names                                    | packages/agent-verbs/src/plan/dashboard-input.test.ts, packages/templates/src/dashboard-builder.test.ts                                                                                                    |
 
 ## Constants and configuration
 

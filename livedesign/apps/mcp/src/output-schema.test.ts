@@ -56,8 +56,15 @@ const PAGES = {
 const LIVE_DOC = {
   id: 'd1',
   name: 'Roadmap',
-  tabs: [{ id: 't1', name: 'Tab 1', orderIndex: 0 }],
+  tabs: [
+    { id: 't1', name: 'Tab 1', orderIndex: 0 },
+    { id: 't2', name: 'Tab 2', orderIndex: 1 },
+  ],
 };
+// A tab with an element to make a component of (docs/specs/015-api/mcp-server.md §4.9e).
+const BOX = { id: 'b1', type: 'shape', shape: 'square', x: 0, y: 0, width: 100, height: 40 };
+const TAB_2 = { id: 't2', name: 'Tab 2', rev: 3, elements: [BOX] };
+const MAIN = { id: 'card', name: 'Card', width: 100, height: 40, updatedAt: 1, elements: [BOX] };
 // A plausible api with non-empty lists, so the array item schemas are exercised.
 async function api(request: Request): Promise<Response> {
   const url = new URL(request.url);
@@ -98,6 +105,9 @@ async function api(request: Request): Promise<Response> {
   if (path.endsWith('/pages')) return json(PAGES);
   if (path.endsWith('/changesets')) return json(CHANGESET);
   if (path.endsWith('/name')) return json({ tab: { id: 't1', name: 'Renamed', orderIndex: 0 } });
+  if (path.endsWith('/components')) return json({ components: [MAIN] });
+  if (path.includes('/components/')) return json({ component: MAIN });
+  if (path.endsWith('/tabs/t2')) return json({ tab: TAB_2 });
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
   return json({ design: LIVE_DOC });
 }
@@ -153,6 +163,22 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     output: 'changePagesOutput',
     args: { designId: 'd1', changes: [{ op: 'add', kind: 'logo', layout: 'title' }] },
   },
+  { tool: 'read_design', output: 'readDesignOutput', args: { designId: 'd1', view: 'components' } },
+  {
+    tool: 'change_components',
+    output: 'changeComponentsOutput',
+    args: { designId: 'd1', make: { tabId: 't2', elementIds: ['b1'], name: 'Card' } },
+  },
+  {
+    tool: 'change_components',
+    output: 'changeComponentsOutput',
+    args: { designId: 'd1', patch: { componentId: 'card', archived: true } },
+  },
+  {
+    tool: 'change_components',
+    output: 'changeComponentsOutput',
+    args: { designId: 'd1', detach: { instance: 'i1' } },
+  },
 ];
 
 describe('tool output schemas', () => {
@@ -188,7 +214,12 @@ describe('tool output schemas', () => {
       // carries its text, then one line naming the design, the tab and its revision (VW55).
       const [first] = result.content as { type: string; text: string }[];
       const view = z.object({ tab: z.object({ text: z.string() }) }).safeParse(structured);
-      if (view.success) {
+      const components = z.object({ components: z.string() }).safeParse(structured);
+      if (components.success) {
+        // The components view: its text, then one line naming the design and its tabs.
+        const { components: text, ...rest } = structured as { components: string };
+        expect(first!.text).toBe(`${text}\n${JSON.stringify(rest)}`);
+      } else if (view.success) {
         const { tab, ...rest } = structured as { tab: { text: string; view: string } };
         const { text, view: _view, ...tabMeta } = tab;
         const [viewText, line, ...extra] = first!.text.split('\n');

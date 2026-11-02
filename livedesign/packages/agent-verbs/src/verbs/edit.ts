@@ -107,6 +107,11 @@ const ELEMENT_OPERATIONS = {
     words: '<selector…> in frame key=value…',
     example: 'n3 n4 in frame label=Auth',
   },
+  detach: {
+    summary: 'Turn a component instance into plain elements',
+    words: '<instance>',
+    example: 'nav-bar',
+  },
 } as const;
 
 type ElementOperation = keyof typeof ELEMENT_OPERATIONS;

@@ -1,79 +1,31 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { ReactNode } from 'react';
+import { cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { CommunityOwnPost } from '@livediagram/api-schema';
 
-// The Share dialog's Community wiring (docs/specs/025-community/community.md "Publishing", "Turning the Community
-// off"): the section only where a post can exist, the password lock only while listed, the publish dialog in place
-// of the Share dialog, and nothing at all while the Community is switched off.
+// The editor's Share binds the shared Community tab to livediagram (docs/specs/025-community/community.md
+// "Publishing", "Turning the Community off"): the Community's switch, the canvas's sign-in return, the person as the
+// listing's author, and the header badge's store. The tab itself is @liveworkspace/community-ui's, tested there.
 
-const h = vi.hoisted(() => ({
-  enabled: true,
-  post: null as CommunityOwnPost | null,
-  useCommunityPost: vi.fn(),
-}));
+const h = vi.hoisted(() => ({ enabled: true, community: null as Record<string, unknown> | null }));
 
 vi.mock('@livediagram/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@livediagram/ui')>()),
   useCommunityEnabled: () => h.enabled,
 }));
-vi.mock('@/hooks/persistence/useCommunityPost', () => ({
-  useCommunityPost: (opts: unknown) => {
-    h.useCommunityPost(opts);
-    return { post: h.post, loading: false, error: null, publish: vi.fn(), remove: vi.fn() };
+vi.mock('@liveworkspace/explorer', () => ({
+  ShareDialogWithCommunity: (p: { community: Record<string, unknown> }) => {
+    h.community = p.community;
+    return null;
   },
 }));
-vi.mock('@liveworkspace/explorer', () => ({
-  ShareDialog: (p: {
-    passwordLockedReason?: string | null;
-    publicNote?: string | null;
-    appTab?: { label: string; badge?: ReactNode; panel: ReactNode } | null;
-    initialView?: string;
-  }) => (
-    <div
-      data-testid="share"
-      data-locked={p.passwordLockedReason ?? ''}
-      data-public={p.publicNote ?? ''}
-      data-tab={p.appTab?.label ?? ''}
-      data-view={p.initialView ?? ''}
-    >
-      <span data-testid="badge">{p.appTab?.badge}</span>
-      {p.appTab?.panel}
-    </div>
-  ),
-}));
-vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
-  indexClient: { listShareLinks: async () => ({ links: [], passwordSet: false }) },
-}));
-vi.mock('./CommunityGuide', () => ({ CommunityGuide: () => <p>Guide</p> }));
-vi.mock('./CommunitySection', () => ({
-  CommunityPublicBadge: () => <span>Public</span>,
-  CommunitySection: (p: { onPublish: () => void; firstTabEmpty?: boolean }) => (
-    <button type="button" onClick={p.onPublish} disabled={!!p.firstTabEmpty}>
-      Share to Community
-    </button>
-  ),
-}));
-vi.mock('./CommunityPublishDialog', () => ({
-  CommunityPublishDialog: (p: { onClose: () => void }) => (
-    <button type="button" onClick={p.onClose}>
-      Publish dialog
-    </button>
-  ),
+vi.mock('@/lib/community-share-host', () => ({
+  livediagramCommunityHost: (opts: { documentId: string }) => ({ documentId: opts.documentId }),
 }));
 
+import { getCommunityState } from '@/lib/community-state-store';
 import { ShareDialogWithCommunity } from './ShareDialogWithCommunity';
 
-const post = (state: CommunityOwnPost['state']) => ({ state }) as CommunityOwnPost;
-
-function renderDialog(
-  over: {
-    signedIn?: boolean;
-    teamDocument?: boolean;
-    firstTabEmpty?: boolean;
-  } = {},
-) {
+function renderDialog(over: { signedIn?: boolean; firstTabEmpty?: boolean } = {}) {
   const share = {
     client: {},
     item: {
@@ -82,7 +34,7 @@ function renderDialog(
       kind: 'canvas',
       sharedVia: null,
       title: 'Doc',
-      teamId: over.teamDocument ? 't1' : null,
+      teamId: null,
     },
     shareUrl: () => '',
     onClose: () => {},
@@ -97,93 +49,43 @@ function renderDialog(
       firstTabEmpty={over.firstTabEmpty}
     />,
   );
+  return h.community!;
 }
 
 beforeEach(() => {
   h.enabled = true;
-  h.post = null;
-  h.useCommunityPost.mockReset();
+  h.community = null;
 });
 afterEach(cleanup);
 
 describe('ShareDialogWithCommunity', () => {
-  it('reads the post only for a signed-in owner of a personal canvas', () => {
-    renderDialog();
-    expect(h.useCommunityPost).toHaveBeenLastCalledWith(expect.objectContaining({ open: true }));
-    cleanup();
-    for (const over of [{ signedIn: false }, { teamDocument: true }]) {
-      renderDialog(over);
-      expect(h.useCommunityPost).toHaveBeenLastCalledWith(expect.objectContaining({ open: false }));
-      cleanup();
-    }
+  it('binds the tab to the canvas, its owner and the person', () => {
+    const community = renderDialog({ firstTabEmpty: true });
+    expect(community).toMatchObject({
+      host: { documentId: 'd1' },
+      ownerId: 'user_a',
+      documentName: 'Doc',
+      signedIn: true,
+      communityOn: true,
+      firstTabEmpty: true,
+      author: { name: 'Ada', color: '#f97316' },
+    });
+    expect(String(community.signInHref)).toContain(encodeURIComponent('/document/d1'));
   });
 
-  it('locks the share password only while the post is listed', () => {
-    h.post = post('listed');
-    renderDialog();
-    expect(screen.getByTestId('share').dataset.locked).toBe(
-      'Remove it from the Community to set a password.',
-    );
-    cleanup();
-    h.post = post('hidden');
-    renderDialog();
-    expect(screen.getByTestId('share').dataset.locked).toBe('');
-  });
-
-  it('says the canvas is public on the status line only while the post is listed', () => {
-    h.post = post('listed');
-    renderDialog();
-    expect(screen.getByTestId('share').dataset.public).toBe(
-      'in the Community, where anyone can find it, view it and make a copy.',
-    );
-    cleanup();
-    for (const state of ['hidden', null] as const) {
-      h.post = state ? post(state) : null;
-      renderDialog();
-      expect(screen.getByTestId('share').dataset.public).toBe('');
-      cleanup();
-    }
-  });
-
-  it('gives the Share dialog a Community tab: the guide, then the section, Public while listed', () => {
-    h.post = post('listed');
-    renderDialog();
-    expect(screen.getByTestId('share').dataset.tab).toBe('Community');
-    expect(screen.getByText('Guide')).toBeTruthy();
-    expect(screen.getByTestId('badge').textContent).toBe('Public');
-    cleanup();
-    h.post = post('hidden');
-    renderDialog();
-    expect(screen.getByTestId('badge').textContent).toBe('');
-  });
-
-  it('swaps in the publish dialog, and comes back to the Share dialog on its Community tab after', () => {
-    renderDialog();
-    expect(screen.getByTestId('share').dataset.view).toBe('passes');
-    fireEvent.click(screen.getByRole('button', { name: 'Share to Community' }));
-    expect(screen.queryByTestId('share')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Publish dialog' }));
-    expect(screen.getByTestId('share').dataset.view).toBe('app');
-  });
-
-  it('hands the Community section an empty first tab, which holds Share to Community', () => {
-    renderDialog({ firstTabEmpty: true });
-    expect(
-      screen.getByRole<HTMLButtonElement>('button', { name: 'Share to Community' }).disabled,
-    ).toBe(true);
-    cleanup();
-    renderDialog();
-    expect(
-      screen.getByRole<HTMLButtonElement>('button', { name: 'Share to Community' }).disabled,
-    ).toBe(false);
-  });
-
-  it('is the plain Share dialog while the Community is switched off', () => {
+  it('follows the Community switch and the sign-in', () => {
     h.enabled = false;
-    h.post = post('listed');
-    renderDialog();
-    expect(screen.getByTestId('share').dataset.locked).toBe('');
-    expect(screen.queryByRole('button', { name: 'Share to Community' })).toBeNull();
-    expect(h.useCommunityPost).toHaveBeenLastCalledWith(expect.objectContaining({ open: false }));
+    expect(renderDialog({ signedIn: false })).toMatchObject({
+      communityOn: false,
+      signedIn: false,
+    });
+  });
+
+  it('keeps the header badge in step with the post', () => {
+    const community = renderDialog();
+    (community.onStateChange as (s: string | null) => void)('listed');
+    expect(getCommunityState('d1')).toBe('listed');
+    (community.onStateChange as (s: string | null) => void)(null);
+    expect(getCommunityState('d1')).toBeNull();
   });
 });

@@ -1,7 +1,7 @@
-// /api/account — deleting an account.
+// /api/account: deleting an account, and the code emailed to confirm it.
 
 import { bearerTokenOf } from '@livedesign/api-schema';
-import { closeAccount } from '@liveworkspace/auth-client';
+import { confirmDeletionCode, requestDeletionCode } from '@liveworkspace/auth-client';
 import { deleteAccount } from '../db';
 import { emailEnabled, sendEmail } from '../email/client';
 import { accountDeletedEmail } from '../email/templates';
@@ -46,22 +46,37 @@ async function purgeOwnDesigns(ctx: RouteContext): Promise<{ designs: number; mo
 // again, and the data delete is idempotent (a second run finds nothing to remove).
 export async function handleAccount(ctx: RouteContext): Promise<Response> {
   const { request, env, segments, accountUserId, accountEmail } = ctx;
-  if (!(segments[1] === 'account' && segments.length === 2)) return notFound();
+  if (segments[1] !== 'account') return notFound();
+  const accessToken = bearerTokenOf(request.headers.get('Authorization'));
+  // Being signed in is not enough to delete the account: the code emailed to it is (docs/specs/014-identity/
+  // auth-and-guest-access.md "Deleting an account"). This asks for one.
+  if (segments.length === 3 && segments[2] === 'deletion-code' && request.method === 'POST') {
+    if (!accountUserId) return missingAuth();
+    const sent = await requestDeletionCode(configured(env), accessToken);
+    return json(sent.body, { status: sent.status, headers: { 'Cache-Control': 'no-store' } });
+  }
+  if (segments.length !== 2) return notFound();
   if (request.method === 'DELETE') {
     if (!accountUserId) return missingAuth();
+    // The code is checked before anything is deleted, and the close below sends it again, where the accounts Worker
+    // checks it once more and spends it.
+    const body = (await request.json().catch(() => null)) as { code?: unknown } | null;
+    const confirmed = await confirmDeletionCode(configured(env), accessToken, body?.code);
+    if (!confirmed.ok) {
+      return json(confirmed.answer.body, {
+        status: confirmed.answer.status,
+        headers: { 'Cache-Control': 'no-store' },
+      });
+    }
     const purged = await purgeOwnDesigns(ctx);
     if (purged.more) return json({ error: 'designs_remaining', deleted: purged }, { status: 409 });
     await deleteAccount(env, accountUserId);
     const deleted = { designs: purged.designs };
-    const accounts = configured(env);
-    const accessToken = bearerTokenOf(request.headers.get('Authorization'));
-    if (accounts && accessToken) {
-      try {
-        await closeAccount(accounts, accessToken);
-      } catch (err) {
-        console.warn('[account] close_failed', err instanceof Error ? err.message : 'unknown');
-        return json({ error: 'account_not_closed', deleted }, { status: 502 });
-      }
+    try {
+      await confirmed.closeAccount();
+    } catch (err) {
+      console.warn('[account] close_failed', err instanceof Error ? err.message : 'unknown');
+      return json({ error: 'account_not_closed', deleted }, { status: 502 });
     }
     // docs/specs/014-identity/transactional-email.md: a parting confirmation (best-effort, after the rows are gone).
     if (accountEmail && emailEnabled(env)) {

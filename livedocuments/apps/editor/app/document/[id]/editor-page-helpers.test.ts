@@ -269,6 +269,25 @@ describe('resolveDocumentSession (owner / role / share-code security)', () => {
     expect(s.sessionShareCode).toBeNull();
   });
 
+  it('a Community link is read-only for everyone, the author included', () => {
+    const own = resolveDocumentSession({
+      documentOwnerId: 'me',
+      selfId: 'me',
+      shareRole: 'view',
+      shareCodeParam: 'POSTLINK',
+      community: true,
+    });
+    expect(own).toEqual({ isOwner: false, sessionRole: 'view', sessionShareCode: 'POSTLINK' });
+    const visitor = resolveDocumentSession({
+      documentOwnerId: 'someone-else',
+      selfId: 'me',
+      shareRole: 'view',
+      shareCodeParam: 'POSTLINK',
+      community: true,
+    });
+    expect(visitor).toEqual(own);
+  });
+
   it('edit-role visitor: inherits edit, carries their code', () => {
     const s = resolveDocumentSession({
       documentOwnerId: 'someone-else',

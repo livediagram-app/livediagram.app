@@ -10,6 +10,8 @@ export * from './dashboard-export';
 export * from './plan-export-tab';
 export * from './plan-export-formats';
 export * from './widget-stats';
+export * from './field-widget-stats';
+export * from './widget-suggestions';
 export * from './metric-tile-model';
 export * from './phase-colours';
 export * from './board-widget-info';

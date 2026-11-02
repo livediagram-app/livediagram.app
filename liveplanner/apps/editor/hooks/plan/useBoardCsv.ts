@@ -9,6 +9,7 @@ import {
   boardCsvMessage,
   boardCsvRows,
   boardTakesCsv,
+  donePhase,
   type PlanBoardSetup,
 } from '@liveplanner/items';
 import { parseCsv, toCsv } from '@liveplanner/sheets';
@@ -28,11 +29,16 @@ export const BOARD_CSV_MAX_BYTES = 5 * 1024 * 1024;
 export const BOARD_CSV_TOO_BIG =
   'That file is too big to import. Import CSV reads files up to 5 MB.';
 
-type Plan = Pick<PlanContextValue, 'items' | 'types' | 'statusNames'>;
+type Plan = Pick<PlanContextValue, 'items' | 'types' | 'statusNames'> &
+  Partial<Pick<PlanContextValue, 'statusPhases'>>;
 
 export function boardCsvText(plan: Plan, setup: PlanBoardSetup): string {
   // A download: no field runs as a formula in the spreadsheet that opens it (sheet.md "CSV").
-  return toCsv(boardCsvRows(setup, plan.items, plan.types, plan.statusNames), { safe: true });
+  // A Rollup's Count Done by the plan's done columns (docs/specs/026-plan/item-types.md "Rollup and Lookup fields").
+  const isDone = plan.statusPhases ? donePhase(plan.statusPhases) : undefined;
+  return toCsv(boardCsvRows(setup, plan.items, plan.types, plan.statusNames, isDone), {
+    safe: true,
+  });
 }
 
 // Reads a file's text into new cards on the board as one write; answers what the board then says.
@@ -64,6 +70,14 @@ export async function importBoardCsv(
 export function useBoardCsv(elementId: string, setup: PlanBoardSetup | null): void {
   const plan = usePlan();
   const latest = useLatest({ plan, setup });
+  // A picked or dropped file's text into new cards, then what the board says; refused unread past the cap.
+  const importFile = async (file: { tooBig?: boolean; text: () => Promise<string> } | null) => {
+    const { plan: p, setup: s } = latest.current;
+    if (!file || !p || !s) return;
+    const message = file.tooBig ? BOARD_CSV_TOO_BIG : await importBoardCsv(p, s, await file.text());
+    p.announce(message);
+    p.notify?.(message);
+  };
   usePublishBoardCsv(
     elementId,
     plan && setup
@@ -78,15 +92,14 @@ export function useBoardCsv(elementId: string, setup: PlanBoardSetup | null): vo
               // Loaded at the press: the picker is the import dialog's, not needed to draw a board.
               const { pickTabFile } = await import('@/lib/import-tab');
               const file = await pickTabFile(BOARD_CSV_ACCEPT, { maxBytes: BOARD_CSV_MAX_BYTES });
-              const { plan: p, setup: s } = latest.current;
-              if (!file || !p || !s) return;
-              const message = file.tooBig
-                ? BOARD_CSV_TOO_BIG
-                : await importBoardCsv(p, s, file.text);
-              p.announce(message);
-              p.notify?.(message);
+              await importFile(file && { tooBig: file.tooBig, text: async () => file.text });
             })();
           },
+          onImportCsvFile: (file) =>
+            void importFile({
+              tooBig: file.size > BOARD_CSV_MAX_BYTES,
+              text: () => file.text(),
+            }),
         }
       : undefined,
   );

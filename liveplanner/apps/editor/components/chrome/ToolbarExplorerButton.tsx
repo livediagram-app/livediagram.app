@@ -1,7 +1,7 @@
 'use client';
 
 import { track } from '@/lib/telemetry';
-import { HoverCard, Glyph } from '@liveplanner/ui';
+import { Glyph } from '@liveplanner/ui';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
@@ -80,11 +80,8 @@ export function ToolbarExplorerButton({
         e.stopPropagation();
       }}
     >
-      {/* No hover card while open: it would sit over the panel it names. Disabled, not unwrapped, so the
-          button keeps its focus as the panel opens. */}
-      <HoverCard title="Explorer" description="Your plans, folders and teams." disabled={open}>
-        {button}
-      </HoverCard>
+      {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}
+      {button}
       {/* A maximised or tab-filling element's name, while its header holds the top row (menu-name-slot). */}
       {phone || inline ? null : <MenuNameSlot />}
       {/* Else the open tab's name, in every mode (not on a phone). */}

@@ -2,10 +2,16 @@
 // Calendar's month with the cards on their days, from the live views' models, at the element's box. Pure.
 import {
   WEEKDAY_SHORT,
+  blockingIndexOf,
   calendarModel,
+  donePhase,
+  ganttArrowPath,
+  ganttArrows,
+  ganttMarkEnds,
   ganttAt,
   ganttModel,
   ganttShownTypes,
+  viewDatesOf,
   itemColourOf,
   itemTitle,
   shiftMonth,
@@ -23,13 +29,15 @@ const AXIS_H = 22;
 
 const titled = (name: string, own: string | undefined) => own?.trim() || name;
 
-// The Gantt: a names column, the weeks along the top, a bar (or a diamond for a date alone) a row, today's line.
+// The Gantt: a names column, the weeks along the top, a bar (or a diamond for a date alone) a row, an arrow from each
+// blocker to each row it blocks (docs/specs/026-plan/plan-views.md "Dependency arrows"), today's line.
 export function ganttArt({ rect, p, items, data, settings, title }: ViewArtInput): string {
   const model = ganttModel(
     items.values(),
     data.statusPhases,
     data.now,
     ganttShownTypes(settings, data.types),
+    viewDatesOf(settings, data.types),
   );
   const frame = viewFrame(rect, p, titled('Gantt Chart', title), model.rows.length);
   if (model.rows.length === 0)
@@ -51,9 +59,28 @@ export function ganttArt({ rect, p, items, data, settings, title }: ViewArtInput
     );
   }
   const room = Math.max(0, Math.floor((body.height - AXIS_H) / ROW_H));
-  model.rows.slice(0, room).forEach((row, i) => {
+  const shown = model.rows.slice(0, room);
+  const arrows = ganttArrows(
+    shown.map((row, i) => ({ row, top: body.y + AXIS_H + i * ROW_H })),
+    blockingIndexOf(items.values(), data.types, donePhase(data.statusPhases)),
+    data.statusPhases,
+  );
+  for (const a of arrows) {
+    const from = ganttMarkEnds(a.from.row, at, 7);
+    const to = ganttMarkEnds(a.to.row, at, 7);
+    const { d, head } = ganttArrowPath(
+      { x: from.right, y: a.from.top + ROW_H / 2 },
+      { x: to.left, y: a.to.top + ROW_H / 2 },
+      ROW_H,
+    );
+    parts.push(
+      `<g opacity="${a.done ? 0.4 : 1}" color="${xmlEscape(p.muted)}"><path d="${d}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="${head}" fill="currentColor"/></g>`,
+    );
+  }
+  shown.forEach((row, i) => {
     const y = body.y + AXIS_H + i * ROW_H;
-    const colour = accentOn(itemColourOf(row.item) ?? typeIn(data.types, row.item.type).color, p);
+    const type = typeIn(data.types, row.item.type);
+    const colour = accentOn(itemColourOf(row.item, type) ?? type.color, p);
     parts.push(
       line(body.x + ART_PAD, y + 18, itemTitle(row.item).trim() || 'Untitled', {
         size: 12,
@@ -95,12 +122,19 @@ export function ganttArt({ rect, p, items, data, settings, title }: ViewArtInput
 
 // A Calendar: this month's weeks, each day its date and its cards (a line each, as many as fit, then "+2").
 export function calendarArt(
-  { rect, p, items, data, title }: ViewArtInput,
+  { rect, p, items, data, settings, title }: ViewArtInput,
   field: CalendarField,
 ): string {
   const now = data.now;
   const shown = shiftMonth(now.getFullYear(), now.getMonth(), 0);
-  const model = calendarModel(items.values(), data.statusPhases, shown.year, shown.month, field);
+  const model = calendarModel(
+    items.values(),
+    data.statusPhases,
+    shown.year,
+    shown.month,
+    field,
+    viewDatesOf(settings, data.types),
+  );
   const name = field === 'start' ? 'Start Calendar' : 'Due Calendar';
   const frame = viewFrame(rect, p, `${titled(name, title)} · ${model.label}`, model.count);
   const body = frame.body;

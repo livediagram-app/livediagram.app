@@ -10,6 +10,7 @@ import {
   type ShapeElement,
   estimatedLabelMeasure,
   fontSizeFor,
+  labelTextScale,
   LABEL_LINE_HEIGHT,
   labelRoom,
   wrapLabel,
@@ -53,7 +54,8 @@ export const labelOverflow: Check = (ctx) =>
     const label: unknown = Reflect.get(box, 'label');
     if (typeof label !== 'string' || label.trim() === '') return [];
     if (box.textSize === 'scale' || !drawsStandardLabel(box)) return [];
-    const px = fontSizeFor(box.textSize, box.type === 'sticky');
+    // A re-fitted shape's label draws at its scale (docs/specs/007-editor/pages-mode.md "Sizes").
+    const px = fontSizeFor(box.textSize, box.type === 'sticky') * labelTextScale(box);
     const room = labelRoom(box);
     const lines = wrapLabel(label, room.width, estimatedLabelMeasure(px), true).length;
     const holds = Math.max(1, Math.floor(room.height / (px * LABEL_LINE_HEIGHT)));

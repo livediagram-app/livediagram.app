@@ -50,6 +50,8 @@ export const HELP_ARTICLES = {
   planCardTypes: 'plan/card-types',
   planBoards: 'plan/boards',
   planCards: 'plan/cards',
+  planCardActivity: 'plan/card-activity',
+  planSelectCards: 'plan/select-cards',
   planSheets: 'plan/sheets',
   planDashboards: 'plan/dashboards',
   planForms: 'plan/forms',
@@ -115,6 +117,14 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about cards',
     description: 'Open a card, fill it in, and archive, trash or present it.',
   },
+  planCardActivity: {
+    title: 'Learn about card activity',
+    description: 'Who made a card, moved it and changed it, and when.',
+  },
+  planSelectCards: {
+    title: 'Learn about selecting cards',
+    description: 'Change several cards at once, or drag them as one group.',
+  },
   planSheets: {
     title: 'Learn about sheets',
     description: 'Cells, formulas, charts, setup and settings.',
@@ -169,8 +179,8 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'How long deleted plans wait, and how to restore one.',
   },
   importTabs: {
-    title: 'Learn about importing tabs',
-    description: 'What you can import and how it replaces the tab.',
+    title: 'Learn about importing',
+    description: 'Each kind of file, and a board from Trello, Asana, Jira or Linear.',
   },
   linkingTabs: {
     title: 'Learn about linking tabs',

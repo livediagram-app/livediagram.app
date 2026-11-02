@@ -21,9 +21,9 @@ import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 const ICON = 18;
 // Written out rather than read from @livediagram/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 82;
+export const TEMPLATE_COUNT = 88;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
-export const TEMPLATE_CATEGORY_COUNT = 9;
+export const TEMPLATE_CATEGORY_COUNT = 14;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
@@ -250,13 +250,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers,
-            text, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a
-            stylus, a resting palm never leaves a mark. See{' '}
+            text, a fill bucket, an eraser and shapes, on a plain, dotted or grid board in light or
+            dark. With a stylus, a resting palm never leaves a mark. See{' '}
             <a href="/help/canvas/draw-mode/">Draw mode</a>.
           </>
         ),
         aText:
-          'Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers, text, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a stylus, a resting palm never leaves a mark. See Draw mode.',
+          'Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers, text, a fill bucket, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a stylus, a resting palm never leaves a mark. See Draw mode.',
       },
       {
         q: 'Can I present from it?',

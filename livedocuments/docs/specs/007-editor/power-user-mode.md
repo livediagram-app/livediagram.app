@@ -71,18 +71,16 @@ While searching, a child that matches shows on its own, like any other row.
 On by default when the mode switches on (the preset writes it). Minimal chrome removes words and hints that teach
 the interface, and leaves the controls:
 
-- **Selection kind chip.** The caption above the selection toolbar ("Selected Arrow", "Selected Square", "Selected
-  Elements (3)") is hidden.
+- **Selection kind chip.** The caption above the multi-selection toolbar ("Selected Elements (3)") is hidden.
 - **Palette tile captions.** Palette tiles show their icon only.
 - **Status bar text.** The bottom bar's Start Tour, Search, Settings and appearance controls show their icons only.
-- **The "Tabs" label** before the tab pills is hidden.
 - **Panel titles and help buttons.** Panels (Explorer, Map, Layers, ...) hide their
   header title and their `?` help button. A panel with a `⋯` menu gains a **Help** row there, opening the same
   article. The Explorer is the one panel with a `⋯` menu today. A panel without one simply drops its `?`: no menu is
   added to hold it, and the help centre stays one click away in the header's **Editor** menu.
 - **Onboarding notices and hints.** The modifier-key hint banner, the Explorer's sign-in / "saved to this browser"
   notice, and the match-theme nudge are not shown.
-- **The bin** (Delete) in the selection toolbars, on desktop. Touch devices keep it: they have no Delete key.
+- **The bin** (Delete) in the multi-selection toolbar, on desktop. Touch devices keep it: they have no Delete key.
 - **The role pill** leaves the title bar ([Editor app](editor-app.md#role-pill)) and becomes an icon, **first** in the
   bottom-left of the status bar: a pencil while editing, an eye while viewing. Its Tooltip reads "Editing" or
   "Viewing (read-only)". Whoever may toggle the pill may toggle the icon, the same way.
@@ -100,7 +98,7 @@ The mode also makes, whatever the Minimal chrome option says:
 
 And it drops, whatever the Minimal chrome option says:
 
-- **The More button** (`⋯`) in the selection toolbars, on desktop: a power user opens the element menu with a
+- **The More button** (`⋯`) in the multi-selection toolbar, on desktop: a power user opens the element menu with a
   right-click ([Canvas and palette](../008-canvas/canvas-and-palette.md#selection-popover)). Touch devices keep it:
   they cannot right-click.
 
@@ -115,8 +113,7 @@ Minimal chrome meets WCAG 2.2 AA:
   keyboard focus, long press on touch), per [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md).
   Palette tiles use a Tooltip.
 - **Non-interactive labels stay in the document.** A panel title keeps its text as visually hidden text; the selection
-  toolbar names itself with the kind (`role="toolbar"`, `aria-label` "Selected Square"); the "Tabs" label was never
-  announced (the tab strip carries its own names).
+  toolbar names itself with the kind (`role="toolbar"`, `aria-label` "Selected Square").
 - **No layout shift.** Hiding happens at render, from the preference, never after paint: nothing moves on its own.
   Flipping the setting re-lays the chrome once, as the direct result of the click.
 

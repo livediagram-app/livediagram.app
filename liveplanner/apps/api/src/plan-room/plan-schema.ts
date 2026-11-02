@@ -11,6 +11,10 @@
 // stores nothing. Versioned by `_plan_schema`; a later change adds a step to STEPS, never edits one.
 
 import { migrationSchema, tabSharesSchema } from '@liveworkspace/index-app';
+import { CARD_REPEATS_SCHEMA } from './card-repeats-schema';
+import { CARD_THREADS_SCHEMA } from './card-thread-schema';
+import { IMAGE_REFS_SCHEMA } from './image-refs';
+import { ITEM_HISTORY_SCHEMA } from './item-history-schema';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -349,11 +353,61 @@ const V5 = tabSharesSchema();
 // own step, appended: every statement is IF NOT EXISTS.
 const V6 = migrationSchema();
 
-const STEPS: readonly string[] = [V1, V2, V3, V4, V5, V6];
+// A card's comment threads, and the move of each card's old single thread into its first one
+// (card-thread-schema.ts; docs/specs/026-plan/items.md "Comments"). Its own step, appended.
+const V7 = CARD_THREADS_SCHEMA;
 
-export const PLAN_SCHEMA_VERSION = STEPS.length;
+// The Image field pictures the plan may serve (image-grants.ts; docs/specs/026-plan/item-types.md "Image fields"):
+// one row per picture uploaded for it, the oldest dropped past IMAGE_GRANTS_MAX. Its own step, appended.
+const V8 = `
+CREATE TABLE IF NOT EXISTS card_image_grants (
+  plan_id    TEXT    NOT NULL,
+  image_id   TEXT    NOT NULL,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (plan_id, image_id)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS card_image_grants_age ON card_image_grants (plan_id, created_at);
+`;
+
+// A card's history (item-history-schema.ts; docs/specs/026-plan/items.md "History"). Its own step, appended; every
+// statement is IF NOT EXISTS, so it runs again harmlessly wherever it lands.
+const V9 = ITEM_HISTORY_SCHEMA;
 
 type Exec = (query: string) => { toArray(): Record<string, unknown>[] };
+
+// The Comments field a card's thread belongs to (docs/specs/026-plan/item-types.md "Comments and Votes fields"): null
+// is the built-in Comments, as every thread from before. Its own step, appended; SQLite has no ADD COLUMN IF NOT
+// EXISTS, so it asks first, and runs again harmlessly as every other step does.
+const V10 = (exec: Exec) => {
+  const columns = exec('PRAGMA table_info(card_threads)').toArray();
+  if (!columns.some((c) => c.name === 'field'))
+    exec('ALTER TABLE card_threads ADD COLUMN field TEXT NULL');
+};
+
+// The pictures the plan's cards hold, reported to liveworkspace's media service (image-refs.ts; docs/specs/026-plan/
+// items.md "Images in use"): the last set sent, and the triggers that queue a report. Its own step, appended.
+const V11 = IMAGE_REFS_SCHEMA;
+
+// A repeating card's schedule (card-repeats-schema.ts; docs/specs/026-plan/items.md "Repeating cards"). Its own step,
+// appended.
+const V12 = CARD_REPEATS_SCHEMA;
+
+const STEPS: readonly (string | ((exec: Exec) => void))[] = [
+  V1,
+  V2,
+  V3,
+  V4,
+  V5,
+  V6,
+  V7,
+  V8,
+  V9,
+  V10,
+  V11,
+  V12,
+];
+
+export const PLAN_SCHEMA_VERSION = STEPS.length;
 
 // Bring the plan's SQLite up to PLAN_SCHEMA_VERSION. Idempotent: every statement is IF NOT EXISTS, and the
 // version row skips what already ran. Runs inside the caller's transaction when it has one.
@@ -362,7 +416,11 @@ export function migratePlanSchema(exec: Exec): void {
   const row = exec('SELECT version FROM _plan_schema LIMIT 1').toArray()[0];
   const at = typeof row?.version === 'number' ? row.version : 0;
   if (at >= STEPS.length) return;
-  for (let step = at; step < STEPS.length; step++) exec(STEPS[step]!);
+  for (let step = at; step < STEPS.length; step++) {
+    const run = STEPS[step]!;
+    if (typeof run === 'string') exec(run);
+    else run(exec);
+  }
   exec('DELETE FROM _plan_schema');
   exec(`INSERT INTO _plan_schema (version) VALUES (${STEPS.length})`);
 }

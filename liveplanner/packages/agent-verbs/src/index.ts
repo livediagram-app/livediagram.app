@@ -63,6 +63,10 @@ export { EXPORT_FORMATS } from './verbs/local';
 export { workbenchNameOf, workbenchOriginOf } from './verbs/workbench';
 export {
   addBoard,
+  importTrackerBoard,
+  trackerImportAnswer,
+  type TrackerImportInput,
+  type TrackerImportResult,
   apiRefusalOf,
   deleteRefusal,
   changeBoard,
@@ -81,6 +85,16 @@ export {
   readPlanState,
   type ItemChange,
   type PlanState,
+  applyThreadChanges,
+  readThreadsState,
+  resolveComment,
+  resolveThread,
+  threadListing,
+  THREAD_STATUSES,
+  type ListedThread,
+  type ThreadChange,
+  type ThreadStatus,
+  type ThreadsState,
 } from './plan';
 export {
   addSheet,

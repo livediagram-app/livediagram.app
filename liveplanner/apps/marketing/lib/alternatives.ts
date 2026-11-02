@@ -496,7 +496,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Does liveplanner have docs, goals and time tracking?',
-        a: 'Not as separate features. Cards hold rich-text descriptions and checklists, the OKRs template plans objectives on a board, and the Timesheet template is a Sheet for hours. If you need those as full products, ClickUp covers more.',
+        a: 'Time tracking, yes: give a card type a Duration field with Track Time and each card gets a timer anyone can start, its entries adding up on the card and in the board’s Time widget. Docs and goals are not separate features: cards hold rich-text descriptions and checklists, and the OKRs template plans objectives on a board. If you need those as full products, ClickUp covers more.',
       },
       {
         q: 'Can I import from ClickUp?',
@@ -531,7 +531,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Formulas',
-        us: 'Over 150 spreadsheet functions with A1 references',
+        us: 'Over 150 spreadsheet functions, and formula, rollup and lookup fields on cards',
         them: 'Formula fields computed per record',
       },
       {

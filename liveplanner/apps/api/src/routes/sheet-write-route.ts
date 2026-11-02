@@ -177,10 +177,14 @@ export async function storeSheetWrite(
   body: SheetWriteRequest,
   by: SheetPerson,
   scopeTab: string | null,
+  // A write planned against the sheet at this rev (a form's response row): applied only to that rev, else answered
+  // sheet_busy for the caller to plan again, so a plan never lands on a sheet that changed under it.
+  { atRev }: { atRev?: number } = {},
 ): Promise<Response> {
   for (let attempt = 0; attempt < SHEET_WRITE_RETRIES; attempt++) {
     const head = await readSheetHead(ctx.env, projectId, sheetId);
     if (!head || (scopeTab && head.tabId !== scopeTab)) return sheetNotFound();
+    if (atRev !== undefined && head.rev !== atRev) return sheetBusy();
     const write = body.write;
     if (write.kind === 'title') {
       const heads = await listSheetHeads(ctx.env, projectId, head.tabId);

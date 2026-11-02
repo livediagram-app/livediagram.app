@@ -26,6 +26,7 @@ import {
   TrashIcon,
 } from '../ui/icons';
 import { useExplorer } from './context';
+import { kindWords } from '../words';
 import { MY_WORK, rowsAbove } from './sidebar/expansion';
 import { SIDEBAR_LABELS } from '../views';
 import { VisibilityBadge } from './badges';
@@ -50,8 +51,7 @@ export function ItemMenu({
   /** Rows a surface adds before the destructive ones (the Timeline's Remove from Timeline). */
   extra?: ReactNode;
 }) {
-  const { actions, openItem, setRenamingId, openDialog, navigate, kind, reloadLists } =
-    useExplorer();
+  const { actions, openItem, setRenamingId, openDialog, navigate, reloadLists } = useExplorer();
   const { slideOut } = useExtras();
   const host = useLibraryHost();
   const run = (fn: () => void) => () => {
@@ -165,7 +165,8 @@ export function ItemMenu({
         />
       ) : manage ? (
         <MenuActionRow
-          label={`Delete ${kind.one}`}
+          // The item's own kind: the All filter lists every app's, and a canvas isn't a plan.
+          label={`Delete ${kindWords(item.app).one}`}
           icon={<TrashIcon />}
           // The row slides out, then goes to the Trash.
           onClick={run(() => slideOut(item.id, () => void actions.trash(item)))}

@@ -31,6 +31,8 @@ const SETUP_KEYS = new Set([
   'title',
   'doneColumnId',
   'swimlaneBy',
+  // Sort Cards (docs/specs/026-plan/plan-board.md "The board set-up").
+  'sortBy',
   'cardFields',
   'cardSize',
   'archive',
@@ -43,8 +45,11 @@ const SETUP_KEYS = new Set([
   'fillTab',
   // A linked board's kind (docs/specs/026-plan/linked-boards.md).
   'collects',
+  // Saved filters (docs/specs/026-plan/board-widgets.md "Saved filters"): the list travels whole, as widgets do.
+  'savedFilters',
 ]);
-const COLUMN_KEYS = new Set(['status', 'name', 'wipLimit', 'color', 'width']);
+// `done`: Counts as Done (docs/specs/026-plan/plan-board.md "Done columns").
+const COLUMN_KEYS = new Set(['status', 'name', 'wipLimit', 'color', 'width', 'done']);
 // Bounds on one frame, well past any real board (PLAN_COLUMNS_MAX columns, a handful of fields).
 const PATCH_COLUMNS_MAX = 64;
 const ID_MAX = 40;

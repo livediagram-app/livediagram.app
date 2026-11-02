@@ -1,4 +1,5 @@
 import { TERMS_LABEL } from '@liveworkspace/sites';
+import { SECURITY_POLICY_URL } from '@liveworkspace/sites/security';
 import { listedApps } from '@/lib/apps';
 import { AppLogo } from './landing/AppLogo';
 import { Wordmark } from './Wordmark';
@@ -8,7 +9,7 @@ const linkClass =
 
 // The footer (liveworkspace/docs/specs/010-site/site.md "The front door"): every app again, the platform's own
 // pages and services (Comparison, which points at each app's comparisons), and the privacy
-// policy and terms that cover all of them, and the site's third-party licences.
+// policy and terms that cover all of them, where to report a vulnerability, and the site's third-party licences.
 export function Footer() {
   return (
     <footer className="border-t border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
@@ -48,6 +49,11 @@ export function Footer() {
           </a>
           <a href="/terms" className={linkClass}>
             {TERMS_LABEL}
+          </a>
+          {/* The repository's security policy, the same private channel for every app
+              (liveworkspace/docs/specs/001-platform-scope/vulnerability-disclosure.md). */}
+          <a href={SECURITY_POLICY_URL} className={linkClass}>
+            Report a Vulnerability
           </a>
           {/* Third-party licences (liveworkspace/docs/specs/010-site/site.md "Licences"). */}
           <a href="/licences" className={linkClass}>

@@ -344,6 +344,41 @@
         "!$TURBO_ROOT$/.git/**"
       ]
     },
+    // The naming guard (src/design-naming.test.ts) reads every tracked file under livedesign/, the apps
+    // that depend on this package included, so they are inputs: a word in apps/live must run it.
+    "@livedesign/design#test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/livedesign/**",
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/coverage/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/.wrangler/**",
+        "!$TURBO_ROOT$/**/test-results*/**",
+        "!$TURBO_ROOT$/**/playwright-report*/**"
+      ]
+    },
+    "@livedesign/design#test:coverage": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/livedesign/**",
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/coverage/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/.wrangler/**",
+        "!$TURBO_ROOT$/**/test-results*/**",
+        "!$TURBO_ROOT$/**/playwright-report*/**"
+      ]
+    },
     // livedocuments: the same per-package rules as livediagram above, on its own paths.
     "@livedocuments/marketing#build": {
       "dependsOn": [

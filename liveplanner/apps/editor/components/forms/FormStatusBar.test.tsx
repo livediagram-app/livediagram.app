@@ -126,3 +126,23 @@ describe('FormStatusBar, Not Taking Responses', () => {
     expect(screen.getByText('Closed')).toBeTruthy();
   });
 });
+
+describe('FormStatusBar, the count', () => {
+  // docs/specs/004-interface-design/touch-targets.md: the count is a 20px line of text that opens the responses, so
+  // on a touch screen its tap area reaches 44px tall.
+  it("takes a finger's tap area when it opens the responses", () => {
+    render(
+      <FormStatusBar
+        link={state({ responses: 3 })}
+        problem={null}
+        canEdit
+        onFix={() => {}}
+        onOpenResponses={() => {}}
+      />,
+    );
+    const count = screen.getByRole('button', { name: /3 responses/ });
+    expect(count.className.split(' ')).toEqual(
+      expect.arrayContaining(['relative', 'touch-target-y']),
+    );
+  });
+});

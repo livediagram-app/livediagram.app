@@ -34,6 +34,9 @@ export type EditorKeyboardShortcutsDeps = {
   // discriminated union type itself.
   pendingDraw: unknown;
   onCancelDraw: () => void;
+  // Enter's tap: drops the armed tile at the middle of the view. False when the intent has no tap
+  // (a pen, the Path or Fill tool), so the key is left alone.
+  onDropDrawAtCentre: () => boolean;
   // Selection state. Delete / Backspace acts on whichever is
   // populated (multi wins).
   // Read when a key is pressed (docs/specs/008-canvas/blueprints/selection-store.md).
@@ -140,6 +143,10 @@ export type EditorKeyboardShortcutsDeps = {
   // for a non-labelable selection (image / freehand) so the tool
   // shortcuts still fire there.
   onTypeIntoSelected: (elementId: string, char: string) => boolean;
+  // Dot voting from the keyboard (docs/specs/012-collaboration/session-tools.md "Casting from the keyboard"): `+`
+  // or `-` on the one selected element. True when the vote took the key; false leaves it to type-to-edit. Absent
+  // for a session that cannot cast (a Viewer).
+  onVoteKey?: (elementId: string, delta: 1 | -1) => boolean;
   // Zoom controls. Allowed for view-role visitors (zooming doesn't
   // change the document). Ctrl/Cmd + = / + zooms in, - zooms out,
   // 0 resets to 100%. Mirrors the ZoomControls buttons.
@@ -165,6 +172,8 @@ export type EditorKeyboardShortcutsDeps = {
     pickText: () => void;
     pickShape: (id: WhiteboardShapeId) => void;
     pickPath: () => void;
+    // F: the Fill tool (docs/specs/023-draw-mode/fill-tool.md).
+    pickFill: () => void;
     // S: the Shapes flyout, opened as a hover opens it, its search field focused.
     openShapes: () => void;
   } | null;
@@ -375,6 +384,8 @@ export const WHITEBOARD_EDIT_KEYS: Record<string, ShortcutAction> = {
   '3': (l) => l.whiteboard?.pickPen('third'),
   // The Path tool (docs/specs/023-draw-mode/path-tool.md): P, which is the pencil on a diagram tab.
   p: (l) => l.whiteboard?.pickPath(),
+  // The Fill tool (docs/specs/023-draw-mode/fill-tool.md): F, which is the Frame on a diagram tab.
+  f: (l) => l.whiteboard?.pickFill(),
   e: (l) => l.whiteboard?.pickEraser(),
   n: (l) => l.whiteboard?.pickSticky(),
   t: (l) => l.whiteboard?.pickText(),
@@ -396,6 +407,7 @@ export const WHITEBOARD_TOOL_KEYS = {
   second: '2',
   third: '3',
   path: 'P',
+  fill: 'F',
   eraser: 'E',
   sticky: 'N',
   text: 'T',

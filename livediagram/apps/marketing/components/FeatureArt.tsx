@@ -44,3 +44,4 @@ export * from './feature-art/canvas-data';
 export * from './feature-art/reach';
 // Draw's dock.
 export * from './feature-art/whiteboard-dock';
+export * from './feature-art/whiteboard-fill';

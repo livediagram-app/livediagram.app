@@ -5,7 +5,7 @@
 // Template's its template families.
 
 import { APP_KINDS, APPS, type App, type Kind } from '@liveworkspace/index-client';
-import { APP_SITES } from '@liveworkspace/sites';
+import { APP_NAMES, APP_SITES } from '@liveworkspace/sites';
 
 /** The dimensions in canonical order: the order tokens are written in and chips are shown in. */
 export const LENS_DIMENSIONS = [
@@ -19,8 +19,9 @@ export const LENS_DIMENSIONS = [
 ] as const;
 export type LensDimension = (typeof LENS_DIMENSIONS)[number];
 
-/** Opens in's values: each app's kind, in the apps' order (`canvas`, `plan`, `document`, `design`). */
-export const OPENS_IN_VALUES: readonly Kind[] = APPS.map((app) => APP_KINDS[app]);
+/** Opens in's values: each listed app's kind, in the apps' order (`canvas`, `plan`, `document`, `design`). A held app
+ *  (livehuddle's `space`) is no choice until it launches. */
+export const OPENS_IN_VALUES: readonly Kind[] = APP_NAMES.map((app) => APP_KINDS[app]);
 export type OpensInValue = Kind;
 
 /** The app an Opens in value names. */

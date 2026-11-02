@@ -39,10 +39,12 @@ export function ArticlePager({ prev, next }: { prev?: ArticleLink; next?: Articl
   );
 }
 
-/** `contactFormUrl` is the product's public contact form (HelpFacts). */
+/** `contactFormUrl` is the product's public contact form (HelpFacts). A plain block under its own heading, not an
+ * `<aside>`: it sits inside the page's main landmark, where a complementary landmark is an axe failure
+ * (landmark-complementary-is-top-level) on every article. */
 export function StillNeedHelp({ contactFormUrl }: { contactFormUrl: string }) {
   return (
-    <aside className="mt-10 flex flex-col gap-4 rounded-2xl border border-brand-200 bg-brand-50/60 p-5 sm:flex-row sm:items-center sm:justify-between dark:border-brand-500/30 dark:bg-brand-500/10">
+    <div className="mt-10 flex flex-col gap-4 rounded-2xl border border-brand-200 bg-brand-50/60 p-5 sm:flex-row sm:items-center sm:justify-between dark:border-brand-500/30 dark:bg-brand-500/10">
       <div>
         <h2 className="font-semibold text-slate-900 dark:text-slate-100">Still need help?</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
@@ -65,6 +67,6 @@ export function StillNeedHelp({ contactFormUrl }: { contactFormUrl: string }) {
         <MessageIcon />
         Contact us
       </a>
-    </aside>
+    </div>
   );
 }

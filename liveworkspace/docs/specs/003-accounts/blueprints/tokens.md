@@ -50,13 +50,14 @@ A secret passes `isApiTokenFormat` when it has either prefix and more than 24 ch
 - Verify: an indexed lookup by hash, joined to the user; `lastUsedAt` stamped only when older than a minute (`AND
 (lastUsedAt IS NULL OR lastUsedAt < ?)`); the email only when verified.
 
-### The daily expiry steps
+### The expiry steps
 
-1. `sweepExpiringTokens`: up to 100 live, unwarned tokens expiring within 7 days whose owner's address is verified,
-   soonest first (`api_token_expiry_warning_idx`). Sent one at a time; a failure is logged and left for tomorrow;
+1. `sweepExpiringTokens` (hourly): up to 100 live, unwarned tokens expiring within 7 days whose owner's address is
+   verified and whose owner is inside the send window (`u.timeZone`, [email.md](email.md) "The send window"),
+   soonest first (`api_token_expiry_warning_idx`). Sent one at a time; a failure is logged and left for the next run;
    those that went stamped `expiryWarnedAt` in one update; each counted `Email·Sent·TokenExpiring` under the
    owner's sign-up app. Logged `[tokens] expiry warnings { sent, failed }`.
-2. `noteExpiringTokens` (always, after step 1): up to 500 live tokens expiring within 7 days not yet noted
+2. `noteExpiringTokens` (in the 09:17 UTC run, after step 1): up to 500 live tokens expiring within 7 days not yet noted
    (`api_token_expiry_note_idx`), verified or not; one batch of `token_expiring:<id>` events dated at the expiry (so
    they show under Upcoming) and the `expiryNotedAt` stamps; then a Timeline flush.
 

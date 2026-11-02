@@ -44,6 +44,18 @@ The app the person came from: `?from=<app>`, else the referrer's site, else none
 kept in `localStorage` (`liveworkspace:explorer-app`): what New makes and whose welcome Home shows in no app; it never
 filters the lists. On an app's address the app is the host's. Settings opens through `?settings=<section>`.
 
+### The site switcher's logo tap (`packages/ui/src/SiteSwitcher.tsx`, `packages/ui/src/touch-tap.ts`)
+
+The switcher wraps the header's logo in a `display: contents` span with a capture-phase click handler. A click on a
+link inside it, while the card is shut, is a tap when `isTouchTap(event)` says so: never a keyboard click
+(`detail === 0`), a `pointerType` of `touch` when the browser gives one, and otherwise
+`matchMedia('(pointer: coarse)')` (SITE4). A tap cancels the navigation, keeps the link's `href` and opens the card
+(`openMenu('checked')`, as a chevron click does). While that `href` is kept, the current site's row links to it in
+place of its usual address, so home is still reachable; until then (and always, with a mouse or the keyboard) every
+row is unchanged. With the card
+open, a tap on the logo is not intercepted and follows the link. Outside taps close it through `useClickOutside`, as
+before.
+
 ### Old addresses
 
 `/account`, `/account/settings…` and `/account/tokens` send the browser to `/explorer?settings=<section>`, the anchor
@@ -72,6 +84,7 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 
 | Address                     | File                                                            | Role                                                                                                                                                                        |
 | --------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/.well-known/security.txt` | `liveworkspace/apps/site/app/.well-known/security.txt/route.ts` | The RFC 9116 file, `securityTxt` from `@liveworkspace/sites/security` with `SECURITY_POLICY_URL` as its Policy, built at build time                                         |
 | `/account`                  | `liveworkspace/apps/site/app/account/page.tsx`                  |                                                                                                                                                                             |
 | `/account/settings`         | `liveworkspace/apps/site/app/account/settings/page.tsx`         |                                                                                                                                                                             |
 | `/account/tokens`           | `liveworkspace/apps/site/app/account/tokens/page.tsx`           |                                                                                                                                                                             |
@@ -257,18 +270,20 @@ Every access is wrapped so a blocked storage reads as empty.
 
 ## Errors and edge cases
 
-| Case                                       | What the page shows                                           |
-| ------------------------------------------ | ------------------------------------------------------------- |
-| An address that isn't one                  | "Please enter a valid email address."                         |
-| Too many code requests (429)               | "Too many codes requested. Wait a minute and try again."      |
-| A send that fails otherwise                | "We could not send a code. Check the address and try again."  |
-| A wrong or expired code                    | "That code is wrong or has expired."; the boxes cleared       |
-| Too many wrong codes (`TOO_MANY_ATTEMPTS`) | "Too many wrong codes. Request a new one."                    |
-| Too many attempts (429)                    | "Too many attempts. Wait a minute and try again."             |
-| The name not saved                         | "We could not save your name. Please try again."              |
-| An expired OAuth request                   | "That sign-in has expired. Go back to the app and try again." |
-| A `return` that leaves the site            | ignored; the page goes home                                   |
-| No hand-off possible on an app's address   | straight to `next`; the app still signs in                    |
+| Case                                       | What the page shows                                                                     |
+| ------------------------------------------ | --------------------------------------------------------------------------------------- |
+| An address that isn't one                  | "Please enter a valid email address."                                                   |
+| Too many code requests (429)               | "Too many codes requested. Wait a minute and try again."                                |
+| A send that fails otherwise                | "We could not send a code. Check the address and try again."                            |
+| A wrong or expired code                    | "That code is wrong or has expired."; the boxes cleared                                 |
+| Too many wrong codes (`TOO_MANY_ATTEMPTS`) | "Too many wrong codes. Request a new one."                                              |
+| Too many attempts (429)                    | "Too many attempts. Wait a minute and try again."                                       |
+| The name not saved                         | "We could not save your name. Please try again."                                        |
+| An expired OAuth request                   | "That sign-in has expired. Go back to the app and try again."                           |
+| A `return` that leaves the site            | ignored; the page goes home                                                             |
+| A page that throws while rendering         | `app/error.tsx`: the `PageError` card, Try Again calls `reset`                          |
+| The root layout throws                     | `app/global-error.tsx`: its own `<html lang="en-GB">`, the same card, Try Again reloads |
+| No hand-off possible on an app's address   | straight to `next`; the app still signs in                                              |
 
 ## Constants and configuration: the Worker
 
@@ -316,7 +331,7 @@ Every access is wrapped so a blocked storage reads as empty.
 | `PREVIEW_CONCURRENCY`         | `4`                                                             | `previews.tsx`              |
 | `WORKSPACE_TOKEN_URL`         | `'/api/auth/workspace-token'`                                   | `token.ts`                  |
 | `LEGAL_UPDATED`               | `'25 October 2026'`                                             | `legal.ts`                  |
-| `CONTACT_URL`                 | `'https://livediagram-router.liveworkspace-easing509.workers.…` | `legal.ts`                  |
+| `CONTACT_URL`                 | `'https://www.liveplanner.app/form/90Bgj5sY9eTpVrjhx9tTZj'`     | `legal.ts`                  |
 | `LICENCE_APPS`                | `(object or list, see file)`                                    | `apps.ts`                   |
 | `EMBEDDED_WORKS`              | `(object or list, see file)`                                    | `embedded-works.ts`         |
 | `OVERRIDES`                   | `(object or list, see file)`                                    | `overrides.ts`              |
@@ -327,7 +342,6 @@ Every access is wrapped so a blocked storage reads as empty.
 | `INVITES_PATH`                | `'/explorer/invites'`                                           | `teams.ts`                  |
 | `AVATAR_TONES`                | `(object or list, see file)`                                    | `teams.ts`                  |
 | `TURNSTILE_ORIGIN`            | `'https://challenges.cloudflare.com'`                           | `turnstile.ts`              |
-| `STAND_INS`                   | `(object or list, see file)`                                    | `app-origins.ts`            |
 | `LOCAL_PORTS`                 | `(object or list, see file)`                                    | `index.ts`                  |
 | `PLATFORM_SITE`               | `(object or list, see file)`                                    | `index.ts`                  |
 | `APP_SITES`                   | `(object or list, see file)`                                    | `index.ts`                  |
@@ -407,6 +421,8 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 
 123 test files:
 
+- `liveworkspace/apps/site/app/error.test.tsx`
+- `liveworkspace/apps/site/app/global-error.test.tsx`
 - `liveworkspace/apps/site/app/not-found.test.ts`
 - `liveworkspace/apps/site/app/seo-pages.test.ts`
 - `liveworkspace/apps/site/app/telemetry/AllApps.test.ts`
@@ -536,3 +552,4 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 - `SITE1`: a sign-in's `return` path is honoured only when it is a path on this site; anything else goes home.
 - `SITE2`: the site asks who is signed in once per page load.
 - `SITE3`: the last app a browser came from picks what New makes, never what the lists show.
+- `SITE4`: a click is a touch tap on a `touch` pointer, or on a coarse primary pointer when the click names none; a keyboard click never is.

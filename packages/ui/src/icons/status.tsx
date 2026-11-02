@@ -44,6 +44,16 @@ export function SparkleIcon({ size = 14, ...rest }: IconProps) {
   );
 }
 
+// One four-point star, filled, drawn for a small size on a 10-unit viewBox: an agent's mark, inside its avatar disc
+// (docs/specs/024-agents/agent-presence.md "Presence"), legible down to the tab pill's 16px avatar.
+export function AgentIcon({ size = 10, ...rest }: IconProps) {
+  return (
+    <Glyph size={size} units={10} filled {...rest}>
+      <path d="M5 .6 6.15 3.85 9.4 5 6.15 6.15 5 9.4 3.85 6.15.6 5 3.85 3.85Z" />
+    </Glyph>
+  );
+}
+
 // A crossed-out circle: the "not found" / "no access" error cards.
 export const CircleXIcon = /* @__PURE__ */ lucideGlyph(lucideCircleX, 28);
 

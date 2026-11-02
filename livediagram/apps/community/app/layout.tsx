@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
-import { CommunityGate } from '@/components/CommunityGate';
+import { CommunityGate } from '@liveworkspace/community-site/gate';
 import { Header } from '@/components/Header';
+import { CommunityProvider } from '@/lib/community-site';
 import './globals.css';
 import {
   APPEARANCE_BOOT_SCRIPT,
@@ -68,7 +69,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <WebVitalsBoot />
         <Header />
         <main className="flex-1 pb-20">
-          <CommunityGate>{children}</CommunityGate>
+          {/* livediagram's binding of the shared Community pages (lib/community-site.tsx). */}
+          <CommunityProvider>
+            <CommunityGate>{children}</CommunityGate>
+          </CommunityProvider>
         </main>
         <SiteFooter />
       </body>

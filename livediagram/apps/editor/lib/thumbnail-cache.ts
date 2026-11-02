@@ -1,3 +1,4 @@
+import type { Appearance } from '@livediagram/document';
 import { apiFetchDocumentThumbnailUrl } from '@/lib/api-client';
 
 // In-memory cache of document snapshot thumbnails (docs/specs/006-document/document-snapshots.md), shared
@@ -8,8 +9,8 @@ import { apiFetchDocumentThumbnailUrl } from '@/lib/api-client';
 // and the next mount went back to the network (at best the browser's HTTP
 // cache) and re-decoded it, showing the loader in between. Keyed by the
 // same inputs the thumbnail fetches for (viewer, document, version, share
-// code), so an edited document's new `savedAt` is a new key and never
-// reads the old picture.
+// code, appearance), so an edited document's new `savedAt` is a new key and never
+// reads the old picture, and a switch of appearance asks for the other half.
 //
 // A "no snapshot" answer is cached too: it is version-keyed like the
 // picture, so it cannot change until the document does. A thrown fetch
@@ -23,6 +24,8 @@ export type ThumbnailRequest = {
   documentId: string;
   version: number;
   shareCode: string | null;
+  // The viewer's, so the picture is the tab as they see it (document-snapshots.md "In the viewer's half").
+  appearance: Appearance;
 };
 
 // Enough for a full Explorer grid, its folder mosaics and a Timeline feed,
@@ -34,7 +37,7 @@ const entries = new Map<string, ThumbnailEntry>();
 const inflight = new Map<string, Promise<ThumbnailEntry>>();
 
 export function thumbnailKey(req: ThumbnailRequest): string {
-  return JSON.stringify([req.ownerId, req.documentId, req.version, req.shareCode]);
+  return JSON.stringify([req.ownerId, req.documentId, req.version, req.shareCode, req.appearance]);
 }
 
 // A settled entry, if there is one. Pure (no recency bump), so a render
@@ -57,6 +60,7 @@ export function loadThumbnail(req: ThumbnailRequest): Promise<ThumbnailEntry> {
   const request = apiFetchDocumentThumbnailUrl(req.ownerId, req.documentId, {
     version: req.version,
     shareCode: req.shareCode,
+    appearance: req.appearance,
   })
     .then((result): ThumbnailEntry => {
       const entry: ThumbnailEntry = result

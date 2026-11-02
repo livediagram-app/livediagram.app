@@ -12,8 +12,8 @@ describe('templateCatalogue', () => {
     expect(categories.at(-1)!.id).toBe('blanks');
     expect(templates.find((t) => t.kind === 'blank')!.category).toBe('blanks');
     expect(templates.find((t) => t.kind === 'blank-illustration')!.category).toBe('blanks');
-    expect(templates.find((t) => t.kind === 'slide-deck')!.category).toBe('presentations');
-    expect(templates.find((t) => t.kind === 'storyboard')!.category).toBe('design');
+    expect(templates.find((t) => t.kind === 'slide-deck')!.category).toBe('pitches');
+    expect(templates.find((t) => t.kind === 'storyboard')!.category).toBe('marketing');
     expect(templates.map((t) => t.kind)).toEqual(
       TEMPLATES.filter((t) => !t.hidden).map((t) => t.kind),
     );

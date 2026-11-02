@@ -43,6 +43,13 @@ describe('CommentThreadPopover', () => {
     expect(document.activeElement).toBe(screen.getByPlaceholderText('Add a comment…'));
   });
 
+  it('is a dialog named by its title, with no banner landmark inside', () => {
+    addAnchor('a');
+    renderPopover('a');
+    const dialog = screen.getByRole('dialog', { name: 'Comments' });
+    expect(dialog.querySelector('header')).toBeNull();
+  });
+
   it('focuses the composer once an anchor that lands later places it', () => {
     renderPopover('late');
     expect(screen.queryByRole('dialog')).toBeNull();

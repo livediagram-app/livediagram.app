@@ -9,6 +9,8 @@
 //     api, a returning guest of the old livediagram.app claimed (legacy-guests.ts).
 //   - workbenches, for every app (/api/account/workbench/*, workbench/routes.ts), and the apps' servers' checks of
 //     their sessions (workbench/internal.ts).
+import { basicClientId } from './app-caller.ts';
+import { storageOutageOf } from '@liveworkspace/api-kit/request-failure';
 import { AUTH_BASE_PATH } from './auth-options.ts';
 import { sameSiteOrigin } from '@liveworkspace/sites/www';
 import { introspectWithLegacy } from './legacy-issuer.ts';
@@ -89,6 +91,7 @@ import {
   revokeApiTokenBySecret,
   verifyApiToken,
 } from './tokens.ts';
+import { pushDeviceRoutes, pushInternal } from './push/routes.ts';
 import { reportServerEvent } from './telemetry.ts';
 import { handleWorkbenchInternal } from './workbench/internal.ts';
 import { endTokenWorkbench, tokenBySecret } from './workbench/revoke.ts';
@@ -154,7 +157,12 @@ async function sessionActor(
   request: Request,
   auth: Auth,
 ): Promise<(Actor & { name: string }) | null> {
-  const session = await auth.api.getSession({ headers: request.headers }).catch(() => null);
+  // No session is someone signed out; the database itself down is no answer at all, so it goes on to the request-failure
+  // guard (a 503) rather than read as signed out.
+  const session = await auth.api.getSession({ headers: request.headers }).catch((err: unknown) => {
+    if (storageOutageOf(err)) throw err;
+    return null;
+  });
   if (!session) return null;
   const { user } = session;
   return {
@@ -332,6 +340,10 @@ async function handleSignedIn(
   if (section === 'people' && !id && method === 'GET') {
     return peopleNames(request, db, { pictures: true });
   }
+
+  // The devices they get phone notifications on (push/routes.ts).
+  const push = await pushDeviceRoutes(request, env, actor.id, parts);
+  if (push) return push;
 
   // Their display name and colour, the ones collaborators see in every app.
   if (section === 'profile' && !id) {
@@ -604,6 +616,9 @@ async function handleBearer(
     const answered = await profileRoute(request, db, actor.id);
     if (answered) return answered;
   }
+  // And its Phone section registers this device and lists and removes the rest (push/routes.ts).
+  const push = await pushDeviceRoutes(request, env, actor.id, parts);
+  if (push) return push;
   return error(404, 'not_found');
 }
 
@@ -635,18 +650,6 @@ async function accountName(db: Env['AUTH_DB'], userId: string): Promise<string> 
 const CLIENT_CHECK_TTL_MS = 5 * 60_000;
 type CheckedClient = { clientId: string; app: SettingsApp | null };
 const checkedClients = new Map<string, CheckedClient & { until: number }>();
-
-function basicClientId(header: string | null): string | null {
-  const encoded = header?.match(/^Basic\s+(.+)$/i)?.[1];
-  if (!encoded) return null;
-  try {
-    const decoded = atob(encoded);
-    const colon = decoded.indexOf(':');
-    return colon > 0 ? decodeURIComponent(decoded.slice(0, colon)) : null;
-  } catch {
-    return null;
-  }
-}
 
 async function digest(value: string): Promise<string> {
   const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
@@ -941,6 +944,9 @@ async function handleInternal(
     if (typeof userId !== 'string' || !USER_ID.test(userId)) return error(400, 'invalid_user');
     return json({ teams: await teamsClaim(db, userId) });
   }
+
+  // Phone notifications an app has decided on, sent after the answer (push/routes.ts).
+  if (route === 'POST push') return pushInternal(request, env, client.app, waitUntil);
 
   if (route === 'GET teams/changes') {
     return json(await teamChanges(db, url.searchParams.get('cursor')));

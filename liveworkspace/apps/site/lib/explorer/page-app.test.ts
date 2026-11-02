@@ -14,6 +14,7 @@ import {
 } from './app-session';
 import { accountFetch, resetWorkspaceIdentity, workspaceIdentity } from './token';
 import { explorerSilentSignInScript } from './silent';
+import { SILENT_RETRY_GLOBAL } from '@liveworkspace/auth-client/silent';
 
 const token = (sub: string) => `h.${btoa(JSON.stringify({ sub })).replace(/=+$/, '')}.s`;
 
@@ -61,11 +62,8 @@ describe('where the page is', () => {
     expect(appOfHost('www.livedesign.app')).toBe('livedesign');
     expect(appOfHost('staging.livedocuments.app')).toBe('livedocuments');
     expect(appOfHost('localhost:3200')).toBe('liveplanner');
-    // livediagram's workers.dev stand-ins until livediagram.app moves: the page there is livediagram's.
-    expect(appOfHost('livediagram-router.liveworkspace-easing509.workers.dev')).toBe('livediagram');
-    expect(appOfHost('livediagram-router-staging.liveworkspace-easing509.workers.dev')).toBe(
-      'livediagram',
-    );
+    expect(appOfHost('www.livediagram.app')).toBe('livediagram');
+    expect(appOfHost('staging.livediagram.app')).toBe('livediagram');
     expect(appOfHost('livediagram.app')).toBe('livediagram');
     expect(appOfHost('localhost:3100')).toBe('livediagram');
     expect(appOfHost('liveworkspace.app')).toBeNull();
@@ -97,6 +95,25 @@ describe("the app's session", () => {
     expect(a).toMatchObject({ sub: 'user_1', name: 'Ada' });
     await appAccount();
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets the silent sign-in look again after its first answer, and never after a later one', async () => {
+    // The function the boot script leaves on the page (@liveworkspace/auth-client/silent retrySilentSignIn).
+    const again = vi.fn();
+    vi.stubGlobal(SILENT_RETRY_GLOBAL, again);
+    document.cookie = 'lp_signed_in=1; path=/';
+    // The hint outlived its session: the app's answer clears it.
+    const refused = vi.fn<typeof fetch>(async () => {
+      document.cookie = 'lp_signed_in=0; path=/';
+      return Response.json({ signedIn: false }, { status: 401 });
+    });
+    vi.stubGlobal('fetch', refused);
+    expect(await appAccount()).toBeNull();
+    expect(again).toHaveBeenCalledTimes(1);
+    document.cookie = 'lp_signed_in=1; path=/';
+    await appAccount();
+    expect(refused).toHaveBeenCalledTimes(2);
+    expect(again).toHaveBeenCalledTimes(1);
   });
 
   it('is who the Explorer asks the index as', async () => {

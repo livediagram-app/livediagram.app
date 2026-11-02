@@ -144,8 +144,9 @@ export const TELEMETRY_CATEGORIES = [
   // 'Local'). Whether people ever come back for a deleted design is the
   // question; never a design or team name.
   'Trash',
-  // The markers (docs/specs/023-draw-mode/drawing-tools.md): a marker 'Changed' ('PenColour' |
-  // 'PenWidth') and a stroke flipped between ink and a shape, 'Toggled' ('RecogniseOnceKey' |
+  // The markers and the Fill tool (docs/specs/023-draw-mode/drawing-tools.md): a marker 'Changed'
+  // ('PenColour' | 'PenWidth'), the Fill tool picked up, 'Toggled' ('Fill') and 'Changed' ('FillColour', and
+  // 'FillMissed' for a press that filled nothing), and a stroke flipped between ink and a shape, 'Toggled' ('RecogniseOnceKey' |
   // 'RecogniseOnceChip' | 'BreakShapeKey' | 'BreakShapeChip'). Presets only; never content.
   'Draw',
   // The Explorer's filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): 'Selected' with
@@ -159,6 +160,10 @@ export const TELEMETRY_CATEGORIES = [
   // see what changed; 'Viewed' for a design view the api answered, typed by the view. Never
   // content, never an id.
   'Agent',
+  // Community (docs/specs/025-community/community.md): publishing, Edit Listing and removal from the Share dialog
+  // ('Shared'/'Changed' typed by category, 'Removed'·'Post'); opens, likes, copies, reports, search and filters in
+  // the Community app. Never a title, tag or id.
+  'Community',
   // Timings (docs/specs/017-telemetry/timing-telemetry.md): how long a key moment of the experience took
   // (a design opening, a tab switch, a save, the live room connecting, a page's Web Vitals). Only ever
   // 'Measured', `type` the metric and the bucket its value fell in ('DesignLoad.Under1000ms'), checked
@@ -244,7 +249,8 @@ export const TELEMETRY_ACTIONS = [
   'Present',
   'Held',
   // Design views (docs/specs/024-agents/design-views.md): a view the api answered, typed by the
-  // view ('Overview' | 'Outline' | 'Graph' | 'Layout' | 'Comments' | 'Show' | 'Find' | 'Pages' | 'Lint').
+  // view ('Overview' | 'Components' | 'Outline' | 'Graph' | 'Layout' | 'Comments' | 'Show' | 'Find' | 'Pages' |
+  // 'Lint').
   'Viewed',
   // Email (docs/specs/014-identity/transactional-email.md): a transactional / lifecycle email left the worker for
   // the provider. Only ever paired with the 'Email' category.
@@ -256,6 +262,10 @@ export const TELEMETRY_ACTIONS = [
   'Api',
   'Client',
   'Warning',
+  // Community (docs/specs/025-community/community.md): a post liked or unliked, and a post reported (typed by reason).
+  'Liked',
+  'Unliked',
+  'Reported',
   // Timing (docs/specs/017-telemetry/timing-telemetry.md): a key moment was timed. Only ever paired with the
   // 'Timing' category.
   'Measured',
@@ -375,6 +385,8 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Card',
     'Badge',
     'Step',
+    // An instance of the design's own component (docs/specs/009-elements/components.md), placed from In This Design.
+    'Instance',
   ],
   // Concept graphics (docs/specs/009-elements/concept-graphics.md): the Concepts category.
   concepts: ['LayerStack', 'Pyramid', 'Cycle', 'Hub', 'Onion', 'Chevrons'],

@@ -62,6 +62,10 @@ describe('the comments field', () => {
     expect(itemCommentCount(item({ title: 'A', comments: thread(3) }))).toBe(3);
     expect(itemCommentCount(item({ title: 'A', comments: thread(3, true) }))).toBe(0);
     expect(itemCommentCount(item({ title: 'A' }))).toBe(0);
+    // A render's count from the card's threads wins.
+    expect(
+      itemCommentCount({ ...item({ title: 'A', comments: thread(3) }), openComments: 7 }),
+    ).toBe(7);
     expect(itemCommentCount(item({ title: 'A', comments: 'junk' }))).toBe(0);
     expect(itemCommentCount(item({ title: 'A', comments: { resolved: false } }))).toBe(0);
   });
@@ -76,9 +80,8 @@ describe('the comments field', () => {
     expect(itemAsCreate(item({ title: 'B' })).comments).toBeUndefined();
   });
 
-  it('is a card field: on new boards, on Compact and Detailed cards', () => {
+  it('is a card field: on new boards, on Detailed cards', () => {
     expect(DEFAULT_CARD_FIELDS).toContain('comments');
-    expect(CARD_SIZE_FIELDS.compact).toContain('comments');
     expect(CARD_SIZE_FIELDS.detailed).toContain('comments');
     expect(CARD_SIZE_FIELDS.minimal).not.toContain('comments');
   });

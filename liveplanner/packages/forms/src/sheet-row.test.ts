@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   SHEET_PREVIEW_MARK,
   responseRowWrite,
-  sheetHeaders,
   submittedText,
   type SheetRowInput,
 } from './sheet-row';
+import { sheetHeaders } from './sheet-columns';
 import type { FormDefinition } from './model';
 
 // A response as a row of a Sheet (docs/specs/030-forms/forms.md "Responses to a Sheet").
@@ -157,5 +157,44 @@ describe('responseRowWrite', () => {
 
   it('reads the time in UTC', () => {
     expect(submittedText(Date.UTC(2026, 0, 2, 3, 4))).toBe('2026-01-02 03:04 UTC');
+  });
+});
+
+describe('responseRowWrite with remembered columns', () => {
+  it('writes each answer under its remembered column, whatever its header now reads', () => {
+    const write = responseRowWrite(
+      base({
+        header: new Map([
+          ['ca', 'Number'],
+          ['cb', 'When'],
+          ['cc', 'Full name'],
+          ['cd', 'Years'],
+          ['ce', 'Agree'],
+          ['cf', 'Diet'],
+          ['cg', 'name (2)'],
+        ]),
+        usedRows: new Set(['r1', 'r2']),
+        columns: { '#': 'ca', at: 'cb', 'q-name': 'cc', 'q-age': 'cd' },
+      }),
+    );
+    expect(write.kind).toBe('cells');
+    const cells = write.kind === 'cells' ? write.cells : [];
+    // No header is written: each key found its column, remembered or by header.
+    expect(cells.filter((c) => c.r === 'r1')).toEqual([]);
+    expect(cells).toContainEqual({ r: 'r3', c: 'ca', i: { n: 4 } });
+    expect(cells).toContainEqual({ r: 'r3', c: 'cc', i: { s: 'Ada' } });
+    expect(cells).toContainEqual({ r: 'r3', c: 'cd', i: { n: 36 } });
+    expect(cells).toContainEqual({ r: 'r3', c: 'ce', i: { b: true } });
+  });
+
+  it('forgets a remembered column the sheet no longer has, and finds the header instead', () => {
+    const write = responseRowWrite(
+      base({
+        header: new Map([['cc', 'Name']]),
+        columns: { 'q-name': 'gone1' },
+      }),
+    );
+    const cells = write.kind === 'layout' ? (write.cells ?? []) : [];
+    expect(cells).toContainEqual({ r: 'r2', c: 'cc', i: { s: 'Ada' } });
   });
 });

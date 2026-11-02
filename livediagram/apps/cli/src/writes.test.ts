@@ -207,7 +207,7 @@ describe('creating from the CLI', () => {
       tabs: [{ name: 'Shop', mermaid: 'flowchart LR\n  a --> b\n' }],
     });
     expect(result.out).toBe(
-      `+ document ${body!.id.slice(0, 8)} "Shop" · 1 tab · https://livediagram-router.liveworkspace-easing509.workers.dev/document/${body!.id}\n`,
+      `+ document ${body!.id.slice(0, 8)} "Shop" · 1 tab · https://www.livediagram.app/document/${body!.id}\n`,
     );
   });
 });

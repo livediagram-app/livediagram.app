@@ -4,13 +4,15 @@
 import type React from 'react';
 import { HANDLE_TOUCH, type useHandleReorder } from '@/components/primitives/useHandleReorder';
 import { LockIcon, PencilIcon, Tooltip } from '@liveplanner/ui';
-import { FieldMenu, GripIcon } from './ItemTypeFieldMenu';
+import { FieldMenu, GripIcon, type NotifiesToggle } from './ItemTypeFieldMenu';
 import { ICON_BUTTON } from './ItemTypeFieldForms';
+import { RequiredMark } from './ItemPanelLayout';
 import type { GroupId } from './item-type-layout';
 
 // One field: a drag handle (a field that moves), its kind's icon (the Add Field popover's, CustomFieldKindParts),
 // its name with a lock when the type always keeps it,
-// Edit (a custom field) and a ⋯ menu: Move Up, Move Down, Move to each other group and Remove. Title and Status
+// Edit (a custom field) and a ⋯ menu: the Assignee's Notifies switch, Move Up, Move Down, Move to each other group and
+// Remove. Title and Status
 // stay put and never come off; a field the type always keeps (a Project's Start and Due) moves but never comes
 // off. The handle is for a pointer or a finger; the menu's Move Up and Move Down are the keyboard's way.
 // Rows alternate white and a light grey (odd and even in their group), so a long list reads row by row.
@@ -19,6 +21,8 @@ export function FieldRow({
   label,
   icon,
   removable,
+  lockLabel,
+  required,
   editing,
   onEdit,
   moveTargets,
@@ -30,6 +34,7 @@ export function FieldRow({
   canDown,
   onMove,
   onRemove,
+  notifies,
   children,
 }: {
   id: string;
@@ -38,6 +43,10 @@ export function FieldRow({
   icon: { node: React.ReactNode; name: string };
   // False for a field that never comes off (Title, Status, a type's kept fields): no Remove, and a lock.
   removable: boolean;
+  // What the lock says: "{Name} is always on this type", or why else it stays ("Inherited from Work").
+  lockLabel?: string | undefined;
+  // A required custom field (docs/specs/026-plan/item-types.md "Required fields"): marked after its name.
+  required?: boolean;
   editing: boolean;
   onEdit?: () => void;
   moveTargets: readonly { id: GroupId; label: string }[];
@@ -50,9 +59,12 @@ export function FieldRow({
   canDown: boolean;
   onMove?: ((by: -1 | 1) => void) | undefined;
   onRemove: () => void;
+  // The Assignee's Notifies switch, in its menu (docs/specs/026-plan/item-types.md "Notifies").
+  notifies?: NotifiesToggle | undefined;
   children?: React.ReactNode;
 }) {
-  const hasMenu = removable || moveTargets.length > 0 || (onMove && (canUp || canDown));
+  const hasMenu =
+    !!notifies || removable || moveTargets.length > 0 || (onMove && (canUp || canDown));
   return (
     <li
       data-reorder-id={id}
@@ -85,13 +97,16 @@ export function FieldRow({
               {icon.node}
             </span>
           </Tooltip>
-          <span className="truncate">{label}</span>
+          <span className="truncate">
+            {label}
+            {required ? <RequiredMark /> : null}
+          </span>
           {!removable ? (
-            <Tooltip label={`${label} is always on this type`}>
+            <Tooltip label={lockLabel ?? `${label} is always on this type`}>
               <span
                 tabIndex={0}
                 role="img"
-                aria-label={`${label} is always on this type`}
+                aria-label={lockLabel ?? `${label} is always on this type`}
                 className="flex shrink-0 text-slate-400 dark:text-slate-400"
               >
                 <LockIcon size={11} />
@@ -119,6 +134,7 @@ export function FieldRow({
             canDown={canDown}
             onMove={onMove}
             onRemove={removable ? onRemove : undefined}
+            notifies={notifies}
           />
         ) : (
           <span aria-hidden className="h-7 w-7 shrink-0" />

@@ -4,8 +4,8 @@ account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # Better Auth reads AsyncLocalStorage from node:async_hooks.
-# global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
-# livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
+# global_fetch_strictly_public: a fetch() to another Worker's route on this zone (liveworkspace.app) isn't routed to
+# that Worker without it (docs/specs/009-status/status.md "Where the checks go").
 compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 # The accounts API on liveworkspace.app: /api/auth/*, /api/account/* and the two discovery documents, on www. (its
 # address, BASE_URL) and on the bare domain for clients from before the move (liveworkspace/docs/specs/003-accounts/accounts.md "The move
@@ -36,7 +36,7 @@ workers_dev = false
 #                         DELETE /app/people/<id> when an account closes (src/drive-disconnect.ts); optional,
 #                         without it (or the DRIVE binding) nothing is sent
 #   TELEMETRY_KEY_LIVEDIAGRAM, TELEMETRY_KEY_LIVEPLANNER, TELEMETRY_KEY_LIVEDOCUMENTS,
-#   TELEMETRY_KEY_LIVEDESIGN
+#   TELEMETRY_KEY_LIVEDESIGN, TELEMETRY_KEY_LIVEHUDDLE (livehuddle, held until launch)
 #                         each app's key on the telemetry service (the telemetry Worker's values), to
 #                         count Email·Sent for the onboarding emails under the app each speaks for;
 #                         optional, an app without one isn't counted
@@ -44,6 +44,10 @@ workers_dev = false
 #                         the old livediagram.app's GUEST_ID_HMAC_SECRET (from its repository's GitHub secrets), for
 #                         the migration's returning guests (src/legacy-guests.ts); unset, that route is a plain 404.
 #                         Set for the migration and removed after it (docs/migration.md step 6)
+#   VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY
+#                         phone notifications' VAPID key pair (src/push/web-push.ts), from
+#                         `node scripts/generate-vapid-keys.ts`, one pair per environment, kept for good; unset, devices
+#                         can't register and nothing is sent
 [vars]
 ENVIRONMENT = "production"
 BASE_URL = "https://www.liveworkspace.app"
@@ -138,11 +142,13 @@ class_name = "WorkbenchStore"
 tag = "v1"
 new_sqlite_classes = ["WorkbenchStore"]
 
-# The daily sweep of team invitations: reminders, then expiry (src/teams.ts sweepInvitations), and of
-# guests who can never come back (src/guest-sweep.ts). Every 15 minutes: closed accounts' index purges
-# not yet taken are sent again (src/index-purge.ts).
+# Hourly: the onboarding series, team invitations' expiry and reminders (src/teams.ts sweepInvitations) and the
+# token expiry warnings, each email only to whoever's local time is inside the send window (src/send-window.ts);
+# the 09:17 UTC run also notes expiring tokens on the Timeline and sweeps guests who can never come back
+# (src/guest-sweep.ts). Every 15 minutes: closed accounts' index purges not yet taken are sent again
+# (src/index-purge.ts), and failed welcomes are tried again.
 [triggers]
-crons = ["17 9 * * *", "*/15 * * * *"]
+crons = ["17 * * * *", "*/15 * * * *"]
 
 [env.staging]
 name = "liveworkspace-accounts-staging"
@@ -226,4 +232,4 @@ tag = "v1"
 new_sqlite_classes = ["WorkbenchStore"]
 
 [env.staging.triggers]
-crons = ["17 9 * * *", "*/15 * * * *"]
+crons = ["17 * * * *", "*/15 * * * *"]

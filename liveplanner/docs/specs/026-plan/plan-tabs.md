@@ -1,6 +1,6 @@
 # Plan tabs
 
-Planning happens on tabs of three **kinds**: a **Board tab** (one board, always filling the tab), a **Sheet tab** (one Sheet, always filling the tab) and a **Dashboard tab** (rows of slots holding compact, live versions of the project's Board and Sheet tabs, plan views, charts and notes). Boards and Sheets are never small elements free on a canvas any more; a Dashboard is where they are seen side by side. A fourth Plan kind, the **Form tab** (one form, whose responses become cards on a Board tab), has its own spec: [Forms](../030-forms/forms.md). Each kind is a tab **Kind** ([Domain language](../003-system-architecture/domain-language.md)), and it brings its own behaviour.
+Planning happens on tabs of three **kinds**: a **Board tab** (one board, always filling the tab), a **Sheet tab** (one Sheet, always filling the tab) and a **Dashboard tab** (rows of slots holding compact, live versions of the project's Board and Sheet tabs (a board simplified for working its cards: [A board in a slot is simplified](#dashboard-tab)), plan views, charts and notes). Boards and Sheets are never small elements free on a canvas any more; a Dashboard is where they are seen side by side. A fourth Plan kind, the **Form tab** (one form, whose responses become cards on a Board tab), has its own spec: [Forms](../030-forms/forms.md). Each kind is a tab **Kind** ([Domain language](../003-system-architecture/domain-language.md)), and it brings its own behaviour.
 
 ## Domain language
 
@@ -23,8 +23,9 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
   and a search reaches Plan's templates. The choice sets the tab's kind and adds its element in one change, one undo step.
   A Dashboard started on a tab still on its default name ("Tab 5") is named **Dashboard**; a name someone gave the tab
   stays.
-- Its tab pill leads with its **kind's glyph** rather than Plan's mark (a general tab's): a kanban for a Board tab, a grid for a
-  Sheet tab, a layout of tiles for a Dashboard; tinted with the tab's accent as any pill's is.
+- Its **kind's glyph** marks it where a tab is listed with an icon (a split view's chip, a Dashboard's links), rather
+  than Plan's mark (a general tab's): a kanban for a Board tab, a grid for a Sheet tab, a layout of tiles for a
+  Dashboard. The footer tab itself shows its name alone ([Editor app](../007-editor/editor-app.md#how-a-tab-looks)).
 - A tab's kind is stored on the tab (`kind`) and syncs as tab metadata. A Board or Sheet tab whose element is deleted
   shows Start Planning again; choosing anew sets the kind anew.
 
@@ -34,20 +35,62 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
   Tab switch anywhere (not on Setup Board, Board Setup or Sheet Settings; a flag stored on an old board or Sheet still
   reads), no Maximise or Restore, no Focus and no Add to Slides, and Escape restores nothing. Its header holds the
   top row where there is room ([The header holds the top row](plan-board.md#maximised-board)).
-- A Board tab's board fills the screen, so it starts with its cards **Detailed**, whatever its preset uses on a canvas
-  (a Kanban's Compact): from Start Planning and from a template alike. Card Layout changes it as ever.
+- A Board tab's board fills the screen, so it starts with its cards **Detailed**, whatever its preset uses on a canvas:
+  from Start Planning and from a template alike. Card Layout changes it as ever.
 - A Board, Sheet or Dashboard tab shows no palette, as nothing in Plan does ([No palette](plan-mode.md#no-palette)); a
   Sheet tab's toolbar sits in the top row beside the menu box, in a card of its own
   ([Sheet](../029-sheets/sheet.md#sheet-tab)).
 - Anything else added to a Board or Sheet tab (a paste, an agent) is hidden under the element, as for Fill Tab.
-- **Import and Export** in a Board or Sheet tab's tab menu are only what fits its element, in place of the
-  project's Import dialog: **Import CSV…** and **Export** (the Export dialog, with only the formats that suit the
-  kind, its CSV among them: [Export](#export)), in that order. There is no separate Download CSV row: CSV is one of
-  the Export dialog's formats.
-  - A **Sheet tab**: **Import CSV…** (the Sheet's own file picker and import, for someone who may shape it; dimmed
-    otherwise). Sheet Settings then leaves Import CSV… and Download CSV out; a Sheet on any other tab keeps them there.
-  - A **Board tab**: **Import CSV…** (each row a new card on the board, for someone who may add cards: an Editor or a
-    Participant; dimmed for a Viewer, and on an Archive board). The rules are the board's [CSV](plan-board.md#csv).
+- **Import and Export** in a Board or Sheet tab's tab menu are the same two rows as every tab's: **Import…** (the
+  [Import dialog](#the-import-dialog), whose Into This Tab row is the tab's CSV) and **Export** (the Export dialog,
+  with only the formats that suit the kind, its CSV among them: [Export](#export)), in that order. There is no
+  separate Import CSV… or Download CSV row: CSV is one of each dialog's choices.
+  - A **Sheet tab**: the dialog's **CSV** row is the Sheet's own file picker and import, for someone who may shape it.
+    Sheet Settings then leaves Import CSV… and Download CSV out; a Sheet on any other tab keeps them there.
+  - A **Board tab**: the dialog's **CSV** row makes each row a new card on the board, for someone who may add cards
+    (an Editor or a Participant; not a Viewer, and not on an Archive board). The rules are the board's
+    [CSV](plan-board.md#csv).
+
+## The Import dialog
+
+**One dialog holds every way in.** The tab menu's **Import…** row (on every tab, from its **⋯** and the canvas
+right-click menu alike) and the command palette's **Import…** both open it; nothing else in the editor offers an
+import of its own beside it. It is headed **Import**, "Choose what to bring in, or drop a file here.", with the
+Import Tabs help link and Close, and opens on its list:
+
+- **Into This Tab**: what the tab itself takes, one row.
+  - A **Board tab**: **CSV**, "A .csv or .tsv, each row a new card on this board." Pressing it closes the dialog and
+    opens the board's own picker ([CSV](plan-board.md#csv)).
+  - A **Sheet tab**: **CSV**, "A .csv or .tsv into this sheet's cells." Pressing it closes the dialog and opens the
+    Sheet's own picker ([CSV](../029-sheets/sheet.md#csv)).
+  - **Any other tab** (a Dashboard or Form tab, or one not yet started): **liveplanner Tab**, "A tab's JSON from
+    Export. Replaces this tab." Pressing it opens the paste-or-file step ([Import and Export of a
+    Dashboard](#import-and-export-of-a-dashboard)) under an **All Imports** back bar: the amber warning naming the
+    tab, the box to paste into, **Import a file instead** and **Import**.
+  - The row is dimmed, its line saying why, when this person may not import into the tab: "This tab is locked.
+    Unlock it to import into it.", "Only someone who may add cards can import here." (a board) or "Only someone who
+    may change this sheet can import here." (a Sheet).
+- **A Board from Another Tool**, for an Editor only: **Trello**, **Asana**, **Jira** and **Linear**, each with the
+  tool's mark, its file type at the right and a line naming the file and where the tool keeps it
+  ([Importing from another tool](tracker-import.md#where-it-lives)). Under the section, one quiet line: "A one-off
+  copy into a new Board tab or plan, after a preview."
+- **Dropping a file** anywhere on the list reads it as what it is: a liveplanner tab's JSON goes to the liveplanner
+  Tab import (when the tab offers it, and not locked), another tool's export to its preview (an Editor's), and any
+  other CSV into a Board or Sheet tab as its CSV row would. A file none of them takes says why under the list, which
+  stays as it was: "That file isn't a liveplanner tab or a Trello, Asana, Jira or Linear export." (a Dashboard or
+  Form tab), "That file isn't a CSV or a Trello, Asana, Jira or Linear export." (a Board or Sheet tab), "A liveplanner
+  tab's JSON imports into a Dashboard or Form tab. This tab takes a CSV.", "This tab takes a CSV, and that file is
+  JSON." (no tools offered), the row's own reason when it is dimmed, or the tool reader's refusal (not JSON, no cards,
+  too many cards). A file over 20 MB is refused unread, as a picked one is. While a file is dragged over, the list
+  shows a dashed outline and **Drop to Import**. A file is parsed once, by the import it goes to: a tab's JSON is told
+  by its envelope's first lines, a tool's CSV by its header row.
+- **When the list holds one row and it is liveplanner Tab** (someone who is not an Editor, on a Dashboard or Form
+  tab), the dialog opens straight at its step, with no back bar.
+- The rows are the Plan option list ([Option lists](plan-board.md#option-lists)): one is in the Tab order,
+  ArrowUp / ArrowDown / Home / End move between them, Enter or Space presses. On a phone the dialog is a sheet and its
+  rows' lines wrap rather than cut.
+- **The tab menu row** is dimmed only when the dialog would offer nothing to press: no tool section and the Into This
+  Tab row dimmed.
 
 ### Names
 
@@ -139,6 +182,56 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   sits last among that header's controls; otherwise (a metric, a note, an empty slot) the Slot Settings cog floats at
   the slot's top right on hover.
   Each change is one undo step.
+- **A board in a slot is simplified**: a board shown in a slot (a Board tab, or a dashboard's own board) is a compact
+  board made only for working its cards, always (no per-slot choice), so it stays usable in a small slot. Nothing on it
+  sets anything up.
+  - **What it shows**: a slim header (the board's title and how many cards it shows), then the columns, then the
+    cards. Each column's head is its colour dot, its name, its count (against its WIP limit, in the warning colour
+    when over it) and, for someone who may add cards, a **+** (**Add a card to <column>**, opening the Add a Card
+    menu, without **Add New Card Type**). There is no Add card row under the cards (but an All Cards board's
+    rows by status, below, keep theirs).
+  - **Working the cards**: drag a card between columns and within one, click (or Enter) to open it, right-click or
+    hold for its menu, add one from a column's **+** (or the N key). The share roles are a Board tab's: an Editor and
+    a Participant move, add and open cards; a Viewer opens them only.
+  - **Compact and scaling**: the columns share the slot's width, each at least `SLOT_COLUMN_MIN_PX` (160 px) wide.
+    When the slot is narrower than that, they scroll sideways, sized so whole columns fit with a part of the next
+    (`SLOT_COLUMN_PEEK`, 40% of a column) peeking in at the edge, which fades out, so it reads as "more this way".
+    The cards are the board's own size while a column is at least `PLAN_COLUMN_MIN_PX` (220 px) wide; narrower, they
+    are Minimal and stacked: the title on its own (up to two lines), and what its type's Minimal Display shows
+    (by default a custom type's key, priority, due date and assignee; a Task only its title) in a row under it, so a small slot still reads. On a phone the board shows one column a screen, as a phone does
+    elsewhere ([Plan board](plan-board.md#on-a-phone)).
+  - **Swimlanes are not drawn**: a board with swimlanes shows its cards in plain columns in a slot (a move changes
+    only a card's column, never its lane). An All Cards board keeps its rows by status, since its one column holds
+    every status and those rows are where a card's status is shown and changed.
+  - **Left on its tab**: the widgets (and the filter they set), the Items Not on This Board tray, the example cards'
+    **Clear Example Cards** and **Keep Them**, **Focus**, the column cogs (and adding a column), the form strip (a
+    form sending its responses to the board), renaming the board from its title, **Reveal**, **Add New Card Type**
+    and the board-setup sections of its cog. Changes to the board are made on its own tab, through **Open Tab**.
+  - **The header's controls**: **Maximise Board**, then the slot's own cog (**Slot Settings**, with the slot
+    toolbar's **Open Tab**; none for someone with no slot settings). They show while the pointer is over the slot or
+    focus is in it, and always on a touch screen, so at rest the slot is only the title, the columns and the cards.
+    A failed load still shows **Couldn't load items · Retry**, and a board not set up yet still offers **Set Up
+    Board**, so a new board can be started from its slot.
+  - **Maximised** from its slot the board is the whole board again, as on its tab: its own card size, swimlanes, the
+    widgets and their **+**, reordering and ×, the example cards' notice, column cogs and adding a column, Add card
+    under each cell, the form strip, renaming, Reveal, Add New Card Type and, for an Editor, the **Board Settings**
+    cog (its board sections, then the slot's **Slot** section). **Restore** returns it to the simplified slot board.
+    Focus stays off (a slot has no place on the canvas to glide to).
+- **A slot's name**: a filled slot whose heading is made for it takes a name of its own, so a reader sees what it is
+  for ("Launch readiness" rather than "Cards by Assignee"). That is a slot showing a chart or a metric tile (a plan
+  view), a figure from a Sheet, or a Form figure. An Editor gives it in the Slot section, under Add a Slot: a **Name**
+  field (up to 80 characters) whose placeholder is the generated name where it is fixed (a metric's, a figure's
+  kind, a chart's kind; a chart that names what it groups by shows its kind, "Cards by Field"). Enter or leaving the
+  field saves the trimmed name; Escape puts back what was there; emptying it clears the name, and the slot shows the
+  generated name again. A name that is unchanged saves nothing. The name takes the generated heading's place wherever
+  the slot draws it: a chart's header title (what it shows at the moment kept after it, "Launch · Oct 2026"), a
+  metric tile's label, a figure's label, their accessible names, maximised too, and the Dashboard's image and PDF
+  exports. A chart's own title (set where a chart fills a Visualisation tab) still shows where the slot has no name.
+  A slot showing a Board or Sheet tab is not offered one (its name is the tab's: Names); nor are a Sheet Chart (it
+  draws no heading), a Board or Sheet on the dashboard, or a note, a title or another utility, whose own titles are
+  written in place. The name is stored on the slot's content (`name`, additive: a dashboard without one reads as
+  before), so it moves, swaps and duplicates with what the slot shows, and goes when the slot is cleared or filled
+  with something else. One undo step, `Plan · Changed · DashboardContent`.
 - **A new slot settles into place**: a slot added (Add a Slot, a new Dashboard's rows, or by a collaborator)
   fades up from 8 px low at 96% scale, at the long motion token; a new row's slots cascade left to right, landing by
   the motion ceiling. The slots a Dashboard opens with, or shows on switching to another Dashboard, draw still, and
@@ -218,14 +311,14 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   a Sheet tab for it, as Start Planning makes one (its kind, opening in Plan, a board drawing its cards Detailed, a
   board bringing its preset's card types), named as Start Planning names it (the board's title, such as "Kanban"; the
   Sheet's, "Sheet" or its template's name), looking like the dashboard's tab, and placed straight after the dashboard
-  in the tab bar. The slot shows that tab (as picking it under This Project’s Tabs does), and the new tab, the slot
+  in the tab bar. The slot shows that tab (as picking it under This Plan’s Tabs does), and the new tab, the slot
   filled and the card types are one undo step. The Sheet is made on its own tab even though it is first drawn in the
   slot. The dashboard stays the open tab. Telemetry: `Plan · Created · BoardTab` or `SheetTab` with the slot's
   `Plan · Changed · DashboardContent`; no new values.
 - **Add to Slot browses in two levels**, as the palette's Tools do. Its heading, **Add to Slot**, sits over both
   with one short line, "What fits here, as it will look.". It opens on its **categories**, only those with something
   that fits the slot: a grid of two columns of cards, each a small picture of what it holds (the slot pictures below,
-  at three quarters: a Sprint board for This Project’s Tabs, a Kanban board for New Board, a sheet, a Completion tile for Metrics, a Gantt for
+  at three quarters: a Sprint board for This Plan’s Tabs, a Kanban board for New Board, a sheet, a Completion tile for Metrics, a Gantt for
   Visualisations, a Trend for From a Sheet, a stack of cards for Utilities), its own glyph in a brand well, its name,
   how many choices it holds (the shared CountBadge) and a line of what is inside, in full, wrapping (never cut off).
   A card lifts on hover with a brand-tinted edge, shows a focus ring, and the cards cascade in when the picker
@@ -239,8 +332,7 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   its height eases to the new level's (short motion token, easing out), and the new level slides in from the right
   going in and from the left coming back, fading up (the wizard's tip-next and tip-prev); only one level is ever
   drawn. Under reduced motion the swap is instant.
-- **What fits**: content goes only into a slot big enough to draw it well: a board (or Board tab) 480 by 440 px (its header, three
-  columns and two or three cards: less shows one card and reads as cramped), a Sheet (or Sheet tab) 320 by 240, a visualisation 300 by 220; a metric or a note fits any slot. Add to Slot offers only what fits, saying "Only what looks good at this slot’s size, each
+- **What fits**: content goes only into a slot big enough to draw it well: a board (or Board tab) 280 by 260 px (simplified there: its slim header, a column with part of the next peeking in and two Minimal cards; it was 480 by 440 while a slot drew the whole board), a Sheet (or Sheet tab) 320 by 240, a visualisation 300 by 220; a metric or a note fits any slot. Add to Slot offers only what fits, saying "Only what looks good at this slot’s size, each
   shown as it will look here.", and when anything was left out, "Boards, sheets and charts need a bigger slot: drag
   the row’s lower edge to make it taller." (naming only those left out). Each choice is drawn as it will look: a board
   preset's picture, a sheet's, a metric as its tile, a chart as its chart, a note as a heading over lines.
@@ -253,7 +345,7 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
 - An **empty slot** shows the site's empty state at slot size: a gradient badge and **Empty Slot**, with no
   description, over an **Add to Slot** button (the dashed add row Add New Card Type wears, kept to 224 px in a wide
   slot) for an Editor; anyone else sees the badge and title alone. **Add to Slot** opens a picker of what a slot
-  takes, by category: **This Project’s Tabs** (every tab but a Dashboard, see Showing a tab), **New Board** (each preset), **New
+  takes, by category: **This Plan’s Tabs** (every tab but a Dashboard, see Showing a tab), **New Board** (each preset), **New
   Sheet**, **Card Metrics**, **Form Metrics** (only while the project has a Form tab), **Visualisations**, **From a Sheet** (Sheet Figure, Column Summary, Trend, Sheet Chart) and **Utilities** (Note, Title, Status, Checklist, Key Date, Links); picking
   one fills that slot. Each fill is one undo step, replacing what the slot held (an element it held leaves the tab
   with it).
@@ -293,8 +385,9 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
 
 ## Import and Export of a Dashboard
 
-- **Import** on a Dashboard tab's tab menu opens the Import dialog straight at **JSON**, the only format it offers: a
-  Dashboard tab's own `.json` export (Export's JSON), pasted or picked (the picker asks for `.json`). It replaces the
+- **Import…** on a Dashboard tab's tab menu opens the [Import dialog](#the-import-dialog), whose Into This Tab row is
+  **liveplanner Tab**, the only format a Dashboard takes: a Dashboard tab's own `.json` export (Export's JSON), pasted,
+  picked (the picker asks for `.json`) or dropped on the dialog. It replaces the
   dashboard's rows, slots and elements with the file's, in one undo step; the slots follow their elements' new ids.
 - An imported or duplicated Dashboard's layout is its own: every row and slot takes a new id, a figure from a Sheet on
   the tab names the copy of that Sheet made with it (as a chart from it does), and a layout read with a repeated row or
@@ -525,7 +618,7 @@ have nothing to offer a dashboard, are not shown (only a Sheet zooms).
 
 ## Showing a tab
 
-Add to Slot's **This Project’s Tabs** offers each of the project's **Board** and **Sheet** tabs, in tab-bar order, as a card named for the tab, drawn as a board or a sheet; picked, it shows that tab in the slot, worked on in place. No other tab goes in a slot: a Dashboard, a Form (a page of its own) and a tab still on Start Planning are not offered, and a slot's tab kind is only ever `board` or `sheet`. The list follows the tab bar live (a tab added, renamed or deleted) and is left out while the project has no other tab. A tab may show in several slots and on several dashboards.
+Add to Slot's **This Plan’s Tabs** offers each of the project's **Board** and **Sheet** tabs, in tab-bar order, as a card named for the tab, drawn as a board or a sheet; picked, it shows that tab in the slot, worked on in place. No other tab goes in a slot: a Dashboard, a Form (a page of its own) and a tab still on Start Planning are not offered, and a slot's tab kind is only ever `board` or `sheet`. The list follows the tab bar live (a tab added, renamed or deleted) and is left out while the project has no other tab. A tab may show in several slots and on several dashboards.
 
 ## Moving a slot
 
@@ -594,6 +687,10 @@ the muted ink. Each metric's figure, line and picture:
 | Top Voted   | votes                  | The card's title               | The card, which opens it                        |
 | Stale Cards | stale (amber when any) | Not done, unchanged in 14 days | The five oldest, each opening its card          |
 
+A regular tile's strip of rows (People's top person, Top Voted's card, Stale Cards' oldest) is drawn only where it fits
+whole under the figure and its line, so a short tile (the 160 px metric rows) leaves it out rather than cutting it in half
+at its edge; a meter or a split bar always shows.
+
 With nothing to count a tile says so in its line and draws no picture; while the cards load it says Loading cards….
 
 ## Templates
@@ -633,7 +730,14 @@ next time the project is opened:
 | Viewer      | Looks                                | Looks, and Open                                                 |
 
 A Dashboard's layout is tab metadata; only an Editor's change to it is accepted. Gated on the session's `can.level === 'edit'`,
-never on `isReadOnly`.
+never on `isReadOnly`; the room takes a layout change (`dashboard-delta`) from an Editor's socket only.
+
+**Two Editors at once.** Each layout change travels as a small change to the rows and slots it touched, never as
+the whole layout, so two Editors changing a Dashboard at the same moment (one resizing a row, the other a divider,
+filling a slot, adding a row) both keep their change, on both screens and after a reload, and each one's Undo takes
+back only their own. Two changes to the very same thing (the same row's height) end on the later one everywhere. A
+whole layout from elsewhere (an agent rebuilding the Dashboard) replaces what is there for everyone. How:
+[A Dashboard's layout travels as deltas](../012-collaboration/collab-race-hardening.md#a-dashboards-layout-travels-as-deltas).
 
 A **locked tab** refuses every change, as every edit there is: an Editor sees its Dashboard as a Viewer does (no cog,
 grip, edges or editing in a card), and the Dashboard's writes (a layout change, a slot's content, a new kind from Start

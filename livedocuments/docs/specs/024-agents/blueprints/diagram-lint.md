@@ -255,7 +255,8 @@ re-lints the tab through the view.
 - **N9** `label-overflow` judges the estimate, not a browser's font: the same measure every headless render (the
   MCP's PNG, the api's `render.svg`) wraps with, so the lint agrees with the preview an agent sees.
 - **N10** Rich text is measured as its plain `label` at the element's base size (LN7).
-- **N11** A sticky with `textSize: 'scale'` fits its text by design and never overflows.
+- **N11** A sticky with `textSize: 'scale'` fits its text by design and never overflows. A re-fitted shape's
+  label, and a Shift-resized or re-fitted text, is measured at its `textScale` (`labelTextScale`).
 - **N12** A box wholly inside another (an icon on a square, a table on a card) is not a `box-overlap`.
 - **N18** Two arrows with the same ends: messages name both `orders→bus`; fixes and JSON use each arrow's ref, since
   `orders->bus` would be ambiguous.

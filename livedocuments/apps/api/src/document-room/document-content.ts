@@ -3,6 +3,7 @@
 // import. Runs inside the document's Durable Object, on `env.DOCUMENT_DB`.
 
 import { remapTabLinks, type Element } from '@livedocuments/document';
+import { redactTabDataForCommunity } from '@liveworkspace/community/app';
 import { redactTabDataAuthors } from '../comments';
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
 import { servableImageIds } from '../db/image-grants';
@@ -263,11 +264,14 @@ export async function readContentTabRows(
 
 // The source side of a copy. `onlyTabId`: a tab-scoped visitor's copy takes that tab only.
 // `redactAuthorsFor`: anyone but the owner copies the comments as the tab read serves them to them.
+// `redactForCommunity`: a copy through a Community post's link (docs/specs/025-community/community.md) carries the
+// document without its comments or the people on its actions.
 export async function exportDocumentCopy(
   env: DocumentEnv,
   documentId: string,
   onlyTabId: string | null,
   redactAuthorsFor: string | null,
+  redactForCommunity = false,
 ): Promise<DocumentCopy | null> {
   const rows = await readContentTabRows(env, documentId, onlyTabId);
   // Every fresh tab id minted up front, so a tab or element link on one tab can be re-pointed at its sibling's copy.
@@ -281,8 +285,11 @@ export async function exportDocumentCopy(
         name: row.name,
         orderIndex: row.order_index,
         folder: row.folder,
-        data:
-          redactAuthorsFor !== null ? redactTabDataAuthors(remapped, redactAuthorsFor) : remapped,
+        data: redactForCommunity
+          ? redactTabDataForCommunity(remapped).data
+          : redactAuthorsFor !== null
+            ? redactTabDataAuthors(remapped, redactAuthorsFor)
+            : remapped,
         // Link remapping rewrites ids inside elements, never their number, so the count carries over.
         elementCount: row.element_count,
       };
@@ -294,17 +301,19 @@ export async function exportDocumentCopy(
 }
 
 // The source side of a copy for whoever copies (`copiedBy`, as the index names them; null when it does not say):
-// anyone but the owner takes the comments as the tab read serves them, other people's authors redacted.
+// anyone but the owner takes the comments as the tab read serves them, other people's authors redacted; through a
+// Community post's open link (`community`), without its comments or the people on its actions.
 export async function exportDocumentCopyFor(
   env: DocumentEnv,
   documentId: string,
   onlyTabId: string | null,
   copiedBy: string | null,
+  community = false,
 ): Promise<DocumentCopy | null> {
   const ownerId =
     copiedBy === null ? null : ((await readDocumentMeta(env, documentId))?.ownerId ?? null);
   const redact = copiedBy !== null && copiedBy !== ownerId ? copiedBy : null;
-  return exportDocumentCopy(env, documentId, onlyTabId, redact);
+  return exportDocumentCopy(env, documentId, onlyTabId, redact, community);
 }
 
 // The images a copy's bodies place, for the placement grants the copy carries (db/image-grants.ts).

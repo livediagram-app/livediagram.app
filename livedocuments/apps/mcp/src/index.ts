@@ -5,6 +5,7 @@
 // endpoints mount alongside.
 import { createMcpApp } from '@liveworkspace/mcp-kit/app';
 import type { Env } from '@liveworkspace/mcp-kit/env';
+import { LISTING } from './listing';
 import { OAUTH } from './oauth';
 import { buildServer } from './server';
 
@@ -12,6 +13,6 @@ export type { Env };
 
 // The transport, CORS, health check and OAuth endpoints are @liveworkspace/mcp-kit's; this product hands in its
 // server (tools, prompts, the schema resource) and its authorization server's configuration (oauth.ts).
-const app = createMcpApp<Env>({ buildServer, oauth: OAUTH });
+const app = createMcpApp<Env>({ buildServer, oauth: OAUTH, listing: LISTING });
 
 export default app;

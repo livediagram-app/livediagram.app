@@ -360,6 +360,29 @@ describe('the view, History and place commands', () => {
     expect(photoDialogs.get()).toEqual({ kind: 'place' });
   });
 
+  // photo-pages.md "Making sizes" The dialog: refused on an unstarted photo and with no room, and only
+  // for someone who may add pages.
+  it('opens Make Sizes for an Editor who may add pages, with room, on a started photo', () => {
+    const e = editor();
+    const addSizes = vi.fn(() => true);
+    runPhotoAction('make-sizes', { ...e.view, addSizes, photoRoom: 3 });
+    expect(photoDialogs.get()).toEqual({ kind: 'make-sizes' });
+    photoDialogs.close();
+    runPhotoAction('make-sizes', { ...e.view, addSizes, photoRoom: 0 });
+    // No addSizes: a session that may not add pages.
+    runPhotoAction('make-sizes', { ...e.view, photoRoom: 3 });
+    expect(e.toasts).toEqual([
+      'A tab holds up to 10 photo pages. Delete one to make sizes.',
+      'A tab holds up to 10 photo pages. Delete one to make sizes.',
+    ]);
+    const blank = editor(16, 12, []);
+    runPhotoAction('make-sizes', { ...blank.view, addSizes, photoRoom: 3 });
+    expect(blank.toasts).toEqual(['Start the photo first: there is nothing to make sizes from.']);
+    // A Participant or a Viewer runs no photo command at all.
+    runPhotoAction('make-sizes', { ...e.view, addSizes, photoRoom: 3, canEdit: false });
+    expect(photoDialogs.get()).toBeNull();
+  });
+
   it('toggles the pixel grid for this browser', () => {
     const e = editor();
     const was = photoViewOptions.get().pixelGrid;

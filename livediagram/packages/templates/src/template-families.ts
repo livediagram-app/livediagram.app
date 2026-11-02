@@ -90,6 +90,12 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'journey-doodle': null,
   'pre-mortem': null,
   'idea-garden': null,
+  'eisenhower-matrix': null,
+  'pestle-analysis': null,
+  'kwl-chart': null,
+  'onboarding-plan': null,
+  'concept-map': null,
+  'network-diagram': null,
 };
 
 /** The family a document made from this template belongs to; null for no template or no family. */

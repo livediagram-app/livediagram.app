@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 
 import { useMenuItemProps } from '@liveworkspace/workbench/components/primitives/menu-item-props';
+import { clampToViewport } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import {
   Glyph,
   MenuTreeContext,
@@ -181,6 +182,28 @@ function SurfaceFrame({
     },
     [popoverRef, attach],
   );
+  // Anchored to its trigger's edge, a wide panel can still run off the far side (a Timer near the left of the
+  // screen opens its right-anchored panel leftward, past x = 0): nudged back inside the viewport once measured.
+  // Measured per anchor and again whenever the panel's size changes: a Timer's panel opens narrow and grows to its
+  // full width once its dial loads, growing leftward past the edge. A nudge moves the panel without resizing it, so
+  // it never feeds its own re-measure.
+  const [adjust, setAdjust] = useState({ x: 0, y: 0 });
+  useLayoutEffect(() => {
+    const el = popoverRef.current;
+    if (!el) return;
+    const measure = () => {
+      const rect = el.getBoundingClientRect();
+      setAdjust((prev) => {
+        const next = clampToViewport(rect, prev);
+        return next.x === prev.x && next.y === prev.y ? prev : next;
+      });
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [popoverRef, at.x, at.y]);
   return (
     <MenuTreeContext.Provider value={tree}>
       <div
@@ -216,6 +239,9 @@ function SurfaceFrame({
           // Anchored by the edge it opened from, so a menu near the right
           // of the screen opens leftward instead of off it.
           ...(align === 'left' ? { left: at.x } : { right: window.innerWidth - at.x }),
+          ...(adjust.x || adjust.y
+            ? { transform: `translate(${adjust.x}px, ${adjust.y}px)` }
+            : null),
         }}
       >
         {children}

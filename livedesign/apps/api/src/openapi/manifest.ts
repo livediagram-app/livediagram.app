@@ -14,7 +14,13 @@
 // design.ts, so they aren't repeated here.
 
 import { LINT_VIEW_NAME, TAB_VIEW_NAMES } from '@livedesign/api-schema';
-import { NAME_MAX_LENGTH } from '@livedesign/design';
+import {
+  COMPONENT_NAME_MAX,
+  MAX_COMPONENT_BYTES,
+  MAX_COMPONENT_ELEMENTS,
+  MAX_COMPONENTS,
+  NAME_MAX_LENGTH,
+} from '@livedesign/design';
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livedesign/design-views';
 import type { BodySchema } from '@liveworkspace/api-kit/openapi-types';
 
@@ -33,7 +39,7 @@ interface QueryParam {
 }
 
 export interface RouteSpec {
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   /** Path template under the server base, e.g. `/designs/{id}/tabs/{tabId}`. */
   path: string;
   /** Top-level resource segment, matching index.ts's dispatch switch. Used by
@@ -147,6 +153,21 @@ const wrap = (key: string, name: string): BodySchema => ({
   properties: { [key]: ref(name) },
   required: [key],
 });
+
+// The gallery's search parameters, shared by the public list and My Shares (docs/specs/025-community/community.md
+// "The gallery"): every filter can also be a word in `q` (`#tag`, `category:`, `sort:`, `is:mine`).
+const COMMUNITY_QUERY = [
+  {
+    name: 'q',
+    required: false,
+    description:
+      'Search words: plain terms (title, description, tags), `#tag`, `category:<id>`, `sort:loved|copied`.',
+  },
+  { name: 'category', required: false, description: 'One category id.' },
+  { name: 'tag', required: false, description: 'One tag.' },
+  { name: 'sort', required: false, description: '`new` (default), `loved` or `copied`.' },
+  { name: 'offset', required: false, description: 'From `nextOffset`.' },
+] as const;
 
 export const ROUTE_MANIFEST: RouteSpec[] = [
   // ---- Meta ----
@@ -510,6 +531,53 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 401, 403, 404, 409, 410, 413],
   },
   {
+    method: 'GET',
+    path: '/designs/{id}/components',
+    segment: 'designs',
+    tag: 'Components',
+    summary:
+      "The design's component library: every main (a component's own elements in its frame), archived ones included, which the instances on its tabs (`shape: 'instance'`, `componentId`) draw. A link confined to one tab gets only the mains that tab uses.",
+    auth: 'guest-or-account',
+    tokenUsable: true,
+    responseSchema: 'ComponentsResponse',
+    statuses: [200, 401, 404, 410],
+  },
+  {
+    method: 'PUT',
+    path: '/designs/{id}/components/{componentId}',
+    segment: 'designs',
+    tag: 'Components',
+    summary: `Make (or replace) one main. The body's \`id\` must be the path's; \`updatedAt\` is set by the server. At most ${MAX_COMPONENTS} mains per design (409 \`too_many_components\`), ${MAX_COMPONENT_ELEMENTS} elements and ${MAX_COMPONENT_BYTES / 1024} KB each (413). Everyone with the design open sees it at once.`,
+    auth: 'guest-or-account',
+    tokenUsable: true,
+    requestSchema: ref('DesignComponent'),
+    responseSchema: 'ComponentResponse',
+    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
+  },
+  {
+    method: 'PATCH',
+    path: '/designs/{id}/components/{componentId}',
+    segment: 'designs',
+    tag: 'Components',
+    summary:
+      'Change one main element by element: elements upserted and removed by id, their order, its name, archived. Applied to the main as stored, so two changes to different elements both land; every instance redraws. 404 for a main the design does not have.',
+    auth: 'guest-or-account',
+    tokenUsable: true,
+    requestSchema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', maxLength: COMPONENT_NAME_MAX },
+        archived: { type: 'boolean' },
+        upsert: { type: 'array', items: ref('Element') },
+        remove: { type: 'array', items: { type: 'string' } },
+        order: { type: 'array', items: { type: 'string' } },
+      },
+      additionalProperties: false,
+    },
+    responseSchema: 'ComponentResponse',
+    statuses: [200, 400, 401, 403, 404, 409, 410, 413],
+  },
+  {
     method: 'PUT',
     path: '/designs/{id}/tabs/{tabId}/name',
     segment: 'designs',
@@ -802,6 +870,41 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 404],
   },
   {
+    method: 'GET',
+    path: '/designs/{id}/community',
+    segment: 'designs',
+    tag: 'Community',
+    summary: "The design's Community post, in any state, or null (owner only).",
+    auth: 'guest-or-account',
+    responseSchema: {
+      type: 'object',
+      properties: { post: { anyOf: [ref('CommunityOwnPost'), { type: 'null' }] } },
+      required: ['post'],
+    },
+    statuses: [200, 400, 401, 403, 404, 410, 502],
+  },
+  {
+    method: 'PUT',
+    path: '/designs/{id}/community',
+    segment: 'designs',
+    tag: 'Community',
+    summary:
+      'Publish the design to Community, or save its listing (signed-in owner; not a team design, not password protected).',
+    auth: 'account',
+    requestSchema: ref('CommunityPostInput'),
+    responseSchema: wrap('post', 'CommunityOwnPost'),
+    statuses: [200, 201, 400, 401, 403, 404, 409, 410, 502],
+  },
+  {
+    method: 'DELETE',
+    path: '/designs/{id}/community',
+    segment: 'designs',
+    tag: 'Community',
+    summary: 'Remove the design from Community (owner only).',
+    auth: 'guest-or-account',
+    statuses: [204, 400, 401, 403, 404, 409, 410, 502],
+  },
+  {
     method: 'POST',
     path: '/designs/{id}/room-ticket',
     segment: 'designs',
@@ -954,6 +1057,21 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401, 403, 404],
   },
 
+  // Every other Community read, and likes and reports, are the liveworkspace Community service's
+  // (liveworkspace/docs/specs/007-community/community.md), which the Community pages call directly.
+  {
+    method: 'GET',
+    path: '/community/mine',
+    segment: 'community',
+    tag: 'Community',
+    summary:
+      "My Shares: the signed-in author's own posts (hidden ones included) under the same search words, with their totals.",
+    auth: 'account',
+    query: [...COMMUNITY_QUERY],
+    responseSchema: ref('CommunityMineResponse'),
+    statuses: [200, 400, 401, 404, 502],
+  },
+
   // ---- Shared with you ----
   {
     method: 'GET',
@@ -969,6 +1087,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         design: ref('Design'),
         role: ref('ShareRole'),
         tabId: { type: ['string', 'null'] },
+        community: ref('CommunityShareInfo'),
       },
       required: ['design', 'role', 'tabId'],
     },
@@ -1074,14 +1193,31 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
 
   // ---- Account ----
   {
+    method: 'POST',
+    path: '/account/deletion-code',
+    segment: 'account',
+    tag: 'Account',
+    summary:
+      'Email the signed-in account the 6-digit code that deleting it needs (10 minutes, 3 tries).',
+    auth: 'account',
+    responseSchema: { type: 'object', properties: { sent: { type: 'boolean' } } },
+    statuses: [200, 401, 429, 502, 503],
+  },
+  {
     method: 'DELETE',
     path: '/account',
     segment: 'account',
     tag: 'Account',
-    summary: 'Delete the signed-in account and all of its data (designs, tokens, ...).',
+    summary:
+      'With the code emailed to it, delete the signed-in account and all of its data (designs, tokens, ...).',
     auth: 'account',
+    requestSchema: {
+      type: 'object',
+      properties: { code: { type: 'string' } },
+      required: ['code'],
+    },
     responseSchema: { type: 'object', properties: { deleted: { type: 'number' } } },
-    statuses: [204, 401],
+    statuses: [200, 400, 401, 403, 409, 429, 502, 503],
   },
 
   // ---- Teams ----

@@ -91,13 +91,19 @@ export const START_CATEGORIES: readonly { id: StartCategory; name: string; line:
 const INSPIRATION_ORDER: readonly PlanTemplateKind[] = [
   'hiring-pipeline',
   'content-calendar',
+  'event-planner',
+  'sales-crm',
   'product-launch',
   'okrs',
+  'help-desk',
   'feedback-board',
   'project-planner',
   'bug-triage',
   'team-retro',
+  'meeting-agenda',
+  'personal-goals',
   'weekly-planner',
+  'study-planner',
   'kanban',
 ];
 

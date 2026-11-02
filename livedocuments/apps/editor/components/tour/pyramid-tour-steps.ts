@@ -39,16 +39,12 @@ export function pyramidTourSteps(
       `Add Tier adds one at the ${ctx.inverted ? 'point' : 'base'}, up to six.`,
       'Add Tier',
     ),
-    ...(ctx.hasMore
-      ? [
-          inTheMenu(
-            'shape',
-            'Pyramid, Inverted or Funnel',
-            'In its menu, Shape switches between Pyramid, Inverted and Funnel.',
-            ['Tools', 'Pyramid'],
-          ),
-        ]
-      : []),
+    inTheMenu(
+      'shape',
+      'Pyramid, Inverted or Funnel',
+      'In its menu, Shape switches between Pyramid, Inverted and Funnel.',
+      ['Tools', 'Pyramid'],
+    ),
     onGraphic(
       'colours',
       'From the Accent Down',

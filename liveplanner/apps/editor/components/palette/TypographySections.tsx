@@ -6,7 +6,7 @@ import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hov
 import { FontGlyph } from '@liveworkspace/workbench/components/rich-text/rich-text-toolbar-icons';
 import { DotsIcon, NonePaddingIcon, PaddingIcon } from './palette-icons';
 import { TextSizeControl, type PresetPx } from './TextSizeControl';
-import { FONTS, legendFontPx, resolveFontStack } from '@liveplanner/project';
+import { PLANNER_FONTS, legendFontPx, resolveFontStack } from '@liveplanner/project';
 import type { Padding, TextSize } from '@liveplanner/project';
 
 // The typography controls — Font / Size / Padding — as three collapsible
@@ -81,7 +81,8 @@ export function TypographySections({
     <>
       <MenuAccordionSection title="Font" icon={<FontGlyph />} {...sectionProps('font')}>
         <MenuTileGrid cols={2}>
-          {FONTS.map((f) => (
+          {/* The faces liveplanner offers (docs/specs/004-interface-design/fonts.md). */}
+          {PLANNER_FONTS.map((f) => (
             // No "Aa" swatch — the tile IS the font name rendered in its own
             // face, which is both a truer preview and more compact.
             <MenuTile

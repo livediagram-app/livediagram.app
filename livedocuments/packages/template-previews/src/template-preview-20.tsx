@@ -3,7 +3,7 @@ import type { TemplateKind } from '@livedocuments/templates';
 import { pv } from '@liveworkspace/template-previews/motion';
 
 // Group 20: the blanks of a page kind (docs/specs/007-editor/start-diagramming.md "Recommended and groups"): Blank
-// Slide Deck, Blank Article and Blank Infographic. Each draws its one empty page in its own proportions
+// Slide Deck, Blank Article, Blank Infographic and Blank Flashcards. Each draws its one empty page in its own proportions
 // (a 16:9 slide, an A4 page) with the dashed edge, faint guides and brand "+" of Blank
 // Illustration's page, so the Pages blanks read as a set. Hover story: the guides light up, what the page is for.
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
@@ -161,6 +161,39 @@ export function templatePreviewGroup20(kind: TemplateKind): ReactElement | null 
             ))}
           </g>
           <Plus cx={40} cy={41} />
+        </svg>
+      );
+    case 'blank-flashcards':
+      // One empty 5:3 card, a second card peeking out below it (the stack): a title and a few lines to say. Hover story:
+      // the lines light up.
+      return (
+        <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
+          <rect
+            x="19"
+            y="13"
+            width="42"
+            height="25.2"
+            rx="2"
+            fill="rgb(241 245 249)"
+            stroke={EDGE}
+            strokeWidth="0.5"
+          />
+          <Page x={16} y={9} width={48} height={28.8} />
+          <g className="pv-pulse" style={pv({ '--pv-at': '500ms' })}>
+            <rect x="20" y="13" width="18" height="2.6" rx="0.8" fill={EDGE} />
+            {[18.5, 21.5, 24.5].map((y, i) => (
+              <rect
+                key={y}
+                x="20"
+                y={y}
+                width={i === 2 ? 24 : 38}
+                height="1.3"
+                rx="0.6"
+                fill={LINE}
+              />
+            ))}
+          </g>
+          <Plus cx={40} cy={44} />
         </svg>
       );
     default:

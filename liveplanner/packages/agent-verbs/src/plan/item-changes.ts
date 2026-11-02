@@ -8,17 +8,28 @@ import {
   assignedPeople,
   boardShowsType,
   descriptionFromMarkdown,
-  DESCRIPTION_RICH_FIELD,
+  isRichFieldKey,
+  richFieldOf,
   isItemPerson,
   itemStatus,
   itemSummary,
   resolveFields,
+  calculatedWritten,
+  isFormulaField,
+  isLookupField,
   resolveItem,
   resolveStatus,
   resolveType,
   fieldKeyOf,
+  missingRequiredFields,
+  requiredCleared,
+  requiredFieldsMessage,
   typeIn,
+  blockingCycleOf,
+  blockingLoopMessage,
+  type BlockingChange,
   type Item,
+  type ItemFields,
   type ItemTypeDef,
   type Named,
 } from '@liveplanner/items';
@@ -57,6 +68,27 @@ class Stop extends Error {
     super(message);
     this.code = code;
   }
+}
+
+// A required custom field left empty (docs/specs/026-plan/item-types.md "Required fields"), stopped before the api
+// sees it so the refusal names the type and every field.
+function requiredStop(type: ItemTypeDef, missing: readonly { label: string }[]): Stop {
+  return new Stop(
+    'field_required',
+    `${requiredFieldsMessage(type, missing)}: give ${missing.length === 1 ? 'it' : 'them'} in fields, by name. ` +
+      'list_items marks each required field (required: true).',
+  );
+}
+
+// A Blocked By loop (docs/specs/026-plan/item-types.md "Blocked By"), stopped before the api sees it so the refusal
+// names the chain it would close.
+function loopStop(
+  items: readonly Item[],
+  types: readonly ItemTypeDef[],
+  change: BlockingChange,
+): void {
+  const loop = blockingCycleOf(items, types, [change]);
+  if (loop) throw new Stop('blocks_cycle', blockingLoopMessage(loop.chain));
 }
 
 function must<T extends object>(named: Named<T>): T {
@@ -98,6 +130,10 @@ function personNote(fields: Readonly<Record<string, unknown>>, items: readonly I
   return [`${p.name} is a new name on this plan, not linked to anyone's account`];
 }
 
+// The card a value names, by id.
+const byIdIn = (items: readonly Item[], v: unknown): Item | undefined =>
+  items.find((i) => i.id === v);
+
 // The most of a value a set line repeats.
 const SET_VALUE_MAX = 40;
 
@@ -105,6 +141,11 @@ const SET_VALUE_MAX = 40;
 // ★"). A card link by its number, a person by name, a list by its length.
 function storedText(value: unknown, items: readonly Item[]): string {
   if (isItemPerson(value)) return value.name;
+  // A field that holds several (docs/specs/026-plan/item-types.md "Holds Several"): its people or cards, named.
+  if (Array.isArray(value) && value.length > 0 && value.every(isItemPerson))
+    return cut(value.map((p) => p.name).join(', '));
+  if (Array.isArray(value) && value.length > 0 && value.every((v) => byIdIn(items, v)))
+    return cut(value.map((v) => `#${byIdIn(items, v)!.key}`).join(', '));
   if (Array.isArray(value)) return `${value.length} entr${value.length === 1 ? 'y' : 'ies'}`;
   if (typeof value === 'string') {
     const linked = items.find((i) => i.id === value);
@@ -115,21 +156,33 @@ function storedText(value: unknown, items: readonly Item[]): string {
   return cut(String(JSON.stringify(value)));
 }
 
-// A description as an agent writes it is Markdown: stored as its plain text and its formatting. Text with nothing
-// marked drops formatting the card had, so the panel never shows an old description over the new one.
-function withDescription(
+// A description, and a Long Text custom field (docs/specs/026-plan/plan-agents.md "Naming things as people do"), as
+// an agent writes it is Markdown: stored as its plain text and its formatting (`descriptionRich`, `<id>Rich`). Text
+// with nothing marked drops formatting the card had, so the panel never shows an old text over the new one.
+function richFieldsOf(type: ItemTypeDef): string[] {
+  return [
+    'description',
+    ...(type.custom ?? []).filter((f) => f.kind === 'longtext').map((f) => f.id),
+  ];
+}
+
+function withRichText(
   fields: Record<string, unknown>,
+  type: ItemTypeDef,
   had: Readonly<Record<string, unknown>> = {},
 ): { set: Record<string, unknown>; clear: string[] } {
-  const markdown = fields['description'];
-  if (typeof markdown !== 'string') return { set: fields, clear: [] };
-  const { plain, runs } = descriptionFromMarkdown(markdown);
-  if (runs)
-    return { set: { ...fields, description: plain, [DESCRIPTION_RICH_FIELD]: runs }, clear: [] };
-  return {
-    set: { ...fields, description: plain },
-    clear: DESCRIPTION_RICH_FIELD in had ? [DESCRIPTION_RICH_FIELD] : [],
-  };
+  const set = { ...fields };
+  const clear: string[] = [];
+  for (const key of richFieldsOf(type)) {
+    const markdown = fields[key];
+    if (typeof markdown !== 'string') continue;
+    const { plain, runs } = descriptionFromMarkdown(markdown);
+    set[key] = plain;
+    const rich = richFieldOf(key);
+    if (runs) set[rich] = runs;
+    else if (rich in had) clear.push(rich);
+  }
+  return { set, clear };
 }
 
 const cut = (text: string) =>
@@ -142,11 +195,9 @@ function setNote(
   items: readonly Item[],
 ): string[] {
   const name = (key: string) => type.custom?.find((f) => f.id === key)?.label ?? key;
-  // The formatting reads back as the description it belongs to.
-  const set = Object.fromEntries(
-    Object.entries(written).filter(([k]) => k !== DESCRIPTION_RICH_FIELD),
-  );
-  const clear = cleared.filter((k) => k !== DESCRIPTION_RICH_FIELD);
+  // Formatting reads back as the field it belongs to.
+  const set = Object.fromEntries(Object.entries(written).filter(([k]) => !isRichFieldKey(k)));
+  const clear = cleared.filter((k) => !isRichFieldKey(k));
   const parts = [
     ...(Object.keys(set).length
       ? [
@@ -178,16 +229,39 @@ export async function applyItemChanges(
   const naming = () => ({ statuses: state.plan.statuses, items });
   const post = (path: string, body: unknown) =>
     api.json<ItemResponse>(path, { method: 'POST', body: JSON.stringify(body) });
-  const fieldsFor = (input: Readonly<Record<string, unknown>> | undefined, type: ItemTypeDef) =>
-    input ? must(resolveFields(input, type, naming())).fields : {};
+  // A Calculated field is worked out, never given (docs/specs/026-plan/item-types.md "Calculated fields"): refused
+  // before the write, by name.
+  const fieldsFor = (input: Readonly<Record<string, unknown>> | undefined, type: ItemTypeDef) => {
+    const fields = input ? must(resolveFields(input, type, naming())).fields : {};
+    const calculated = calculatedWritten([type], { type: type.id, fields: fields as ItemFields });
+    if (calculated) {
+      // calculatedWritten names only a field the type has.
+      const field = type.custom!.find((f) => f.id === calculated)!;
+      const from = isFormulaField(field)
+        ? 'by its formula'
+        : isLookupField(field)
+          ? 'from the card it links to'
+          : 'from the cards linking here';
+      throw new Stop(
+        'field_calculated',
+        `${field.label} is calculated: it can't be set. list_items lists its value, worked out ${from}.`,
+      );
+    }
+    return fields;
+  };
   try {
     for (const c of changes) {
       if (c.op === 'add') {
         const type = must(resolveType(c.type ?? 'task', types)).type;
-        const fields = withDescription(fieldsFor(c.fields, type)).set;
+        const fields = withRichText(fieldsFor(c.fields, type), type).set;
         const status = c.status
           ? must(resolveStatus(c.status, state.plan.statuses)).status
           : undefined;
+        const missing = missingRequiredFields(type, fields as ItemFields);
+        if (missing.length) throw requiredStop(type, missing);
+        loopStop(items, types, {
+          next: { id: '', type: type.id, fields: { ...fields, title: c.title } },
+        });
         const { item } = await post(base, {
           type: type.id,
           fields: { ...fields, title: c.title },
@@ -199,20 +273,33 @@ export async function applyItemChanges(
       } else if (c.op === 'set') {
         const target = must(resolveItem(c.item, items)).item;
         const type = c.type ? must(resolveType(c.type, types)).type : typeIn(types, target.type);
-        const described = withDescription(fieldsFor(c.fields, type), target.fields);
+        const described = withRichText(fieldsFor(c.fields, type), type, target.fields);
         const set = described.set;
         // A value a removed field left on the card is cleared by its key, though the type no longer has it.
         const named = (c.clear ?? []).map((k) =>
           k in target.fields && !fieldKeyOf(k, type).ok ? k : must(fieldKeyOf(k, type)).key,
         );
-        // Clearing the description clears its formatting with it.
+        // Clearing the description, or a Long Text field, clears its formatting with it.
         const clear = [
           ...named,
           ...described.clear,
-          ...(named.includes('description') && DESCRIPTION_RICH_FIELD in target.fields
-            ? [DESCRIPTION_RICH_FIELD]
-            : []),
+          ...named.map(richFieldOf).filter((k) => isRichFieldKey(k) && k in target.fields),
         ];
+        const after: Record<string, (typeof target.fields)[string]> = {
+          ...target.fields,
+          ...(set as typeof target.fields),
+        };
+        for (const k of clear) delete after[k];
+        const emptied = requiredCleared(type, target.fields, after);
+        if (emptied)
+          throw new Stop(
+            'field_required',
+            `${emptied.label} is required on ${type.label} cards: it can be changed, not emptied.`,
+          );
+        loopStop(items, types, {
+          before: target,
+          next: { ...target, type: type.id, fields: after },
+        });
         const { item } = await post(`${base}/${encodeURIComponent(target.id)}`, {
           ...(Object.keys(set).length ? { set } : {}),
           ...(clear.length ? { clear } : {}),

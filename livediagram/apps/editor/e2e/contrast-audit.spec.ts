@@ -37,8 +37,10 @@ function expectAA(report: ContrastReport, screen: string): void {
 }
 
 test.describe('Contrast audit, dark mode', () => {
+  // A visitor with no identity leaves /new for the guest handoff the moment the page hydrates (fixtures.ts
+  // serverNewUrl), which destroyed the page mid-audit: the wizard is audited as a minted guest, who stays.
   test('the New Canvas wizard', async ({ page, pageErrors }) => {
-    await darkVisitor(page);
+    await darkVisitor(page, await mintGuest(page.request));
     await page.goto('/new');
     await page.getByText('New Canvas', { exact: false }).first().waitFor();
     await untilHydrated(page.getByRole('button', { name: /^create$/i }));

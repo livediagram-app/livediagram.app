@@ -53,23 +53,36 @@ describe('ParticipantAvatar', () => {
     expect(container.querySelector('img')).toBeNull();
   });
 
-  it('reads an owner’s agent status in the accessible name', () => {
-    render(<ParticipantAvatar participant={{ ...webber, statusLine: 'adding payment service' }} />);
+  it('draws an agent as its mark in its owner’s colour, never initials', () => {
+    const { container } = render(
+      <ParticipantAvatar participant={{ ...webber, name: "Webber's Agent", agent: true }} />,
+    );
+    const disc = screen.getByRole('img');
+    expect(disc.textContent).toBe('');
+    expect(container.querySelector('svg')).not.toBeNull();
+    expect(disc.getAttribute('style')).toContain('#3b82f6');
+  });
+
+  it('reads an agent’s status in the accessible name', () => {
+    render(
+      <ParticipantAvatar
+        participant={{
+          ...webber,
+          name: "Webber's Agent",
+          agent: true,
+          statusLine: 'adding payment service',
+        }}
+      />,
+    );
     expect(screen.getByRole('img').getAttribute('aria-label')).toBe(
-      'Webber (Online), adding payment service',
+      "Webber's Agent (Online), adding payment service",
     );
   });
 
-  it('leads an owner’s hover card with their agent’s status line', () => {
-    expect(hoverText({ ...webber, statusLine: 'adding payment' })).toContain(
-      'adding payment · Online',
-    );
+  it('says only what an agent row is doing, or that it is at work on the tab', () => {
+    const row = { ...webber, name: "Webber's Agent", agent: true as const, lastActiveAt: 1 };
+    expect(hoverText({ ...row, statusLine: 'reviewing' })).toMatch(/Webber's Agentreviewing$/);
+    expect(hoverText(row)).toMatch(/Webber's AgentWorking on this tab$/);
     expect(hoverText(webber)).toMatch(/WebberOnline$/);
-  });
-
-  it('says only what an agent row is doing, or that it is online', () => {
-    const row = { ...webber, agent: true as const, lastActiveAt: 1 };
-    expect(hoverText({ ...row, statusLine: 'reviewing' })).toMatch(/Webberreviewing$/);
-    expect(hoverText(row)).toMatch(/WebberOnline$/);
   });
 });

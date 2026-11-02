@@ -13,6 +13,7 @@ import {
   type GanttModel,
   type GanttRow,
   type ItemPatch,
+  type ViewDates,
 } from '@liveplanner/items';
 import { tint } from '../plan-card-parts';
 import { ganttDayLabel, swallowNextClick } from './gantt-drag';
@@ -23,6 +24,7 @@ export function GanttDrawRow({
   view,
   trackRef,
   colour,
+  dates,
   onCommit,
   onBegin,
 }: {
@@ -31,6 +33,9 @@ export function GanttDrawRow({
   // The timeline, whose box turns a pointer into a day.
   trackRef: RefObject<HTMLElement | null>;
   colour: string;
+  // The fields the chart reads (plan-views.md "Dates"): a draw writes them, in their own shape (a day, a moment, a
+  // range's two ends).
+  dates?: ViewDates;
   onCommit: (itemId: string, patch: ItemPatch) => void;
   // A draw begins (the chart pins its timeline).
   onBegin?: () => void;
@@ -67,7 +72,7 @@ export function GanttDrawRow({
       setDraw(null);
       // A drag across days can be let go over another row: its click must not open that card.
       if (b !== a) swallowNextClick();
-      if (commit) onCommit(row.item.id, { set: ganttDrawn(a, b).set });
+      if (commit) onCommit(row.item.id, { set: ganttDrawn(a, b, dates, row.item).set });
     });
   };
 

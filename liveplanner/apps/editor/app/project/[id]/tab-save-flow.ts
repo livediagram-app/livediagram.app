@@ -1,7 +1,7 @@
 import { diffToElementOps, ledgerKey, type ElementOp, type Tab } from '@liveplanner/project';
 import type { RoomOp, RoomOutgoing } from '@liveplanner/api-schema';
 import { tabBroadcastOps } from './tab-broadcast-ops';
-import { holdOwnWrites, type OwnElementWrites } from './own-element-writes';
+import { holdOwnDashboardWrites, holdOwnWrites, type OwnElementWrites } from './own-element-writes';
 
 // What one tab's save needs of the realtime room: read when it is used, since a reconnect replaces it.
 // `sequence` sends an op and resolves true once the room has sequenced it, false when it can't say.
@@ -24,7 +24,13 @@ export type SaveRoom = {
 // The save's ops, derived at the snapshot, and (with `writes`) the elements they write held from that moment
 // until the room sequences them (own-element-writes.ts), so a peer's update of one of them that the room ordered
 // first is not shown over ours. Taken when the snapshot is, not when a queued save gets to run.
-export type PreparedTabSave = { ops: RoomOp[]; release: (() => void) | null };
+// `releaseLayout` ends the hold on the layout fields its `dashboard-delta` writes, once the room has ordered that op
+// (collab-race-hardening.md "A Dashboard's layout travels as deltas").
+export type PreparedTabSave = {
+  ops: RoomOp[];
+  release: (() => void) | null;
+  releaseLayout?: (() => void) | null;
+};
 
 export function prepareTabSave(
   before: Tab | undefined,
@@ -34,7 +40,12 @@ export function prepareTabSave(
   const ops = tabBroadcastOps(before, tab);
   if (!writes) return { ops, release: null };
   const elementOps = ops.flatMap((op) => (op.kind === 'el' ? [op.op] : []));
-  return { ops, release: holdOwnWrites(writes, tab.id, elementOps) };
+  const layout = ops.find((op) => op.kind === 'dashboard-delta');
+  return {
+    ops,
+    release: holdOwnWrites(writes, tab.id, elementOps),
+    releaseLayout: layout ? holdOwnDashboardWrites(writes, tab.id, layout.patch) : null,
+  };
 }
 
 export async function saveTabAndRelay<R>(
@@ -44,12 +55,22 @@ export async function saveTabAndRelay<R>(
   put: () => Promise<R>,
   prepared: PreparedTabSave = prepareTabSave(before, tab),
 ): Promise<R> {
-  const { ops, release } = prepared;
+  const { ops, release, releaseLayout } = prepared;
   const deltas = ops.filter((op) => ledgerKey(op) !== null);
   const rest = ops.filter((op) => ledgerKey(op) === null);
   const live = room();
+  // With no room to order it, nothing is sent and nothing is held.
+  if (!live) releaseLayout?.();
   if (live && deltas.length > 0) {
-    const confirmed = await Promise.all(deltas.map((op) => live.sequence(op)));
+    const confirmed = await Promise.all(
+      deltas.map((op) => {
+        const sequenced = live.sequence(op);
+        // The layout's hold ends the moment the room has ordered (or cannot say about) its delta: a peer's change
+        // after that was ordered after ours and is theirs to win.
+        if (op.kind === 'dashboard-delta') void sequenced.finally(() => releaseLayout?.());
+        return sequenced;
+      }),
+    );
     if (confirmed.includes(false)) {
       console.warn('[autosave] room did not confirm the deltas before the save', {
         tabId: tab.id,

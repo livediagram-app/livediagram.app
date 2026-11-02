@@ -123,7 +123,7 @@ describe('parseLinkFile', () => {
       expect(failureOf(text)).toEqual({ exit: 1, ...failure });
     refused('host = "ftp://x.org"\n[covers]\nfolder = "f"\n', {
       code: 'invalid_host',
-      message: `${PATH}: host must be an origin such as https://livediagram-router.liveworkspace-easing509.workers.dev, not ftp://x.org`,
+      message: `${PATH}: host must be an origin such as https://www.livediagram.app, not ftp://x.org`,
     });
     for (const host of ['https://x.org/app', 'https://x.org/?a=1', 'https://x.org/#a', 'nope'])
       expect(failureOf(`host = "${host}"\n[covers]\nfolder = "f"\n`).code).toBe('invalid_host');
@@ -172,15 +172,15 @@ describe('linkFileText', () => {
   it('writes the keys in order, host always, the rest only when given', () => {
     expect(
       linkFileText({
-        host: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
+        host: 'https://www.livediagram.app',
         folder: 'fld_1',
         documents: ['d1', 'd"2'],
         level: 'files',
       }),
     ).toBe(
       [
-        "# This repository's diagrams live in livediagram; see https://livediagram-router.liveworkspace-easing509.workers.dev/help/developers/repositories/",
-        'host = "https://livediagram-router.liveworkspace-easing509.workers.dev"',
+        "# This repository's diagrams live in livediagram; see https://www.livediagram.app/help/developers/repositories/",
+        'host = "https://www.livediagram.app"',
         '',
         '[covers]',
         'folder = "fld_1"',

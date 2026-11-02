@@ -382,7 +382,8 @@ export * from './collab-index-rows';
 export * from './plan-board-rows';
 export * from './cell-comments';
 export * from './comment-thread';
-export * from './item-comments';
+export * from './card-threads';
+export * from './imported-thread';
 // The whole-project `liveplanner.project` envelope and the per-tab JSON and Markdown export (the editor and the
 // CLI's pull files).
 export * from './project-envelope';
@@ -390,6 +391,8 @@ export * from './export-tab-text';
 export * from './export-tab-plan';
 export * from './plan-board-layout';
 export * from '@liveworkspace/model-core/comment-mentions';
+// Comment reactions (docs/specs/012-collaboration/comment-reactions.md): the six, the stored shape and the toggle.
+export * from '@liveworkspace/model-core/comment-reactions';
 // The shared plain-object guard for untrusted JSON.
 export * from '@liveworkspace/model-core/is-record';
 // The shared FNV-1a string hash for deterministic picks.
@@ -435,6 +438,7 @@ export * from './cell-colours';
 export * from './table-header-colours';
 export * from './progress-colours';
 export * from '@liveworkspace/model-core/icon-size';
+export * from '@liveworkspace/model-core/progress-label';
 export * from '@liveworkspace/model-core/icon-weight';
 
 // Per-range label formatting (docs/specs/008-canvas/canvas-and-palette.md): the runs-as-delta model + pure
@@ -485,6 +489,7 @@ export * from './tab-builders';
 // Headless SVG renderer (docs/specs/015-api/mcp-server.md §5): per-element drawers + renderElementsToSvg,
 // shared by the in-app export and the MCP worker's inline image render.
 export * from './svg-render';
+export { borderOf } from './svg-render-border';
 export {
   isSequenceDiagram,
   parseSequenceDiagram,
@@ -596,6 +601,8 @@ export * from './session';
 // to paint a label in the face the canvas painted it in, and they run in the
 // mcp worker as well as the browser.
 export * from '@liveworkspace/model-core/fonts';
+// The faces liveplanner's own pickers offer (docs/specs/004-interface-design/fonts.md "Not offered in liveplanner").
+export * from './planner-fonts';
 
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/project-views.md):
 // how views, edit operations and the lint name and place elements alike.
@@ -607,6 +614,9 @@ export * from './plan-presets';
 export * from './dashboard';
 export * from './dashboard-cards';
 export * from './dashboard-card-style';
+export * from './dashboard-patch';
+export * from './dashboard-ledger';
+export * from './slot-name';
 export * from '@liveworkspace/model-core/tab-names';
 export { planBoardFitHeight } from './svg-render-plan';
 export * from './session-button-text';

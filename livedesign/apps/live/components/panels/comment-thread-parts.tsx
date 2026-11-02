@@ -6,6 +6,11 @@
 // `comfortable` (a feed: larger text, the composer beside your own avatar), the popover `compact`.
 import { useRef, useState, type RefObject } from 'react';
 import { useAutoHeight } from '@liveworkspace/workbench/hooks/ui/useAutoHeight';
+import { useReactionTray } from '@liveworkspace/workbench/components/comments/CommentReactions';
+import {
+  ScopedAddReactionButton,
+  ScopedCommentReactions,
+} from '@liveworkspace/workbench/components/comments/CommentReactionsContext';
 import {
   Button,
   CheckIcon,
@@ -57,7 +62,7 @@ export function CommentResolveToggle({
       <button
         type="button"
         onClick={onResolve}
-        className="inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+        className="relative touch-target-y inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
       >
         <CheckIcon size={12} />
         Resolve
@@ -72,7 +77,7 @@ export function CommentResolveToggle({
       <button
         type="button"
         onClick={onUnresolve}
-        className="cursor-pointer rounded-md px-2 py-0.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+        className="relative touch-target-y cursor-pointer rounded-md px-2 py-0.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
       >
         Reopen
       </button>
@@ -262,6 +267,9 @@ function CommentRow({
 }) {
   const now = useRelativeNow();
   const comfortable = density === 'comfortable';
+  // Its reactions (docs/specs/012-collaboration/comment-reactions.md): the trigger beside Delete opens the tray
+  // under the text, where the chips are.
+  const tray = useReactionTray();
   const when = new Date(comment.createdAt).toLocaleString(undefined, {
     dateStyle: 'medium',
     timeStyle: 'short',
@@ -310,7 +318,15 @@ function CommentRow({
             chipClassName="bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300"
           />
         </p>
+        <ScopedCommentReactions
+          commentId={comment.id}
+          reactions={comment.reactions}
+          tray={tray}
+          density={density}
+          closed={resolved}
+        />
       </div>
+      <ScopedAddReactionButton tray={tray} density={density} closed={resolved} />
       {!resolved && onDelete ? (
         <Tooltip label="Delete comment">
           <button

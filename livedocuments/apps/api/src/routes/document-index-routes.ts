@@ -7,6 +7,10 @@ import {
   readDocumentConversion,
 } from '@livedocuments/api-schema';
 import type { ShareLinkExpiry } from '@liveworkspace/index-client';
+import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
+import { communityService } from '../community-service';
+import { documentRoom } from '../document-client';
+import { capStoredName } from '../names';
 import { json, noContent } from '../responses';
 import { readOptionalBody, requireOwner, shareAccessOf, type RouteContext } from './context';
 import { clientFor, listItems, refusal, shareLinkOf, summaryOf } from './index-adapters';
@@ -50,8 +54,20 @@ export async function handleDocumentIndexRoutes(ctx: RouteContext): Promise<Resp
     }
     const body = await readOptionalBody(request);
     if (isCopy) {
-      const title = typeof body.name === 'string' ? body.name : undefined;
-      const { item } = await client.copyItem(id, title ? { title } : {}, shareAccessOf(request));
+      // A copy through a Community post's link is named after the post (docs/specs/025-community/community.md
+      // "Viewing a post's document"): the author's own document name was never published.
+      const share = shareAccessOf(request);
+      const named = typeof body.name === 'string' ? body.name : '';
+      const post =
+        !named && share ? await documentRoom(ctx.env, id).communityPostTitle(share.code) : null;
+      const title = named || (post ? capStoredName(post, null, 'document') : '');
+      // A copy through the post's open link counts toward it: once per copier, and at most a few from one network,
+      // so it is counted here, where the copier's network is known, before the index copies (whose own count,
+      // routes/internal-items.ts, then adds nothing).
+      const copier = ctx.verifiedUserId ?? ctx.resolveOwner();
+      if (post !== null && share && copier)
+        await communityService.countCopy(ctx.env, id, copier, clientRateKey(request));
+      const { item } = await client.copyItem(id, title ? { title } : {}, share);
       return json({ document: { ...summaryOf(item), tabs: [] } }, { status: 201 });
     }
     const level = isAccessLevel(body.role) ? body.role : undefined;

@@ -1,4 +1,5 @@
 import { createPortal } from 'react-dom';
+import { MenuTreeContext, useMenu } from '@liveplanner/ui';
 import type { TableElement } from '@liveplanner/project';
 import {
   TableHeaderMenu,
@@ -17,7 +18,14 @@ import {
 // hover state stays in TableView because the grid CELLS also arm it (the
 // trigger appears when hovering anywhere in the column / row).
 
-type AxisMenu = { axis: 'col' | 'row'; index: number; x: number; y: number } | null;
+// `trigger` is the ⋯ that opened it: the menu is named by it and hands focus back to it on close.
+type AxisMenu = {
+  axis: 'col' | 'row';
+  index: number;
+  x: number;
+  y: number;
+  trigger?: HTMLElement | null;
+} | null;
 
 // The table's quick-connect pluses sit on the edge MIDPOINTS (docs/specs/008-canvas/canvas-and-palette.md),
 // right where a centre column / row's ⋯ trigger would land now the
@@ -202,6 +210,7 @@ export function TableAxisMenuPortal({
   addRow,
   moveRow,
   delRow,
+  onClose,
 }: {
   menu: NonNullable<AxisMenu>;
   cols: number;
@@ -212,35 +221,48 @@ export function TableAxisMenuPortal({
   addRow: (index: number) => void;
   moveRow: (index: number, delta: number) => void;
   delRow: (index: number) => void;
+  onClose: () => void;
 }) {
+  // A command menu (docs/specs/004-interface-design/menus.md): role menu with its rows as items, focus on the first
+  // row, the arrow keys between rows, Escape to close and focus back to the ⋯. It had none of these, so Escape left
+  // it open and a screen reader met a loose group of buttons at the end of the page.
+  const { attach, tree, surfaceProps } = useMenu({
+    onClose,
+    trigger: menu.trigger ?? null,
+    initialFocus: 'first',
+  });
   return createPortal(
-    <div
-      data-table-ui
-      className={`pointer-events-auto fixed z-[var(--z-overlay)] w-36 animate-pop-in rounded-lg border border-slate-200 bg-white/90 p-1 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/90 ${
-        menu.axis === 'col' ? '-translate-x-1/2' : '-translate-y-1/2'
-      }`}
-      style={{ left: menu.x, top: menu.y }}
-    >
-      {menu.axis === 'col' ? (
-        <TableHeaderMenu
-          axis="col"
-          index={menu.index}
-          count={cols}
-          onAdd={addCol}
-          onMove={moveCol}
-          onDelete={delCol}
-        />
-      ) : (
-        <TableHeaderMenu
-          axis="row"
-          index={menu.index}
-          count={rows}
-          onAdd={addRow}
-          onMove={moveRow}
-          onDelete={delRow}
-        />
-      )}
-    </div>,
+    <MenuTreeContext.Provider value={tree}>
+      <div
+        ref={attach}
+        {...surfaceProps}
+        data-table-ui
+        className={`pointer-events-auto fixed z-[var(--z-overlay)] w-36 animate-pop-in rounded-lg border border-slate-200 bg-white/90 p-1 shadow-lg backdrop-blur-sm dark:border-slate-700 dark:bg-slate-800/90 ${
+          menu.axis === 'col' ? '-translate-x-1/2' : '-translate-y-1/2'
+        }`}
+        style={{ left: menu.x, top: menu.y }}
+      >
+        {menu.axis === 'col' ? (
+          <TableHeaderMenu
+            axis="col"
+            index={menu.index}
+            count={cols}
+            onAdd={addCol}
+            onMove={moveCol}
+            onDelete={delCol}
+          />
+        ) : (
+          <TableHeaderMenu
+            axis="row"
+            index={menu.index}
+            count={rows}
+            onAdd={addRow}
+            onMove={moveRow}
+            onDelete={delRow}
+          />
+        )}
+      </div>
+    </MenuTreeContext.Provider>,
     document.body,
   );
 }

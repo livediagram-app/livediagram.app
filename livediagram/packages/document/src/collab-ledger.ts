@@ -14,8 +14,9 @@
 //   - dots: the round's votes map (a round starts empty, so its deltas are
 //     the whole map).
 //   - comments: each one posted (as the room stamped it, see
-//     `stampCommentAuthor`), each one removed, and the thread's latest
-//     resolve.
+//     `stampCommentAuthor`), each one removed, the thread's latest
+//     resolve, and each person's latest reaction per comment and emoji
+//     (docs/specs/012-collaboration/comment-reactions.md).
 //
 // Each answer, tick and the vote carry the room seq that last set them, and a
 // merge only applies what the SAVING client had not yet seen (seq past the
@@ -38,6 +39,10 @@ import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
 import { IDEA_MAX_CARDS, IDEA_MAX_TEXT } from './collab-shapes';
 import { CHECKLIST_MAX_TEXT } from './data-shapes';
 import { applyVoteDelta, type TabVote } from './session';
+import {
+  isReactionChange,
+  type CommentReactionId,
+} from '@liveworkspace/model-core/comment-reactions';
 
 export type ElementLedger = {
   round?: string;
@@ -55,6 +60,8 @@ export type ElementLedger = {
     adds: Record<string, { comment: Comment; seq: number; cell?: string }>;
     removes: Record<string, number>;
     resolved?: { value: boolean; seq: number };
+    // Reactions, keyed `${commentId}\u0000${emoji}\u0000${by}`: each person's latest on or off.
+    reacts?: Record<string, { on: boolean; name: string; seq: number }>;
   };
 };
 
@@ -210,9 +217,13 @@ function recordElement(
     }
     case 'comment-add':
     case 'comment-remove':
-    case 'comment-resolve': {
+    case 'comment-resolve':
+    case 'comment-react': {
       const comments = prev?.comments ?? { adds: {}, removes: {} };
-      const events = Object.keys(comments.adds).length + Object.keys(comments.removes).length;
+      const events =
+        Object.keys(comments.adds).length +
+        Object.keys(comments.removes).length +
+        Object.keys(comments.reacts ?? {}).length;
       // A Sheet cell's thread went with Plan: a delta naming one is refused.
       if (d.cell !== undefined) return null;
       if (d.kind === 'comment-add') {
@@ -235,6 +246,20 @@ function recordElement(
           comments: { ...comments, adds, removes: { ...comments.removes, [d.commentId]: seq } },
         };
       }
+      if (d.kind === 'comment-react') {
+        const commentId = d.commentId;
+        if (!isStr(commentId, ID_MAX) || !isReactionChange(d)) return null;
+        const key = reactKey(commentId, d.emoji, d.by);
+        const reacts = comments.reacts ?? {};
+        if (!(key in reacts) && events >= COMMENT_EVENTS_MAX) return null;
+        return {
+          ...(prev ?? {}),
+          comments: {
+            ...comments,
+            reacts: { ...reacts, [key]: { on: d.on, name: d.name, seq } },
+          },
+        };
+      }
       if (typeof d.resolved !== 'boolean') return null;
       return {
         ...(prev ?? {}),
@@ -244,6 +269,11 @@ function recordElement(
     default:
       return null;
   }
+}
+
+// The ledger key of one person's reaction on one comment.
+function reactKey(commentId: string, emoji: string, by: string): string {
+  return `${commentId}\u0000${emoji}\u0000${by}`;
 }
 
 // Assemble a tab's ledger from its stored entries (keys under ledgerPrefix).
@@ -318,18 +348,20 @@ export function mergeLedgerIntoTab(tab: Tab, ledger: TabLedger, since: number): 
 }
 
 // A Participant's answers into the STORED tab (docs/specs/013-workspace/share-roles.md "Integrity"): the room
-// writes a Participant's dots, responses and ideas itself, since a Participant never saves a whole tab. Only those
-// three are taken from the ledger, every one the room holds (they are idempotent: a response is the latest per
-// person, an idea is added once, the dots are the round's whole map), and only while the stored round still
-// matches; ticks and threads stay with an Editor's save.
+// writes a Participant's dots, responses, ideas and comment reactions itself, since a Participant never saves a
+// whole tab. Only those are taken from the ledger, every one the room holds (they are idempotent: a response or a
+// reaction is the latest per person, an idea is added once, the dots are the round's whole map), and only while the
+// stored round still matches; ticks and the rest of a thread stay with an Editor's save.
 export function mergeLedgerAnswersIntoTab(tab: Tab, ledger: TabLedger): Tab {
   const elements: Record<string, ElementLedger> = {};
   for (const [id, entry] of Object.entries(ledger.elements)) {
-    if (!entry.responses && !entry.ideas) continue;
+    const reacts = entry.comments?.reacts;
+    if (!entry.responses && !entry.ideas && !reacts) continue;
     elements[id] = {
       ...(entry.round !== undefined ? { round: entry.round } : {}),
       ...(entry.responses ? { responses: entry.responses } : {}),
       ...(entry.ideas ? { ideas: entry.ideas } : {}),
+      ...(reacts ? { comments: { adds: {}, removes: {}, reacts } } : {}),
     };
   }
   return mergeLedgerIntoTab(tab, { ...(ledger.vote ? { vote: ledger.vote } : {}), elements }, 0);
@@ -348,7 +380,8 @@ function applyCommentEvents<E extends Tab['elements'][number]>(
   if (!c) return el;
   const events: { seq: number; delta: ElementDelta }[] = [];
   for (const { comment, seq, cell } of Object.values(c.adds)) {
-    if (seq > since && cell === undefined) events.push({ seq, delta: { kind: 'comment-add', comment } });
+    if (seq > since && cell === undefined)
+      events.push({ seq, delta: { kind: 'comment-add', comment } });
   }
   for (const [commentId, seq] of Object.entries(c.removes)) {
     if (seq > since) events.push({ seq, delta: { kind: 'comment-remove', commentId } });
@@ -357,6 +390,14 @@ function applyCommentEvents<E extends Tab['elements'][number]>(
     events.push({
       seq: c.resolved.seq,
       delta: { kind: 'comment-resolve', resolved: c.resolved.value },
+    });
+  }
+  for (const [key, r] of Object.entries(c.reacts ?? {})) {
+    if (r.seq <= since) continue;
+    const [commentId, emoji, by] = key.split('\u0000') as [string, CommentReactionId, string];
+    events.push({
+      seq: r.seq,
+      delta: { kind: 'comment-react', commentId, emoji, by, name: r.name, on: r.on },
     });
   }
   events.sort((a, b) => a.seq - b.seq);

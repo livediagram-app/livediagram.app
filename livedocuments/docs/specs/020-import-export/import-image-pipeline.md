@@ -6,9 +6,10 @@ livedocuments image element carries an `imageId` that points into the owner's ga
 one browser-side path that turns those bytes into a stored image, so every caller stores images
 the same way, under the same limits, with the same named outcomes.
 
-Its caller is [Image search](../009-elements/image-search.md): a picked Openverse result is
-downloaded in the browser and handed to the pipeline (`apps/editor/lib/image-search/pick.ts`). The
-session below is shaped for many images at once: it shares one concurrency limit, one offline budget and one
+Its callers are [Image search](../009-elements/image-search.md): a picked Openverse result is
+downloaded in the browser and handed to the pipeline (`apps/editor/lib/image-search/pick.ts`), and
+[Word and PowerPoint import](office-import.md): every picture inside the file, read from the file's
+own parts (`apps/editor/lib/office-import/store-images.ts`). The session below is shaped for many images at once: it shares one concurrency limit, one offline budget and one
 short-circuit across them.
 
 ## Where it lives
@@ -141,6 +142,9 @@ Image search shows a failed pick as one line under the grid (`pickFailureMessage
 | `images-unavailable`          | Image uploads are not available on this server.               |
 | `too-large`, `offline-budget` | That image is too large to add.                               |
 | any other                     | Couldn’t download that image. Try another one.                |
+
+Word and PowerPoint import counts its failed images by failure, one report line each, and leaves each
+an empty placeholder ([Word and PowerPoint import](office-import.md) "Images").
 
 ## Observability
 

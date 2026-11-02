@@ -3,3 +3,5 @@
 ENVIRONMENT=development
 COMMUNITY_KEY_LIVEDIAGRAM=dev-livediagram-community-key
 COMMUNITY_KEY_LIVEPLANNER=dev-liveplanner-community-key
+COMMUNITY_KEY_LIVEDOCUMENTS=dev-livedocuments-community-key
+COMMUNITY_KEY_LIVEDESIGN=dev-livedesign-community-key

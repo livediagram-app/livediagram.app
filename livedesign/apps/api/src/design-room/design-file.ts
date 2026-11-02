@@ -23,6 +23,7 @@ import { APP_FILE_FORMATS } from '@liveworkspace/drive/formats';
 import type { ExportResult } from '@liveworkspace/index-app';
 import { MAX_TAB_BYTES, byteLength, logTabRefused } from '../limits';
 import { capStoredName } from '../names';
+import { readComponents } from '../db/components';
 import type { DesignEnv } from '../types';
 import {
   importDesignCopy,
@@ -58,9 +59,11 @@ export async function exportDesignFile(
   if (!meta) return { status: 'not_found' };
   if (ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
   const tabs = (await readContentTabRows(env, designId, null)).map(envelopeTabOf);
+  // The component library rides with the tabs (docs/specs/009-elements/components.md), so an import draws them.
+  const components = await readComponents(env);
   return {
     status: 'ok',
-    body: designToEnvelopeText({ id: designId, name: meta.name }, tabs, savedAt),
+    body: designToEnvelopeText({ id: designId, name: meta.name }, tabs, savedAt, components),
     contentType: DESIGN_FILE_FORMAT.mimeType,
     version: savedAt,
   };
@@ -84,7 +87,7 @@ const ROW_FIELDS = ['designId', 'orderIndex', 'updatedAt', 'rev', 'folder'] as c
 export function readDesignFile(text: string): DesignFileRead {
   const parsed = parseDesignEnvelope(text);
   if (!parsed.ok) return { ok: false, failure: 'invalid_file' };
-  const { tabs } = copyDesignEnvelope(parsed.envelope);
+  const { tabs, components } = copyDesignEnvelope(parsed.envelope);
   const copied: DesignCopy['tabs'] = [];
   for (const [index, incoming] of tabs.entries()) {
     const tab = migrateIncomingTab(incoming);
@@ -120,6 +123,7 @@ export function readDesignFile(text: string): DesignFileRead {
         grants: [],
         owners: [],
         blobs: [],
+        ...(components.length > 0 ? { components } : {}),
       },
     },
   };

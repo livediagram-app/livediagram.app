@@ -45,6 +45,12 @@ export const ALL_SETTING_KEYS = [
   'notifyMilestones',
   'notifyActionAssigned',
   'notifyMentions',
+  // Phone notifications' switches, one per kind (./push.ts PUSH_SETTING_KEYS): the accounts Worker reads them when an
+  // app asks it to send.
+  'pushComments',
+  'pushMentions',
+  'pushActionAssigned',
+  'pushThreadReplies',
   // How the editors' chrome looks and handles, the same in each app.
   'panelOpacity',
   'uiScale',

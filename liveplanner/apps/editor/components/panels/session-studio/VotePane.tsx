@@ -9,6 +9,7 @@
 
 import { useState, type ReactNode } from 'react';
 import { VOTE_DOTS_RANGE } from '@liveplanner/project';
+import { VOTES_FIELD as BUILT_IN_VOTES } from '@liveplanner/items';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { StudioButton, StudioLabel, StudioSegmented } from './studio-ui';
 import { SOLID_BRAND_DARK, Glyph, Switch } from '@liveplanner/ui';
@@ -18,6 +19,7 @@ type VotePaneProps = Pick<
   | 'vote'
   | 'voteLayers'
   | 'activeLayerId'
+  | 'voteFields'
   | 'onStartVote'
   | 'onEndVote'
   | 'onRevealVote'
@@ -51,10 +53,11 @@ const STACKING_OPTIONS = [
 export function VoteSetupBody({
   voteLayers,
   activeLayerId,
+  voteFields = [],
   onStartVote,
   dots,
   onDotsChange,
-}: Pick<VotePaneProps, 'voteLayers' | 'activeLayerId' | 'onStartVote'> & {
+}: Pick<VotePaneProps, 'voteLayers' | 'activeLayerId' | 'voteFields' | 'onStartVote'> & {
   dots: number;
   onDotsChange: (dots: number) => void;
 }) {
@@ -69,6 +72,10 @@ export function VoteSetupBody({
   // '' is the explicit "all layers" choice (docs/specs/012-collaboration/vote-layer-scope.md).
   const [layerId, setLayerId] = useState(activeLayerId);
   const multiLayer = voteLayers.length > 1;
+  // Count In (docs/specs/012-collaboration/session-tools.md): shown only when the tab's card types offer more than
+  // the built-in Votes, which comes first and is the default.
+  const [countIn, setCountIn] = useState(BUILT_IN_VOTES);
+  const counted = voteFields.find((f) => f.id === countIn) ?? voteFields[0];
 
   return (
     <div className="flex flex-col gap-3">
@@ -113,6 +120,22 @@ export function VoteSetupBody({
           </span>
         </div>
       ) : null}
+      {counted ? (
+        <div className="flex flex-col gap-1.5">
+          <StudioLabel>Count In</StudioLabel>
+          <StudioSegmented
+            label="Count In"
+            value={counted.id}
+            onChange={setCountIn}
+            options={voteFields.map((f) => ({ value: f.id, label: f.label }))}
+          />
+          <span className="text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+            {counted.id === BUILT_IN_VOTES
+              ? `Each card's dots are added to its ${counted.label}.`
+              : `Each card's dots are added to its ${counted.label}, or to its Votes when its type has none.`}
+          </span>
+        </div>
+      ) : null}
       <div className="flex flex-col gap-1.5">
         <StudioLabel>Privacy</StudioLabel>
         <PrivacyCard
@@ -138,6 +161,7 @@ export function VoteSetupBody({
             hideCounts,
             layerId: multiLayer && layerId ? layerId : undefined,
             onePerElement: dots > 1 && stacking === 'one',
+            voteField: counted && counted.id !== BUILT_IN_VOTES ? counted.id : undefined,
           })
         }
       >

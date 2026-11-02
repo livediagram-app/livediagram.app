@@ -6,7 +6,7 @@
 // with Replace and Remove. Spaces around a password are trimmed, and a field of spaces alone saves nothing. A new
 // password needs SHARE_PASSWORD_MIN characters (the index refuses fewer); until then Save waits and the field says so.
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { SHARE_PASSWORD_MAX, SHARE_PASSWORD_MIN } from '@liveworkspace/index-client';
 import { Button, Switch } from '@liveworkspace/ui';
 import { LockIcon } from '../../ui/icons';
@@ -43,6 +43,9 @@ export function PasswordSection({
   const [enabled, setEnabled] = useState(false);
   const [replacing, setReplacing] = useState(false);
   const field = useRef<HTMLInputElement>(null);
+  // The "Saved" flash's timer, cleared when the dialog closes so it never sets state on an unmounted section.
+  const savedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(savedTimer.current), []);
   const on = passwordSet || enabled;
   const focusField = () => requestAnimationFrame(() => field.current?.focus());
 
@@ -53,7 +56,8 @@ export function PasswordSection({
     setTyped('');
     setReplacing(false);
     setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
+    clearTimeout(savedTimer.current);
+    savedTimer.current = setTimeout(() => setSaved(false), 1500);
   };
   const remove = async () => {
     if (!(await onSet(null))) return;
@@ -124,7 +128,8 @@ export function PasswordSection({
             checked={on}
             labelledBy="share-password-label"
             describedBy="share-password-description"
-            disabled={busy || locked}
+            disabled={locked}
+            busy={busy}
             onChange={toggle}
             coversRow
             className="ml-auto"
@@ -156,7 +161,7 @@ export function PasswordSection({
           >
             Replace
           </Button>
-          <Button variant="secondary" size="xs" disabled={busy} onClick={() => void remove()}>
+          <Button variant="secondary" size="xs" busy={busy} onClick={() => void remove()}>
             Remove
           </Button>
         </div>
@@ -197,7 +202,14 @@ export function PasswordSection({
                 className="w-full rounded-lg border border-slate-200 bg-white py-1.5 pl-8 pr-2 font-mono text-sm text-slate-800 outline-none transition duration-micro placeholder:font-sans placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
               />
             </div>
-            <Button type="submit" size="xs" disabled={!canSave} className="shadow-sm">
+            <Button
+              type="submit"
+              size="xs"
+              // Busy, not disabled, while it saves (busy-buttons.md); disabled only while the password is not ready.
+              disabled={next === null || tooShort}
+              busy={busy}
+              className="shadow-sm"
+            >
               Save
             </Button>
             {replacing ? (

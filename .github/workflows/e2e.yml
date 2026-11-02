@@ -66,6 +66,7 @@ jobs:
         apps/community/.next/cache
         apps/marketing/.next/cache
       smoke-explorer: true
+      signed-in-explorer: true
       signed-in-cache: editor-signed-in
 
   liveplanner:
@@ -100,6 +101,8 @@ jobs:
         apps/live/.next/cache
         apps/help/.next/cache
         apps/marketing/.next/cache
+      smoke-explorer: true
+      signed-in-explorer: true
 
   livedocuments:
     name: livedocuments

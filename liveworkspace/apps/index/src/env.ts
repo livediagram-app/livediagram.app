@@ -1,5 +1,11 @@
 import type { App } from '@liveworkspace/index-client';
 
+// The webhook dispatcher's binding (webhooks/durable-object.ts), as the index calls it.
+export type WebhookNamespace = {
+  idFromName(name: string): DurableObjectId;
+  get(id: DurableObjectId): { kick(): Promise<void> };
+};
+
 export interface Env {
   // 'production', 'staging' or 'development'. Development signs grants with an ephemeral key when
   // GRANT_SIGNING_KEY is unset.
@@ -22,6 +28,7 @@ export interface Env {
   INDEX_KEY_LIVEPLANNER?: string;
   INDEX_KEY_LIVEDOCUMENTS?: string;
   INDEX_KEY_LIVEDESIGN?: string;
+  INDEX_KEY_LIVEHUDDLE?: string;
   // The Google Drive mirror's service (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The index"): its key here, with
   // which it acts for a person and sets their drive_mirrored flag; the key the index signals it with (its
   // DRIVE_KEY_INDEX); and the binding the signal goes through. Without the binding no signal is sent.
@@ -39,6 +46,12 @@ export interface Env {
   APP_ORIGIN_LIVEPLANNER?: string;
   APP_ORIGIN_LIVEDOCUMENTS?: string;
   APP_ORIGIN_LIVEDESIGN?: string;
+  APP_ORIGIN_LIVEHUDDLE?: string;
+  // Webhooks (liveworkspace/docs/specs/004-index/webhooks.md): the AES-GCM key their URLs and secrets are sealed with
+  // (base64 of 32 bytes; without it the routes answer 503 and nothing is sent), and the one dispatcher whose alarm
+  // sends them. Absent (tests), nothing is woken.
+  WEBHOOK_KEY?: string;
+  WEBHOOKS?: WebhookNamespace;
 }
 
 const KEY_OF: Record<App, keyof Env> = {
@@ -46,6 +59,7 @@ const KEY_OF: Record<App, keyof Env> = {
   liveplanner: 'INDEX_KEY_LIVEPLANNER',
   livedocuments: 'INDEX_KEY_LIVEDOCUMENTS',
   livedesign: 'INDEX_KEY_LIVEDESIGN',
+  livehuddle: 'INDEX_KEY_LIVEHUDDLE',
 };
 
 const ORIGIN_OF: Record<App, keyof Env> = {
@@ -53,6 +67,7 @@ const ORIGIN_OF: Record<App, keyof Env> = {
   liveplanner: 'APP_ORIGIN_LIVEPLANNER',
   livedocuments: 'APP_ORIGIN_LIVEDOCUMENTS',
   livedesign: 'APP_ORIGIN_LIVEDESIGN',
+  livehuddle: 'APP_ORIGIN_LIVEHUDDLE',
 };
 
 const setting = (value: unknown): string | undefined =>

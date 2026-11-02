@@ -9,8 +9,24 @@ import { appOriginOfProxy, signInOnAppAddress } from './handoff.ts';
 import { BENCH_ACCOUNTS_PATH, benchAccounts } from './bench-accounts.ts';
 import { CLIENTS_PATH, registerClient } from './clients.ts';
 import { DELETE_ACCOUNT_PATH, deleteAccount } from './delete-account.ts';
+import {
+  checkDeletionCodeRoute,
+  DELETION_CHECK_PATH,
+  DELETION_CODE_PATH,
+  sendDeletionCode,
+  type DeletionCodeConfig,
+} from './deletion-code.ts';
 import { disconnectDrive, driveDisconnectConfig } from './drive-disconnect.ts';
+import {
+  END_SESSION_PATH,
+  endSessionFromApp,
+  endSessionInBrowser,
+  endSessionTokensOf,
+  SESSION_ENDING_ROUTES,
+} from './end-session.ts';
 import type { Env } from './env.ts';
+import { guardRequest } from '@liveworkspace/api-kit/request-failure';
+import { createApiRouteLabel } from '@liveworkspace/telemetry/error-tokens';
 import { sweepIdleGuests } from './guest-sweep.ts';
 import {
   AUTHORIZE_PATH,
@@ -19,16 +35,18 @@ import {
   guestMergeConfig,
   mergeGuestOnAuthorize,
 } from './guests.ts';
-import { indexPurgeConfig, PURGE_RETRY_CRON, retryPendingPurges } from './index-purge.ts';
+import { indexPurgeConfig, retryPendingPurges } from './index-purge.ts';
 import { withSessionColour } from './profiles.ts';
 import { networkOf, overCodeLimit } from './rate-limit.ts';
 import { withOwnCookies } from './own-cookies.ts';
 
 const GET_SESSION_PATH = '/get-session';
 import { SIGN_IN_OPTIONS_PATH, signInOptions } from './sign-in-options.ts';
-import { sendEmail, sendTeamInviteEmail } from './email.ts';
+import { sendDeletionCodeEmail, sendEmail, sendTeamInviteEmail } from './email.ts';
 import { runLifecycle, sendWelcomes, takeWelcomes, type SendEmail } from './lifecycle.ts';
-import { sweepInvitations } from './teams.ts';
+import { sweepInvitations, type ReminderEmail } from './teams.ts';
+import { canSendEmail, cronRun } from './cron-run.ts';
+import { parseTimeZone, sendWindowOf, TIME_ZONE_HEADER } from './send-window.ts';
 import { noteExpiringTokens, sweepExpiringTokens } from './token-expiry.ts';
 import {
   flushTimeline,
@@ -46,140 +64,232 @@ export { WorkbenchStore } from './workbench/durable-object.ts';
 // The accounts API. Only the paths routed to this Worker reach it (wrangler.toml): /api/auth/*,
 // /api/account/* (teams and API tokens, account-api.ts) and the two discovery documents. Every page, the sign-in pages included, is the static site's
 // (liveworkspace/apps/site), on the same origin.
-export default {
-  async fetch(incoming: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const url = new URL(incoming.url);
-    const { pathname } = url;
-    // Nothing is served without the secret: a key minted under Better Auth's default would break every sign-in
-    // once the real one is set (auth.ts getAuth).
-    if (!env.BETTER_AUTH_SECRET) {
-      console.error('[accounts] BETTER_AUTH_SECRET unset; refusing to serve');
-      return Response.json({ error: 'not_configured' }, { status: 503 });
-    }
-    // A cookie of ours that comes twice (production's on the domain beside staging's own, or a bare host-only copy
-    // from before the move to www.) is narrowed to the copy signed here, before anything reads it (own-cookies.ts).
-    const request = await withOwnCookies(incoming, env.BETTER_AUTH_SECRET);
+// The route words a failure is logged under (`Get.Account.Teams.Members`), never an id, a code or an email.
+const routeLabel = createApiRouteLabel(
+  new Set(['auth', 'account']),
+  new Set([
+    'guest',
+    'workspace-token',
+    'end-session',
+    'sign-in-options',
+    'get-session',
+    'sign-in',
+    'sign-out',
+    'sign-up',
+    'email-otp',
+    'send-verification-otp',
+    'social',
+    'callback',
+    'google',
+    'oauth2',
+    'authorize',
+    'consent',
+    'token',
+    'userinfo',
+    'jwks',
+    'handoff',
+    'start',
+    'delete-account',
+    'code',
+    'check',
+    'internal',
+    'bench-accounts',
+    'clients',
+    'teams',
+    'tokens',
+    'current',
+    'members',
+    'invitations',
+    'invite-link',
+    'team-link',
+    'join',
+    'accept',
+    'decline',
+    'profile',
+    'settings',
+    'people',
+    'workbench',
+    'index',
+    'legacy-guests',
+    'claim',
+  ]),
+);
 
-    if (request.method === 'GET') {
-      if (pathname === `${AUTH_BASE_PATH}${SIGN_IN_OPTIONS_PATH}`) return signInOptions(env);
-      if (pathname === `${AUTH_BASE_PATH}${GUEST_PATH}`) {
-        if (!(await env.GUEST_LIMITER.limit({ key: `ip:${networkOf(request)}` })).success) {
-          return Response.json({ error: 'rate_limited' }, { status: 429 });
-        }
-        return guestHandoff(request, env, getAuth(env));
+// A failure's answer, never cached, as every account answer is.
+function failureJson(body: unknown, init: ResponseInit = {}): Response {
+  const headers = new Headers(init.headers);
+  headers.set('Cache-Control', 'no-store');
+  return Response.json(body, { ...init, headers });
+}
+
+async function serve(incoming: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const url = new URL(incoming.url);
+  const { pathname } = url;
+  // Nothing is served without the secret: a key minted under Better Auth's default would break every sign-in
+  // once the real one is set (auth.ts getAuth).
+  if (!env.BETTER_AUTH_SECRET) {
+    console.error('[accounts] BETTER_AUTH_SECRET unset; refusing to serve');
+    return Response.json({ error: 'not_configured' }, { status: 503 });
+  }
+  // A cookie of ours that comes twice (production's on the domain beside staging's own, or a bare host-only copy
+  // from before the move to www.) is narrowed to the copy signed here, before anything reads it (own-cookies.ts).
+  const request = await withOwnCookies(incoming, env.BETTER_AUTH_SECRET);
+
+  if (request.method === 'GET') {
+    if (pathname === `${AUTH_BASE_PATH}${SIGN_IN_OPTIONS_PATH}`) return signInOptions(env);
+    if (pathname === `${AUTH_BASE_PATH}${GUEST_PATH}`) {
+      if (!(await env.GUEST_LIMITER.limit({ key: `ip:${networkOf(request)}` })).success) {
+        return Response.json({ error: 'rate_limited' }, { status: 429 });
       }
-      // liveworkspace.app's own Explorer: a short-lived token for the session's account or the browser's guest.
-      if (pathname === `${AUTH_BASE_PATH}${WORKSPACE_TOKEN_PATH}`) {
-        return workspaceToken(request, env, getAuth(env));
-      }
-      // Discovery at the root as well as under the issuer path, for clients that only look
-      // at the origin (RFC 8414 §3 and OIDC Discovery §4 disagree on where it lives).
-      if (pathname === '/.well-known/openid-configuration') {
-        return oauthProviderOpenIdConfigMetadata(getAuth(env))(request);
-      }
-      if (pathname === '/.well-known/oauth-authorization-server') {
-        return oauthProviderAuthServerMetadata(getAuth(env))(request);
-      }
+      return guestHandoff(request, env, getAuth(env));
     }
-
-    if (pathname === ACCOUNT_API_PATH || pathname.startsWith(`${ACCOUNT_API_PATH}/`)) {
-      const response = await handleAccountApi(request, env, getAuth(env), (promise) =>
-        ctx.waitUntil(promise),
-      );
-      // The team emails it sent are counted after the response (telemetry.ts), and the team and token
-      // events it made go to the Timeline (index-timeline.ts).
-      flushServerEventsAfter(env, ctx);
-      flushTimelineAfter(env, ctx);
-      return response;
+    // liveworkspace.app's own Explorer: a short-lived token for the session's account or the browser's guest.
+    if (pathname === `${AUTH_BASE_PATH}${WORKSPACE_TOKEN_PATH}`) {
+      return workspaceToken(request, env, getAuth(env));
     }
-
-    if (request.method === 'POST' && pathname === CLIENTS_PATH) {
-      return registerClient(request, env, getAuth(env));
+    // Signing out everywhere: the browser's hop through here, back to the app (end-session.ts).
+    if (pathname === `${AUTH_BASE_PATH}${END_SESSION_PATH}`) {
+      return endSessionInBrowser(request, env, getAuth(env));
     }
-
-    if (request.method === 'POST' && pathname === BENCH_ACCOUNTS_PATH) {
-      return benchAccounts(request, env);
+    // Discovery at the root as well as under the issuer path, for clients that only look
+    // at the origin (RFC 8414 §3 and OIDC Discovery §4 disagree on where it lives).
+    if (pathname === '/.well-known/openid-configuration') {
+      return oauthProviderOpenIdConfigMetadata(getAuth(env))(request);
     }
+    if (pathname === '/.well-known/oauth-authorization-server') {
+      return oauthProviderAuthServerMetadata(getAuth(env))(request);
+    }
+  }
 
-    if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETE_ACCOUNT_PATH}`) {
-      return deleteAccount(
-        request,
-        getAuth(env),
+  if (pathname === ACCOUNT_API_PATH || pathname.startsWith(`${ACCOUNT_API_PATH}/`)) {
+    const response = await handleAccountApi(request, env, getAuth(env), (promise) =>
+      ctx.waitUntil(promise),
+    );
+    // The team emails it sent are counted after the response (telemetry.ts), and the team and token
+    // events it made go to the Timeline (index-timeline.ts).
+    flushServerEventsAfter(env, ctx);
+    flushTimelineAfter(env, ctx);
+    return response;
+  }
+
+  if (request.method === 'POST' && pathname === CLIENTS_PATH) {
+    return registerClient(request, env, getAuth(env));
+  }
+
+  // Signing out everywhere, from an app's Worker: the session its refresh token came from ends (end-session.ts).
+  if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${END_SESSION_PATH}`) {
+    return endSessionFromApp(request, env, getAuth(env));
+  }
+
+  if (request.method === 'POST' && pathname === BENCH_ACCOUNTS_PATH) {
+    return benchAccounts(request, env);
+  }
+
+  // Closing an account, and the code emailed first that it needs (deletion-code.ts).
+  if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETION_CODE_PATH}`) {
+    return sendDeletionCode(request, env.AUTH_DB, deletionCodeConfig(env));
+  }
+  if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETION_CHECK_PATH}`) {
+    return checkDeletionCodeRoute(request, env.AUTH_DB, deletionCodeConfig(env));
+  }
+  if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETE_ACCOUNT_PATH}`) {
+    return deleteAccount(request, env.AUTH_DB, {
+      auth: getAuth(env),
+      issuerEnv: env,
+      checkLimiter: env.CODE_IP_LIMITER,
+      index: indexPurgeConfig(env),
+      closeWorkbench: (userId) =>
+        closeAccountWorkbench(env, userId, (promise) => ctx.waitUntil(promise)),
+      // After the answer: Google's revoke never holds the close up.
+      disconnectDrive: (userId) =>
+        ctx.waitUntil(disconnectDrive(driveDisconnectConfig(env), userId)),
+    });
+  }
+
+  if (pathname === AUTH_BASE_PATH || pathname.startsWith(`${AUTH_BASE_PATH}/`)) {
+    const route = pathname.slice(AUTH_BASE_PATH.length);
+    if (
+      request.method === 'POST' &&
+      (route === SEND_CODE_PATH || route === SIGN_IN_CODE_PATH) &&
+      (await overCodeLimit(request, env, route === SEND_CODE_PATH))
+    ) {
+      return Response.json({ code: 'RATE_LIMITED', message: 'Too many requests' }, { status: 429 });
+    }
+    // Google on an app's own address (GOOGLE_ON_APP_ORIGINS): Google sends the browser back to the app's address.
+    const googleOrigin =
+      env.GOOGLE_ON_APP_ORIGINS === 'true' &&
+      (route === '/sign-in/social' || route.startsWith('/callback/google'))
+        ? appOriginOfProxy(request, env.ENVIRONMENT)
+        : null;
+    const auth = googleOrigin ? getGoogleAuthFor(env, googleOrigin) : getAuth(env);
+    // liveworkspace.app's own Sign out, and Settings › Security's, end every app's session from the sessions they
+    // end too (end-session.ts).
+    if (request.method === 'POST' && SESSION_ENDING_ROUTES.has(route)) {
+      await endSessionTokensOf(request, route, auth, env.AUTH_DB);
+    }
+    let response = await auth.handler(request);
+    // liveworkspace.app's header learns the account's presence colour with its session (profiles.ts).
+    if (request.method === 'GET' && route === GET_SESSION_PATH) {
+      // With the browser's time zone, kept for the send window (send-window.ts).
+      response = await withSessionColour(
+        response,
         env.AUTH_DB,
-        indexPurgeConfig(env),
-        (userId) => closeAccountWorkbench(env, userId, (promise) => ctx.waitUntil(promise)),
-        // After the answer: Google's revoke never holds the close up.
-        (userId) => ctx.waitUntil(disconnectDrive(driveDisconnectConfig(env), userId)),
-        env,
+        parseTimeZone(request.headers.get(TIME_ZONE_HEADER)),
       );
     }
-
-    if (pathname === AUTH_BASE_PATH || pathname.startsWith(`${AUTH_BASE_PATH}/`)) {
-      const route = pathname.slice(AUTH_BASE_PATH.length);
-      if (
-        request.method === 'POST' &&
-        (route === SEND_CODE_PATH || route === SIGN_IN_CODE_PATH) &&
-        (await overCodeLimit(request, env, route === SEND_CODE_PATH))
-      ) {
-        return Response.json(
-          { code: 'RATE_LIMITED', message: 'Too many requests' },
-          { status: 429 },
-        );
-      }
-      // Google on an app's own address (GOOGLE_ON_APP_ORIGINS): Google sends the browser back to the app's address.
-      const googleOrigin =
-        env.GOOGLE_ON_APP_ORIGINS === 'true' &&
-        (route === '/sign-in/social' || route.startsWith('/callback/google'))
-          ? appOriginOfProxy(request, env.ENVIRONMENT)
-          : null;
-      const auth = googleOrigin ? getGoogleAuthFor(env, googleOrigin) : getAuth(env);
-      let response = await auth.handler(request);
-      // liveworkspace.app's header learns the account's presence colour with its session (profiles.ts).
-      if (request.method === 'GET' && route === GET_SESSION_PATH) {
-        response = await withSessionColour(response, env.AUTH_DB);
-      }
-      // Someone not signed in here yet signs in on the app's own address (handoff.ts).
-      if (request.method === 'GET' && route === AUTHORIZE_PATH) {
-        response = await signInOnAppAddress(request, response, {
-          environment: env.ENVIRONMENT,
-          baseUrl: env.BASE_URL,
-          enabled: env.SIGN_IN_ON_APP_ORIGINS === 'true',
-          db: env.AUTH_DB,
-        });
-      }
-      // A sign-in that found a session already here still takes a guest's things (guests.ts).
-      if (request.method === 'GET' && route === AUTHORIZE_PATH) {
-        response = await mergeGuestOnAuthorize(
-          request,
-          response,
-          guestMergeConfig(env),
-          async (headers) => (await auth.api.getSession({ headers }))?.user.id ?? null,
-        );
-      }
-      // An account made by this request (or another in this isolate) hears its welcome now, after the
-      // response, rather than holding the sign-up on the email (lifecycle.ts).
-      const welcomes = takeWelcomes();
-      if (welcomes.length > 0) {
-        ctx.waitUntil(
-          sendWelcomes(env.AUTH_DB, env, lifecycleSender(env), welcomes).catch((error: unknown) =>
-            console.error('[lifecycle] welcome failed', error),
-          ),
-        );
-      }
-      return response;
+    // Someone not signed in here yet signs in on the app's own address (handoff.ts).
+    if (request.method === 'GET' && route === AUTHORIZE_PATH) {
+      response = await signInOnAppAddress(request, response, {
+        environment: env.ENVIRONMENT,
+        baseUrl: env.BASE_URL,
+        enabled: env.SIGN_IN_ON_APP_ORIGINS === 'true',
+        db: env.AUTH_DB,
+      });
     }
+    // A sign-in that found a session already here still takes a guest's things (guests.ts).
+    if (request.method === 'GET' && route === AUTHORIZE_PATH) {
+      response = await mergeGuestOnAuthorize(
+        request,
+        response,
+        guestMergeConfig(env),
+        async (headers) => (await auth.api.getSession({ headers }))?.user.id ?? null,
+      );
+    }
+    // An account made by this request (or another in this isolate) hears its welcome now, after the
+    // response, rather than holding the sign-up on the email (lifecycle.ts).
+    const welcomes = takeWelcomes();
+    if (welcomes.length > 0) {
+      ctx.waitUntil(
+        sendWelcomes(env.AUTH_DB, env, lifecycleSender(env), welcomes).catch((error: unknown) =>
+          console.error('[lifecycle] welcome failed', error),
+        ),
+      );
+    }
+    return response;
+  }
 
-    return new Response('Not found', { status: 404 });
+  return new Response('Not found', { status: 404 });
+}
+
+export default {
+  // One guard for the whole request (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails").
+  fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    return guardRequest(
+      () => serve(request, env, ctx),
+      () => ({ route: routeLabel(request.method, request.url), json: failureJson }),
+    );
   },
 
   // Every 15 minutes (wrangler.toml): closed accounts' purges the index hasn't taken yet are sent
-  // again, and welcomes that failed are tried again; once a day the rest of the onboarding series goes
-  // (liveworkspace/docs/specs/003-accounts/accounts.md "Onboarding emails"). Once a day as well: team invitations nobody answered expire, and the rest hear their
-  // reminders (liveworkspace/docs/specs/003-accounts/accounts.md "Reminders and expiry"); owners of API tokens that expire
-  // within a week are warned, once per token, and see it on their Timelines ("API tokens"); and the settings and profiles
-  // of guests who can never come back are deleted ("Guests who never come back").
+  // again, and welcomes that failed are tried again. Every hour, to whoever's local time is inside the send window
+  // (liveworkspace/docs/specs/003-accounts/accounts.md "The send window"): the rest of the onboarding series
+  // ("Onboarding emails"); team invitations' reminders, after those nobody answered expire ("Reminders and expiry");
+  // and the warning to owners of API tokens that expire within a week, once per token ("API tokens"). In the 09:17 UTC
+  // run only: those tokens go on their owners' Timelines, and the settings and profiles of guests who can never come
+  // back are deleted ("Guests who never come back").
   // Each step is isolated (`step`): one that throws is logged and the run goes on to the next.
   async scheduled(controller: ScheduledController, env: Env): Promise<void> {
+    const now = Date.now();
     await step('index purges', async () => {
       const purges = await retryPendingPurges(env.AUTH_DB, indexPurgeConfig(env));
       if (purges.sent + purges.failed > 0)
@@ -199,44 +309,60 @@ export default {
       if (timeline.sent > 0 || timeline.waiting)
         console.log('[accounts] timeline events', JSON.stringify(timeline));
     });
-    // Every run: a welcome that failed is tried again within 15 minutes. Once a day: the whole series.
-    const daily = controller.cron !== PURGE_RETRY_CRON;
+    // Every run: a welcome that failed is tried again within 15 minutes. Every hour: the whole series, the stages
+    // after the welcome to those inside their send window. Without a way to send (no EMAIL binding outside
+    // development), nothing is sent or stamped.
+    const { hourly, daily } = cronRun(controller);
+    const emailOn = canSendEmail(env);
     await step('lifecycle', async () => {
+      if (!emailOn) return;
       const lifecycle = await runLifecycle(
         env.AUTH_DB,
         env,
         lifecycleSender(env),
-        daily ? undefined : ['welcome'],
+        hourly ? undefined : ['welcome'],
+        now,
       );
-      if (daily || (lifecycle.welcome?.sent ?? 0) + (lifecycle.welcome?.failed ?? 0) > 0) {
+      if (hourly || (lifecycle.welcome?.sent ?? 0) + (lifecycle.welcome?.failed ?? 0) > 0) {
         console.log('[lifecycle] onboarding emails', JSON.stringify(lifecycle));
       }
     });
-    if (!daily) return;
+    if (!hourly) return;
     await step('invitation sweep', async () => {
-      const result = await sweepInvitations(env.AUTH_DB, (reminder) =>
-        sendTeamInviteEmail(env, {
-          to: reminder.to,
-          teamName: reminder.teamName,
-          inviterName: reminder.inviterName ?? '',
-          declineToken: reminder.declineToken,
-          stage: reminder.stage,
-          app: reminder.inviterApp,
-        }),
-      );
-      console.log('[teams] invitation sweep', JSON.stringify(result));
+      const send = emailOn
+        ? (reminder: ReminderEmail) =>
+            sendTeamInviteEmail(env, {
+              to: reminder.to,
+              teamName: reminder.teamName,
+              inviterName: reminder.inviterName ?? '',
+              declineToken: reminder.declineToken,
+              stage: reminder.stage,
+              app: reminder.inviterApp,
+            })
+        : null;
+      const result = await sweepInvitations(env.AUTH_DB, send, now, sendWindowOf(env));
+      if (result.expired + result.reminded + result.failed > 0) {
+        console.log('[teams] invitation sweep', JSON.stringify(result));
+      }
     });
     try {
-      const tokens = await sweepExpiringTokens(env.AUTH_DB, env, (email) => sendEmail(env, email));
-      if (tokens.sent + tokens.failed > 0) {
-        console.log('[tokens] expiry warnings', JSON.stringify(tokens));
+      if (emailOn) {
+        const tokens = await sweepExpiringTokens(
+          env.AUTH_DB,
+          env,
+          (email) => sendEmail(env, email),
+          now,
+        );
+        if (tokens.sent + tokens.failed > 0) {
+          console.log('[tokens] expiry warnings', JSON.stringify(tokens));
+        }
       }
     } catch (error) {
       console.error('[tokens] expiry warning sweep failed', error);
     } finally {
-      // Tokens expiring within the week go on their owners' Timelines, then to the index.
+      // Once a day: tokens expiring within the week go on their owners' Timelines, then to the index.
       try {
-        if ((await noteExpiringTokens(env.AUTH_DB)) > 0) {
+        if (daily && (await noteExpiringTokens(env.AUTH_DB)) > 0) {
           await flushTimeline(env.AUTH_DB, indexPurgeConfig(env), TIMELINE_CALLS_PER_RUN);
         }
       } catch (error) {
@@ -247,6 +373,7 @@ export default {
         await flushServerEvents(env);
       });
     }
+    if (!daily) return;
     // Guests who can never come back: what is kept against their ids goes (src/guest-sweep.ts).
     await step('idle guests', async () => {
       const guests = await sweepIdleGuests(env.AUTH_DB);
@@ -262,6 +389,17 @@ async function step(name: string, run: () => Promise<void>): Promise<void> {
   } catch (error) {
     console.error(`[accounts] cron step failed: ${name}`, error);
   }
+}
+
+// The deletion code's doors: sending shares the sign-in send's per-address bucket, checking is per account.
+function deletionCodeConfig(env: Env): DeletionCodeConfig {
+  return {
+    auth: getAuth(env),
+    issuerEnv: env,
+    emailLimiter: env.CODE_EMAIL_LIMITER,
+    checkLimiter: env.CODE_IP_LIMITER,
+    send: (to, code, app) => sendDeletionCodeEmail(env, to, code, app),
+  };
 }
 
 const lifecycleSender =

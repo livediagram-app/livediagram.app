@@ -6,10 +6,11 @@ import {
   type TabLedger,
 } from '@livedesign/design';
 import {
-  AGENT_PRESENCE_TTL_MS,
+  AGENT_PRESENCE_ACTIVITY_TTL_MS,
   ROOM_RELAY_TIMEOUT_MS,
   ROOM_SELECTIONS_TIMEOUT_MS,
   type ChangesetRoomOp,
+  type ComponentRoomOp,
   type RoomOp,
 } from '@livedesign/api-schema';
 import type { AgentPresenceWrite } from '@liveworkspace/api-kit/room-agent-presence';
@@ -198,6 +199,32 @@ export async function relayChangeset(
     console.warn('[changeset] relay-failed', { ...fields, error: `status ${res.status}` });
   } catch (err) {
     console.warn('[changeset] relay-failed', { ...fields, error: String(err) });
+  }
+  return false;
+}
+
+// One main of the component library as a write stored it (docs/specs/009-elements/components.md "Sharing,
+// collaboration and storage"), into the room's ordered stream like a changeset: sequenced, kept for catch-up, sent to
+// everyone (a tab-scoped session only when its tab is in `tabIds`, room-scope.ts). It never fails the write: the
+// library already holds the main, and an editor reads it again on an instance it cannot draw.
+export async function relayComponent(
+  env: Env,
+  designId: string,
+  op: ComponentRoomOp,
+): Promise<boolean> {
+  const fields = { designId, componentId: op.component.id };
+  try {
+    const res = await roomFetch(
+      env,
+      designId,
+      '/mutation',
+      mutationInit(op),
+      ROOM_RELAY_TIMEOUT_MS,
+    );
+    if (res.ok) return true;
+    console.warn('[components] relay-failed', { ...fields, error: `status ${res.status}` });
+  } catch (err) {
+    console.warn('[components] relay-failed', { ...fields, error: String(err) });
   }
   return false;
 }
@@ -421,8 +448,8 @@ export async function deleteAgentPresence(
   return (await res.json<{ cleared: boolean }>()).cleared;
 }
 
-// A token's changeset refreshes its presence on the tab (spec "Presence"); a refresh that fails is logged and the
-// changeset stands (E7).
+// A token's changeset or read refreshes its presence on the tab for the activity window (spec "Presence"); a refresh
+// that fails is logged and the changeset or read stands (E7).
 export async function refreshAgentPresence(
   env: Env,
   write: Omit<AgentPresenceRoomWrite, 'mode' | 'status' | 'focus' | 'ttlMs'>,
@@ -432,7 +459,7 @@ export async function refreshAgentPresence(
       ...write,
       status: null,
       focus: [],
-      ttlMs: AGENT_PRESENCE_TTL_MS,
+      ttlMs: AGENT_PRESENCE_ACTIVITY_TTL_MS,
       mode: 'refresh',
     });
     if (!answer.ok)

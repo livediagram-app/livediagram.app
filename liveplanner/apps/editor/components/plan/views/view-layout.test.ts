@@ -22,10 +22,15 @@ describe('cardSearchLayout', () => {
     });
   });
 
-  it('falls back to Compact cards in a narrow or short slot', () => {
-    expect(cardSearchLayout(240, 400)).toEqual({ size: 'compact', columns: 1 });
-    expect(cardSearchLayout(900, 220)).toEqual({ size: 'compact', columns: 4 });
-    expect(cardSearchLayout(80, 80).columns).toBe(1);
+  it('fills a slot narrower than a 240 px column with one Detailed column, down to 200 px', () => {
+    expect(cardSearchLayout(240, 400)).toEqual({ size: 'detailed', columns: 1 });
+    expect(cardSearchLayout(224, 400)).toEqual({ size: 'detailed', columns: 1 });
+  });
+
+  it('falls back to Minimal cards in a very narrow or short slot', () => {
+    expect(cardSearchLayout(200, 400)).toEqual({ size: 'minimal', columns: 1 });
+    expect(cardSearchLayout(900, 220)).toEqual({ size: 'minimal', columns: 4 });
+    expect(cardSearchLayout(80, 80)).toEqual({ size: 'minimal', columns: 1 });
   });
 });
 

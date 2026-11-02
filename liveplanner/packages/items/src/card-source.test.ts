@@ -80,3 +80,41 @@ describe('builtInFieldOf', () => {
     expect(isCardDateField('Title')).toBe(false);
   });
 });
+
+describe('cardSourceOf, times and ranges', () => {
+  it('reads a Date and Time as its UTC instant and a Date Range as its interval, a phone as typed', () => {
+    const types = [
+      {
+        ...ITEM_TYPES[0],
+        id: 'event',
+        label: 'Event',
+        custom: [
+          { id: 'f-call', label: 'Call', kind: 'datetime' as const },
+          { id: 'f-when', label: 'When', kind: 'daterange' as const },
+          { id: 'f-phone', label: 'Phone', kind: 'phone' as const },
+        ],
+      },
+    ];
+    const src = cardSourceOf(
+      [
+        item(
+          1,
+          {
+            title: 'A',
+            'f-call': '2026-10-31T17:00:00Z[Europe/London]',
+            'f-when': ['2026-10-31', '2026-11-02'],
+            'f-phone': '+44 20 7946 0958',
+          },
+          'event',
+        ),
+        item(2, { title: 'B', 'f-call': 'nope' }, 'event'),
+      ],
+      types,
+    );
+    expect(src.fieldOf({ key: 1 }, 'Call')).toBe('2026-10-31T17:00:00Z');
+    expect(src.fieldOf({ key: 1 }, 'When')).toBe('2026-10-31/2026-11-02');
+    expect(src.fieldOf({ key: 1 }, 'Phone')).toBe('+44 20 7946 0958');
+    expect(src.fieldOf({ key: 2 }, 'Call')).toBeNull();
+    expect(src.fieldOf({ key: 2 }, 'When')).toBeNull();
+  });
+});

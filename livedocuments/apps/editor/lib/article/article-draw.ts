@@ -35,10 +35,12 @@ export function drawArticleOps(ctx: CanvasRenderingContext2D, ops: readonly Arti
     } else if (op.k === 'line') {
       ctx.strokeStyle = op.stroke;
       ctx.lineWidth = op.width;
+      ctx.setLineDash(op.dash ? [op.width, op.width * 2] : []);
       ctx.beginPath();
       ctx.moveTo(op.x1, op.y1);
       ctx.lineTo(op.x2, op.y2);
       ctx.stroke();
+      ctx.setLineDash([]);
     } else if (op.k === 'check') {
       const { x, y, size: z } = op;
       ctx.lineWidth = 1.5;

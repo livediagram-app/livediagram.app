@@ -47,6 +47,13 @@ import type {
   UpdateItemInput,
   UpdateShareLinkInput,
 } from './types';
+import type {
+  CardMove,
+  CreateWebhookInput,
+  UpdateWebhookInput,
+  Webhook,
+  WebhookDelivery,
+} from './webhooks';
 
 export class IndexError extends Error {
   readonly status: number;
@@ -262,6 +269,22 @@ export function createIndexClient({
     dismissTimelineEvents: (ids: readonly string[]) =>
       call<void>('/timeline/dismiss', { method: 'POST', body: { ids } }),
 
+    // Webhooks (webhooks.md): the person's own and those of the teams they run.
+    listWebhooks: () => call<{ webhooks: Webhook[] }>('/webhooks'),
+    // `secret` only for a `json` webhook, and only now.
+    createWebhook: (input: CreateWebhookInput) =>
+      call<{ webhook: Webhook; secret: string | null }>('/webhooks', {
+        method: 'POST',
+        body: input,
+      }),
+    updateWebhook: (id: string, input: UpdateWebhookInput) =>
+      call<{ webhook: Webhook }>(`/webhooks/${enc(id)}`, { method: 'PATCH', body: input }),
+    deleteWebhook: (id: string) => call<void>(`/webhooks/${enc(id)}`, { method: 'DELETE' }),
+    testWebhook: (id: string) =>
+      call<{ queued: true }>(`/webhooks/${enc(id)}/test`, { method: 'POST' }),
+    webhookDeliveries: (id: string) =>
+      call<{ deliveries: WebhookDelivery[] }>(`/webhooks/${enc(id)}/deliveries`),
+
     // Inbox
     inbox: (query: { app?: App; limit?: number } = {}, options: RequestOptions = {}) =>
       call<InboxResponse>('/inbox', { query, signal: options.signal }),
@@ -371,6 +394,10 @@ export function createIndexAppClient({ app, key, baseUrl, fetch: doFetch }: Inde
     // Up to APP_EVENTS_MAX Timeline events about people rather than an item (images uploaded). Safe to send
     // again only as a count: each report adds its `count` to the person's event for that day.
     pushPersonEvents: (events: readonly AppPersonEvent[]) => put('/people/events', { events }),
+    // Up to CARD_MOVES_MAX cards that changed status (liveplanner), for the item's scope's webhooks. Safe to send
+    // again: each is one delivery per webhook.
+    pushCardMoves: (itemId: string, moves: readonly CardMove[]) =>
+      put(`/items/${enc(itemId)}/card-moves`, { moves }),
   };
 }
 

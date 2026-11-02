@@ -17,6 +17,7 @@ import {
   handleInternalItems as handle,
 } from '@liveworkspace/index-app';
 import { MAX_TAB_BYTES } from '../limits';
+import { communityService } from '../community-service';
 import { notifyFirstShare } from '../email/notifications';
 import { deleteAccount } from '../db/account';
 import { purgeDocumentPreviews } from '../db/documents';
@@ -61,13 +62,19 @@ export function handleInternalItems(
       // images), and their name off each document of someone else's that names them.
       personClosed: async (personId) => void (await deleteAccount(env, personId)),
       // A guest who became an account (accounts merged them; the index tells each app): their images in
-      // liveworkspace's media service become the account's. A guest has no workbench (it needs a token).
+      // liveworkspace's media service and their Community copies become the account's. A guest has no workbench
+      // (it needs a token).
       personMerged: async (guestId, userId) => {
         const media = mediaClient(env);
-        if (!media) return;
-        const merged = await media.mergeOwner(await mediaOwner(guestId), await mediaOwner(userId));
-        if (!merged.ok)
-          throw new Error(`media: merging the guest's images answered ${merged.status}`);
+        if (media) {
+          const merged = await media.mergeOwner(
+            await mediaOwner(guestId),
+            await mediaOwner(userId),
+          );
+          if (!merged.ok)
+            throw new Error(`media: merging the guest's images answered ${merged.status}`);
+        }
+        await communityService.mergeCopier(env, guestId, userId);
       },
       anonymise: (id, personId) => documentRoom(env, id).anonymise(personId),
       // The document drawn, for liveworkspace's previews (document-room.ts `exportImage`), or its whole file, for
@@ -88,14 +95,25 @@ export function handleInternalItems(
       workbenchClose: (id, pairingId) => closeWorkbenchSessions(env, id, pairingId),
       copy: async (from, to, tabId, copier) => {
         // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves them
-        // to them, other people's authors redacted.
-        const copy = await documentRoom(env, from).exportCopy(tabId, copier.by);
+        // to them, other people's authors redacted; through the document's Community post's link, without its
+        // comments or the people on its actions.
+        const source = await documentRoom(env, from).exportCopy(tabId, copier);
         // No such document, or no such tab in it.
-        if (!copy || (tabId && copy.tabs.length === 0)) return 'not_found';
+        if (!source || (tabId && source.copy.tabs.length === 0)) return 'not_found';
+        const { copy } = source;
         // The target is a new document: a copy into one that already holds this content fails its keys, and nothing
         // is written (importCopy is one transaction); the kit answers that as a conflict. The copy carries a grant for
         // each image its source could serve, so it serves them too (docs/specs/009-elements/images.md).
         await documentRoom(env, to).importCopy(copy);
+        // A copy through a Community post's link counts toward the post (docs/specs/025-community/community.md
+        // "Likes, reports and moderation"), once per copier and at most a few from one network: the copier's address
+        // as the index saw it (an Explorer's copy). The api's own copy door counted it first
+        // (routes/document-index-routes.ts), so this adds nothing then. An index that names no address counts the
+        // copier as their own network.
+        if (source.community && copier.by)
+          waitUntil(
+            communityService.countCopy(env, from, copier.by, copier.ip ?? `copier:${copier.by}`),
+          );
         return { tabs: copy.tabs.length, items: 0 };
       },
     },

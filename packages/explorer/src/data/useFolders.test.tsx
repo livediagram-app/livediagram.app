@@ -28,6 +28,20 @@ describe('useFolderStore', () => {
     expect(index.count('listFolders')).toBe(3);
   });
 
+  it('lists folders with the numbers in their names read as numbers, as the Details view sorts them', async () => {
+    const named = (id: string, name: string) => ({ ...folder(id), name });
+    const index = createFakeIndex({
+      folders: [named('a', 'Folder 10'), named('b', 'folder 2'), named('c', 'Folder 1')],
+    });
+    const { result } = renderHook(() => useFolderStore(index.client, vi.fn(), vi.fn()));
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.childrenOf(null, null).map((f) => f.name)).toEqual([
+      'Folder 1',
+      'folder 2',
+      'Folder 10',
+    ]);
+  });
+
   it('shows a new folder at once and takes it away when refused', async () => {
     const index = createFakeIndex();
     const onError = vi.fn();

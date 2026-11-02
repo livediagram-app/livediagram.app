@@ -66,7 +66,14 @@ export function PageContentsPanel({
   }, [mobile, onClose]);
 
   const body = (
-    <div className="flex min-h-0 flex-col" data-page-contents="">
+    <div
+      className="flex min-h-0 flex-col"
+      data-page-contents=""
+      // Presses, holds and right-clicks here are the list's, never the canvas's beneath the portal
+      // (no canvas menu from a finger held on a row), as the sidebar's own are.
+      onPointerDown={(e) => e.stopPropagation()}
+      onContextMenu={(e) => e.stopPropagation()}
+    >
       <ContentsFind contents={contents} />
       <ContentsList
         contents={contents}

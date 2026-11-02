@@ -72,12 +72,38 @@ describe('DriveSwitchDialog', () => {
     await act(async () => button('Switch Account').click());
     expect(onSwitched).not.toHaveBeenCalled();
     expect(document.body.textContent).toContain(ACCOUNT_SWITCH_EXPIRED);
-    const back = [...document.querySelectorAll('a')].find((a) => a.textContent === 'Back to Cloud Sync');
+    const back = [...document.querySelectorAll('a')].find(
+      (a) => a.textContent === 'Back to Cloud Sync',
+    );
     expect(back?.getAttribute('href')).toBe('https://lw.test/explorer?settings=profile');
+    // The buttons gave way to it: the keyboard went with them (busy-buttons.md).
+    expect(document.activeElement).toBe(back);
+  });
+
+  it('keeps the keyboard on Switch Account while it switches, and sends it once', async () => {
+    let finish: (r: DriveResult<unknown>) => void = () => {};
+    const confirm = vi.fn(() => new Promise<DriveResult<unknown>>((r) => (finish = r)));
+    await mount(confirm, answer({ ok: true, data: undefined }));
+    const pressed = button('Switch Account');
+    expect(document.activeElement).toBe(pressed);
+    await act(async () => pressed.click());
+    const busy = button('Switching…');
+    expect(busy).toBe(pressed);
+    expect(busy.getAttribute('aria-busy')).toBe('true');
+    expect(busy.disabled).toBe(false);
+    expect(document.activeElement).toBe(busy);
+    await act(async () => busy.click());
+    await act(async () => button('Keep Current Account').click());
+    expect(confirm).toHaveBeenCalledTimes(1);
+    await act(async () => finish({ ok: false, status: 0, error: 'offline' }));
+    expect(document.activeElement).toBe(button('Switch Account'));
   });
 
   it('keeps the dialog open on a failure, saying nothing changed', async () => {
-    await mount(answer({ ok: false, status: 0, error: 'offline' }), answer({ ok: true, data: undefined }));
+    await mount(
+      answer({ ok: false, status: 0, error: 'offline' }),
+      answer({ ok: true, data: undefined }),
+    );
     await act(async () => button('Switch Account').click());
     expect(document.body.textContent).toContain(ACCOUNT_SWITCH_FAILED);
     expect(button('Switch Account').disabled).toBe(false);

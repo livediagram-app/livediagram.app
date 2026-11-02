@@ -145,7 +145,7 @@ describe('SettingsDialog', () => {
     // The rail is gone: a phone shows one screen at a time.
     expect(screen.queryByRole('button', { name: 'Privacy' })).toBeNull();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Settings./ }));
     expect(screen.getByRole('button', { name: 'Privacy' })).toBeTruthy();
     expect(screen.queryByRole('switch', { name: 'Power User Mode' })).toBeNull();
   });
@@ -165,9 +165,9 @@ describe('SettingsDialog', () => {
     expect(screen.getByRole('heading', { name: 'Collaborate' })).toBeTruthy();
     expect(screen.queryByRole('navigation', { name: 'Panels sub-categories' })).toBeNull();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Panels' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Panels./ }));
     expect(screen.getByRole('heading', { name: 'Panels' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Settings./ }));
     expect(screen.getByRole('button', { name: 'Privacy' })).toBeTruthy();
   });
 
@@ -216,7 +216,7 @@ describe('SettingsDialog', () => {
       setViewport(true);
       renderDialog();
       fireEvent.click(screen.getByRole('button', { name: 'Privacy' }));
-      fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+      fireEvent.click(screen.getByRole('button', { name: /^Settings./ }));
       fireEvent.click(screen.getByRole('button', { name: 'Close' }));
       cleanup();
       expect(readSettingsView()).toEqual({ categoryId: null, anchor: null });

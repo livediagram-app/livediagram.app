@@ -10,7 +10,6 @@ import type { ItemUndoStep } from './item-undo-journal';
 const api = vi.hoisted(() => ({
   fetchItems: vi.fn(),
   writeItem: vi.fn(),
-  writeItemComment: vi.fn(),
 }));
 vi.mock('@/lib/api/items', () => api);
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -51,7 +50,6 @@ describe('usePlanItems undo', () => {
         tabScope: null,
         pushUndo: (step) => steps.push(step),
         onError: vi.fn(),
-        onMentioned: vi.fn(),
       }),
     );
     await waitFor(() => expect(result.current.items.size).toBe(1));
@@ -95,7 +93,6 @@ describe('usePlanItems undo', () => {
         tabScope: null,
         pushUndo: (step) => steps.push(step),
         onError,
-        onMentioned: vi.fn(),
       }),
     );
     await waitFor(() => expect(result.current.items.size).toBe(2));
@@ -116,7 +113,8 @@ describe('usePlanItems undo', () => {
     expect(api.writeItem.mock.calls[1]![1]).toEqual({
       kind: 'patches',
       undo: true,
-      patches: [{ id: 'item-one', patch: { set: { status: 'done' } } }],
+      // Its old column's stamp comes back with it (docs/specs/026-plan/items.md "Undo").
+      patches: [{ id: 'item-one', patch: { set: { status: 'done', statusSince: 0 } } }],
     });
   });
 });

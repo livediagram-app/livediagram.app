@@ -1,13 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   authorizeUrl,
-  closeAccount,
   createPkcePair,
+  endAccountsSession,
+  endSessionUrl,
   exchangeCode,
   guestHandoffUrl,
   isGuestHandoffState,
   randomState,
   refreshTokens,
+  signOutEverywhere,
 } from './oauth';
 
 const credentials = {
@@ -42,22 +44,22 @@ describe('authorizeUrl', () => {
       authorizeUrl({
         accountsUrl: credentials.accountsUrl,
         clientId: 'client-1',
-        redirectUri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback',
+        redirectUri: 'https://www.livediagram.app/auth/callback',
         state: 'st',
         codeChallenge: 'ch',
-        resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+        resource: 'https://livediagram.app/api',
       }),
     );
     expect(url.origin + url.pathname).toBe('https://liveworkspace.app/api/auth/oauth2/authorize');
     expect(Object.fromEntries(url.searchParams)).toEqual({
       response_type: 'code',
       client_id: 'client-1',
-      redirect_uri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback',
+      redirect_uri: 'https://www.livediagram.app/auth/callback',
       scope: 'openid email profile offline_access',
       state: 'st',
       code_challenge: 'ch',
       code_challenge_method: 'S256',
-      resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+      resource: 'https://livediagram.app/api',
     });
   });
 
@@ -66,10 +68,10 @@ describe('authorizeUrl', () => {
       authorizeUrl({
         accountsUrl: credentials.accountsUrl,
         clientId: 'client-1',
-        redirectUri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback',
+        redirectUri: 'https://www.livediagram.app/auth/callback',
         state: 'st',
         codeChallenge: 'ch',
-        resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+        resource: 'https://livediagram.app/api',
         prompt: 'create',
       }),
     );
@@ -83,7 +85,7 @@ describe('guestHandoffUrl', () => {
       guestHandoffUrl({
         accountsUrl: 'https://liveworkspace.app/',
         clientId: 'client-1',
-        redirectUri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/guest',
+        redirectUri: 'https://www.livediagram.app/auth/guest',
         state: 'abcdefgh',
         resource: 'https://api.livediagram.app',
       }),
@@ -91,7 +93,7 @@ describe('guestHandoffUrl', () => {
     expect(url.origin + url.pathname).toBe('https://liveworkspace.app/api/auth/guest');
     expect(Object.fromEntries(url.searchParams)).toEqual({
       client_id: 'client-1',
-      redirect_uri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/guest',
+      redirect_uri: 'https://www.livediagram.app/auth/guest',
       state: 'abcdefgh',
       resource: 'https://api.livediagram.app',
     });
@@ -108,6 +110,22 @@ describe('guestHandoffUrl', () => {
       }),
     );
     expect(url.origin + url.pathname).toBe('http://127.0.0.1:3132/e2e/accounts/api/auth/guest');
+  });
+
+  it('drops any run of trailing slashes on the accounts URL, in linear time', () => {
+    const at = (accountsUrl: string) =>
+      new URL(
+        guestHandoffUrl({
+          accountsUrl,
+          clientId: 'client-1',
+          redirectUri: 'https://www.livediagram.app/auth/guest',
+          state: 'abcdefgh',
+          resource: 'https://api.livediagram.app',
+        }),
+      ).pathname;
+    expect(at('https://liveworkspace.app///')).toBe('/api/auth/guest');
+    // A pattern like /\/+$/ backtracks quadratically here; the scan finishes well inside the test's timeout.
+    expect(at(`https://liveworkspace.app/a${'/'.repeat(50_000)}`)).toBe('/a/api/auth/guest');
   });
 
   it('takes only a state shaped like one the editor makes', () => {
@@ -133,9 +151,9 @@ describe('exchangeCode', () => {
       credentials,
       {
         code: 'c',
-        redirectUri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback',
+        redirectUri: 'https://www.livediagram.app/auth/callback',
         codeVerifier: 'v',
-        resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+        resource: 'https://livediagram.app/api',
       },
       fetchImpl,
     );
@@ -154,9 +172,9 @@ describe('exchangeCode', () => {
     expect(Object.fromEntries(new URLSearchParams(String(init?.body)))).toEqual({
       grant_type: 'authorization_code',
       code: 'c',
-      redirect_uri: 'https://livediagram-router.liveworkspace-easing509.workers.dev/auth/callback',
+      redirect_uri: 'https://www.livediagram.app/auth/callback',
       code_verifier: 'v',
-      resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+      resource: 'https://livediagram.app/api',
     });
   });
 
@@ -198,7 +216,7 @@ describe('refreshTokens', () => {
       credentials,
       {
         refreshToken: 'rt',
-        resource: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+        resource: 'https://livediagram.app/api',
       },
       fetchImpl,
     );
@@ -210,22 +228,79 @@ describe('refreshTokens', () => {
   });
 });
 
-describe('closeAccount', () => {
-  it('sends the access token with basic client auth', async () => {
-    const fetchImpl = tokenResponse({ deleted: true });
-    await closeAccount(credentials, 'at', fetchImpl);
+describe('signing out everywhere', () => {
+  it('ends the session with basic client auth and the refresh token, answering the ticket', async () => {
+    const fetchImpl = tokenResponse({ ended: true, ticket: 't1' });
+    expect(await endAccountsSession(credentials, 'rt', fetchImpl)).toBe('t1');
     const [url, init] = fetchImpl.mock.calls[0]!;
-    expect(String(url)).toBe('https://liveworkspace.app/api/auth/delete-account');
+    expect(String(url)).toBe('https://liveworkspace.app/api/auth/end-session');
     expect(init?.method).toBe('POST');
     expect(new Headers(init?.headers).get('authorization')).toBe(
       `Basic ${btoa('client-1:s3cret')}`,
     );
-    expect(JSON.parse(String(init?.body))).toEqual({ token: 'at' });
+    expect(JSON.parse(String(init?.body))).toEqual({ token: 'rt' });
+    expect(init?.signal).toBeInstanceOf(AbortSignal);
   });
 
-  it('throws when the account was not closed', async () => {
-    await expect(
-      closeAccount(credentials, 'at', tokenResponse({ error: 'invalid_token' }, 401)),
-    ).rejects.toThrow('closing the account failed (401)');
+  it('answers null for a refusal, a body without a ticket, or no answer at all', async () => {
+    expect(
+      await endAccountsSession(credentials, 'rt', tokenResponse({ error: 'invalid_token' }, 401)),
+    ).toBeNull();
+    expect(await endAccountsSession(credentials, 'rt', tokenResponse({ ended: false }))).toBeNull();
+    expect(await endAccountsSession(credentials, 'rt', tokenResponse({ ticket: '' }))).toBeNull();
+    const nullBody = vi.fn<typeof fetch>(async () => new Response('null'));
+    expect(await endAccountsSession(credentials, 'rt', nullBody)).toBeNull();
+    const down = vi.fn<typeof fetch>(async () => {
+      throw new TypeError('network');
+    });
+    expect(await endAccountsSession(credentials, 'rt', down)).toBeNull();
+  });
+
+  it('builds the hop under any path the accounts URL carries', () => {
+    const url = new URL(
+      endSessionUrl({
+        accountsUrl: 'http://localhost:3101/e2e/accounts/',
+        clientId: 'client-1',
+        postLogoutRedirectUri: 'https://livediagram.app/',
+        ticket: 'a.b+c',
+      }),
+    );
+    expect(url.origin + url.pathname).toBe(
+      'http://localhost:3101/e2e/accounts/api/auth/end-session',
+    );
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      client_id: 'client-1',
+      post_logout_redirect_uri: 'https://livediagram.app/',
+      ticket: 'a.b+c',
+    });
+  });
+
+  it('answers the hop once the session ended, and nothing without a refresh token or a ticket', async () => {
+    const back = 'https://livediagram.app/explorer';
+    const fetchImpl = tokenResponse({ ticket: 't1' });
+    const next = await signOutEverywhere(
+      credentials,
+      { refreshToken: 'rt', postLogoutRedirectUri: back },
+      fetchImpl,
+    );
+    expect(new URL(next!).searchParams.get('post_logout_redirect_uri')).toBe(back);
+    expect(new URL(next!).searchParams.get('ticket')).toBe('t1');
+
+    const unused = tokenResponse({ ticket: 't1' });
+    expect(
+      await signOutEverywhere(
+        credentials,
+        { refreshToken: null, postLogoutRedirectUri: back },
+        unused,
+      ),
+    ).toBeNull();
+    expect(unused).not.toHaveBeenCalled();
+    expect(
+      await signOutEverywhere(
+        credentials,
+        { refreshToken: 'rt', postLogoutRedirectUri: back },
+        tokenResponse({}, 502),
+      ),
+    ).toBeNull();
   });
 });

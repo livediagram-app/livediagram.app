@@ -1,6 +1,15 @@
 import { expect, test } from '../fixtures';
 import { ADD_PAYMENTS_VIEW, ARRANGED_VIEW, RENAME_API_VIEW } from './agent-changeset-bodies';
-import { agentSubmits, arrange, CANVAS, open, storedIds, storedX, WEBBER } from './agent-session';
+import {
+  agentSubmits,
+  arrange,
+  CANVAS,
+  open,
+  PERSON_BOX,
+  storedIds,
+  storedX,
+  WEBBER,
+} from './agent-session';
 import { freshUserId, installSession } from './session';
 
 // Agent changesets end to end (docs/specs/024-agents/agent-changesets.md; liveplanner #343): a
@@ -50,19 +59,19 @@ test("an agent's changeset reaches the open editor, survives its save, and the t
   await expect
     .poll(() => storedX(page, s, 'api'), { timeout: 10_000 })
     .toBeGreaterThan(ARRANGED_VIEW.x);
-  expect(await storedIds(page, s)).toEqual(['api', 'payments']);
+  expect(await storedIds(page, s)).toEqual(['api', PERSON_BOX.id, 'payments']);
 
   // Ctrl+Z undoes the person's own nudge, never the agent's change.
   await page.keyboard.press('ControlOrMeta+z');
   await expect.poll(() => storedX(page, s, 'api'), { timeout: 10_000 }).toBe(ARRANGED_VIEW.x);
-  expect(await storedIds(page, s)).toEqual(['api', 'payments']);
+  expect(await storedIds(page, s)).toEqual(['api', PERSON_BOX.id, 'payments']);
   await expect(page.locator(PAYMENTS)).toBeVisible();
 
   // The toast's Undo reverts the changeset, for the person and in storage.
   await toast.getByRole('button', { name: "Undo Webber Takken's changes" }).click();
   await expect(page.getByRole('status').filter({ hasText: /^Undone/ })).toBeVisible();
   await expect(page.locator(PAYMENTS)).toHaveCount(0);
-  await expect.poll(() => storedIds(page, s), { timeout: 10_000 }).toEqual(['api']);
+  await expect.poll(() => storedIds(page, s), { timeout: 10_000 }).toEqual(['api', PERSON_BOX.id]);
   expect(pageErrors).toEqual([]);
 });
 

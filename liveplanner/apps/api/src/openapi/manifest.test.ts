@@ -114,6 +114,7 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
       'events',
       'folders',
       'forms',
+      'images',
       'oauth',
       'participants',
       'preferences',

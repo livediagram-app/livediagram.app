@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
+import { Button } from '@liveworkspace/ui';
 import type { AccountSection } from '../account-model';
 import type { SettingsRow } from '../model';
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '../SettingsRowShell';
@@ -68,13 +69,14 @@ function SignOutRow({ onSignOut }: { onSignOut: NonNullable<AccountSection['onSi
       row={{
         key: 'signOut',
         label: 'Sign Out',
-        description: 'Sign out of liveworkspace in this browser. Your work stays in your account.',
+        description:
+          'Sign out of every liveworkspace app in this browser. Your work stays in your account.',
       }}
       control={
-        <button
-          type="button"
+        <Button
+          variant="none"
           className={SETTINGS_ROW_BUTTON}
-          disabled={state === 'busy'}
+          busy={state === 'busy'}
           onClick={async () => {
             setState('busy');
             const result = await Promise.resolve(onSignOut()).catch(() => false);
@@ -82,7 +84,7 @@ function SignOutRow({ onSignOut }: { onSignOut: NonNullable<AccountSection['onSi
           }}
         >
           {state === 'busy' ? 'Signing out…' : 'Sign Out'}
-        </button>
+        </Button>
       }
     >
       {state === 'failed' ? (
@@ -174,7 +176,7 @@ export function profileRows(section: AccountSection): SettingsRow[] {
       kind: 'custom',
       key: 'signOut',
       label: 'Sign Out',
-      description: 'Sign out of liveworkspace in this browser.',
+      description: 'Sign out of every liveworkspace app in this browser.',
       keywords: 'sign out log out logout leave',
       section: PROFILE_SECTIONS.account,
       render: () => <SignOutRow onSignOut={onSignOut} />,

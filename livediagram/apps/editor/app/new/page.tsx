@@ -7,6 +7,7 @@ import {
   useEffect,
   useEffectEvent,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -34,6 +35,7 @@ import { isOfflineLocation, type SaveLocationId } from '@/lib/save-locations';
 import { useNewDocumentLocation } from './useNewDocumentLocation';
 import { NewSaveSwitch } from './NewSaveSwitch';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
+import { firstVisitName } from '@/app/document/[id]/resolve-participant';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
 import { markNameConfirmed } from '@/lib/local-identity';
@@ -111,7 +113,7 @@ export default function NewDocumentPage() {
   // real participant lands once the identity has resolved.
   // Sign-in wiring (the token provider), the same
   // hook as the editor route; see hooks/useAccountBootstrap.ts.
-  const { authLoaded, sessionAnswered, accountUserId } = useAccountBootstrap();
+  const { authLoaded, sessionAnswered, accountUserId, accountDisplayName } = useAccountBootstrap();
 
   // Who is creating (docs/specs/003-system-architecture/react-state-and-effects.md): derived during render.
   // The base is the account id once auth has settled, else the guest id read from its store, with a name and
@@ -124,7 +126,13 @@ export default function NewDocumentPage() {
   // A returning old livediagram.app guest's work is claimed in the background
   // (docs/specs/014-identity/auth-and-guest-access.md "Returning guests from the old site").
   useLegacyGuestClaim(true, useSettledOwnerId(authLoaded, accountUserId));
-  const [seed] = useState(() => ({ name: randomName(), color: randomColor() }));
+  const [guestSeed] = useState(() => ({ name: randomName(), color: randomColor() }));
+  // A signed-in person is seeded with their account name, as the editor seeds them; a guest with the random one.
+  const seedName = firstVisitName(accountUserId, accountDisplayName, guestSeed.name);
+  const seed = useMemo(
+    () => ({ name: seedName, color: guestSeed.color }),
+    [seedName, guestSeed.color],
+  );
   const [selfOverride, setSelf] = useState<Participant | null>(null);
   const baseId = authLoaded ? (accountUserId ?? guestId) : null;
   const self: Participant =

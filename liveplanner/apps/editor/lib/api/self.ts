@@ -1,5 +1,11 @@
 // Participant / account calls: load self, save self, account self-
 // deletion, and guest -> authed data migration.
+import {
+  accountDeletionOf,
+  deletionCodeSentOf,
+  type AccountDeletion,
+  type DeletionCodeSent,
+} from '@liveworkspace/workbench/lib/account-deletion';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import type { Participant } from '../identity';
 import {
@@ -63,30 +69,28 @@ export async function apiLoadSelf(id: string): Promise<Participant | null> {
   return loaded;
 }
 
-// Account self-deletion (signed-in only). Wipes the caller's projects,
-// folders, and participant row server-side, and closes the liveworkspace
-// account; the caller then ends the session.
-// Deletes the person's liveplanner data, then closes their liveworkspace account. Resolves to what
-// was deleted, `'account_not_closed'` when the data went but closing the account failed (asking
-// again finishes it), or null when nothing was deleted.
-export async function apiDeleteAccount(): Promise<
-  { projects: number; folders: number } | 'account_not_closed' | null
-> {
-  // ownerId arg is unused server-side for this endpoint (the
-  // resolved account id wins), but apiHeaders' signature wants
-  // something — pass an empty string. The registered token
-  // provider attaches the Bearer; the endpoint refuses if absent.
-  const res = await apiFetch(`${API_BASE}/account`, {
-    method: 'DELETE',
+// Account self-deletion (signed-in only; docs/specs/014-identity/auth-and-guest-access.md "Deleting an account").
+// First the code: the api has the accounts Worker email a 6-digit code to the account.
+export async function apiSendDeletionCode(): Promise<DeletionCodeSent> {
+  // ownerId is unused server-side for these endpoints (the resolved account id wins), but apiHeaders' signature
+  // wants something. The registered token provider attaches the Bearer; the endpoints refuse if it is absent.
+  const res = await apiFetch(`${API_BASE}/account/deletion-code`, {
+    method: 'POST',
     headers: await apiHeaders(''),
   });
-  if (res.status === 502) {
-    const failed = (await res.json().catch(() => null)) as { error?: string } | null;
-    if (failed?.error === 'account_not_closed') return 'account_not_closed';
-  }
-  if (!res.ok) return null;
-  const body = (await res.json()) as { deleted: { projects: number; folders: number } };
-  return body.deleted;
+  return deletionCodeSentOf(res);
+}
+
+// Then the delete, with that code: the api checks it before anything goes, deletes this app's data, then closes the
+// liveworkspace account with it. `account_not_closed` means the data went but the account did not (asking again
+// finishes it).
+export async function apiDeleteAccount(code: string): Promise<AccountDeletion> {
+  const res = await apiFetch(`${API_BASE}/account`, {
+    method: 'DELETE',
+    headers: await apiHeaders('', { body: true }),
+    body: JSON.stringify({ code }),
+  });
+  return accountDeletionOf(res);
 }
 
 export async function apiSaveSelf(p: Participant): Promise<void> {

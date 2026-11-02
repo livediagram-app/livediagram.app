@@ -43,6 +43,15 @@ describe('values and recalculation', () => {
     b.set('B1', '5');
     expect(b.v('A1')).toBe(5);
   });
+  it('names each sheet in a loop that runs through another sheet', () => {
+    const b = book({ 'Sheet 1': { A1: "='Q3 Costs'!A1" }, 'Q3 Costs': { A1: "='Sheet 1'!A1" } });
+    expect((b.v('A1') as { why: string }).why).toBe(
+      "Circular reference: 'Sheet 1'!A1 → 'Q3 Costs'!A1 → 'Sheet 1'!A1",
+    );
+    // A loop on one sheet keeps the short form.
+    const one = book({ B2: '=C2', C2: '=B2' });
+    expect((one.v('B2') as { why: string }).why).toBe('Circular reference: B2 → C2 → B2');
+  });
   it('shows #REF! for a loop longer than the stack holds, and recovers once it is broken', () => {
     const cells: Record<string, string> = { A1: '=A300' };
     for (let i = 2; i <= 300; i++) cells[`A${i}`] = `=A${i - 1}+1`;
@@ -55,7 +64,7 @@ describe('values and recalculation', () => {
   });
   // Over five million reads by design (past RECALC_READS_MAX): seconds under a loaded runner.
   it(
-    'works a cell out afresh after a read that ran past the recalculation budget',
+    'works a cell out afresh after a change, once a recalculation ran past its budget',
     { timeout: 30_000 },
     () => {
       const cells: Record<string, string> = { C1: '=SUM(B1:B6000)' };
@@ -63,8 +72,8 @@ describe('values and recalculation', () => {
       for (let i = 1; i <= 6000; i++) cells[`B${i}`] = '=SUM($A$1:$A$1000)';
       const b = book(cells, { rows: 6000, cols: 3 });
       expect(b.v('C1')).toMatchObject({ e: '#NUM!' });
-      // Read on its own, a cell the budget cut short has its own value.
-      expect(b.v('B6000')).toBe(1000);
+      // The budget is the whole recalculation's: a cell it cut short stays cut short until the next change.
+      expect(b.v('B6000')).toMatchObject({ e: '#NUM!' });
       b.set('A1', '2');
       expect(b.v('B5999')).toBe(1001);
     },

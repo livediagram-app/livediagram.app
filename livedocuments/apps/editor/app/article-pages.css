@@ -387,3 +387,20 @@ html[data-presenting] .article-flow .article-note {
 :root[data-article-toolbar-top] [data-toolbar-palette] {
   visibility: hidden;
 }
+
+/* The Find bar's matches (docs/specs/007-editor/find-and-replace.md "Highlights", article-find-plugin.ts): a soft
+   find yellow under every match, a strong orange with an outline under the one in hand, slate under one this person
+   may not replace. Background only, so the text's own ink and marks are untouched on a light or a dark page. */
+.article-flow .find-match {
+  background-color: rgb(253 224 71 / 0.45);
+  border-radius: 2px;
+}
+.article-flow .find-match-current {
+  background-color: rgb(251 146 60 / 0.7);
+  border-radius: 2px;
+  outline: 1px solid #ea580c;
+}
+.article-flow .find-match-held {
+  background-color: rgb(148 163 184 / 0.35);
+  border-radius: 2px;
+}

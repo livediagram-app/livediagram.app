@@ -32,6 +32,8 @@ const edits = (): PageEdits => ({
   isLocked: () => false,
   setLocked: vi.fn(),
   splitPage: vi.fn(),
+  splitCard: vi.fn(),
+  cardSplitState: vi.fn(() => 'fits' as const),
   removePage: vi.fn(),
 });
 

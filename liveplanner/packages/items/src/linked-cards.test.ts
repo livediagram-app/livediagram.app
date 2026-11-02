@@ -129,6 +129,11 @@ describe('collectingBoard', () => {
 });
 
 describe('status mapping', () => {
+  // No column counts as done, whatever its name (Counts as Done off on each).
+  const noDone: PlanBoardSetup = {
+    ...setup,
+    columns: setup.columns.map((c) => ({ ...c, done: false })),
+  };
   const withDoing: PlanBoardSetup = {
     ...setup,
     columns: [
@@ -143,7 +148,7 @@ describe('status mapping', () => {
     expect(recordStatusOf(withDoing, 'done')).toBe('done');
     expect(recordStatusOf(withDoing, 'wont-do')).toBe('wont-do');
     expect(recordStatusOf(withDoing, 'elsewhere')).toBeNull();
-    expect(recordStatusOf({ ...setup, doneColumnId: undefined }, 'new')).toBeNull();
+    expect(recordStatusOf(noDone, 'new')).toBeNull();
   });
   it('places each record status, keeping an open card in its open column', () => {
     expect(cardStatusFor(withDoing, 'open', undefined)).toBe('new');
@@ -153,7 +158,7 @@ describe('status mapping', () => {
     expect(cardStatusFor(withDoing, 'wont-do', 'new')).toBe('wont-do');
     const noAfter = { ...setup, columns: setup.columns.slice(0, 2) };
     expect(cardStatusFor(noAfter, 'wont-do', 'new')).toBe('done');
-    expect(cardStatusFor({ ...setup, doneColumnId: undefined }, 'done', 'new')).toBeUndefined();
+    expect(cardStatusFor(noDone, 'done', 'new')).toBeUndefined();
   });
 });
 

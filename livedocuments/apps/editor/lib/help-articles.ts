@@ -14,6 +14,7 @@
 // help page is a bug, the same way an unregistered help article is - keep
 // these in sync with @livedocuments/help-registry.
 
+import { COMMUNITY_HELP } from '@livedocuments/help-registry/community';
 import { helpPathTelemetryId } from '@livedocuments/help-registry/telemetry';
 
 export const HELP_ARTICLES = {
@@ -21,6 +22,8 @@ export const HELP_ARTICLES = {
   sharing: 'collaboration/sharing',
   shareLinkExpiry: 'collaboration/sharing/share-link-expiry',
   sharePasswords: 'collaboration/sharing/share-passwords',
+  // The Community's own help map holds the path (the public sites link it too).
+  community: COMMUNITY_HELP.sharing.path,
   // Palette behaviour
   autoAttachArrows: 'palette/auto-attach-arrows',
   // The embed's article is linked from the link picker, when it is restricted to a URL
@@ -44,6 +47,8 @@ export const HELP_ARTICLES = {
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
   markdownImport: 'tools/markdown-import',
+  // The Find bar's `?` (docs/specs/007-editor/find-and-replace.md "The bar").
+  findAndReplace: 'tools/find-and-replace',
   linkingTabs: 'tabs/linking-tabs',
   // Teams
   // Canvas / themes
@@ -92,6 +97,7 @@ export const HELP_ARTICLES = {
   slidePages: 'pages/slide-pages',
   infographicLayouts: 'pages/infographic-layouts',
   articlePages: 'pages/articles',
+  flashcards: 'pages/flashcards',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
@@ -123,6 +129,15 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about share passwords',
     description: 'One password that guards every link to a document, embeds included.',
   },
+  findAndReplace: {
+    title: 'Learn about Find and Replace',
+    description: 'What Find searches, Match Case and Whole Word, and who may replace.',
+  },
+  community: {
+    title: 'Learn about the Community',
+    description: 'Sharing a document publicly, and how people find and copy it.',
+  },
+
   autoAttachArrows: {
     title: 'Learn about auto-attach arrows',
     description: 'How arrows re-pin to shapes as they move.',
@@ -323,6 +338,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   articlePages: {
     title: 'Learn about articles',
     description: 'Writing, the page toolbar, article style and how pages flow.',
+  },
+  flashcards: {
+    title: 'Learn about flashcards',
+    description: 'Writing cards to speak from, the stack, flipping and splitting a long card.',
   },
   livePresence: {
     title: 'Learn about live presence',

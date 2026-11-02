@@ -63,7 +63,7 @@ export default function Home() {
                     <a
                       href={app.url}
                       className="font-semibold text-[var(--lw-ink)] underline-offset-4 hover:underline dark:text-[var(--lw-ink-dark)]"
-                      style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.accent } as CSSProperties}
+                      style={{ '--lw-ink': app.deep, '--lw-ink-dark': app.light } as CSSProperties}
                     >
                       {app.name}
                     </a>

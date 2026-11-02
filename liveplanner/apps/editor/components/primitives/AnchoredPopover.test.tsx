@@ -86,6 +86,45 @@ describe('AnchoredPopover', () => {
     anchor.remove();
   });
 
+  // tooltips-hover-cards-popovers.md: a touch screen opens Add Field without raising a keyboard.
+  it('focuses the panel itself when asked, so no field takes focus', () => {
+    const anchor = document.createElement('button');
+    document.body.append(anchor);
+    render(
+      <AnchoredPopover
+        anchor={anchor}
+        name="Add Field"
+        width={300}
+        onClose={vi.fn()}
+        initialFocus="panel"
+      >
+        <input aria-label="Name" />
+      </AnchoredPopover>,
+    );
+    expect(document.activeElement).toBe(screen.getByRole('dialog', { name: 'Add Field' }));
+    anchor.remove();
+  });
+
+  // plan-board.md "Working on a board": the label menu leaves focus in the field typed in.
+  it('takes no focus when asked, for a list a field drives', () => {
+    const field = document.createElement('input');
+    document.body.append(field);
+    field.focus();
+    render(
+      <AnchoredPopover
+        anchor={field}
+        name="Labels"
+        width={300}
+        onClose={vi.fn()}
+        initialFocus="none"
+      >
+        <button type="button">frontend</button>
+      </AnchoredPopover>,
+    );
+    expect(document.activeElement).toBe(field);
+    field.remove();
+  });
+
   it('closes on a press outside, but not on its anchor or inside it', () => {
     const { anchor, onClose } = draw();
     fireEvent.pointerDown(screen.getByLabelText('Name'));

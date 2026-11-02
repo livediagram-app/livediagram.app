@@ -344,6 +344,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "ArticleBand": {
+    "additionalProperties": false,
+    "description": "A header or a footer: its left, centre and right parts, plain text with fields.",
+    "properties": {
+      "center": {
+        "type": "string"
+      },
+      "left": {
+        "type": "string"
+      },
+      "right": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
   "ArticleBlock": {
     "anyOf": [
       {
@@ -360,6 +376,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       {
         "$ref": "#/components/schemas/ArticlePageBreakBlock"
+      },
+      {
+        "$ref": "#/components/schemas/ArticleTableBlock"
+      },
+      {
+        "$ref": "#/components/schemas/ArticleTocBlock"
       },
       {
         "$ref": "#/components/schemas/ArticleZoneBlock"
@@ -764,6 +786,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "bodyFont": {
         "type": "string"
       },
+      "differentFirstPage": {
+        "const": true,
+        "type": "boolean"
+      },
+      "footer": {
+        "$ref": "#/components/schemas/ArticleBand"
+      },
+      "header": {
+        "$ref": "#/components/schemas/ArticleBand"
+      },
       "headingFont": {
         "type": "string"
       },
@@ -837,6 +869,81 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ArticleTableBlock": {
+    "additionalProperties": false,
+    "properties": {
+      "cols": {
+        "items": {
+          "$ref": "#/components/schemas/ArticleTableColumn"
+        },
+        "type": "array"
+      },
+      "header": {
+        "const": true,
+        "type": "boolean"
+      },
+      "id": {
+        "type": "string"
+      },
+      "rows": {
+        "items": {
+          "$ref": "#/components/schemas/ArticleTableRow"
+        },
+        "type": "array"
+      },
+      "type": {
+        "const": "table",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "cols",
+      "rows"
+    ],
+    "type": "object"
+  },
+  "ArticleTableColumn": {
+    "additionalProperties": false,
+    "description": "A column: its id (what a cell op names) and its share of the text width (the shares sum to 1).",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "w": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "w"
+    ],
+    "type": "object"
+  },
+  "ArticleTableRow": {
+    "additionalProperties": false,
+    "description": "A row: its id and one cell per column, in the columns' order; a cell is its runs.",
+    "properties": {
+      "cells": {
+        "items": {
+          "items": {
+            "$ref": "#/components/schemas/ArticleRun"
+          },
+          "type": "array"
+        },
+        "type": "array"
+      },
+      "id": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "cells"
+    ],
+    "type": "object"
+  },
   "ArticleTextSize": {
     "enum": [
       "small",
@@ -844,6 +951,30 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "large"
     ],
     "type": "string"
+  },
+  "ArticleTocBlock": {
+    "additionalProperties": false,
+    "properties": {
+      "depth": {
+        "enum": [
+          1,
+          2
+        ],
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "type": {
+        "const": "toc",
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "type"
+    ],
+    "type": "object"
   },
   "ArticleWrite": {
     "additionalProperties": false,
@@ -1092,6 +1223,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "minVersion"
         ],
         "type": "object"
+      },
+      "communityEnabled": {
+        "type": "boolean"
       },
       "documentFormat": {
         "type": "number"
@@ -1490,6 +1624,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "reactions": {
+        "items": {
+          "$ref": "#/components/schemas/CommentReaction"
+        },
+        "type": "array"
+      },
       "text": {
         "type": "string"
       },
@@ -1531,6 +1671,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "handle"
     ],
     "type": "object"
+  },
+  "CommentReaction": {
+    "additionalProperties": false,
+    "properties": {
+      "by": {
+        "type": "string"
+      },
+      "emoji": {
+        "$ref": "#/components/schemas/CommentReactionId"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "emoji",
+      "by",
+      "name"
+    ],
+    "type": "object"
+  },
+  "CommentReactionId": {
+    "enum": [
+      "thumbs-up",
+      "thumbs-down",
+      "laugh",
+      "hooray",
+      "heart",
+      "eyes"
+    ],
+    "type": "string"
   },
   "CommentThread": {
     "additionalProperties": false,
@@ -1619,6 +1790,303 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "header",
       "threads",
       "elision"
+    ],
+    "type": "object"
+  },
+  "CommunityAuthor": {
+    "additionalProperties": false,
+    "properties": {
+      "color": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "picture": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "name",
+      "color",
+      "picture"
+    ],
+    "type": "object"
+  },
+  "CommunityCategory": {
+    "enum": [
+      "architecture",
+      "art",
+      "articles",
+      "budgets",
+      "dashboards",
+      "data",
+      "decks",
+      "design",
+      "events",
+      "flows",
+      "forms",
+      "guides",
+      "illustrations",
+      "infographics",
+      "learning",
+      "logos",
+      "mindmaps",
+      "newsletters",
+      "other",
+      "personal",
+      "photos",
+      "planning",
+      "posters",
+      "projects",
+      "proposals",
+      "roadmaps",
+      "social",
+      "trackers",
+      "wireframes",
+      "workflows",
+      "workshops"
+    ],
+    "type": "string"
+  },
+  "CommunityMinePost": {
+    "additionalProperties": false,
+    "properties": {
+      "anonymous": {
+        "type": "boolean"
+      },
+      "author": {
+        "$ref": "#/components/schemas/CommunityAuthor"
+      },
+      "category": {
+        "$ref": "#/components/schemas/CommunityCategory"
+      },
+      "copyCount": {
+        "type": "number"
+      },
+      "description": {
+        "type": "string"
+      },
+      "documentId": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "likeCount": {
+        "type": "number"
+      },
+      "liked": {
+        "type": "boolean"
+      },
+      "publishedAt": {
+        "type": "number"
+      },
+      "shareCode": {
+        "type": "string"
+      },
+      "state": {
+        "$ref": "#/components/schemas/CommunityPostState"
+      },
+      "tags": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "anonymous",
+      "author",
+      "category",
+      "copyCount",
+      "description",
+      "documentId",
+      "id",
+      "likeCount",
+      "liked",
+      "publishedAt",
+      "shareCode",
+      "state",
+      "tags",
+      "title",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "CommunityMineResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "nextOffset": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "posts": {
+        "items": {
+          "$ref": "#/components/schemas/CommunityMinePost"
+        },
+        "type": "array"
+      },
+      "totals": {
+        "$ref": "#/components/schemas/CommunityMineTotals"
+      }
+    },
+    "required": [
+      "posts",
+      "nextOffset",
+      "totals"
+    ],
+    "type": "object"
+  },
+  "CommunityMineTotals": {
+    "additionalProperties": false,
+    "properties": {
+      "copies": {
+        "type": "number"
+      },
+      "likes": {
+        "type": "number"
+      },
+      "posts": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "posts",
+      "likes",
+      "copies"
+    ],
+    "type": "object"
+  },
+  "CommunityOwnPost": {
+    "additionalProperties": false,
+    "properties": {
+      "anonymous": {
+        "type": "boolean"
+      },
+      "author": {
+        "$ref": "#/components/schemas/CommunityAuthor"
+      },
+      "category": {
+        "$ref": "#/components/schemas/CommunityCategory"
+      },
+      "copyCount": {
+        "type": "number"
+      },
+      "description": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "likeCount": {
+        "type": "number"
+      },
+      "liked": {
+        "type": "boolean"
+      },
+      "publishedAt": {
+        "type": "number"
+      },
+      "shareCode": {
+        "type": "string"
+      },
+      "state": {
+        "$ref": "#/components/schemas/CommunityPostState"
+      },
+      "tags": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "anonymous",
+      "author",
+      "category",
+      "copyCount",
+      "description",
+      "id",
+      "likeCount",
+      "liked",
+      "publishedAt",
+      "shareCode",
+      "state",
+      "tags",
+      "title",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "CommunityPostInput": {
+    "additionalProperties": false,
+    "properties": {
+      "anonymous": {
+        "type": "boolean"
+      },
+      "category": {
+        "$ref": "#/components/schemas/CommunityCategory"
+      },
+      "description": {
+        "type": "string"
+      },
+      "tags": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "title",
+      "description",
+      "category",
+      "tags",
+      "anonymous"
+    ],
+    "type": "object"
+  },
+  "CommunityPostState": {
+    "enum": [
+      "listed",
+      "hidden"
+    ],
+    "type": "string"
+  },
+  "CommunityShareInfo": {
+    "additionalProperties": false,
+    "properties": {
+      "author": {
+        "$ref": "#/components/schemas/CommunityAuthor"
+      },
+      "postId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "postId",
+      "author"
     ],
     "type": "object"
   },
@@ -1769,6 +2237,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Document": {
     "additionalProperties": false,
     "properties": {
+      "communityState": {
+        "enum": [
+          "listed",
+          "hidden",
+          null
+        ],
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "createdAt": {
         "type": "number"
       },
@@ -1883,6 +2362,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "mentions": {
               "items": {
                 "$ref": "#/components/schemas/CommentMention"
+              },
+              "type": "array"
+            },
+            "reactions": {
+              "items": {
+                "$ref": "#/components/schemas/ReactionSummary"
               },
               "type": "array"
             },
@@ -3880,6 +4365,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                   "article": {
                     "type": "number"
                   },
+                  "flashcard": {
+                    "type": "number"
+                  },
                   "infographic": {
                     "type": "number"
                   },
@@ -4401,7 +4889,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "enum": [
       "infographic",
       "article",
-      "slide"
+      "slide",
+      "flashcard"
     ],
     "type": "string"
   },
@@ -4505,7 +4994,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "wide",
       "slide",
       "slide-classic",
-      "fit"
+      "fit",
+      "card"
     ],
     "type": "string"
   },
@@ -5014,6 +5504,33 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "rock"
     ],
     "type": "string"
+  },
+  "ReactionSummary": {
+    "additionalProperties": false,
+    "properties": {
+      "by": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "count": {
+        "type": "number"
+      },
+      "emoji": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "emoji",
+      "name",
+      "count",
+      "by"
+    ],
+    "type": "object"
   },
   "RefCandidate": {
     "additionalProperties": false,
@@ -5916,6 +6433,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "textItalic": {
         "type": "boolean"
+      },
+      "textScale": {
+        "type": "number"
       },
       "textSize": {
         "$ref": "#/components/schemas/TextSize"
@@ -7827,6 +8347,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "additionalProperties": false,
             "properties": {
               "article": {
+                "type": "number"
+              },
+              "flashcard": {
                 "type": "number"
               },
               "infographic": {

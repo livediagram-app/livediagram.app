@@ -257,6 +257,13 @@ describe('page ls and page set', () => {
     expect(pageSet.text!(out)[1]).toBe('1  slide  slide  -960,-540 1920x1080');
   });
 
+  // docs/specs/007-editor/flashcards.md "Agents".
+  it('adds a flashcard', async () => {
+    const { ctx, sent } = setUp();
+    await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, add: 'flashcard' }));
+    expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'flashcard' }] }]);
+  });
+
   it('takes a JSON list of changes, on the tab named', async () => {
     const { ctx, sent } = setUp(undefined, undefined, '[{"op":"add","kind":"slide"}]');
     await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, tab: 'Details', changes: 'c.json' }));

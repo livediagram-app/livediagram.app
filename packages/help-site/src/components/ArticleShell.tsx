@@ -146,7 +146,7 @@ export function ArticleShell({
       <HelpHero
         eyebrow={
           category ? (
-            <Link href={category.href} className="hover:underline">
+            <Link href={category.href} className="relative touch-target-y hover:underline">
               {category.title}
             </Link>
           ) : undefined

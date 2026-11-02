@@ -3,6 +3,7 @@
 // kind of event gets, and whether it is new. No React here beyond the types, so each rule is tested on its own.
 
 import { isApp, type TimelineEvent, type TimelineEventType } from '@liveworkspace/index-client';
+import { dateFormat, MONTH_YEAR, TIME } from '@liveworkspace/ui/date-format';
 import type { MouseEvent, ReactNode } from 'react';
 import { kindWords } from '../words';
 
@@ -63,21 +64,25 @@ export function dateKey(at: number): string {
 
 /** Time of day in the reader's locale. */
 export function timeLabel(at: number): string {
-  return new Date(at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  return TIME.format(at);
 }
 
-/** "Tue, 5 Aug" and its year, assembled from parts so it reads the same on every ICU. */
-export function formatDay(key: string): { label: string; year: string } {
+// A day's heading in the reader's locale ("Tue 5 Aug" in the UK, "Tue, Aug 5" in the US), with its year when it
+// needs one (@liveworkspace/ui/date-format, one formatter each).
+const DAY_LABEL = dateFormat({ weekday: 'short', day: 'numeric', month: 'short' });
+const DAY_LABEL_YEAR = dateFormat({
+  weekday: 'short',
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+});
+
+/** A local day's heading, its year, and the heading with the year, in the reader's locale. */
+export function formatDay(key: string): { label: string; year: string; withYear: string } {
   const [y, m, d] = key.split('-').map(Number);
   const date = new Date(y!, m! - 1, d);
-  if (Number.isNaN(date.getTime())) return { label: key, year: '' };
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-  }).formatToParts(date);
-  const part = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
-  return { label: `${part('weekday')}, ${part('day')} ${part('month')}`, year: String(y) };
+  if (Number.isNaN(date.getTime())) return { label: key, year: '', withYear: key };
+  return { label: DAY_LABEL.format(date), year: String(y), withYear: DAY_LABEL_YEAR.format(date) };
 }
 
 /** Newest-first events, one group per local day, by key rather than adjacency. */
@@ -130,10 +135,7 @@ export function shiftMonth(monthKey: string, delta: number): string {
 
 export function formatMonth(monthKey: string): string {
   const [year, month] = monthKey.split('-').map(Number);
-  return new Date(year!, month! - 1, 1).toLocaleDateString('en-GB', {
-    month: 'long',
-    year: 'numeric',
-  });
+  return MONTH_YEAR.format(new Date(year!, month! - 1, 1));
 }
 
 // ---------- What an event says ---------------------------------------------------------------------------------
@@ -250,9 +252,26 @@ const TONE_FALLBACK: Record<TimelineTone, { bold: string; soft: string }> = {
   neutral: { bold: '#64748b', soft: 'rgba(100, 116, 139, 0.10)' },
 };
 
-// The host may set --lw-timeline-<tone>(-soft); these are the fallbacks.
+// The ink each tone's words and dots take on a dark page: the light page's ink is 3.2 to 3.8:1 on a dark card,
+// under the 4.5:1 its 10 to 12px words need, so dark mode lifts each to its 400.
+const TONE_DARK_INK: Record<TimelineTone, string> = {
+  danger: '#f87171',
+  structural: '#fbbf24',
+  create: '#34d399',
+  neutral: '#94a3b8',
+};
+
+/** Classes for any element drawn in toneColor (or holding one): each tone's ink for the page's mode, as
+ *  --lw-timeline-ink-<tone>. Written out whole so Tailwind finds every one. */
+export const TONE_INKS =
+  '[--lw-timeline-ink-danger:#dc2626] [--lw-timeline-ink-structural:#b45309] [--lw-timeline-ink-create:#047857] [--lw-timeline-ink-neutral:#64748b] dark:[--lw-timeline-ink-danger:#f87171] dark:[--lw-timeline-ink-structural:#fbbf24] dark:[--lw-timeline-ink-create:#34d399] dark:[--lw-timeline-ink-neutral:#94a3b8]';
+
+// The host may set --lw-timeline-<tone>(-soft); else the mode's ink from TONE_INKS, else the light page's.
 export const toneColor = (tone: TimelineTone) =>
-  `var(--lw-timeline-${tone}, ${TONE_FALLBACK[tone].bold})`;
+  `var(--lw-timeline-${tone}, var(--lw-timeline-ink-${tone}, ${TONE_FALLBACK[tone].bold}))`;
+
+/** A tone's ink on a dark page (what TONE_INKS sets there). */
+export const toneDarkInk = (tone: TimelineTone) => TONE_DARK_INK[tone];
 export const toneSoftColor = (tone: TimelineTone) =>
   `var(--lw-timeline-${tone}-soft, ${TONE_FALLBACK[tone].soft})`;
 

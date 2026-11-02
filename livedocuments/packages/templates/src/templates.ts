@@ -1,4 +1,4 @@
-import { titleCase } from '@livedocuments/api-schema';
+import { isUntitledName, titleCase } from '@livedocuments/api-schema';
 import { UNTITLED_DOCUMENT_NAME, isUntitledDocumentName } from './untitled';
 
 // The Pages templates (docs/specs/008-canvas/canvas-and-palette.md "Templates"): every template opens in Pages,
@@ -14,6 +14,7 @@ export type TemplateKind =
   | 'blank-slide-deck'
   | 'blank-article'
   | 'blank-infographic'
+  | 'blank-flashcards'
   // A six-slide pitch on 16:9 slide pages.
   | 'slide-deck'
   // Group card: a greeting card the whole team signs (cover + message wall). The kind id predates the name.
@@ -38,7 +39,22 @@ export type TemplateKind =
   | 'launch-keynote'
   | 'quarterly-review'
   | 'team-welcome'
-  | 'workshop-kickoff';
+  | 'workshop-kickoff'
+  // Flashcards to speak from (docs/specs/007-editor/flashcards.md "Making flashcards"; flashcard-templates.ts).
+  | 'talk-flashcards'
+  | 'wedding-toast'
+  | 'pitch-flashcards'
+  | 'class-presentation'
+  // Written documents (article-templates.ts): articles that use tables, contents, headers and footers as a real
+  // document of their kind would.
+  | 'meeting-notes'
+  | 'lesson-plan'
+  | 'business-proposal'
+  | 'design-doc'
+  | 'status-report'
+  | 'cover-letter'
+  // A lesson deck built from the slide layouts, like the decks above.
+  | 'class-lesson';
 
 export type TemplateDescriptor = {
   kind: TemplateKind;
@@ -83,6 +99,12 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'blank-infographic',
     title: 'Blank Infographic',
     description: 'One empty A4 infographic page: lay it out yourself or start from a layout.',
+    extra: true,
+  },
+  {
+    kind: 'blank-flashcards',
+    title: 'Blank Flashcards',
+    description: 'One empty flashcard: a title and a few lines to say, flipped one card at a time.',
     extra: true,
   },
   {
@@ -211,6 +233,83 @@ export const TEMPLATES: TemplateDescriptor[] = [
       'A six-slide workshop opener on rolling waves: the outcomes, the agenda, how each round runs, the one rule and the close.',
     extra: true,
   },
+  {
+    kind: 'talk-flashcards',
+    title: 'Conference Talk',
+    description:
+      'A 15-minute talk on six flashcards, from the opening question to the close, with cues for where to pause.',
+    extra: true,
+  },
+  {
+    kind: 'wedding-toast',
+    title: 'Wedding Toast',
+    description:
+      'A warm best-person toast on five flashcards: a story from back then, meeting the partner, the wishes, the raised glass.',
+    extra: true,
+  },
+  {
+    kind: 'pitch-flashcards',
+    title: 'Product Pitch',
+    description:
+      'A two-minute pitch on five flashcards: the hook, the problem, the answer, the proof and the ask.',
+    extra: true,
+  },
+  {
+    kind: 'class-presentation',
+    title: 'School Presentation',
+    description:
+      'A five-minute class talk on the water cycle, on five flashcards: the question, three stages and what to remember.',
+    extra: true,
+  },
+  {
+    kind: 'meeting-notes',
+    title: 'Meeting Notes',
+    description:
+      'Notes from a weekly team meeting: who came, the agenda, the decisions in a table and the actions with their owners.',
+    extra: true,
+  },
+  {
+    kind: 'lesson-plan',
+    title: 'Lesson Plan',
+    description:
+      'A one-hour science lesson: objectives, what to prepare, the timings in a table, differentiation and homework.',
+    extra: true,
+  },
+  {
+    kind: 'business-proposal',
+    title: 'Business Proposal',
+    description:
+      'A proposal to win a client: a title page, contents, the problem and approach, a timeline and a pricing table.',
+    extra: true,
+  },
+  {
+    kind: 'design-doc',
+    title: 'Design Doc',
+    description:
+      'A technical design doc: contents, context and goals, the proposed design with code, the options weighed and rollout.',
+    extra: true,
+  },
+  {
+    kind: 'status-report',
+    title: 'Status Report',
+    description:
+      'A monthly project status report: the headline, each workstream in a status table, risks and what happens next.',
+    extra: true,
+  },
+  {
+    kind: 'cover-letter',
+    title: 'Cover Letter',
+    description:
+      'A one-page cover letter in the Classic look: your details, the date, three short paragraphs and a sign-off.',
+    extra: true,
+  },
+  {
+    kind: 'class-lesson',
+    title: 'Class Lesson',
+    description:
+      'A six-slide science lesson on drifting colour: what we will learn, a question, the steps, a check and the homework.',
+    extra: true,
+  },
 ];
 
 // True when `value` names a template in the catalogue. The guard for a kind
@@ -256,5 +355,5 @@ let DEFAULT_NAMES: ReadonlySet<string> | null = null;
  */
 export function isDefaultDocumentName(name: string): boolean {
   DEFAULT_NAMES ??= new Set(TEMPLATES.map((t) => untitledNameForTemplate(t.kind)));
-  return isUntitledDocumentName(name) || DEFAULT_NAMES.has(name);
+  return isUntitledDocumentName(name) || isUntitledName(name) || DEFAULT_NAMES.has(name);
 }

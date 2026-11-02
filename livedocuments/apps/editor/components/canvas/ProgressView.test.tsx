@@ -90,3 +90,27 @@ describe('ProgressView bar label', () => {
     expect(all[0]!.style.color).toBe(rgb('#ffffff'));
   });
 });
+
+// docs/specs/009-elements/progress.md "The percentage's size": the ring's label is a share of its
+// diameter (floor 14, ceiling 64), the bar's a fixed 14 px.
+describe('ProgressView label size', () => {
+  const size = (el: ShapeElement) => {
+    const { container } = render(
+      <ProgressView element={el} accent="#1d4ed8" track="#e2e8f0" textColor="#111111" />,
+    );
+    return container.querySelector('span')!.style.fontSize;
+  };
+
+  it.each([
+    [40, '14px'],
+    [130, '26px'],
+    [180, '36px'],
+    [1000, '64px'],
+  ])('draws a %ipx ring at %s', (side, px) => {
+    expect(size(bar({ shape: 'progress-ring', width: side, height: side }))).toBe(px);
+  });
+
+  it('keeps the bar at 14px whatever its box', () => {
+    expect(size(bar({ width: 600, height: 200 }))).toBe('14px');
+  });
+});

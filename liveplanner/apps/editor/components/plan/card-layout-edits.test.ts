@@ -16,7 +16,7 @@ describe('card layout edits', () => {
     expect(moveCardField('detailed', desc, 'description', 'foot', 0)).toEqual({
       foot: ['description'],
     });
-    expect(moveCardField('compact', {}, 'labels', 'row', 0)).toEqual({});
+    expect(moveCardField('minimal', {}, 'labels', 'trail', 0)).toEqual({});
   });
 
   it('takes a field off, dropping a slot left empty', () => {

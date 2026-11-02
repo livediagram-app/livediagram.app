@@ -57,13 +57,20 @@ export function WorkbenchBackButton({
   onBack,
   backTitle,
   inline = false,
+  joinedWidth,
 }: {
   onBack: () => void;
   backTitle: string;
   inline?: boolean;
+  // Heading Pages mode's docked Contents sidebar (ToolbarMenuCard).
+  joinedWidth?: number;
 }) {
   return (
-    <ToolbarMenuCard inline={inline} region="header">
+    <ToolbarMenuCard
+      inline={inline}
+      region="header"
+      {...(joinedWidth === undefined ? {} : { joinedWidth })}
+    >
       <HoverCard title="Back" description={`Back to ${backTitle}.`}>
         <button
           type="button"

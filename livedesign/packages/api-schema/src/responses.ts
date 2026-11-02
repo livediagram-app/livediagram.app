@@ -5,11 +5,17 @@
 // call site, where a renamed key would drift silently.
 
 import type { LiveDoc, DesignSummary, Folder, ShareLink, TabRecord, TeamListItem } from './index';
+import type { DesignComponent } from '@livedesign/design';
 
 // GET / PUT /api/designs/:id, POST /api/designs (+ copy).
 export type DesignResponse = { design: LiveDoc };
 // GET /api/designs/:id/tabs/:tabId.
 export type TabResponse = { tab: TabRecord };
+
+// The component library (docs/specs/009-elements/components.md "Sharing, collaboration and storage"): `GET
+// /api/designs/:id/components`, and one main as a write stored it (`PUT` / `PATCH .../components/:componentId`).
+export type ComponentsResponse = { components: DesignComponent[] };
+export type ComponentResponse = { component: DesignComponent };
 // GET /api/designs: the caller's personal library.
 export type DesignListResponse = { designs: DesignSummary[] };
 // POST /api/designs/:id/share (+ extend).

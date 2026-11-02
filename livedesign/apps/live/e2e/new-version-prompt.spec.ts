@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { DESIGN_FORMAT, DESIGN_FORMAT_HEADER } from '@livedesign/api-schema';
-import { expect, expectNoPageErrors, openStartBlank, paletteTile, test } from './fixtures';
+import { expect, expectNoPageErrors, onPage, openBlankPage, paletteTile, test } from './fixtures';
 
 // The new version prompt (docs/specs/016-platform/new-version-prompt.md), in dark mode: this build is
 // the "older editor", and the server is made "newer" by raising the design format number every
@@ -35,15 +35,19 @@ async function serveNewerFormat(page: Page, { failSaves = false } = {}) {
 async function openBlank(page: Page) {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
-  await openStartBlank(page);
+  // Its page chosen a Logo, so the squares below have a page to land on (fixtures openBlankPage).
+  await openBlankPage(page);
 }
 
-// One edit: a Square from the Shapes flyout, dropped with a click. Each edit lands a little further right, clear of
-// the last one.
-let drops = 0;
+// One edit: a Square from the Shapes flyout, dropped with a click on the page (a press off every page places
+// nothing). Each edit lands a little further right, clear of the last one. Counted per page, so a worker's earlier
+// tests never move this test's drops.
+const drops = new WeakMap<Page, number>();
 async function addSquare(page: Page) {
+  const n = drops.get(page) ?? 0;
+  drops.set(page, n + 1);
   await (await paletteTile(page, 'Add Square')).click();
-  await page.locator(CANVAS).click({ position: { x: 420 + (drops++ % 4) * 260, y: 420 } });
+  await page.locator(CANVAS).click({ position: await onPage(page, 0.2 + (n % 4) * 0.2, 0.3) });
 }
 
 test.describe('new version prompt', () => {

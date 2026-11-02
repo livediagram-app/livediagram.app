@@ -39,6 +39,7 @@ import {
   type SettingsStore,
 } from './store';
 import { SettingsView, type SettingsFocus } from './SettingsView';
+import type { PhoneHost } from './push/phone-host';
 
 // The apps by name, for the All view's headings.
 const APP_NAMES: Record<SettingsAppId, string> = {
@@ -47,6 +48,18 @@ const APP_NAMES: Record<SettingsAppId, string> = {
   'livedocuments.app': 'livedocuments',
   'livedesign.app': 'livedesign',
 };
+
+// The Phone section's host: the panel's request, and the app it opened in, shown beside the device it registers
+// (liveworkspace on liveworkspace.app). Kept per request, so the section keeps its identity across renders.
+const phoneHosts = new WeakMap<object, Map<string, PhoneHost>>();
+function phoneHost(request: SettingsRequest, current: SettingsAppId | null): PhoneHost {
+  const app = current ? (APP_NAMES[current] as PhoneHost['app']) : 'liveworkspace';
+  let byApp = phoneHosts.get(request);
+  if (!byApp) phoneHosts.set(request, (byApp = new Map()));
+  let host = byApp.get(app);
+  if (!host) byApp.set(app, (host = { request, app }));
+  return host;
+}
 
 export const ACCOUNT_GROUP = 'account';
 // All's merged categories (merge-categories.ts), listed under the Account section with no heading of their own.
@@ -149,9 +162,30 @@ export default function CatalogueSettingsView({
     };
   }, [apps, store, attempt]);
 
-  // An editor's own settings are drawn at once while the Account section and Common load beside them.
-  if (load.state === 'loading' && mode === 'app' && own) {
-    return <SettingsView {...view(props)} categories={own} memoryKey={props.memoryKey ?? null} />;
+  const retry = () => {
+    setLoad({ state: 'loading' });
+    setAttempt((n) => n + 1);
+  };
+  // An editor's own settings are drawn at once while the Account section and Common load beside them, and stay when
+  // that read fails: only the account's and the shared parts are missing, so the note and Try again say so below them.
+  if (load.state !== 'ready' && mode === 'app' && own) {
+    return (
+      <SettingsView
+        {...view(props)}
+        categories={own}
+        memoryKey={props.memoryKey ?? null}
+        footer={
+          load.state === 'error' ? (
+            <>
+              {props.footer}
+              <ReadFailed message={errorMessage(load.error)} onRetry={retry} />
+            </>
+          ) : (
+            props.footer
+          )
+        }
+      />
+    );
   }
   if (load.state !== 'ready') {
     return (
@@ -166,17 +200,7 @@ export default function CatalogueSettingsView({
         placeholder={
           load.state === 'error' ? (
             <div className="px-4 py-4">
-              <ErrorNote>{errorMessage(load.error)}</ErrorNote>
-              <button
-                type="button"
-                onClick={() => {
-                  setLoad({ state: 'loading' });
-                  setAttempt((n) => n + 1);
-                }}
-                className="mt-3 cursor-pointer text-sm font-semibold text-slate-900 underline underline-offset-2 dark:text-white"
-              >
-                Try again
-              </button>
+              <ReadFailed message={errorMessage(load.error)} onRetry={retry} />
             </div>
           ) : (
             <SettingsSkeleton />
@@ -233,6 +257,15 @@ function ReadyView({
     [mode, withShared, catalogues],
   );
 
+  // Phone notifications over the panel's own door (liveworkspace/docs/specs/003-accounts/push.md "Settings"), unless
+  // the host hands in its own: signed in only, gated as API Tokens are (a host offers tokens only to an account).
+  const withPhone = useMemo<AccountHost>(
+    () =>
+      account.phone !== undefined || account.guest || !(account.renderTokens || account.tokensHref)
+        ? account
+        : { ...account, phone: phoneHost(store.request, current) },
+    [account, store, current],
+  );
   // Rebuilt only when what it reads changes, so a search keystroke keeps every row's identity (and the view's memo).
   const model = useMemo(
     () =>
@@ -244,11 +277,11 @@ function ReadyView({
         catalogues,
         common,
         value,
-        account,
+        account: withPhone,
         renderLogo,
         saver,
       }),
-    [mode, withShared, current, own, catalogues, common, value, account, renderLogo, saver],
+    [mode, withShared, current, own, catalogues, common, value, withPhone, renderLogo, saver],
   );
 
   return (
@@ -442,6 +475,22 @@ export function panelModel({
     categories.push(...listed);
   }
   return { categories: [...accountListed, ...categories], groups };
+}
+
+// A read of the account's settings that failed: what went wrong, and the way to ask again.
+function ReadFailed({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <>
+      <ErrorNote>{message}</ErrorNote>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="mt-3 cursor-pointer text-sm font-semibold text-slate-900 underline underline-offset-2 dark:text-white"
+      >
+        Try again
+      </button>
+    </>
+  );
 }
 
 function ErrorNote({ children }: { children: ReactNode }) {

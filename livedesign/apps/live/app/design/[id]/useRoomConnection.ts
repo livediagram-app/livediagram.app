@@ -13,7 +13,7 @@ import {
 } from '@liveworkspace/workbench/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
 import type { Tab } from '@livedesign/design';
-import type { AgentPresence, ChangesetRoomOp } from '@livedesign/api-schema';
+import type { AgentPresence, ChangesetRoomOp, ComponentRoomOp } from '@livedesign/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import { publishedPicture, useOwnPicture } from '@/lib/own-picture';
 import { isProfilePictureUrl } from '@liveworkspace/sites/picture';
@@ -134,6 +134,9 @@ export function useRoomConnection(opts: {
   // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"), relayed by the
   // worker; useChangesetFeed decides what to do with it.
   receiveChangeset: (op: ChangesetRoomOp) => void;
+  // A main stored in the design's component library (docs/specs/009-elements/components.md "Sharing, collaboration
+  // and storage"), announced by the worker to every session that may see it.
+  receiveComponent?: (op: ComponentRoomOp) => void;
   // A peer's active layer on a photo page (docs/specs/031-photo/photo-pages.md "Collaboration"). Presence.
   receivePhotoPresence: (
     from: string,
@@ -182,6 +185,7 @@ export function useRoomConnection(opts: {
     receiveDesignTrashed,
     resyncFromServer,
     receiveChangeset,
+    receiveComponent,
     receivePhotoPresence,
     onRoomJoined,
     onAdderKey,
@@ -439,6 +443,9 @@ export function useRoomConnection(opts: {
         // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
         // the share ops: the room refuses one from a client socket.
         if (from === 'system') receiveChangeset(op);
+      } else if (op.kind === 'component') {
+        // System-only, like the changeset: the worker announces a main once it is stored.
+        if (from === 'system') receiveComponent?.(op);
       } else if (op.kind === 'photo-presence') {
         receivePhotoPresence(from, op);
       } else if (op.kind === 'design-trashed') {

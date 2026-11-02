@@ -2,31 +2,11 @@
 // tab's own Diagram backdrop resolved for the export's appearance, whoever exports and in
 // whichever editor mode, and every stock colour stored by name in its version for that canvas, so
 // every export format (the image renderers and the text formats alike) draws what the canvas does.
-import {
-  DEFAULT_BACKGROUND_COLOR,
-  canvasSurface,
-  withReadableLabelInks,
-  type Appearance,
-  type Tab,
-} from '@livediagram/document';
+// The drawing itself is @livediagram/document's tabAsSeen, shared with the export door's previews; this adds the
+// viewer's appearance.
+import { tabAsSeen as tabAsSeenIn, type Appearance, type Tab } from '@livediagram/document';
 import { getResolvedAppearance } from '@livediagram/ui';
-import { resolveTabBackdrop, themeViewMap } from './themes';
-import { elementAsSeen } from './stock-colour-projector';
 
 export function tabAsSeen(tab: Tab, appearance: Appearance = getResolvedAppearance()): Tab {
-  const backdrop = resolveTabBackdrop(tab, appearance);
-  const surface = canvasSurface(backdrop.backgroundColor);
-  // Theme colours in the export's half (docs/specs/011-theme/light-and-dark.md), then the stock colours.
-  const themeMap = themeViewMap(tab.theme, appearance);
-  const drawn = tab.elements.map((el) => elementAsSeen(el, surface, themeMap));
-  // As the canvas draws them: a label the half sank into what is behind it in an ink that reads there.
-  const elements = [
-    ...withReadableLabelInks(
-      tab.elements,
-      tab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR,
-      drawn,
-      backdrop.backgroundColor,
-    ),
-  ];
-  return { ...tab, ...backdrop, elements };
+  return tabAsSeenIn(tab, appearance);
 }

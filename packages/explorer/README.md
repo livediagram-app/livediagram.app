@@ -180,8 +180,17 @@ the revoke confirmation beside the bin, Password Protection as a settings card, 
 glyph (never a coloured dot). The words are each app's own (Share This Plan, only you can open this design).
 
 The Explorer opens it from an item's menu with the host's `share` prop (`ShareHost`): `loadTabs(item)`,
-`handOver(item)`, `helpHref` and `onTelemetry(action, type, item)`, asked per item since the Explorer may list
-every app's; the item lets a host count a dialog's events for that item's app.
+`handOver(item)`, `helpHref`, `onTelemetry(action, type, item)` and `community(item)`, asked per item since the
+Explorer may list every app's; the item lets a host count a dialog's events for that item's app.
+
+### `<ShareDialogWithCommunity>`
+
+The Share dialog with the Community tab beside Passes (liveworkspace/docs/specs/007-community/community.md "The
+Share dialog's Community tab"): the `ShareDialog` props plus `community` (`CommunityShareInput`: a
+`CommunityShareHost` from `@liveworkspace/community-ui/share`, the owner, the document's name, signed in, the
+Community's switch, the sign-in link, the author). While a listing is being written the publish dialog takes the
+Share dialog's place. The Explorer uses it for an item whose `ShareHost.community(item)` answers; an app's editor
+uses it for the open document.
 
 ### `<ExplorerPanel>`
 
@@ -211,6 +220,12 @@ host trashes the item open in its editor itself, from any of the panel's menus o
 `onRenameCurrent?(title)` (the open item was renamed, from its pencil or any menu's Rename, so the editor's title
 follows), and the same optional props as `<Explorer>`.
 
+Its size: `EXPLORER_POPOVER_WIDTH` (`w-[64rem]`) and `EXPLORER_POPOVER_HEIGHT` (`56rem`) are the editors' popover,
+passed to each editor's movable panel so the size lives once. In it the rail is 13rem and the pane's preview cards
+(Jump Back In, up to eight, and folders) are compact: two across, three from a 24rem pane, four from 42rem
+(liveworkspace/docs/specs/004-index/one-explorer.md "The editors' panel: its size and the scrim"). Each card's picture
+is the host's `renderThumbnail`, which should load only once it scrolls into view, as every editor's does.
+
 Rename works in place wherever an item shows: list rows, cards, Details rows, Home's Jump Back In and the panel.
 
 Lists that span places (Recent, Favourites, Search, Shared With Me) carry a location chip on each row and card: its
@@ -221,7 +236,9 @@ the team's name, or Shared with you (the index keeps no names, so a sharer is no
 ### `<SearchPanel>` (`@liveworkspace/explorer/search-panel`)
 
 The Search panel a host's Search button and Cmd/Ctrl+K or Cmd/Ctrl+. open (liveworkspace/docs/specs/010-site/site.md "The Explorer"): one field
-over the person's items, folders and teams and the host's own entries, in groups of at most 8 (`SEARCH_GROUP_MAX`).
+over the person's items, folders and teams and the host's own entries, in groups of at most 8 (`SEARCH_GROUP_MAX`). Each editor's own Search panel finds work in every app through `@liveworkspace/explorer/item-search`: the same
+index search (`useItemSearch`, every app when no app is named), `everyAppResults` (what the panel does not list itself,
+at most 8), and `AppMark` and `appLabel` to mark each result with its app's logo, name and colour.
 Its own entry point, so a host loads it (`React.lazy`) only when it first opens.
 
 - **Items** come from the index's `search` view (the words in the title or folder name), only `app`'s when given,
@@ -349,16 +366,16 @@ the list scrolls near. If that read fails, the list is not marked complete: a "C
 list. Try again" row shows under it (the panel's Show more says "Couldn’t load more. Try again"), and each press
 reads that page once. Scrolling never asks again on its own.
 
-| Data                  | When it loads                                                                                                                                                                                                                                                                                                                                |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Folders               | Once, paging if needed. The sidebar, breadcrumbs, folder rows and Move all read this copy.                                                                                                                                                                                                                                                   |
-| Default folders       | Once per page (`GET /placement-defaults`), shared by the markers, Use as Default for… and the delete warning. A dev server shows two: React StrictMode runs effects twice; a production build asks once.                                                                                                                                     |
-| Inbox                 | Once per filter, and again on returning to the browser tab (at most every 30 s). The sidebar's counts (Inbox, and the Timeline's new events) and the Inbox view share it.                                                                                                                                                                    |
-| Home                  | Three requests: one items read (Recent's 8, carrying Most Used via `used`, the hero's My Work count via `mine` and the first-run question via `any`), Shared With You Recently (the sidebar's Shared With Me page, read once for both) and one Timeline page (30) for What Happened (`data/homeReads.ts`; `homeReads.test.tsx` counts them). |
-| Folder cards and rows | One `GET /folders/previews` per batch of up to 60 cards (or list rows on screen) not yet answered, for their mosaics and counts ("1 folder · 5 plans"); again after an item changes place.                                                                                                                                                   |
-| Timeline              | One `GET /timeline` page of 30 on arrival and per filter, then one per Show More (5 at most for an `#event=` link). One `POST /timeline/seen` a visit. Removing: 100 ids a call.                                                                                                                                                             |
-| Home's hero           | My Work's count while it shows, counted by the index up to 200 ("200+" past that) beside Home's items read, so no request of its own, plus the live items this browser keeps where the host can read them (they are never in the index, so none counts twice). The Inbox pill reuses the sidebar's Inbox. None when the hero is hidden.      |
-| Teams                 | The page: the person's teams and invitations once as it opens (`myTeams`), with a `teamsHost` and signed in. A team's members and join link when its card shows, and after a change there. The panel: nothing until its Members dialog opens.                                                                                                |
+| Data                  | When it loads                                                                                                                                                                                                                                                                                                                                                                             |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Folders               | Once, paging if needed. The sidebar, breadcrumbs, folder rows and Move all read this copy.                                                                                                                                                                                                                                                                                                |
+| Default folders       | Once per page (`GET /placement-defaults`), shared by the markers, Use as Default for… and the delete warning. A dev server shows two: React StrictMode runs effects twice; a production build asks once.                                                                                                                                                                                  |
+| Inbox                 | Once per filter, and again on returning to the browser tab (at most every 30 s). The sidebar's counts (Inbox, and the Timeline's new events) and the Inbox view share it.                                                                                                                                                                                                                 |
+| Home                  | Three requests: one items read (Recent's 16, carrying Most Used's 8 via `used`, the hero's count of every space via `mine` and the first-run question via `any`), Shared With You Recently (the sidebar's Shared With Me page, read once for both) and one Timeline page (30) for What Happened (`data/homeReads.ts`; `homeReads.test.tsx` counts them).                                  |
+| Folder cards and rows | One `GET /folders/previews` per batch of up to 60 cards (or list rows on screen) not yet answered, for their mosaics and counts ("1 folder · 5 plans"); again after an item changes place.                                                                                                                                                                                                |
+| Timeline              | One `GET /timeline` page of 30 on arrival and per filter, then one per Show More (5 at most for an `#event=` link). One `POST /timeline/seen` a visit. Removing: 100 ids a call.                                                                                                                                                                                                          |
+| Home's hero           | The count of every space the person is in (My Work and each team) while it shows, counted by the index up to 200 ("200+" past that) beside Home's items read, so no request of its own, plus the live items this browser keeps where the host can read them (they are never in the index, so none counts twice). The Inbox pill reuses the sidebar's Inbox. None when the hero is hidden. |
+| Teams                 | The page: the person's teams and invitations once as it opens (`myTeams`), with a `teamsHost` and signed in. A team's members and join link when its card shows, and after a change there. The panel: nothing until its Members dialog opens.                                                                                                                                             |
 
 Nothing is fetched per row, or per folder.
 

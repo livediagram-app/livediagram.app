@@ -1,5 +1,5 @@
-// Tabs-category illustrations (docs/specs/018-help/help-app.md): the tab bar and its tab pills,
-// tab folders and their upward fan, the tab menu (toolbar over full-width rows split into groups),
+// Tabs-category illustrations (docs/specs/018-help/help-app.md): the tab bar and its tabs,
+// tab folders opening in place, the tab menu (toolbar over full-width rows split into groups),
 // the Organise in Tab Folder / Add to Design / Import / Export dialogs, cross-tab links, a locked
 // tab, and a before/after cleanup. Labels are the editor's own (TabPortalMenu,
 // TabOrganiseDialogs, ImportTabDialog, ExportTabDialog).
@@ -35,8 +35,9 @@ function Padlock({ tone = 'accent' }: { tone?: 'accent' | 'muted' }) {
   );
 }
 
-/** One tab in the bar. The active tab is a raised white card with an accent ring, accent text
- *  and its trailing ⋯ menu button; the others are soft tinted chips. */
+/** One tab on the bar, standing on its bottom edge (TabFrame). The open tab is a white card that
+ *  joins the bar's bottom edge, rounded only at the top, its name in the accent with its trailing
+ *  ⋯; the others are bare names on the bar. Nothing runs along a tab's top, and no type icon. */
 function TabPill({
   x,
   y,
@@ -54,28 +55,30 @@ function TabPill({
   locked?: boolean;
   h?: number;
 }) {
-  const textX = x + 10 + (locked ? 13 : 0);
+  const top = y - 4;
+  const bottom = y + h + 8;
+  const r = 7;
+  const mid = (top + bottom) / 2;
+  const textX = x + 12 + (locked ? 13 : 0);
   return (
     <g>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={h}
-        rx={7}
-        className={active ? 'fill-white stroke-brand-400' : 'fill-slate-100 stroke-transparent'}
-        strokeWidth={1.5}
-      />
+      {active && (
+        <path
+          d={`M${x} ${bottom} V${top + r} a${r} ${r} 0 0 1 ${r} ${-r} H${x + w - r} a${r} ${r} 0 0 1 ${r} ${r} V${bottom} Z`}
+          className="fill-white stroke-slate-300"
+          strokeWidth={1}
+        />
+      )}
       {locked && (
-        <g transform={`translate(${x + 15} ${y + h / 2})`}>
+        <g transform={`translate(${x + 16} ${mid})`}>
           <Padlock tone={active ? 'accent' : 'muted'} />
         </g>
       )}
       <Label
         x={textX}
-        y={y + h / 2 + 1}
+        y={mid + 1}
         size={11}
-        weight={active ? 700 : 500}
+        weight={active ? 650 : 500}
         tone={active ? 'accent' : 'body'}
       >
         {label}
@@ -83,13 +86,7 @@ function TabPill({
       {active && (
         <g>
           {[0, 1, 2].map((i) => (
-            <circle
-              key={i}
-              cx={x + w - 18 + i * 5}
-              cy={y + h / 2}
-              r={1.4}
-              className="fill-slate-400"
-            />
+            <circle key={i} cx={x + w - 18 + i * 5} cy={mid} r={1.4} className="fill-slate-400" />
           ))}
         </g>
       )}
@@ -100,18 +97,18 @@ function TabPill({
 /** The `+` (Add tab) button after the last tab. */
 function AddTabButton({ x, y, h = 26 }: { x: number; y: number; h?: number }) {
   const cx = x + h / 2;
-  const cy = y + h / 2;
+  const cy = y + h / 2 + 2;
   return (
     <path
-      d={`M${cx - 6} ${cy} h12 M${cx} ${cy - 6} v12`}
+      d={`M${cx - 5} ${cy} h10 M${cx} ${cy - 5} v10`}
       className="stroke-slate-500"
-      strokeWidth={2}
+      strokeWidth={1.75}
       strokeLinecap="round"
     />
   );
 }
 
-/** A folder glyph drawn from its centre: closed while the fan is tucked away, open while it shows. */
+/** A folder glyph drawn from its centre, closed or open (the folder tiles in the dialogs). */
 function FolderIcon({ open = false }: { open?: boolean }) {
   if (open) {
     return (
@@ -141,73 +138,102 @@ function FolderIcon({ open = false }: { open?: boolean }) {
   );
 }
 
-/** A folder on the bar: a dashed container holding the chip (folder glyph, the name in small
- *  caps, a count badge) and, when the active tab lives in the folder, that one tab inline. */
+/** A folder's colour, as the editor derives it from the name (folder-colour.ts): a pale shelf
+ *  behind its tabs, the chip a deeper tint with the name and count badge in the hue. */
+const FOLDER_TONES = {
+  rose: {
+    shelf: 'fill-rose-50',
+    chip: 'fill-rose-100',
+    ink: 'fill-rose-700 dark:fill-rose-300',
+    badge: 'fill-rose-600 dark:fill-rose-300',
+    stroke: 'stroke-rose-700 dark:stroke-rose-300',
+  },
+  violet: {
+    shelf: 'fill-violet-50',
+    chip: 'fill-violet-100',
+    ink: 'fill-violet-700 dark:fill-violet-300',
+    badge: 'fill-violet-600 dark:fill-violet-300',
+    stroke: 'stroke-violet-700 dark:stroke-violet-300',
+  },
+} as const;
+
+/** A folder on the bar (TabFolderGroup): a shelf tinted in the folder's colour and shaped like a tab, always there,
+ *  holding its header (a folder glyph, the name and the count badge, open or shut) and then whichever of its tabs
+ *  show. Shut, only the tab you are on stays beside the header; open, every tab sits after it, in order. */
 function FolderGroup({
   x,
   y,
   name,
   count,
-  open = false,
-  chipW = 92,
-  member,
-  memberW = 62,
+  chipW = 80,
+  tabs = [],
+  tone = 'rose',
 }: {
   x: number;
   y: number;
   name: string;
   count: number;
-  open?: boolean;
   chipW?: number;
-  member?: string;
-  memberW?: number;
+  tabs?: { label: string; w: number; active?: boolean }[];
+  tone?: keyof typeof FOLDER_TONES;
 }) {
-  const w = chipW + (member ? memberW + 6 : 0) + 8;
+  const t = FOLDER_TONES[tone];
+  const w = chipW + tabs.reduce((s, tab) => s + tab.w + 2, 0) + 2;
+  const top = y - 4;
+  const bottom = y + 34;
+  const r = 7;
+  const mid = y + 15;
+  const tabsX = x + chipW + 2;
+  const badgeX = x + chipW - 20;
   return (
     <g>
-      <rect
-        x={x}
-        y={y - 3}
-        width={w}
-        height={32}
-        rx={8}
-        className="fill-slate-100 stroke-slate-300"
-        strokeWidth={1.5}
-        strokeDasharray="4 3"
+      <path
+        d={`M${x} ${bottom} V${top + r} a${r} ${r} 0 0 1 ${r} ${-r} H${x + w - r} a${r} ${r} 0 0 1 ${r} ${r} V${bottom} Z`}
+        className={t.shelf}
       />
-      <g transform={`translate(${x + 15} ${y + 13})`}>
-        <FolderIcon open={open} />
-      </g>
-      <Label x={x + 28} y={y + 14} size={10} weight={700} tone="muted">
-        {name.toUpperCase()}
+      <path
+        d="M-8 -5 h5 l2 2 h8 a1 1 0 0 1 1 1 v7 a1 1 0 0 1 -1 1 h-14 a1 1 0 0 1 -1 -1 v-9 a1 1 0 0 1 1 -1 Z"
+        transform={`translate(${x + 14} ${mid + 0.5}) scale(0.65)`}
+        fill="none"
+        className={t.stroke}
+        strokeWidth={2.2}
+        strokeLinejoin="round"
+      />
+      <Label x={x + 25} y={mid + 1} size={10.5} weight={650} className={t.ink}>
+        {name}
       </Label>
-      <rect
-        x={x + chipW - 18}
-        y={y + 7}
-        width={18}
-        height={13}
-        rx={6.5}
-        className="fill-slate-200"
-      />
-      <Label x={x + chipW - 9} y={y + 14} anchor="middle" size={10} weight={700} tone="muted">
+      <rect x={badgeX} y={mid - 7} width={14} height={14} rx={4} className={t.badge} />
+      <Label
+        x={badgeX + 7}
+        y={mid + 0.5}
+        anchor="middle"
+        size={9}
+        weight={700}
+        className="fill-white dark:fill-slate-950"
+      >
         {String(count)}
       </Label>
-      {member && <TabPill x={x + chipW + 6} y={y} w={memberW} label={member} active />}
+      {tabs.map((tab, i) => (
+        <TabPill
+          key={tab.label}
+          x={tabsX + tabs.slice(0, i).reduce((s, t) => s + t.w + 2, 0)}
+          y={y}
+          w={tab.w}
+          label={tab.label}
+          active={tab.active}
+        />
+      ))}
     </g>
   );
 }
 
-/** The bottom tab-bar strip. */
+/** The bottom tab-bar strip: a quiet slate band the tabs stand on. */
 function TabBar({ y, w }: { y: number; w: number }) {
   return (
-    <rect
-      x={0}
-      y={y}
-      width={w}
-      height={42}
-      className="fill-slate-50 stroke-slate-200"
-      strokeWidth={1.5}
-    />
+    <g>
+      <rect x={0} y={y} width={w} height={42} className="fill-slate-100" />
+      <path d={`M0 ${y} H${w}`} className="stroke-slate-200" strokeWidth={1.5} />
+    </g>
   );
 }
 
@@ -579,34 +605,44 @@ export function TabMenu() {
   );
 }
 
-/** A tab folder on the bar: the chip with its open tab inline, and the rest of the folder's
- *  tabs fanned upward above the chip after a click. */
+/** A tab folder opening in place: its header always holds a count; shut, only the tab you are on stays
+ *  beside it; a click opens its tabs after the header on the bar, the neighbours sliding along. */
 export function TabFolderStates() {
-  const barY = 118;
+  const shutY = 40;
+  const openY = 128;
   return (
-    <Scene w={420} h={170}>
-      {/* The fan: the folder's other tabs, listed above the chip */}
-      <rect
-        x={14}
-        y={28}
-        width={108}
-        height={80}
-        rx={8}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+    <Scene w={432} h={186}>
+      <Label x={14} y={shutY - 14} size={10} tone="muted">
+        Shut: the tab you are on stays out beside the folder
+      </Label>
+      <TabBar y={shutY} w={432} />
+      <TabPill x={8} y={shutY + 8} w={70} label="Overview" />
+      <FolderGroup
+        x={80}
+        y={shutY + 8}
+        name="Plans"
+        count={3}
+        tabs={[{ label: 'Q1 plan', w: 84, active: true }]}
       />
-      <TabPill x={22} y={36} w={92} label="Q2 plan" />
-      <TabPill x={22} y={66} w={92} label="Q3 plan" />
-      <Label x={136} y={50} size={10} tone="muted">
-        Click the chip to fan out
+      <TabPill x={252} y={shutY + 8} w={60} label="Notes" />
+      <AddTabButton x={314} y={shutY + 8} />
+      <Label x={14} y={openY - 14} size={10} tone="muted">
+        Open: a click lays every tab out after the chip
       </Label>
-      <Label x={136} y={66} size={10} tone="muted">
-        the folder&apos;s other tabs
-      </Label>
-      <TabBar y={barY} w={420} />
-      <FolderGroup x={10} y={barY + 8} name="Plans" count={3} open member="Q1 plan" memberW={82} />
-      <TabPill x={208} y={barY + 8} w={66} label="Notes" />
-      <AddTabButton x={280} y={barY + 8} />
+      <TabBar y={openY} w={432} />
+      <TabPill x={8} y={openY + 8} w={70} label="Overview" />
+      <FolderGroup
+        x={80}
+        y={openY + 8}
+        name="Plans"
+        count={3}
+        tabs={[
+          { label: 'Q1 plan', w: 84, active: true },
+          { label: 'Q2 plan', w: 60 },
+          { label: 'Q3 plan', w: 60 },
+        ]}
+      />
+      <TabPill x={370} y={openY + 8} w={58} label="Notes" />
     </Scene>
   );
 }

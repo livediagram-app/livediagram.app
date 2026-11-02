@@ -286,7 +286,9 @@ describe('Check now', () => {
     const button = [...host!.querySelectorAll('button')].find((b) =>
       b.textContent?.includes('Check now'),
     )!;
-    expect(button.disabled).toBe(true);
+    // Resting reads as busy, not disabled, so a focused Check now keeps the keyboard (busy-buttons.md).
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    expect(button.disabled).toBe(false);
     expect(host!.textContent).toContain('in 30 s');
 
     // Ten minutes open: no round of its own, and Check now is ready.
@@ -294,16 +296,18 @@ describe('Check now', () => {
       vi.advanceTimersByTime(10 * 60_000);
     });
     expect(checks).toBe(first);
-    expect(button.disabled).toBe(false);
+    expect(button.hasAttribute('aria-disabled')).toBe(false);
     expect(host!.textContent).toContain('Ready');
 
     // One press, one round, then the rest again; a second press inside it does nothing.
+    button.focus();
     await act(async () => {
       button.click();
       await new Promise((r) => setTimeout(r, 0));
     });
     expect(checks).toBe(first * 2);
-    expect(button.disabled).toBe(true);
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    expect(document.activeElement).toBe(button);
     await act(async () => {
       button.click();
       await new Promise((r) => setTimeout(r, 0));

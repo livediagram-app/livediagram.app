@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Item } from '@liveplanner/items';
-import { ITEM_TRAIL_MAX, liveTrail, stepTrail, visibleTrail } from './item-trail';
+import { ITEM_TRAIL_MAX, liveTrail, stepTrail } from './item-trail';
 
 // docs/specs/026-plan/plan-board.md "Open an item": the Breadcrumb's trail (a project's Linked as Parent: card-links.test.ts in packages/items).
 
@@ -47,16 +47,5 @@ describe('liveTrail', () => {
   it('is just the open card when the trail does not end on it', () => {
     const items = mapOf(item('a', 1), item('z', 9));
     expect(liveTrail(['a'], 'z', items).map((i) => i.id)).toEqual(['z']);
-  });
-});
-
-describe('visibleTrail', () => {
-  it('shows the crumbs nearest the current card and counts the folded ones', () => {
-    expect(visibleTrail(['a', 'b', 'c', 'd', 'e'], 3)).toEqual({
-      folded: 2,
-      crumbs: ['c', 'd', 'e'],
-    });
-    expect(visibleTrail(['a', 'b'], 3)).toEqual({ folded: 0, crumbs: ['a', 'b'] });
-    expect(visibleTrail(['a', 'b'], 1)).toEqual({ folded: 1, crumbs: ['b'] });
   });
 });

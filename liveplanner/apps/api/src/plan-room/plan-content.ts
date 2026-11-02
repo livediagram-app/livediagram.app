@@ -11,6 +11,8 @@ import type { TabItemElement } from '@liveplanner/items';
 import { remapTabLinks, type Element } from '@liveplanner/project';
 import { redactTabDataAuthors } from '../comments';
 import { listItems } from '../db/items';
+import { insertLinkStatement, insertThreadStatement, listHomeThreads } from '../db/card-threads';
+import { threadForViewer, type CardThread } from '@liveplanner/project';
 import { sheetRefIds } from '../db/sheet-refs';
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
 import { rowToTabSummary, type TabRow } from '../tab-row';
@@ -276,7 +278,59 @@ export type PlanCopy = {
   items: Record<string, unknown>[];
   sheets: Record<string, unknown>[];
   cells: Record<string, unknown>[];
+  // The comment threads this plan stores on the copied cards (docs/specs/026-plan/items.md "Cards coming and
+  // going"), each on those cards alone, named in the copy as COPY_PLAN until the copy lands. A thread shared in
+  // from another plan stays that plan's. Absent from a copy made before threads.
+  threads?: CardThread[];
 };
+
+// The plan a copy's threads name before it lands (importPlanCopy puts its own id in).
+export const COPY_PLAN = '~copy';
+
+// The threads this plan stores on the cards `itemIds` names (null: every card), as a copy carries them.
+export async function copiedThreads(
+  env: PlanEnv,
+  planId: string,
+  itemIds: ReadonlySet<string> | null,
+  redactAuthorsFor: string | null,
+): Promise<CardThread[]> {
+  const out: CardThread[] = [];
+  for (const t of await listHomeThreads(env, planId)) {
+    const cards = t.cards
+      .filter((c) => c.projectId === planId && (itemIds === null || itemIds.has(c.itemId)))
+      .map((c) => ({ projectId: COPY_PLAN, itemId: c.itemId, key: c.key }));
+    if (cards.length === 0) continue;
+    const seen = redactAuthorsFor === null ? t : threadForViewer(t, redactAuthorsFor);
+    out.push({ ...seen, home: COPY_PLAN, cards });
+  }
+  return out;
+}
+
+// A copy's threads as rows of the plan they land in, with their links.
+function copiedThreadStatements(
+  env: PlanEnv,
+  planId: string,
+  threads: readonly CardThread[],
+): D1PreparedStatement[] {
+  return threads.flatMap((t) => {
+    const thread: CardThread = {
+      ...t,
+      home: planId,
+      cards: t.cards.map((c) => ({ ...c, projectId: planId })),
+    };
+    return [
+      insertThreadStatement(env, thread),
+      ...thread.cards.map((c) =>
+        insertLinkStatement(env, planId, {
+          itemId: c.itemId,
+          threadId: t.id,
+          home: planId,
+          openComments: t.resolved ? 0 : t.comments.length,
+        }),
+      ),
+    ];
+  });
+}
 
 // Every tab of the plan (or one) with its body, in order: the read a copy makes, and the Drive file's
 // (project-file.ts).
@@ -356,12 +410,19 @@ export async function exportPlanCopy(
   )
     .bind(planId, sourceTabs)
     .all<Record<string, unknown>>();
+  const threads = await copiedThreads(
+    env,
+    planId,
+    itemIds === null ? null : new Set(itemIds),
+    redactAuthorsFor,
+  );
   return {
     itemTypes: plan?.item_types ?? null,
     itemsRev: plan?.items_rev ?? 0,
     itemsNextKey: plan?.items_next_key ?? 1,
     tabs,
     items: items.results ?? [],
+    ...(threads.length ? { threads } : {}),
     sheets: (sheets.results ?? []).map((s) => ({ ...s, tab_id: tabIdMap.get(String(s.tab_id)) })),
     cells: cells.results ?? [],
   };
@@ -506,6 +567,8 @@ export async function importPlanCopy(
         .bind(planId, chunk),
     );
   }
+  // Its threads, after the cards they are on.
+  stmts.push(...copiedThreadStatements(env, planId, copy.threads ?? []));
   // The copy's Sheets reference the copied sheets, after the sheets, so the reference triggers find them.
   for (const tab of copy.tabs) {
     const ids = sheetRefsOfData(tab.data);

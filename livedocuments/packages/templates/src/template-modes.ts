@@ -11,6 +11,7 @@ export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = [
   'blank-slide-deck',
   'blank-article',
   'blank-infographic',
+  'blank-flashcards',
 ];
 
 /** True for the blanks: Blank Illustration, the blanks of a page kind, and Blank Tab (the plain empty tab an agent or a

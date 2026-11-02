@@ -13,14 +13,17 @@ import { SIGNED_IN_HINTS } from './app-session';
 /** The inline script: `{host: app}` read from the address, then that app's own bounce, with the API on its origin. */
 export function explorerSilentSignInScript(): string {
   const hosts = appHosts();
-  const apps = APP_NAMES.filter((app) => Object.values(hosts).includes(app));
+  const apps = APP_NAMES.flatMap((app) => {
+    const hint = SIGNED_IN_HINTS[app];
+    return hint && Object.values(hosts).includes(app) ? [{ app, hint }] : [];
+  });
   if (apps.length === 0) return '';
   const branches = apps
     .map(
-      (app) =>
+      ({ app, hint }) =>
         `if(a===${JSON.stringify(app)}){${silentSignInBootScript({
           apiBase: '/api',
-          cookies: silentCookiesForHint(SIGNED_IN_HINTS[app]),
+          cookies: silentCookiesForHint(hint),
           skipPaths: [],
         })}}`,
     )

@@ -7,6 +7,8 @@ import {
   isKnownElement,
   kindWordOf,
   tabKindOf,
+  type ComponentLookup,
+  type DesignComponent,
   type Element,
   type RefTable,
   type Tab,
@@ -18,10 +20,13 @@ import { partitionVisible, pinnedIds } from './visibility';
 
 // What the caller knows beyond the tab: its revision, and the design's tab ids in order (VW4).
 // `selected`: the owner's live selection for `show selected`; null or absent when it was not read (VW68).
+// `components`: the design's mains (or those the tab's instances use), which name each instance's main (VW70); absent
+// when the caller did not read the library.
 export type ViewContext = {
   rev?: number;
   tabIds?: readonly string[];
   selected?: readonly string[] | null;
+  components?: readonly DesignComponent[];
 };
 
 export type ViewModel = {
@@ -34,6 +39,8 @@ export type ViewModel = {
   tree: ViewTree;
   edges: Edges;
   facts: HeaderFacts;
+  // The main an instance draws, by id; null when the caller gave no library (`(main not loaded)`).
+  componentOf: ComponentLookup | null;
 };
 
 // Tab refs unique among the design's tabs; a tab outside them (no design context) takes the
@@ -97,5 +104,22 @@ export function buildViewModel(tab: Tab, context: ViewContext = {}): ViewModel {
   const tree = buildViewTree(printed, new Set(printed.flatMap(pinnedIds)));
   const edges = edgesOf(printed, refs, new Set(tree.nodes.keys()));
   const facts = headerFacts(tab, printed, hidden.length, tabRefOf, context.rev);
-  return { tab, printed, hidden, refs, tabRefOf, kindOf, tree, edges, facts };
+  return {
+    tab,
+    printed,
+    hidden,
+    refs,
+    tabRefOf,
+    kindOf,
+    tree,
+    edges,
+    facts,
+    componentOf: lookupOf(context),
+  };
+}
+
+function lookupOf({ components }: ViewContext): ComponentLookup | null {
+  if (components === undefined) return null;
+  const byId = new Map(components.map((c) => [c.id, c] as const));
+  return (id) => byId.get(id);
 }

@@ -7,7 +7,7 @@ import type { Env } from './env.ts';
 import { guestMergeConfig, mergeGuestOfRequest } from './guests.ts';
 import { ACCOUNTS_ON_APP_PATH } from '@liveworkspace/sites/workspace-proxy';
 import {
-  APP_SITES,
+  REGISTERED_APP_SITES,
   appOfOrigin,
   appOrigins,
   type AppEnvironment,
@@ -90,9 +90,9 @@ export function getAuth(env: Env): Auth {
   return cached.auth;
 }
 
-/** Every app's origins in this environment: where the sign-in pages may call from (handoff.ts). */
+/** Every app's origins in this environment, a held app's too: where the sign-in pages may call from (handoff.ts). */
 export function allAppOrigins(environment: AppEnvironment): string[] {
-  return APP_SITES.flatMap((site) => appOrigins(site.id as AppSiteId, environment));
+  return REGISTERED_APP_SITES.flatMap((site) => appOrigins(site.id as AppSiteId, environment));
 }
 
 // Google on an app's address (GOOGLE_ON_APP_ORIGINS): the same instance but for where Google sends the browser back,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ITEM_TYPES, metricBoard, type Item, type StatusPhase } from '@liveplanner/items';
-import { heroSize, metricModel, metricTier } from './metric-tile-model';
+import { heroSize, metricModel, metricStripFits, metricTier } from './metric-tile-model';
 
 // docs/specs/026-plan/plan-tabs.md "Metric tiles".
 let n = 0;
@@ -40,6 +40,21 @@ describe('a metric tile', () => {
     expect(heroSize(120, 100, 'compact')).toBe(28);
     expect(heroSize(2000, 2000, 'large')).toBe(72);
     expect(heroSize(400, 200, 'regular')).toBe(60);
+  });
+
+  it('draws a strip of rows only where it fits whole, and a thin bar always', () => {
+    const people = { kind: 'people' as const, rows: [{ person: ALI, count: 2 }] };
+    // A 160 px tile (Two by Two's metric rows): its 48 px figure leaves 1 px, so the person's row is left out.
+    expect(metricStripFits(people, 158, heroSize(454, 158, 'regular'))).toBe(false);
+    expect(metricStripFits({ kind: 'list', rows: [{ itemId: 'a', title: 'A' }] }, 158, 47)).toBe(
+      false,
+    );
+    expect(metricStripFits({ kind: 'card', itemId: 'a', title: 'A', votes: 3 }, 200, 60)).toBe(
+      false,
+    );
+    expect(metricStripFits(people, 200, heroSize(454, 200, 'regular'))).toBe(true);
+    expect(metricStripFits({ kind: 'ring', pct: 40 }, 158, 48)).toBe(true);
+    expect(metricStripFits(null, 158, 48)).toBe(true);
   });
 
   it('reads completion as a share with a ring', () => {

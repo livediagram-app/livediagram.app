@@ -84,7 +84,7 @@ describe('StartFromTemplates, switching category', () => {
     mount();
     const scroller = document.querySelector('[data-start-card]')!.closest('.overflow-y-auto')!;
     scroller.scrollTop = 300;
-    fireEvent.click(document.querySelector('[data-rail="design"]')!);
+    fireEvent.click(document.querySelector('[data-rail="team"]')!);
     expect(scroller.scrollTop).toBe(0);
   });
 });

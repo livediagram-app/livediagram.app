@@ -34,7 +34,6 @@ describe('ELEMENT_TOUR_DEFS', () => {
     'gives the %s tour steps on its element, ending on a closing card',
     (kind) => {
       const steps = ELEMENT_TOUR_DEFS[kind].steps(SAMPLE[kind], {
-        hasMore: true,
         touch: false,
         elements: [SAMPLE[kind]],
       });
@@ -54,21 +53,18 @@ describe('ELEMENT_TOUR_DEFS', () => {
     const stack = { ...createShape('stack', 0, 0), width: 400, height: 200 } as Element;
     const kid = { ...createShape('square', 40, 40), width: 80, height: 80 } as Element;
     const steps = ELEMENT_TOUR_DEFS.stack.steps(stack, {
-      hasMore: true,
       touch: false,
       elements: [stack, kid],
     });
     expect(steps.map((s) => s.id)).toContain('child');
     expect(
-      ELEMENT_TOUR_DEFS.stack
-        .steps(stack, { hasMore: true, touch: false, elements: [stack] })
-        .map((s) => s.id),
+      ELEMENT_TOUR_DEFS.stack.steps(stack, { touch: false, elements: [stack] }).map((s) => s.id),
     ).toContain('drop');
   });
 
   it('reads a chart as its own type', () => {
     const pie = createShape('pie-chart', 0, 0) as Element;
-    const env = { hasMore: true, touch: false, elements: [pie] };
+    const env = { touch: false, elements: [pie] };
     expect(ELEMENT_TOUR_DEFS.chart.steps(pie, env)[0]!.body).toContain('Pie chart');
     const line = createShape('line-chart', 0, 0);
     expect(ELEMENT_TOUR_DEFS.chart.steps(line, env).map((s) => s.id)).toContain('data');

@@ -42,6 +42,8 @@ export function opForScope(op: unknown, tabScope: string | null): unknown {
   // moved on, without the items, and refetches the ones its tab shows
   // (docs/specs/026-plan/items.md "Who may do what").
   if (o.kind === 'items') return { ...o, upserts: [], removed: [] };
+  // A card thread's write may be on cards another tab shows, the same way: the session reads its threads again.
+  if (o.kind === 'threads') return { ...o, upserts: [], removed: [] };
   const mine = onScope(o, tabScope);
   if (mine !== undefined) return mine ? op : null;
   return typeof o.kind === 'string' && TAB_LESS_DELIVERED.has(o.kind) ? op : null;

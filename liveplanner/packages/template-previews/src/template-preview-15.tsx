@@ -414,6 +414,103 @@ export function templatePreviewGroup15(kind: TemplateKind): ReactElement | null 
           { cards: [{ stripe: IDEA }] },
         ],
       });
+    case 'event-planner':
+      // Workstreams over their Gantt, At Risk in red; the story confirms the one at risk.
+      return board({
+        tabs: 4,
+        columns: [
+          { cards: [{ stripe: EPIC }] },
+          { cards: [{ stripe: EPIC }] },
+          { head: BUG, cards: [{ stripe: EPIC, moveTo: { dx: w4, dy: 0, at: 900 } }] },
+          { head: STORY, cards: [{ stripe: EPIC }] },
+        ],
+        gantt: [
+          { x: 14, w: 24 },
+          { x: 26, w: 30 },
+          { x: 44, w: 28 },
+        ],
+      });
+    case 'sales-crm':
+      // Deals from Lead to Won and Lost, in the Deal's green; the story wins the deal in Negotiation.
+      return board({
+        tabs: 3,
+        columns: [
+          { cards: [{ stripe: STORY }, { stripe: STORY }, { stripe: STORY }] },
+          { cards: [{ stripe: STORY }, { stripe: STORY }] },
+          { cards: [{ stripe: STORY }] },
+          { head: NOTE, cards: [{ stripe: STORY, moveTo: { dx: w6, dy: 0, at: 900 } }] },
+          { head: STORY, cards: [{ stripe: STORY }] },
+          { cards: [{ stripe: STORY }] },
+        ],
+      });
+    case 'help-desk':
+      // Tickets, a row per priority, Waiting on Customer in amber; the story resolves an urgent ticket.
+      return board({
+        tabs: 3,
+        rows: 2,
+        columns: [
+          { cards: [{ stripe: TASK }, { stripe: TASK }] },
+          { cards: [{ stripe: TASK, moveTo: { dx: w5 * 2, dy: 0, at: 900 } }, { stripe: TASK }] },
+          { head: NOTE, cards: [{ stripe: TASK }] },
+          { head: STORY, cards: [] },
+          { cards: [{ stripe: TASK }, { stripe: TASK }] },
+        ],
+      });
+    case 'meeting-agenda':
+      // Topics voted into order: the story drops three dots on a topic, then takes the top one into Discussing.
+      return board({
+        tabs: 4,
+        columns: [
+          {
+            cards: [
+              { stripe: NOTE, moveTo: { dx: step, dy: 0, at: 900 } },
+              { stripe: NOTE },
+              { stripe: NOTE },
+            ],
+          },
+          { cards: [] },
+          { head: STORY, cards: [{ stripe: NOTE }, { stripe: NOTE }] },
+        ],
+        overlay: [0, 1, 2].map((i) => (
+          <circle
+            key={i}
+            className="pv-new"
+            opacity="0"
+            cx={step - 2.8 - i * 1.8}
+            cy="27.8"
+            r="0.7"
+            fill={ACTION}
+            style={pv({ '--pv-at': `${300 + i * 160}ms` })}
+          />
+        )),
+      });
+    case 'personal-goals':
+      // Goals over their Gantt, in the Objective's amber; the story achieves the one being worked on.
+      return board({
+        tabs: 4,
+        columns: [
+          { cards: [{ stripe: NOTE }] },
+          { cards: [{ stripe: NOTE }] },
+          { head: IDEA, cards: [{ stripe: NOTE, moveTo: { dx: w4, dy: 0, at: 900 } }] },
+          { head: STORY, cards: [{ stripe: NOTE }] },
+        ],
+        gantt: [
+          { x: 20, w: 34 },
+          { x: 14, w: 46 },
+          { x: 40, w: 32 },
+        ],
+      });
+    case 'study-planner':
+      // Assignments by subject; the story hands in the one in progress.
+      return board({
+        tabs: 3,
+        columns: [
+          { cards: [{ stripe: TASK }, { stripe: STORY }, { stripe: ACTION }] },
+          { cards: [{ stripe: EPIC, moveTo: { dx: w4, dy: 0, at: 900 } }] },
+          { head: IDEA, cards: [{ stripe: STORY }] },
+          { head: STORY, cards: [{ stripe: TASK }] },
+        ],
+      });
     default:
       return null;
   }

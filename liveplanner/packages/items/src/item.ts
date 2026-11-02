@@ -32,6 +32,9 @@ export interface Item {
   updatedAt: number;
   createdBy: ItemPerson;
   updatedBy: ItemPerson;
+  // The comments in the card's open comment threads (docs/specs/026-plan/items.md "Comments"): worked out when the
+  // card is drawn from its threads (a render, an export), never stored. Absent everywhere else.
+  openComments?: number;
 }
 
 // Where an item goes: a status, and a neighbour within that status's column.
@@ -55,6 +58,9 @@ export interface ItemCreate {
   // The same for its comment thread (a CommentThread, docs/specs/026-plan/items.md "Comments"), which is
   // otherwise written by the comment writes alone. The api checks it before it is kept.
   comments?: ItemFieldValue;
+  // The comment threads a restored card goes back on (docs/specs/026-plan/items.md "Cards coming and going"): the
+  // threads as the editor held them when the card was deleted. Checked by the api, never stored on the item.
+  threads?: readonly unknown[];
 }
 
 export interface ItemPatch {
@@ -90,11 +96,16 @@ export function isSwimlaneSettable(key: string): boolean {
 // The flag an archived item carries (docs/specs/026-plan/items.md "Archive").
 export const ARCHIVED_FIELD = 'archived';
 
-// Whether a move may set or clear this field: a swimlane's (isSwimlaneSettable), or the archived flag, which a card
-// dragged off an Archive board loses in the move itself (one write, one undo step).
+// Whether a move may set or clear this field: a swimlane's (isSwimlaneSettable), the archived flag, which a card
+// dragged off an Archive board loses in the move itself (one write, one undo step), or the status stamp a move's undo
+// puts back.
 export function isMoveSettable(key: string): boolean {
-  return isSwimlaneSettable(key) || key === ARCHIVED_FIELD;
+  return isSwimlaneSettable(key) || key === ARCHIVED_FIELD || key === STATUS_SINCE_FIELD;
 }
+
+// When the card entered its current status, a ms epoch (docs/specs/026-plan/items.md "Fields"; status-since.ts).
+// A move may carry it, so undoing one puts the card's Age back.
+export const STATUS_SINCE_FIELD = 'statusSince';
 
 export function itemTitle(item: Pick<Item, 'fields'>): string {
   const title = item.fields['title'];
@@ -119,20 +130,24 @@ export function itemAssignee(item: Pick<Item, 'fields'>): ItemPerson | undefined
   return isItemPerson(a) ? a : undefined;
 }
 
-export function itemVotes(item: Pick<Item, 'fields'>): Record<string, number> {
-  const v = item.fields['votes'];
+// A card's votes in one Votes field (`{ voter: dots }`): the built-in `votes` unless a custom Votes field's id is
+// given (docs/specs/026-plan/item-types.md "Comments and Votes fields").
+export function itemVotes(item: Pick<Item, 'fields'>, field = 'votes'): Record<string, number> {
+  const v = item.fields[field];
   if (!v || typeof v !== 'object' || Array.isArray(v)) return {};
   const out: Record<string, number> = {};
   for (const [k, n] of Object.entries(v)) if (typeof n === 'number' && n > 0) out[k] = n;
   return out;
 }
 
-export function itemVoteTotal(item: Pick<Item, 'fields'>): number {
-  return Object.values(itemVotes(item)).reduce((a, b) => a + b, 0);
+export function itemVoteTotal(item: Pick<Item, 'fields'>, field = 'votes'): number {
+  return Object.values(itemVotes(item, field)).reduce((a, b) => a + b, 0);
 }
 
-// How many comments an open thread holds (0 when there is none, or it is resolved): the card's comment count.
-export function itemCommentCount(item: Pick<Item, 'fields'>): number {
+// The card's comment count: the comments in its open threads, as a render worked them out (`openComments`), else
+// (a card still holding its old single thread) that thread's while open; 0 with none.
+export function itemCommentCount(item: Pick<Item, 'fields' | 'openComments'>): number {
+  if (item.openComments !== undefined) return item.openComments;
   const t = item.fields['comments'];
   if (!t || typeof t !== 'object' || Array.isArray(t) || t['resolved'] === true) return 0;
   const comments = t['comments'];

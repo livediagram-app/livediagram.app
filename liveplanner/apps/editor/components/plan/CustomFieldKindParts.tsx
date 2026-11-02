@@ -1,32 +1,62 @@
 'use client';
 
-// New Custom Field's kind and preview (docs/specs/026-plan/item-types.md "Editing a type": Add Field): the twelve
-// kinds as a grid of icon tiles, six to a row, one radio group, and a preview of the field as the card's panel will show it,
-// named as typed, with a sample value of its kind.
+// Each custom field kind's icon, and Add Field's preview (docs/specs/026-plan/item-types.md "Fields and Tabs": Add
+// Field): a small card holding the field as the card's panel will show it, named as typed, with a sample value of its
+// kind.
 import {
   RATING_FIELD_SCALE_DEFAULT,
   currencyText,
   ratingText,
+  canShowAsPercent,
   type CustomFieldDef,
+  type Calculation,
   type CustomFieldKind,
 } from '@liveplanner/items';
 import { CheckIcon, lucideGlyph } from '@liveplanner/ui';
 import {
+  lucideCalculator,
+  lucideCalendarClock,
+  lucideCalendarRange,
+  lucideClipboardCheck,
   lucideHash,
+  lucideImage,
   lucideList,
   lucideListChecks,
   lucideLink,
+  lucideMessageSquare,
+  lucidePalette,
+  lucidePhone,
+  lucideTag,
   lucideType,
+  lucideVote,
 } from '@liveworkspace/icons/lucide';
-import { CUSTOM_KIND_LABELS } from './ItemTypeFieldForms';
+import type { PickKind } from './add-field-kinds';
+import { PICK_KIND_LABELS } from './ItemTypeFieldForms';
 import { ItemDetailsRow } from './ItemPanelLayout';
 import { PlanTypeGlyph } from './plan-type-glyph';
+import { PersonDisc } from './PersonDisc';
+import { PlayIcon } from './time/TimerReadouts';
+import { LabelChips } from './plan-card-parts';
+import { planColourName } from './ColourSwatches';
+import { PercentReading } from './PercentBar';
+import { OptionChip } from './OptionChip';
+import { choiceColour } from './choice-options';
 
 const TypeIcon = lucideGlyph(lucideType, 16);
 const HashIcon = lucideGlyph(lucideHash, 16);
 const ListIcon = lucideGlyph(lucideList, 16);
 const LinkIcon = lucideGlyph(lucideLink, 16);
 const ListChecksIcon = lucideGlyph(lucideListChecks, 16);
+const CalculatorIcon = lucideGlyph(lucideCalculator, 16);
+const TagIcon = lucideGlyph(lucideTag, 16);
+const PaletteIcon = lucideGlyph(lucidePalette, 16);
+const ChecklistIcon = lucideGlyph(lucideClipboardCheck, 16);
+const ImageIcon = lucideGlyph(lucideImage, 16);
+const CommentsIcon = lucideGlyph(lucideMessageSquare, 16);
+const DateTimeIcon = lucideGlyph(lucideCalendarClock, 16);
+const DateRangeIcon = lucideGlyph(lucideCalendarRange, 16);
+const PhoneIcon = lucideGlyph(lucidePhone, 16);
+const VotesIcon = lucideGlyph(lucideVote, 16);
 
 // Each kind's icon: what its value looks like.
 export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
@@ -34,31 +64,53 @@ export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
   longtext: <PlanTypeGlyph glyph="project" size={16} />,
   number: <HashIcon />,
   currency: <PlanTypeGlyph glyph="coin" size={16} />,
+  percent: <PlanTypeGlyph glyph="percent" size={16} />,
+  duration: <PlanTypeGlyph glyph="clock" size={16} />,
   date: <PlanTypeGlyph glyph="calendar" size={16} />,
+  datetime: <DateTimeIcon />,
+  daterange: <DateRangeIcon />,
   checkbox: <PlanTypeGlyph glyph="task" size={16} />,
   link: <LinkIcon />,
   email: <PlanTypeGlyph glyph="mail" size={16} />,
+  phone: <PhoneIcon />,
   choice: <ListIcon />,
   multichoice: <ListChecksIcon />,
   rating: <PlanTypeGlyph glyph="star" size={16} />,
   card: <PlanTypeGlyph glyph="ticket" size={16} />,
+  calculated: <CalculatorIcon />,
+  person: <PlanTypeGlyph glyph="person" size={16} />,
+  labels: <TagIcon />,
+  colour: <PaletteIcon />,
+  checklist: <ChecklistIcon />,
+  image: <ImageIcon />,
+  comments: <CommentsIcon />,
+  votes: <VotesIcon />,
 };
 
-// What a built-in field holds, as the custom kind closest to it, so every row of the type editor wears the Add
-// Field popover's icons. The Assignee is a person, which no custom kind is (people are assigned there).
-const BUILT_IN_KINDS: Partial<Record<string, CustomFieldKind>> = {
+// Add Field's kinds: every custom kind's icon, and the one-to-a-type built-in fields' (Comments, Votes).
+export const PICK_KIND_ICONS: Record<PickKind, React.ReactNode> = {
+  ...CUSTOM_KIND_ICONS,
+  comments: <CommentsIcon />,
+  votes: <VotesIcon />,
+};
+
+// What a built-in field holds, as its kind (docs/specs/026-plan/item-types.md "Fields and Tabs"), so every row of the
+// type editor wears the Add Field popover's icons: the Assignee a Person, Labels Labels, Comments and Votes their own.
+const BUILT_IN_KINDS: Partial<Record<string, PickKind>> = {
   title: 'text',
   description: 'longtext',
   status: 'choice',
   priority: 'choice',
-  color: 'choice',
-  labels: 'choice',
+  assignee: 'person',
+  color: 'colour',
+  labels: 'labels',
   estimate: 'number',
   start: 'date',
   due: 'date',
-  checklist: 'checkbox',
-  comments: 'longtext',
-  votes: 'number',
+  checklist: 'checklist',
+  comments: 'comments',
+  votes: 'votes',
+  attachments: 'image',
 };
 
 // A field's icon and the name of what it holds ("Link to Card", "Date", "Person"), for the type editor's rows.
@@ -66,46 +118,13 @@ export function fieldIconOf(
   id: string,
   custom: Pick<CustomFieldDef, 'kind'> | undefined,
 ): { node: React.ReactNode; name: string } {
-  if (!custom && id === 'assignee')
-    return { node: <PlanTypeGlyph glyph="person" size={16} />, name: 'Person' };
   const kind = custom?.kind ?? BUILT_IN_KINDS[id] ?? 'text';
-  return { node: CUSTOM_KIND_ICONS[kind], name: CUSTOM_KIND_LABELS[kind] };
+  return { node: PICK_KIND_ICONS[kind], name: PICK_KIND_LABELS[kind] };
 }
 
-export function CustomFieldKindTiles({
-  kinds,
-  value,
-  onChange,
-}: {
-  kinds: readonly CustomFieldKind[];
-  value: CustomFieldKind;
-  onChange: (kind: CustomFieldKind) => void;
-}) {
-  return (
-    <div role="radiogroup" aria-label="New field's kind" className="grid grid-cols-6 gap-1">
-      {kinds.map((k) => {
-        const on = k === value;
-        return (
-          <button
-            key={k}
-            type="button"
-            role="radio"
-            aria-checked={on}
-            className={`flex min-h-14 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border px-1 py-1.5 text-center text-[11px] font-medium leading-tight transition ${
-              on
-                ? 'border-brand-400 bg-brand-50 text-brand-800 dark:border-brand-500/60 dark:bg-brand-500/10 dark:text-brand-100'
-                : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-800'
-            }`}
-            onClick={() => onChange(k)}
-          >
-            {CUSTOM_KIND_ICONS[k]}
-            {CUSTOM_KIND_LABELS[k]}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
+const SAMPLE_PERSON = { id: 'sample', name: 'Sam Rivera', color: '#7c3aed' };
+const SAMPLE_COLOUR = '#0d9488';
+const SAMPLE_PERCENT = 40;
 
 // A sample of each kind, drawn as the card's panel draws a value (quietly: it is only a picture).
 function SampleValue({
@@ -114,12 +133,20 @@ function SampleValue({
   linkLabel,
   currency,
   scale,
+  calculation,
+  showAs,
+  timeSpent,
+  withTime,
 }: {
   kind: CustomFieldKind;
   options: readonly string[];
   linkLabel: string | undefined;
   currency: string | undefined;
   scale: number | undefined;
+  calculation: Calculation | undefined;
+  showAs: 'percent' | undefined;
+  timeSpent?: boolean | undefined;
+  withTime?: boolean | undefined;
 }) {
   const box =
     'rounded-md border border-slate-200 bg-white px-2 py-1 text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200';
@@ -136,14 +163,48 @@ function SampleValue({
       return <div className={`${box} w-20 tabular-nums`}>42</div>;
     case 'currency':
       return <div className={`${box} w-28 tabular-nums`}>{currencyText(12500, currency)}</div>;
+    // The panel's bar at a sample share (docs/specs/026-plan/item-types.md "Percent").
+    case 'percent':
+      return <PercentReading value={SAMPLE_PERCENT} />;
+    // "2h 30m"; tracking time, the total and the timer's Start beside it (docs/specs/026-plan/item-types.md "Duration").
+    case 'duration':
+      return timeSpent ? (
+        <span className="inline-flex items-center gap-2">
+          <span className="text-[15px] font-semibold tabular-nums text-slate-900 dark:text-slate-50">
+            2h 30m
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-md bg-brand-700 px-2 py-0.5 text-[12px] font-medium text-white dark:bg-brand-600">
+            <PlayIcon />
+            <span className="text-optical-centre">Start</span>
+          </span>
+        </span>
+      ) : (
+        <div className={`${box} w-24 tabular-nums`}>2h 30m</div>
+      );
     case 'email':
       return <span className="text-brand-700 underline dark:text-brand-300">sam@example.com</span>;
+    case 'phone':
+      return <span className="text-brand-700 underline dark:text-brand-300">+44 20 7946 0958</span>;
     case 'date':
       return (
         <div className={`${box} inline-flex items-center gap-1.5`}>
           <PlanTypeGlyph glyph="calendar" size={13} />
           12 Oct 2026
         </div>
+      );
+    case 'datetime':
+      return <div className={`${box} whitespace-nowrap tabular-nums`}>Fri 31 Oct, 17:00</div>;
+    case 'daterange':
+      return (
+        <span className="inline-flex flex-wrap items-center gap-1.5">
+          <span className={`${box} whitespace-nowrap tabular-nums`}>
+            {withTime ? '31 Oct, 09:00' : '31 Oct'}
+          </span>
+          <span className="text-[12px] text-slate-500 dark:text-slate-400">to</span>
+          <span className={`${box} whitespace-nowrap tabular-nums`}>
+            {withTime ? '2 Nov, 17:00' : '2 Nov'}
+          </span>
+        </span>
       );
     case 'checkbox':
       return (
@@ -153,25 +214,19 @@ function SampleValue({
       );
     case 'link':
       return <span className="text-brand-700 underline dark:text-brand-300">example.com</span>;
+    // The panel's option chips, coloured by place (docs/specs/026-plan/item-types.md "Choice and Multiple Choice in the
+    // card panel").
     case 'choice':
-      return (
-        <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[12px] text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-          {options[0] ?? 'An option'}
-        </span>
-      );
-    case 'multichoice':
+    case 'multichoice': {
+      const sample = options.length ? options : ['An option', 'Another'];
       return (
         <span className="flex flex-wrap gap-1">
-          {(options.length ? options.slice(0, 2) : ['An option', 'Another']).map((o) => (
-            <span
-              key={o}
-              className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[12px] text-slate-700 dark:bg-slate-800 dark:text-slate-200"
-            >
-              {o}
-            </span>
+          {sample.slice(0, kind === 'choice' ? 1 : 2).map((o) => (
+            <OptionChip key={o} option={o} colour={choiceColour(sample, o)} />
           ))}
         </span>
       );
+    }
     case 'rating':
       return (
         <span className="text-[14px] tracking-wider text-amber-500" aria-hidden>
@@ -185,6 +240,62 @@ function SampleValue({
           {linkLabel ? `A ${linkLabel} card` : 'A linked card'}
         </div>
       );
+    case 'calculated':
+      // A Calculated field's value, worked out and read-only (docs/specs/026-plan/item-types.md "Calculated fields"):
+      // the Percent bar when a share is shown as one.
+      if (showAs === 'percent' && canShowAsPercent({ kind, calculation }))
+        return <PercentReading value={SAMPLE_PERCENT} />;
+      return (
+        <span className="text-[13px] tabular-nums text-slate-700 dark:text-slate-200">
+          {calculation === 'childrenDone' ? '40%' : '3'}
+        </span>
+      );
+    // The built-in fields' kinds, as their fields draw (docs/specs/026-plan/item-types.md "Custom field kinds").
+    case 'person':
+      return (
+        <span className="inline-flex items-center gap-1.5 text-[13px] text-slate-700 dark:text-slate-200">
+          <PersonDisc person={SAMPLE_PERSON} />
+          {SAMPLE_PERSON.name}
+        </span>
+      );
+    case 'labels':
+      return <LabelChips labels={['Design', 'Urgent']} />;
+    case 'colour':
+      return (
+        <span className="inline-flex items-center gap-1.5 text-[13px] text-slate-700 dark:text-slate-200">
+          <span className="h-3 w-3 rounded-full" style={{ backgroundColor: SAMPLE_COLOUR }} />
+          {planColourName(SAMPLE_COLOUR)}
+        </span>
+      );
+    case 'checklist':
+      return (
+        <span className="inline-flex items-center gap-1 text-[13px] tabular-nums text-slate-700 dark:text-slate-200 [&_svg]:h-3.5 [&_svg]:w-3.5">
+          <ChecklistIcon />
+          2/5
+        </span>
+      );
+    case 'image':
+      return (
+        <span className="inline-flex items-center gap-1.5 text-[13px] text-slate-700 dark:text-slate-200">
+          <span className="flex h-7 w-10 items-center justify-center rounded bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+            <ImageIcon />
+          </span>
+          photo.png
+        </span>
+      );
+    // A Comments field reads as the count of its open threads' comments, as the card's chip draws it
+    // (item-types.md "Comments and Votes fields").
+    case 'comments':
+      return (
+        <span className="inline-flex items-center gap-1 text-[13px] tabular-nums text-slate-700 dark:text-slate-200 [&_svg]:h-3.5 [&_svg]:w-3.5">
+          <CommentsIcon />2
+        </span>
+      );
+    // A Votes field reads as the built-in Votes' ▲ count.
+    case 'votes':
+      return (
+        <span className="text-[13px] tabular-nums text-slate-700 dark:text-slate-200">▲ 3</span>
+      );
   }
 }
 
@@ -195,6 +306,11 @@ export function CustomFieldPreview({
   linkLabel,
   currency,
   scale,
+  calculation,
+  showAs,
+  timeSpent,
+  withTime,
+  required,
 }: {
   label: string;
   kind: CustomFieldKind;
@@ -205,23 +321,44 @@ export function CustomFieldPreview({
   currency?: string | undefined;
   // A Rating field's scale.
   scale?: number | undefined;
+  // A Calculated field's calculation.
+  calculation?: Calculation | undefined;
+  // A share drawn as a Percent field is.
+  showAs?: 'percent' | undefined;
+  // A Duration field that tracks time.
+  timeSpent?: boolean | undefined;
+  // A Date Range whose ends carry times.
+  withTime?: boolean | undefined;
+  // Drawn with the required mark.
+  required?: boolean | undefined;
 }) {
   return (
     <figure
       aria-label="Preview"
-      className="rounded-lg bg-slate-50 px-3 py-1.5 dark:bg-slate-800/50"
+      className="flex flex-col gap-1.5 rounded-xl bg-slate-100/80 p-2.5 dark:bg-slate-800/60"
     >
-      <figcaption className="pt-1 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+      <figcaption className="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         Preview
       </figcaption>
-      <div className="pointer-events-none" aria-hidden>
-        <ItemDetailsRow label={label.trim() || 'Field name'}>
+      {/* A card as a board's panel draws it: only a picture, so nothing in it takes a press or focus. */}
+      <div
+        className="pointer-events-none rounded-lg border border-slate-200 bg-white px-3 pb-1.5 pt-2.5 shadow-sm dark:border-slate-700 dark:bg-slate-900"
+        aria-hidden
+      >
+        <p className="mb-1 text-[13px] font-semibold text-slate-900 dark:text-slate-50">
+          Example card
+        </p>
+        <ItemDetailsRow label={label.trim() || 'Field name'} required={required === true}>
           <SampleValue
             kind={kind}
             options={options}
             linkLabel={linkLabel}
             currency={currency}
             scale={scale}
+            calculation={calculation}
+            showAs={showAs}
+            timeSpent={timeSpent}
+            withTime={withTime}
           />
         </ItemDetailsRow>
       </div>

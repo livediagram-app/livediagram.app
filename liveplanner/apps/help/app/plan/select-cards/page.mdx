@@ -1,0 +1,58 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Select Several Cards',
+  description:
+    'Select several cards on a board and move, assign, prioritise, label, flag, archive or trash them together, or drag them as one group.',
+  path: '/help/plan/select-cards/',
+});
+
+<ArticleLayout
+  title="Select Several Cards"
+  description="Pick a handful of cards and change them all at once, in one step you can undo."
+  categoryTitle="Plan"
+  categorySlug="plan"
+>
+
+Triage and sprint planning change many cards at once. Rather than open ten cards one by one, **select** them on the [board](/help/plan/boards/) and change them together from the selection bar, or drag them as one group. Each change is a single step: one **Undo** takes it back for every card.
+
+## Select Cards
+
+- **Cmd-click** a card (**Ctrl-click** on Windows) to add it to the selection, or take it out.
+- **Shift-click** selects every card from the last one you picked to this one, within a column (on a board with swimlanes, reading its rows top to bottom). Shift-click a card in another column and it's added on its own, starting the next range.
+- **Shift+Space** on a focused card adds it or takes it out, from the keyboard.
+- **Select** in a card's right-click menu picks that card and starts **select mode**: until the selection is cleared, a click on a card adds it or takes it out instead of opening it. On a phone, hold your finger on a card for its menu, choose **Select**, then tap the others.
+
+A selected card has a ring round it in the board's focus colour, and the count is read out ("3 cards selected"). Face-down cards on a board that hides writing can't be selected.
+
+**To clear the selection**, press **Escape**, the cross at the end of the bar (**Clear Selection**), or click a card that isn't selected (which opens it, as ever). A card that leaves the board (moved off it, filtered out, trashed) leaves the selection too.
+
+## The Selection Bar
+
+While cards are selected, a bar under the board's header names how many ("3 cards selected") and holds what you can do to them all:
+
+- **Move To**: one of the board's columns. The cards go to the end of it, in the order they sat on the board.
+- **Assign**: one of the people a card can be assigned to, or **Unassign**.
+- **Priority**: Urgent, High, Medium, Low or **No Priority**.
+- **Labels**: add one of the plan's labels to every card that lacks it, or, under **Remove**, take one off them all.
+- **Set Field**: a custom field every selected card's type has (Choice, Checkbox, Number, Currency, Percent, Rating, Date, Text or Person). Pick it, then its value; **Clear** empties it on them all.
+- **Flag** (or **Remove Flag**, when they're all flagged).
+- **Archive** (or **Restore**) and **Move to Trash**.
+- **?** opens this page.
+
+A card that can't take a change is left as it was: a Note with no Assignee isn't assigned, and a card whose type can't be in a column stays put, with one message for them all ("2 cards stayed: their types can't be Done"). On a narrow board the actions show as icons alone, each named when you hover it.
+
+## Drag Several Cards
+
+Press a selected card and drag: the whole selection comes with it, drawn as a little stack with a count. Let go and they land together at the drop point, in the order they sat on the board, as one step. Drop them in a swimlane and each takes that row's value; drop them on another board and they land there (any card that board doesn't show stays behind); drop them on the **Trash** button and they all go to the Trash. On a sorted board, each lands where the sort puts it.
+
+Pressing a card that isn't selected drags just that card, and clears the selection.
+
+## Who Can
+
+Editors and Participants select cards and use the bar; **Archive**, **Restore** and **Move to Trash** are an Editor's alone. A Viewer can't select: a Cmd-click opens the card, as a click does. Selecting works on a board on its tab, maximised or filling it, but not on the smaller board inside a [Dashboard](/help/plan/dashboards/) slot (maximise it first).
+
+Your selection is your own: nobody else sees it, and it isn't saved. Collaborators see only the changes you make with it, as they happen.
+
+</ArticleLayout>

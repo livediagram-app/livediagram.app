@@ -3,12 +3,19 @@
 // A Plan board's rows and cards (docs/specs/026-plan/plan-board.md "What the board shows"), drawn by
 // PlanBoardView: a row's collapsible band when the board has swimlanes, one card in a cell, and the
 // card under the pointer while it is dragged.
+import { planCardCursor } from './board-cursors';
+import { useEffect, useRef } from 'react';
 import { itemVoteKey } from '@liveplanner/project';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
 import type { CardVote } from './CardVoteContext';
 import { useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
-import { usePlanDragPointer, type PlanDragPointerStore } from '@/hooks/plan/usePlanCardDrag';
+import {
+  holdCardTouch,
+  usePlanDragPointer,
+  type PlanDragPointerStore,
+} from '@/hooks/plan/usePlanCardDrag';
 import { createPortal } from 'react-dom';
+import { CountBadge } from '@liveplanner/ui';
 import {
   ITEM_TYPES,
   itemAccessibleName,
@@ -20,11 +27,15 @@ import { usePlan } from './PlanContext';
 import { PersonDisc } from './PersonDisc';
 import { ColourDot } from './ColourSwatches';
 import { PlanCardFace } from './PlanCardFace';
+import { useCardFileDrop } from './card-file-drop';
 import type { PlanPalette } from './plan-palette';
+import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
 const REFUSED_COLOUR = '#dc2626';
+// The cards drawn behind the held one while a group is carried.
+export const GROUP_GHOST_STACK = 2;
 
 // The gap a held card would land in, dashed in the board's focus colour; or, for a palette card of a type the board
 // does not show (`refused`), a red dashed zone saying why (docs/specs/026-plan/plan-mode.md "The palette").
@@ -93,7 +104,7 @@ export function LaneRow({
         <span aria-hidden>{shut ? '▸' : '▾'}</span>
         {lane.person ? <PersonDisc person={lane.person} /> : null}
         {lane.colour ? <ColourDot colour={lane.colour} /> : null}
-        <span style={{ color: palette.text }}>{lane.label}</span>
+        <span style={{ ...PLAN_HEADING_STYLE, color: palette.text }}>{lane.label}</span>
       </button>
       {children}
     </>
@@ -106,12 +117,16 @@ export function PlanBoardCard({
   palette,
   placeholderBefore,
   lifted,
+  selected = false,
   done,
   setupFields,
   cardSize,
+  stacked = false,
+  touch = 'touch-none',
   faceDown,
   presence,
   interactive,
+  canMove,
   onPress,
   onOpen,
   onKey,
@@ -123,12 +138,20 @@ export function PlanBoardCard({
   palette: PlanPalette;
   placeholderBefore: number | undefined;
   lifted: boolean;
+  // One of this person's selected cards (docs/specs/026-plan/plan-board.md "Several cards at once"): the brand ring.
+  selected?: boolean;
   done: boolean;
   setupFields: Parameters<typeof PlanCardFace>[0]['fields'];
   cardSize: Parameters<typeof PlanCardFace>[0]['size'];
+  // A slot board's narrow column: a Minimal card's title over its bits (PlanCardFace `stacked`).
+  stacked?: boolean;
+  // The card's touch-action (phone-board.ts cardTouch): touch-none but on a phone board one column a screen.
+  touch?: string;
   faceDown: boolean;
   presence: Parameters<typeof PlanCardFace>[0]['presence'];
   interactive: boolean;
+  // This person may pick the card up (an Editor, a Participant): the hand shows only then (board-cursors.ts).
+  canMove: boolean;
   onPress: (id: string, e: React.PointerEvent<HTMLElement>) => void;
   onOpen: () => void;
   onKey: (item: Item, e: React.KeyboardEvent<HTMLElement>) => void;
@@ -142,23 +165,42 @@ export function PlanBoardCard({
 }) {
   const types = usePlan()?.types ?? ITEM_TYPES;
   const hold = useLongPress((x, y) => onLongPress?.(item, { x, y }));
+  // A card that takes a finger as a scroll is picked up by a hold: past it, its finger stops scrolling
+  // (usePlanCardDrag holdCardTouch). Non-passive from the start, so the browser waits on it.
+  const cardRef = useRef<HTMLDivElement>(null);
+  const scrolls = touch !== 'touch-none';
+  // A file dropped on it joins its Attachments (card-file-drop.ts).
+  const fileDrop = useCardFileDrop(item, faceDown);
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el || !scrolls) return;
+    el.addEventListener('touchmove', holdCardTouch, { passive: false });
+    return () => el.removeEventListener('touchmove', holdCardTouch);
+  }, [scrolls]);
   return (
     <>
       {placeholderBefore !== undefined ? (
         <DropGap height={placeholderBefore} palette={palette} />
       ) : null}
       <div
+        ref={cardRef}
         role="listitem"
         tabIndex={0}
         data-plan-card={item.id}
-        aria-label={faceDown ? 'Hidden card' : itemAccessibleName(item, types)}
-        // touch-none: a finger on a card drags it, never scrolls the board under it (a maximised board scrolls).
-        className="relative touch-none rounded-lg outline-none transition-opacity focus-visible:ring-2"
+        aria-label={`${faceDown ? 'Hidden card' : itemAccessibleName(item, types)}${selected ? ', selected' : ''}`}
+        data-selected={selected || undefined}
+        // touch-none: a finger on a card drags it, never scrolls the board under it (a maximised board scrolls); on a
+        // phone board one column a screen it scrolls, and a card held still is carried (phone-board.ts).
+        className={`relative ${touch} rounded-lg outline-none transition-opacity focus-visible:ring-2`}
         style={{
           opacity: lifted ? 0.35 : 1,
-          cursor: interactive ? 'grab' : undefined,
+          cursor: planCardCursor(interactive, canMove),
           ['--tw-ring-color' as string]: palette.focus,
+          // The ring sits outside the card's own box, so every card size and a cover keep their layout.
+          ...(selected ? { boxShadow: `0 0 0 2px ${palette.focus}` } : {}),
         }}
+        aria-busy={fileDrop.uploading || undefined}
+        {...fileDrop.handlers}
         onPointerDown={(e) => {
           if (onLongPress && !faceDown) hold.onPointerDown(e);
           onPress(item.id, e);
@@ -186,10 +228,22 @@ export function PlanBoardCard({
           palette={palette}
           fields={setupFields}
           size={cardSize}
+          stacked={stacked}
           faceDown={faceDown}
           muted={done}
           presence={presence}
         />
+        {fileDrop.over || fileDrop.uploading ? (
+          <span
+            aria-hidden
+            data-card-file-drop=""
+            className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-xl bg-white/80 ring-2 ring-brand-500 dark:bg-slate-900/80"
+          >
+            <span className="rounded-md bg-brand-700 px-2 py-0.5 text-[11px] font-semibold text-white shadow-sm dark:bg-brand-600">
+              {fileDrop.uploading ? 'Uploading…' : 'Drop to Attach'}
+            </span>
+          </span>
+        ) : null}
         {cardVote ? (
           <ElementVoteOverlay
             voteKey={itemVoteKey(item.id)}
@@ -217,6 +271,8 @@ export function PlanDragGhost({
   palette,
   fields,
   size,
+  stacked = false,
+  count = 1,
 }: {
   drag: {
     clientX: number;
@@ -232,8 +288,14 @@ export function PlanDragGhost({
   palette: PlanPalette;
   fields: Parameters<typeof PlanCardFace>[0]['fields'];
   size: Parameters<typeof PlanCardFace>[0]['size'];
+  // As the card it carries was drawn (PlanBoardCard `stacked`).
+  stacked?: boolean;
+  // A group carried together (docs/specs/026-plan/plan-board.md "Several cards at once"): copies stacked behind the held
+  // card and a count badge.
+  count?: number;
 }) {
   const at = usePlanDragPointer(pointer) ?? drag;
+  const behind = Math.min(GROUP_GHOST_STACK, count - 1);
   return createPortal(
     <div
       className="pointer-events-none fixed z-[1000] rotate-2 opacity-90 shadow-xl motion-reduce:rotate-0"
@@ -244,7 +306,31 @@ export function PlanDragGhost({
         height: drag.height,
       }}
     >
-      <PlanCardFace item={item} palette={palette} fields={fields} size={size} />
+      {Array.from({ length: behind }, (_, i) => (
+        <div
+          key={i}
+          aria-hidden
+          className="absolute inset-0 rounded-lg border shadow-sm"
+          style={{
+            transform: `translate(${(behind - i) * 5}px, ${(behind - i) * 5}px)`,
+            backgroundColor: palette.card,
+            borderColor: palette.border,
+          }}
+        />
+      ))}
+      <div className="relative">
+        <PlanCardFace item={item} palette={palette} fields={fields} size={size} stacked={stacked} />
+      </div>
+      {count > 1 ? (
+        // The board's surface on its focus colour: the pair each theme already keeps apart.
+        <CountBadge
+          count={count}
+          size="md"
+          background={palette.focus}
+          color={palette.surface}
+          className="absolute -right-2 -top-2 shadow"
+        />
+      ) : null}
     </div>,
     document.body,
   );

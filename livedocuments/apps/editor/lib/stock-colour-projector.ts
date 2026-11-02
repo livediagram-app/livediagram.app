@@ -12,20 +12,39 @@
 // drawn for that page, not for the viewer's chrome: its theme colours in the half that matches the page's
 // surface, its stock colours for that surface, so a light slide in dark chrome keeps dark words.
 import {
+  canvasSurface,
+  elementPageTones,
   resolveStockColours,
   viewElementInTheme,
   type CanvasSurface,
   type Element,
+  type LaidOutPage,
 } from '@livedocuments/document';
 
 const NO_THEME_MAP: ReadonlyMap<string, string> = new Map();
 
-/** The surface of each element on a page with its own fill (elementPageSurfaces), and the theme map
- *  for each surface (themeViewMap in that appearance). */
+/** The surface of each element on a page with its own fill (elementPageSurfaces), the theme map
+ *  for each surface (themeViewMap in that appearance), and, where known, that page's tone
+ *  (elementPageTones), which a label with no fill of its own is read against. */
 export type PageView = {
   surfaces: ReadonlyMap<string, CanvasSurface>;
   maps: Readonly<Record<CanvasSurface, ReadonlyMap<string, string>>>;
+  tones?: ReadonlyMap<string, string>;
 };
+
+/** The page view of `elements` on `pages`: each one's page tone and the surface it makes, from one
+ *  walk (elementPageTones). Undefined where no element sits on a filled page. */
+export function pageViewOf(
+  elements: Element[],
+  pages: readonly LaidOutPage[],
+  maps: PageView['maps'],
+): PageView | undefined {
+  const tones = elementPageTones(elements, pages);
+  if (!tones.size) return undefined;
+  const surfaces = new Map<string, CanvasSurface>();
+  for (const [id, tone] of tones) surfaces.set(id, canvasSurface(tone));
+  return { surfaces, maps, tones };
+}
 
 /** One element as drawn: on its page's surface where it has one, else on the canvas's. */
 export function elementAsSeen(
@@ -36,7 +55,10 @@ export function elementAsSeen(
 ): Element {
   const onPage = pageView?.surfaces.get(el.id);
   return onPage
-    ? resolveStockColours(viewElementInTheme(el, pageView!.maps[onPage]), onPage)
+    ? resolveStockColours(
+        viewElementInTheme(el, pageView!.maps[onPage], pageView!.tones?.get(el.id)),
+        onPage,
+      )
     : resolveStockColours(viewElementInTheme(el, themeMap), surface);
 }
 
@@ -49,7 +71,7 @@ export function createStockColourProjector(): (
   let cacheSurface: CanvasSurface | null = null;
   let cacheMap: ReadonlyMap<string, string> | null = null;
   let cacheMaps: PageView['maps'] | null = null;
-  // Each element's projection and the page surface it was drawn for ('' off a filled page), so an
+  // Each element's projection and the page surface and tone it was drawn for ('' off a filled page), so an
   // element moved onto another page is drawn afresh without dropping everyone else's.
   let cache = new WeakMap<Element, { on: string; out: Element }>();
   // The last board in and its projection: a render that changes no element (a pan, a zoom, a marquee
@@ -71,7 +93,7 @@ export function createStockColourProjector(): (
     lastSurfaces = surfaces;
     let changed = false;
     const out = elements.map((el) => {
-      const on = surfaces?.get(el.id) ?? '';
+      const on = `${surfaces?.get(el.id) ?? ''}${pageView?.tones?.get(el.id) ?? ''}`;
       const hit = cache.get(el);
       let projected = hit?.on === on ? hit.out : undefined;
       if (!projected) {

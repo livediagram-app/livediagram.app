@@ -30,6 +30,15 @@ vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
   },
 }));
 
+// The component library travels both ways (docs/specs/009-elements/components.md "This Browser").
+vi.mock('@/lib/api/components', () => ({
+  apiLoadComponents: vi.fn(async () => []),
+  cloudPutComponent: vi.fn(async (_o: string, _d: string, c: unknown) => {
+    calls.push('cloudPutComponent');
+    return c;
+  }),
+}));
+
 vi.mock('@/lib/api/core', () => ({
   API_BASE: '/api',
   // Mirrors the real signature (action, status, code) so the type the tests
@@ -89,6 +98,7 @@ const apiClient = await import('@/lib/api-client');
 const core = await import('@/lib/api/core');
 const images = await import('./offline-images');
 const store = await import('./offline-store');
+const componentsApi = await import('@/lib/api/components');
 const { indexClient } = await import('@liveworkspace/workbench/lib/index-client');
 const {
   ConversionInProgressError,
@@ -111,6 +121,17 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     return saveOfflineToCloud('d1', 'owner').then(() => {
       expect(calls).toEqual(['apiCreateDesign', 'offlineDeleteDesign']);
     });
+  });
+
+  it('puts the library on the cloud copy before the local one goes', async () => {
+    vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({
+      id: 'd1',
+      name: 'Roadmap',
+      tabs: [],
+      components: [{ id: 'c1', name: 'Header', width: 1, height: 1, elements: [], updatedAt: 1 }],
+    } as never);
+    await saveOfflineToCloud('d1', 'owner');
+    expect(calls).toEqual(['apiCreateDesign', 'cloudPutComponent', 'offlineDeleteDesign']);
   });
 
   it('keeps the local copy when the cloud write fails', async () => {
@@ -269,6 +290,18 @@ describe('takeCloudOffline (cloud -> offline)', () => {
     vi.mocked(indexClient.getItem).mockRejectedValueOnce(new Error('offline'));
     await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow('offline');
     expect(calls).toEqual([]);
+  });
+
+  it('carries the library onto the offline record, and none when it has none', async () => {
+    vi.mocked(componentsApi.apiLoadComponents).mockResolvedValueOnce([
+      { id: 'c1', name: 'Header', width: 1, height: 1, elements: [], updatedAt: 1 },
+    ] as never);
+    await takeCloudOffline('d1', 'owner');
+    expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).toMatchObject({
+      components: [{ id: 'c1' }],
+    });
+    await takeCloudOffline('d1', 'owner');
+    expect(vi.mocked(store.offlinePutRecord).mock.calls[1]![0]).not.toHaveProperty('components');
   });
 
   it('writes the local copy before deleting the server one', async () => {

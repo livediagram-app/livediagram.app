@@ -47,8 +47,7 @@ Code category turns it off. The still render wraps too (word first, mid-token as
 ## Editing
 
 - **Double-click** (`EditorCanvasHost`, `useBoxedElementGestures`) or **Edit Code** in the menu opens the **Edit code
-  dialog** (`components/dialogs/CodeEditDialog.tsx`): a monospace textarea (Tab inserts two spaces, never moves
-  focus) and a language dropdown. Save commits code and language together, one undo step
+  dialog** (`components/dialogs/CodeEditDialog.tsx`): a monospace textarea (Tab inserts two spaces; Shift+Tab moves focus back out as anywhere, and ⌘/Ctrl+Enter saves, so a keyboard is never trapped in the field; a hint under it says so where there is a keyboard) and a language dropdown. Save commits code and language together, one undo step
   (`useDataShapeSetters`); read-only and locked tabs can't open it.
 - The element menu's **Code** category (`context-menu-data-editors.tsx`, in `ElementDataSections`) shows the line
   count and language, Edit Code, and Wrap Long Lines. The language is chosen in the dialog only.

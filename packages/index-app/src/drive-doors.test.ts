@@ -53,6 +53,7 @@ describe('the Drive key', () => {
       format: 'file',
       tabId: null,
       code: null,
+      appearance: null,
       ifVersion: null,
     });
   });

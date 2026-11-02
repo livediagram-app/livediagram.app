@@ -109,6 +109,21 @@ describe('comment ls', () => {
     expect(commentLs.text!({ status: 'resolved', threads: [] })).toEqual(['no resolved threads']);
     expect(commentLs.text!({ status: 'open', threads: [] })).toEqual(['no open threads']);
   });
+
+  it('carries a comment’s reactions when it has some, and leaves them out when it has none', async () => {
+    const reactions = [{ emoji: '👍', name: 'Thumbs Up', count: 2, by: ['Sam', 'Ada'] }];
+    const reacted = thread({});
+    const listing = {
+      threads: [
+        { ...reacted, comments: [{ ...reacted.comments[0]!, reactions }] },
+        thread({ ref: 'x9', comments: [{ ...reacted.comments[0]!, reactions: [] }] }),
+      ],
+    };
+    const api = fakeApi({ ...tabsOfA, [`/documents/${DOC_A}/comments?status=open`]: listing });
+    const out = await commentLs.run!(contextOf(api, [], []), { doc: DOC_A, status: 'open' });
+    expect(out.threads[0]!.comments[0]!.reactions).toEqual(reactions);
+    expect(out.threads[1]!.comments[0]).not.toHaveProperty('reactions');
+  });
 });
 
 describe('comment add, reply, resolve, reopen', () => {

@@ -1,13 +1,6 @@
 import { auditContrast, type ContrastReport } from './contrast';
 import { CANVAS, darkVisitor, freshDarkPage, seedDesign, shareLink } from './audit-screens';
-import {
-  dismissQuickTour,
-  expect,
-  expectNoPageErrors,
-  test,
-  untilHydrated,
-  mintGuest,
-} from './fixtures';
+import { dismissQuickTour, expect, expectNoPageErrors, test, mintGuest } from './fixtures';
 
 // Contrast audit, dark mode (docs/specs/003-system-architecture/e2e-smoke.md; the palette it guards is
 // docs/specs/004-interface-design/color-scheme.md, Dark palette (Steel)). Every visible text node on each
@@ -30,16 +23,6 @@ function expectAA(report: ContrastReport, screen: string): void {
 }
 
 test.describe('Contrast audit, dark mode', () => {
-  test('the New Design wizard', async ({ page, pageErrors }) => {
-    await darkVisitor(page);
-    await page.goto('/new');
-    await page.getByText('New Design', { exact: false }).first().waitFor();
-    await untilHydrated(page.getByRole('button', { name: /^create$/i }));
-    await expect(page.locator('html')).toHaveClass(/dark/);
-    expectAA(await auditContrast(page), 'wizard');
-    expectNoPageErrors(pageErrors);
-  });
-
   test('the editor, its panels and dialogs', async ({ page, pageErrors, baseURL }) => {
     const owner = await mintGuest(page.request);
     const origin = new URL(baseURL!).origin;
@@ -63,8 +46,12 @@ test.describe('Contrast audit, dark mode', () => {
     expectAA(await auditContrast(page), 'Settings dialog');
     await page.keyboard.press('Escape');
 
+    // The shared Share dialog (`@liveworkspace/explorer`, ShareDialog.test.tsx): named "Share <the design>",
+    // headed "Share This Design", its composer ending in Create Pass.
     await page.getByRole('button', { name: /^Share$/ }).click();
-    await page.getByRole('dialog', { name: 'Share This Design' }).waitFor();
+    const dialog = page.getByRole('dialog', { name: /^Share / });
+    await dialog.getByRole('heading', { name: 'Share This Design' }).waitFor();
+    await dialog.getByRole('button', { name: 'Create Pass' }).waitFor();
     expectAA(await auditContrast(page), 'Share dialog');
     await page.keyboard.press('Escape');
     expectNoPageErrors(pageErrors);

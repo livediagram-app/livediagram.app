@@ -281,7 +281,7 @@ test('the photo import needs no model key', async ({ page, pageErrors }) => {
   await page.route('**/api/capabilities', (route) =>
     route.fulfill({ json: { aiEnabled: false, emailEnabled: false } }),
   );
-  await startTemplateDocument(page, 'Technical', /^Event storming/i);
+  await startTemplateDocument(page, 'Software & IT', /^Event storming/i);
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);
   await expect(page.getByRole('button', { name: /add from photo/i })).toBeVisible();

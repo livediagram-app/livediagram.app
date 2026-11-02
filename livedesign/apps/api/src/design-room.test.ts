@@ -503,6 +503,59 @@ describe('DesignRoom op-role enforcement', () => {
     return receivedOf(ws, 'op');
   }
 
+  // docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element".
+  it("refuses an editor's element op the validator refuses: not relayed or sequenced, answered and logged", () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const { room } = newRoom();
+      const editor = connect(room, 'editor', 'edit');
+      const other = connect(room, 'other', 'edit');
+      editor.ws.sent.length = 0;
+      other.ws.sent.length = 0;
+      const arrow = { id: 'r', type: 'arrow', from: 'a', to: { kind: 'free', x: 0, y: 0 } };
+      const op = { kind: 'el', tabId: 't', op: { kind: 'add', element: arrow } };
+
+      sendFrame(room, editor.ws, { kind: 'op', op, ref: 4 });
+
+      expect(opsReceived(other.ws)).toHaveLength(0);
+      expect(receivedOf(editor.ws, 'cursor')).toHaveLength(0);
+      expect(room.seq).toBe(0);
+      expect(receivedOf(editor.ws, 'op-refused')).toEqual([
+        {
+          kind: 'op-refused',
+          op: 'el',
+          reason: 'invalid-element',
+          tabId: 't',
+          elementId: 'r',
+          field: 'from',
+          ref: 4,
+        },
+      ]);
+      expect(warn).toHaveBeenCalledWith('[room] element op refused', {
+        op: 'el',
+        reason: 'invalid-element',
+        field: 'from',
+      });
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
+  it("relays an editor's valid element op, and one of a kind the room does not know", () => {
+    const { room } = newRoom();
+    const editor = connect(room, 'editor', 'edit');
+    const other = connect(room, 'other', 'edit');
+    other.ws.sent.length = 0;
+    const shape = { id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 };
+    const add = (element: unknown) => ({ kind: 'el', tabId: 't', op: { kind: 'add', element } });
+
+    sendFrame(room, editor.ws, { kind: 'op', op: add(shape) });
+    sendFrame(room, editor.ws, { kind: 'op', op: add({ id: 'h', type: 'hologram', from: 'a' }) });
+
+    expect(opsReceived(other.ws)).toHaveLength(2);
+    expect(receivedOf(editor.ws, 'op-refused')).toHaveLength(0);
+  });
+
   it('relays an op from an edit-role session to peers', () => {
     const { room } = newRoom();
     const editor = connect(room, 'editor', 'edit');
@@ -1721,6 +1774,39 @@ describe('DesignRoom and agent changesets', () => {
     const peer = join(room, 'p');
     sendFrame(room, sender, { kind: 'op', op: changeset });
     expect(peer.sent).toEqual([]);
+  });
+
+  // docs/specs/009-elements/components.md "Sharing, collaboration and storage": a main the api stored is sequenced
+  // for everybody, a tab-scoped session hears it only for a main its tab uses, and no client may send one.
+  describe('a component op', () => {
+    const main = { id: 'cmp-1', name: 'Header', width: 10, height: 10, elements: [], updatedAt: 1 };
+    const op = { kind: 'component', component: main, tabIds: ['t1'] };
+    function joinScoped(room: DesignRoom, id: string, tabScope: string) {
+      const ws = makeSocket();
+      room.acceptSession(asWs(ws), 'edit', tabScope);
+      sendFrame(room, ws, { kind: 'hello', participant: { id, name: id, color: '#abc' } });
+      ws.sent.length = 0;
+      return ws;
+    }
+
+    it('is sequenced for everybody, and for a scoped session only on a tab that uses it', async () => {
+      const { room } = newRoom();
+      const peer = join(room, 'p');
+      const onTab = joinScoped(room, 's1', 't1');
+      const offTab = joinScoped(room, 's2', 't2');
+      expect((await room.fetch(mutation(op))).status).toBe(204);
+      expect(received(peer).at(-1)).toMatchObject({ kind: 'op', from: 'system', op, seq: 1 });
+      expect(received(onTab).at(-1)).toMatchObject({ op });
+      expect(received(offTab).filter((m) => (m as { kind?: string }).kind === 'op')).toEqual([]);
+    });
+
+    it('is never relayed from a client socket', () => {
+      const { room } = newRoom();
+      const sender = join(room, 's');
+      const peer = join(room, 'p');
+      sendFrame(room, sender, { kind: 'op', op });
+      expect(peer.sent).toEqual([]);
+    });
   });
 
   // docs/specs/024-agents/agent-changesets.md "Held elements": a Viewer's selection holds nothing.

@@ -4,9 +4,8 @@
 // "Beside the cog", "The layout gallery"): the page's layout gallery in a popover anchored to the
 // button (a bottom sheet on a phone), as Background opens its swatches. Hovering a tile previews it
 // on the page; a press places it (over anything there, one undo step back) and closes the popover;
-// Surprise Me places one and keeps it open, to roll again; closing it takes any preview away. Its
-// top offers Change Theme (the Tab Style popover, as the dock's Theme button opens it) beside an
-// X that closes it.
+// Surprise Me places one and keeps it open, to roll again; closing it takes any preview away. It
+// keeps to its layouts: an X closes it, and no Change Theme (the tab's Style button does that).
 import { useEffect, useRef } from 'react';
 import { lucidePanelsTopLeft } from '@liveworkspace/icons/lucide';
 import type { LaidOutPage } from '@livedocuments/document';
@@ -14,7 +13,6 @@ import type { PageLayoutId } from '@livedocuments/templates';
 import { CloseIcon, lucideGlyph, Tooltip } from '@livedocuments/ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { track } from '@/lib/telemetry';
-import { ChangeThemeButton } from '@liveworkspace/workbench/components/canvas/ChangeThemeButton';
 import { LayoutGallery } from './layout-gallery/LayoutGallery';
 import { TitlePopoverButton, titleButtonClass } from './TitlePopoverButton';
 
@@ -38,8 +36,6 @@ type BodyProps = {
   // Surprise Me: places a layout without closing (Body's host passes the plain apply).
   onSurprise?: (layout: PageLayoutId) => void;
   onPreview: (layout: PageLayoutId | null) => void;
-  // Opens the Tab Style popover; absent where the session may not restyle the tab (no button).
-  onChangeTheme?: (() => void) | undefined;
 };
 
 // The popover's body; unmounting (the popover closing) takes the preview off the page.
@@ -48,7 +44,6 @@ function Body({
   onApply,
   onSurprise,
   onPreview,
-  onChangeTheme,
   wide,
   onClose,
 }: BodyProps & { wide: boolean; onClose: () => void }) {
@@ -67,14 +62,6 @@ function Body({
           <span />
         )}
         <div className="flex items-center gap-1">
-          {onChangeTheme ? (
-            <ChangeThemeButton
-              onClick={() => {
-                onClose();
-                onChangeTheme();
-              }}
-            />
-          ) : null}
           {/* A phone's bottom sheet closes by a swipe or an outside press: no X there. */}
           {wide ? (
             <Tooltip label="Close">

@@ -5,11 +5,12 @@
 // (layers kept) or Layers as Files (a .zip of each visible layer). PNG, JPEG and WebP draw the
 // elements on the page over the photo while Include Elements is on.
 import { useContext, useState } from 'react';
-import { Button } from '@livedesign/ui';
+import { BackBar, Button } from '@livedesign/ui';
 import type { LaidOutPage, Tab } from '@livedesign/design';
 import { EditorContext } from '@/app/design/[id]/EditorContext';
 import { loadTabImages } from '@/lib/export-tab-images';
 import {
+  allSizesZip,
   download,
   elementsImage,
   loadedSession,
@@ -18,15 +19,30 @@ import {
 } from '@/lib/photo-editor/photo-export';
 import { apiFetcher, PixelsStore } from '@/lib/photo-editor/pixels-store';
 import { track } from '@/lib/telemetry';
+import { photoTools } from '@/lib/photo-editor/tool-state';
 import { OptionChoice, OptionSlider, OptionToggle } from './photo-controls';
 
-const FORMATS: readonly { value: PhotoFormat; label: string; line: string }[] = [
+// What a JPEG shows where the photo is transparent (photo-pages.md "Exports and other views"): white, or the
+// person's background colour.
+export type JpegMatte = 'white' | 'background';
+export const jpegMatte = (choice: JpegMatte, background: string): string =>
+  choice === 'white' ? '#ffffff' : background;
+
+// All Sizes: every photo page of the tab in one .zip (photo-pages.md "Making sizes").
+type PanelFormat = PhotoFormat | 'sizes';
+
+const FORMATS: readonly { value: PanelFormat; label: string; line: string }[] = [
   { value: 'png', label: 'PNG', line: 'Every pixel as it is, transparency kept.' },
   { value: 'jpeg', label: 'JPEG', line: 'Smaller, for sharing; no transparency.' },
   { value: 'webp', label: 'WebP', line: 'Small, with transparency, for the web.' },
   { value: 'psd', label: 'PSD', line: 'Its layers kept, to open in another editor.' },
   { value: 'layers', label: 'Layers as Files', line: 'A .zip of each visible layer as a PNG.' },
+  { value: 'sizes', label: 'All Sizes', line: 'A .zip of every photo page, named by its size.' },
 ];
+
+/** The formats the card offers: All Sizes once the tab has two photo pages or more. */
+export const formatsFor = (photoPages: number) =>
+  FORMATS.filter((f) => f.value !== 'sizes' || photoPages > 1);
 
 const pascal = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
@@ -54,10 +70,12 @@ export function PhotoExportPanel({
       ? live.focusId
       : (photoPages[0]?.id ?? ''),
   );
-  const [format, setFormat] = useState<PhotoFormat>('png');
+  const [format, setFormat] = useState<PanelFormat>('png');
+  // All Sizes' file type.
+  const [sizesAs, setSizesAs] = useState<'png' | 'jpeg'>('png');
   const [quality, setQuality] = useState(0.9);
   const [lossless, setLossless] = useState(false);
-  const [matte, setMatte] = useState<'white' | 'black'>('white');
+  const [matte, setMatte] = useState<JpegMatte>('white');
   const [withElements, setWithElements] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,23 +87,32 @@ export function PhotoExportPanel({
     setError(null);
     try {
       const store = live?.store ?? new PixelsStore(apiFetcher(() => scope));
+      if (format === 'sizes') {
+        const file = await allSizesZip(tab, pages, store, live?.session ?? null, designName, {
+          format: sizesAs,
+          quality,
+          matte: jpegMatte(matte, photoTools.get().background),
+          withElements,
+          scope,
+        });
+        download(file.blob, file.name);
+        track('Document', 'Exported', 'PhotoAllSizes');
+        onDone();
+        return;
+      }
       const { session, done } = await loadedSession(tab, page.id, store, live?.session ?? null);
       const flat = format === 'png' || format === 'jpeg' || format === 'webp';
       const elements =
         flat && withElements
           ? await elementsImage(tab, page, await loadTabImages(tab, scope).catch(() => undefined))
           : null;
-      const file = await photoFile(
-        session,
-        `${designName || 'Photo'} - ${page.name ?? 'Photo'}`,
-        {
-          format,
-          quality,
-          lossless,
-          matte: matte === 'white' ? '#ffffff' : '#000000',
-          elements,
-        },
-      );
+      const file = await photoFile(session, `${designName || 'Photo'} - ${page.name ?? 'Photo'}`, {
+        format,
+        quality,
+        lossless,
+        matte: jpegMatte(matte, photoTools.get().background),
+        elements,
+      });
       done();
       download(file.blob, file.name);
       track('Document', 'Exported', `Photo${format === 'layers' ? 'Layers' : pascal(format)}`);
@@ -98,14 +125,8 @@ export function PhotoExportPanel({
   };
   return (
     <div className="flex flex-col gap-4">
-      <button
-        type="button"
-        onClick={onBack}
-        className="self-start text-xs font-medium text-slate-500 hover:underline"
-      >
-        ← All formats
-      </button>
-      {photoPages.length > 1 ? (
+      <BackBar label="All formats" current="Photo" onClick={onBack} disabled={busy} />
+      {photoPages.length > 1 && format !== 'sizes' ? (
         <OptionChoice
           label="Photo Page"
           value={pageId}
@@ -114,7 +135,7 @@ export function PhotoExportPanel({
         />
       ) : null}
       <div role="radiogroup" aria-label="Format" className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {FORMATS.map((f) => (
+        {formatsFor(photoPages.length).map((f) => (
           <button
             key={f.value}
             type="button"
@@ -136,7 +157,18 @@ export function PhotoExportPanel({
           </button>
         ))}
       </div>
-      {format === 'jpeg' || format === 'webp' ? (
+      {format === 'sizes' ? (
+        <OptionChoice<'png' | 'jpeg'>
+          label="File Type"
+          value={sizesAs}
+          choices={[
+            { value: 'png', label: 'PNG' },
+            { value: 'jpeg', label: 'JPEG' },
+          ]}
+          onChange={setSizesAs}
+        />
+      ) : null}
+      {format === 'jpeg' || format === 'webp' || (format === 'sizes' && sizesAs === 'jpeg') ? (
         <OptionSlider
           label="Quality"
           value={quality}
@@ -152,28 +184,33 @@ export function PhotoExportPanel({
       {format === 'webp' ? (
         <OptionToggle label="Lossless" on={lossless} onChange={setLossless} />
       ) : null}
-      {format === 'jpeg' ? (
-        <OptionChoice<'white' | 'black'>
+      {format === 'jpeg' || (format === 'sizes' && sizesAs === 'jpeg') ? (
+        <OptionChoice<JpegMatte>
           label="Where Transparent"
           value={matte}
           choices={[
             { value: 'white', label: 'White' },
-            { value: 'black', label: 'Black' },
+            { value: 'background', label: 'Background Colour' },
           ]}
           onChange={setMatte}
         />
       ) : null}
-      {format === 'png' || format === 'jpeg' || format === 'webp' ? (
+      {format === 'png' || format === 'jpeg' || format === 'webp' || format === 'sizes' ? (
         <OptionToggle label="Include Elements" on={withElements} onChange={setWithElements} />
       ) : null}
-      {page && live?.photos[page.id] ? (
+      {format === 'sizes' ? (
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          {photoPages.length} photo pages, each at its pixel size, named by its page and size.
+        </p>
+      ) : null}
+      {format !== 'sizes' && page && live?.photos[page.id] ? (
         <p className="text-xs text-slate-500 dark:text-slate-400">
           {live.photos[page.id]!.width} x {live.photos[page.id]!.height} px, at its pixel size.
         </p>
       ) : null}
       {error ? <p className="text-xs text-rose-600 dark:text-rose-400">{error}</p> : null}
       <div className="flex justify-end">
-        <Button size="sm" disabled={busy || !page} onClick={() => void run()}>
+        <Button size="sm" disabled={!page} busy={busy} onClick={() => void run()}>
           {busy ? 'Exporting…' : 'Download'}
         </Button>
       </div>

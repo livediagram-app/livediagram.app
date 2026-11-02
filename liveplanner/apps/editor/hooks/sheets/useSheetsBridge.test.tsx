@@ -136,17 +136,40 @@ describe('useSheetsBridge', () => {
     }).not.toThrow();
     const h = handlers();
     const detach = r.bridge.attach(h);
+    // What was dropped is read again as it attaches.
+    expect(h.resync).toHaveBeenCalledOnce();
     r.receiveSheets(sheetsOp);
     r.receiveSheetPresence('peer', presenceOp);
     r.resync();
     r.reannounce();
     expect(h.receive).toHaveBeenCalledWith(sheetsOp);
     expect(h.presence).toHaveBeenCalledWith('peer', presenceOp);
-    expect(h.resync).toHaveBeenCalledOnce();
+    expect(h.resync).toHaveBeenCalledTimes(2);
     expect(h.reannounce).toHaveBeenCalledOnce();
     detach();
     r.receiveSheets(sheetsOp);
     expect(h.receive).toHaveBeenCalledOnce();
+  });
+
+  // A sheet form's builder loads its sheet without drawing it, and a Sheet's tab left behind detaches: a response or
+  // a collaborator's write that arrives then is dropped, so the sheet once drawn read stale until a reload.
+  it('reads the loaded sheets again on attaching after an op was dropped, and only then', () => {
+    const { result } = renderHook(() => useSheetsBridge(opts()));
+    const r = result.current;
+    const first = handlers();
+    const detach = r.bridge.attach(first);
+    expect(first.resync).not.toHaveBeenCalled();
+    detach();
+    // Nothing missed while detached: attaching again reads nothing.
+    const quiet = handlers();
+    r.bridge.attach(quiet)();
+    expect(quiet.resync).not.toHaveBeenCalled();
+    // A write lands while nothing is attached.
+    r.receiveSheets(sheetsOp);
+    const next = handlers();
+    r.bridge.attach(next);
+    expect(next.resync).toHaveBeenCalledOnce();
+    expect(next.receive).not.toHaveBeenCalled();
   });
 
   it('names and releases sheets only once the chunk has attached', () => {

@@ -19,6 +19,7 @@ import { contentBounds } from './svg-render';
 import { pagesOf, layOutPages } from './page';
 import { elementIdsOnPage } from './page-content';
 import type { Element, ElementId, Tab, TabId } from './index';
+import { parseNoteCards, type NoteCard } from './slide-notes';
 
 export type Slide = {
   id: string;
@@ -33,7 +34,13 @@ export type Slide = {
    * `elementIds` is empty and ignored. Added from the slide panel's page picker.
    */
   pageId?: string;
-  /** What you mean to SAY over this slide. The slide's own, not any element's. */
+  /**
+   * What you mean to SAY over this slide, as note cards in order (docs/specs/012-collaboration/speaker-note-cards.md).
+   * The slide's own, not any element's. Read through `slideNoteCards`, never directly.
+   */
+  noteCards?: NoteCard[];
+  /** The cards' text joined by a blank line, kept for older readers; a slide written before note cards has only this,
+   *  which reads as one card. Written by `withNoteCards`. */
   notes?: string;
   /**
    * Left out of the presentation without being deleted. Absent = shown, so a
@@ -221,6 +228,14 @@ function isSlide(value: unknown): value is Slide {
   return true;
 }
 
+// A slide's stored cards, cleaned (parseNoteCards): a field that is not a list of cards goes, the slide stays.
+function withCleanNoteCards(slide: Slide): Slide {
+  if (!('noteCards' in slide)) return slide;
+  const { noteCards: raw, ...rest } = slide;
+  const noteCards = parseNoteCards(raw);
+  return noteCards ? { ...rest, noteCards } : rest;
+}
+
 /** Parse a stored presentation blob. Null when absent or unreadable. */
 export function parseStoredPresentation(raw: unknown): StoredPresentation | null {
   if (raw === null || raw === undefined) return null;
@@ -241,7 +256,7 @@ export function parseStoredPresentation(raw: unknown): StoredPresentation | null
     if (typeof deck !== 'object' || deck === null) continue;
     const slides = (deck as Partial<Deck>).slides;
     if (!Array.isArray(slides)) continue;
-    parsed.push({ slides: slides.filter(isSlide) });
+    parsed.push({ slides: slides.filter(isSlide).map(withCleanNoteCards) });
   }
   return { decks: parsed };
 }

@@ -1,6 +1,7 @@
 import { Profiler } from 'react';
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { Folder } from '@liveworkspace/index-client';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import { Explorer } from '../explorer/Explorer';
@@ -260,13 +261,11 @@ describe('cost of a drag', () => {
     const items = Array.from({ length: 2000 }, (_, i) => makeItem(i));
     const folders = Array.from({ length: 10 }, (_, i) => folder(`f${i}`));
     const index = createFakeIndex({ items, folders });
-    let committed = 0;
     let commits = 0;
     render(
       <Profiler
         id="explorer"
-        onRender={(_id, _phase, actual) => {
-          committed += actual;
+        onRender={() => {
           commits += 1;
         }}
       >
@@ -283,14 +282,16 @@ describe('cost of a drag', () => {
     await waitFor(() => expect(document.querySelector('[data-item-row]')).toBeTruthy());
     const row = document.querySelector('[data-item-row]')!;
     await act(async () => {});
-    committed = 0;
     commits = 0;
     const dt = transfer();
-    fireEvent.dragStart(row, { dataTransfer: dt });
-    fireEvent.dragEnd(row, { dataTransfer: dt });
+    // CPU time, not the Profiler's wall-clock actualDuration, which a busy CI runner stretched past the budget.
+    const cpu = cpuMsOf(() => {
+      fireEvent.dragStart(row, { dataTransfer: dt });
+      fireEvent.dragEnd(row, { dataTransfer: dt });
+    });
     // eslint-disable-next-line no-console
-    console.log(`[drag] start+end: ${commits} commits, ${committed.toFixed(1)}ms rendering`);
+    console.log(`[drag] start+end: ${commits} commits, ${cpu.toFixed(1)}ms CPU`);
     expect(commits).toBeLessThanOrEqual(2);
-    expect(committed).toBeLessThan(50);
+    expect(cpu).toBeLessThan(cpuBudgetMs(50));
   });
 });

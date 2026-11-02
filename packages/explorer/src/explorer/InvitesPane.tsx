@@ -24,7 +24,7 @@ const members = (n: number) => `${n} ${n === 1 ? 'member' : 'members'}`;
 
 export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
   const { words, navigate } = useExplorer();
-  const { myTeams, canRun, answer } = useTeams();
+  const { myTeams, myTeamsFailed, retryMyTeams, canRun, answer } = useTeams();
   const toast = useToast();
   const now = useNow();
   // The invitations being answered, so their buttons wait.
@@ -63,6 +63,16 @@ export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
       <PaneHeader title={SIDEBAR_LABELS.invites} onOpenNav={onOpenNav} showFilter={false} />
       {!canRun ? (
         <EmptyPane view={{ kind: 'invites' }} words={words} />
+      ) : invites === null && myTeamsFailed ? (
+        <EmptyState
+          icon={<MailIcon size={28} />}
+          title="Couldn’t load your invites"
+          description="Check your connection and try again."
+        >
+          <Button size="sm" onClick={retryMyTeams}>
+            Try again
+          </Button>
+        </EmptyState>
       ) : invites === null ? (
         <SkeletonRows count={2} />
       ) : invites.length === 0 ? (
@@ -78,12 +88,6 @@ export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
       ) : (
         <ul className="flex flex-col gap-3">
           {invites.map((invite) => {
-            const subtitle = [invite.organisation, members(invite.memberCount)]
-              .filter(Boolean)
-              .join(' · ');
-            const from = invite.invitedByName
-              ? `${invite.invitedByName} invited you`
-              : 'You were invited';
             const when = invite.createdAt && now ? ` ${relativeSince(invite.createdAt, now)}` : '';
             const role = invite.role === 'admin' ? ', as an admin' : '';
             return (
@@ -94,7 +98,7 @@ export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
               >
                 <span
                   aria-hidden
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-600 text-sm font-semibold text-white"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-700 text-sm font-semibold text-white dark:bg-brand-600"
                 >
                   {initialsOf(invite.teamName)}
                 </span>
@@ -102,18 +106,32 @@ export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
                   <span className="block truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                     {invite.teamName}
                   </span>
+                  {/* The organisation and the inviter's name are someone's typing: isolated, so their direction
+                      never turns the words around them. */}
                   <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
-                    {subtitle}
+                    {invite.organisation ? (
+                      <>
+                        <bdi>{invite.organisation}</bdi> ·{' '}
+                      </>
+                    ) : null}
+                    {members(invite.memberCount)}
                   </span>
                   <span className="block truncate text-xs text-slate-500 dark:text-slate-400">
-                    {`${from}${when}${role}.`}
+                    {invite.invitedByName ? (
+                      <>
+                        <bdi>{invite.invitedByName}</bdi> invited you
+                      </>
+                    ) : (
+                      'You were invited'
+                    )}
+                    {`${when}${role}.`}
                   </span>
                 </span>
                 <span className="flex shrink-0 items-center gap-2">
                   <Button
                     variant="secondary"
                     size="xs"
-                    disabled={busy.has(invite.id)}
+                    busy={busy.has(invite.id)}
                     aria-label={`Decline the invitation to ${invite.teamName}`}
                     onClick={() => void reply(invite, false)}
                   >
@@ -121,7 +139,7 @@ export function InvitesPane({ onOpenNav }: { onOpenNav?: () => void }) {
                   </Button>
                   <Button
                     size="xs"
-                    disabled={busy.has(invite.id)}
+                    busy={busy.has(invite.id)}
                     aria-label={`Accept the invitation to ${invite.teamName}`}
                     className="shadow-sm"
                     onClick={() => void reply(invite, true)}

@@ -6,7 +6,7 @@ import {
   type TabLedger,
 } from '@livedocuments/document';
 import {
-  AGENT_PRESENCE_TTL_MS,
+  AGENT_PRESENCE_ACTIVITY_TTL_MS,
   ROOM_RELAY_TIMEOUT_MS,
   ROOM_SELECTIONS_TIMEOUT_MS,
   type ChangesetRoomOp,
@@ -397,8 +397,8 @@ export async function deleteAgentPresence(
   return (await res.json<{ cleared: boolean }>()).cleared;
 }
 
-// A token's changeset refreshes its presence on the tab (spec "Presence"); a refresh that fails is logged and the
-// changeset stands (E7).
+// A token's changeset or read refreshes its presence on the tab for the activity window (spec "Presence"); a refresh
+// that fails is logged and the changeset or read stands (E7).
 export async function refreshAgentPresence(
   env: Env,
   write: Omit<AgentPresenceRoomWrite, 'mode' | 'status' | 'focus' | 'ttlMs'>,
@@ -408,7 +408,7 @@ export async function refreshAgentPresence(
       ...write,
       status: null,
       focus: [],
-      ttlMs: AGENT_PRESENCE_TTL_MS,
+      ttlMs: AGENT_PRESENCE_ACTIVITY_TTL_MS,
       mode: 'refresh',
     });
     if (!answer.ok)

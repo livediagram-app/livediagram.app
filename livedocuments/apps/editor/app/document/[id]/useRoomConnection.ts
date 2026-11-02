@@ -40,7 +40,11 @@ import { keepUnsavedTabChanges } from './meta-keep-local';
 import { migrateRoomOp } from './room-op-migrate';
 import { roomOpIsWellFormed } from './room-op-shape';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
-import { isSupersededByOwnWrite, type OwnElementWrites } from './own-element-writes';
+import {
+  isSupersededByOwnWrite,
+  withoutSupersededArticleOps,
+  type OwnElementWrites,
+} from './own-element-writes';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { shareLinkOpEffect } from './share-link-ops';
 import {
@@ -363,15 +367,21 @@ export function useRoomConnection(opts: {
           debugLog('[room] peer update superseded by our pending write');
           return;
         }
+        // The same for the blocks and cells of an article this editor is writing (own-element-writes.ts).
+        const incoming = ownWrites ? withoutSupersededArticleOps(ownWrites, op) : op;
+        if (incoming === null) {
+          debugLog('[room] peer writing superseded by our pending write');
+          return;
+        }
         // A peer's tab list keeps what this editor has not saved yet: a tab added here, one deleted here
         // (keepUnsavedTabChanges), judged against the baseline as it was before the list arrived.
         const savedBefore = saveBaseline.tabs.current;
         applyRemoteOp((prev) =>
-          op.kind === 'document-meta'
-            ? keepUnsavedTabChanges(prev, applyRoomOpToTabs(prev, op), savedBefore)
-            : applyRoomOpToTabs(prev, op),
+          incoming.kind === 'document-meta'
+            ? keepUnsavedTabChanges(prev, applyRoomOpToTabs(prev, incoming), savedBefore)
+            : applyRoomOpToTabs(prev, incoming),
         );
-        foldRemoteOpIntoBaseline(saveBaseline, op);
+        foldRemoteOpIntoBaseline(saveBaseline, incoming);
         // In the same batch as the tabs update, so the render that shows the op also counts it.
         countAppliedOp();
       } else if (op.kind === 'select') {

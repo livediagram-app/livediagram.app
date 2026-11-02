@@ -3,7 +3,7 @@
 // the address is one of the app's registered OAuth redirect URIs; the sign-in pages read them to know when they are
 // being served under an app's address. Kept Worker-safe: no Node, no DOM.
 
-import { APP_SITES, isStagingHost, LOCAL_PORTS, type Site, type SiteId } from './index';
+import { isStagingHost, LOCAL_PORTS, REGISTERED_APP_SITES, type Site, type SiteId } from './index';
 
 export type AppSiteId = Exclude<SiteId, 'liveworkspace.app'>;
 
@@ -17,31 +17,13 @@ export function appOrigins(site: AppSiteId, environment: AppEnvironment): string
     const port = LOCAL_PORTS[site];
     return [`http://localhost:${port}`, `http://127.0.0.1:${port}`];
   }
-  const standIn = STAND_INS[site];
-  if (environment === 'staging')
-    return standIn ? [`https://staging.${site}`, standIn.staging] : [`https://staging.${site}`];
-  return standIn
-    ? [`https://${site}`, `https://www.${site}`, standIn.production]
-    : [`https://${site}`, `https://www.${site}`];
+  if (environment === 'staging') return [`https://staging.${site}`];
+  return [`https://${site}`, `https://www.${site}`];
 }
 
-/** An app that answers on a workers.dev address while its domain is still on another Cloudflare account
- *  (livediagram/docs/specs/016-platform/stand-in-addresses.md): it answers there as well, until the domain moves. */
-export const STAND_INS: Partial<
-  Record<AppSiteId, { production: string; staging: string; mcp: string }>
-> = {
-  'livediagram.app': {
-    production: 'https://livediagram-router.liveworkspace-easing509.workers.dev',
-    staging: 'https://livediagram-router-staging.liveworkspace-easing509.workers.dev',
-    // Its production MCP server's.
-    mcp: 'https://livediagram-mcp.liveworkspace-easing509.workers.dev',
-  },
-};
-
-/** `site`'s staging origin: `staging.<site>`, or its staging stand-in while it has one. */
+/** `site`'s staging origin: `staging.<site>`. */
 export function stagingOrigin(site: SiteId): string {
-  if (site === 'liveworkspace.app') return 'https://staging.liveworkspace.app';
-  return STAND_INS[site]?.staging ?? `https://staging.${site}`;
+  return `https://staging.${site}`;
 }
 
 /** A link to `site` (`href`, on its live origin `site.url`) as a page on `host` gives it: moved to the site's staging
@@ -52,7 +34,8 @@ export function siteHrefFrom(site: Site, href: string, host: string): string {
 }
 
 /** The app an origin belongs to in `environment`, or null (liveworkspace.app itself, or anywhere else). Only an exact
- *  origin matches: no other port, scheme or subdomain. */
+ *  origin matches: no other port, scheme or subdomain. A held app's origins count: the services accept it before it
+ *  is listed anywhere. */
 export function appOfOrigin(origin: string, environment: AppEnvironment): AppSiteId | null {
   let normal: string;
   try {
@@ -60,7 +43,7 @@ export function appOfOrigin(origin: string, environment: AppEnvironment): AppSit
   } catch {
     return null;
   }
-  for (const site of APP_SITES) {
+  for (const site of REGISTERED_APP_SITES) {
     const id = site.id as AppSiteId;
     if (appOrigins(id, environment).includes(normal)) return id;
   }

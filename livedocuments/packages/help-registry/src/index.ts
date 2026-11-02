@@ -102,7 +102,7 @@ export const categories: Category[] = [
     title: 'Pages',
     description:
       'Build documents out of pages: articles, slide decks and infographics, with layouts, backgrounds and exports.',
-    articleCount: 7,
+    articleCount: 8,
     kind: 'feature',
     groups: ['Basics', 'Kinds of Page'],
   },
@@ -169,8 +169,8 @@ export const categories: Category[] = [
     slug: 'tools',
     title: 'Tools',
     description:
-      'Do more with less effort using the editor helpers: zen mode, light and dark mode, Markdown import, and cleanup.',
-    articleCount: 4,
+      'Do more with less effort using the editor helpers: find and replace, zen mode, light and dark mode, Markdown import, and cleanup.',
+    articleCount: 5,
     kind: 'feature',
   },
   {
@@ -464,9 +464,9 @@ export const articles: Article[] = [
     slug: 'exporting-documents',
     title: 'Exporting Documents',
     description:
-      'Take your pages with you as a PDF, images, a GIF or a portable file, or embed a live view.',
+      'Take your pages with you as a PDF, images, a GIF, PowerPoint, Word or a portable file, or embed a live view.',
     keywords:
-      'export download png svg pdf gif animated image save picture screenshot json embed backup',
+      'export download png svg pdf gif animated image save picture screenshot json embed backup powerpoint pptx word docx',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -1155,7 +1155,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start a document from a ready-made template instead of a blank page.',
     keywords:
-      'template templates starter scaffold quick start prebuilt blank slide deck blank article blank infographic blank tab blank illustration empty slide empty page slide deck group card storyboard floor plan working backwards pr faq project brief event poster year in review resume cv recipe card data story how it works versus social carousel launch keynote quarterly review team welcome workshop kickoff design presentations search find a template start making pages recommended',
+      'template templates starter scaffold quick start prebuilt blank slide deck blank article blank infographic blank tab blank illustration empty slide empty page slide deck group card storyboard floor plan working backwards pr faq project brief event poster year in review resume cv recipe card data story how it works versus social carousel launch keynote quarterly review team welcome workshop kickoff conference talk wedding toast product pitch school presentation class lesson meeting notes minutes lesson plan business proposal design doc rfc status report cover letter careers events celebrations home hobbies lessons learning marketing social pitches launches plans proposals reports speeches talks team meetings blank pages search find a template start making pages recommended',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
@@ -1207,9 +1207,10 @@ export const articles: Article[] = [
   {
     slug: 'exporting-pages',
     title: 'Exporting and Presenting Pages',
-    description: 'Every page or one page as a PDF, images or an animated GIF, and pages as slides.',
+    description:
+      'Every page or one page as a PDF, images or an animated GIF, a deck as PowerPoint, an article as Word, and pages as slides.',
     keywords:
-      'export download pdf png svg gif animated gif animation moving image loop image zip all pages one page import json print printable pages page pages infographic slides slide deck present presentation add as slide page slide deck from pages',
+      'export download pdf png svg gif animated gif animation moving image loop image zip all pages one page import json print printable pages page pages infographic slides slide deck present presentation add as slide page slide deck from pages powerpoint pptx keynote google slides word docx google docs editable speaker notes',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
@@ -1223,6 +1224,16 @@ export const articles: Article[] = [
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
+  },
+  {
+    slug: 'flashcards',
+    title: 'Flashcards',
+    description: 'A stack of small text cards to speak from, flipped one at a time.',
+    keywords:
+      'flashcard flashcards flash card cards cue card cue cards note cards index card speaker notes speech talk toast pitch presentation stack flip flipping card number speaking time reading time words per minute too long split onto a new card text only blank flashcards conference talk wedding toast product pitch',
+    category: 'Pages',
+    categorySlug: 'pages',
+    group: 'Kinds of Page',
   },
   {
     slug: 'slide-pages',
@@ -1301,8 +1312,9 @@ export const articles: Article[] = [
     slug: 'export-tabs',
     title: 'Exporting a Tab',
     description:
-      "Export a tab's pages as PDF, PNG, SVG or GIF, or as JSON; a selection also exports as Markdown.",
-    keywords: 'export download save png svg pdf gif animated json markdown image picture pages',
+      "Export a tab's pages as PDF, PNG, SVG, GIF, PowerPoint or Word, or as JSON; a selection also as Markdown.",
+    keywords:
+      'export download save png svg pdf gif animated json markdown image picture pages powerpoint pptx word docx',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1538,6 +1550,16 @@ export const articles: Article[] = [
     categorySlug: 'tools',
   },
   {
+    slug: 'find-and-replace',
+    title: 'Find and Replace',
+    description:
+      'Find a word on every page of the tab, step through the matches, and replace one or all of them.',
+    keywords:
+      'find replace search find in tab find and replace replace all match case whole word ctrl f cmd f command f ctrl shift h search and replace look for word phrase text highlight matches next previous count change every rename',
+    category: 'Tools',
+    categorySlug: 'tools',
+  },
+  {
     slug: 'markdown-import',
     title: 'Markdown Import',
     description:
@@ -1550,7 +1572,8 @@ export const articles: Article[] = [
     slug: 'style-presets',
     title: 'Style Presets',
     description: 'One-click colour and line-style variations for shapes and arrows.',
-    keywords: 'markdown md paste article headings lists bullet formatting import text convert',
+    keywords:
+      'style preset presets variation variations quick style colour color line style dashed dotted fill outline one click shape arrow look',
     category: 'Palette',
     categorySlug: 'palette/shapes',
     parentSlug: 'shapes',
@@ -1745,6 +1768,29 @@ export const articles: Article[] = [
     parentSlug: 'the-canvas',
   },
 
+  // ---- Sub-articles: Writing Articles ----
+  {
+    slug: 'article-tables',
+    title: 'Tables in Articles',
+    description:
+      'A table in the writing: Tab through its cells, add rows and columns, and repeat its header row on every page.',
+    keywords:
+      'table tables article writing rows columns row column cell cells grid spreadsheet header row repeat repeated insert row above below insert column left right delete row delete column delete table resize column width tab paste google sheets excel numbers word google docs markdown pipe table tab separated split across pages',
+    category: 'Pages',
+    categorySlug: 'pages/articles',
+    parentSlug: 'articles',
+  },
+  {
+    slug: 'contents-headers-footers',
+    title: 'Contents, Headers and Footers',
+    description:
+      'A table of contents that lists your headings with their pages, and a header and footer on every page.',
+    keywords:
+      'table of contents toc contents index headings outline page numbers page number page count document name date header footer running header running footer different first page title page leader dotted jump link pdf word h1 h2 h3 depth style',
+    category: 'Pages',
+    categorySlug: 'pages/articles',
+    parentSlug: 'articles',
+  },
   // ---- Sub-articles: Shapes ----
   {
     slug: 'shape-markers',
@@ -1937,6 +1983,27 @@ export const articles: Article[] = [
   },
 
   // ---- Sub-articles: Sharing ----
+  {
+    slug: 'finding-community-documents',
+    title: 'Finding Documents in the Community',
+    description:
+      'Search the Community by words, #tags, category and sort, then make a document your own.',
+    keywords:
+      'community gallery browse search find filter hashtag tag tags sort most loved most copied newest category inspiration examples like heart copy duplicate report flag my shares mine own popular popularity stats hidden document report deck infographic',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/sharing',
+    parentSlug: 'sharing',
+  },
+  {
+    slug: 'community',
+    title: 'Sharing to the Community',
+    description: 'Publish a document to the public gallery for others to view and copy.',
+    keywords:
+      'community gallery public publish showcase inspiration examples share document proud like likes copy copies tags category report moderation discover browse',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/sharing',
+    parentSlug: 'sharing',
+  },
   {
     slug: 'share-passwords',
     title: 'Share Passwords',

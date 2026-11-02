@@ -849,3 +849,19 @@ body:has([data-mode-message]) [data-yields-to-mode] {
 html {
   view-transition-name: none;
 }
+
+/* Maximise and Minimise Card (docs/specs/026-plan/plan-board.md "Maximised"): the card panel's box morphs from one
+   size to the other over `short`, its old and new pictures cross-fading inside it, scaled to cover the box without
+   stretching. Only the compositor works each frame; reduced motion starts no transition. */
+::view-transition-group(.item-panel-resize) {
+  animation-duration: var(--transition-duration-short);
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 0.75rem;
+  overflow: clip;
+}
+::view-transition-old(.item-panel-resize),
+::view-transition-new(.item-panel-resize) {
+  animation-duration: var(--transition-duration-short);
+  height: 100%;
+  object-fit: cover;
+}

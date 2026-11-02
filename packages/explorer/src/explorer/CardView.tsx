@@ -101,7 +101,7 @@ export function CardView({
       <div className={`${CARD_GRID} ${cascade ? 'lw-cascade' : ''}`}>{cards}</div>
       {more ? (
         <div ref={sentinel} className="mt-4 flex justify-center">
-          <Button variant="secondary" size="sm" onClick={showMore} disabled={loadingMore}>
+          <Button variant="secondary" size="sm" onClick={showMore} busy={loadingMore}>
             {loadingMore ? 'Loading…' : 'Show more'}
           </Button>
         </div>

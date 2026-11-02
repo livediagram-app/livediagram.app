@@ -34,7 +34,10 @@ export type PanelId =
   // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, on the same terms.
   | 'eraser'
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, on the same terms.
-  | 'format';
+  | 'format'
+  // Inspect panel (docs/specs/007-editor/wireframe-pages.md "The Inspect panel"): a wireframe element's
+  // measurements, on the same terms.
+  | 'inspect';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [
   'top-left',
@@ -50,6 +53,7 @@ export const PANEL_IDS: readonly PanelId[] = [
   'spotlight',
   'eraser',
   'format',
+  'inspect',
 ];
 
 // Internal: a free panel's pixel position. Not exported — callers pass
@@ -79,6 +83,7 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   spotlight: 'bottom-right',
   eraser: 'bottom-right',
   format: 'bottom-right',
+  inspect: 'bottom-right',
 };
 
 export const STORAGE_KEY = 'livedesign:panel-layout:v1';

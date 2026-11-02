@@ -114,7 +114,6 @@ function Page({ of, deleted = false }: { of: Page; deleted?: boolean }) {
           <TitlePopover name="Background" />
           <TitlePopover name="Style" />
           <TitlePopover name="Text" />
-          <button type="button" data-page-deck-button="add" aria-label="Add to Slides" />
           <button type="button" data-tour-id="page-cog" aria-label="Page settings" />
         </div>
       )}

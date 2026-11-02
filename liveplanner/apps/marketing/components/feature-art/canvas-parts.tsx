@@ -7,6 +7,7 @@
 // participant colours (who is who) stay fixed, as they do in the editor.
 
 import type { CSSProperties, ReactNode } from 'react';
+import { capBandBaselineY } from '@liveworkspace/icons';
 import { Cursor, Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 // Participant colours, as the editor hands them out: you first, then each teammate.
@@ -144,7 +145,8 @@ export function Avatar({
       <circle className={ring} cx={cx} cy={cy} r={r} fill={color} strokeWidth="1.5" />
       <text
         x={cx}
-        y={cy + r * 0.36}
+        // The initials centre on their cap band (optical-alignment.md "SVG text centres on its cap band too").
+        y={capBandBaselineY(cy, r * 0.95)}
         fontSize={r * 0.95}
         fontWeight="700"
         textAnchor="middle"

@@ -113,7 +113,7 @@ export function PhotoOverview({ photo }: { photo: PhotoEditorView }) {
         <span className="font-semibold text-slate-800 dark:text-slate-100">
           {W} × {H}
         </span>
-        <span className="text-slate-400">px</span>
+        <span className="text-[11.5px] text-slate-500 dark:text-slate-400">px</span>
         <span className="flex-1" />
         {inside ? (
           <>

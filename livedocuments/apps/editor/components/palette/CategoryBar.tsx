@@ -324,6 +324,7 @@ export function CategoryBarFlyout({
         right={bar.popover.right}
         isMobile={isMobile}
         scale={scale}
+        name={category.label}
         dataAttr="data-category-flyout"
         widthClass={WIDTH_CLASS[width] ?? 'w-[26rem]'}
         seeThrough={bar.dragActive}

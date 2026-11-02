@@ -15,6 +15,8 @@ The import reads Markdown the way pasting it into an article page does, so a fil
 - **Lists** (`-`, `*`, `+` bulleted; `1.` numbered; `- [ ]` / `- [x]` a to-do, ticked or not), nested by indentation.
 - **Quotes** (`>`), **fenced code** (kept exactly as written) and **dividers** (`---`, `***`, `___`).
 - **Inline marks**: bold, italic, strikethrough, inline code and links.
+- **Pipe tables** (a header line, a `|---|` line, then rows): a table block, the header line its header row.
+- **`[TOC]`** alone on a line: a table of contents.
 
 Every other line is a paragraph. The article flows onto as many pages as the writing needs, in the tab's theme.
 
@@ -26,8 +28,12 @@ brings it back (naming ⌘Z / Ctrl-Z only where there is a keyboard, a fine poin
 
 - **JSON**: a `.json` tab export, restored exactly.
 - **Markdown**: a `.md` document, written into an article as above.
+- **Word** and **PowerPoint**: a `.docx` as an article, a `.pptx` as slide pages
+  ([Word and PowerPoint import](office-import.md)). They are files, not text, so each opens a
+  **file panel** (`FileImportPanel`: a drop area and **Choose a File**) instead of the paste panel
+  below, behind the same `BackBar` and warning.
 
-Every format is text, so each card opens the **same two-step panel**
+The format cards sit two across. Every text format's card opens the **same two-step panel**
 (`TextImportPanel`): **paste or write** the
 content, or **import a file instead**. The way back to the format grid is the
 shared **`BackBar`** across the top of that step (the same control the placement

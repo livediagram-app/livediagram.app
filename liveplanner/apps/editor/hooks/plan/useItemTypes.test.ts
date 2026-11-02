@@ -133,3 +133,50 @@ describe('useItemTypes', () => {
     expect(ids(hook.result.current.slice.catalogue)).toEqual(['a']);
   });
 });
+
+// docs/specs/026-plan/item-types.md "The statuses a type uses": statuses joining types are a quiet change.
+describe('useItemTypes.quietChange', () => {
+  const addTo = (id: string) => (c: ItemTypeCatalogue | null) =>
+    c ? { ...c, types: c.types.map((t) => (t.id === id ? { ...t, statuses: ['qa'] } : t)) } : null;
+
+  it('makes its change to the catalogue as stored at each send, with no undo step', async () => {
+    api.saveItemTypes.mockRejectedValueOnce(
+      new ItemTypesStaleError({ itemTypes: cat('task', 'spike'), itemTypesRev: 4 }),
+    );
+    answering();
+    const { hook, steps } = render({ itemTypes: cat('task'), itemTypesRev: 3 });
+    act(() => hook.result.current.slice.quietChange(addTo('task')));
+    expect(hook.result.current.slice.catalogue?.types[0]!.statuses).toEqual(['qa']);
+    await waitFor(() => expect(hook.result.current.stored.itemTypesRev).toBe(5));
+    expect(sent(1)).toEqual({ ids: ['task', 'spike'], rev: 4 });
+    expect(hook.result.current.stored.itemTypes?.types[0]!.statuses).toEqual(['qa']);
+    expect(steps).toHaveLength(0);
+  });
+
+  it('sends nothing when it changes nothing, now or once someone else made it', async () => {
+    const done = { ...cat('task'), types: [{ ...def('task'), statuses: ['qa'] }] };
+    api.saveItemTypes.mockRejectedValueOnce(
+      new ItemTypesStaleError({ itemTypes: done, itemTypesRev: 4 }),
+    );
+    const { hook } = render({ itemTypes: cat('task'), itemTypesRev: 3 });
+    act(() => hook.result.current.slice.quietChange(() => null));
+    expect(api.saveItemTypes).not.toHaveBeenCalled();
+    act(() =>
+      hook.result.current.slice.quietChange((c) =>
+        c?.types[0]!.statuses ? null : addTo('task')(c),
+      ),
+    );
+    await waitFor(() => expect(hook.result.current.stored.itemTypesRev).toBe(4));
+    expect(api.saveItemTypes).toHaveBeenCalledTimes(1);
+  });
+
+  it('fails without a toast', async () => {
+    api.saveItemTypes.mockRejectedValueOnce(new Error('item-types failed: 400'));
+    const { hook, onError } = render({ itemTypes: cat('task'), itemTypesRev: 1 });
+    act(() => hook.result.current.slice.quietChange(addTo('task')));
+    await waitFor(() =>
+      expect(hook.result.current.slice.catalogue?.types[0]!.statuses).toBeUndefined(),
+    );
+    expect(onError).not.toHaveBeenCalled();
+  });
+});

@@ -58,6 +58,9 @@ export type ShapeKind =
   // Tab window (docs/specs/009-elements/tab-window.md): another tab of the design drawn live inside it, fitted;
   // which tab lives in `windowTabId`.
   | 'tab-window'
+  // Instance (docs/specs/009-elements/components.md): one element drawing a main of the design's component
+  // library (`componentId`) inside its box, with overrides as fields.
+  | 'instance'
   | 'stadium'
   | 'cloud'
   | 'triangle'

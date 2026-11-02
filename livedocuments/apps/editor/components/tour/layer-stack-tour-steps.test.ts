@@ -24,7 +24,6 @@ const rows = [
 const ctxOf = (over: Partial<ConceptTourContext> = {}): ConceptTourContext => ({
   elementId: 'st',
   rows,
-  hasMore: true,
   touch: false,
   ...over,
 });
@@ -58,12 +57,12 @@ describe('layerStackTourSteps', () => {
     ]);
   });
 
-  it('leaves out notes on a stack with none, and the menu where More is not shown', () => {
-    const ids = layerStackTourSteps(
-      ctxOf({ rows: [{ label: 'A' }, { label: 'B' }], hasMore: false }),
-    ).map((s) => s.id);
+  it('leaves out notes on a stack with none, and keeps the menu step', () => {
+    const ids = layerStackTourSteps(ctxOf({ rows: [{ label: 'A' }, { label: 'B' }] })).map(
+      (s) => s.id,
+    );
     expect(ids).not.toContain('notes');
-    expect(ids).not.toContain('rows');
+    expect(ids).toContain('rows');
   });
 
   it('points at the real stack: the top layer, the first note, the bottom layer', () => {

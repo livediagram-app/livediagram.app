@@ -84,10 +84,9 @@ can open. The thread row carries `mentionsYou`, and its hint reads
 **Mentioned you** (it wins over "On your project"). A resolved thread leaves the
 page as every thread does.
 
-A Plan card's thread ([Items](../026-plan/items.md) "Comments") lists the same way, read straight from the
-item store rather than the index (the thread lives in the item, not in tab JSON): it is included when the reader
-is mentioned in it, commented in it, or owns the project, and carries the same `mentionsYou` hint
-([Inbox](../013-workspace/inbox.md) §2.5).
+Each of a Plan card's threads ([Items](../026-plan/items.md) "Comments") lists the same way, pushed by the plan
+under its cards (`~cards`) with its own title: it is included when the reader is mentioned in it, commented in it,
+or owns the project, and carries the same `mentionsYou` hint ([Inbox](../013-workspace/inbox.md) §2.5).
 
 ## The email
 
@@ -122,7 +121,7 @@ The server decides everything that matters:
 
 The email reads **"{author} mentioned you in {project}"**, quotes the
 comment, and has one button, **Open the plan** (for a card's comment, **Open the card**, linking
-`/project/<id>#item=<itemId>`). It is sent only when email is
+`/project/<id>#item=<itemId>&thread=<threadId>`, which opens the card on that thread). It is sent only when email is
 configured (the `EMAIL` binding, [Transactional email](../014-identity/transactional-email.md)).
 
 ## Setting

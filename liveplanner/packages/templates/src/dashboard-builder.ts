@@ -8,6 +8,7 @@ import {
   createShape,
   dashboardRowsOf,
   readDashboard,
+  readSlotName,
   type DashboardContent,
   type DashboardLayout,
   type PlanViewRef,
@@ -46,9 +47,11 @@ const CHARTS_PER_ROW = 2;
 const NOTES_PER_ROW = 3;
 
 // A chart a Dashboard holds: its view and, for its element, the rest of its settings (its card types, its grouping).
+// `name`: its slot's own name in place of the generated heading (docs/specs/026-plan/plan-tabs.md "A slot's name").
 export type DashboardChartSpec = {
   view: PlanVisualisation;
   settings?: Omit<PlanViewRef, 'view'>;
+  name?: string;
 };
 
 export type DashboardSpec = {
@@ -106,7 +109,16 @@ export function dashboardLayoutOf(
 ): { dashboard: DashboardLayout | undefined; dropped: number } {
   const gantts = views.charts.filter((el) => el.planView?.view === 'gantt');
   const others = views.charts.filter((el) => el.planView?.view !== 'gantt');
-  const element = (el: ShapeElement): DashboardContent => ({ type: 'element', elementId: el.id });
+  // Each chart's slot name, by its element (views.charts is in spec.charts' order); read as a stored name is.
+  const names = new Map<ShapeElement, string>();
+  views.charts.forEach((el, i) => {
+    const name = readSlotName(spec.charts?.[i]?.name);
+    if (name) names.set(el, name);
+  });
+  const element = (el: ShapeElement): DashboardContent => {
+    const name = names.get(el);
+    return { type: 'element', elementId: el.id, ...(name ? { name } : {}) };
+  };
   const rows: DashRow[] = [
     ...dashboardRowsOf(spec.tabs ?? [], TABS_PER_ROW, DASH_TAB_ROW_H, (w) => ({
       type: 'tab',

@@ -66,7 +66,7 @@ describe('CardFace', () => {
   it('keeps its lines out of reach until the card is selected', () => {
     renderCard(card(), false);
     const title = screen.getByRole('textbox', { name: 'Card title' });
-    expect(title.getAttribute('tabindex')).toBe('-1');
+    expect(title.hasAttribute('tabindex')).toBe(false);
   });
 
   it('draws an initial from the title, and a badge "i" with no icon', () => {

@@ -22,16 +22,16 @@ Workbench pairings, tickets and sessions run in this Worker too; they are bluepr
 
 ## Domain and naming
 
-| Term         | Identifier                                                                                 | Meaning                                                          |
-| ------------ | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| Account      | `user` row, id `user_<32 hex>` (`newUserId`); any `^user_[A-Za-z0-9]{1,64}$` (`USER_ID`)   | A person; the prefix kept from Clerk, so imported ids never move |
-| Guest        | `guest_<v4 uuid>` (`GUEST_ID`), cookie `lw_guest`                                          | One guest identity across every app                              |
-| Session      | Better Auth `session`                                                                      | Signed in on liveworkspace.app                                   |
-| Access token | a JWT from `/api/auth/oauth2/token`, keys at `/api/auth/jwks`                              | What an app's server and the services check offline              |
-| API token    | `lwt_…` (`API_TOKEN_PREFIX`), legacy `lvd_…`                                               | One per integration, on every app's API and MCP                  |
-| Team         | `team`, `team_member`                                                                      | Made on liveworkspace.app, the same in every app                 |
-| Client       | an OAuth client, one per app (`oauth_client_app`)                                          | Registered with `POST /api/auth/internal/clients`                |
-| App          | `SettingsApp`: `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app` | The site id the account data is keyed by                         |
+| Term         | Identifier                                                                                                          | Meaning                                                                                                         |
+| ------------ | ------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Account      | `user` row, id `user_<32 hex>` (`newUserId`); any `^user_[A-Za-z0-9]{1,64}$` (`USER_ID`)                            | A person; the prefix kept from Clerk, so imported ids never move                                                |
+| Guest        | `guest_<v4 uuid>` (`GUEST_ID`), cookie `lw_guest`                                                                   | One guest identity across every app                                                                             |
+| Session      | Better Auth `session`                                                                                               | Signed in on liveworkspace.app                                                                                  |
+| Access token | a JWT from `/api/auth/oauth2/token`, keys at `/api/auth/jwks`                                                       | What an app's server and the services check offline                                                             |
+| API token    | `lwt_…` (`API_TOKEN_PREFIX`), legacy `lvd_…`                                                                        | One per integration, on every app's API and MCP                                                                 |
+| Team         | `team`, `team_member`                                                                                               | Made on liveworkspace.app, the same in every app                                                                |
+| Client       | an OAuth client, one per app (`oauth_client_app`)                                                                   | Registered with `POST /api/auth/internal/clients`                                                               |
+| App          | `SettingsApp`: `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`, `livehuddle.app` (held) | The site id the account data is keyed by (`REGISTERED_APP_SITES`; `0018_livehuddle.sql` widens every app CHECK) |
 
 ## Behaviour and state
 
@@ -40,12 +40,16 @@ Workbench pairings, tickets and sessions run in this Worker too; they are bluepr
 1. No `BETTER_AUTH_SECRET`: every request `503 { error: 'not_configured' }` (logged). Shorter than 32 characters,
    `getAuth` throws.
 2. `GET`: `/api/auth/sign-in-options`; `/api/auth/guest` (first `GUEST_LIMITER` keyed `ip:<network>`, `429 {
-error: 'rate_limited' }`); `/api/auth/workspace-token`; the two discovery documents at the root.
+error: 'rate_limited' }`); `/api/auth/workspace-token`; `/api/auth/end-session` (the browser's hop); the two
+   discovery documents at the root.
 3. `/api/account` and below: `handleAccountApi`; after it, the request's telemetry events and Timeline events are
    flushed in `waitUntil`.
-4. `POST /api/auth/internal/clients`; `POST /api/auth/internal/bench-accounts`; `POST /api/auth/delete-account`.
+4. `POST /api/auth/internal/clients`; `POST /api/auth/internal/bench-accounts`; `POST /api/auth/delete-account/code`;
+   `POST /api/auth/delete-account/check`; `POST /api/auth/delete-account`;
+   `POST /api/auth/end-session` (an app's Worker).
 5. Anything else under `/api/auth`: the code routes are limited first (below), then Better Auth's handler (for
-   Google on an app's address, an instance built for that origin), then three rewrites of the answer: `GET
+   Google on an app's address, an instance built for that origin; before `POST /sign-out` and Security's `revoke-*`, every
+   app's tokens on the sessions they end are deleted, `endSessionTokensOf`), then three rewrites of the answer: `GET
 /get-session` gains the presence colour; `GET /oauth2/authorize` may move the sign-in page to the app's address,
    and may merge a guest into a session already there. Welcomes queued by a sign-up go after the answer.
 6. Else `404 Not found`.
@@ -70,31 +74,54 @@ parse is read as `{}`.
 
 Each step runs in `step()`: a throw logs `[accounts] cron step failed: <name>` and the run goes on.
 
-| Cron           | Steps, in order                                                                                                                                                                               |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `*/15 * * * *` | 1. `index purges`: up to 25 `pending_purges` rows sent again. 2. `timeline`: the outbox trimmed to 5,000, then up to 10 calls of 100 events. 3. `lifecycle`: welcomes only.                   |
-| `17 9 * * *`   | The same three (the lifecycle runs every stage), then 4. `invitation sweep`; 5. the token expiry emails, then the token Timeline notes (and a flush), then `server events`; 6. `idle guests`. |
+| Cron           | Steps, in order                                                                                                                                                                                                                                      |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `*/15 * * * *` | 1. `index purges`: up to 25 `pending_purges` rows sent again. 2. `timeline`: the outbox trimmed to 5,000, then up to 10 calls of 100 events. 3. `lifecycle`: welcomes only.                                                                          |
+| `17 * * * *`   | The same three (the lifecycle runs every stage), then 4. `invitation sweep`; 5. the token expiry emails, then, in the 09:17 UTC run only, the token Timeline notes (and a flush); then `server events`; 6. in the 09:17 UTC run only, `idle guests`. |
+
+The hourly run's emails keep to the send window ([email.md](email.md) "The send window"): the window is read from
+`EMAIL_SEND_WINDOW` and `EMAIL_DEFAULT_TIME_ZONE` once per run (`sendWindowOf`). Without an `EMAIL` binding outside
+development (`emailOn`), steps 3 to 5 send nothing: the lifecycle and token steps are skipped and the invitation
+sweep only expires.
 
 Details: [teams.md](teams.md), [tokens.md](tokens.md), [email.md](email.md),
 [sessions-and-guests.md](sessions-and-guests.md).
 
+### The deletion code (`deletion-code.ts`)
+
+Every door below starts the same way (`introspectCaller` in `delete-account.ts`): client credentials (`Basic`) and
+`{ token }`, the person's access token, missing either `400 invalid_request`; then introspection with those
+credentials, a wrong secret `401 invalid_client`, a token inactive, without a `sub`, or minted for another client `401
+invalid_token`. A body that won't parse is read as `{}`.
+
+| Door                                  | Body              | Then                                                                                                                                                                                                                                                            |
+| ------------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/auth/delete-account/code`  | `{ token }`       | The account's address (`404 unknown_account` without one); `CODE_EMAIL_LIMITER` keyed `email:<lower-case address>`, the sign-in send's own bucket, over it `429 rate_limited`; a new code stored, then mailed in the client's app's brand. `200 { sent: true }` |
+| `POST /api/auth/delete-account/check` | `{ token, code }` | `CODE_IP_LIMITER` keyed `account:<userId>` (`429 rate_limited`); the code checked and kept (`403 invalid_code` or `403 too_many_attempts`). `200 { ok: true }`                                                                                                  |
+| `POST /api/auth/delete-account`       | `{ token, code }` | The same limit; the code checked and spent (the same refusals), then the close below                                                                                                                                                                            |
+
+The code: 6 digits, uniform (`crypto.getRandomValues`, rejection-sampled), in Better Auth's `verification` table under
+`delete-account-otp-<userId>`, its value `<sha256(userId:code), base64url>:<tries>`, `expiresAt` 600 s on. Storing one
+deletes the account's earlier row in the same batch. Each check is one `UPDATE … SET value = <tries + 1> … RETURNING`,
+so concurrent guesses each take a try. Then: no row, or one past `expiresAt` (deleted), is `invalid_code`; a try past
+the third deletes the row, `too_many_attempts`; a wrong code is `invalid_code`, or `too_many_attempts` (row deleted)
+when it was the third. A right one is kept with its tries back at 0 (`/check`), or spent: deleted only while the row
+still holds what this check wrote, else `invalid_code` (two closes can't share one code).
+
 ### Closing an account (`POST /api/auth/delete-account`), in order
 
-1. Client credentials (`Basic`) and `{ token }`, the person's access token: missing either is `400
-invalid_request`.
-2. Introspection with those credentials: a wrong secret `401 invalid_client`; a token inactive, without a `sub`, or
-   minted for another client `401 invalid_token`.
-3. `leaveAllTeams` ([teams.md](teams.md)): teams run alone close; a sole admin's role passes to the longest-standing
+1. The door and the code, above.
+2. `leaveAllTeams` ([teams.md](teams.md)): teams run alone close; a sole admin's role passes to the longest-standing
    member; their address comes off every row.
-4. Settings, then the profile, deleted.
-5. `recordPendingPurge(userId, closedTeams)`, before the user goes.
-6. Better Auth deletes the user: sessions, linked accounts, OAuth tokens, consents, API tokens, `account_app`,
+3. Settings, then the profile, deleted.
+4. `recordPendingPurge(userId, closedTeams)`, before the user goes.
+5. Better Auth deletes the user: sessions, linked accounts, OAuth tokens, consents, API tokens, `account_app`,
    `email_lifecycle` cascade.
-7. `purgeFromIndex`: `POST ${INDEX_URL}/internal/purge-person { personId, teamIds }` with `INDEX_MERGE_KEY`, 15 s;
+6. `purgeFromIndex`: `POST ${INDEX_URL}/internal/purge-person { personId, teamIds }` with `INDEX_MERGE_KEY`, 15 s;
    taken clears the row, else `attempts + 1` and the cron retries (logged as an error from the third try).
-8. `closeAccountWorkbench`, then `DELETE https://drive/app/people/<id>` with `DRIVE_KEY_ACCOUNTS` in `waitUntil` (10
+7. `closeAccountWorkbench`, then `DELETE https://drive/app/people/<id>` with `DRIVE_KEY_ACCOUNTS` in `waitUntil` (10
    s; `404` is done; nothing retried).
-9. `200 { deleted: true }`.
+8. `200 { deleted: true }`.
 
 ### Telemetry (`telemetry.ts`)
 
@@ -110,26 +137,28 @@ Shared(Link)|Removed(Link|Self|Invite|Member)|Added(Member)|Changed(Role)|Joined
 | Path                                                                                                                                                                                                                                    | Blueprint                                                    |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | `GET /api/auth/sign-in-options`, `POST /api/auth/email-otp/send-verification-otp`, `POST /api/auth/sign-in/email-otp`, `/api/auth/sign-in/social`, `/api/auth/callback/google`, `POST /api/auth/handoff/start`, `GET /api/auth/handoff` | [sign-in.md](sign-in.md)                                     |
-| `GET /api/auth/get-session`, `GET /api/auth/guest`, `GET /api/auth/workspace-token`, `POST /api/account/internal/legacy-guests/claim`, `GET /api/account/people`                                                                        | [sessions-and-guests.md](sessions-and-guests.md)             |
+| `GET /api/auth/get-session`, `GET /api/auth/guest`, `GET /api/auth/workspace-token`, `POST`/`GET /api/auth/end-session`, `POST /api/auth/sign-out`, `POST /api/account/internal/legacy-guests/claim`, `GET /api/account/people`         | [sessions-and-guests.md](sessions-and-guests.md)             |
 | `/api/account/teams…`, `/api/account/invitations…`, `/api/account/join/:token`, `/api/account/internal/{teams,teams/of,teams/members,teams/changes,invitations}`, `POST /api/account/index/teams`                                       | [teams.md](teams.md)                                         |
 | `/api/account/tokens…`, `/api/account/internal/tokens{,/verify,/revoke,/live}`, `POST /api/auth/internal/bench-accounts`                                                                                                                | [tokens.md](tokens.md)                                       |
 | `/api/auth/oauth2/*`, `/api/auth/jwks`, `/.well-known/*`, `POST /api/auth/internal/clients`, an app's `/oauth/device*`                                                                                                                  | [oauth.md](oauth.md)                                         |
 | `/api/account/settings…`, `/api/account/profile`, `/api/account/internal/{settings/read,settings/write,profiles/read,profiles/write}`                                                                                                   | [settings-and-profiles.md](settings-and-profiles.md)         |
 | `/api/account/internal/{sightings,milestones/claim,activity,emails,settings/notify}`                                                                                                                                                    | [email.md](email.md)                                         |
-| `POST /api/auth/delete-account`                                                                                                                                                                                                         | this file                                                    |
+| `POST /api/auth/delete-account`, `POST /api/auth/delete-account/code`, `POST /api/auth/delete-account/check`                                                                                                                            | this file                                                    |
 | `/api/account/workbench/*`, `/api/account/internal/workbench/*`, `/api/account/internal/allowance`                                                                                                                                      | [011-workbench](../../011-workbench/blueprints/workbench.md) |
 
 ## Errors and edge cases
 
-| Case                        | Answer                                                  |
-| --------------------------- | ------------------------------------------------------- |
-| No secret                   | `503 not_configured` on every route                     |
-| A write from another origin | `403 cross_origin`                                      |
-| No session                  | `401 signed_out`                                        |
-| Wrong client credentials    | `401 invalid_client`                                    |
-| The index down when closing | the account closes; the purge waits in `pending_purges` |
-| Drive down when closing     | logged, not retried                                     |
-| A cron step throws          | logged; later steps run                                 |
+| Case                        | Answer                                                       |
+| --------------------------- | ------------------------------------------------------------ |
+| No secret                   | `503 not_configured` on every route                          |
+| A write from another origin | `403 cross_origin`                                           |
+| No session                  | `401 signed_out`                                             |
+| D1 down reading the session | `503 storage_unavailable`, never `401 signed_out`            |
+| Anything else that throws   | `500 internal_error`, logged `api error route=<route words>` |
+| Wrong client credentials    | `401 invalid_client`                                         |
+| The index down when closing | the account closes; the purge waits in `pending_purges`      |
+| Drive down when closing     | logged, not retried                                          |
+| A cron step throws          | logged; later steps run                                      |
 
 ## Security and trust
 
@@ -212,16 +241,19 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | File                                                          | Role                                                                                                                                                                                                               |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `liveworkspace/apps/accounts/src/account-api.ts`              | The account API under /api/account (liveworkspace/docs/specs/003-accounts/accounts.md "Teams" and "API tokens"): - for the signed-in person on liveworkspace.app, by their session cookie: th…                     |
+| `liveworkspace/apps/accounts/src/app-caller.ts`               | An app's server acting for someone signed in to it: `basicClientId`, `introspectCaller`                                                                                                                            |
 | `liveworkspace/apps/accounts/src/account-apps.ts`             | What one app keeps about an account (liveworkspace/docs/specs/003-accounts/accounts.md "Sign-ups and milestones per app"): when it first saw the account, which is how it counts a sign-up, a…                     |
 | `liveworkspace/apps/accounts/src/auth-options.ts`             | Everything Better Auth is configured with, apart from where the database lives                                                                                                                                     |
 | `liveworkspace/apps/accounts/src/auth.ts`                     |                                                                                                                                                                                                                    |
 | `liveworkspace/apps/accounts/src/bearer.ts`                   | The Explorer served under an app's own address (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on each app's address") has no liveworkspace.app session: it is the app's…                        |
 | `liveworkspace/apps/accounts/src/bench-accounts.ts`           | Throwaway accounts for the apps' local evaluation benches (each app's apps/mcp/eval/bench): an account and one API token each, so every bench run gets its own empty libra…                                        |
 | `liveworkspace/apps/accounts/src/clients.ts`                  | Registering an app (a confidential OAuth client) with this Worker                                                                                                                                                  |
-| `liveworkspace/apps/accounts/src/delete-account.ts`           | Closing a liveworkspace account, asked for by an app's own server when the person deletes their account there                                                                                                      |
+| `liveworkspace/apps/accounts/src/delete-account.ts`           | Closing a liveworkspace account, asked for by an app's own server with the code emailed to the person                                                                                                              |
+| `liveworkspace/apps/accounts/src/deletion-code.ts`            | The code that confirms closing an account: made, stored hashed in `verification`, emailed, checked and spent                                                                                                       |
 | `liveworkspace/apps/accounts/src/drive-disconnect.ts`         | Closing an account disconnects its Google Drive mirror too (liveworkspace/docs/specs/005-drive/drive.md "Disconnecting and account deletion"): the Drive service revokes the grant and for…                        |
 | `liveworkspace/apps/accounts/src/email-layout.ts`             | The frame every accounts email is drawn in (liveworkspace/docs/specs/003-accounts/accounts.md "Emails"), the same as the apps' own (each product's docs/specs/014-identity/transactional-emai…                     |
 | `liveworkspace/apps/accounts/src/email.ts`                    |                                                                                                                                                                                                                    |
+| `liveworkspace/apps/accounts/src/end-session.ts`              | Signing out everywhere (liveworkspace/docs/specs/003-accounts/accounts.md "Signing out"): an app's Worker ends the session its refresh token came from, and the browser's hop ends its own                         |
 | `liveworkspace/apps/accounts/src/env.ts`                      |                                                                                                                                                                                                                    |
 | `liveworkspace/apps/accounts/src/guest-sweep.ts`              | Guests who can never come back (liveworkspace/docs/specs/003-accounts/accounts.md "Guests who never come back")                                                                                                    |
 | `liveworkspace/apps/accounts/src/guests.ts`                   | Guests: one identity across every app (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Guests").                                                                                                     |
@@ -308,7 +340,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | Rate limit `WORKBENCH_LIMITER`    | 30 per 60 s                                                                                                                  |
 | Rate limit `LEGACY_GUEST_LIMITER` | 10 per 60 s                                                                                                                  |
 | Email `EMAIL`                     | `send_email`                                                                                                                 |
-| Crons                             | `17 9 * * *`, `*/15 * * * *`                                                                                                 |
+| Crons                             | `17 * * * *`, `*/15 * * * *`                                                                                                 |
 | Var `ENVIRONMENT`                 | `production`                                                                                                                 |
 | Var `BASE_URL`                    | `https://www.liveworkspace.app`                                                                                              |
 | Var `INDEX_URL`                   | `https://www.liveworkspace.app/api/index`                                                                                    |
@@ -339,7 +371,7 @@ Every log line the service writes, by its fingerprint (the first literal of the 
 | Rate limit `WORKBENCH_LIMITER`    | 30 per 60 s                                                         |
 | Rate limit `LEGACY_GUEST_LIMITER` | 10 per 60 s                                                         |
 | Email `EMAIL`                     | `send_email`                                                        |
-| Crons                             | `17 9 * * *`, `*/15 * * * *`                                        |
+| Crons                             | `17 * * * *`, `*/15 * * * *`                                        |
 | Var `ENVIRONMENT`                 | `staging`                                                           |
 | Var `BASE_URL`                    | `https://staging.liveworkspace.app`                                 |
 | Var `INDEX_URL`                   | `https://staging.liveworkspace.app/api/index`                       |
@@ -375,6 +407,11 @@ Migrations, in order:
 - `0011_legacy_guest.sql`
 - `0012_profile_picture.sql`
 - `0013_legacy_guest_claiming.sql`
+- `0014_migration_notice.sql`: `migration_notice`, for the one email to everyone moved from the old livediagram.app
+  (docs/migration.md step 8)
+- `0015_drop_migration_notice.sql`: drops `migration_notice` once that email was sent, so the recipients'
+  addresses aren't kept
+- `0016_user_time_zone.sql`: `user.timeZone`, the account's IANA zone for the send window
 
 | Table                   | Columns                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         | Created in                  |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
@@ -402,7 +439,7 @@ Migrations, in order:
 | `team`                  | `id`, `name`, `organisation`, `createdAt`, `updatedAt`, `deletedAt`, `rev`, `inviteLinkNonce`, `inviteLinkHash`, `inviteLinkExpiresAt`                                                                                                                                                                                                                                                                                                                                                                                                                                          | `0002_teams_and_tokens.sql` |
 | `team_member`           | `id`, `teamId`, `userId`, `email`, `role`, `status`, `invitedBy`, `createdAt`, `updatedAt`, `rev`, `declineTokenHashes`, `clockStartedAt`, `reminder1SentAt`, `reminder2SentAt`, `reminder3SentAt`, `reminderAttempts`, `expiredAt`                                                                                                                                                                                                                                                                                                                                             | `0002_teams_and_tokens.sql` |
 | `team_seq`              | `id`, `value`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | `0002_teams_and_tokens.sql` |
-| `user`                  | `id`, `name`, `email`, `emailVerified`, `image`, `createdAt`, `updatedAt`, `givenName`, `familyName`                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | `0001_better_auth.sql`      |
+| `user`                  | `id`, `name`, `email`, `emailVerified`, `image`, `createdAt`, `updatedAt`, `givenName`, `familyName`, `timeZone (0016)`                                                                                                                                                                                                                                                                                                                                                                                                                                                         | `0001_better_auth.sql`      |
 | `verification`          | `id`, `identifier`, `value`, `expiresAt`, `createdAt`, `updatedAt`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | `0001_better_auth.sql`      |
 
 ## Constants and configuration: named constants
@@ -420,6 +457,10 @@ Migrations, in order:
 | `BENCH_ACCOUNTS_MAX`                | `200`                                                                    | `bench-accounts.ts`  |
 | `CLIENTS_PATH`                      | `${AUTH_BASE_PATH}/internal/clients`                                     | `clients.ts`         |
 | `DELETE_ACCOUNT_PATH`               | `'/delete-account'`                                                      | `delete-account.ts`  |
+| `DELETION_CODE_PATH`                | `'/delete-account/code'`                                                 | `deletion-code.ts`   |
+| `DELETION_CHECK_PATH`               | `'/delete-account/check'`                                                | `deletion-code.ts`   |
+| `DELETION_CODE_TTL_SECONDS`         | `600`                                                                    | `deletion-code.ts`   |
+| `DELETION_CODE_TRIES`               | `3`                                                                      | `deletion-code.ts`   |
 | `INK`                               | `'#0f172a'`                                                              | `email-layout.ts`    |
 | `MUTED`                             | `'#475569'`                                                              | `email-layout.ts`    |
 | `GUEST_IDLE_MS`                     | `400 * DAY_MS`                                                           | `guest-sweep.ts`     |
@@ -519,7 +560,11 @@ Migrations, in order:
 | `SILENT_SESSION_KEY`                | `'liveworkspace:silent-sign-in'`                                         | `silent.ts`          |
 | `SILENT_GUARD_MAX_AGE_SECONDS`      | `120`                                                                    | `silent.ts`          |
 | `SIGNED_OUT_MAX_AGE_SECONDS`        | `400 * 24 * 3600`                                                        | `silent.ts`          |
+| `SIGNED_OUT_VALUE`                  | `'2'`                                                                    | `silent.ts`          |
+| `SILENT_RETURN_KEY`                 | `'liveworkspace:silent-return'`                                          | `silent.ts`          |
+| `SILENT_RETURN_ATTRIBUTE`           | `'data-silent-return'`                                                   | `silent.ts`          |
 | `SILENT_RETURN_MAX_LENGTH`          | `1500`                                                                   | `silent.ts`          |
+| `SILENT_RETRY_GLOBAL`               | `'__liveworkspaceSilentSignIn'`                                          | `silent.ts`          |
 | `WORKBENCH_SESSION_VALID_FOR_MS`    | `60_000`                                                                 | `workbench.ts`       |
 | `WORKBENCH_SESSION_INVALID_FOR_MS`  | `10_000`                                                                 | `workbench.ts`       |
 | `WORKBENCH_SESSION_CACHE_MAX`       | `1_000`                                                                  | `workbench.ts`       |
@@ -553,6 +598,7 @@ Worker as a whole:
 | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/accounts/src/account-api.test.ts` (33)            | the account API's doors: signed in, by bearer, for the apps                                                                                                                  |
 | `liveworkspace/apps/accounts/src/index-purge.test.ts` (8)             | `purgeFromIndex`, `retryPendingPurges`, `deleteAccount`                                                                                                                      |
+| `liveworkspace/apps/accounts/src/deletion-code.test.ts`               | the deletion code: sent, checked, spent, expired, three tries, concurrent guesses, and closing refused without it                                                            |
 | `liveworkspace/apps/accounts/src/drive-disconnect.test.ts` (4)        | `disconnectDrive`: done, skipped, failed, a `404`                                                                                                                            |
 | `liveworkspace/apps/accounts/src/telemetry.test.ts` (7)               | server events: held, bounded, one batch per app, keys                                                                                                                        |
 | `liveworkspace/apps/accounts/src/index-timeline.test.ts` (16)         | API token and team events; sending to the index; the outbox's bound                                                                                                          |
@@ -563,7 +609,10 @@ Worker as a whole:
 
 ## Defaults ledger
 
-- `ACC1`: the spec names no cron minute; the daily run is `17 9 * * *` and the frequent one `*/15 * * * *`.
+- `ACC1`: the spec names no cron minute; the hourly run is `17 * * * *` (its daily steps in the 09:17 UTC run) and the
+  frequent one `*/15 * * * *`.
 - `ACC2`: closing an account answers `200` once the account is gone, whether or not the index, the workbench or
   Drive took their part; the index's is retried, Drive's is not.
 - `ACC3`: a telemetry event with no app (someone who signed up on liveworkspace.app) is not counted.
+- `ACC17`: the spec gives the deletion code the sign-in code's rules; checking and closing share `CODE_IP_LIMITER`'s
+  10 a minute, keyed by account rather than address, since the caller is always an app's server.

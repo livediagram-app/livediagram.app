@@ -7,21 +7,26 @@ import {
   duplicateItemType,
   isArchived,
   isTrashed,
-  itemLabels,
+  labelUsage,
   linkedCardsOf,
   newItemId,
+  requiredFieldEmptied,
   typeIn,
 } from '@liveplanner/items';
 import { duplicateItem } from './duplicate-item';
+import { copyCardLink } from './copy-card-link';
 import { mayCreateCardType } from './may-create-card-type';
 import { newCardStatus } from './new-card-status';
 import { newTypeForBoard } from '@/hooks/plan/useTypeForBoard';
 import { liveTrail } from './item-trail';
 import { toggleFlag } from './item-flag';
+import { linkExistingCard } from './link-existing';
 import type { PlanSlice } from '@/hooks/plan/usePlanSlice';
 import { ItemPanel } from './ItemPanel';
 import { ItemTypeEditor } from './ItemTypeEditor';
+import { RequiredFieldsDialog } from './RequiredFieldsDialog';
 import { track } from '@/lib/telemetry';
+import { useCardPanelMaximised } from '@/hooks/plan/useCardPanelMaximised';
 
 export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
   const ctx = plan.context;
@@ -44,6 +49,22 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
     const open = openId ? ctx.items.get(openId) : undefined;
     return open ? linkedCardsOf(open, ctx.items, ctx.types) : [];
   }, [openId, ctx.items, ctx.types]);
+  // The plan's labels with their counts, for the Labels field's menu (docs/specs/026-plan/plan-board.md "Working on
+  // a board"): one pass over the cards while a card is open, again only when the cards change, never per keystroke.
+  const labelUses = useMemo(
+    () => (openId ? labelUsage(ctx.items.values()) : []),
+    [openId, ctx.items],
+  );
+  // Maximise Card (docs/specs/026-plan/plan-board.md "Maximised"): this person's preference, so every card opens
+  // the way they last left one.
+  const { maximised, setMaximised } = useCardPanelMaximised(ctx.ownerId);
+  // A new card waiting for its required fields comes first (docs/specs/026-plan/item-types.md "Required fields"):
+  // the panel of a card opened as it was asked for shows once it is made.
+  if (plan.requiredFields) {
+    return (
+      <RequiredFieldsDialog request={plan.requiredFields} onDone={plan.settleRequiredFields} />
+    );
+  }
   // The type editor (docs/specs/026-plan/item-types.md "Editing a type").
   const target = plan.editingType;
   if (target && ctx.canEdit) {
@@ -63,7 +84,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
         !editing && from
           ? duplicateItemType(from, ctx.types)
           : forBoard
-            ? newTypeForBoard(forBoard, ctx.statusNames.keys())
+            ? newTypeForBoard(forBoard)
             : undefined;
       return (
         <ItemTypeEditor
@@ -97,24 +118,34 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
       );
     }
   }
-  // Every label in use, for the labels field's suggestions.
-  const allLabels = [...new Set([...ctx.items.values()].flatMap((it) => itemLabels(it)))].sort();
   if (item) {
+    const linkOf = ctx.cardLink;
     return (
       <ItemPanel
         item={item}
         types={ctx.types}
+        statusTypes={ctx.statusTypes}
         statuses={statuses}
         people={ctx.people}
-        labels={allLabels}
+        labels={labelUses}
         canEdit={ctx.canEditCards}
         canRetire={ctx.canEdit}
-        onSave={(field, value) =>
-          ctx.patchItem(
+        onSave={(field, value) => {
+          // A required field is never emptied (docs/specs/026-plan/item-types.md "Required fields"): said by name,
+          // and the field goes back to its value.
+          const type = typeIn(ctx.types, item.type);
+          const emptied = requiredFieldEmptied(type, item.fields, field, value);
+          if (emptied) {
+            const message = `${emptied.label} is required on ${type.label} cards`;
+            ctx.notify?.(message);
+            ctx.announce(message);
+            return Promise.resolve(false);
+          }
+          return ctx.patchItem(
             item.id,
             value === undefined ? { clear: [field] } : { set: { [field]: value } },
-          )
-        }
+          );
+        }}
         onPatch={(patch) => void ctx.patchItem(item.id, patch)}
         onType={(type) => void ctx.patchItem(item.id, { type })}
         onOpenItem={(id, via) => ctx.openItem(id, via)}
@@ -129,7 +160,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           const id = newItemId();
           void ctx.addItem({
             type: typeId,
-            fields: { title: type.newTitle, [group.fieldId]: item.id },
+            fields: { title: type.newTitle, [group.fieldId]: group.several ? [item.id] : item.id },
             status,
             after: null,
             id,
@@ -137,7 +168,10 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           ctx.openNewItem(id, 'ChildCard');
           track('Plan', 'Added', 'LinkedCard');
         }}
+        onLinkExisting={(group, cardId, moved) => linkExistingCard(ctx, item, group, cardId, moved)}
         statusNames={ctx.statusNames}
+        maximised={maximised}
+        onMaximise={setMaximised}
         {...(ctx.linkedActions ? { linkedActions: ctx.linkedActions } : {})}
         onTrash={() => {
           ctx.trashItem(item.id);
@@ -153,14 +187,10 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           else track('Plan', 'Moved', 'Archive');
         }}
         onClose={plan.closeItem}
+        {...(linkOf ? { onCopyLink: () => copyCardLink(linkOf(item.id), ctx.notify) } : {})}
         onEditType={() => {
           plan.closeItem();
           ctx.editType({ id: item.type });
-        }}
-        comments={{
-          canComment: ctx.canVote,
-          selfId: ctx.ownerId,
-          onComment: (action) => ctx.commentItem(item.id, action),
         }}
       />
     );

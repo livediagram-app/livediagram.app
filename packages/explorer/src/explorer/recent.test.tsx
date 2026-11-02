@@ -54,7 +54,7 @@ describe('Recent', () => {
   it('leads back to Home', async () => {
     const onNavigate = page(createFakeIndex(), { kind: 'recent' });
     const crumbs = await screen.findByRole('navigation', { name: 'Breadcrumb' });
-    fireEvent.click(within(crumbs).getByRole('button', { name: 'Home' }));
+    fireEvent.click(within(crumbs).getByRole('button', { name: /^Home/ }));
     expect(onNavigate).toHaveBeenCalledWith({ kind: 'home' }, '/explorer/home');
   });
 

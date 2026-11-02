@@ -9,6 +9,8 @@
 
 import { useMemo, useState, type ReactNode } from 'react';
 import { FOLDER_NAME_MAX } from '@liveworkspace/index-client';
+import { BackBar, Button } from '@liveworkspace/ui';
+import { compareNames } from '../data/name-order';
 import {
   ChevronRightIcon,
   FolderPlaceIcon,
@@ -108,9 +110,7 @@ export function PlacementBrowser({
   if (space === null) {
     return (
       <div className="flex flex-col gap-1">
-        <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
-          Choose a Space
-        </p>
+        <BackBar label="Choose a Space" gap="tight" />
         {showPersonal ? (
           <PlacementCard
             label="My Work"
@@ -185,7 +185,7 @@ export function PlacementBrowser({
   const open = openId ? byId.get(openId) : undefined;
   const children = spaceFolders
     .filter((f) => f.parentId === (open?.id ?? null))
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .sort((a, b) => compareNames(a.name, b.name));
   const hasKids = (id: string) => spaceFolders.some((f) => f.parentId === id);
   const valueFor = (folderId: string | null) => placementValue(teamId, folderId);
   const chain = new Set(
@@ -201,20 +201,16 @@ export function PlacementBrowser({
 
   return (
     <div className="flex flex-col gap-1">
-      <div className="mb-1 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
-        {back ? (
-          <button
-            type="button"
-            onClick={back}
-            className="rounded px-1.5 py-0.5 font-medium hover:bg-slate-100 dark:hover:bg-slate-800"
-          >
-            ‹ Back
-          </button>
-        ) : null}
-        <span className="truncate font-semibold uppercase tracking-wider">
-          {[spaceName, ...trail.map((f) => f.name)].join(' › ')}
-        </span>
-      </div>
+      {/* The back bar (docs/specs/004-interface-design/back-bar.md): where Back goes, and the level open as its
+          chip. With nowhere to go back to, it stands as the space's heading. */}
+      <BackBar
+        label={
+          trail.length > 1 ? trail[trail.length - 2]!.name : open ? spaceName : 'Choose a Space'
+        }
+        current={open ? open.name : spaceName}
+        onClick={back}
+        gap="tight"
+      />
       <PlacementCard
         label={open ? open.name : teamId ? 'Team Library' : 'My Work'}
         sub={open ? 'This folder' : teamId ? spaceName : 'Top level'}
@@ -379,13 +375,14 @@ function NameField({
         aria-label={label}
         className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none dark:text-slate-100"
       />
-      <button
+      <Button
+        variant="none"
         type="submit"
-        disabled={busy}
+        busy={busy}
         className="text-sm font-semibold text-brand-700 disabled:opacity-60 dark:text-brand-300"
       >
         {busy ? 'Creating…' : 'Create'}
-      </button>
+      </Button>
       {error ? (
         <p role="alert" className="w-full text-xs text-rose-600 dark:text-rose-400">
           {error}

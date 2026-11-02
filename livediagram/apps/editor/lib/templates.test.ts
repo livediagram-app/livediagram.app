@@ -26,7 +26,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "82 templates (10 default + 72 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "88 templates (10 default + 78 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -117,25 +117,31 @@ describe('TEMPLATES catalogue', () => {
     'journey-doodle',
     'pre-mortem',
     'idea-garden',
+    'eisenhower-matrix',
+    'pestle-analysis',
+    'kwl-chart',
+    'onboarding-plan',
+    'concept-map',
+    'network-diagram',
     'blank-session',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "82 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "88 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 82 templates (10 default + 72 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(82);
+  it('lists exactly 88 templates (10 default + 78 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(88);
   });
 
-  it('splits cleanly into 10 default + 72 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 10 default + 78 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(10);
-    expect(extras).toHaveLength(72);
+    expect(extras).toHaveLength(78);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/editor-tour.md has no sample)', () => {
@@ -459,6 +465,22 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // samples and labels. Stream: title, 2 chips, 6 data boxes, 6 triangles and waits, 2 bursts and fixes, 12 rung
     // figures, the totals and the future state.
     'value-stream-map': { names: ['Map', 'Stream'], scaffold: 48, content: 39 },
+    // The use-case batch's board grids (template-builders-board-grid.ts). The scaffold is the how-to, each panel and
+    // its three header parts, the axis words, the rail's heading and steps, and the closing panel and its header;
+    // the content the title, the notes, the rail's question and two tools, and the closing checklists.
+    // Matrix: how-to, 4 axis words, 4 panels (4 each), the closing (4). Tasks: title, 16 notes, the checklist.
+    'eisenhower-matrix': { names: ['Matrix', 'Tasks'], scaffold: 25, content: 18 },
+    // Lenses: how-to, the rail's heading and steps, 6 lenses (4 each), the closing (4). Notes: title, the question,
+    // timer and vote, 18 notes, the checklist.
+    'pestle-analysis': { names: ['Lenses', 'Notes'], scaffold: 31, content: 23 },
+    // Chart: how-to, the rail's heading and steps, 3 columns (4 each). Notes: title, the question, timer and vote,
+    // 12 notes.
+    'kwl-chart': { names: ['Chart', 'Notes'], scaffold: 15, content: 16 },
+    // Plan: how-to, 3 stages (4 each), the closing (4). Goals: title, 12 goals, the check-ins in two checklists.
+    'onboarding-plan': { names: ['Plan', 'Goals'], scaffold: 17, content: 15 },
+    // Tiers: title and caption, 4 lanes with blurb and glyph, the key, the IP plan. Network: 3 VLAN boundaries,
+    // 14 devices and 13 links.
+    'network-diagram': { names: ['Tiers', 'Network'], scaffold: 16, content: 30 },
   };
 
   it('pins each layered template’s names and scaffold / content split', () => {

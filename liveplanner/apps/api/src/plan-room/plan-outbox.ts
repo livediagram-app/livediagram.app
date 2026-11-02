@@ -33,6 +33,7 @@ import { cardsPushOf, noteKnownPeople } from './plan-cards-push';
 import { projectStatsSql } from '../db/tab-stats';
 import { isEmptyCount, type ContentSummary } from '../db/content-summary';
 import { pushFormInbox } from '../forms/form-inbox';
+import { IMAGES_OUTBOX_KIND, pushImageRefs } from './image-refs';
 import { indexAppClient } from '../index-service';
 import { reportOwnerActivity } from '../person/account-app';
 import type { PlanEnv } from '../types';
@@ -214,11 +215,14 @@ export async function drainOutbox(
   planId: string,
   client: IndexAppClient | null = indexAppClient(env),
 ): Promise<DrainResult> {
-  const rows = (
+  const all = (
     await env.PLAN_DB.prepare('SELECT id, kind, key FROM outbox WHERE plan_id = ? ORDER BY id')
       .bind(planId)
       .all<OutboxRow>()
   ).results;
+  // The pictures the cards hold go to the media service (image-refs.ts), the rest to the index.
+  const imageKeys = all.filter((r) => r.kind === IMAGES_OUTBOX_KIND).map((r) => r.id);
+  const rows = all.filter((r) => r.kind !== IMAGES_OUTBOX_KIND);
   const formStmts: D1PreparedStatement[] = [];
   const formTabs: string[] = [];
   // Who wrote to the plan, remembered so a card assigned to them can be named to the index.
@@ -259,10 +263,21 @@ export async function drainOutbox(
     // A form's heading and board as the Inbox shows them (forms/form-inbox.ts).
     await Promise.all(formTabs.map((tabId) => pushFormInbox(env, planId, tabId)));
   }
-  if (outcome.done.length > 0)
+  const done = [...outcome.done];
+  const failures = [...outcome.failures];
+  let pushes = outcome.pushes;
+  if (imageKeys.length > 0) {
+    try {
+      if (await pushImageRefs(env, planId)) pushes++;
+      done.push(...imageKeys);
+    } catch (error) {
+      failures.push(error);
+    }
+  }
+  if (done.length > 0)
     await env.PLAN_DB.prepare('DELETE FROM outbox WHERE id IN (SELECT value FROM json_each(?))')
-      .bind(JSON.stringify(outcome.done))
+      .bind(JSON.stringify(done))
       .run();
-  if (outcome.failures.length > 0) throw outcome.failures[0];
-  return { keys: outcome.done.length, pushes: outcome.pushes, more: outcome.more };
+  if (failures.length > 0) throw failures[0];
+  return { keys: done.length, pushes, more: outcome.more };
 }

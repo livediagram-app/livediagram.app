@@ -7,9 +7,6 @@ export type ItemOpenVia = 'Parent' | 'ChildCard' | 'Breadcrumb';
 
 // The most cards the trail remembers (spec): bounds its memory however long someone wanders.
 export const ITEM_TRAIL_MAX = 8;
-// Earlier crumbs the header shows before folding the rest into "…": what fits a 60rem header, and a phone's.
-export const ITEM_TRAIL_SHOWN = 3;
-export const ITEM_TRAIL_SHOWN_PHONE = 1;
 
 // The trail after opening `id` from inside the panel: back to it when it is already there (the crumbs after it
 // drop), else appended, the oldest dropped past the cap.
@@ -32,13 +29,4 @@ export function liveTrail(
     const item = items.get(id);
     return item && !isTrashed(item) ? [item] : [];
   });
-}
-
-// The earlier crumbs the header shows, nearest the current card, and how many fold into "…" before them.
-export function visibleTrail<T>(
-  earlier: readonly T[],
-  shown: number,
-): { folded: number; crumbs: readonly T[] } {
-  const folded = Math.max(0, earlier.length - shown);
-  return { folded, crumbs: earlier.slice(folded) };
 }

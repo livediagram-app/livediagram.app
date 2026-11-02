@@ -2,7 +2,8 @@
 
 // A visualisation's settings behind the cog in its header (docs/specs/026-plan/plan-views.md "Settings"), as a
 // board's Board Settings and a Sheet's Sheet Settings: Card Types, then Group By (Cards by Field), Statuses (Cards by
-// Field, Priority by Status), Swimlanes and Row Order (a Gantt chart). The same changes as its element menu's View
+// Field, Priority by Status), Count By (Cards by Field), Dates (a Gantt chart, a calendar), Swimlanes and Row Order (a
+// Gantt chart). The same changes as its element menu's View
 // flyout (planViewSettingsModel), so either does.
 import { useState, type ReactNode } from 'react';
 import type { PlanViewRef } from '@liveplanner/project';
@@ -10,6 +11,7 @@ import { CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
 import {
   lucideCalendar,
   lucideCircleDot,
+  lucideHash,
   lucideGroup,
   lucideLayers,
 } from '@liveworkspace/icons/lucide';
@@ -19,11 +21,14 @@ import { OptionRows } from '../OptionRows';
 import { usePlan } from '../PlanContext';
 import { PHASE_COLOURS } from './view-frame';
 import { planViewSettingsModel, viewTypesNote } from './plan-view-settings';
+import { ViewDateOptions, ViewMeasureOptions } from './ViewFieldSettings';
 
 const TypesGlyph = lucideGlyph(lucideLayers, 14);
 const GroupGlyph = lucideGlyph(lucideGroup, 14);
 const OrderGlyph = lucideGlyph(lucideCalendar, 14);
 const StatusGlyph = lucideGlyph(lucideCircleDot, 14);
+const DatesGlyph = lucideGlyph(lucideCalendar, 14);
+const MeasureGlyph = lucideGlyph(lucideHash, 14);
 
 export function PlanViewSettingsPanel({
   elementId,
@@ -63,8 +68,18 @@ export function PlanViewSettingsPanel({
           />
         </BoardSettingsSection>
       ) : null}
+      {m.measures.length > 1 ? (
+        <BoardSettingsSection title="Count By" icon={<MeasureGlyph />} {...section('measure')}>
+          <ViewMeasureOptions m={m} />
+        </BoardSettingsSection>
+      ) : null}
+      {m.dateRoles.length ? (
+        <BoardSettingsSection title="Dates" icon={<DatesGlyph />} {...section('dates')}>
+          <ViewDateOptions m={m} />
+        </BoardSettingsSection>
+      ) : null}
       <BoardSettingsSection title="Card Types" icon={<TypesGlyph />} {...section('types')}>
-        <InfoNote>{viewTypesNote(m.needs)}</InfoNote>
+        <InfoNote>{viewTypesNote(m.needs, plan.types)}</InfoNote>
         <CardTypeOptions types={m.eligible} selected={m.selected} onChange={m.setTypes} />
       </BoardSettingsSection>
       {m.takesStatuses ? (

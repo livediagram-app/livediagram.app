@@ -27,6 +27,19 @@ describe('opForScope (what a scoped session receives)', () => {
     }
   });
 
+  // docs/specs/009-elements/components.md: a scoped session never receives a main its tab does not use.
+  it('delivers a component op only when its tab uses the main, failing closed', () => {
+    const op = { kind: 'component', component: { id: 'c1' }, tabIds: ['t1', SCOPE] };
+    expect(opForScope(op, SCOPE)).toBe(op);
+    expect(opForScope({ ...op, tabIds: ['t1'] }, SCOPE)).toBeNull();
+    expect(opForScope({ ...op, tabIds: [] }, SCOPE)).toBeNull();
+    expect(opForScope({ kind: 'component', component: { id: 'c1' } }, SCOPE)).toBeNull();
+    expect(opForScope({ ...op, tabIds: SCOPE }, SCOPE)).toBeNull();
+    // A component op naming a tabId of its own is still judged by tabIds.
+    expect(opForScope({ ...op, tabId: SCOPE, tabIds: ['t1'] }, SCOPE)).toBeNull();
+    expect(opForScope({ ...op, tabIds: ['t1'] }, null)).toEqual({ ...op, tabIds: ['t1'] });
+  });
+
   it('drops a selection that does not say which tab it is on', () => {
     expect(opForScope({ kind: 'select', elementId: 'e1' }, SCOPE)).toBeNull();
     expect(opForScope({ kind: 'select', elementId: 'e1', tabId: SCOPE }, SCOPE)).not.toBeNull();

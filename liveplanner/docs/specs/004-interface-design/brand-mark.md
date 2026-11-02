@@ -62,11 +62,12 @@ wordmark in email follows the same split: `live` in brand violet, `planner` in i
 The mark sits a size up from the wordmark text, since a solid cube reads smaller than a line icon
 in the same box, with a small gap between them:
 
-| Size | Where                     | Mark | Wordmark | Gap  |
-| ---- | ------------------------- | ---- | -------- | ---- |
-| `sm` | The marketing hero's mock | 20px | 16px     | 8px  |
-| `md` | Site and editor headers   | 28px | 18px     | 10px |
-| `lg` | The site footer           | 40px | 24px     | 12px |
+| Size | Where                                                      | Mark | Wordmark | Gap  |
+| ---- | ---------------------------------------------------------- | ---- | -------- | ---- |
+| `xs` | Inside a line of text: liveworkspace's Settings › Webhooks | 16px | 13px     | 4px  |
+| `sm` | The marketing hero's mock                                  | 20px | 16px     | 8px  |
+| `md` | Site and editor headers                                    | 28px | 18px     | 10px |
+| `lg` | The site footer                                            | 40px | 24px     | 12px |
 
 Pointing at the logo, or reaching it by keyboard, opens and turns the prism in 3D:
 

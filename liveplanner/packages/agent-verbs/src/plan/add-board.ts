@@ -86,10 +86,17 @@ export async function addBoard(
       headers: { [CLIENT_HEADER]: client },
       body: JSON.stringify(body),
     });
-    const brought = await bringBoardCardTypes(api, projectId, [placed.board], {
-      stored: project.itemTypes ?? null,
-      ...(project.itemTypesRev !== undefined ? { rev: project.itemTypesRev } : {}),
-    });
+    // Its card types come with it, and its statuses join the types it takes (and only those).
+    const brought = await bringBoardCardTypes(
+      api,
+      projectId,
+      [placed.board],
+      {
+        stored: project.itemTypes ?? null,
+        ...(project.itemTypesRev !== undefined ? { rev: project.itemTypesRev } : {}),
+      },
+      state.plan.statuses.map((s) => s.status),
+    );
     // Named as the project names them, else as the ready-made type it just gained (a board's types are always one
     // or the other).
     const known = [...state.plan.types, ...READY_MADE_CARD_TYPES];

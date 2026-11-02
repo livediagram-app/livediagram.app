@@ -1,11 +1,18 @@
 // The index's fixed names and numbers (liveworkspace/docs/specs/004-index/one-explorer-contracts.md). Both sides read
 // these, so the Explorer, the apps and the index can never disagree on a limit.
 
-// The four apps, and the one kind of item each makes: the word people see.
-export const APPS = ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'] as const;
+// The apps, and the one kind of item each makes: the word people see. livehuddle (a Space) is registered before its
+// launch (liveworkspace/docs/specs/002-architecture/integrating-an-app.md "Registered before launch").
+export const APPS = [
+  'livediagram',
+  'liveplanner',
+  'livedocuments',
+  'livedesign',
+  'livehuddle',
+] as const;
 export type App = (typeof APPS)[number];
 
-export const KINDS = ['canvas', 'plan', 'document', 'design'] as const;
+export const KINDS = ['canvas', 'plan', 'document', 'design', 'space'] as const;
 export type Kind = (typeof KINDS)[number];
 
 export const APP_KINDS: Record<App, Kind> = {
@@ -13,6 +20,7 @@ export const APP_KINDS: Record<App, Kind> = {
   liveplanner: 'plan',
   livedocuments: 'document',
   livedesign: 'design',
+  livehuddle: 'space',
 };
 
 export const isApp = (value: unknown): value is App =>
@@ -97,8 +105,9 @@ export const TRASH_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 export const EMPTY_ITEM_STALE_MS = 30 * 24 * 60 * 60 * 1000;
 // Opens are recorded at most once a minute per person and item.
 export const OPEN_DEBOUNCE_MS = 60 * 1000;
-// Most Used counts the distinct UTC days a person opened an item over this window; older days are pruned.
-export const USE_WINDOW_DAYS = 90;
+// Most Used counts how many times a person opened an item over this window of UTC days; older days are pruned, so an
+// item not opened in it drops off.
+export const USE_WINDOW_DAYS = 14;
 // How many Most Used items one Recent request may ask for alongside its page (`used`).
 export const MOST_USED_MAX = 8;
 
@@ -234,6 +243,18 @@ export const INDEX_ERRORS = [
   'invalid_form',
   'invalid_form_seen',
   'invalid_events',
+  // Webhooks (webhooks.md): a malformed body, an address refused, a scope full, no key set, a caller who isn't an
+  // account, card moves malformed.
+  'invalid_webhook',
+  'webhook_url_invalid',
+  'webhook_url_private',
+  'webhook_limit',
+  'webhook_not_found',
+  'webhook_paused',
+  'webhooks_unavailable',
+  'webhooks_need_account',
+  'not_team_admin',
+  'invalid_moves',
   'invalid_password',
   // A new share password shorter than SHARE_PASSWORD_MIN.
   'password_too_short',
@@ -254,6 +275,10 @@ export const INDEX_ERRORS = [
   'rate_limited',
   'payload_too_large',
   'migration_failed',
+  // Any request that threw (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails"): the
+  // database failing on its side (503 with Retry-After), or anything else (500).
+  'storage_unavailable',
+  'internal_error',
 ] as const;
 export type IndexErrorCode = (typeof INDEX_ERRORS)[number];
 

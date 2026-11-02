@@ -7,7 +7,6 @@
 // then draws read-only from nothing.
 import type { StatusBoard } from '@/hooks/plan/usePlanStatusNames';
 import { createContext, useContext } from 'react';
-import type { ItemCommentAction } from '@/lib/api/items';
 import type { PlanCardRef, PlanViewRef } from '@liveplanner/project';
 import type {
   BoardStatusTypes,
@@ -16,14 +15,17 @@ import type {
   ItemMove,
   ItemPatch,
   ItemPatchOf,
+  ItemMoveOf,
   ItemPerson,
   ItemTypeDef,
   PlanBoardSetup,
   StatusPhase,
+  TimeOp,
 } from '@liveplanner/items';
 import type { PlanItemsStatus } from '@/hooks/plan/usePlanItems';
 import type { ItemOpenVia } from './item-trail';
 import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
+import type { ItemsScope } from '@/lib/api/items';
 
 // Someone else's hands on a card: dragging it or reading it.
 export type PlanCardPresence = { name: string; color: string; state: 'drag' | 'view' };
@@ -70,6 +72,8 @@ export type PlanContextValue = {
   // A card this person just made, opened at once with its title selected (never for others' or undone cards).
   openNewItem: (itemId: string, via?: ItemOpenVia) => void;
   openItemId: string | null;
+  // A card's address, for Copy Card Link (docs/specs/026-plan/plan-board.md "Its address"); absent, no row.
+  cardLink?: (itemId: string) => string;
   addItem: (input: {
     type: string;
     fields: Item['fields'];
@@ -85,13 +89,20 @@ export type PlanContextValue = {
   // the editor.
   addItems?: (creates: readonly ItemCreate[]) => Promise<boolean>;
   moveItem: (itemId: string, move: ItemMove) => void;
+  // Many cards moved as one write and one undo step, in order (a group dragged, a selection's Move To; docs/specs/026-plan/
+  // plan-board.md "Several cards at once"). Absent outside the editor.
+  moveItems?: (moves: readonly ItemMoveOf[]) => void;
   // Whether the change landed (false: refused, and the store put back).
   patchItem: (itemId: string, patch: ItemPatch) => Promise<boolean>;
+  // A time write to a card's Time Spent field (docs/specs/026-plan/item-types.md "Time Spent"); whether it landed.
+  // Absent outside the editor's own slice.
+  trackTime?: (itemId: string, field: string, op: TimeOp) => Promise<boolean>;
   deleteItem: (itemId: string) => void;
-  // A card's comment change (docs/specs/026-plan/items.md "Comments"); comments need participate access.
-  commentItem: (itemId: string, action: ItemCommentAction) => void;
   // This person's owner id: the author id on their own comments, for the delete-own control.
   ownerId: string;
+  // The project as this session reaches it (its id, this person, a share link's code): an Image field uploads and
+  // reads its picture through it (docs/specs/026-plan/item-types.md "Image fields"). Absent outside a project.
+  itemsScope?: ItemsScope | null;
   updateBoard: (boardId: string, setup: PlanBoardSetup) => void;
   // Delete Status: the state's columns off every board but `exceptBoardId` (the one deleting it updates itself).
   removeStatusColumns: (status: string, exceptBoardId: string) => void;

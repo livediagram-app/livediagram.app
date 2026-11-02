@@ -4,6 +4,7 @@
 // place, over the team's library, then the team's own feed (TeamActivity.tsx), closed until opened. A team the person is not in (gone, left, never joined) is a not-found card instead.
 
 import type { ReactNode } from 'react';
+import { Button } from '@liveworkspace/ui';
 import { LIST_CARD } from '../ui/classes';
 import { TeamCard, useTeamDetails } from '../teams/TeamCard';
 import { useExplorer } from './context';
@@ -58,7 +59,9 @@ function TeamNotFound() {
   return (
     <div className="flex items-center justify-center px-6 py-16" data-team-not-found="">
       <div className="flex max-w-md flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-rose-600">404</p>
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400">
+          404
+        </p>
         <h1 className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">
           Team not found
         </h1>
@@ -66,13 +69,9 @@ function TeamNotFound() {
           This team doesn’t exist, or you’re not a member of it. Ask an admin for an invite, or head
           back to your own {words.lowerMany}.
         </p>
-        <button
-          type="button"
-          onClick={() => navigate({ kind: 'all' })}
-          className="mt-6 rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700"
-        >
+        <Button size="md" className="mt-6" onClick={() => navigate({ kind: 'all' })}>
           Back to your {words.lowerMany}
-        </button>
+        </Button>
       </div>
     </div>
   );

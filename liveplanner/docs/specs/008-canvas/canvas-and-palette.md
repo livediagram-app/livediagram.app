@@ -328,7 +328,7 @@ All follow the **active tab theme**. Two looks, both legible by construction: so
 
 **Swapping an icon.** In every mode, an icon dropped onto a standalone `icon` element **replaces its glyph**: the target keeps its id, box, position, rotation, style and label and takes the dropped icon's id. Two ways in: (1) **drag an icon tile** from the Icons or Technology tab onto it (the whole icon rings and fills faintly while it is the target, with no side band); (2) **drag an icon element** already on the canvas onto it: on release the dragged icon is used up (removed) and the target takes its glyph, in one undo with the move. Any icon swaps with any other, a Technology mark included. Telemetry: `Element · Changed · IconSwapped` (a palette drop; a canvas drag reports nothing new, as the inline fold does not).
 
-**No images.** liveplanner takes no image uploads, so nothing makes an Image, Avatar or Hero. The Header's logo is its inline icon (drop an icon on it) or the brand's initial, so it needs no image.
+**No images.** The canvas takes no image uploads (only a card's Image field does, [Image fields](../026-plan/item-types.md#image-fields)), so nothing makes an Image, Avatar or Hero. The Header's logo is its inline icon (drop an icon on it) or the brand's initial, so it needs no image.
 
 ### Screens inside an element
 
@@ -406,7 +406,7 @@ Snapping during the drag considers every anchor each shape offers (sixteen on a 
   - Straight arrows have no middle handle; drag the line itself to bow one ([Bending arrows and the double-press rule](arrow-bending.md)).
 - **Drag the line** to bend the arrow where you grabbed it, and use the move frame to move a free arrow: see [Bending arrows and the double-press rule](arrow-bending.md).
 - **Add / remove bend points.** Curved and angled arrows can carry multiple bend points (`curvePoints`, deltas from the chord midpoint like `curveOffset`). Dragging the line inserts a point where it was grabbed, a single-bow curve's bow becoming the first point ([Bending arrows and the double-press rule](arrow-bending.md)); there is no "+" handle. Each point shows its own draggable `CurveHandle`; **right-clicking a point deletes it**. Deleting the **last** bend point leaves nothing to curve through, so the arrow reverts to a **plain straight line** (the `curvePoints`, `curveOffset`, `elbowOffset` and the curved/angled `arrowStyle` are all dropped) rather than snapping back to a single-handle bow the user didn't ask for.
-- **Touch targets.** The endpoint handles and the bend-point / elbow `CurveHandle`s are small fixed-size SVG marks: fine for a mouse, fiddly for a fingertip. On coarse-pointer (touch) devices each one carries an invisible larger hit circle (~44px diameter, the iOS HIG target) so it's reliably tappable, without enlarging the visible grip on desktop. The box resize handles do the same via a `pointer-coarse` hit pad (corner + N/S/E/W edge handles, `element-parts.tsx`).
+- **Touch targets.** The endpoint handles and the bend-point / elbow `CurveHandle`s are small fixed-size SVG marks: fine for a mouse, fiddly for a fingertip. On coarse-pointer (touch) devices each one carries an invisible larger hit circle (~44px diameter, the iOS HIG target) so it's reliably tappable, without enlarging the visible grip on desktop. The box resize handles do the same via a `pointer-coarse` hit pad (corner + N/S/E/W edge handles, `element-parts.tsx`), which leans outward: toward the element it reaches only 4px past the grip, so a finger on a small element's body moves it rather than catching a grip.
 - **Click the empty canvas** deselects.
 - The selection popover applies to arrows the same way it does to shapes (lock + delete). It floats clear of the arrow's label as well as its line ([Arrow labels](arrow-labels.md) "Selection").
 
@@ -588,7 +588,7 @@ type Element = {
 - The palette is always rendered on top of the canvas, regardless of which tab is active.
 - Each tab owns its own array of elements. Adding a shape adds it to the **active tab** only.
 - Switching tabs swaps the canvas content; each tab's shapes persist while the page is loaded.
-- Reloads restore the project from the api worker (D1), keyed by the project id in the URL. The active tab id is encoded in the URL fragment (`#t=<tabId>`) so refreshing keeps you on the same tab.
+- Reloads restore the project from the api worker (D1), keyed by the project id in the URL. The active tab id is encoded in the URL fragment (`#t=<tabId>`) so refreshing keeps you on the same tab; an open card rides beside it (`&item=<cardId>`, [Plan board](../026-plan/plan-board.md) "Its address").
 - When the active tab has zero elements (and the template picker isn't open), an **empty-state card** is centred on the canvas. It contains, top to bottom: a brand-coloured icon (square + circle, evoking diagram primitives), the tab name in bold, an `EMPTY CANVAS` subtitle, a one-paragraph hint explaining the three ways to start ("Open the palette on the left to add shapes, double-click anywhere to drop text, or connect elements by dragging from their anchor dots"), and a **Browse templates** button that opens the template picker. The card sits on top of any background pattern so it stays legible on coloured / patterned canvases.
 - The empty-state card disappears once the active tab has at least one element.
 
@@ -607,7 +607,7 @@ A template is picked where the work begins: on an empty tab's **Start Planning**
 
 ### The catalogue
 
-`TEMPLATES` (`packages/templates/src/templates.ts`, pinned by `templates.test.ts`) lists every `TemplateKind`: **Blank Tab** (`blank`), the 24 Plan templates (`PLAN_TEMPLATE_KINDS` in `plan-template-catalogue.ts`: Blank Plan, Blank Spreadsheet, the boards and the sheets) and the form templates (`FORM_TEMPLATES` in `form-templates.ts`: Blank Form and one per form starter). A form template makes an empty tab and the editor starts its form on it ([Forms](../030-forms/forms.md) "Starting a form"), so it is `editorOnly` and left out of the agents' catalogue, whose creates are built on the api.
+`TEMPLATES` (`packages/templates/src/templates.ts`, pinned by `templates.test.ts`) lists every `TemplateKind`: **Blank Tab** (`blank`), the 30 Plan templates (`PLAN_TEMPLATE_KINDS` in `plan-template-catalogue.ts`: Blank Plan, Blank Spreadsheet, the boards and the sheets) and the form templates (`FORM_TEMPLATES` in `form-templates.ts`: Blank Form and one per form starter). A form template makes an empty tab and the editor starts its form on it ([Forms](../030-forms/forms.md) "Starting a form"), so it is `editorOnly` and left out of the agents' catalogue, whose creates are built on the api.
 
 - `TemplateDescriptor.extra?: boolean` is catalogue metadata only (it marks templates beyond the first starters); no surface gates on it.
 - `TemplateDescriptor.hidden?: boolean` keeps a template out of every listing while `buildTemplate` still builds it. No template sets it; `templates.test.ts` asserts the set is empty.
@@ -618,26 +618,33 @@ All template elements are inserted via the history hook (commit), so they're und
 
 #### Template categories
 
-The catalogue is browsed by **what a person is trying to get done**, not by what kind of artefact a template is: five categories, declared once in `packages/templates/src/template-categories.ts` and read by Start Planning, `/new`, the marketing gallery and the agents' catalogue. Descriptions are kept to a similar length (40 to 50 characters), so the folded tiles read as an even set.
+The catalogue is browsed by **what the work is for** (the use case), not by what kind of artefact a template is: a board, a Sheet and a form for the same job sit together. Eleven categories, declared once in `packages/templates/src/template-categories.ts` and read by the marketing gallery, template search and the agents' catalogue. They are liveplanner's own, chosen for the jobs people plan here; they need not match the other products' categories. Descriptions are kept to a similar length (40 to 50 characters), so the folded tiles read as an even set.
 
 **Order.** The categories run **alphabetically by label** everywhere they are listed: `TEMPLATE_CATEGORIES` is derived by sorting the declared categories by label (`localeCompare`, English, case ignored), never hand-ordered, so a new category lands in its place. Popular is not a category and stays the shelf above them.
 
-| Category     | Id             | Description                                      | Templates (primary)                                                                                                               | Also shown                                                                                        |
-| ------------ | -------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Finance      | `finance`      | Budgets, invoices, loans and sales forecasts.    | Budget Planner, Timesheet, Invoice, Expense Report, Loan Calculator, Sales Pipeline                                               |                                                                                                   |
-| Forms        | `forms`        | Forms to share by link, answers kept for you.    | the form templates but Blank Form                                                                                                 |                                                                                                   |
-| Meetings     | `meetings`     | Retros and feedback boards a team runs together. | Team Retro, Feedback Board                                                                                                        |                                                                                                   |
-| Planning     | `planning`     | Boards and trackers for plans and teams.         | Project Planner, Kanban Board, Task Tracker, Bug Tracker, Weekly Planner, Content Calendar, Product Launch, Hiring Pipeline, OKRs | Team Retro, Feedback Board                                                                        |
-| Spreadsheets | `spreadsheets` | Ready-made sheets with formulas and charts.      | Contact List, Inventory, Guest List, Grade Book, Habit Tracker                                                                    | Task Tracker, Budget Planner, Timesheet, Invoice, Expense Report, Loan Calculator, Sales Pipeline |
+| Category                | Id          | Description                                        | Templates (primary)                                                                 | Also shown                                                  |
+| ----------------------- | ----------- | -------------------------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Customer Support        | `support`   | Tickets, contact forms and what customers say.     | Help Desk, Contact Form, Feedback Form                                              | Feedback Board, Bug Report Form, Feature Request Form       |
+| Education               | `education` | Study plans, coursework and a class grade book.    | Study Planner, Grade Book                                                           |                                                             |
+| Events                  | `events`    | Plans, guest lists and RSVPs for any occasion.     | Event Planner, Guest List, Event RSVP Form                                          |                                                             |
+| Finance                 | `finance`   | Budgets, invoices, expenses, loans and stock.      | Budget Planner, Timesheet, Invoice, Expense Report, Loan Calculator, Inventory      | Sales Pipeline                                              |
+| Hiring and People       | `hiring`    | Open roles, candidates and their first month.      | Hiring Pipeline, Job Application Form                                               |                                                             |
+| Marketing               | `marketing` | Content and launches, planned to the day.          | Content Calendar, Product Launch                                                    |                                                             |
+| Meetings                | `meetings`  | Agendas, retros and the actions they lead to.      | Team Retro, Meeting Agenda                                                          |                                                             |
+| Personal                | `personal`  | Your week, goals, habits and household money.      | Weekly Planner, Habit Tracker, Personal Goals                                       | Budget Planner, Loan Calculator, Task Tracker               |
+| Product and Engineering | `product`   | Sprints, bugs and feedback for product teams.      | Project Planner, Bug Tracker, Feedback Board, Bug Report Form, Feature Request Form | Kanban Board, Product Launch                                |
+| Projects and Teams      | `planning`  | Boards, trackers and goals that keep teams moving. | Kanban Board, Task Tracker, OKRs                                                    | Project Planner, Weekly Planner, Team Retro, Meeting Agenda |
+| Sales                   | `sales`     | Deals, contacts and the forecast they add up to.   | Sales CRM, Sales Pipeline, Contact List                                             |                                                             |
 
+- **Why these.** Each is a job people come to plan: a support queue, a term of study, an event, money, hiring, marketing, the meetings a team runs, a person's own life, building a product, running a team's work, and selling. A form sits with the job its answers feed (an Event RSVP with Events, a Job Application with Hiring), and a spreadsheet with the job it does (an Inventory with Finance, a Contact List with Sales), so neither Forms nor Spreadsheets is a category: a search for "form" or "spreadsheet" still finds them by their descriptions.
 - **One primary category each.** Every template but the blanks has exactly one primary category (`templateCategory(kind)`, `TEMPLATE_CATEGORY`, a record over every non-blank kind, so a new template cannot ship without one). The primary is the one the agents' catalogue names and the one a search result groups under.
 - **Cross-listing.** A template may also be shown in other categories where someone would genuinely look for it (`TEMPLATE_ALSO_IN`, the "Also shown" column). `templateCategories(kind)` is the primary followed by these. A cross-listed template appears on each of its categories' shelves and counts in each tile's badge; never twice on one shelf.
 - **The blanks are in no category.** Blank Tab, Blank Plan, Blank Spreadsheet and Blank Form have no primary (`templateCategory` answers `null`) and are reached from Popular or by search. The agents' catalogue lists them under a `blanks` entry so an agent still finds them.
-- **Ids.** No category id is stored in a project, a URL or a telemetry event; the ids are read by the pickers, links and the agents' catalogue.
+- **Ids.** No category id is stored in a project, a URL or a telemetry event; the ids are read by the pickers, links and the agents' catalogue. `planning`, `finance` and `meetings` kept their ids when the catalogue was regrouped by use case (`planning` was Planning, now Projects and Teams); `forms` and `spreadsheets` are gone.
 
 **Popular** is the open shelf on load, "Where most people start.", above the categories and not one of them. Its cards are a short curated list (`POPULAR_TEMPLATE_KINDS` in `packages/templates/src/popular.ts`): Blank Plan, Project Planner, Kanban Board, Budget Planner, Team Retro, Bug Tracker, Invoice ([Templates](../007-editor/templates-by-mode.md)).
 
-**Search** (a start's search box; also the marketing gallery's) matches a template when **every word typed** is found, case ignored, in its title, description, kind id, the labels of every category it is shown in, or its **search words**, punctuation and hyphens no part of a word on either side ("to-do" finds "to do" and "todo") (`templateKeywords(kind)` in `packages/templates/src/template-keywords.ts`: what people call it and the job it does, "sprint" for the Project Planner, "excel" and "cells" for Blank Spreadsheet, plus a sheet template's own words). A sheet template's words are its sheet's own (`SheetTemplateInfo.keywords` in `@liveplanner/sheets`, which Start Planning's Spreadsheets search too), so the two pickers find a sheet by the same words. One function, `templateMatchesQuery`, decides a match for the editor and the marketing gallery alike.
+**Search** (a start's search box; also the marketing gallery's) matches a template when **every word typed** is found, case ignored, in its title, description, kind id, the labels of every category it is shown in (and each such category's own search words, `templateCategorySearchWords`: "crm" for Sales, "helpdesk" for Customer Support, "school" for Education), or its **search words**, punctuation and hyphens no part of a word on either side ("to-do" finds "to do" and "todo") (`templateKeywords(kind)` in `packages/templates/src/template-keywords.ts`: what people call it and the job it does, "sprint" for the Project Planner, "excel" and "cells" for Blank Spreadsheet, plus a sheet template's own words). A sheet template's words are its sheet's own (`SheetTemplateInfo.keywords` in `@liveplanner/sheets`, which Start Planning's Spreadsheets search too), so the two pickers find a sheet by the same words. One function, `templateMatchesQuery`, decides a match for the editor and the marketing gallery alike.
 
 ### Theme section
 
@@ -740,6 +747,18 @@ Result sections, in order, each capped (8 per section, 12 for elements, 10 for A
 7. **Settings**: rows from the settings catalogue (`lib/settings-search-items.ts`), matched on title and keywords (non-empty query only). Picking one opens the Settings dialog on that row.
 8. **Help**: help-centre articles (`lib/help-search.ts`), matched on title and keywords (non-empty query only), listed last so navigation and edit results keep the default Enter.
 
+**Every App** (Work Tracker #63). Typing also asks liveworkspace's index (`GET /api/index/items?view=search&q=…`,
+every app, up to 24, once the typing pauses for 200 ms, the request before cancelled) for everything the person can
+open: their own work, their teams' and what a live share link reaches, exactly as the index decides, never more. The
+results this panel already lists from its own lists (plans of this app's, shared and team ones) are left out, and up
+to 8 of the rest form an **Every App** group after Teams, in the index's order. Each row wears its app's logo in the
+app's colour (`AppMark`) and ends in the app's name in that colour (its deep shade on light, its accent on dark), so
+canvases, plans, documents and designs read apart at a glance. Picking one of this app's opens it here (with its
+share code when a link is how the person reaches it); picking another app's opens it in that app, at its own address.
+A failed or offline index read shows no group and no error: the panel's own groups still work. The hook and the
+helpers are shared (`@liveworkspace/explorer/item-search`: `useItemSearch`, `everyAppResults`, `AppMark`,
+`appLabel`), so the four editors' panels behave alike.
+
 Out of scope (deliberate): element text in **other** projects (issue #13: needs a server-side index), a board's column names, a sheet's cells, a form's questions, comments, notes, element links, and participant names.
 
 ## Comments
@@ -759,6 +778,7 @@ The popover is portal-rendered (it escapes the canvas transform), anchored to th
 
 - Header: "Comments (n)" + a **Resolve / Resolved** toggle + close button.
 - Scrolling list of comments (oldest first). Each row shows the author's circular initial badge (in their colour), their name, a relative timestamp ("3m ago"), and the text. Hovering a row reveals a delete button (disabled when the thread is resolved).
+- Each comment takes [reactions](../012-collaboration/comment-reactions.md): Add Reaction in its row actions opens the six in place, and chips under the text count each emoji and say who (an Editor or Participant reacts; a Viewer only reads).
 - Reply box at the bottom with a textarea + Comment button. **Cmd/Ctrl + Enter** submits.
 
 ### Resolve semantics
@@ -1117,12 +1137,11 @@ The tab bar sits at the bottom of the editor. Each tab represents one canvas wit
 - Click a tab to switch to it. Switching clears element selection, edit mode, and any active picker, AND **fit-to-screens** the new tab's content on load (so the user lands centred on whatever's there, not wherever the previous tab left the viewport). A fit pads the content by at least the Palette strip's reach into the canvas on every side (`topChromeInset`, a whole even number of px), so nothing lands under the strip or the bottom chrome and the content stays centred on whole pixels. Subsequent edits on the same tab don't re-fit, the first element on an empty tab included; the gate is per tab id.
 - The **+** button at the right of the bar adds a fresh empty tab and switches to it. The new tab is **seeded from the active tab's visual context**: theme id, canvas backdrop (`backgroundColor`, `backgroundPattern`, `backgroundOpacity`, `patternColor`), font, and default text size all carry over, so a user mid-diagram doesn't land on a brand-default canvas. It opens in the active tab's mode too (a Plan tab's + makes a Plan tab), on that mode's own start ([Editor modes](../007-editor/editor-modes.md) "A new tab opens in the mode it was made from"). Each tab stays independently styleable after creation (restyling the new tab never affects the source). The seed survives the new tab's template picker too: picking a template under the unchanged theme keeps the inherited backdrop (see [Per-template canvas backdrop](#templates-section)), and Skip leaves it untouched.
 
-### Tab pill styling
+### Tab styling
 
-Each tab pill colours itself from its tab's theme:
+A tab takes its colour from its tab's theme ([How a tab looks](../007-editor/editor-app.md#how-a-tab-looks)):
 
-- Pill text colour uses `getTheme(tab.theme).elementStroke` (falls through to the brand sky for themes that don't override the stroke).
-- The active pill additionally tints its background to a 10% alpha of the same accent.
+- The open tab's name uses `getTheme(tab.theme).elementStroke` (the brand sky for themes that set no stroke), made legible (AA) on the open tab's white (slate-800 in dark) card. The other tabs keep neutral ink, whatever their theme.
 - A small **padlock icon** sits to the left of the name when `tab.locked === true`.
 - Per-tab **participant avatars** stack to the right of the name, one circle per remote participant whose `tab-focus` op points at this tab. Lets the user see at a glance who's working where.
 
@@ -1145,6 +1164,8 @@ The active tab carries a **`⋯` ellipsis button** to the right of its name. Cli
 - **Delete**: removes the tab and falls back to a neighbouring tab. Disabled when only one tab remains.
 
 The menu renders through a **portal** to `document.body` so it isn't clipped by the tab bar's horizontal scroll. It positions itself from the ellipsis button's bounding rect (tab surface) or at the cursor / footer-button point (canvas surface), clamping back on-screen at every viewport edge.
+
+**Closing.** The menu closes like every other menu: on Escape, on a primary press anywhere outside it (the canvas included, though the canvas stops its own pointer events), on a wheel scroll outside it, and when the window loses focus. All of it is one shared hook, `useMenuDismiss` (`packages/workbench/src/hooks/ui/useMenuDismiss.ts`): the press is heard on `pointerdown` in the capture phase, before the canvas can stop it, so a click on the canvas both dismisses the menu and does what it would have done. A press inside the menu, on the tab that opened it, or on a flyout, confirm popover or tour popover it opened never closes it; nor does a right press (its release re-opens the menu where it lands), nor a finger lifting within the first 400ms of the long press that opened it. Scrolling means the wheel, not the `scroll` event: the tab strip scrolls itself smoothly to reveal a tab just right-clicked, which would close the menu the moment it opened.
 
 ### Reordering
 
@@ -1361,7 +1382,7 @@ re-attaching any of them to a copy misrepresents it, and a copy can cross
 accounts.
 
 **Two sources compete on paste, in order:** our own serialised elements, then
-the in-app buffer (an image on the system clipboard is ignored: liveplanner
+the in-app buffer (an image on the system clipboard is ignored: the canvas
 takes no image uploads). The buffer is kept as a fallback
 rather than deleted because clipboard writes are best-effort: `writeText`
 rejects when the project isn't focused or permission is denied, and a copy

@@ -1,8 +1,11 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent, type RefObject } from 'react';
 import { accountApi, errorMessage, formatDate, type ApiToken } from '@/lib/account-api';
+import { Button } from '@liveworkspace/ui';
 import { BUTTON, ErrorNote, INPUT, Panel } from './account-ui';
+import { ConfirmAction } from './ConfirmAction';
+import { SecretReveal } from './SecretReveal';
 import { useAccountData } from './useAccountData';
 
 // The Settings panel's API Tokens (liveworkspace/docs/specs/010-site/site.md "Settings"): making a token, seeing it once,
@@ -11,19 +14,37 @@ import { useAccountData } from './useAccountData';
 export function TokensPanel() {
   const [load, refresh] = useAccountData<{ tokens: ApiToken[] }>('/tokens');
   const [made, setMade] = useState<(ApiToken & { secret: string }) | null>(null);
+  // Where the keyboard goes when what held it goes: the name field after Done, the list's heading after a revoke.
+  const nameRef = useRef<HTMLInputElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
 
   return (
     <div className="space-y-6">
       <CreateToken
+        nameRef={nameRef}
         onCreated={async (token) => {
           setMade(token);
           await refresh();
         }}
       />
-      {made && <Reveal token={made} onDone={() => setMade(null)} />}
+      {made && (
+        <SecretReveal
+          title={`Here’s ${made.name}. Copy it now: it won’t be shown again.`}
+          secret={made.secret}
+          onDone={() => {
+            setMade(null);
+            nameRef.current?.focus();
+          }}
+        />
+      )}
 
       <section aria-labelledby="your-tokens">
-        <h2 id="your-tokens" className="text-base font-semibold text-slate-900 dark:text-white">
+        <h2
+          id="your-tokens"
+          ref={headingRef}
+          tabIndex={-1}
+          className="text-base font-semibold text-slate-900 outline-none dark:text-white"
+        >
           Your tokens
         </h2>
         {load.state === 'loading' && (
@@ -41,7 +62,14 @@ export function TokensPanel() {
           ) : (
             <ul className="mt-4 space-y-3">
               {load.data.tokens.map((token) => (
-                <TokenRow key={token.id} token={token} onRevoked={refresh} />
+                <TokenRow
+                  key={token.id}
+                  token={token}
+                  onRevoked={async () => {
+                    await refresh();
+                    headingRef.current?.focus();
+                  }}
+                />
               ))}
             </ul>
           ))}
@@ -51,8 +79,10 @@ export function TokensPanel() {
 }
 
 function CreateToken({
+  nameRef,
   onCreated,
 }: {
+  nameRef: RefObject<HTMLInputElement | null>;
   onCreated: (token: ApiToken & { secret: string }) => Promise<void>;
 }) {
   const [name, setName] = useState('');
@@ -85,6 +115,7 @@ function CreateToken({
         </p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row">
           <input
+            ref={nameRef}
             aria-label="Token name"
             className={INPUT}
             placeholder="What it’s for, like “Weekly report script”"
@@ -92,9 +123,11 @@ function CreateToken({
             value={name}
             onChange={(event) => setName(event.target.value)}
           />
-          <button type="submit" className={`${BUTTON.primary} shrink-0`} disabled={busy}>
+          {/* Keeps the keyboard while it makes the token (busy-buttons.md): disabled, the focused button dropped it
+              to the top of Settings. */}
+          <Button type="submit" variant="none" className={`${BUTTON.primary} shrink-0`} busy={busy}>
             Make token
-          </button>
+          </Button>
         </div>
         <label className="mt-3 flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
           <input
@@ -111,36 +144,7 @@ function CreateToken({
   );
 }
 
-function Reveal({ token, onDone }: { token: ApiToken & { secret: string }; onDone: () => void }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <Panel className="border-emerald-300 bg-emerald-50/70 dark:border-emerald-500/40 dark:bg-emerald-500/5">
-      <p role="status" className="font-semibold text-slate-900 dark:text-white">
-        Here’s {token.name}. Copy it now: it won’t be shown again.
-      </p>
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-        <code className="block min-w-0 flex-1 overflow-x-auto rounded-xl bg-white px-3 py-2 font-mono text-sm text-slate-900 ring-1 ring-emerald-200 dark:bg-slate-950 dark:text-white dark:ring-emerald-500/30">
-          {token.secret}
-        </code>
-        <button
-          type="button"
-          className={`${BUTTON.secondary} shrink-0`}
-          onClick={() => {
-            void navigator.clipboard?.writeText(token.secret).then(() => setCopied(true));
-          }}
-        >
-          {copied ? 'Copied' : 'Copy'}
-        </button>
-        <button type="button" className={`${BUTTON.primary} shrink-0`} onClick={onDone}>
-          Done
-        </button>
-      </div>
-    </Panel>
-  );
-}
-
 function TokenRow({ token, onRevoked }: { token: ApiToken; onRevoked: () => Promise<void> }) {
-  const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function revoke() {
@@ -168,24 +172,7 @@ function TokenRow({ token, onRevoked }: { token: ApiToken; onRevoked: () => Prom
               Expires {formatDate(token.expiresAt)}
             </p>
           </div>
-          {confirming ? (
-            <span className="flex gap-1">
-              <button type="button" className={BUTTON.danger} onClick={() => void revoke()}>
-                Revoke now
-              </button>
-              <button
-                type="button"
-                className={BUTTON.secondary}
-                onClick={() => setConfirming(false)}
-              >
-                Keep
-              </button>
-            </span>
-          ) : (
-            <button type="button" className={BUTTON.danger} onClick={() => setConfirming(true)}>
-              Revoke
-            </button>
-          )}
+          <ConfirmAction label="Revoke" confirmLabel="Revoke now" onConfirm={revoke} />
         </div>
         {error && <ErrorNote>{errorMessage(error)}</ErrorNote>}
       </Panel>

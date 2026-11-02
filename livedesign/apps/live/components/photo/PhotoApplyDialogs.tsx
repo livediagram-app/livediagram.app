@@ -229,7 +229,7 @@ function Footer({
         <Button variant="secondary" size="sm" onClick={onCancel}>
           Cancel
         </Button>
-        <Button size="sm" disabled={busy} onClick={onOk}>
+        <Button size="sm" busy={busy} onClick={onOk}>
           OK
         </Button>
       </DialogFooter>

@@ -1,7 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
-import { COLLAB_MAX_THREADS, IndexError, type IndexAppClient } from '@liveworkspace/index-client';
+import {
+  CARD_MOVES_MAX,
+  COLLAB_MAX_THREADS,
+  IndexError,
+  type IndexAppClient,
+} from '@liveworkspace/index-client';
 import {
   capCollabPush,
+  CARD_MOVED_KIND,
+  cardMoveKeyOf,
+  cardMoveOf,
   DRAIN_TABS,
   drainIndexOutbox,
   editedOf,
@@ -17,7 +25,12 @@ import { nodeSql } from './test-sqlite';
 const sqlite = (): SqlExec => nodeSql();
 
 function fakeIndex(fail: (kind: string) => unknown = () => null) {
-  const calls = { summary: [] as unknown[], collab: [] as string[], events: [] as unknown[] };
+  const calls = {
+    summary: [] as unknown[],
+    collab: [] as string[],
+    events: [] as unknown[],
+    moves: [] as unknown[][],
+  };
   const client = {
     pushSummary: async (_id: string, summary: unknown) => {
       const err = fail('summary');
@@ -33,6 +46,11 @@ function fakeIndex(fail: (kind: string) => unknown = () => null) {
       const err = fail('events');
       if (err) throw err;
       calls.events.push(...events);
+    },
+    pushCardMoves: async (_id: string, moves: unknown[]) => {
+      const err = fail('moves');
+      if (err) throw err;
+      calls.moves.push(moves);
     },
   } as unknown as IndexAppClient;
   return { client, calls };
@@ -96,6 +114,57 @@ describe('the outbox', () => {
     expect(calls.collab).toHaveLength(DRAIN_TABS);
   });
 
+  it(`pushes card moves together, at most ${CARD_MOVES_MAX} a drain, dropping keys that don't parse`, async () => {
+    const move = (i: number) =>
+      row(
+        i,
+        CARD_MOVED_KIND,
+        cardMoveKeyOf({
+          cardId: `c${i}`,
+          cardKey: i,
+          card: 'Fix',
+          from: 'To Do',
+          to: 'Done',
+          at: i,
+        }),
+      );
+    const rows = [
+      ...Array.from({ length: CARD_MOVES_MAX + 2 }, (_, i) => move(i + 1)),
+      row(900, CARD_MOVED_KIND, 'not json'),
+    ];
+    const { client, calls } = fakeIndex();
+    const out = await drainIndexOutbox('I', rows, client, source);
+    expect(out.more).toBe(true);
+    expect(out.pushes).toBe(1);
+    expect(calls.moves).toHaveLength(1);
+    expect(calls.moves[0]).toHaveLength(CARD_MOVES_MAX);
+    expect(calls.moves[0]![0]).toEqual({
+      cardId: 'c1',
+      cardKey: 1,
+      card: 'Fix',
+      from: 'To Do',
+      to: 'Done',
+      at: 1,
+    });
+    expect(out.done).toHaveLength(CARD_MOVES_MAX);
+    // The bad key is past the cap this drain; alone, it is done without a push.
+    const again = await drainIndexOutbox(
+      'I',
+      [row(900, CARD_MOVED_KIND, 'not json')],
+      client,
+      source,
+    );
+    expect(again).toEqual({ done: [900], failures: [], pushes: 0, more: false });
+  });
+
+  it('keeps card moves whose push failed', async () => {
+    const { client } = fakeIndex((kind) => (kind === 'moves' ? new Error('down') : null));
+    const key = cardMoveKeyOf({ cardId: 'c', cardKey: null, card: 'x', from: 'a', to: 'b', at: 1 });
+    const out = await drainIndexOutbox('I', [row(1, CARD_MOVED_KIND, key)], client, source);
+    expect(out.done).toEqual([]);
+    expect(out.failures).toEqual([new Error('down')]);
+  });
+
   it('drops every key without an index', async () => {
     expect((await drainIndexOutbox('I', [row(1, 'summary')], null, source)).done).toEqual([1]);
   });
@@ -110,6 +179,35 @@ describe('helpers', () => {
     });
     expect(editedOf('@9')).toBeNull();
     expect(editedOf('user_a@soon')).toBeNull();
+  });
+
+  it('writes and reads card move keys, cutting long text and refusing malformed ones', () => {
+    const long = 'x'.repeat(300);
+    const key = cardMoveKeyOf({
+      cardId: 'c',
+      cardKey: 3,
+      card: long,
+      from: long,
+      to: long,
+      actorName: long,
+      at: 9,
+    });
+    expect(cardMoveOf(key)).toEqual({
+      cardId: 'c',
+      cardKey: 3,
+      card: 'x'.repeat(200),
+      from: 'x'.repeat(200),
+      to: 'x'.repeat(200),
+      actorName: 'x'.repeat(200),
+      at: 9,
+    });
+    const plain = { cardId: 'c', cardKey: null, card: 'a', from: 'b', to: 'c', at: 1 };
+    expect(cardMoveOf(cardMoveKeyOf({ ...plain, actorName: null }))).toEqual(plain);
+    expect(cardMoveOf(JSON.stringify({ ...plain, cardKey: 'seven' }))).toEqual(plain);
+    expect(cardMoveOf('null')).toBeNull();
+    expect(cardMoveOf('{')).toBeNull();
+    for (const field of ['cardId', 'card', 'from', 'to', 'at'])
+      expect(cardMoveOf(JSON.stringify({ ...plain, [field]: undefined }))).toBeNull();
   });
 
   it('caps a collab push to the newest', () => {

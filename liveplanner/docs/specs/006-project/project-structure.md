@@ -103,7 +103,7 @@ type Tab = {
 //                     fixed box, docs/specs/007-editor/editor-modes.md "A text box's sizing"; and
 //                     textScale, the Shift-resize scale)
 //   ImageElement     (boxed, an empty picture placeholder left by diagram templates; imageId stays null,
-//                     liveplanner takes no image uploads)
+//                     the canvas takes no image uploads)
 //   ArrowElement     (from + to Endpoints, arrowStyle, arrowheadSize, optional label)
 //   FreehandElement  (boxed, carries its points as one packed block, docs/specs/006-project/stroke-points.md,
 //                     + optional auto-close flag for

@@ -4,8 +4,12 @@ import { ARRANGED_VIEW } from './agent-changeset-bodies';
 import type { StubUser } from './session';
 
 // What the agent specs share (docs/specs/024-agents/): Webber, signed in, with his own unshared project holding one
-// Dashboard view (ARRANGED_VIEW), his participant row, and an API token for his agent; and opening that project until its room greets the
-// editor.
+// Dashboard view (ARRANGED_VIEW) beside a box of his own (PERSON_BOX), his participant row, and an API token for his
+// agent; and opening that project until its room greets the editor.
+//
+// The box keeps the tab an ordinary canvas tab. A general tab holding only Plan elements is an old Plan tab, which
+// becomes a Dashboard when its editor opens it (docs/specs/026-plan/plan-tabs.md "Converting old Plan tabs"); a
+// Dashboard's rows cover the canvas, so its views could not be selected, nudged or badged with comments there.
 
 export const CANVAS = '[data-canvas-a11y-root]';
 export const WEBBER: StubUser = {
@@ -13,6 +17,18 @@ export const WEBBER: StubUser = {
   lastName: 'Takken',
   email: 'webber@example.com',
 };
+
+// Webber's own element on the tab: not one an agent adds, so it is his alone.
+export const PERSON_BOX = {
+  id: 'notes',
+  type: 'shape',
+  shape: 'rectangle',
+  x: 200,
+  y: 480,
+  width: 220,
+  height: 110,
+  label: 'Launch notes',
+} as const;
 
 export type Setup = { id: string; tabId: string; token: string; session: Record<string, string> };
 
@@ -35,7 +51,7 @@ export async function arrange(page: Page, baseURL: string, userId: string): Prom
         {
           id: tabId,
           name: 'Board',
-          elements: [ARRANGED_VIEW],
+          elements: [ARRANGED_VIEW, PERSON_BOX],
         },
       ],
     },
@@ -58,12 +74,13 @@ export async function agentSubmits(page: Page, s: Setup, body: unknown) {
   });
 }
 
+// The tab's stored element ids, in id order: the editor's saves may write them in another order.
 export async function storedIds(page: Page, s: Setup): Promise<string[]> {
   const res = await page.request.get(`/api/projects/${s.id}/tabs/${s.tabId}`, {
     headers: { Authorization: `Bearer ${s.token}` },
   });
   const { tab } = (await res.json()) as { tab: { elements: { id: string }[] } };
-  return tab.elements.map((e) => e.id);
+  return tab.elements.map((e) => e.id).sort();
 }
 
 // Where a stored element sits across, or null when it is not stored.

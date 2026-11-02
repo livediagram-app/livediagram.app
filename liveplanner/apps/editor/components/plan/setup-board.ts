@@ -2,6 +2,7 @@
 // person has chosen its card types and its columns, as one change. Pure.
 import {
   PLAN_COLUMNS_MAX,
+  settleDoneColumns,
   suggestionIndex,
   type CardSize,
   type PlanBoardSetup,
@@ -84,11 +85,9 @@ export function setUpBoard(
       next = addColumnAfter(next, null, c.name, random)?.setup ?? next;
     }
   }
-  // The done column stays only while its column does.
-  if (next.doneColumnId && !next.columns.some((c) => c.id === next.doneColumnId)) {
-    const { doneColumnId: _gone, ...withoutDone } = next;
-    next = withoutDone;
-  }
+  // A kept column counts as done as it did, a new one by its name (docs/specs/026-plan/plan-board.md "Done columns").
+  const { doneColumnId: _done, ...unflagged } = next;
+  next = settleDoneColumns(setup, unflagged);
   const { addTypes: _drop, ...rest } = next;
   const every = !typeIds || allTypeIds.every((id) => typeIds.includes(id));
   return every ? rest : { ...rest, addTypes: allTypeIds.filter((id) => typeIds.includes(id)) };

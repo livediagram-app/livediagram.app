@@ -264,6 +264,17 @@ describe('<Explorer>', () => {
     expect(index.count('restoreItem')).toBe(1);
   });
 
+  it("names an item's own kind on Delete, whatever app the Explorer is in", async () => {
+    const index = createFakeIndex({
+      items: [makeItem(1, { app: 'livediagram', kind: 'canvas' }), makeItem(2)],
+    });
+    renderExplorer(index, { kind: 'all' }, { filter: 'all' });
+    await waitFor(() => expect(rows()).toHaveLength(2));
+    fireEvent.click(screen.getByRole('button', { name: 'Menu for Item 1' }));
+    expect(await screen.findByRole('menuitem', { name: 'Delete Canvas' })).toBeTruthy();
+    expect(screen.queryByRole('menuitem', { name: 'Delete Plan' })).toBeNull();
+  });
+
   it('lays a list out as cards until the person picks another layout', async () => {
     localStorage.removeItem('liveworkspace:explorer-view-mode');
     const index = createFakeIndex({ items: [makeItem(1)] });
@@ -288,13 +299,17 @@ describe('<Explorer>', () => {
     expect(screen.queryByRole('button', { name: /^New / })).toBeNull();
   });
 
-  it('groups the Trash by whose it is, with Restore and Delete permanently', async () => {
+  it('groups the Trash by whose it is, with Restore and Delete Forever', async () => {
     const index = createFakeIndex({
       items: [makeItem(1, { trashedAt: Date.now(), trashReason: 'deleted' })],
     });
     renderExplorer(index, { kind: 'trash' });
     expect(await screen.findByRole('heading', { name: 'Your plans' })).toBeTruthy();
     expect(screen.getByText(/Deleted .* · 30 days left/)).toBeTruthy();
+    // The menu's words, and the name after them (the accessible name starts with what the button shows).
+    expect(screen.getByRole('button', { name: 'Delete Forever: Item 1' }).textContent).toBe(
+      'Delete Forever',
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Restore Item 1' }));
     await waitFor(() => expect(index.count('restoreItem')).toBe(1));
   });

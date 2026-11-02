@@ -5,6 +5,7 @@
 import type { CardField, CardSize } from './board';
 import type { CardSlot } from './card-display';
 import type { PlanGlyphId } from './glyphs';
+import type { FormulaResult } from './formula/limits';
 
 export type ItemFieldId =
   | 'title'
@@ -20,6 +21,8 @@ export type ItemFieldId =
   | 'start'
   | 'due'
   | 'checklist'
+  // Pictures on the card, one of them its cover (docs/specs/026-plan/items.md "Attachments").
+  | 'attachments'
   | 'votes'
   // A comment thread (docs/specs/026-plan/items.md "Comments"): the canvas's CommentThread, written only by the
   // comment writes.
@@ -39,20 +42,63 @@ export const CUSTOM_FIELD_KINDS = [
   'number',
   // An amount in the field's own currency (`currency`), read as the locale formats it.
   'currency',
+  // How far along, a whole number from 0 to 100 drawn as a bar (docs/specs/026-plan/item-types.md "Percent").
+  'percent',
+  // How long, stored as whole minutes and read "2h 30m"; with `timeSpent` the time people track on the card
+  // (docs/specs/026-plan/item-types.md "Duration", "Time Spent"; duration-fields.ts, time-tracking.ts).
+  'duration',
   'date',
+  // A moment, stored as its UTC instant and the zone it was set in, read in each viewer's zone
+  // (docs/specs/026-plan/item-types.md "Date and Time"; date-time-fields.ts).
+  'datetime',
+  // A start and an end, two days or, with `withTime`, two moments (item-types.md "Date Range"; date-range-fields.ts).
+  'daterange',
   'checkbox',
   'link',
   // One email address.
   'email',
+  // One phone number, kept as typed and called through a tel: link (item-types.md "Phone"; phone-fields.ts).
+  'phone',
   'choice',
   // Several of its named options (docs/specs/030-forms/forms.md "New card field kinds").
   'multichoice',
   // A whole number from 1 to its `scale`, drawn as stars.
   'rating',
-  // A link to one other card, of the type `linkType` names (docs/specs/026-plan/item-types.md "Card fields").
+  // A link to one other card, of the type `linkType` names, or to several when it holds several
+  // (docs/specs/026-plan/item-types.md "Card fields").
   'card',
+  // A value worked out from the plan by its `calculation`, never stored (docs/specs/026-plan/item-types.md
+  // "Calculated fields").
+  'calculated',
+  // The kinds the built-in fields are (docs/specs/026-plan/item-types.md "Custom field kinds"): each reads and is
+  // edited as its built-in field, so a type may hold more than one. A Person is the Assignee's `{ id, name, color }`,
+  // Labels the Labels' list, a Colour any `#rrggbb`, a Checklist the Checklist's `{ text, done }` rows.
+  'person',
+  'labels',
+  'colour',
+  'checklist',
+  // One picture at liveworkspace's media service, by its id (docs/specs/026-plan/item-types.md "Image fields").
+  'image',
+  // Its own comment threads and its own votes (docs/specs/026-plan/item-types.md "Comments and Votes fields"): a
+  // thread names its Comments field (`CardThread.field`); a Votes field holds `{ voter: dots }` as the built-in Votes,
+  // written only by a session vote's tally.
+  'comments',
+  'votes',
 ] as const;
 export type CustomFieldKind = (typeof CUSTOM_FIELD_KINDS)[number];
+
+// The built-in field each of the built-in kinds reads, is edited and is checked as (docs/specs/026-plan/item-types.md
+// "Custom field kinds"): a Person field as the Assignee, and so on. Undefined for every other kind.
+const BUILT_IN_OF_KIND: Partial<Record<CustomFieldKind, ItemFieldId>> = {
+  person: 'assignee',
+  labels: 'labels',
+  colour: 'color',
+  checklist: 'checklist',
+  comments: 'comments',
+  votes: 'votes',
+};
+export const builtInFieldOfKind = (kind: CustomFieldKind): ItemFieldId | undefined =>
+  BUILT_IN_OF_KIND[kind];
 
 // The currencies a Currency field offers first, and the one it takes when none is given (docs/specs/026-plan/
 // item-types.md "Custom field kinds"); any other ISO 4217 code is kept too.
@@ -81,6 +127,26 @@ export const EMAIL_MAX = 254;
 export const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const isEmailAddress = (v: string) => v.length <= EMAIL_MAX && EMAIL_PATTERN.test(v);
 
+// A Calculated field's menu (docs/specs/026-plan/item-types.md "Calculated fields"), in the order it is offered:
+// how many children a card has, the share of them that are done, one of the children's fields aggregated (a Rollup),
+// a linked card's field (a Lookup; rollup-fields.ts), and a formula over the card's own fields (formula-fields.ts).
+export const CALCULATIONS = ['childCount', 'childrenDone', 'rollup', 'lookup', 'formula'] as const;
+export type Calculation = (typeof CALCULATIONS)[number];
+
+// What a Rollup works out over a card's children (docs/specs/026-plan/item-types.md "Rollup and Lookup fields"), in
+// the order its menu offers them.
+export const AGGREGATES = [
+  'sum',
+  'average',
+  'min',
+  'max',
+  'count',
+  'countDone',
+  'earliest',
+  'latest',
+] as const;
+export type Aggregate = (typeof AGGREGATES)[number];
+
 export interface CustomFieldDef {
   id: string;
   label: string;
@@ -89,12 +155,76 @@ export interface CustomFieldDef {
   options?: readonly string[];
   // A Rating's top score, RATING_FIELD_SCALE_MIN..MAX; RATING_FIELD_SCALE_DEFAULT when absent.
   scale?: number;
-  // A Card field's target card type id: its value is the id of one card of that type.
+  // A Card field's first target card type id: its value is the id of one card of that type (or of `linkTypes`).
   linkType?: string;
+  // Every card type a Card field may link to, `linkType` first, when there is more than one (linkTypesOf).
+  linkTypes?: readonly string[];
   // A Currency field's ISO 4217 code ("GBP"); CURRENCY_DEFAULT when absent.
   currency?: string;
+  // A Calculated field's calculation (calculated-fields.ts).
+  calculation?: Calculation;
+  // A Formula's expression as stored, each field its id in braces (`{f-budget} - {f-spent}`; formula/references.ts),
+  // and how its value reads (`result`, Number when absent); only on a Calculated field whose calculation is formula.
+  formula?: string;
+  result?: FormulaResult;
+  // A Rollup's or Lookup's settings (rollup-fields.ts): the Card field it reads through (a Rollup's absent for every
+  // child), what a Rollup works out, and the field it reads on the other cards, by id. Its `result` (and `currency`)
+  // is taken from that field when it is set.
+  through?: string;
+  aggregate?: Aggregate;
+  source?: string;
+  // A worked-out share drawn as a Percent field is (percent-fields.ts); kept only as 'percent', only where
+  // canShowAsPercent allows it.
+  showAs?: 'percent';
+  // A Duration field that tracks time (Time Spent, time-tracking.ts): its value is entries and running timers, never
+  // typed in. Kept only as true, only on a Duration field; set when the field is made and never changed.
+  timeSpent?: boolean;
+  // A Date Range whose ends carry a time (date-range-fields.ts). Kept only as true, only on a Date Range; set when the
+  // field is made and never changed.
+  withTime?: boolean;
   // Drawn on the card face, after the board's card fields.
   onCard?: boolean;
+  // A card of the type must have a value for it (required-fields.ts); never on a Checkbox.
+  required?: boolean;
+  // A Person field tells its person when a card is theirs (docs/specs/026-plan/item-types.md "Notifies"): the
+  // Inbox, emails and Only Mine. Kept only as true, only on a Person field.
+  notifies?: boolean;
+  // A Person or Card field holds several people or cards (docs/specs/026-plan/item-types.md "Holds Several";
+  // several-values.ts). Kept only as true, only on those two kinds.
+  multiple?: boolean;
+  // A Card field whose cards block the card: a Blocked By field (docs/specs/026-plan/item-types.md "Blocked By";
+  // blocked-by.ts). Kept only as true, only on a Card field.
+  blocks?: boolean;
+}
+
+// The most card types one Card field links to: every type the catalogue can hold (ITEM_TYPES_MAX).
+export const CARD_LINK_TYPES_MAX = 32;
+
+// The card types a Card field links to (docs/specs/026-plan/item-types.md "Card fields"): `linkTypes` when it holds
+// `linkType`, else `linkType` alone, so a field saved before (no `linkTypes`), or one an older editor re-pointed by
+// changing `linkType` alone, reads as its `linkType`. None for a field that is no Card field.
+export function linkTypesOf(
+  field: Pick<CustomFieldDef, 'linkType' | 'linkTypes'>,
+): readonly string[] {
+  const first = field.linkType;
+  if (!first) return [];
+  return field.linkTypes && field.linkTypes.includes(first) ? field.linkTypes : [first];
+}
+
+// A Card field's types as stored: `linkType` the first, `linkTypes` only when there are several (deduplicated, in
+// order), so a one-type field is stored exactly as before.
+export function withLinkTypes<T extends CustomFieldDef | Omit<CustomFieldDef, 'id'>>(
+  field: T,
+  ids: readonly string[],
+): T {
+  const unique = [...new Set(ids)];
+  const { linkTypes: _old, linkType: _first, ...rest } = field;
+  if (unique.length === 0) return rest as T;
+  return {
+    ...rest,
+    linkType: unique[0],
+    ...(unique.length > 1 ? { linkTypes: unique } : {}),
+  } as T;
 }
 
 // A tab of an item type's panel (docs/specs/026-plan/item-types.md "An item type"): the fields it shows.
@@ -120,8 +250,12 @@ export interface ItemTypeDef {
   detailsLabel?: string;
   // The panel's tabs; absent is one Overview tab (tabsOf).
   tabs?: readonly ItemTypeTab[];
-  // Statuses this type does not use (docs/specs/026-plan/item-types.md "An item type"): a card of it never moves
-  // into one. An exclusion list, so a status added later is open to every type.
+  // The statuses this type uses, in order (docs/specs/026-plan/item-types.md "The statuses a type uses"): a card of
+  // it never moves into any other, and every status menu for its cards lists them in this order. A new board's
+  // statuses join only the types that board takes. Empty: it uses none. Absent: a legacy type (below).
+  statuses?: readonly string[];
+  // A legacy type's statuses it does not use, from before `statuses`: such a type uses every status the boards name
+  // but these (typeStatusesOf). Read, never written; a type with `statuses` has none.
   excludedStatuses?: readonly string[];
   // The Default State (docs/specs/026-plan/item-types.md "An item type"): the status a card of this type is made in
   // when nothing else gives it one (a board's column always does). Absent: none.
@@ -129,6 +263,16 @@ export interface ItemTypeDef {
   // What its cards show at each card size (docs/specs/026-plan/item-types.md "Card display"); a size left out takes
   // the type's default (typeCardDisplay).
   display?: Partial<Record<CardSize, Partial<Record<CardSlot, readonly CardField[]>>>>;
+  // The Assignee does not tell its person (docs/specs/026-plan/item-types.md "Notifies"). Kept only as false.
+  assigneeNotifies?: boolean;
+  // The custom Colour field its cards take their colour from ("Fields by role"); absent is the built-in Colour.
+  colourField?: string;
+  // The base type it inherits from, by id (docs/specs/026-plan/item-types.md "Inherited types"; type-inheritance.ts):
+  // every part but its id, name, colour, glyph and new-card title is the base's, stored resolved beside this link.
+  inherits?: string;
+  // An inherited type's own fields, by id, in order: what it adds after its base type's. Always stored beside
+  // `inherits` once resolved (empty when none); absent, every field it has that its base lacks.
+  ownFields?: readonly string[];
 }
 
 // Parent (docs/specs/026-plan/item-types.md "Card fields"): a Card field linking to Projects, under the one custom
@@ -163,7 +307,7 @@ const BUILT_IN_TYPES = [
   {
     id: 'project',
     label: 'Project',
-    newTitle: 'New plan',
+    newTitle: 'New project',
     glyph: 'project',
     color: '#18181b',
     fields: [

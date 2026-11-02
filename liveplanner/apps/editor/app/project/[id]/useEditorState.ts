@@ -3,10 +3,12 @@
 import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
 import { useFocusNewPlanElement } from '@/hooks/plan/useFocusNewPlanElement';
 import { contentAddBlocked } from '@/lib/editor-capabilities';
-import { voteTallies } from '@/hooks/plan/vote-tally';
+import { voteTallyWritesOf } from '@/hooks/plan/vote-tally';
 import { useMergeDuplicateStatuses } from '@/hooks/plan/useMergeDuplicateStatuses';
+import { useTypeStatusJoins } from '@/hooks/plan/useTypeStatusJoins';
 import { usePresetCardTypes } from '@/hooks/plan/usePresetCardTypes';
 import { usePlanTabImport } from '@/hooks/plan/usePlanTabImport';
+import { useTrackerImport } from '@/hooks/plan/useTrackerImport';
 import { usePlanSlice } from '@/hooks/plan/usePlanSlice';
 import { useWorkbenchProjectSession } from '@/components/providers/workbench-session-context';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
@@ -20,10 +22,12 @@ import { planHidesCursors } from '@/lib/plan-cursors';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
+import { useCardThreads, type CardThreads } from '@/hooks/plan/useCardThreads';
 import { useLinkedActionCards, type LinkedActions } from '@/hooks/plan/useLinkedActionCards';
 import { actionsBoardIn } from '@/hooks/plan/linked-actions';
 import { usePlanStatuses } from '@/hooks/plan/usePlanStatusNames';
 import { useFormActions } from '@/hooks/forms/useFormActions';
+import { useFormSheetColumns } from '@/hooks/forms/useFormSheetColumns';
 import { makeFormSheet } from '@/lib/forms-make-sheet';
 import { usePlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { usePlanTabConversion } from '@/hooks/plan/usePlanTabConversion';
@@ -35,6 +39,7 @@ import { usePlanDefaultTool } from '@/hooks/editor/usePlanDefaultTool';
 import { useItemUndo } from '@/hooks/plan/useItemUndo';
 import { useSheetCsvDrop } from '@/hooks/sheets/useSheetCsvDrop';
 import { useSheetChartInertIds } from '@/hooks/sheets/useSheetChartInertIds';
+import { signalReconnect } from '@/lib/offline-queue/reconnect';
 import { useSheetsBridge, type SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { tabNamedForSheet } from '@/lib/tab-named-plan';
 import { useBoardDeleteGuard } from '@/hooks/plan/useBoardDeleteGuard';
@@ -82,9 +87,12 @@ import { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import { useToast } from '@/hooks/ui/useToast';
 import { commitUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
 import { track } from '@/lib/telemetry';
+import { useApplyStyleToAllTabs } from '@liveworkspace/workbench/hooks/editor/useApplyStyleToAllTabs';
+import { withStyleOfTab } from '@/lib/tab-theme-apply';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
 import { useEditorComments } from '@/hooks/collab/useEditorComments';
+import { useCommentReactionScope } from '@/hooks/collab/useCommentReactionScope';
 import { useEditorDrag } from '@/hooks/canvas/useEditorDrag';
 import { useEditorNotes } from '@/hooks/canvas/useEditorNotes';
 import { useElementLinks } from '@/hooks/canvas/useElementLinks';
@@ -141,6 +149,8 @@ import { useInlineIconMutators } from './useInlineIconMutators';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
 import { useSelectionEditing } from './useSelectionEditing';
 import { useTabEntryEffects } from './useTabEntryEffects';
+import { useCardAddress } from './useCardAddress';
+import { cardLink } from '@/lib/card-address';
 import { useCollabDeepLink, useCollabDeepLinkCapture } from './useCollabDeepLink';
 import { useEditorUiState } from './editor-ui-state';
 import { useTabScope } from './useTabScope';
@@ -836,13 +846,33 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     color: selfParticipant.color,
     shareCode: sessionShareCode,
     tabScope: sessionTabScope,
+    // Which of this session's card writes may wait for the connection (offline-changes.md "Roles").
+    level: participant.can.level,
     pushUndo: itemUndo.push,
     onError: (message) => toast.error(message),
-    // A card comment's mentions reach people as a canvas comment's do (docs/specs/026-plan/items.md "Comments").
+    // An undo of a card's delete puts it back on its threads (docs/specs/026-plan/items.md "Cards coming and going").
+    threadsOf: (itemId) => cardThreadsRef.current?.threadsOf(itemId) ?? [],
+    onOwnWrite: (write, before) => {
+      linkedActionsRef.current?.noteOwnWrite(write, before);
+      // A card deleted, or put back, changes the threads it was on: read them again once it has landed.
+      if (write.kind === 'delete' || write.kind === 'create') cardThreadsRef.current?.refetch();
+    },
+  });
+  // The plan's card comment threads (docs/specs/026-plan/items.md "Comments"), read once its cards are.
+  const cardThreadsRef = useRef<CardThreads | null>(null);
+  const cardThreads = useCardThreads({
+    projectId,
+    ready: planItems.status === 'ready',
+    ownerId: selfParticipant.id,
+    self: planItems.self,
+    shareCode: sessionShareCode,
+    tabScope: sessionTabScope,
+    onError: (message) => toast.error(message),
+    // A thread comment's mentions reach people as a canvas comment's do (docs/specs/026-plan/items.md "Comments").
     onMentioned: (text, mentions, itemId, commentId) =>
       mentionNotifyRef.current(text, mentions, itemId, commentId),
-    onOwnWrite: (write, before) => linkedActionsRef.current?.noteOwnWrite(write, before),
   });
+  useAssignRef(cardThreadsRef, cardThreads);
 
   // The project's item types (docs/specs/026-plan/item-types.md): what cards, panels and the palette's
   // Cards category draw from, and the Card Types panel changes.
@@ -932,11 +962,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     receiveProjectTrashed: () => projectTrashed.setProjectTrashed(true),
     resyncFromServer: async () => {
       planItems.refetch();
+      cardThreads.refetch();
       sheets.resync();
       await resyncFromServer();
     },
     receiveChangeset: changesetFeed.receiveChangeset,
     receiveItems: planItems.receive,
+    receiveThreads: cardThreads.receive,
     receiveItemTypes: itemTypes.receive,
     receivePlanPresence: planPresence.receive,
     receiveSheets: sheets.receiveSheets,
@@ -945,8 +977,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       roomFullNotice.joined();
       void changesetFeed.checkSinceLoad();
       planItems.refetch();
+      cardThreads.refetch();
       sheets.resync();
       sheets.reannounce();
+      // Changes that waited for the connection go now (docs/specs/007-editor/offline-changes.md "Sending them").
+      signalReconnect();
       // A rejoined connection has a new presence id, which carries no hold until it is said again.
       planPresence.reannounce();
     },
@@ -1005,6 +1040,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   });
   useAssignRef(mentionNotifyRef, commentMentions.notifyMentioned);
   const activeTab = tabs.find((t) => t.id === activeId) ?? tabs[0]!;
+  // Comment reactions (docs/specs/012-collaboration/comment-reactions.md): whoever may comment may react, under
+  // the collab key their answers use.
+  const commentReactions = useCommentReactionScope({
+    applyElementDelta,
+    activeTab,
+    selfKey: voteSelfId,
+    selfName: selfParticipant.name,
+    canReact: hydrated && participant.can.takePart,
+  });
   // A colour picked with + joins the tab's custom colours, which every picker offers.
   const addCustomColour = useAddCustomColour({ activeId: activeTab.id, canEdit, tickTabs });
   // A card tag's colour for the tab (docs/specs/009-elements/tag-colours.md).
@@ -1104,7 +1148,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Capture an Inbox element deep link BEFORE the tab-entry
   // effect below rewrites the hash to the plain #t= pin (docs/specs/013-workspace/inbox.md §1).
   // Consumed further down by useCollabDeepLink once the tab is ready.
-  const collabDeepLink = useCollabDeepLinkCapture();
+  const collabDeepLink = useCollabDeepLinkCapture(hydrated);
+  // The card a link is opening (useCardAddress): its address replaces the entry rather than adding one.
+  const arrivingCardRef = useRef<string | null>(null);
 
   // Tab-entry side effects (URL #t= pin + fit-to-screen once per tab
   // entry). See useTabEntryEffects.
@@ -1208,6 +1254,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
         assigneeMemberId: input.assigneeMemberId,
         actionName: input.actionName,
         ...(input.description ? { description: input.description } : {}),
+        email: input.email,
+        tabId: input.tabId,
+        elementId: input.elementId,
       }).catch(() => {});
     },
   });
@@ -1321,7 +1370,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openActionPopover,
     openComments,
     // Read when the link lands, after this render has made the Plan slice below.
-    openItem: (itemId) => plan.context.openItem(itemId),
+    openItem: (itemId, threadId) => {
+      arrivingCardRef.current = itemId;
+      plan.context.openItem(itemId);
+      // The thread a link names opens on the card (docs/specs/026-plan/items.md "Where it shows").
+      if (threadId) cardThreads.focus(threadId);
+    },
   });
 
   const commit = (mapElements: (els: Element[]) => Element[]) => {
@@ -1458,6 +1512,15 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     catalogue: itemTypes.catalogue,
     saveCatalogue: itemTypes.saveCatalogue,
   });
+  // A new status joins only the card types its board takes, and old types take the ordered list. See
+  // useTypeStatusJoins.
+  useTypeStatusJoins({
+    tabs,
+    loadedTabIds,
+    enabled: hydrated && !isStructureReadOnly,
+    catalogue: itemTypes.catalogue,
+    quietChange: itemTypes.quietChange,
+  });
   // The Actions board (docs/specs/026-plan/linked-boards.md): every action has a card on it, kept together.
   const actionsBoard = useMemo(() => actionsBoardIn(tabs), [tabs]);
   const editorLevel = hydrated && participant.can.level === 'edit' && !workbenchMode;
@@ -1490,8 +1553,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     () => ({ placeOf: linkedActions.placeOf, showOnCanvas: linkedActions.showOnCanvas }),
     [linkedActions.placeOf, linkedActions.showOnCanvas],
   );
-  // Assignees: the members of your teams (docs/specs/026-plan/items.md "Who may do what").
-  const teamPeople = useTeamPeople(selfParticipant.id, !workbenchMode, !!accountUserId, teams);
+  // Assignees: the members of the plan's team, never your other teams (docs/specs/026-plan/items.md "Who may do what").
+  const teamPeople = useTeamPeople(
+    selfParticipant.id,
+    !workbenchMode,
+    !!accountUserId,
+    teams,
+    projectTeamId,
+  );
   // Whether a Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Fill Tab"): see usePlanCoverWiring.
   const planCover = usePlanCoverWiring({ activeTab, tabs });
   // Board, Sheet and Dashboard tabs (docs/specs/026-plan/plan-tabs.md).
@@ -1514,6 +1583,13 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     openTab: setActiveId,
     makeSheet: (create) => void makeFormSheet(sheets.bridge, create),
     retitleSheets: sheets.retitleSheets,
+  });
+  // A sheet form's columns, there before any response and linked by column (docs/specs/030-forms/forms.md).
+  useFormSheetColumns({
+    tab: activeTab,
+    canEdit: !isStructureReadOnly,
+    bridge: sheets.bridge,
+    changeFormQuietly: forms.changeFormQuietly,
   });
   // Old Plan tabs become the Plan kinds when an Editor opens them (docs/specs/026-plan/plan-tabs.md).
   usePlanTabConversion({
@@ -1546,6 +1622,25 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // A form is an Editor's to make (docs/specs/030-forms/forms.md "Who may do what").
     newFormFor: participant.can.level === 'edit' ? forms.newFormFor : undefined,
     linkedActions: linkedPlan,
+    // Copy Card Link in the item panel's ⋯ menu (docs/specs/026-plan/plan-board.md "Its address").
+    cardLink: (itemId) =>
+      cardLink({
+        origin: window.location.origin,
+        projectId: projectId ?? '',
+        search: window.location.search,
+        tabId: activeId,
+        itemId,
+      }),
+  });
+  // The open card in the address, and Back and Forward over it (docs/specs/026-plan/plan-board.md "Its address").
+  useCardAddress({
+    hydrated,
+    activeId,
+    shownId: plan.openItemId && plan.context.items.has(plan.openItemId) ? plan.openItemId : null,
+    openItemId: plan.openItemId,
+    arrivingRef: arrivingCardRef,
+    openItem: plan.context.openItem,
+    closeItem: plan.closeItem,
   });
   // The Plan tour's example board and cards, or sheet (docs/specs/026-plan/plan-tour.md "Tour content").
   const tourSquare = useTourSquare({ activeId, tickTabs });
@@ -1675,6 +1770,32 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     sessionShareCode,
   });
 
+  // A board from another tool (docs/specs/026-plan/tracker-import.md): an Editor's, into a new Board tab or plan.
+  const trackerImport = useTrackerImport({
+    canImport: !isStructureReadOnly,
+    projectId,
+    ownerId: selfParticipant.id,
+    signedIn: !!accountUserId,
+    teamId: projectTeamId && teams.some((t) => t.id === projectTeamId) ? projectTeamId : null,
+    self: planItems.self,
+    selfParticipant,
+    teamPeople,
+    status: planItems.status,
+    items: planItems.items,
+    tabs,
+    activeId,
+    catalogue: itemTypes.catalogue,
+    types: itemTypes.types,
+    saveType: itemTypes.saveType,
+    write: planItems.write,
+    commitTabs,
+    createTab,
+    markTabLoaded,
+    openTab: setActiveId,
+    openProject,
+    notify: (message) => toast.success(message),
+  });
+
   // Mark the participant's name as "confirmed" — they explicitly
   // dismissed at least one modal that prompted for it. Persisted in
   // localStorage so a returning visitor isn't re-prompted, and clears
@@ -1763,6 +1884,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     tickTabs,
     checkpointBurst,
   });
+
+  // Apply to All Tabs (docs/specs/011-theme/canvas-and-theme-dialog.md): the open tab's style on every tab, as one
+  // undo step, an Editor's of the whole plan only.
+  const { applyToAllTabs: applyStyleToAllTabs, applying: applyingStyleToAllTabs } =
+    useApplyStyleToAllTabs<Tab>({
+      canApply: !structureBlocked && !isStructureReadOnly,
+      activeId,
+      loadAllTabs,
+      isTabLoaded: (id) => loadedTabIdsRef.current.has(id),
+      commitTabs,
+      restyle: withStyleOfTab,
+      notify: (message) => toast.info(message),
+      onApplied: () => track('Tab', 'Changed', 'AllTabs'),
+    });
 
   // Live session tools (docs/specs/012-collaboration/session-tools.md): timer + dot-voting handlers.
   // State lives on the tab (`activeTab.timer` / `activeTab.vote`), so the
@@ -2269,8 +2404,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const endVoteAndTally = () => {
     const vote = activeTab.vote;
     if (!endVote() || !vote) return;
-    void voteTallies(vote).then((tallies) => {
-      if (tallies.length) void planItems.writeQuiet({ kind: 'tally', tallies });
+    // In the Votes field the vote counts in (session-tools.md "Count In"), the built-in for a type without it.
+    void voteTallyWritesOf(vote, planItems.items, itemTypes.types).then((writes) => {
+      for (const write of writes) void planItems.writeQuiet(write);
     });
   };
 
@@ -2495,6 +2631,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // What the agents present name in focus on the active tab, for the focus rings.
     agentFocusByElement,
     plan,
+    // The plan's card comment threads, and what this person may do with them (components/plan/threads).
+    cardThreads,
+    cardThreadsAccess: {
+      canComment: hydrated && participant.can.takePart,
+      isEditor: hydrated && participant.can.level === 'edit' && !isReadOnly,
+    },
     // The sheet store's bridge, provided to Sheet elements (components/sheets).
     sheetsBridge: sheets.bridge,
     // A Dashboard slot's Clear or Remove deleting its Sheet's cells too (plan-tabs.md).
@@ -2576,6 +2718,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     assessCleanupKind,
     setTabFinish,
     applyTabLook,
+    applyStyleToAllTabs,
+    applyingStyleToAllTabs,
+    canApplyStyleToAllTabs: !isStructureReadOnly,
     // Live session tools (docs/specs/012-collaboration/session-tools.md)
     startTimer,
     pauseTimer,
@@ -2652,6 +2797,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     identityOnlyScreenOpen,
     importIntoActiveTab,
     importTextIntoActiveTab,
+    trackerImport,
     isPinchingRef,
     isReadOnly,
     // What this session may do (docs/specs/013-workspace/share-roles.md): a Participant's content gestures.
@@ -2668,6 +2814,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     applyCellLink,
     activeTabLoadState,
     commentMentions,
+    commentReactions,
     // Bring an element into view (the Collaborate panel's jump to a card).
     scrollIntoView,
     livePresence,

@@ -11,6 +11,7 @@
 
 import {
   INK_PEN_COLOUR,
+  withPickedTextSize,
   isPenColourName,
   penColourHex,
   type PenColourName,
@@ -300,9 +301,11 @@ export function applyTextAlignToEl(el: Element, x: TextAlignX, y: TextAlignY): E
   return isBoxed(el) ? { ...el, textAlignX: x, textAlignY: y } : el;
 }
 
-// Label size preset. Boxed elements + arrows (arrow labels size too).
+// Label size preset. Boxed elements + arrows (arrow labels size too). A picked size is the size the
+// words draw at, so it drops a text's or shape's textScale (docs/specs/004-interface-design/fonts.md
+// "Text size"), in the hover preview as on commit.
 export function applyTextSizeToEl(el: Element, size: TextSize): Element {
-  return isBoxed(el) || el.type === 'arrow' ? { ...el, textSize: size } : el;
+  return isBoxed(el) || el.type === 'arrow' ? withPickedTextSize(el, size) : el;
 }
 
 // Label font. Boxed elements + arrows; `null` clears the override back to the

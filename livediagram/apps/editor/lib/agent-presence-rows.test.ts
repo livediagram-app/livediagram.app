@@ -2,6 +2,9 @@ import { describe, expect, it, vi } from 'vitest';
 import type { AgentPresence } from '@livediagram/api-schema';
 import type { Participant } from './identity';
 import {
+  AGENT_AT_WORK,
+  agentRowDetail,
+  agentRowName,
   buildAgentFocusByElement,
   foldAgentPresence,
   splitPresenceFrame,
@@ -33,19 +36,12 @@ const agent = (over: Partial<AgentPresence> = {}): AgentPresence => ({
   ...over,
 });
 
-const fold = (
-  participantsByTab: Map<string, Participant[]>,
-  agents: AgentPresence[],
-  activeId = 't1',
-) =>
-  foldAgentPresence({
-    participantsByTab,
-    agents,
-    selfParticipant: self,
-    activeId,
-    tabIds: ['t1', 't2'],
-    now: NOW,
-  });
+const fold = (participantsByTab: Map<string, Participant[]>, agents: AgentPresence[]) =>
+  foldAgentPresence({ participantsByTab, agents, tabIds: ['t1', 't2'], now: NOW });
+
+// A row as the fold builds it: no key holding undefined.
+const withoutUndefined = (row: Participant): Participant =>
+  Object.fromEntries(Object.entries(row).filter(([, v]) => v !== undefined)) as Participant;
 
 describe('splitPresenceFrame', () => {
   it('keeps valid agent entries apart from the participants', () => {
@@ -106,33 +102,39 @@ describe('splitPresenceFrame', () => {
 });
 
 describe('foldAgentPresence', () => {
-  it('puts my own agent’s status on my row when it is on my tab', () => {
-    const out = fold(new Map([['t1', [self]]]), [agent({ self: true })]);
-    expect(out.get('t1')).toEqual([{ ...self, statusLine: 'adding payment' }]);
+  const agentRow = (over: Partial<Participant> = {}): Participant => ({
+    id: 'a1',
+    name: "Webber's Agent",
+    color: '#3b82f6',
+    role: 'edit',
+    status: 'online',
+    lastActiveAt: NOW,
+    statusLine: 'adding payment',
+    agent: true,
+    ...over,
   });
 
-  it('puts an agent’s status on its owner’s row when the owner is on the tab', () => {
+  it('shows my own agent as a row of its own beside mine, on my tab', () => {
+    const out = fold(new Map([['t1', [self]]]), [agent({ self: true, joins: ['p0'] })]);
+    expect(out.get('t1')).toEqual([self, agentRow()]);
+  });
+
+  it('shows another person’s agent beside them, never folded into their row', () => {
     const out = fold(new Map([['t1', [self, peer]]]), [
-      agent({ name: 'Ada', joins: ['p0', 'p2'] }),
+      agent({ name: 'Ada', color: '#10b981', joins: ['p2'] }),
     ]);
-    expect(out.get('t1')).toEqual([self, { ...peer, statusLine: 'adding payment' }]);
+    expect(out.get('t1')).toEqual([
+      self,
+      peer,
+      agentRow({ name: "Ada's Agent", color: '#10b981' }),
+    ]);
   });
 
-  it('adds a standalone row when the owner is not on the tab, my own agent elsewhere included', () => {
+  it('adds the row on a tab nobody is on, without a status line when the agent set none', () => {
     const out = fold(new Map([['t1', [self]]]), [
       agent({ id: 'a1', tabId: 't2', self: true, status: undefined }),
     ]);
-    expect(out.get('t2')).toEqual([
-      {
-        id: 'a1',
-        name: 'Webber',
-        color: '#3b82f6',
-        role: 'edit',
-        status: 'online',
-        lastActiveAt: NOW,
-        agent: true,
-      },
-    ]);
+    expect(out.get('t2')).toEqual([agentRow({ statusLine: undefined })].map(withoutUndefined));
     expect(out.get('t1')).toEqual([self]);
   });
 
@@ -149,33 +151,28 @@ describe('foldAgentPresence', () => {
     expect(out.get('t2')!.map((p) => p.statusLine)).toEqual(['elsewhere']);
   });
 
-  it('joins a person’s entries to their row when any entry names it', () => {
-    const out = fold(new Map([['t1', [self, peer]]]), [
-      agent({ id: 'a1', person: 1, name: 'Ada' }),
-      agent({ id: 'a2', person: 1, name: 'Ada', joins: ['p2'], status: 'reviewing' }),
-    ]);
-    expect(out.get('t1')).toEqual([self, { ...peer, statusLine: 'reviewing' }]);
-  });
-
   it('skips entries on tabs it does not know, and leaves the input untouched', () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => undefined);
     const input = new Map([['t1', [self]]]);
     const out = fold(input, [agent({ tabId: 'gone' }), agent({ self: true })]);
     expect(out.has('gone')).toBe(false);
     expect(input.get('t1')).toEqual([self]);
-    expect(out.get('t1')![0]!.statusLine).toBe('adding payment');
+    expect(out.get('t1')).toEqual([self, agentRow()]);
     expect(info).toHaveBeenCalledWith('[agent-presence] skipped entry', { reason: 'unknown_tab' });
     info.mockRestore();
-  });
-
-  it('leaves the owner’s row as it is when their agent set no status', () => {
-    const out = fold(new Map([['t1', [self]]]), [agent({ self: true, status: undefined })]);
-    expect(out.get('t1')).toEqual([self]);
   });
 
   it('returns the same map when there are no agents', () => {
     const input = new Map([['t1', [self]]]);
     expect(fold(input, [])).toBe(input);
+  });
+});
+
+describe('agentRowName and agentRowDetail', () => {
+  it('names an agent for its owner and says what it is doing', () => {
+    expect(agentRowName('Webber')).toBe("Webber's Agent");
+    expect(agentRowDetail({ statusLine: 'adding payment' })).toBe('adding payment');
+    expect(agentRowDetail({})).toBe(AGENT_AT_WORK);
   });
 });
 

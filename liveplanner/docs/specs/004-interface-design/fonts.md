@@ -113,6 +113,42 @@ Applies to every text surface: shape / text / sticky labels (committed +
 live editor), table cells, and arrow labels (arrows have no per-element
 font, so they take the tab default).
 
+## On boards and cards
+
+A board and its cards are read in small type: chips, pills, field values, numbers, counts and buttons at 11 to 13 px.
+Most faces in the catalogue are display or hand-lettered faces that read well as a heading and poorly at that size, so
+a Plan board, a Plan card element and a board in a Dashboard slot follow **one rule**:
+
+- **Headings take the tab's font**: the board's title, its column and swimlane names, and each card's title.
+- **Everything else is the editor's own face** (the UI sans): the type chip, number and priority, labels, the
+  description, every field pill and value, dates, counts, Add card and the board's controls.
+
+So a board keeps the voice its tab picked, and its small text reads the same whatever that voice is. Three details
+keep the headings themselves readable:
+
+- A heading is drawn at its face's own weights: a face that ships one weight (Abril Fatface) is never thickened
+  into a fake bold, which clogged its counters at card size.
+- Caveat, whose lowercase is small, keeps its x-height lift (`PLAN_HANDWRITING_EX`) on headings; the small text is
+  in the UI face and needs none.
+- A Dashboard tab passes its font to the boards in its slots the same way.
+
+Exports, thumbnails and agent images already draw a board in the system sans, so they are unchanged.
+
+### Not offered in liveplanner
+
+A face that still does not read on a card heading is left out of every liveplanner font picker (the Tab Style
+dialog's Typeface cards, an element's Font menu, a Sheet cell's Font menu). The list lives in liveplanner
+(`PLANNER_EXCLUDED_FONT_IDS`, `@liveplanner/project` `planner-fonts.ts`), never in the shared catalogue: livediagram,
+livedocuments and livedesign keep every face.
+
+| id                 | Why it is left out                                                                                 |
+| ------------------ | -------------------------------------------------------------------------------------------------- |
+| `permanent-marker` | No lowercase: every title is set in capitals, and its 1, 3 and 0 read as ), ʒ and O at card sizes. |
+
+A plan that already letters a board in an excluded face (its tab font, an element's own font, or the Marker finish,
+whose face it is) keeps the setting as stored, but its boards and cards draw their headings in the UI face instead.
+Other text on the canvas (a shape's label, a sticky) keeps the face: it is drawn large enough to read.
+
 ## Storage & behaviour
 
 - The model stores the stable **id** (`Element.font` / `Tab.font` in

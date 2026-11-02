@@ -8,7 +8,7 @@ import {
   type Tab,
 } from '@livediagram/document';
 import { getTheme } from '@/lib/themes';
-import { withThemeApplied } from './tab-theme-apply';
+import { withStyleOfTab, withThemeApplied } from './tab-theme-apply';
 
 // Applying a theme to a tab (docs/specs/011-theme/canvas-and-theme-dialog.md "Colours panel").
 const shape = (over: Partial<ShapeElement> = {}): Element => ({
@@ -81,5 +81,47 @@ describe('labels a pick sank', () => {
     expect(contrastRatio(ink, out.backgroundColor ?? '')).toBeGreaterThanOrEqual(
       LABEL_BACKDROP_CONTRAST,
     );
+  });
+});
+
+// Apply to All Tabs (docs/specs/011-theme/canvas-and-theme-dialog.md "Apply to All Tabs").
+describe('withStyleOfTab', () => {
+  it("puts the source's theme, canvas, text defaults and finish on the target, keeping its name and content", () => {
+    const source = {
+      id: 'src',
+      name: 'Source',
+      elements: [],
+      theme: 'ocean',
+      finish: 'sketch',
+      backgroundPattern: 'dots',
+      font: 'serif',
+    } as unknown as Tab;
+    const target = {
+      id: 't',
+      name: 'Target',
+      elements: [],
+      backgroundColor: '#123456',
+      defaultTextSize: 'lg',
+    } as unknown as Tab;
+    const next = withStyleOfTab(target, source) as unknown as Record<string, unknown>;
+    expect(next).toMatchObject({
+      id: 't',
+      name: 'Target',
+      theme: 'ocean',
+      finish: 'sketch',
+      backgroundPattern: 'dots',
+      font: 'serif',
+    });
+    // A setting the source leaves unset is cleared on the target.
+    expect(next.backgroundColor).toBeUndefined();
+    expect(next.defaultTextSize).toBeUndefined();
+  });
+
+  it('applies the default theme when the source has none', () => {
+    const next = withStyleOfTab(
+      { id: 't', name: 'T', elements: [], theme: 'ocean' },
+      { id: 's', name: 'S', elements: [] },
+    );
+    expect(next.theme).toBe('brand');
   });
 });

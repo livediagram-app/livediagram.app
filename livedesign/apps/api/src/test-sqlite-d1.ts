@@ -225,6 +225,20 @@ function testDesignRooms(
   rooms: DurableObjectNamespace | undefined,
 ): DurableObjectNamespace {
   type FakeId = DurableObjectId & { designName: string; roomId: unknown };
+  // The design's Community post's link as the room reads it (design-room.ts communityOf).
+  const communityOf = async (designId: string) => {
+    const cp = await import('./design-room/community-post');
+    const post = await cp.readCommunityPost(env);
+    if (!post) return null;
+    const meta = await (await import('./design-room/design-content')).readDesignMeta(env, designId);
+    return { code: post.shareCode, open: cp.openCommunityCode(env, post, meta) === post.shareCode };
+  };
+  // The post when `code` is its open link (design-room.ts openPost).
+  const openPost = async (designId: string, code: string) => {
+    const post = await communityOf(designId);
+    if (!post || post.code !== code || !post.open) return null;
+    return (await import('./design-room/community-post')).readCommunityPost(env);
+  };
   const roomOf = (id: FakeId) =>
     rooms ? (rooms.get(id.roomId as DurableObjectId) as { fetch: typeof fetch }) : null;
   const ns = {
@@ -244,12 +258,13 @@ function testDesignRooms(
       },
       outline: async (designId: string) =>
         (await import('./design-room/design-content')).readDesignOutline(env, designId),
-      route: async (_designId: string, request: Request, identity: unknown) =>
+      route: async (designId: string, request: Request, identity: unknown) =>
         (await import('./design-room/design-route')).answerDesignRequest(
           env,
           request,
           identity as never,
           () => {},
+          await communityOf(designId),
         ),
       exportImage: async (
         designId: string,
@@ -259,6 +274,10 @@ function testDesignRooms(
           await import('./design-room/design-content')
         ).readDesignHead(env, designId);
         if (!meta) return { status: 'not_found' };
+        // A Community post's link draws only while the post is open (design-room.ts exportImage).
+        const post = query.code ? await communityOf(designId) : null;
+        const onPost = post !== null && post.code === query.code;
+        if (onPost && !post.open) return { status: 'not_found' };
         if (query.ifVersion === savedAt) return { status: 'unchanged', version: savedAt };
         if (
           query.tabId !== null &&
@@ -268,7 +287,7 @@ function testDesignRooms(
         }
         const svg = await (
           await import('./thumbnail')
-        ).drawDesign(env, { id: designId, name: meta.name }, query.tabId);
+        ).drawDesign(env, { id: designId, name: meta.name }, query.tabId, { community: onPost });
         return svg === null
           ? { status: 'empty', version: savedAt }
           : {
@@ -284,18 +303,36 @@ function testDesignRooms(
         (await import('./db/image-grants')).designServesImage(env, designId, imageId, onlyTabId),
       // The Drive file's two halves (design-room.ts exportFile and importFile).
       exportFile: async (designId: string, query: { ifVersion: number | null }) =>
-        (await import('./design-room/design-file')).exportDesignFile(env, designId, query.ifVersion),
+        (await import('./design-room/design-file')).exportDesignFile(
+          env,
+          designId,
+          query.ifVersion,
+        ),
       importFile: async (designId: string, file: unknown) =>
         (await import('./design-room/design-file')).importDesignFile(env, designId, file as never),
       hasTab: async (designId: string, tabId: string) =>
         (await import('./db/tabs')).designHasTab(env, designId, tabId),
-      exportCopy: async (designId: string, onlyTabId: string | null, copierId: string | null) =>
-        (await import('./design-room/design-content')).exportDesignCopy(
-          env,
-          designId,
-          onlyTabId,
-          copierId,
-        ),
+      exportCopy: async (
+        designId: string,
+        onlyTabId: string | null,
+        copier: { by: string | null; code: string | null } | null,
+      ) => {
+        const post = copier?.code ? await communityOf(designId) : null;
+        const community = post !== null && post.open && post.code === copier?.code;
+        const copy = await (
+          await import('./design-room/design-content')
+        ).exportDesignCopy(env, designId, onlyTabId, copier?.by ?? null, community);
+        return copy ? { copy, community } : null;
+      },
+      community: (designId: string) => communityOf(designId),
+      communityPostTitle: async (designId: string, code: string) =>
+        (await openPost(designId, code))?.title ?? null,
+      communityListing: async (designId: string, code: string) => {
+        const stored = await openPost(designId, code);
+        if (!stored) return null;
+        const cp = await import('./design-room/community-post');
+        return { postId: stored.postId, author: await cp.communityPostAuthor(env, stored) };
+      },
       joined: async (designId: string, personId: string) => {
         const meta = await (
           await import('./design-room/design-content')

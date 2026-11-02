@@ -20,6 +20,8 @@ vi.mock('../index-service', async (importOriginal) => ({
 }));
 
 import { upsertTab } from '../db/tabs';
+import { putComponent } from '../db/components';
+import { readDesignFile } from '../design-room/design-file';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { handleInternalItems } from './internal-items';
 
@@ -97,6 +99,31 @@ describe('GET /api/internal/items/:id/export?format=file', () => {
     expect(text).not.toContain('decks');
     // Unchanged content is byte-identical.
     expect(await (await send('GET', 'A/export?format=file')).text()).toBe(text);
+  });
+
+  // docs/specs/009-elements/components.md: the library rides in the file, so an import draws the instances.
+  it('carries the component library, and an import of the file takes it', async () => {
+    const { db, send } = await arrange();
+    const main = {
+      id: 'c1',
+      name: 'Nav',
+      width: 10,
+      height: 10,
+      elements: [box('e1')],
+      updatedAt: 3,
+    };
+    await putComponent(db.env, main);
+    const text = await (await send('GET', 'A/export?format=file')).text();
+    const parsed = parseDesignEnvelope(text);
+    if (!parsed.ok) throw new Error(parsed.failure);
+    expect(parsed.envelope.design.components).toEqual([main]);
+    const read = readDesignFile(text);
+    if (!read.ok) throw new Error(read.failure);
+    expect(read.content.copy.components).toEqual([main]);
+    // A file without a library imports without one.
+    const plain = readDesignFile(text.replace('"components"', '"retired"'));
+    if (!plain.ok) throw new Error(plain.failure);
+    expect(plain.content.copy).not.toHaveProperty('components');
   });
 
   it('answers 304 for the save the caller holds, and 404 for no design', async () => {

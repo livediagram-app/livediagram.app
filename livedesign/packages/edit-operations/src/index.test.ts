@@ -41,7 +41,7 @@ describe('the public surface', () => {
   });
 
   it('keeps the whole vocabulary and the wire codes', () => {
-    expect(EDIT_OPERATION_NAMES).toHaveLength(12);
+    expect(EDIT_OPERATION_NAMES).toHaveLength(13);
     expect(EDIT_REJECTION_CODES).toContain('element_locked');
   });
 });

@@ -137,7 +137,8 @@ both the panel header and the popover band, and stops the pointer so
 pressing it opens the article rather than starting a panel drag.
 
 Wired: Palette, Explorer, Activity, Layers, Map, and the tool panels
-(Laser, Spotlight, Format, Eraser, Photo). This closed the gap the feature was written for and had never
+(Laser, Spotlight, Format, Eraser, Photo, and Inspect on a wireframe tab, which links
+`inspect`, the Inspect article under Wireframe Pages). This closed the gap the feature was written for and had never
 reached: 21 surfaces linked an article, and every one of them was a dialog, so
 a panel you were looking at could not tell you there was a page about it.
 

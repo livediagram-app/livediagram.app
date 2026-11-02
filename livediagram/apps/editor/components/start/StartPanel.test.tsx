@@ -112,8 +112,8 @@ describe('a start search, best match first', () => {
     const first = best.querySelector('[data-start-card]')!.getAttribute('data-start-card');
     expect(first).toBe('flowchart');
     expect(document.querySelectorAll('[data-start-card="flowchart"]')).toHaveLength(1);
-    // Before the groups, Design's Service Blueprint among them.
-    expect(sections().indexOf('Best Match')).toBeLessThan(sections().indexOf('Design'));
+    // Before the groups, Product & UX's Service Blueprint among them.
+    expect(sections().indexOf('Best Match')).toBeLessThan(sections().indexOf('Product & UX'));
     fireEvent.keyDown(search, { key: 'ArrowDown' });
     expect(document.activeElement?.getAttribute('data-start-card')).toBe('flowchart');
   });

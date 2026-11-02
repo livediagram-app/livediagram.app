@@ -27,4 +27,8 @@ describe("Home's first run on liveworkspace.app", () => {
       expect(m?.popular.length).toBeLessThanOrEqual(8);
     }
   });
+
+  it('has none for a held app, which no Explorer lists yet', async () => {
+    expect(await loadWelcome('livehuddle')).toBeNull();
+  });
 });

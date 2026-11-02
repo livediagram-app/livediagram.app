@@ -18,14 +18,10 @@ type TypeForBoard = {
   fields?: readonly CardField[];
 };
 
-// A new type's starting point: for a board, every status of the project but the board's turned off; with fields,
-// those fields on beside the new type's own.
-export function newTypeForBoard(
-  forBoard: TypeForBoard,
-  projectStatuses: Iterable<string>,
-): ItemTypeDef {
-  const on = new Set(forBoard.statuses ?? []);
-  const off = forBoard.statuses ? [...projectStatuses].filter((s) => !on.has(s)) : [];
+// A new type's starting point: for a board, only the board's statuses, in its column order (docs/specs/026-plan/
+// item-types.md "The statuses a type uses"); otherwise none given, so the type editor starts it on every status. With
+// fields, those fields on beside the new type's own.
+export function newTypeForBoard(forBoard: TypeForBoard): ItemTypeDef {
   const fields = [...NEW_ITEM_TYPE.fields];
   for (const f of forBoard.fields ?? []) if (!fields.includes(f)) fields.push(f);
   return {
@@ -33,7 +29,7 @@ export function newTypeForBoard(
     id: '',
     newTitle: '',
     fields,
-    ...(off.length ? { excludedStatuses: off } : {}),
+    ...(forBoard.statuses ? { statuses: [...new Set(forBoard.statuses)] } : {}),
   };
 }
 

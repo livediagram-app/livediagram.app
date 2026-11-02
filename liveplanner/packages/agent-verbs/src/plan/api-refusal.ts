@@ -14,9 +14,18 @@ export const FIELD_HINT =
 const BY_CODE: Readonly<Record<string, string>> = {
   status_excluded:
     "the item's card type does not use that column: pick another, or allow it with change_card_types " +
-    '(set excludedStatuses).',
+    '(set statuses).',
+  field_calculated:
+    'a calculated field is worked out from the plan (the cards linking here, or its formula), never set: leave it ' +
+    'out of fields. list_items lists its value.',
   type_invalid: 'that is not a card type id. list_items lists the card types.',
   title_required: 'an item needs a title.',
+  field_required:
+    'a required custom field would be left empty: give it a value in fields, by name. list_items marks each ' +
+    'required field (required: true).',
+  blocks_cycle:
+    'those cards would block each other in a loop (A blocks B blocks A): leave one link out. list_items lists ' +
+    'what each card blocks (blocks).',
   item_types_invalid: 'the card types would break a rule.',
   item_types_stale:
     'someone else kept changing the card types at the same moment: list_items reads them again, then retry.',

@@ -7,6 +7,7 @@ import { photoDialogs, usePhotoDialog } from '@/lib/photo-editor/photo-dialog-st
 import { AdjustDialog, FilterDialog } from './PhotoApplyDialogs';
 import { ColourRangeDialog, FillDialog, FlattenDialog, ModifyDialog } from './PhotoEditDialogs';
 import { CanvasSizeDialog, ImageSizeDialog, RotateDialog } from './PhotoSizeDialogs';
+import { MakeSizesDialog } from './MakeSizesDialog';
 import { PlacePictureDialog } from './PlacePictureDialog';
 import { SelectAndMaskDialog } from './SelectAndMaskDialog';
 
@@ -37,6 +38,8 @@ export function PhotoDialogs({ photo }: { photo: PhotoEditorView | undefined }) 
       return <FlattenDialog photo={photo} onClose={close} />;
     case 'place':
       return <PlacePictureDialog photo={photo} onClose={close} />;
+    case 'make-sizes':
+      return <MakeSizesDialog photo={photo} onClose={close} />;
     case 'select-and-mask':
       return <SelectAndMaskDialog photo={photo} onClose={close} />;
   }

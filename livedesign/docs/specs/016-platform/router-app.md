@@ -32,6 +32,7 @@ In order; the first match wins.
 | `/live/*` (the live app's `_next` assets only)                                                                                                      | live app (`apps/live`), stripped                                                                                                                           |
 | `/status`, `/status/*`                                                                                                                              | `301` to liveworkspace's status page at livedesign's group (`statusRedirect`)                                                                              |
 | `/telemetry`, `/telemetry/*`                                                                                                                        | `301` to the central dashboard, `?app=livedesign.app` (`telemetryRedirect`, liveworkspace/docs/specs/008-telemetry/telemetry.md)                           |
+| `/community`, `/community/*`                                                                                                                        | Community app (`apps/community`, [Community](../025-community/community.md)), stripped                                                                     |
 | `/help`, `/help/*`                                                                                                                                  | help app (`apps/help`), stripped                                                                                                                           |
 | live page routes: `/design/*`, `/auth/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed/*`, `/oauth/*`, `/offline`, `/explorer`, `/icon.svg` | live app (`apps/live`), as-is                                                                                                                              |
 | a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                    | 308 redirect to `/help/<path>`                                                                                                                             |
@@ -93,10 +94,10 @@ forward again. The page is `no-store`, as every page; the assets are content-has
 
 ## Implementation
 
-In production the Worker has four **service bindings**, one to each downstream app (`MARKETING`, `LIVE`, `API`, `HELP`). liveworkspace's services (pages, index, previews, Drive) are reached by origin: `WORKSPACE_ORIGIN`, `INDEX_ORIGIN`, `PREVIEWS_ORIGIN` and `DRIVE_ORIGIN`, each production's when unset (the helpers in `@liveworkspace/sites/workspace-proxy`). `/telemetry` and `/status` are redirects, not bindings. The source is `apps/router/src/index.ts`:
+In production the Worker has five **service bindings**, one to each downstream app (`MARKETING`, `LIVE`, `API`, `COMMUNITY`, `HELP`). liveworkspace's services (pages, index, previews, Drive) are reached by origin: `WORKSPACE_ORIGIN`, `INDEX_ORIGIN`, `PREVIEWS_ORIGIN` and `DRIVE_ORIGIN`, each production's when unset (the helpers in `@liveworkspace/sites/workspace-proxy`). `/telemetry` and `/status` are redirects, not bindings. The source is `apps/router/src/index.ts`:
 
 - `route(request, env)` is the routing table above, in order.
-- `forward(request, url, binding, origin, stripPrefix?)` resolves each target as _binding if present, else local-dev origin_ (see Local development below), strips the prefix for the assetPrefix and basePath paths (live assets and help) when forwarding to a binding, and answers 503 when it has neither.
+- `forward(request, url, binding, origin, stripPrefix?)` resolves each target as _binding if present, else local-dev origin_ (see Local development below), strips the prefix for the assetPrefix and basePath paths (live assets, the Community and help) when forwarding to a binding, and answers 503 when it has neither.
 - `telemetryRedirect(env)` builds the 301 to `TELEMETRY_DASHBOARD_URL` with `?app=livedesign.app`.
 - `markNoIndex` stamps `X-Robots-Tag: noindex, nofollow` on staging's responses, leaving a WebSocket upgrade untouched ([Staging environment](staging-environment.md)).
 - `withCachePolicy` applies the caching rules (`cache-policy.ts`, [Stale builds](stale-builds.md) "Caching rules") to every response but the api's.
@@ -109,7 +110,7 @@ Service bindings target deployed Workers. The downstream apps deploy as their ow
 
 ## Local development
 
-The router **also runs locally**, so `pnpm dev` gives you the production URL shape on one port: `http://localhost:3400` serves marketing at `/`, the editor at `/new` etc., `/help` and `/api` (and `/telemetry` redirects to the central dashboard, the local liveworkspace site at `http://localhost:3000/telemetry`), with no per-app port to remember. Each app still runs on its own port underneath and stays directly reachable:
+The router **also runs locally**, so `pnpm dev` gives you the production URL shape on one port: `http://localhost:3400` serves marketing at `/`, the editor at `/new` etc., `/help`, `/community` and `/api` (and `/telemetry` redirects to the central dashboard, the local liveworkspace site at `http://localhost:3000/telemetry`), with no per-app port to remember. Each app still runs on its own port underneath and stays directly reachable:
 
 | App       | Local URL                                                           |
 | --------- | ------------------------------------------------------------------- |
@@ -117,6 +118,7 @@ The router **also runs locally**, so `pnpm dev` gives you the production URL sha
 | marketing | `http://localhost:3401/`                                            |
 | live      | `http://localhost:3402/new`, `/explorer/recent`, ... (clean routes) |
 | help      | `http://localhost:3404/help` (basePath baked in)                    |
+| community | `http://localhost:3405/community` (basePath baked in)               |
 | api       | `http://localhost:8989/api/...` (wrangler dev)                      |
 
 **How local mode works.** Service bindings only exist between deployed Workers, so the router's `wrangler.toml` carries an `[env.local]` environment that defines no service bindings and instead sets `<APP>_ORIGIN` vars (`http://127.0.0.1:<port>` for each downstream app, and the local liveworkspace services: the site on `:3000`, the index on `:8793`, previews on `:8792`, Drive on `:3011`). The worker resolves each target as _binding if present, else proxy to the origin_; `pnpm --filter @livedesign/router dev` runs `wrangler dev --env local --port 3400`, and the root `pnpm dev` includes it.

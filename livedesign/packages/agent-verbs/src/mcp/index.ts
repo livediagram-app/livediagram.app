@@ -3,5 +3,6 @@
 export * from './schema';
 export * from './output-schema';
 export * from './pages-schema';
+export * from './components-schema';
 export * from '@liveworkspace/agent-verbs/mcp/image-schema';
 export * from '../verbs/mcp-tools';

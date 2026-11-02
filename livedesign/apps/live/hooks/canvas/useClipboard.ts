@@ -31,11 +31,20 @@
 
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useEffect, useRef, useState } from 'react';
-import { duplicateElements, withAttached, type Element, type Tab } from '@livedesign/design';
+import {
+  componentRefIds,
+  duplicateElements,
+  withAttached,
+  type DesignComponent,
+  type Element,
+  type Tab,
+} from '@livedesign/design';
+import { registryLookup } from '@/lib/component-registry';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { watchPrimarySelectionPaste } from '@liveworkspace/workbench/lib/primary-selection-paste';
 import {
   clipboardWriteFor,
+  parseComponentsPayload,
   copyTooLargeMessage,
   IN_APP_COPY_ELSEWHERE,
   inAppCopyIdOf,
@@ -106,6 +115,9 @@ type ClipboardDeps = {
   // The canvas-coord rectangle on screen; a paste whose usual spot is outside
   // it lands in its middle (docs/specs/008-canvas/canvas-and-palette.md Clipboard).
   getViewportCanvasRect?: () => { x: number; y: number; width: number; height: number } | null;
+  // Adds the mains a pasted copy carries that the design's library lacks (docs/specs/009-elements/components.md
+  // "Clipboard"). Read through a ref, so the paste listener never holds a stale one.
+  addMissingComponents?: (components: readonly DesignComponent[]) => void;
 };
 
 export function useClipboard(deps: ClipboardDeps) {
@@ -128,6 +140,7 @@ export function useClipboard(deps: ClipboardDeps) {
     toast,
     getViewportCanvasRect,
   } = deps;
+  const addMissingRef = useLatest(deps.addMissingComponents);
 
   const [clipboard, setClipboard] = useState<Element[] | null>(null);
   // True (after explaining) when nothing may be created right now. Every
@@ -198,7 +211,11 @@ export function useClipboard(deps: ClipboardDeps) {
     // another window, and a paste there must not land part of it.
     osWriteOk.current = false;
     copyId.current = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-    const write = clipboardWriteFor(snapshot, copyId.current);
+    // The mains its instances draw go along, so another design's paste can add them (components.md "Clipboard").
+    const mains = componentRefIds(snapshot)
+      .map((id) => registryLookup(id))
+      .filter((c): c is DesignComponent => c !== undefined);
+    const write = clipboardWriteFor(snapshot, copyId.current, mains);
     if (write.inAppOnly) toast.info(copyTooLargeMessage(snapshot.length));
     void navigator.clipboard
       ?.writeText?.(write.text)
@@ -416,6 +433,7 @@ export function useClipboard(deps: ClipboardDeps) {
       const fromOs = parseElementsPayload(text);
       if (fromOs) {
         e.preventDefault();
+        addMissingRef.current?.(parseComponentsPayload(text));
         pasteRef.current.pasteFromClipboard(fromOs);
         return;
       }
@@ -443,7 +461,7 @@ export function useClipboard(deps: ClipboardDeps) {
     };
     document.addEventListener('paste', onPaste);
     return () => document.removeEventListener('paste', onPaste);
-  }, [isReadOnly, editingId, pasteRef]);
+  }, [isReadOnly, editingId, pasteRef, addMissingRef]);
 
   // Copied ELEMENTS pasted while a label on the canvas is open for typing. The
   // clipboard carries them as JSON text, and every label editor pastes plain
@@ -466,12 +484,14 @@ export function useClipboard(deps: ClipboardDeps) {
       e.preventDefault();
       e.stopPropagation();
       setEditingId(null);
-      if (elements) pasteRef.current.pasteFromClipboard(elements);
-      else if (inAppCopy !== null) pasteRef.current.pasteInAppCopy(inAppCopy);
+      if (elements) {
+        addMissingRef.current?.(parseComponentsPayload(text));
+        pasteRef.current.pasteFromClipboard(elements);
+      } else if (inAppCopy !== null) pasteRef.current.pasteInAppCopy(inAppCopy);
     };
     document.addEventListener('paste', onPasteIntoLabel, true);
     return () => document.removeEventListener('paste', onPasteIntoLabel, true);
-  }, [isReadOnly, editingId, setEditingId, pasteRef]);
+  }, [isReadOnly, editingId, setEditingId, pasteRef, addMissingRef]);
 
   // `hasClipboard` backs the canvas menu's Paste row (docs/specs/008-canvas/canvas-and-palette.md): the row is
   // always THERE — a menu that changes shape with invisible state is a menu

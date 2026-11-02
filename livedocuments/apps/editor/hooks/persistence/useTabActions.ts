@@ -68,6 +68,8 @@ type TabActionsDeps = {
   setImportError: (message: string | null) => void;
   // Frames the tab once replaced content has rendered (useTabEntryEffects).
   requestFit: () => void;
+  // Hands an imported deck's speaker notes and hidden slides to the Slide Deck (office-import.md).
+  onSlidesImported?: Parameters<typeof useTabImport>[0]['onSlidesImported'];
   // Re-pulls the owner's document list after a cross-document tab link.
   refreshDocumentList: (ownerId: string) => void;
   confirm: ReturnType<typeof useConfirm>;
@@ -117,7 +119,7 @@ export function useTabActions(deps: TabActionsDeps) {
 
   // Import (id re-mint, content replace, JSON parsing) lives in useTabImport;
   // remintTabElements is shared with the Duplicate below.
-  const { importIntoActiveTab, importTextIntoActiveTab } = useTabImport({
+  const { importIntoActiveTab, importTextIntoActiveTab, importFileIntoActiveTab } = useTabImport({
     tabs,
     activeId,
     commitTabs,
@@ -126,6 +128,9 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId,
     setImportError,
     requestFit,
+    ownerId,
+    documentId,
+    onSlidesImported: deps.onSlidesImported,
   });
 
   const toggleActiveTabLock = () => {
@@ -321,6 +326,7 @@ export function useTabActions(deps: TabActionsDeps) {
     addTab,
     importIntoActiveTab,
     importTextIntoActiveTab,
+    importFileIntoActiveTab,
     toggleActiveTabLock,
     renameTab,
     linkActiveTabTo,

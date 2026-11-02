@@ -11,6 +11,7 @@
 // Made on first use, never on construction (document-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_document_schema`; a later change adds a step to STEPS, never edits one.
 
+import { COMMUNITY_POST_TABLE } from '@liveworkspace/community/app';
 import { migrationSchema, tabSharesSchema } from '@liveworkspace/index-app';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
@@ -223,7 +224,29 @@ const V2 = tabSharesSchema();
 // own step, appended: every statement is IF NOT EXISTS.
 const V3 = migrationSchema();
 
-const STEPS: readonly string[] = [V1, V2, V3];
+// The document's Community post (docs/specs/025-community/community.md), at most one: its link's share code (an
+// index share link; a grant through it is a content-only pass, routes/context.ts), its post at the liveworkspace
+// Community service, what the link's doors show of it, and the listing state last sent (community-post.ts; the
+// table is every app's, @liveworkspace/community/app). A post listed, hidden, moved or taken down changes whether
+// the document is public, which its summary says. Its own step, appended: every statement is IF NOT EXISTS.
+const V4 = `
+${COMMUNITY_POST_TABLE}
+CREATE TRIGGER IF NOT EXISTS outbox_community_insert AFTER INSERT ON community_post
+BEGIN
+  INSERT OR IGNORE INTO outbox (document_id, kind, key) SELECT id, 'summary', '' FROM document;
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_community_update AFTER UPDATE OF hidden_at, sent_state ON community_post
+  WHEN NEW.hidden_at IS NOT OLD.hidden_at OR NEW.sent_state IS NOT OLD.sent_state
+BEGIN
+  INSERT OR IGNORE INTO outbox (document_id, kind, key) SELECT id, 'summary', '' FROM document;
+END;
+CREATE TRIGGER IF NOT EXISTS outbox_community_delete AFTER DELETE ON community_post
+BEGIN
+  INSERT OR IGNORE INTO outbox (document_id, kind, key) SELECT id, 'summary', '' FROM document;
+END;
+`;
+
+const STEPS: readonly string[] = [V1, V2, V3, V4];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
 

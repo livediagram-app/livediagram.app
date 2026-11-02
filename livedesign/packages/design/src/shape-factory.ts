@@ -107,6 +107,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   sankey: { width: 560, height: 300 },
   // Tab window (docs/specs/009-elements/tab-window.md): 16:9, TAB_WINDOW_SIZE.
   'tab-window': { width: 640, height: 360 },
+  // Instance (docs/specs/009-elements/components.md): placed at its main's frame; this is only the fallback.
+  instance: { width: 320, height: 80 },
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md), at the sizes the grouped composites they
   // replace arrived at, so a canvas built from either reads the same.
   banner: { width: 440, height: 104 },

@@ -17,7 +17,12 @@ export type EditorCapabilities = {
   writeText: (el: Element) => boolean;
   // Write in an article on the tab (participant-article.ts): its text, never its style, zones or pages.
   writeArticle: boolean;
+  // Replace found text (docs/specs/007-editor/find-and-replace.md "Share roles"): anywhere ('any', an Editor), only in
+  // the text it may write ('text', a Participant: its article writing and PARTICIPANT_TEXT_FIELDS), or not at all.
+  replace: ReplaceScope;
 };
+
+export type ReplaceScope = 'any' | 'text' | false;
 
 const never = () => false;
 const always = () => true;
@@ -25,7 +30,15 @@ const always = () => true;
 const isLocked = (el: Element) => (el as { locked?: boolean }).locked === true;
 
 export function resolveEditorCapabilities(level: AccessLevel): EditorCapabilities {
-  if (level === 'edit') return { level, takePart: true, writeText: always, writeArticle: true };
-  if (level === 'view') return { level, takePart: false, writeText: never, writeArticle: false };
-  return { level, takePart: true, writeText: (el) => !isLocked(el), writeArticle: true };
+  if (level === 'edit')
+    return { level, takePart: true, writeText: always, writeArticle: true, replace: 'any' };
+  if (level === 'view')
+    return { level, takePart: false, writeText: never, writeArticle: false, replace: false };
+  return {
+    level,
+    takePart: true,
+    writeText: (el) => !isLocked(el),
+    writeArticle: true,
+    replace: 'text',
+  };
 }

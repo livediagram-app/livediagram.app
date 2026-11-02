@@ -21,6 +21,12 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
   (`normaliseBoardSetup` null); statuses from `statusColumnsOfSetups` (first board's name wins; All Cards and
   Archive name none); types `typesOf(catalogue)`. The editor's `usePlanStatusNames` imports the same
   `statusColumnsOfSetups`.
+- Blocked By ([item-types.md "Blocked By"](../item-types.md#blocked-by)): `listedType` lists `custom[].blocks`;
+  `planListing` makes one `blockingIndexOf(state.items, plan.types, doneStatusesOf(plan.boards))` and adds `blocked`
+  (open blockers, when any) and `blocks` (`ref`s of the cards it blocks, when any) to each item; `applyItemChanges`
+  builds an add's or set's next card and stops on `blockingCycleOf` (code `blocks_cycle`, `blockingLoopMessage`)
+  before posting; `apiRefusalOf` reads `blocks_cycle` as the same sentence. `change_card_types`' `blocks` (Zod
+  `blocksArg`) reaches `CustomFieldInput.blocks` / `CustomFieldEdit.blocks`.
 - Names resolve in this order: exact id, then `statusKey` match on the name (case, spacing, punctuation aside).
 - `resolveFields` keys: built-in id, `statusKey` of an id, alias (`duedate`, `startdate`, `colour`, `label`,
   `assignedto`, `owner`), custom field id or name on the item's type. Values: `status` by column name, `assignee`
@@ -31,7 +37,9 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
   `*`/`_` italic, `~~` strikethrough, `[text](url)` (link kept when it passes the item store's safe-link check),
   backticks dropped, `\` escapes the next mark. `runs` is undefined when nothing is marked. `applyItemChanges`
   writes a `description` through it: `description` the plain text, `descriptionRich` the runs, or
-  `descriptionRich` cleared when there are none and the card has some; clearing `description` clears both.
+  `descriptionRich` cleared when there are none and the card has some; clearing `description` clears both. Each
+  `longtext` custom field of the card's type goes through it the same way (`withRichText`): its id the plain text,
+  `richFieldOf(id)` the runs, cleared as the description's is; set lines leave every `isRichFieldKey` key out.
 - `applyItemChanges`: one plan read per call; changes in order, each seeing earlier ones' items; first refusal
   stops; answers `applied` lines naming the column (`in To Do`, or `(on no board)`).
 - `applyCardTypeChanges`: changes in order on a working list; `add` starts from `NEW_ITEM_TYPE` (shared with the
@@ -40,8 +48,8 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
   chosen, given nothing but those, stays null. The whole result goes through `validateItemTypeCatalogue`.
   `add` and `set` apply `display`, `tabs` and `detailsLabel` last (`withFace`), through
   `packages/items/src/type-change-face.ts`: `displayFrom` maps `DISPLAY_SLOT_NAMES` (minimal beforeTitle/afterTitle →
-  lead/trail; compact besideTitle/belowTitle/bottomRight → lead/row/trail; detailed header/headerEnd/underTitle/
-  footer/bottomRight → head/headEnd/body/foot/footEnd) and field names (`CARD_FIELD_LABELS`, "Number"/"#" → key,
+  lead/trail; detailed header/headerEnd/underTitle/footer/bottomRight → head/headEnd/body/foot/footEnd; a
+  `compact` size is skipped, never refused) and field names (`CARD_FIELD_LABELS`, "Number"/"#" → key,
   else `fieldKeyOf`) into a layout per given size, checked by `typeOffersCardField` and `cardSlotFits`, stored
   through `readCardDisplay` (defaults dropped); a refusal is `display_invalid`. `tabsFrom` builds whole tabs (≤
   `ITEM_TYPE_TABS_MAX`), refusing Title, Votes, a field the type lacks or one in two tabs, keeping a same-named tab's
@@ -64,7 +72,7 @@ trashedFrom }` on each live card of a deleted type, as the editor's `trashItems`
   (`isCardTypesStale`) reads the plan again and applies the changes again, up to `CARD_TYPES_SAVE_ATTEMPTS` (3), then
   answers the refusal; `bringBoardCardTypes` does the same with the project's `itemTypesRev` (`KnownCardTypes.rev`).
 - `placeBoard`: preset through `freshBoardSetup`; columns by name reuse a status `statusNamed` finds (each status
-  once), else `<slug>~<4 chars>`; a preset's `doneColumnId` is dropped with its columns; placed right of the tab's
+  once), else `<slug>~<4 chars>`; a preset's done flags go with its columns and the new ones are settled by name (`settleDoneColumns`); placed right of the tab's
   elements' bounding box by `PLACED_BOARD_GAP`, tops aligned, origin on an empty tab.
 - `addBoard`: tab = given, else first tab with a board, else lowest `orderIndex`; one changeset
   `{ operations: [{ op: 'add', element }], base: { rev, elements: {} } }` with the client header (`mcp` or `cli`).
@@ -134,16 +142,17 @@ types? }`, `change_card_types { projectId, changes[1..32] }`; outputs `listItems
 
 ## Testing
 
-| Rule                                   | Test                                                                         |
-| -------------------------------------- | ---------------------------------------------------------------------------- |
-| outline order, statuses once, types    | `packages/items/src/plan-outline.test.ts`                                    |
-| naming and refusals                    | `packages/items/src/plan-names.test.ts`                                      |
-| card type changes                      | `packages/items/src/type-changes.test.ts`                                    |
-| board placement                        | `packages/items/src/board-place.test.ts`                                     |
-| plan route gate, scope, batching       | `apps/api/src/routes/plan-route.test.ts`                                     |
-| engine: listing, changes, types, board | `packages/agent-verbs/src/plan/plan-engine.test.ts`                          |
-| CLI verbs                              | `packages/agent-verbs/src/verbs/item.test.ts`, `plan-verbs.test.ts`          |
-| MCP tools, outputs, annotations        | `apps/mcp/src/output-schema.test.ts`, `tools.test.ts`, `verb-parity.test.ts` |
+| Rule                                                  | Test                                                                                           |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| outline order, statuses once, types                   | `packages/items/src/plan-outline.test.ts`                                                      |
+| naming and refusals                                   | `packages/items/src/plan-names.test.ts`                                                        |
+| card type changes                                     | `packages/items/src/type-changes.test.ts`                                                      |
+| Blocked By: listing, set by number, loop stop, switch | `packages/agent-verbs/src/plan/plan-engine.test.ts`, `packages/items/src/type-changes.test.ts` |
+| board placement                                       | `packages/items/src/board-place.test.ts`                                                       |
+| plan route gate, scope, batching                      | `apps/api/src/routes/plan-route.test.ts`                                                       |
+| engine: listing, changes, types, board                | `packages/agent-verbs/src/plan/plan-engine.test.ts`                                            |
+| CLI verbs                                             | `packages/agent-verbs/src/verbs/item.test.ts`, `plan-verbs.test.ts`                            |
+| MCP tools, outputs, annotations                       | `apps/mcp/src/output-schema.test.ts`, `tools.test.ts`, `verb-parity.test.ts`                   |
 
 ## Constants and configuration
 

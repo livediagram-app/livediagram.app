@@ -184,3 +184,121 @@ describe('an article estimated', () => {
     });
   });
 });
+
+// docs/specs/007-editor/article-pages.md "Tables", "Table of contents", "Headers and footers".
+describe('tables, contents and bands estimated', () => {
+  const table = (rows: number, header = true): ArticleBlock => ({
+    id: 'tb',
+    type: 'table',
+    ...(header ? { header: true as const } : {}),
+    cols: [
+      { id: 'c0', w: 0.5 },
+      { id: 'c1', w: 0.5 },
+    ],
+    rows: Array.from({ length: rows }, (_, i) => ({
+      id: `r${i}`,
+      cells: [
+        [{ text: i === 0 ? 'Name' : `Row ${i}` }],
+        i === 1 ? [{ text: 'all bold', b: true }] : i === 2 ? [] : [{ text: 'v' }],
+      ],
+    })),
+  });
+
+  it('sets a table’s cells and hairlines, repeating its header row on each page it continues onto', () => {
+    const tab = article([p('Before'), table(90)]);
+    const est = estimateArticle(tab, 'f', laid(tab), '#000000');
+    expect(est.pagesUsed).toBeGreaterThan(1);
+    expect(texts(est.ops, 'a1')).toContain('Row 1');
+    expect(texts(est.ops, 'a1').filter((t) => t === 'Name')).toHaveLength(1);
+    const second = est.added[0]!.id;
+    expect(texts(est.ops, second)[0]).toBe('Name');
+    expect((est.ops.get('a1') ?? []).some((o) => o.k === 'line')).toBe(true);
+  });
+
+  it('never repeats a row when the table has no header row', () => {
+    const tab = article([table(90, false)]);
+    const est = estimateArticle(tab, 'f', laid(tab), '#000000');
+    expect(texts(est.ops, est.added[0]!.id)[0]).not.toBe('Name');
+  });
+
+  it('stops a table at the estimate’s page limit', () => {
+    const tab = article([table(500)]);
+    expect(estimateArticle(tab, 'f', laid(tab), '#000000').overflows).toBe(false);
+    const huge: ArticleBlock[] = Array.from({ length: 40 }, (_, i) => ({
+      ...(table(60) as object),
+      id: `t${i}`,
+    })) as ArticleBlock[];
+    const big = article(huge);
+    expect(estimateArticle(big, 'f', laid(big), '#000000').overflows).toBe(true);
+  });
+
+  it('lists the headings under "Contents" with the pages the first pass put them on', () => {
+    const tab = article([
+      { id: 'toc', type: 'toc', depth: 2 },
+      p('Intro', 'h1'),
+      { id: 'pb', type: 'pageBreak' },
+      p('Later', 'h2'),
+      p('Small', 'h3'),
+    ]);
+    const est = estimateArticle(tab, 'f', laid(tab), '#000000');
+    const first = texts(est.ops, 'a1');
+    expect(first.slice(0, 5)).toEqual(['Contents', 'Intro', '1', 'Later', '2']);
+    expect(first).not.toContain('Small');
+    expect((est.ops.get('a1') ?? []).some((o) => o.k === 'line' && o.dash)).toBe(true);
+  });
+
+  it('runs a contents block onto the next page when it does not fit, and stops at the limit', () => {
+    const headings = Array.from({ length: 80 }, (_, i) => p(`Heading ${i}`, 'h1'));
+    const tab = article([{ id: 'toc', type: 'toc' }, ...headings]);
+    const est = estimateArticle(tab, 'f', laid(tab), '#000000');
+    expect(texts(est.ops, est.added[0]!.id)).toContain('Heading 50');
+    const full = article([
+      ...Array.from({ length: ARTICLE_ESTIMATE_PAGES_MAX }, (_, i) => ({
+        id: `x${i}`,
+        type: 'pageBreak' as const,
+      })),
+      { id: 'toc', type: 'toc' },
+      ...headings,
+    ]);
+    expect(estimateArticle(full, 'f', laid(full), '#000000').overflows).toBe(true);
+  });
+
+  it('draws the header, the footer and the page number on each page, none on a first page set apart', () => {
+    const style = {
+      pageNumbers: true,
+      header: { left: 'Brief', right: '{pages} pages' },
+      footer: { left: 'Draft' },
+      differentFirstPage: true,
+    };
+    const tab = article([p('One'), { id: 'pb', type: 'pageBreak' }, p('Two')], { style });
+    const est = estimateArticle(tab, 'f', laid(tab), '#000000');
+    expect(texts(est.ops, 'a1')).not.toContain('Brief');
+    expect(texts(est.ops, est.added[0]!.id)).toEqual(
+      expect.arrayContaining(['Brief', '2 pages', 'Draft', '2']),
+    );
+  });
+
+  it('sets a contents block after writing, in the accent, a long heading cut before its page', () => {
+    const tab = article([p('Lead'), { id: 'toc', type: 'toc' }, p('W'.repeat(400), 'h1')], {
+      style: { look: 'report', header: { left: 'H' } },
+    });
+    const est = estimateArticle(tab, 'f', laid(tab), '#000000');
+    const first = texts(est.ops, 'a1');
+    expect(first.slice(0, 2)).toEqual(['Lead', 'Contents']);
+    expect(first[2]!.length).toBeLessThan(400);
+    expect(first).toContain('H');
+  });
+
+  it('stops a contents block on the last page the estimate makes', () => {
+    const headings = Array.from({ length: 80 }, (_, i) => p(`Heading ${i}`, 'h1'));
+    const tab = article([
+      ...Array.from({ length: ARTICLE_ESTIMATE_PAGES_MAX - 2 }, (_, i) => ({
+        id: `x${i}`,
+        type: 'pageBreak' as const,
+      })),
+      { id: 'toc', type: 'toc' },
+      ...headings,
+    ]);
+    expect(estimateArticle(tab, 'f', laid(tab), '#000000').overflows).toBe(true);
+  });
+});

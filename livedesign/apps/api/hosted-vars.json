@@ -5,11 +5,13 @@
     "production": {
       "APP_BASE_URL": "https://www.livedesign.app",
       "TELEMETRY_URL": "https://www.liveworkspace.app/api/telemetry",
+      "COMMUNITY_URL": "https://www.liveworkspace.app/api/community",
       "MEDIA_URL": "https://www.liveworkspace.app/api/media"
     },
     "staging": {
       "APP_BASE_URL": "https://staging.livedesign.app",
       "TELEMETRY_URL": "https://staging.liveworkspace.app/api/telemetry",
+      "COMMUNITY_URL": "https://staging.liveworkspace.app/api/community",
       "MEDIA_URL": "https://staging.liveworkspace.app/api/media"
     }
   }

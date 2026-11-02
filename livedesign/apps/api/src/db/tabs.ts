@@ -2,7 +2,13 @@
 // `design_tabs`. Runs only inside the design's Durable Object, on `env.DESIGN_DB` (design-room/design-db.ts).
 
 import { shareLeaveStatements } from '@liveworkspace/index-app';
-import { capElementActions, drawnCount, type Tab } from '@livedesign/design';
+import {
+  capElementActions,
+  componentRefIds,
+  componentRefIdsFromData,
+  drawnCount,
+  type Tab,
+} from '@livedesign/design';
 import { rowToTab, type TabRow } from '../tab-row';
 import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
 
@@ -23,6 +29,11 @@ import {
   imageRefPruneTabStatement,
   imageRefReplaceStatements,
 } from './image-refs';
+import {
+  componentRefAddStatements,
+  componentRefPruneTabStatement,
+  componentRefReplaceStatements,
+} from './components';
 
 export async function getTab(
   env: DesignEnv,
@@ -193,6 +204,8 @@ export function tabWriteStatements(
     // The image reference index (docs/specs/009-elements/images.md, "Reference index"): a reference
     // this batch missed is an image the retention sweep reaps.
     ...imageRefReplaceStatements(env, id, imageRefIds(tab.elements, tab.pages)),
+    // The mains its instances use (docs/specs/009-elements/components.md), beside the image references.
+    ...componentRefReplaceStatements(env, id, componentRefIds(tab.elements)),
   ];
 }
 
@@ -306,6 +319,7 @@ export async function seedTabs(
   // import or a copy from a share link can carry actions and threads in on create.
   for (const tab of capped) {
     stmts.push(...imageRefReplaceStatements(env, tab.id, imageRefIds(tab.elements, tab.pages)));
+    stmts.push(...componentRefReplaceStatements(env, tab.id, componentRefIds(tab.elements)));
   }
   await env.DESIGN_DB.batch(stmts);
 }
@@ -329,6 +343,7 @@ export async function deleteTabRow(
     // The tab's image and photo references go with it (no foreign key cascades them); the outbox triggers tell
     // the media service the design no longer shows its images (design-room/design-outbox.ts).
     imageRefPruneTabStatement(env, tabId),
+    componentRefPruneTabStatement(env, tabId),
     env.DESIGN_DB.prepare('DELETE FROM photo_blob_refs WHERE tab_id = ?').bind(tabId),
     // A shared tab (design-room/tab-shares.ts): every other holder hears that this design left, and nothing else it
     // owed them about the tab is sent. Before the tab's delete, which takes its `tab_shares` rows.
@@ -423,6 +438,7 @@ export async function swapTabData(
     // Only if the swap above won: then the tab stores exactly `nextData`.
     tabStatsStatement(env, tabId, nextStats, now, nextData),
     ...imageRefAddStatements(env, tabId, imageRefIdsFromData(nextData)),
+    ...componentRefAddStatements(env, tabId, componentRefIdsFromData(nextData)),
   ]);
   if ((res?.meta?.changes ?? 0) === 0) return false;
   await env.DESIGN_DB.prepare('UPDATE design SET saved_at = ? WHERE id = ?')

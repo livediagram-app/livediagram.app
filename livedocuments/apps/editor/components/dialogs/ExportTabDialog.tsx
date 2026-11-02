@@ -8,6 +8,7 @@ import { ImageExportPanel } from './ImageExportPanel';
 import {
   isLayerVisible,
   tabLayers,
+  type Deck,
   type LaidOutPage,
   type Tab,
   tabToJsonText,
@@ -29,6 +30,12 @@ import {
   type PageScope,
 } from '@/lib/export-pages';
 import { ExportPagePicker } from './ExportPagePicker';
+import {
+  OFFICE_CARDS,
+  OFFICE_SUBTITLE,
+  officeFormatFor,
+  type OfficeFormat,
+} from '@/lib/office-export/summary';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -37,6 +44,9 @@ import { useTabWindowExport } from './useTabWindowExport';
 // The animated GIF's panel and its capture, loaded only when the GIF card opens
 // (docs/specs/020-import-export/blueprints/animated-gif-export.md "Performance and limits").
 const GifExportPanel = lazy(() => import('./gif/GifExportPanel'));
+// The PowerPoint and Word panel and its writers, loaded only when that card opens
+// (docs/specs/020-import-export/office-export.md "Performance").
+const OfficeExportPanel = lazy(() => import('./office/OfficeExportPanel'));
 
 // Telemetry (docs/specs/017-telemetry/telemetry.md): map the internal format key to the public label
 // the dashboard shows. 'file' is the portable .json export.
@@ -47,6 +57,8 @@ const EXPORT_LABEL: Record<Format, string> = {
   svg: 'SVG',
   pdf: 'PDF',
   gif: 'GIF',
+  pptx: 'PagesPPTX',
+  docx: 'PagesDOCX',
 };
 
 // A text format taken (downloaded or copied) counts as the document's export.
@@ -69,7 +81,7 @@ const PAGES_EXPORT_LABEL: Record<ImageFormat, string> = {
 
 // The formats Pages mode exports to (docs/specs/007-editor/pages-mode.md "Export"):
 // its pages, and the tab itself as JSON. Diagram-tool formats are not offered.
-const PAGES_FORMATS: readonly Format[] = ['pdf', 'png', 'svg', 'gif', 'file'];
+const PAGES_FORMATS: readonly Format[] = ['pdf', 'png', 'svg', 'gif', 'pptx', 'docx', 'file'];
 // The page formats' card copy in Pages mode, which speaks of pages rather than the tab.
 const PAGES_CARD_COPY: Partial<Record<Format, string>> = {
   pdf: 'Every page in one PDF, or a single page, ready to print or share.',
@@ -105,18 +117,22 @@ type ExportTabDialogProps = {
   loadTabs?: (only: readonly string[]) => Promise<string[]>;
   // Empty the canvas selection: the GIF draws the canvas as it stands, rings and all.
   onClearSelection?: () => void;
+  // The Slide Deck, for the PowerPoint export's speaker notes and hidden slides
+  // (docs/specs/020-import-export/office-export.md).
+  deck?: Deck;
 };
 
 const NO_DOCUMENT_TABS: readonly Tab[] = [];
 
 // The format keys ('file' is the livedocuments .json).
-export type Format = 'markdown' | 'pdf' | 'png' | 'svg' | 'gif' | 'file';
+export type Format = 'markdown' | 'pdf' | 'png' | 'svg' | 'gif' | OfficeFormat | 'file';
 
 // The two text formats each open a view/edit/copy panel; the three image
 // formats each open an options-and-download panel (docs/specs/010-palette/style-presets.md / 73).
 type TextFormat = 'file' | 'markdown';
 type ImageFormat = 'png' | 'svg' | 'pdf';
 const isTextFormat = (f: Format): f is TextFormat => f === 'file' || f === 'markdown';
+const isOfficeFormat = (f: Format | null): f is OfficeFormat => f === 'pptx' || f === 'docx';
 
 // Grid card copy, in display order: text formats first, then image formats.
 const CARDS: { kind: Format; title: string; description: string }[] = [
@@ -151,6 +167,9 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     title: 'GIF',
     description: 'An animated image of the pages, moving as they move on the canvas.',
   },
+  // A slide tab's or an article tab's only (docs/specs/020-import-export/office-export.md "Where it is offered").
+  { kind: 'pptx', ...OFFICE_CARDS.pptx },
+  { kind: 'docx', ...OFFICE_CARDS.docx },
 ];
 
 // Per-text-format panel config: the blurb, the download button label + file
@@ -199,6 +218,7 @@ export function ExportTabDialog({
   documentTabs,
   loadTabs,
   onClearSelection,
+  deck,
 }: ExportTabDialogProps) {
   // null = the format grid; otherwise the picked format's sub-panel.
   const [active, setActive] = useState<Format | null>(null);
@@ -218,14 +238,19 @@ export function ExportTabDialog({
   // All pages or One page, per format: each starts where DEFAULT_PAGE_SCOPE puts it.
   const [scopes, setScopes] = useState<Partial<Record<ImageFormat, PageScope>>>({});
   const scopeOf = (format: ImageFormat) => scopes[format] ?? DEFAULT_PAGE_SCOPE[format];
+  const officeFormat = officeFormatFor(pages);
   const cards = pages
     ? // A GIF animates the pages, so a Pages tab with none yet (First Page Choice) offers no GIF.
-      PAGES_FORMATS.filter((kind) => kind !== 'gif' || pages.length > 0).map((kind) => {
+      // PowerPoint for a deck and Word for an article, neither for any other kind.
+      PAGES_FORMATS.filter(
+        (kind) =>
+          (kind !== 'gif' || pages.length > 0) && (!isOfficeFormat(kind) || kind === officeFormat),
+      ).map((kind) => {
         const card = CARDS.find((c) => c.kind === kind)!;
         return { ...card, description: PAGES_CARD_COPY[kind] ?? card.description };
       })
-    : // A selection has no pages, so no GIF.
-      CARDS.filter((c) => c.kind !== 'gif');
+    : // A selection has no pages, so no GIF, PowerPoint or Word.
+      CARDS.filter((c) => c.kind !== 'gif' && !isOfficeFormat(c.kind));
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
@@ -302,6 +327,26 @@ export function ExportTabDialog({
     [tab, previewImages, page, windowOpts],
   );
 
+  // The PowerPoint and Word preview: the first page, as the image formats draw it.
+  const firstPage = pages?.[0];
+  const officePreview = useMemo(
+    () =>
+      isOfficeFormat(active) && firstPage && previewReady && windows.ready
+        ? renderTabToSvg(tab, {
+            pattern: true,
+            hiddenLayers: false,
+            images: previewImages,
+            page: firstPage,
+            ...windowOpts,
+          })
+        : '',
+    [active, firstPage, previewReady, windows.ready, tab, previewImages, windowOpts],
+  );
+  const officeRender = useMemo(
+    () => ({ ...(previewImages ? { images: previewImages } : {}), ...windowOpts }),
+    [previewImages, windowOpts],
+  );
+
   // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
   const runImageExport = async (
     format: ImageFormat,
@@ -362,9 +407,11 @@ export function ExportTabDialog({
   const subtitle = activeCard
     ? active === 'gif'
       ? 'Set how the pages play, then download the GIF.'
-      : isTextFormat(active!)
-        ? `Copy this tab as ${activeCard.title}, or download a file.`
-        : `Set the image options for ${activeCard.title}, then download.`
+      : isOfficeFormat(active)
+        ? OFFICE_SUBTITLE[active]
+        : isTextFormat(active!)
+          ? `Copy this tab as ${activeCard.title}, or download a file.`
+          : `Set the image options for ${activeCard.title}, then download.`
     : isSelection
       ? 'Pick a format to export the selected elements.'
       : pages
@@ -417,6 +464,28 @@ export function ExportTabDialog({
               onClearSelection={onClearSelection}
             />
           </Suspense>
+        ) : isOfficeFormat(active) && pages && pages.length > 0 ? (
+          <Suspense
+            fallback={
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Preparing the {OFFICE_CARDS[active].title} export…
+              </p>
+            }
+          >
+            <OfficeExportPanel
+              format={active}
+              tab={tab}
+              pages={pages}
+              {...(deck ? { deck } : {})}
+              title={documentName || 'document'}
+              baseName={baseName}
+              render={officeRender}
+              previewSvg={officePreview}
+              ready={previewReady && windows.ready}
+              onDone={onClose}
+              onBack={() => setActive(null)}
+            />
+          </Suspense>
         ) : active ? (
           <ImageExportPanel
             pagePicker={
@@ -425,7 +494,7 @@ export function ExportTabDialog({
                   pages={pages}
                   page={page}
                   scope={scopeOf(active as ImageFormat)}
-                  format={active}
+                  format={active as ImageFormat}
                   onScope={(next) => setScopes((s) => ({ ...s, [active as ImageFormat]: next }))}
                   onPick={setPageIndex}
                 />

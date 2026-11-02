@@ -8,7 +8,8 @@ import {
   type CommunityMineResponse,
   type CommunityPostResponse,
 } from '@liveworkspace/community';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { unavailableD1 } from '@liveworkspace/api-kit/testing/unavailable-d1';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
 import { testDb, type TestDb } from './test-sqlite-d1';
 import type { Env } from './env';
@@ -65,10 +66,7 @@ async function publish(document = 'd1', patch: Partial<CommunityAppPublish> = {}
   return { res, post: res.ok ? ((await res.json()) as { post: CommunityAppPost }).post : null };
 }
 
-const fromPage = (
-  origin = 'https://livediagram-router.liveworkspace-easing509.workers.dev',
-  key = KEY,
-): Record<string, string> => ({
+const fromPage = (origin = 'https://www.livediagram.app', key = KEY): Record<string, string> => ({
   Origin: origin,
   'X-Community-Key': key,
 });
@@ -131,6 +129,36 @@ describe('the app routes', () => {
       ...body(publishing({ author: { name: 'A', color: 'red', picture: null } })),
     });
     expect(badAuthor.status).toBe(400);
+  });
+
+  it("take only a category of the publishing app's own", async () => {
+    const theirs = await asApp('/app/documents/d1', {
+      method: 'PUT',
+      ...body(publishing({ input: { ...publishing().input, category: 'logos' } })),
+    });
+    expect(theirs.status).toBe(400);
+    expect(await theirs.json()).toEqual({ error: 'invalid_category' });
+    const own = await asApp(
+      '/app/documents/d1',
+      {
+        method: 'PUT',
+        ...body(publishing({ input: { ...publishing().input, category: 'logos' } })),
+      },
+      'livedesign.app',
+      'ls-key',
+    );
+    expect(own.status).toBe(201);
+  });
+
+  it('speak for livedocuments and livedesign with their own keys only', async () => {
+    expect((await asApp('/app/hidden?since=0', {}, 'livedocuments.app', 'lc-key')).status).toBe(
+      200,
+    );
+    expect((await asApp('/app/hidden?since=0', {}, 'livedesign.app', 'ls-key')).status).toBe(200);
+    expect((await asApp('/app/hidden?since=0', {}, 'livedesign.app', 'lc-key')).status).toBe(401);
+    expect((await asApp('/app/hidden?since=0', {}, 'livedocuments.app', 'ld-key')).status).toBe(
+      401,
+    );
   });
 
   it("keep a post's author's picture only when it is an https address", async () => {
@@ -295,9 +323,7 @@ describe('the public routes', () => {
       call(`/posts/${post!.id}/like?app=livediagram.app`, { method, headers });
     const liked = await like(fromPage());
     expect(await liked.json()).toEqual({ likeCount: 1, liked: true });
-    expect(liked.headers.get('Access-Control-Allow-Origin')).toBe(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev',
-    );
+    expect(liked.headers.get('Access-Control-Allow-Origin')).toBe('https://www.livediagram.app');
     // Another site's page: the like is answered, but the browser never lets that page read it, and the
     // preflight a real cross-site call needs refuses it first.
     const elsewhere = await like(fromPage('https://evil.example'));
@@ -309,18 +335,13 @@ describe('the public routes', () => {
     expect(pre.headers.get('Access-Control-Allow-Origin')).toBeNull();
     const ok = await call(`/posts/${post!.id}/like?app=livediagram.app`, {
       method: 'OPTIONS',
-      headers: { Origin: 'https://livediagram-router.liveworkspace-easing509.workers.dev' },
+      headers: { Origin: 'https://www.livediagram.app' },
     });
-    expect(ok.headers.get('Access-Control-Allow-Origin')).toBe(
-      'https://livediagram-router.liveworkspace-easing509.workers.dev',
-    );
+    expect(ok.headers.get('Access-Control-Allow-Origin')).toBe('https://www.livediagram.app');
     expect(ok.headers.get('Access-Control-Allow-Headers')).toContain('X-Community-Key');
     // The same browser key from the other page changed nothing, so unliking leaves none.
     expect(await (await like(fromPage(), 'DELETE')).json()).toEqual({ likeCount: 0, liked: false });
-    expect(
-      (await like({ Origin: 'https://livediagram-router.liveworkspace-easing509.workers.dev' }))
-        .status,
-    ).toBe(400);
+    expect((await like({ Origin: 'https://www.livediagram.app' })).status).toBe(400);
   });
 
   it('hide a post after three reports from distinct browsers and networks', async () => {
@@ -329,7 +350,7 @@ describe('the public routes', () => {
       call(`/posts/${post!.id}/report?app=livediagram.app`, {
         method: 'POST',
         headers: {
-          ...fromPage('https://livediagram-router.liveworkspace-easing509.workers.dev', key),
+          ...fromPage('https://www.livediagram.app', key),
           'CF-Connecting-IP': ip,
         },
         body: JSON.stringify(payload),
@@ -380,5 +401,42 @@ describe('the public routes', () => {
       const res = await worker.fetch(new Request(`https://liveworkspace.app${path}`), db.env, ctx);
       expect(res.status).toBe(404);
     }
+  });
+});
+
+// A D1 outage (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails").
+describe('when D1 is unavailable', () => {
+  it('answers a public read 503 storage_unavailable, with its CORS', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await call(
+      '/posts?app=livediagram.app',
+      { headers: { Origin: 'https://x.example' } },
+      { ...db.env, COMMUNITY_DB: unavailableD1() },
+    );
+
+    expect(res.status).toBe(503);
+    expect(res.headers.get('Retry-After')).toBe('5');
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    expect(await res.json()).toEqual({ error: 'storage_unavailable' });
+    expect(error).toHaveBeenCalledWith(
+      '[d1] unavailable route=Get.Community.Posts',
+      expect.any(Error),
+    );
+    error.mockRestore();
+  });
+
+  it('answers an app route 503 storage_unavailable, with no CORS', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await call(
+      '/app/hidden',
+      { headers: { Authorization: 'Bearer ld-key', 'X-Community-App': 'livediagram.app' } },
+      { ...db.env, COMMUNITY_DB: unavailableD1() },
+    );
+
+    expect(res.status).toBe(503);
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBeNull();
+    error.mockRestore();
   });
 });

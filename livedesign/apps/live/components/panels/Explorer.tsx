@@ -1,8 +1,15 @@
 'use client';
 
 import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { ExplorerPanel, explorerPath, type RenderAppLogo } from '@liveworkspace/explorer';
+import { memo, useCallback, useEffect, useMemo } from 'react';
+import {
+  EXPLORER_POPOVER_HEIGHT,
+  EXPLORER_POPOVER_WIDTH,
+  ExplorerPanel,
+  explorerPath,
+  useOpenItem,
+  type RenderAppLogo,
+} from '@liveworkspace/explorer';
 import { trackOrganise } from '@/lib/explorer-organise';
 import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
@@ -18,12 +25,14 @@ import { useThisBrowserHost } from '@/hooks/persistence/useThisBrowserHost';
 import { useOfflineItemMenu } from '@/hooks/persistence/useOfflineItemMenu';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
-import { getSessionSharePassword } from '@/lib/api-client';
+import { API_BASE, getSessionSharePassword } from '@/lib/api-client';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { explorerLibrary } from '@/lib/explorer-library';
 import { explorerTeamsHost } from '@liveworkspace/workbench/lib/explorer-teams-host';
 import { itemHref, newDesignHref, shareUrl, useTokenTeams } from '@/lib/explorer-host';
 import { explorerShareHost } from '@/lib/explorer-share-host';
+import { explorerCommunity } from '@/lib/explorer-community-host';
+import { useCommunityEnabled } from '@liveworkspace/community-ui';
 import { explorerInboxActions, explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { renderDesignThumbnail } from '@/lib/explorer-thumbnail';
 import { trashOpenDesign } from '@/lib/design-delete-undo';
@@ -56,15 +65,27 @@ function ExplorerImpl({
   const isMobile = useIsMobileViewport();
   const sheet = isMobile;
   const router = useAppNavigation();
-  const { isSignedIn, authLoaded, accountUserId } = useAccountBootstrap();
+  const { isSignedIn, authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
   // The person: an account, or this browser's guest, as the Explorer page has them, so the Timeline, History and
   // the Inbox name their own doings as theirs.
   const guestId = useSignedGuestId(authLoaded, accountUserId);
   const viewerId = accountUserId ?? guestId;
   // Take Offline and Sync Design on a design's menu.
   const itemMenu = useOfflineItemMenu(viewerId);
-  const thisBrowser = useThisBrowserHost(viewerId, !!accountUserId);
-  const shareHost = useMemo(() => explorerShareHost(viewerId), [viewerId]);
+  const thisBrowser = useThisBrowserHost(viewerId, !!accountUserId, currentDesignId ?? null);
+  // The Community tab for a signed-in account's own designs (lib/explorer-community-host.ts), asked whether the
+  // Community is on only for an account.
+  const communityOn = useCommunityEnabled(API_BASE, !!accountUserId);
+  const shareHost = useMemo(
+    () => ({
+      ...explorerShareHost(viewerId),
+      community: explorerCommunity(
+        accountUserId ? { id: accountUserId, name: accountDisplayName } : null,
+        communityOn,
+      ),
+    }),
+    [viewerId, accountUserId, accountDisplayName, communityOn],
+  );
   const inboxBase = useMemo(() => explorerInboxHost(viewerId), [viewerId]);
   // The pane's verbs: this app's threads, and an action on the open design's active tab.
   const inboxActions = useMemo(
@@ -87,21 +108,14 @@ function ExplorerImpl({
   const drive = useMemo(() => (isSignedIn ? cloudSyncHost() : null), [isSignedIn]);
 
   // The open design as the index has it (its title, place and star), for the card on top.
-  const [current, setCurrent] = useState<Item | null>(null);
-  useEffect(() => {
-    if (!currentDesignId) return;
-    let live = true;
-    const share = currentShareCode
-      ? { code: currentShareCode, password: getSessionSharePassword() }
-      : null;
-    indexClient.getItem(currentDesignId, share).then(
-      ({ item }) => live && setCurrent(item),
-      () => live && setCurrent(null),
-    );
-    return () => {
-      live = false;
-    };
-  }, [currentDesignId, currentShareCode]);
+  // Null when the index has none for it (kept only in this browser): the panel then draws its card from This
+  // Browser's list (@liveworkspace/explorer ExplorerPanel).
+  const current = useOpenItem(
+    indexClient,
+    currentDesignId,
+    currentShareCode,
+    getSessionSharePassword,
+  );
 
   // Open, the panel reaches under the palette strip: the trays hanging from it step aside (PaletteTray).
   const shown = popoverOpen === true;
@@ -127,7 +141,12 @@ function ExplorerImpl({
       // Only ever the menu button's popover: never placed in a corner or dragged.
       position={null}
       defaultCorner="top-left"
-      popoverWidth="w-[38rem]"
+      // Roomy on a desktop or tablet: up to 64rem wide (kept 1rem inside the window) and 56rem tall (kept on the
+      // canvas below its button, 24px short of its edge), over a dimmed scrim on every screen size. Every editor's
+      // panel takes the one size from the package.
+      popoverWidth={EXPLORER_POPOVER_WIDTH}
+      popoverHeight={EXPLORER_POPOVER_HEIGHT}
+      popoverScrim
       // On a phone it opens as a sheet: edge to edge, down to the tab bar.
       popoverSheet={sheet}
       onMoveTo={NO_MOVE}

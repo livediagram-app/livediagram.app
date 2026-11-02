@@ -1,9 +1,11 @@
 import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
-import type { ElementDelta, RoomElementOp, Tab } from '@liveplanner/project';
+import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
+import type { DashboardPatch, ElementDelta, RoomElementOp, Tab } from '@liveplanner/project';
 import type { ParticipantPresence } from './index';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
 import type { ItemsRoomOp, ItemTypesRoomOp } from './items';
+import type { CardThreadsRoomOp } from './card-threads';
 import type { SheetsRoomOp } from './sheets';
 
 // ---------------------------------------------------------------------
@@ -54,6 +56,10 @@ export const MUTATION_OP_KINDS = [
   // (docs/specs/012-collaboration/collab-race-hardening.md). A mutation for the same reasons as a dot.
   'el-delta',
   'project-meta',
+  // One change to a Dashboard's layout (docs/specs/012-collaboration/collab-race-hardening.md "A Dashboard's layout
+  // travels as deltas"). A mutation like `el-delta`: sequenced, logged, recorded in the ledger, and an Editor's alone
+  // (not a participation op, so a Participant's or a Viewer's socket has it dropped).
+  'dashboard-delta',
 ] as const;
 
 // Op kinds only the WORKER may originate, stamped `from: 'system'` and pushed
@@ -85,6 +91,9 @@ export const SYSTEM_OP_KINDS = [
   // `sheets` (docs/specs/029-sheets/sheet-store.md "Live for everyone"): sheet writes the api made. Sheets change
   // only through the api, so a forged one would show people cells nobody wrote.
   'sheets',
+  // `threads` (docs/specs/026-plan/items.md "Comments"): card thread writes the api made, from any plan the thread
+  // is on. Threads change only through the api.
+  'threads',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -113,7 +122,9 @@ export function isPresenceOpKind(kind: unknown): kind is PresenceOpKind {
 // A Participant's socket may send these beside presence; every other mutation from it is dropped, except an `el`
 // op, which the room applies through the participant content rule instead of relaying.
 const PARTICIPATION_OP_KINDS = ['vote'] as const;
-const PARTICIPATION_DELTA_KINDS = ['response'] as const;
+// A comment reaction is taking part too (docs/specs/012-collaboration/comment-reactions.md): whoever may comment
+// may react, and the room writes a Participant's reactions as it writes its answers.
+const PARTICIPATION_DELTA_KINDS = ['response', 'comment-react'] as const;
 
 export function isParticipationOp(op: unknown): boolean {
   if (typeof op !== 'object' || op === null) return false;
@@ -164,7 +175,9 @@ export type ServerMessage =
   // replayed dot was counted twice.
   | CursorMessage
   | FormatMessage
-  | GrantRenewMessage;
+  | GrantRenewMessage
+  // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
+  | OpRefusedMessage;
 
 // `ref`: the `ref` the sender put on the op this frame answers, echoed so the sender knows that op is
 // sequenced (docs/specs/012-collaboration/collab-race-hardening.md phase 6). Absent on hello.
@@ -235,7 +248,11 @@ export type RoomOp =
   // changes and older peers; the granular `el` op (docs/specs/012-collaboration/realtime-conflict-resolution.md) supersedes it
   // for the common single-element edit so concurrent different-element
   // edits stop clobbering.
-  | { kind: 'tab'; tabId: string; tab: Tab }
+  //
+  // `dashboardDeltas`: the sender sends its Dashboard layout changes as `dashboard-delta` ops, so a receiver that has
+  // a layout keeps its own through this copy (docs/specs/012-collaboration/collab-race-hardening.md). Absent from an
+  // older editor, whose whole layout is taken as before.
+  | { kind: 'tab'; tabId: string; tab: Tab; dashboardDeltas?: true }
   // A single element on a tab changed (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0): add / update /
   // remove / reorder, applied by id so a peer editing a DIFFERENT element
   // on the same tab merges instead of overwriting the whole tab. `op`
@@ -280,6 +297,10 @@ export type RoomOp =
   // element fields: a whole-element `el` update replaced a peer's copy with the
   // sender's snapshot, so two people pressing the same done check lost a mark.
   | { kind: 'el-delta'; tabId: string; elementId: string; delta: ElementDelta }
+  // ONE change to a Dashboard's layout, by row and slot id (docs/specs/012-collaboration/collab-race-hardening.md
+  // "A Dashboard's layout travels as deltas"): the `el-delta` reasoning for the one tab field two Editors change at
+  // once. The whole layout used to ride `tab-meta`, so each receiver took the other's layout and lost its own change.
+  | { kind: 'dashboard-delta'; tabId: string; patch: DashboardPatch }
   | {
       kind: 'vote';
       tabId: string;
@@ -356,6 +377,9 @@ export type RoomOp =
   // Sheet writes the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"). Worker-originated
   // through an ordered /broadcast; a session scoped to one tab hears only its tab's.
   | SheetsRoomOp
+  // A card comment thread's write (docs/specs/026-plan/items.md "Comments"), from any plan the thread is on.
+  // Worker-originated through an ordered /broadcast; a session scoped to one tab hears it without its threads.
+  | CardThreadsRoomOp
   // The project went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.
@@ -384,7 +408,9 @@ export type RoomIncoming =
     }
   | CursorMessage
   | FormatMessage
-  | GrantRenewMessage;
+  | GrantRenewMessage
+  // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
+  | OpRefusedMessage;
 
 // The WebSocket close code the realtime room ends a session with when an access
 // change narrows who may be in it without revoking a link (docs/specs/015-api/api.md

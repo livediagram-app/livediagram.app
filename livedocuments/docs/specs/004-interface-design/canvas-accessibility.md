@@ -18,6 +18,10 @@ delete, undo, label edit via Space) that already work on a selection.
 - **While focus is on / inside the canvas, Tab selects the next element and
   Shift+Tab the previous**, in render (z) order. The selection scrolls into
   view via the existing viewport `scrollIntoView` pan/zoom helper.
+- **The Menu key or Shift+F10 opens the selected element's menu**, beside it as a right-click does, for every role
+  (an Editor's full menu, a Participant's or Viewer's short one). livedocuments has no selection toolbar whose More
+  button Tab could reach, so this is the keyboard's way in; Escape closes the menu and focus returns to the canvas
+  (`apps/editor/hooks/canvas/useKeyboardElementMenu.ts`).
 - **No wrap, no trap:** Tab past the last element (or Shift+Tab before the
   first) falls through to the browser default, so keyboard focus can always
   leave the canvas. Escape keeps its existing behaviour (clear selection /
@@ -31,6 +35,9 @@ delete, undo, label edit via Space) that already work on a selection.
   is skipped. It works from anywhere on the page but a modal dialog (whose focus trap keeps it) and with focus in a
   text field, where F6 still moves on: typing never uses it. Each region is marked `data-region` with its name, and
   the tab order inside a region is unchanged. (`../packages/workbench/src/hooks/ui/useRegionCycle.ts`.)
+- **Panels are named regions.** Every floating panel and the popovers hung from the bottom controls (Layers, the
+  Explorer, the Map and the rest) is a `region` named by its title, so a screen reader moving into one hears which
+  panel it is in rather than a nameless group of controls.
 - Traversal is **selection**: the existing selection ring is the focus
   indicator (one concept, not two). Works in read-only views (it's
   navigation); the guarded verbs (nudge / delete / …) stay edit-only as
@@ -48,7 +55,7 @@ delete, undo, label edit via Space) that already work on a selection.
   shared naming helpers in `lib/element-names.ts` (`kindLabel` /
   `describeOne`): `Square "Login"`, `Sticky note`, `Arrow
 "yes"`. Arrows carry the same on their SVG group.
-- An element whose face holds controls of its own is a named `role="group"` instead (`elementRole`): checklists, an embed, a link card, and an image still waiting for its picture. An img's children are
+- An element whose face holds controls of its own is a named `role="group"` instead (`elementRole`): checklists, a tab window (its Show a Tab and Open), a table (its cells edit in place, and selected it shows its column and row options), an embed, a link card, an image still waiting for its picture, and any element showing indicator buttons (its link, note, action or comments, [Element indicators](../008-canvas/element-indicators.md)). An img's children are
   presentational, so as pictures their tick and Ask buttons could not be reached with a screen reader.
 
 ## Live announcements

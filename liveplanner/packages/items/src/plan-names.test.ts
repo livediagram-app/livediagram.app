@@ -189,6 +189,25 @@ describe('resolveFields', () => {
     });
   });
 
+  it('refuses setting a Comments or Votes field, naming the write that does (item-types.md "Comments and Votes fields")', () => {
+    const review: ItemTypeDef = {
+      ...bug,
+      fields: ['title', 'status', 'f-qa', 'f-pv'],
+      custom: [
+        { id: 'f-qa', label: 'QA Notes', kind: 'comments' },
+        { id: 'f-pv', label: 'Priority Vote', kind: 'votes' },
+      ],
+    };
+    expect(resolveFields({ 'QA Notes': 'hi' }, review, naming)).toMatchObject({
+      code: 'value_invalid',
+      message: 'QA Notes is a Comments field: start a thread in it with change_threads.',
+    });
+    expect(resolveFields({ 'Priority Vote': 3 }, review, naming)).toMatchObject({
+      code: 'value_invalid',
+      message: 'Priority Vote is a Votes field: votes come from a session vote.',
+    });
+  });
+
   it('refuses an unknown field, option, status or item', () => {
     expect(resolveFields({ Effort: 3 }, bug, naming)).toMatchObject({
       ok: false,

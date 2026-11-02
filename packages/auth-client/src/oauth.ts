@@ -4,15 +4,19 @@
 // full-page visit to liveworkspace.app, never from a fetch or an iframe inside another app
 // (Safari blocks those third-party cookies outright).
 //
-// exchangeCode, refreshTokens and closeAccount send the client secret, so they run in the app's
+// exchangeCode and refreshTokens (and close-account.ts) send the client secret, so they run in the app's
 // Worker. authorizeUrl and createPkcePair are safe anywhere.
 
 const AUTH_PATH = '/api/auth/oauth2';
 
 // A route of the accounts service, kept under any path its URL carries (a stand-in served at /e2e/accounts, say):
 // `new URL('/api/…', base)` would drop that path.
-const accountsRoute = (accountsUrl: string, route: string): URL =>
-  new URL(`${accountsUrl.replace(/\/+$/, '')}${route}`);
+// Trailing slashes dropped by a scan, not /\/+$/, which is quadratic on a long run of slashes.
+export const accountsRoute = (accountsUrl: string, route: string): URL => {
+  let end = accountsUrl.length;
+  while (end > 0 && accountsUrl[end - 1] === '/') end--;
+  return new URL(`${accountsUrl.slice(0, end)}${route}`);
+};
 
 export interface PkcePair {
   verifier: string;
@@ -180,28 +184,73 @@ export function refreshTokens(
   );
 }
 
-// Closes the person's liveworkspace account, everywhere, when they delete their account in the
-// app. Sends the client secret, so it runs in the app's Worker, with the access token the person
-// signed in to the app with. Resolves once the account is gone.
-export async function closeAccount(
+// Signing out everywhere (liveworkspace/docs/specs/003-accounts/accounts.md "Signing out"). How long an app's sign-out
+// waits on the accounts site before it signs out of the app alone.
+const END_SESSION_TIMEOUT_MS = 5_000;
+
+// Ends the liveworkspace session the refresh token came from, and every app's session from it. Sends the client
+// secret, so it runs in the app's Worker. Resolves the ticket the browser's hop carries, or null when anything failed:
+// the app then signs out of itself alone.
+export async function endAccountsSession(
   credentials: ClientCredentials,
-  accessToken: string,
+  refreshToken: string,
   fetchImpl: typeof fetch = fetch,
-): Promise<void> {
-  const response = await fetchImpl(
-    accountsRoute(credentials.accountsUrl, '/api/auth/delete-account'),
-    {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        accept: 'application/json',
-        authorization: basicAuthorization(credentials),
+): Promise<string | null> {
+  try {
+    const response = await fetchImpl(
+      accountsRoute(credentials.accountsUrl, '/api/auth/end-session'),
+      {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          accept: 'application/json',
+          authorization: basicAuthorization(credentials),
+        },
+        body: JSON.stringify({ token: refreshToken }),
+        signal: AbortSignal.timeout(END_SESSION_TIMEOUT_MS),
       },
-      body: JSON.stringify({ token: accessToken }),
-    },
-  );
-  if (!response.ok) {
-    const detail = await response.text().catch(() => '');
-    throw new Error(`closing the account failed (${response.status}): ${detail.slice(0, 200)}`);
+    );
+    if (!response.ok) return null;
+    const body = (await response.json()) as { ticket?: unknown } | null;
+    return typeof body?.ticket === 'string' && body.ticket ? body.ticket : null;
+  } catch {
+    return null;
   }
+}
+
+export interface EndSessionUrlOptions {
+  accountsUrl: string;
+  clientId: string;
+  // Where the browser lands afterwards: an address on the origin of one of the client's registered redirect URIs.
+  postLogoutRedirectUri: string;
+  ticket: string;
+}
+
+// The browser's hop through the accounts site, which clears its session cookie there and comes back to the app.
+export function endSessionUrl(options: EndSessionUrlOptions): string {
+  const url = accountsRoute(options.accountsUrl, '/api/auth/end-session');
+  url.search = new URLSearchParams({
+    client_id: options.clientId,
+    post_logout_redirect_uri: options.postLogoutRedirectUri,
+    ticket: options.ticket,
+  }).toString();
+  return url.toString();
+}
+
+// Both steps of an app's sign-out: the session ended from the Worker, then the hop for the page to take; null when
+// there is nothing to hop for (no refresh token, or the accounts site didn't answer).
+export async function signOutEverywhere(
+  credentials: ClientCredentials,
+  input: { refreshToken: string | null; postLogoutRedirectUri: string },
+  fetchImpl: typeof fetch = fetch,
+): Promise<string | null> {
+  if (!input.refreshToken) return null;
+  const ticket = await endAccountsSession(credentials, input.refreshToken, fetchImpl);
+  if (!ticket) return null;
+  return endSessionUrl({
+    accountsUrl: credentials.accountsUrl,
+    clientId: credentials.clientId,
+    postLogoutRedirectUri: input.postLogoutRedirectUri,
+    ticket,
+  });
 }

@@ -44,7 +44,7 @@ describe('filterGallery', () => {
 
   it('matches the description and the category name', () => {
     expect(filterGallery(all, 'offsite plan').map((t) => t.kind)).toContain('mindmap');
-    expect(filterGallery(all, 'technical').map((t) => t.kind)).toContain('sequence-diagram');
+    expect(filterGallery(all, 'software').map((t) => t.kind)).toContain('sequence-diagram');
   });
 
   it('needs every word to hit somewhere', () => {
@@ -58,7 +58,7 @@ describe('filterGallery', () => {
 describe('groupGallery', () => {
   it('keeps catalogue category order and drops emptied categories', () => {
     const groups = groupGallery(filterGallery(galleryTemplates(), 'sailboat'));
-    expect(groups.map((g) => g.label)).toEqual(['Workshops']);
+    expect(groups.map((g) => g.label)).toEqual(['Retrospectives']);
     expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['sailboat']);
   });
 
@@ -73,7 +73,7 @@ describe('groupGallery', () => {
     const browse = groupGallery(galleryTemplates());
     const holding = (kind: string) =>
       browse.filter((g) => g.templates.some((t) => t.kind === kind)).map((g) => g.id);
-    expect(holding('roadmap')).toEqual(['strategy', 'timelines']);
+    expect(holding('roadmap')).toEqual(['planning', 'strategy']);
   });
 
   it('finds a template by its search words, as the editor does', () => {

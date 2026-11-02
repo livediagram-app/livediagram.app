@@ -31,6 +31,8 @@ import {
   type ThisBrowserConversion,
   type ThisBrowserItem,
 } from '../this-browser';
+import { DAY_MONTH, MEDIUM_DATE_TIME } from '@liveworkspace/ui/date-format';
+import { relativeSince, useNow } from '../time';
 import { LIST_CARD, MUTED } from '../ui/classes';
 import { OpenIcon, SyncIcon, TrashIcon } from '../ui/icons';
 import { MenuActionRow, MenuGroupSeparator, MenuHeader, PortalMenu } from '../ui/Menu';
@@ -68,6 +70,9 @@ export type ThisBrowserHost = {
 };
 
 export { THIS_BROWSER_COPY };
+
+/** What This Browser says with nothing kept, on the page and in the panel. */
+export const THIS_BROWSER_EMPTY = 'Nothing is kept only in this browser.';
 export { LocalPreview };
 
 // A host's verb that moved an item (Sync, Take Offline) without a page load: the lists load again once it settles,
@@ -183,7 +188,18 @@ export function ThisBrowserPill({ inLink = false }: { inLink?: boolean }) {
 const SYNC_LINK =
   'mr-3 shrink-0 rounded-md px-2 py-1 text-xs font-medium text-brand-700 hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-brand-300 dark:hover:bg-slate-800';
 
-const DATE: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+/** "Changed 3 hours ago", its full date and time in the reader's locale on hover: This Browser's rows, on the page
+ *  and in the panel alike. */
+export function ChangedAgo({ at }: { at: number }) {
+  const now = useNow();
+  // A stored date past what a Date holds has no full date to give.
+  if (Number.isNaN(new Date(at).getTime())) return <span>Changed</span>;
+  return (
+    <time dateTime={new Date(at).toISOString()} title={MEDIUM_DATE_TIME.format(at)}>
+      Changed {relativeSince(at, now || Date.now())}
+    </time>
+  );
+}
 
 function LocalRow({
   item,
@@ -282,16 +298,11 @@ export function ThisBrowserPane({ onOpenNav }: { onOpenNav?: () => void }) {
           onClear={() => navigate(withLens(view, ''), { replace: true })}
         />
       ) : !host || items.length === 0 ? (
-        <p className={`text-sm ${MUTED}`}>Nothing is kept only in this browser.</p>
+        <p className={`text-sm ${MUTED}`}>{THIS_BROWSER_EMPTY}</p>
       ) : (
         <ul className={`${LIST_CARD} divide-y divide-slate-100 dark:divide-slate-700/60`}>
           {items.map((item) => (
-            <LocalRow
-              key={item.id}
-              item={item}
-              sync
-              detail={`Changed ${new Date(item.updatedAt).toLocaleDateString(undefined, DATE)}`}
-            />
+            <LocalRow key={item.id} item={item} sync detail={<ChangedAgo at={item.updatedAt} />} />
           ))}
         </ul>
       )}
@@ -348,10 +359,7 @@ export function ThisBrowserTrashGroup() {
           <LocalRow
             key={item.id}
             item={item}
-            detail={`Deleted ${new Date(item.trashedAt!).toLocaleDateString(undefined, {
-              day: 'numeric',
-              month: 'short',
-            })} · ${daysLeftLabel(item.trashedAt!, now)}`}
+            detail={`Deleted ${DAY_MONTH.format(item.trashedAt!)} · ${daysLeftLabel(item.trashedAt!, now)}`}
           />
         ))}
       </ul>

@@ -8,6 +8,7 @@ import {
   readDashboardCardStyle,
   type DashboardCardStyle,
 } from './dashboard-card-style';
+import { isNamedSlotType, readSlotName } from './slot-name';
 
 export const DASHBOARD_ROWS_MAX = 12;
 export const DASHBOARD_SLOTS_MAX = 4;
@@ -28,7 +29,8 @@ export type DashboardContent =
   // `of`: which it is, so a slot whose tab was deleted can still say what was lost (a Board when absent).
   | { type: 'tab'; tabId: string; of?: DashboardTabOf }
   // An element on the dashboard tab: a plan view (visualisation or metric) or a chart from a Sheet.
-  | { type: 'element'; elementId: string }
+  // `name`: the slot's own name in place of the view's generated heading (slot-name.ts).
+  | { type: 'element'; elementId: string; name?: string }
   | { type: 'note'; title: string; text: string; style?: DashboardCardStyle }
   // A section's title: a big heading over a line or two of description, drawn bare on the page.
   | { type: 'title'; title: string; text: string; style?: DashboardCardStyle }
@@ -97,12 +99,19 @@ export function newDashboard(id: IdMaker): DashboardLayout {
   return { rows: [newRow(id), newRow(id)] };
 }
 
-// A stored slot's content, a Utility keeping its style (dashboard-card-style.ts).
+// A stored slot's content, a Utility keeping its style (dashboard-card-style.ts), a named kind its name (slot-name.ts).
 function readContent(v: unknown): DashboardContent | undefined {
-  const content = readBareContent(v);
+  const content = readNamedContent(v);
   if (!content || !isDashboardStyledType(content.type)) return content;
   const style = readDashboardCardStyle((v as { style?: unknown }).style, content.type);
   return style ? ({ ...content, style } as DashboardContent) : content;
+}
+
+function readNamedContent(v: unknown): DashboardContent | undefined {
+  const content = readBareContent(v);
+  if (!content || !isNamedSlotType(content.type)) return content;
+  const name = readSlotName((v as { name?: unknown }).name);
+  return name ? ({ ...content, name } as DashboardContent) : content;
 }
 
 function readBareContent(v: unknown): DashboardContent | undefined {
@@ -529,7 +538,7 @@ function remappedContent(
 ): DashboardContent {
   if (content.type === 'element') {
     const next = ids.get(content.elementId);
-    return next && next !== content.elementId ? { type: 'element', elementId: next } : content;
+    return next && next !== content.elementId ? { ...content, elementId: next } : content;
   }
   if (content.type === 'sheet-metric') {
     const next = sheetIds.get(content.sheetId);

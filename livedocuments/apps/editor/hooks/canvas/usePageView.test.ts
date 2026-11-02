@@ -23,6 +23,8 @@ describe('usePageView', () => {
   it('names the surface of each element on a filled page, with the theme in both halves', () => {
     const view = renderHook(() => usePageView(words, filled, 'steel')).result.current!;
     expect(view.surfaces.get('w')).toBe('light');
+    // And the page's tone, which its words are read against.
+    expect(view.tones?.get('w')).toBe('#ffffff');
     expect(view.maps.light.size).toBeGreaterThan(0);
     expect(view.maps.dark.size).toBeGreaterThan(0);
   });

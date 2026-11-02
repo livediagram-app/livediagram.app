@@ -174,6 +174,20 @@ describe('the catalogue boards leave', () => {
     expect(catalogueWithBoardTypes(hiring, [board(['role'])])).toBeNull();
   });
 
+  // docs/specs/026-plan/item-types.md "The statuses a type uses": a brought type starts with its boards' statuses.
+  it('gives each brought type only the statuses of the boards that bring it', () => {
+    const triage = preset('bug-triage');
+    const kept = { version: 1, types: [{ ...ITEM_TYPES[1], statuses: ['todo'] }] };
+    const next = catalogueWithBoardTypes(kept, [triage, preset('roadmap')])!;
+    const statusesOf = (id: string) => next.types.find((t) => t.id === id)?.statuses;
+    expect(statusesOf('bug')).toEqual(presetSetup('bug-triage').columns.map((c) => c.status));
+    expect(statusesOf('project')).toEqual(presetSetup('roadmap').columns.map((c) => c.status));
+    // The type the project had is left as it was; a type only a Gantt chart brings has no list yet.
+    expect(statusesOf('task')).toEqual(['todo']);
+    const gantt = { type: 'shape', shape: 'plan-view', planView: { view: 'gantt' } };
+    expect(catalogueWithBoardTypes(null, [gantt])?.types[0]!.statuses).toBeUndefined();
+  });
+
   it('never grows a catalogue past its cap', () => {
     const full = {
       version: 1,

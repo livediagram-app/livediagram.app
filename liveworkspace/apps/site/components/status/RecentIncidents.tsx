@@ -2,6 +2,7 @@ import { BrandMark, lucideGlyph } from '@livediagram/ui';
 import { lucideCircleCheck } from '@liveworkspace/icons/lucide';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
 import { type ServiceGroup, STATE_OF_LETTER, type StatusHistory } from '@liveworkspace/status';
+import { dateFormat } from '@liveworkspace/ui/date-format';
 import { useState } from 'react';
 import { AppMark } from '@/components/landing/AppLogo';
 import { listedApps } from '@/lib/apps';
@@ -17,7 +18,8 @@ const ERROR_WORDS: Record<string, string> = {
   not_json: 'Answered with a page, not the service',
 };
 
-const WHEN = new Intl.DateTimeFormat('en-GB', {
+// In the reader's locale, made once (@liveworkspace/ui/date-format).
+const WHEN = dateFormat({
   weekday: 'short',
   day: 'numeric',
   month: 'short',

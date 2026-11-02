@@ -1,5 +1,5 @@
-// Home's reads in one request: Recent's first page (with Most Used) can also carry My Work's count (`mine`, the
-// hero's pill) and whether the person can open anything at all (`any`, the first run), each the same answer the
+// Home's reads in one request: Recent's first page (with Most Used) can also carry the count of every space the
+// person is in (`mine`, the hero's pill: My Work and each team) and whether the person can open anything at all (`any`, the first run), each the same answer the
 // list it stands for would give, counted in SQL rather than sent, and bounded however much the index holds.
 import type { Item, MineCount } from '@liveworkspace/index-client';
 import { LIST_LIMIT_MAX } from '@liveworkspace/index-client';
@@ -16,9 +16,12 @@ const list = async (auth: string, query: string) =>
   body<Page>(await call(`/items?${query}`, { auth }));
 
 describe("Home's reads beside Recent", () => {
-  it('count My Work as its first page would, in the app asked, and say whether anything opens', async () => {
+  it('count every space as its first page would, in the app asked, and say whether anything opens', async () => {
     const ada = await person('user_hr_a', { teams: [{ id: 'team1' }] });
     const eve = await person('user_hr_e');
+    const bob = await person('user_hr_bob', { teams: [{ id: 'team1' }] });
+    await makeItem(bob.auth, { title: "Bob's team plan", teamId: 'team1' });
+    await makeItem(bob.auth, { title: "Bob's own" });
     await makeItem(ada.auth, { title: 'Mine 1' });
     await makeItem(ada.auth, { title: 'Mine 2' });
     await makeItem(ada.auth, { title: 'Canvas', app: 'livediagram' });
@@ -27,14 +30,15 @@ describe("Home's reads beside Recent", () => {
     await call(`/items/${gone.id}`, { method: 'DELETE', auth: ada.auth });
 
     const home = await list(ada.auth, 'view=recent&limit=8&used=4&mine=200&any=1&app=liveplanner');
-    const myWork = await list(ada.auth, 'view=all&team=personal&limit=200&app=liveplanner');
-    expect(home.mine).toEqual({ count: myWork.items.length, more: myWork.nextCursor !== null });
-    expect(home.mine).toEqual({ count: 2, more: false });
+    // My Work and the team's library, each item once; not Bob's own.
+    const spaces = await list(ada.auth, 'view=all&limit=200&app=liveplanner');
+    expect(home.mine).toEqual({ count: spaces.items.length, more: spaces.nextCursor !== null });
+    expect(home.mine).toEqual({ count: 4, more: false });
     expect(home.any).toBe(true);
     // A cap it passes says so, as a full page does.
     expect((await list(ada.auth, 'view=recent&mine=1')).mine).toEqual({ count: 1, more: true });
     // Every app: the canvas counts too.
-    expect((await list(ada.auth, 'view=recent&mine=200')).mine).toEqual({ count: 3, more: false });
+    expect((await list(ada.auth, 'view=recent&mine=200')).mine).toEqual({ count: 5, more: false });
 
     // Eve has nothing of her own; a link she opened is still something she can open.
     expect(await list(eve.auth, 'view=recent&mine=200&any=1')).toMatchObject({

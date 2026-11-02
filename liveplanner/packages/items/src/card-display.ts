@@ -1,7 +1,6 @@
 // What a card type's cards show at each card size, and where (docs/specs/026-plan/item-types.md "Card display"):
-// each size draws its fields in slots (Minimal before and after its title; Compact beside and below it, and at
-// the bottom right; Detailed a
-// header, a header end, under the title, a footer and the footer's end, at the bottom right), each slot an ordered list of fields. A type's own layout for a
+// each size draws its fields in slots (Minimal before and after its title; Detailed a header, a header end, under
+// the title, a footer and the footer's end, at the bottom right), each slot an ordered list of fields. A type's own layout for a
 // size, else its default: a built-in type's own field set, by id, or the generic one, each placed where a board drew
 // it before layouts existed. A board has no say over the fields: the type's layout is what a card shows.
 //
@@ -16,15 +15,19 @@ import {
   type CustomCardField,
 } from './board';
 import type { ItemTypeDef } from './item-types';
+import { STAMP_FIELDS, STAMP_FIELD_LABELS } from './card-stamps';
 
-export type CardSlot = 'lead' | 'trail' | 'row' | 'head' | 'headEnd' | 'body' | 'foot' | 'footEnd';
+export type CardSlot = 'lead' | 'trail' | 'head' | 'headEnd' | 'body' | 'foot' | 'footEnd';
 export type CardLayout = Partial<Record<CardSlot, readonly CardField[]>>;
 export type CardDisplay = Partial<Record<CardSize, CardLayout>>;
+
+// The card size there is no more: a stored or sent layout for it is dropped, never refused
+// (docs/specs/026-plan/item-types.md "Card display").
+export const RETIRED_CARD_SIZE = 'compact';
 
 // Each size's slots, in reading order.
 export const CARD_SLOTS: Readonly<Record<CardSize, readonly CardSlot[]>> = {
   minimal: ['lead', 'trail'],
-  compact: ['lead', 'row', 'trail'],
   detailed: ['head', 'headEnd', 'body', 'foot', 'footEnd'],
 };
 
@@ -42,11 +45,18 @@ export const CARD_FIELD_LABELS: Readonly<Record<Exclude<CardField, CustomCardFie
   checklist: 'Checklist',
   comments: 'Comments',
   description: 'Description',
+  attachments: 'Attachments',
+  cover: 'Cover Image',
+  age: 'Age',
+  ...STAMP_FIELD_LABELS,
 };
+
+// The card fields filled in automatically, offered on every type (docs/specs/026-plan/item-types.md "Card display"):
+// Age and the card's stamps. The Display lists them apart, after the fields a person fills in.
+export const AUTOMATIC_CARD_FIELDS: readonly CardField[] = ['age', ...STAMP_FIELDS];
 
 export const CARD_SLOT_LABELS: Readonly<Record<CardSize, Partial<Record<CardSlot, string>>>> = {
   minimal: { lead: 'Before the Title', trail: 'After the Title' },
-  compact: { lead: 'Beside the Title', row: 'Below the Title', trail: 'Bottom Right' },
   detailed: {
     head: 'Header',
     headEnd: 'Header End',
@@ -59,17 +69,12 @@ export const CARD_SLOT_LABELS: Readonly<Record<CardSize, Partial<Record<CardSlot
 // Where a board drew each field before layouts existed, in its order: a field's default slot and place.
 const DRAWN: Readonly<Record<CardSize, Partial<Record<CardSlot, readonly CardField[]>>>> = {
   minimal: { lead: ['key'], trail: ['priority', 'due', 'assignee'] },
-  compact: {
-    lead: ['type', 'key'],
-    row: ['priority', 'start', 'due', 'votes', 'comments'],
-    // The assignee sits at the bottom right by default (docs/specs/026-plan/item-types.md "Card display").
-    trail: ['assignee'],
-  },
   detailed: {
-    head: ['type', 'key'],
+    head: ['cover', 'type', 'key'],
     headEnd: ['priority'],
     body: ['parent', 'description', 'labels'],
-    foot: ['start', 'due', 'estimate', 'checklist', 'comments', 'votes'],
+    foot: ['start', 'due', 'estimate', 'checklist', 'attachments', 'comments', 'votes'],
+    // The assignee sits at the bottom right by default (docs/specs/026-plan/item-types.md "Card display").
     footEnd: ['assignee'],
   },
 };
@@ -82,6 +87,8 @@ export function cardDisplayFields(size: CardSize): readonly CardField[] {
 // Whether a field may sit in a slot: any slot of a size that draws it (the person chooses where). A custom field
 // fits any slot of any size.
 export function cardSlotFits(size: CardSize, slot: CardSlot, field: CardField): boolean {
+  // The cover is drawn across the top of the card: it is placed in the Header alone.
+  if (field === 'cover') return size === 'detailed' && slot === 'head';
   return (
     CARD_SLOTS[size].includes(slot) &&
     (isCustomCardField(field) || CARD_SIZE_FIELDS[size].includes(field))
@@ -103,10 +110,13 @@ export function cardLayoutFields(size: CardSize, layout: CardLayout): CardField[
   return CARD_SLOTS[size].flatMap((slot) => [...(layout[slot] ?? [])]);
 }
 
+// A type's Attachments' two card fields (docs/specs/026-plan/item-types.md "Card display"): in every default, drawn
+// only while the type offers Attachments (typeOffersCardField), so adding them to a type shows its cover at once.
+const WITH_ATTACHMENTS: readonly CardField[] = ['cover', 'attachments'];
+
 // The built-in types' default field sets, by id.
 const BUILT_IN_FIELDS: Readonly<Record<string, Partial<Record<CardSize, readonly CardField[]>>>> = {
   project: {
-    compact: ['key', 'type', 'assignee', 'priority', 'start', 'due', 'comments'],
     detailed: [
       'key',
       'type',
@@ -118,10 +128,10 @@ const BUILT_IN_FIELDS: Readonly<Record<string, Partial<Record<CardSize, readonly
       'checklist',
       'comments',
       'description',
+      ...WITH_ATTACHMENTS,
     ],
   },
   task: {
-    compact: ['key', 'type', 'assignee', 'priority', 'due', 'comments'],
     detailed: [
       'key',
       'type',
@@ -134,32 +144,35 @@ const BUILT_IN_FIELDS: Readonly<Record<string, Partial<Record<CardSize, readonly
       'comments',
       'description',
       'parent',
+      ...WITH_ATTACHMENTS,
     ],
   },
   note: {
-    compact: ['type', 'votes', 'comments'],
-    detailed: ['type', 'votes', 'comments', 'description'],
+    detailed: ['type', 'votes', 'comments', 'description', ...WITH_ATTACHMENTS],
   },
   idea: {
-    compact: ['type', 'votes', 'comments'],
-    detailed: ['type', 'labels', 'votes', 'comments', 'description'],
+    detailed: ['type', 'labels', 'votes', 'comments', 'description', ...WITH_ATTACHMENTS],
   },
   action: {
-    compact: ['key', 'type', 'assignee', 'due', 'comments'],
-    detailed: ['key', 'type', 'assignee', 'due', 'checklist', 'comments', 'description'],
+    detailed: [
+      'key',
+      'type',
+      'assignee',
+      'due',
+      'checklist',
+      'comments',
+      'description',
+      ...WITH_ATTACHMENTS,
+    ],
   },
 };
 
 // A type of the person's own starts Minimal with its Number before the title and its Assignee after it (each when
-// the type has it); Compact and Detailed with every field the size draws (less those the type lacks).
+// the type has it); Detailed with every field it draws (less those the type lacks).
 const OWN_TYPE_MINIMAL: readonly CardField[] = ['key', 'assignee'];
 
 function genericFields(size: CardSize): readonly CardField[] {
-  return size === 'minimal'
-    ? OWN_TYPE_MINIMAL
-    : size === 'compact'
-      ? CARD_SIZE_FIELDS.compact
-      : CARD_FIELDS;
+  return size === 'minimal' ? OWN_TYPE_MINIMAL : CARD_FIELDS;
 }
 
 // A size's default layout for a type. A built-in type keeps its own (Minimal: none).
@@ -219,14 +232,20 @@ export function typeCardDisplay(
   return cardLayoutFields(size, typeCardLayout(type, size));
 }
 
-// A field the type can show: one it offers (Number and Type always; the rest when in its fields), a custom field
-// when the type has it.
+// A field the type can show: one it offers (Number, Type, Age and the stamps always; the rest when in its fields), a
+// custom field when the type has it.
 export function typeOffersCardField(
   type: Pick<ItemTypeDef, 'fields' | 'custom'>,
   field: CardField,
 ): boolean {
   if (isCustomCardField(field)) return (type.custom ?? []).some((c) => c.id === field);
-  return field === 'key' || field === 'type' || type.fields.includes(field);
+  if (field === 'cover') return type.fields.includes('attachments');
+  return (
+    field === 'key' ||
+    field === 'type' ||
+    AUTOMATIC_CARD_FIELDS.includes(field) ||
+    type.fields.includes(field)
+  );
 }
 
 // The type's custom fields a size can place, in the type's order.
@@ -243,13 +262,15 @@ export function sameCardLayout(size: CardSize, a: CardLayout, b: CardLayout): bo
 }
 
 // A stored Display as it is kept: each size's slots holding fields that fit there, each field once; a size equal to
-// its default is dropped, and so is an empty Display. Null for anything malformed.
+// its default is dropped, and so is an empty Display. A layout for the retired Compact size is dropped too (its cards
+// draw Detailed, at the Detailed layout). Null for anything malformed.
 export function readCardDisplay(input: unknown, typeId: string): CardDisplay | null | undefined {
   if (input === undefined) return undefined;
   if (typeof input !== 'object' || input === null || Array.isArray(input)) return null;
   const out: Partial<Record<CardSize, CardLayout>> = {};
   for (const [sizeKey, raw] of Object.entries(input)) {
-    if (sizeKey !== 'minimal' && sizeKey !== 'compact' && sizeKey !== 'detailed') return null;
+    if (sizeKey === RETIRED_CARD_SIZE) continue;
+    if (sizeKey !== 'minimal' && sizeKey !== 'detailed') return null;
     const size: CardSize = sizeKey;
     if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) return null;
     const layout: Partial<Record<CardSlot, CardField[]>> = {};

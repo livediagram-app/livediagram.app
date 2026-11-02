@@ -130,6 +130,39 @@ describe('useFocusTrap', () => {
     expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Title' }));
   });
 
+  it('gives focus back to the opener when an autoFocus field took it as the modal opened', () => {
+    function AutoModal({ onClose }: { onClose: () => void }) {
+      const ref = useRef<HTMLDivElement>(null);
+      useFocusTrap(ref);
+      return (
+        <div ref={ref} role="dialog" tabIndex={-1}>
+          <input aria-label="Title" autoFocus />
+          <button type="button" onClick={onClose}>
+            Close
+          </button>
+        </div>
+      );
+    }
+    function AutoPage() {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Edit
+          </button>
+          {open ? <AutoModal onClose={() => setOpen(false)} /> : null}
+        </>
+      );
+    }
+    render(<AutoPage />);
+    const trigger = screen.getByRole('button', { name: 'Edit' });
+    trigger.focus();
+    fireEvent.click(trigger);
+    expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Title' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(document.activeElement).toBe(trigger);
+  });
+
   it('focuses the dialog itself on a touch screen, not its first control', () => {
     stubCoarsePointer();
     render(<Page />);
@@ -151,6 +184,32 @@ describe('useFocusTrap', () => {
     }
     render(<AutoModal />);
     expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'Title' }));
+  });
+
+  it('keeps focus in the dialog when the focused control is swapped out under it', async () => {
+    function Steps() {
+      const ref = useRef<HTMLDivElement>(null);
+      const [step, setStep] = useState<'pick' | 'paste'>('pick');
+      useFocusTrap(ref);
+      return (
+        <div ref={ref} role="dialog" tabIndex={-1}>
+          {step === 'pick' ? (
+            <button type="button" onClick={() => setStep('paste')}>
+              Mermaid
+            </button>
+          ) : (
+            <textarea aria-label="Mermaid to import" />
+          )}
+        </div>
+      );
+    }
+    render(<Steps />);
+    const card = screen.getByRole('button', { name: 'Mermaid' });
+    expect(document.activeElement).toBe(card);
+    fireEvent.click(card);
+    // The card left the page while focused; focus falls back to the dialog, never to <body>.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(document.activeElement).toBe(screen.getByRole('dialog'));
   });
 
   it('focuses the container when asked, and Shift+Tab from it wraps to the last control', () => {

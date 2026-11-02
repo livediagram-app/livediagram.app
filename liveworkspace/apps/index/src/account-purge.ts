@@ -27,6 +27,7 @@ import type { Env } from './env';
 import { badRequest, json, notFound, readObject, unauthorized } from './http';
 import { drainPersonNotices, recordPersonNotices } from './person-notices';
 import { drainTombstones, drainTombstonesSoon } from './purge';
+import { webhookPurgeStatements } from './webhooks/purge';
 
 // What a reference to a closed account becomes. Shaped like neither an account (`user_…`) nor a guest
 // (`guest_…`), so it can never match anyone.
@@ -243,7 +244,12 @@ export async function purgePerson(
   // What each app must hear (person-notices.ts), recorded before the rows that name them are rewritten.
   if (spent(budget)) return { done: false, items: 0, purged: [] };
   budget.calls--;
-  await db.batch(recordPersonNotices(db, person, teams, now));
+  // In the same batch, their webhooks: their own and a closed team's deleted, an outliving team's paused
+  // (webhooks/purge.ts).
+  await db.batch([
+    ...recordPersonNotices(db, person, teams, now),
+    ...webhookPurgeStatements(db, person, teams, ANONYMISED_PERSON, now),
+  ]);
   if (!(await anonymiseTeamWork(db, budget, person, teams))) {
     return { done: false, items: 0, purged: [] };
   }

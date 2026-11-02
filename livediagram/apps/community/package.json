@@ -15,6 +15,8 @@
     "@livediagram/api-schema": "workspace:*",
     "@livediagram/telemetry-client": "workspace:*",
     "@livediagram/ui": "workspace:*",
+    "@liveworkspace/community-site": "workspace:*",
+    "@liveworkspace/community-ui": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/sites": "workspace:^",
     "@liveworkspace/ui": "workspace:*",

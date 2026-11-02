@@ -2,6 +2,7 @@
 // (docs/specs/026-plan/plan-mode.md "The palette", "Templates").
 
 import { statusNamed } from './status-names';
+import { settleDoneColumns } from './done-columns';
 import type { CardField, PlanBoardSetup, PlanColumn } from './board';
 
 // All Cards is always last (docs/specs/026-plan/plan-mode.md "Starting a board").
@@ -64,7 +65,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
         statusColumn('todo', 'To Do'),
         statusColumn('doing', 'In Progress', { wipLimit: 3 }),
         statusColumn('review', 'Review', { wipLimit: 2 }),
-        statusColumn('done', 'Done'),
+        statusColumn('done', 'Done', { done: true }),
       ],
       doneColumnId: 'done',
       swimlaneBy: 'none',
@@ -74,17 +75,16 @@ export const PLAN_BOARD_PRESETS: Readonly<
       hideWriting: false,
     },
   },
-  // A to-do list of Actions (docs/specs/026-plan/plan-board.md "The To-do List board"): To Do and Done, Compact
-  // cards (a dense list of short items) showing who has each and when it is due.
+  // A to-do list of Actions (docs/specs/026-plan/plan-board.md "The To-do List board"): To Do and Done, Detailed
+  // cards showing who has each, when it is due and its checklist.
   todo: {
     label: 'To-do List',
     setup: {
       title: 'To-do list',
-      columns: [statusColumn('todo', 'To Do'), statusColumn('done', 'Done')],
+      columns: [statusColumn('todo', 'To Do'), statusColumn('done', 'Done', { done: true })],
       doneColumnId: 'done',
       swimlaneBy: 'none',
       cardFields: ['assignee', 'due', 'checklist'],
-      cardSize: 'compact',
       widgets: ['progress', 'due'],
       addTypes: ['action'],
       hideWriting: false,
@@ -98,7 +98,7 @@ export const PLAN_BOARD_PRESETS: Readonly<
         statusColumn('sprint-backlog', 'Sprint Backlog'),
         statusColumn('doing', 'In Progress'),
         statusColumn('review', 'In Review'),
-        statusColumn('done', 'Done'),
+        statusColumn('done', 'Done', { done: true }),
       ],
       doneColumnId: 'done',
       swimlaneBy: 'assignee',
@@ -116,8 +116,8 @@ export const PLAN_BOARD_PRESETS: Readonly<
         statusColumn('new', 'New'),
         statusColumn('confirmed', 'Confirmed'),
         statusColumn('fixing', 'Fixing', { wipLimit: 4 }),
-        statusColumn('fixed', 'Fixed'),
-        statusColumn('wont-fix', 'Won’t Fix'),
+        statusColumn('fixed', 'Fixed', { done: true }),
+        statusColumn('wont-fix', 'Won’t Fix', { done: true }),
       ],
       doneColumnId: 'fixed',
       swimlaneBy: 'priority',
@@ -187,7 +187,6 @@ export const PLAN_BOARD_PRESETS: Readonly<
       columns: [statusColumn('all', 'All Cards')],
       swimlaneBy: 'status',
       cardFields: ['key', 'type', 'assignee', 'priority', 'due'],
-      cardSize: 'compact',
       allCards: true,
       widgets: ['count', 'types', 'filter'],
       hideWriting: false,
@@ -201,7 +200,6 @@ export const PLAN_BOARD_PRESETS: Readonly<
       columns: [statusColumn('archived', 'Archived')],
       swimlaneBy: 'none',
       cardFields: ['key', 'type', 'assignee', 'labels'],
-      cardSize: 'compact',
       archive: true,
       widgets: ['count', 'filter'],
       hideWriting: false,
@@ -246,7 +244,8 @@ export function freshSetup(
   const names = [...existing];
   const suffix = Array.from({ length: 4 }, () => Math.floor(random() * 36).toString(36)).join('');
   const used = new Set<string>();
-  return {
+  // Its done columns flagged (docs/specs/026-plan/plan-board.md "Done columns"), as every board written now is.
+  return settleDoneColumns(setup, {
     ...setup,
     columns: setup.columns.map((c) => {
       const named = statusNamed(c.name, names);
@@ -256,5 +255,5 @@ export function freshSetup(
       }
       return { ...c, status: `${c.status}~${suffix}` };
     }),
-  };
+  });
 }

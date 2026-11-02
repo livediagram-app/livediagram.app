@@ -303,6 +303,61 @@ describe("a design's content lives in its own Durable Object", () => {
     expect(indexCalls).toEqual([]);
   });
 
+  it('records no editor for the create: the making is no edit, so a bulk import counts no use day', async () => {
+    const w = world({ INDEX_KEY: 'index-key' });
+    await createDesign(w, 'A');
+    const design = w.designs.get('A')!;
+    expect(design.db.prepare("SELECT key FROM outbox WHERE kind = 'edit'").all()).toEqual([]);
+    // A re-commit of its own id is the making again, not an edit.
+    await createDesign(w, 'A');
+    expect(design.db.prepare("SELECT key FROM outbox WHERE kind = 'edit'").all()).toEqual([]);
+    indexCalls.length = 0;
+    await design.room.drain();
+    expect(indexCalls).not.toContain('PUT /api/index/app/items/A/events');
+  });
+
+  it("records an API client's create as its use unless it says markUsed: false", async () => {
+    const w = world({ INDEX_KEY: 'index-key' });
+    // The index makes an API client's item and answers its grant.
+    const indexFetch = globalThis.fetch;
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
+      const req = new Request(input, init);
+      if (req.method === 'POST' && new URL(req.url).pathname === '/api/index/items') {
+        indexCalls.push('POST /api/index/items');
+        const { id } = (await req.json()) as { id: string };
+        return Response.json(
+          {
+            item: { id, folderId: null, teamId: null },
+            grant: { grant: grantOf(id), level: 'edit', tabId: null, expiresAt: 9e12 },
+          },
+          { status: 201 },
+        );
+      }
+      return indexFetch(input, init);
+    });
+    const apiCreate = async (id: string, extra: Record<string, unknown> = {}) => {
+      const res = await w.send(
+        'POST',
+        '/api/designs',
+        { id, name: id, tabs: [{ id: `${id}-t1`, name: 'Board', elements: [box('a')] }], ...extra },
+        { 'X-Index-Grant': '' },
+      );
+      expect(res.status).toBe(201);
+      // Told beside the create, never waited on.
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    };
+
+    await apiCreate('used');
+    await apiCreate('batch', { markUsed: false });
+    expect(indexCalls).toContain('POST /api/index/items/used/open');
+    expect(indexCalls).not.toContain('POST /api/index/items/batch/open');
+
+    // An editor's create sends the index's grant and records its own use: nothing recorded here.
+    indexCalls.length = 0;
+    await createDesign(w, 'mine');
+    expect(indexCalls.filter((call) => call.endsWith('/open'))).toEqual([]);
+  });
+
   it('pushes its summary and Inbox rows to the index from its outbox, never on the save itself', async () => {
     const w = world({ INDEX_KEY: 'index-key' });
     await createDesign(w, 'A', [{ id: 't1', name: 'Board', elements: [] }]);
@@ -920,6 +975,76 @@ describe('a tab shared between designs', () => {
     expect(holders(w, 'A')).toEqual([]);
     expect(await sharedTabs(w, 'A')).toEqual({ tabs: 0, designs: 0 });
     expect(labels(w, 'A')).toEqual(['From A']);
+  });
+
+  // docs/specs/009-elements/components.md "Sharing, collaboration and storage": the mains a shared tab's instances use
+  // travel with every body, the later `updatedAt` winning, and the refs follow the body taken in.
+  it('carries the mains its instances use, the later one winning, with their refs', async () => {
+    const w = world({ INDEX_KEY: 'index-key' });
+    const nav = (name: string) => ({
+      id: 'c1',
+      name,
+      width: 100,
+      height: 40,
+      elements: [box('e1', name)],
+      updatedAt: 0,
+    });
+    const instance = (id: string) =>
+      ({
+        id,
+        type: 'shape',
+        shape: 'instance',
+        componentId: 'c1',
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 40,
+      }) as unknown as Element;
+    await createDesign(w, 'A', [{ id: 't1', name: 'Board', elements: [instance('i1')] }]);
+    await createDesign(w, 'B', [{ id: 'tb', name: 'Own', elements: [] }]);
+    expect((await w.send('PUT', '/api/designs/A/components/c1', nav('Nav'))).status).toBe(200);
+    await w.send('PUT', '/api/designs/A/components/unused', { ...nav('Other'), id: 'unused' });
+    expect((await link(w, 'B', 't1', 'A')).status).toBe(200);
+    const b = w.designs.get('B')!;
+    const mainsOf = () =>
+      b.db
+        .prepare('SELECT id, data FROM components ORDER BY id')
+        .all()
+        .map((r) => `${String(r.id)}:${(JSON.parse(String(r.data)) as { name: string }).name}`);
+    expect(mainsOf()).toEqual(['c1:Nav']);
+    expect(b.db.prepare('SELECT tab_id, component_id FROM component_refs').all()).toEqual([
+      { tab_id: 't1', component_id: 'c1' },
+    ]);
+    await drain(w, 'A', 'B');
+    // A later main in A rides the next body; an older one never overwrites B's.
+    await new Promise((r) => setTimeout(r, 2));
+    await w.send('PUT', '/api/designs/A/components/c1', nav('Nav v2'));
+    const putA = await w.send('PUT', '/api/designs/A/tabs/t1', {
+      id: 't1',
+      name: 'Board',
+      elements: [instance('i1'), instance('i2')],
+    });
+    expect(putA.status).toBe(200);
+    await drain(w, 'A');
+    expect(mainsOf()).toEqual(['c1:Nav v2']);
+    await new Promise((r) => setTimeout(r, 2));
+    await w.send('PUT', '/api/designs/B/components/c1', nav('Nav in B'));
+    await w.send('PUT', '/api/designs/A/tabs/t1', {
+      id: 't1',
+      name: 'Board',
+      elements: [instance('i1')],
+    });
+    await drain(w, 'A');
+    expect(mainsOf()).toEqual(['c1:Nav in B']);
+    // A body that no longer uses it drops its ref.
+    await new Promise((r) => setTimeout(r, 2));
+    await w.send('PUT', '/api/designs/A/tabs/t1', {
+      id: 't1',
+      name: 'Board',
+      elements: [box('a', 'Plain')],
+    });
+    await drain(w, 'A');
+    expect(b.db.prepare('SELECT tab_id FROM component_refs').all()).toEqual([]);
   });
 
   it('grants the holder taking it in the images its sender may serve, and no others', async () => {

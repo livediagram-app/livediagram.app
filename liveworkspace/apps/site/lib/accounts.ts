@@ -64,6 +64,18 @@ export async function call(
   }
 }
 
+// The browser's time zone, sent on the session reads so the accounts Worker can keep the emails that wait for the
+// person's daytime to it (liveworkspace/docs/specs/003-accounts/accounts.md "The send window"). None when the
+// browser won't say.
+export function timeZoneHeader(): Record<string, string> {
+  try {
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return zone ? { 'x-time-zone': zone } : {};
+  } catch {
+    return {};
+  }
+}
+
 // The `url` a sign-in, consent or continue answers with: where the browser goes next.
 export function nextUrl(result: CallResult): string | null {
   return result.ok && typeof result.data.url === 'string' ? result.data.url : null;

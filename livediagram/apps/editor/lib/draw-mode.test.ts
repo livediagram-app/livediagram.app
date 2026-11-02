@@ -3,8 +3,12 @@ import { EMBED_PROVIDERS } from '@livediagram/document';
 import {
   drawBannerMessage,
   drawIntentCursor,
+  dropsOnTap,
+  isFillIntent,
   isHeldPenIntent,
+  isHeldToolIntent,
   isPathIntent,
+  isWhiteboardOnlyIntent,
   opensForTyping,
   type PendingDraw,
 } from './draw-mode';
@@ -28,6 +32,7 @@ const FREEHAND_VARIANTS: Record<FreehandVariant, PendingDraw> = {
 const INTENT_SAMPLES: Record<PendingDraw['type'], PendingDraw[]> = {
   shape: [{ type: 'shape', kind: 'square' }],
   text: [{ type: 'text' }],
+  fill: [{ type: 'fill', fill: '#dbeafe' }],
   sticky: [{ type: 'sticky' }],
   image: [{ type: 'image' }],
   table: [{ type: 'table' }],
@@ -310,6 +315,26 @@ describe('the Highlighter (docs/specs/008-canvas/highlighter.md)', () => {
   });
 });
 
+describe('the Fill tool (docs/specs/023-draw-mode/fill-tool.md)', () => {
+  const fill: PendingDraw = { type: 'fill', fill: '#dbeafe' };
+  it('is held, with no one-shot banner, but is not an inking tool, and lives on a whiteboard', () => {
+    expect(isFillIntent(fill)).toBe(true);
+    expect(isFillIntent({ type: 'path' })).toBe(false);
+    expect(isHeldToolIntent(fill)).toBe(true);
+    expect(isHeldToolIntent({ type: 'path' })).toBe(true);
+    expect(isHeldToolIntent({ type: 'polygon' })).toBe(false);
+    expect(isHeldPenIntent(fill)).toBe(false);
+    expect(isWhiteboardOnlyIntent(fill)).toBe(true);
+  });
+
+  it('has its own bucket cursor and screen-reader copy', () => {
+    expect(drawIntentCursor(fill)).toMatch(/^url\(/);
+    expect(drawIntentCursor(fill)).not.toBe(drawIntentCursor({ type: 'path' }));
+    expect(drawBannerMessage(fill, false)).toBe('Click inside a closed shape to fill it');
+    expect(drawBannerMessage(fill, true)).toBe('Tap inside a closed shape to fill it');
+  });
+});
+
 describe('the Path tool (docs/specs/023-draw-mode/path-tool.md)', () => {
   it('is held like a pen: no one-shot banner, and a finger pans once a pen is seen', () => {
     expect(isHeldPenIntent({ type: 'path' })).toBe(true);
@@ -320,5 +345,37 @@ describe('the Path tool (docs/specs/023-draw-mode/path-tool.md)', () => {
   it('has its own cursor and screen-reader copy', () => {
     expect(drawIntentCursor({ type: 'path' })).toMatch(/^url\(/);
     expect(drawBannerMessage({ type: 'path' }, false)).toBe('Click to place points, drag to curve');
+  });
+});
+
+// Enter drops an armed tile at the middle of the view, as a tap would (docs/specs/008-canvas/canvas-and-palette.md
+// "Adding elements"); a gesture with no tap leaves Enter alone.
+describe('dropsOnTap', () => {
+  it('holds for every box, line and component', () => {
+    const taps: PendingDraw[] = [
+      { type: 'shape', kind: 'circle' },
+      { type: 'text' },
+      { type: 'sticky' },
+      { type: 'image' },
+      { type: 'table' },
+      { type: 'link-card' },
+      { type: 'video' },
+      { type: 'arrow' },
+      { type: 'component', kind: 'banner' },
+    ];
+    for (const intent of taps) expect(dropsOnTap(intent)).toBe(true);
+  });
+
+  it('fails for the pens, the polygon, the Path and Fill tools, and nothing armed', () => {
+    const gestures: PendingDraw[] = [
+      { type: 'freehand' },
+      { type: 'freehand', variant: 'shape-pen' },
+      { type: 'freehand', variant: 'highlighter' },
+      { type: 'polygon' },
+      { type: 'path' },
+      { type: 'fill', fill: '#000' },
+    ];
+    for (const intent of gestures) expect(dropsOnTap(intent)).toBe(false);
+    expect(dropsOnTap(null)).toBe(false);
   });
 });

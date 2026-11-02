@@ -15,7 +15,9 @@ import type { IconPosition, ShapeElement, TextSize } from './index';
  * content estimate (docs/specs/008-canvas/element-indicators.md) so all agree on where the icon is.
  */
 export function inlineIconMetrics(
-  element: { width: number; height: number },
+  // Its `textScale` (a shape a page re-fit scaled, docs/specs/007-editor/pages-mode.md "Sizes") scales a fixed size,
+  // so the glyph, which follows the label, shrinks with the words.
+  element: { width: number; height: number; textScale?: number },
   label: string,
   textSize: TextSize,
 ): { fontSize: number; iconSize: number; elementIconSize: number } {
@@ -23,7 +25,7 @@ export function inlineIconMetrics(
   const fontSize =
     textSize === 'scale'
       ? Math.max(12, Math.min(element.height * 0.26, 26))
-      : labelFontPx(textSize);
+      : labelFontPx(textSize) * (element.textScale ?? 1);
   // Element-proportional size: a fraction of the shorter side, clamped so it's neither a speck nor dominant. The
   // ceiling, and the size itself for an icon with no label.
   const elementIconSize = Math.max(

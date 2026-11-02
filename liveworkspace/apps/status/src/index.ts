@@ -2,18 +2,29 @@
 // an hour from Cloudflare and kept for 90 days. Its API, on liveworkspace.app/api/status, serves the latest run and the
 // history; the page itself is the static site's (liveworkspace/apps/site), at liveworkspace.app/status.
 
-import { under } from '@liveworkspace/index-app/worker-http';
+import { guardRequest } from '@liveworkspace/api-kit/request-failure';
+import { json, under } from '@liveworkspace/index-app/worker-http';
+import { createApiRouteLabel } from '@liveworkspace/telemetry/error-tokens';
 import { STATUS_API_PATH } from '@liveworkspace/status';
 import { handleRead } from './api';
 import type { Env } from './env';
 import { runOnce } from './run';
 
+// The route words a failure is logged under (`Get.Status.History`).
+const routeLabel = createApiRouteLabel(new Set(['status']), new Set(['history']));
+
 const worker = {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const url = new URL(request.url);
-    if (under(url.pathname, STATUS_API_PATH))
-      return handleRead(request, env, ctx, url.pathname.slice(STATUS_API_PATH.length));
-    return new Response('Not found', { status: 404 });
+  // One guard for the whole request (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails").
+  fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    return guardRequest(
+      async () => {
+        const url = new URL(request.url);
+        if (under(url.pathname, STATUS_API_PATH))
+          return handleRead(request, env, ctx, url.pathname.slice(STATUS_API_PATH.length));
+        return new Response('Not found', { status: 404 });
+      },
+      () => ({ route: routeLabel(request.method, request.url), json }),
+    );
   },
 
   async scheduled(event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {

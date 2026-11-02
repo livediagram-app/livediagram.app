@@ -7,11 +7,13 @@ import {
   createDesignTab,
   elementSchemaDoc,
   findDesignsShape,
+  readDesignShape,
   renameDesignShape,
   SERVER_INSTRUCTIONS,
   updateDesignShape,
 } from './schema';
 import { resolveTemplate } from '@livedesign/templates';
+import { changeComponentsShape } from './components-schema';
 
 describe('elementSchemaDoc', () => {
   it('lists element types, the pinned-arrow convention, and the no-colour rule', () => {
@@ -153,5 +155,26 @@ describe('SERVER_INSTRUCTIONS template examples', () => {
     const blanks = [...SERVER_INSTRUCTIONS.matchAll(/"(blank-[a-z-]+)"/g)].map((m) => m[1]!);
     expect(blanks.length).toBeGreaterThan(3);
     for (const kind of blanks) expect(resolveTemplate(kind), kind).not.toBeNull();
+  });
+});
+
+describe('change_components', () => {
+  it('takes make, patch or detach, each bounded', () => {
+    const s = z.object(changeComponentsShape);
+    expect(s.parse({ designId: 'd', make: { elementIds: ['a'] } }).make?.elementIds).toEqual(['a']);
+    expect(() => s.parse({ designId: 'd', make: { elementIds: [] } })).toThrow();
+    expect(s.parse({ designId: 'd', patch: { componentId: 'c', remove: ['x'] } }).patch).toEqual({
+      componentId: 'c',
+      remove: ['x'],
+    });
+    expect(() => s.parse({ designId: 'd', detach: { instance: '' } })).toThrow();
+  });
+
+  it('read_design takes the components view, and the element format names instances', () => {
+    expect(z.object(readDesignShape).parse({ designId: 'd', view: 'components' }).view).toBe(
+      'components',
+    );
+    expect(elementSchemaDoc()).toContain('shape "instance"');
+    expect(updateDesignShape.edits.description).toContain('detach <instance>');
   });
 });

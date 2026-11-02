@@ -185,6 +185,22 @@ describe('the photo keys', () => {
     expect(photoTools.get().tool).toBe('brush');
   });
 
+  it('still act while a hidden menu stays mounted (the header’s site switcher)', () => {
+    // The site switcher keeps its role=menu card in the page, invisible, to open on hover: every photo key was dead.
+    const { view } = photoView();
+    renderHook(() => usePhotoShortcuts(view));
+    const shell = document.createElement('div');
+    shell.style.visibility = 'hidden';
+    const menu = document.createElement('div');
+    menu.setAttribute('role', 'menu');
+    shell.append(menu);
+    document.body.append(shell);
+    press('g');
+    expect(photoTools.get().tool).toBe('gradient');
+    press('Escape');
+    expect(photoTools.get().tool).toBeNull();
+  });
+
   it('leave Escape to a popover or dialog that has the focus', () => {
     const { view } = photoView();
     renderHook(() => usePhotoShortcuts(view));

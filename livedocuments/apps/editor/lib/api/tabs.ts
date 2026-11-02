@@ -401,6 +401,28 @@ export async function apiSetThreadResolved(
   await expectOkVoid(res, `${verb} thread`);
 }
 
+// Add or take back the caller's reaction on a comment (docs/specs/012-collaboration/comment-reactions.md): the
+// path a Participant's reaction takes, since the room relays element deltas from an Editor only. `key` is this
+// browser's collab key, the public id its reactions are recorded under.
+export async function apiReactToComment(
+  ownerId: string,
+  documentId: string,
+  tabId: string,
+  commentId: string,
+  reaction: { emoji: string; on: boolean; key: string },
+  shareCode: string | null = null,
+): Promise<void> {
+  const res = await apiFetch(
+    `${API_BASE}/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/comments/${encodeURIComponent(commentId)}/react`,
+    {
+      method: 'POST',
+      headers: await apiHeaders(ownerId, { share: shareCode, body: true }),
+      body: JSON.stringify(reaction),
+    },
+  );
+  await expectOkVoid(res, 'react to comment');
+}
+
 // Share a tab of `fromDocumentId` into another of the caller's documents (docs/specs/006-document/tab-document-many-to-many.md).
 // After this returns both documents hold the tab, and an edit in either reaches the other. Answers the tab as the
 // target document now holds it, so the caller can show it without a full document refetch.

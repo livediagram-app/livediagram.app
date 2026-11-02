@@ -1,11 +1,19 @@
 'use client';
 
 // The current card's part of the item panel header (docs/specs/026-plan/plan-board.md "The header reads part by
-// part"): its Card Type picker as a bordered pill, and its number as a quiet tag that copies "#12".
+// part"): its Card Type picker as a bordered pill (a plain label with one type to offer), its number as a quiet tag that copies "#12", and the desktop's
+// Maximise / Minimise Card button beside the close button ("Maximised").
 import type { ItemTypeDef } from '@liveplanner/items';
-import { ChevronDownIcon, Tooltip, useCopiedFlash } from '@liveplanner/ui';
+import {
+  ChevronDownIcon,
+  MaximizeIcon,
+  MinimizeIcon,
+  Tooltip,
+  useCopiedFlash,
+} from '@liveplanner/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
+import { hasTypeChoice } from './type-choices';
 
 // How long the number's tooltip says Copied.
 export const KEY_COPIED_MS = 1500;
@@ -20,6 +28,7 @@ export function ItemTypePill({
   // The card's type as drawn (a fallback when its id is not in the catalogue).
   type: ItemTypeDef;
   value: string;
+  // The types it may switch to (typeChoices): its boards' types, its own among them.
   types: readonly ItemTypeDef[];
   canEdit: boolean;
   onType: (typeId: string) => void;
@@ -29,7 +38,9 @@ export function ItemTypePill({
       <PlanTypeGlyph glyph={type.glyph} size={15} />
     </span>
   );
-  if (!canEdit)
+  // One type to offer is no choice: the plain label, as someone who may not edit sees it (plan-board.md "One type
+  // to offer is no choice").
+  if (!canEdit || !hasTypeChoice(types, value))
     return (
       <span className="flex shrink-0 items-center gap-1.5 px-1 text-[13px] font-semibold text-slate-900 dark:text-slate-50">
         {glyph}
@@ -75,9 +86,34 @@ export function ItemKeyTag({ itemKey }: { itemKey: number }) {
             () => undefined,
           );
         }}
-        className="shrink-0 cursor-pointer rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[12px] tabular-nums text-slate-600 transition hover:bg-slate-200 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+        className="relative shrink-0 cursor-pointer rounded-md bg-slate-100 px-1.5 py-0.5 font-mono touch-target-y text-[12px] tabular-nums text-slate-600 transition hover:bg-slate-200 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-100"
       >
         {text}
+      </button>
+    </Tooltip>
+  );
+}
+
+// Maximise Card / Minimise Card (docs/specs/026-plan/plan-board.md "Maximised"): the window-control pair to the
+// close button's left, drawn as the close button is (compact), pressed while the panel is maximised.
+export function ItemMaximiseButton({
+  maximised,
+  onToggle,
+}: {
+  maximised: boolean;
+  onToggle: (on: boolean) => void;
+}) {
+  const label = maximised ? 'Minimise Card' : 'Maximise Card';
+  return (
+    <Tooltip label={label}>
+      <button
+        type="button"
+        aria-label={label}
+        aria-pressed={maximised}
+        onClick={() => onToggle(!maximised)}
+        className="touch-target relative rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+      >
+        {maximised ? <MinimizeIcon size={16} /> : <MaximizeIcon size={16} />}
       </button>
     </Tooltip>
   );

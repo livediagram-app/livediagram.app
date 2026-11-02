@@ -1,6 +1,6 @@
 // The steps every concept graphic's element tour is built from (docs/specs/007-editor/element-tours.md, one section per
 // kind; docs/specs/009-elements/concept-graphics.md): a step on the graphic or one of its rows (with an animation
-// previewed there, never stored), the "+" ring opened on the add it offers, the More button, and the closing card.
+// previewed there, never stored), the "+" ring opened on the add it offers, the element menu, and the closing card.
 // Each kind's own steps and words live in its own file (layer-stack-tour-steps.ts, ...).
 import type { ConceptRow } from '@livedocuments/document';
 import type { TourPreviewAnim } from '@liveworkspace/workbench/lib/concept-tour-preview';
@@ -19,7 +19,6 @@ type Step = TourStepOf<ElementTourApi>;
 export type ConceptTourContext = {
   elementId: string;
   rows: readonly ConceptRow[];
-  hasMore: boolean;
   touch: boolean;
 };
 

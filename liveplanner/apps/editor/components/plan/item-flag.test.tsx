@@ -44,7 +44,7 @@ describe('flags', () => {
   });
 
   it('marks a flagged card at every size', () => {
-    for (const size of ['minimal', 'compact', 'detailed'] as const) {
+    for (const size of ['minimal', 'detailed'] as const) {
       render(
         <PlanCardFace
           item={item({ flagged: true })}

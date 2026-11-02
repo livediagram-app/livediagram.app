@@ -7,6 +7,7 @@ import {
   type TextSize,
 } from '@livedesign/design';
 import { track } from '@/lib/telemetry';
+import { applyTextSizeToEl } from '@/lib/style-presets';
 import { hugsText, hugTextSize } from '@/lib/text-hug';
 import { measureDrawnText } from '@/components/canvas/text-hug-measure';
 
@@ -46,14 +47,9 @@ export function useTextStyleSetters({
     if (ids.size === 0) return;
     commitHugging(ids, (els) =>
       els.map((el) => {
-        if (!ids.has(el.id) || !(isBoxed(el) || el.type === 'arrow')) return el;
-        // A picked size is the size: it replaces a Shift-resize scale.
-        if (el.type === 'text') {
-          const { textScale: _scale, ...rest } = el;
-          void _scale;
-          return { ...rest, textSize: size };
-        }
-        return { ...el, textSize: size };
+        if (!ids.has(el.id)) return el;
+        // A picked size is the size: it replaces a Shift-resize or re-fit scale.
+        return applyTextSizeToEl(el, size);
       }),
     );
     track('Element', 'Changed', 'TextSize');

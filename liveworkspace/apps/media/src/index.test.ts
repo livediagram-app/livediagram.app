@@ -7,7 +7,8 @@ import type {
   MediaUploadResponse,
   MediaUsageResponse,
 } from '@liveworkspace/media';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { unavailableD1 } from '@liveworkspace/api-kit/testing/unavailable-d1';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
 import type { Env } from './env';
 import { testDb, type TestDb } from './test-sqlite-d1';
@@ -65,6 +66,7 @@ type UploadInit = {
   height?: number;
   name?: string;
   sha?: string;
+  document?: string;
 };
 const upload = (bytes: Uint8Array, init: UploadInit = {}, as = asApp) =>
   as(`/app/images?owner=${init.owner ?? 'user_1'}`, {
@@ -76,6 +78,7 @@ const upload = (bytes: Uint8Array, init: UploadInit = {}, as = asApp) =>
       'X-Image-Height': String(init.height ?? 30),
       ...(init.name ? { 'X-Image-Original-Name': encodeURIComponent(init.name) } : {}),
       ...(init.sha ? { 'X-Image-Sha256': init.sha } : {}),
+      ...(init.document ? { 'X-Media-Document': init.document } : {}),
     },
     body: bytes,
   });
@@ -309,6 +312,41 @@ describe('references and usage', () => {
     expect(after.usage[a.image.id]).toEqual([{ app: 'livediagram.app', document: 'd1' }]);
   });
 
+  it('places an image uploaded for a document at once, deduped or new, and claims only a new one', async () => {
+    const first = await uploaded(png(1), { document: 'plan-1' });
+    const again = await uploaded(png(1), { document: 'plan-2' });
+    const shortcut = await uploaded(png(9), { document: 'plan-3', sha: await sha256(png(1)) });
+    const plain = await uploaded(png(2));
+    expect(again.image.id).toBe(first.image.id);
+    expect(shortcut.image.id).toBe(first.image.id);
+    const usage = (await (await asApp('/app/usage?owner=user_1')).json()) as MediaUsageResponse;
+    expect(usage.usage).toEqual({
+      [first.image.id]: [
+        { app: 'livediagram.app', document: 'plan-1' },
+        { app: 'livediagram.app', document: 'plan-2' },
+        { app: 'livediagram.app', document: 'plan-3' },
+      ],
+    });
+    const claims = db.sql
+      .prepare('SELECT id, document FROM images ORDER BY document')
+      .all()
+      .map((r) => [r.id, r.document]);
+    expect(claims).toEqual([
+      [plain.image.id, null],
+      [first.image.id, 'plan-1'],
+    ]);
+    // Only the document's own report takes its reference away.
+    await sync({ documents: [{ document: 'plan-1', images: [] }] });
+    const after = (await (await asApp('/app/usage?owner=user_1')).json()) as MediaUsageResponse;
+    expect(after.usage[first.image.id]).toHaveLength(2);
+  });
+
+  it('refuses a document longer than an id', async () => {
+    const res = await upload(png(1), { document: 'd'.repeat(201) });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({ error: 'invalid_document' });
+  });
+
   it('refuses a malformed sync', async () => {
     expect((await sync({ documents: 'no' })).status).toBe(400);
     expect((await sync({ documents: [{ document: '', images: [] }] })).status).toBe(400);
@@ -334,5 +372,27 @@ describe('a guest signing up', () => {
     });
     const list = (await (await asApp('/app/images?owner=user_1')).json()) as MediaListResponse;
     expect(list.images.map((i) => i.id).sort()).toEqual([shared.image.id, fresh.image.id].sort());
+  });
+});
+
+// A D1 outage (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails").
+describe('when D1 is unavailable', () => {
+  it('answers 503 storage_unavailable, naming the route by its words only', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await call(
+      '/app/images/img_123/bytes',
+      { headers: { Authorization: 'Bearer ld-key', 'X-Media-App': 'livediagram.app' } },
+      { ...db.env, MEDIA_DB: unavailableD1() },
+    );
+
+    expect(res.status).toBe(503);
+    expect(res.headers.get('Retry-After')).toBe('5');
+    expect(await res.json()).toEqual({ error: 'storage_unavailable' });
+    expect(error).toHaveBeenCalledWith(
+      '[d1] unavailable route=Get.Media.App.Images.Bytes',
+      expect.any(Error),
+    );
+    error.mockRestore();
   });
 });

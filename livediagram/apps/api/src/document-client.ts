@@ -17,7 +17,12 @@ import type { Env } from './types';
 
 // What the canvas's action-assigned and mention emails are told (email/notifications.ts): all but the canvas,
 // which the canvas names itself.
-export type ActionNotice = Omit<Parameters<typeof notifyActionAssigned>[1], 'document'>;
+// `email: false` (the dialog's Email box unticked) sends no email; `push` is the assignee's phone notification's link
+// and tag, sent when they can open the canvas (docs/specs/014-identity/phone-notifications.md).
+export type ActionNotice = Omit<Parameters<typeof notifyActionAssigned>[1], 'document'> & {
+  email?: boolean;
+  push?: { url: string; tag: string };
+};
 export type MentionNotice = Omit<Parameters<typeof notifyMentioned>[1], 'document'>;
 
 export type CopySource = { copy: DocumentCopy; community: boolean };
@@ -62,8 +67,8 @@ export type DocumentRoomClient = {
   // A closed account's name off the canvas (document-anonymise.ts): answers the rows changed.
   anonymise(personId: string): Promise<number>;
   // The emails of an action assigned and of a comment's mentions (routes/team-notify-routes.ts, which checked the
-  // people and the canvas): sent from the canvas, which keeps their once-only claims. False for a canvas not
-  // started.
+  // people and the canvas): sent from the canvas, which keeps their once-only claims and knows who is looking (an
+  // action's phone notification skips an assignee already there). False for a canvas not started.
   notifyAction(input: ActionNotice): Promise<boolean>;
   notifyMention(input: MentionNotice): Promise<boolean>;
   // A tab shared between documents (document-room/tab-shares.ts): the tab and its holders for one joining, the

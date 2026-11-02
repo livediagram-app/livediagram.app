@@ -13,6 +13,14 @@
 // once per action. `event-explanation.test.ts` checks every event the code
 // can send gets a real sentence, free of code names and jargon.
 
+import { COMMUNITY_CATEGORIES, COMMUNITY_REPORT_REASONS } from '@livedocuments/api-schema';
+
+// One sentence per Community category, read off the closed list so a new one reads by its own label the day it ships.
+const perCommunityCategory = (action: string, sentence: (label: string) => string) =>
+  Object.fromEntries(
+    COMMUNITY_CATEGORIES.map((c) => [`Community|${action}|${c.type}`, sentence(c.label)]),
+  );
+
 export const EXACT: Readonly<Record<string, string>> = {
   'Action|Changed|Edited':
     "Someone edited the details of an action assigned to an element, without changing who it's assigned to.",
@@ -151,6 +159,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone let a badge or step number go from the element it was attached to.',
   'Element|Changed|TabWindowTab':
     'Someone chose which tab a Tab Window shows, so a slide or page shows that tab live.',
+  'UI|Opened|FindBar': 'Someone opened the Find bar on a tab, with Cmd/Ctrl+F or Cmd/Ctrl+Shift+H.',
+  'UI|Used|FindReplace': 'Someone replaced one match from the Find bar.',
+  'UI|Used|FindReplaceAll':
+    'Someone replaced every match on a tab at once with Replace All, as one undo step.',
   'UI|Used|TabWindowOpen':
     'Someone opened the tab a Tab Window shows, from the window or its menu.',
   'Element|Changed|ConceptRows':
@@ -451,6 +463,35 @@ export const EXACT: Readonly<Record<string, string>> = {
     'An agent or a script checked how a tab is drawn: overlaps, crossings, hidden arrows.',
   'Agent|Opened|Toast':
     "Somebody pressed Show on the toast an agent's change raised, to see what it touched.",
+  ...perCommunityCategory(
+    'Shared',
+    (label) => `Someone shared a document to the Community, under ${label}.`,
+  ),
+  ...perCommunityCategory(
+    'Changed',
+    (label) => `Someone saved changes to their Community post, now listed under ${label}.`,
+  ),
+  'Community|Removed|Post':
+    'Someone took their own post down from the Community, with Remove From Community in the Share dialog.',
+  'Community|Opened|Post': "Someone opened a post's own page in the Community.",
+  'Community|Liked|Post': 'Someone liked a post in the Community.',
+  'Community|Unliked|Post': 'Someone took back a like they had given a post in the Community.',
+  'Community|Copied|Post':
+    'Someone pressed Make a Copy on a Community post, to start their own document from it.',
+  ...Object.fromEntries(
+    COMMUNITY_REPORT_REASONS.map((r) => [
+      `Community|Reported|${r.type}`,
+      `Someone reported a post in the Community, giving ${r.label} as the reason.`,
+    ]),
+  ),
+  'Community|Searched|Query':
+    'Someone searched the Community gallery. Counted once per search, never what they typed.',
+  'Community|Selected|Category': 'Someone filtered the Community gallery to one category.',
+  'Community|Selected|Tag': 'Someone filtered the Community gallery to one tag. Never which tag.',
+  'Community|Selected|Sort':
+    'Someone changed how the Community gallery is sorted: newest, most loved or most copied.',
+  'Community|Selected|Mine':
+    'Someone turned on My Shares, to see the documents they shared to the Community and how they are doing.',
   'Mcp|Used|AddTab': 'An AI tool connected over MCP added a new tab to a document.',
   'Mcp|Used|CreateDocument': 'An AI tool connected over MCP created a new document.',
   'Mcp|Used|FindDocuments':
@@ -521,7 +562,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|ArticleStyle':
     "Someone changed one part of an article's style: a font, the accent, spacing, rules, margins or page numbers.",
   'Element|Added|ArticleImage': "Someone inserted an image at the caret in an article's writing.",
-  'Element|Added|ArticleTable': "Someone inserted a table at the caret in an article's writing.",
+  'Element|Added|ArticleTable':
+    "Someone inserted a table into an article's writing, as a table block of rows and cells.",
+  'Element|Added|ArticleContents':
+    "Someone inserted a table of contents into an article's writing, listing its headings with their pages.",
   'Element|Added|ArticleChart': "Someone inserted a chart at the caret in an article's writing.",
   'Element|Added|ArticleCallout':
     "Someone inserted a callout at the caret in an article's writing.",
@@ -546,6 +590,10 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|ArticleLink': 'Someone added a link to text in an article.',
   'Element|Changed|ArticlePaste':
     'Someone pasted Markdown into an article, and it became headings, lists and formatting.',
+  'Element|Changed|ArticleTableShape':
+    "Someone reshaped a table in an article's writing: a row or column added or removed, the header row, or a column's width.",
+  'Element|Changed|ArticleTablePaste':
+    'Someone pasted a table (from a spreadsheet, a web page or a document) into an article, and it became a table block.',
   'Element|Changed|ArticleZoneWrap':
     "Someone changed how a picture or drawing sits in an article's writing: in line, or wrapped.",
   'Element|Changed|ArticleZoneResized':
@@ -588,6 +636,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone picked a look in Tab Look & Feel, setting the tab's theme, finish, font and canvas pattern at once.",
   'Tab|Changed|SeasonalLook':
     "Someone picked a seasonal look (New Year, Easter, Halloween or Christmas) behind the Seasonal toggle in Tab Style, setting the tab's theme, finish, font and canvas pattern at once.",
+  'Tab|Changed|AllTabs':
+    "Someone pressed Apply to All Tabs in Tab Style, putting the open tab's style on every other tab at once.",
   'Tab|Changed|Finish':
     "Someone changed a tab's finish (Flexible, Professional, Sketch or Marker) from Tab Look & Feel.",
   'Tab|Changed|DefaultTextSize':
@@ -693,6 +743,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Token|Removed|': 'Someone revoked an API token.',
   'UI|Added|PaletteFavourite':
     'Someone added a tile to their Favourites in the shape palette. No longer recorded: the palette opens on Popular, a fixed pick.',
+  'UI|Added|NoteCard':
+    'Someone added a speaker note card to a slide, in the title-bar Notes popover or the Slide Deck panel.',
   'UI|Added|Slide':
     'Someone added a slide to the Slide Deck: either a fresh slide built from the current selection, or a duplicate of an existing one.',
   'UI|Changed|FormatCopies':
@@ -744,7 +796,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|LooksSeasonal':
     "Someone switched the Tab Style popover's Looks to the seasonal looks, with the Seasonal toggle beside the Finish filter.",
   'UI|Changed|SlideNotes':
-    'Someone typed presenter notes for a slide, in the Slide Deck panel. Counted once per slide edited, not per keystroke.',
+    'Someone typed in a speaker note card, in the title-bar Notes popover or the Slide Deck panel. Counted once per card opened, not per keystroke.',
   'UI|Changed|SpotlightDim':
     'Someone changed how dark the area outside the Spotlight is, in the Spotlight panel.',
   'UI|Changed|SpotlightEdge':
@@ -858,6 +910,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|PagesTourSkipped': 'Someone closed the Pages tour before its end.',
   'UI|Moved|PanelDock':
     'Someone dragged a panel, such as the Map or the AI panel, to a different corner of the screen, or let it go free.',
+  'UI|Moved|NoteCard':
+    'Someone moved a speaker note card up or down its slide, by dragging its grip, a Move button or Alt+arrow.',
   'UI|Moved|Slide':
     'Someone dragged a slide to a new position in the Slide Deck. Counted once per completed drag, not per position crossed.',
   'UI|Opened|ActionSignInNudge':
@@ -871,7 +925,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|IconGroup': "Someone opened a category inside the palette's Icons tab.",
   'UI|Opened|PresentationSettings':
     "Someone opened the settings popover on the presentation's on-screen controls, while presenting.",
-  'UI|Opened|PresenterNotes': 'Someone opened the speaker-notes card while presenting.',
+  'UI|Opened|PresenterNotes': 'Someone opened the speaker note cards while presenting.',
   'UI|Opened|Settings': 'Someone opened the Settings dialog.',
   'UI|Opened|SettingsAccessibility':
     'Someone opened the Accessibility category in the Settings dialog.',
@@ -922,6 +976,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "In the Toolbar strip's Search, someone expanded the elements that other editor modes offer.",
   'UI|Opened|PowerUserOffer':
     'The one-time offer of power user mode appeared, after 20 editing days or 50 keyboard shortcuts on one device.',
+  'UI|Used|NoteCardFlip':
+    'Someone flipped to another speaker note card while presenting, with the arrows, a button or a dot.',
   'UI|Used|PowerUserOffer': 'Someone accepted the power user mode offer, switching the mode on.',
   'UI|Declined|PowerUserOffer':
     'Someone said no thanks to the power user mode offer, or closed it.',
@@ -981,6 +1037,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone opened the help article about building their first diagram, from the empty-canvas banner or a search result.',
   'UI|Removed|PaletteFavourite':
     'Someone removed a tile from their Favourites in the shape palette. No longer recorded: Favourites is gone.',
+  'UI|Removed|NoteCard': 'Someone removed a speaker note card from a slide.',
   'UI|Removed|Slide': 'Someone deleted a slide from the Slide Deck.',
   'UI|Searched|IconSearch': "Someone searched within the palette's Icons tab.",
   'UI|Searched|PaletteSearch':
@@ -1143,6 +1200,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned on Plan mode, in Settings > Experimental. No longer recorded: Plan mode is always offered.',
   'UI|Toggled|ReduceMotionOff': 'Someone turned off reduced motion, in Settings > Accessibility.',
   'UI|Toggled|ReduceMotionOn': 'Someone turned on reduced motion, in Settings > Accessibility.',
+  'UI|Toggled|HideCursorsOff':
+    "Someone turned off Hide Participant Cursors, in Settings > Collaborate or the Collaborators window, so other people's cursors show on their screen again.",
+  'UI|Toggled|HideCursorsOn':
+    "Someone turned on Hide Participant Cursors, in Settings > Collaborate or the Collaborators window, so other people's cursors stop showing on their screen.",
   'UI|Toggled|ShortcutsOff': 'Someone turned off keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|ShortcutsOn': 'Someone turned on keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|SkipLocationStepOff':
@@ -1496,6 +1557,18 @@ export const EXACT: Readonly<Record<string, string>> = {
 };
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
+  'Community|Shared':
+    'Someone shared a document to the Community, the public gallery of documents.',
+  'Community|Changed': 'A Community post changed: its owner edited the listing.',
+  'Community|Removed': 'Someone took their own post down from the Community.',
+  'Community|Opened': "Someone opened a post's own page in the Community.",
+  'Community|Liked': 'Someone liked a post in the Community.',
+  'Community|Unliked': 'Someone took back a like they had given a post in the Community.',
+  'Community|Copied': 'Someone made their own copy of a Community post.',
+  'Community|Reported': 'Someone reported a post in the Community.',
+  'Community|Searched': 'Someone searched the Community gallery. Never what they typed.',
+  'Community|Selected':
+    'Someone narrowed or reordered the Community gallery: a category, a tag, a sort order or My Shares.',
   'Timing|Measured':
     'A key moment was timed: a document opening, a tab switch, a save, the live room connecting, or a page loading. Only the range it fell in is recorded, never the exact time.',
   'Element|Created': 'Someone made an element in a way other than placing it from the palette.',

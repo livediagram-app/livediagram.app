@@ -8,6 +8,10 @@ describe('dropImportHint', () => {
     );
     expect(dropImportHint({ name: 'notes.md' })).toContain('a Markdown file');
     expect(dropImportHint({ name: 'Notes.MARKDOWN' })).toContain('a Markdown file');
+    expect(dropImportHint({ name: 'Report.DOCX' })).toBe(
+      'To bring in a Word document, use Import in the tab menu.',
+    );
+    expect(dropImportHint({ name: 'pitch.pptx' })).toContain('a PowerPoint deck');
   });
 
   it('says nothing for any other file', () => {

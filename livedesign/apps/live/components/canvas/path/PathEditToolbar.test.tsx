@@ -12,6 +12,8 @@ function renderBar(over: Partial<PathToolbarView> = {}) {
     onSetType: vi.fn(),
     onDelete: vi.fn(),
     onToggleClosed: vi.fn(),
+    onNextShape: vi.fn(),
+    onSimplify: vi.fn(),
     onDone: vi.fn(),
   };
   render(
@@ -42,7 +44,7 @@ describe('PathEditToolbar', () => {
       ['Mirrored', 'true'],
       ['Aligned', 'false'],
     ]);
-    fireEvent.click(screen.getByRole('radio', { name: 'Aligned' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Aligned Point' }));
     expect(h.onSetType).toHaveBeenCalledWith('aligned');
   });
 
@@ -62,7 +64,9 @@ describe('PathEditToolbar', () => {
 
   it('asks for a node before typing, deleting or opening', () => {
     renderBar({ hasSelection: false, type: null, closed: true, canOpen: false });
-    expect(screen.getByRole<HTMLButtonElement>('radio', { name: 'Corner' }).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('radio', { name: 'Corner Point' }).disabled).toBe(
+      true,
+    );
     expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Delete Point' }).disabled).toBe(
       true,
     );
@@ -76,5 +80,36 @@ describe('PathEditToolbar', () => {
     expect(
       screen.getByRole('toolbar', { name: 'Edit path' }).closest('[data-canvas-toolbar]'),
     ).not.toBeNull();
+  });
+
+  // docs/specs/023-draw-mode/path-tool.md "Combined paths".
+  it('steps a combined path to its next shape and offers no closing', () => {
+    const h = renderBar({ shape: { index: 1, count: 3 }, canClose: false, closed: true });
+    const step = screen.getByRole('button', { name: 'Shape 2 of 3, edit the next shape' });
+    expect(step.textContent).toBe('2/3Shape 2 of 3');
+    fireEvent.click(step);
+    expect(h.onNextShape).toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: 'Open Path' })).toBeNull();
+  });
+
+  it('offers Simplify only for a contour that can be simplified', () => {
+    const h = renderBar({ canSimplify: true });
+    fireEvent.click(screen.getByRole('button', { name: /^Simplify/ }));
+    expect(h.onSimplify).toHaveBeenCalled();
+    cleanup();
+    renderBar();
+    expect(screen.queryByRole('button', { name: /^Simplify/ })).toBeNull();
+    expect(screen.queryByText(/^Shape /)).toBeNull();
+  });
+
+  // packages/ui Tooltip: a tooltip repeats its control's name; the node types and Simplify said more than their
+  // names, so hovering them warned "[tooltip] label is not the accessible name".
+  it('names every button with its tooltip’s words', () => {
+    renderBar({ canSimplify: true });
+    for (const name of ['Corner Point', 'Mirrored Point', 'Aligned Point'])
+      expect(screen.getByRole('radio', { name })).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Simplify: Fewer Points, Smooth Curves' }),
+    ).toBeTruthy();
   });
 });

@@ -4,12 +4,15 @@
 // always there for an editor, only the running ones for a view-role visitor, and the Timer showing
 // its clock while a timer runs.
 
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { TabTimer } from '@livediagram/document';
 import {
   SessionClusterStrip,
   sessionStripTools,
+  sessionToolsForSurface,
   stripCanStart,
   stripSegmentGone,
 } from './SessionClusterStrip';
@@ -185,5 +188,19 @@ describe('stripSegmentGone', () => {
     const at = { tools: workshop, readOnly: true };
     expect(stripSegmentGone({ ...at, segment: 'session-timer', running: all })).toBe(false);
     expect(stripSegmentGone({ ...at, segment: 'session-timer', running: idle })).toBe(true);
+  });
+});
+
+describe('an embed has no Session strip', () => {
+  it('hands the canvas chrome no session tools in an embed, and the tools elsewhere', () => {
+    const tools = { timer: null };
+    expect(sessionToolsForSurface(tools, true)).toBeUndefined();
+    expect(sessionToolsForSurface(tools, false)).toBe(tools);
+  });
+
+  it('is what the editor host feeds the canvas chrome, so the Timer, Vote and Poll buttons cannot come back', () => {
+    const host = readFileSync(join(__dirname, 'EditorCanvasHost.tsx'), 'utf8');
+    expect(host).toContain('sessionTools={sessionToolsForSurface(sessionTools, embedMode)}');
+    expect(host).not.toMatch(/sessionTools=\{sessionTools\}/);
   });
 });

@@ -4,7 +4,9 @@ import {
   DESCRIPTION_RICH_FIELD,
   ITEM_DESCRIPTION_MAX,
   ITEM_TITLE_MAX,
+  momentText,
   ratingScaleOf,
+  readInstant,
   type CustomFieldDef,
   type ItemFields,
   type ItemFieldValue,
@@ -33,10 +35,23 @@ export function readFromForm(v: unknown): { tabId: string; number: number } | nu
 
 // An answer as text, as a card's Description and a Text field keep it.
 export function answerText(q: FormQuestion, value: AnswerValue): string {
+  // A moment in the zone it was given in, named; a range "start to end" (docs/specs/030-forms/forms.md "Question
+  // types").
+  if (q.type === 'datetime' && typeof value === 'string') return momentAnswer(value);
+  if (q.type === 'daterange' && Array.isArray(value))
+    return value.map((end) => (q.withTime ? momentAnswer(end) : end)).join(' to ');
   if (Array.isArray(value)) return value.join(', ');
   if (typeof value === 'boolean') return value ? 'Yes' : 'No';
   if (q.type === 'rating') return `${value} / ${q.scale ?? RATING_SCALE_DEFAULT}`;
   return String(value);
+}
+
+// A moment as a Description or a sheet's row reads it: in its own zone (UTC without one), the zone in brackets.
+function momentAnswer(value: string): string {
+  const at = readInstant(value);
+  if (!at) return value;
+  const zone = at.zone ?? 'UTC';
+  return `${momentText(at.ms, { tz: zone, year: true, weekday: true })} (${zone})`;
 }
 
 // The title a card takes when no question goes to Title: the form's heading and the response number.

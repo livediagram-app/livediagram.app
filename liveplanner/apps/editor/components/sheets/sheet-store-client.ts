@@ -2,7 +2,7 @@
 // lazy sheet chunk: per sheet, the server's confirmed state and this person's pending writes laid over it (what
 // they see), one workbook per tab, writes sent one at a time per sheet in order, undo steps, and the room's ops
 // merged by rev. Writes land on ids, so pending writes rebase cleanly over anyone else's.
-import { subscribeOfflineIds } from '@/lib/offline/offline-store';
+import { isOfflineIdSync, subscribeOfflineIds } from '@/lib/offline/offline-store';
 import type { SheetCreateRequest, SheetsRoomOp, SheetWriteResponse } from '@liveplanner/api-schema';
 import {
   Workbook,
@@ -36,7 +36,7 @@ import {
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { ApiError } from '@/lib/api/core';
-import { errorStatus, isTransientWriteError, sheetWriteRetryMs } from './sheet-write-retry';
+import { errorStatus, isTransientWriteError } from './sheet-write-retry';
 import {
   createSheet,
   deleteSheet,
@@ -45,6 +45,13 @@ import {
   type SheetsScope,
 } from '@/lib/api/sheets';
 import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
+import {
+  PLAN_QUEUE_FULL_MESSAGE,
+  nextSeq,
+  planQueue,
+  type SheetWriteFlags,
+} from '@/lib/offline-queue/plan-queue';
+import { SheetQueueKeeper, type SheetChange, type SheetQueueDeps } from './sheet-store-queue';
 
 // How a write is made: `undoable` false for an undo or redo itself (`undo` true then); `alongside`, a change outside
 // the sheet made with it (Clear Sheet taking the Sheet's charts), undone and redone with it as one step.
@@ -77,9 +84,12 @@ type SheetStoreDeps = {
   };
   // The wait before a write is sent again; injected in tests.
   wait?: (ms: number) => Promise<void>;
-};
+  // The plan's queue of waiting changes and what of this session's may wait in it (docs/specs/007-editor/
+  // offline-changes.md); absent, nothing is kept past the tab, as for an Offline Mode project.
+} & SheetQueueDeps;
 
-type Pending = { wid: string; write: SheetWrite };
+// `seq`: when it was made, which orders it in the queue of waiting changes.
+type Pending = { wid: string; write: SheetWrite; seq: number };
 // One sheet's part of an undo step; a deletion's also keeps the layout it was made on and what it did, to be undone
 // against the sheet as it is at the undo.
 type Inverse = { sheetId: string; write: SheetWrite; before?: SheetLayout; applied?: SheetWrite };
@@ -132,6 +142,7 @@ export class SheetStore {
   private deps: SheetStoreDeps;
   private readonly api: NonNullable<SheetStoreDeps['api']>;
   private readonly wait: (ms: number) => Promise<void>;
+  private readonly waiting: SheetQueueKeeper;
   private readonly entries = new Map<string, Entry>();
   private readonly tabStatus = new Map<string, TabStatus>();
   private readonly workbooks = new Map<string, Workbook>();
@@ -143,6 +154,9 @@ export class SheetStore {
   // Sheets this person deleted with their elements, as they were: Undo puts the element back and its sheet with it
   // (sheet-store.md "Deleting a sheet"). Kept for the session, as undo is.
   private readonly released = new Map<string, SheetJson>();
+  // Writes a reload kept waiting (offline-changes.md "Kept across a reload") for sheets not loaded yet: laid over the
+  // sheet when it loads, as its pending writes.
+  private readonly restored = new Map<string, Pending[]>();
   private cards: CardSource | null = null;
   version = 0;
 
@@ -150,12 +164,17 @@ export class SheetStore {
     this.deps = deps;
     this.api = deps.api ?? { fetchSheets, createSheet, writeSheet, deleteSheet };
     this.wait = deps.wait ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
+    this.waiting = new SheetQueueKeeper(() => this.deps, this.wait);
     // The project synced to the server in place (docs/specs/006-project/offline-mode.md "Syncing in
     // place"): every loaded tab is read again from the server, so the confirmed revisions are its own.
     // The store lives for the session, as does this subscription.
     subscribeOfflineIds((id) => {
       if (id === this.deps.scope.projectId) this.resync();
     });
+    // Back online: every loaded tab is read again, as a rejoin does, so a room connection that outlived the outage
+    // cannot leave a sheet behind (offline-changes.md "Then a refresh"). Waiting sends are cut short on their own.
+    if (typeof window !== 'undefined') window.addEventListener('online', () => this.resync());
+    this.restore();
   }
 
   // The editor's latest identity, toasts and undo (they change across renders; the store lives for the session).
@@ -250,7 +269,8 @@ export class SheetStore {
   private adopt(json: SheetJson): void {
     const confirmed = sheetFromJson(json);
     const entry = this.entries.get(json.id);
-    const pending = entry?.pending ?? [];
+    const pending = entry?.pending ?? this.restored.get(json.id) ?? [];
+    this.restored.delete(json.id);
     this.entries.set(json.id, { confirmed, pending, view: this.rebase(confirmed, pending) });
     this.workbookUpdate(confirmed.tabId, json.id);
   }
@@ -342,7 +362,18 @@ export class SheetStore {
     };
     this.adopt(json);
     this.notify();
-    this.sendCreate(create, opts, 0);
+    const seq = nextSeq();
+    const change: SheetChange = {
+      id: `c${seq.toString(36)}`,
+      seq,
+      store: 'sheets',
+      op: 'create',
+      sheetId: create.id,
+      create,
+    };
+    // Past the queue's bound the new sheet still goes from this tab's memory: its element is already placed.
+    if (this.waiting.waitsNow()) this.waiting.keep(change);
+    this.sendCreate(create, opts, 0, change);
   }
 
   // Sends a create. A sheet on a tab made a moment ago can reach the server before its tab is saved: `tab_not_found`
@@ -351,29 +382,47 @@ export class SheetStore {
     create: SheetCreateRequest & { id: string },
     opts: { onRefused?: (code: string | null) => boolean; onCreated?: () => void },
     attempt: number,
+    change: SheetChange,
   ): void {
-    this.enqueue(create.id, async () => {
-      try {
-        const stored = await this.api.createSheet(this.deps.scope, create, this.by(), {
-          tabMayBeUnsaved: attempt < CREATE_TAB_RETRIES,
-        });
-        this.adopt(stored);
-        this.notify();
-        opts.onCreated?.();
-      } catch (e) {
-        const code = e instanceof ApiError ? e.code : null;
-        if (code === 'tab_not_found' && attempt < CREATE_TAB_RETRIES) {
-          setTimeout(
-            () => this.sendCreate(create, opts, attempt + 1),
-            CREATE_TAB_RETRY_MS * (attempt + 1),
-          );
-          return;
-        }
-        if (!opts.onRefused?.(code)) this.refused(e, create.id);
-        this.drop(create.id);
-        this.notify();
+    this.enqueue(create.id, () => this.createTask(create, opts, attempt, change, 0));
+  }
+
+  // One try at a create; with no answer it waits for the connection (holding the sheet's later writes behind it).
+  private async createTask(
+    create: SheetCreateRequest & { id: string },
+    opts: { onRefused?: (code: string | null) => boolean; onCreated?: () => void },
+    attempt: number,
+    change: SheetChange,
+    retry: number,
+  ): Promise<void> {
+    try {
+      const stored = await this.api.createSheet(this.deps.scope, create, this.by(), {
+        tabMayBeUnsaved: attempt < CREATE_TAB_RETRIES,
+      });
+      this.waiting.forget(change.id);
+      this.adopt(stored);
+      this.notify();
+      opts.onCreated?.();
+    } catch (e) {
+      const code = e instanceof ApiError ? e.code : null;
+      if (code === 'tab_not_found' && attempt < CREATE_TAB_RETRIES) {
+        setTimeout(
+          () => this.sendCreate(create, opts, attempt + 1, change),
+          CREATE_TAB_RETRY_MS * (attempt + 1),
+        );
+        return;
       }
-    });
+      if (isTransientWriteError(e)) {
+        debugLog('[sheets] sheets.create.retrying', { retry, status: errorStatus(e) });
+        this.waiting.keep(change);
+        await this.waiting.pause(retry);
+        return this.createTask(create, opts, attempt, change, retry + 1);
+      }
+      this.waiting.forget(change.id);
+      if (!opts.onRefused?.(code)) this.refused(e, create.id);
+      this.drop(create.id);
+      this.notify();
+    }
   }
 
   // One change to a sheet, as the person made it: applied now, sent in order, undoable unless `undoable` is false
@@ -394,8 +443,17 @@ export class SheetStore {
     const edits = opts.undo ? asMadeEdits : this.withReaders(asMadeEdits);
     const now = Date.now();
     const states = new Map<string, Sheet>();
-    const plan: { sheetId: string; write: SheetWrite; parts: SheetWrite[] }[] = [];
+    const plan: {
+      sheetId: string;
+      write: SheetWrite;
+      parts: SheetWrite[];
+      ids: { wid: string; seq: number }[];
+    }[] = [];
     const checked = !opts.undo && !opts.unchecked && opts.undoable !== false;
+    const flags: SheetWriteFlags = {
+      ...(opts.undo ? { undo: true } : {}),
+      ...(opts.unchecked || (opts.undoable === false && !opts.undo) ? { unchecked: true } : {}),
+    };
     for (const { sheetId, write: asMade } of edits) {
       const entry = this.entries.get(sheetId);
       if (!entry) return 'write_invalid';
@@ -422,10 +480,21 @@ export class SheetStore {
           state = applySheetWrite(state, part, { now, by: this.by() }).sheet;
       }
       states.set(sheetId, state);
-      plan.push({ sheetId, write, parts });
+      plan.push({
+        sheetId,
+        write,
+        parts,
+        ids: parts.map(() => ({ wid: newWid(), seq: nextSeq() })),
+      });
+    }
+    // Offline, or with older changes waiting: every part joins the queue of waiting changes before anything is
+    // applied, or, past its bound, the change is refused whole (offline-changes.md "Bounds").
+    if (this.waiting.waitsNow() && !this.waiting.keepAll(plan, flags)) {
+      this.deps.toast(PLAN_QUEUE_FULL_MESSAGE);
+      return 'write_too_large';
     }
     const inverses: Inverse[] = [];
-    for (const { sheetId, write, parts } of plan) {
+    for (const { sheetId, write, parts, ids } of plan) {
       const entry = this.entries.get(sheetId)!;
       const before = entry.view;
       const result = applySheetWrite(before, write, { now, by: this.by() });
@@ -435,18 +504,11 @@ export class SheetStore {
         // A deletion's undo is worked out again when it is made, against the sheet as it is then.
         ...(undoReadsNow(result.applied) ? { before: before.layout, applied: result.applied } : {}),
       });
-      for (const part of parts) {
-        const wid = newWid();
-        entry.pending.push({ wid, write: part });
-        this.enqueue(sheetId, () =>
-          this.send(sheetId, wid, part, {
-            ...(opts.undo ? { undo: true } : {}),
-            ...(opts.unchecked || (opts.undoable === false && !opts.undo)
-              ? { unchecked: true }
-              : {}),
-          }),
-        );
-      }
+      parts.forEach((part, i) => {
+        const { wid, seq } = ids[i]!;
+        entry.pending.push({ wid, write: part, seq });
+        this.enqueue(sheetId, () => this.send(sheetId, wid, part, flags, seq));
+      });
       entry.view = { ...result.sheet, rev: entry.confirmed.rev };
       this.workbookUpdate(
         before.tabId,
@@ -520,16 +582,88 @@ export class SheetStore {
       if (!entry) continue;
       this.released.set(id, sheetToJson(entry.view));
       this.drop(id);
-      this.enqueue(id, async () => {
-        try {
-          await this.api.deleteSheet(this.deps.scope, id, { whenUnreferenced: true });
-        } catch (e) {
-          // Already gone is what was wanted.
-          if (!(e instanceof ApiError && e.code === 'sheet_not_found')) this.refused(e, id);
-        }
-      });
+      const seq = nextSeq();
+      const change: SheetChange = {
+        id: `d${seq.toString(36)}`,
+        seq,
+        store: 'sheets',
+        op: 'delete',
+        sheetId: id,
+      };
+      if (this.waiting.waitsNow()) this.waiting.keep(change);
+      this.enqueue(id, () => this.deleteTask(change, 0));
     }
     this.notify();
+  }
+
+  // One try at deleting a sheet; with no answer it waits for the connection.
+  private async deleteTask(change: SheetChange, retry: number): Promise<void> {
+    const id = change.sheetId;
+    try {
+      await this.api.deleteSheet(this.deps.scope, id, { whenUnreferenced: true });
+    } catch (e) {
+      if (isTransientWriteError(e)) {
+        debugLog('[sheets] sheets.delete.retrying', { retry, status: errorStatus(e) });
+        this.waiting.keep(change);
+        await this.waiting.pause(retry);
+        return this.deleteTask(change, retry + 1);
+      }
+      // Already gone is what was wanted.
+      if (!(e instanceof ApiError && e.code === 'sheet_not_found')) this.refused(e, id);
+    }
+    this.waiting.forget(change.id);
+  }
+
+  // ---- Waiting for the connection (docs/specs/007-editor/offline-changes.md) -------------------------------------
+
+  // The changes a reload kept, sent again in their order (offline-changes.md "Kept across a reload"): a new sheet is
+  // in the store at once, a write laid over its sheet when that loads.
+  private restore(): void {
+    const kept = this.waiting.kept();
+    for (const c of kept) {
+      if (c.op === 'create') {
+        const { create } = c;
+        const now = Date.now();
+        this.adopt({
+          id: create.id,
+          tabId: create.tabId,
+          title: create.title,
+          layout: create.layout ?? { rows: [], cols: [] },
+          cells: create.cells ?? [],
+          rev: 0,
+          createdAt: now,
+          updatedAt: now,
+          updatedBy: this.by(),
+        });
+        this.sendCreate(create, {}, 0, c);
+      } else if (c.op === 'write') {
+        const pending: Pending = { wid: c.id, write: c.write, seq: c.seq };
+        const entry = this.entries.get(c.sheetId);
+        if (entry) entry.pending.push(pending);
+        else this.restored.set(c.sheetId, [...(this.restored.get(c.sheetId) ?? []), pending]);
+        this.enqueue(c.sheetId, () => this.send(c.sheetId, c.id, c.write, c.flags, c.seq));
+      } else {
+        this.enqueue(c.sheetId, () => this.deleteTask(c, 0));
+      }
+    }
+    if (kept.length > 0) debugLog('[offline-queue] sheets.restored', { count: kept.length });
+  }
+
+  // Whether a write is still this person's to send: pending on its sheet, or kept by a reload for a sheet not loaded.
+  private isPending(sheetId: string, wid: string): boolean {
+    const has = (list: readonly Pending[] | undefined) => !!list?.some((p) => p.wid === wid);
+    return has(this.entries.get(sheetId)?.pending) || has(this.restored.get(sheetId));
+  }
+
+  private dropPending(sheetId: string, wid: string | undefined): void {
+    const entry = this.entries.get(sheetId);
+    if (entry) entry.pending = entry.pending.filter((p) => p.wid !== wid);
+    const kept = this.restored.get(sheetId);
+    if (kept)
+      this.restored.set(
+        sheetId,
+        kept.filter((p) => p.wid !== wid),
+      );
   }
 
   // A Sheet whose sheet this person deleted with it is back (Undo): make the sheet again as it was, under the next
@@ -568,7 +702,8 @@ export class SheetStore {
     sheetId: string,
     wid: string,
     write: SheetWrite,
-    flags: { undo?: true; unchecked?: true },
+    flags: SheetWriteFlags,
+    seq: number,
     attempt = 0,
   ): Promise<void> {
     let answer: SheetWriteResponse;
@@ -582,19 +717,25 @@ export class SheetStore {
     } catch (e) {
       // A dropped connection, a rate limit or a server error is not a refusal: the write stays pending (still seen,
       // and still ahead of this sheet's later writes) and goes again after a wait. Unless the room has meanwhile
-      // confirmed it (the server stored it and only the answer was lost), or the sheet is gone.
+      // confirmed it (the server stored it and only the answer was lost), or the sheet is gone. It waits in the queue
+      // meanwhile, so a reload keeps it (offline-changes.md).
       if (isTransientWriteError(e)) {
         debugLog('[sheets] sheets.write.retrying', { attempt, status: errorStatus(e) });
-        await this.wait(sheetWriteRetryMs(attempt));
-        if (!this.entries.get(sheetId)?.pending.some((p) => p.wid === wid)) return;
-        return this.send(sheetId, wid, write, flags, attempt + 1);
+        this.waiting.keep({ id: wid, seq, store: 'sheets', op: 'write', sheetId, write, flags });
+        await this.waiting.pause(attempt);
+        if (!this.isPending(sheetId, wid)) {
+          this.waiting.forget(wid);
+          return;
+        }
+        return this.send(sheetId, wid, write, flags, seq, attempt + 1);
       }
+      this.waiting.forget(wid);
       this.refused(e, sheetId);
-      const entry = this.entries.get(sheetId);
-      if (entry) entry.pending = entry.pending.filter((p) => p.wid !== wid);
+      this.dropPending(sheetId, wid);
       await this.refetchSheet(sheetId);
       return;
     }
+    this.waiting.forget(wid);
     this.landed(sheetId, wid, answer.rev, answer.applied);
   }
 
@@ -608,7 +749,10 @@ export class SheetStore {
     at?: number,
   ): void {
     const entry = this.entries.get(sheetId);
-    if (!entry) return;
+    if (!entry) {
+      this.dropPending(sheetId, wid);
+      return;
+    }
     if (rev <= entry.confirmed.rev) {
       if (wid) entry.pending = entry.pending.filter((p) => p.wid !== wid);
       return;
@@ -674,12 +818,16 @@ const STORES = new Map<string, SheetStore>();
 // The store of a project, made on first use and kept for the session.
 // The project's sheet store, as the sheets bridge describes it (a Sheet and a chart drawn from one share it).
 export function sheetStoreOf(bridge: SheetsBridge): SheetStore {
+  const { projectId, ownerId } = bridge.scope;
   return sheetStoreFor({
     scope: bridge.scope,
     self: () => bridge.self,
     locale: bridge.locale,
     pushUndo: bridge.pushUndo,
     toast: bridge.toast,
+    // An Offline Mode project needs no connection, so nothing of it waits.
+    queue: isOfflineIdSync(projectId) ? null : planQueue(projectId, ownerId),
+    rights: { cells: bridge.canEdit, shape: bridge.canShape },
   });
 }
 

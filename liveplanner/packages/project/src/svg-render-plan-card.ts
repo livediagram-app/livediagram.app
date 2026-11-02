@@ -1,6 +1,6 @@
 // A Plan card face in exports and api or MCP images (docs/specs/026-plan/plan-board.md "Both elements everywhere"),
 // drawn from its type's Display at the board's card size as the canvas draws it (docs/specs/026-plan/item-types.md
-// "Card display"): Minimal one line, Compact a title over one row, Detailed a header, the title on up to three lines,
+// "Card display"): Minimal one line, Detailed a header, the title on up to three lines,
 // what sits under it (custom fields, labels, the description) and a footer. A field shows only when the card has a
 // value for it. The face measures itself, so a board stacks cards as tall as they need.
 
@@ -26,11 +26,46 @@ import {
   type CardSlot,
   type Item,
   type ItemTypeDef,
+  type CustomFieldDef,
+  type CalculatedValue,
+  type IsDoneStatus,
+  calculatedText,
+  calculatedValue,
+  formulaValue,
+  isFormulaField,
+  childIndexFor,
+  cardAgeDays,
+  cardAgeText,
+  cardAgeTone,
+  itemStatus,
+  itemStatusSince,
+  itemStampPerson,
+  itemStampTime,
+  stampDay,
+  AUTOMATIC_CARD_FIELDS,
+  percentShown,
+  percentText,
+  showsAsPercent,
+  isTimeSpent,
+  readTimeValue,
+  timePerson,
+  openBlockersOf,
+  type BlockingIndex,
 } from '@liveplanner/items';
-import { FLAG_COLOUR, PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
+import { lucideLink } from '@liveworkspace/icons/lucide';
+import {
+  FLAG_COLOUR,
+  PLAN_PERCENT_BAR,
+  PRIORITY_COLOURS,
+  planPercentInks,
+  type PlanPalette,
+} from './plan-palette';
 import { r2, xmlEscape } from './svg-render-primitives';
 import { personDisc, text as faceText, wrapLines } from './svg-render-face-kit';
 import { initialsOf } from '@liveworkspace/model-core/names';
+
+// Age past its thresholds: the board's amber and red (docs/specs/026-plan/item-types.md "Card display").
+const AGE_INK = { warn: '#d97706', alert: '#dc2626' } as const;
 
 const PRIORITY_LABEL: Readonly<Record<string, string>> = {
   urgent: 'Urgent',
@@ -51,14 +86,34 @@ const CHAR_EM = 0.56;
 type Bit =
   | { kind: 'text'; text: string; color: string; weight?: number; pill?: boolean; dot?: string }
   | { kind: 'person'; name: string; color: string }
-  | { kind: 'lines'; lines: string[]; color: string };
+  | { kind: 'lines'; lines: string[]; color: string }
+  // A share drawn as a Percent field is (docs/specs/026-plan/item-types.md "Percent"): its name, a thin bar, "40%".
+  | { kind: 'percent'; label: string; value: number; color: string; fill: string; track: string }
+  // Blocked by open cards (docs/specs/026-plan/item-types.md "Blocked By"): the red link glyph and the count.
+  | { kind: 'blocked'; count: number };
+
+// The blocked badge: the board's red, and its link glyph's size (the editor's BlockedMark).
+export const BLOCKED_RED = '#dc2626';
+const BLOCKED_GLYPH = 12;
+
+// The gap either side of a Percent bit's bar.
+const PERCENT_GAP = 5;
+const charsWidth = (s: string) => s.length * BIT_PX * CHAR_EM;
 
 const bitWidth = (b: Bit): number =>
-  b.kind === 'person'
-    ? 20
-    : b.kind === 'lines'
-      ? 0
-      : b.text.length * BIT_PX * CHAR_EM + (b.pill ? 14 : 0) + (b.dot ? 12 : 0);
+  b.kind === 'blocked'
+    ? BLOCKED_GLYPH + 3 + charsWidth(String(b.count))
+    : b.kind === 'person'
+      ? 20
+      : b.kind === 'lines'
+        ? 0
+        : b.kind === 'percent'
+          ? charsWidth(b.label) +
+            PLAN_PERCENT_BAR.width +
+            PERCENT_GAP * 2 +
+            charsWidth(percentText(b.value)) +
+            14
+          : charsWidth(b.text) + (b.pill ? 14 : 0) + (b.dot ? 12 : 0);
 
 export type CardFaceContext = {
   palette: PlanPalette;
@@ -67,8 +122,15 @@ export type CardFaceContext = {
   boardFields?: readonly CardField[];
   size?: CardSize;
   items?: ReadonlyMap<string, Item>;
+  // The board's done columns, for a Calculated field's Children Done (docs/specs/026-plan/item-types.md "Calculated
+  // fields"); a lone card element has none in hand, so it draws Child Count alone.
+  isDone?: IsDoneStatus;
   // A standalone card element's own height: its frame keeps the element's bounds rather than its measured need.
   height?: number;
+  // The moment a card's Age is read at; absent, now.
+  now?: number;
+  // The plan's Blocked By lookup (blockingIndexOf), made once per board: a blocked card wears the badge.
+  blocking?: BlockingIndex;
 };
 
 // One field's bit, or null when the card has nothing for it.
@@ -126,6 +188,41 @@ function bitOf(
         ? { kind: 'text', text: labels.join(' · '), color: p.muted, pill: true }
         : null;
     }
+    // The card's stamps (docs/specs/026-plan/items.md "Created and Last Edited"): a day as a muted pill, a person as
+    // their disc; nothing for a card stored without one.
+    case 'createdAt':
+    case 'updatedAt': {
+      const at = itemStampTime(item, f);
+      return at === undefined
+        ? null
+        : {
+            kind: 'text',
+            text: `${f === 'createdAt' ? 'Created' : 'Edited'} ${dayLabel(stampDay(at))}`,
+            color: p.muted,
+            pill: true,
+          };
+    }
+    case 'createdBy':
+    case 'updatedBy': {
+      const who = itemStampPerson(item, f);
+      return who ? { kind: 'person', name: who.name, color: who.color } : null;
+    }
+    // How long it has sat in its column: only with the board's done columns in hand (a done card shows none).
+    case 'age': {
+      const status = itemStatus(item);
+      if (!ctx.isDone || status === undefined || ctx.isDone(status)) return null;
+      const days = cardAgeDays(itemStatusSince(item), new Date(ctx.now ?? Date.now()));
+      const tone = cardAgeTone(days);
+      return tone === 'quiet'
+        ? { kind: 'text', text: cardAgeText(days), color: p.muted, pill: true }
+        : {
+            kind: 'text',
+            text: cardAgeText(days),
+            color: AGE_INK[tone],
+            weight: tone === 'alert' ? 700 : 600,
+            pill: true,
+          };
+    }
     case 'description':
       return typeof v === 'string' && v.trim()
         ? { kind: 'lines', lines: wrapLines(v.trim(), width - PAD * 2, 12, 2), color: p.muted }
@@ -134,12 +231,85 @@ function bitOf(
       // A custom field: its name and its value, a linked card's title for a Card field.
       if (!isCustomCardField(f)) return null;
       const def = (type.custom ?? []).find((c) => c.id === f);
-      const value = def ? customFieldText(def, item.fields[def.id], ctx.items) : null;
+      // A Votes field draws the built-in's ▲ count of its own votes (item-types.md "Comments and Votes fields").
+      if (def?.kind === 'votes') {
+        const n = itemVoteTotal(item, def.id);
+        return n > 0 ? { kind: 'text', text: `${def.label} ▲ ${n}`, color: p.muted } : null;
+      }
+      // A Percent field, or a share shown as one, draws its bar (docs/specs/026-plan/item-types.md "Percent").
+      if (def && showsAsPercent(def)) {
+        const share = percentShown(
+          def,
+          def.kind === 'calculated'
+            ? calculatedOf(def, item, ctx, ctx.types ?? ITEM_TYPES)
+            : item.fields[def.id],
+        );
+        return share === undefined
+          ? null
+          : {
+              kind: 'percent',
+              label: def.label,
+              value: share,
+              color: p.text,
+              ...planPercentInks(p),
+            };
+      }
+      const value = !def
+        ? null
+        : def.kind === 'calculated'
+          ? calculatedText(def, calculatedOf(def, item, ctx, ctx.types ?? ITEM_TYPES))
+          : customFieldText(def, item.fields[def.id], ctx.items);
       return def && value
         ? { kind: 'text', text: `${def.label}: ${value}`, color: p.text, pill: true }
         : null;
     }
   }
+}
+
+// The green of a running timer (docs/specs/026-plan/item-types.md "Time Spent").
+export const TIMER_RUNNING_GREEN = '#16a34a';
+
+// While anyone's timer runs on the card, at every size whatever the Display: "Running · Sam" (or "Sam +2") after a
+// green dot; null with none running.
+function runningBit(item: Item, type: ItemTypeDef, p: PlanPalette): Bit | null {
+  const names: string[] = [];
+  for (const f of type.custom ?? []) {
+    if (!isTimeSpent(f) || !type.fields.includes(f.id)) continue;
+    const value = readTimeValue(item.fields[f.id]);
+    for (const r of value.running) {
+      const name = timePerson(value, r.by).name;
+      if (!names.includes(name)) names.push(name);
+    }
+  }
+  if (names.length === 0) return null;
+  const who = names.length > 1 ? `${names[0]} +${names.length - 1}` : names[0];
+  return {
+    kind: 'text',
+    text: `Running · ${who}`,
+    color: p.text,
+    pill: true,
+    dot: TIMER_RUNNING_GREEN,
+  };
+}
+
+// A Calculated field's value, worked out from the cards in hand: null without them, and Children Done only with the
+// board's done columns (a Rollup's Count Done too). A Formula reads the card itself, so a lone card draws it too (none
+// when it can't be worked out; docs/specs/026-plan/item-types.md "Formula fields"); a Rollup or Lookup reads the
+// cards ("Rollup and Lookup fields").
+function calculatedOf(
+  def: CustomFieldDef,
+  item: Item,
+  ctx: CardFaceContext,
+  types: readonly ItemTypeDef[],
+): CalculatedValue {
+  const type = typeIn(types, item.type);
+  if (isFormulaField(def) && !ctx.items) return formulaValue(def, item, type);
+  if (!ctx.items) return null;
+  return calculatedValue(def, item, childIndexFor(ctx.items, types), ctx.isDone, {
+    type,
+    items: ctx.items,
+    types,
+  });
 }
 
 // The face, drawn at (x, y) `w` wide, with the height it took. `measureOnly` skips the markup.
@@ -157,8 +327,9 @@ export function planCardFace(
   const size: CardSize = ctx.size ?? 'detailed';
   const typeShows = typeCardDisplay(type, size);
   const boardShows = ctx.boardFields ? cardFieldsAt(size, ctx.boardFields) : null;
+  // A custom field, and Age and the stamps (newer than the board's old field list), follow the type's Display alone.
   const show = (f: CardField) =>
-    isCustomCardField(f)
+    isCustomCardField(f) || AUTOMATIC_CARD_FIELDS.includes(f)
       ? typeShows.includes(f)
       : typeShows.includes(f) && (!boardShows || boardShows.includes(f));
   const layout = typeCardLayout(type, size);
@@ -213,10 +384,14 @@ export function planCardFace(
   const titleLines = (lines: number, width: number) =>
     wrapLines(itemTitle(item) || 'Untitled', width, TITLE_PX, lines);
   const flagged = isFlagged(item);
+  // At every size, whatever the Display, as a running timer shows.
+  const openBlockers = ctx.blocking ? openBlockersOf(ctx.blocking, item.id) : 0;
+  const blocked: Bit | null = openBlockers ? { kind: 'blocked', count: openBlockers } : null;
   let h: number;
   if (size === 'minimal') {
     const lead = bits('lead');
-    const trail = bits('trail');
+    const running = runningBit(item, type, p);
+    const trail = [...bits('trail'), ...(running ? [running] : []), ...(blocked ? [blocked] : [])];
     const leadW = lead.reduce((s, b) => s + bitWidth(b) + BIT_GAP, 0);
     const trailW = trail.reduce((s, b) => s + bitWidth(b) + BIT_GAP, 0);
     row(lead, x + PAD, y + 8, x + PAD + leadW);
@@ -233,31 +408,12 @@ export function planCardFace(
     });
     rightRow(trail, x + w - PAD, y + 8);
     h = Math.max(36, 16 + lines.length * TITLE_LINE);
-  } else if (size === 'compact') {
-    const lead = bits('lead');
-    const leadW = lead.reduce((s, b) => s + bitWidth(b) + BIT_GAP, 0);
-    row(lead, x + PAD, y + 9, x + PAD + leadW);
-    const lines = titleLines(2, w - PAD * 2 - leadW);
-    lines.forEach((line, i) => {
-      if (!measureOnly)
-        out.push(
-          faceText(x + PAD + leadW, y + 23 + i * TITLE_LINE, line, {
-            size: TITLE_PX,
-            color: p.text,
-            weight: 600,
-          }),
-        );
-    });
-    let cy = y + 10 + lines.length * TITLE_LINE + 4;
-    const trail = bits('trail');
-    const trailW = rightRow(trail, x + w - PAD, cy);
-    cy += Math.max(row(bits('row'), x + PAD, cy, x + w - PAD - trailW), trail.length ? ROW_H : 0);
-    h = cy - y + 8;
   } else {
     let cy = y + 9;
     const headEnd = bits('headEnd');
     const head = bits('head');
-    const flagW = flagged ? 14 : 0;
+    const flagOnlyW = flagged ? 14 : 0;
+    const flagW = flagOnlyW + (blocked ? bitWidth(blocked) + BIT_GAP : 0);
     // The header end sits at the right of the header row when both fit; on a narrow card it takes a row of its own.
     const widthOf = (list: Bit[]) => list.reduce((sum, b) => sum + bitWidth(b) + BIT_GAP, 0);
     const shared = widthOf(head) + widthOf(headEnd) <= w - PAD * 2 - flagW;
@@ -272,7 +428,9 @@ export function planCardFace(
       out.push(
         faceText(x + w - PAD, cy + 14, '⚑', { size: 12, color: FLAG_COLOUR, anchor: 'end' }),
       );
-    cy += Math.max(headH, headEnd.length || flagged ? ROW_H : 0) + 4;
+    if (blocked && !measureOnly)
+      out.push(drawBit(blocked, x + w - PAD - flagOnlyW - bitWidth(blocked), cy, 0, p.border));
+    cy += Math.max(headH, headEnd.length || flagged || blocked ? ROW_H : 0) + 4;
     const lines = titleLines(3, w - PAD * 2);
     lines.forEach((line, i) => {
       if (!measureOnly)
@@ -287,7 +445,8 @@ export function planCardFace(
     cy += lines.length * TITLE_LINE + 6;
     const body = row(bits('body'), x + PAD, cy, x + w - PAD);
     cy += body ? body + 6 : 0;
-    const footEnd = bits('footEnd');
+    const running = runningBit(item, type, p);
+    const footEnd = running ? [...bits('footEnd'), running] : bits('footEnd');
     const footEndW = rightRow(footEnd, x + w - PAD, cy);
     cy += Math.max(
       row(bits('foot'), x + PAD, cy, x + w - PAD - footEndW),
@@ -320,6 +479,8 @@ function drawBit(
 ): string {
   if (b.kind === 'person')
     return personDisc(x + 10, y + 10, 10, b.color, { initials: initialsOf(b.name), fill: b.color });
+  if (b.kind === 'percent') return drawPercentBit(b, x, y, w, border);
+  if (b.kind === 'blocked') return drawBlockedBit(b.count, x, y);
   const parts: string[] = [];
   let tx = x;
   if (b.pill)
@@ -341,4 +502,53 @@ function drawBit(
     }),
   );
   return parts.join('');
+}
+
+// The blocked badge: the Lucide link glyph in red at 12 px, then its count.
+function drawBlockedBit(count: number, x: number, y: number): string {
+  const scale = BLOCKED_GLYPH / 24;
+  const paths = lucideLink
+    .map((prim) => (prim.t === 'path' ? `<path d="${prim.d}"/>` : ''))
+    .join('');
+  return (
+    `<g transform="translate(${r2(x)} ${r2(y + 4)}) scale(${scale})" fill="none" stroke="${BLOCKED_RED}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${paths}</g>` +
+    faceText(x + BLOCKED_GLYPH + 3, y + 14, String(count), {
+      size: BIT_PX,
+      color: BLOCKED_RED,
+      weight: 600,
+    })
+  );
+}
+
+// A Percent bit: the pill, the field's name, a thin track with the share filled, then "40%". A pill narrower than it
+// wants keeps the bar and the share, shortening the name.
+function drawPercentBit(
+  b: Extract<Bit, { kind: 'percent' }>,
+  x: number,
+  y: number,
+  w: number,
+  border: string,
+): string {
+  const share = percentText(b.value);
+  const shareW = charsWidth(share);
+  const bar = PLAN_PERCENT_BAR;
+  const nameRoom = Math.max(0, w - 14 - bar.width - PERCENT_GAP * 2 - shareW);
+  const name = fitChars(b.label, nameRoom);
+  const barX = x + 7 + (name ? charsWidth(name) + PERCENT_GAP : 0);
+  const barY = y + 10 - bar.height / 2;
+  const r = bar.height / 2;
+  const fillW = (bar.width * b.value) / 100;
+  return (
+    `<rect x="${r2(x)}" y="${r2(y + 1)}" width="${r2(w)}" height="18" rx="9" fill="none" stroke="${xmlEscape(border)}" stroke-width="1"/>` +
+    (name ? faceText(x + 7, y + 14, name, { size: BIT_PX, color: b.color }) : '') +
+    `<rect x="${r2(barX)}" y="${r2(barY)}" width="${bar.width}" height="${bar.height}" rx="${r}" fill="${xmlEscape(b.track)}"/>` +
+    (fillW > 0
+      ? `<rect x="${r2(barX)}" y="${r2(barY)}" width="${r2(fillW)}" height="${bar.height}" rx="${r}" fill="${xmlEscape(b.fill)}"/>`
+      : '') +
+    faceText(barX + bar.width + PERCENT_GAP, y + 14, share, {
+      size: BIT_PX,
+      color: b.color,
+      weight: 600,
+    })
+  );
 }

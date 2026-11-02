@@ -12,7 +12,7 @@ import { stackTourSteps } from './stack-tour-steps';
 import { tabWindowTourSteps } from './tab-window-tour-steps';
 import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 
-const env: MenuTourEnv = { elementId: 'el', hasMore: true, touch: false };
+const env: MenuTourEnv = { elementId: 'el', touch: false };
 type Step = TourStepOf<ElementTourApi>;
 const ids = (steps: Step[]) => steps.map((s) => s.id);
 const step = (steps: Step[], id: string) => steps.find((s) => s.id === id)!;
@@ -20,15 +20,15 @@ const ringed = (s: Step) => s.selector!({} as ElementTourApi);
 
 describe('menuStep', () => {
   it('opens the menu to its path and rings it, saying how to get there', () => {
-    const more = menuStep(env, 'menu', 'Menu', 'Tools, then Stack.', ['Tools', 'Stack']);
-    expect(ringed(more)).toBe('[data-tour-menu-target]');
-    expect(more.body).toBe('More, then Tools, then Stack.');
-    const right = menuStep({ ...env, hasMore: false }, 'menu', 'Menu', 'Tools, then Stack.', [
+    const right = menuStep(env, 'menu', 'Menu', 'Tools, then Stack.', ['Tools', 'Stack']);
+    expect(ringed(right)).toBe('[data-tour-menu-target]');
+    expect(right.body).toBe('Right-click it, then Tools, then Stack.');
+    const hold = menuStep({ ...env, touch: true }, 'menu', 'Menu', 'Tools, then Stack.', [
       'Tools',
       'Stack',
     ]);
-    expect(ringed(right)).toBe('[data-tour-menu-target]');
-    expect(right.body).toBe('Right-click it, then Tools, then Stack.');
+    expect(ringed(hold)).toBe('[data-tour-menu-target]');
+    expect(hold.body).toBe('Press and hold it, then Tools, then Stack.');
   });
 });
 
@@ -55,7 +55,7 @@ describe('tabWindowTourSteps', () => {
 });
 
 describe('the registry reads what is on screen when Play is pressed', () => {
-  const env2 = (el: Element) => ({ hasMore: true, touch: false, elements: [el] });
+  const env2 = (el: Element) => ({ touch: false, elements: [el] });
 
   it("rings a tab window's Open button only when it draws one", () => {
     const win = { ...createShape('tab-window', 0, 0), id: 'w1' } as Element;

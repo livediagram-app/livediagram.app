@@ -20,8 +20,9 @@ export function CategoryTiles({
   groups: GalleryShelf[];
   onOpen: (id: ShelfId) => void;
 }) {
-  // Blank Slate's blanks are on no category, so every folded shelf counts toward the "more templates" sum.
-  const total = groups.reduce((n, g) => n + g.templates.length, 0);
+  // Blank Slate's blanks are on no category, so every folded shelf counts toward the "more templates" sum; a template
+  // cross-listed on two folded shelves counts once.
+  const total = new Set(groups.flatMap((g) => g.templates.map((t) => t.kind))).size;
   return (
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">

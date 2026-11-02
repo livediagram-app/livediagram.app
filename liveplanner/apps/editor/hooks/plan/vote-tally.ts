@@ -2,7 +2,15 @@
 // voter, each voter as a pseudonymous person id (itemPersonId of their collab key: never the key itself, which the
 // room broadcasts). Element dots are not cards and are left out.
 import { itemIdOfVoteKey, type TabVote } from '@liveplanner/project';
-import { itemPersonId, type ItemTally } from '@liveplanner/items';
+import {
+  itemPersonId,
+  typeIn,
+  voteTallyWrites,
+  type Item,
+  type ItemTally,
+  type ItemTypeDef,
+  type ItemWrite,
+} from '@liveplanner/items';
 
 export async function voteTallies(vote: TabVote): Promise<ItemTally[]> {
   const out: ItemTally[] = [];
@@ -16,4 +24,18 @@ export async function voteTallies(vote: TabVote): Promise<ItemTally[]> {
     out.push({ id, votes });
   }
   return out;
+}
+
+// The writes that land a vote's tally in the Votes field it counts in (docs/specs/012-collaboration/session-tools.md
+// "Count In"): a card whose type lacks that field takes its dots in the built-in Votes.
+export async function voteTallyWritesOf(
+  vote: TabVote,
+  items: ReadonlyMap<string, Item>,
+  types: readonly ItemTypeDef[],
+): Promise<ItemWrite[]> {
+  const tallies = await voteTallies(vote);
+  return voteTallyWrites(tallies, vote.voteField, (id) => {
+    const item = items.get(id);
+    return item ? typeIn(types, item.type) : undefined;
+  });
 }

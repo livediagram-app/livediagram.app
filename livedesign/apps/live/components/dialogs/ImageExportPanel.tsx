@@ -1,6 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { BackBar } from '@liveworkspace/workbench/components/primitives/BackBar';
-import { Button, trustedHtml, Switch } from '@livedesign/ui';
+import { Button, trustedHtml, Switch, BackBar } from '@livedesign/ui';
 import { track } from '@/lib/telemetry';
 
 // A checkerboard under a preview, so see-through paper reads as see-through (a logo page's PNG and
@@ -145,7 +144,7 @@ export function ImageExportPanel({
           variant="primary"
           size="md"
           onClick={() => onExport({ pattern, hiddenLayers })}
-          disabled={busy}
+          busy={busy}
         >
           {busy ? 'Exporting…' : `Download ${label}`}
         </Button>

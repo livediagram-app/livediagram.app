@@ -11,9 +11,8 @@
 // Category artwork is the FIRST tile in the group, so a category always looks
 // like what it contains and no separate icon set can drift from the tiles.
 
-import { BackBar } from '../primitives/BackBar';
 import type { ReactNode } from 'react';
-import { HoverCard } from '@liveworkspace/ui';
+import { HoverCard, BackBar } from '@liveworkspace/ui';
 
 export type ToolsCategory = {
   id: string;

@@ -56,6 +56,10 @@ vi.mock('../api/items', () => ({
   fetchCloudItems: vi.fn(async () => ({ items: [], rev: 0, nextKey: 1 })),
 }));
 
+vi.mock('../api/card-threads', () => ({
+  fetchCloudThreads: vi.fn(async () => []),
+}));
+
 vi.mock('../api/sheets', () => ({
   fetchAllSheets: vi.fn(async () => []),
   fetchCloudSheets: vi.fn(async () => []),
@@ -88,6 +92,7 @@ const apiClient = await import('@/lib/api-client');
 const core = await import('@/lib/api/core');
 const items = await import('../api/items');
 const sheets = await import('../api/sheets');
+const threadsApi = await import('../api/card-threads');
 const store = await import('./offline-store');
 const { indexClient } = await import('@liveworkspace/workbench/lib/index-client');
 const {
@@ -275,6 +280,34 @@ describe('takeCloudOffline (cloud -> offline)', () => {
     expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).toMatchObject({
       folderId: 'f1',
     });
+  });
+
+  it('keeps the threads the plan stores, on its own cards, and leaves shared-in ones behind', async () => {
+    const thread = (id: string, home: string, cards: { projectId: string; itemId: string }[]) => ({
+      id,
+      home,
+      title: id,
+      resolved: false,
+      comments: [{ id: 'c', text: 'x', createdAt: 1, authorName: 'A', authorColor: '#000' }],
+      createdAt: 1,
+      createdBy: { name: 'A', color: '#000' },
+      updatedAt: 1,
+      rev: 1,
+      cards: cards.map((c) => ({ ...c, key: 1 })),
+    });
+    vi.mocked(threadsApi.fetchCloudThreads).mockResolvedValueOnce([
+      thread('th-home', 'd1', [
+        { projectId: 'd1', itemId: 'i1' },
+        { projectId: 'other', itemId: 'i9' },
+      ]),
+      thread('th-in', 'other', [{ projectId: 'd1', itemId: 'i1' }]),
+    ] as never);
+    await takeCloudOffline('d1', 'owner');
+    const rec = vi.mocked(store.offlinePutRecord).mock.calls[0]![0] as {
+      threads?: { id: string; cards: { projectId: string }[] }[];
+    };
+    expect(rec.threads?.map((t) => t.id)).toEqual(['th-home']);
+    expect(rec.threads?.[0]!.cards.map((c) => c.projectId)).toEqual(['d1']);
   });
 
   it('keeps a starred project starred on the offline record', async () => {

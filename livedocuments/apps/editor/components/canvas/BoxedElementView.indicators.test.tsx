@@ -125,3 +125,25 @@ describe('BoxedElementView indicators', () => {
     expect(getByText('Box')).toBeTruthy();
   });
 });
+
+// docs/specs/004-interface-design/canvas-accessibility.md "Names on elements": the wrapper is a picture only while
+// its face holds no controls. Indicator buttons make it a named group, so a screen reader can reach them.
+describe('BoxedElementView role', () => {
+  const plain = {
+    ...createShape('square', 0, 0),
+    width: 120,
+    height: 60,
+    label: 'Plain',
+  } as BoxedElement;
+  const roleOf = (container: HTMLElement) =>
+    container.querySelector('[data-element-id]')?.getAttribute('role');
+  it('is a picture when only drawn', () => {
+    expect(roleOf(draw(plain).container)).toBe('img');
+  });
+  it('is a group while it shows indicator buttons', () => {
+    expect(roleOf(draw(cloud).container)).toBe('group');
+  });
+  it('stays a picture while a plain shape is selected, so it is found and read the same way', () => {
+    expect(roleOf(draw(plain, { selected: true }).container)).toBe('img');
+  });
+});

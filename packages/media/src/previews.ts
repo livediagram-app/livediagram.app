@@ -6,11 +6,27 @@
 // Where previews live, on liveworkspace.app and (forwarded) on every app's origin.
 export const PREVIEWS_API_PATH = '/api/previews';
 
+// The reader's appearance a preview is drawn in (previews.md "GET /api/previews/items/:id"): the item as a person in
+// it sees it on opening it.
+export const PREVIEW_APPEARANCES = ['light', 'dark'] as const;
+export type PreviewAppearance = (typeof PREVIEW_APPEARANCES)[number];
+
+export const isPreviewAppearance = (value: unknown): value is PreviewAppearance =>
+  typeof value === 'string' && (PREVIEW_APPEARANCES as readonly string[]).includes(value);
+
 /** An item's preview, for anyone the index lets read the item. `version` (the item's `updatedAt`) keys the
- *  browser's cache; the service decides freshness itself. */
-export function previewItemPath(itemId: string, version?: number): string {
+ *  browser's cache; the service decides freshness itself. `appearance` draws it in the reader's half. */
+export function previewItemPath(
+  itemId: string,
+  version?: number,
+  appearance?: PreviewAppearance,
+): string {
   const path = `${PREVIEWS_API_PATH}/items/${encodeURIComponent(itemId)}`;
-  return version === undefined ? path : `${path}?v=${version}`;
+  const params = new URLSearchParams();
+  if (version !== undefined) params.set('v', String(version));
+  if (appearance) params.set('appearance', appearance);
+  const qs = params.toString();
+  return qs ? `${path}?${qs}` : path;
 }
 
 // A share link's three public doors, under the service, and under the address every app has always served them at

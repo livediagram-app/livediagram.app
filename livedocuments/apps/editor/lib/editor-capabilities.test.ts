@@ -14,6 +14,8 @@ describe('resolveEditorCapabilities', () => {
     const can = resolveEditorCapabilities('edit');
     expect(can.takePart && can.writeArticle).toBe(true);
     expect(can.writeText(shape()) && can.writeText(shape({ locked: true }))).toBe(true);
+    // Find and replace: an Editor replaces anywhere it finds.
+    expect(can.replace).toBe('any');
   });
 
   // Locks the role in as capabilities are added: every flag and every per-element check is false for a Viewer.
@@ -34,6 +36,8 @@ describe('resolveEditorCapabilities', () => {
     expect(can.writeText(shape())).toBe(true);
     expect(can.writeText(sticky())).toBe(true);
     expect(can.writeText(shape({ locked: true }))).toBe(false);
+    // Find and replace: only in the text it may write (docs/specs/007-editor/find-and-replace.md "Share roles").
+    expect(can.replace).toBe('text');
   });
 
   // Text only: nothing that adds, moves, resizes, restyles or removes an element is a capability at all, so no
@@ -41,6 +45,7 @@ describe('resolveEditorCapabilities', () => {
   it('holds no flag beyond the text ones', () => {
     expect(Object.keys(resolveEditorCapabilities('participate')).sort()).toEqual([
       'level',
+      'replace',
       'takePart',
       'writeArticle',
       'writeText',

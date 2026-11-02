@@ -6,6 +6,7 @@
 // their writing) are dropped as they are read.
 import type { Layer } from './layers';
 import { isRecord } from '@liveworkspace/model-core/is-record';
+import { CUSTOM_FIELD_ID_PATTERN } from '@liveplanner/items';
 
 type SettledFields = {
   layers?: unknown;
@@ -23,8 +24,15 @@ const RETIRED_FIELDS = ['pages', 'articles', 'pageOrientation'] as const;
 // A dot vote as its tallies read it (docs/specs/012-collaboration/session-tools.md): `votes` a map of element id to
 // the voters' ids. A vote that is not an object is no vote; its map's entries that are not lists of ids are
 // dropped, and a map that is not one reads as no dots. The same vote back when nothing needed doing.
+// Its `voteField` (Count In) is a custom field's id or nothing: anything else is dropped, so the tally counts in the
+// built-in Votes.
 function settleVote(v: unknown): unknown {
   if (!isRecord(v)) return undefined;
+  const field = v.voteField;
+  if (field !== undefined && !(typeof field === 'string' && CUSTOM_FIELD_ID_PATTERN.test(field))) {
+    const { voteField: _dropped, ...rest } = v;
+    return settleVote(rest);
+  }
   const votes = v.votes;
   if (!isRecord(votes)) return { ...v, votes: {} };
   const ok = (ids: unknown) => Array.isArray(ids) && ids.every((id) => typeof id === 'string');

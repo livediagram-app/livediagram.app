@@ -14,6 +14,12 @@ async function showView(page: Page, name: string): Promise<void> {
   await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
 }
 
+// Recent and Favourites have no sidebar entry (Home's Jump Back In and the panel link to them): opened by address.
+async function openView(page: Page, slug: 'recent' | 'favourites', name: string): Promise<void> {
+  await page.goto(`/explorer/${slug}`);
+  await expect(page.getByRole('heading', { level: 1, name })).toBeVisible();
+}
+
 const thisBrowserList = (page: Page) =>
   page.evaluate(
     (key) =>
@@ -31,14 +37,30 @@ async function rowAction(page: Page, title: string, action: string): Promise<voi
   await page.getByRole('menuitem', { name: action, exact: true }).click();
 }
 
+// The Explorer shows a change at once and writes it to the index behind it (optimistic). A step that then leaves the
+// page, or reads another list, waits until the index has taken the write: a navigation cancels a write still in
+// flight, and a list read before the write lands never shows it. A move, a delete and a restore say so in a toast;
+// a rename, a star and the editor's open say nothing, so their answer is waited for. Asked before the step acts.
+const indexWrite = (page: Page, method: string, path: string) =>
+  page.waitForResponse(
+    (r) =>
+      r.request().method() === method &&
+      new URL(r.url()).pathname === `/api/index${path}` &&
+      r.ok(),
+  );
+
+const toast = (page: Page, text: string) =>
+  page.getByRole('status').getByText(text, { exact: true });
+
 test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a plan', async ({
   page,
   pageErrors,
 }) => {
-  // New Plan from the Explorer goes through /new, which makes a guest's plan in This Browser and opens it
+  // A new guest's Explorer Home is a first run, so its hero is the welcome (liveworkspace/docs/specs/004-index/
+  // one-explorer.md): its Start Blank goes through /new, which makes a guest's plan in This Browser and opens it
   // (docs/specs/006-project/save-locations.md "The default depends on who is creating").
   await page.goto('/explorer');
-  await page.getByRole('button', { name: 'New Plan' }).first().click();
+  await page.getByRole('link', { name: 'Start Blank', exact: true }).first().click();
   await page.waitForURL(/\/project\/[0-9a-f-]{36}/, { timeout: 30_000 });
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   const id = new URL(page.url()).pathname.split('/').pop()!;
@@ -59,10 +81,12 @@ test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a
   await expect.poll(() => thisBrowserList(page), { timeout: 15_000 }).not.toContain(id);
   await page.keyboard.press('Escape');
 
-  // It is listed in My Work, under the name the editor gave it.
+  // It is listed in My Work, under the name the editor gave it. Its links are the item's address in its app (an
+  // absolute URL on the app's origin); the card's preview is a second link, "Open <title>", so the title is read from
+  // the one without that label.
   await page.goto('/explorer');
   await showView(page, 'My Work');
-  const made = page.locator(`main a[href^="/project/${id}"]`);
+  const made = page.locator(`main a[href$="/project/${id}"]:not([aria-label])`);
   await expect(made).toBeVisible();
   const firstTitle = (await made.innerText()).trim();
 
@@ -70,22 +94,27 @@ test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a
   await rowAction(page, firstTitle, 'Rename');
   const input = page.getByRole('textbox', { name: `Rename ${firstTitle}` });
   await input.fill('Roadmap');
+  const renamed = indexWrite(page, 'PATCH', `/items/${id}`);
   await input.press('Enter');
   await expect(row(page, 'Roadmap')).toBeVisible();
+  await renamed;
 
   // Open: the row is the plan's address in the editor.
+  const opened = indexWrite(page, 'POST', `/items/${id}/open`);
   await row(page, 'Roadmap').click();
   await page.waitForURL(new RegExp(`/project/${id}`));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
+  await opened;
 
   // The open is recorded, so it is in Recent.
-  await page.goto('/explorer');
-  await showView(page, 'Recent');
+  await openView(page, 'recent', 'Recent');
   await expect(row(page, 'Roadmap')).toBeVisible();
 
   // Star it: Favourites lists it.
+  const starred = indexWrite(page, 'PUT', `/favourites/${id}`);
   await rowAction(page, 'Roadmap', 'Add to Favourites');
-  await showView(page, 'Favourites');
+  await starred;
+  await openView(page, 'favourites', 'Favourites');
   await expect(row(page, 'Roadmap')).toBeVisible();
 
   // File it in a new folder, made from the move dialog.
@@ -99,17 +128,21 @@ test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a
   await move.getByRole('button', { name: 'Move Here' }).click();
   await expect(move).toBeHidden();
   await expect(row(page, 'Roadmap')).toBeHidden();
+  await expect(toast(page, 'Moved “Roadmap” to Q3.')).toBeVisible();
   await page.locator('main').getByText('Q3', { exact: true }).first().click();
   await expect(row(page, 'Roadmap')).toBeVisible();
 
   // Delete it: it goes to the Trash, and Restore brings it back.
   await rowAction(page, 'Roadmap', 'Delete Plan');
   await expect(row(page, 'Roadmap')).toBeHidden();
+  await expect(toast(page, 'Moved “Roadmap” to the Trash.')).toBeVisible();
   await showView(page, 'Trash');
   await expect(page.locator('main').getByText('Roadmap', { exact: true })).toBeVisible();
-  await rowAction(page, 'Roadmap', 'Restore');
+  // A Trash row has its own Restore button, no row menu.
+  await page.locator('main').getByRole('button', { name: 'Restore Roadmap', exact: true }).click();
   await expect(page.locator('main').getByText('Roadmap', { exact: true })).toBeHidden();
-  await showView(page, 'Recent');
+  await expect(toast(page, '“Roadmap” restored.')).toBeVisible();
+  await openView(page, 'recent', 'Recent');
   await expect(row(page, 'Roadmap')).toBeVisible();
 
   expectNoPageErrors(pageErrors);
@@ -117,7 +150,9 @@ test('a guest makes, syncs, renames, opens, stars, files, deletes and restores a
 
 // The Explorer lists what the index holds for the person, not only plans: the Show switch widens it to every app.
 test('the Explorer offers every app’s items, plans first', async ({ page, pageErrors }) => {
+  // The switch heads a list's pane (My Work here); Home's hero has none.
   await page.goto('/explorer');
+  await showView(page, 'My Work');
   const show = page.getByRole('group', { name: 'Show' });
   await expect(show.getByRole('button', { name: 'liveplanner' })).toHaveAttribute(
     'aria-pressed',

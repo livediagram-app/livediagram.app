@@ -453,8 +453,8 @@ function BoxedElementViewImpl({
       data-stack-glide={stackGlide ? '' : undefined}
       // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): same naming the change log uses,
       // so 'Square "Login"' reads consistently across both surfaces. A face with controls of its own is a named group,
-      // so its buttons stay reachable.
-      role={elementRole(element)}
+      // so its buttons stay reachable, as is one showing indicator buttons (its link, note, action or comments).
+      role={elementRole(element, indicators.items.length > 0)}
       aria-label={elementAriaLabel(element)}
       // Frames are tagged so isometric mode can settle them just under the
       // base plane (globals.css [data-iso] rule): a frame's big surface is

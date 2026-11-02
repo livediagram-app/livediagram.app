@@ -4,15 +4,20 @@
 // block keeps its identity and the block diff (diffArticleFlow) only ever sees real changes.
 import type { Mark, Node as PMNode } from 'prosemirror-model';
 import {
+  MAX_ARTICLE_CELL_RUNS,
+  MAX_ARTICLE_CELL_TEXT,
   isArticleHex,
   isSafeArticleHref,
   normaliseRuns,
+  parseArticleTable,
   sameArticleValue,
   type ArticleAlign,
   type ArticleBlock,
   type ArticleListKind,
   type ArticleParagraphStyle,
   type ArticleRun,
+  type ArticleTableBlock,
+  type ArticleTableColumn,
   type ArticleZoneAlign,
   type ArticleZoneAt,
   type ArticleZoneKind,
@@ -80,6 +85,10 @@ function blockToNode(b: ArticleBlock): PMNode {
       return S.nodes.divider.create({ id: b.id });
     case 'pageBreak':
       return S.nodes.page_break.create({ id: b.id });
+    case 'table':
+      return tableToNode(b);
+    case 'toc':
+      return S.nodes.toc.create({ id: b.id, depth: b.depth ?? 3 });
     case 'zone':
       return S.nodes.zone.create({
         id: b.id,
@@ -93,12 +102,28 @@ function blockToNode(b: ArticleBlock): PMNode {
   }
 }
 
+/** A table as its editor node: its rows, the header row's cells as header cells. */
+function tableToNode(b: ArticleTableBlock): PMNode {
+  const rows = b.rows.map((row, r) =>
+    S.nodes.table_row.create(
+      { id: row.id },
+      row.cells.map((runs) =>
+        (r === 0 && b.header ? S.nodes.table_header : S.nodes.table_cell).create(
+          null,
+          inlineOf(runs),
+        ),
+      ),
+    ),
+  );
+  return S.nodes.table.create({ id: b.id, cols: b.cols }, rows);
+}
+
 /** The writing as an editor article. */
 export function blocksToDoc(blocks: readonly ArticleBlock[]): PMNode {
   return S.nodes.doc.create(null, blocks.map(blockToNode));
 }
 
-function runsOf(node: PMNode): ArticleRun[] {
+function runsOf(node: PMNode, limit?: number, maxRuns?: number): ArticleRun[] {
   const runs: ArticleRun[] = [];
   node.forEach((child) => {
     if (child.type === S.nodes.hard_break) {
@@ -126,7 +151,24 @@ function runsOf(node: PMNode): ArticleRun[] {
     runs.push(run);
   });
   // A break between two runs of one format merges into them (normaliseRuns), as stored.
-  return normaliseRuns(runs);
+  return normaliseRuns(runs, limit, maxRuns);
+}
+
+/** An editor table as its block, read through the same caps as a stored one (parseArticleTable), so
+ *  what is committed is what every reader keeps. */
+function tableToBlock(node: PMNode, id: string): ArticleTableBlock | undefined {
+  const cols = (Array.isArray(node.attrs.cols) ? node.attrs.cols : []) as ArticleTableColumn[];
+  let header = node.childCount > 0;
+  const rows: { id: string; cells: ArticleRun[][] }[] = [];
+  node.forEach((row, _o, r) => {
+    const cells: ArticleRun[][] = [];
+    row.forEach((cell) => {
+      if (r === 0 && cell.type !== S.nodes.table_header) header = false;
+      cells.push(runsOf(cell, MAX_ARTICLE_CELL_TEXT, MAX_ARTICLE_CELL_RUNS));
+    });
+    rows.push({ id: row.attrs.id as string, cells });
+  });
+  return parseArticleTable({ header, cols, rows }, id);
 }
 
 /** One editor node as its block (undefined for a node with no id yet). */
@@ -165,6 +207,12 @@ function nodeToBlock(node: PMNode): ArticleBlock | undefined {
       return { id, type: 'divider' };
     case 'page_break':
       return { id, type: 'pageBreak' };
+    case 'table':
+      return tableToBlock(node, id);
+    case 'toc': {
+      const depth = node.attrs.depth as number;
+      return depth === 1 || depth === 2 ? { id, type: 'toc', depth } : { id, type: 'toc' };
+    }
     case 'zone': {
       const a = node.attrs as {
         zone: ArticleZoneKind;

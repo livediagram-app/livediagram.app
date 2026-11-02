@@ -12,4 +12,6 @@ export { PERSON_ID_FIELDS } from './show';
 export { commentHosts, threadListingLines } from './comments';
 export { selectionReference } from './selection-reference';
 export { pagesView } from './pages';
+export { componentsView } from './components-view';
+export { instanceSummaryOf } from './instance-summary';
 export { elementFindTexts } from './find';

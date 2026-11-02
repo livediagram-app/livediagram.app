@@ -40,16 +40,12 @@ export function funnelTourSteps(ctx: ConceptTourContext): TourStepOf<ElementTour
         ]
       : []),
     addRowStep('add', 'Add a Stage', 'Add Tier adds a band at the bottom, up to six.', 'Add Tier'),
-    ...(ctx.hasMore
-      ? [
-          inTheMenu(
-            'shape',
-            'Funnel, Pyramid or Inverted',
-            'In its menu, Shape switches between Funnel, Pyramid and Inverted.',
-            ['Tools', 'Pyramid'],
-          ),
-        ]
-      : []),
+    inTheMenu(
+      'shape',
+      'Funnel, Pyramid or Inverted',
+      'In its menu, Shape switches between Funnel, Pyramid and Inverted.',
+      ['Tools', 'Pyramid'],
+    ),
     onGraphic(
       'colours',
       'From the Accent Down',

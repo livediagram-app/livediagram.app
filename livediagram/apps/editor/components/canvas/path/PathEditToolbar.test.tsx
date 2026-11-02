@@ -42,7 +42,7 @@ describe('PathEditToolbar', () => {
       ['Mirrored', 'true'],
       ['Aligned', 'false'],
     ]);
-    fireEvent.click(screen.getByRole('radio', { name: 'Aligned' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Aligned Point' }));
     expect(h.onSetType).toHaveBeenCalledWith('aligned');
   });
 
@@ -62,7 +62,9 @@ describe('PathEditToolbar', () => {
 
   it('asks for a node before typing, deleting or opening', () => {
     renderBar({ hasSelection: false, type: null, closed: true, canOpen: false });
-    expect(screen.getByRole<HTMLButtonElement>('radio', { name: 'Corner' }).disabled).toBe(true);
+    expect(screen.getByRole<HTMLButtonElement>('radio', { name: 'Corner Point' }).disabled).toBe(
+      true,
+    );
     expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Delete Point' }).disabled).toBe(
       true,
     );
@@ -76,5 +78,13 @@ describe('PathEditToolbar', () => {
     expect(
       screen.getByRole('toolbar', { name: 'Edit path' }).closest('[data-canvas-toolbar]'),
     ).not.toBeNull();
+  });
+
+  // packages/ui Tooltip: a tooltip repeats its control's name; the node types said more than their names ("Corner
+  // point" over a button named "Corner"), so hovering them warned "[tooltip] label is not the accessible name".
+  it('names every node type with its tooltip’s words', () => {
+    renderBar();
+    for (const name of ['Corner Point', 'Mirrored Point', 'Aligned Point'])
+      expect(screen.getByRole('radio', { name })).toBeTruthy();
   });
 });

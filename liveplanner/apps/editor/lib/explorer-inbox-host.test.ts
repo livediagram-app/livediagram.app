@@ -70,6 +70,8 @@ const local: OfflineActivity = {
       key: 5,
       type: 'nope',
       title: 'Loose',
+      threadId: 'th-1',
+      threadTitle: 'Ada: Loose ends',
       commentCount: 1,
       latest,
       firstAt: 1,
@@ -108,8 +110,9 @@ describe('the Inbox host', () => {
     });
     // A custom type, whose name lives in its plan, reads as a plain card.
     expect(rows.threads[1]).toMatchObject({
-      elementId: 'c2',
-      card: { typeLabel: 'Card', board: null },
+      elementId: 'th-1',
+      elementLabel: 'Ada: Loose ends',
+      card: { id: 'c2', typeLabel: 'Card', board: null },
     });
   });
 

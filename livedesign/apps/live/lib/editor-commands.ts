@@ -65,6 +65,8 @@ export type CommandContext = {
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table):
   // no ownership powers, so neither Share nor Delete design.
   workbench?: boolean;
+  // The tab's pages are wireframe pages, so Inspect is offered (docs/specs/007-editor/wireframe-pages.md "Inspect").
+  wireframeTab?: boolean;
   // The canvas tool in force, so the command for the CURRENT tool is dropped
   // (offering "Hand tool" while holding the hand does nothing).
   canvasTool: string;
@@ -138,6 +140,8 @@ export const CANVAS_TOOLS: {
   // Edits the tab's elements, so it goes on a locked tab and in Plan mode, as in the dropdown.
   editsElements?: boolean;
   desktopOnly?: boolean;
+  // Offered on a wireframe tab alone, from its cluster button rather than the palette's dropdown.
+  wireframeOnly?: boolean;
 }[] = [
   { id: 'select', name: 'Select Tool', keywords: 'select pointer arrow cursor pick v' },
   { id: 'pan', name: 'Hand Tool', keywords: 'hand pan grab drag move canvas scroll h' },
@@ -170,6 +174,13 @@ export const CANVAS_TOOLS: {
     needsContent: true,
     desktopOnly: true,
   },
+  {
+    id: 'inspect',
+    name: 'Inspect Tool',
+    keywords: 'inspect measure handoff developer spacing size css values redline specs',
+    needsContent: true,
+    wireframeOnly: true,
+  },
 ];
 
 // The tool switches, minus whichever tool is already in force. Grouped with
@@ -182,6 +193,7 @@ function toolCommands(ctx: CommandContext, h: CommandHandlers): EditorCommand[] 
       t.id !== ctx.canvasTool &&
       !(t.needsContent && ctx.canvasEmpty) &&
       !(t.desktopOnly && ctx.isMobile) &&
+      !(t.wireframeOnly && !ctx.wireframeTab) &&
       !(t.mutates && ctx.isReadOnly) &&
       !(t.editsElements && ctx.tabLocked),
   ).map((t) => ({

@@ -67,7 +67,7 @@ const LIVE_APP_DIR = fileURLToPath(new URL('../../live/app', import.meta.url));
 
 // Routes served by a different worker entirely, so there is no page.tsx to
 // find. The router stitches these under the same hostname (docs/specs/016-platform/router-app.md).
-const OTHER_WORKERS = new Set(['/telemetry']);
+const OTHER_WORKERS = new Set(['/telemetry', '/community']);
 // The Explorer is liveworkspace's page, which the router serves at /explorer/* with the address kept
 // (liveworkspace/docs/specs/004-index/one-explorer.md), so the editor has no page for it.
 const OTHER_WORKER_PREFIXES = ['/explorer'];

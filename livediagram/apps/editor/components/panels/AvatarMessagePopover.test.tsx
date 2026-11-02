@@ -2,8 +2,8 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { stubResizeObserver } from '@/lib/stub-resize-observer';
-import { DEFAULT_AVATAR_CONFIG } from '@/lib/avatar-config';
-import { AvatarClusterButton } from '@/components/canvas/AvatarClusterButton';
+import { DEFAULT_AVATAR_CONFIG } from '@liveworkspace/avatar/config';
+import { AvatarClusterButton } from '@liveworkspace/avatar/components/AvatarClusterButton';
 import { AvatarPanel } from './AvatarPanel';
 
 beforeAll(stubResizeObserver);

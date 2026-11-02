@@ -4,9 +4,10 @@
 
 Please report security vulnerabilities **privately** through GitHub:
 
-**[Report a vulnerability](https://github.com/livedesign-app/livedesign.app/security/advisories/new)**
+**[Report a vulnerability](https://github.com/livediagram-app/livediagram.app/security/advisories/new)**
 
-Do not open a public issue, discussion or pull request for a security problem.
+Do not open a public issue, discussion or pull request for a security problem. This is the same private channel for
+every liveworkspace app; the repository's root [`SECURITY.md`](../SECURITY.md) lists them all.
 
 The full policy, covering scope, rules for testing, safe harbour and what to expect, is at
 [livedesign.app/help/policies/report-a-vulnerability](https://www.livedesign.app/help/policies/report-a-vulnerability/).

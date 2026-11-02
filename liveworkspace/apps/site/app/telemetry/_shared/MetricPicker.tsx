@@ -2,7 +2,7 @@
 
 import { useCallback, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Glyph, CloseIcon } from '@livediagram/ui';
-import { TextInput } from '@liveworkspace/ui';
+import { BackBar, TextInput } from '@liveworkspace/ui';
 import { eventLabel, titleCase } from './event-vocab';
 import { useCategoryColor } from './useCategoryColor';
 import { SearchGlyph } from './glyphs';
@@ -243,7 +243,7 @@ export function MetricPicker({
     ? `Matches (${rows.length})`
     : path.length === 0
       ? 'Browse by category'
-      : null; // deeper levels render a breadcrumb back-button instead
+      : null; // deeper levels render the back bar instead
 
   return (
     <div className="relative w-full">
@@ -286,20 +286,17 @@ export function MetricPicker({
               {header}
             </p>
           ) : (
-            <button
-              type="button"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                if (blurTimer.current) clearTimeout(blurTimer.current);
-                back();
-              }}
-              className="flex w-full cursor-pointer items-center gap-1.5 border-b border-slate-100 px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-500 transition hover:text-slate-700 dark:border-slate-800 dark:hover:text-slate-300 dark:text-slate-400"
-            >
-              <span aria-hidden className="text-sm leading-none">
-                ‹
-              </span>
-              {path.join(' › ')}
-            </button>
+            // The shared back bar (docs/specs/004-interface-design/back-bar.md), up one level. It keeps the
+            // focus in the search box, so the list stays open.
+            <div className="border-b border-slate-100 p-1.5 dark:border-slate-800">
+              <BackBar
+                label={path.length > 1 ? path[path.length - 2]! : 'All categories'}
+                current={path[path.length - 1]}
+                onClick={back}
+                keepFocus
+                gap="none"
+              />
+            </div>
           )}
 
           {rows.length > 0 ? (

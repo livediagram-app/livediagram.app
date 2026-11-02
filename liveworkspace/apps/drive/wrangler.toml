@@ -3,8 +3,8 @@ name = "liveworkspace-drive"
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
-# global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
-# livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
+# global_fetch_strictly_public: a fetch() to another Worker's route on this zone (liveworkspace.app) isn't routed to
+# that Worker without it (docs/specs/009-status/status.md "Where the checks go").
 compatibility_flags = ["global_fetch_strictly_public"]
 # The Google Drive mirror (liveworkspace/docs/specs/005-drive/drive.md): /api/drive on liveworkspace.app, and on each app's address
 # through its router.
@@ -52,9 +52,9 @@ DRIVE_PUBLIC_URL = "https://liveworkspace.app"
 # The accounts origin: access tokens are checked against `${ACCOUNTS_URL}/api/auth`.
 ACCOUNTS_URL = "https://www.liveworkspace.app"
 # Every app's API resource: an access token addressed to any of them is let in (as the index does).
-INDEX_AUDIENCES = "https://livediagram-router.liveworkspace-easing509.workers.dev/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api"
+INDEX_AUDIENCES = "https://livediagram.app/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api"
 # Where the service calls each app's export and import doors, and where an item opens.
-APP_ORIGIN_LIVEDIAGRAM = "https://livediagram-router.liveworkspace-easing509.workers.dev"
+APP_ORIGIN_LIVEDIAGRAM = "https://www.livediagram.app"
 APP_ORIGIN_LIVEPLANNER = "https://www.liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://www.livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://www.livedesign.app"
@@ -85,8 +85,8 @@ ENVIRONMENT = "staging"
 GOOGLE_CLIENT_ID = "75973480147-lpppg0shfk6tju1qn0mrg1o62a16siin.apps.googleusercontent.com"
 DRIVE_PUBLIC_URL = "https://staging.liveworkspace.app"
 ACCOUNTS_URL = "https://staging.liveworkspace.app"
-INDEX_AUDIENCES = "https://livediagram-router-staging.liveworkspace-easing509.workers.dev/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api"
-APP_ORIGIN_LIVEDIAGRAM = "https://livediagram-router-staging.liveworkspace-easing509.workers.dev"
+INDEX_AUDIENCES = "https://staging.livediagram.app/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api"
+APP_ORIGIN_LIVEDIAGRAM = "https://staging.livediagram.app"
 APP_ORIGIN_LIVEPLANNER = "https://staging.liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://staging.livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://staging.livedesign.app"

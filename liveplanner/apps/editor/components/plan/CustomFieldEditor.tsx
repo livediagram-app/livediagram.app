@@ -4,20 +4,29 @@
 // its kind. Every value is a plain string, number or true/false under the field's id; clearing a
 // field removes its value. A value of the wrong kind (the field's kind changed) shows empty and is
 // replaced by the next edit.
-import { CloseIcon, Select, TextInput } from '@liveplanner/ui';
+import { CloseIcon, TextInput } from '@liveplanner/ui';
 import {
   CURRENCY_DEFAULT,
   EMAIL_MAX,
+  dateTimeZones,
+  rangeEndOf,
   ITEM_UNKNOWN_STRING_MAX,
   RATING_STARS_ON_CARD,
+  durationMinutes,
   isEmailAddress,
   ratingScaleOf,
   type CustomFieldDef,
   type ItemFieldValue,
 } from '@liveplanner/items';
 import { DateField, DebouncedText } from './item-field-editors';
+import { ChoiceField } from './ChoiceField';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { RatingInput } from '../forms/RatingInput';
+import { PercentSlider } from './PercentSlider';
+import { DurationInput } from './time/DurationInput';
+import { DateTimeInput } from './DateTimeInput';
+import { DateRangeField } from './DateRangeField';
+import { PhoneField } from './PhoneField';
 
 type Save = (value: ItemFieldValue | undefined) => void | boolean | Promise<boolean>;
 
@@ -114,6 +123,29 @@ export function CustomFieldEditor({
         </div>
       );
     }
+    // A draggable bar and the number (docs/specs/026-plan/item-types.md "Percent").
+    case 'percent':
+      return (
+        <PercentSlider
+          id={id}
+          label={field.label}
+          value={value}
+          disabled={disabled}
+          onSave={(v) => void onSave(v)}
+        />
+      );
+    // "2h 30m", stored as whole minutes (docs/specs/026-plan/item-types.md "Duration"); a Time Spent field is drawn by
+    // the card panel itself (TimeSpentField).
+    case 'duration':
+      return (
+        <DurationInput
+          id={id}
+          label={field.label}
+          minutes={durationMinutes(field, value)}
+          disabled={disabled}
+          onSave={(m) => void onSave(m)}
+        />
+      );
     case 'email':
       return (
         <div className="flex items-center gap-1.5">
@@ -147,70 +179,65 @@ export function CustomFieldEditor({
           ) : null}
         </div>
       );
+    // A phone number as typed, and its call link (docs/specs/026-plan/item-types.md "Phone").
+    case 'phone':
+      return (
+        <PhoneField
+          id={id}
+          label={field.label}
+          value={text}
+          disabled={disabled}
+          onSave={(v) => void onSave(v)}
+        />
+      );
     case 'date':
       return <DateField id={id} value={value} disabled={disabled} onSave={onSave} />;
+    // A moment in the viewer's zone (docs/specs/026-plan/item-types.md "Date and Time").
+    case 'datetime':
+      return (
+        <div className="flex flex-col gap-0.5">
+          <DateTimeInput
+            id={id}
+            label={field.label}
+            value={text || undefined}
+            disabled={disabled}
+            onCommit={(v) => void onSave(v)}
+          />
+          <ZoneLine value={text} />
+        </div>
+      );
+    case 'daterange':
+      return (
+        <div className="flex flex-col gap-0.5">
+          <DateRangeField
+            id={id}
+            field={field}
+            value={value}
+            disabled={disabled}
+            onSave={(v) => void onSave(v)}
+          />
+          {field.withTime ? <ZoneLine value={rangeEndOf(value, 'start')} /> : null}
+        </div>
+      );
     case 'checkbox':
       return (
         <input
           id={id}
           type="checkbox"
+          aria-label={field.label}
           disabled={disabled}
           className="h-4 w-4 accent-brand-600 enabled:cursor-pointer"
           checked={value === true}
           onChange={(e) => void onSave(e.target.checked ? true : undefined)}
         />
       );
-    case 'choice': {
-      const options = field.options ?? [];
+    // Option chips and a list to pick from, one control for both (docs/specs/026-plan/item-types.md "Choice and
+    // Multiple Choice in the card panel").
+    case 'choice':
+    case 'multichoice':
       return (
-        <Select
-          id={id}
-          className="w-full"
-          selectClassName="text-[13px]"
-          disabled={disabled}
-          value={options.includes(text) ? text : ''}
-          onChange={(e) => void onSave(e.target.value || undefined)}
-        >
-          <option value="">None</option>
-          {options.map((o) => (
-            <option key={o} value={o}>
-              {o}
-            </option>
-          ))}
-        </Select>
+        <ChoiceField id={id} field={field} value={value} disabled={disabled} onSave={onSave} />
       );
-    }
-    case 'multichoice': {
-      // Checkboxes, one an option; the picks kept in option order (docs/specs/030-forms/forms.md).
-      const options = field.options ?? [];
-      const picks = Array.isArray(value)
-        ? value.filter((v): v is string => typeof v === 'string')
-        : [];
-      return (
-        <div id={id} role="group" aria-label={field.label} className="flex flex-col gap-1">
-          {options.map((o) => (
-            <label
-              key={o}
-              className="flex items-center gap-2 text-[13px] text-slate-700 dark:text-slate-200"
-            >
-              <input
-                type="checkbox"
-                disabled={disabled}
-                className="h-4 w-4 accent-brand-600 enabled:cursor-pointer"
-                checked={picks.includes(o)}
-                onChange={(e) => {
-                  const next = options.filter((x) =>
-                    x === o ? e.target.checked : picks.includes(x),
-                  );
-                  void onSave(next.length ? next : undefined);
-                }}
-              />
-              {o}
-            </label>
-          ))}
-        </div>
-      );
-    }
     case 'rating': {
       const scale = ratingScaleOf(field);
       const n = typeof value === 'number' ? value : undefined;
@@ -238,8 +265,29 @@ export function CustomFieldEditor({
         </div>
       );
     }
-    // A Card field is drawn by LinkedCardField (ItemFieldEditor), never here.
+    // A Card field is drawn by LinkedCardField and a Calculated field by CalculatedFieldValue (ItemFieldEditor),
+    // never here.
+    // Drawn by the card panel itself (ItemFieldEditor): a linked card, a worked-out value, a picture, and the built-in
+    // fields' kinds, which it edits as their built-in fields. A Comments field's threads and a Votes field's votes
+    // are never typed in (item-types.md "Comments and Votes fields").
     case 'card':
+    case 'calculated':
+    case 'image':
+    case 'person':
+    case 'labels':
+    case 'colour':
+    case 'checklist':
+    case 'comments':
+    case 'votes':
       return null;
   }
+}
+
+// Under a moment's box, the zone it reads in and where it was set when that is another (item-types.md "Date and Time"):
+// a line rather than a tooltip, so a phone shows it too.
+function ZoneLine({ value }: { value: unknown }) {
+  const zones = dateTimeZones(value);
+  return zones ? (
+    <p className="text-[11px] leading-snug text-slate-500 dark:text-slate-400">{zones}</p>
+  ) : null;
 }

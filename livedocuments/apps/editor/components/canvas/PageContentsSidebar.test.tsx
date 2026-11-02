@@ -5,9 +5,11 @@ import { layOutPages, type Page } from '@livedocuments/document';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
+import { requestPagePanel } from '@/lib/page-panel-request';
 import { CONTENTS_FOLLOW_SETTLE_MS, PageContentsSidebar } from './PageContentsSidebar';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+vi.mock('@/lib/page-panel-request', () => ({ requestPagePanel: vi.fn() }));
 
 // docs/specs/007-editor/pages-mode.md "Contents": docked as a sidebar down the canvas's left.
 afterEach(() => {
@@ -37,11 +39,14 @@ const laid = layOutPages(
 function show({
   canEdit = true,
   side = 'left',
-}: { canEdit?: boolean; side?: 'left' | 'right' } = {}) {
+  hidden = false,
+  joined = false,
+}: { canEdit?: boolean; side?: 'left' | 'right'; hidden?: boolean; joined?: boolean } = {}) {
   const focusPage = vi.fn();
   const addPage = vi.fn();
   const onMinimise = vi.fn();
   const onMoveToSide = vi.fn();
+  const onDraggingChange = vi.fn();
   const edit = {
     addPage,
     movePageTo: vi.fn(),
@@ -49,8 +54,14 @@ function show({
     canDuplicate: () => true,
     setLocked: vi.fn(),
     removePage: vi.fn(),
+    canMove: (id: string, by: -1 | 1) => (by === -1 ? id !== 'p1' : id !== 'p3'),
+    movePage: vi.fn(),
   };
-  const deck = { slideOf: (id: string) => (id === 'p1' ? { id: 's1' } : undefined), add: vi.fn() };
+  const deck = {
+    slideOf: (id: string) => (id === 'p1' ? { id: 's1', hidden } : undefined),
+    add: vi.fn(),
+    toggleHidden: vi.fn(),
+  };
   const store = createViewportStore(1);
   const view = {
     pages: laid,
@@ -66,10 +77,12 @@ function show({
         side={side}
         onMoveToSide={onMoveToSide}
         onMinimise={onMinimise}
+        joined={joined}
+        onDraggingChange={onDraggingChange}
       />
     </ViewportStoreProvider>,
   );
-  return { focusPage, addPage, onMinimise, onMoveToSide, edit, deck, store };
+  return { focusPage, addPage, onMinimise, onMoveToSide, onDraggingChange, edit, deck, store };
 }
 
 // The view centred on a page (the centred transform, @liveworkspace/workbench/lib/viewport.ts), in jsdom's 0 x 0 canvas.
@@ -110,22 +123,108 @@ describe('PageContentsSidebar', () => {
     expect(screen.getByRole('complementary', { name: 'Contents' }).style.right).toBe('0px');
   });
 
-  it("gives each page a toolbar, an Editor's alone, whose presses never glide", () => {
+  // docs/specs/007-editor/pages-mode.md "Joined to the menu box".
+  it('joined, rises to the top and keeps the menu box’s row, its header where it was', () => {
+    show({ joined: true });
+    const aside = screen.getByRole('complementary', { name: 'Contents' });
+    expect(aside.style.top).toBe('0px');
+    const band = aside.firstElementChild as HTMLElement;
+    expect(band.hasAttribute('data-menu-join-band')).toBe(true);
+    expect(band.style.height).toBe('68px');
+    expect(band.nextElementSibling?.hasAttribute('data-contents-handle')).toBe(true);
+  });
+
+  it('has no menu row unjoined', () => {
+    show();
+    expect(document.querySelector('[data-menu-join-band]')).toBeNull();
+  });
+
+  it('tells the chrome a drag across starts and ends, a cancelled one too', () => {
+    const h = show({ joined: true });
+    const handle = document.querySelector<HTMLElement>('[data-contents-handle]')!;
+    handle.setPointerCapture = () => {};
+    fireEvent.pointerDown(handle, { button: 0, clientX: -10, pointerId: 1 });
+    expect(h.onDraggingChange).toHaveBeenLastCalledWith(true);
+    fireEvent.pointerUp(handle, { clientX: -10, pointerId: 1 });
+    expect(h.onDraggingChange).toHaveBeenLastCalledWith(false);
+    fireEvent.pointerDown(handle, { button: 0, clientX: -10, pointerId: 1 });
+    fireEvent.pointerCancel(handle, { pointerId: 1 });
+    expect(h.onDraggingChange).toHaveBeenLastCalledWith(false);
+    // A press on its buttons is no drag.
+    h.onDraggingChange.mockClear();
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Minimise Contents' }), {
+      button: 0,
+      pointerId: 1,
+    });
+    expect(h.onDraggingChange).not.toHaveBeenCalled();
+  });
+
+  it('lets go of the menu box if it goes mid-drag', () => {
+    const h = show({ joined: true });
+    const handle = document.querySelector<HTMLElement>('[data-contents-handle]')!;
+    handle.setPointerCapture = () => {};
+    fireEvent.pointerDown(handle, { button: 0, clientX: -10, pointerId: 1 });
+    cleanup();
+    expect(h.onDraggingChange).toHaveBeenLastCalledWith(false);
+  });
+
+  it("stacks each page's Delete and ⋯ down its left, an Editor's alone, whose presses never glide", () => {
     const h = show();
-    // Add to Slides stays on the page's own title bar: the sidebar's toolbar leaves it out.
-    expect(screen.queryByRole('button', { name: 'Add to Slides Page 2' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Duplicate Page 2' }));
-    expect(h.edit.duplicatePage).toHaveBeenCalledWith('p2');
-    fireEvent.click(screen.getByRole('button', { name: 'Lock Page 2' }));
-    expect(h.edit.setLocked).toHaveBeenCalledWith('p2', true);
     fireEvent.click(screen.getByRole('button', { name: 'Delete Page 2' }));
     expect(h.edit.removePage).toHaveBeenCalledWith('p2');
+    fireEvent.click(screen.getByRole('button', { name: 'More Actions for Page 2' }));
+    expect(screen.getAllByRole('menuitem').map((el) => el.textContent)).toEqual([
+      'Page Settings',
+      'Add to Slides',
+      'Duplicate',
+      'Move Up',
+      'Move Down',
+      'Lock',
+      'Delete',
+    ]);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Move Down' }));
+    expect(h.edit.movePage).toHaveBeenCalledWith('p2', 1);
     expect(h.focusPage).not.toHaveBeenCalledWith('p2');
-    // No line of what each page is: the toolbar and the picture say it.
+    // One menu for the whole list, whichever row's ⋯ opened it.
+    fireEvent.click(screen.getByRole('button', { name: 'More Actions for Page 1' }));
+    expect(screen.getAllByRole('menu')).toHaveLength(1);
+    expect(screen.queryByRole('menuitem', { name: 'Move Up' })).toBeNull();
+    // No line of what each page is: the picture says it.
     expect(screen.queryByText(/Not in the deck|In the deck/)).toBeNull();
     cleanup();
     show({ canEdit: false });
-    expect(screen.queryByRole('toolbar')).toBeNull();
+    expect(screen.queryByRole('button', { name: /^More Actions for/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Delete/ })).toBeNull();
+    // A right-click on a row opens nothing for someone who may not edit.
+    fireEvent.contextMenu(screen.getAllByRole('listitem')[1]!);
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+
+  it("holds each page's place in the slide deck in its menu, and marks a hidden one", () => {
+    const h = show();
+    fireEvent.click(screen.getByRole('button', { name: 'More Actions for Page 2' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Add to Slides' }));
+    expect(h.deck.add).toHaveBeenCalledWith('p2');
+    fireEvent.click(screen.getByRole('button', { name: 'More Actions for Page 1' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Hide in Slides' }));
+    expect(h.deck.toggleHidden).toHaveBeenCalledWith('s1');
+    expect(screen.queryByRole('img', { name: 'Hidden in Slides' })).toBeNull();
+    cleanup();
+    const hid = show({ hidden: true });
+    expect(screen.getAllByRole('img', { name: 'Hidden in Slides' })).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'More Actions for Page 1' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Show in Slides' }));
+    expect(hid.deck.toggleHidden).toHaveBeenCalledWith('s1');
+  });
+
+  it('opens a page’s settings from its menu, framing it first', async () => {
+    const h = show();
+    fireEvent.contextMenu(screen.getAllByRole('listitem')[2]!);
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Page Settings' }));
+    expect(h.focusPage).toHaveBeenCalledWith('p3');
+    expect(screen.queryByRole('menu')).toBeNull();
+    // Its settings open from its cog once it is framed.
+    await waitFor(() => expect(requestPagePanel).toHaveBeenCalledWith('p3'));
   });
 
   it('minimises to its button, framing the page in view again', async () => {

@@ -95,6 +95,20 @@ export function resizeCursor(handle: string, rotation: number): string {
 const HIT_PAD_CLASSES =
   "pointer-coarse:before:absolute pointer-coarse:before:-inset-[16px] pointer-coarse:before:content-['']";
 
+// The pad leans outward: toward the element it reaches only 4 px past the grip. Fanned out evenly it reached
+// 19 to 22 px into the element from every edge and corner, so on a phone a finger on a small element's body
+// grabbed a grip and resized it instead of moving it. Each pad is still at least 26 px across.
+export const HIT_PAD_INWARD: Record<HandlePosition | 'n' | 'e' | 's' | 'w', string> = {
+  n: 'pointer-coarse:before:bottom-[-4px]',
+  e: 'pointer-coarse:before:left-[-4px]',
+  s: 'pointer-coarse:before:top-[-4px]',
+  w: 'pointer-coarse:before:right-[-4px]',
+  nw: 'pointer-coarse:before:bottom-[-4px] pointer-coarse:before:right-[-4px]',
+  ne: 'pointer-coarse:before:bottom-[-4px] pointer-coarse:before:left-[-4px]',
+  sw: 'pointer-coarse:before:top-[-4px] pointer-coarse:before:right-[-4px]',
+  se: 'pointer-coarse:before:top-[-4px] pointer-coarse:before:left-[-4px]',
+};
+
 // The corner resize handle: the floating control in light mode, and in dark mode
 // (docs/specs/008-canvas/canvas-and-palette.md, Selection) a #60a5fa square with a #1e3a8a border
 // that holds its fill on hover (only the opacity lifts). The floating control's own dark plate
@@ -117,9 +131,18 @@ type ResizeHandlesProps = {
   // diagonal once the box is turned.
   rotation?: number;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
+  // Every press on a handle, first: the element's touch long-press, so a finger held still on a handle opens the
+  // element's menu as it would on the element (docs/specs/008-canvas/element-menu-quick-bar.md "Opening it").
+  onHandlePress?: (e: ReactPointerEvent) => void;
 };
 
-export function ResizeHandles({ elementId, zoom, rotation = 0, onBeginDrag }: ResizeHandlesProps) {
+export function ResizeHandles({
+  elementId,
+  zoom,
+  rotation = 0,
+  onBeginDrag,
+  onHandlePress,
+}: ResizeHandlesProps) {
   return (
     <>
       {HANDLE_POSITIONS.map((pos) => (
@@ -128,6 +151,7 @@ export function ResizeHandles({ elementId, zoom, rotation = 0, onBeginDrag }: Re
           data-canvas-handle=""
           onPointerDown={(e) => {
             e.stopPropagation();
+            onHandlePress?.(e);
             if (handlePressStarts(elementId, e)) onBeginDrag(elementId, `resize-${pos}`, e);
           }}
           style={{
@@ -135,7 +159,7 @@ export function ResizeHandles({ elementId, zoom, rotation = 0, onBeginDrag }: Re
             transformOrigin: 'center',
             cursor: resizeCursor(pos, rotation),
           }}
-          className={`pointer-events-auto absolute h-3 w-3 opacity-70 hover:opacity-100 ${RESIZE_HANDLE_CLASS} ${positionClasses[pos]} ${HIT_PAD_CLASSES}`}
+          className={`pointer-events-auto absolute h-3 w-3 opacity-70 hover:opacity-100 ${RESIZE_HANDLE_CLASS} ${positionClasses[pos]} ${HIT_PAD_CLASSES} ${HIT_PAD_INWARD[pos]}`}
         />
       ))}
     </>
@@ -197,7 +221,7 @@ export function UnionResizeHandles({
             // base angle alone picks the diagonal (rotation = 0).
             cursor: resizeCursor(pos, 0),
           }}
-          className={`pointer-events-auto absolute h-3 w-3 rounded-sm border border-brand-600 bg-white dark:border-brand-300 dark:bg-slate-900 ${positionClasses[pos]} ${HIT_PAD_CLASSES}`}
+          className={`pointer-events-auto absolute h-3 w-3 rounded-sm border border-brand-600 bg-white dark:border-brand-300 dark:bg-slate-900 ${positionClasses[pos]} ${HIT_PAD_CLASSES} ${HIT_PAD_INWARD[pos]}`}
         />
       ))}
     </div>
@@ -219,6 +243,7 @@ export function SelectionChromeLayer({
   showHandles,
   showAnchors,
   onBeginDrag,
+  onHandlePress,
 }: {
   elementId: string;
   // The element's box in canvas coordinates.
@@ -227,6 +252,9 @@ export function SelectionChromeLayer({
   showHandles: boolean;
   showAnchors: boolean;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
+  // A finger near a small element's edge lands on a handle (the browser moves a touch onto the nearest control), so
+  // each handle hands its press to the element's long-press too. See ResizeHandlesProps.
+  onHandlePress?: (e: ReactPointerEvent) => void;
 }) {
   const zoom = useCanvasZoom();
   if (!showHandles && !showAnchors) return null;
@@ -254,6 +282,7 @@ export function SelectionChromeLayer({
             zoom={zoom}
             rotation={rotation}
             onBeginDrag={onBeginDrag}
+            onHandlePress={onHandlePress}
           />
         ) : null}
 
@@ -266,6 +295,7 @@ export function SelectionChromeLayer({
                 zoom={zoom}
                 rotation={rotation}
                 onBeginDrag={onBeginDrag}
+                onHandlePress={onHandlePress}
               />
             ))
           : null}
@@ -292,12 +322,14 @@ export function EdgeResizeHandle({
   zoom,
   rotation = 0,
   onBeginDrag,
+  onHandlePress,
 }: {
   anchor: 'n' | 'e' | 's' | 'w';
   elementId: string;
   zoom: number;
   rotation?: number;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
+  onHandlePress?: (e: ReactPointerEvent) => void;
 }) {
   const vertical = anchor === 'n' || anchor === 's';
   return (
@@ -307,6 +339,7 @@ export function EdgeResizeHandle({
       data-canvas-handle=""
       onPointerDown={(e) => {
         e.stopPropagation();
+        onHandlePress?.(e);
         if (handlePressStarts(elementId, e)) onBeginDrag(elementId, `resize-${anchor}`, e);
       }}
       style={{
@@ -316,7 +349,7 @@ export function EdgeResizeHandle({
         // Rotation-aware cursor so it points the right way once turned.
         cursor: resizeCursor(anchor, rotation),
       }}
-      className={`pointer-events-auto absolute rounded-full border border-brand-400 bg-white opacity-80 shadow-sm transition hover:opacity-100 dark:border-brand-300 dark:bg-slate-900 ${HIT_PAD_CLASSES} ${
+      className={`pointer-events-auto absolute rounded-full border border-brand-400 bg-white opacity-80 shadow-sm transition hover:opacity-100 dark:border-brand-300 dark:bg-slate-900 ${HIT_PAD_CLASSES} ${HIT_PAD_INWARD[anchor]} ${
         vertical ? 'h-1.5 w-4' : 'h-4 w-1.5'
       }`}
     />

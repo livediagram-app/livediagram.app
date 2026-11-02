@@ -26,6 +26,8 @@ type ModePanelExtras = {
   headerActions?: ReactNode;
   /** The article explaining this mode (docs/specs/018-help/contextual-help-links.md), shown as `?` in the header. */
   helpArticle?: HelpArticleKey;
+  /** A wider body for a panel of values (Inspect); the column's width otherwise. */
+  width?: string;
 };
 
 export function ModePanel({
@@ -37,6 +39,7 @@ export function ModePanel({
   dock,
   headerActions,
   helpArticle,
+  width = 'w-auto sm:w-64',
 }: ModePanelProps &
   ModePanelExtras & {
     title: string;
@@ -48,7 +51,7 @@ export function ModePanel({
       position={position}
       defaultCorner="bottom-right"
       // One width for the whole bottom-right column, so it reads as one edge.
-      width="w-auto sm:w-64"
+      width={width}
       onMoveTo={onMoveTo}
       onReset={onReset}
       headerActions={headerActions}

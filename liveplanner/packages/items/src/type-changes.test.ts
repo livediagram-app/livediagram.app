@@ -3,6 +3,7 @@ import { ITEM_TYPES } from './item-types';
 import { DEFAULT_STATUS_PENDING, NEW_ITEM_TYPE, applyCardTypeChanges } from './type-changes';
 import {
   ITEM_TYPE_CATALOGUE_VERSION,
+  ITEM_TYPE_STATUSES_MAX,
   defaultCatalogue,
   validateItemTypeCatalogue,
 } from './type-catalogue';
@@ -35,7 +36,7 @@ describe('applyCardTypeChanges: add', () => {
               { name: 'Blocks', kind: 'card', linkType: 'Task' },
             ],
             defaultStatus: 'to do',
-            excludedStatuses: ['Done'],
+            statuses: ['Done', 'to do', 'Done'],
           },
         ],
         statuses,
@@ -48,7 +49,7 @@ describe('applyCardTypeChanges: add', () => {
       color: NEW_ITEM_TYPE.color,
       glyph: 'star',
       defaultStatus: 'todo~a1',
-      excludedStatuses: ['done~a1'],
+      statuses: ['done~a1', 'todo~a1'],
     });
     expect(bug.custom).toEqual([
       { id: 'f-severity', label: 'Severity', kind: 'choice', options: ['S1', 'S2'] },
@@ -124,7 +125,7 @@ describe('applyCardTypeChanges: add', () => {
       code: 'type_change_invalid',
     });
     expect(
-      refusal({ op: 'add', name: 'X', custom: [{ name: 'A', kind: 'person' }] }),
+      refusal({ op: 'add', name: 'X', custom: [{ name: 'A', kind: 'signature' }] }),
     ).toMatchObject({
       code: 'type_change_invalid',
     });
@@ -142,6 +143,103 @@ describe('applyCardTypeChanges: add', () => {
       code: 'type_change_invalid',
       message: expect.stringContaining('nothing was saved'),
     });
+  });
+});
+
+// docs/specs/026-plan/plan-agents.md "Changing card types": a Card field of several card types.
+describe('applyCardTypeChanges: card fields of several types', () => {
+  it('adds one linking to every type named, linkType first, each once', () => {
+    const r = ok(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [
+          {
+            op: 'add',
+            name: 'Risk',
+            custom: [
+              { name: 'Owner', kind: 'card', linkType: 'Project', linkTypes: ['task', 'Project'] },
+              { name: 'About', kind: 'card', linkTypes: ['Task'] },
+            ],
+          },
+        ],
+        statuses,
+      ),
+    );
+    const risk = r.catalogue!.types.find((t) => t.id === 'risk')!;
+    expect(risk.custom).toEqual([
+      {
+        id: 'f-owner',
+        label: 'Owner',
+        kind: 'card',
+        linkType: 'project',
+        linkTypes: ['project', 'task'],
+      },
+      { id: 'f-about', label: 'About', kind: 'card', linkType: 'task' },
+    ]);
+    expect(validateItemTypeCatalogue(r.catalogue).ok).toBe(true);
+  });
+
+  it('replaces a Card field’s types in place, and refuses them on any other kind or empty', () => {
+    const r = ok(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [
+          {
+            op: 'set',
+            type: 'Task',
+            editCustom: [{ field: 'Parent', linkTypes: ['Project', 'Task'] }],
+          },
+        ],
+        statuses,
+      ),
+    );
+    const parent = r
+      .catalogue!.types.find((t) => t.id === 'task')!
+      .custom!.find((f) => f.id === 'parent');
+    expect(parent).toMatchObject({ linkType: 'project', linkTypes: ['project', 'task'] });
+    const back = ok(
+      applyCardTypeChanges(
+        r.catalogue,
+        [{ op: 'set', type: 'Task', editCustom: [{ field: 'Parent', linkTypes: ['Project'] }] }],
+        statuses,
+      ),
+    );
+    expect(
+      back.catalogue!.types.find((t) => t.id === 'task')!.custom!.find((f) => f.id === 'parent'),
+    ).toEqual({
+      id: 'parent',
+      label: 'Parent',
+      kind: 'card',
+      linkType: 'project',
+    });
+    const withText = ok(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [{ op: 'add', name: 'Bug', custom: [{ name: 'Severity', kind: 'text' }] }],
+        statuses,
+      ),
+    ).catalogue;
+    expect(
+      applyCardTypeChanges(
+        withText,
+        [{ op: 'set', type: 'Bug', editCustom: [{ field: 'Severity', linkTypes: ['Task'] }] }],
+        statuses,
+      ),
+    ).toMatchObject({ ok: false, code: 'type_change_invalid' });
+    expect(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [{ op: 'set', type: 'Task', editCustom: [{ field: 'Parent', linkTypes: [] }] }],
+        statuses,
+      ),
+    ).toMatchObject({ ok: false, code: 'type_change_invalid' });
+    expect(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [{ op: 'set', type: 'Task', editCustom: [{ field: 'Parent', linkTypes: ['Epic'] }] }],
+        statuses,
+      ),
+    ).toMatchObject({ ok: false, code: 'type_unknown' });
   });
 });
 
@@ -220,7 +318,7 @@ describe('applyCardTypeChanges: set, delete, restore', () => {
     ).toEqual([`+ Y (y); ${DEFAULT_STATUS_PENDING('Doing')}`]);
   });
 
-  // The benchmark's P4: "A compact Post card cannot show "Owner". It can show: … Owner".
+  // The benchmark's P4: "A Post card cannot show "Owner". It can show: … Owner".
   it('shows a custom field named Owner on the card, not the Assignee', () => {
     const r = ok(
       applyCardTypeChanges(
@@ -230,7 +328,7 @@ describe('applyCardTypeChanges: set, delete, restore', () => {
             op: 'add',
             name: 'Post',
             custom: [{ name: 'Owner', kind: 'text', onCard: true }],
-            display: { compact: { besideTitle: ['Type'], belowTitle: ['Owner'] } },
+            display: { detailed: { header: ['Type'], underTitle: ['Owner'] } },
           },
         ],
         statuses,
@@ -498,5 +596,54 @@ describe('applyCardTypeChanges: every edit path', () => {
         statuses,
       ),
     ).toThrow(TypeError);
+  });
+});
+
+// docs/specs/026-plan/item-types.md "The statuses a type uses", plan-agents.md "Changing card types".
+describe('applyCardTypeChanges: the statuses a type uses', () => {
+  it('starts a new type with every status the boards name, in order', () => {
+    const r = ok(applyCardTypeChanges(DEFAULTS, [{ op: 'add', name: 'Lead' }], statuses));
+    expect(r.catalogue!.types.find((t) => t.id === 'lead')!.statuses).toEqual([
+      'todo~a1',
+      'done~a1',
+    ]);
+  });
+
+  it('leaves a new type to read every status when the boards name more than a list holds', () => {
+    const many = Array.from({ length: ITEM_TYPE_STATUSES_MAX + 1 }, (_, i) => ({
+      status: `s${i}`,
+      name: `S${i}`,
+    }));
+    const r = ok(applyCardTypeChanges(DEFAULTS, [{ op: 'add', name: 'Lead' }], many));
+    expect(r.catalogue!.types.find((t) => t.id === 'lead')!.statuses).toBeUndefined();
+    expect(
+      applyCardTypeChanges(
+        DEFAULTS,
+        [{ op: 'set', type: 'Task', statuses: many.map((s) => s.name) }],
+        many,
+      ),
+    ).toMatchObject({ ok: false, code: 'type_change_invalid' });
+  });
+
+  it('sets a type’s whole ordered list by name, replacing a legacy type’s exclusions', () => {
+    const legacy = {
+      version: 1,
+      types: DEFAULTS.types.map((t) =>
+        t.id === 'task' ? { ...t, excludedStatuses: ['done~a1'] } : t,
+      ),
+    };
+    const r = ok(
+      applyCardTypeChanges(
+        legacy,
+        [{ op: 'set', type: 'Task', statuses: ['Done', 'to do'] }],
+        statuses,
+      ),
+    );
+    const t = r.catalogue!.types.find((x) => x.id === 'task')!;
+    expect(t.statuses).toEqual(['done~a1', 'todo~a1']);
+    expect('excludedStatuses' in t).toBe(false);
+    expect(
+      applyCardTypeChanges(legacy, [{ op: 'set', type: 'Task', statuses: ['Nope'] }], statuses),
+    ).toMatchObject({ ok: false });
   });
 });

@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { ShapeElement } from '@liveplanner/project';
 import {
   ARCHIVED_FIELD,
+  ITEM_TYPES,
   boardAddTypes,
   boardShowsType,
   isArchived,
@@ -18,8 +19,14 @@ import {
   newItemId,
 } from '@liveplanner/items';
 import type { PlanContextValue } from '@/components/plan/PlanContext';
-import { boardMoveFor, cellStatus, laneMove } from '@/components/plan/plan-board-moves';
-import { moveStatusRefusal } from './status-refusal';
+import {
+  boardMoveFor,
+  cellStatus,
+  groupDropMoves,
+  laneMove,
+  sortedSlot,
+} from '@/components/plan/plan-board-moves';
+import { cardsStayedMessage, moveStatusRefusal } from './status-refusal';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { registerPlanBoardTarget, sameIncoming, type PlanIncoming } from './plan-board-targets';
 
@@ -55,7 +62,7 @@ export function usePlanBoardDrop(opts: {
   // over a slot does not re-render the board on every pointermove (a same-value setState can still render once).
   const lastIncoming = useRef<PlanIncoming | null>(null);
 
-  const drop = (itemId: string, slot: PlanDropSlot) => {
+  const drop = (itemId: string, slot: PlanDropSlot, fromLane?: string) => {
     if (!plan || !setup || !projection) return;
     const item = items.get(itemId);
     // An Archive board (docs/specs/026-plan/items.md "Archive"): a card dropped on it is archived, its
@@ -67,7 +74,7 @@ export function usePlanBoardDrop(opts: {
       track('Plan', 'Moved', 'Archive');
       return;
     }
-    const lands = boardMoveFor(setup, projection, item, itemId, slot);
+    const lands = boardMoveFor(setup, projection, item, itemId, slot, fromLane);
     if (!lands) return;
     // Off an Archive board onto another: it comes back, in the move itself (one write, one undo step).
     const restored = !!item && isArchived(item);
@@ -76,6 +83,45 @@ export function usePlanBoardDrop(opts: {
     if (restored) track('Plan', 'Restored', 'Card');
     const column = setup.columns.find((c) => c.status === slot.status);
     plan.announce(`Moved to ${column?.name ?? slot.status}`);
+  };
+
+  // A group of selected cards let go in one of this board's cells (docs/specs/026-plan/plan-board.md "Several cards at
+  // once"): one write landing them together, in order; the cards the cell's status refuses stay, announced once.
+  const dropGroup = (ids: readonly string[], slot: PlanDropSlot) => {
+    if (!plan || !setup || !projection) return;
+    // A card of a type this board does not show stays where it is (a group dropped from another board).
+    const shown = ids.filter((id) => {
+      const it = items.get(id);
+      return !!it && boardShowsType(setup, it.type, plan.types);
+    });
+    if (setup.archive) {
+      const patches = shown
+        .filter((id) => !isArchived(items.get(id)!))
+        .map((id) => ({ id, patch: { set: { [ARCHIVED_FIELD]: true } } }));
+      if (patches.length === 0) return;
+      plan.patchItems?.(patches);
+      plan.announce(`${patches.length === 1 ? 'Card' : `${patches.length} cards`} archived`);
+      track('Plan', 'Moved', 'Archive');
+      return;
+    }
+    const columnName = (s: string) =>
+      setup.columns.find((c) => c.status === s)?.name ?? plan.statusNames.get(s) ?? s;
+    const { moves, stayed } = groupDropMoves(
+      setup,
+      projection,
+      items,
+      shown,
+      slot,
+      (item, move) => moveStatusRefusal(plan.types, item, move, columnName) !== null,
+    );
+    if (moves.length) {
+      plan.moveItems?.(moves);
+      track('Plan', 'Moved', 'Cards');
+      plan.announce(
+        `${moves.length === 1 ? 'Card' : `${moves.length} cards`} moved to ${columnName(slot.status)}`,
+      );
+    }
+    if (stayed) plan.announce(cardsStayedMessage(stayed, columnName(slot.status)));
   };
 
   const drag = usePlanCardDrag({
@@ -103,6 +149,12 @@ export function usePlanBoardDrop(opts: {
     },
     onDragging: (id) => plan?.setDragging(id),
     item: (id) => items.get(id),
+    onDropGroup: dropGroup,
+    onTrashGroup: (ids) => {
+      if (!plan?.canEdit) return;
+      const went = plan.trashItems(ids);
+      if (went) plan.announce(`${went === 1 ? 'Card' : `${went} cards`} moved to the Trash`);
+    },
   });
 
   // The handlers read this render's board; the registration lasts as long as the board's element.
@@ -123,6 +175,7 @@ export function usePlanBoardDrop(opts: {
       return 'This board can’t be changed';
     },
     drop,
+    dropGroup,
     // An Archive board takes cards moved to it, never a new one; any other board takes the types it shows
     // (docs/specs/026-plan/plan-board.md "Card types a board shows").
     acceptsType: (type: string) =>
@@ -147,6 +200,11 @@ export function usePlanBoardDrop(opts: {
       const column = setup.columns.find((c) => c.status === slot.status);
       plan.announce(`${def.label} added to ${column?.name ?? slot.status}`);
     },
+    // A sorted board puts the card where its sort does, so the placeholder shows where it lands.
+    place: (itemId: string, slot: PlanDropSlot) =>
+      setup && projection
+        ? sortedSlot(setup, projection, items.get(itemId), slot, plan?.types ?? ITEM_TYPES)
+        : slot,
     // The card's own status is never refused (it may be reordered there or change lanes); a swimlane by type
     // checks the lane's type, the one the card would have.
     refuseAt: (item: Pick<Item, 'type' | 'fields'>, slot: PlanDropSlot) => {
@@ -167,6 +225,7 @@ export function usePlanBoardDrop(opts: {
         accepts: (id) => target.current.accepts(id),
         refusal: () => target.current.refusal(),
         drop: (id, slot) => target.current.drop(id, slot),
+        dropMany: (ids, slot) => target.current.dropGroup(ids, slot),
         hover: (next) => {
           if (sameIncoming(lastIncoming.current, next)) return;
           lastIncoming.current = next;
@@ -175,9 +234,10 @@ export function usePlanBoardDrop(opts: {
         acceptsType: (type) => target.current.acceptsType(type),
         addCard: (type, slot) => target.current.addCard(type, slot),
         refuseAt: (type, slot) => target.current.refuseAt(type, slot),
+        place: (id, slot) => target.current.place(id, slot),
       }),
     [element.id, target],
   );
 
-  return { drag, incoming, drop };
+  return { drag, incoming, drop, dropGroup };
 }

@@ -28,6 +28,7 @@ import { isBendDelta, isCurvePoints, MAX_CURVE_POINTS } from './malformed-bends'
 import { ELEMENT_KEY_FIELDS, ELEMENT_KEY_MAX, isElementKey } from './malformed-ids';
 import { parseStrokePoints } from '@liveworkspace/model-core/stroke-points';
 import { shapeValidationIssue } from './validate-shape';
+import { MEMBER_FIELD_CHECKS } from './component-fields';
 import {
   FONT_WEIGHTS,
   isFontWeight,
@@ -122,6 +123,8 @@ export const SHAPE_KINDS = new Set<string>([
   'site-header',
   // Tab window (docs/specs/009-elements/tab-window.md): another tab of the design drawn inside it.
   'tab-window',
+  // Instance (docs/specs/009-elements/components.md): one element drawing a main of the component library.
+  'instance',
   'stadium',
   'cloud',
   'triangle',
@@ -177,6 +180,8 @@ const COMMON_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: isElementKey,
     rule: `a string of at most ${ELEMENT_KEY_MAX} characters`,
   })),
+  // An edit session's member (docs/specs/009-elements/components.md "Editing the main").
+  ...MEMBER_FIELD_CHECKS,
   // A Participant's adder key (docs/specs/013-workspace/share-roles.md), stamped by the server.
   {
     field: 'addedBy',
@@ -308,14 +313,18 @@ function freehandIssue(el: Record<string, unknown>): ElementValidationIssue | nu
   return firstFieldIssue(el, FREEHAND_FIELD_CHECKS);
 }
 
+// The label's scale on a text and a shape (docs/specs/007-editor/pages-mode.md "Sizes").
+const TEXT_SCALE_CHECK: FieldCheck = {
+  field: 'textScale',
+  valid: (v) => isNum(v) && v >= TEXT_SCALE_MIN && v <= TEXT_SCALE_MAX,
+  rule: `a number from ${TEXT_SCALE_MIN} to ${TEXT_SCALE_MAX}`,
+};
+const SHAPE_SCALE_CHECKS: readonly FieldCheck[] = [TEXT_SCALE_CHECK];
+
 // A text box's sizing and Shift scale (docs/specs/006-design/design-structure.md).
 const TEXT_FIELD_CHECKS: readonly FieldCheck[] = [
   { field: 'sizing', valid: (v) => v === 'fit' || v === 'wrap', rule: oneOfRule(['fit', 'wrap']) },
-  {
-    field: 'textScale',
-    valid: (v) => isNum(v) && v >= TEXT_SCALE_MIN && v <= TEXT_SCALE_MAX,
-    rule: `a number from ${TEXT_SCALE_MIN} to ${TEXT_SCALE_MAX}`,
-  },
+  TEXT_SCALE_CHECK,
   // Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type").
   {
     field: 'letterSpacing',
@@ -389,7 +398,7 @@ function boxedIssue(el: Record<string, unknown>): ElementValidationIssue | null 
   if (box) return box;
   switch (el.type) {
     case 'shape':
-      return shapeValidationIssue(el);
+      return shapeValidationIssue(el) ?? firstFieldIssue(el, SHAPE_SCALE_CHECKS);
     case 'table':
       return tableIssue(el);
     case 'image':

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Tab } from '@livediagram/document';
 import type { PendingDraw } from '@/lib/draw-mode';
+import type { ShownSwatch } from '@/lib/swatch-overrides';
 import { track } from '@/lib/telemetry';
 import { useWhiteboard } from './useWhiteboard';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
@@ -45,6 +46,7 @@ function setup(tab: Tab, pendingDraw: PendingDraw | null = null, canvasTool = 's
     pathEditing: false,
     leavePathEdit: vi.fn(),
     snapColours: { colours: [], blocked: false, snap: vi.fn(() => 0) },
+    fillSwatches: [] as ShownSwatch[],
   };
   // The synced preferences as the editor holds them: state, written through to this browser.
   const hook = renderHook(
@@ -166,6 +168,55 @@ describe('useWhiteboard', () => {
     expect(deps.setCanvasTool).toHaveBeenCalledWith('select');
     expect(deps.beginDraw).toHaveBeenLastCalledWith({ type: 'path' });
     expect(track).toHaveBeenCalledWith('Draw', 'Selected', 'Path');
+  });
+
+  // docs/specs/023-draw-mode/fill-tool.md "Its colour".
+  it("picks up the Fill tool in the theme's first fill until a colour is picked", () => {
+    const { deps, hook } = setup(board('wb', { elements: [stroke] }));
+    expect(hook.result.current.fill).toBe('transparent');
+    hook.rerender({
+      ...deps,
+      fillSwatches: [
+        { slot: 0, color: '#ffffff', name: 'Theme default' },
+        { slot: 1, color: '#dbeafe', name: 'Blue' },
+      ],
+    });
+    expect(hook.result.current.fill).toBe('#dbeafe');
+    hook.rerender({
+      ...deps,
+      fillSwatches: [{ slot: 0, color: '#ffffff', name: 'Theme default' }],
+    });
+    expect(hook.result.current.fill).toBe('#ffffff');
+    act(() => hook.result.current.pickFill());
+    expect(deps.setCanvasTool).toHaveBeenCalledWith('select');
+    expect(deps.beginDraw).toHaveBeenLastCalledWith({ type: 'fill', fill: '#ffffff' });
+    expect(track).toHaveBeenCalledWith('Draw', 'Selected', 'Fill');
+  });
+
+  it('remembers a picked fill colour in this browser and re-arms the bucket in hand', () => {
+    const { deps, hook } = setup(board('wb', { elements: [stroke] }), {
+      type: 'fill',
+      fill: 'transparent',
+    });
+    act(() => hook.result.current.setFill('#123456'));
+    expect(hook.result.current.fill).toBe('#123456');
+    expect(localStorage.getItem('livediagram:v2:whiteboard-fill')).toBe('#123456');
+    expect(deps.beginDraw).toHaveBeenLastCalledWith({ type: 'fill', fill: '#123456' });
+    expect(track).toHaveBeenCalledWith('Draw', 'Changed', 'FillColour');
+    vi.mocked(track).mockClear();
+    act(() => hook.result.current.setFill('#123456'));
+    expect(track).not.toHaveBeenCalled();
+  });
+
+  it('changes the fill colour without picking the bucket up when it is not in hand', () => {
+    const { deps, hook } = setup(board('wb', { elements: [stroke] }));
+    act(() => hook.result.current.setFill('#123456'));
+    expect(deps.beginDraw).not.toHaveBeenCalled();
+  });
+
+  it('puts the Fill tool down on a diagram tab', () => {
+    const { deps } = setup(diagram, { type: 'fill', fill: '#dbeafe' });
+    expect(deps.cancelDraw).toHaveBeenCalled();
   });
 
   it('puts the Path tool down on a diagram tab', () => {

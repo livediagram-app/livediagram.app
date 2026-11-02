@@ -14,6 +14,7 @@ import {
 } from '@liveworkspace/settings-ui';
 import { workspaceOriginFor } from '@liveworkspace/sites';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { useCursorsDrawn } from '@liveworkspace/workbench/hooks/collab/useHideCursors';
 import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
@@ -80,6 +81,8 @@ export function SettingsDialog({
   // (docs/specs/007-editor/power-user-mode.md), so this reads the live settings, not a snapshot.
   const powerUserMode = isPowerUserMode(settings);
   // Live settings too: a panel's rows follow its Enable switch the same way.
+  // The Hide Participant Cursors row only where the tab draws cursors (collaborator-enhancements.md).
+  const cursorsDrawn = useCursorsDrawn();
   const categories = useMemo(
     () =>
       visibleCategories({
@@ -88,8 +91,9 @@ export function SettingsDialog({
         powerUserMode,
         preferences: settings,
         workbench,
+        cursorsDrawn,
       }),
-    [emailEnabled, signedIn, powerUserMode, settings, workbench],
+    [emailEnabled, signedIn, powerUserMode, settings, workbench, cursorsDrawn],
   );
 
   // This editor's catalogue bound to the live preferences, as the shared view's model. Rebuilt
@@ -140,6 +144,8 @@ export function SettingsDialog({
       ...(profile ? { profile } : {}),
       // Sign-in methods and devices are liveworkspace.app's session's.
       securityHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=profile`,
+      // Webhooks are added and managed in liveworkspace's Settings (liveworkspace/docs/specs/004-index/webhooks.md).
+      webhooksHref: `${workspaceOriginFor(window.location.host)}/explorer?settings=webhooks`,
       emails: emailEnabled,
       cloudSync,
     }),

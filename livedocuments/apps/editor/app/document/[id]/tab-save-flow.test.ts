@@ -8,7 +8,11 @@ import {
   saveTabAndRelay,
   type SaveRoom,
 } from './tab-save-flow';
-import { createOwnElementWrites, isSupersededByOwnWrite } from './own-element-writes';
+import {
+  createOwnElementWrites,
+  isSupersededByOwnWrite,
+  withoutSupersededArticleOps,
+} from './own-element-writes';
 
 const shapeTab = (): Tab =>
   ({
@@ -172,6 +176,62 @@ describe('a save holding its elements', () => {
     };
     await relayParticipantChanges(tab(0), tab(40), () => room, writes);
     expect(isSupersededByOwnWrite(writes, peerMove(90))).toBe(true);
+    confirm(false);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(writes.held.size).toBe(0);
+  });
+});
+
+// docs/specs/007-editor/article-pages.md "Collaboration": a save holds the article blocks it writes the same way, so two
+// people committing one paragraph at once both end on the room's last commit.
+describe('a save holding its writing', () => {
+  const article = (text: string): Tab =>
+    ({
+      id: 't1',
+      name: 'T',
+      elements: [],
+      articles: { f1: { blocks: [{ id: 'p1', type: 'paragraph', runs: [{ text }] }] } },
+    }) as unknown as Tab;
+  const peerPut: RoomOp = {
+    kind: 'article',
+    tabId: 't1',
+    flow: 'f1',
+    ops: [{ kind: 'put', block: { id: 'p1', type: 'paragraph', runs: [{ text: 'theirs' }] } }],
+  };
+
+  it('sequences its article op and holds the block until the room confirms it', async () => {
+    const writes = createOwnElementWrites();
+    let confirm: (ok: boolean) => void = () => {};
+    const room: SaveRoom = {
+      send: vi.fn(),
+      sequence: vi.fn(() => new Promise<boolean>((resolve) => (confirm = resolve))),
+    };
+    const prepared = prepareTabSave(article('was'), article('ours'), writes);
+    expect(withoutSupersededArticleOps(writes, peerPut)).toBeNull();
+    await saveTabAndRelay(
+      article('was'),
+      article('ours'),
+      () => room,
+      async () => null,
+      prepared,
+    );
+    expect(room.sequence).toHaveBeenCalledWith(expect.objectContaining({ kind: 'article' }));
+    expect(room.send).not.toHaveBeenCalled();
+    expect(withoutSupersededArticleOps(writes, peerPut)).toBeNull();
+    confirm(true);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(withoutSupersededArticleOps(writes, peerPut)).toBe(peerPut);
+  });
+
+  it('holds a Participant’s writing until the room answers', async () => {
+    const writes = createOwnElementWrites();
+    let confirm: (ok: boolean) => void = () => {};
+    const room: SaveRoom = {
+      send: vi.fn(),
+      sequence: vi.fn(() => new Promise<boolean>((resolve) => (confirm = resolve))),
+    };
+    await relayParticipantChanges(article('was'), article('ours'), () => room, writes);
+    expect(withoutSupersededArticleOps(writes, peerPut)).toBeNull();
     confirm(false);
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(writes.held.size).toBe(0);

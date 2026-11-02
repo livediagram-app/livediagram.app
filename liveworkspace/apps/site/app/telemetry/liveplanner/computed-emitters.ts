@@ -26,6 +26,7 @@ import {
 } from '@liveplanner/api-schema';
 import { countedVerbs } from '@liveplanner/agent-verbs';
 import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@liveplanner/forms';
+import { TRACKER_SOURCE_NAMES } from '@liveplanner/items';
 import { MCP_TOOL_VERBS } from '@liveplanner/agent-verbs/mcp';
 import { CANVAS_CONTROLS } from '../_shared/event-vocab';
 
@@ -235,7 +236,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/app/project/[id]/useProjectTrashed.ts Trash·Restored': { values: TRASH_TYPES },
   // Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): an item type, or a set-up part.
   'apps/editor/hooks/plan/usePlanSlice.ts Plan·Added': {
-    values: PLAN_ITEM_TYPES,
+    values: [...PLAN_ITEM_TYPES, 'TimeEntry'],
     open: PLAN_TYPE_WHY,
   },
   'apps/editor/hooks/plan/usePlanSlice.ts Plan·Deleted': {
@@ -263,6 +264,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'ViewRestored',
       'SheetRestored',
     ],
+  },
+  // A board imported from another tool names the tool (docs/specs/026-plan/tracker-import.md).
+  'apps/editor/hooks/plan/useTrackerImport.ts Plan·Imported': {
+    values: Object.values(TRACKER_SOURCE_NAMES),
   },
   // A form started names its starter, a question added its type (docs/specs/030-forms/forms.md "Telemetry").
   'apps/editor/hooks/forms/useFormActions.ts Form·Created': {
@@ -368,7 +373,17 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/editor/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
   'apps/editor/components/panels/SearchPanel.tsx Search·Selected': {
-    values: ['Project', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
+    values: [
+      'Project',
+      'Shared',
+      'Folder',
+      'Team',
+      'Tab',
+      'Element',
+      'Palette',
+      'Command',
+      'Workspace',
+    ],
   },
   'apps/editor/components/primitives/AreaErrorBoundary.tsx Error·Client': {
     values: ['Render.Canvas.TypeError', 'Render.Header.Error'],

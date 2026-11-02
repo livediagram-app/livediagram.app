@@ -34,17 +34,17 @@ const slotEl = (slot: string) => document.querySelector<HTMLElement>(`[data-slot
 const pointAt = (el: Element) =>
   ((document as unknown as { elementsFromPoint: () => Element[] }).elementsFromPoint = () => [el]);
 
-// A slot of the compact card other than the one holding `field`.
+// A slot of the Detailed card (the Display's first size) other than the one holding `field`.
 function otherSlot(field: string): CardSlot {
   const from = chip(field).closest<HTMLElement>('[data-slot]')!.dataset.slot;
   const shown = [...document.querySelectorAll<HTMLElement>('[data-slot]')].map(
     (el) => el.dataset.slot,
   );
-  return CARD_SLOTS.compact.find((slot) => slot !== from && shown.includes(slot))!;
+  return CARD_SLOTS.detailed.find((slot) => slot !== from && shown.includes(slot))!;
 }
-// The compact layout the last change asked for.
-const lastCompact = (onChange: ReturnType<typeof display>) =>
-  onChange.mock.lastCall![0].compact ?? {};
+// The Detailed layout the last change asked for.
+const lastDetailed = (onChange: ReturnType<typeof display>) =>
+  onChange.mock.lastCall![0].detailed ?? {};
 
 function startDrag(field: string, over: Element) {
   pointAt(over);
@@ -60,7 +60,7 @@ describe('dragging a field on the card', () => {
     expect(document.querySelector('[data-drop-marker]')!.closest('[data-slot]')).toBe(slotEl(to));
     expect(document.body.lastElementChild!.textContent).toBe('Due Date');
     fireEvent.pointerUp(chip('due'), { clientX: 60, clientY: 60, pointerId: 1 });
-    expect(lastCompact(onChange)[to]).toContain('due');
+    expect(lastDetailed(onChange)[to]).toContain('due');
     expect(document.querySelector('[data-drop-marker]')).toBeNull();
   });
 
@@ -71,7 +71,7 @@ describe('dragging a field on the card', () => {
     const to = otherSlot('due');
     startDrag('due', slotEl(to));
     fireEvent.pointerUp(slotEl(to), { clientX: 60, clientY: 60, pointerId: 1 });
-    expect(lastCompact(onChange)[to]).toContain('due');
+    expect(lastDetailed(onChange)[to]).toContain('due');
     expect(document.querySelector('[data-drop-marker]')).toBeNull();
   });
 
@@ -81,8 +81,8 @@ describe('dragging a field on the card', () => {
     expect(screen.getByText('Drop to take it off the card')).toBeTruthy();
     expect(document.querySelector('[data-drop-marker]')).toBeNull();
     fireEvent.pointerUp(chip('due'), { clientX: 60, clientY: 60, pointerId: 1 });
-    const before = cardLayoutFields('compact', typeCardLayout(task, 'compact'));
-    const after = cardLayoutFields('compact', lastCompact(onChange));
+    const before = cardLayoutFields('detailed', typeCardLayout(task, 'detailed'));
+    const after = cardLayoutFields('detailed', lastDetailed(onChange));
     expect(after).toEqual(before.filter((f) => f !== 'due'));
   });
 
@@ -128,15 +128,45 @@ describe('custom fields in the Display', () => {
     render(<ItemTypeDisplay type={pet} display={{}} onChange={onChange} />);
     fireEvent.keyDown(screen.getByRole('button', { name: 'Person' }), { key: 'Enter' });
     fireEvent.click(screen.getByRole('button', { name: 'Bottom Right' }));
-    expect(lastCompact(onChange).trail).toContain('f-person');
+    expect(lastDetailed(onChange).footEnd).toContain('f-person');
     cleanup();
     render(
       <ItemTypeDisplay
         type={pet}
-        display={{ compact: { trail: ['f-person'] } }}
+        display={{ detailed: { footEnd: ['f-person'] } }}
         onChange={() => {}}
       />,
     );
     expect(screen.getByText('Person: Person')).toBeTruthy();
+  });
+
+  it('draws a built-in kind’s sample as its built-in field, and an Image by its name', () => {
+    const review = {
+      ...task,
+      custom: [
+        { id: 'f-rev', label: 'Reviewer', kind: 'person' as const },
+        { id: 'f-areas', label: 'Areas', kind: 'labels' as const },
+        { id: 'f-tone', label: 'Tone', kind: 'colour' as const },
+        { id: 'f-steps', label: 'Steps', kind: 'checklist' as const },
+        { id: 'f-shot', label: 'Shot', kind: 'image' as const },
+        { id: 'f-pri', label: 'Priority Vote', kind: 'votes' as const },
+      ],
+    };
+    render(
+      <ItemTypeDisplay
+        type={review}
+        display={{
+          detailed: { foot: ['f-rev', 'f-areas', 'f-tone', 'f-steps', 'f-shot', 'f-pri'] },
+        }}
+        onChange={() => {}}
+      />,
+    );
+    // A Votes field reads as the built-in Votes' ▲ count (item-types.md "Comments and Votes fields").
+    expect(screen.getByText('Priority Vote: 2 votes')).toBeTruthy();
+    expect(screen.getByLabelText('Reviewer: Ana Silva')).toBeTruthy();
+    expect(screen.getByText('Areas: Urgent')).toBeTruthy();
+    expect(screen.getByText('Tone: Teal')).toBeTruthy();
+    expect(screen.getByText('Steps 1 of 2 done')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Shot, in Footer/ }).textContent).toContain('Shot');
   });
 });

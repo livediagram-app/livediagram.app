@@ -135,6 +135,29 @@ describe('searchArticles', () => {
     expect(searchArticles('hotkey').map((a) => a.slug)).toContain('keyboard-shortcuts');
   });
 
+  it('finds the field kinds and dashboard cards by the names the editor gives them', () => {
+    // The Card Types article explains them all, but none was in its title, description or keywords, so "rollup" found nothing.
+    for (const q of [
+      'rollup',
+      'lookup',
+      'formula',
+      'percent',
+      'duration',
+      'time spent',
+      'timer',
+      'calculated',
+    ])
+      expect(
+        searchArticles(q).map((a) => a.slug),
+        q,
+      ).toContain('card-types');
+    for (const q of ['key date', 'status', 'checklist', 'links'])
+      expect(
+        searchArticles(q).map((a) => a.slug),
+        q,
+      ).toContain('dashboards');
+  });
+
   it('ranks title matches ahead of description and keyword matches (docs/specs/018-help/help-pages.md "Search")', () => {
     const inTitle = searchArticles('share').map((a) => a.title.toLowerCase().includes('share'));
     expect(inTitle.indexOf(false)).toBeGreaterThan(inTitle.lastIndexOf(true));

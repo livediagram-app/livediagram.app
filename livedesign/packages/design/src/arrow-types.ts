@@ -8,6 +8,7 @@
 // `@livedesign/design` surface is unchanged.
 
 import type { Finish } from './finish';
+import type { ComponentMember } from './components';
 import type { ArrowFlow, ElementId, ElementLink, TextSize } from './index';
 import type { ArrowheadShape, ArrowheadSize, ArrowStyle } from './arrow-style';
 import type { AnimationSpeed } from './animation';
@@ -78,6 +79,8 @@ export type ArrowElement = {
   type: 'arrow';
   // Layer membership (docs/specs/006-design/layers.md) — see ShapeElement.layerId.
   layerId?: string;
+  // An element of an open component edit session (docs/specs/009-elements/components.md "Editing the main").
+  componentMember?: ComponentMember;
   from: Endpoint;
   to: Endpoint;
   locked?: boolean;

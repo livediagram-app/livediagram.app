@@ -19,10 +19,13 @@ describe('FormLockedStrip', () => {
     expect(onEdit).toHaveBeenCalledTimes(1);
   });
 
-  it('holds Edit Form while the link is busy', () => {
-    render(<FormLockedStrip onEdit={() => {}} busy />);
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Edit Form' }).disabled).toBe(
-      true,
-    );
+  it('holds Edit Form while the link is busy, keeping the keyboard on it', () => {
+    const onEdit = vi.fn();
+    render(<FormLockedStrip onEdit={onEdit} busy />);
+    const button = screen.getByRole<HTMLButtonElement>('button', { name: 'Edit Form' });
+    expect(button.getAttribute('aria-busy')).toBe('true');
+    expect(button.disabled).toBe(false);
+    fireEvent.click(button);
+    expect(onEdit).not.toHaveBeenCalled();
   });
 });

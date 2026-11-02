@@ -1,18 +1,13 @@
 // The Gantt Chart's model (docs/specs/026-plan/plan-views.md "Gantt Chart"): a row per live card of the chart's
 // card types (Project by default) with its dates, its children's progress, and the time axis they sit on. Pure; the editor
 // draws it with the row fractions this gives.
-import type { Item } from './item';
-import {
-  dayKey,
-  dayNumber,
-  dayParts,
-  MONTH_SHORT,
-  monthStart,
-  todayNumber,
-} from './plan-view-dates';
+import type { Item, ItemFieldValue } from './item';
+import { dayParts, MONTH_SHORT, monthStart, todayNumber } from './plan-view-dates';
 import { liveCards, phaseOf, type StatusPhase } from './plan-views';
-import { laneGroups, type LaneHead, type SwimlaneBy } from './board';
+import { inLane, laneGroups, type LaneHead, type SwimlaneBy } from './board';
 import type { ItemTypeDef } from './item-types';
+import { BUILT_IN_DATES, type ViewDates } from './view-fields';
+import { roleDay, roleDays, roleMoment } from './view-dates-write';
 
 // Days of axis either side of the dates, the shortest axis, and the longest that still ticks weeks.
 const GANTT_PAD_DAYS = 7;
@@ -49,12 +44,17 @@ function rowOf(
   kids: readonly Item[],
   phases: ReadonlyMap<string, StatusPhase>,
   today: number,
+  dates: ViewDates,
+  nowMs: number,
 ): GanttRow {
-  const start = dayNumber(project.fields['start']);
-  const due = dayNumber(project.fields['due']);
+  const start = roleDay(project, dates, 'start');
+  const due = roleDay(project, dates, 'due');
   const isDone = phaseOf(project, phases) === 'done';
   const done = kids.filter((k) => phaseOf(k, phases) === 'done').length;
-  const overdue = !isDone && due !== undefined && due < today;
+  // A timed Due is overdue to the minute, a day once the day has passed (plan-views.md "Times and ranges").
+  const dueAt = roleMoment(project, dates, 'due');
+  const overdue =
+    !isDone && due !== undefined && (dueAt !== undefined ? dueAt < nowMs : due < today);
   const base = { item: project, done, total: kids.length, overdue, isDone };
   if (start !== undefined && due !== undefined)
     return { ...base, mark: 'bar', from: Math.min(start, due), to: Math.max(start, due) };
@@ -99,6 +99,8 @@ export function ganttModel(
   now: Date,
   // The card types the chart draws (ganttShownTypes: every type with a start and a due date unless it names others).
   types: readonly string[],
+  // The fields its bars run between (docs/specs/026-plan/plan-views.md "Dates").
+  dates: ViewDates = BUILT_IN_DATES,
 ): GanttModel {
   const accepted = new Set(types);
   const live = liveCards(items);
@@ -113,7 +115,7 @@ export function ganttModel(
   }
   const rows = live
     .filter((it) => accepted.has(it.type))
-    .map((p) => rowOf(p, kidsOf.get(p.id) ?? [], phases, today))
+    .map((p) => rowOf(p, kidsOf.get(p.id) ?? [], phases, today, dates, now.getTime()))
     .sort((a, b) => {
       if (a.from === undefined) return b.from === undefined ? a.item.key - b.item.key : 1;
       if (b.from === undefined) return -1;
@@ -156,30 +158,34 @@ export function ganttDrag(
   row: Pick<GanttRow, 'mark' | 'from' | 'to' | 'item'>,
   edge: GanttEdge,
   days: number,
-): { from: number; to: number; set: Record<string, string> } | null {
+  // The fields the chart reads its dates from: a drag writes them.
+  dates: ViewDates = BUILT_IN_DATES,
+): { from: number; to: number; set: Record<string, ItemFieldValue> } | null {
   if (row.mark === 'none' || row.from === undefined || row.to === undefined || days === 0)
     return null;
+  // Each role's new day, written in its field's own shape (a moment keeps its time, a range moves its end).
+  const write = (changes: Partial<Record<'start' | 'due', number>>) =>
+    roleDays(row.item, dates, changes);
   if (row.mark !== 'bar') {
     const day = row.from + days;
-    return { from: day, to: day, set: { [row.mark]: dayKey(day) } };
+    return { from: day, to: day, set: write({ [row.mark]: day }) };
   }
   const startIsLeft =
-    (dayNumber(row.item.fields['start']) ?? row.from) <=
-    (dayNumber(row.item.fields['due']) ?? row.to);
+    (roleDay(row.item, dates, 'start') ?? row.from) <= (roleDay(row.item, dates, 'due') ?? row.to);
+  const [left, right] = startIsLeft ? (['start', 'due'] as const) : (['due', 'start'] as const);
   if (edge === 'bar' || edge === 'mark') {
     const from = row.from + days;
     const to = row.to + days;
-    const [left, right] = startIsLeft ? ['start', 'due'] : ['due', 'start'];
-    return { from, to, set: { [left]: dayKey(from), [right]: dayKey(to) } };
+    return { from, to, set: write({ [left]: from, [right]: to }) };
   }
   if (edge === 'to') {
     const to = Math.max(row.from, row.to + days);
     if (to === row.to) return null;
-    return { from: row.from, to, set: { [startIsLeft ? 'due' : 'start']: dayKey(to) } };
+    return { from: row.from, to, set: write({ [right]: to }) };
   }
   const from = Math.min(row.to, row.from + days);
   if (from === row.from) return null;
-  return { from, to: row.to, set: { [startIsLeft ? 'start' : 'due']: dayKey(from) } };
+  return { from, to: row.to, set: write({ [left]: from }) };
 }
 
 // The chart's scales (docs/specs/026-plan/plan-views.md "Scale"): how many days the window shows.
@@ -267,7 +273,7 @@ export function ganttLanes(
   return groups.lanes
     .map((lane) => ({
       lane,
-      rows: rows.filter((r) => groups.laneOfItem.get(r.item.id) === lane.key),
+      rows: rows.filter((r) => inLane(groups, r.item.id, lane.key)),
     }))
     .filter((l) => l.rows.length > 0);
 }
@@ -315,8 +321,11 @@ export function ganttDayAt(window: Pick<GanttModel, 'from' | 'to'>, share: numbe
 export function ganttDrawn(
   a: number,
   b: number,
-): { from: number; to: number; set: Record<string, string> } {
+  // The fields the chart reads (plan-views.md "Dates"): a draw writes them, in their own shape.
+  dates: ViewDates = BUILT_IN_DATES,
+  item: Pick<Item, 'fields'> = { fields: {} },
+): { from: number; to: number; set: Record<string, ItemFieldValue> } {
   const from = Math.min(a, b);
   const to = a === b ? a + GANTT_NEW_BAR_DAYS - 1 : Math.max(a, b);
-  return { from, to, set: { start: dayKey(from), due: dayKey(to) } };
+  return { from, to, set: roleDays(item, dates, { start: from, due: to }) };
 }

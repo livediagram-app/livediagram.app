@@ -18,6 +18,7 @@
 @import './thumbnail-loader.css';
 @import './image-search-loader.css';
 @import './article-pages.css';
+@import './article-tables.css';
 @import './split-view.css';
 @import './sketch-face.css';
 @import './face-finish.css';
@@ -58,6 +59,8 @@
 /* The design system every app shares (@liveworkspace/ui), which the product's ui re-exports. */
 @source '../../../../packages/ui/src';
 @source '../../../../packages/brand/src';
+/* The Community's cards and Share tab, every app's (@liveworkspace/community-ui). */
+@source '../../../../packages/community-ui/src';
 /* The shared template-browse art (PreviewFan, @liveworkspace/template-previews) carries its own utility classes. */
 @source '../../../../packages/template-previews/src/PreviewFan.tsx';
 /* The shared Settings view (@liveworkspace/settings-ui) carries its own utility classes. */

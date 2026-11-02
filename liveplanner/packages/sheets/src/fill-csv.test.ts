@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { fillSeries } from './fill';
-import { csvSafeField, parseCsv, toCsv } from './csv';
+import { csvSafeField, isCsvPhoneNumber, parseCsv, toCsv } from './csv';
 import { serialFromDate } from './dates';
 
 const n = (x: number) => ({ n: x });
@@ -171,8 +172,30 @@ describe('CSV', () => {
     expect(csvSafeField('- x')).toBe("'- x");
     // A field that is a sign then 100,000 spaces backtracked quadratically before (seconds); now well under a budget.
     const field = `-${' '.repeat(100_000)}x`;
-    const t0 = performance.now();
-    expect(csvSafeField(field)).toBe(`'${field}`);
-    expect(performance.now() - t0).toBeLessThan(50);
+    let safe = '';
+    // CPU time (docs/ci.md "Speed budgets"): a linear check, well under the budget; a backtracking one is not.
+    expect(cpuMsOf(() => (safe = csvSafeField(field)))).toBeLessThan(50);
+    expect(safe).toBe(`'${field}`);
+  });
+  // A phone number holds no formula, so a download keeps its + as quoted text with no ' (sheet.md "CSV").
+  it('writes a phone number as quoted text, keeping its +, and still makes a formula inert', () => {
+    expect(['+44 20 7946 0958', '+1 (555) 010-0199'].map(csvSafeField)).toEqual([
+      '+44 20 7946 0958',
+      '+1 (555) 010-0199',
+    ]);
+    expect(isCsvPhoneNumber('+44')).toBe(false);
+    for (const formula of ['+44 20 7946 0958+A1', '+SUM(A1)', '+1-2 x', '=HYPERLINK("x")'])
+      expect(csvSafeField(formula), formula).toBe(`'${formula}`);
+    expect(toCsv([['+44 20 7946 0958', '=1+1', 'a,b']], { safe: true })).toBe(
+      `"+44 20 7946 0958",'=1+1,"a,b"\r\n`,
+    );
+    expect(parseCsv(toCsv([['+44 20 7946 0958']], { safe: true }), ',').rows).toEqual([
+      ['+44 20 7946 0958'],
+    ]);
+    const field = `+${' '.repeat(100_000)}x`;
+    let safe = '';
+    // CPU time (docs/ci.md "Speed budgets"): a linear check, well under the budget; a backtracking one is not.
+    expect(cpuMsOf(() => (safe = csvSafeField(field)))).toBeLessThan(50);
+    expect(safe).toBe(`'${field}`);
   });
 });

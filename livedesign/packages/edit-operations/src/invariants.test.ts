@@ -27,6 +27,24 @@ const SAMPLES: Readonly<Record<(typeof EDIT_OPERATION_NAMES)[number], string>> =
   order: 'order f2 front',
   layout: 'layout n5 n6 n7 n8 direction=right',
   test: 'test n3 label=Login',
+  detach: 'add instance id=nav componentId=nav at:0,600\ndetach nav',
+};
+
+// A main, for the detach sample; every other operation runs alike with or without it.
+const OPTIONS = {
+  components: [
+    {
+      id: 'nav',
+      name: 'Nav',
+      width: 200,
+      height: 40,
+      updatedAt: 1,
+      elements: [
+        { id: 'bar', type: 'shape', shape: 'square', x: 0, y: 0, width: 200, height: 40 },
+        { id: 'brand', type: 'text', x: 10, y: 10, width: 60, height: 20, label: 'Acme' },
+      ] as Element[],
+    },
+  ],
 };
 
 const samples = Object.entries(SAMPLES);
@@ -41,7 +59,7 @@ describe('invariants', () => {
     '%s: a rejected changeset carries no tab and the input is untouched (I1)',
     (_, text) => {
       const tab = checkoutFlow();
-      const outcome = run(`${text}\ntest n1 label=Nope`, tab);
+      const outcome = run(`${text}\ntest n1 label=Nope`, tab, OPTIONS);
       expect(outcome).not.toHaveProperty('tab');
       expect(tab).toEqual(frozen(checkoutFlow()));
     },
@@ -51,7 +69,7 @@ describe('invariants', () => {
     '%s: the input tab is never mutated, and what stayed is the same object (I1, I2)',
     (_, text) => {
       const tab = checkoutFlow();
-      const { tab: next } = applied(run(text, tab));
+      const { tab: next } = applied(run(text, tab, OPTIONS));
       expect(tab).toEqual(frozen(checkoutFlow()));
       const before = new Map(tab.elements.map((el) => [el.id, el]));
       for (const el of next.elements) {
@@ -63,13 +81,13 @@ describe('invariants', () => {
 
   it.each(samples)('%s: element ops and their inverse round trip (I4)', (_, text) => {
     const tab = checkoutFlow();
-    const { tab: next, elementOps, inverse } = applied(run(text, tab));
+    const { tab: next, elementOps, inverse } = applied(run(text, tab, OPTIONS));
     expect(applyElementOps(tab.elements, elementOps)).toEqual(next.elements);
     expect(applyElementOps(next.elements, inverse)).toEqual(tab.elements);
   });
 
   it.each(samples)('%s: the same input gives the same outcome (I5)', (_, text) => {
-    expect(run(text)).toEqual(run(text));
+    expect(run(text, undefined, OPTIONS)).toEqual(run(text, undefined, OPTIONS));
   });
 
   it.each(samples)('%s: every container behind its members (I6)', (_, text) => {
@@ -83,7 +101,7 @@ describe('invariants', () => {
       height: 1200,
     };
     const tab = { ...checkoutFlow(), elements: [...checkoutFlow().elements, frame] };
-    const { tab: next } = applied(run(text, tab));
+    const { tab: next } = applied(run(text, tab, OPTIONS));
     const order = next.elements.map((el) => el.id);
     const byId = new Map(next.elements.map((el) => [el.id, el]));
     for (const [id, holder] of deriveContainers(next.elements)) {
@@ -95,7 +113,7 @@ describe('invariants', () => {
   it.each(samples)('%s: no locked element changes (I7)', (_, text) => {
     for (const id of checkoutFlow().elements.map((el) => el.id)) {
       const tab = flowWith((el) => (el.id === id ? { ...el, locked: true } : el));
-      const outcome = run(text, tab);
+      const outcome = run(text, tab, OPTIONS);
       if ('errors' in outcome) {
         expect(outcome.errors[0]!.code).toBe('element_locked');
         continue;

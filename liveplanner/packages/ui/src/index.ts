@@ -1,4 +1,4 @@
-export { Brand, BrandMark } from './Brand';
+export { Brand, BrandGlyph, BrandMark } from './Brand';
 export {
   BRAND_ACCENT,
   BRAND_RAMP,
@@ -70,7 +70,9 @@ export { indefiniteArticle, withArticle } from '@liveplanner/items';
 // formatting are @liveworkspace/ui's.
 export {
   GUEST_IDENTITY_KEYS,
+  OFFLINE_QUEUE_KEY_PREFIX,
   REPAIR_KEPT_KEYS,
+  REPAIR_KEPT_PREFIXES,
   REPAIR_SCOPE_PREFIXES,
   isRepairClearable,
   repairBrowserStorage,

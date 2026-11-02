@@ -8,6 +8,7 @@ import {
   redactTabDataAuthors,
   removeComment,
   rewriteCommentAuthors,
+  threadsOfTab,
 } from './comments';
 import type { ParticipantDTO } from './types';
 
@@ -408,5 +409,36 @@ describe('newCommentsBy (docs/specs/012-collaboration/comment-mentions.md)', () 
         'w',
       ).map((c) => c.id),
     ).toEqual(['c2']);
+  });
+});
+
+// docs/specs/012-collaboration/comment-reactions.md: reactions are public, kept by a save (cleaned), and listed.
+describe('comment reactions', () => {
+  const ana = { emoji: 'thumbs-up' as const, by: 'k-ana', name: 'Ana' };
+  const withReactions = (reactions: unknown) =>
+    mkShape('a', [{ ...mkComment('c1', 'Bea', '#f00', 't', 'bea'), reactions } as Comment]);
+
+  it("keeps a save's reactions, on a stored comment and a new one, dropping malformed ones", () => {
+    const prior = withReactions(undefined);
+    const out = rewriteCommentAuthors(
+      [withReactions([ana, { emoji: 'rocket', by: 'x', name: 'X' }])],
+      [prior],
+      writer,
+    );
+    expect((out[0] as ShapeElement).commentThread!.comments[0]!.reactions).toEqual([ana]);
+    const fresh = rewriteCommentAuthors([withReactions([ana])], [], writer);
+    expect((fresh[0] as ShapeElement).commentThread!.comments[0]!.reactions).toEqual([ana]);
+    const none = rewriteCommentAuthors([withReactions('junk')], [], writer);
+    expect('reactions' in (none[0] as ShapeElement).commentThread!.comments[0]!).toBe(false);
+  });
+
+  it('lists them per emoji with who, for an agent', () => {
+    const tab = { id: 't1', name: 'Main', elements: [withReactions([ana])] };
+    const [thread] = threadsOfTab(tab, 'all', null);
+    expect(thread!.comments[0]!.reactions).toEqual([
+      { emoji: '👍', name: 'Thumbs Up', count: 1, by: ['Ana'] },
+    ]);
+    const bare = threadsOfTab({ ...tab, elements: [withReactions(undefined)] }, 'all', null);
+    expect('reactions' in bare[0]!.comments[0]!).toBe(false);
   });
 });

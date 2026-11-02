@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import type { Tab } from '@livediagram/document';
 import { Button, DialogHeader, DialogCloseButton } from '@livediagram/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { HideCursorsFooter } from '@liveworkspace/workbench/components/dialogs/HideCursorsSwitch';
 import { FacilitatorButton } from '@/components/dialogs/CollaboratorFacilitatorButton';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
@@ -210,6 +211,9 @@ export function CollaboratorsDialog({
           </section>
         ))}
       </div>
+      {/* Hide Participant Cursors (docs/specs/012-collaboration/collaborator-enhancements.md): the Settings switch,
+          one click away when a session gets busy, and only on a tab that draws cursors. */}
+      <HideCursorsFooter />
     </Dialog>
   );
 }

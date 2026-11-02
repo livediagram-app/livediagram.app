@@ -67,11 +67,8 @@ export function AppAccountControl({ settings = null }: { settings?: SettingsCont
         {...(settings
           ? { onOpenSettings: settings.onOpen, onPrepareSettings: settings.onPrepare }
           : {})}
-        onSignOut={async () => {
-          const left = await appSignOut();
-          if (left) window.location.reload();
-          return left;
-        }}
+        // Every app in this browser signs out with it, through the accounts site's hop (app-session.ts).
+        onSignOut={() => appSignOut()}
       />
     );
   const checking = state === 'checking';

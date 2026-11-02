@@ -1,3 +1,7 @@
+import { lucidePackage } from '@liveworkspace/icons/lucide';
+import { lucideGlyph } from '@livedesign/ui';
+import { useEditorContext } from '@/app/design/[id]/EditorContext';
+import { MakeComponentRow } from './ComponentMenuSection';
 import {
   arrowheadShapeOf,
   arrowheadSizeOf,
@@ -77,6 +81,30 @@ type MultiSelectionContextMenuProps = {
 // (Animation / Colours / Border + arrow Line / Pointer + Text) that apply to
 // every matching member of a marquee selection. Extracted from
 // EditorContextMenu; shares the accordion/colour scaffolding via the hook.
+const ComponentMenuGlyph = lucideGlyph(lucidePackage, 16);
+
+function MultiMakeComponent({
+  ids,
+  sectionProps,
+  onClose,
+}: {
+  ids: string[];
+  sectionProps: (id: string) => { open: boolean; onToggle: () => void; flush: boolean };
+  onClose: () => void;
+}) {
+  const { componentActions } = useEditorContext();
+  if (!componentActions.canEdit) return null;
+  return (
+    <MenuAccordionSection
+      title="Component"
+      icon={<ComponentMenuGlyph />}
+      {...sectionProps('m-component')}
+    >
+      <MakeComponentRow ids={new Set(ids)} onDone={onClose} />
+    </MenuAccordionSection>
+  );
+}
+
 export function MultiSelectionContextMenu({
   props,
   position,
@@ -100,6 +128,12 @@ export function MultiSelectionContextMenu({
       flush
       anchorBottom={anchorBottom}
     >
+      {/* Make Component (docs/specs/009-elements/components.md "Making a component"): an Editor's only. */}
+      <MultiMakeComponent
+        ids={props.selectionElements.map((el) => el.id)}
+        sectionProps={sectionProps}
+        onClose={onClose}
+      />
       {(() => {
         // Type-aware formatting for the whole selection: only the categories
         // that match the selected element types show, and each control

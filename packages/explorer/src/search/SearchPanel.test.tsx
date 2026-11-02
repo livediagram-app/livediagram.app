@@ -137,6 +137,26 @@ describe('the Search panel', () => {
     expect(open).toHaveBeenCalledWith('https://lp/help/f/', '_blank', 'noopener,noreferrer');
     open.mockRestore();
   });
+
+  it('is a listbox only while it has results: its hints are plain text a screen reader reads', async () => {
+    vi.useFakeTimers();
+    render(
+      <SearchPanel
+        client={createFakeIndex().client}
+        itemHref={(i) => `/open/${i.id}`}
+        entries={entries}
+        onOpen={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.getByText('Start typing to search.')).toBeTruthy();
+    await typeAndWait('zzzz');
+    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(screen.getByText('Nothing matches “zzzz”.')).toBeTruthy();
+    await typeAndWait('filters');
+    expect(screen.getByRole('listbox', { name: 'Results' })).toBeTruthy();
+  });
 });
 
 describe('matchAll', () => {

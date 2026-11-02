@@ -13,14 +13,19 @@ import {
   itemTitle,
   todayNumber,
   typeIn,
+  durationSpoken,
+  durationText,
   type BoardProjection,
   type BoardWidgetKind,
   type Item,
   type ItemTypeDef,
   type PlanBoardSetup,
   type QuickFilter,
+  doneColumnsOf,
   finishedStatuses,
+  setColumnDone,
   type QuickDueWindow,
+  quickNarrows,
 } from '@liveplanner/items';
 import { PRIORITY_COLOURS, accentOn, type PlanPalette } from '../plan-palette';
 import { BoardWidgetArt } from '../plan-tile-art';
@@ -29,6 +34,7 @@ import {
   DUE_SOON_DAYS,
   STALE_DAYS,
   boardPoints,
+  boardTime,
   priorityCounts,
   staleCount,
   topVoted,
@@ -41,6 +47,9 @@ import {
 } from '@liveplanner/plan-art';
 import { OVERDUE_RED, PHASE_COLOURS } from '../views/view-frame';
 import { CountBadge } from '@liveplanner/ui';
+import { RunningDot } from '../time/TimerReadouts';
+import { BoardFilterField } from './BoardFilterField';
+import { SavedFilterChips } from './SavedFilterChips';
 
 const PEOPLE_SHOWN = 5;
 const TYPES_SHOWN = 3;
@@ -69,15 +78,14 @@ export type WidgetContext = {
   onSetup: (next: PlanBoardSetup, part: string) => void;
   // Open an item in the item panel (Top Voted).
   onOpenItem: (itemId: string) => void;
+  // Every card of the plan and its status names: the Filter widget's chips name and count by them.
+  planItems?: ReadonlyMap<string, Item> | undefined;
+  statusNames?: ReadonlyMap<string, string> | undefined;
 };
 
-// The quick filter with the widget narrowings cleared, the text and Only Mine kept.
+const NO_PLAN_ITEMS: ReadonlyMap<string, Item> = new Map();
+
 const WIDGET_KEYS = ['person', 'type', 'due', 'priority'] as const;
-function narrowed(quick: QuickFilter): boolean {
-  return (
-    WIDGET_KEYS.some((k) => quick[k] !== undefined) || !!quick.text || quick.mine !== undefined
-  );
-}
 
 // The quick filter with one widget narrowing set, or cleared when it is already the one set.
 function toggle<K extends (typeof WIDGET_KEYS)[number]>(
@@ -93,9 +101,7 @@ function toggle<K extends (typeof WIDGET_KEYS)[number]>(
 
 // A part of a widget that narrows the board when pressed, pressed while it does.
 const PRESSABLE =
-  'inline-flex items-center gap-1 rounded-md px-1 py-0.5 transition enabled:cursor-pointer enabled:hover:bg-black/5 dark:enabled:hover:bg-white/10';
-
-const stopKeys = (e: { stopPropagation: () => void }) => e.stopPropagation();
+  'relative inline-flex items-center gap-1 rounded-md px-1 py-0.5 touch-target-y transition enabled:cursor-pointer enabled:hover:bg-black/5 dark:enabled:hover:bg-white/10';
 
 // The widget's glyph, small, in a colour that says what it is about.
 function Lead({ kind, color }: { kind: BoardWidgetKind; color: string }) {
@@ -125,7 +131,7 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
         (n, c) => n + c.lanes.reduce((m, l) => m + l.items.length, 0),
         0,
       );
-      if (narrowed(ctx.quick))
+      if (quickNarrows(ctx.quick))
         return (
           <button
             type="button"
@@ -148,15 +154,15 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
       );
     }
     case 'progress': {
-      if (setup.doneColumnId === undefined) {
-        // Pressing it makes the last column the done one, the column work usually ends in.
+      if (doneColumnsOf(setup).length === 0) {
+        // Pressing it makes the last column count as done, the column work usually ends in.
         const last = setup.columns[setup.columns.length - 1];
         return ctx.canEdit && last ? (
           <button
             type="button"
             className={`${WIDGET_PILL} cursor-pointer transition hover:bg-black/5 dark:hover:bg-white/10`}
             style={{ ...pill, borderStyle: 'dashed' }}
-            onClick={() => ctx.onSetup({ ...setup, doneColumnId: last.id }, 'DoneColumn')}
+            onClick={() => ctx.onSetup(setColumnDone(setup, last.id, true), 'DoneColumn')}
           >
             <Lead kind="progress" color={palette.muted} />
             Set Done Column
@@ -198,30 +204,31 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
         </span>
       );
     }
-    case 'filter': {
-      const on = !!ctx.quick.text;
+    case 'filter':
+      // The words and field chips as one field, then the board's saved filters (board-widgets.md "The Filter widget").
       return (
-        <span className="relative flex shrink-0 items-center">
-          <span
-            className="pointer-events-none absolute left-2 flex"
-            style={{ color: on ? palette.focus : palette.muted }}
-            aria-hidden
-          >
-            <BoardWidgetArt kind="filter" size={13} />
-          </span>
-          <input
-            type="search"
-            value={ctx.quick.text ?? ''}
-            onChange={(e) => ctx.onQuick({ ...ctx.quick, text: e.target.value })}
-            onKeyDown={stopKeys}
-            placeholder="Filter cards"
-            aria-label="Filter this board"
-            className="h-7 w-36 rounded-md border bg-transparent pl-7 pr-2 text-[12px] outline-none"
-            style={{ borderColor: on ? palette.focus : palette.border, color: palette.text }}
+        <span className="flex shrink-0 items-center gap-1.5">
+          <BoardFilterField
+            projection={projection}
+            planItems={ctx.planItems ?? NO_PLAN_ITEMS}
+            types={ctx.types}
+            statusNames={ctx.statusNames}
+            palette={palette}
+            quick={ctx.quick}
+            onQuick={ctx.onQuick}
+          />
+          <SavedFilterChips
+            setup={setup}
+            palette={palette}
+            quick={ctx.quick}
+            onQuick={ctx.onQuick}
+            mine={ctx.canFilterMine}
+            now={ctx.now}
+            canEdit={ctx.canEdit}
+            onSetup={ctx.onSetup}
           />
         </span>
       );
-    }
     case 'mine': {
       const on = ctx.quick.mine !== undefined;
       return (
@@ -238,7 +245,10 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
           onClick={() =>
             ctx.onQuick(
               on
-                ? { text: ctx.quick.text }
+                ? {
+                    text: ctx.quick.text,
+                    ...(ctx.quick.filters ? { filters: ctx.quick.filters } : {}),
+                  }
                 : { ...ctx.quick, mine: ctx.canFilterMine ?? undefined },
             )
           }
@@ -519,6 +529,34 @@ export function BoardWidgetView({ kind, ctx }: { kind: BoardWidgetKind; ctx: Wid
             {done}/{total}
           </strong>
           pts
+        </span>
+      );
+    }
+    // Hours on the board's cards, and the timers running now (docs/specs/026-plan/board-widgets.md "Time").
+    case 'time': {
+      const { minutes, counted, running } = boardTime(ctx.items, ctx.types);
+      if (counted === 0 && running === 0)
+        return (
+          <span className={WIDGET_PILL} style={pill}>
+            <Lead kind="time" color={palette.muted} />
+            No time yet
+          </span>
+        );
+      const spoken = `${durationSpoken(minutes)} tracked${
+        running ? `, ${running} ${running === 1 ? 'timer' : 'timers'} running` : ''
+      }`;
+      return (
+        <span className={WIDGET_PILL} style={pill} role="img" aria-label={spoken}>
+          <Lead kind="time" color={palette.text} />
+          <strong className="font-semibold tabular-nums" style={{ color: palette.text }}>
+            {durationText(minutes)}
+          </strong>
+          {running ? (
+            <span className="inline-flex items-center gap-1">
+              <RunningDot />
+              {running} running
+            </span>
+          ) : null}
         </span>
       );
     }

@@ -1,9 +1,9 @@
 'use client';
 
-// Home (livediagram's HomePane): under the hero, Jump Back In as livediagram draws it, Most Used (four large cards,
-// the items opened on the most days of the last 90, "Used on N days") then Recent (four more of the same size, the
-// latest opened of the rest), and Shared With You Recently. On a phone Jump Back In is one scrolling strip, the two groups
-// alternating. An item kept only in this browser is one card among the rest (LocalCard): the same frame, size, menu
+// Home (livediagram's HomePane): under the hero, Jump Back In as livediagram draws it, Most Used (up to eight large
+// cards, two rows of four on a desktop: the items opened most often in the last 14 days, "Opened N times") then Recent
+// (up to eight more of the same size, the latest opened of the rest), and Shared With You Recently. On a phone Jump Back
+// In is one scrolling strip of up to eight, the two groups alternating. An item kept only in this browser is one card among the rest (LocalCard): the same frame, size, menu
 // and drag, with the This Browser badge on its line and This Browser's own verbs. Last, What Happened: what other people did to the items the person can open, from the index's
 // Timeline. With the hero hidden, Home takes the ordinary page header. Three requests, each one small page: Recent
 // carries Most Used beside it (the index's `used`), Shared, and one Timeline page.
@@ -50,7 +50,9 @@ import {
 
 export const HOME_SHARED = 4;
 // Jump Back In's Recent group with this browser's own items merged in.
-const HOME_RECENT_MAX = 8;
+const HOME_RECENT_MAX = JUMP_BACK_IN_PER_GROUP;
+// The phone's strip: one row, at most this many tiles before See More, both groups and this browser's together.
+export const HOME_STRIP_MAX = 8;
 
 export const HOME_COPY = {
   jumpBackIn: 'Jump Back In',
@@ -200,7 +202,7 @@ export function HomePane({ onOpenNav, hero }: { onOpenNav?: () => void; hero: bo
           ) : empty ? (
             <HomeEmpty />
           ) : !wide ? (
-            <Strip items={phoneOrder(recent.items)} local={localOpened} />
+            <Strip items={phoneOrder(recent.items)} local={localOpened} max={HOME_STRIP_MAX} />
           ) : (
             <div className="flex flex-col gap-4">
               <CardGroup
@@ -576,10 +578,21 @@ const LocalCard = memo(function LocalCard({
   );
 });
 
-/** A phone's Jump Back In: one strip of small tiles, then See More. */
-function Strip({ items, local }: { items: ShownItem[]; local: readonly ThisBrowserItem[] }) {
+/** A phone's Jump Back In: one strip of at most `max` small tiles (the index's first, then this browser's), then See
+ *  More. */
+function Strip({
+  items: all,
+  local: allLocal,
+  max,
+}: {
+  items: ShownItem[];
+  local: readonly ThisBrowserItem[];
+  max: number;
+}) {
   const { app, Link, itemHref, viewHref, navigate } = useExplorer();
   const { host } = useThisBrowserItems();
+  const items = all.slice(0, max);
+  const local = allLocal.slice(0, max - items.length);
   return (
     <div className="relative -mx-4 sm:mx-0">
       <div className="flex h-28 snap-x scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 pt-1 sm:-mx-1 sm:scroll-px-1 sm:px-1">
@@ -632,25 +645,20 @@ function Strip({ items, local }: { items: ShownItem[]; local: readonly ThisBrows
   );
 }
 
+/** Both groups as they load: each a label over two rows of large cards (a full group on a desktop). */
 function GridSkeleton() {
   return (
     <div aria-hidden className="flex flex-col gap-4">
-      <div>
-        <div className={`mb-2.5 h-4 w-20 ${SKELETON}`} />
-        <div className={LARGE_GRID}>
-          {Array.from({ length: JUMP_BACK_IN_PER_GROUP }, (_, i) => (
-            <div key={i} className={`h-[12.5rem] rounded-[18px] ${SKELETON}`} />
-          ))}
+      {['w-20', 'w-16'].map((label) => (
+        <div key={label}>
+          <div className={`mb-2.5 h-4 ${label} ${SKELETON}`} />
+          <div className={LARGE_GRID}>
+            {Array.from({ length: JUMP_BACK_IN_PER_GROUP }, (_, i) => (
+              <div key={i} className={`h-[12.5rem] rounded-[18px] ${SKELETON}`} />
+            ))}
+          </div>
         </div>
-      </div>
-      <div>
-        <div className={`mb-2.5 h-4 w-16 ${SKELETON}`} />
-        <div className={COMPACT_GRID}>
-          {Array.from({ length: JUMP_BACK_IN_PER_GROUP }, (_, i) => (
-            <div key={i} className={`h-[3.875rem] rounded-[14px] ${SKELETON}`} />
-          ))}
-        </div>
-      </div>
+      ))}
     </div>
   );
 }

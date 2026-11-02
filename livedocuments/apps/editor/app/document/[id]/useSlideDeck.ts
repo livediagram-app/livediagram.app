@@ -22,6 +22,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import {
   deckFollowingPages,
+  deckWithPageSlideDetails,
   GoneSlides,
   EMPTY_DECK,
   firstDeck,
@@ -32,13 +33,15 @@ import {
   parseStoredPresentation,
   presentableSlides,
   storePresentation,
+  withNoteCards,
   type Deck,
+  type NoteCard,
+  type PageSlideDetail,
   type Slide,
   type Tab,
 } from '@livedocuments/document';
 
 import { track } from '@/lib/telemetry';
-import { useSlideThumbnails } from '@/hooks/ui/useSlideThumbnails';
 import {
   readPresentationConfig,
   withPresentationConfig,
@@ -219,8 +222,6 @@ export function useSlideDeck({
       setPresenting(next === null ? null : positionAt(next, runnableRef.current)),
     [runnableRef],
   );
-  // Row previews, from the same headless renderer the Layers panel uses.
-  const thumbs = useSlideThumbnails(deck, tabs);
   // Each page slide's page, named from its own tab (null once the page is gone).
   const pageLabels = useMemo(() => pageSlideLabels(deck, tabs), [deck, tabs]);
   // What each slide is about, for a row whose slide has no name: its largest text.
@@ -331,18 +332,24 @@ export function useSlideDeck({
     [commitDeck, isReadOnly],
   );
 
-  const setSlideNotes = useCallback(
-    (slideId: string, notes: string) => {
+  // A slide's speaker notes as note cards (docs/specs/012-collaboration/speaker-note-cards.md): the cards and the
+  // `notes` mirror older readers keep reading, both gone with the last card.
+  const setSlideNoteCards = useCallback(
+    (slideId: string, cards: readonly NoteCard[]) => {
       if (isReadOnly) return;
       commitDeck((prev) => ({
-        slides: prev.slides.map((s) => {
-          if (s.id !== slideId) return s;
-          const next = { ...s };
-          if (notes) next.notes = notes;
-          else delete next.notes;
-          return next;
-        }),
+        slides: prev.slides.map((s) => (s.id === slideId ? withNoteCards(s, cards) : s)),
       }));
+    },
+    [commitDeck, isReadOnly],
+  );
+
+  // An imported deck's notes and hidden slides onto its pages' own slides (docs/specs/020-import-export/
+  // office-import.md "One undo step"); the follow pass then runs them into page order.
+  const adoptImportedSlides = useCallback(
+    (tabId: string, details: readonly PageSlideDetail[]) => {
+      if (isReadOnly) return;
+      commitDeck((prev) => deckWithPageSlideDetails(prev, tabId, details));
     },
     [commitDeck, isReadOnly],
   );
@@ -501,7 +508,8 @@ export function useSlideDeck({
     setOpenSlideId,
     openSlideInEditor,
     runnable,
-    thumbs,
+    // The real tabs, for the panel's row previews (useSlideThumbnails, drawn while it is open).
+    slideTabs: tabs,
     pageLabels,
     headlines,
     newSlideFromSelection,
@@ -509,7 +517,8 @@ export function useSlideDeck({
     addSelectionToSlide,
     removeFromSlide,
     renameSlide,
-    setSlideNotes,
+    setSlideNoteCards,
+    adoptImportedSlides,
     setSlideMinutes,
     deleteSlide,
     ownPageSlideIds,

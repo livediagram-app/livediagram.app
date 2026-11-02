@@ -14,6 +14,7 @@
 // help page is a bug, the same way an unregistered help article is - keep
 // these in sync with @livedesign/help-registry.
 
+import { COMMUNITY_HELP } from '@livedesign/help-registry/community';
 import { helpPathTelemetryId } from '@livedesign/help-registry/telemetry';
 
 export const HELP_ARTICLES = {
@@ -21,6 +22,8 @@ export const HELP_ARTICLES = {
   sharing: 'collaboration/sharing',
   shareLinkExpiry: 'collaboration/sharing/share-link-expiry',
   sharePasswords: 'collaboration/sharing/share-passwords',
+  // The Community's own help map holds the path (the public sites link it too).
+  community: COMMUNITY_HELP.sharing.path,
   // Palette behaviour
   autoAttachArrows: 'palette/auto-attach-arrows',
   // The embed's article is linked from the link picker, when it is restricted to a URL
@@ -88,6 +91,8 @@ export const HELP_ARTICLES = {
   templates: 'canvas/templates',
   logoPages: 'pages/logo-pages',
   wireframePages: 'pages/wireframe-pages',
+  // The Inspect panel's header (docs/specs/007-editor/wireframe-pages.md "Inspect").
+  inspect: 'pages/wireframe-pages/inspect',
   photoPages: 'pages/photo-pages',
   // Each page kind's Show Me links its own article (docs/specs/007-editor/pages-tour.md).
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
@@ -120,6 +125,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   sharePasswords: {
     title: 'Learn about share passwords',
     description: 'How the optional password gate protects every link.',
+  },
+  community: {
+    title: 'Learn about the Community',
+    description: 'Sharing a design publicly, and how people find and copy it.',
   },
   autoAttachArrows: {
     title: 'Learn about auto-attach arrows',
@@ -156,6 +165,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   formatPainter: {
     title: 'Learn about the Format Painter',
     description: "Tips for copying one element's look onto others.",
+  },
+  inspect: {
+    title: 'Learn about Inspect',
+    description:
+      'Read sizes, spacing, colours and type off a wireframe, and hand them to developers.',
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',

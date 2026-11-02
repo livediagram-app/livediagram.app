@@ -168,7 +168,9 @@ SheetWrite; cells?: CellDto[]; created?: true; deleted?: true; refetch?: true }`
 canEdit, locale, peers, pushUndo, toast, notify, sendPresence, commitElements, undo, redo,
 selectElement, attach }`, made in `useEditorState` and provided by `EditorView` (`SheetsBridgeContext`). The room
   hands it `sheets` system ops and `sheet-presence` ops (`useRoomConnection`); the sheet chunk `attach`es its
-  handlers, and before it has, every op is dropped (the first load reads the sheets fresh). A rejoin resyncs.
+  handlers, and before it has, every op is dropped (the first load reads the sheets fresh). A rejoin resyncs. A
+  store may hold tabs loaded while nothing was attached (a sheet form's builder reads its sheet; a Sheet's tab left and
+  shown again detaches), so when an op or a rejoin was dropped since the last attach, attaching resyncs every loaded tab.
 - **Store client** (`apps/editor/components/sheets/sheet-store-client.ts`, in the lazy sheet chunk): a module store
   per project (`sheetStoreFor(deps)`), `useSyncExternalStore`-subscribed. State per sheet: the confirmed sheet, the
   pending writes (by write id) and the view (confirmed with the pending laid over it, `rebase`); per-tab load status

@@ -1,4 +1,5 @@
 import type { ElementStyleOps } from '@/lib/element-style-ops';
+import type { ElementMenuActions } from './ElementMenuQuickBar';
 import type {
   AnimationSpeed,
   ArrowEnds,
@@ -327,6 +328,9 @@ export type EditorContextMenuProps = {
   // tile, shown for everyone (signed-out users can self-assign). Opens
   // the assign dialog (no action yet) or the action popover (one exists).
   onAssignAction: (elementId: string) => void;
+  // The Element actions row (Edit Text, Duplicate, Stack Front / Back, Lock, Delete), first in the element menu
+  // (docs/specs/008-canvas/element-menu-quick-bar.md): livedocuments has no selection toolbar, so they live here.
+  elementActions?: ElementMenuActions;
   // The selected elements (multi-selection / group members), so the 'multi'
   // menu can surface the formatting categories that match their types (Colours
   // / Text / Border for boxed, Line + Pointer for arrows). The format setters

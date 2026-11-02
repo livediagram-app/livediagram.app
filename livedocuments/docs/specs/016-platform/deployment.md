@@ -17,8 +17,9 @@ covers what they do for livedocuments. [Staging environment](staging-environment
 | `apps/mcp`       | `livedocuments-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
 | `apps/router`    | `livedocuments-router`    | Worker (service bindings to the other four sites and the api).                |
 
-`apps/cli` is published to npm, not deployed ([CLI](../015-api/cli.md)). Publishing is a manual step outside CI, as is
-the MCP Registry listing ([MCP server](../015-api/mcp-server.md)); CI builds and packs the CLI on every run that reaches
+`apps/cli` is published to npm, not deployed ([CLI](../015-api/cli.md)). Publishing is a manual step outside CI, and the
+MCP Registry listing is manual too (by hand, or the root `mcp-registry.yml` workflow started by hand,
+[MCP server](../015-api/mcp-server.md)); CI builds and packs the CLI on every run that reaches
 it (`npm pack --dry-run`, [CI](../../../../docs/ci.md)).
 
 The marketing worker serves files from `apps/marketing/out/`. The editor worker serves files from `apps/editor/out/`

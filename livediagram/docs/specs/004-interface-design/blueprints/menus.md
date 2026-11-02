@@ -25,12 +25,12 @@ Scope, by file:
 | `../packages/workbench/src/components/primitives/MenuFlyoutPanel.tsx`       | The flyout's surface: `menu` or `dialog`                                                                                    |
 | `../packages/workbench/src/components/primitives/EllipsisTriggerButton.tsx` | Accepts `onKeyDown` for Down / Up Arrow                                                                                     |
 | `../packages/workbench/src/components/palette/ContextMenu.tsx`              | Control menu at a point (element, selection, cell)                                                                          |
-| `apps/editor/components/chrome/TabPortalMenu.tsx`                           | Tab and Canvas control menu                                                                                                 |
+| `apps/editor/components/chrome/TabPortalMenu.tsx`                           | Tab and Canvas control menu, closed by `useMenuDismiss`                                                                     |
 | `apps/editor/components/panels/LayerRowMenu.tsx`                            | Layer control menu                                                                                                          |
 | `apps/editor/components/canvas/ElementEllipsisMenu.tsx`                     | Element quick menu (`kind="command"`) or session settings (`kind="control"`)                                                |
 | `../packages/workbench/src/components/canvas/LockedElementMenu.tsx`         | Command menu, no trigger                                                                                                    |
 | `apps/editor/components/chrome/ZoomMenu.tsx`                                | Hover-open command menu with a button of its own                                                                            |
-| `apps/editor/components/chrome/editor-mode/ModeMenuChip.tsx`                | One-of-a-set command menu; its own key handling deleted                                                                     |
+| `apps/editor/components/chrome/editor-mode/ModeMenuChip.tsx`                | One-of-a-set command menu (beside the menu button and on a start's rail); its own key handling deleted                      |
 | `apps/editor/components/chrome/AuthControls.tsx`                            | Account command menu                                                                                                        |
 | `apps/editor/components/chrome/EmbedChrome.tsx`                             | Embed tab command menu                                                                                                      |
 | `../packages/explorer/src/dialogs/share/CopyMenu.tsx`                       | Command menu, or control menu when it carries a header control                                                              |
@@ -257,6 +257,7 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 | Trigger props, Down / Up open                                                              | `../packages/ui/src/menu/useMenuButton.test.tsx`                                                          |
 | Keyboard-only focus, Escape layering, return                                               | `../packages/ui/src/menu/useControlMenu.test.tsx`                                                         |
 | Rows take the kind's roles                                                                 | `apps/editor/components/primitives/PortalMenu.test.tsx`                                                   |
+| Row labels left-aligned, icon level with the first line                                    | `../packages/workbench/src/components/primitives/MenuActionRow.layout.test.tsx`                           |
 | Submenu keys and roles                                                                     | `../packages/workbench/src/components/primitives/MenuFlyoutSection.test.tsx`, `UseAsDefaultMenu.test.tsx` |
 | Canvas stands down inside a menu                                                           | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx`                                        |
 | Folder menu + submenu, element menu, Tab menu, zoom presets, phone drill-down, by keyboard | e2e `apps/editor/e2e/menu-keyboard.spec.ts`                                                               |

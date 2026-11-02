@@ -217,6 +217,51 @@ describe('reply, resolve and reopen', () => {
   });
 });
 
+// docs/specs/012-collaboration/comment-reactions.md: a Participant reacts through the comment endpoints.
+describe('react', () => {
+  const react = (body: unknown, extra: Partial<Call> = {}) =>
+    call({ path: '/tabs/t1/comments/c1/react', body, ...extra });
+
+  it("adds and takes back a reaction under the caller's key and profile name, relayed once", async () => {
+    seed([shape('a', { commentThread: { resolved: false, comments: [comment('c1')] } })]);
+    expect((await react({ emoji: 'eyes', on: true, key: 'k-me' })).status).toBe(204);
+    expect((await threadOf('a'))!.comments[0]!.reactions).toEqual([
+      { emoji: 'eyes', by: 'k-me', name: 'Webber' },
+    ]);
+    const rev = (await stored()).rev;
+    expect((await react({ emoji: 'eyes', on: true, key: 'k-me' })).status).toBe(204);
+    expect((await stored()).rev).toBe(rev);
+    expect((await react({ emoji: 'eyes', on: false, key: 'k-me' })).status).toBe(204);
+    expect((await threadOf('a'))!.comments[0]!.reactions).toBeUndefined();
+  });
+
+  it('refuses a bad body, an unknown comment, a GET, an agent and a Viewer', async () => {
+    seed([shape('a', { commentThread: { resolved: false, comments: [comment('c1')] } })]);
+    expect((await react({ emoji: 'rocket', on: true, key: 'k' })).status).toBe(400);
+    expect((await react({ emoji: 'eyes', key: 'k' })).status).toBe(400);
+    expect((await react({ emoji: 'eyes', on: true })).status).toBe(400);
+    expect((await react({ emoji: 'eyes', on: true, key: 'k'.repeat(201) })).status).toBe(400);
+    expect((await react([1])).status).toBe(400);
+    expect(
+      (
+        await call({
+          path: '/tabs/t1/comments/nope/react',
+          body: { emoji: 'eyes', on: true, key: 'k' },
+        })
+      ).status,
+    ).toBe(404);
+    expect((await call({ method: 'GET', path: '/tabs/t1/comments/c1/react' })).status).toBe(405);
+    expect((await react({ emoji: 'eyes', on: true, key: 'k' }, { token: 'tok' })).status).toBe(403);
+    expect(
+      (await react({ emoji: 'eyes', on: true, key: 'k' }, { owner: 'looker', code: 'LOOK' }))
+        .status,
+    ).toBe(403);
+    expect(
+      (await react({ emoji: 'eyes', on: true, key: 'k' }, { owner: 'guest', code: 'VIEW' })).status,
+    ).toBe(204);
+  });
+});
+
 describe('delete-own', () => {
   it('deletes the caller’s own comment only', async () => {
     seed([

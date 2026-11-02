@@ -145,16 +145,18 @@ export const PAGES = chart(
   'Tab',
   'Changed',
   'Pages Added and Deleted',
-  'A page added to a Pages tab from the plus after its last page (an infographic page, a new article, or a slide), or deleted from its settings.',
+  'A page added to a Pages tab from the plus after its last page (an infographic page, a new article, a slide or a flashcard), or deleted from its settings.',
   {
     types: [
       'PageAdded',
       'ArticleAdded',
       'SlidePageAdded',
+      'FlashcardAdded',
       'PageRemoved',
       'PageKindInfographic',
       'PageKindArticle',
       'PageKindSlide',
+      'PageKindFlashcard',
       'PageAddedLikeLast',
     ],
   },
@@ -203,6 +205,15 @@ export const PAGE_SWIPES = chart(
   { types: ['PageSwipe'], rising: 'neutral' },
 );
 
+// A flashcard turned over to its other side (docs/specs/007-editor/flashcards.md).
+export const FLASHCARD_FLIPS = chart(
+  'UI',
+  'Used',
+  'Flashcard Flips',
+  'A flashcard turned over to show its other side.',
+  { types: ['FlashcardFlip'], rising: 'neutral' },
+);
+
 // Tab windows (docs/specs/009-elements/tab-window.md): a window's tab chosen, and the tab opened from it.
 export const TAB_WINDOW_USE = chart(
   'UI',
@@ -217,7 +228,7 @@ export const PAGE_BUILDING = chart(
   'Tab',
   'Changed',
   'Pages Built',
-  'A layout put onto a page, a page duplicated, moved or split, or a board put onto a page.',
+  'A layout put onto a page, a page duplicated, moved or split (a flashcard too long for its card included), or a board put onto a page.',
   {
     types: [
       'PageLayout',
@@ -226,6 +237,7 @@ export const PAGE_BUILDING = chart(
       'PageMoved',
       'PagesLaidOut',
       'PageFitToContent',
+      'FlashcardSplit',
     ],
   },
 );
@@ -245,7 +257,7 @@ export const ARTICLE_INSERTS = chart(
   'Element',
   'Added',
   'Article Inserts',
-  'Something put into the writing of an article: an image, table, chart or drawing at the caret, an object or drawing taken in from the palette, or a divider, page break, quote or code block.',
+  'Something put into the writing of an article: an image, table, chart or drawing at the caret, an object or drawing taken in from the palette, or a divider, page break, quote, code block or table of contents.',
   {
     types: [
       'ArticleImage',
@@ -259,6 +271,7 @@ export const ARTICLE_INSERTS = chart(
       'ArticlePageBreak',
       'ArticleQuote',
       'ArticleCode',
+      'ArticleContents',
       'ArticleComment',
       'ArticleAction',
     ],
@@ -269,13 +282,15 @@ export const ARTICLE_FORMATTING = chart(
   'Element',
   'Changed',
   'Article Formatting',
-  "The page toolbar used on an article's writing (a format, a text style or list, a link) and a zone in the writing wrapped, placed or deleted.",
+  "The page toolbar used on an article's writing (a format, a text style or list, a link), a table in the writing reshaped or pasted, and a zone in the writing wrapped, placed or deleted.",
   {
     types: [
       'ArticleFormat',
       'ArticleBlockStyle',
       'ArticleLink',
       'ArticlePaste',
+      'ArticleTableShape',
+      'ArticleTablePaste',
       'ArticleZoneWrap',
       'ArticleZoneResized',
       'ArticleZoneMoved',
@@ -314,6 +329,7 @@ export const PAGE_WORK: MetricStack = {
     PAGE_BUILDING,
     PAGE_CONTENTS_JUMPS,
     PAGE_SWIPES,
+    FLASHCARD_FLIPS,
     TAB_WINDOW_USE,
     EMPTY_PAGE_LAYOUTS_HIDDEN,
     ARTICLE_INSERTS,
@@ -585,6 +601,32 @@ export const EDITOR_SEARCH: MetricStack = {
   headline: SEARCH_OPENED,
 };
 
+// Find and Replace on a tab (docs/specs/007-editor/find-and-replace.md "Telemetry"): the bar opened, and a match
+// replaced or every match at once. The queries and the words are never sent.
+export const FIND_BAR_OPENED = chart(
+  'UI',
+  'Opened',
+  'Find Opened',
+  'The Find bar opened on a tab, from Cmd/Ctrl+F or Cmd/Ctrl+Shift+H.',
+  { typeIn: (t) => t === 'FindBar' },
+);
+
+export const FIND_REPLACES = chart(
+  'UI',
+  'Used',
+  'Replaces',
+  'One match replaced, or every match at once with Replace All.',
+  { types: ['FindReplace', 'FindReplaceAll'] },
+);
+
+export const FIND_AND_REPLACE: MetricStack = {
+  stack: true,
+  title: 'Find and Replace',
+  blurb: 'The Find bar opened on a tab, and its matches replaced one at a time or all at once.',
+  members: [FIND_BAR_OPENED, FIND_REPLACES],
+  headline: FIND_BAR_OPENED,
+};
+
 // The palette beyond adding elements (Palette tab has the rankings).
 export const PALETTE_SEARCHES = chart(
   'UI',
@@ -804,7 +846,7 @@ export const LOCAL_MOVE_OFFERED = opened(
   (t) => t === 'LocalMovePrompt',
 );
 
-OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!);
+OPENED_HOMES.push(PALETTE_GROUPS_OPENED.typeIn!, FIND_BAR_OPENED.typeIn!);
 
 export const OTHER_OPENED = chart(
   'UI',

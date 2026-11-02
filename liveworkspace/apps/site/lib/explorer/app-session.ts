@@ -1,7 +1,9 @@
 // The app's own session, for the Explorer shown on that app's address (page-app.ts): its signed-in account from
 // the app's API, its sign-in and sign-out, and its guest token. On liveworkspace.app none of this is asked.
 
+import { appSignOut as signOutOfApp } from '@liveworkspace/account-menu';
 import { accountColourOf, accountPictureOf } from '@liveworkspace/auth-client/account-name';
+import { retrySilentSignIn } from '@liveworkspace/auth-client/silent';
 import { createGuestTokens, type GuestTokens } from '@liveworkspace/index-client/browser';
 import { SIGNED_IN_HINT_COOKIE as DIAGRAM_HINT } from '@livediagram/api-schema';
 import { SIGNED_IN_HINT_COOKIE as PLANNER_HINT } from '@liveplanner/api-schema';
@@ -12,7 +14,8 @@ import { fullNameOf } from '../accounts';
 import { pageApp } from './page-app';
 
 // Each app's readable "this browser has a session here" cookie (`1`), set beside its refresh cookie.
-export const SIGNED_IN_HINTS: Record<AppName, string> = {
+// A held app (livehuddle) has none until its fork brings its api-schema; no Explorer lists it before then.
+export const SIGNED_IN_HINTS: Partial<Record<AppName, string>> = {
   livediagram: DIAGRAM_HINT,
   liveplanner: PLANNER_HINT,
   livedocuments: DOCUMENTS_HINT,
@@ -42,6 +45,7 @@ export type AppAccount = {
 const RENEW_BEFORE_MS = 60_000;
 let account: AppAccount | null = null;
 let accountPending: Promise<AppAccount | null> | null = null;
+let answered = false;
 
 function cookie(name: string): string | null {
   if (typeof document === 'undefined') return null;
@@ -147,13 +151,21 @@ export function appAccount(now = Date.now()): Promise<AppAccount | null> {
   const e2e = e2eAccount(app);
   if (e2e) return Promise.resolve(e2e);
   if (account && account.expiresAt - RENEW_BEFORE_MS > now) return Promise.resolve(account);
-  if (cookie(SIGNED_IN_HINTS[app]) !== '1') {
+  const hint = SIGNED_IN_HINTS[app];
+  if (!hint || cookie(hint) !== '1') {
     account = null;
     return Promise.resolve(null);
   }
   accountPending ??= askToken().then((found) => {
     accountPending = null;
     account = found;
+    // The page's first answer: a hint that outlived its session (it ended in another app) lets the silent sign-in
+    // ask again (liveworkspace/docs/specs/003-accounts/accounts.md "A hint that outlived its session"). Later answers
+    // never do; the retry itself is once per page.
+    if (!answered) {
+      answered = true;
+      retrySilentSignIn();
+    }
     return found;
   });
   return accountPending;
@@ -187,20 +199,13 @@ export function forgetAppAccount() {
   accountPending = null;
 }
 
-/** Signs out of the app (its API clears its cookies, and remembers not to sign in silently again). */
-export async function appSignOut(): Promise<boolean> {
-  try {
-    const res = await fetch('/api/auth/sign-out', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { accept: 'application/json' },
-    });
-    if (!res.ok) return false;
-  } catch {
-    return false;
-  }
-  account = null;
-  return true;
+/** Signs out of the app, and so of every liveworkspace app in this browser (liveworkspace/docs/specs/003-accounts/
+ *  accounts.md "Signing out"), then goes through the accounts site's hop, or straight back to this page, as a visitor
+ *  (the account menu's own sign-out, `@liveworkspace/account-menu`). Resolves false when the API refused. */
+export async function appSignOut(go?: (to: string) => void): Promise<boolean> {
+  const left = await signOutOfApp(go);
+  if (left) account = null;
+  return left;
 }
 
 /** The app's own sign-in, and its registration page, coming back to `here` (the account menu's, one for every
@@ -229,5 +234,6 @@ export function appGuestTokens(app: AppName): GuestTokens {
 export function resetAppSession() {
   account = null;
   accountPending = null;
+  answered = false;
   guestTokens.clear();
 }

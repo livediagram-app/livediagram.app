@@ -167,32 +167,94 @@ describe('a written article read back', () => {
 });
 
 describe('a Markdown table', () => {
-  it('is written as a list, its header in bold, and counted; never inside a code fence', () => {
-    const out = articleFromMarkdown(
+  const cellsOf = (b: ArticleBlock) =>
+    b.type === 'table' ? b.rows.map((r) => r.cells.map((c) => c.map((x) => x.text).join(''))) : [];
+
+  it('is a table block, its header line the header row; never inside a code fence', () => {
+    const blocks = blocksOf(
       'Before\n\n| Method | Safe |\n| --- | :---: |\n| GET | yes |\n| POST | no |\n\nAfter\n\n```\n| a | b |\n|---|---|\n```',
     );
-    if (!('blocks' in out)) throw new Error('refused');
-    expect(out.tables).toBe(1);
-    expect(shape(out.blocks)).toEqual([
-      { type: 'paragraph', runs: [{ text: 'Before' }] },
-      { type: 'paragraph', runs: [{ text: 'Method · Safe', b: true }] },
-      { type: 'list', list: 'bullet', runs: [{ text: 'GET · yes' }] },
-      { type: 'list', list: 'bullet', runs: [{ text: 'POST · no' }] },
-      { type: 'paragraph', runs: [{ text: 'After' }] },
-      { type: 'code', text: '| a | b |\n|---|---|' },
+    expect(blocks.map((b) => b.type)).toEqual(['paragraph', 'table', 'paragraph', 'code']);
+    const table = blocks[1]!;
+    expect(table.type === 'table' && table.header).toBe(true);
+    expect(cellsOf(table)).toEqual([
+      ['Method', 'Safe'],
+      ['GET', 'yes'],
+      ['POST', 'no'],
     ]);
   });
 
   it('takes a rule with or without outer pipes and alignment colons, and nothing else', () => {
-    const tables = (rule: string) => {
-      const out = articleFromMarkdown(`| a | b |\n${rule}\n| 1 | 2 |`);
-      if (!('blocks' in out)) throw new Error('refused');
-      return out.tables;
-    };
+    const tables = (rule: string) =>
+      blocksOf(`| a | b |\n${rule}\n| 1 | 2 |`).filter((b) => b.type === 'table').length;
     for (const rule of ['|---|---|', '  | :--- | ---: |  ', ':---: | ---', '|----|'])
       expect(tables(rule), rule).toBe(1);
     for (const rule of ['| -- | --- |', '|---||', '||', '| --- | a |', '| :-:- |', '|', ''])
       expect(tables(rule), rule).toBe(0);
+  });
+
+  it('reads an empty header line as no header row, and keeps marks, bars and line breaks in cells', () => {
+    const [table] = blocksOf('|  |  |\n|---|---|\n| **a** \\| b | one<br>two |');
+    expect(table?.type === 'table' && table.header).toBeUndefined();
+    if (table?.type !== 'table') throw new Error('no table');
+    expect(table.rows).toHaveLength(1);
+    expect(table.rows[0]!.cells[0]).toEqual([{ text: 'a', b: true }, { text: ' | b' }]);
+    expect(table.rows[0]!.cells[1]).toEqual([{ text: 'one\ntwo' }]);
+  });
+
+  it('pads ragged rows to the widest', () => {
+    const [table] = blocksOf('| a | b | c |\n|---|---|---|\n| 1 |');
+    expect(cellsOf(table!)).toEqual([
+      ['a', 'b', 'c'],
+      ['1', '', ''],
+    ]);
+  });
+
+  it('keeps a long table whole rather than refusing it as a long paragraph', () => {
+    const row = `| ${'x'.repeat(90)} | y |`;
+    const text = ['| a | b |', '|---|---|', ...Array.from({ length: 300 }, () => row)].join('\n');
+    const out = articleFromMarkdown(text);
+    expect('blocks' in out).toBe(true);
+  });
+
+  it('is written back as a pipe table and reads back the same', () => {
+    const blocks = blocksOf(
+      '| Name | Notes |\n|---|---|\n| [site](https://example.com) | a \\| b<br>c |\n| *x* | |',
+    );
+    const md = articleToMarkdown({ blocks });
+    expect(md).toContain('| Name | Notes |\n| --- | --- |\n');
+    expect(md).toContain('a \\| b<br>c');
+    const back = blocksOf(md)[0]!;
+    expect(cellsOf(back)).toEqual(cellsOf(blocks[0]!));
+    expect(back.type === 'table' && back.rows[1]!.cells[0]).toEqual([
+      { text: 'site', href: 'https://example.com' },
+    ]);
+  });
+
+  it('writes a table with no header row with an empty header line', () => {
+    const [table] = blocksOf('|  |  |\n|---|---|\n| 1 | 2 |');
+    const md = articleToMarkdown({ blocks: [table!] });
+    expect(md).toBe('|  |  |\n| --- | --- |\n| 1 | 2 |\n');
+    expect(cellsOf(blocksOf(md)[0]!)).toEqual([['1', '2']]);
+  });
+
+  it('counts its cells as words', () => {
+    expect(
+      articleWordCount({ blocks: blocksOf('| one two | three |\n|---|---|\n| four | |') }),
+    ).toBe(4);
+  });
+});
+
+describe('a contents line', () => {
+  it('reads [TOC] as a contents block, its depth from [TOC 1] or [TOC 2], and writes it back', () => {
+    const blocks = blocksOf('[TOC]\n\n[TOC 2]\n\n[TOC 1]\n\n[TOC 3]');
+    expect(shape(blocks)).toEqual([
+      { type: 'toc' },
+      { type: 'toc', depth: 2 },
+      { type: 'toc', depth: 1 },
+      { type: 'paragraph', runs: [{ text: '[TOC 3]' }] },
+    ]);
+    expect(articleToMarkdown({ blocks: blocks.slice(0, 3) })).toBe('[TOC]\n\n[TOC 2]\n\n[TOC 1]\n');
   });
 });
 

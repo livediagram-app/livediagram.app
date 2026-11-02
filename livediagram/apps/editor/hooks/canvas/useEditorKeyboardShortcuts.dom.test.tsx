@@ -153,6 +153,7 @@ describe("a Participant's palette keys", () => {
       pickText: vi.fn(),
       pickShape: vi.fn(),
       pickPath: vi.fn(),
+      pickFill: vi.fn(),
       openShapes: vi.fn(),
     };
     const { bag } = deps({
@@ -212,6 +213,7 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
       pickText: vi.fn(),
       pickShape: vi.fn(),
       pickPath: vi.fn(),
+      pickFill: vi.fn(),
       openShapes: vi.fn(),
     };
     const addShape = vi.fn();
@@ -259,6 +261,13 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
     expect(addShape).not.toHaveBeenCalled();
   });
 
+  it('picks up the Fill tool with F, never the Frame', () => {
+    const { wb, addShape } = board();
+    press('f');
+    expect(wb.pickFill).toHaveBeenCalledTimes(1);
+    expect(addShape).not.toHaveBeenCalled();
+  });
+
   it('picks up the Path tool with P, never the pencil', () => {
     const { wb } = board();
     press('p');
@@ -283,6 +292,7 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
       pickText: vi.fn(),
       pickShape: vi.fn(),
       pickPath: vi.fn(),
+      pickFill: vi.fn(),
       openShapes: vi.fn(),
     };
     const onDeselect = vi.fn();
@@ -302,6 +312,7 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
       pickText: vi.fn(),
       pickShape: vi.fn(),
       pickPath: vi.fn(),
+      pickFill: vi.fn(),
       openShapes: vi.fn(),
     };
     const { bag } = deps({ selectedId: null, whiteboard: wb, canvasTool: 'eraser' });
@@ -325,6 +336,7 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
       pickText: vi.fn(),
       pickShape: vi.fn(),
       pickPath: vi.fn(),
+      pickFill: vi.fn(),
       openShapes: vi.fn(),
     };
     const { bag } = deps({ selectedId: null, whiteboard: wb, isReadOnly: true });
@@ -521,5 +533,103 @@ describe('undo and redo from the start search', () => {
     pressIn(input, 'c', { metaKey: true });
     expect(copySelection).not.toHaveBeenCalled();
     input.remove();
+  });
+});
+
+// Enter is the keyboard's tap on an armed tile (docs/specs/008-canvas/canvas-and-palette.md "Adding elements"): a tile
+// armed from the keyboard waited for a pointer press, so a keyboard user could not place anything.
+describe('Enter with a tile armed', () => {
+  it('drops it at the middle of the view and claims the key', () => {
+    const onDropDrawAtCentre = vi.fn(() => true);
+    const { bag } = deps({
+      pendingDraw: { type: 'shape', kind: 'circle' },
+      selectedId: null,
+      onDropDrawAtCentre,
+    });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    expect(press('Enter').defaultPrevented).toBe(true);
+    expect(onDropDrawAtCentre).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves the key alone for a gesture with no tap', () => {
+    const onDropDrawAtCentre = vi.fn(() => false);
+    const { bag } = deps({
+      pendingDraw: { type: 'freehand' },
+      selectedId: null,
+      onDropDrawAtCentre,
+    });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    expect(press('Enter').defaultPrevented).toBe(false);
+  });
+
+  it('does nothing with nothing armed, on a repeat, with a modifier, or in a text field', () => {
+    const onDropDrawAtCentre = vi.fn(() => true);
+    const idle = deps({ selectedId: null, onDropDrawAtCentre });
+    renderHook(() => useEditorKeyboardShortcuts(idle.bag));
+    press('Enter');
+    cleanup();
+    const armed = deps({ pendingDraw: { type: 'text' }, selectedId: null, onDropDrawAtCentre });
+    renderHook(() => useEditorKeyboardShortcuts(armed.bag));
+    press('Enter', { repeat: true });
+    press('Enter', { shiftKey: true });
+    press('Enter', { metaKey: true });
+    const input = document.createElement('input');
+    document.body.append(input);
+    input.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }),
+    );
+    input.remove();
+    expect(onDropDrawAtCentre).not.toHaveBeenCalled();
+  });
+});
+
+describe('vote keys (docs/specs/012-collaboration/blueprints/vote-keys.md)', () => {
+  it('hands + and - on the one selected element to the vote, ahead of type-to-edit', () => {
+    const onVoteKey = vi.fn(() => true);
+    const onTypeIntoSelected = vi.fn(() => true);
+    const { bag, spies } = deps({ onVoteKey, onTypeIntoSelected });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    expect(press('+').defaultPrevented).toBe(true);
+    press('=');
+    press('-');
+    expect(onVoteKey.mock.calls).toEqual([
+      ['a', 1],
+      ['a', 1],
+      ['a', -1],
+    ]);
+    expect(onTypeIntoSelected).not.toHaveBeenCalled();
+    expect(spies.onShortcutUsed).toHaveBeenCalledTimes(3);
+  });
+
+  it('leaves a key the vote did not take to type-to-edit', () => {
+    const onVoteKey = vi.fn(() => false);
+    const onTypeIntoSelected = vi.fn(() => true);
+    const { bag } = deps({ onVoteKey, onTypeIntoSelected });
+    renderHook(() => useEditorKeyboardShortcuts(bag));
+    press('-');
+    expect(onVoteKey).toHaveBeenCalledWith('a', -1);
+    expect(onTypeIntoSelected).toHaveBeenCalledWith('a', '-');
+  });
+
+  it('never asks the vote with several selected, nothing selected, a chord, or no vote key (a Viewer)', () => {
+    const onVoteKey = vi.fn(() => true);
+    const multi = deps({ onVoteKey, multiSelectedIds: new Set(['a', 'b']) });
+    renderHook(() => useEditorKeyboardShortcuts(multi.bag));
+    press('+');
+    cleanup();
+    const none = deps({ onVoteKey, selectedId: null });
+    renderHook(() => useEditorKeyboardShortcuts(none.bag));
+    press('+');
+    cleanup();
+    const chord = deps({ onVoteKey });
+    renderHook(() => useEditorKeyboardShortcuts(chord.bag));
+    press('+', { altKey: true });
+    expect(onVoteKey).not.toHaveBeenCalled();
+    cleanup();
+    const onTypeIntoSelected = vi.fn(() => false);
+    const viewer = deps({ onVoteKey: undefined, isReadOnly: true, onTypeIntoSelected });
+    renderHook(() => useEditorKeyboardShortcuts(viewer.bag));
+    expect(press('+').defaultPrevented).toBe(false);
+    expect(onTypeIntoSelected).not.toHaveBeenCalled();
   });
 });

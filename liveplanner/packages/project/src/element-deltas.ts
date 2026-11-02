@@ -44,6 +44,13 @@ import {
   type ParticipantResponse,
 } from './responses';
 import { MENTIONS_MAX } from '@liveworkspace/model-core/comment-mentions';
+import {
+  commentWithReactions,
+  isCommentReactions,
+  isReactionChange,
+  withReaction,
+  type CommentReactionId,
+} from '@liveworkspace/model-core/comment-reactions';
 import { applyPlanBoardPatch, type PlanBoardPatch } from './plan-board-patch';
 
 // Bound on the round id, which is otherwise opaque.
@@ -73,6 +80,17 @@ export type ElementDelta =
   | { kind: 'comment-remove'; commentId: string }
   | { kind: 'comment-rekey'; from: string; to: string }
   | { kind: 'comment-resolve'; resolved: boolean; cell?: string }
+  // One person's reaction on one comment, on or off (docs/specs/012-collaboration/comment-reactions.md): `by` is
+  // their collab key, `name` the name they react under (the room stamps both from the sender's presence). Found
+  // in whichever thread holds the comment, a Sheet cell's included.
+  | {
+      kind: 'comment-react';
+      commentId: string;
+      emoji: CommentReactionId;
+      by: string;
+      name: string;
+      on: boolean;
+    }
   // A Plan board's set-up change, as only what changed (docs/specs/012-collaboration/collab-race-hardening.md,
   // phase 6): column cogs and the Board flyout edit it without selecting the board, so two people set one
   // board up at once.
@@ -94,7 +112,10 @@ export function isComment(value: unknown): value is Comment {
     typeof c.authorColor === 'string' &&
     // Mentions (docs/specs/012-collaboration/comment-mentions.md), when present, are a bounded list; their
     // fields are cleaned server-side (sanitizeMentions) before they persist.
-    (c.mentions === undefined || (Array.isArray(c.mentions) && c.mentions.length <= MENTIONS_MAX))
+    (c.mentions === undefined ||
+      (Array.isArray(c.mentions) && c.mentions.length <= MENTIONS_MAX)) &&
+    // Reactions (docs/specs/012-collaboration/comment-reactions.md), when present, are the bounded list.
+    isCommentReactions(c.reactions)
   );
 }
 
@@ -194,6 +215,19 @@ export function applyElementDelta(el: Element, delta: ElementDelta): Element {
       const thread = threadAt(el, cell);
       const next = threadResolved(thread, delta.resolved);
       return next === thread ? el : withThreadAt(el, cell, next);
+    }
+    case 'comment-react': {
+      if (typeof delta.commentId !== 'string' || !isReactionChange(delta)) return el;
+      const holder = threadHolding(el, delta.commentId);
+      if (!holder) return el;
+      let changed = false;
+      const comments = holder.thread.comments.map((c) => {
+        if (c.id !== delta.commentId) return c;
+        const next = commentWithReactions(c, withReaction(c.reactions, delta));
+        if (next !== c) changed = true;
+        return next;
+      });
+      return changed ? withThreadAt(el, holder.cell, { ...holder.thread, comments }) : el;
     }
     case 'board': {
       if (el.type !== 'shape' || !el.planBoard) return el;

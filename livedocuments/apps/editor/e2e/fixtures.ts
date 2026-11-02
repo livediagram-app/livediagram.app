@@ -209,8 +209,8 @@ export async function startBlankDocument(page: Page): Promise<void> {
 // A /new address that makes the document on livedocuments. A guest's own /new makes it in This Browser
 // (docs/specs/006-document/save-locations.md "The default depends on who is creating"), but a `?folder=` context
 // names a place on the server, so /new makes it there whoever is creating. The page becomes a minted guest (its token
-// where the app keeps it, so /new never leaves for the guest handoff) and the folder is one of theirs, made at the
-// index. For a spec that writes the document through the api (seedTab), watches the api's saves, or shares it.
+// where the app keeps it, so /new never leaves for the guest handoff), or keeps the account it is signed in as
+// (adoptAccount), and the folder is one of theirs, made at the index. For a spec that writes the document through the api (seedTab), watches the api's saves, or shares it.
 // One guest per page, so a spec that makes a second document (or comes back to the first) stays its owner.
 const serverGuests = new WeakMap<Page, string>();
 
@@ -306,6 +306,14 @@ export async function adoptGuest(target: Page | BrowserContext, owner: string): 
       // A page with no storage keeps none.
     }
   }, token);
+}
+
+// The page opens signed in as this account (signed-in/session.ts installSession puts the session where the app reads
+// it): serverNewUrl then makes its folder as the account, never as a guest it would mint, so the document is the
+// account's, on the server, rather than a guest's.
+export function adoptAccount(page: Page, userId: string, token: string): void {
+  guestTokens.set(userId, token);
+  serverGuests.set(page, userId);
 }
 
 export function ownerHeaders(

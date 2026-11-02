@@ -123,7 +123,8 @@ logs the count and the code that stopped the read (`none` when none did):
    `element_locked`.
 5. **Finalise** ([Finalise](#finalise)).
 6. **Validate** every touched element with `elementValidationIssue`, then the whole tab with `isValidTab`; the
-   first issue is `invalid_result`.
+   first issue is `invalid_result`. A result that `guardFlashcards` holds back (an element added or moved onto a
+   flashcard, `@livedocuments/document`) is `text_only`.
 7. **Diff.** `elementOps = diffToElementOps(tab.elements, next.elements)`;
    `inverse = diffToElementOps(next.elements, tab.elements)`.
 8. **Results.** `buildResultLines(before, after, state)`; `targets` and `createdIds` in first-resolution and
@@ -203,7 +204,7 @@ print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` 
 | `stroke`     | every type with a `strokeColor` field                             | `strokeColor`; clears `strokeSwatch`               | a colour: hex (warning `colour_overrides_theme` where the theme colours it) or a marker colour name |
 | `text-color` | every type with a `textColor` field                               | `textColor`                                        | a colour, as `stroke`                                                                               |
 | `border`     | every type with a `strokeStyle` field                             | `strokeStyle`                                      | `solid dashed dotted long-dash dash-dot dash-dot-dot`                                               |
-| `text`       | every type with a `textSize` field                                | `textSize`                                         | `sm md lg scale`                                                                                    |
+| `text`       | every type with a `textSize` field                                | `textSize`, clearing a `textScale`                 | `sm md lg scale`                                                                                    |
 | `line`       | `arrow`                                                           | `arrowStyle`                                       | `straight angled curved`                                                                            |
 
 - **Stored field names** are `ELEMENT_FIELD_NAMES[el.type]`. `id` and `type` are refused (`invalid_value`,
@@ -350,7 +351,8 @@ means `newElementId` ([Ids](#ids)).
   arrows with both ends among them are laid out by `autoLayoutElements(subset, { style, direction, originX,
 originY, fixedSizeIds })`, origin the selection's bounding-box top-left, every selected box keeping its size;
   edgeless selected boxes are swept below with `sweepEdgelessNodes` (EO38). `direction` maps `down`→`TB`,
-  `right`→`LR`; omitted, flow detects it (`flowDirectionOf`). Nothing outside the selection moves; a locked arrow
+  `right`→`LR` for `flow` and `tree` (a mindmap is radial and takes none); omitted, flow detects it
+  (`flowDirectionOf`) and a tree runs down. Nothing outside the selection moves; a locked arrow
   between selected boxes keeps its ends. A locked element in the selection
   is `element_locked`.
 - **`test <selector> key=value…`.** For each field, the value `set` would write (aliases resolved, no label cap,
@@ -635,6 +637,7 @@ and by the api for the tab byte cap.
 | `id_taken`          | `id "<id>" is taken by <kind> "<label>"`                                                                    | `use id=<free>`                                                        |
 | `arrow_exists`      | `<a>→<b> already has an arrow:` and it as `ref  from→to "label"`                                            | `add again for a second arrow, or set the existing one`                |
 | `element_locked`    | `the tab is locked`, or `locked:` and each element as `ref  kind "label"` and why (element, layer "<name>") | `unlock it in the editor, or leave it out of the changeset`            |
+| `text_only`         | `a flashcard holds text only: an element cannot be added or moved onto a card`                              | `write on the card with write_article, or place it off the cards`      |
 | `not_connected`     | `no arrow <a>→<b>`; the arrows touching a and b as `ref  from→to "label"`                                   | `connect <a> -> <b> first, or insert between the ends of one of these` |
 | `test_failed`       | `<ref> <key>: expected <value>, actual <value>`                                                             | `re-read <ref>: it changed since you read it`                          |
 | `invalid_result`    | `<ref> <field>: <rule>` from `elementValidationIssue`                                                       | `see the format: livedocuments schema <kind>`                          |

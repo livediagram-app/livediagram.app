@@ -7,6 +7,7 @@ const KIND_NOUN: Record<PageKind, string> = {
   infographic: 'Infographic Page',
   article: 'Article',
   slide: 'Slide',
+  flashcard: 'Card',
 };
 
 /** The page a press of the + adds, in words: its kind. */

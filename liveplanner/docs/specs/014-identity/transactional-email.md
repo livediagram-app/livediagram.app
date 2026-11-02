@@ -15,7 +15,11 @@ accounts Worker for every app ([liveworkspace/docs/specs/003-accounts/accounts.m
 "Onboarding emails"), which also counts those sends. liveplanner keeps no
 lifecycle table and runs no sweep; it reports when someone's plan is saved
 (`reportActivity`, the newest save of a plan they own, pushed from the plan's
-room at most once a minute) so the series knows who is active.
+room at most once a minute) so the series knows who is active. The series after the welcome, invitation reminders and the token warning wait
+for the recipient's weekday daytime (Monday to Friday, 09:00 to 21:00 in their
+own time zone, Europe/London when it isn't known; accounts.md "The send
+window"). liveplanner's own emails
+below are never held.
 
 **Transactional: always send (when the feature is on):**
 

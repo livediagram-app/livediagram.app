@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, test, dismissQuickTour, expectNoPageErrors, paletteTile } from './fixtures';
+import { expect, test, expectNoPageErrors, openStartBlank, paletteTile } from './fixtures';
 
 // The runtime motion guard (docs/specs/004-interface-design/motion.md "Enforcement").
 //
@@ -56,12 +56,10 @@ async function recorded(page: Page): Promise<MotionRecord[]> {
 const transitions = (all: MotionRecord[]) =>
   all.filter((m) => Number.isFinite(m.active) && m.iterations < 2);
 
-async function startBlank(page: Page): Promise<void> {
-  // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank).
-  await page.goto('/new?blank=1');
-  await page.locator('[data-canvas-a11y-root]').waitFor();
-  await dismissQuickTour(page);
-}
+// Straight to a blank canvas (the /new?blank=1 bypass), made on livediagram: a guest's own /new keeps it in This
+// Browser, which the index never holds, so the Explorer panel would show no Current canvas card and no Canvas menu
+// (docs/specs/013-workspace/explorer-structure.md "The editor's Explorer panel").
+const startBlank = openStartBlank;
 
 /** Open a chrome surface, let its motion play out, and close it again. `shown` is the surface
  *  itself, for one whose code loads on demand (Settings, Search): its motion starts only once it
@@ -107,7 +105,8 @@ async function tourTheChrome(page: Page): Promise<void> {
   await explorer.click();
   await page.waitForTimeout(400);
   await openAndClose(page, () => page.getByRole('button', { name: 'Canvas menu' }).click());
-  await explorer.click();
+  // The scrim sits over the Explorer button while the panel is open; Escape closes it.
+  await page.keyboard.press('Escape');
   await page.waitForTimeout(300);
   await openAndClose(page, () => page.getByRole('button', { name: 'Tab menu' }).click());
   await openAndClose(page, () => square.click({ button: 'right' }));

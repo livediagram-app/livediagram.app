@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   deckFollowingPages,
+  deckWithPageSlideDetails,
   GoneSlides,
   GONE_SLIDES_MAX,
   deckPagesKey,
@@ -9,6 +10,7 @@ import {
   slidePageOwnSlideIds,
 } from './slide-deck-pages';
 import type { Deck, Slide } from './slide-deck';
+import { LEGACY_NOTE_CARD_ID, slideNoteCards } from './slide-notes';
 import type { Page } from './page';
 import type { Tab } from './index';
 
@@ -256,5 +258,72 @@ describe('GoneSlides', () => {
     for (let i = 0; i <= GONE_SLIDES_MAX; i++) gone.remember(pageSlide('t', `p${i}`));
     expect(gone.take('t', 'p0', [], [])).toEqual([]);
     expect(gone.take('t', `p${GONE_SLIDES_MAX}`, [], [])).toHaveLength(1);
+  });
+});
+
+describe('deckWithPageSlideDetails (docs/specs/020-import-export/office-import.md "One undo step")', () => {
+  it('puts notes and hidden flags on the pages\u2019 own slides, adding them, and the follow pass keeps them', () => {
+    const existing: Slide = {
+      id: pageSlideIdFor('t', 'p1'),
+      tabId: 't',
+      elementIds: [],
+      pageId: 'p1',
+    };
+    const other: Slide = { id: 'other', tabId: 'u', elementIds: ['e'] };
+    const deck: Deck = { slides: [other, existing] };
+    const next = deckWithPageSlideDetails(deck, 't', [
+      { pageId: 'p2', notes: 'Second', hidden: true },
+      { pageId: 'p1', notes: 'First' },
+      { pageId: 'p3' },
+    ]);
+    expect(next.slides).toEqual([
+      other,
+      { ...existing, notes: 'First' },
+      {
+        id: pageSlideIdFor('t', 'p2'),
+        tabId: 't',
+        elementIds: [],
+        pageId: 'p2',
+        notes: 'Second',
+        hidden: true,
+      },
+      { id: pageSlideIdFor('t', 'p3'), tabId: 't', elementIds: [], pageId: 'p3' },
+    ]);
+    const followed = deckFollowingPages(next, [
+      deckTab('t', [slidePage('p1'), slidePage('p2'), slidePage('p3')]),
+    ]);
+    expect(followed.slides.find((s) => s.pageId === 'p2')).toMatchObject({
+      notes: 'Second',
+      hidden: true,
+    });
+    expect(followed.slides.filter((s) => s.tabId === 't')).toHaveLength(3);
+  });
+
+  it('brings imported notes in as one note card, in place of the slide’s own cards', () => {
+    const existing: Slide = {
+      id: pageSlideIdFor('t', 'p1'),
+      tabId: 't',
+      elementIds: [],
+      pageId: 'p1',
+      noteCards: [{ id: 'c1', text: 'Old card' }],
+      notes: 'Old card',
+    };
+    const next = deckWithPageSlideDetails({ slides: [existing] }, 't', [
+      { pageId: 'p1', notes: 'Line one\nLine two' },
+    ]);
+    expect(next.slides[0]).not.toHaveProperty('noteCards');
+    expect(slideNoteCards(next.slides[0]!)).toEqual([
+      { id: LEGACY_NOTE_CARD_ID, text: 'Line one\nLine two' },
+    ]);
+    // A detail with no notes leaves the cards alone.
+    const hiddenOnly = deckWithPageSlideDetails({ slides: [existing] }, 't', [
+      { pageId: 'p1', hidden: true },
+    ]);
+    expect(hiddenOnly.slides[0]).toEqual({ ...existing, hidden: true });
+  });
+
+  it('is the same deck when nothing is given', () => {
+    const deck: Deck = { slides: [] };
+    expect(deckWithPageSlideDetails(deck, 't', [])).toBe(deck);
   });
 });

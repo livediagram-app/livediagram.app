@@ -70,4 +70,30 @@ describe('FreehandSvg', () => {
     const { container } = render(<FreehandSvg element={stroke()} fill="none" stroke="#000" />);
     expect(container.querySelector('[data-stroke-hit]')).toBeNull();
   });
+
+  // docs/specs/023-draw-mode/drawing-tools.md "The Fill tool": the fill under the ink, picked by it too.
+  it('draws a filled marker loop under its ink, catching pointers on it when picked', () => {
+    const ring = Array.from({ length: 12 }, (_, i) => ({
+      x: 50 + 40 * Math.cos((i / 12) * 2 * Math.PI),
+      y: 50 + 40 * Math.sin((i / 12) * 2 * Math.PI),
+    }));
+    const loop: FreehandElement = {
+      ...createFreehand(ring, true),
+      penWidth: 1.5,
+      fillColor: '#dbeafe',
+    };
+    const { container, rerender } = render(
+      <FreehandSvg element={loop} fill="#dbeafe" stroke="#000" hitPenWidth={1.5} />,
+    );
+    const paths = container.querySelectorAll('path');
+    expect(paths[0]!.hasAttribute('data-loop-fill')).toBe(true);
+    expect(paths[0]!.getAttribute('fill')).toBe('#dbeafe');
+    expect(paths[0]!.getAttribute('d')).toMatch(/^M.*Z$/);
+    expect(paths[0]!.style.pointerEvents).toBe('all');
+    rerender(<FreehandSvg element={loop} fill="#dbeafe" stroke="#000" />);
+    expect(container.querySelector<SVGElement>('[data-loop-fill]')!.style.pointerEvents).toBe('');
+    // Open, or with no fill to show: no fill path.
+    rerender(<FreehandSvg element={{ ...loop, closed: false }} fill="#dbeafe" stroke="#000" />);
+    expect(container.querySelector('[data-loop-fill]')).toBeNull();
+  });
 });

@@ -1,4 +1,4 @@
-import { sentForm, sentUrl } from '@liveworkspace/vitest-config/sent-request';
+import { sentForm, sentJson, sentUrl } from '@liveworkspace/vitest-config/sent-request';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
 
@@ -223,6 +223,65 @@ describe('POST /api/auth/sign-out', () => {
     expect(res.status).toBe(200);
     expect(cookieValue(res, 'ld_refresh')).toBe('');
     expect(cookieValue(res, 'ld_signed_in')).toBe('0');
+    // No refresh token to end a session with: this app alone, and no hop.
+    expect(await res.json()).toEqual({ signedIn: false, next: null });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  // liveworkspace/docs/specs/003-accounts/accounts.md "Signing out".
+  it('ends the liveworkspace session and answers the hop back to ?return=', async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ ended: true, ticket: 'tk.1' }));
+    const res = await call('/api/auth/sign-out?return=%2Fpricing%3Fx%3D1', {
+      method: 'POST',
+      headers: { Cookie: 'ld_refresh=refresh-1' },
+    });
+    expect(sentUrl(fetchMock.mock.calls[0]![0])).toBe(
+      'https://accounts.example/api/auth/end-session',
+    );
+    const init = fetchMock.mock.calls[0]![1]!;
+    expect(new Headers(init.headers).get('authorization')).toBe(`Basic ${btoa('client-lp:shh')}`);
+    expect(sentJson(init)).toEqual({ token: 'refresh-1' });
+    const { next } = (await res.json()) as { next: string };
+    const hop = new URL(next);
+    expect(hop.origin + hop.pathname).toBe('https://accounts.example/api/auth/end-session');
+    expect(Object.fromEntries(hop.searchParams)).toEqual({
+      client_id: 'client-lp',
+      post_logout_redirect_uri: `${APP}/pricing?x=1`,
+      ticket: 'tk.1',
+    });
+    expect(cookieValue(res, 'ld_refresh')).toBe('');
+    // Signed out everywhere: no mark, and the page it lands on spends no bounce.
+    expect(cookieValue(res, 'ld_signed_out')).toBe('');
+    expect(cookieValue(res, 'ld_silent')).toBe('1');
+  });
+
+  it('comes back only to this site', async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ ticket: 'tk.1' }));
+    const res = await call('/api/auth/sign-out?return=%2F%2Fevil.example', {
+      method: 'POST',
+      headers: { Cookie: 'ld_refresh=refresh-1' },
+    });
+    const { next } = (await res.json()) as { next: string };
+    expect(new URL(new URL(next).searchParams.get('post_logout_redirect_uri')!).origin).toBe(APP);
+  });
+
+  it('still signs out of this app when the accounts site refuses or is down', async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ error: 'invalid_token' }, { status: 401 }));
+    const refused = await call('/api/auth/sign-out', {
+      method: 'POST',
+      headers: { Cookie: 'ld_refresh=stale' },
+    });
+    expect(await refused.json()).toEqual({ signedIn: false, next: null });
+    expect(cookieValue(refused, 'ld_refresh')).toBe('');
+
+    fetchMock.mockRejectedValueOnce(new TypeError('network'));
+    const down = await call('/api/auth/sign-out', {
+      method: 'POST',
+      headers: { Cookie: 'ld_refresh=refresh-1' },
+    });
+    expect(await down.json()).toEqual({ signedIn: false, next: null });
+    // Signed out of this app alone: remembered, so no silent sign-in undoes it.
+    expect(cookieValue(down, 'ld_signed_out')).toBe('2');
   });
 });
 
@@ -417,7 +476,7 @@ describe('GET /api/auth/silent', () => {
   });
 
   it('goes straight back after the person signed out of this app', async () => {
-    const res = await bounce('/new', { headers: { Cookie: 'ld_signed_out=1' } });
+    const res = await bounce('/new', { headers: { Cookie: 'ld_signed_out=2' } });
     expect(res.headers.get('Location')).toBe('/new');
   });
 
@@ -464,9 +523,9 @@ describe('GET /api/auth/silent', () => {
 });
 
 describe('signing out, and signing in again', () => {
-  it('remembers an explicit sign-out, so no silent sign-in undoes it', async () => {
+  it('remembers a sign-out of this app alone, so no silent sign-in undoes it', async () => {
     const res = await call('/api/auth/sign-out', { method: 'POST' });
-    expect(cookieValue(res, 'ld_signed_out')).toBe('1');
+    expect(cookieValue(res, 'ld_signed_out')).toBe('2');
     const out = setCookies(res).find((c) => c.startsWith('ld_signed_out='))!;
     expect(out).toContain('Path=/');
     expect(out).not.toContain('HttpOnly');

@@ -167,9 +167,7 @@ describe('documentIdsIn', () => {
   it('reads ids from documentId fields and document links', () => {
     const other = '11111111-2222-3333-4444-555555555555';
     expect(
-      documentIdsIn(
-        `"documentId": "${DOC}" https://livediagram-router.liveworkspace-easing509.workers.dev/document/${other}`,
-      ),
+      documentIdsIn(`"documentId": "${DOC}" https://www.livediagram.app/document/${other}`),
     ).toEqual([DOC, other]);
     expect(documentIdsIn(`"tabId":"${DOC}"`)).toEqual([]);
   });

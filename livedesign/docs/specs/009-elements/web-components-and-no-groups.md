@@ -103,6 +103,9 @@ hero.
 
 ## No groups
 
+Components ([Components](components.md)) reuse a piece of a design across screens without bringing groups back:
+an instance is one element, and its main lives in the design's library, off the tab.
+
 The editor has none of these:
 
 - Group / Ungroup in the selection popover, multi-selection toolbar and context menu; `⌘G`.

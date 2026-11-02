@@ -46,7 +46,8 @@ export function shapeHasBespokeBody(kind: ShapeKind): boolean {
     isConceptShape(kind) ||
     kind === 'page' ||
     kind === 'browser' ||
-    kind === 'tab-window'
+    kind === 'tab-window' ||
+    kind === 'instance'
   );
 }
 

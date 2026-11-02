@@ -31,8 +31,9 @@ forks, no drifted telemetry):
 ## Read-only visitors
 
 For read-only views the registry returns
-the **view-safe subset** (zen mode, fit to screen, export, Collaborators, and
-the canvas tool switches that do not write to the document); mutating
+the **view-safe subset** (zen mode, fit to screen, Find in Tab, export, Collaborators, and
+the canvas tool switches that do not write to the document), plus Find and Replace for a Participant, who may
+replace in its own text ([Find and replace](find-and-replace.md)); mutating
 commands and the Format painter tool stay editor-only. `CommandContext` carries `isReadOnly` so the gating lives
 in the pure builder where it's unit-tested.
 

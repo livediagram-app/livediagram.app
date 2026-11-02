@@ -3,12 +3,15 @@
 import { act, renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { avatarPadCore, createShape, type Element } from '@livediagram/document';
-import { DEFAULT_AVATAR_CONFIG } from '@/lib/avatar-config';
-import type { AvatarPoint } from '@/lib/avatar-walk';
+import { DEFAULT_AVATAR_CONFIG } from '@liveworkspace/avatar/config';
+import type { AvatarPoint } from '@liveworkspace/avatar/walk';
 import { track } from '@/lib/telemetry';
-import { useAvatarWalk } from './useAvatarWalk';
+import { bindAvatar } from '@/lib/avatar-bindings';
+import { useAvatarWalk } from '@liveworkspace/avatar/hooks/useAvatarWalk';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+// This editor's telemetry reaches Avatar mode through its bindings (lib/avatar-bindings.ts).
+bindAvatar();
 
 // docs/specs/009-elements/avatar-pad.md "Starting on the pad": entering Avatar mode on a tab with a pad puts the
 // character on it, over a button's spawn, and brings the view to it when it is off screen.

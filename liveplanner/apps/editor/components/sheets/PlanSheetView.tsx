@@ -307,6 +307,11 @@ function SheetParts({
     return () => clearPointingTarget(c.sheet.id);
   }, [writingFormula, c.sheet.id, c.sheet.tabId, latestPoint, latestCaret]);
   const onImportCsv = () => file.current?.click();
+  const readFile = async (f: File) => {
+    const text = await f.text();
+    if (c.sheet.cells.size === 0) importCsvText(c, text, 'replace');
+    else setImportText(text);
+  };
   // Setup Sheet (sheet.md "Setup Sheet"): a placed sheet awaiting setup shows its placeholder (and, for this person,
   // the dialog) while it has no cells; cells arriving any other way (a peer, an agent, an import) end setup, so a
   // sheet cleared later never shows it again.
@@ -325,16 +330,16 @@ function SheetParts({
       );
   }, [filled, c.store, c.sheet.id]);
   // The cog's settings for the element menu's Sheet flyout (sheet-settings-registry).
-  usePublishSheetSettings(element.id, { controller: c, actions, onImportCsv });
+  usePublishSheetSettings(element.id, {
+    controller: c,
+    actions,
+    onImportCsv,
+    onImportCsvFile: (f) => void readFile(f),
+  });
   // Covering the canvas (maximised, or filling its tab), the zoom controls zoom its cells (sheet-zoom.ts).
   const fillsTab = useFillsTab(element.id);
   const sheetZoom = useSheetZoom();
   const zoom = c.maximised || fillsTab ? sheetZoom : 1;
-  const readFile = async (f: File) => {
-    const text = await f.text();
-    if (c.sheet.cells.size === 0) importCsvText(c, text, 'replace');
-    else setImportText(text);
-  };
   return (
     <div
       className="contents"

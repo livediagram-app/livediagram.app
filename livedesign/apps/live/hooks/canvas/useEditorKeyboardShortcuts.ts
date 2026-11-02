@@ -43,14 +43,20 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
   const liveRef = useLatest(deps);
 
   // Escape cancels whichever transient editor mode is active:
-  // format-painter, or a pending draw-to-size shape.
+  // format-painter, Inspect, or a pending draw-to-size shape.
   // Keeping the narrow deps means the listener only attaches while
   // one of those modes is on, so we pay nothing in the idle case.
   // The setters come through the ref so the same-render values apply.
   useEffect(() => {
     const { formatSourceId, pendingDraw, canvasTool, enabled } = liveRef.current;
     if (!enabled) return;
-    if (formatSourceId === null && pendingDraw === null && canvasTool !== 'format') return;
+    if (
+      formatSourceId === null &&
+      pendingDraw === null &&
+      canvasTool !== 'format' &&
+      canvasTool !== 'inspect'
+    )
+      return;
     const onKey = (e: KeyboardEvent) => {
       // A modal dialog owns the keyboard while open (its own Escape
       // closes it); cancelling canvas modes behind it double-acts.
@@ -67,7 +73,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         if (
           live.formatSourceId !== null ||
           live.pendingDraw !== null ||
-          live.canvasTool === 'format'
+          live.canvasTool === 'format' ||
+          live.canvasTool === 'inspect'
         ) {
           e.preventDefault();
         }
@@ -75,6 +82,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         // Persistent Format tool: Escape exits the tool entirely (back to
         // Select) from either phase, not just disarming the base.
         if (liveRef.current.canvasTool === 'format') liveRef.current.setCanvasTool('select');
+        // Inspect (docs/specs/007-editor/wireframe-pages.md "Inspect") leaves the same way.
+        if (liveRef.current.canvasTool === 'inspect') liveRef.current.setCanvasTool('select');
         if (liveRef.current.pendingDraw !== null) {
           liveRef.current.onCancelDraw();
         }
@@ -135,6 +144,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.formatSourceId === null &&
         live.pendingDraw === null &&
         live.canvasTool !== 'format' &&
+        live.canvasTool !== 'inspect' &&
         selectedId === null &&
         multiSelectedIds.size === 0
       ) {
@@ -157,6 +167,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         live.formatSourceId === null &&
         live.pendingDraw === null &&
         live.canvasTool !== 'format' &&
+        live.canvasTool !== 'inspect' &&
         (selectedId !== null || multiSelectedIds.size > 0)
       ) {
         e.preventDefault();

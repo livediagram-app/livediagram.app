@@ -20,6 +20,10 @@ import { handleLocalParts, LOCAL_PARTS_MAX_BYTES } from './routes/migration';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
 import { reportServerEvent } from './server-telemetry';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
+import {
+  guardRequest,
+  UNAVAILABLE_RETRY_AFTER_SECONDS,
+} from '@liveworkspace/api-kit/request-failure';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleAiReadNotes } from './routes/ai-read-notes';
@@ -132,10 +136,7 @@ async function routeApiRequest(
         tokenAuth = isApiTokenFormat(bearer) ? await resolveApiToken(env, bearer) : null;
       } catch (err) {
         if (!(err instanceof AccountsUnavailable)) throw err;
-        return json(
-          { error: 'accounts_unavailable' },
-          { status: 503, headers: { 'Retry-After': '5' } },
-        );
+        return accountsUnavailable();
       }
       // A token-shaped bearer claims to be a token: unknown, revoked or expired, it is refused here, never
       // read as a guest or as nobody (docs/specs/015-api/public-api-and-tokens.md §3.3).
@@ -172,10 +173,7 @@ async function routeApiRequest(
           : { ok: false, reason: 'malformed', sessionPrefix: '' };
       } catch (err) {
         if (!(err instanceof AccountsUnavailable)) throw err;
-        return json(
-          { error: 'accounts_unavailable' },
-          { status: 503, headers: { 'Retry-After': '5' } },
-        );
+        return accountsUnavailable();
       }
       if (!resolved.ok) {
         console.warn('[workbench] bearer-refused', {
@@ -329,79 +327,91 @@ async function routeApiRequest(
     teams: teamsClaim,
     waitUntil: (promise) => executionCtx?.waitUntil(promise),
   };
-  try {
-    switch (segments[1]) {
-      case 'capabilities':
-        return handleCapabilities(ctx);
-      case 'templates':
-      case 'icons':
-      case 'schema':
-        return handleCatalogues(ctx);
-      case 'openapi.json':
-        return handleOpenapi(ctx);
-      case 'unfurl':
-        return await handleUnfurl(ctx);
-      case 'ai':
-        // The one model route, the sticky-note crop reader (docs/specs/021-event-storming/note-reader.md).
-        if (segments[2] === 'read-notes' && segments.length === 3)
-          return await handleAiReadNotes(ctx);
-        return notFound();
-      case 'events':
-        return await handleEvents(ctx);
-      case 'share':
-        return await handleShare(ctx);
-      case 'community':
-        return await handleCommunity(ctx);
-      case 'images':
-        return await handleImages(ctx);
-      case 'documents':
-        return await handleDocuments(ctx);
-      case 'folders':
-        return await handleFolders(ctx);
-      case 'shape-libraries':
-        return await handleShapeLibraries(ctx);
-      case 'teams':
-        return await handleTeams(ctx);
-      case 'tokens':
-        return await handleTokens(ctx);
-      case 'oauth':
-        return await handleOauthExchange(ctx);
-      case 'account':
-        return await handleAccount(ctx);
-      case 'trash':
-        return await handleTrash(ctx);
-      case 'preferences':
-        return await handlePreferences(ctx);
-      case 'participants':
-        return await handleParticipants(ctx);
-      // The one-time doors of the move from the old livediagram.app (docs/migration.md step 6).
-      case 'legacy-guest':
-        return await handleLegacyGuestClaim(ctx);
-      case 'migration':
-        return await handleLocalParts(ctx);
-    }
-  } catch (err) {
-    // Log the real error server-side, but don't echo its message to the
-    // client — internal error text can leak implementation details (table
-    // names, stack hints). Return a generic body instead.
-    console.error('api error', err);
-    // Self-report the crash (docs/specs/017-telemetry/telemetry.md 'Error' category): the worker
-    // counts a server-side exception even when no client survives to report it. Same
-    // TELEMETRY_ENABLED gate as every emit; off the response's critical path (waitUntil), and its own
-    // failure is swallowed — the 500 must still go out. The type names the endpoint by its route
-    // words only (`Internal.Put.Documents.Tabs`), never an id.
-    const type = errorTypeToken('Internal', apiRouteLabel(request.method, url.pathname));
-    executionCtx?.waitUntil?.(reportServerEvent(env, 'Error', 'Api', type));
-    return json({ error: 'internal_error' }, { status: 500 });
+  switch (segments[1]) {
+    case 'capabilities':
+      return handleCapabilities(ctx);
+    case 'templates':
+    case 'icons':
+    case 'schema':
+      return handleCatalogues(ctx);
+    case 'openapi.json':
+      return handleOpenapi(ctx);
+    case 'unfurl':
+      return await handleUnfurl(ctx);
+    case 'ai':
+      // The one model route, the sticky-note crop reader (docs/specs/021-event-storming/note-reader.md).
+      if (segments[2] === 'read-notes' && segments.length === 3)
+        return await handleAiReadNotes(ctx);
+      return notFound();
+    case 'events':
+      return await handleEvents(ctx);
+    case 'share':
+      return await handleShare(ctx);
+    case 'community':
+      return await handleCommunity(ctx);
+    case 'images':
+      return await handleImages(ctx);
+    case 'documents':
+      return await handleDocuments(ctx);
+    case 'folders':
+      return await handleFolders(ctx);
+    case 'shape-libraries':
+      return await handleShapeLibraries(ctx);
+    case 'teams':
+      return await handleTeams(ctx);
+    case 'tokens':
+      return await handleTokens(ctx);
+    case 'oauth':
+      return await handleOauthExchange(ctx);
+    case 'account':
+      return await handleAccount(ctx);
+    case 'trash':
+      return await handleTrash(ctx);
+    case 'preferences':
+      return await handlePreferences(ctx);
+    case 'participants':
+      return await handleParticipants(ctx);
+    // The one-time doors of the move from the old livediagram.app (docs/migration.md step 6).
+    case 'legacy-guest':
+      return await handleLegacyGuestClaim(ctx);
+    case 'migration':
+      return await handleLocalParts(ctx);
   }
 
   return notFound();
 }
 
+// liveworkspace can't say whether a credential is good: neither good nor bad, so a client retries rather than drops it.
+const accountsUnavailable = (): Response =>
+  json(
+    { error: 'accounts_unavailable' },
+    { status: 503, headers: { 'Retry-After': String(UNAVAILABLE_RETRY_AFTER_SECONDS) } },
+  );
+
 const worker = {
   // Every response carries the server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
   async fetch(request: Request, env: Env, executionCtx?: ExecutionContext): Promise<Response> {
-    return withServerRelease(await routeApiRequest(request, env, executionCtx), env.BUILD_ID);
+    // One guard for the whole request, identity resolution included (docs/specs/015-api/api.md "When a request
+    // fails"): nothing that throws is left to the runtime's bare error page.
+    const response = await guardRequest(
+      () => routeApiRequest(request, env, executionCtx),
+      () => {
+        // The route by its words only (`Put.Documents.Tabs`), never an id.
+        const route = apiRouteLabel(request.method, request.url);
+        return {
+          route,
+          json,
+          // Self-report the crash (docs/specs/017-telemetry/telemetry.md 'Error' category): the worker counts a
+          // server-side exception even when no client survives to report it. Off the response's critical path
+          // (waitUntil); the send swallows its own failure, so the 500 still goes out.
+          reportCrash: () =>
+            executionCtx?.waitUntil?.(
+              reportServerEvent(env, 'Error', 'Api', errorTypeToken('Internal', route)),
+            ),
+        };
+      },
+    );
+    return withServerRelease(response, env.BUILD_ID);
   },
 } satisfies ExportedHandler<Env>;
 

@@ -74,3 +74,79 @@ result for a click whose obvious meaning is "tell me about this person".
   its open flag and the clicked participant id live in `useEditorDialogs`.
 - Telemetry: `UI` / `Opened` / `Collaborators` on open. Following from the
   modal keeps the existing `Canvas` / `Used` / `FollowMe` event.
+
+## 2. Hide Participant Cursors
+
+### The problem
+
+In a busy session everyone's cursor and name pill move over the canvas at once. The room can hide them all
+with a vote ([Session tools](session-tools.md)), but that is for everyone and only while the vote is open. One
+person who just wants to read or work without the movement had no way to turn them off for themselves.
+
+### The behaviour
+
+- **One switch, Hide Participant Cursors**, off by default. On, this screen stops drawing other people's
+  cursor arrows and name pills. Nothing else changes: avatars on the tabs, the Collaborators modal, Follow,
+  selection discs and locks, laser trails and agents' focus rings all stay, and everyone else still sees your
+  cursor.
+- **Two places, one value.** The switch is in Settings under **Panels › Collaborate**, and the same switch sits
+  at the foot of the Collaborators modal, one click away when a session gets busy. Flipping either flips both.
+- **Remembered on this device**, in `localStorage` (`<product>:v2:hide-cursors`), never in the synced
+  `UserPreferences` ([User preferences](../007-editor/user-preferences.md)): like the Keyboard Shortcuts switch,
+  it suits a screen (a projector, a small laptop) rather than a person. Every tab of the browser follows a flip
+  at once (the `storage` event). It is not on the Settings page at liveworkspace.app, which shows synced
+  settings only.
+- **A filter at render, nothing on the wire.** Peers' cursor positions still arrive; they are just not drawn.
+  Turning it off shows every cursor again at its latest position.
+- **Every role** (Editor, Participant, Viewer) has it: it only changes what this screen draws, and nobody
+  else sees any difference.
+- **Only where cursors are drawn.** The switch shows, in Settings and in the Collaborators modal, only while
+  the tab you are on draws other people's cursors. Where none are drawn it is absent from both, and from search
+  (the Settings dialog's and the editor's), since there it could change nothing. The stored value is untouched:
+  back on a tab that draws cursors, the switch is there again as you left it. In livediagram every tab kind draws them (a diagram tab and an Event Storming tab share the one canvas), so the switch always shows.
+
+### Implementation notes
+
+- `@liveworkspace/workbench`: `hooks/collab/useHideCursors` (the store, over `useLocalStorageValue` and the
+  `hideCursorsKey` binding), `components/canvas/RemoteCursor` (the cursor, and `RemoteCursors`, the layer that
+  draws the list and draws nothing while the switch is on) and `components/dialogs/HideCursorsSwitch` (the
+  modal's row). The editors' four copies of `RemoteCursor.tsx` are gone.
+- Settings: a `hideCursors` row (its own kind, like `shortcuts`) in the Collaborate category.
+- Where cursors are drawn: `CursorsDrawnContext` / `useCursorsDrawn` in `hooks/collab/useHideCursors` (true
+  unless an editor says otherwise). `HideCursorsFooter` draws the modal's footer only when true; the Settings row's
+  `available` reads `cursorsDrawn` off the row context; `settingsOfferedHere` drops the row from the editor's search.
+- Telemetry: `UI` / `Toggled` / `HideCursorsOn` / `HideCursorsOff`, sent before the write, from either place.
+
+## 3. Cursors Step Aside
+
+### The problem
+
+Another person's cursor and name pill can sit right over the thing you want to read or click. The cursor never
+took the click (it has always let pointer events through), but you could not see what you were aiming at
+until they moved.
+
+### The behaviour
+
+- **Over or near a cursor, it fades out.** When your pointer comes within 8 px of another person's arrow or name
+  pill, that cursor fades away (a short opacity fade, none with reduced motion) and stays faded while your pointer
+  is there. Move away and it comes back at its latest position. Only the cursors near your pointer fade; the rest
+  stay.
+- **It works both ways round:** a cursor that moves under your still pointer steps aside too, and one that moves
+  away comes back.
+- **Never steals a click.** Cursors stay `pointer-events: none`, faded or not, so a click lands on whatever is
+  beneath.
+- **Mouse and pen only.** A touch screen has no hover, so nothing fades there; a touch clears anything a pen
+  left faded. Leaving the window or the page brings every cursor back.
+- **Every role** (Editor, Participant, Viewer) gets it: it changes only what this screen draws.
+
+### Implementation notes
+
+- `@liveworkspace/workbench`: `lib/cursor-hover` (the hit test: each cursor's box on screen from its canvas
+  point, the zoom and the canvas origin, its pill's width estimated from the name's length, so no layout is read
+  per cursor), `hooks/canvas/useCursorsNearPointer` (one passive `pointermove` listener while any cursor is drawn,
+  at most one check per animation frame, one rect read per check: a zero-size anchor at canvas (0, 0)), and
+  `components/canvas/RemoteCursor`, whose `RemoteCursors` layer fades the cursors the hook names.
+- It renders only when the set of cursors near the pointer changes, never per pointer move.
+- The fade lives in the shared `RemoteCursors` layer (moved into the workbench by
+  [Hide Participant Cursors](#2-hide-participant-cursors)), so all four editors get it; each draws the layer with its
+  own identity fill (`identityVars`).

@@ -118,7 +118,7 @@ describe('SILENT_SIGN_IN_BOOT_SCRIPT', () => {
   it("bounces through this app's own api and reads only this app's cookies", () => {
     expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain(`"/api"+'/auth/silent?return='`);
     expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain("has('ldoc_signed_in','1')");
-    expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain("has('ldoc_signed_out','1')");
+    expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain("has('ldoc_signed_out','2')");
     expect(SILENT_SIGN_IN_BOOT_SCRIPT).toContain("has('ldoc_silent')");
   });
 

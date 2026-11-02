@@ -9,14 +9,17 @@ import type { Env } from './env';
 import { handleIngest } from './ingest';
 import { handleSummary } from './summary';
 import { API_PATH, CORS, RETENTION_MS } from './config';
-import { under } from '@liveworkspace/index-app/worker-http';
+import { json, under } from '@liveworkspace/index-app/worker-http';
+import { guardRequest } from '@liveworkspace/api-kit/request-failure';
+import { createApiRouteLabel } from '@liveworkspace/telemetry/error-tokens';
 
 const worker = {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-    const url = new URL(request.url);
-    if (under(url.pathname, API_PATH))
-      return api(request, env, ctx, url.pathname.slice(API_PATH.length));
-    return new Response('Not found', { status: 404 });
+  // One guard for the whole request (liveworkspace/docs/specs/002-architecture/architecture.md "When a request fails").
+  fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    return guardRequest(
+      () => serve(request, env, ctx),
+      () => ({ route: routeLabel(request.method, request.url), json: publicJson }),
+    );
   },
 
   async scheduled(_event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
@@ -28,6 +31,23 @@ const worker = {
     );
   },
 };
+
+// The route words a failure is logged under (`Get.Telemetry.Summary`), never anything a caller sent.
+const routeLabel = createApiRouteLabel(new Set(['telemetry']), new Set(['events', 'summary']));
+
+// A failure's answer, readable by any page as every answer here is.
+function publicJson(body: unknown, init: ResponseInit = {}): Response {
+  const res = json(body, init);
+  for (const [name, value] of Object.entries(CORS)) res.headers.set(name, value);
+  return res;
+}
+
+async function serve(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  const url = new URL(request.url);
+  if (under(url.pathname, API_PATH))
+    return api(request, env, ctx, url.pathname.slice(API_PATH.length));
+  return new Response('Not found', { status: 404 });
+}
 
 async function api(
   request: Request,

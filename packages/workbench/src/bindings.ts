@@ -10,8 +10,8 @@ import { ZOOM_MAX } from './lib/zoom-range';
  * The telemetry events workbench code sends: a subset of every product's vocabulary, so each
  * product's own wider `track` binds as it is, and typecheck fails if a vocabulary drops one.
  */
-export type WorkbenchTelemetryCategory = 'Canvas' | 'Error';
-export type WorkbenchTelemetryAction = 'Client' | 'Zoomed';
+export type WorkbenchTelemetryCategory = 'Canvas' | 'Error' | 'UI';
+export type WorkbenchTelemetryAction = 'Client' | 'Toggled' | 'Zoomed';
 export type WorkbenchTrack = (
   category: WorkbenchTelemetryCategory,
   action: WorkbenchTelemetryAction,
@@ -75,6 +75,8 @@ export type WorkbenchBindings = {
   formatConfigKey?: string;
   /** The localStorage key of the Spotlight panel's configuration (`<product>:v2:spotlight-config`), where it has one. */
   spotlightConfigKey?: string;
+  /** The localStorage key of the Hide Participant Cursors switch (`<product>:v2:hide-cursors`). */
+  hideCursorsKey: string;
 };
 
 /** What workbench code reads until an editor configures it: safe no-ops and `workbench:` keys. */
@@ -103,6 +105,7 @@ export const WORKBENCH_DEFAULTS: Readonly<Required<WorkbenchBindings>> = Object.
   emptyCardDismissedKey: 'workbench:v2:empty-card-dismissed',
   formatConfigKey: 'workbench:v2:format-config',
   spotlightConfigKey: 'workbench:v2:spotlight-config',
+  hideCursorsKey: 'workbench:v2:hide-cursors',
 });
 
 let bound: Readonly<WorkbenchBindings> = WORKBENCH_DEFAULTS;
@@ -161,6 +164,9 @@ export const workbench = {
   },
   get localMoveDismissedPrefix(): string {
     return current().localMoveDismissedPrefix;
+  },
+  get hideCursorsKey(): string {
+    return current().hideCursorsKey;
   },
   // Bound only by an editor that runs the module, so an unbound one keeps its `workbench:` default.
   get emptyCardDismissedKey(): string {

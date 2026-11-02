@@ -8,8 +8,10 @@ import type { ArticleDrawOp } from '@livedocuments/document';
 
 export type { ArticleDrawOp } from '@livedocuments/document';
 
+// Fully transparent: `rgba(r, g, b, 0)` or `rgb(r g b / 0)`. Never an opaque `rgb(r, g, 0)` (black, a red),
+// whose last number is its blue.
 const transparent = (c: string) =>
-  !c || c === 'transparent' || /rgba?\([^)]*,\s*0\)$/.test(c) || /\/\s*0\)$/.test(c);
+  !c || c === 'transparent' || /^rgba\([^)]*,\s*0(\.0*)?\)$/.test(c) || /\/\s*0(\.0*)?\)$/.test(c);
 
 let measureCtx: CanvasRenderingContext2D | null = null;
 // The font's ascent and descent about the baseline, as the browser lays its content area out
@@ -31,6 +33,10 @@ const ascentOf = (cs: CSSStyleDeclaration, text: string) => metricsOf(cs, text).
  * The writing under `root` as draw operations. `toCanvas` maps a screen point to the canvas;
  * `scale` is screen px per canvas px. Skips the editing chrome (page break labels, placeholders).
  */
+// What is never drawn: a page break's label, a zone (its elements are drawn by the canvas), a
+// collaborator's caret, and editing chrome (a contents block's level chips and its hint).
+const SKIP = '.article-page-break, .article-zone, .article-peer-caret, .article-chrome';
+
 export function snapshotWriting(
   root: HTMLElement,
   toCanvas: (x: number, y: number) => { x: number; y: number },
@@ -43,12 +49,16 @@ export function snapshotWriting(
   // Backgrounds and borders first, under the words.
   for (const el of Array.from(elements)) {
     // Collaborators' carets are someone else's live presence, never part of the writing.
-    if (el.closest('.article-page-break, .article-zone, .article-peer-caret')) continue;
-    // A margin note's tint is review furniture, never printed (its words are, as written).
+    if (el.closest(SKIP)) continue;
+    // A margin note's tint is review furniture, never printed (its words are, as written); so is the
+    // tint of cells selected by a drag.
     if (el.classList.contains('article-note')) continue;
     const cs = getComputedStyle(el);
     const rects = Array.from(el.getClientRects());
-    if (!transparent(cs.backgroundColor)) {
+    // A table's rules: its top and left edges, each cell's right and bottom; a table split across
+    // pages is ruled on each.
+    const inTable = el.closest('.article-table') !== null;
+    if (!transparent(cs.backgroundColor) && !el.classList.contains('selectedCell')) {
       for (const r of rects) {
         const p = toCanvas(r.left, r.top);
         ops.push({
@@ -80,12 +90,30 @@ export function snapshotWriting(
         });
       }
     }
+    if (inTable && edge(cs.borderRightWidth, cs.borderRightColor, cs.borderRightStyle)) {
+      for (const r of rects) {
+        const a = toCanvas(r.right, r.top);
+        const b = toCanvas(r.right, r.bottom);
+        const w = parseFloat(cs.borderRightWidth);
+        ops.push({
+          k: 'line',
+          x1: a.x - w / 2,
+          y1: a.y,
+          x2: b.x - w / 2,
+          y2: b.y,
+          stroke: cs.borderRightColor,
+          width: w,
+        });
+      }
+    }
     if (edge(cs.borderBottomWidth, cs.borderBottomColor, cs.borderBottomStyle)) {
       const r = rects[rects.length - 1];
       if (r) {
         const a = toCanvas(r.left, r.bottom);
         const b = toCanvas(r.right, r.bottom);
         const w = parseFloat(cs.borderBottomWidth);
+        // A dotted or dashed rule (a contents entry's leader) is drawn dashed.
+        const dash = cs.borderBottomStyle === 'dotted' || cs.borderBottomStyle === 'dashed';
         ops.push({
           k: 'line',
           x1: a.x,
@@ -93,6 +121,23 @@ export function snapshotWriting(
           x2: b.x,
           y2: b.y - w / 2,
           stroke: cs.borderBottomColor,
+          width: w,
+          ...(dash ? { dash: true as const } : {}),
+        });
+      }
+    }
+    if (inTable && edge(cs.borderTopWidth, cs.borderTopColor, cs.borderTopStyle)) {
+      for (const r of rects) {
+        const a = toCanvas(r.left, r.top);
+        const b = toCanvas(r.right, r.top);
+        const w = parseFloat(cs.borderTopWidth);
+        ops.push({
+          k: 'line',
+          x1: a.x,
+          y1: a.y + w / 2,
+          x2: b.x,
+          y2: b.y + w / 2,
+          stroke: cs.borderTopColor,
           width: w,
         });
       }
@@ -122,7 +167,7 @@ export function snapshotWriting(
   while (walker.nextNode()) {
     const node = walker.currentNode as Text;
     const parent = node.parentElement;
-    if (!parent || parent.closest('.article-page-break, .article-zone')) continue;
+    if (!parent || parent.closest(SKIP)) continue;
     const content = node.textContent ?? '';
     if (!content.trim()) continue;
     const cs = getComputedStyle(parent);
@@ -245,11 +290,7 @@ export function snapshotBars(
   const range = document.createRange();
   while (walker.nextNode()) {
     const node = walker.currentNode as Text;
-    if (
-      !node.textContent?.trim() ||
-      node.parentElement?.closest('.article-page-break, .article-zone')
-    )
-      continue;
+    if (!node.textContent?.trim() || node.parentElement?.closest(SKIP)) continue;
     range.selectNodeContents(node);
     for (const r of Array.from(range.getClientRects())) {
       if (r.width < 1) continue;

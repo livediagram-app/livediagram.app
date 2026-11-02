@@ -2,6 +2,7 @@ import type { Tab } from '@livedesign/design';
 import { newCommentsBy } from '../comments';
 import { emailEnabled } from '../email/client';
 import { notifyMentions, notifyNewComment } from '../email/notifications';
+import { pushItemOf, pushNewComments } from '../accounts/push';
 import { reportServerEvent } from '../server-telemetry';
 import type { DesignDTO, Env, DesignEnv } from '../types';
 import type { FrontDoor } from './front-door';
@@ -66,6 +67,19 @@ async function run(
       }),
     );
   }
+  // Phone notifications for the author's new comments (docs/specs/014-identity/phone-notifications.md): a
+  // person's own changeset only.
+  if (!w.agent)
+    work.push(
+      pushNewComments(env, {
+        design: pushItemOf(w.design),
+        tabId: w.next.id,
+        authorId: w.author.id,
+        authorName: w.author.name,
+        next: w.next.elements,
+        previous,
+      }),
+    );
   if (w.agent) work.push(telemetry(env, w.action, w.frontDoor));
   const settled = await Promise.allSettled(work);
   for (const s of settled) {

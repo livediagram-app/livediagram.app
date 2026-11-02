@@ -85,4 +85,21 @@ describe('useEditorMode', () => {
     act(() => es.hook.result.current.setMode('draw'));
     expect(es.commitTabs).not.toHaveBeenCalled();
   });
+
+  // One context value while nothing in it changes, so the chrome's switches re-render on a switch, not on every edit
+  // of the tab (docs/specs/007-editor/blueprints/editor-modes.md "Performance and limits").
+  it('returns the same object across an edit that leaves the mode alone', () => {
+    const commitTabs = vi.fn();
+    const deps = { canEdit: true, commitTabs, toastInfo: vi.fn() };
+    const tab: Tab = { id: 't', name: 'T', elements: [] };
+    const hook = renderHook(({ t }: { t: Tab }) => useEditorMode(t, deps), {
+      initialProps: { t: tab },
+    });
+    const first = hook.result.current;
+    hook.rerender({ t: { ...tab, name: 'Renamed' } });
+    expect(hook.result.current).toBe(first);
+    hook.rerender({ t: { ...tab, opensIn: 'draw' } });
+    expect(hook.result.current).not.toBe(first);
+    expect(hook.result.current.mode).toBe('draw');
+  });
 });

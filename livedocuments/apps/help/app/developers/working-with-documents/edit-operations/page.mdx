@@ -71,6 +71,7 @@ A few rules hold for every operation:
 - **Fields.** `label`, `note`, `shape`, `fill`, `stroke`, `text-color`, `border`, `text` (a size: `sm`, `md`, `lg` or `scale`), `font` and `line` (`straight`, `angled` or `curved`) work on the kinds that have them, beside any stored field of the element. `fill=` takes a colour slot of the tab's theme by name (such as `theme`), which follows a theme change; a hex colour works too, with a `colour_overrides_theme` warning. A sticky takes its own colour names instead. A number, `true` or `false` is read as JSON, and a value starting with `[` or `{` is read as JSON as written.
 - **Comments are not fields.** Comment threads travel live between people, so edit operations never change them; comments have their own [endpoints](/help/developers/agent-comments-presence/).
 - **Locks.** A changeset on a locked tab, or one that would change a locked element or an element on a locked layer, is refused with `element_locked`.
+- **Flashcards.** A flashcard holds text only: a changeset that would add an element onto a card, or move one onto it, is refused with `text_only`. Write a card's text with `write_article`.
 
 ## Selectors
 
@@ -183,6 +184,7 @@ nothing was applied
 | `arrow_exists`       | `connect a -> b` when an a→b arrow exists, without `again`    |
 | `not_connected`      | `insert … between a b` with no a→b arrow                      |
 | `element_locked`     | The tab, a target or its layer is locked                      |
+| `text_only`          | An element added or moved onto a flashcard                    |
 | `test_failed`        | A `test` does not hold; shows expected and actual             |
 | `changeset_conflict` | A target changed since the `base` revision you sent           |
 | `elements_held`      | Someone has a target selected in the editor                   |

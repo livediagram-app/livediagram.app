@@ -65,6 +65,8 @@ describe('the self-drawing shape family', () => {
     fromMembers.add('pyramid');
     // docs/specs/009-elements/tab-window.md: a tab window draws another tab and takes no label.
     fromMembers.add('tab-window');
+    // docs/specs/009-elements/components.md: an instance draws its main and takes no label.
+    fromMembers.add('instance');
     fromMembers.add('onion');
     fromMembers.add('chevrons');
     expect(kindsMatching(isSelfDrawingShape)).toEqual([...fromMembers].sort());

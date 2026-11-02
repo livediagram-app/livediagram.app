@@ -229,7 +229,7 @@ export function IconButton({
           </span>
           {/* 10px, not 9: at 9px the caption's stems fell under a pixel wide
               and anti-aliased to grey, which read as blur beside the glyph. */}
-          <span className="w-full truncate text-center text-[10px] leading-none">{caption}</span>
+          <span className="w-full truncate text-center text-[10px] leading-tight">{caption}</span>
         </>
       )}
       {showBadge ? (

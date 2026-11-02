@@ -120,17 +120,6 @@ export function portalExitPoint(portal: PortalBox): { x: number; y: number } {
   return { x: portal.x + portal.width / 2, y: portal.y + portal.height };
 }
 
-// The viewport offset that centres `portal` in a viewport of `size` at `zoom`.
-// The canvas transform is `scale(zoom) translate(offset)`, so the offset is in
-// canvas px and the centring maths divides the viewport by the zoom.
-export function viewportOffsetCentredOn(
-  portal: PortalBox,
-  size: { width: number; height: number },
-  zoom: number,
-): { x: number; y: number } {
-  const z = zoom > 0 ? zoom : 1;
-  return {
-    x: size.width / (2 * z) - (portal.x + portal.width / 2),
-    y: size.height / (2 * z) - (portal.y + portal.height / 2),
-  };
-}
+// The viewport offset that centres a portal in the viewport is the walk's camera maths too
+// (@liveworkspace/avatar/walk), re-exported for the portal travel.
+export { viewportOffsetCentredOn } from '@liveworkspace/avatar/walk';

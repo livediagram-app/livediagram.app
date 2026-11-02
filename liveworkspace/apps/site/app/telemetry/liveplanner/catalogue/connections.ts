@@ -78,10 +78,21 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
     'Reading a project’s Plan items: cards, tasks and their fields.',
   ),
   mcpTool('ChangeItems', 'Change Items', 'Adding, changing, moving or removing Plan items.'),
+  mcpTool('ListThreads', 'List Threads', 'Reading the comment threads on a project’s Plan cards.'),
+  mcpTool(
+    'ChangeThreads',
+    'Change Threads',
+    'Starting, replying to, resolving or reopening comment threads on Plan cards.',
+  ),
   mcpTool(
     'AddBoard',
     'Add Board',
     'Putting a Plan board on a tab, from a preset or columns by name.',
+  ),
+  mcpTool(
+    'ImportBoard',
+    'Import Board',
+    'Making a Board tab from a Trello, Asana, Jira or Linear export.',
   ),
   mcpTool(
     'ChangeBoard',

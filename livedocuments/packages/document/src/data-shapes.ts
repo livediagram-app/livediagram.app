@@ -212,8 +212,8 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
 }
 
 // Round to a whole number and clamp into [0, max]. The fiddly half of the
-// clamp-and-round idiom (min/max order, the round) lives here so clampRating /
-// clampPercent can't drift apart.
+// clamp-and-round idiom (min/max order, the round) lives here so clampRating
+// can't drift.
 function clampRound(value: number, max: number): number {
   return Math.max(0, Math.min(max, Math.round(value)));
 }
@@ -223,9 +223,6 @@ export function clampRating(value: number): number {
   return clampRound(value, RATING_MAX);
 }
 
-// Round a value to a whole 0–100 percentage. Shared by the progress setter,
-// the context-menu slider, and ProgressView so the clamp-and-round can't drift
-// (default applied by the caller before clamping).
-export function clampPercent(value: number): number {
-  return clampRound(value, 100);
-}
+// A whole 0–100 percentage, shared with every product's progress elements and liveplanner's Percent fields
+// (@liveworkspace/model-core/progress-label), so the clamp-and-round can't drift.
+export { clampPercent } from '@liveworkspace/model-core/progress-label';

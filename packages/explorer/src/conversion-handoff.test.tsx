@@ -4,6 +4,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Item } from '@liveworkspace/index-client';
 import { useConversionHandoff, type ConversionHandoffOptions } from './conversion-handoff';
+import { markThisBrowserDeleteConfirmed } from './this-browser';
 
 const h = {
   item: null as Partial<Item> | null,
@@ -11,6 +12,7 @@ const h = {
   confirmed: true,
   takeOffline: vi.fn(async () => {}),
   syncToCloud: vi.fn(async () => {}),
+  remove: vi.fn(async (_id: string) => {}),
   confirm: vi.fn(),
   error: vi.fn(),
 };
@@ -35,6 +37,7 @@ const options = (
     return { item: h.item as Item };
   },
   listKept: async () => h.kept,
+  remove: h.remove,
   ...over,
 });
 
@@ -52,9 +55,12 @@ beforeEach(() => {
   h.item = null;
   h.kept = [];
   h.confirmed = true;
-  for (const fn of [h.takeOffline, h.syncToCloud, h.confirm, h.error]) fn.mockClear();
+  for (const fn of [h.takeOffline, h.syncToCloud, h.remove, h.confirm, h.error]) fn.mockClear();
 });
-afterEach(() => at(''));
+afterEach(() => {
+  at('');
+  sessionStorage.clear();
+});
 
 describe('Take Offline and Sync handed over by the Explorer', () => {
   it("takes the person's own item offline (its own confirm asks), and leaves the address", async () => {
@@ -124,5 +130,56 @@ describe('Take Offline and Sync handed over by the Explorer', () => {
     await waitFor(() => expect(h.error).toHaveBeenCalledTimes(2));
     expect(h.error).toHaveBeenCalledWith('Couldn’t find that canvas in this browser.');
     expect(h.syncToCloud).not.toHaveBeenCalled();
+  });
+
+  it('deletes one this browser keeps once the person confirms, in This Browser’s words, signed out too', async () => {
+    at('?convert=delete&item=d1');
+    h.kept = [{ id: 'd1', name: 'Notes' }];
+    renderHook(() => useConversionHandoff(options('guest_1', false, { noun: 'plan' })));
+    await waitFor(() => expect(h.remove).toHaveBeenCalledWith('d1'));
+    expect(h.confirm).toHaveBeenCalledWith({
+      title: 'Delete this plan from this browser?',
+      message:
+        '“Notes” is kept only in this browser. Deleting it removes this browser’s copy, the only one, for good. Nothing in your account changes.',
+      confirmLabel: 'Delete',
+    });
+    expect(window.location.search).toBe('');
+  });
+
+  it('deletes nothing when the person says no, or for one this browser lacks', async () => {
+    at('?convert=delete&item=d1');
+    h.kept = [{ id: 'd1', name: 'Notes' }];
+    h.confirmed = false;
+    renderHook(() => useConversionHandoff(options('user_ada', true)));
+    await waitFor(() => expect(h.confirm).toHaveBeenCalledTimes(1));
+    at('?convert=delete&item=missing');
+    renderHook(() => useConversionHandoff(options('user_ada', true)));
+    await waitFor(() =>
+      expect(h.error).toHaveBeenCalledWith('Couldn’t find that canvas in this browser.'),
+    );
+    expect(h.remove).not.toHaveBeenCalled();
+  });
+
+  it('deletes without asking again when the page asked in this tab, for that item only, once', async () => {
+    h.kept = [
+      { id: 'd1', name: 'Notes' },
+      { id: 'd2', name: 'Other' },
+    ];
+    markThisBrowserDeleteConfirmed('d1');
+    at('?convert=delete&item=d1');
+    renderHook(() => useConversionHandoff(options('user_ada', true)));
+    await waitFor(() => expect(h.remove).toHaveBeenCalledWith('d1'));
+    expect(h.confirm).not.toHaveBeenCalled();
+    // The note was taken: the same link again asks.
+    h.confirmed = false;
+    at('?convert=delete&item=d1');
+    renderHook(() => useConversionHandoff(options('user_ada', true)));
+    await waitFor(() => expect(h.confirm).toHaveBeenCalledTimes(1));
+    // A note for another item doesn't stand for this one.
+    markThisBrowserDeleteConfirmed('d1');
+    at('?convert=delete&item=d2');
+    renderHook(() => useConversionHandoff(options('user_ada', true)));
+    await waitFor(() => expect(h.confirm).toHaveBeenCalledTimes(2));
+    expect(h.remove).toHaveBeenCalledTimes(1);
   });
 });

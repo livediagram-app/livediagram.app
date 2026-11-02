@@ -27,6 +27,8 @@ retired and its three parts redistributed:
 - **Email notifications** are the six rows in **Notifications > Email**
   (§3). Absent unless email is configured (the `EMAIL` binding) AND the reader is signed in, since
   a guest has no address to send to.
+- **Phone notifications** are **Notifications > Phone**: Turn On, the device list and four switches, signed in
+  only, and not behind the `EMAIL` binding ([Phone notifications](phone-notifications.md)).
 - **Delete account** is the `deleteAccount` row in **Account > Danger Zone**.
 
 ### `/explorer/profile` still resolves, deliberately
@@ -50,12 +52,12 @@ directly.
 ### Delete account moves here
 
 Account self-deletion already exists end to end (`DELETE /api/account`,
-[Auth + guest access](auth-and-guest-access.md#deleting-an-account); `DeleteAccountDialog`, the type-your-email confirmation). It used
+[Auth + guest access](auth-and-guest-access.md#deleting-an-account); `DeleteAccountDialog`, the type-your-email confirmation, then the code emailed to the account). It used
 to hang off the header dropdown; now that there is a dedicated account home,
 the **Delete account** trigger lives on the profile page's Danger zone and is
 **removed from the header menu** (one home for destructive account actions,
 no drift). The dialog component itself is unchanged and simply reused: the
-confirmation flow (type your email, then wipe livedocuments's data and close the
+confirmation flow (type your email, then the code emailed to the account, then wipe livedocuments's data and close the
 liveworkspace account, then end the session) is exactly as [Transactional & lifecycle email](transactional-email.md) describes.
 Account deletion is immediate and total within livedocuments: it deletes the account's own documents for good
 through the index, **including every one in its [Trash](../013-workspace/trash.md)**, which the

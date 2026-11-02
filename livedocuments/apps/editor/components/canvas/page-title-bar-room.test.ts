@@ -6,7 +6,6 @@ import { LABEL_MIN, titleBarFixedRoom, titleBarNamed } from './page-title-bar-ro
 const infographic = {
   edit: true,
   locked: false,
-  deck: false,
   notes: false,
   page: true,
   tidy: true,
@@ -33,8 +32,8 @@ describe('the title bar', () => {
     );
   });
 
-  it("makes room for a slide's named deck and notes buttons", () => {
-    const slide = { ...infographic, deck: true, notes: true };
+  it("makes room for a slide's named notes button", () => {
+    const slide = { ...infographic, notes: true };
     expect(titleBarFixedRoom(slide, true)).toBeGreaterThan(titleBarFixedRoom(infographic, true));
     expect(titleBarFixedRoom(slide, true) - titleBarFixedRoom(slide, false)).toBeGreaterThan(
       titleBarFixedRoom(infographic, true) - titleBarFixedRoom(infographic, false),

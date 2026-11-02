@@ -26,6 +26,7 @@ import { TOOL_ICONS } from './photo-icons';
 import { PhotoToolOptionsBody } from './PhotoToolOptionsBody';
 import { TransformOptionsBody } from './PhotoTransformOptions';
 import { useToolAnchor } from './useToolAnchor';
+import { useToolFlyoutDismiss } from './useToolFlyoutDismiss';
 import { lucideGlyph } from '@livedesign/ui';
 import { lucideScaling } from '@liveworkspace/icons/lucide';
 
@@ -36,10 +37,6 @@ export const FLYOUT_WIDTH = 360;
 const EDGE = 12;
 // The pointer's half width, px.
 const POINTER = 6;
-// A press in these is the card's, not outside it: the photo tools in the strip (a tool's button toggles the card
-// itself) and the colours, and the popovers, pickers and menus the card opens.
-const INSIDE =
-  '[data-photo-flyout], [data-photo-rail], [data-anchored-popover], [data-colour-picker], [data-photo-gradient-editor], [role="menu"]';
 
 export function PhotoToolFlyout({ photo }: { photo: PhotoEditorView }) {
   'use no memo'; // It reads the mutable photo session as it renders (PhotoSession).
@@ -72,29 +69,7 @@ export function PhotoToolFlyout({ photo }: { photo: PhotoEditorView }) {
     ro.observe(card);
     return () => ro.disconnect();
   }, [card]);
-  useEffect(() => {
-    if (!shown || !open) return;
-    // Capture: the photo's own press (the tool at work) closes it as it starts.
-    const down = (e: PointerEvent) => {
-      const t = e.target;
-      if (t instanceof Element && t.closest(INSIDE)) return;
-      toolFlyout.close();
-    };
-    // Before the photo's keys: Escape closes the card rather than putting the tool down.
-    const key = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      if ((e.target as Element | null)?.closest?.('[data-anchored-popover]')) return;
-      e.preventDefault();
-      e.stopPropagation();
-      toolFlyout.close();
-    };
-    window.addEventListener('pointerdown', down, true);
-    window.addEventListener('keydown', key, true);
-    return () => {
-      window.removeEventListener('pointerdown', down, true);
-      window.removeEventListener('keydown', key, true);
-    };
-  }, [shown, open]);
+  useToolFlyoutDismiss(shown && open);
 
   if (!shown || !anchor) return null;
   const centre = (anchor.left + anchor.right) / 2;

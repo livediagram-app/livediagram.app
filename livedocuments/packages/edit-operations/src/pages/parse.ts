@@ -22,7 +22,7 @@ import {
   PAGE_SIZE_IDS,
 } from '@livedocuments/document';
 
-const PAGE_KINDS = ['infographic', 'article', 'slide'] as const;
+const PAGE_KINDS = ['infographic', 'article', 'slide', 'flashcard'] as const;
 
 type Raw = Record<string, unknown>;
 

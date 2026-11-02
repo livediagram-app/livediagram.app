@@ -3,7 +3,14 @@
 // panel, and the view helpers a host's router needs.
 
 export { Explorer, type ExplorerProps } from './explorer/Explorer';
-export { ExplorerPanel, type ExplorerPanelProps, type PanelLayout } from './panel/ExplorerPanel';
+export {
+  EXPLORER_POPOVER_HEIGHT,
+  EXPLORER_POPOVER_WIDTH,
+  ExplorerPanel,
+  type ExplorerPanelProps,
+  type PanelLayout,
+} from './panel/ExplorerPanel';
+export { useOpenItem } from './panel/useOpenItem';
 export { MoveToFolderDialog, type MoveToFolderDialogProps } from './dialogs/MoveToFolderDialog';
 export type { PickerFolder, PickerTeam, Destination } from './dialogs/PlacementBrowser';
 export {
@@ -19,6 +26,10 @@ export {
   type ShareTelemetry,
 } from './dialogs/ShareDialog';
 export { SECTION_LABEL as SHARE_SECTION_LABEL } from './dialogs/share/parts';
+export {
+  ShareDialogWithCommunity,
+  type CommunityShareInput,
+} from './dialogs/ShareDialogWithCommunity';
 export {
   explorerPath,
   viewFromLocation,

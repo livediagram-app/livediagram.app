@@ -187,6 +187,19 @@ describe('plan views', () => {
     expect(screen.getByRole('cell', { name: 'No Priority, Not Started: 1' })).toBeTruthy();
   });
 
+  // A table's column headers sit in a row (ARIA's required parent), and none is nameless.
+  it('puts the priority matrix headers in a row of their own, every one named', () => {
+    draw('priority-matrix', planWith([item({ title: 'a', status: 'done', priority: 'high' })]));
+    const headers = screen.getAllByRole('columnheader');
+    expect(headers.map((h) => h.textContent)).toEqual([
+      'Priority',
+      'Not Started',
+      'In Progress',
+      'Done',
+    ]);
+    for (const h of headers) expect(h.parentElement?.getAttribute('role')).toBe('row');
+  });
+
   it('draws a metric over every card, with no set-up', () => {
     const cards = [item({ title: 'a', status: 'done' }), item({ title: 'b', status: 'todo' })];
     draw('metric:progress', planWith(cards));

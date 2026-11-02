@@ -36,7 +36,7 @@ it is what the tab is and it brings its own behaviour. It is always in Plan mode
 ## The Form tab
 
 - A Form tab follows the Plan tab kinds' rules ([Plan tabs](../026-plan/plan-tabs.md#the-kinds)): always in Plan,
-  no palette, its tab menu lists no modes. Its pill leads with a clipboard-list glyph.
+  no palette, its tab menu lists no modes. Its glyph, where tabs are listed with one, is a clipboard list.
 - The tab and its form share one name ([Names](../026-plan/plan-tabs.md#names)): the form's **heading** is the tab's
   name. Renaming either renames both in one undo step. A Form tab still on its default name takes its starter's name
   ("Bug Report"); a tab with a name of its own gives it to the form.
@@ -143,10 +143,10 @@ previewing), the help link and the form's **cog**.
 - **Questions**, each a card. The selected one (click, or Tab onto it and Enter) shows its editing chrome: a
   **left accent bar** in the form colour, the prompt as an editable field beside its **type button**, the help text
   under it ("Description (optional)"), a choice question's options, a text answer's box (Short Answer, Paragraph,
-  Number, Email, Link) as respondents see it with its **placeholder** typed straight into it, grey as it will show
+  Number, Email, Link, Phone) as respondents see it with its **placeholder** typed straight into it, grey as it will show
   ("Placeholder: shown in the box until someone types." under it; emptied, the type's own hint), or any other type's
   answer control as respondents see it, disabled; its own **settings** in a tinted block (bounds and Whole Numbers Only, fewest and most
-  picks, Show as Dropdown, scale, style and end labels: whichever its type has), and a **footer**: **Answer goes to**
+  picks, Show as Dropdown, scale, style and end labels, a Date Range's Include Time: whichever its type has), and a **footer**: **Answer goes to**
   (a badge naming the mapping, opening [Answer Goes To](#mapping-where-an-answer-goes) under itself, a sheet on a
   phone, which closes once a choice is made), **Move Up**, **Move Down**, **Duplicate**, **Delete** and
   **Required**. Selecting a question grows its card open to the editing chrome, and letting go shrinks it back
@@ -271,6 +271,9 @@ a card refuses with "Preview can't add its card until Responses Go To names a bo
 | **Email**           | An email box                                                                     | Placeholder, typed into its box                                               | An email address              |
 | **Link**            | A web address box                                                                | Placeholder, typed into its box                                               | An `https://` URL             |
 | **Date**            | A date picker                                                                    |                                                                               | A date (`YYYY-MM-DD`)         |
+| **Date and Time**   | A date-and-time picker, in the respondent's own time zone                        |                                                                               | A moment (UTC, with its zone) |
+| **Date Range**      | Two date pickers, From and To (date-and-time pickers with Include Time)          | Include Time                                                                  | A start and an end            |
+| **Phone**           | A phone box (a phone's number pad on a phone)                                    | Placeholder, typed into its box                                               | A phone number, as typed      |
 | **Single Choice**   | Radio buttons (or a dropdown past 7 options)                                     | Options (2 to 20), Show as Dropdown                                           | One option                    |
 | **Multiple Choice** | Checkboxes                                                                       | Options (2 to 20), Minimum and Maximum Picks                                  | A list of options             |
 | **Rating**          | Stars, or numbered buttons on a scale (Numbers' labels under the first and last) | Scale 3 to 10 (5 by default), Stars or Numbers, Low and High labels (Numbers) | A whole number 1 to the scale |
@@ -290,6 +293,18 @@ a card refuses with "Preview can't add its card until Responses Go To names a bo
   on a German or French phone, so the browser reads `3,5` as 3.5 and `1.234,5` as 1234.5 before it checks the answer
   and sends it (`withLocaleNumbers`, `packages/forms/src/locale-number.ts`); the box keeps showing what was typed. A
   group mark counts only between thousands, so an en-US `3,5` is not read as 35. The server checks plain numbers.
+- A **Date and Time** answer is read in the respondent's own time zone and sent as its UTC instant with that zone
+  (`2026-10-31T17:00:00Z[Europe/London]`, as a [Date and Time field](../026-plan/item-types.md#date-and-time-fields)
+  keeps it); a time that is not a real moment says "Enter a real date and time". In a card's Description or a sheet's
+  row it reads in the zone it was given in, with the zone named ("Fri 31 Oct 2026, 17:00 (Europe/London)").
+- A **Date Range** answer is its two ends; both are needed ("Enter both dates", or "Enter a real date"), and an end
+  before its start is refused ("The end is before the start"). **Include Time** (off) makes each end a date and time,
+  read as a Date and Time answer is. In a Description or a sheet's row it reads "2026-10-31 to 2026-11-02" (with
+  times, each end as a Date and Time answer reads it).
+- A **Phone** answer is checked as a [Phone field](../026-plan/item-types.md#phone-fields) checks a number (digits,
+  spaces, brackets, dashes and a leading `+`, at least 3 digits): "Enter a phone number like +44 20 7946 0958". Its box
+  is `type="tel"` with `autocomplete="tel"`, so a phone shows its number pad and can fill the respondent's own
+  number. Its placeholder is "+44 20 7946 0958" until one is typed.
 
 ### Mapping: where an answer goes
 
@@ -298,7 +313,7 @@ Every question's answer is kept on the response's card. **Answer Goes To** offer
 - **Description** (the default): the answer is written into the card's Description under its prompt, in form order:
   each unmapped answered question a bold line of the prompt, then the answer (choices joined by commas, a Rating as
   "4 / 5", a Checkbox as Yes or No). Unanswered questions are left out.
-- **Title**: Short Answer, Email, Number, Single Choice and Date questions may map to Title; one question at most
+- **Title**: Short Answer, Email, Phone, Number, Single Choice and Date questions may map to Title; one question at most
   (picking it for one unmaps it from another, saying so).
 - **A custom field** of the destination card type whose kind takes the answer (below), or **New Field "<Prompt>"**,
   which adds a custom field of the right kind named after the prompt (made unique) to the card type at once. A
@@ -312,6 +327,9 @@ Every question's answer is kept on the response's card. **Answer Goes To** offer
 | Email           | Email, Text                                          |
 | Link            | Link, Text                                           |
 | Date            | Date                                                 |
+| Date and Time   | Date and Time                                        |
+| Date Range      | Date Range (its Include Time matching)               |
+| Phone           | Phone, Text                                          |
 | Single Choice   | Choice (options matched by name), Text               |
 | Multiple Choice | Multiple Choice (options matched by name), Long Text |
 | Rating          | Rating (scale equal or larger), Number               |
@@ -336,7 +354,8 @@ Every question's answer is kept on the response's card. **Answer Goes To** offer
 Two kinds join the [custom field kinds](../026-plan/item-types.md) so form answers keep their shape on a card:
 
 - **Multiple Choice**: several of up to 20 named options. Its value is a list of option names in option order. On a
-  card it reads as the names joined by commas; the panel edits it as checkboxes; a board cannot lane by it (a card
+  card it reads as the names joined by commas; the panel edits it as option chips with a list to pick from, as Choice
+  ([Choice and Multiple Choice in the card panel](../026-plan/item-types.md#choice-fields)); a board cannot lane by it (a card
   belongs in one lane). The type editor takes its options one a line, as Choice's.
 - **Rating**: a whole number from 1 to the field's scale (3 to 10, `scale`, 5 by default, chosen in the type editor
   as "Out of 3" to "Out of 10"), drawn as that many stars filled to the value (or "7 / 10" when the scale is past 5);
@@ -397,8 +416,16 @@ time the button shows it in a page load), `Started` `FormTour` (a press), `View`
     - "A question has no wording yet.";
     - "A choice question has no options." (a Single or Multiple Choice with none);
     - "An answer goes to a card field that was removed or no longer fits." (a broken mapping);
-    - "A section shows only on an answer that is no longer there." (a broken section rule).
+    - "A section shows only on an answer that is no longer there." (a broken section rule);
+    - "{Field} is required on {Type} cards: add a required question that goes to it." (a
+      [required field](../026-plan/item-types.md#required-fields) of the card type with no required question
+      mapped to it in a section every response sees: the first section, or one with no Show If; one line per
+      field). A required Link to Card field cannot be asked by a form, so a card type with one takes no form.
+      A form already published keeps taking responses when a field becomes required later; the problem is listed
+      under "Problems with this Form" until it is fixed.
       The api checks the same (`publishProblems`) and refuses with 409 `form_not_ready` and the problems.
+      Publish Form first waits (up to 5 seconds) for this page's pending save, since the api checks the stored form:
+      a question worded a moment before was otherwise refused as unworded, with nothing listed to fix.
   - Published: any problem since publishing listed the same way under "Problems with this Form"; the link in a
     read-only field with **Copy Link** (it reads "Copied" for a moment), **Open** (a new
     browser tab), **Accepting Responses** with the count so far, and **Delete Link**, which asks first ("Delete this
@@ -528,17 +555,32 @@ board settings, for switching back.
   question. No mapping needed." A sheet no longer on its tab says "Its sheet was removed. Choose where responses go."
   and pauses the form, as a broken board destination does.
 - **In the builder**: a question's footer reads "Its own column in the sheet" in place of the Answer goes to badge.
+- **Columns before any response**: while an Editor has the Form tab open, the sheet holds a column for **#**,
+  **Submitted** and every question as soon as the sheet is chosen and as each question is added, a moment after the
+  last edit (so typing a wording writes one header, not one per letter). A question whose wording changes takes its
+  column's header with it while that header still reads the old wording; a header renamed in the sheet is kept. These
+  writes are no undo step and change nothing but headers. A tab-scoped link's Editor does not write them (the sheet is
+  on another tab); the first response does.
+- **Linked by column, not by heading**: the form remembers each column it uses (`form.sheet.columns`, question id →
+  the column's id; `#` and `at` for **#** and **Submitted**), so renaming a heading in the sheet, or moving its column,
+  keeps it linked. A question with no remembered column (a form from before, or one an agent changed) finds its column
+  by its header, as before, and the builder remembers it from then on. A remembered column that was deleted is
+  forgotten: the question finds or makes another.
 - **The row** (`responseRowWrite`, `@liveplanner/forms`): the sheet's first row holds the headers, **#**,
-  **Submitted** and each question's wording (a repeated wording gets " (2)"); a question finds its column by its
-  header, ignoring case, and one with none takes the next free column after the last header (columns added in one
-  insert when the sheet has too few). Headers the form writes are bold, and a sheet given its first headers has row 1
-  frozen. The response takes the first row after the last row holding anything (rows added when there are none).
+  **Submitted** and each question's wording (a repeated wording gets " (2)"); a question finds its remembered column,
+  else its column by its header, ignoring case, and one with neither takes the next free column after the last header
+  (columns added in one insert when the sheet has too few). Headers the form writes are bold, and a sheet given its
+  first headers has row 1 frozen. The response takes the first row after the last row holding a value (a styled but
+  empty row, such as a banded look's, does not count; rows added when there are none).
   Its cells: the response number, the time ("2026-10-15 14:03 UTC"; the api knows no one's zone), and each answer: a
   Number or Rating as a number, a Checkbox as true or false, the rest as text (several picks "Vegan, Halal"); an
   unanswered question leaves its cell empty.
 - **Stored** through the sheet store's own write (`storeSheetWrite`: validation, caps, the rev guard, the relay),
   unchecked against the sheet's validation rules so a response always lands; by the form's person ("<Form> form").
-  A sheet too full refuses as `form_full`; the number stays claimed whatever happens.
+  A sheet too full refuses as `form_full`. **A counted response is never lost**: the row is planned against the sheet
+  as stored and stored only if the sheet has not changed since (else planned again, up to the store's retries), and
+  every planned cell must land; a row that cannot be written gives its number back (the count does not grow) and the
+  respondent sees why (`form_full`, `form_closed` or `form_busy`), never Thanks.
 - **Preview**: a published form's preview is a counted row (its number, "· Preview" after its time); an unpublished
   form's preview is written by the api too (`.../form-preview` with no link), its # reading **Preview**.
 - **Elsewhere**: the response count opens the sheet's tab; the Inbox names the sheet's tab; no board shows the
@@ -552,7 +594,8 @@ board settings, for switching back.
   read out), "3 responses · 1 new", **Copy Form Link** (an Editor's, once published; it reads "Copied") and **Open
   Form** (opens the Form tab). It reads the count without marking anything seen (only opening the Form tab does), and
   refreshes as the Form tab's status bar does. It is not a stored widget: it comes and goes with the form's
-  destination.
+  destination. The same board shown in a Dashboard slot has no strip, until it is maximised from the slot (a board there is simplified:
+  [Dashboard tab](../026-plan/plan-tabs.md#dashboard-tab) "A board in a slot is simplified").
 - **On the board**: a card made by a response shows a **New** dot (the brand colour, beside its flag, named "New
   response") until it is opened in this browser, or until a week has passed. What has been opened is kept per browser.
 - **On the Form tab**: the **status bar** over the form: its state (**Not Published**, **Accepting Responses**,
@@ -644,7 +687,7 @@ stands, its answers landing where a person would have sent them, and hands back 
 first), a destination's board by its tab's name or the board's title, its card type and column by name, a sheet by
 its name in Responses Go To ("Budget", "Budget 2"), and a mapping by the card field's name. An unknown name is refused
 with the ones there are. Question types go by their ids (`short`, `paragraph`, `number`, `email`, `link`, `date`,
-`single`, `multi`, `rating`, `checkbox`), each described with the builder's name for it.
+`datetime`, `daterange`, `phone`, `single`, `multi`, `rating`, `checkbox`; a `daterange` takes `withTime`), each described with the builder's name for it.
 
 - **`read_form`** (read): the Form tab named (or the project's first): its heading and description, its sections
   in order (each with its rule as the question's prompt and the answers), each question with every setting it has

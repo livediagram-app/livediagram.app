@@ -31,6 +31,7 @@ import { blocksToDoc, docToBlocks } from '@/lib/article/article-convert';
 import type { ArticleNotePlace } from '@livedocuments/document';
 import { articleKeymap, articleInputRules } from '@/lib/article/article-keys';
 import { blockIdsPlugin, decorationsPlugin, todoTogglePlugin } from '@/lib/article/article-plugins';
+import { findHighlightPlugin } from '@/lib/article/article-find-plugin';
 import {
   insertBlocksAfterCaret,
   sameSelectionState,
@@ -49,6 +50,10 @@ import {
 } from '@/lib/article/article-editor-store';
 import { articleSchema } from '@/lib/article/article-schema';
 import { columnAt, flowFrame, pagePlaceOf } from '@/lib/article/article-flow-geometry';
+import { publishCardOverflow } from '@/lib/flashcard-overflow-store';
+import { announceTextOnly } from '@/lib/flashcard-guard';
+import { FlashcardTooLong } from './FlashcardTooLong';
+import type { CardSplit } from '@/lib/flashcard-split';
 import { articleStyleVars, type ArticleInk } from '@/lib/article/article-style-vars';
 import type { ArticleDrawOp } from '@/lib/article/article-snapshot';
 import {
@@ -71,6 +76,23 @@ import type { ArticleInsert } from '@/hooks/editor/useArticles';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { slashInsertEvent } from '@/lib/article/article-telemetry';
+import {
+  articleTablePasteProps,
+  jumpToHeading,
+  tableKeyPlugins,
+  tableNodeViews,
+  tablePlugins,
+  type TableRights,
+} from '@/lib/article/article-table-editor';
+import { insertTable } from '@/lib/article/article-table-commands';
+import { measureRepeats } from '@/lib/article/article-table-repeat';
+import { measureTocPages } from '@/lib/article/article-toc-view';
+
+// How many times one change may re-measure for repeated header rows settling (each copy drawn can move
+// the rows after it); a guard, two is the most a real layout needs.
+const REPEAT_SETTLE_TRIES = 4;
+// The writing's paste, tables composed over it.
+const pasteProps = articleTablePasteProps(articlePasteProps);
 
 // How long typing pauses before it is written to the tab (docs/specs/007-editor/article-pages.md
 // "Writing", "Commits").
@@ -102,6 +124,11 @@ export type ArticleEditorProps = {
   // The tab holds as many pages as it can (MAX_PAGES): no page is added for writing that
   // runs past the last.
   atPageLimit?: boolean;
+  // A flashcard (docs/specs/007-editor/flashcards.md): text only, laid out on its one card and
+  // never grown; writing past its foot is cut off there and said so.
+  card?: boolean;
+  // Split Onto a New Card from the Too long marker: given to someone who may change the pages.
+  split?: CardSplit | undefined;
   doc: ArticleFlow;
   editable: boolean;
   // Whether the writer may reshape the article too (the slash menu's inserts): an Editor. A Participant writes
@@ -113,6 +140,8 @@ export type ArticleEditorProps = {
   ink: ArticleInk;
   themeAccent: string;
   margin: number;
+  // The least top margin: the toolbar's room, and a header's band above it (ARTICLE_TOP_MIN_PX when absent).
+  topMin?: number;
   // A style shown in place of the article's own while a Style tab choice is hovered.
   styleOverride?: ArticleFlow['style'];
   // The writing's blocks, written to the tab (one undo step, one sync).
@@ -151,6 +180,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   const idle = useRef<number | null>(null);
   const lastLocal = useRef(0);
   const measureFrame = useRef<number | null>(null);
+  const repeatTries = useRef(0);
   // Whether this writing's layout has been announced to the pictures drawn from it (the Map).
   const announced = useRef(false);
   // Set while an undo or redo from the writing is under way: the change it brings back takes the
@@ -168,16 +198,22 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       undoing.current = false;
     }, UNDO_SETTLE_MS);
   };
-  // An undo or redo asked for from the writing: what was typed goes first, as its own step. The
-  // commit and the undo of it land in one render, the tab's article back to the very object it was:
-  // `undoSeq` has the writing look at the tab again all the same.
+  // An undo or redo asked for from the writing: what was typed goes first, as its own step, then
+  // the undo of it, the tab's article back to the very object it was: `undoSeq` has the writing look
+  // at the tab again all the same.
   const [undoSeq, setUndoSeq] = useState(0);
   const undoRedo = (which: 'undo' | 'redo') => {
-    flush();
-    markUndoing();
-    if (which === 'undo') latest.current.onUndo();
-    else latest.current.onRedo();
-    setUndoSeq((n) => n + 1);
+    const run = () => {
+      markUndoing();
+      if (which === 'undo') latest.current.onUndo();
+      else latest.current.onRedo();
+      setUndoSeq((n) => n + 1);
+    };
+    // The host decides whether there is anything to undo from its last render, so an undo that
+    // follows a commit made just now waits for that render: else ⌘Z within a pause of a session's
+    // first typing found nothing to undo and the typing stayed.
+    if (flush()) window.setTimeout(run, 0);
+    else run();
   };
   const blurTimer = useRef<number | null>(null);
   // The writing runs past the last page while the tab is at its page limit.
@@ -190,7 +226,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     at: { left: number; top: number; bottom: number };
   } | null>(null);
   const [slashIndex, setSlashIndex] = useState(0);
-  const slashItems = slash && props.reshape !== false ? filterSlashItems(slash.query) : [];
+  const slashItems =
+    slash && props.reshape !== false ? filterSlashItems(slash.query, props.card === true) : [];
   const slashLive = useRef({ items: slashItems, index: slashIndex, open: false });
   useLayoutEffect(() => {
     const open = !!slash && slashItems.length > 0;
@@ -208,11 +245,15 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     let done = false;
     if (a.kind === 'style') done = setBlockStyle(a.style)(view.state, view.dispatch, view);
     else if (a.kind === 'list') done = toggleList(a.list)(view.state, view.dispatch, view);
+    else if (a.kind === 'block' && a.block === 'table')
+      done = insertTable(view.state, view.dispatch, view);
     else if (a.kind === 'block')
       done = insertBlocksAfterCaret(
         a.block === 'divider'
           ? [articleSchema.nodes.divider.create()]
-          : [articleSchema.nodes.page_break.create(), articleSchema.nodes.paragraph.create()],
+          : a.block === 'toc'
+            ? [articleSchema.nodes.toc.create(), articleSchema.nodes.paragraph.create()]
+            : [articleSchema.nodes.page_break.create(), articleSchema.nodes.paragraph.create()],
       )(view.state, view.dispatch, view);
     else latest.current.onInsert(latest.current.flow, a.what);
     // A block put in from the menu counts as the toolbar's Insert does, once it went in; an
@@ -227,19 +268,21 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   });
 
   // Everything below reads the view through the ref; created once, below.
-  const flush = () => {
+  // Writes what was typed since the last commit; true when it wrote something.
+  const flush = (): boolean => {
     const view = viewRef.current;
     if (idle.current !== null) {
       window.clearTimeout(idle.current);
       idle.current = null;
     }
-    if (!view) return;
+    if (!view) return false;
     const blocks = docToBlocks(view.state.doc, committed.current.blocks);
-    if (blocks === committed.current.blocks) return;
+    if (blocks === committed.current.blocks) return false;
     // Taken as written only once the host accepts it (a tab locked meanwhile refuses): refused,
     // it stays local and goes with the next commit.
-    if (latest.current.onCommit(latest.current.flow, blocks) === false) return;
+    if (latest.current.onCommit(latest.current.flow, blocks) === false) return false;
     committed.current = { ...committed.current, blocks };
+    return true;
   };
   const scheduleCommit = () => {
     if (idle.current !== null) window.clearTimeout(idle.current);
@@ -254,6 +297,18 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     const p = latest.current;
     if (!view || p.pages.length === 0) return;
     const { frame, root, z } = writingScale(view, p);
+    // Repeated header rows first: a copy drawn moves the rows after it, so the rest is measured once
+    // they have settled (a frame later).
+    if (measureRepeats(view, root.top, z) && repeatTries.current < REPEAT_SETTLE_TRIES) {
+      repeatTries.current++;
+      scheduleMeasure();
+      return;
+    }
+    repeatTries.current = 0;
+    // The contents' page numbers, from where each heading landed.
+    measureTocPages(view, (x) =>
+      Math.min(p.pages.length - 1, columnAt(frame, (x - root.left) / z)),
+    );
     let right = 0;
     for (const child of Array.from(view.dom.children)) {
       for (const r of Array.from(child.getClientRects())) {
@@ -261,9 +316,14 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         right = Math.max(right, (r.left - root.left) / z + 1);
       }
     }
-    const pagesNeeded = columnAt(frame, Math.max(0, right - 2)) + 1;
+    const reached = columnAt(frame, Math.max(0, right - 2)) + 1;
+    // A card never grows: what runs past its foot waits unseen, and the first block that does not
+    // fit whole is where a split would start (docs/specs/007-editor/flashcards.md "Never flows").
+    const pagesNeeded = p.card ? 1 : reached;
+    if (p.card)
+      publishCardOverflow(p.flow, reached > 1 ? firstBlockPastFoot(view, frame, root, z) : null);
     // At the tab's page limit the writing past the last page waits unseen: say so on that page.
-    const cut = p.atPageLimit === true && pagesNeeded > p.pages.length;
+    const cut = (p.atPageLimit === true || p.card === true) && reached > p.pages.length;
     setCutOff((was) => (was === cut ? was : cut));
     const zones: FlowLayout['zones'] = [];
     view.dom.querySelectorAll<HTMLElement>('.article-zone').forEach((el) => {
@@ -335,6 +395,10 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       const p = latest.current;
       if (!v || !p.editable || !v.hasFocus() || !p.onRevealCaret) return;
       const rect = caretCanvasRect(v, p);
+      // A card never flows: a caret past its foot is in writing kept but hidden (the Too long
+      // marker says so), and the view stays on the card rather than following it off.
+      const card = p.card ? p.pages[0] : undefined;
+      if (card && rect && rect.x >= card.rect.x + card.rect.width) return;
       if (rect) p.onRevealCaret(rect);
     });
   };
@@ -375,6 +439,13 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     const mount = host.current;
     if (!mount) return;
     const isEditable = () => latest.current.editable;
+    const rights: TableRights = {
+      editable: isEditable,
+      reshape: () => latest.current.reshape !== false,
+      commit: () => {
+        flush();
+      },
+    };
     const bridge: SlashBridge = {
       onChange: (s, v) => {
         if (!s.active) {
@@ -405,6 +476,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       plugins: [
         // First, so its keys come before Enter's and the arrows'.
         slashPlugin(bridge),
+        // A cell's keys before the writing's (Tab, Enter and Backspace mean other things there).
+        ...tableKeyPlugins(rights),
         ...articleKeymap({
           undo: () => undoRedo('undo'),
           redo: () => undoRedo('redo'),
@@ -420,6 +493,9 @@ export default function ArticleEditor(props: ArticleEditorProps) {
         decorationsPlugin(isEditable),
         todoTogglePlugin(isEditable),
         articlePeersPlugin,
+        // The Find bar's matches in this writing (docs/specs/007-editor/find-and-replace.md "Highlights").
+        findHighlightPlugin(() => latest.current.flow),
+        ...tablePlugins(),
         gapCursor(),
       ],
     });
@@ -428,7 +504,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       editable: isEditable,
       attributes: () => {
         const p = latest.current;
-        const frame = flowFrame(p.pages, p.margin);
+        const frame = flowFrame(p.pages, p.margin, p.topMin);
         const { vars, rules } = articleStyleVars(
           p.styleOverride ?? p.doc.style,
           p.themeAccent,
@@ -474,7 +550,19 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       },
       // The canvas is not a scrolling page: ProseMirror must never scroll its ancestors.
       handleScrollToSelection: () => true,
-      ...articlePasteProps,
+      ...pasteProps,
+      nodeViews: tableNodeViews(rights, (v, id) =>
+        jumpToHeading(v, id, latest.current.editable, (r) => {
+          const p = latest.current;
+          const { frame, root, z } = writingScale(v, p);
+          p.onRevealCaret?.({
+            x: frame.x + (r.left - root.left) / z,
+            y: frame.y + (r.top - root.top) / z,
+            w: Math.max(1, r.width / z),
+            h: Math.max(1, r.height / z),
+          });
+        }),
+      ),
       dispatchTransaction(tr: Transaction) {
         const v = viewRef.current;
         if (!v) return;
@@ -494,7 +582,16 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       handleDOMEvents: {
         // An image, or elements copied from a canvas: not the writing's to take. Left alone (no
         // preventDefault), the paste reaches the canvas, which puts it into the writing as a zone.
-        paste: (_v, e) => articlePasteIsCanvas(e.clipboardData),
+        paste: (_v, e) => {
+          if (!articlePasteIsCanvas(e.clipboardData)) return false;
+          // A card holds text only: a picture or canvas elements pasted on it are dropped
+          // (docs/specs/007-editor/flashcards.md "Text only").
+          if (latest.current.card) {
+            e.preventDefault();
+            announceTextOnly();
+          }
+          return true;
+        },
         click: (_v, e) => {
           // A plain click on a margin note's text opens what it carries; a drag that selects
           // does not.
@@ -569,6 +666,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       view.destroy();
       viewRef.current = null;
       clearActiveArticle(latest.current.flow);
+      if (latest.current.card) publishCardOverflow(latest.current.flow, null);
       setLocalArticleCaret(latest.current.flow, null);
     };
     // Created once per article: everything it reads is read through refs.
@@ -608,6 +706,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     props.ink,
     props.themeAccent,
     props.margin,
+    props.topMin,
     props.editable,
     props.interactive,
     props.styleOverride,
@@ -640,7 +739,11 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   return (
     <>
       {linkCard}
-      {cutOff ? <PageLimitNotice page={props.pages[props.pages.length - 1]!} /> : null}
+      {cutOff && props.card ? (
+        <FlashcardTooLong page={props.pages[0]!} zoom={props.zoom} split={props.split} />
+      ) : cutOff ? (
+        <PageLimitNotice page={props.pages[props.pages.length - 1]!} />
+      ) : null}
       {slash && props.editable && props.reshape !== false ? (
         <SlashMenu
           at={slash.at}
@@ -697,6 +800,25 @@ function replaceContent(
     tr.setSelection(TextSelection.near(tr.doc.resolve(at), -1));
   }
   view.dispatch(tr);
+}
+
+// The id of the first top-level block that does not fit whole on the first page (a box of it in a
+// later column), or null.
+function firstBlockPastFoot(
+  view: EditorView,
+  frame: ReturnType<typeof flowFrame>,
+  root: DOMRect,
+  z: number,
+): string | null {
+  for (const child of Array.from(view.dom.children)) {
+    const id = (child as HTMLElement).dataset.blockId;
+    if (!id) continue;
+    for (const r of Array.from(child.getClientRects())) {
+      if (r.width === 0 && r.height === 0) continue;
+      if (columnAt(frame, Math.max(0, (r.right - root.left) / z - 2)) >= 1) return id;
+    }
+  }
+  return null;
 }
 
 // The foot of an article's last page when the tab is at its page limit and the writing runs past it

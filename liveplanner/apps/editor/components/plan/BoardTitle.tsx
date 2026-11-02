@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { PlanPalette } from './plan-palette';
 import { IN_BOX_TITLE_CLASS } from './menu-name-slot';
+import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
 
 // The longest board title, as the Board flyout's Title field takes it.
 const BOARD_TITLE_MAX = 80;
@@ -45,6 +46,9 @@ export function BoardTitle({
       <div
         // In the menu box a click renames (on the canvas a press moves the board, a double-click renames).
         onClick={inBox ? onStart : undefined}
+        // On the board the title is a heading in the tab's face (docs/specs/004-interface-design/fonts.md "On boards
+        // and cards"); in the menu box it is chrome.
+        style={inBox ? undefined : PLAN_HEADING_STYLE}
         className={`${inBox ? `${IN_BOX_TITLE_CLASS} ${onStart ? 'cursor-text' : ''}` : `${TITLE_CLASS} ${capped ? CAPPED_CLASS : ''} truncate`} ${selected && !inBox ? 'cursor-move' : ''}`}
       >
         {title}

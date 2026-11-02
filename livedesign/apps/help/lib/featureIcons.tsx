@@ -235,6 +235,15 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M8.5 15h7M8.5 18h4" />
     </Glyph>
   ),
+  // A button with its width measured under it, end ticks and all: reading a wireframe's numbers off it.
+  inspect: (
+    <Glyph>
+      <rect x="4" y="4.5" width="16" height="8" rx="4" />
+      <path d="M4 18h16" />
+      <path d="M4 16v4M20 16v4" />
+      <path d="M12 12.5v3" strokeDasharray="1 1.5" />
+    </Glyph>
+  ),
   // Two stacked layers of a photo, the front one a landscape: a picture made of layers.
   'photo-pages': (
     <Glyph>
@@ -371,6 +380,23 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="15.5" cy="12" r="1.3" fill="currentColor" stroke="none" />
       <path d="M19 12h.01" />
       <path d="M12 5.5V4a2.5 2.5 0 015 0v1.5" />
+    </Glyph>
+  ),
+  // A gallery wall: three framed designs, one with a heart on it.
+  community: (
+    <Glyph>
+      <rect x="2.5" y="4" width="8" height="7" rx="1.5" />
+      <rect x="13.5" y="4" width="8" height="7" rx="1.5" />
+      <rect x="2.5" y="14" width="8" height="6" rx="1.5" />
+      <path d="M17.5 20.5l-2.6-2.5a1.6 1.6 0 012.6-1.9 1.6 1.6 0 012.6 1.9z" />
+    </Glyph>
+  ),
+  // A search glass over a hashtag: finding designs by their tags.
+  'finding-community-documents': (
+    <Glyph>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="M15.5 15.5 21 21" />
+      <path d="M9 7.5 8 13.5M12.5 7.5l-1 6M7 9.5h6M6.5 11.5h6" />
     </Glyph>
   ),
   // A row of tabs where only the middle one is solid: the one tab a link opens.

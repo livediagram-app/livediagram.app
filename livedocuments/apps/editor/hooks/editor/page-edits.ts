@@ -22,6 +22,9 @@ import {
   type ThemeDefinition,
   PAGE_NAME_MAX,
   withPageSplit,
+  withFlashcardSplit,
+  canSplitFlashcardAt,
+  articlesOf,
   withPageInkFor,
   pageAdded,
   pageAddedLike,
@@ -56,9 +59,12 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { track } from '@/lib/telemetry';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
+import { cardOverflowNow } from '@/lib/flashcard-overflow-store';
 import { restoreEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { startClosedKey } from '@/components/start/start-closed-key';
 import { backgroundCopyEdits, type BackgroundCopyEdits } from './pages-background-copy-edits';
+
+export type CardSplitState = 'fits' | 'ready' | 'one-paragraph' | 'page-limit';
 
 export type PageEdits = BackgroundCopyEdits & {
   setOrientation: (pageId: string, next: PageOrientation) => void;
@@ -87,6 +93,11 @@ export type PageEdits = BackgroundCopyEdits & {
   // A Fit to Content page split into one page per cluster of its content, nothing scaled
   // (docs/specs/007-editor/pages-mode.md "Split Into Pages").
   splitPage: (pageId: string) => void;
+  // Split Onto a New Card (docs/specs/007-editor/flashcards.md "Never flows"): a too-long card's
+  // writing from its first block that does not fit moves onto a new card right after it.
+  splitCard: (pageId: string) => void;
+  // Whether a card can be split now: it fits ('fits'), it can ('ready'), or why not.
+  cardSplitState: (pageId: string) => CardSplitState;
   // Whether the page's unit can move left / right (not at the row's end).
   canMove: (pageId: string, by: -1 | 1) => boolean;
   // Puts a layout onto the page in place of everything on it (the panel asks first when there is
@@ -124,11 +135,13 @@ const KIND_CHOSEN_EVENT: Record<PageKind, string> = {
   infographic: 'PageKindInfographic',
   article: 'PageKindArticle',
   slide: 'PageKindSlide',
+  flashcard: 'PageKindFlashcard',
 };
 const KIND_ADDED_EVENT: Record<PageKind, string> = {
   infographic: 'PageAdded',
   article: 'ArticleAdded',
   slide: 'SlidePageAdded',
+  flashcard: 'FlashcardAdded',
 };
 
 // Whether a page would change under a Tidy, by tab and page, with what the answer was for: the
@@ -328,7 +341,7 @@ export function pageEdits({
       const chosen = withPageKindChosen(t, pageId, kind, flow);
       return kind === 'infographic' || kind === 'slide' ? themed(chosen, pageId) : chosen;
     });
-    if (kind === 'article') onArticleCreated?.(flow);
+    if (kind === 'article' || kind === 'flashcard') onArticleCreated?.(flow);
     debugLog('[page] first page kind chosen', { tabId, pageId, kind });
   };
   const addPage = (kind: PageKind) => {
@@ -345,7 +358,7 @@ export function pageEdits({
       const added = edited(t, pageAdded(t, kind, id, flow));
       return kind === 'infographic' || kind === 'slide' ? themed(added, id) : added;
     });
-    if (kind === 'article') {
+    if (kind === 'article' || kind === 'flashcard') {
       onGoTo(id);
       onArticleCreated?.(flow);
       debugLog('[page] article added', { tabId, flow, count: current.length + 1 });
@@ -366,7 +379,7 @@ export function pageEdits({
       const added = edited(t, pageAddedLike(t, pageId, id, flow));
       return kind === 'infographic' || kind === 'slide' ? themed(added, id) : added;
     });
-    if (kind === 'article') {
+    if (kind === 'article' || kind === 'flashcard') {
       onGoTo(id);
       onArticleCreated?.(flow);
       return;
@@ -451,6 +464,39 @@ export function pageEdits({
     toastInfo(`Split into ${made} pages. Undo puts it back.`);
     if (first) onGoTo(first);
     debugLog('[page] page split', { tabId, pageId, pages: made });
+  };
+
+  const cardSplitState = (pageId: string): CardSplitState => {
+    const card = page(pageId);
+    const from = card?.flow ? cardOverflowNow(card.flow) : null;
+    const doc = card?.flow ? articlesOf(tab)[card.flow] : undefined;
+    if (!from || !doc) return 'fits';
+    if (!canSplitFlashcardAt(doc, from)) return 'one-paragraph';
+    return current.length >= MAX_PAGES ? 'page-limit' : 'ready';
+  };
+  // The card's writing past its foot onto a new card after it, one edit; the view flips to it.
+  const splitCard = (pageId: string) => {
+    if (!takesEdits() || refusedLocked(pageId, 'split')) return;
+    const card = page(pageId);
+    const from = card?.flow ? cardOverflowNow(card.flow) : null;
+    if (!card || !from) return;
+    const id = nextPageId(current);
+    const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
+    const out = withFlashcardSplit(tab, pageId, from, id, flow);
+    if ('refused' in out) {
+      if (out.refused === 'page_limit')
+        toastInfo(`A tab holds at most ${MAX_PAGES} pages: delete one to split this card.`);
+      debugLog('[flashcard] split refused', { tabId, pageId, reason: out.refused });
+      return;
+    }
+    track('Tab', 'Changed', 'FlashcardSplit');
+    commitTab((t) => {
+      if (t === tab) return out.tab;
+      const again = withFlashcardSplit(t, pageId, from, id, flow);
+      return 'tab' in again ? again.tab : null;
+    });
+    onGoTo(id);
+    debugLog('[flashcard] split', { tabId, pageId, from });
   };
 
   // Laid out in the page's content box (the page less its margins), the page's own words and
@@ -595,6 +641,8 @@ export function pageEdits({
     },
     removePage,
     splitPage,
+    splitCard,
+    cardSplitState,
     applyLayout,
     contentCount,
     isLocked,

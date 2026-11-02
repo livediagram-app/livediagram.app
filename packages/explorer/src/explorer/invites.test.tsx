@@ -61,10 +61,45 @@ describe('Invites', () => {
   it('shows a card per invitation, with Accept and Decline', async () => {
     page({ kind: 'invites' }, [invite()]);
     expect(await screen.findByText('Ops Crew')).toBeTruthy();
-    expect(screen.getByText('Acme · 3 members')).toBeTruthy();
-    expect(screen.getByText(/^Ann invited you .*, as an admin\.$/)).toBeTruthy();
+    // A line's whole text, though a name or an organisation in it is its own <bdi>.
+    const text = (want: RegExp) =>
+      screen.getByText((_, el) => el?.tagName === 'SPAN' && want.test(el.textContent ?? ''));
+    expect(text(/^Acme · 3 members$/)).toBeTruthy();
+    expect(text(/^Ann invited you .*, as an admin\.$/)).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Accept the invitation to Ops Crew' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Decline the invitation to Ops Crew' })).toBeTruthy();
+  });
+
+  it('says the invites couldn’t load, never a blank page, and tries again', async () => {
+    const teams = fakeTeams([invite()]);
+    const myTeams = teams.host.myTeams as ReturnType<typeof vi.fn>;
+    myTeams.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+    render(
+      <Explorer
+        app="livediagram"
+        client={createFakeIndex({}).client}
+        view={{ kind: 'invites' }}
+        onNavigate={vi.fn()}
+        itemHref={(i) => `/d/${i.id}`}
+        onCreate={vi.fn()}
+        viewerId="user_me"
+        heroHidden
+        teamsHost={teams.host}
+      />,
+    );
+    expect(await screen.findByText('Couldn’t load your invites')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(await screen.findByText('Ops Crew')).toBeTruthy();
+    expect(screen.queryByText('Couldn’t load your invites')).toBeNull();
+  });
+
+  it('isolates the organisation and the inviter’s name, so right-to-left text turns nothing around', async () => {
+    page({ kind: 'invites' }, [
+      invite({ organisation: '\u202Eevil org', invitedByName: '\u202Enna' }),
+    ]);
+    expect(await screen.findByText('Ops Crew')).toBeTruthy();
+    expect(screen.getByText('\u202Eevil org').tagName).toBe('BDI');
+    expect(screen.getByText('\u202Enna').tagName).toBe('BDI');
   });
 
   it('accepts in place: the team joins the sidebar and opens', async () => {

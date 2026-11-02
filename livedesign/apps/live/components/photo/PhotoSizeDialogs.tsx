@@ -21,7 +21,7 @@ const FIELD =
   'w-24 rounded-md border border-slate-200 bg-white px-2 py-1 text-sm tabular-nums dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100';
 const LABEL = 'flex items-center justify-between gap-3 text-sm text-slate-700 dark:text-slate-200';
 
-function NumberField({
+export function NumberField({
   label,
   value,
   onChange,
@@ -44,7 +44,7 @@ function NumberField({
           onChange={(e) => onChange(Number(e.target.value))}
           className={FIELD}
         />
-        <span className="w-6 text-xs text-slate-500">{unit}</span>
+        <span className="w-6 text-xs text-slate-500 dark:text-slate-400">{unit}</span>
       </span>
     </label>
   );

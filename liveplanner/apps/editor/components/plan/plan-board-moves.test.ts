@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { presetSetup, projectBoard, type Item } from '@liveplanner/items';
-import { boardMoveFor } from './plan-board-moves';
+import { ITEM_TYPES, presetSetup, projectBoard, type Item } from '@liveplanner/items';
+import { boardMoveFor, groupDropMoves, sortedSlot } from './plan-board-moves';
 
 let n = 0;
 const item = (status: string, rank: string, extra: Item['fields'] = {}, type = 'task'): Item => {
@@ -95,5 +95,128 @@ describe('boardMoveFor on a board laned by a field', () => {
     expect(
       boardMoveFor(setup, projection, a, a.id, { status: 'done', laneKey: '', beforeId: null }),
     ).toEqual({ status: 'done', before: null });
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "The board set-up": Sort Cards.
+describe('a sorted board', () => {
+  const sorted = () => ({
+    ...threeColumns(),
+    sortBy: [{ field: 'priority', dir: 'desc' as const }],
+  });
+
+  it('never reorders a card in its own cell, but moves it to another column', () => {
+    const a = item('todo', 'a', { priority: 'low' });
+    const b = item('todo', 'b', { priority: 'high' });
+    const setup = sorted();
+    const p = projectBoard(setup, mapOf(a, b), undefined, ITEM_TYPES);
+    expect(p.columns[0]!.lanes[0]!.items.map((i) => i.id)).toEqual([b.id, a.id]);
+    expect(
+      boardMoveFor(setup, p, a, a.id, { status: 'todo', laneKey: '', beforeId: b.id }),
+    ).toBeNull();
+    expect(
+      boardMoveFor(setup, p, a, a.id, { status: 'done', laneKey: '', beforeId: null }),
+    ).toEqual({ status: 'done', before: null });
+  });
+
+  it('puts the drop slot where the sort puts the card', () => {
+    const urgent = item('doing', 'a', { priority: 'urgent' });
+    const low = item('doing', 'b', { priority: 'low' });
+    const high = item('todo', 'c', { priority: 'high' });
+    const setup = sorted();
+    const p = projectBoard(setup, mapOf(urgent, low, high), undefined, ITEM_TYPES);
+    const slot = { status: 'doing', laneKey: '', beforeId: null };
+    expect(sortedSlot(setup, p, high, slot, ITEM_TYPES)).toEqual({ ...slot, beforeId: low.id });
+    expect(sortedSlot(setup, p, high, { ...slot, beforeId: urgent.id }, ITEM_TYPES).beforeId).toBe(
+      low.id,
+    );
+    // Last when it sorts after every card there.
+    const none = item('todo', 'd');
+    expect(sortedSlot(setup, p, none, slot, ITEM_TYPES).beforeId).toBeNull();
+    // A board in hand order, or a card it does not know, keeps the slot.
+    const plain = projectBoard(threeColumns(), mapOf(urgent, low, high), undefined, ITEM_TYPES);
+    expect(sortedSlot(threeColumns(), plain, high, slot, ITEM_TYPES)).toBe(slot);
+    expect(sortedSlot(setup, p, undefined, slot, ITEM_TYPES)).toBe(slot);
+    // A cell the board does not draw has no card to go before.
+    expect(sortedSlot(setup, p, high, { ...slot, status: 'gone' }, ITEM_TYPES).beforeId).toBeNull();
+  });
+
+  it('applies the row’s field first: rows by priority sort by the row the card lands in', () => {
+    const urgent = item('todo', 'a', { priority: 'urgent', due: '2026-01-05' });
+    const early = item('todo', 'b', { priority: 'urgent', due: '2026-01-01' });
+    const card = item('doing', 'c', { priority: 'low', due: '2026-01-03' });
+    const setup = {
+      ...threeColumns(),
+      swimlaneBy: 'priority' as const,
+      sortBy: [{ field: 'due', dir: 'asc' as const }],
+    };
+    const p = projectBoard(setup, mapOf(urgent, early, card), undefined, ITEM_TYPES);
+    const lane = p.lanes.find((l) => l.label === 'Urgent')!;
+    expect(
+      sortedSlot(setup, p, card, { status: 'todo', laneKey: lane.key, beforeId: null }, ITEM_TYPES)
+        .beforeId,
+    ).toBe(urgent.id);
+    // The No Priority row clears the field.
+    const noRow = p.lanes.find((l) => l.label.startsWith('No'));
+    expect(
+      sortedSlot(
+        setup,
+        p,
+        card,
+        { status: 'todo', laneKey: noRow?.key ?? '', beforeId: null },
+        ITEM_TYPES,
+      ).beforeId,
+    ).toBeNull();
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "Several cards at once".
+describe('groupDropMoves', () => {
+  it('lands the group together in order before the first card at the slot that is not one of them', () => {
+    const a = item('todo', 'a');
+    const b = item('todo', 'b');
+    const c = item('doing', 'a');
+    const d = item('doing', 'b');
+    const setup = threeColumns();
+    const p = projectBoard(setup, mapOf(a, b, c, d));
+    const slot = { status: 'doing', laneKey: '', beforeId: c.id };
+    expect(
+      groupDropMoves(setup, p, mapOf(a, b, c, d), [c.id, a.id, b.id], slot, () => false),
+    ).toEqual({
+      moves: [
+        { id: c.id, move: { status: 'doing', before: d.id } },
+        { id: a.id, move: { status: 'doing', after: c.id } },
+        { id: b.id, move: { status: 'doing', after: a.id } },
+      ],
+      stayed: 0,
+    });
+    expect(
+      groupDropMoves(setup, p, mapOf(a, b, c, d), [a.id], { ...slot, beforeId: null }, () => false)
+        .moves,
+    ).toEqual([{ id: a.id, move: { status: 'doing', before: null } }]);
+  });
+
+  it('keeps refused and unknown cards where they are, restores archived ones, and gives a row its field', () => {
+    const sam = { id: 's', name: 'Sam', color: '#0ea5e9' };
+    const a = item('todo', 'a', { archived: true });
+    const b = item('todo', 'b', {}, 'note');
+    const setup = presetSetup('sprint');
+    const p = projectBoard(setup, mapOf(a, b, item('doing', 'a', { assignee: sam })));
+    const slot = { status: 'doing', laneKey: 'a:s', beforeId: null };
+    const out = groupDropMoves(
+      setup,
+      p,
+      mapOf(a, b),
+      [a.id, b.id, 'gone'],
+      slot,
+      (it) => it.type === 'note',
+    );
+    expect(out.stayed).toBe(1);
+    expect(out.moves).toEqual([
+      {
+        id: a.id,
+        move: { status: 'doing', before: null, set: { assignee: sam }, clear: ['archived'] },
+      },
+    ]);
   });
 });

@@ -26,3 +26,6 @@ export const LOCAL_MOVE_DISMISSED_PREFIX = 'liveplanner:v2:local-move-dismissed:
 
 /** Test builds only: the localStorage key the e2e specs put a signed-in session under for E2EAuthBridge. */
 export const E2E_SESSION_KEY = 'liveplanner:e2e:session';
+
+/** The localStorage key of the Hide Participant Cursors switch (docs/specs/012-collaboration/collaborator-enhancements.md). */
+export const HIDE_CURSORS_KEY = 'liveplanner:v2:hide-cursors';

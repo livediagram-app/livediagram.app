@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { __setOfflineBackend, offlineGetRecord, offlinePutRecord } from './offline-store';
 import { offlineFetchItems, offlineWriteItem, recordItemStore } from './offline-items';
-import { fetchItems, writeItem, writeItemComment } from '../api/items';
+import { fetchItems, writeItem } from '../api/items';
 import { memBackend, testRecord } from './offline-test-utils';
 import { ApiError } from '../api/core';
 
@@ -40,6 +40,36 @@ describe('offline items', () => {
     expect((await fetchItems(scope)).items).toHaveLength(1);
     await writeItem(scope, { kind: 'delete', id: 'item-one' }, ME);
     expect((await offlineGetRecord('d1'))?.items).toEqual([]);
+  });
+
+  // docs/specs/026-plan/item-types.md "Link Existing": linking an existing card is one patch on it, offline alike.
+  it('links an existing card through its Parent field, moving it from another card', async () => {
+    __setOfflineBackend(memBackend());
+    await offlinePutRecord(testRecord());
+    const scope = { ownerId: 'o', projectId: 'd1', shareCode: null, tabId: null };
+    await writeItem(
+      scope,
+      {
+        kind: 'create',
+        creates: [
+          { id: 'plan-a', type: 'project', fields: { title: 'A', status: 'todo' } },
+          { id: 'plan-b', type: 'project', fields: { title: 'B', status: 'todo' } },
+          {
+            id: 'task-1',
+            type: 'task',
+            fields: { title: 'One', status: 'todo', parent: 'plan-a' },
+          },
+        ],
+      },
+      ME,
+    );
+    await writeItem(
+      scope,
+      { kind: 'patch', id: 'task-1', patch: { set: { parent: 'plan-b' } } },
+      ME,
+    );
+    const rec = await offlineGetRecord('d1');
+    expect(rec?.items?.find((i) => i.id === 'task-1')?.fields['parent']).toBe('plan-b');
   });
 
   it('refuses as the api does', async () => {
@@ -115,51 +145,5 @@ describe('offline items', () => {
       ME,
     );
     expect(undone.upserts[0]!.fields['status']).toBe('done');
-  });
-
-  // docs/specs/026-plan/items.md "Comments": an offline project comments locally, by the same rules.
-  it('comments on a card in the record: add, resolve, delete, and refuses as the api does', async () => {
-    __setOfflineBackend(memBackend());
-    await offlinePutRecord(testRecord());
-    const scope = { ownerId: 'owner-me', projectId: 'd1', shareCode: null, tabId: null };
-    await writeItem(
-      scope,
-      { kind: 'create', creates: [{ id: 'item-one', type: 'task', fields: { title: 'One' } }] },
-      ME,
-    );
-    const who = { ownerId: 'owner-me', by: ME };
-    const added = await writeItemComment(scope, 'item-one', { kind: 'add', text: 'Hi' }, who);
-    const thread = added!.upserts[0]!.fields['comments'] as {
-      comments: { id: string; text: string; authorId: string }[];
-    };
-    expect(thread.comments[0]).toMatchObject({ text: 'Hi', authorId: 'owner-me' });
-    expect((await offlineGetRecord('d1'))?.itemsRev).toBe(2);
-    const resolved = await writeItemComment(
-      scope,
-      'item-one',
-      { kind: 'resolve', resolved: true },
-      who,
-    );
-    expect(resolved!.upserts[0]!.fields['comments']).toMatchObject({ resolved: true });
-    expect(
-      await writeItemComment(scope, 'item-one', { kind: 'resolve', resolved: true }, who),
-    ).toBeNull();
-    await writeItemComment(
-      scope,
-      'item-one',
-      { kind: 'delete', commentId: thread.comments[0]!.id },
-      who,
-    );
-    expect((await offlineGetRecord('d1'))?.items?.[0]?.fields['comments']).toBeUndefined();
-    await expect(
-      writeItemComment(scope, 'item-one', { kind: 'delete', commentId: 'gone' }, who),
-    ).rejects.toMatchObject({ status: 404, code: 'comment_not_found' });
-    await expect(
-      writeItemComment(scope, 'missing', { kind: 'add', text: 'x' }, who),
-    ).rejects.toMatchObject({ status: 404, code: 'item_not_found' });
-    await offlinePutRecord(testRecord({ id: 'd2', trashedAt: 5 }));
-    await expect(
-      writeItemComment({ ...scope, projectId: 'd2' }, 'x', { kind: 'add', text: 'x' }, who),
-    ).rejects.toMatchObject({ status: 404 });
   });
 });

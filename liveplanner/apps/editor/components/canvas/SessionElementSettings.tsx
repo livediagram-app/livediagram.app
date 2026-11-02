@@ -32,6 +32,7 @@ import {
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { TimerSetupBody } from '@/components/panels/session-studio/TimerSetupBody';
 import { VoteSetupBody } from '@/components/panels/session-studio/VotePane';
+import { useVoteCountIn } from '@/hooks/plan/useVoteCountIn';
 
 // The Session Studio's pane body measures 286px wide including its own p-3.
 // Matched here rather than approximated, so the identical component is not
@@ -88,11 +89,13 @@ function SessionVoteSettings({
 }) {
   const { startVote, layers, activeLayerId } = useEditorContext();
   const votePlan = sessionButtonPlan({ ...config, tool: 'vote' });
+  const voteFields = useVoteCountIn();
   return (
     <div className={BODY_CLASS}>
       <VoteSetupBody
         voteLayers={layers}
         activeLayerId={activeLayerId}
+        voteFields={voteFields}
         dots={votePlan?.tool === 'vote' ? votePlan.dots : DEFAULT_VOTE_DOTS}
         onDotsChange={(dots) => onChange({ ...config, dots })}
         onStartVote={(dots, setup) => {

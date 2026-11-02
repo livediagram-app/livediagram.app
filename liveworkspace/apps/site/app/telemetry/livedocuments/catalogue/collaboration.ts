@@ -120,6 +120,39 @@ export const SLIDE_NOTES = chart(
   { types: ['SlideNotes'] },
 );
 
+// Speaker note cards (livedocuments docs/specs/012-collaboration/speaker-note-cards.md "Telemetry").
+export const NOTE_CARDS_ADDED = chart(
+  'UI',
+  'Added',
+  'Note Cards Added',
+  'A speaker note card added to a slide.',
+  { types: ['NoteCard'] },
+);
+
+export const NOTE_CARDS_REMOVED = chart(
+  'UI',
+  'Removed',
+  'Note Cards Removed',
+  'A speaker note card removed from a slide.',
+  { types: ['NoteCard'] },
+);
+
+export const NOTE_CARDS_REORDERED = chart(
+  'UI',
+  'Moved',
+  'Note Cards Reordered',
+  'A speaker note card moved up or down its slide’s stack.',
+  { types: ['NoteCard'] },
+);
+
+export const NOTE_CARD_FLIPS = chart(
+  'UI',
+  'Used',
+  'Note Card Flips',
+  'A presenter flipped to another note card while presenting.',
+  { types: ['NoteCardFlip'] },
+);
+
 export const LIVE_IMAGE_TABS = chart(
   'UI',
   'Selected',
@@ -613,6 +646,10 @@ export const PRESENTATIONS: MetricStack = {
     SLIDES_REMOVED,
     SLIDES_SHOWN_HIDDEN,
     SLIDE_NOTES,
+    NOTE_CARDS_ADDED,
+    NOTE_CARDS_REMOVED,
+    NOTE_CARDS_REORDERED,
+    NOTE_CARD_FLIPS,
     SLIDES_REORDERED,
     PRESENTER_SETTINGS_CHANGED,
     PRESENTER_SETTINGS_TOGGLED,

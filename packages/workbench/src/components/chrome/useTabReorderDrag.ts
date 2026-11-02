@@ -56,5 +56,8 @@ export function useTabReorderDrag(
     },
   });
 
-  return { caretFor, handlersFor };
+  // True for the tab being dragged, which dims while it moves.
+  const isDragging = (tabId: string): boolean => dragId === tabId;
+
+  return { caretFor, handlersFor, isDragging };
 }

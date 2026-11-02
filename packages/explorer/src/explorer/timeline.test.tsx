@@ -63,6 +63,14 @@ describe('the Timeline view', () => {
     );
   });
 
+  it('clips the cards dealt in from the right, so a phone’s page never widens', async () => {
+    const index = createFakeIndex({ events: mixedApps() });
+    renderTimeline(index);
+    await waitFor(() => expect(cards().length).toBe(1));
+    const dealt = cards()[0]!.closest('.lw-tl-fan-out')!;
+    expect(dealt.parentElement!.className).toContain('overflow-x-clip');
+  });
+
   it('shows every app’s events under All, each with its app’s mark, and remembers the choice', async () => {
     const index = createFakeIndex({ events: mixedApps() });
     const { onOpenItem } = renderTimeline(index);

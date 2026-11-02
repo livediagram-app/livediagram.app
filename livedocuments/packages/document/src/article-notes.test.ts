@@ -10,6 +10,8 @@ import {
   withNotesSettled,
 } from './article-notes';
 import { layOutPages, type Page } from './page';
+import { looseOnArticles } from './article-intake';
+import type { Element } from './index';
 import type { ArticleBlock } from './article-flow';
 
 const pages: Page[] = [
@@ -22,6 +24,15 @@ const blocks: ArticleBlock[] = [
 ];
 
 describe('margin notes', () => {
+  it('are never taken into the writing as a zone, though they sit on the page', () => {
+    const page = laid[0]!;
+    const corner = articleNoteCorner(page, 96, { y: 200, height: 24 });
+    const marker = newArticleNote('n1', 'comment', corner);
+    const square = { ...marker, id: 's1', type: 'shape', shape: 'square' } as unknown as Element;
+    const loose = looseOnArticles([marker, square], ['n1', 's1'], laid, { f: { blocks } });
+    expect(loose.get('f')).toEqual(['s1']);
+  });
+
   it('centres a marker in the right margin, level with its line', () => {
     const page = laid[0]!;
     const at = articleNoteCorner(page, 96, { y: 200, height: 24 });

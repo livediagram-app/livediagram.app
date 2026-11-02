@@ -6,6 +6,7 @@
 import { TRASH_RETENTION_DAYS } from '@livedesign/api-schema';
 import { mcpTool, type McpToolVerb } from '@liveworkspace/agent-verbs/mcp/tool';
 import { changePagesOutput, changePagesShape } from '../mcp/pages-schema';
+import { changeComponentsOutput, changeComponentsShape } from '../mcp/components-schema';
 import { listImagesOutput, listImagesShape } from '@liveworkspace/agent-verbs/mcp/image-schema';
 import {
   addTabOutput,
@@ -216,9 +217,24 @@ export const mcpChangePages = mcpTool('change_pages', {
   outputSchema: changePagesOutput,
 });
 
+export const mcpChangeComponents = mcpTool('change_components', {
+  behaviour: 'destructive',
+  title: 'Change components',
+  description:
+    'Change the design\u2019s components (reusable mains whose instances all follow them), one change a call: ' +
+    'make {elementIds, name?} turns elements into a new main and puts one instance in their place; patch ' +
+    '{componentId, name?, archived?, upsert?, remove?, order?} changes a main, and every instance redraws; detach ' +
+    '{instance} turns an instance back into plain elements. read_design view "components" lists the mains. An ' +
+    'instance is placed with update_design: an add of shape "instance" with its "componentId", and ' +
+    '"componentOverrides" changes what one copy shows. Everyone with the design open sees it at once.',
+  inputSchema: changeComponentsShape,
+  outputSchema: changeComponentsOutput,
+});
+
 // Every tool, in the order the server registers them.
 export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpChangePages,
+  mcpChangeComponents,
   mcpListImages,
   mcpFindDesigns,
   mcpReadDesign,

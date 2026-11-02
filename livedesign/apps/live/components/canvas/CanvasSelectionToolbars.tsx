@@ -7,7 +7,6 @@ import {
   elementKindLabel,
   elementSupportsText,
   isBoxed,
-  isCompoundPath,
   type CommentThread,
   type Element,
 } from '@livedesign/design';
@@ -24,6 +23,9 @@ import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
 import { SelectionPopover } from '@/components/canvas/SelectionPopover';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
+import { useOptionalEditorContext } from '@/app/design/[id]/EditorContext';
+import { useToast } from '@/hooks/ui/useToast';
+import { isTidyable } from '@/lib/stroke-tidy';
 
 // The floating selection toolbars (docs/specs/008-canvas/canvas-and-palette.md): the single-selection popover
 // and the marquee multi-selection toolbar, each riding a sibling wrapper
@@ -67,6 +69,8 @@ export function CanvasSelectionToolbars({
   // (docs/specs/008-canvas/canvas-performance.md); they come back at the new place when it ends.
   const moving = selectionMoving(useCanvasGesture());
   const toolbarsStale = quickRingOpen || moving;
+  const editor = useOptionalEditorContext();
+  const toast = useToast();
   const multiStale = moving;
   const {
     elements,
@@ -98,7 +102,7 @@ export function CanvasSelectionToolbars({
           options own the space around the element, and a toolbar on top just
           competes for clicks. Kept mounted and faded out (not unmounted) so
           it animates away as the ring opens and back in when it closes. */}
-      {showPopover && selectionBounds && canvasTool !== 'spotlight' ? (
+      {showPopover && selectionBounds && canvasTool !== 'spotlight' && canvasTool !== 'inspect' ? (
         <div
           className="pointer-events-none absolute inset-0 z-[var(--z-overlay)] origin-center"
           style={{
@@ -135,13 +139,28 @@ export function CanvasSelectionToolbars({
             hasText={selected ? elementHasText(selected) : false}
             // A path's points (docs/specs/023-draw-mode/path-tool.md "Editing"): its edit mode, the
             // Path tool put down first when it is still in hand.
+            // A combined path edits one contour at a time; a stroke Tidy can take is tidied into a
+            // path first, which then opens (path-tool.md "Combined paths", "Freehand strokes").
             onEditPoints={
-              // A combined shape edits as a whole (docs/specs/007-editor/logo-pages.md "Combine").
-              !readOnly && !selectedLocked && selected?.type === 'path' && !isCompoundPath(selected)
-                ? () => {
-                    if (props.pendingDraw) props.onCancelDraw();
-                    props.onBeginEdit(selected.id);
-                  }
+              readOnly || selectedLocked || !selected
+                ? undefined
+                : selected.type === 'path'
+                  ? () => {
+                      if (props.pendingDraw) props.onCancelDraw();
+                      props.onBeginEdit(selected.id);
+                    }
+                  : selected.type === 'freehand' && editor && isTidyable(selected)
+                    ? () => {
+                        if (props.pendingDraw) props.onCancelDraw();
+                        if (!editor.tidyUpSelected()) return;
+                        props.onBeginEdit(selected.id);
+                        toast.info('Tidied into a path so its points can be edited.');
+                      }
+                    : undefined
+            }
+            editPointsDescription={
+              selected?.type === 'freehand'
+                ? 'Tidy this drawing into a path, then adjust its points.'
                 : undefined
             }
             onDuplicate={readOnly ? undefined : selected ? onDuplicateSelected : undefined}
@@ -199,7 +218,10 @@ export function CanvasSelectionToolbars({
           than the boxed-only resize box, so an arrow-only / mixed marquee still
           gets the toolbar — and its "More" entry into the Flow / animate menu.
           Gated on a true marquee multi-selection (2+), never in view-only. */}
-      {showMultiToolbar && multiToolbarBounds && canvasTool !== 'spotlight' ? (
+      {showMultiToolbar &&
+      multiToolbarBounds &&
+      canvasTool !== 'spotlight' &&
+      canvasTool !== 'inspect' ? (
         <div
           className="pointer-events-none absolute inset-0 z-[var(--z-overlay)] origin-center"
           style={{

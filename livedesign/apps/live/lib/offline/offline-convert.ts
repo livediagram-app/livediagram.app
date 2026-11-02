@@ -7,6 +7,7 @@
 // every other device), so the UI gates it behind a confirmation.
 
 import { apiLoadDesign, apiLoadTab } from '@/lib/api-client';
+import { apiLoadComponents } from '@/lib/api/components';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { DESIGN_CONVERSION_HEADER } from '@livedesign/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
@@ -113,6 +114,9 @@ async function downloadAndRemoveCloudCopy(
   // the offline record (docs/specs/013-workspace/favourites.md). A failed read aborts here, before anything is
   // written: taken as "none" it would drop it.
   const { item } = await indexClient.getItem(liveDoc.id);
+  // The library comes along (docs/specs/009-elements/components.md "This Browser"). A failed read aborts before the
+  // server copy goes, like a tab that would not load.
+  const components = await apiLoadComponents(ownerId, designId, shareCode);
   const starred = item.favourite;
   const now = Date.now();
   const rec: OfflineDesignRecord = {
@@ -126,6 +130,7 @@ async function downloadAndRemoveCloudCopy(
     savedAt: now,
     tabs,
     ...(starred ? { favourite: true } : {}),
+    ...(components.length > 0 ? { components } : {}),
   };
   await offlinePutRecord(rec);
   // Raw server delete — the id is now in the offline index, so the dispatching

@@ -117,9 +117,10 @@ export const itemLs = defineVerb({
       });
     const listing = planListing(state, filter);
     const keys = new Map(state.items.map((i) => [i.id, i.key]));
-    // A board's line: its title and each column with its card count ("Sprint: To Do 2 · Done 1").
+    // A board's line: its title and each column with its card count, a done column ticked ("Sprint: To Do 2 · Done ✓ 1").
     const boards = listing.boards.map(
-      (b) => `${b.title}: ${b.columns.map((c) => `${c.name} ${c.cards.length}`).join(' · ')}`,
+      (b) =>
+        `${b.title}: ${b.columns.map((c) => `${c.name}${c.done ? ' ✓' : ''} ${c.cards.length}`).join(' · ')}`,
     );
     return {
       boards: listing.hint ? [listing.hint] : boards,

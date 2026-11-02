@@ -339,6 +339,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "null"
         ]
       },
+      "threadId": {
+        "type": "string"
+      },
+      "threadTitle": {
+        "type": "string"
+      },
       "title": {
         "type": "string"
       },
@@ -370,6 +376,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "projectName",
       "shareCode",
       "teamId",
+      "threadId",
+      "threadTitle",
       "title",
       "type",
       "via",
@@ -560,6 +568,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "expiresAt"
     ],
     "type": "object"
+  },
+  "Aggregate": {
+    "enum": [
+      "sum",
+      "average",
+      "min",
+      "max",
+      "count",
+      "countDone",
+      "earliest",
+      "latest"
+    ],
+    "type": "string"
   },
   "Anchor": {
     "enum": [
@@ -1086,6 +1107,39 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "BoardSortDir": {
+    "enum": [
+      "asc",
+      "desc"
+    ],
+    "type": "string"
+  },
+  "BoardSortLevel": {
+    "additionalProperties": false,
+    "properties": {
+      "dir": {
+        "$ref": "#/components/schemas/BoardSortDir"
+      },
+      "field": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "field",
+      "dir"
+    ],
+    "type": "object"
+  },
+  "BoardWidgetId": {
+    "anyOf": [
+      {
+        "$ref": "#/components/schemas/BoardWidgetKind"
+      },
+      {
+        "$ref": "#/components/schemas/FieldWidgetKey"
+      }
+    ]
+  },
   "BoardWidgetKind": {
     "enum": [
       "count",
@@ -1098,6 +1152,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "wip",
       "due",
       "points",
+      "time",
       "priorities",
       "unassigned",
       "top-voted",
@@ -1197,6 +1252,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "Calculation": {
+    "enum": [
+      "childCount",
+      "childrenDone",
+      "rollup",
+      "lookup",
+      "formula"
+    ],
+    "type": "string"
+  },
   "CapabilitiesResponse": {
     "additionalProperties": false,
     "properties": {
@@ -1281,6 +1346,34 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       {
+        "const": "attachments",
+        "type": "string"
+      },
+      {
+        "const": "cover",
+        "type": "string"
+      },
+      {
+        "const": "age",
+        "type": "string"
+      },
+      {
+        "const": "createdAt",
+        "type": "string"
+      },
+      {
+        "const": "createdBy",
+        "type": "string"
+      },
+      {
+        "const": "updatedAt",
+        "type": "string"
+      },
+      {
+        "const": "updatedBy",
+        "type": "string"
+      },
+      {
         "$ref": "#/components/schemas/CustomCardField"
       }
     ]
@@ -1292,6 +1385,33 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "initial"
     ],
     "type": "string"
+  },
+  "CardRef": {
+    "additionalProperties": false,
+    "description": "One card a thread is on: its plan and id, its number, and (a card in another plan) that plan's name when the thread was added there.",
+    "properties": {
+      "itemId": {
+        "type": "string"
+      },
+      "key": {
+        "type": [
+          "number",
+          "null"
+        ]
+      },
+      "projectId": {
+        "type": "string"
+      },
+      "projectName": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "projectId",
+      "itemId",
+      "key"
+    ],
+    "type": "object"
   },
   "CardSearchFilter": {
     "additionalProperties": false,
@@ -1315,7 +1435,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "CardSize": {
     "enum": [
       "minimal",
-      "compact",
       "detailed"
     ],
     "type": "string"
@@ -1373,6 +1492,195 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "cols",
       "rows",
       "type"
+    ],
+    "type": "object"
+  },
+  "CardThread": {
+    "additionalProperties": false,
+    "properties": {
+      "cards": {
+        "items": {
+          "$ref": "#/components/schemas/CardRef"
+        },
+        "type": "array"
+      },
+      "comments": {
+        "items": {
+          "$ref": "#/components/schemas/Comment"
+        },
+        "type": "array"
+      },
+      "createdAt": {
+        "type": "number"
+      },
+      "createdBy": {
+        "$ref": "#/components/schemas/ThreadPerson"
+      },
+      "field": {
+        "type": "string"
+      },
+      "home": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "resolved": {
+        "type": "boolean"
+      },
+      "resolvedAt": {
+        "type": "number"
+      },
+      "resolvedBy": {
+        "type": "string"
+      },
+      "rev": {
+        "type": "number"
+      },
+      "title": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "title",
+      "resolved",
+      "comments",
+      "createdAt",
+      "createdBy",
+      "updatedAt",
+      "home",
+      "cards",
+      "rev"
+    ],
+    "type": "object"
+  },
+  "CardThreadAddCardRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "itemId": {
+        "type": "string"
+      },
+      "projectId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "itemId"
+    ],
+    "type": "object"
+  },
+  "CardThreadCommentRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "mentions": {
+        "items": {
+          "$ref": "#/components/schemas/CommentMention"
+        },
+        "type": "array"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text"
+    ],
+    "type": "object"
+  },
+  "CardThreadReactionRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "emoji": {
+        "$ref": "#/components/schemas/CommentReactionId"
+      },
+      "key": {
+        "type": "string"
+      },
+      "on": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "emoji",
+      "on",
+      "key"
+    ],
+    "type": "object"
+  },
+  "CardThreadRenameRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "title"
+    ],
+    "type": "object"
+  },
+  "CardThreadStartRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "field": {
+        "type": "string"
+      },
+      "mentions": {
+        "items": {
+          "$ref": "#/components/schemas/CommentMention"
+        },
+        "type": "array"
+      },
+      "text": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "text"
+    ],
+    "type": "object"
+  },
+  "CardThreadWriteResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "commentId": {
+        "type": "string"
+      },
+      "thread": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/CardThread"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    "required": [
+      "thread"
+    ],
+    "type": "object"
+  },
+  "CardThreadsResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "threads": {
+        "items": {
+          "$ref": "#/components/schemas/CardThread"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "threads"
     ],
     "type": "object"
   },
@@ -1968,6 +2276,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "Comment": {
     "additionalProperties": false,
     "properties": {
+      "ai": {
+        "const": true,
+        "type": "boolean"
+      },
       "authorColor": {
         "type": "string"
       },
@@ -1980,12 +2292,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "createdAt": {
         "type": "number"
       },
+      "editedAt": {
+        "type": "number"
+      },
       "id": {
         "type": "string"
       },
       "mentions": {
         "items": {
           "$ref": "#/components/schemas/CommentMention"
+        },
+        "type": "array"
+      },
+      "reactions": {
+        "items": {
+          "$ref": "#/components/schemas/CommentReaction"
         },
         "type": "array"
       },
@@ -2030,6 +2351,37 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "handle"
     ],
     "type": "object"
+  },
+  "CommentReaction": {
+    "additionalProperties": false,
+    "properties": {
+      "by": {
+        "type": "string"
+      },
+      "emoji": {
+        "$ref": "#/components/schemas/CommentReactionId"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "emoji",
+      "by",
+      "name"
+    ],
+    "type": "object"
+  },
+  "CommentReactionId": {
+    "enum": [
+      "thumbs-up",
+      "thumbs-down",
+      "laugh",
+      "hooray",
+      "heart",
+      "eyes"
+    ],
+    "type": "string"
   },
   "CommentThread": {
     "additionalProperties": false,
@@ -2231,7 +2583,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "CustomFieldDef": {
     "additionalProperties": false,
     "properties": {
+      "aggregate": {
+        "$ref": "#/components/schemas/Aggregate"
+      },
+      "blocks": {
+        "type": "boolean"
+      },
+      "calculation": {
+        "$ref": "#/components/schemas/Calculation"
+      },
       "currency": {
+        "type": "string"
+      },
+      "formula": {
         "type": "string"
       },
       "id": {
@@ -2246,6 +2610,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "linkType": {
         "type": "string"
       },
+      "linkTypes": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "multiple": {
+        "type": "boolean"
+      },
+      "notifies": {
+        "type": "boolean"
+      },
       "onCard": {
         "type": "boolean"
       },
@@ -2255,8 +2631,30 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "required": {
+        "type": "boolean"
+      },
+      "result": {
+        "$ref": "#/components/schemas/FormulaResult"
+      },
       "scale": {
         "type": "number"
+      },
+      "showAs": {
+        "const": "percent",
+        "type": "string"
+      },
+      "source": {
+        "type": "string"
+      },
+      "through": {
+        "type": "string"
+      },
+      "timeSpent": {
+        "type": "boolean"
+      },
+      "withTime": {
+        "type": "boolean"
       }
     },
     "required": [
@@ -2272,14 +2670,27 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "longtext",
       "number",
       "currency",
+      "percent",
+      "duration",
       "date",
+      "datetime",
+      "daterange",
       "checkbox",
       "link",
       "email",
+      "phone",
       "choice",
       "multichoice",
       "rating",
-      "card"
+      "card",
+      "calculated",
+      "person",
+      "labels",
+      "colour",
+      "checklist",
+      "image",
+      "comments",
+      "votes"
     ],
     "type": "string"
   },
@@ -2480,6 +2891,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "additionalProperties": false,
         "properties": {
           "elementId": {
+            "type": "string"
+          },
+          "name": {
             "type": "string"
           },
           "type": {
@@ -3231,6 +3645,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "FieldWidgetKey": {
+    "type": "string"
+  },
   "FilterCondition": {
     "additionalProperties": false,
     "properties": {
@@ -3599,6 +4016,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "metric": {
         "$ref": "#/components/schemas/FormMetricKind"
       },
+      "name": {
+        "type": "string"
+      },
       "type": {
         "const": "form-metric",
         "type": "string"
@@ -3684,6 +4104,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/QuestionType"
       },
       "whole": {
+        "const": true,
+        "type": "boolean"
+      },
+      "withTime": {
         "const": true,
         "type": "boolean"
       }
@@ -3783,6 +4207,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "FormSheetDestination": {
     "additionalProperties": false,
     "properties": {
+      "columns": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
       "sheetId": {
         "type": "string"
       },
@@ -3916,6 +4346,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     },
     "type": "object"
+  },
+  "FormulaResult": {
+    "enum": [
+      "number",
+      "currency",
+      "percent",
+      "duration",
+      "text",
+      "date",
+      "checkbox"
+    ],
+    "type": "string"
   },
   "FreehandElement": {
     "additionalProperties": false,
@@ -4706,6 +5148,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "key": {
         "type": "number"
       },
+      "openComments": {
+        "type": "number"
+      },
       "rank": {
         "type": "string"
       },
@@ -4753,6 +5198,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "place": {
         "$ref": "#/components/schemas/ItemPlace"
+      },
+      "threads": {
+        "items": {},
+        "type": "array"
       },
       "type": {
         "type": "string"
@@ -4803,6 +5252,279 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "$ref": "#/components/schemas/ItemFieldValue"
     },
     "type": "object"
+  },
+  "ItemHistoryChange": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "created",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "kind": {
+            "const": "moved",
+            "type": "string"
+          },
+          "to": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "kind",
+          "from",
+          "to"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "trashed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "untrashed",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "archived",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "unarchived",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "flagged",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "unflagged",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "type",
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "from",
+          "to"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "set",
+            "type": "string"
+          },
+          "value": {
+            "$ref": "#/components/schemas/ItemHistoryValue"
+          }
+        },
+        "required": [
+          "kind",
+          "field"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "kind": {
+            "const": "cleared",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "field"
+        ],
+        "type": "object"
+      }
+    ]
+  },
+  "ItemHistoryEntry": {
+    "additionalProperties": false,
+    "properties": {
+      "at": {
+        "type": "number"
+      },
+      "by": {
+        "additionalProperties": false,
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "color"
+        ],
+        "type": "object"
+      },
+      "changes": {
+        "items": {
+          "$ref": "#/components/schemas/ItemHistoryChange"
+        },
+        "type": "array"
+      },
+      "mine": {
+        "const": true,
+        "type": "boolean"
+      },
+      "tag": {
+        "$ref": "#/components/schemas/ItemHistoryTag"
+      }
+    },
+    "required": [
+      "at",
+      "by",
+      "changes"
+    ],
+    "type": "object"
+  },
+  "ItemHistoryResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "entries": {
+        "items": {
+          "$ref": "#/components/schemas/ItemHistoryEntry"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "entries"
+    ],
+    "type": "object"
+  },
+  "ItemHistoryTag": {
+    "enum": [
+      "ai",
+      "undo",
+      "form",
+      "repeat"
+    ],
+    "type": "string"
+  },
+  "ItemHistoryValue": {
+    "anyOf": [
+      {
+        "type": "string"
+      },
+      {
+        "type": "number"
+      },
+      {
+        "type": "boolean"
+      },
+      {
+        "items": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ]
+        },
+        "type": "array"
+      }
+    ]
   },
   "ItemMoveRequest": {
     "additionalProperties": false,
@@ -4922,6 +5644,165 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ItemTimeRequest": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "op": {
+            "const": "start",
+            "type": "string"
+          },
+          "timer": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "op",
+          "timer"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "entry": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "op": {
+            "const": "stop",
+            "type": "string"
+          },
+          "timer": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "entry",
+          "field",
+          "op",
+          "timer"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "entry": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "minutes": {
+            "type": "number"
+          },
+          "op": {
+            "const": "add",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entry",
+          "field",
+          "minutes",
+          "op"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "entry": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          },
+          "op": {
+            "const": "remove",
+            "type": "string"
+          }
+        },
+        "required": [
+          "entry",
+          "field",
+          "op"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "entry": {
+            "additionalProperties": false,
+            "properties": {
+              "at": {
+                "type": "number"
+              },
+              "by": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "minutes": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "id",
+              "by",
+              "minutes",
+              "at"
+            ],
+            "type": "object"
+          },
+          "field": {
+            "type": "string"
+          },
+          "op": {
+            "const": "put",
+            "type": "string"
+          },
+          "person": {
+            "additionalProperties": false,
+            "properties": {
+              "color": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "color"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "entry",
+          "field",
+          "op",
+          "person"
+        ],
+        "type": "object"
+      }
+    ]
+  },
   "ItemTypeCatalogue": {
     "additionalProperties": false,
     "properties": {
@@ -4944,7 +5825,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ItemTypeDef": {
     "additionalProperties": false,
     "properties": {
+      "assigneeNotifies": {
+        "type": "boolean"
+      },
       "color": {
+        "type": "string"
+      },
+      "colourField": {
         "type": "string"
       },
       "custom": {
@@ -4962,60 +5849,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "display": {
         "additionalProperties": false,
         "properties": {
-          "compact": {
-            "additionalProperties": false,
-            "properties": {
-              "body": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "foot": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "footEnd": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "head": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "headEnd": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "lead": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "row": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "trail": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              }
-            },
-            "type": "object"
-          },
           "detailed": {
             "additionalProperties": false,
             "properties": {
@@ -5050,12 +5883,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 "type": "array"
               },
               "lead": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
-              "row": {
                 "items": {
                   "$ref": "#/components/schemas/CardField"
                 },
@@ -5109,12 +5936,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 },
                 "type": "array"
               },
-              "row": {
-                "items": {
-                  "$ref": "#/components/schemas/CardField"
-                },
-                "type": "array"
-              },
               "trail": {
                 "items": {
                   "$ref": "#/components/schemas/CardField"
@@ -5153,11 +5974,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "type": "string"
       },
+      "inherits": {
+        "type": "string"
+      },
       "label": {
         "type": "string"
       },
       "newTitle": {
         "type": "string"
+      },
+      "ownFields": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "statuses": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
       },
       "tabs": {
         "items": {
@@ -5259,6 +6095,62 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ItemsMoveRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "items": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "after": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "before": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "clear": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "id": {
+              "type": "string"
+            },
+            "set": {
+              "$ref": "#/components/schemas/ItemFields"
+            },
+            "status": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "undo": {
+        "const": true,
+        "description": "Marks an undo or redo of an earlier change: lets it restore a status the card's type leaves out.",
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "items"
+    ],
+    "type": "object"
+  },
   "ItemsPatchRequest": {
     "additionalProperties": false,
     "properties": {
@@ -5303,6 +6195,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ItemsResponse": {
     "additionalProperties": false,
     "properties": {
+      "calculated": {
+        "additionalProperties": {
+          "additionalProperties": {
+            "type": [
+              "number",
+              "string",
+              "boolean",
+              "null"
+            ]
+          },
+          "type": "object"
+        },
+        "description": "Asked for with include=calculated: each card's Calculated field values (a count, a whole percentage, a Formula's number, text, true or false or ISO day, or null), by card id then field id; only cards whose type has a Calculated field. Worked out as read, never stored.",
+        "type": "object"
+      },
       "items": {
         "items": {
           "$ref": "#/components/schemas/Item"
@@ -5322,6 +6229,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "ItemsTallyRequest": {
     "additionalProperties": false,
     "properties": {
+      "field": {
+        "type": "string"
+      },
       "items": {
         "items": {
           "additionalProperties": false,
@@ -6635,6 +7545,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "kind": {
         "$ref": "#/components/schemas/PlanBoardKind"
       },
+      "sortBy": {
+        "items": {
+          "$ref": "#/components/schemas/BoardSortLevel"
+        },
+        "type": "array"
+      },
       "tabId": {
         "type": "string"
       },
@@ -6711,6 +7627,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "hideWriting": {
         "type": "boolean"
       },
+      "savedFilters": {
+        "items": {
+          "$ref": "#/components/schemas/SavedBoardFilter"
+        },
+        "type": "array"
+      },
+      "sortBy": {
+        "items": {
+          "$ref": "#/components/schemas/BoardSortLevel"
+        },
+        "type": "array"
+      },
       "swimlaneBy": {
         "$ref": "#/components/schemas/SwimlaneBy"
       },
@@ -6722,7 +7650,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "widgets": {
         "items": {
-          "$ref": "#/components/schemas/BoardWidgetKind"
+          "$ref": "#/components/schemas/BoardWidgetId"
         },
         "type": "array"
       }
@@ -6745,7 +7673,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "size": {
         "enum": [
           "minimal",
-          "compact",
           "detailed"
         ],
         "type": "string"
@@ -6761,6 +7688,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "properties": {
       "color": {
         "type": "string"
+      },
+      "done": {
+        "type": "boolean"
       },
       "id": {
         "type": "string"
@@ -6788,6 +7718,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "PlanColumnOutline": {
     "additionalProperties": false,
     "properties": {
+      "done": {
+        "const": true,
+        "type": "boolean"
+      },
       "name": {
         "type": "string"
       },
@@ -7048,11 +7982,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "PlanViewRef": {
     "additionalProperties": false,
     "properties": {
+      "dueField": {
+        "type": "string"
+      },
       "filters": {
         "items": {
           "$ref": "#/components/schemas/CardSearchFilter"
         },
         "type": "array"
+      },
+      "measure": {
+        "type": "string"
       },
       "namesWidth": {
         "type": "number"
@@ -7062,6 +8002,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "type": "string"
         },
         "type": "array"
+      },
+      "startField": {
+        "type": "string"
       },
       "statuses": {
         "items": {
@@ -7102,6 +8045,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "status-mix",
       "priority-matrix",
       "search"
+    ],
+    "type": "string"
+  },
+  "Priority": {
+    "enum": [
+      "urgent",
+      "high",
+      "medium",
+      "low"
     ],
     "type": "string"
   },
@@ -7257,6 +8209,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "items": {
           "additionalProperties": false,
           "properties": {
+            "ai": {
+              "const": true,
+              "type": "boolean"
+            },
             "authorColor": {
               "type": "string"
             },
@@ -7269,12 +8225,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "createdAt": {
               "type": "number"
             },
+            "editedAt": {
+              "type": "number"
+            },
             "id": {
               "type": "string"
             },
             "mentions": {
               "items": {
                 "$ref": "#/components/schemas/CommentMention"
+              },
+              "type": "array"
+            },
+            "reactions": {
+              "items": {
+                "$ref": "#/components/schemas/ReactionSummary"
               },
               "type": "array"
             },
@@ -7612,6 +8577,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "whole": {
         "const": true,
         "type": "boolean"
+      },
+      "withTime": {
+        "const": true,
+        "type": "boolean"
       }
     },
     "required": [
@@ -7664,8 +8633,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "paragraph",
       "number",
       "email",
+      "phone",
       "link",
       "date",
+      "datetime",
+      "daterange",
       "single",
       "multi",
       "rating",
@@ -7720,6 +8692,33 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "rock"
     ],
     "type": "string"
+  },
+  "ReactionSummary": {
+    "additionalProperties": false,
+    "properties": {
+      "by": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "count": {
+        "type": "number"
+      },
+      "emoji": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "emoji",
+      "name",
+      "count",
+      "by"
+    ],
+    "type": "object"
   },
   "RefCandidate": {
     "additionalProperties": false,
@@ -8040,6 +9039,54 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "value",
       "percent",
       "none"
+    ],
+    "type": "string"
+  },
+  "SavedBoardFilter": {
+    "additionalProperties": false,
+    "properties": {
+      "due": {
+        "$ref": "#/components/schemas/SavedDueWindow"
+      },
+      "filters": {
+        "items": {
+          "$ref": "#/components/schemas/CardSearchFilter"
+        },
+        "type": "array"
+      },
+      "id": {
+        "type": "string"
+      },
+      "mine": {
+        "const": true,
+        "type": "boolean"
+      },
+      "name": {
+        "type": "string"
+      },
+      "person": {
+        "type": "string"
+      },
+      "priority": {
+        "$ref": "#/components/schemas/Priority"
+      },
+      "text": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "name"
+    ],
+    "type": "object"
+  },
+  "SavedDueWindow": {
+    "enum": [
+      "overdue",
+      "soon"
     ],
     "type": "string"
   },
@@ -9233,6 +10280,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "metric": {
         "$ref": "#/components/schemas/SheetMetricKind"
       },
+      "name": {
+        "type": "string"
+      },
       "sheetId": {
         "type": "string"
       },
@@ -10154,6 +11204,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "startedBy": {
         "type": "string"
       },
+      "voteField": {
+        "type": "string"
+      },
       "voteLayerId": {
         "type": "string"
       },
@@ -10904,6 +11957,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "wrap"
     ],
     "type": "string"
+  },
+  "ThreadPerson": {
+    "additionalProperties": false,
+    "description": "Who started a thread: their name and colour, and (to themselves alone) their owner id.",
+    "properties": {
+      "authorId": {
+        "type": "string"
+      },
+      "color": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "name",
+      "color"
+    ],
+    "type": "object"
   },
   "TimerMode": {
     "enum": [

@@ -6,6 +6,7 @@
 // MCP worker for the waiting CLI to collect; on cancel it refuses the code, so the CLI stops waiting. No help link:
 // the CLI's own README documents it.
 import { Suspense, use, useState } from 'react';
+import { Button } from '@livediagram/ui';
 import { browser } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
 import { apiExchangeOauthToken, apiRevokeTokenAsItself } from '@/lib/api-client';
@@ -193,14 +194,15 @@ function Device() {
             </p>
           ) : null}
           <div className="mt-5 flex items-center gap-2">
-            <button
-              type="button"
+            {/* Keeps the keyboard while it connects (busy-buttons.md). */}
+            <Button
+              variant="none"
               onClick={() => void approve(userCode, clientName)}
-              disabled={working}
+              busy={working}
               className={OAUTH_PRIMARY}
             >
               {working ? 'Connecting…' : 'Connect'}
-            </button>
+            </Button>
             <button type="button" onClick={() => void cancel()} className={SECONDARY}>
               Cancel
             </button>

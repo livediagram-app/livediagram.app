@@ -6,8 +6,11 @@ import {
   COLUMN_ATTR,
   COLUMN_MOVE_EASING,
   COLUMN_MOVE_MS,
+  STRIP_ATTR,
+  STRIP_FADE_MS,
   captureColumns,
   playColumnMove,
+  playColumnResize,
   useColumnMoveFlip,
 } from './column-move-flip';
 
@@ -125,5 +128,69 @@ describe('useColumnMoveFlip', () => {
     lefts.set('a', 260).set('b', 0);
     rerender(<Board order={['b', 'a']} />);
     expect(animate).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/026-plan/plan-board.md "Collapse Column": its neighbours glide; the column opens out, or its strip fades in.
+function StripBoard({ shut }: { shut: boolean }) {
+  const grid = useRef<HTMLDivElement>(null);
+  const flip = useColumnMoveFlip(grid, `a|b/${shut ? 'a' : ''}`, 40);
+  useLayoutEffect(() => {
+    handle.current = flip;
+  });
+  return (
+    <div ref={grid}>
+      {shut ? (
+        <div key="a-strip" ref={part('a', 'a-strip')} {...{ [STRIP_ATTR]: '' }} />
+      ) : (
+        <div key="a" ref={part('a', 'a')} />
+      )}
+      <div key="b" ref={part('b', 'b')} />
+    </div>
+  );
+}
+
+describe('a column collapsing or expanding', () => {
+  it('fades the strip in as its neighbour glides back', () => {
+    lefts.set('a', 0).set('a-strip', 0).set('b', 272);
+    const { rerender } = render(<StripBoard shut={false} />);
+    act(() => handle.current.beforeResize('a'));
+    lefts.set('b', 52);
+    rerender(<StripBoard shut />);
+    expect(animate).toHaveBeenCalledWith(
+      [{ transform: 'translateX(220px)' }, { transform: 'translateX(0)' }],
+      { duration: COLUMN_MOVE_MS, easing: COLUMN_MOVE_EASING },
+    );
+    expect(animate).toHaveBeenCalledWith([{ opacity: 0 }, { opacity: 1 }], {
+      duration: STRIP_FADE_MS,
+      easing: 'ease-out',
+    });
+    expect(handle.current.isMoving()).toBe(true);
+  });
+
+  it('opens the column out from the strip, keeping pace with its neighbour', () => {
+    lefts.set('a', 0).set('a-strip', 0).set('b', 52);
+    const { rerender } = render(<StripBoard shut />);
+    act(() => handle.current.beforeResize('a'));
+    lefts.set('b', 272);
+    rerender(<StripBoard shut={false} />);
+    expect(animate).toHaveBeenCalledWith(
+      [{ transform: 'translateX(-220px)' }, { transform: 'translateX(0)' }],
+      expect.anything(),
+    );
+    // jsdom lays nothing out (no width), so the clip starts closed.
+    expect(animate).toHaveBeenCalledWith(
+      [{ clipPath: 'inset(0 0px 0 0)' }, { clipPath: 'inset(0 0 0 0)' }],
+      { duration: COLUMN_MOVE_MS, easing: COLUMN_MOVE_EASING },
+    );
+  });
+
+  it('leaves a part with nothing to animate with alone', () => {
+    const root = document.createElement('div');
+    const fresh = document.createElement('div');
+    fresh.setAttribute(COLUMN_ATTR, 'a');
+    Object.defineProperty(fresh, 'animate', { value: undefined });
+    root.append(fresh);
+    expect(playColumnResize(root, new Map(), 'a', 40)).toBe(0);
   });
 });

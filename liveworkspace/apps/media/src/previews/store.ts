@@ -1,13 +1,15 @@
 // Where previews are kept and when they are fresh (liveworkspace/docs/specs/006-media/previews.md "Storage", "Staleness"). One
 // bucket, the service's own, under `previews/`: image ids never hold a slash, so the two never meet.
 //
-//   previews/<app>/<itemId>/<view>-<tab>.svg   view: full | public; tab: first | <tabId>
+//   previews/<app>/<itemId>/<view>-<tab>[-<appearance>].svg   view: full | public; tab: first | <tabId>;
+//                                                    appearance: the reader's, when they asked for one
 //   previews/<app>/<itemId>/<view>-<tab>.png   the share card drawn from the SVG beside it
 //
 // Metadata: `v`, the item version the object is fresh for; `av`, the app's own content version it was drawn at;
 // `e: '1'`, nothing to draw (a zero-byte object, so an empty item is asked of its app once per change).
 
 import type { App } from '@liveworkspace/index-client';
+import type { PreviewAppearance } from '@liveworkspace/media';
 import { callDoor } from './door';
 
 export const PREVIEWS_PREFIX = 'previews/';
@@ -22,6 +24,8 @@ export type Subject = {
   tabId: string | null;
   // A public link's code: its app is asked every time whether it may still show anything.
   code: string | null;
+  // The reader's appearance, drawn and stored on its own; null draws as the app does with no reader.
+  appearance: PreviewAppearance | null;
 };
 
 export type Drawing =
@@ -35,7 +39,7 @@ export const itemPrefix = (app: App, itemId: string): string =>
   `${PREVIEWS_PREFIX}${app}/${encodeURIComponent(itemId)}/`;
 
 const baseKey = (s: Subject): string =>
-  `${itemPrefix(s.app, s.itemId)}${s.code ? 'public' : 'full'}-${s.tabId ? encodeURIComponent(s.tabId) : 'first'}`;
+  `${itemPrefix(s.app, s.itemId)}${s.code ? 'public' : 'full'}-${s.tabId ? encodeURIComponent(s.tabId) : 'first'}${s.appearance ? `-${s.appearance}` : ''}`;
 
 export const svgKey = (s: Subject): string => `${baseKey(s)}.svg`;
 export const cardKey = (s: Subject): string => `${baseKey(s)}.png`;
@@ -84,6 +88,7 @@ export async function drawing(
     itemId: subject.itemId,
     tabId: subject.tabId,
     code: subject.code,
+    appearance: subject.appearance,
     ifVersion: subject.code && object && Number.isFinite(heldVersion) ? heldVersion : null,
   });
   switch (answer.status) {

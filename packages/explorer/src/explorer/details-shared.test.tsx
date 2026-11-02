@@ -162,7 +162,10 @@ describe('the Details table', () => {
         'Not counted yet',
       ).length,
     ).toBeGreaterThan(0);
-    expect(prefetch).toHaveBeenCalledTimes(2);
+    // Each row asks in a passive effect. The list lands from a promise, so React commits it on a default lane
+    // and runs those effects in a later scheduler task, while findByText resolves on the commit's DOM writes:
+    // on a busy runner the assertion can land between the two, so it waits for the effects.
+    await waitFor(() => expect(prefetch).toHaveBeenCalledTimes(2));
     fireEvent.click(screen.getByRole('button', { name: 'Menu for folder Specs' }));
     fireEvent.click(await screen.findByRole('menuitem', { name: 'Rename' }));
     const input = await screen.findByRole('textbox', { name: 'Rename Specs' });

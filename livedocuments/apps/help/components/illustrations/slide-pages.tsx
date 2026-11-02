@@ -1,10 +1,10 @@
 // Slide page illustrations for the Canvas article on Slide Pages (docs/specs/018-help/help-app.md).
 // Draws the real surface with its real labels: two slide pages in a row, each with its label
 // ("Page 1 · Slide (16:9)") and its title-bar buttons (CanvasPages.tsx), as icons at
-// this size: the deck button first (PageDeckButton.tsx, its tooltip shown), Add Notes once the page is in the deck
-// (PageNotesButton.tsx), Layout, Background (page-title-bar.tsx), the padlock and the cog, then the + after the
-// last page. The first page is in the deck (an open eye, Hide in Slides); the second is not yet (the Slide Deck
-// icon, Add to Slides). Composed from the shared primitives.
+// this size: Add Notes first once the page is in the deck (PageNotesButton.tsx, its tooltip shown on the
+// second), Layout, Background (page-title-bar.tsx), the padlock and the cog, then the + after the last page. A
+// page's place in the deck (Hide in Slides) is in its Contents menu, not its title bar. Composed from the shared
+// primitives.
 
 import type { ReactNode } from 'react';
 import { Scene, Label, TextBar } from '@liveworkspace/help-site/art/primitives';
@@ -30,46 +30,6 @@ function Cog({ cx, cy }: { cx: number; cy: number }) {
         />
       ))}
       <circle r={2.5} fill="none" className="stroke-slate-500" strokeWidth={1.3} />
-    </g>
-  );
-}
-
-/** The deck button: an open eye once the page is in the deck, else the Slide Deck icon. */
-function DeckButton({ cx, cy, inDeck }: { cx: number; cy: number; inDeck: boolean }) {
-  return (
-    <g transform={`translate(${cx} ${cy})`}>
-      <rect x={-10} y={-10} width={20} height={20} rx={5} className="fill-white stroke-brand-300" />
-      {inDeck ? (
-        <g>
-          <path
-            d="M-6 0 Q0 -6 6 0 Q0 6 -6 0 Z"
-            fill="none"
-            className="stroke-slate-600"
-            strokeWidth={1.3}
-            strokeLinejoin="round"
-          />
-          <circle r={1.8} className="fill-slate-600" />
-        </g>
-      ) : (
-        <g>
-          <rect
-            x={-6}
-            y={-5.5}
-            width={12}
-            height={8}
-            rx={1}
-            fill="none"
-            className="stroke-slate-600"
-            strokeWidth={1.3}
-          />
-          <path
-            d="M0 2.5 v3 M-3 5.5 h6"
-            className="stroke-slate-600"
-            strokeWidth={1.3}
-            strokeLinecap="round"
-          />
-        </g>
-      )}
     </g>
   );
 }
@@ -130,8 +90,8 @@ function Slide({ x, y, children }: { x: number; y: number; children?: ReactNode 
   );
 }
 
-/** A slide page's title bar: its label on the left; the deck button, Add Notes (in the deck),
- *  Layout, Background, the padlock and the cog on the right. */
+/** A slide page's title bar: its label on the left; Add Notes (in the deck), Layout, Background,
+ *  the padlock and the cog on the right. */
 function TitleBar({
   x,
   y,
@@ -148,7 +108,6 @@ function TitleBar({
       <Label x={x} y={y} size={8} weight={600} tone="body">
         {label}
       </Label>
-      <DeckButton cx={x + SW - (inDeck ? 92 : 74)} cy={y} inDeck={inDeck} />
       {inDeck ? <TitleIcon cx={x + SW - 72} cy={y} Glyph={NotesGlyph} /> : null}
       <TitleIcon cx={x + SW - 56} cy={y} Glyph={LayoutGlyph} />
       <TitleIcon cx={x + SW - 40} cy={y} Glyph={BackgroundGlyph} />
@@ -158,13 +117,12 @@ function TitleBar({
   );
 }
 
-/** Two slide pages, both in the deck as every slide page is: the first's eye, the second's Add Notes. */
+/** Two slide pages, both in the deck as every slide page is: the second's Add Notes named. */
 export function SlidePagesScene() {
   const y = 66;
   const sy = y + 14;
   return (
     <Scene w={524} h={220}>
-      <Tip cx={144} y={14} toY={y - 10} text="Hide in Slides" />
       <Tip cx={400} y={14} toY={y - 10} text="Add Notes" />
       {/* Page 1: a Title Slide layout */}
       <TitleBar x={16} y={y} label="Page 1 · Slide (16:9)" inDeck />

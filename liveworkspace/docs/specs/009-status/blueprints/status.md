@@ -10,7 +10,7 @@ Scope, by file:
 | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `liveworkspace/apps/status/src/index.ts`               | The Worker: `fetch` hands `/api/status*` to `handleRead`, 404 elsewhere; `scheduled` runs `runOnce`                                 |
 | `liveworkspace/apps/status/src/config.ts`              | `DAY_MS`, `RETENTION_DAYS`, `RETENTION_MS`, `PROBE_CONCURRENCY`, `CACHE_SECONDS`, `USER_AGENT`                                      |
-| `liveworkspace/apps/status/src/env.ts`                 | `Env`: `ENVIRONMENT`, `PLATFORM_ORIGIN`, `STATUS_DB`, `LIVEDIAGRAM_ROUTER`, `LIVEDIAGRAM_MCP`, `READ_RATE_LIMITER`                  |
+| `liveworkspace/apps/status/src/env.ts`                 | `Env`: `ENVIRONMENT`, `PLATFORM_ORIGIN`, `STATUS_DB`, `READ_RATE_LIMITER`                                                           |
 | `liveworkspace/apps/status/src/run.ts`                 | `runOnce`: probe, one read batch, the fold, one write batch; `probeTargets`, `environmentOfWorker`                                  |
 | `liveworkspace/apps/status/src/probe.ts`               | `probeOne` (timeout, never a body), `pooled`, `probeAll`                                                                            |
 | `liveworkspace/apps/status/src/rollup.ts`              | `rollupDay`, `percentile` (nearest rank), `uptimeTenths`                                                                            |
@@ -25,19 +25,18 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term     | Identifier                                                   | Meaning                                                                            |
-| -------- | ------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| Group    | `ServiceGroup`, id `liveworkspace` or the app's name         | The platform, then each app in `APP_SITES` order                                   |
-| Service  | `Service`, id `<group>:<service>`                            | One row on the page                                                                |
-| Check    | `Check`: `probe`, `derived` (`same` / `any`) or `skipped`    | How a service's state is found                                                     |
-| Probe    | `Probe`: `read` (status in `ok`, JSON if `json`) or `reach`  | One request; `reach` is any 2xx or 3xx on the server                               |
-| State    | `CheckState` `up` / `slow` / `down`; letters `u` / `s` / `d` | `down` on any error, `slow` past `SLOW_MS`, else `up`                              |
-| Error    | `CheckError` `timeout` / `network` / `status` / `not_json`   | Why a check was down                                                               |
-| Run      | `runOnce`, the hourly cron                                   | One pass over every service                                                        |
-| Rollup   | `daily` row, `rollupDay`                                     | One service's UTC day                                                              |
-| Incident | `incidents` row, `Incident`                                  | Consecutive `down` checks of one service, to the first answered check after them   |
-| Snapshot | `snapshots` row `latest` or `history`                        | A read API answer, built once a run                                                |
-| Stand-in | `STAND_INS` (`@liveworkspace/sites`)                         | An app served from this account's `workers.dev`, reached through a service binding |
+| Term     | Identifier                                                   | Meaning                                                                          |
+| -------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| Group    | `ServiceGroup`, id `liveworkspace` or the app's name         | The platform, then each app in `APP_SITES` order                                 |
+| Service  | `Service`, id `<group>:<service>`                            | One row on the page                                                              |
+| Check    | `Check`: `probe`, `derived` (`same` / `any`) or `skipped`    | How a service's state is found                                                   |
+| Probe    | `Probe`: `read` (status in `ok`, JSON if `json`) or `reach`  | One request; `reach` is any 2xx or 3xx on the server                             |
+| State    | `CheckState` `up` / `slow` / `down`; letters `u` / `s` / `d` | `down` on any error, `slow` past `SLOW_MS`, else `up`                            |
+| Error    | `CheckError` `timeout` / `network` / `status` / `not_json`   | Why a check was down                                                             |
+| Run      | `runOnce`, the hourly cron                                   | One pass over every service                                                      |
+| Rollup   | `daily` row, `rollupDay`                                     | One service's UTC day                                                            |
+| Incident | `incidents` row, `Incident`                                  | Consecutive `down` checks of one service, to the first answered check after them |
+| Snapshot | `snapshots` row `latest` or `history`                        | A read API answer, built once a run                                              |
 
 ### The services (production)
 
@@ -57,22 +56,23 @@ Scope, by file:
 | each app      | `marketing`       | reach `HEAD <app>/robots.txt`                                                   |
 | each app      | `help`            | reach `HEAD <app>/help/robots.txt`                                              |
 | livediagram   | `community-pages` | reach `HEAD <app>/community/`                                                   |
-| each app      | `mcp`             | read `GET <mcp>/health`, 200, JSON; `skipped` on staging (no public MCP host)   |
+| app with MCP  | `mcp`             | read `GET <mcp>/health`, 200, JSON; `skipped` on staging (no public MCP host)   |
 | each app      | `router`          | derived `any` from `api`, `editor`, `marketing`, `help` (and `community-pages`) |
 
-`appOrigin(site, env)`: development `http://localhost:<LOCAL_PORTS[site]>`; staging the stand-in's staging origin or
-`https://staging.<site>`; production the stand-in's origin or `https://www.<site>`. `mcpOrigin`: development
-`http://localhost:<MCP_DEV_PORTS>` (8788, 8888, 8988, 8990), staging none, production the stand-in's MCP origin or
-`https://mcp.<site>`. Paths starting `/` resolve on `PLATFORM_ORIGIN` (`resolveProbeUrl`).
+`appOrigin(site, env)`: development `http://localhost:<LOCAL_PORTS[site]>`; staging `https://staging.<site>`;
+production `https://www.<site>`. `mcpOrigin`: development `http://localhost:<MCP_DEV_PORTS>` (8788, 8888, 8988,
+8990), staging none, production `https://mcp.<site>`. `hasMcp(site)`: whether the app has an entry in
+`MCP_DEV_PORTS`; an app without one (livehuddle, held) gets no `mcp` row, and `mcpOrigin` is null for it in every
+environment. `appGroup(site, env)` is exported for one app's group; `statusGroups` lists `APP_SITES` only, so a held
+app is never on the page. Paths starting `/` resolve on `PLATFORM_ORIGIN` (`resolveProbeUrl`).
 
 ## Behaviour and state
 
 ### One run (`runOnce`), in order
 
 1. Groups for `environmentOfWorker(env)` (`staging` and `development` as named, anything else `production`).
-2. Probe every `probedServices` target, `PROBE_CONCURRENCY` (6) at a time, in page order (`pooled`). A target whose
-   origin is a stand-in's (livediagram's production and staging router, its MCP) goes through `LIVEDIAGRAM_ROUTER` or
-   `LIVEDIAGRAM_MCP`; in development no binding is used.
+2. Probe every `probedServices` target, `PROBE_CONCURRENCY` (6) at a time, in page order (`pooled`).
+   Every target is fetched by URL; the Worker has no service bindings.
 3. `deriveResults`: `same` copies the first source's result; `any` takes the fastest answered (`up` or `slow`)
    source, or the fastest source marked `down` when none answered. Results are kept in page order.
 4. One read batch:
@@ -130,8 +130,9 @@ window, newest first, at most `INCIDENTS_MAX` (50), as `[service, started, ended
 4. Cache key `<origin><path>[?days=<n>]`. Outside development a `caches.default` hit answers (a HEAD gets its headers
    only).
 5. `READ_RATE_LIMITER` on a miss, keyed by `clientRateKey`: over it, `429 { error: 'rate_limited' }`, `Retry-After: 60`.
-6. One row: `SELECT body FROM snapshots WHERE key = ?`. A read error (no table yet) logs `status snapshot read failed`
-   and counts as no row.
+6. One row: `SELECT body FROM snapshots WHERE key = ?`. D1 itself down (`storageOutageOf`) is rethrown to the
+   request-failure guard: `503 storage_unavailable`, nothing cached. Any other read error (no table yet) logs
+   `status snapshot read failed` and counts as no row.
 7. `latest`: the stored text, or `{ v: 1, at: null, services: {} }`. `history`: the stored text when it parses and
    holds exactly `days`, else `sliceHistory(stored ?? emptyHistory(now), days)`.
 8. `Cache-Control: public, max-age=120`; a GET is put in the edge cache in `waitUntil` (failure logs `status cache
@@ -167,23 +168,23 @@ Indexes: `incidents_open_idx ON incidents (service) WHERE ended_at IS NULL`; `in
 
 ## Errors and edge cases
 
-| Case                                           | Behaviour                                                                                    |
-| ---------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| No run yet                                     | `latest` with `at: null`; an empty 90-day `history`                                          |
-| Stored snapshot not JSON or wrong shape        | rebuilt from `emptyHistory` (or the stored history, sliced); never a 500                     |
-| No `snapshots` table (fresh local DB)          | logged, treated as no row                                                                    |
-| A probe hangs or ignores its signal            | the timer ends the wait at 10 s: `down`, `timeout`                                           |
-| A service missing from a run                   | its open incident stays open                                                                 |
-| A derived service whose sources have no result | no result stored for it this run                                                             |
-| The write batch fails                          | nothing written; the run logs `status run failed`; the next run starts from the stored state |
-| Midnight UTC                                   | yesterday's `daily` row is never rewritten; today starts from this run alone                 |
+| Case                                           | Behaviour                                                                                            |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| No run yet                                     | `latest` with `at: null`; an empty 90-day `history`                                                  |
+| Stored snapshot not JSON or wrong shape        | rebuilt from `emptyHistory` (or the stored history, sliced); never a 500                             |
+| No `snapshots` table (fresh local DB)          | logged, treated as no row                                                                            |
+| D1 down on a read                              | `503 storage_unavailable`, `Retry-After: 5`, logged `[d1] unavailable route=Get.Status…`; not cached |
+| A probe hangs or ignores its signal            | the timer ends the wait at 10 s: `down`, `timeout`                                                   |
+| A service missing from a run                   | its open incident stays open                                                                         |
+| A derived service whose sources have no result | no result stored for it this run                                                                     |
+| The write batch fails                          | nothing written; the run logs `status run failed`; the next run starts from the stored state         |
+| Midnight UTC                                   | yesterday's `daily` row is never rewritten; today starts from this run alone                         |
 
 ## Security and trust
 
 Public facts about public addresses: no people, no bodies kept, no secrets. Reads are anonymous; the limiter (60 a
 minute per network, both environments) applies only to cache misses. `global_fetch_strictly_public`;
-`workers_dev = false`. A Worker cannot fetch another Worker's `workers.dev` address on the same account, so stand-ins
-are reached through service bindings, never by URL.
+`workers_dev = false`. Every app is on its own custom domains, so every check goes out by URL.
 
 ## Performance and limits
 
@@ -194,27 +195,28 @@ gzipped (`api.test.ts`); `rollup.test.ts` rolls a worst-case day (24 checks for 
 
 ## Observability
 
-| Level   | Line                           | Where      |
-| ------- | ------------------------------ | ---------- |
-| `log`   | `{"run":"status", …RunReport}` | `index.ts` |
-| `error` | `status run failed`            | `index.ts` |
-| `error` | `status snapshot read failed`  | `api.ts`   |
-| `error` | `status cache put failed`      | `api.ts`   |
+| Level   | Line                             | Where                                  |
+| ------- | -------------------------------- | -------------------------------------- |
+| `log`   | `{"run":"status", …RunReport}`   | `index.ts`                             |
+| `error` | `status run failed`              | `index.ts`                             |
+| `error` | `status snapshot read failed`    | `api.ts`                               |
+| `error` | `[d1] unavailable route=<route>` | `index.ts` (the request-failure guard) |
+| `error` | `status cache put failed`        | `api.ts`                               |
 
 Probes send `User-Agent: liveworkspace-status/1 (+https://www.liveworkspace.app/status)`, so a service's own logs can tell
 them apart.
 
 ## Testing
 
-| Test                                   | Pins                                                                                                                                                                                                                                                                    |
-| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/status/src/run.test.ts`          | a row per service, the rollup and both snapshots; today re-rolled each run; consecutive non-up checks as one incident closed by the next up; the 90-day prune; midnight; probing when no results are given; one batch, all or nothing                                   |
-| `apps/status/src/probe.test.ts`        | up with code and time; slow past 1.5 s; wrong code and HTML-for-JSON down; reach 2xx/3xx up, 4xx/5xx down; network and timeout down with no code; no body read, the method and user agent; six at a time, in order; targets per environment; stand-ins through bindings |
-| `apps/status/src/api.test.ts`          | empty before a run; the last run, cacheable; slicing and `bad_days`; repeats from the edge without D1; HEAD from the edge without a body; no cache in development; GET/HEAD and two paths only; bad stored JSON; the per-network limit on misses; the worst-case size   |
-| `apps/status/src/rollup.test.ts`       | counts, percentiles, worst; empty days; nearest rank; the worst-case speed; incidents open, extend (first error kept), close on slow or up, and untouched when unchecked                                                                                                |
-| `packages/status/src/judge.test.ts`    | expected codes and JSON; reach on the server; down, slow, up; state order; derived rooms and router; router down only when nothing answered                                                                                                                             |
-| `packages/status/src/services.test.ts` | group order; each app's seven services; unique ids, derived on real checks; read only own origin or CORS routes; addresses per environment; path resolution; 27 requests a round                                                                                        |
-| `packages/status/src/wire.test.ts`     | day uptime; UTC days; slicing (never widening, at least a day, null uptime without checks); the parser's accept and reject; the empty window                                                                                                                            |
+| Test                                   | Pins                                                                                                                                                                                                                                                                  |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/status/src/run.test.ts`          | a row per service, the rollup and both snapshots; today re-rolled each run; consecutive non-up checks as one incident closed by the next up; the 90-day prune; midnight; probing when no results are given; one batch, all or nothing                                 |
+| `apps/status/src/probe.test.ts`        | up with code and time; slow past 1.5 s; wrong code and HTML-for-JSON down; reach 2xx/3xx up, 4xx/5xx down; network and timeout down with no code; no body read, the method and user agent; six at a time, in order; targets per environment, every app by URL         |
+| `apps/status/src/api.test.ts`          | empty before a run; the last run, cacheable; slicing and `bad_days`; repeats from the edge without D1; HEAD from the edge without a body; no cache in development; GET/HEAD and two paths only; bad stored JSON; the per-network limit on misses; the worst-case size |
+| `apps/status/src/rollup.test.ts`       | counts, percentiles, worst; empty days; nearest rank; the worst-case speed; incidents open, extend (first error kept), close on slow or up, and untouched when unchecked                                                                                              |
+| `packages/status/src/judge.test.ts`    | expected codes and JSON; reach on the server; down, slow, up; state order; derived rooms and router; router down only when nothing answered                                                                                                                           |
+| `packages/status/src/services.test.ts` | group order; each app's seven services; unique ids, derived on real checks; read only own origin or CORS routes; addresses per environment; path resolution; 27 requests a round                                                                                      |
+| `packages/status/src/wire.test.ts`     | day uptime; UTC days; slicing (never widening, at least a day, null uptime without checks); the parser's accept and reject; the empty window                                                                                                                          |
 
 ## Constants and configuration
 
@@ -232,19 +234,17 @@ them apart.
 | `STATUS_HISTORY_PATH` | `'/history'`                                                            | `wire.ts`                      | the read                       |
 | `HISTORY_DAYS`        | `90`                                                                    | `wire.ts`                      | the window, `parseDays`        |
 | `INCIDENTS_MAX`       | `50`                                                                    | `wire.ts`                      | `buildHistory`                 |
-| `MCP_DEV_PORTS`       | livediagram 8788, liveplanner 8888, livedocuments 8988, livedesign 8990 | `services.ts`                  | development MCP checks         |
+| `MCP_DEV_PORTS`       | livediagram 8788, liveplanner 8888, livedocuments 8988, livedesign 8990 | `services.ts`                  | which apps have an MCP row     |
 
-| Setting              | Production                                                           | Staging                                 |
-| -------------------- | -------------------------------------------------------------------- | --------------------------------------- |
-| Name                 | `liveworkspace-status`                                               | `liveworkspace-status-staging`          |
-| Route                | `www.liveworkspace.app/api/status*`, `liveworkspace.app/api/status*` | `staging.liveworkspace.app/api/status*` |
-| D1 `STATUS_DB`       | `liveworkspace-status`                                               | `liveworkspace-status-staging`          |
-| `LIVEDIAGRAM_ROUTER` | `livediagram-router`                                                 | `livediagram-router-staging`            |
-| `LIVEDIAGRAM_MCP`    | `livediagram-mcp`                                                    | none                                    |
-| `READ_RATE_LIMITER`  | namespace `1104`, 60 per 60 s                                        | namespace `2104`, 60 per 60 s           |
-| Cron                 | `7 * * * *`                                                          | `7 * * * *`                             |
-| `ENVIRONMENT`        | `production`                                                         | `staging`                               |
-| `PLATFORM_ORIGIN`    | `https://www.liveworkspace.app`                                      | `https://staging.liveworkspace.app`     |
+| Setting             | Production                                                           | Staging                                 |
+| ------------------- | -------------------------------------------------------------------- | --------------------------------------- |
+| Name                | `liveworkspace-status`                                               | `liveworkspace-status-staging`          |
+| Route               | `www.liveworkspace.app/api/status*`, `liveworkspace.app/api/status*` | `staging.liveworkspace.app/api/status*` |
+| D1 `STATUS_DB`      | `liveworkspace-status`                                               | `liveworkspace-status-staging`          |
+| `READ_RATE_LIMITER` | namespace `1104`, 60 per 60 s                                        | namespace `2104`, 60 per 60 s           |
+| Cron                | `7 * * * *`                                                          | `7 * * * *`                             |
+| `ENVIRONMENT`       | `production`                                                         | `staging`                               |
+| `PLATFORM_ORIGIN`   | `https://www.liveworkspace.app`                                      | `https://staging.liveworkspace.app`     |
 
 Locally: `wrangler dev --port 3010 --test-scheduled --var ENVIRONMENT:development --var PLATFORM_ORIGIN:http://localhost:3000`;
 `corepack pnpm seed:local` fills the local database. No secrets.

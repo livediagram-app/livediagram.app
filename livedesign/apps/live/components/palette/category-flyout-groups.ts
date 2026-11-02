@@ -84,6 +84,8 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   // Logo's Draw (palette-layouts PAGES_LOGO): the Pen first, then each person's markers as a group.
   'logo:pen': 'Pens',
   'draw:marker-main': 'Markers',
+  // Then the Fill tool (FillToolRow, useLogoFillTool).
+  'logo:fill': 'Fill',
   'tools:polygon': 'Outlines',
   'tools:arrow': 'Connectors',
   'tools:table': 'Tables',

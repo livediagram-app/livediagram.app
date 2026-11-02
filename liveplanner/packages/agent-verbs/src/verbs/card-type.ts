@@ -15,14 +15,25 @@ const typeOut = z.object({
   id: z.string(),
   name: z.string(),
   fields: z.array(z.string()),
-  custom: z.array(z.object({ id: z.string(), name: z.string(), kind: z.string() }).passthrough()),
+  custom: z.array(
+    z
+      .object({
+        id: z.string(),
+        name: z.string(),
+        kind: z.string(),
+        calculation: z.string().optional(),
+        formula: z.string().optional(),
+      })
+      .passthrough(),
+  ),
 });
 
 export const typeLs = defineVerb({
   id: 'type.ls',
   summary: 'The card types of a plan',
   description:
-    'Lists the card types its boards hold: id, name, built-in fields and custom fields with their ids.',
+    'Lists the card types its boards hold: id, name, built-in fields and custom fields with their ids; a ' +
+    'required custom field is marked with *.',
   behaviour: 'read',
   input: z.object({ project: projectArg }),
   output: z.object({ types: z.array(typeOut) }),
@@ -37,14 +48,20 @@ export const typeLs = defineVerb({
       types.map((t) => [
         t.id,
         JSON.stringify(t.name),
-        [...t.fields, ...t.custom.map((f) => `${f.name}:${f.kind} (${f.id})`)].join(', '),
+        [
+          ...t.fields,
+          ...t.custom.map(
+            (f) =>
+              `${f.name}${f.required ? '*' : ''}:${f.kind}${f.calculation ? `=${f.calculation}` : ''}${f.formula ? `(${f.formula})` : ''} (${f.id})`,
+          ),
+        ].join(', '),
       ]),
     ),
   quiet: ({ types }) => types.map((t) => t.id),
   cli: {
     positionals: ['project'],
     examples: ['liveplanner type ls "Sprint 14"', 'liveplanner type ls 3f9c --json'],
-    prints: 'one type a line: id, name, fields',
+    prints: 'one type a line: id, name, fields (a required custom field marked *)',
   },
 });
 

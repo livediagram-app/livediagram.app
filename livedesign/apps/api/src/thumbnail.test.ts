@@ -12,6 +12,9 @@ const db = vi.hoisted(() => ({
   servableImageIds: vi.fn(async (_env: unknown, _doc: string, ids: string[]) => new Set(ids)),
 }));
 vi.mock('./db', () => db);
+// The component library (docs/specs/009-elements/components.md): the mains a drawing's instances use.
+const library = vi.hoisted(() => ({ readComponentsById: vi.fn(async () => [] as unknown[]) }));
+vi.mock('./db/components', () => library);
 // The images' bytes come from the media service (src/media.ts); here, from a stub each test arranges.
 type StubImage = {
   arrayBuffer: () => Promise<ArrayBuffer>;
@@ -100,6 +103,51 @@ describe('drawDesign', () => {
     expect(db.getTabBody).toHaveBeenLastCalledWith(ENV, 'd1');
     await draw(liveDoc(), { tabId: 't2' });
     expect(db.getTabBody).toHaveBeenLastCalledWith(ENV, 'd1', 't2');
+  });
+
+  it("draws an instance as its main's elements, reading only the mains the tab uses", async () => {
+    const data = JSON.stringify({
+      elements: [
+        {
+          id: 'i1',
+          type: 'shape',
+          shape: 'instance',
+          componentId: 'c1',
+          x: 0,
+          y: 0,
+          width: 200,
+          height: 80,
+        },
+      ],
+    });
+    db.getTabBody.mockResolvedValue(stored(data));
+    library.readComponentsById.mockResolvedValueOnce([
+      {
+        id: 'c1',
+        name: 'Nav',
+        width: 100,
+        height: 40,
+        elements: [
+          {
+            id: 'e1',
+            type: 'shape',
+            shape: 'square',
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 40,
+            label: 'Main nav',
+          },
+        ],
+        updatedAt: 1,
+      },
+    ]);
+    expect(await draw(liveDoc())).toContain('Main nav');
+    expect(library.readComponentsById).toHaveBeenCalledWith(ENV, ['c1']);
+    library.readComponentsById.mockClear();
+    db.getTabBody.mockResolvedValue(stored(TAB_DATA));
+    await draw(liveDoc());
+    expect(library.readComponentsById).not.toHaveBeenCalled();
   });
 
   it('draws nothing for an empty design, one with no tabs, or a body it cannot read', async () => {

@@ -249,26 +249,31 @@ export function cardArt(content: DashboardContent, input: CardArtInput): string 
       return parts.join('');
     }
     case 'sheet-metric':
-      return sheetMetricArt(content.metric, input);
+      return sheetMetricArt(content.metric, content.name, input);
     // A figure from a form is read live from its link: an export names it.
     case 'form-metric':
-      return slotMessageArt(r, p, FORM_METRIC_NAMES[content.metric], true);
+      return slotMessageArt(r, p, content.name ?? FORM_METRIC_NAMES[content.metric], true);
     default:
       return '';
   }
 }
 
 // A figure from a Sheet: its name, the figure large, the line under it.
-function sheetMetricArt(kind: keyof typeof SHEET_METRIC_NAMES, input: CardArtInput): string {
+// `own`: the slot's own name (plan-tabs.md "A slot's name"), in place of the figure's.
+function sheetMetricArt(
+  kind: keyof typeof SHEET_METRIC_NAMES,
+  own: string | undefined,
+  input: CardArtInput,
+): string {
   const { rect: r, p, metric } = input;
-  const name = SHEET_METRIC_NAMES[kind];
+  const name = own ?? SHEET_METRIC_NAMES[kind];
   if (!metric || metric === 'unset') return slotMessageArt(r, p, name, true);
   if (metric === 'loading') return slotMessageArt(r, p, 'Loading the sheet…');
   if (metric === 'gone') return slotMessageArt(r, p, 'This Sheet was deleted.');
   if (metric === 'cell-gone') return slotMessageArt(r, p, 'This cell was removed.');
   const hero = Math.max(22, Math.min(40, r.height / 3.4));
   const parts = [
-    line(r.x + PAD, r.y + PAD + 12, metric.label, {
+    line(r.x + PAD, r.y + PAD + 12, own ?? metric.label, {
       size: 12,
       weight: 600,
       color: p.muted,

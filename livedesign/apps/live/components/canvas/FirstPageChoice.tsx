@@ -27,7 +27,11 @@ export function FirstPageChoice({
         role="group"
         aria-labelledby="first-page-choice-title"
         data-first-page-choice=""
-        className="pointer-events-auto w-[420px] animate-fade-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900"
+        // Its own scroll box, no wider or taller than the window: Choose a Device runs taller than a phone's
+        // canvas, and its sticky back bar needs a scroller of its own to pin to. Without one it pins to the
+        // editor's frame, outside the canvas's transform, and floats over the device tiles. Its cap leaves room for the
+        // palette above it, which would otherwise cover the bar.
+        className="pointer-events-auto max-h-[max(12rem,calc(100dvh-20rem))] w-[min(420px,calc(100vw-1.5rem))] touch-pan-y overflow-y-auto overscroll-contain animate-fade-in rounded-xl border border-slate-200 bg-white p-3 shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900"
         style={{ transform: `scale(${1 / zoom})`, transformOrigin: 'center' }}
         onPointerDown={(e) => e.stopPropagation()}
         onDoubleClick={(e) => e.stopPropagation()}

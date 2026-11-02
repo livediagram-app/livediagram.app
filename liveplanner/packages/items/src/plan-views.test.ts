@@ -71,7 +71,10 @@ describe('status phases', () => {
   });
 
   it('gives no Done without a done column, and the first board decides a shared status', () => {
-    const noDone = { ...kanban, doneColumnId: undefined };
+    const noDone = {
+      ...kanban,
+      columns: kanban.columns.map((c) => ({ ...c, done: false })),
+    };
     const other = { ...kanban, columns: [{ id: 'x', name: 'Done', status: 'doing' }] };
     const phases = statusPhasesOf([noDone, other]);
     expect(phases.get('done')).toBe('doing');

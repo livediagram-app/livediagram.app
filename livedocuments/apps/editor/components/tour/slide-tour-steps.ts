@@ -55,7 +55,7 @@ export function slideTourSteps(): PageTourStep[] {
       {
         id: 'slide-menu',
         title: 'Each Slide’s Menu',
-        body: 'Speaker notes, hide a slide from the show, rename it or duplicate it.',
+        body: 'Speaker note cards, hide a slide from the show, rename it or duplicate it.',
         selector: () => `${SLIDE_DECK} [data-slide-slot]`,
         requires: () => SLIDES_BUTTON,
         prepare: holdSlideDeck,

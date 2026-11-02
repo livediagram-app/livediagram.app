@@ -58,17 +58,35 @@ refused by liveplanner. They carry `sub` (the account id), `email` and `email_ve
 
 ## Closing an account
 
-An app's Delete Account closes the whole liveworkspace account, for every app. The app's Worker
-deletes its own data first, then sends `POST /api/auth/delete-account` with its client
-credentials (Basic, as for the token endpoint) and the person's access token
-(`closeAccount` in `@liveworkspace/auth-client`). The Worker checks both through the provider's
-introspection, so a token alone closes nothing, and an app can close only the account of someone
-signed in to it. Deleting the user removes its sessions, its Google link, and every app's tokens
-and consents; refreshing then fails in every app, and an access token already issued runs out
-within the hour.
+An app's Delete Account closes the whole liveworkspace account, for every app. Being signed in is not enough on its
+own: a session left open on a shared machine would let anyone close it. So closing needs a **6-digit code sent to the
+account's email**, the same kind of code that signs in, and only the person who reads that inbox can give it.
+
+1. **The code is sent.** The app's Worker asks `POST /api/auth/delete-account/code` with its client credentials
+   (Basic, as for the token endpoint) and the person's access token (`sendDeletionCode` in `@liveworkspace/auth-client`).
+   The code goes to the account's own address, never one the caller names, in the brand of the app that asked. A new
+   code replaces the one before it.
+2. **The code is checked, before anything is deleted.** The app's Worker sends the code it was given to
+   `POST /api/auth/delete-account/check` (`checkDeletionCode`). A wrong code deletes nothing in any app.
+3. **The app deletes its own data, then closes the account.** `POST /api/auth/delete-account` takes the same client
+   credentials, the access token and the code (`closeAccount`), checks the code again and spends it, then closes the
+   account. The check here is the one that counts: no app can close an account without the code, whatever it checked
+   itself.
+
+The Worker checks the client credentials and the token through the provider's introspection on all three, so a token
+alone sends, checks and closes nothing, and an app can act only for someone signed in to it. Deleting the user removes
+its sessions, its Google link, and every app's tokens and consents; refreshing then fails in every app, and an access
+token already issued runs out within the hour.
 
 Every app's own data for the account goes with the close: the closing app deletes its own first, and the
 index purges every app's items and tells each app what was purged ([accounts.md](accounts.md#closing-an-account)).
+
+## Signing out
+
+Signing out in any app, or on liveworkspace.app, ends the liveworkspace session and every app's session in that
+browser, so the next sign-in asks for a code or Google again. The app's Worker ends the session server to server
+(`POST /api/auth/end-session`), then the browser takes one hop through `GET /api/auth/end-session`, which clears the
+liveworkspace cookie and comes back to the app ([accounts.md](accounts.md#signing-out)).
 
 ## Deploys
 
@@ -92,7 +110,10 @@ What a deploy never writes, set once per environment and kept across deploys:
 
 ## Registering an app
 
-1. Add the app's API to `RESOURCES` in `apps/accounts/src/resources.ts`; CI's deploy ships it.
+1. Add the app's API to `RESOURCES` in `apps/accounts/src/resources.ts`; CI's deploy ships it. An app can be
+   registered before its launch, when nothing a person sees lists it yet
+   ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)); livehuddle's
+   API is in `RESOURCES` that way.
 2. Register it once per environment. The secret is printed once, so store it straight away as
    the app's Worker secret:
 
@@ -127,7 +148,13 @@ What a deploy never writes, set once per environment and kept across deploys:
   `clientPrivileges` refuses everything without the admin token. Dynamic registration stays off.
 - **Account ids** keep the `user_` prefix (`src/ids.ts`). Imported accounts keep their exact
   Clerk id, and livediagram's guard against an account id sent as a guest id keeps working.
-- **Closing an account** needs an app's client secret and an access token issued to that app.
+- **Closing an account** needs an app's client secret, an access token issued to that app, and the code emailed to the
+  account. The deletion code keeps the sign-in code's rules: 6 digits, 10 minutes, 3 tries (a correct check gives the
+  tries back, so checking and then closing with it works), stored hashed in Better Auth's `verification` table. Each
+  try counts in one atomic write, so guesses sent at once can't share a count. Sending one is held to the sign-in
+  code's per-address limit (3 a minute, shared with signing in, so the two together can't flood an inbox); checking
+  and closing to 10 a minute per account. It needs no Turnstile: only an app's server, for someone signed in to it, can
+  ask.
 - **Names** are trimmed and cut to 80 characters whenever an account is created or updated.
 - **Signing in on an app's address:** the hand-off that brings the session to liveworkspace.app is
   single-use, lasts 60 seconds, is stored hashed, is bound to the browser that started the sign-in
@@ -161,9 +188,6 @@ limit, start by checking which plugins are loaded.
 
 ## Known gaps
 
-- **Sign-out everywhere:** an app drops its own tokens and revokes them at `/api/auth/oauth2/revoke`;
-  ending the accounts session as well would need `enable_end_session` on the clients and a sign-out link to
-  the provider's end-session endpoint.
 - **Email change and closing from liveworkspace.app:** the Settings panel's Profile edits the name and colour,
   but there is no change-email flow, and closing an account goes through an app's server
   ([site.md](../010-site/site.md#settings)).

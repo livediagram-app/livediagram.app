@@ -178,10 +178,10 @@ describe('accountsIssuer', () => {
 describe('getPersonIdentity (the Explorer’s reads)', () => {
   const LIVE = {
     ...CONFIGURED,
-    API_RESOURCE: 'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+    API_RESOURCE: 'https://livediagram.app/api',
   } as unknown as Env;
   const at = (path: string, method = 'GET') =>
-    new Request(`https://livediagram-router.liveworkspace-easing509.workers.dev${path}`, {
+    new Request(`https://www.livediagram.app${path}`, {
       method,
       headers: { Authorization: 'Bearer t' },
     });
@@ -191,7 +191,7 @@ describe('getPersonIdentity (the Explorer’s reads)', () => {
     await getPersonIdentity(LIVE, at('/api/documents/x1/tabs'));
     const audiences = createVerifierMock.mock.calls.map(([o]) => o.audience);
     expect(audiences).toContainEqual([
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+      'https://livediagram.app/api',
       'https://liveplanner.app/api',
       'https://livedocuments.app/api',
       'https://livedesign.app/api',
@@ -203,7 +203,7 @@ describe('getPersonIdentity (the Explorer’s reads)', () => {
     await getPersonIdentity(LIVE, at('/api/documents/x2'));
     await getPersonIdentity(LIVE, at('/api/documents/x2/tabs', 'PUT'));
     expect(createVerifierMock.mock.calls.map(([o]) => o.audience)).toEqual([
-      'https://livediagram-router.liveworkspace-easing509.workers.dev/api',
+      'https://livediagram.app/api',
     ]);
     expect(verifyMock).toHaveBeenCalledTimes(2);
   });

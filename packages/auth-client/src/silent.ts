@@ -9,11 +9,18 @@
 // the same address as a guest. Either way it costs one bounce per browser session, and nothing after.
 //
 // Guards, all here so every app keeps the same ones:
-// - the page: once per browser session (sessionStorage), never in a frame, never for a crawler or an automated
+// - the page: once per tab (sessionStorage) until the person may have signed in elsewhere since (the tab came back
+//   into view, or the page was opened from another site), never in a frame, never for a crawler or an automated
 //   browser (`navigator.webdriver`, which also keeps the apps' own end-to-end suites unbounced), never on the
-//   sign-in pages, embeds or a share link (`?s=`), never with a session already (the app's hint cookie);
-// - the person: never after they signed out of this app, until they sign in again (the signed-out cookie);
+//   sign-in pages, embeds or a share link (`?s=`), never with a session already (the app's hint cookie), unless that
+//   hint outlived its session, which the page's first token answer finds out (retrySilentSignIn);
+// - the person: never after they signed out of this app alone (the global sign-out failed), until they sign in
+//   again (the signed-out cookie);
 // - loops: a short-lived guard cookie the bounce sets, which both the page and the route refuse to bounce past.
+//
+// The editors bounce before the page paints. The marketing pages bounce after it (`afterPaint`): their first load
+// is often a guest's first look at the product, so it paints at full speed and the bounce waits until the page
+// has loaded and gone idle, and only while the visitor hasn't started using it.
 //
 // startSilentSignIn and finishSilentSignIn run in the app's Worker; silentSignInBootScript is inlined into the
 // page. The Worker parts never send the client secret except in the code swap, as exchangeCode always does.
@@ -36,6 +43,17 @@ export const SILENT_GUARD_MAX_AGE_SECONDS = 120;
 // How long an explicit sign-out is remembered: as long as browsers let a cookie live (Chrome caps at 400 days),
 // and every sign-in clears it.
 export const SIGNED_OUT_MAX_AGE_SECONDS = 400 * 24 * 3600;
+// The signed-out mark's value. `2`, not `1`: before signing out became global, every sign-out set `1`, and those
+// marks must not keep blocking the bounce once the person signs in elsewhere, so a `1` means nothing now.
+export const SIGNED_OUT_VALUE = '2';
+// What a deferred bounce (`afterPaint`) leaves in the tab's sessionStorage: the path and query it left from. The page
+// it lands back on turns it into `<html data-silent-return>`, so its page view and Web Vitals aren't counted a
+// second time (the visitor already saw the first load). @liveworkspace/ui's trackers read the attribute by name.
+export const SILENT_RETURN_KEY = 'liveworkspace:silent-return';
+export const SILENT_RETURN_ATTRIBUTE = 'data-silent-return';
+// The function the boot script leaves on the page for retrySilentSignIn: a hint that outlived its session (the session
+// ended in another app) found out by the page's first token answer.
+export const SILENT_RETRY_GLOBAL = '__liveworkspaceSilentSignIn';
 // The bounce's PKCE verifier and return address, for as long as the accounts site's own codes last.
 const SILENT_PKCE_MAX_AGE_SECONDS = 600;
 // A return address longer than this isn't bounced: it rides in a cookie, and a dropped cookie would turn the
@@ -45,7 +63,7 @@ export const SILENT_RETURN_MAX_LENGTH = 1500;
 export interface SilentCookies {
   // The app's readable "this browser has a session here" hint (`1` / `0`), set beside its refresh cookie.
   hint: string;
-  // Readable, the whole site: set when the person signs out of this app, cleared by any sign-in to it.
+  // Readable, the whole site: set when the person signs out of this app alone, cleared by any sign-in to it.
   signedOut: string;
   // Readable, the whole site, two minutes: a bounce went out, so neither the page nor the route sends another.
   guard: string;
@@ -84,15 +102,28 @@ export function readCookie(header: string | null, name: string): string | null {
 const readable = (name: string, value: string, maxAge: number) =>
   `${name}=${value}; Path=/; Secure; SameSite=Lax; Max-Age=${maxAge}`;
 
-/** The signed-out mark: set (`true`) by an explicit sign-out of the app, cleared (`false`) by any sign-in. */
+/** The signed-out mark: set (`true`) by a sign-out of the app alone, cleared (`false`) by any sign-in. */
 export function signedOutCookie(cookies: SilentCookies, signedOut: boolean): string {
   return signedOut
-    ? readable(cookies.signedOut, '1', SIGNED_OUT_MAX_AGE_SECONDS)
+    ? readable(cookies.signedOut, SIGNED_OUT_VALUE, SIGNED_OUT_MAX_AGE_SECONDS)
     : readable(cookies.signedOut, '', 0);
 }
 
 const guardCookie = (cookies: SilentCookies) =>
   readable(cookies.guard, '1', SILENT_GUARD_MAX_AGE_SECONDS);
+
+/**
+ * The silent sign-in's cookies on an app's sign-out (liveworkspace/docs/specs/003-accounts/accounts.md "Signing
+ * out"). `everywhere`: the accounts site ended the liveworkspace session, so a bounce from any app finds none and no
+ * mark is needed; this app's own is cleared, and the guard saves the page it lands on a bounce to learn that.
+ * Otherwise (no refresh token, or the accounts site didn't answer) only this app signed out while the liveworkspace
+ * session may live on, so the mark stops the bounce signing the person straight back in.
+ */
+export function signOutSilentCookies(cookies: SilentCookies, everywhere: boolean): string[] {
+  return everywhere
+    ? [signedOutCookie(cookies, false), guardCookie(cookies)]
+    : [signedOutCookie(cookies, true)];
+}
 
 function pkceCookie(cookies: SilentCookies, value: string, maxAge: number, path: string): string {
   return `${cookies.pkce}=${value}; Path=${path}; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
@@ -159,7 +190,7 @@ export async function startSilentSignIn(input: SilentStartInput): Promise<Respon
   const returnTo = safeReturnPath(raw, input.fallbackReturn);
   const header = request.headers.get('cookie');
   if (
-    readCookie(header, cookies.signedOut) === '1' ||
+    readCookie(header, cookies.signedOut) === SIGNED_OUT_VALUE ||
     readCookie(header, cookies.guard) ||
     returnTo.length > SILENT_RETURN_MAX_LENGTH
   ) {
@@ -255,16 +286,21 @@ export interface SilentBootOptions {
   // Paths (and everything under them) that never bounce: the sign-in pages, embeds, the guest hand-off's way
   // back, the AI-tool consent pages.
   skipPaths: string[];
+  // Bounce once the page has painted, loaded and gone idle, and only if the visitor hasn't pressed, typed, turned a
+  // wheel or touched it by then (the marketing pages); without it, before anything renders (the editors).
+  afterPaint?: boolean;
 }
 
 const COOKIE_NAME = /^[A-Za-z0-9_]+$/;
 const PATH = /^\/[A-Za-z0-9/_-]*$/;
 
 /**
- * The inline <head> script that starts the bounce. It runs before anything renders: when it bounces it stops the
- * page loading first (so no app code runs and nothing signed-out paints), lets the page follow the device's
- * light or dark setting meanwhile, and goes. Written as ES5 in a try/catch, as the other boot scripts are, so a
- * blocked storage or an old browser only means no bounce.
+ * The inline <head> script that starts the bounce. By default it runs before anything renders: when it bounces it
+ * stops the page loading first (so no app code runs and nothing signed-out paints), lets the page follow the
+ * device's light or dark setting meanwhile, and goes. With `afterPaint` the page loads and paints as usual, and the
+ * bounce goes once it is idle, unless the visitor has started using it (then the next page they open tries again).
+ * Either way it leaves SILENT_RETRY_GLOBAL on the page for retrySilentSignIn. Written as ES5 in a try/catch, as the
+ * other boot scripts are, so a blocked storage or an old browser only means no bounce.
  */
 export function silentSignInBootScript(options: SilentBootOptions): string {
   const { hint, signedOut, guard } = options.cookies;
@@ -280,27 +316,85 @@ export function silentSignInBootScript(options: SilentBootOptions): string {
   const api = JSON.stringify(options.apiBase.replace(/\/+$/, ''));
   const skip = JSON.stringify(options.skipPaths);
   const key = JSON.stringify(SILENT_SESSION_KEY);
+  const back = JSON.stringify(SILENT_RETURN_KEY);
+  const retry = JSON.stringify(SILENT_RETRY_GLOBAL);
+  const afterPaint = options.afterPaint === true;
+  // A session here already, signed out of this app alone, or a bounce just out.
+  const settled = `has('${hint}','1')||has('${signedOut}','${SIGNED_OUT_VALUE}')||has('${guard}')`;
+  // Once per browser session; no storage, no bounce (nothing to stop the next one).
+  const once = `if(st.getItem(${key}))return;st.setItem(${key},'1');if(st.getItem(${key})!=='1')return;`;
+  const go = `l.replace(${api}+'/auth/silent?return='+encodeURIComponent(r));`;
+  const tooLong = `if(r.length>${SILENT_RETURN_MAX_LENGTH})return;`;
+  // The way back from a deferred bounce, said once for the page view and Web Vitals trackers.
+  const leaving = afterPaint ? `st.setItem(${back},l.pathname+l.search);` : '';
   return (
     `(function(){try{` +
-    `var w=window,d=document,l=location,n=navigator,c=d.cookie||'';` +
+    `var w=window,d=document,l=location,n=navigator,c=d.cookie||'',st=w.sessionStorage,s=${skip};` +
     `function has(k,v){return new RegExp('(?:^|;\\\\s*)'+k+'='+(v?v+'(?:;|$)':'[^;\\\\s]')).test(c)}` +
-    // A frame (an embed, the workbench, a preview), a crawler or other automated browser, or no cookies to come
-    // back with.
-    `if(w.top!==w.self||n.webdriver||!n.cookieEnabled||/bot|crawl|spider|slurp|mediapartners|facebookexternalhit|embedly|preview/i.test(n.userAgent||''))return;` +
-    // A session here already, signed out of this app on purpose, or a bounce just out.
-    `if(has('${hint}','1')||has('${signedOut}','1')||has('${guard}'))return;` +
-    `var p=l.pathname,s=${skip};` +
-    `for(var i=0;i<s.length;i++){if(p===s[i]||p.indexOf(s[i]+'/')===0)return}` +
-    // A share link: its own visitor flow, not to be interrupted.
-    `if(/[?&]s=/.test(l.search))return;` +
-    `var r=p+l.search+l.hash;if(r.length>${SILENT_RETURN_MAX_LENGTH})return;` +
-    // Once per browser session; no storage, no bounce (nothing to stop the next one).
-    `var st=w.sessionStorage;if(st.getItem(${key}))return;st.setItem(${key},'1');if(st.getItem(${key})!=='1')return;` +
-    `d.documentElement.style.colorScheme='light dark';` +
-    `if(w.stop)w.stop();` +
-    `l.replace(${api}+'/auth/silent?return='+encodeURIComponent(r));` +
-    // Restored from the back-forward cache mid-bounce: load it properly (the session mark stops a second bounce).
-    `w.addEventListener('pageshow',function(e){if(e.persisted)l.reload()})` +
+    // The sign-in pages, embeds and the rest (and everything under them), and a share link: their own flows, not to
+    // be interrupted.
+    `function skipped(p){for(var i=0;i<s.length;i++){if(p===s[i]||p.indexOf(s[i]+'/')===0)return 1}return /[?&]s=/.test(l.search)}` +
+    (afterPaint
+      ? // Back from a deferred bounce: said once, for the page view and Web Vitals trackers.
+        `var b=st.getItem(${back});if(b!==null){st.removeItem(${back});` +
+        `if(b===l.pathname+l.search)d.documentElement.setAttribute('${SILENT_RETURN_ATTRIBUTE}','')}`
+      : '') +
+    // A frame (an embed, the workbench, a preview), a crawler, an audit or other automated browser, or no cookies
+    // to come back with.
+    `if(w.top!==w.self||n.webdriver||!n.cookieEnabled||/bot|crawl|spider|slurp|mediapartners|facebookexternalhit|embedly|preview|lighthouse/i.test(n.userAgent||''))return;` +
+    `if(skipped(l.pathname))return;` +
+    // The tab's mark holds only while the person can't have signed in anywhere else since it was set: it goes when
+    // the page was opened from another site (the tab may have been through a sign-in there) and when the tab comes
+    // back into view after being hidden (the person was in another tab or app), so the next full load asks again.
+    // Not while the guard is up: the way back from a bounce is no visit to another site.
+    `var o=l.protocol+'//'+l.host,f=d.referrer||'';if(f&&f!==o&&f.indexOf(o+'/')!==0&&!has('${guard}'))st.removeItem(${key});` +
+    `d.addEventListener('visibilitychange',function(){try{if(d.visibilityState==='visible')st.removeItem(${key})}catch(e){}});` +
+    (afterPaint
+      ? // The visitor starting to use the page calls a bounce off: a reload under their hands would lose their place.
+        `var used=0,ev=['pointerdown','keydown','wheel','touchstart'];` +
+        `function use(){used=1}` +
+        `for(var j=0;j<ev.length;j++)w.addEventListener(ev[j],use,{capture:true,passive:true});`
+      : '') +
+    // retrySilentSignIn, once per page: the hint said there was a session as the page loaded, and the page's first
+    // token answer cleared it (the session ended in another app), so ask the accounts site after all. Past the tab's
+    // mark, which predates the news; under every other guard.
+    `var hinted=has('${hint}','1');` +
+    `w[${retry}]=function(){try{w[${retry}]=function(){};c=d.cookie||'';` +
+    `if(!hinted||${settled}${afterPaint ? '||used' : ''}||skipped(l.pathname))return;` +
+    `var r=l.pathname+l.search+l.hash;${tooLong}st.setItem(${key},'1');${leaving}${go}}catch(e){}};` +
+    `if(${settled})return;` +
+    (afterPaint
+      ? // A prerendered page nobody is looking at yet, or a tab that already bounced, waits for nothing.
+        `if(d.prerendering||st.getItem(${key}))return;` +
+        `function bounce(){try{if(used)return;c=d.cookie||'';if(${settled})return;` +
+        `var r=l.pathname+l.search+l.hash;${tooLong}${once}${leaving}${go}}catch(e){}}` +
+        `function idle(){if(w.requestIdleCallback)w.requestIdleCallback(bounce,{timeout:1000});else w.setTimeout(bounce,200)}` +
+        `if(d.readyState==='complete')idle();else w.addEventListener('load',function(){w.setTimeout(idle,0)})`
+      : `var r=l.pathname+l.search+l.hash;${tooLong}${once}` +
+        `d.documentElement.style.colorScheme='light dark';` +
+        `if(w.stop)w.stop();` +
+        go +
+        // Restored from the back-forward cache mid-bounce: load it properly (the session mark stops a second
+        // bounce).
+        `w.addEventListener('pageshow',function(e){if(e.persisted)l.reload()})`) +
     `}catch(e){}})();`
   );
+}
+
+/**
+ * Lets the silent sign-in look again after the page's first answer from its app's `POST /api/auth/token`
+ * (liveworkspace/docs/specs/003-accounts/accounts.md "A hint that outlived its session"). When the app's hint said there
+ * was a session as the page loaded and that answer cleared it, the session ended in another app, perhaps before the
+ * person signed in again somewhere: the page bounces once, as a fresh tab would. Otherwise (still signed in, a guest
+ * all along, offline, the hint untouched) it does nothing. Call it after the first answer only, never a later one, so
+ * a session ending under an open page never reloads it; it works once per page whoever calls it. A no-op on a page
+ * without the boot script.
+ */
+export function retrySilentSignIn(): void {
+  try {
+    const again = (globalThis as Record<string, unknown>)[SILENT_RETRY_GLOBAL];
+    if (typeof again === 'function') again();
+  } catch {
+    // A page without the boot script, or a sealed global: nothing to retry.
+  }
 }

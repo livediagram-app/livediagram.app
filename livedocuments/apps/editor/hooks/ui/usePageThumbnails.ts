@@ -20,6 +20,8 @@ import {
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import { pageElementBuckets } from '@/lib/page-element-buckets';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useImageSources } from '@/components/canvas/page-image-access';
+import { thumbImageHref, thumbImageIds } from '@/lib/thumb-images';
 import { slideThumbFor, tabArrowLabels, type SlideThumb } from '@/lib/slide-thumb';
 
 export type PageThumbTab = Pick<
@@ -28,7 +30,13 @@ export type PageThumbTab = Pick<
 >;
 
 // One page's picture and what it was drawn from.
-type Drawn = { page: LaidOutPage; elements: readonly Element[]; thumb: SlideThumb | null };
+// `hrefs`: its pictures' URLs as drawn, so a picture arriving redraws only the pages that show it.
+type Drawn = {
+  page: LaidOutPage;
+  elements: readonly Element[];
+  hrefs: readonly (string | undefined)[];
+  thumb: SlideThumb | null;
+};
 // What every picture shares: a change to any redraws them all.
 type Shared = readonly unknown[];
 
@@ -53,8 +61,23 @@ export function usePageThumbnails(
     shared: [],
     pages: new Map(),
   });
+  // The drawn rows' pages and their own elements, and the pictures on them for the image store.
+  const laidOut = useMemo(() => {
+    const full = drawn.tab as Tab;
+    const laid = layOutPages(pagesOf(full));
+    const buckets = pageElementBuckets(full.elements, laid);
+    const byId = new Map(laid.map((p) => [p.id, p]));
+    const imageIds = drawn.pageIds.flatMap((pageId) =>
+      thumbImageIds(buckets.get(pageId) ?? [], byId.get(pageId)),
+    );
+    return { byId, buckets, imageIds };
+  }, [drawn]);
+  // Each picture fetched once while a drawn row shows it, shared with the canvas's copy.
+  const imageSource = useImageSources(laidOut.imageIds);
   return useMemo(() => {
     const full = drawn.tab as Tab;
+    const { byId, buckets } = laidOut;
+    const resolveImageHref = thumbImageHref(imageSource);
     const shared: Shared = [
       full.id,
       full.layers,
@@ -67,34 +90,38 @@ export function usePageThumbnails(
     const kept = sameList(shared, cache.current.shared)
       ? cache.current.pages
       : new Map<string, Drawn>();
-    const laid = layOutPages(pagesOf(full));
-    const buckets = pageElementBuckets(full.elements, laid);
     let labels: ReturnType<typeof tabArrowLabels> | undefined;
     const next = new Map<string, Drawn>();
     const out = new Map<string, SlideThumb>();
     for (const pageId of drawn.pageIds) {
-      const page = laid.find((p) => p.id === pageId);
+      const page = byId.get(pageId);
       if (!page) continue;
       const elements = buckets.get(pageId) ?? [];
       const was = kept.get(pageId);
       let entry = was;
-      if (!was || !samePage(was.page, page) || !sameList(was.elements, elements)) {
+      const hrefs = thumbImageIds(elements, page).map(resolveImageHref);
+      if (
+        !was ||
+        !samePage(was.page, page) ||
+        !sameList(was.elements, elements) ||
+        !sameList(was.hrefs, hrefs)
+      ) {
         // Arrow labels laid out once for the tab, and only when a page with an arrow redraws.
         if (!labels && full.elements.some((e) => e.type === 'arrow')) labels = tabArrowLabels(full);
         const slide: Slide = { id: `contents-${pageId}`, tabId: full.id, elementIds: [], pageId };
         const thumb = slideThumbFor(
           slide,
           { ...full, elements },
-          { iconsLoaded, surface, ...(labels ? { labels } : {}) },
+          { iconsLoaded, surface, resolveImageHref, ...(labels ? { labels } : {}) },
         );
-        entry = { page, elements, thumb };
+        entry = { page, elements, hrefs, thumb };
       }
       next.set(pageId, entry!);
       if (entry!.thumb) out.set(pageId, entry!.thumb);
     }
     cache.current = { shared, pages: next };
     return out;
-  }, [drawn, iconsLoaded, surface]);
+  }, [drawn, laidOut, imageSource, iconsLoaded, surface]);
 }
 
 function sameList(a: readonly unknown[], b: readonly unknown[]): boolean {

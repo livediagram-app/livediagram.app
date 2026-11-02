@@ -11,6 +11,7 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from '
 import { isDragTravel } from '@liveworkspace/workbench/lib/press-gestures';
 import type { Item } from '@liveplanner/items';
 import { otherPlanBoardAt, planBoardTarget } from './plan-board-targets';
+import { CARD_HOLD_TO_DRAG_MS, holdPhase } from '@/components/plan/phone-board';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export type PlanDropSlot = {
@@ -38,6 +39,9 @@ export type PlanDragState = {
   refused?: string;
   // Over the Trash button (docs/specs/026-plan/items.md "Trash"): letting go trashes the card.
   overTrash?: boolean;
+  // A group of selected cards carried together, in board order, the held one among them
+  // (docs/specs/026-plan/plan-board.md "Several cards at once").
+  group?: readonly string[];
 };
 
 type Rect = { left: number; top: number; right: number; bottom: number };
@@ -112,15 +116,41 @@ type Pressed = {
   startX: number;
   startY: number;
   rect: DOMRect;
+  // The row the card was picked up in (`data-plan-lane`): a card holding several values sits in several rows, and a
+  // drop swaps the value of the row it left (docs/specs/026-plan/item-types.md "Holds Several").
+  fromLane: string | undefined;
+  // A touch press on a phone board's card is carried only once held still this long (performance.now()); null
+  // carries it on its first travel past the slop (components/plan/phone-board.ts holdPhase).
+  holdUntil: number | null;
+  // The group the press carries, when it is on one of two or more selected cards.
+  group?: readonly string[];
 };
+
+// When the held-to-drag press under the finger may be carried (performance.now()), or null: one finger carries one
+// card, so one for every board.
+let heldUntil: number | null = null;
+
+// A phone board's card's own non-passive touchmove (a listener there from the start, so the browser waits on it):
+// once the card's hold is up its finger carries the card, so the board's own scroll under it is stopped.
+export function holdCardTouch(e: TouchEvent): void {
+  if (heldUntil !== null && e.cancelable && performance.now() >= heldUntil) e.preventDefault();
+}
+
+// Whether the finger's held-to-drag press is held long enough to carry its card (now or already): a phone board's
+// sideways swipe (usePhoneColumnSwipe) then stands down, so the pager never fights a card's drag.
+export function cardHeld(): boolean {
+  return heldUntil !== null && performance.now() >= heldUntil;
+}
 
 // The slot under a screen point, inside the board `boardEl`.
 export function dropSlotAt(
   boardEl: HTMLElement,
   clientX: number,
   clientY: number,
-  draggedId: string,
+  // The card carried, or a group's cards: none of them is a slot's neighbour.
+  dragged: string | ReadonlySet<string>,
 ): PlanDropSlot | null {
+  const skip = typeof dragged === 'string' ? new Set([dragged]) : dragged;
   const hits = document.elementsFromPoint(clientX, clientY);
   const cell = hits.find(
     (el): el is HTMLElement =>
@@ -130,7 +160,7 @@ export function dropSlotAt(
   const status = cell.dataset.planStatus!;
   const laneKey = cell.dataset.planLane ?? '';
   const cards = [...cell.querySelectorAll<HTMLElement>('[data-plan-card]')].filter(
-    (c) => c.dataset.planCard !== draggedId,
+    (c) => !skip.has(c.dataset.planCard ?? ''),
   );
   const below = cards.find((c) => {
     const r = c.getBoundingClientRect();
@@ -145,7 +175,7 @@ export function usePlanCardDrag(opts: {
   boardId: string;
   enabled: boolean;
   onClick: (itemId: string) => void;
-  onDrop: (itemId: string, slot: PlanDropSlot) => void;
+  onDrop: (itemId: string, slot: PlanDropSlot, fromLane?: string) => void;
   onDropOutside: (itemId: string, clientX: number, clientY: number) => void;
   // A drop on a board that does not show the item: nothing moves; the reason is announced.
   onRefused: (message: string) => void;
@@ -154,6 +184,9 @@ export function usePlanCardDrag(opts: {
   item?: (itemId: string) => Pick<Item, 'type' | 'fields'> | undefined;
   // A card let go over the Trash.
   onTrash?: (itemId: string) => void;
+  // A group let go in one of this board's cells, or over the Trash.
+  onDropGroup?: (itemIds: readonly string[], slot: PlanDropSlot) => void;
+  onTrashGroup?: (itemIds: readonly string[]) => void;
 }) {
   const { boardRef, enabled } = opts;
   const optsRef = useRef(opts);
@@ -181,6 +214,7 @@ export function usePlanCardDrag(opts: {
     pointer.set(null);
     leaveTarget();
     pressedRef.current = null;
+    heldUntil = null;
     dragRef.current = null;
     setDrag(null);
     optsRef.current.onDragging(null);
@@ -191,8 +225,19 @@ export function usePlanCardDrag(opts: {
       const p = pressedRef.current;
       const board = boardRef.current;
       if (!p || e.pointerId !== p.pointerId || !board) return;
+      const travelled = isDragTravel(e.clientX - p.startX, e.clientY - p.startY);
+      if (!dragRef.current && p.holdUntil !== null) {
+        const phase = holdPhase(p.holdUntil, performance.now(), travelled);
+        // Moved before the hold was up: the finger is scrolling the board, so the press is neither drag nor click.
+        if (phase === 'scroll') {
+          pressedRef.current = null;
+          heldUntil = null;
+          return;
+        }
+        if (phase === 'wait') return;
+      }
       // A press that has not travelled the shared slop is still a click.
-      if (!dragRef.current && !isDragTravel(e.clientX - p.startX, e.clientY - p.startY)) return;
+      if (!dragRef.current && !travelled) return;
       if (!dragRef.current) optsRef.current.onDragging(p.itemId);
       const { outside, overTrash } = dragPlace(
         e.clientX,
@@ -205,15 +250,20 @@ export function usePlanCardDrag(opts: {
           ? otherPlanBoardAt(e.clientX, e.clientY, optsRef.current.boardId)
           : null;
       const accepts = !!other && !!planBoardTarget(other.id)?.accepts(p.itemId);
+      const carried = p.group ? new Set(p.group) : p.itemId;
       const otherSlot =
-        other && accepts ? dropSlotAt(other.el, e.clientX, e.clientY, p.itemId) : null;
+        other && accepts ? dropSlotAt(other.el, e.clientX, e.clientY, carried) : null;
       if (dragRef.current?.target && dragRef.current.target.boardId !== other?.id) leaveTarget();
-      // The slot under the pointer, and whether the card's type refuses its status.
-      const rawSlot = outside ? otherSlot : dropSlotAt(board, e.clientX, e.clientY, p.itemId);
-      const dragged = optsRef.current.item?.(p.itemId);
+      // The slot under the pointer (where a sorted board's sort puts the card), and whether the card's type refuses
+      // its status.
       const slotTarget = planBoardTarget(other ? other.id : optsRef.current.boardId);
+      const underPointer = outside ? otherSlot : dropSlotAt(board, e.clientX, e.clientY, carried);
+      const rawSlot =
+        underPointer && slotTarget?.place ? slotTarget.place(p.itemId, underPointer) : underPointer;
+      const dragged = optsRef.current.item?.(p.itemId);
+      // A group is checked card by card when it lands (some may stay); a single card shows its refusal here.
       const refused =
-        dragged && rawSlot && slotTarget ? slotTarget.refuseAt(dragged, rawSlot) : null;
+        !p.group && dragged && rawSlot && slotTarget ? slotTarget.refuseAt(dragged, rawSlot) : null;
       const slot = rawSlot && refused ? { ...rawSlot, beforeId: null } : rawSlot;
       if (other && slot) {
         planBoardTarget(other.id)?.hover({
@@ -236,6 +286,7 @@ export function usePlanCardDrag(opts: {
         target: other ? { boardId: other.id, accepts } : null,
         ...(refused ? { refused } : {}),
         ...(overTrash ? { overTrash: true } : {}),
+        ...(p.group ? { group: p.group } : {}),
       };
       pointer.set({ clientX: e.clientX, clientY: e.clientY });
       const changed = !samePlanDragTarget(dragRef.current, next);
@@ -267,14 +318,27 @@ export function usePlanCardDrag(opts: {
       const d = dragRef.current;
       const target = d?.target ? planBoardTarget(d.target.boardId) : undefined;
       if (!d) optsRef.current.onClick(p.itemId);
+      else if (d.group) dropGroup(d, d.group);
       else if (d.overTrash && optsRef.current.onTrash) optsRef.current.onTrash(d.itemId);
       else if (d.refused) optsRef.current.onRefused(d.refused);
       else if (d.target && target) {
         if (!d.target.accepts) optsRef.current.onRefused(target.refusal());
         else if (d.slot) target.drop(d.itemId, d.slot);
       } else if (d.outside) optsRef.current.onDropOutside(d.itemId, e.clientX, e.clientY);
-      else if (d.slot) optsRef.current.onDrop(d.itemId, d.slot);
+      else if (d.slot) optsRef.current.onDrop(d.itemId, d.slot, p.fromLane);
       end();
+    };
+    // A group let go: over the Trash, on another board, off every board (nothing moves), or in one of this board's
+    // cells.
+    const dropGroup = (d: PlanDragState, group: readonly string[]) => {
+      const o = optsRef.current;
+      const target = d.target ? planBoardTarget(d.target.boardId) : undefined;
+      if (d.overTrash) o.onTrashGroup?.(group);
+      else if (d.target && target) {
+        if (!d.target.accepts) o.onRefused(target.refusal());
+        else if (d.slot) target.dropMany?.(group, d.slot);
+      } else if (d.outside) o.onRefused('Drop the cards on a board');
+      else if (d.slot) o.onDropGroup?.(group, d.slot);
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && pressedRef.current) {
@@ -296,7 +360,13 @@ export function usePlanCardDrag(opts: {
 
   // A press on a card: taken from the canvas (no board drag, no selection change).
   const onCardPointerDown = useCallback(
-    (itemId: string, e: React.PointerEvent<HTMLElement>) => {
+    (
+      itemId: string,
+      e: React.PointerEvent<HTMLElement>,
+      holdToDrag = false,
+      // The selected cards in board order, when the press is on one of two or more of them: they move together.
+      group?: readonly string[],
+    ) => {
       if (!enabled || e.button !== 0) return;
       e.stopPropagation();
       pressedRef.current = {
@@ -305,7 +375,12 @@ export function usePlanCardDrag(opts: {
         startX: e.clientX,
         startY: e.clientY,
         rect: e.currentTarget.getBoundingClientRect(),
+        fromLane: e.currentTarget.closest<HTMLElement>('[data-plan-lane]')?.dataset.planLane,
+        holdUntil:
+          holdToDrag && e.pointerType === 'touch' ? performance.now() + CARD_HOLD_TO_DRAG_MS : null,
+        ...(group && group.length > 1 ? { group } : {}),
       };
+      heldUntil = pressedRef.current.holdUntil;
     },
     [enabled],
   );

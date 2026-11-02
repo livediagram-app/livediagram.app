@@ -2,15 +2,17 @@
 # (mcp.livediagram.app), separate from the api worker — distinct dependency
 # surface (MCP SDK, OAuth/KV, the resvg WASM rasteriser) and public origin.
 name = "livediagram-mcp"
-# The liveworkspace Cloudflare account, which will also host livediagram.app, so a deploy can never land on another one.
+# The liveworkspace Cloudflare account, which also hosts livediagram.app, so a deploy can never land on another one.
 account_id = "851be7d244b76a6557bcbe6c4ded80f5"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # nodejs_compat for the MCP SDK's transport internals; WASM modules (resvg) are
 # bundled by wrangler directly.
-# global_fetch_strictly_public: a fetch() to another Worker's workers.dev address on this account fails (1042) without it, and
-# livediagram answers on workers.dev stand-ins until its domain moves (stand-in-addresses.md).
-compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
+compatibility_flags = ["nodejs_compat"]
+# Its own hostname (docs/specs/016-platform/deployment.md "Custom domain"), attached by `wrangler deploy`
+# with its DNS record and certificate. Other deployments set their own host here, then point
+# CONSENT_BASE_URL + the editor app's NEXT_PUBLIC_MCP_ORIGIN at it.
+routes = [{ pattern = "mcp.livediagram.app", custom_domain = true }]
 
 # Pin a fixed local dev port so `pnpm dev` doesn't race the api worker:
 # both `wrangler dev` invocations otherwise default to 8787. The api takes
@@ -28,7 +30,7 @@ globs = ["**/*.ttf", "**/*.otf"]
 [vars]
 # Where the OAuth consent page lives (apps/editor). Staging sets its own
 # live origin; the authorize endpoint redirects the signed-in user here.
-CONSENT_BASE_URL = "https://livediagram-router.liveworkspace-easing509.workers.dev"
+CONSENT_BASE_URL = "https://www.livediagram.app"
 
 # TELEMETRY_KEY is deliberately NOT here — it's secret material, so it goes
 # through `wrangler secret put TELEMETRY_KEY` (docs/specs/002-project-scope/secrets-policy.md),
@@ -38,11 +40,6 @@ CONSENT_BASE_URL = "https://livediagram-router.liveworkspace-easing509.workers.d
 # https://www.liveworkspace.app/api/telemetry) names the service; staging's is set below.
 # See apps/api/wrangler.toml for the full rationale and apps/mcp/.env.example for
 # the operator summary.
-
-# Its own hostname `mcp.livediagram.app` (docs/specs/015-api/mcp-server.md) is still on the previous account's
-# zone, so until it moves this worker answers on its workers.dev address instead
-# (docs/specs/016-platform/stand-in-addresses.md), which CONSENT_BASE_URL + the editor app's
-# NEXT_PUBLIC_MCP_ORIGIN point at.
 
 # Reach the api worker over a service binding (not public DNS). Every tool
 # forwards to /api/* carrying the caller's `Authorization: Bearer lwt_…`
@@ -60,9 +57,9 @@ id = "1a32ea4a20b74c55938025fae41bb9a8"
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livediagram-mcp-staging` on its own host,
-# `mcp-staging.livediagram.app`, its workers.dev address until that zone moves (stand-in-addresses.md).
+# `mcp-staging.livediagram.app`.
 # `compatibility_flags`, `[[rules]]` and `[dev]` are inheritable and carry
-# over; vars, the service binding and KV are not, so they are restated.
+# over; routes, vars, the service binding and KV are not, so they are restated.
 # ---------------------------------------------------------------------------
 
 # Named explicitly: wrangler would append "-staging" to the top-level
@@ -70,11 +67,12 @@ id = "1a32ea4a20b74c55938025fae41bb9a8"
 # and the router's service bindings depend on this exact string.
 [env.staging]
 name = "livediagram-mcp-staging"
+routes = [{ pattern = "mcp-staging.livediagram.app", custom_domain = true }]
 
 [env.staging.vars]
 # The consent page lives in the STAGING editor app — a staging OAuth flow must
 # never bounce the user through production's sign-in.
-CONSENT_BASE_URL = "https://livediagram-router-staging.liveworkspace-easing509.workers.dev"
+CONSENT_BASE_URL = "https://staging.livediagram.app"
 # Staging's events go to the staging telemetry service, never into production's numbers.
 TELEMETRY_URL = "https://staging.liveworkspace.app/api/telemetry"
 

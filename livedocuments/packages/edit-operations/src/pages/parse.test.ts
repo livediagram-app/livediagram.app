@@ -122,6 +122,12 @@ describe('an add without a place', () => {
       pages: [{ op: 'add', kind: 'slide' }],
     });
   });
+
+  it('reads a flashcard as a kind', () => {
+    expect(parsePagesRequest({ pages: [{ op: 'add', kind: 'flashcard' }] })).toEqual({
+      pages: [{ op: 'add', kind: 'flashcard' }],
+    });
+  });
 });
 
 describe('an article write', () => {

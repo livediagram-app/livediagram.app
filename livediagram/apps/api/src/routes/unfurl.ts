@@ -9,8 +9,7 @@ import { unfurl } from '@liveworkspace/api-kit/unfurl-fetch';
 import { badRequest, json, notFound, rateLimited } from '../responses';
 import type { RouteContext } from './context';
 
-const USER_AGENT =
-  'livediagram-unfurl/1.0 (+https://livediagram-router.liveworkspace-easing509.workers.dev)';
+const USER_AGENT = 'livediagram-unfurl/1.0 (+https://www.livediagram.app)';
 
 export async function handleUnfurl(ctx: RouteContext): Promise<Response> {
   const { request, env, url, segments } = ctx;

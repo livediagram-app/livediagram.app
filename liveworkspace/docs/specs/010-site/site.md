@@ -64,9 +64,10 @@ shareable as it is, and the device's own setting applies through System.
   name (or full name, or email; the name hides on a phone), opening a menu
   (`components/AccountControl.tsx`): the name again over "Your account", **Explorer** (this site's own
   `/explorer`, every app's work at once, [The Explorer](#the-explorer-explorer)), **Settings**, which opens the
-  Settings panel ([below](#settings)) in place over whatever page this is, without leaving it, and **Sign out**,
-  which ends the liveworkspace session here. It doesn't sign anyone out of an app: each app holds its own
-  tokens. API tokens are a category of the panel, not a menu item.
+  Settings panel ([below](#settings)) in place over whatever page this is, without leaving it, and **Sign Out**
+  (its hint under it: "Every app in this browser"), which ends the liveworkspace session here and with it every
+  app's session in this browser ([accounts.md](../003-accounts/accounts.md#signing-out)). API tokens are a category
+  of the panel, not a menu item.
 
 The site is static, so the control asks the accounts API (`GET /api/auth/get-session`, on this
 origin, with the session cookie) once the page is up. Until it hears, it keeps the Guest button's place, invisible,
@@ -84,7 +85,7 @@ wherever the surface has the panel: this site's header (its own lazily loaded pa
 an app's address (the Explorer's panel). A surface with no panel of its own, an app's marketing page, links instead
 to that app's own Explorer on the same address with the panel open (`/explorer?settings=all`, `settingsHref`). Only
 liveworkspace.app's header adds **Explorer** (`explorerHref`): on an app's address the app's own Explorer is a click
-away already. On an app's own pages Sign out is the app's. A marketing page learns who is signed in from the app's readable cookies,
+away already. On an app's own pages Sign out is the app's, and it signs out of every app in the browser just the same, through the accounts site's hop. A marketing page learns who is signed in from the app's readable cookies,
 `<prefix>signed_in` and `<prefix>account` (the name), and makes no request for it
 ([accounts.md](../003-accounts/accounts.md#an-apps-signed-in-cookies)). There a guest's Sign in is the app's own
 (`/api/auth/sign-in?return_to=<the page>`) and Create account the same with `&screen=sign-up`, and the Guest button
@@ -110,9 +111,12 @@ moves between them, and the one account that joins them.
    it (a flowchart; a board with a card on the move; an article with its slides; a logo, a wireframe
    and a photo being cropped), and a button in its deep accent naming the work: **Start Diagramming**, **Start Planning**, **Start Writing**, **Start Designing**. Below `lg` the window sits between the summary and the three things it does.
    Every logo is the app's own UI package `Brand`, with its hover
-   shimmer, "live" pointed at the app's deep and accent colours (`components/landing/AppLogo.tsx`). The copy is
+   shimmer, "live" in the app's deep shade on light and its own 400 on dark, which reads at AA on a dark card where its 500
+   accent does not (`components/landing/AppLogo.tsx`). The copy is
    `lib/apps.ts`; tests require it for every app and that white text on each deep accent passes
-   WCAG AA.
+   WCAG AA. On a dark page, text in an app's colour (a link, a name, a card's call to action, here and on every
+   page of the site) is its light shade, `light` in `@liveworkspace/sites` (its brand-400), which passes AA on every
+   dark surface; the accent itself does not for each app (liveplanner's violet-500 is 4.1:1 on slate-900).
 3. **What every app shares** (`#what-you-get`, `components/landing/Promises.tsx`): "Different apps,
    the same promises", ten tiles that fill every row, each with a small piece of the product drawn
    in the apps' colours (`components/landing/PromiseArt.tsx`) above its words and no icon: one
@@ -125,7 +129,9 @@ moves between them, and the one account that joins them.
 4. **Closing call to action**: "One account. Every app. Always live."
 5. **Footer**: Our Apps (each app's logo, linking to its site), Platform (Comparison, which points at each app's
    comparisons, the telemetry dashboard and Status) and Legal (the
-   privacy policy, Terms of Use and Licences). Every footer, here and in each app, labels the
+   privacy policy, Terms of Use, Report a Vulnerability and Licences). Report a Vulnerability opens the repository's
+   security policy on GitHub (`SECURITY_POLICY_URL`,
+   [Vulnerability disclosure](../001-platform-scope/vulnerability-disclosure.md)). Every footer, here and in each app, labels the
    terms "Terms of Use" from one constant, `TERMS_LABEL` in `@liveworkspace/sites`.
 
 The illustrations are drawn in the page (HTML and SVG with the apps' own logos), not images. Their
@@ -139,6 +145,17 @@ footer. They were built from the apps' own policies, which said the same things 
 feature only some apps have (livediagram's sticky-note reader, liveplanner's live sessions) says which;
 Google Drive sync and Offline Mode are every app's. Every app is MIT-licensed, and the terms say so app by app. Both share
 `components/LegalPage.tsx`, and their date and contact form are in `lib/legal.ts`. Change them when what an app stores or who it uses changes.
+The privacy policy's Security section and the terms' Acceptable use send a vulnerability to the private advisory
+form (`SECURITY_ADVISORY_URL`), never the contact form
+([Vulnerability disclosure](../001-platform-scope/vulnerability-disclosure.md)).
+
+### Security reporting (`/.well-known/security.txt`)
+
+The site serves liveworkspace.app's [RFC 9116](https://www.rfc-editor.org/rfc/rfc9116) file from
+`app/.well-known/security.txt/route.ts`, built at build time by `securityTxt` in `@liveworkspace/sites/security`, the
+same builder every app's marketing site uses. Its `Policy` is the repository's security policy on GitHub
+(`SECURITY_POLICY_URL`), since every app's policy agrees and this site has no help centre of its own. The fields and
+why are in [Vulnerability disclosure](../001-platform-scope/vulnerability-disclosure.md#securitytxt-on-every-site).
 
 ### Help (`/help/google-drive`)
 
@@ -209,7 +226,7 @@ chosen to be cheap (no database read where one can be avoided, or one the edge c
 |               | Marketing site     | `HEAD <app>/robots.txt`                            | the browser reaches it       |
 |               | Help centre        | `HEAD <app>/help/robots.txt`                       | the browser reaches it       |
 |               | Community pages    | `HEAD <app>/community/` (livediagram only)         | the browser reaches it       |
-|               | MCP server         | `GET mcp.<app>/health` (CORS `*`)                  | 200, JSON                    |
+|               | MCP server         | `GET mcp.<app>/health` (CORS `*`), apps with one   | 200, JSON                    |
 
 liveworkspace's own checks are on this origin, so the page reads their answers. Each app's API and MCP server
 answer any origin (CORS `*`), so those are read too. An app's pages send no CORS headers, so the browser can only
@@ -358,7 +375,7 @@ built once here. It is shown here and, through each switched-on app's router, at
 - **Addresses handed over.** `?settings=<category>` (every notification email's unsubscribe link, the old
   `/account/settings` and `/account/tokens`, a Search result) opens the Settings panel here, in place, once the
   page knows who is here (`settingsOpening` in `lib/explorer/host.ts`): `notifications`, `profile` (or `account`),
-  `tokens`, `privacy` and `accessibility` open All on that Account category, `all` opens All, an app's name
+  `tokens`, `webhooks`, `privacy` and `accessibility` open All on that Account category, `all` opens All, an app's name
   (`liveplanner`) that app's side, `teams` goes to the Invites, and anything else (an editor's own category) the
   side of the app the person came from. It works on a move inside the Explorer too, not only on arrival. Signed
   out, an Account category asks them to sign in and come back to the same address; on an app's address a guest's
@@ -384,7 +401,9 @@ The same page, served by the app's router at `<app>.app/explorer/…` with the a
   its teams, read and run (making, renaming, inviting, roles, the join link, leaving, deleting, answering an
   invitation); nothing else.
 - **Signing in.** The app's silent sign-in script is inlined in the Explorer's layout, one per switched-on app
-  behind a check of the host (`lib/explorer/silent.ts`); Sign In and Sign Out are the app's
+  behind a check of the host (`lib/explorer/silent.ts`), and the page's first token answer lets it ask again when the
+  app's hint outlived its session (`retrySilentSignIn`, liveworkspace/docs/specs/003-accounts/accounts.md "A hint that
+  outlived its session"); Sign In and Sign Out are the app's
   (`components/explorer/AppAccountControl.tsx`). Teams are run here as on liveworkspace.app; after a change the
   page asks the app for a fresh token (`renewIdentity`), which names them.
 - **Links** to the app's items, New, previews, the Library and Import from use the page's own origin
@@ -456,14 +475,16 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
 
 - **The app's name.** Opened for an app, the header's title reads as that app's: its logo and wordmark ("live" in
   the app's accent), then **Settings** ("liveplanner Settings"), on the front screen of either side of the switch. A
-  pushed pane's back bar takes its place. Opened for no app, the title is **Settings** alone.
+  pushed pane's name takes its place, and the pane opens under the shared back bar (`BackBar`, `@liveworkspace/ui`) to
+  the screen that pushed it, the pane's name as its chip. Opened for no app, the title is **Settings** alone.
 - **The switch.** Opened for an app, the header has the Explorer's switch: the app's logo and name, and **All** with
   liveworkspace's logo. The app's side shows, signed in, the **Account** group and the **Common** settings that app
   has (below), then the app's own group, from its plain-data catalogue (`@liveworkspace/settings/catalogues/<app>`,
   [accounts.md](../003-accounts/accounts.md#scopes)): the account's and the shared settings shape that app as much as its own do,
   so they are never hidden behind All. Only the other apps' groups are left out. It is drawn in the app's own Settings
   view: its rail with category tiles and nested sub-categories, panes, sections, collapsed sections, section notes,
-  search, the phone's push layout and back bar. An editor's own rows draw at once and the rest join them when read.
+  search, the phone's push layout and back bar. An editor's own rows draw at once and the rest join them when read. A read that fails leaves the editor's own rows in place,
+  with a note and Try again for the rest.
   A guest's side is the app's settings alone. The footer only says where settings are saved: it has no link into the
   app's own Settings (a "More in <app> Settings" link was removed on 25 October 2026); what only makes sense inside
   the editor (appearance, shortcuts, the editors' shared chrome such as UI scale) is in the editor's own Settings.
@@ -483,7 +504,10 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   assigned, invitation answers, tips and check-ins, milestones) and **API Tokens** (making a token, seeing its
   secret once with room to copy it, and revoking one, the AI tools connected in an app among them,
   `components/settings/TokensPanel.tsx`, its own chunk fetched when the category is first shown; on an app's
-  address a link to the same category on liveworkspace.app, since tokens are the session's), then
+  address a link to the same category on liveworkspace.app, since tokens are the session's), **Webhooks** beside
+  them (`components/settings/webhooks/`, its own chunk; on liveworkspace.app and on an app's address alike, since
+  both reach the index with the person's token; an editor's Settings links to it,
+  [webhooks.md](../004-index/webhooks.md#managing-them)), then
   **Privacy** (anonymous usage events) and **Accessibility** (Reduce Motion). The switches are plain data in
   `@liveworkspace/settings/account`, worded as the apps' own Settings word them; the shared keys that only mean
   something in an editor (UI scale, panel opacity and the rest) are left to that editor's own rows.
@@ -516,6 +540,38 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     the merge, a deep link and a link row or readout line that names an old id all land on the merged
     category. The merge is linear in rows and categories, rebuilt only when what it reads changes (40,000 rows
     in about 30 ms; the four apps' catalogues in under 1 ms, with the rest of the panel's model).
+- **Webhooks** is one card, drawn as the Notifications' cards are (the same frame, hairlines between its parts, the
+  same type), in the plain words of someone who has never met a webhook:
+  - **The top** says in a line what a webhook is ("When something happens to your work, post a message to Slack,
+    Microsoft Teams or a service you run"), names the apps it covers by their logos (each app's Living Prism and
+    wordmark, never the name as plain text, as everywhere a product is named in this panel), and holds **Add
+    Webhook** once there is one.
+  - **Each webhook** is a row: its destination's mark (Slack's hash, Teams' people, a service's braces, on a tile
+    in each one's colour), its name, a status badge (**Active**; **Paused**; **Needs Attention** when it paused
+    itself, its reason and a **Resume** beside it in an amber note), whose items it reports on and the address's
+    host, and its last delivery ("Delivered 2 hours ago", or "Failed 31 Oct" in red). **Send Test** is a button;
+    Pause or Resume and Delete are icon buttons with tooltips; Delete asks in a confirmation popover. Send Test's
+    result is shown on the row: "Sending a test…", then the test's own delivery, read back from Recent Deliveries
+    a few times over about 20 seconds ("Test delivered: your endpoint answered 200", or why it failed), or "Test
+    queued" if it hasn't gone yet. Under it, the events it sends as small labels, and **Recent Deliveries**, a
+    section closed by default, read when first opened: each delivery's event, item, outcome in words and time,
+    with a green, red or amber mark.
+  - **Adding one** unfolds a form in the card, in the order a person thinks of it: **Where Should It Post?** (three
+    option tiles: Slack, Microsoft Teams, Your Own Service), the address (labelled for the choice, with the steps
+    to get one from Slack or Teams written out), a **Name**, **Whose Items** (your own, or each team you run, as
+    option tiles; none to choose when you run no team) and **What Should It Send?**: the events as checkable
+    tiles, each with a line saying when it fires, grouped under Items, Sharing and Comments, and Actions and
+    Cards (Card Moved carries liveplanner's logo), with Select All and Clear. All events start chosen. Add Webhook
+    waits for a name, an address and one event. A plain webhook's signing secret then shows once, with how to
+    check a signature; a Slack or Teams one is ready, with a note to send a test.
+  - With none yet, the empty state ("No Webhooks Yet", a line on what they do, **Add Webhook**). Loading shows the
+    card's skeleton; a failed read says why with **Try Again**.
+  - **Signed in only, as API Tokens are.** A guest gets no Webhooks category on liveworkspace.app or on an app's
+    address (a guest's panel there has no Account section); `?settings=webhooks` signed out asks them to sign in
+    and come back to the same address, as `?settings=tokens` does ([The Explorer](#the-explorer), Addresses
+    handed over); and in an editor's own Settings a guest finds a **Webhooks** category under Account holding
+    one stand-in row, "Sign in to add webhooks." with the **Sign In** link, as its API Tokens row says "Sign in to
+    create API tokens." The index refuses a guest's token too (403 `webhooks_need_account`).
 - **The Account section shows once.** Each editor's own Settings has Account, Notifications, API Tokens, Privacy
   and Accessibility categories of its own, and each app's catalogue an Account › Notifications. In All they are
   folded into the Account section rather than listed again under the app: the app's rows the Account section
@@ -546,6 +602,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     **Where You're Signed In** (each session's browser and system, when it was last active, **This device** for the
     current one, **Sign Out** of any other and **Sign Out Everywhere Else**), from Better Auth's own
     `/list-sessions`, `/revoke-session`, `/revoke-other-sessions`, `/list-accounts` and `/link-social` on this origin.
+    Signing another device out signs its apps out too ([accounts.md](../003-accounts/accounts.md#signing-out)).
     Either section that can't be read says so with **Try again**.
     On an app's address and in an editor, a link to the same section on liveworkspace.app.
   - **Your Account**: **Sign Out** where the host can sign out (`AccountHost.onSignOut`), and, in an editor's All, the
@@ -585,7 +642,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   token (`/api/workspace/account/profile`), and its Sign-in Methods and API Tokens rows link to liveworkspace.app,
   since sessions and tokens are the session's.
 - **A guest** (on an app's address only) gets the app's side alone: no switch, no All, no Account section and no
-  tokens, but a **Profile** category first, the guest's header card and the way to sign in ([Profile](#settings)). The settings are the ones the app's editor keeps for a guest in this browser, read and written
+  tokens or webhooks, but a **Profile** category first, the guest's header card and the way to sign in ([Profile](#settings)). The settings are the ones the app's editor keeps for a guest in this browser, read and written
   by a device store (`createDeviceSettingsStore` in `@liveworkspace/settings-ui`) under the editor's own key and
   shape: one flat JSON object at `<app>:user-preferences:v1` (`DEVICE_PREFERENCES` in
   `@liveworkspace/settings/device`, pinned to each editor's `STORAGE_KEY` by its catalogue test), the `all` keys
@@ -643,9 +700,32 @@ they never meet an app's own `/_next`, and one build serves both addresses.
   Settings panel also call their APIs. All of it is on this origin, but for Status, which also checks each
   app's own addresses ([Status](#status-status)).
 - Light and dark, following the device (the shared appearance boot script).
+- A page that fails to render never shows the framework's bare error screen. It shows the site's own: the
+  title "Something went wrong · liveworkspace", a main landmark holding one card (the shared empty state) with
+  the heading "Something went wrong", a line saying nothing was lost, **Try Again** (which renders the page
+  again) and **Go to the Home Page**. A failure in the root layout itself gets the same card in a page of its
+  own, with `lang`, the stylesheet and the appearance setting, so it is light or dark as the rest of the site.
+- A button that starts work it waits for keeps the keyboard while it works (busy, never `disabled`;
+  [busy buttons](../../../livediagram/docs/specs/004-interface-design/busy-buttons.md)).
 - Works at phone width with a 16px gutter. Tap targets are 44px on touch screens.
 - The front door, Comparison, the dashboard, Status and the privacy policy and terms are indexable: title, description, canonical,
-  Open Graph, `robots.txt` and `sitemap.xml`.
+  Open Graph, `robots.txt` and `sitemap.xml`. Every other page's title names the page and then the site
+  (`Status · liveworkspace`), the same in its Open Graph and X cards, so a search result or a tab never reads
+  "Status" alone.
+
+## Installing
+
+liveworkspace.app installs to a home screen like each app does
+([push.md "The app side"](../003-accounts/push.md#the-app-side)), so an installed liveworkspace can show phone
+notifications from every app:
+
+- `/manifest.webmanifest` (`app/manifest.ts`, `installManifest` from `@liveworkspace/marketing-site/lib/install`):
+  `liveworkspace`, standalone, `id` and `scope` `/`, starting at `/explorer`, with the scalable mark and 256 and 512
+  pixel PNGs drawn from it at build (`app/liveworkspace-icon-256.png/route.tsx`, `…-512.png`, `lib/install-icon.tsx`),
+  and an opaque 180 pixel Apple tile (`app/apple-icon.tsx`). Every page links it. Served on an app's address, the
+  Explorer's link is relative, so it names that app's manifest there, and installing from there installs the app.
+- `/push-worker.js` (`app/push-worker.js/route.ts`): the push-only service worker every site serves, registered only
+  when someone turns phone notifications on, with no fetch handler.
 
 ## Hosting
 
@@ -655,7 +735,8 @@ path routes on the same hosts, which win over a custom domain, so Cloudflare sen
 the two `.well-known` discovery documents to the accounts Worker, `/api/index*` to the index, `/api/media*` and
 `/api/previews*` to media, `/api/telemetry*` to telemetry, `/api/community*` to the Community, `/api/status*` to
 the status Worker, `/api/drive*` to Drive, and everything else here. Every API has the same routes on both hosts.
-Security headers come from `public/_headers`.
+Security headers come from `public/_headers`. `/.well-known/security.txt` is the site's (accounts' routes name only its two
+discovery documents), and the bare-domain redirect leaves `/.well-known/*` alone, so both hosts answer it.
 
 Every page enforces Trusted Types with the policies every app shares (`@liveworkspace/trusted-types`;
 livediagram/docs/specs/016-platform/trusted-types.md). Each app's router passes these same headers through for the
@@ -700,7 +781,7 @@ corepack pnpm dev:workspace           # from the repo root: http://localhost:300
 That runs the site's dev server on 3000 and the seven services behind it (accounts on 8787, telemetry on 8790, the
 Community on 8791, media on 8792, the index on 8793, status on 3010, Drive on 3011; first-time setup for each is in
 [the README](../../../README.md#local-development) and the API's own doc). The dev server forwards `/api/auth/*`,
-`/api/account/*`, `/.well-known/*`, `/api/index/*`, `/api/previews/*`, `/api/telemetry/*`, `/api/community/*`,
+`/api/account/*`, the two `.well-known` discovery documents, `/api/index/*`, `/api/previews/*`, `/api/telemetry/*`, `/api/community/*`,
 `/api/status*` and `/api/drive/*` to them (`next.config.ts`), so the whole site works from one origin, as it does in production. Run `corepack pnpm dev:site` for the pages alone.
 
 ## Known gaps

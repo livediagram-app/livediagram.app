@@ -195,14 +195,15 @@ export async function readCells(
   });
 }
 
-// The rows of a sheet holding any cell (a form's response goes under the last of them).
+// The rows of a sheet holding a value (a form's response goes under the last of them). A cell with only a format (a
+// banded or boxed look's empty rows) holds none, so a styled sheet's response lands under its last value, in view.
 export async function usedSheetRows(
   env: PlanEnv,
   projectId: string,
   sheetId: string,
 ): Promise<Set<string>> {
   const rows = await env.PLAN_DB.prepare(
-    `SELECT DISTINCT row_id FROM sheet_cells WHERE plan_id = ? AND sheet_id = ?`,
+    `SELECT DISTINCT row_id FROM sheet_cells WHERE plan_id = ? AND sheet_id = ? AND input IS NOT NULL`,
   )
     .bind(projectId, sheetId)
     .all<{ row_id: string }>();

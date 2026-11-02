@@ -21,6 +21,10 @@ import { cliCommandSentence } from './cli-commands';
 import { API_OPERATIONS, BY_ACTION, EXACT } from './event-explanations';
 import {
   ACCOUNT_ACTIVITY,
+  COMMUNITY_DISCOVERY,
+  COMMUNITY_ENGAGEMENT,
+  COMMUNITY_MODERATION,
+  COMMUNITY_PUBLISHING,
   AGENT_CHANGESETS,
   AGENT_VIEWED,
   ALL_VISITORS,
@@ -45,6 +49,7 @@ import {
   EXCEPTIONS,
   EXPORT_AND_IMPORT,
   FAILED_REQUESTS,
+  FIND_AND_REPLACE,
   HELP_CENTRE,
   HELP_SEARCHES,
   JOINING,
@@ -132,6 +137,8 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   // Warm stone: a quiet backstop, apart from Document's sky and Error's red.
   Trash: '#78716c',
   Mcp: '#f43f5e',
+  // Deep pink, the heart on a Community card, apart from Canvas's lighter pink.
+  Community: '#db2777',
   // Terminal ink: the command line, darker than Trash's stone grey.
   Cli: '#1e293b',
   // Burnt orange: the agents' changesets, apart from MCP's rose and Activity's amber.
@@ -144,7 +151,7 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Timing: '#047857',
 };
 
-const PAGE_VIEW_APPS: PageViewApp[] = ['Marketing', 'Live', 'Help', 'Dashboard'];
+const PAGE_VIEW_APPS: PageViewApp[] = ['Marketing', 'Live', 'Help', 'Dashboard', 'Community'];
 
 const FUNNEL = createCtaFunnel({
   surfaces: CTA_SURFACES,
@@ -246,6 +253,7 @@ export const LIVEDOCUMENTS: TelemetryAppConfig = {
           LAYERS_FEATURE,
           SIDE_BY_SIDE,
           EDITOR_SEARCH,
+          FIND_AND_REPLACE,
           EDITOR_CHROME,
           TRASH,
         ],
@@ -282,6 +290,15 @@ export const LIVEDOCUMENTS: TelemetryAppConfig = {
       {
         title: 'Discussion and teams',
         metrics: [DISCUSSION, TEAM_ACTIVITY],
+      },
+      {
+        title: 'Community',
+        metrics: [
+          COMMUNITY_PUBLISHING,
+          COMMUNITY_ENGAGEMENT,
+          COMMUNITY_DISCOVERY,
+          COMMUNITY_MODERATION,
+        ],
       },
     ],
   },

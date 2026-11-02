@@ -27,6 +27,29 @@ describe('a Dashboard slot', () => {
     expect(dashboardOf(cleared).rows[0]!.slots[0]!.content).toBeUndefined();
   });
 
+  // plan-tabs.md "A slot's name": naming the slot changes its content but keeps what it shows.
+  it('keeps its element when the new content still shows it, and drops it for another', () => {
+    const stored = tab();
+    const d = { ...stored, dashboard: dashboardOf(stored) };
+    const slot = d.dashboard.rows[0]!.slots[0]!.id;
+    const view = dashboardViewElement('metric:count');
+    const filled = withSlotContent(d, slot, { type: 'element', elementId: view.id }, view);
+    const named = withSlotContent(filled, slot, {
+      type: 'element',
+      elementId: view.id,
+      name: 'Open work',
+    });
+    expect(named.elements.map((e) => e.id)).toEqual([view.id]);
+    expect(dashboardOf(named).rows[0]!.slots[0]!.content).toEqual({
+      type: 'element',
+      elementId: view.id,
+      name: 'Open work',
+    });
+    const other = dashboardViewElement('gantt');
+    const replaced = withSlotContent(named, slot, { type: 'element', elementId: other.id }, other);
+    expect(replaced.elements.map((e) => e.id)).toEqual([other.id]);
+  });
+
   it('makes a board or Sheet of the dashboard itself for a board or Sheet tile', () => {
     expect(dashboardElement({ kind: 'board', preset: 'kanban' })).toMatchObject({
       shape: 'plan-board',

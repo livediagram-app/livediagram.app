@@ -8,6 +8,7 @@ import {
   shareLink,
 } from './audit-screens';
 import {
+  adoptGuest,
   dismissQuickTour,
   expect,
   expectNoPageErrors,
@@ -55,8 +56,10 @@ async function openSeededEditor(page: Page, baseURL: string): Promise<Locator> {
 }
 
 test.describe('Optical alignment audit', () => {
+  // A visitor with no identity leaves /new for the guest handoff the moment the page hydrates (fixtures.ts
+  // serverNewUrl), which destroyed the page mid-audit: the wizard is audited as a minted guest, who stays.
   test('the New Canvas wizard', async ({ page, pageErrors }) => {
-    await darkVisitor(page);
+    await darkVisitor(page, await mintGuest(page.request));
     await page.goto('/new');
     await page.getByText('New Canvas', { exact: false }).first().waitFor();
     await untilHydrated(page.getByRole('button', { name: /^create$/i }));
@@ -123,6 +126,8 @@ test.describe('Optical alignment audit', () => {
 // holding one is judged by its cap band, not its ink. Participant names are random, so this is pinned here
 // rather than left to the day a "Q" comes up.
 test('initials with a tailed capital centre on their cap band', async ({ page }) => {
+  // A minted guest, so /new stays put rather than leaving for the guest handoff mid-audit.
+  await adoptGuest(page, await mintGuest(page.request));
   await page.goto('/new');
   await page.getByText('New Canvas', { exact: false }).first().waitFor();
   await page.evaluate(() => {

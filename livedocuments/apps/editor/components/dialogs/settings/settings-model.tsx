@@ -14,6 +14,7 @@ import type { AppearanceSetting } from '@livedocuments/ui';
 import { SHORTCUT_SECTIONS } from '@/components/dialogs/shortcut-sections';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useShortcutsEnabled } from '@/hooks/ui/useShortcutsEnabled';
+import { useHideCursors } from '@liveworkspace/workbench/hooks/collab/useHideCursors';
 import { track } from '@/lib/telemetry';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { presetSummaryLines } from './power-user-preset-rows';
@@ -21,6 +22,7 @@ import { rowSharedAcrossApps } from './settings-all-apps';
 import type {
   SettingsAppearanceRowSpec,
   SettingsCategorySpec,
+  SettingsHideCursorsRowSpec,
   SettingsRowSpec,
   SettingsShortcutsRowSpec,
 } from './settings-catalogue';
@@ -60,6 +62,8 @@ export function settingsModel(
         return { ...row, kind: 'custom', render: () => <AppearanceRow row={row} /> };
       case 'shortcuts':
         return { ...row, kind: 'custom', render: () => <ShortcutsRow row={row} /> };
+      case 'hideCursors':
+        return { ...row, kind: 'custom', render: () => <HideCursorsRow row={row} /> };
       case 'tokens':
         return { ...row, kind: 'custom', render: () => <SettingsTokensRow row={row} /> };
       case 'identity':
@@ -112,4 +116,11 @@ function AppearanceRow({ row }: { row: SettingsAppearanceRowSpec }) {
 function ShortcutsRow({ row }: { row: SettingsShortcutsRowSpec }) {
   const { enabled, setEnabled } = useShortcutsEnabled();
   return <SettingsToggleRowView row={row} checked={enabled} onChange={setEnabled} />;
+}
+
+// Hide Participant Cursors (docs/specs/012-collaboration/collaborator-enhancements.md): per-device, like the
+// shortcuts switch, over the store the Collaborators modal's switch shares. The hook sends its own telemetry.
+function HideCursorsRow({ row }: { row: SettingsHideCursorsRowSpec }) {
+  const { hidden, setHidden } = useHideCursors();
+  return <SettingsToggleRowView row={row} checked={hidden} onChange={setHidden} />;
 }

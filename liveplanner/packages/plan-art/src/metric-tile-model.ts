@@ -11,6 +11,7 @@ import {
   type ItemTypeDef,
   type MetricKind,
   type PlanBoardSetup,
+  doneColumnsOf,
 } from '@liveplanner/items';
 import { PRIORITY_COLOURS } from '@liveplanner/project';
 import { OVERDUE_RED, PHASE_COLOURS } from './phase-colours';
@@ -51,6 +52,22 @@ export function metricTier(width: number, height: number): MetricTier {
 export function heroSize(width: number, height: number, tier: MetricTier): number {
   const fit = Math.min(height * (tier === 'compact' ? 0.42 : 0.3), width * 0.2);
   return Math.round(Math.min(72, Math.max(28, fit)));
+}
+
+// A regular tile's strip of rows (a person, the top card, a stale card) is drawn only where it fits whole under the
+// header and the figure: a short tile (Two by Two's 160 px metric rows) left it cut in half at its bottom edge. The
+// space left is the tile less its padding and border (34), its header row (28), the figure with its line (the figure's
+// size and 23) and the two 12 px gaps; a meter or a split bar is thin enough to sit in the padding, so it always shows.
+const METRIC_TILE_CHROME_PX = 34 + 28 + 12 + 23 + 12;
+const METRIC_ROW_STRIP_PX: Partial<Record<NonNullable<MetricVisual>['kind'], number>> = {
+  people: 20,
+  list: 26,
+  card: 38,
+};
+
+export function metricStripFits(visual: MetricVisual, height: number, heroPx: number): boolean {
+  const need = visual ? METRIC_ROW_STRIP_PX[visual.kind] : undefined;
+  return need === undefined || height - METRIC_TILE_CHROME_PX - heroPx >= need;
 }
 
 export type MetricBar = { key: string; label: string; count: number; color: string };
@@ -117,7 +134,7 @@ export function metricModel(
         visual: total ? { kind: 'split', parts: phaseSplit(projection), total } : null,
       };
     case 'progress': {
-      if (setup.doneColumnId === undefined)
+      if (doneColumnsOf(setup).length === 0)
         return { hero: '–', line: 'No board has a done column yet', visual: null };
       const pct = percentDone(projection.doneCount, total);
       return {

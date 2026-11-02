@@ -138,7 +138,7 @@ or **Plain Text** (the value alone; the arrow shows on the active cell only).
     then its fields: a Dropdown's **options**, each a text field with its colour button (the one
     [colour picker](../004-interface-design/colour-picker.md) in its swatch skin, **No Colour** first) and a remove
     button, dragged by a grip to reorder, **Add Another Option** under them (Enter in an option's field adds one after
-    it), and its **Display** (Chip, Arrow, Plain Text); a range's A1 field; a Number, Date or Text rule's condition
+    it and moves the typing there, as Add Another Option does), and its **Display** (Chip, Arrow, Plain Text); a range's A1 field; a Number, Date or Text rule's condition
     (a select) and its one or two values (a date in the person's locale).
   - **Advanced**, a collapsed section: **If the Value Isn't Allowed** (Reject the Value, Show a Warning) and **Help
     Text**.

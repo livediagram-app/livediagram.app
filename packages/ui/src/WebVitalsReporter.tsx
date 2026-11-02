@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useReportWebVitals } from 'next/web-vitals';
 import type { TimingTrack, WebVitalsReport } from './web-vitals';
+import { isSilentReturn } from './silent-return';
 
 // The Web Vitals observer (docs/specs/017-telemetry/timing-telemetry.md in each product), for a product's lazily
 // loaded reporter chunk (its WebVitalsReporter, which WebVitalsTracker loads), so the library stays off the
@@ -15,10 +16,15 @@ export function WebVitalsReporter({
   report: Pick<WebVitalsReport<string>, 'webVitalApp' | 'reportWebVital'>;
 }) {
   const [app] = useState(() => report.webVitalApp(window.location.pathname));
+  // The way back from a deferred silent sign-in: its timings start at the bounce, after the visitor had already seen
+  // the page, so they describe no wait anyone had.
+  const [skip] = useState(isSilentReturn);
   useReportWebVitals(
     useCallback(
-      (metric: { name: string; value: number }) => report.reportWebVital(track, metric, app),
-      [track, app, report],
+      (metric: { name: string; value: number }) => {
+        if (!skip) report.reportWebVital(track, metric, app);
+      },
+      [track, app, report, skip],
     ),
   );
   return null;

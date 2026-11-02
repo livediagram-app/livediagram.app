@@ -6,7 +6,7 @@
 
 import { cleanup, fireEvent, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { SettingsCategoryList } from './SettingsCategoryList';
+import { FOCUS_INSIDE, SettingsCategoryList } from './SettingsCategoryList';
 import { fixtureCategories } from './test/fixture';
 import { renderWithKit } from './test/kit';
 
@@ -141,6 +141,16 @@ describe('the All view’s groups', () => {
     expect(expanded('livediagram')).toBe('false');
   });
 
+  // A group's rows sit in a body that clips for its ease open and shut: a ring drawn outside a row lost its sides.
+  it('draws every focus ring inside its own row, headings and group rows alike', () => {
+    renderWithKit(ui('profile'));
+    const buttons = screen.getAllByRole('button');
+    expect(buttons.map((b) => b.textContent)).toEqual(
+      expect.arrayContaining(['Account', 'Profile', 'Privacy']),
+    );
+    for (const b of buttons) expect(b.className.split(' ')).toContain(FOCUS_INSIDE);
+  });
+
   it('opens the group of a category picked from elsewhere, and every group while searching', () => {
     const view = renderWithKit(ui('profile'));
     view.rerender(ui('canvas'));
@@ -148,5 +158,14 @@ describe('the All view’s groups', () => {
     expect(expanded('Account')).toBe('false');
     view.rerender(ui('canvas', true));
     expect(expanded('livediagram')).toBe('true');
+  });
+});
+
+describe('focus rings on the phone and in the sidebar', () => {
+  // The phone's card clips at its rounded edge, and a parent row's disclosure sits beside it.
+  it.each(['root', 'sidebar'] as const)('keeps every %s ring inside its row', (variant) => {
+    mount('editor', { variant });
+    for (const b of screen.getAllByRole('button'))
+      expect(b.className.split(' ')).toContain(FOCUS_INSIDE);
   });
 });

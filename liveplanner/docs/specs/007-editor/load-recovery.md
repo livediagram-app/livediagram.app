@@ -130,6 +130,9 @@ cache, cached share passwords, and the stale-build reload guards.
   past answers and votes are matched against;
 - the offline store (IndexedDB `liveplanner-offline`): Offline Mode projects
   exist nowhere else;
+- every plan's queue of waiting card and sheet changes (keys under
+  `liveplanner:offline-queue:`, [Offline changes](offline-changes.md)): work
+  that has not reached the server yet;
 - cookies and the sign-in provider's own storage: repair never signs anyone
   out.
 
@@ -195,8 +198,10 @@ the server, which the rest of this spec covers.
 - **In the editor.** While offline a banner sits at the top of the canvas
   stack: "You're offline. Changes stay in this tab and save when you
   reconnect." for someone who can edit, "You're offline. You'll see changes
-  when you reconnect." for a viewer. Changes are held in memory only, so the
-  banner says "in this tab": closing it while offline loses them. The words
+  when you reconnect." for a viewer. Tab changes are held in memory only, so the
+  banner says "in this tab": closing it while offline loses them. Card and
+  Sheet changes are kept in this browser instead and the banner counts them
+  while they wait ([Offline changes](offline-changes.md)). The words
   say it all: no coloured dot beside them (never a dot standing for a status), and not the This
   Browser pill's teal, since a dropped connection is not where a project lives. The save
   failure toast reads "You're offline. Keep this tab open to save when you
@@ -226,13 +231,21 @@ the server, which the rest of this spec covers.
   spending its one reload; the same failure reported once back online still
   recovers. The load-error card ships in the editor's bundle for the same
   reason, lazy-loading only its recovery tools, which show online only.
+- **Code not loaded yet waits for the connection.** Much of the editor loads when first opened (a card's panel, the
+  Trash, Find, Card Types, the Timer and Vote popovers, a Sheet tab). Opened while offline, its code cannot come, and
+  it never takes the board with it: a card's panel or a popover simply does not open (a popover's button lets go),
+  and opens once the connection is back if it is still wanted (a card stays the open card). A layout area that
+  cannot load (the canvas, for a Sheet tab first opened offline) says "You're offline, so the canvas couldn't load.
+  It comes back when you reconnect." with no Try Again, and comes back on its own when the browser is online again.
 - No telemetry: events cannot leave while offline, and the reload on reconnect
   drops anything buffered.
 
 ## Out of scope
 
 - A request id on API responses for matching a report to a log line.
-- A service worker or any offline copy of the editor itself: without a
-  connection the editor still cannot start.
+- An offline copy of the editor itself: without a connection the editor still
+  cannot start. The one service worker, `/push-worker.js`, only shows phone
+  notifications: it has no fetch handler, so it caches and answers nothing
+  ([Installable app](../016-platform/installable-app.md)).
 - Timeouts on every API request. The watchdog bounds the load; requests after
   it are already reported when they fail.

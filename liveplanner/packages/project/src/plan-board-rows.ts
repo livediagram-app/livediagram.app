@@ -7,7 +7,7 @@
 // own batch, and the editor's offline Inbox read (§2.6) uses them in place of the table.
 
 import type { Element } from './index';
-import { normaliseBoardSetup } from '@liveplanner/items';
+import { isDoneColumn, normaliseBoardSetup } from '@liveplanner/items';
 
 // The status an All Cards board writes: it shows every card whatever its status, so the read can land a card
 // there when no column holds it. Never a real status (a status is trimmed text a person typed).
@@ -44,13 +44,12 @@ export function planBoardRowsFromElements(elements: readonly Element[]): PlanBoa
       });
       continue;
     }
-    const doneAt = setup.columns.findIndex((c) => c.id === setup.doneColumnId);
     setup.columns.forEach((c, i) =>
       rows.push({
         elementId: el.id,
         boardTitle,
         status: c.status,
-        done: doneAt >= 0 && i >= doneAt,
+        done: isDoneColumn(setup, c),
         boardOrder: order,
         position: i,
       }),
@@ -65,7 +64,8 @@ export type CardPlaces = {
   // The board a card in `status` opens on: one holding its status, then an All Cards board, then any board, by
   // tab, board and column order. Null when the plan shows no board.
   boardFor(status: string | undefined): CardBoard | null;
-  // Whether `status` is past a board's Done column: such a card is no longer waiting on anyone.
+  // Whether `status` is a board's done column (docs/specs/026-plan/plan-board.md "Done columns"): such a card is no
+  // longer waiting on anyone.
   isDone(status: string | undefined): boolean;
 };
 

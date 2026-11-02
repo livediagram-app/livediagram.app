@@ -3,7 +3,8 @@
 // `/new?template=<template>`, the address its welcome uses) and its picture, drawn from the shared miniatures every
 // help centre draws a product's work with. One table for every app, so every app's set is laid out alike.
 
-import { APPS, type App } from '@liveworkspace/index-client';
+import { type App } from '@liveworkspace/index-client';
+import { APP_NAMES } from '@liveworkspace/sites';
 import {
   MiniArticle,
   MiniBoard,
@@ -126,14 +127,16 @@ export const WORK_KINDS: Record<App, readonly WorkKind[]> = {
     },
     { id: 'photo', label: 'Photo', template: 'photo-edit', draw: (b) => <MiniPhoto {...b} /> },
   ],
+  // Registered before its launch, so no Explorer shows it yet: its kinds (the Spaces) come with its fork.
+  livehuddle: [],
 };
 
 /** One tile of the hero's set: an app's kind of work. */
 export type WorkTile = { app: App; kind: WorkKind; label: string };
 
-/** The tiles the hero shows: the app's kinds, or under All one per app (its first kind, named by the app's kind:
+/** The tiles the hero shows: the app's kinds, or under All one per listed app (its first kind, named by the app's kind:
  *  Canvas, Plan, Document, Design), so either way the set holds the same number of tiles. */
 export function workTiles(app: App, all: boolean): WorkTile[] {
   if (!all) return WORK_KINDS[app].map((kind) => ({ app, kind, label: kind.label }));
-  return APPS.map((a) => ({ app: a, kind: WORK_KINDS[a][0]!, label: kindWords(a).one }));
+  return APP_NAMES.map((a) => ({ app: a, kind: WORK_KINDS[a][0]!, label: kindWords(a).one }));
 }

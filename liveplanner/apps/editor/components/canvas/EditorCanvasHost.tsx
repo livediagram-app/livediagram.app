@@ -541,37 +541,30 @@ export function EditorCanvasHost() {
             setContextMenu(null);
           }}
           onSelect={selectElement}
-          onElementContextMenu={
-            isReadOnly
-              ? undefined
-              : (id, sx, sy) => {
-                  // Concurrent-selection lock (docs/specs/007-editor/editor-app.md): a peer holds this
-                  // element, so it can't be selected, dragged, or edited — don't
-                  // pop a dead context menu on it either. Same gate as
-                  // selectElement.
-                  if (lockedByOther(id)) return;
-                  // Right-clicking the element that already owns the menu AT THE
-                  // SAME ANCHOR is a no-op: return the SAME state object so React
-                  // re-renders nothing. Re-opening would restart the entrance
-                  // animation and flash the selection popover in the gap, for a
-                  // gesture that asked for the menu already on screen.
-                  //
-                  // The anchor has to be part of that comparison: selectElement
-                  // runs first and retargets an open menu's elementId in place
-                  // (keeping the old x / y), so an id-only check would see 'same
-                  // element' for a right-click on a DIFFERENT one and strand the
-                  // menu at the previous element's position.
-                  setContextMenu((cur) =>
-                    cur &&
-                    cur.mode === 'element' &&
-                    cur.elementId === id &&
-                    cur.x === sx &&
-                    cur.y === sy
-                      ? cur
-                      : { mode: 'element', elementId: id, x: sx, y: sy },
-                  );
-                }
-          }
+          onElementContextMenu={(id, sx, sy) => {
+            // Concurrent-selection lock (docs/specs/007-editor/editor-app.md): a peer holds this
+            // element, so it can't be selected, dragged, or edited — don't
+            // pop a dead context menu on it either. Same gate as
+            // selectElement. A Participant or a Viewer still opens its own menu there
+            // (comments, a link), less Edit Text (docs/specs/008-canvas/element-menu-quick-bar.md).
+            if (!isReadOnly && lockedByOther(id)) return;
+            // Right-clicking the element that already owns the menu AT THE
+            // SAME ANCHOR is a no-op: return the SAME state object so React
+            // re-renders nothing. Re-opening would restart the entrance
+            // animation and flash the selection popover in the gap, for a
+            // gesture that asked for the menu already on screen.
+            //
+            // The anchor has to be part of that comparison: selectElement
+            // runs first and retargets an open menu's elementId in place
+            // (keeping the old x / y), so an id-only check would see 'same
+            // element' for a right-click on a DIFFERENT one and strand the
+            // menu at the previous element's position.
+            setContextMenu((cur) =>
+              cur && cur.mode === 'element' && cur.elementId === id && cur.x === sx && cur.y === sy
+                ? cur
+                : { mode: 'element', elementId: id, x: sx, y: sy },
+            );
+          }}
           onMultiContextMenu={
             isReadOnly
               ? undefined

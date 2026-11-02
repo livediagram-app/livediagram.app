@@ -37,11 +37,11 @@ A new push to a pull request cancels its run in flight (`concurrency`); on `main
 It runs **every** spec file in `apps/editor/e2e/` (bar the opt-in perf and WebKit projects),
 spread over parallel jobs so the wall time is the slowest job, not the sum:
 
-| Job                 | Builds                                              | Runs                                                                                                    |
-| ------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| **Smoke shard i/6** | the editor, and liveworkspace's site (the Explorer) | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests                                 |
-| **Sites audit**     | the editor, help and community, then marketing      | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts` and `marketing-header-fit.spec.ts` |
-| **Signed-in specs** | the editor with sign-in on (`build:signed-in`)      | the `signed-in` project ([Signed-in specs](#signed-in-specs))                                           |
+| Job                 | Builds                                                                                      | Runs                                                                                                    |
+| ------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| **Smoke shard i/6** | the editor, and liveworkspace's site (the Explorer)                                         | `test:e2e:smoke --shard=i/6`: a sixth of the `chromium` project's tests                                 |
+| **Sites audit**     | the editor, help and community, then marketing                                              | `test:e2e:sites`: the `sites` project, `optical-audit-sites.spec.ts` and `marketing-header-fit.spec.ts` |
+| **Signed-in specs** | the editor with sign-in on (`build:signed-in`), and the Explorer's e2e export (`build:e2e`) | the `signed-in` project ([Signed-in specs](#signed-in-specs))                                           |
 
 Only the sites audit opens help, the Community and marketing, so only its job pays for their builds. Marketing builds after the
 others, as `turbo.json` orders it: its licences page runs Next's analyzer in each other app on that
@@ -143,7 +143,11 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
    `E2E_MEDIA_PORT` (8120), its D1 and R2 fresh each boot under `liveworkspace/apps/media/.wrangler/e2e-state-<port>`
    (migrations applied first), keyed for livediagram.app with a test-only key the api gets as `MEDIA_KEY` (and
    `MEDIA_URL` pointing at it). Uploads, the gallery and image bytes run end to end, as `import-images.spec.ts`
-   and `drawio-import.spec.ts` need.
+   and `drawio-import.spec.ts` need. So do previews: its `INDEX_URL` is the stack's index and its
+   `APP_ORIGIN_LIVEDIAGRAM` this api (the export door), as `explorer-previews.spec.ts` needs. Its `INDEX` service
+   binding finds the stack's index through the stack's own wrangler dev registry (`WRANGLER_REGISTRY_PATH`,
+   `liveworkspace/apps/index/.wrangler/e2e-registry-<media port>`, fresh each boot), never a developer's or another
+   stack's Worker registered under the same name.
 3. **api**: `wrangler dev --local` (`apps/api`) on a fixed port, with
    each document's content in its own local Durable Object (no migration to apply).
    `TELEMETRY_ENABLED` unset (the suite asserts on the app, not the
@@ -158,7 +162,8 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
    - rewrite every `/document/<id>` to the single placeholder
      `out/document/[id].html` ([Dedicated route for new-document creation](../007-editor/new-document-route.md): one HTML backs every document
      URL);
-   - forward `/api/index/*` to the index, and proxy the rest of `/api/*` to the api worker, WebSocket upgrades
+   - forward `/api/index/*` to the index and `/api/previews/*` to media, cookies dropped (the router's
+     `routeToPreviews`), and proxy the rest of `/api/*` to the api worker, WebSocket upgrades
      included (the realtime room), so the app is same-origin (no CORS surprises, mirroring the router);
    - serve liveworkspace's Explorer at `/explorer/*` and its assets at `/_liveworkspace/*` from
      `liveworkspace/apps/site/out` when that site is built, as the router's `routeToWorkspace` does; without

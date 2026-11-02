@@ -4,9 +4,19 @@
 
 import { itemColourOf } from './item-colour';
 import { ITEM_TYPE_PATTERN } from './limits';
-import { readBoardWidgets, type BoardWidgetKind } from './board-widgets';
+import { readBoardWidgets, type BoardWidgetId } from './board-widgets';
+import type { CardSearchFilter } from './card-search';
+import { readSavedFilters, type SavedBoardFilter } from './saved-filters';
 import { statusTitleCase } from './status-title-case';
-import type { Item, ItemPerson } from './item';
+import type { Item, ItemFieldValue, ItemPerson } from './item';
+import {
+  cardKey,
+  fieldCardIds,
+  fieldPeople,
+  holdsSeveral,
+  personKey,
+  swappedValues,
+} from './several-values';
 import {
   ARCHIVED_FIELD,
   LANE_FIELD_BUILT_INS,
@@ -16,11 +26,19 @@ import {
   itemTitle,
 } from './item';
 import type { ItemMove } from './item';
-import { CUSTOM_FIELD_ID_PATTERN } from './type-catalogue';
+import { CUSTOM_FIELD_ID_PATTERN, customFieldOf, typeIn } from './type-catalogue';
+import { calculatedResultOf, hasResult } from './calculated-result';
+import { calculatedReaderOf, type IsDoneStatus } from './calculated-fields';
+import type { FormulaResult } from './formula/limits';
+import { isNotified } from './notify-fields';
+import { percentText, percentValue } from './percent-fields';
+import { boardSortComparator, normaliseBoardSort, type BoardSortLevel } from './board-sort';
 import {
+  type CustomFieldDef,
   ITEM_TYPES,
   LEGACY_PARENT_GROUPING,
   PARENT_FIELD_ID,
+  linkTypesOf,
   type ItemTypeDef,
 } from './item-types';
 import { PRIORITIES, PRIORITY_LABELS, isPriority, type Priority } from './fields';
@@ -33,6 +51,16 @@ import {
   PLAN_WIP_MAX,
 } from './limits';
 import { HEX_COLOUR, isObj } from './validate';
+import { isDoneColumn } from './done-columns';
+import {
+  STAMP_FIELDS,
+  STAMP_FIELD_LABELS,
+  isStampField,
+  itemStampPerson,
+  itemStampTime,
+  stampDay,
+  type StampTimeField,
+} from './card-stamps';
 
 export interface PlanColumn {
   id: string;
@@ -42,6 +70,9 @@ export interface PlanColumn {
   color?: string;
   // How many slots wide it is (docs/specs/026-plan/plan-board.md "The board set-up"); absent is 1.
   width?: ColumnWidth;
+  // Whether its cards count as done (docs/specs/026-plan/plan-board.md "Done columns"). Absent: by its name, or on
+  // an older board by its `doneColumnId` (isDoneColumn).
+  done?: boolean;
 }
 
 export const COLUMN_WIDTHS = [1, 2, 3] as const;
@@ -68,6 +99,18 @@ export const CARD_FIELDS = [
   'comments',
   // A Detailed card's extra: two lines of its description.
   'description',
+  // A card's Attachments (docs/specs/026-plan/items.md "Attachments"): a picture glyph and how many it holds.
+  'attachments',
+  // Its cover picture across the top of a Detailed card, placed only in the Header (docs/specs/026-plan/item-types.md
+  // "Card display").
+  'cover',
+  // How long the card has sat in its status (docs/specs/026-plan/item-types.md "Card display"): in no default.
+  'age',
+  // Its stamps (docs/specs/026-plan/items.md "Created and Last Edited"; card-stamps.ts): Age's family, in no default.
+  'createdAt',
+  'createdBy',
+  'updatedAt',
+  'updatedBy',
 ] as const;
 // A card field: a built-in one, or a card type's custom field by its id (`f-…`, or the reserved `parent`), placed
 // by the type's Display (docs/specs/026-plan/item-types.md "Card display").
@@ -77,17 +120,22 @@ export function isCustomCardField(field: string): field is CustomCardField {
   return CUSTOM_FIELD_ID_PATTERN.test(field);
 }
 
-// How much of each card a board draws (docs/specs/026-plan/plan-board.md "The board set-up"): the title
-// only, one line, or every field it shows. Absent is Detailed.
-export const CARD_SIZES = ['minimal', 'compact', 'detailed'] as const;
+// How much of each card a board draws (docs/specs/026-plan/plan-board.md "The board set-up"): one line, or
+// every field it shows. Absent is Detailed.
+export const CARD_SIZES = ['minimal', 'detailed'] as const;
 export type CardSize = (typeof CARD_SIZES)[number];
+
+// A stored or sent card size as it reads now: Minimal, else Detailed. The retired Compact size (`'compact'`, still
+// in older boards, Plan card elements and agent prompts) reads as Detailed, as does anything unknown.
+export function readCardSize(input: unknown): CardSize {
+  return input === 'minimal' ? 'minimal' : 'detailed';
+}
 
 // The fields each card size can draw (docs/specs/026-plan/plan-board.md "The board set-up"): a field the
 // board shows outside its size's set is kept but not drawn, and its tile in the Cards menu says so.
 export const CARD_SIZE_FIELDS: Readonly<Record<CardSize, readonly CardField[]>> = {
   // Minimal's one line can carry these beside the title (a type's Display picks them; none by default).
-  minimal: ['key', 'priority', 'due', 'assignee'],
-  compact: ['key', 'type', 'assignee', 'priority', 'start', 'due', 'votes', 'comments'],
+  minimal: ['key', 'priority', 'due', 'age', 'assignee'],
   detailed: CARD_FIELDS,
 };
 
@@ -103,10 +151,15 @@ export function cardFieldsAt(
 export interface PlanBoardSetup {
   title: string;
   columns: PlanColumn[];
+  // An older board's one done column, every column after it done too; now written for older editors only, as the
+  // first done column (docs/specs/026-plan/plan-board.md "Done columns").
   doneColumnId?: string;
   swimlaneBy: SwimlaneBy;
   // The field a 'field' board lanes by: a built-in of LANE_FIELD_BUILT_INS or a custom field id.
   swimlaneField?: string;
+  // Sort Cards (docs/specs/026-plan/plan-board.md "The board set-up"): up to two levels, rank breaking ties. Absent is
+  // rank order.
+  sortBy?: BoardSortLevel[];
   cardFields: CardField[];
   cardSize?: CardSize;
   // An Archive board (docs/specs/026-plan/items.md "Archive"): it shows only archived items.
@@ -117,13 +170,16 @@ export interface PlanBoardSetup {
   // and the palette add only these, and cards of other types are hidden on it (never moved). Absent is every type.
   addTypes?: string[];
   // The header's widgets in order (docs/specs/026-plan/board-widgets.md); absent is the default set.
-  widgets?: BoardWidgetKind[];
+  widgets?: BoardWidgetId[];
   hideWriting: boolean;
   // Fill Tab (docs/specs/026-plan/plan-board.md "Fill Tab"): the board fills its tab for everyone, every time the tab
   // is shown, and the rest of the canvas cannot be used. Absent is off.
   fillTab?: boolean;
   // A linked board (docs/specs/026-plan/linked-boards.md): the kind of canvas record it collects. Absent is none.
   collects?: LinkedRecordKind;
+  // Saved filters (docs/specs/026-plan/board-widgets.md "Saved filters"): named quick filters everyone may apply,
+  // at most SAVED_FILTERS_MAX. Absent is none.
+  savedFilters?: SavedBoardFilter[];
 }
 
 // The kinds of canvas record a linked board collects (docs/specs/026-plan/linked-boards.md).
@@ -138,18 +194,9 @@ export interface QuickDueWindow {
   finished?: string[];
 }
 
-// The statuses a board counts as finished (docs/specs/026-plan/board-widgets.md "Not done"): its done column's and
-// those of every column after it (Won't Do). None without a done column, when every card is not done.
-export function finishedStatuses(
-  setup: Pick<PlanBoardSetup, 'columns' | 'doneColumnId'>,
-): string[] {
-  const at = setup.columns.findIndex((c) => c.id === setup.doneColumnId);
-  return at < 0 ? [] : setup.columns.slice(at).map((c) => c.status);
-}
-
 export interface QuickFilter {
   text?: string;
-  // Only items assigned to this person id.
+  // Only Mine: only items a notifying Person field gives this person id (notify-fields.ts).
   mine?: string;
   // From the board's widgets (docs/specs/026-plan/board-widgets.md): only items assigned to this person
   // id, only items of this type, only items due within a window of days (YYYY-MM-DD, both ends
@@ -159,6 +206,9 @@ export interface QuickFilter {
   due?: QuickDueWindow;
   // Only items of this priority.
   priority?: Priority;
+  // The Filter widget's field chips (docs/specs/026-plan/board-widgets.md "The Filter widget"): Card Search's filters,
+  // every one of which a card must match.
+  filters?: CardSearchFilter[];
 }
 
 // `QuickFilter.person` for the cards nobody is assigned.
@@ -208,17 +258,32 @@ export interface LaneHead {
   colour?: string;
   fieldId?: string;
   fieldKind?: LaneFieldKind;
+  // A row of a field that holds several (item-types.md "Holds Several"): a drop swaps values rather than setting one.
+  several?: boolean;
+  // A row of a worked-out value (item-types.md "Rollup and Lookup fields", Filters): a drop into it sets nothing.
+  readOnly?: true;
 }
 
 // How a field lane groups (docs/specs/026-plan/plan-board.md "Swimlanes by a field").
-export type LaneFieldKind = 'choice' | 'checkbox' | 'number' | 'date' | 'text' | 'labels' | 'card';
+export type LaneFieldKind =
+  'choice' | 'checkbox' | 'number' | 'percent' | 'date' | 'text' | 'labels' | 'card' | 'person';
 export interface LaneField {
   id: string;
   label: string;
   kind: LaneFieldKind;
+  // One of the item's stamps (card-stamps.ts), or a worked-out value: read, never set, so a drop into its row sets
+  // nothing.
+  readOnly?: true;
+  // A Formula, Rollup or Lookup (docs/specs/026-plan/item-types.md "Rollup and Lookup fields", Filters): a row per
+  // worked-out value, laned as its result's kind.
+  calculated?: true;
   options?: readonly string[];
-  // A Card field's target type: a row per linked card (docs/specs/026-plan/item-types.md "Card fields").
-  linkType?: string;
+  // A Card field's target types: a row per linked card, of any of them (docs/specs/026-plan/item-types.md "Card
+  // fields").
+  linkTypes?: readonly string[];
+  // A Person or Card field that holds several: a card sits in each of its values' rows (item-types.md "Holds
+  // Several").
+  several?: boolean;
 }
 
 const BUILT_IN_LANE_FIELDS: readonly LaneField[] = [
@@ -227,23 +292,62 @@ const BUILT_IN_LANE_FIELDS: readonly LaneField[] = [
   { id: 'start', label: 'Start Date', kind: 'date' },
   { id: 'due', label: 'Due Date', kind: 'date' },
 ];
-const GROUPING_KINDS = new Set<string>(['choice', 'checkbox', 'number', 'date', 'text', 'card']);
+// The four stamps every type offers (docs/specs/026-plan/items.md "Created and Last Edited").
+const STAMP_LANE_FIELDS: readonly LaneField[] = STAMP_FIELDS.map((id) => ({
+  id,
+  label: STAMP_FIELD_LABELS[id],
+  kind: id === 'createdBy' || id === 'updatedBy' ? 'person' : 'date',
+  readOnly: true,
+}));
+const GROUPING_KINDS = new Set<string>([
+  'choice',
+  'checkbox',
+  'number',
+  // A share groups as a Number, a row per share (docs/specs/026-plan/item-types.md "Percent").
+  'percent',
+  'date',
+  'text',
+  'card',
+  'person',
+  'labels',
+]);
+
+// The lane kind of a Formula, Rollup or Lookup's result: Number, Percent, Date, Text and Checkbox lane as those kinds;
+// a Currency, like a Currency field, lanes none.
+const CALCULATED_LANE_KINDS: Partial<Record<FormulaResult, LaneFieldKind>> = {
+  number: 'number',
+  percent: 'percent',
+  date: 'date',
+  text: 'text',
+  checkbox: 'checkbox',
+};
+const calculatedLaneKind = (c: CustomFieldDef): LaneFieldKind | undefined =>
+  hasResult(c) ? CALCULATED_LANE_KINDS[calculatedResultOf(c)!] : undefined;
 
 // The fields a board can lane by, of the types it shows: the built-ins those types offer, then every grouping
 // custom field in catalogue order, each once (named as the first type that offers it names it).
 export function laneFieldsOf(types: readonly ItemTypeDef[]): LaneField[] {
   // A built-in lane field only when one of the types offers it (docs/specs/026-plan/plan-board.md "Swimlanes by a
   // field"): a board or chart lanes by what its own cards can hold.
-  return everyLaneField(types).filter(
-    (f) => !BUILT_IN_LANE_FIELDS.includes(f) || types.some((t) => t.fields.includes(f.id)),
+  // The stamps with any type at all: every type offers them.
+  return everyLaneField(types).filter((f) =>
+    f.readOnly
+      ? types.length > 0
+      : !BUILT_IN_LANE_FIELDS.includes(f) || types.some((t) => t.fields.includes(f.id)),
   );
 }
 
-// Every field a board could lane by, offered or not: what a board already laned by a field looks it up in.
+// Every field a board could lane by, offered or not: what a board already laned by a field looks it up in. The
+// stamps come after the built-ins, before the custom fields.
 function everyLaneField(types: readonly ItemTypeDef[]): LaneField[] {
-  const out: LaneField[] = [...BUILT_IN_LANE_FIELDS];
+  const out: LaneField[] = [...BUILT_IN_LANE_FIELDS, ...STAMP_LANE_FIELDS];
   for (const t of types)
     for (const c of t.custom ?? []) {
+      const worked = calculatedLaneKind(c);
+      if (worked && t.fields.includes(c.id) && !out.some((f) => f.id === c.id)) {
+        out.push({ id: c.id, label: c.label, kind: worked, readOnly: true, calculated: true });
+        continue;
+      }
       if (!GROUPING_KINDS.has(c.kind) || !t.fields.includes(c.id)) continue;
       if (out.some((f) => f.id === c.id)) continue;
       out.push({
@@ -251,7 +355,8 @@ function everyLaneField(types: readonly ItemTypeDef[]): LaneField[] {
         label: c.label,
         kind: c.kind as LaneFieldKind,
         ...(c.options ? { options: c.options } : {}),
-        ...(c.linkType ? { linkType: c.linkType } : {}),
+        ...(c.kind === 'card' ? { linkTypes: linkTypesOf(c) } : {}),
+        ...(holdsSeveral(c) ? { several: true } : {}),
       });
     }
   return out;
@@ -264,48 +369,174 @@ export function laneFieldOf(
   return id ? everyLaneField(types).find((f) => f.id === id) : undefined;
 }
 
-// An item's value for a field lane, or undefined for the No row (a checkbox is never undefined).
+// An item's value for a field lane, or undefined for the No row (a checkbox is never undefined); a worked-out field's
+// from `calculated`.
 function laneValue(
   field: LaneField,
-  item: Pick<Item, 'fields'>,
+  item: Item,
+  calc?: LaneCalc,
 ): string | number | boolean | undefined {
-  if (field.kind === 'labels') return itemLabels(item)[0];
-  const v = item.fields[field.id];
+  if (field.kind === 'labels') return labelsIn(field.id, item)[0];
+  const v = field.calculated ? calc?.(field.id, item) : item.fields[field.id];
   if (field.kind === 'checkbox') return v === true;
   if (field.kind === 'number') return typeof v === 'number' && Number.isFinite(v) ? v : undefined;
+  if (field.kind === 'percent') return typeof v === 'number' ? percentValue(v) : undefined;
   if (typeof v !== 'string') return undefined;
   const s = field.kind === 'text' ? v.trim() : v;
   return s ? s : undefined;
 }
 
+// A worked-out field's value on a card (a Formula, Rollup or Lookup laned by its result), by field id: one reader per
+// grouping, so the child index is made once (calculated-fields.ts).
+type LaneCalc = (fieldId: string, item: Item) => ItemFieldValue | undefined;
+function laneCalcOf(
+  items: ReadonlyMap<string, Item>,
+  types: readonly ItemTypeDef[],
+  isDone: IsDoneStatus | undefined,
+): LaneCalc {
+  const read = calculatedReaderOf(items, types, isDone);
+  return (id, item) => {
+    const def = customFieldOf(typeIn(types, item.type), id);
+    return def ? (read(def, item) ?? undefined) : undefined;
+  };
+}
+
+// A Labels field's labels: the built-in's, or a custom Labels field's (docs/specs/026-plan/item-types.md "Custom field
+// kinds").
+function labelsIn(fieldId: string, item: Pick<Item, 'fields'>): string[] {
+  if (fieldId === 'labels') return itemLabels(item);
+  const v = item.fields[fieldId];
+  return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string' && x !== '') : [];
+}
+
+// A field lane's field as several-values.ts reads it.
+const severalOf = (field: LaneField) => ({
+  kind: field.kind as 'person' | 'card',
+  multiple: field.several === true,
+});
+
+// What every row of a field lane carries.
+const laneBase = (field: LaneField) => ({
+  field: 'field' as const,
+  fieldId: field.id,
+  fieldKind: field.kind,
+  ...(field.several ? { several: true } : {}),
+  ...(field.calculated ? { readOnly: true as const } : {}),
+});
+
+// A Person field's rows: its person's, or each of its people's when it holds several, named and drawn as an Assignee
+// row (plan-board.md "Swimlanes by a field"); No {Field} when it holds none.
+function personLanes(field: LaneField, item: Pick<Item, 'fields'>): LaneHead[] {
+  const base = laneBase(field);
+  const people = fieldPeople(severalOf(field), item.fields[field.id]);
+  if (people.length === 0)
+    return [{ key: NO_LANE, label: `No ${field.label}`, value: null, ...base }];
+  return people.map((p) => ({
+    key: `f:p:${p.id}`,
+    label: p.name,
+    value: { ...p },
+    person: p,
+    ...base,
+  }));
+}
+
+// A Card field's rows: its linked card's, or each linked card's when it holds several, named by the linked card with
+// its colour dot when it has a Colour (docs/specs/026-plan/item-types.md "Card fields"); No {Field} when it links none.
+function cardLanes(
+  field: LaneField,
+  item: Pick<Item, 'fields'>,
+  items: ReadonlyMap<string, Item>,
+  types: readonly ItemTypeDef[],
+): LaneHead[] {
+  const ids = fieldCardIds(severalOf(field), item.fields[field.id]);
+  if (ids.length === 0) return [fieldLane(field, undefined)];
+  return ids.map((id) => {
+    const linked = linkedCard(items, id);
+    const colour = linked ? itemColourOf(linked, typeIn(types, linked.type)) : undefined;
+    return {
+      ...fieldLane(field, id),
+      label: linked ? itemTitle(linked) : 'Missing card',
+      ...(colour ? { colour } : {}),
+    };
+  });
+}
+
+// A stamp's row: the person, or the local day of the moment (docs/specs/026-plan/items.md "Created and Last Edited").
+// A card stored without one sits in the No row.
+function stampLane(field: LaneField, item: Partial<Item>): LaneHead {
+  if (field.id === 'createdBy' || field.id === 'updatedBy') {
+    const p = itemStampPerson(item, field.id);
+    return personLanes(field, { fields: p ? { [field.id]: { ...p } } : {} })[0]!;
+  }
+  const at = itemStampTime(item, field.id as StampTimeField);
+  return fieldLane(field, at === undefined ? undefined : stampDay(at));
+}
+
 function fieldLane(field: LaneField, value: string | number | boolean | undefined): LaneHead {
-  const base = { field: 'field' as const, fieldId: field.id, fieldKind: field.kind };
+  const base = laneBase(field);
   if (value === undefined)
     return { key: NO_LANE, label: `No ${field.label}`, value: null, ...base };
-  const label = typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value);
+  const label =
+    typeof value === 'boolean'
+      ? value
+        ? 'Yes'
+        : 'No'
+      : field.kind === 'percent' && typeof value === 'number'
+        ? percentText(value)
+        : String(value);
   return { key: `f:${JSON.stringify(value)}`, label, value, ...base };
 }
 
 // What a drop into a lane sets on an item (docs/specs/026-plan/plan-board.md "Moving cards"): the lane's
 // field, a type, or nothing for a status row (the move carries the status). A Labels row puts its label
-// first, keeping the card's others; a Checkbox No row and any No row clear the field.
+// first, keeping the card's others; a Checkbox No row and any No row clear the field. A row of a field that holds
+// several swaps the value of the row the card came `from` for its own, keeping the card's others (item-types.md
+// "Holds Several").
 export function laneDropPatch(
   lane: LaneHead | undefined,
   item?: Pick<Item, 'fields'>,
+  from?: LaneHead,
 ): Pick<ItemMove, 'set' | 'clear' | 'type'> {
   if (!lane || !lane.field || lane.field === 'status') return {};
   if (lane.field === 'type') return typeof lane.value === 'string' ? { type: lane.value } : {};
   if (lane.field === 'field') {
     const id = lane.fieldId;
-    if (!id) return {};
+    // Nobody changes who made a card or when: a stamp's row sets nothing.
+    if (!id || isStampField(id) || lane.readOnly) return {};
     if (lane.value === null || lane.value === false) return { clear: [id] };
     if (lane.fieldKind === 'labels' && typeof lane.value === 'string') {
-      const rest = item ? itemLabels(item).filter((l) => l !== lane.value) : [];
+      const rest = item ? labelsIn(id, item).filter((l) => l !== lane.value) : [];
       return { set: { [id]: [lane.value, ...rest] } };
     }
+    if (lane.several) return { set: { [id]: severalDrop(lane, item, from) } };
     return { set: { [id]: lane.value } };
   }
   return lane.value === null ? { clear: [lane.field] } : { set: { [lane.field]: lane.value } };
+}
+
+// The list a drop into a row of a field holding several leaves: the row the card came from swapped for this one.
+function severalDrop(
+  lane: LaneHead,
+  item: Pick<Item, 'fields'> | undefined,
+  from: LaneHead | undefined,
+): ItemFieldValue {
+  const several = { kind: lane.fieldKind as 'person' | 'card', multiple: true };
+  const stored = item?.fields[lane.fieldId!];
+  const left =
+    from && from.fieldId === lane.fieldId && from.value !== null ? from.value : undefined;
+  if (lane.fieldKind === 'person')
+    return swappedValues(
+      fieldPeople(several, stored),
+      left as ItemPerson | undefined,
+      lane.value as ItemPerson,
+      personKey,
+    ).map((p) => ({ ...p }));
+  return swappedValues(
+    fieldCardIds(several, stored),
+    left as string | undefined,
+    lane.value as string,
+    cardKey,
+  );
 }
 
 export interface ProjectedColumn {
@@ -324,6 +555,8 @@ export interface BoardProjection {
   unplaced: Item[];
   doneCount: number;
   total: number;
+  // Sort Cards orders its cards: a card is not reordered by hand in its own cell.
+  sorted?: boolean;
 }
 
 export const NO_LANE = '';
@@ -400,9 +633,14 @@ export function boardTakesType(
   return boardAddTypes(setup, types).some((t) => t.id === typeId);
 }
 
-export function quickFilterMatches(quick: QuickFilter | undefined, item: Item): boolean {
+export function quickFilterMatches(
+  quick: QuickFilter | undefined,
+  item: Item,
+  // The project's type catalogue: Only Mine reads each card's notifying Person fields (notify-fields.ts).
+  types: readonly ItemTypeDef[] = ITEM_TYPES,
+): boolean {
   if (!quick) return true;
-  if (quick.mine && itemAssignee(item)?.id !== quick.mine) return false;
+  if (quick.mine && !isNotified(typeIn(types, item.type), item, quick.mine)) return false;
   if (quick.person && (itemAssignee(item)?.id ?? UNASSIGNED) !== quick.person) return false;
   if (quick.priority && item.fields['priority'] !== quick.priority) return false;
   if (quick.type && item.type !== quick.type) return false;
@@ -442,28 +680,18 @@ export function statusLabel(status: string, names?: ReadonlyMap<string, string>)
 function laneOf(
   by: SwimlaneBy,
   item: Item,
-  items: ReadonlyMap<string, Item>,
   types: readonly ItemTypeDef[],
   statusNames?: ReadonlyMap<string, string>,
   field?: LaneField,
+  calc?: LaneCalc,
 ): LaneHead {
   switch (by) {
-    case 'field': {
+    case 'field':
       if (!field) return { key: NO_LANE, label: '', field: null, value: null };
-      const lane = fieldLane(field, laneValue(field, item));
-      // A Card field's row is named by the linked card, with its colour dot when it has a Colour
-      // (docs/specs/026-plan/item-types.md "Card fields").
-      if (field.kind === 'card' && typeof lane.value === 'string') {
-        const linked = linkedCard(items, lane.value);
-        const colour = linked ? itemColourOf(linked) : undefined;
-        return {
-          ...lane,
-          label: linked ? itemTitle(linked) : 'Missing card',
-          ...(colour ? { colour } : {}),
-        };
-      }
-      return lane;
-    }
+      // A Created or Edited field's row is its stamp's; a Person or Card field's rows are lanesOf's, one per value.
+      return field.readOnly && !field.calculated
+        ? stampLane(field, item)
+        : fieldLane(field, laneValue(field, item, calc));
     case 'status': {
       const s = namedStatus(item, statusNames);
       return s
@@ -496,6 +724,24 @@ function laneOf(
   }
 }
 
+// The rows an item sits in: one, or one per value of a Person or Card field (each of its values' when the field holds
+// several, item-types.md "Holds Several").
+function lanesOf(
+  by: SwimlaneBy,
+  item: Item,
+  items: ReadonlyMap<string, Item>,
+  types: readonly ItemTypeDef[],
+  statusNames?: ReadonlyMap<string, string>,
+  field?: LaneField,
+  calc?: LaneCalc,
+): LaneHead[] {
+  if (by === 'field' && !field?.readOnly && field?.kind === 'person')
+    return personLanes(field, item);
+  if (by === 'field' && !field?.readOnly && field?.kind === 'card')
+    return cardLanes(field, item, items, types);
+  return [laneOf(by, item, types, statusNames, field, calc)];
+}
+
 function laneSort(
   by: SwimlaneBy,
   items: ReadonlyMap<string, Item>,
@@ -510,6 +756,7 @@ function laneSort(
     // Card rows in the linked cards' number order, as Project rows are.
     if (by === 'field' && field?.kind === 'card')
       return (items.get(a.value as string)?.key ?? 0) - (items.get(b.value as string)?.key ?? 0);
+    if (by === 'field' && field?.kind === 'person') return a.label.localeCompare(b.label);
     if (by === 'field' && field) return fieldLaneOrder(field, a.value, b.value);
     // Statuses in the order the tab's boards name them, then any other by name.
     if (by === 'status') {
@@ -536,7 +783,7 @@ const byText = (a: unknown, b: unknown) =>
 // (ISO strings sort as dates). Text and labels: A to Z ignoring case.
 function fieldLaneOrder(field: LaneField, a: unknown, b: unknown): number {
   if (field.kind === 'checkbox') return Number(b === true) - Number(a === true);
-  if (field.kind === 'number') return Number(a) - Number(b);
+  if (field.kind === 'number' || field.kind === 'percent') return Number(a) - Number(b);
   if (field.kind === 'date') return String(a) < String(b) ? -1 : String(a) > String(b) ? 1 : 0;
   if (field.kind === 'choice') {
     const opts = field.options ?? [];
@@ -549,13 +796,21 @@ function fieldLaneOrder(field: LaneField, a: unknown, b: unknown): number {
 
 // Items grouped into swimlanes (docs/specs/026-plan/plan-board.md "Swimlanes"), shared by a board and the Gantt
 // chart (plan-views.md "Swimlanes"): the lanes the items fall in, named and ordered as a board orders them, and each
-// item's lane key. A field lane resolves against the project's types; a field no type offers any more is no lanes.
+// item's lane keys (one, or one per value of a field that holds several). A field lane resolves against the project's
+// types; a field no type offers any more is no lanes.
 interface LaneGroups {
   by: SwimlaneBy;
   field: LaneField | undefined;
   lanes: LaneHead[];
-  laneOfItem: Map<string, string>;
+  lanesOfItem: Map<string, readonly string[]>;
 }
+
+// Whether an item sits in a lane.
+export const inLane = (
+  groups: Pick<LaneGroups, 'lanesOfItem'>,
+  itemId: string,
+  laneKey: string,
+): boolean => groups.lanesOfItem.get(itemId)?.includes(laneKey) ?? false;
 
 export function laneGroups(
   swimlaneBy: SwimlaneBy,
@@ -564,18 +819,24 @@ export function laneGroups(
   items: ReadonlyMap<string, Item>,
   types: readonly ItemTypeDef[] = ITEM_TYPES,
   statusNames?: ReadonlyMap<string, string>,
+  // The boards' done rule, for a Rollup's Count Done (none without it).
+  isDone?: IsDoneStatus,
 ): LaneGroups {
   const field = swimlaneBy === 'field' ? laneFieldOf(swimlaneField, types) : undefined;
   const by: SwimlaneBy = swimlaneBy === 'field' && !field ? 'none' : swimlaneBy;
   const laneMap = new Map<string, LaneHead>();
-  const laneOfItem = new Map<string, string>();
+  const lanesOfItem = new Map<string, readonly string[]>();
+  const calc = field?.calculated ? laneCalcOf(items, types, isDone) : undefined;
   for (const it of list) {
-    const lane = laneOf(by, it, items, types, statusNames, field);
-    if (!laneMap.has(lane.key)) laneMap.set(lane.key, lane);
-    laneOfItem.set(it.id, lane.key);
+    const heads = lanesOf(by, it, items, types, statusNames, field, calc);
+    for (const lane of heads) if (!laneMap.has(lane.key)) laneMap.set(lane.key, lane);
+    lanesOfItem.set(
+      it.id,
+      heads.map((l) => l.key),
+    );
   }
   const lanes = [...laneMap.values()].sort(laneSort(by, items, types, statusNames, field));
-  return { by, field, lanes, laneOfItem };
+  return { by, field, lanes, lanesOfItem };
 }
 
 // A board's lanes: the items' own, then the empty lanes a card can be dropped into.
@@ -584,7 +845,8 @@ function boardLanes(
   scoped: readonly Item[],
   items: ReadonlyMap<string, Item>,
   types: readonly ItemTypeDef[],
-  statusNames?: ReadonlyMap<string, string>,
+  statusNames: ReadonlyMap<string, string> | undefined,
+  isDone: IsDoneStatus,
 ): LaneGroups {
   const groups = laneGroups(
     setup.swimlaneBy,
@@ -593,8 +855,9 @@ function boardLanes(
     items,
     types,
     statusNames,
+    isDone,
   );
-  const { by, field, laneOfItem } = groups;
+  const { by, field, lanesOfItem } = groups;
   const laneMap = new Map<string, LaneHead>(groups.lanes.map((l) => [l.key, l]));
   // A board with swimlanes always offers the empty group as a drop target (a checkbox has none).
   if (
@@ -602,12 +865,13 @@ function boardLanes(
     by !== 'type' &&
     by !== 'status' &&
     field?.kind !== 'checkbox' &&
+    !field?.readOnly &&
     !laneMap.has(NO_LANE)
   ) {
-    laneMap.set(NO_LANE, laneOf(by, { fields: {} } as Item, items, types, statusNames, field));
+    laneMap.set(NO_LANE, lanesOf(by, { fields: {} } as Item, items, types, statusNames, field)[0]!);
   }
   // Every option of a Choice, and both Yes and No, are rows to drop into, cards or not.
-  if (field?.kind === 'choice' || field?.kind === 'checkbox') {
+  if (field?.kind === 'choice' || (field?.kind === 'checkbox' && !field.readOnly)) {
     const values: (string | boolean)[] =
       field.kind === 'checkbox' ? [true, false] : [...(field.options ?? [])];
     for (const v of values) {
@@ -629,9 +893,28 @@ function boardLanes(
   }
   // No rows yet: the board's own empty row ("No status" on a status board), never a nameless one.
   if (laneMap.size === 0)
-    laneMap.set(NO_LANE, laneOf(by, { fields: {} } as Item, items, types, statusNames, field));
+    laneMap.set(NO_LANE, lanesOf(by, { fields: {} } as Item, items, types, statusNames, field)[0]!);
   const lanes = [...laneMap.values()].sort(laneSort(by, items, types, statusNames, field));
-  return { by, field, lanes, laneOfItem };
+  return { by, field, lanes, lanesOfItem };
+}
+
+// `cards` narrowed to those matching every filter, as they are (an Archive board's archived cards too). A parent or a
+// linked card is looked up in `all`. One lane grouping per filter, over the cards still in play.
+export function cardsMatchingFilters(
+  cards: readonly Item[],
+  filters: readonly CardSearchFilter[],
+  all: ReadonlyMap<string, Item>,
+  types: readonly ItemTypeDef[] = ITEM_TYPES,
+  statusNames?: ReadonlyMap<string, string>,
+): Item[] {
+  let out = [...cards];
+  for (const f of filters) {
+    if (out.length === 0) break;
+    const groups = laneGroups(f.by, f.field, out, all, types, statusNames);
+    // A card holding several values matches a filter on any of them (item-types.md "Holds Several").
+    out = out.filter((c) => inLane(groups, c.id, f.key));
+  }
+  return out;
 }
 
 export function projectBoard(
@@ -668,12 +951,25 @@ export function projectBoard(
     else scoped.push(it);
   }
   scoped.sort(byRank);
+  // Sort Cards: stable, so rank still orders the cards each level ties.
+  const sorted = !!setup.sortBy?.length;
+  // The board's done columns, for a Rollup's Count Done and a Children Done it sorts or lanes by.
+  const isDone: IsDoneStatus = (s) =>
+    s !== undefined && setup.columns.some((c) => c.status === s && isDoneColumn(setup, c));
+  if (sorted) scoped.sort(boardSortComparator(setup.sortBy!, types, items, isDone));
   unplaced.sort((a, b) => a.key - b.key);
 
-  const { by, lanes, laneOfItem } = boardLanes(setup, scoped, items, types, statusNames);
+  const groups = boardLanes(setup, scoped, items, types, statusNames, isDone);
+  // The Filter widget's field chips, matched once for the whole board rather than per card.
+  const chipped = quick?.filters?.length
+    ? new Set(
+        cardsMatchingFilters(scoped, quick.filters, items, types, statusNames).map((i) => i.id),
+      )
+    : null;
+  const { by, lanes } = groups;
 
+  // Cards in every done column (docs/specs/026-plan/plan-board.md "Done columns").
   let doneCount = 0;
-  const doneStatus = setup.columns.find((c) => c.id === setup.doneColumnId)?.status;
   const columns: ProjectedColumn[] = setup.columns.map((column) => {
     const all =
       archiveBoard || allBoard
@@ -681,19 +977,30 @@ export function projectBoard(
           ? scoped
           : []
         : scoped.filter((it) => itemStatus(it) === column.status);
-    if (column.status === doneStatus) doneCount = all.length;
-    const shown = all.filter((it) => quickFilterMatches(quick, it));
+    if (isDoneColumn(setup, column)) doneCount += all.length;
+    const shown = all.filter(
+      (it) => (!chipped || chipped.has(it.id)) && quickFilterMatches(quick, it, types),
+    );
+    // One pass files each card into every lane it sits in (several, for a field that holds several), in order.
+    const byLane = new Map<string, Item[]>(lanes.map((l) => [l.key, []]));
+    for (const it of shown)
+      for (const key of groups.lanesOfItem.get(it.id)!) byLane.get(key)!.push(it);
     return {
       column,
       count: all.length,
       overLimit: column.wipLimit !== undefined && all.length > column.wipLimit,
-      lanes: lanes.map((l) => ({
-        laneKey: l.key,
-        items: shown.filter((it) => laneOfItem.get(it.id) === l.key),
-      })),
+      lanes: lanes.map((l) => ({ laneKey: l.key, items: byLane.get(l.key)! })),
     };
   });
-  return { columns, lanes, swimlanes: by !== 'none', unplaced, doneCount, total: scoped.length };
+  return {
+    columns,
+    lanes,
+    swimlanes: by !== 'none',
+    unplaced,
+    doneCount,
+    total: scoped.length,
+    ...(sorted ? { sorted } : {}),
+  };
 }
 
 // Face-down while the board hides writing and the viewer did not write it.
@@ -739,6 +1046,8 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     if (typeof color === 'string' && HEX_COLOUR.test(color)) col.color = color;
     const width = (c as { width?: unknown }).width;
     if (width === 2 || width === 3) col.width = width;
+    const done = (c as { done?: unknown }).done;
+    if (typeof done === 'boolean') col.done = done;
     columns.push(col);
   }
   // No columns is a board waiting for its first (docs/specs/026-plan/plan-board.md "The board set-up").
@@ -759,6 +1068,7 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     swimlaneBy === 'field' &&
     typeof laneField === 'string' &&
     ((LANE_FIELD_BUILT_INS as readonly string[]).includes(laneField) ||
+      isStampField(laneField) ||
       CUSTOM_FIELD_ID_PATTERN.test(laneField))
       ? laneField
       : undefined;
@@ -767,6 +1077,7 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
   // every status) groups by status (docs/specs/026-plan/plan-board.md "Swimlanes"). Another board stored grouping by
   // status reads as no grouping.
   if (swimlaneBy === 'status' && input['allCards'] !== true) swimlaneBy = 'none';
+  const sortBy = normaliseBoardSort(input['sortBy']);
   const cardFields = Array.isArray(input['cardFields'])
     ? CARD_FIELDS.filter((f) => (input['cardFields'] as unknown[]).includes(f))
     : [...DEFAULT_CARD_FIELDS];
@@ -780,16 +1091,19 @@ export function normaliseBoardSetup(input: unknown): PlanBoardSetup | null {
     ...(doneColumnId ? { doneColumnId } : {}),
     swimlaneBy,
     ...(swimlaneField ? { swimlaneField } : {}),
+    ...(sortBy ? { sortBy } : {}),
     cardFields,
     ...(readBoardWidgets(input['widgets']) ? { widgets: readBoardWidgets(input['widgets']) } : {}),
     ...(input['archive'] === true ? { archive: true } : {}),
     ...(input['allCards'] === true ? { allCards: true } : {}),
     ...(readAddTypes(input['addTypes']) ? { addTypes: readAddTypes(input['addTypes']) } : {}),
-    ...(input['cardSize'] === 'minimal' || input['cardSize'] === 'compact'
-      ? { cardSize: input['cardSize'] }
-      : {}),
+    // Detailed is stored as absent; a retired Compact board reads as Detailed.
+    ...(readCardSize(input['cardSize']) === 'minimal' ? { cardSize: 'minimal' as const } : {}),
     hideWriting: input['hideWriting'] === true,
     ...(input['fillTab'] === true ? { fillTab: true } : {}),
+    ...(readSavedFilters(input['savedFilters'])
+      ? { savedFilters: readSavedFilters(input['savedFilters']) }
+      : {}),
     ...((LINKED_RECORD_KINDS as readonly unknown[]).includes(input['collects'])
       ? { collects: input['collects'] as LinkedRecordKind }
       : {}),

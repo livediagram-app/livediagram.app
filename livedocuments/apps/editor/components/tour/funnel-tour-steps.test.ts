@@ -20,7 +20,6 @@ const rows = [
 const ctxOf = (over: Partial<ConceptTourContext> = {}): ConceptTourContext => ({
   elementId: 'fu',
   rows,
-  hasMore: true,
   touch: false,
   ...over,
 });
@@ -40,12 +39,10 @@ describe('funnelTourSteps', () => {
     ]);
   });
 
-  it('leaves out the values with none, and the shapes where More is not shown', () => {
-    const ids = funnelTourSteps(
-      ctxOf({ rows: [{ label: 'A' }, { label: 'B' }], hasMore: false }),
-    ).map((s) => s.id);
+  it('leaves out the values with none, and keeps the shapes step in the menu', () => {
+    const ids = funnelTourSteps(ctxOf({ rows: [{ label: 'A' }, { label: 'B' }] })).map((s) => s.id);
     expect(ids).not.toContain('values');
-    expect(ids).not.toContain('shape');
+    expect(ids).toContain('shape');
   });
 
   it("points at the first band's value, the last band and Add Tier", () => {

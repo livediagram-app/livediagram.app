@@ -2,21 +2,17 @@
 // Each call dispatches an offline project to its local store (../offline/offline-items) and a
 // cloud project to the api. A session on a tab-scoped link names its tab on every call.
 
-import type { ItemCommentAddResponse, ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
+import type { ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
 import {
   ITEM_BULK_MAX,
+  createBatches,
   type Item,
   type ItemPerson,
   type ItemStoreState,
   type ItemWrite,
 } from '@liveplanner/items';
-import { createComment, type CommentMention } from '@liveplanner/project';
 import { isOfflineId } from '../offline/offline-store';
-import {
-  offlineFetchItems,
-  offlineWriteItem,
-  offlineWriteItemComment,
-} from '../offline/offline-items';
+import { offlineFetchItems, offlineWriteItem } from '../offline/offline-items';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
@@ -117,10 +113,12 @@ async function landedOf(res: Response): Promise<ItemsResponse | null> {
 // request, or the failed one's partial answer) throws ItemWritePartlyLanded with what landed.
 async function postInChunks(
   scope: ItemsScope,
-  path: '/patches' | '/tally',
+  path: '/patches' | '/moves' | '/tally',
   entries: readonly object[],
   action: string,
   undo?: true,
+  // What every request carries beside its items (a tally's Votes field).
+  extra: Record<string, unknown> = {},
 ): Promise<ItemWriteAnswer> {
   const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };
   for (let i = 0; i < entries.length; i += ITEM_BULK_MAX) {
@@ -128,7 +126,7 @@ async function postInChunks(
     const res = await apiFetch(itemsUrl(scope, path), {
       method: 'POST',
       headers: await apiHeaders(scope.ownerId, { share: scope.shareCode, body: true }),
-      body: JSON.stringify(undoBody({ items }, undo)),
+      body: JSON.stringify(undoBody({ items, ...extra }, undo)),
     });
     const partial = res.ok ? null : await landedOf(res);
     try {
@@ -168,13 +166,9 @@ export async function writeItem(
       if (write.creates.length === 1)
         return one(await post(scope, '', write.creates[0], 'item create'));
       const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };
-      for (let i = 0; i < write.creates.length; i += ITEM_BULK_MAX) {
-        const r = await post<ItemsResponse>(
-          scope,
-          '/bulk',
-          { items: write.creates.slice(i, i + ITEM_BULK_MAX) },
-          'items create',
-        );
+      // A request per ITEM_BULK_MAX cards, each under the api's request cap (an import's cards carry their threads).
+      for (const items of createBatches(write.creates)) {
+        const r = await post<ItemsResponse>(scope, '/bulk', { items }, 'items create');
         answer.upserts.push(...r.items);
         answer.rev = r.rev;
       }
@@ -183,8 +177,15 @@ export async function writeItem(
     case 'patch':
       return one(await post(scope, id, undoBody(write.patch, write.undo), 'item change'));
     case 'tally':
-      // A session vote's tally, as its host ends it.
-      return postInChunks(scope, '/tally', write.tallies, 'items tally');
+      // A session vote's tally, as its host ends it, in the Votes field it counts in (session-tools.md "Count In").
+      return postInChunks(
+        scope,
+        '/tally',
+        write.tallies,
+        'items tally',
+        undefined,
+        write.field ? { field: write.field } : {},
+      );
     case 'patches':
       // A type's or a removed column's cards to the Trash.
       return postInChunks(
@@ -196,6 +197,19 @@ export async function writeItem(
       );
     case 'move':
       return one(await post(scope, `${id}/move`, undoBody(write.move, write.undo), 'item move'));
+    case 'moves':
+      // A group of cards moved together, in order (docs/specs/026-plan/items.md "Move many"): a chunk's first move names
+      // the last card of the chunk before, which has landed.
+      return postInChunks(
+        scope,
+        '/moves',
+        write.moves.map(({ id: itemId, move }) => ({ id: itemId, ...move })),
+        'items move',
+        write.undo,
+      );
+    // A time write to a Time Spent field (docs/specs/026-plan/item-types.md "Time Spent"); a no-op answers rev -1.
+    case 'time':
+      return one(await post(scope, `${id}/time`, { field: write.field, ...write.op }, 'item time'));
     case 'delete': {
       await apiDelete(itemsUrl(scope, id), scope.ownerId, {
         action: 'item delete',
@@ -205,64 +219,4 @@ export async function writeItem(
       return { upserts: [], removed: [write.id], rev: -1 };
     }
   }
-}
-
-// A card's comment change, as the editor asks for it (docs/specs/026-plan/items.md "Comments").
-export type ItemCommentAction =
-  | { kind: 'add'; text: string; mentions?: CommentMention[] }
-  | { kind: 'delete'; commentId: string }
-  | { kind: 'resolve'; resolved: boolean };
-
-// Who is commenting: their owner id (the author id the api stamps) and how items name them.
-type ItemCommenter = { ownerId: string; by: ItemPerson };
-
-// Sends one comment change: the item as stored, or null when it changed nothing. An offline project applies it
-// to its record; a cloud one sends it to the api, which stamps the author itself.
-export async function writeItemComment(
-  scope: ItemsScope,
-  itemId: string,
-  action: ItemCommentAction,
-  who: ItemCommenter,
-): Promise<(ItemWriteAnswer & { commentId?: string }) | null> {
-  if (await isOfflineId(scope.projectId)) {
-    const change =
-      action.kind === 'add'
-        ? {
-            kind: 'add' as const,
-            comment: createComment(
-              action.text,
-              { id: who.ownerId, name: who.by.name, color: who.by.color },
-              action.mentions,
-            ),
-          }
-        : action.kind === 'delete'
-          ? { kind: 'remove' as const, commentId: action.commentId }
-          : action;
-    return offlineWriteItemComment(scope.projectId, itemId, change, who.by);
-  }
-  const base = `/${encodeURIComponent(itemId)}/comments`;
-  if (action.kind === 'add') {
-    const body = {
-      text: action.text,
-      ...(action.mentions?.length ? { mentions: action.mentions } : {}),
-    };
-    // The api names the comment it wrote, for the mention email (docs/specs/012-collaboration/comment-mentions.md).
-    const added = await post<ItemCommentAddResponse>(scope, base, body, 'item comment');
-    return { ...one(added), commentId: added.commentId };
-  }
-  const res = await apiFetch(
-    itemsUrl(
-      scope,
-      action.kind === 'delete'
-        ? `${base}/${encodeURIComponent(action.commentId)}`
-        : `${base}/${action.resolved ? 'resolve' : 'reopen'}`,
-    ),
-    {
-      method: action.kind === 'delete' ? 'DELETE' : 'POST',
-      headers: await apiHeaders(scope.ownerId, { share: scope.shareCode }),
-    },
-  );
-  // A resolve that changed nothing answers 204.
-  if (res.status === 204) return null;
-  return one(await expectOk<ItemResponse>(res, 'item comment'));
 }
