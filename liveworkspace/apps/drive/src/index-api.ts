@@ -125,7 +125,7 @@ export function createIndexApi(env: Env): IndexApi {
             ),
           ]);
           return {
-            // Only the apps the mirror writes files for (a held app, livehuddle, is none of them).
+            // Only the apps the mirror writes files for (every registered app, held livehuddle included).
             items: items.flatMap((i) =>
               i.teamId === null && i.trashedAt === null && i.sharedVia === null && isAppName(i.app)
                 ? [

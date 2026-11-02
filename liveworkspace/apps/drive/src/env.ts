@@ -33,11 +33,13 @@ export interface Env {
   DRIVE_KEY_LIVEPLANNER?: string;
   DRIVE_KEY_LIVEDOCUMENTS?: string;
   DRIVE_KEY_LIVEDESIGN?: string;
+  DRIVE_KEY_LIVEHUDDLE?: string;
   // Where each app answers its doors, and opens an item.
   APP_ORIGIN_LIVEDIAGRAM?: string;
   APP_ORIGIN_LIVEPLANNER?: string;
   APP_ORIGIN_LIVEDOCUMENTS?: string;
   APP_ORIGIN_LIVEDESIGN?: string;
+  APP_ORIGIN_LIVEHUDDLE?: string;
   DRIVE_MIRROR: DurableObjectNamespace<DriveMirror>;
 }
 
@@ -46,6 +48,7 @@ const KEY_OF: Record<AppName, keyof Env> = {
   liveplanner: 'DRIVE_KEY_LIVEPLANNER',
   livedocuments: 'DRIVE_KEY_LIVEDOCUMENTS',
   livedesign: 'DRIVE_KEY_LIVEDESIGN',
+  livehuddle: 'DRIVE_KEY_LIVEHUDDLE',
 };
 
 const ORIGIN_OF: Record<AppName, keyof Env> = {
@@ -53,6 +56,7 @@ const ORIGIN_OF: Record<AppName, keyof Env> = {
   liveplanner: 'APP_ORIGIN_LIVEPLANNER',
   livedocuments: 'APP_ORIGIN_LIVEDOCUMENTS',
   livedesign: 'APP_ORIGIN_LIVEDESIGN',
+  livehuddle: 'APP_ORIGIN_LIVEHUDDLE',
 };
 
 export const setting = (value: unknown): string | undefined =>

@@ -44,18 +44,18 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term       | Identifier                                                 | Meaning                                                                                                                                                                                                    |
-| ---------- | ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Person     | account id (never `guest_…`)                               | One `DriveMirror` by `idFromName(accountId)`                                                                                                                                                               |
-| Connection | `drive_connection` row `id = 1`                            | The sealed grant, the root, the page token, status, the push channel, back-off, progress                                                                                                                   |
-| Row        | `drive_items (kind, id)`; `rowKey(kind, id)` = `kind:id`   | The last Drive state known for one item or folder                                                                                                                                                          |
-| Root       | `lwRoot = <origin>` folder in My Drive                     | `liveworkspace`, or `liveworkspace (staging)` / `(development)`                                                                                                                                            |
-| Status     | `DriveStatus`: `ok`, `needs_reconnect`, `error`            | Cloud Sync's state                                                                                                                                                                                         |
-| Pass       | `runPass`                                                  | One alarm: inbound, then outbound in a batch                                                                                                                                                               |
-| Echo       | `planInbound` → `echo`                                     | A change that carries nothing the row doesn't                                                                                                                                                              |
-| Notice     | `notice = 'unseen_folder'`                                 | An item moved in Drive into a folder liveworkspace can't see                                                                                                                                               |
-| Mark       | `DriveMarkState`: `synced`, `syncing`, `waiting`, `failed` | The Explorer's per-item sync mark                                                                                                                                                                          |
-| File       | `APP_FILE_FORMATS[app]`                                    | `.livediagram` (`application/vnd.livediagram+json`, kind `livediagram.document`), `.liveplanner` (`liveplanner.project`), `.livedocuments` (`livedocuments.document`), `.livedesign` (`livedesign.design`) |
+| Term       | Identifier                                                 | Meaning                                                                                                                                                                                                                                           |
+| ---------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Person     | account id (never `guest_…`)                               | One `DriveMirror` by `idFromName(accountId)`                                                                                                                                                                                                      |
+| Connection | `drive_connection` row `id = 1`                            | The sealed grant, the root, the page token, status, the push channel, back-off, progress                                                                                                                                                          |
+| Row        | `drive_items (kind, id)`; `rowKey(kind, id)` = `kind:id`   | The last Drive state known for one item or folder                                                                                                                                                                                                 |
+| Root       | `lwRoot = <origin>` folder in My Drive                     | `liveworkspace`, or `liveworkspace (staging)` / `(development)`                                                                                                                                                                                   |
+| Status     | `DriveStatus`: `ok`, `needs_reconnect`, `error`            | Cloud Sync's state                                                                                                                                                                                                                                |
+| Pass       | `runPass`                                                  | One alarm: inbound, then outbound in a batch                                                                                                                                                                                                      |
+| Echo       | `planInbound` → `echo`                                     | A change that carries nothing the row doesn't                                                                                                                                                                                                     |
+| Notice     | `notice = 'unseen_folder'`                                 | An item moved in Drive into a folder liveworkspace can't see                                                                                                                                                                                      |
+| Mark       | `DriveMarkState`: `synced`, `syncing`, `waiting`, `failed` | The Explorer's per-item sync mark                                                                                                                                                                                                                 |
+| File       | `APP_FILE_FORMATS[app]`                                    | `.livediagram` (`application/vnd.livediagram+json`, kind `livediagram.document`), `.liveplanner` (`liveplanner.project`), `.livedocuments` (`livedocuments.document`), `.livedesign` (`livedesign.design`), `.livehuddle` (`livehuddle.document`) |
 
 `appProperties` keys: `lwItemId`, `lwApp`, `lwFolderId`, `lwOrigin`, `lwRoot` (key plus value at most 124 bytes).
 Scopes: `drive.file` and `drive.install`.
@@ -89,8 +89,8 @@ Scopes: `drive.file` and `drive.install`.
    `changes.watch` for 7 days with a fresh id and the signed channel token. A failure is logged and stamped
    `channelFailedAt`.
 5. `index.picture()`: every page of personal items, folders and trash (`LIST_LIMIT_MAX` each, at most
-   `DRIVE_LIST_PAGES_MAX` = 100 pages, else a throw), filtered to the person's own, live, unshared items of the four
-   apps.
+   `DRIVE_LIST_PAGES_MAX` = 100 pages, else a throw), filtered to the person's own, live, unshared items of the five
+   apps (`isAppName`: livehuddle, still held, is one of them).
 6. A fresh root: `adoptExisting` (files tagged `lwOrigin = origin`, `planAdoption`).
 7. Inbound behind the gate: `getStartPageToken`; equal to the stored token (or none stored) is nothing new. Else
    `readChanges` page by page (`DRIVE_CHANGES_PAGE_SIZE` 1000); a `400`/`404` token restarts from now and adopts. The
@@ -304,15 +304,15 @@ Every line is `drive: <step>` with ids. `driveLog`: `route <name>`, `connect`, `
 | `GOOGLE_CLIENT_ID` | one OAuth client for both                                                                                                                                      | the same                               |
 | `DRIVE_PUBLIC_URL` | `https://liveworkspace.app` (kept bare: it is stamped on every mirrored file and root folder)                                                                  | `https://staging.liveworkspace.app`    |
 | `ACCOUNTS_URL`     | `https://www.liveworkspace.app`                                                                                                                                | `https://staging.liveworkspace.app`    |
-| `INDEX_AUDIENCES`  | the four apps' `/api` origins                                                                                                                                  | their staging origins                  |
-| `APP_ORIGIN_<APP>` | `https://www.livediagram.app`, `https://www.liveplanner.app`, `https://www.livedocuments.app`, `https://www.livedesign.app`                                    | their staging origins                  |
+| `INDEX_AUDIENCES`  | the five apps' `/api` origins                                                                                                                                  | their staging origins                  |
+| `APP_ORIGIN_<APP>` | `https://www.livediagram.app`, `https://www.liveplanner.app`, `https://www.livedocuments.app`, `https://www.livedesign.app`, `https://www.livehuddle.app`      | their staging origins                  |
 | Service `INDEX`    | `liveworkspace-index`                                                                                                                                          | `liveworkspace-index-staging`          |
 | Durable Object     | `DRIVE_MIRROR` → `DriveMirror`                                                                                                                                 | the same                               |
 | `[limits] cpu_ms`  | 120000                                                                                                                                                         | (top level)                            |
 | Secrets            | `GOOGLE_CLIENT_SECRET`, `GOOGLE_PICKER_KEY`, `GOOGLE_APP_ID`, `DRIVE_TOKEN_KEY`, `INDEX_KEY_DRIVE`, `DRIVE_KEY_INDEX`, `DRIVE_KEY_ACCOUNTS`, `DRIVE_KEY_<APP>` | the same                               |
 
 Locally (`.dev.vars.example`): `ENVIRONMENT=development`, `localhost:3000` for liveworkspace, the index on
-`localhost:8793`, the four routers on 3100 to 3400, `dev-…` keys; the Google values blank (Drive off).
+`localhost:8793`, the five routers on 3100 to 3500, `dev-…` keys; the Google values blank (Drive off).
 
 ## Assets and external resources
 

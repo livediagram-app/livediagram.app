@@ -27,7 +27,7 @@ Each is a step of its own in the [Build plan](../005-project-roadmap/build-plan.
 | [Site switcher](../../../../liveworkspace/docs/specs/010-site/site-switcher.md)            | One row: livehuddle's name, URL, pitch and colours                                                                                                                                                                                                                  |
 | [Workbench](../../../../liveworkspace/docs/specs/011-workbench/workbench.md)               | livehuddle as a fifth editor on the shared workbench                                                                                                                                                                                                                |
 | [Community](../../../../liveworkspace/docs/specs/007-community/community.md#adding-an-app) | **Not in v1.** Later, by that spec's "Adding an app" steps                                                                                                                                                                                                          |
-| [Drive](../../../../liveworkspace/docs/specs/005-drive/drive.md)                           | **Not in v1**                                                                                                                                                                                                                                                       |
+| [Drive](../../../../liveworkspace/docs/specs/005-drive/drive.md)                           | **In v1** (owner, 2026-11-02; Work Tracker #326): livehuddle among the mirrored apps, a Space as a `.livehuddle` file (`application/vnd.livehuddle+json`, its `livehuddle.document` envelope) in the person's one folder tree; signed-in people only                |
 
 ## Registration steps, by service
 
@@ -50,9 +50,15 @@ In the order the build makes them (code locations as on `main` today):
 6. **Settings.** `packages/settings/src/device.ts` (`keysFor('livehuddle')`) and the Settings panel's catalogue in
    `packages/settings-ui`.
 7. **Status.** `liveworkspace/packages/status/src/services.ts`: livehuddle's checks (see the Status row above).
-8. **Shared marketing and help.** `packages/marketing-site` and `packages/help-site` guards and lists that name every
+8. **Drive.** `packages/drive/src/formats.ts` (`APP_FILE_FORMATS.livehuddle`), the drive Worker's env
+   (`DRIVE_KEY_LIVEHUDDLE`, `APP_ORIGIN_LIVEHUDDLE`) and `wrangler.toml` (the origins and livehuddle's API in
+   `INDEX_AUDIENCES`). The api's internal door answers the file (`handlers.export`, `format: 'file'`) and the import
+   (`handlers.import`), keyed by its `DRIVE_KEY` secret (**owner only**, the service's `DRIVE_KEY_LIVEHUDDLE`). The
+   editor's Explorer marks and Settings' Cloud Sync row come from `@liveworkspace/explorer` and
+   `@liveworkspace/settings-ui`, shown to an account only.
+9. **Shared marketing and help.** `packages/marketing-site` and `packages/help-site` guards and lists that name every
    app, as the build finds them (`grep` for `livedesign` across `packages/` and `liveworkspace/` is the checklist; on
-   `main` today it lists the files above plus `packages/drive`, `packages/community`, `packages/community-ui`,
+   `main` today it lists the files above plus `packages/community`, `packages/community-ui`,
    `packages/mcp-kit` and `packages/migration`, which v1 leaves alone).
 
 ## The monorepo
@@ -121,6 +127,8 @@ D8 so nothing ships waiting on one.
   attach.
 - **Accounts client:** run `register-client.ts` per environment and set `ACCOUNTS_CLIENT_SECRET` on the api Worker.
 - **Telemetry key:** set `TELEMETRY_KEY_LIVEHUDDLE` on the telemetry Worker and livehuddle's.
+- **Drive key:** one value, set as `DRIVE_KEY_LIVEHUDDLE` on the drive Worker and `DRIVE_KEY` on livehuddle's api;
+  and `application/vnd.livehuddle+json` (`.livehuddle`) added to the Google Cloud project's Drive UI MIME types.
 - **Any third-party keys** the fork carries over (Turnstile, Google sign-in origins), added for the new domain.
 - **Billing:** Durable Object requests and duration for a fifth product on the account's Workers paid plan; later,
   TURN and SFU usage for audio and video ([Future work](../005-project-roadmap/future-work.md)).
