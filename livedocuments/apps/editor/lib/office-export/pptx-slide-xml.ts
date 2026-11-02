@@ -134,9 +134,17 @@ function shapeXml(s: PptxShape, id: number): string {
   );
 }
 
-function pictureXml(name: string, box: EmuRect, id: number, rId: string): string {
+// `descr` is PowerPoint's Alt Text for the picture.
+function pictureXml(
+  name: string,
+  box: EmuRect,
+  id: number,
+  rId: string,
+  descr: string | undefined,
+): string {
+  const alt = descr ? ` descr="${xmlText(descr)}"` : '';
   return (
-    `<p:pic><p:nvPicPr><p:cNvPr id="${id}" name="${xmlText(name)}"/><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr>` +
+    `<p:pic><p:nvPicPr><p:cNvPr id="${id}" name="${xmlText(name)}"${alt}/><p:cNvPicPr><a:picLocks noChangeAspect="1"/></p:cNvPicPr><p:nvPr/></p:nvPicPr>` +
     `<p:blipFill><a:blip r:embed="${rId}"/><a:stretch><a:fillRect/></a:stretch></p:blipFill>` +
     `<p:spPr>${xfrmXml(box)}<a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr></p:pic>`
   );
@@ -163,7 +171,7 @@ export function slideXml(
   // Shape ids are the slide's own: 1 is the tree, the items count from 2.
   const items = slide.items.map((item: PptxItem, i) =>
     item.kind === 'picture'
-      ? pictureXml(item.name, item.box, i + 2, pictureRid(i))
+      ? pictureXml(item.name, item.box, i + 2, pictureRid(i), item.descr)
       : shapeXml(item, i + 2),
   );
   return (

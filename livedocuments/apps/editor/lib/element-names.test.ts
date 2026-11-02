@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   createFreehand,
+  createImage,
   createShape,
   createSticky,
   createText,
@@ -73,6 +74,16 @@ describe('elementAriaLabel', () => {
     expect(elementAriaLabel(square('  '))).toBe('Square');
     expect(elementAriaLabel(arrow('yes'))).toBe('Arrow "yes"');
     expect(elementAriaLabel(createSticky(0, 0))).toBe('Sticky note');
+  });
+
+  // docs/specs/009-elements/images.md "Alt text": a picture's accessible name is its alt text; without any it keeps
+  // the name it had.
+  it('names a picture by its alt text, and by its kind (and label) without any', () => {
+    const picture = { ...createImage(0, 0), imageId: 'img1' };
+    expect(elementAriaLabel({ ...picture, alt: '  A red bicycle  ' })).toBe('A red bicycle');
+    expect(elementAriaLabel(picture)).toBe('Image');
+    expect(elementAriaLabel({ ...picture, alt: '   ' })).toBe('Image');
+    expect(elementAriaLabel({ ...picture, alt: '', label: 'Hero' })).toBe('Image "Hero"');
   });
 });
 

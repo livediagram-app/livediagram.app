@@ -37,9 +37,19 @@ export function svgImageShape(
     `<clipPath id="${clipId}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${rr}" ry="${rr}"/></clipPath>` +
     `<g clip-path="url(#${clipId})">` +
     `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#ffffff"/>` +
-    `<image x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="${par}" href="${xmlEscape(href)}"/>` +
+    imageTag(
+      `x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="${par}" href="${xmlEscape(href)}"`,
+      el,
+    ) +
     `</g>`
   );
+}
+
+// The <image>, with the picture's alt text as its <title> (docs/specs/009-elements/images.md "Alt text"): what a
+// screen reader names it by, and the tooltip a viewer shows.
+function imageTag(attrs: string, el: BoxedElement): string {
+  const alt = el.type === 'image' && typeof el.alt === 'string' ? el.alt.trim() : '';
+  return alt ? `<image ${attrs}><title>${xmlEscape(alt)}</title></image>` : `<image ${attrs}/>`;
 }
 
 // A shape==='icon' element's glyph as a nested <svg> positioned over the

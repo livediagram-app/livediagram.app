@@ -3379,6 +3379,9 @@ importers:
 
   livedocuments/packages/document:
     dependencies:
+      '@liveworkspace/api-kit':
+        specifier: workspace:*
+        version: link:../../../packages/api-kit
       '@liveworkspace/icons':
         specifier: workspace:*
         version: link:../../../packages/icons

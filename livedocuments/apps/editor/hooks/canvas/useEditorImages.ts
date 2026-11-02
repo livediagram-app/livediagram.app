@@ -28,7 +28,7 @@
 // contract.
 
 import { useCallback, useEffect, useEffectEvent, useMemo, useState } from 'react';
-import { createImage, isBoxed, type Element } from '@livedocuments/document';
+import { cleanImageAlt, createImage, isBoxed, type Element } from '@livedocuments/document';
 import { apiFetchImageDataUrl, apiListImages, type ImageSummary } from '@/lib/api-client';
 import { isDataImageId } from '@/lib/offline/offline-images';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
@@ -57,6 +57,8 @@ type EditorImagesDeps = {
   // Viewport centre in canvas coordinates — where freshly placed
   // images land.
   getViewportCenter: () => { x: number; y: number };
+  // The active tab's elements as they are now, to tell whether a write changes anything before it commits.
+  elements: () => readonly Element[];
   // The history-aware element mutator. Snapshots history, same path the
   // rest of element CRUD uses.
   commit: (mapElements: (els: Element[]) => Element[]) => void;
@@ -75,6 +77,7 @@ type EditorImagesDeps = {
 
 export function useEditorImages(deps: EditorImagesDeps) {
   const { editsBlocked, isReadOnly, embedMode, getViewportCenter, commit, setSelectedId } = deps;
+  const elementsNow = deps.elements;
   const { documentId, ownerId, sessionShareCode, galleryHidden = false } = deps;
 
   const [imagePickerOpenFor, setImagePickerOpenFor] = useState<{
@@ -205,6 +208,24 @@ export function useEditorImages(deps: EditorImagesDeps) {
     setImagePickerOpenFor(null);
   };
 
+  // Write an image's alt text (docs/specs/009-elements/images.md "Alt text"), cleaned as every path stores it: one
+  // undo step, none when the cleaned words are what it holds, and words that clean to nothing remove it. Not gated on
+  // editsBlocked: a Participant may write it (PARTICIPANT_TEXT_FIELDS), and the field only shows where `can` allows.
+  const setImageAlt = (elementId: string, typed: string) => {
+    const el = elementsNow().find((e) => e.id === elementId);
+    if (!el || el.type !== 'image') return;
+    const next = cleanImageAlt(typed);
+    if (next === (el.alt ?? '')) return;
+    commit((els) =>
+      els.map((e) => {
+        if (e.id !== elementId || e.type !== 'image') return e;
+        const { alt: _old, ...rest } = e;
+        void _old;
+        return next ? { ...rest, alt: next } : rest;
+      }),
+    );
+  };
+
   // Drop a new image element pre-filled with an existing gallery
   // image (skips the picker entirely). Fired from the Current Tab
   // "Images" accordion thumbnails. Sizes the placeholder to the
@@ -255,6 +276,7 @@ export function useEditorImages(deps: EditorImagesDeps) {
     openImagePickerFor,
     applyImageToElement,
     removeImageFromElement,
+    setImageAlt,
     refreshRecentImages,
     closeImagePicker,
   };

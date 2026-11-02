@@ -191,11 +191,28 @@ describe('renderElementsToSvg', () => {
       });
       expect(svg).toContain(`<image`);
       expect(svg).toContain(`href="${href}"`);
-      // contain (the default) letterboxes via meet; no placeholder / alt text.
+      // contain (the default) letterboxes via meet; no placeholder, and the alt text only as the picture's title.
       expect(svg).toContain('preserveAspectRatio="xMidYMid meet"');
       expect(svg).toContain('clip-path="url(#lvd-img-i)"');
       expect(svg).not.toContain('stroke-dasharray="4 4"');
-      expect(svg).not.toContain('A photo');
+      expect(svg.split('A photo')).toHaveLength(2);
+      expect(svg).toContain('<title>A photo</title></image>');
+    });
+
+    // docs/specs/009-elements/images.md "Alt text": the SVG export names the picture by its alt text.
+    it('titles the picture with its alt text, escaped, and leaves a bare <image> without one', () => {
+      const href = 'data:image/png;base64,AAAA';
+      const titled = renderElementsToSvg(tab([image('i', { alt: '  Sales <up> & "away"  ' })]), {
+        resolveImageHref: () => href,
+      });
+      expect(titled).toContain('<title>Sales &lt;up&gt; &amp; &quot;away&quot;</title></image>');
+      for (const alt of [undefined, '', '   ']) {
+        const bare = renderElementsToSvg(tab([image('i', alt === undefined ? {} : { alt })]), {
+          resolveImageHref: () => href,
+        });
+        expect(bare).not.toContain('<title>');
+        expect(bare).toMatch(/<image [^>]*\/>/);
+      }
     });
 
     it("uses slice for objectFit 'cover'", () => {

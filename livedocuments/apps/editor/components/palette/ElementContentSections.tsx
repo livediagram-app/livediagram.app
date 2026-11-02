@@ -20,6 +20,7 @@ import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ColourRow, MenuToggleRow, TextToggle } from '@/components/palette/context-menu-rows';
 import { presetPxFor, TextSizeControl } from '@/components/palette/TextSizeControl';
 import { ImageCreditRow } from '@/components/palette/ImageCreditRow';
+import { ImageAltTextField } from '@/components/palette/ImageAltTextField';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import type { useContextMenuScaffold } from './useContextMenuScaffold';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -169,6 +170,18 @@ export function ElementContentSections({
               />
             </div>
           )}
+          {/* What a screen reader says for the picture (docs/specs/009-elements/images.md "Alt text"): only once
+              there is a picture to describe. */}
+          {hasImage ? (
+            <>
+              <ContextMenuDivider />
+              <ImageAltTextField
+                key={target.id}
+                value={target.alt}
+                onCommit={(typed) => props.onSetImageAlt(target.id, typed)}
+              />
+            </>
+          ) : null}
           {target.credit ? (
             <>
               <ContextMenuDivider />

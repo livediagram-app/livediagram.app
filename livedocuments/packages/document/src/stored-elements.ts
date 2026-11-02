@@ -9,6 +9,7 @@ import { dropMalformedIds } from './malformed-ids';
 import { dropMalformedStyles } from './malformed-styles';
 import { settleChartRows } from './malformed-chart-rows';
 import { dropUnsafeColours } from './unsafe-colours';
+import { cleanImageAlts } from './image-alt';
 import type { Element } from './index';
 
 export function migrateStoredElements(elements: Element[]): Element[] {
@@ -23,10 +24,13 @@ export function migrateStoredElements(elements: Element[]): Element[] {
 export function migrateStoredElementsUnsettled(elements: Element[]): Element[] {
   // Malformed styles, catalogue keys, bends and chart rows are settled first, so no later migration reads them.
   // A stroke given as `{ nx, ny }` points (a model's, through the MCP and edit operations) is packed.
-  return dropUnsafeColours(
-    dropUnturnableRotation(
-      migrateLegacyStrokePoints(
-        settleChartRows(dropMalformedBends(dropMalformedIds(dropMalformedStyles(elements)))),
+  // An image's alt text is stored clean (docs/specs/009-elements/images.md "Alt text"), whoever wrote it.
+  return cleanImageAlts(
+    dropUnsafeColours(
+      dropUnturnableRotation(
+        migrateLegacyStrokePoints(
+          settleChartRows(dropMalformedBends(dropMalformedIds(dropMalformedStyles(elements)))),
+        ),
       ),
     ),
   );
