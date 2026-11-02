@@ -55,8 +55,11 @@ lets you jump the viewport anywhere with a tap or drag.
   the paper keeps that dependency in ONE shared value both renderers read
   (for example `REVEAL_COVER_BASE` for the Reveal cover), and a drift test
   (`svg-render-surface.test.ts`) fails if any kind without a stored fill
-  paints a light base on dark paper. The Layers panel's previews follow the
-  same rule.
+  paints a light base on dark paper. Its ink follows the same paper: a row the
+  renderer writes itself (a checklist's items, a legend's labels) is in the
+  element's text colour, else `defaultTextColor(element, surface)` as on the
+  canvas, never a fixed dark ink, so the SVG, PNG and PDF exports of a dark
+  page read too. The Layers panel's previews follow the same rule.
 - **Navigation.** Tap a point to re-centre the canvas there; press-and-drag
   inside the map to pan continuously; **scroll** on it to zoom the canvas in/out
   centred on that spot. The viewport rectangle tracks live as you move. (Drags

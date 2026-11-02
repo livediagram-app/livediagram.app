@@ -204,7 +204,10 @@ and this editor imports it. livehuddle behaves exactly as it did before the move
   bubbles and composer, the action keys, the Avatar Pad's spawn and arrivals, the costume config and its parser, the
   statuses, the reactions, chair occupancy, and the office pieces' pure parts (a room's walls and doorway, the fence
   and footprint collision, which kinds are floor, seat or give a drink, the Avatar Pad's drawing and the avatar
-  palette, the five bursts a pad or a walker throws).
+  palette, the five bursts a pad or a walker throws), and the seat geometry (`@liveworkspace/avatar/seats`: each
+  seating kind's drawing grid and seat points per facing, the default facing, `seatPoints`, `nearestSeat` and
+  `seatFor`, which also says which way the sitter faces). So another product seats a character in a chair, desk, sofa
+  or meeting table without importing this product's document package.
 - **The wire shapes** (`AvatarPresence`, the statuses, the costume vocabulary, and the `avatar`, `avatar-push` and
   `avatar-say` ops with `parseAvatarSay`) are `@liveworkspace/api-schema/avatar` and `/avatar-say`.
   `@livehuddle/api-schema` re-exports them and keeps the ops in its own `RoomOp` union and `PRESENCE_OP_KINDS`.
@@ -212,8 +215,9 @@ and this editor imports it. livehuddle behaves exactly as it did before the move
   for a shape its kind and box (`@liveworkspace/avatar/scene`); an element "has a box" when its place and size are
   numbers, which is exactly `isBoxed` for every kind here. Generic hooks hand this product's own `ShapeElement` back to
   its callbacks (a portal, a chair, a pad, a drink).
-- **What stays in livehuddle**: the element kinds themselves (their union members, views, drawings, validation and
-  the seat points the furniture's drawings decide), the mode-panel chrome (`AvatarPanel` wraps the shared body in
+- **What stays in livehuddle**: the element kinds themselves (their union members, views, drawings and
+  validation; each furniture drawing takes its grid and seats from the package's seat geometry, so a seat and the
+  cushion it is drawn on cannot drift apart), the mode-panel chrome (`AvatarPanel` wraps the shared body in
   `ModePanel`), the canvas wiring (`useCanvasAvatar`), portal travel, the tour and the room connection.
 - **The bindings**: the package takes this product's facts once, before any of it renders, the way the workbench is
   bound. `lib/avatar-bindings.ts` calls `configureAvatar` with the telemetry `track`, the storage prefix

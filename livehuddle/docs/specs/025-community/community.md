@@ -325,7 +325,8 @@ The landing page carries a **From the Community** section under the template gal
 most liked over the last three months, topped up (when fewer than six were liked in that time) with the best
 of all time by likes and copies, newest first on a tie. Public posts only, credited as they are in the
 gallery (Anonymous when the author chose it). The page is static, so the six load after it: placeholder cards
-hold their space, and with nothing to show the section says the Community is just getting started. **Explore
+hold their space. With fewer than six to show (a young Community, or the service unreachable), the section is not
+shown at all. **Explore
 the Community** leads to the gallery. The Community service answers
 `GET liveworkspace.app/api/community/featured?app=livehuddle.app`, cacheable for one minute, and answers it from
 Cloudflare's edge cache for that minute (every home page visit asks; the facets read is edge-cached the same way

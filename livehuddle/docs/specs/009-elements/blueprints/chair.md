@@ -8,7 +8,8 @@ Scope, by file:
 
 | File                                                        | Role                                                                     |
 | ----------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `packages/document/src/collab-shapes.ts`                    | `ChairFacing`, labels, guard, `CHAIR_SITTER_FACING`                      |
+| `packages/document/src/collab-shapes.ts`                    | `ChairFacing`, labels, guard, `CHAIR_SITTER_FACING` (the package's)      |
+| `../packages/avatar/src/seats.ts`                           | Seat geometry: grids, seats, `seatPoints`, `nearestSeat`, `seatFor`      |
 | `packages/document/src/shape-geometry.ts`                   | `chairSeatFill`                                                          |
 | `packages/document/src/shape-factory.ts`                    | 76x84, `chairFacing: DEFAULT_CHAIR_FACING`, `aspectLocked`, label bottom |
 | `packages/document/src/colors.ts`                           | `behaviourSkin`: transparent box, outline and label ink per paper        |
@@ -21,7 +22,7 @@ Scope, by file:
 | `apps/editor/components/canvas/BoxedElementView.tsx`        | Mounts `FurnitureView`; the ordinary label under it                      |
 | `apps/editor/components/palette/palette-tile-defs.tsx`      | `tools:chair` in the **Navigate** accordion (`tileGroup: 'move'`)        |
 | `apps/editor/components/canvas/useBoxedElementAnimation.ts` | Silhouette animations on the drawing                                     |
-| `apps/editor/components/canvas/useCanvasAvatar.tsx`         | `onWalkIntoChair` → `sitOn`; `chairSitters` from presence                |
+| `apps/editor/components/canvas/useCanvasAvatar.tsx`         | `onWalkIntoChair` → `sitOn(seatFor)`; `chairSitters` from presence       |
 | `../packages/avatar/src/hooks/useAvatarWalk.ts`             | `sitOn`, `standUp`, seated guards, arrival hook, presence packet         |
 | `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`      | Double-click stands up                                                   |
 | `../packages/avatar/src/components/AvatarWalker.tsx`        | Seated pose and the **Stand** press                                      |
@@ -30,13 +31,13 @@ Scope, by file:
 
 Desk and sofa (spec "Desk and sofa") add:
 
-| File                                                     | Role                                                                                                                                                                              |
-| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/seating.ts`                       | `isSeatingShape`, `DEFAULT_SEATING_FACING`, `CHAIR_ART`, `DESK_ART`, `SOFA_ART`, `FURNITURE_ART`, `facingView`, `furnitureFrame`, `seatPoints`, `nearestSeat`, `turnedSeatingBox` |
-| `packages/document/src/shape-factory.ts`                 | desk 120x112, sofa 152x85, facing, `aspectLocked`, label bottom                                                                                                                   |
-| `apps/editor/components/canvas/collab/FurnitureView.tsx` | The canvas desk and sofa, occupied ring, sitter names                                                                                                                             |
-| `apps/editor/hooks/canvas/useDataShapeSetters.ts`        | `setChairFacingSelected` for all three; quarter turns swap the box                                                                                                                |
-| `apps/editor/components/palette/palette-tile-defs.tsx`   | `tools:desk`, `tools:sofa` after `tools:chair`                                                                                                                                    |
+| File                                                     | Role                                                                                                                                                                                                                       |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/document/src/seating.ts`                       | `CHAIR_ART`, `DESK_ART`, `SOFA_ART`, `FURNITURE_ART`, `furnitureFrame`, `turnedSeatingBox`; re-exports the package's seat geometry (`isSeatingShape`, `DEFAULT_SEATING_FACING`, `facingView`, `seatPoints`, `nearestSeat`) |
+| `packages/document/src/shape-factory.ts`                 | desk 120x112, sofa 152x85, facing, `aspectLocked`, label bottom                                                                                                                                                            |
+| `apps/editor/components/canvas/collab/FurnitureView.tsx` | The canvas desk and sofa, occupied ring, sitter names                                                                                                                                                                      |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`        | `setChairFacingSelected` for all three; quarter turns swap the box                                                                                                                                                         |
+| `apps/editor/components/palette/palette-tile-defs.tsx`   | `tools:desk`, `tools:sofa` after `tools:chair`                                                                                                                                                                             |
 
 ## Domain and naming
 
@@ -74,12 +75,14 @@ in `useAvatarWalk`; published on every avatar presence packet.
 | seated   | leaving Avatar mode                      |                    | standing                     |
 | seated   | disconnect, tab change (peer's view)     |                    | gone with presence           |
 
-1. **Sit.** `Canvas` passes `onWalkIntoChair(element, feet)` for any `isSeatingShape` kind: facing
-   `= seatingFacing(element)`, then `sitOn(id, nearestSeat(element, feet),
-CHAIR_SITTER_FACING[facing])`. A chair has one seat; a sofa two; a desk one (each view's `seats`). `sitOn` drops the walk target, arrival callback and held keys,
+1. **Sit.** `Canvas` passes `onWalkIntoChair(element, feet)` for any `isSeatingShape` kind: `seatFor(element, feet)`
+   (`@liveworkspace/avatar/seats`) is `nearestSeat(element, feet)` with its facing, the seat's own (a meeting table's)
+   or `CHAIR_SITTER_FACING[seatingFacing(element)]`, then `sitOn(id, seat, seat.facing)`. A chair has one seat; a sofa two; a desk one (each view's `seats`). `sitOn` drops the walk target, arrival callback and held keys,
    snaps the feet, sets the facing, marks seated, and records the chair as under the feet so
    standing still does not re-seat.
-2. **Seat point.** `seatPoints(element)`: the facing's view (`facingView`), each seat's `(u, v)` as
+2. **Seat point.** `seatPoints(element)` (`@liveworkspace/avatar/seats`, so livehuddle seats without this product's
+   document package): the facing's view (`facingView`) of the kind's seat grid (`SEAT_GRIDS`, which each
+   `FurnitureDrawing` here spreads, so the seats and the drawing share one grid), each seat's `(u, v)` as
    fractions of the drawing as drawn, `u` mirrored for `w`: both renderers fit the view's grid whole and centred in
    the box (`preserveAspectRatio` meet), so a box of other proportions (a quarter turn written by an agent without
    swapping the box, an aspect unlocked) letterboxes it, and the seats follow the drawn rectangle (`drawnRect`). A chair's seats keep the old points: `n` `(0.5, 0.62)`,
@@ -110,6 +113,13 @@ export const CHAIR_FACING_LABELS: Record<ChairFacing, string>;
 export function isChairFacing(value: unknown): value is ChairFacing;
 export type ChairSitterFacing = 'down' | 'left' | 'up' | 'right';
 export const CHAIR_SITTER_FACING: Record<ChairFacing, ChairSitterFacing>;
+// @liveworkspace/avatar/seats (ChairFacing is its SeatFacing, ChairSitterFacing its AvatarFacing)
+export type SeatGrid = { width: number; height: number; seats: readonly { u: number; v: number }[] };
+export const SEAT_GRIDS: Record<'chair' | 'desk' | 'sofa', Record<'front' | 'back' | 'side', SeatGrid>>;
+export const MEETING_TABLE_SEATS: { width: number; height: number; seats: readonly TableSeat[] };
+export function seatPoints(el: Rect & { shape: SeatingKind; chairFacing?: SeatFacing }): Seat[];
+export function nearestSeat(el: SeatedBox, from: Point): Seat;
+export function seatFor(el: SeatedBox, from: Point): Seat & { facing: AvatarFacing };
 // seating.ts
 export type FurnitureDrawing = { width: number; height: number; parts: readonly FurniturePart[];
   seats: readonly { u: number; v: number }[]; ring: { cx: number; cy: number; rx: number; ry: number };
@@ -241,7 +251,7 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | Label survives export                          | "prints a chair label under the seat"               | `packages/document/src/svg-render-fidelity.test.ts`        |
 | Unknown facing rejected                        | "rejects an off-vocabulary chair facing"            | `packages/document/src/collab-shapes.test.ts`              |
 | Desk faces the computer; sofa the reader       | "a new desk faces its sitter at the computer …"     | `packages/document/src/seating.test.ts`                    |
-| Sofa has two seats; nearest seat taken         | `seatPoints`, `nearestSeat` blocks                  | `packages/document/src/seating.test.ts`                    |
+| Sofa has two seats; nearest seat taken         | `seatPoints`, `nearestSeat` blocks                  | `../packages/avatar/src/seats.test.ts`                     |
 | Quarter turn swaps a desk or sofa box          | "swaps a desk or sofa box about its centre …"       | `packages/document/src/seating.test.ts`                    |
 
 ## Constants and configuration
