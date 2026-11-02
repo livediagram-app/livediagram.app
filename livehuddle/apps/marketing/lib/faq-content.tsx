@@ -173,19 +173,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: 'Yes. A canvas holds as many tabs as you need, which you can group into folders, link between and open two at a time side by side. Each tab has Photoshop-style layers you can hide, lock and restack, and your canvases live in nested folders in the Explorer, shown as a list, as cards or as a sortable Details table. Drag a canvas onto a folder to file it.',
       },
       {
-        q: 'Can I make mind maps?',
-        a: (
-          <>
-            Yes. Press Tab to add a child and Enter to add a sibling, so a map grows without the
-            mouse. Pick a Tree, Leftward, Balanced, Downward, Upward or Bubble layout, tidy it in
-            one click, or open Edit Outline to rewrite the whole map as an indented list. See{' '}
-            <a href="/help/palette/mind-maps/">mind maps</a>.
-          </>
-        ),
-        aText:
-          'Yes. Press Tab to add a child and Enter to add a sibling, so a map grows without the mouse. Pick a Tree, Leftward, Balanced, Downward, Upward or Bubble layout, tidy it in one click, or open Edit Outline to rewrite the whole map as an indented list. See mind maps.',
-      },
-      {
         q: 'Can I add pictures?',
         a: (
           <>
@@ -249,14 +236,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I use it as a whiteboard?',
         a: (
           <>
-            Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers,
-            text, a fill bucket, an eraser and shapes, on a plain, dotted or grid board in light or
-            dark. With a stylus, a resting palm never leaves a mark. See{' '}
-            <a href="/help/canvas/draw-mode/">Draw mode</a>.
+            Yes. Every board is a whiteboard: the palette’s Draw category holds a pencil, a
+            highlighter and arrows, and stickies, text and shapes are a key away, on a plain, dotted
+            or grid backdrop in light or dark. See{' '}
+            <a href="/help/palette/tools/drawing/">Drawing</a>.
           </>
         ),
         aText:
-          'Yes. Switch a tab to Draw for a plain whiteboard: three pressure-sensitive markers, text, a fill bucket, an eraser and shapes, on a plain, dotted or grid board in light or dark. With a stylus, a resting palm never leaves a mark. See Draw mode.',
+          'Yes. Every board is a whiteboard: the palette\u2019s Draw category holds a pencil, a highlighter and arrows, and stickies, text and shapes are a key away, on a plain, dotted or grid backdrop in light or dark. See Drawing.',
       },
       {
         q: 'Can I present from it?',

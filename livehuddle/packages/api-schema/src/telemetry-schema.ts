@@ -382,24 +382,20 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Timeline-rail',
     'CodeBlock',
     'Page',
-    // Mind node (docs/specs/009-elements/mind-node.md).
+    // The Diagram elements cut with Diagram mode (docs/specs/007-editor/editor-modes.md); their tokens stay readable.
     'MindNode',
-    // Flowchart (docs/specs/009-elements/flowchart.md): the palette's Start, and every grown step.
     'Flowchart',
     'FlowchartStep',
     // Lane (docs/specs/009-elements/lane.md).
     'Lane',
     // Boundary (docs/specs/009-elements/boundary.md): a Build container beside Frame and Lane.
     'Boundary',
-    // Org chart (docs/specs/009-elements/org-chart.md): a person mind node, after Mind node.
     'OrgChart',
     // Stack (docs/specs/009-elements/stack.md): a Build container after Frame.
     'Stack',
-    // Sequence diagram (docs/specs/009-elements/sequence-diagram.md): a Build element after Flowchart.
     'Sequence',
     // Diagram key (docs/specs/009-elements/diagram-key.md): a Build element after Boundary.
     'DiagramKey',
-    // Entity (docs/specs/009-elements/entity.md).
     'Entity',
     'Checklist',
     'ModeButton',
@@ -439,7 +435,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Progress-ring',
     'Rating',
     'Legend',
-    // Sankey diagram (docs/specs/009-elements/sankey.md): a Build element; its kind has no hyphen to keep.
+    // Sankey, cut with Diagram mode; its token stays readable.
     'Sankey',
   ],
   // The Collaborate category (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) — its own bucket rather
@@ -472,7 +468,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Badge',
     'Step',
   ],
-  // Concept graphics (docs/specs/009-elements/concept-graphics.md): the Concepts category.
+  // Concept graphics (docs/specs/009-elements/timeline.md): the Concepts category.
   concepts: ['LayerStack', 'Pyramid', 'Cycle', 'Hub', 'Onion', 'Chevrons'],
   devices: ['Browser', 'Monitor', 'Laptop', 'Phone', 'Tablet', 'Foldable', 'Smartwatch'],
   icons: ['Icon', 'TechIcon', 'Sticker'],
