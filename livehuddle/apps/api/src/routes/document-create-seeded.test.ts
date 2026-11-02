@@ -133,3 +133,38 @@ describe('compileSeededTabs', () => {
     });
   });
 });
+
+// A tree takes a direction as a flow does (docs/specs/015-api/mcp-server.md §4.7 "Layout choices").
+describe('a seeded tree graph', () => {
+  const tree = (direction?: 'down' | 'right') => ({
+    id: 't1',
+    name: 'Org',
+    graph: {
+      style: 'tree',
+      ...(direction ? { direction } : {}),
+      nodes: ['ceo', 'cto', 'coo'].map((id) => ({ id, label: id.toUpperCase() })),
+      edges: [
+        { from: 'ceo', to: 'cto' },
+        { from: 'ceo', to: 'coo' },
+      ],
+    },
+  });
+  const laid = async (direction?: 'down' | 'right') => {
+    expect((await create([tree(direction)])).status).toBe(201);
+    const els = (await getTab(db.env, 'd1', 't1'))!.elements;
+    return (id: string) =>
+      els.find((e) => e.id === id) as { x: number; y: number; width: number; height: number };
+  };
+
+  it('runs left to right when asked right', async () => {
+    const at = await laid('right');
+    expect(at('cto').x).toBeGreaterThan(at('ceo').x + at('ceo').width);
+    expect(at('cto').x).toBe(at('coo').x);
+  });
+
+  it('runs down when asked down', async () => {
+    const at = await laid('down');
+    expect(at('cto').y).toBeGreaterThan(at('ceo').y + at('ceo').height);
+    expect(at('cto').y).toBe(at('coo').y);
+  });
+});

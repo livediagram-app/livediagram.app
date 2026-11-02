@@ -134,3 +134,19 @@ describe('useCanvasA11y announcements', () => {
     expect(announce).not.toHaveBeenCalled();
   });
 });
+
+describe('a verb spoken after a selection change', () => {
+  it('is not spoken over by the selection (a vote key straight after Tab)', () => {
+    const selection = setup();
+    act(() => {
+      selection.setSelectedId(a.id);
+    });
+    act(() => {
+      heard.nonce += 1; // "Dot added to 'Login'. 1 of 2 dots left." in the same frame
+    });
+    act(() => {
+      vi.runAllTimers();
+    });
+    expect(announce).not.toHaveBeenCalled();
+  });
+});

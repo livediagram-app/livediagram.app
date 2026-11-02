@@ -6,7 +6,7 @@
 
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, pagesOf, layOutPages, type Tab } from '@livedesign/design';
+import { createShape, createText, pagesOf, layOutPages, type Tab } from '@livedesign/design';
 import { ExportTabDialog } from './ExportTabDialog';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -62,6 +62,21 @@ describe('ExportTabDialog, Pages', () => {
     expect(el.style.background).toBe('');
   });
 
+  // Bare, the preview SVG was named by every word on the page (a screen reader read the whole page out).
+  it('names its preview as one picture, of the page or the tab', async () => {
+    open();
+    fireEvent.click(screen.getByRole('button', { name: /^PNG/ }));
+    const page = await preview();
+    expect(page.getAttribute('role')).toBe('img');
+    expect(page.getAttribute('aria-label')).toBe('The page as it will download');
+    cleanup();
+    open(false);
+    fireEvent.click(screen.getByRole('button', { name: /^PNG/ }));
+    const whole = await preview();
+    expect(whole.getAttribute('role')).toBe('img');
+    expect(whole.getAttribute('aria-label')).toBe('The tab as it will download');
+  });
+
   it('offers no Hidden layers option', async () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: /^SVG/ }));
@@ -78,6 +93,29 @@ describe('ExportTabDialog, Pages', () => {
 });
 
 describe('LogoKitPanel', () => {
+  // docs/specs/007-editor/logo-pages.md "Export": the preview is the kit, without the template's notes.
+  it("previews the logo without the template's notes", async () => {
+    const { x, y } = pages[0]!.rect;
+    const withNote = {
+      ...tab,
+      elements: [
+        { ...createText(x + 100, y + 500), id: 'word', label: 'Sunny Side' },
+        {
+          ...createText(x + 60, y + 60),
+          id: 'note',
+          label: 'Pick the lockup that fits',
+          templateNote: true,
+        },
+      ],
+    } as unknown as Tab;
+    render(<ExportTabDialog tab={withNote} designName="Doc" onClose={vi.fn()} pages={pages} />);
+    fireEvent.click(screen.getByRole('button', { name: /Logo Kit/ }));
+    const img = (await screen.findByAltText('The logo as it will export')) as HTMLImageElement;
+    const svg = decodeURIComponent(img.src);
+    expect(svg).toContain('Sunny Side');
+    expect(svg).not.toContain('Pick the lockup');
+  });
+
   it('names each logo page by its full label', () => {
     open();
     fireEvent.click(screen.getByRole('button', { name: /Logo Kit/ }));

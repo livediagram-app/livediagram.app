@@ -124,11 +124,25 @@ export function TourHost() {
     !ctx.isReadOnly &&
     !ctx.embedMode &&
     inDiagram;
+  // Taken (the synced tourSeen, which Settings' Diagram Tour row reads): off the button until that row is on again.
+  const seen = ctx.userPreferences?.tourSeen === true;
+  // Records the tour as taken, onto the freshest preferences, not this render's: the whole blob is written.
+  const markTaken = () => {
+    const next = rebaseUserPreferences(ctx.userPreferences, {
+      ...ctx.userPreferences,
+      tourSeen: true,
+    });
+    ctx.setUserPreferences(next);
+    ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
+  };
   const start = () => {
     if (active || otherTour) return;
     engine.start();
+    // Taken as it starts, so a reload mid-tour does not put it back on the button.
+    if (!seen) markTaken();
   };
-  // The footer's Start Tour button: offered whenever the tour could run, taken or not (it is how it is taken again).
+  // The footer's Start Tour button: offered whenever the tour could run, until it is taken
+  // (docs/specs/007-editor/editor-tour.md "Where it appears").
   useOfferTour(
     'diagram',
     ready
@@ -137,6 +151,7 @@ export function TourHost() {
           rank: TOUR_OFFER_RANK.mode,
           start,
           onShown: () => track('UI', 'Opened', 'TourOffer'),
+          seen,
         }
       : null,
   );
@@ -159,13 +174,7 @@ export function TourHost() {
     apiRef.current.closeContextMenu();
     // The square it placed on an empty tab goes, so the document is left as the person had it.
     if (ctx.tourSquare.remove().length > 0) ctx.setSelectedId(null);
-    // Onto the freshest preferences, not this render's: the whole blob is written.
-    const next = rebaseUserPreferences(ctx.userPreferences, {
-      ...ctx.userPreferences,
-      tourSeen: true,
-    });
-    ctx.setUserPreferences(next);
-    ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
+    markTaken();
     track('UI', 'Ended', outcome === 'completed' ? 'TourCompleted' : 'TourSkipped');
   };
   const endTourRef = useLatest(endTour);

@@ -367,7 +367,7 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
   // read past it, so the edge after it still lands.
   const readStyledNodeRef = (s: string): { id: string; rest: string } | null => {
     const ref = readNodeRef(s);
-    return ref ? { id: ref.id, rest: ref.rest.replace(/^:::[A-Za-z0-9_-]+/, '') } : null;
+    return ref ? { id: ref.id, rest: ref.rest.replace(/^:::[\p{L}\p{M}\p{N}_-]+/u, '') } : null;
   };
 
   // A `&`-fanned group of node references: `A & B & C`.
@@ -406,7 +406,7 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
 
     // `click A "https://…"` (or `click A href "…"`) links the node; the
     // callback form has no code to call, so it's skipped.
-    const click = /^click\s+([A-Za-z0-9_]+)\s+(?:href\s+)?"([^"]+)"/i.exec(line);
+    const click = /^click\s+([\p{L}\p{M}\p{N}_]+)\s+(?:href\s+)?"([^"]+)"/iu.exec(line);
     if (click) {
       touch(click[1]!).link = click[2]!;
       continue;
@@ -419,7 +419,7 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
     if (sub) {
       subgraphDepth += 1;
       const spec = sub[1]!.trim();
-      const idTitle = /^([A-Za-z0-9_-]+)\s*\[(.*)\]$/.exec(spec);
+      const idTitle = /^([\p{L}\p{M}\p{N}_-]+)\s*\[(.*)\]$/u.exec(spec);
       const subId = idTitle ? idTitle[1]! : spec;
       if (subgraphDepth > 1) {
         folded += 1;

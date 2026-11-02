@@ -75,10 +75,25 @@ Wrangler's own ports sit outside the 35xx block, one range per product (the api 
 
 ## CI
 
+**In place since the code fork (build plan step 3), held:**
+
 - **A fifth group** in `.github/scripts/ci-plan.mjs`: `livehuddle`, folder `livehuddle/`, editor
-  `@livehuddle/editor` (sharded), and in v1.1 its CLI. The root-files pattern that reaches everything gains
-  `livehuddle` beside the other product folders.
-- **docs/ci.md**'s group table gains the row.
+  `@livehuddle/editor` (sharded), and its CLI (`livehuddle/apps/cli`, until the cut that may remove it). The
+  root-files pattern that reaches everything has `livehuddle` beside the other product folders.
+- **Held until launch** (`held: true`): the group runs only when a change touches `livehuddle/` itself or everything
+  runs, never because a shared package it uses changed; it has no E2E, and none of its Workers deploy, even with
+  **all** (docs/ci.md "Deploys").
+- **docs/ci.md**'s group table has the row, and says what held means.
+- **The spec checks run** since the specs were forked (step 4): the help app's repo-paths check over `docs/specs/` and
+  `docs/`, and the suites that pin prose to code (the router's routes against `016-platform/router-app.md`, the CLI's
+  command table against `015-api/cli.md`, the preferences cap against `015-api/api.md`, the image cap and the reader's
+  errors against `009-elements/images.md` and `021-event-storming/note-reader.md`). Each cut removes the specs of
+  what it removes in the same PR, so these stay green.
+
+**At launch (step 8):**
+
+- **The hold lifts**: `held: true` comes off, so shared-package changes reach livehuddle's suites and its Workers
+  deploy.
 - **E2E:** `e2e.yml` calls `e2e-product.yml` for livehuddle when its editor is reached.
 - **Canvas performance:** livehuddle's probe joins the nightly `canvas-perf.yml`, with an avatar fan-out probe of its
   own ([Build plan](../005-project-roadmap/build-plan.md#risks), R3).

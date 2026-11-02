@@ -19,13 +19,8 @@ import { useAvatarActionKeys } from '@liveworkspace/avatar/hooks/useAvatarAction
 import { useAvatarWalk } from '@liveworkspace/avatar/hooks/useAvatarWalk';
 import { useAvatarPadArrivals } from '@liveworkspace/avatar/hooks/useAvatarPadArrivals';
 import { avatarSpawnFromButton, type AvatarPoint } from '@liveworkspace/avatar/walk';
-import {
-  CHAIR_SITTER_FACING,
-  isSeatingShape,
-  nearestSeat,
-  drinkFrom,
-  seatingFacing,
-} from '@livehuddle/document';
+import { isSeatingShape, drinkFrom } from '@livehuddle/document';
+import { seatFor } from '@liveworkspace/avatar/seats';
 import { useAvatarConfig } from '@liveworkspace/avatar/hooks/useAvatarConfig';
 import type { Reaction } from '@livehuddle/document';
 import { usePortalTravel } from '@/components/canvas/portal-travel';
@@ -119,14 +114,10 @@ export function useCanvasAvatar({
     // the character on the cushion nearest where it walked in.
     onWalkIntoChair: (element, feet) => {
       if (!isSeatingShape(element.shape)) return;
-      const seating = { ...element, shape: element.shape };
-      // A meeting table's seats each face the table (docs/specs/009-elements/office.md "Meeting Table").
-      const seat = nearestSeat(seating, feet);
-      avatarRef.current?.sitOn(
-        element.id,
-        seat,
-        seat.facing ?? CHAIR_SITTER_FACING[seatingFacing(seating)],
-      );
+      // The nearest seat, facing away from the back; a meeting table's seats each face the table
+      // (docs/specs/009-elements/office.md "Meeting Table").
+      const seat = seatFor({ ...element, shape: element.shape }, feet);
+      avatarRef.current?.sitOn(element.id, seat, seat.facing);
     },
     // A water cooler or a coffee machine (docs/specs/009-elements/office.md "Using it"): a drink in the hand,
     // and the machine answers on your screen.

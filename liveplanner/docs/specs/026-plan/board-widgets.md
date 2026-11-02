@@ -129,7 +129,10 @@ A team that opens the same slice every standup ("My Bugs", "Due This Week") save
   the zone stays in edit mode for the next; **Done**, Escape, a press anywhere outside the widget zone, or the last
   widget going ends it. Edit mode is this person's alone and never saved. Out of edit mode no widget shows a ×, so the
   header stays clean. Delete or Backspace still takes a focused widget off, in or out of edit mode.
-  Once one is taken off, nothing of it stays selected: no widget keeps the focus.
+  Once one is taken off, the keyboard focus moves on rather than dropping to the page: to the same control (its ×,
+  or the widget itself after Delete) on the widget that took its place, or on the one before when the last in the
+  row went. When no widget is left, edit mode has ended and Done has gone with it, so the focus goes to the zone's
+  **+**, which then shows for this person even on an unselected board, to add one back.
   (Before edit mode the × showed only while the board was selected, and then only on hover, keyboard focus or a tap;
   a board filling its tab is seldom selected, so on a desktop the × hardly ever appeared.)
 - Each placement, move and removal is one board edit: undoable, live for everyone, and saved with the board.

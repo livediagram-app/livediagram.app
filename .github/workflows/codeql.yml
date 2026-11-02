@@ -26,8 +26,9 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
-    # Large PRs (the Community series) need more than 20 minutes to analyse.
-    timeout-minutes: 30
+    # The livehuddle fork (#1192) nearly doubled the code to scan: a full analysis now takes 21 to
+    # over 30 minutes, so 30 cancelled runs on main and on PRs alike (docs/ci.md).
+    timeout-minutes: 60
     permissions:
       contents: read
       security-events: write

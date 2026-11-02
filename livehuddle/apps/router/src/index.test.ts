@@ -1,13 +1,8 @@
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
 import { APP_BARE_HOSTS } from '@liveworkspace/sites/workspace-proxy';
 import router, { type Env } from './index';
-
-// livehuddle's specs arrive in their own step (build plan step 4): until then the checks against them wait.
-const ROUTER_SPEC = fileURLToPath(
-  new URL('../../../docs/specs/016-platform/router-app.md', import.meta.url).href,
-);
 
 // Dispatch tests for the router (docs/specs/016-platform/router-app.md): every production request
 // flows through this table, and a mistake here is a product-wide
@@ -288,28 +283,25 @@ describe('bare help-article paths', () => {
     expect(live.urls.length).toBe(1);
   });
 
-  it.skipIf(!existsSync(ROUTER_SPEC))(
-    "lists exactly the editor's route segments in the spec's live page routes row",
-    async () => {
-      // The spec's table is prose, so it kept `/drive/*` for weeks after the old Drive mirror's pages left the
-      // editor. Pin its row to the set the router actually routes by. `explorer` has its own row (liveworkspace's), and
-      // so does `form` (old form links, sent on to liveplanner before the editor sees them).
-      const { LIVE_ROUTE_SEGMENTS } = await import('@livehuddle/api-schema');
-      const spec = readFileSync(
-        fileURLToPath(
-          new URL('../../../docs/specs/016-platform/router-app.md', import.meta.url).href,
-        ),
-        'utf8',
-      );
-      const row = spec.split('\n').find((line) => line.startsWith('| live page routes:'));
-      expect(row).toBeDefined();
-      const listed = [...row!.matchAll(/`\/([a-z-]+)(?:\/\*)?`/g)].map((m) => m[1]!);
-      const routed = [...LIVE_ROUTE_SEGMENTS].filter(
-        (segment) => segment !== 'explorer' && segment !== 'form',
-      );
-      expect(listed.filter((s) => s !== 'icon.svg').toSorted()).toEqual(routed.toSorted());
-    },
-  );
+  it("lists exactly the editor's route segments in the spec's live page routes row", async () => {
+    // The spec's table is prose, so it kept `/drive/*` for weeks after the old Drive mirror's pages left the
+    // editor. Pin its row to the set the router actually routes by. `explorer` has its own row (liveworkspace's), and
+    // so does `form` (old form links, sent on to liveplanner before the editor sees them).
+    const { LIVE_ROUTE_SEGMENTS } = await import('@livehuddle/api-schema');
+    const spec = readFileSync(
+      fileURLToPath(
+        new URL('../../../docs/specs/016-platform/router-app.md', import.meta.url).href,
+      ),
+      'utf8',
+    );
+    const row = spec.split('\n').find((line) => line.startsWith('| live page routes:'));
+    expect(row).toBeDefined();
+    const listed = [...row!.matchAll(/`\/([a-z-]+)(?:\/\*)?`/g)].map((m) => m[1]!);
+    const routed = [...LIVE_ROUTE_SEGMENTS].filter(
+      (segment) => segment !== 'explorer' && segment !== 'form',
+    );
+    expect(listed.filter((s) => s !== 'icon.svg').toSorted()).toEqual(routed.toSorted());
+  });
 
   it('covers every help category the registry declares', async () => {
     // The list in index.ts is hand-kept; this is what stops it drifting when
