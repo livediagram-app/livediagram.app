@@ -18,11 +18,10 @@ import {
 test('the new-document wizard renders', async ({ page, pageErrors }) => {
   await page.goto('/new');
   await expect(page.getByText('New Canvas', { exact: false })).toBeVisible();
-  // The Mode step is the client-rendered heart of the wizard (docs/specs/007-editor/new-document-route.md
-  // "Choosing a mode"); its three mode cards (Diagram, Draw, Workshop) prove the picker mounted, not just the shell.
-  const modes = page.getByRole('group', { name: 'What are you making?' });
-  await expect(modes).toBeVisible();
-  await expect(modes.locator('[data-new-mode]')).toHaveCount(3);
+  // Every board is Workshop (docs/specs/007-editor/editor-modes.md), so the wizard asks no question: its one
+  // Create button proves the client-rendered wizard mounted, not just the shell.
+  await expect(page.locator('[data-new-mode]')).toHaveCount(1);
+  await expect(page.locator('[data-new-mode="workshop"]')).toBeVisible();
   expectNoPageErrors(pageErrors);
 });
 
@@ -33,7 +32,7 @@ test('the new-document wizard shows with no apps menu in the header', async ({
   pageErrors,
 }) => {
   await page.goto('/new');
-  await expect(page.locator('[data-new-mode="diagram"]')).toBeVisible();
+  await expect(page.locator('[data-new-mode="workshop"]')).toBeVisible();
   await expect(page.getByRole('button', { name: /^switch section/i })).toHaveCount(0);
   expectNoPageErrors(pageErrors);
 });
