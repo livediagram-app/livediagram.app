@@ -108,8 +108,8 @@ The name (1 to 40 characters) appears in the editor's copy, such as "Reconnect i
 
 Every message is an object `{ type, v: 1, ... }`. The page sends only to your origin and accepts only messages from its parent window at that origin. A message with an unknown type, a different `v`, or a field that fails validation is ignored (and logged once per type in the page's console), so check your payloads against this table.
 
-| Type                    | Direction    | Payload                                                                                                                                                                                     |
-| ----------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Type                   | Direction    | Payload                                                                                                                                                                                     |
+| ---------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `livehuddle:hello`     | Page to tool | Nothing: asks the tool to answer                                                                                                                                                            |
 | `livehuddle:hello-ack` | Tool to page | `name`: 1 to 40 characters                                                                                                                                                                  |
 | `livehuddle:ready`     | Page to tool | `documentId`, `documentName`, `tabId`, `tabName`, `role` (`view`, `participate` or `edit`), once the canvas is loaded                                                                       |

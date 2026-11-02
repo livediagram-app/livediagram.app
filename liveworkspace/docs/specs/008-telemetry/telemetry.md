@@ -32,7 +32,7 @@ The same three fields as before, plus the app it came from:
 There is no identity, IP address, owner id or document id. Each app keeps its own closed vocabulary
 in its own api-schema (`telemetry-schema.ts`), because its editors and its vocabulary change
 together. The service imports each sending app's vocabulary (livediagram's, liveplanner's,
-livedocuments' and livedesign's), and only stores an event that its app could have sent.
+livedocuments', livedesign's and the held livehuddle's), and only stores an event that its app could have sent.
 
 ## Sending events
 
@@ -258,8 +258,8 @@ Workers' `TELEMETRY_KEY`. The apps reach the service over HTTPS, not a service b
 An app registered before its launch ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch))
 goes in `HELD_TELEMETRY_APPS` instead of `TELEMETRY_APPS` for step 1: the service stores its events and takes its
 key, and the dashboard's app picker and All apps view, which read `TELEMETRY_APPS`, leave it out, so step 3 waits
-for its launch. livehuddle is held this way. Forked from livediagram, it is checked against livediagram's
-vocabulary until its own api-schema comes with its fork.
+for its launch. livehuddle is held this way. It is checked against its own api-schema's vocabulary
+(`@livehuddle/api-schema`).
 
 ## Performance
 
