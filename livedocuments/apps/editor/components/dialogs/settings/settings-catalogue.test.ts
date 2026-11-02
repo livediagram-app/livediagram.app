@@ -116,6 +116,7 @@ describe('settings catalogue', () => {
       ['pagesTourSeen-slide', 'toggle', 'Slides Tour', 'pagesTour'],
       ['pagesTourSeen-infographic', 'toggle', 'Infographic Tour', 'pagesTour'],
       ['pagesTourSeen-article', 'toggle', 'Article Tour', 'pagesTour'],
+      ['pagesTourSeen-flashcard', 'toggle', 'Flashcards Tour', 'flashcards'],
       // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
       // linking that element's article.
       ['elementToursSeen', 'toggle', 'Show Me on Every Element', undefined],
@@ -146,6 +147,7 @@ describe('settings catalogue', () => {
         ['SlidesTourSeenOff', 'SlidesTourSeenOn'],
         ['InfographicTourSeenOff', 'InfographicTourSeenOn'],
         ['ArticleTourSeenOff', 'ArticleTourSeenOn'],
+        ['FlashcardsTourSeenOff', 'FlashcardsTourSeenOn'],
         ['ElementToursSeenOff', 'ElementToursSeenOn'],
         ['SankeyTourSeenOff', 'SankeyTourSeenOn'],
         ['LayerStackTourSeenOff', 'LayerStackTourSeenOn'],
@@ -218,6 +220,7 @@ describe('settings catalogue', () => {
       'pagesTourSeen-slide': ['pagesTourSeen', 'pagesTourKinds'],
       'pagesTourSeen-infographic': ['pagesTourSeen', 'pagesTourKinds'],
       'pagesTourSeen-article': ['pagesTourSeen', 'pagesTourKinds'],
+      'pagesTourSeen-flashcard': ['pagesTourSeen', 'pagesTourKinds'],
       elementToursSeen: ['elementToursSeen', 'elementTourKinds'],
       // One element's tour writes the answered list alone (lib/element-tours.ts).
       'elementTour-sankey': ['elementTourKinds'],

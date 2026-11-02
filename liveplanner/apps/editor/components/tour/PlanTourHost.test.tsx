@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // The Plan tour's way in (docs/specs/026-plan/plan-tour.md "Where it appears"): the footer's Start Tour button, once
-// there is a board or Sheet on the open tab, taken or not, naming the track it runs; a press there (or the Settings
+// there is a board or Sheet on the open tab, until its tracks there are taken, naming the track it runs; a press there (or the Settings
 // row) starts it on that board or Sheet without changing it, never beside another tour. It never starts on its own.
 
 import { act, cleanup, render } from '@testing-library/react';
@@ -296,9 +296,28 @@ describe('PlanTourHost per track', () => {
     expect(tourOffer()?.name).toBe('Sheets');
   });
 
-  it('still offers Boards on a board once every track is taken', () => {
+  // Work Tracker #177: once every track with work on the tab is taken the Plan tour leaves the button, and a track's
+  // Settings row (clearing it from the record) brings it back.
+  it('leaves the button once every track on the tab is taken, and comes back when a row is on again', () => {
     editor({ userPreferences: { planTourTracks: ['boards', 'sheets', 'dashboards'] } });
-    render(<PlanTourHost />);
+    const { rerender } = render(<PlanTourHost />);
+    expect(tourOffer()).toBeNull();
+    editor({ userPreferences: { planTourTracks: ['sheets', 'dashboards'] } });
+    rerender(<PlanTourHost />);
     expect(tourOffer()?.name).toBe('Boards');
+  });
+
+  it('takes a board and Sheet tab off the button only once both its tracks are taken', () => {
+    editor({ ...onTab(BOARD, SHEET), userPreferences: { planTourTracks: ['boards', 'sheets'] } });
+    render(<PlanTourHost />);
+    expect(tourOffer()).toBeNull();
+  });
+
+  it('records the track taken as a press starts it', () => {
+    editor();
+    render(<PlanTourHost />);
+    act(() => tourOffer()!.start());
+    expect(writeUserPreferences).toHaveBeenCalledTimes(1);
+    expect(writeUserPreferences).toHaveBeenCalledWith({ planTourTracks: ['boards'] }, 'me');
   });
 });

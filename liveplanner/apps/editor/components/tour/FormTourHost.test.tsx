@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // The Forms tour's way in (docs/specs/030-forms/forms.md "The Forms tour"): the footer's Start Tour button on a Form
-// tab, to an Editor, taken or not; a press there, or Show Me Around in the form's cog, starts it, never beside another
+// tab, to an Editor, until it is taken; a press there, or Show Me Around in the form's cog, starts it, never beside another
 // tour. It never starts on its own.
 
 import { act, cleanup, render } from '@testing-library/react';
@@ -109,10 +109,22 @@ describe('FormTourHost offer', () => {
     expect(tourOffer()).toBeNull();
   });
 
-  it('stays on offer once seen, so it can be taken again', () => {
+  // Work Tracker #177: a taken tour leaves the button; its Settings row (clearing the record) brings it back.
+  it('leaves the button once taken, and comes back when its Settings row is on again', () => {
     editor({ userPreferences: { tourSeen: true, formTourSeen: true } });
-    render(<FormTourHost />);
+    const { rerender } = render(<FormTourHost />);
+    expect(tourOffer()).toBeNull();
+    editor({ userPreferences: { tourSeen: true } });
+    rerender(<FormTourHost />);
     expect(tourOffer()?.name).toBe('Forms');
+  });
+
+  it('records it taken as a press starts it, before it is finished or skipped', () => {
+    editor();
+    render(<FormTourHost />);
+    act(() => tourOffer()!.start());
+    expect(writeUserPreferences).toHaveBeenCalledTimes(1);
+    expect(writeUserPreferences).toHaveBeenCalledWith({ tourSeen: true, formTourSeen: true }, 'me');
   });
 
   it.each([

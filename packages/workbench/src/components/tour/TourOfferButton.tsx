@@ -19,8 +19,8 @@ export const startTourLabel = (name: string) => `Start ${name} Tour`;
 
 // The footer's Start Tour button (docs/specs/007-editor/editor-tour.md "Where it appears"): the one way into a
 // tour. It leads the editor's bottom-bar cluster, immediately left of Search, and offers the most relevant tour on offer
-// (tour-offer.ts), "Start Draw Tour", "Start Sankey Tour", whether or not the person has taken it before: it is how a
-// tour is taken again. With no tour on offer it is not drawn. A contained chip, as tall as its neighbours, the play
+// (tour-offer.ts), "Start Draw Tour", "Start Sankey Tour", until the person has taken it: a tour started, finished or
+// skipped leaves the button, and its Settings › Tours switch brings it back. With no tour on offer it is not drawn. A contained chip, as tall as its neighbours, the play
 // glyph in a small accent disc and the words beside it; icon only on a phone, and wherever its neighbours drop their
 // words (`labelled`), keeping its name for assistive technology.
 export function TourOfferButton({ labelled = true }: { labelled?: boolean }) {

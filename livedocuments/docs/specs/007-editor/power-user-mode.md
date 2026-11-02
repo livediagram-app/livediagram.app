@@ -24,7 +24,7 @@ Switching the mode **on** writes these values, once:
 The Pages tour records each of its tracks once taken (`pagesTourKinds`), and the
 [element tours](element-tours.md) each toured kind (`elementTourKinds`); their seen
 flag counts every track as taken only while the mode is on, so switching it off gives back every Settings row not yet
-taken. The records only feed Settings › Tours: every tour stays on the Start Tour button either way.
+taken. A taken track or kind is off the Start Tour button until its Settings › Tours switch is on again, so the mode, which counts every one as taken, takes the tours off the button while it is on.
 
 Panel opacity is not part of the preset. Motion is not part of the mode: every transition is snappy for everyone
 ([Motion](../004-interface-design/motion.md)).

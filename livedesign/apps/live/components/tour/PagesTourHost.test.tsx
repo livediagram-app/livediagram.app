@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // The Pages tour's way in (docs/specs/007-editor/pages-tour.md "Where it appears"): the footer's Start Tour button
-// offers it in Pages, taken or not; a press there (or the Settings row) starts it on the page on screen, never beside
+// offers it in Pages until every kind on the tab is taken; a press there (or the Settings row) starts it on the page on screen, never beside
 // another tour, and it never starts on its own. The tour page's kind picks the track.
 
 import { act, cleanup, render } from '@testing-library/react';
@@ -136,12 +136,39 @@ describe('PagesTourHost offer', () => {
     expect(stage.helpHref).toBe('/help/pages/wireframe-pages/');
   });
 
-  it('stays on offer once every kind is taken, so it can be taken again', async () => {
-    editor({ userPreferences: { pagesTourKinds: ['wireframe', 'logo'] } });
+  // Work Tracker #177: once every kind on the tab is taken the button leaves; a kind's Settings row (clearing it from
+  // the record) brings it back.
+  it('leaves the button once every kind on the tab is taken, and comes back when its row is on again', () => {
+    editor({ userPreferences: { pagesTourKinds: ['wireframe'] } });
+    const { rerender } = render(<PagesTourHost />);
+    expect(tourOffer()).toBeNull();
+    editor({ userPreferences: { pagesTourKinds: [] } });
+    rerender(<PagesTourHost />);
+    expect(tourOffer()?.name).toBe('Pages');
+  });
+
+  it('stays on the button while another kind on the tab is owed', () => {
+    editor({
+      activeTab: {
+        id: 'tab1',
+        locked: false,
+        pages: [
+          { id: 'p1', orientation: 'landscape', kind: 'wireframe' },
+          { id: 'p2', orientation: 'portrait', kind: 'logo' },
+        ],
+      },
+      userPreferences: { pagesTourKinds: ['wireframe'] },
+    });
     render(<PagesTourHost />);
     expect(tourOffer()?.name).toBe('Pages');
+  });
+
+  it('records the kind taken as a press starts it', async () => {
+    editor();
+    render(<PagesTourHost />);
     await press();
-    expect(startedTour()).toBe(true);
+    expect(writeUserPreferences).toHaveBeenCalledTimes(1);
+    expect(writeUserPreferences).toHaveBeenCalledWith({ pagesTourKinds: ['wireframe'] }, 'me');
   });
 
   it.each([

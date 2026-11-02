@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // The Avatar tour's way in (docs/specs/008-canvas/avatar-tour.md "Where it appears"): the footer's Start Tour button
-// offers it in Avatar mode whatever the role, ahead of the mode's own tour, taken or not; a press there (or the
+// offers it in Avatar mode whatever the role, ahead of the mode's own tour, until it is taken; a press there (or the
 // Settings row) starts it, never beside another tour, and it never starts on its own.
 
 import { act, cleanup, render } from '@testing-library/react';
@@ -137,16 +137,49 @@ describe('AvatarTourHost offer', () => {
     expect(stage.engine!.countableSteps).toBe(4);
   });
 
+  // A Viewer's (or a guest's) preferences are kept like an Editor's, so the button leaves for them too.
+  it("takes it off a Viewer's button once taken, and records a Viewer's run", () => {
+    editor({ isReadOnly: true, can: { takePart: false } });
+    const { rerender } = render(<AvatarTourHost />);
+    act(() => tourOffer()!.start());
+    expect(writeUserPreferences).toHaveBeenCalledWith(
+      { tourSeen: true, avatarTourSeen: true },
+      'me',
+    );
+    editor({
+      isReadOnly: true,
+      can: { takePart: false },
+      userPreferences: { tourSeen: true, avatarTourSeen: true },
+    });
+    rerender(<AvatarTourHost />);
+    expect(tourOffer()).toBeNull();
+  });
+
   it('counts five steps for someone who may speak', () => {
     editor();
     render(<AvatarTourHost />);
     expect(stage.engine!.countableSteps).toBe(5);
   });
 
-  it('stays on offer once seen, so it can be taken again', () => {
+  // Work Tracker #177: a taken tour leaves the button; its Settings › Tours switch (clearing the record) brings it back.
+  it('leaves the button once taken, and comes back when its Settings switch is on again', () => {
     editor({ userPreferences: { tourSeen: true, avatarTourSeen: true } });
-    render(<AvatarTourHost />);
+    const { rerender } = render(<AvatarTourHost />);
+    expect(tourOffer()).toBeNull();
+    editor({ userPreferences: { tourSeen: true } });
+    rerender(<AvatarTourHost />);
     expect(tourOffer()?.name).toBe('Avatar');
+  });
+
+  it('records it taken as a press starts it, before it is finished or skipped', () => {
+    editor({ userPreferences: { tourSeen: true } });
+    render(<AvatarTourHost />);
+    act(() => tourOffer()!.start());
+    expect(writeUserPreferences).toHaveBeenCalledTimes(1);
+    expect(writeUserPreferences).toHaveBeenCalledWith(
+      { tourSeen: true, avatarTourSeen: true },
+      'me',
+    );
   });
 
   it.each([

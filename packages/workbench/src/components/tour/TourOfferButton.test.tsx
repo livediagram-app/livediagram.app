@@ -148,6 +148,38 @@ describe('tour offers', () => {
     expect(tourOffer()).toBeNull();
   });
 
+  // Work Tracker #177: a taken tour leaves the button, and its Settings switch (clearing `seen`) brings it back.
+  it('withholds a taken tour, makes room for the next, and offers it again once it is not seen', () => {
+    act(() => publishTourOffer('diagram', offer('diagram', 'Diagram', TOUR_OFFER_RANK.mode)));
+    const { rerender } = renderHook(
+      ({ seen }: { seen: boolean }) =>
+        useOfferTour('avatar', {
+          name: 'Avatar',
+          rank: TOUR_OFFER_RANK.tool,
+          start: vi.fn(),
+          seen,
+        }),
+      { initialProps: { seen: false } },
+    );
+    expect(tourOffer()?.name).toBe('Avatar');
+    rerender({ seen: true });
+    expect(tourOffer()?.name).toBe('Diagram');
+    rerender({ seen: false });
+    expect(tourOffer()?.name).toBe('Avatar');
+  });
+
+  it('draws no button while the only tour on offer is taken', () => {
+    render(<Footer />);
+    const { rerender } = renderHook(
+      ({ seen }: { seen: boolean }) =>
+        useOfferTour('draw', { name: 'Draw', rank: TOUR_OFFER_RANK.mode, start: vi.fn(), seen }),
+      { initialProps: { seen: true } },
+    );
+    expect(screen.queryByRole('button', { name: 'Start Draw Tour' })).toBeNull();
+    rerender({ seen: false });
+    expect(screen.getByRole('button', { name: 'Start Draw Tour' })).toBeTruthy();
+  });
+
   it('reads the start it was last given', () => {
     const first = vi.fn();
     const second = vi.fn();

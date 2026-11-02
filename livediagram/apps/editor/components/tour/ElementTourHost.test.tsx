@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // Element tours (docs/specs/007-editor/element-tours.md): the footer's Start Tour button offering a selected Sankey's
-// tour, taken or not, a press starting it, the share-role gate, one tour at a time, and the tour ending when its diagram goes.
+// tour until it is taken, a press starting it, the share-role gate, one tour at a time, and the tour ending when its diagram goes.
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -150,10 +150,14 @@ describe('ElementTourHost offer', () => {
     expect(stage.engine?.active).toBe(false);
   });
 
-  it('stays on offer once taken, so it can be taken again', () => {
+  // Work Tracker #177: a taken element tour leaves the button; its Settings › Show Me switch brings it back.
+  it('leaves the button once taken, and comes back when its Settings switch is on again', () => {
     editor({ userPreferences: { elementTourKinds: ['sankey'] } });
-    mount();
+    const r = mount();
     act(() => store.setSelectedId('sk1'));
+    expect(tourOffer()).toBeNull();
+    editor({ userPreferences: { elementTourKinds: [] } });
+    rerenderWith(r);
     expect(tourOffer()?.name).toBe('Sankey');
   });
 

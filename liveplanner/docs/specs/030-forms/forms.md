@@ -374,8 +374,9 @@ number).
 A guided tour, as [Plan's](../026-plan/plan-tour.md) is (`components/tour/FormTourHost.tsx`, its steps in
 `form-tour-steps.ts`), started from the footer's **Start Forms Tour** button, left of Search
 ([Editor tours](../007-editor/editor-tour.md) "Where it appears"). It is on offer while an Editor has a Form tab open
-and the editor is ready (hydrated, no start panel, not read-only, not locked, not embedded); it stays on offer once
-taken, and a press while another tour is on screen does nothing. It never starts or offers itself: until 25 October
+and the editor is ready (hydrated, no start panel, not read-only, not locked, not embedded), until it is taken: then
+it is off the button until Settings' **Forms Tour** row is on again. A press while another tour is on screen does
+nothing. It never starts or offers itself: until 25 October
 2026 it offered itself once, on a banner asking "Getting started with Forms?", 800 ms after a Form tab first opened.
 A press starts its first step. It does rather than points, on the person's own form, with an example question it takes
 away again:
@@ -394,9 +395,9 @@ away again:
 then its last card, **That Is Your Form**, a step card in the tour popover. The example question is added and deleted with no undo step
 (`changeFormQuietly`), so Undo never brings it back, and the tour leaves Preview and deletes it however it ends. A step's target below the fold of a long form (the add bar) is scrolled into
 view as its ring lands, as every tour's is ([Mechanics](../007-editor/editor-tour.md#mechanics)). Opening any tab but the form or where its responses go ends it as skipped.
-A run ending (completed or skipped) writes `formTourSeen` (synced preferences), which only feeds Settings' Tours ›
-**Forms Tour** row; it never hides the button. **Show Me Around** at the foot of the cog's panel starts it at once,
-taken or not, as Settings' row does, when it is on offer. Its events are `UI` `Opened` `FormTourOffer` (the first
+A run starting, and ending (completed or skipped), writes `formTourSeen` (synced preferences), which feeds Settings'
+Tours › **Forms Tour** row and keeps the tour off the button while set. **Show Me Around** at the foot of the cog's
+panel starts it at once, taken or not, whenever it could run. Its events are `UI` `Opened` `FormTourOffer` (the first
 time the button shows it in a page load), `Started` `FormTour` (a press), `View` `FormTourStep<Step>` and `Ended`
 `FormTourCompleted`/`FormTourSkipped`, charted as the **Forms Tour** stack.
 
