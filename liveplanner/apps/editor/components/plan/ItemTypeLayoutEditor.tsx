@@ -33,6 +33,9 @@ import {
   ICON_BUTTON,
 } from './ItemTypeFieldForms';
 import { NewFieldForm } from './NewFieldForm';
+// The Add Field gallery, Add a Widget's width, whatever column it opens from; on a phone, the window's width less its
+// margins.
+import { GALLERY_WIDTH } from './gallery/GalleryFrame';
 import { track } from '@/lib/telemetry';
 import {
   addField,
@@ -51,9 +54,6 @@ import {
   type LayoutDraft,
 } from './item-type-layout';
 
-// The Add Field popover (24 rem): a kind's name and its line, and the Shape step's controls, whatever column it opens
-// from; on a phone, the window's width less its margins.
-const ADD_FIELD_POPOVER_PX = 384;
 // A touch screen opens it without focusing the search, so no keyboard flies up over the list (asked from the press).
 const coarsePointer = () => window.matchMedia?.('(pointer: coarse)').matches === true;
 const NAME_INPUT =
@@ -210,7 +210,7 @@ export function ItemTypeLayoutEditor({
         <AnchoredPopover
           anchor={adding.anchor}
           name="Add Field"
-          width={ADD_FIELD_POPOVER_PX}
+          width={GALLERY_WIDTH}
           initialFocus={adding.touch ? 'panel' : 'first'}
           onEscape={() => addEscape.current?.() ?? false}
           onClose={() => setAdding(null)}

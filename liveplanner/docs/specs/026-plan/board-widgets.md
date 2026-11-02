@@ -186,7 +186,8 @@ board, so each one can be a widget.
 ## The widget gallery
 
 **Add a Widget**, a 720 px popover (narrower in a narrower window), with the line "Live read-outs for this board’s
-header. Pick as many as you like." and a **Find a widget** search beside the title (focused on open).
+header. Pick as many as you like.", a **Find a widget** search beside the title (focused on open) and a close cross at
+the header's end. Its frame (header, rail, list) is shared with [Add Field](item-types.md#fields-and-tabs)'s gallery.
 
 - **The rail**: down its left, the gallery's sections, each with how many widgets it holds: **For You**, **Focus**,
   **Progress**, **People**, **Dates**, **Health**, then under a **Fields** heading one entry per card type the board
@@ -236,7 +237,8 @@ header. Pick as many as you like." and a **Find a widget** search beside the tit
 - **At the cap**: with 12 field widgets on the board, the field tiles not on it are disabled, their tooltip "A board
   holds up to 12 field widgets".
 - **Keyboard**: the arrow keys move between tiles (left and right one, up and down a row), Down from the search goes
-  to the first tile, Enter or Space presses one; Tab reaches the search, the rail and the tiles in turn.
+  to the first tile and Up from the top row back to it, Enter or Space presses one; Tab reaches the search, the close
+  cross, the rail and the tiles in turn.
 - **Share roles**: only someone who may change the board (an Editor) has the **+**, and so the gallery; a Participant
   and a Viewer see and read every widget, field widgets included, and never see Remove.
 - **Not on a phone**: the gallery hangs from the zone's **+**, and a phone shows no widgets (see "The header").

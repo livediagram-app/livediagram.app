@@ -136,7 +136,7 @@ describe('BoardWidgetPicker', () => {
 
   it('finds widgets by field, kind and card type, and says when nothing matches', () => {
     show();
-    const find = screen.getByRole('textbox', { name: 'Find a widget' });
+    const find = screen.getByRole('searchbox', { name: 'Find a widget' });
     fireEvent.change(find, { target: { value: 'bug' } });
     // Severity is on Bug cards: its views stay; Budget's go.
     expect(screen.getAllByRole('button', { name: /Severity/ }).length).toBeGreaterThan(0);
@@ -151,7 +151,7 @@ describe('BoardWidgetPicker', () => {
 
   it('moves between tiles with the arrow keys, from the search box on', () => {
     show();
-    const find = screen.getByRole('textbox', { name: 'Find a widget' });
+    const find = screen.getByRole('searchbox', { name: 'Find a widget' });
     fireEvent.keyDown(find, { key: 'Enter' });
     fireEvent.keyDown(find, { key: 'ArrowDown' });
     const tiles = [...document.querySelectorAll<HTMLButtonElement>('button[data-widget-card]')];
@@ -168,6 +168,16 @@ describe('BoardWidgetPicker', () => {
     // Another key does nothing.
     fireEvent.keyDown(tiles[0]!, { key: 'a' });
     expect(document.activeElement).toBe(tiles[0]);
+  });
+
+  it('goes back to the search from the top row, and closes from its cross', () => {
+    const { onClose } = show();
+    const find = screen.getByRole('searchbox', { name: 'Find a widget' });
+    fireEvent.keyDown(find, { key: 'ArrowDown' });
+    fireEvent.keyDown(document.activeElement!, { key: 'ArrowUp' });
+    expect(document.activeElement).toBe(find);
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(onClose).toHaveBeenCalled();
   });
 
   it('steps by where tiles sit when laid out', () => {

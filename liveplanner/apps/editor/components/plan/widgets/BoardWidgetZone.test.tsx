@@ -198,13 +198,13 @@ describe('BoardWidgetZone +', () => {
   it('narrows the gallery to a search, and says when nothing matches', () => {
     show(true);
     fireEvent.click(screen.getByRole('button', { name: 'Add a widget' }));
-    fireEvent.change(screen.getByRole('textbox', { name: 'Find a widget' }), {
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Find a widget' }), {
       target: { value: 'votes' },
     });
     expect(screen.getByRole('button', { name: 'Add Top Voted' })).toBeTruthy();
     expect(screen.queryByRole('navigation', { name: 'Widget sections' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Add Completion' })).toBeNull();
-    fireEvent.change(screen.getByRole('textbox', { name: 'Find a widget' }), {
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Find a widget' }), {
       target: { value: 'zzz' },
     });
     expect(screen.getByRole('status').textContent).toMatch(/^No widgets match/);

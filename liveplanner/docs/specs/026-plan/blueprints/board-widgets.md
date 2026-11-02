@@ -43,8 +43,10 @@ apps/editor/components/plan/widgets/FieldWidgetView.tsx      a field widget's pi
 apps/editor/components/plan/widgets/field-widget-charts.tsx  Ring, SplitBar, MiniBars, Stars (inline SVG)
 apps/editor/components/plan/widgets/use-field-widgets.ts     fields, Calculated reader, labelOf, suggest
 apps/editor/components/plan/widgets/widget-gallery-model.ts  WIDGET_GROUPS, gallerySections, sectionSize (pure)
-apps/editor/components/plan/widgets/WidgetGalleryRail.tsx    the rail (a chip row under 600 px)
-apps/editor/components/plan/widgets/WidgetGalleryTile.tsx    a tile: live preview (FitWidth), name, line, On Board
+apps/editor/components/plan/widgets/WidgetGalleryRail.tsx    the rail's sections, on GalleryRail
+apps/editor/components/plan/widgets/WidgetGalleryTile.tsx    a tile's live preview and On Board, on GalleryTile
+apps/editor/components/plan/gallery/                         the frame, rail, tile and keys shared with Add Field
+                                                             (item-types blueprint "Add Field")
 apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObserver per gallery (useSeenRoot, useSeen)
 ```
 
@@ -80,7 +82,8 @@ apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObs
   column (`setColumnDone`, `DoneColumn`).
 - Reorder captures the pointer only once a press passes `REORDER_THRESHOLD_PX`, so a still press is a click on
   the widget's control.
-- The + toggles `BoardWidgetPicker` (an `AnchoredPopover`, `GALLERY_WIDTH` 720, a `@container`) listing every
+- The + toggles `BoardWidgetPicker` (an `AnchoredPopover`, `GALLERY_WIDTH` 720, on `GalleryFrame`: a `@container`
+  with a searchbox "Find a widget" and a close cross; `moveAmongTiles` for the keys, ↑ off the top row to the search) listing every
   widget: For You, `WIDGET_GROUPS`, then a section per card type of its fields (`gallerySections`); a tile toggles
   (see Add above). The rail's entry scrolls its section to the list's top (smooth unless reduced motion); a scroll
   marks the last section whose top has passed as current. A search resets to the top only when its text changes.
@@ -176,20 +179,20 @@ apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObs
 
 ## Constants and configuration
 
-| Constant               | Value | Where                 | Safe range |
-| ---------------------- | ----- | --------------------- | ---------- |
-| `REORDER_THRESHOLD_PX` | 4     | BoardWidgetZone.tsx   | 2..10      |
-| `PEOPLE_SHOWN`         | 5     | BoardWidgetView.tsx   | 3..8       |
-| `TYPES_SHOWN`          | 3     | BoardWidgetView.tsx   | 3..8       |
-| `DUE_SOON_DAYS`        | 7     | widget-stats.ts       | 1..30      |
-| `FIELD_WIDGETS_MAX`    | 12    | field-widgets.ts      | 6..20      |
-| `SPREAD_BINS`          | 8     | field-widget-stats.ts | 5..12      |
-| `TIMELINE_WEEKS`       | 4     | field-widget-stats.ts | 2..8       |
-| `SUGGESTIONS_MAX`      | 6     | widget-suggestions.ts | 4..8       |
-| `FILTER_SUGGEST_CARDS` | 20    | widget-suggestions.ts | 10..50     |
-| `BREAKDOWN_NAMED`      | 2     | FieldWidgetView.tsx   | 1..3       |
-| `GALLERY_WIDTH`        | 720   | BoardWidgetPicker.tsx | 600..800   |
-| `SEEN_MARGIN`          | 160px | use-seen.ts           | 0..400px   |
+| Constant               | Value | Where                    | Safe range |
+| ---------------------- | ----- | ------------------------ | ---------- |
+| `REORDER_THRESHOLD_PX` | 4     | BoardWidgetZone.tsx      | 2..10      |
+| `PEOPLE_SHOWN`         | 5     | BoardWidgetView.tsx      | 3..8       |
+| `TYPES_SHOWN`          | 3     | BoardWidgetView.tsx      | 3..8       |
+| `DUE_SOON_DAYS`        | 7     | widget-stats.ts          | 1..30      |
+| `FIELD_WIDGETS_MAX`    | 12    | field-widgets.ts         | 6..20      |
+| `SPREAD_BINS`          | 8     | field-widget-stats.ts    | 5..12      |
+| `TIMELINE_WEEKS`       | 4     | field-widget-stats.ts    | 2..8       |
+| `SUGGESTIONS_MAX`      | 6     | widget-suggestions.ts    | 4..8       |
+| `FILTER_SUGGEST_CARDS` | 20    | widget-suggestions.ts    | 10..50     |
+| `BREAKDOWN_NAMED`      | 2     | FieldWidgetView.tsx      | 1..3       |
+| `GALLERY_WIDTH`        | 720   | gallery/GalleryFrame.tsx | 600..800   |
+| `SEEN_MARGIN`          | 160px | use-seen.ts              | 0..400px   |
 
 ## Defaults ledger
 
