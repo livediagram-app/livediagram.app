@@ -15,11 +15,11 @@ import { currentBearer } from '@/lib/api/core';
 // account's other settings. The other apps' settings are read and written over liveworkspace's account API through
 // this app's router (`/api/workspace/account`), with the person's access token, as the Explorer panel's teams are;
 // nothing is asked (or loaded) until All is first chosen, and what is read is kept for the page's lifetime.
+// livehuddle is held until launch (liveworkspace/docs/specs/010-site/site.md "Settings", "A held app"): its own
+// catalogue and `livehuddle.app` scope, shown in this panel alone.
 export const SETTINGS_APP = settingsPanelApp({
   ...siteOfApp('livehuddle'),
-  // The Settings panel holds livehuddle out until launch, so the fork borrows livediagram's catalogue and scope
-  // until livehuddle has a held catalogue of its own.
-  id: 'livediagram.app',
+  id: 'livehuddle.app',
 });
 
 // Settings' Cloud Sync (liveworkspace/docs/specs/005-drive/drive.md "Connecting"): the Drive service through this app's router

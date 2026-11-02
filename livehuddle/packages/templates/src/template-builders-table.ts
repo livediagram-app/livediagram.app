@@ -1,6 +1,5 @@
-// Table-based template builders: the plan-comparison grid and the RACI
-// responsibility matrix. Both are a single `table` element doing the real
-// work (header row + column, per-cell tints via `cellStyles`), so users see
+// The table-based template builder: the RACI responsibility matrix. A
+// single `table` element doing the real work (header row + column, per-cell tints via `cellStyles`), so users see
 // tables earning their keep straight away, framed by a title, a one-line
 // how-to and the few shapes that make the grid a decision.
 //
@@ -30,120 +29,6 @@ const tint = (bg: string, textColor: string, bold = false): TableCellStyle => ({
 // be read on, so the headers pin their own paper and ink.
 const HEAD_ROW = tint('#e2e8f0', '#0f172a', true);
 const HEAD_COL = tint('#f1f5f9', '#0f172a', true);
-
-// A buying decision rather than a spec sheet: three plans of a made-up team
-// chat app compared for a 14-person team. Yes / no rows read as ✓ / ✗ (a
-// green tick, a muted cross) so the gaps jump out; the recommended plan's
-// column is tinted amber and bold with an "Our pick" ribbon over it; a
-// "Cost for 14 seats" row does the sum the reader would otherwise do in
-// their head; and a sticky beside the table gives the one-line reason, which
-// is what a comparison is for.
-const PLAN_CELLS = [
-  ['Feature', 'Free', 'Team', 'Business'],
-  ['Price per seat', '£0', '£6 a month', '£12 a month'],
-  ['Seats', 'Up to 5', 'Unlimited', 'Unlimited'],
-  ['Message history', '90 days', 'Unlimited', 'Unlimited'],
-  ['Video calls', '1:1 only', 'Up to 50 people', 'Up to 200 people'],
-  ['Guest access', '✗', '✓', '✓'],
-  ['Shared channels', '✗', '✓', '✓'],
-  ['Single sign-on (SSO)', '✗', '✗', '✓'],
-  ['Support', 'Community', 'Email, 24 h', 'Phone, 1 h'],
-  ['Cost for 14 seats', 'Too small', '£84 a month', '£168 a month'],
-  ['Best for', 'Trying it out', 'Growing teams', 'Regulated companies'],
-];
-// The recommended plan's column index.
-const PICK_COL = 2;
-const PICK = { head: '#fde68a', body: '#fef3c7', ink: '#451a03' };
-const YES = '#16a34a';
-const NO = '#94a3b8';
-
-export function buildComparisonTable(cx: number, cy: number): Element[] {
-  const tableW = 900;
-  const rowH = 46;
-  const tableH = PLAN_CELLS.length * rowH;
-  const featureW = 240;
-  const planW = (tableW - featureW) / (PLAN_CELLS[0]!.length - 1);
-  const noteGap = 36;
-  const noteW = 280;
-  const titleH = 48;
-  const captionH = 28;
-  const ribbonH = 32;
-  const headGap = 24 + ribbonH + 8;
-  const totalW = tableW + noteGap + noteW;
-  const totalH = titleH + captionH + headGap + tableH;
-  const x0 = cx - totalW / 2;
-  const y0 = cy - totalH / 2;
-  const tableTop = y0 + titleH + captionH + headGap;
-
-  const cellStyles = PLAN_CELLS.map((row, r) =>
-    row.map((cell, c): TableCellStyle | null => {
-      const pick = c === PICK_COL;
-      if (r === 0) return pick ? tint(PICK.head, PICK.ink, true) : HEAD_ROW;
-      if (c === 0) return HEAD_COL;
-      const mark = cell === '✓' ? YES : cell === '✗' ? NO : undefined;
-      // Ticks and crosses draw a size up so the gaps read at a glance.
-      const markSize = mark ? { textSize: 'lg' as const } : {};
-      if (pick) return { ...tint(PICK.body, mark ?? PICK.ink, true), ...markSize };
-      return mark ? { textColor: mark, bold: true, ...markSize } : null;
-    }),
-  );
-
-  const pickX = x0 + featureW + (PICK_COL - 1) * planW;
-  const ribbonW = 150;
-  return [
-    {
-      ...createText(x0, y0),
-      width: totalW,
-      height: titleH,
-      label: 'Which Tandem plan should we buy?',
-      textSize: 'lg',
-      textBold: true,
-      textAlignX: 'left',
-    },
-    {
-      ...createText(x0, y0 + titleH),
-      width: totalW,
-      height: captionH,
-      label:
-        'Read down a column: ✓ is included, ✗ is not. The highlighted plan is the recommendation for our 14-person team.',
-      textSize: 'sm',
-      textColor: MUTED,
-      textAlignX: 'left',
-    },
-    {
-      ...createShape('stadium', pickX + (planW - ribbonW) / 2, tableTop - ribbonH - 8),
-      width: ribbonW,
-      height: ribbonH,
-      label: '★ Our pick',
-      textSize: 'sm',
-      textBold: true,
-      fillColor: '#f59e0b',
-      strokeColor: '#d97706',
-      textColor: '#451a03',
-      themeLockFill: true,
-    },
-    {
-      ...createTable(x0, tableTop),
-      width: tableW,
-      height: tableH,
-      cells: PLAN_CELLS.map((row) => [...row]),
-      cellStyles,
-      headerRow: true,
-      headerColumn: true,
-      colWidths: [featureW, null, null, null],
-    },
-    {
-      ...createSticky(x0 + tableW + noteGap, tableTop),
-      width: noteW,
-      height: 132,
-      label:
-        'Why Team: guest access and shared channels are what we need for the agency. SSO is the only Business extra, and it can wait for the Q2 audit.',
-      textSize: 'sm',
-      fillColor: '#fde68a',
-      textColor: '#451a03',
-    },
-  ];
-}
 
 // RACI: who does what on a mobile app launch. Tasks run down the side and
 // named roles across the top; every letter cell is tinted by its role

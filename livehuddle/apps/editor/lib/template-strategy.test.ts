@@ -116,42 +116,6 @@ describe('business model canvas template', () => {
   });
 });
 
-describe('comparison table template', () => {
-  const els = buildTemplate('comparison-table', 0, 0);
-  const table = tableOf(els);
-
-  it('scores yes / no rows with a green tick and a muted cross', () => {
-    const flat = table.cells.flat();
-    expect(flat).toContain('✓');
-    expect(flat).toContain('✗');
-    table.cells.forEach((row, r) =>
-      row.forEach((cell, c) => {
-        if (cell === '✓') expect(table.cellStyles![r]![c]!.textColor).toBe('#16a34a');
-        if (cell === '✗') expect(table.cellStyles![r]![c]!.textColor).toBe('#94a3b8');
-      }),
-    );
-  });
-
-  it('highlights the recommended plan under an "Our pick" ribbon', () => {
-    const pick = table.cells[0]!.indexOf('Team');
-    for (let r = 0; r < table.cells.length; r++) {
-      expect(table.cellStyles![r]![pick]!.bg).toBeTruthy();
-      expect(table.cellStyles![r]![pick]!.textColor).toBeTruthy();
-    }
-    const ribbon = shapesOf(els, 'stadium').find((s) => s.label === '★ Our pick')!;
-    expect(ribbon.themeLockFill).toBe(true);
-    expect(ribbon.y + ribbon.height).toBeLessThanOrEqual(table.y);
-    const colX =
-      table.x + table.colWidths![0]! + ((table.width - table.colWidths![0]!) / 3) * (pick - 1);
-    expect(ribbon.x).toBeGreaterThanOrEqual(colX);
-  });
-
-  it('does the sum for the team and explains the pick on a sticky', () => {
-    expect(table.cells.map((r) => r[0])).toContain('Cost for 14 seats');
-    expect(stickies(els)[0]!.label).toMatch(/^Why Team/);
-  });
-});
-
 describe('raci matrix template', () => {
   const els = buildTemplate('raci-matrix', 0, 0);
   const table = tableOf(els);

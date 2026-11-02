@@ -114,10 +114,11 @@ Every template opens in Workshop ([Templates by mode](../007-editor/templates-by
 - the spaces to walk round in Avatar mode, `virtual-office`, `coworking-space`, `team-pod` and `all-hands-hall`
   ([Virtual Office template](virtual-office-template.md)).
 
-Templates that build with an element livehuddle no longer has (mind maps, flowcharts, sequence diagrams, Sankey
-diagrams, org charts, entities, the concept graphics but the Timeline, device frames, Technology icons) are not in the
-catalogue. The rest of the forked catalogue stays until step 5.4 of the
-[Build plan](../005-project-roadmap/build-plan.md) cuts it to Workshop's and the Spaces.
+That is the whole catalogue, with the blank. Templates that build with an element livehuddle no
+longer has (mind maps, flowcharts, sequence diagrams, Sankey diagrams, org charts, entities, the concept graphics,
+device frames, Technology icons) went with step 5.1, and step 5.4 of the
+[Build plan](../005-project-roadmap/build-plan.md) cut the rest of the forked catalogue (the drawn templates, the
+technical and planning diagrams, Blank Diagram and Blank Whiteboard) to Workshop's and the Spaces.
 
 **Blank Workshop** (kind `blank-session`) is the blank: a general tab with nothing on it, the document named
 "Untitled Workshop".

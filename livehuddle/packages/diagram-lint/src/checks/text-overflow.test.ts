@@ -46,6 +46,16 @@ describe('text-overflow', () => {
     );
   });
 
+  it('reads bottom-aligned text at the foot of its box', () => {
+    const low = text('low', 0, 0, 'Footnote', { height: 200, textAlignY: 'bottom' });
+    // Inside the box's top, clear of its ink: nothing prints over.
+    expect(of(lint(tabOf(low, text('head', 0, 0, 'Heading'))), 'text-overflow')).toEqual([]);
+    // Just under its foot, where the ink is: they print over each other.
+    const found = of(lint(tabOf(low, text('under', 0, 185, 'Under'))), 'text-overflow');
+    expect(found).toHaveLength(1);
+    expect(found[0]!.refs).toEqual(expect.arrayContaining(['low', 'under']));
+  });
+
   it('leaves text on a curve out, drawn along its arc, not in its box', () => {
     const top = text('t', 0, 0, 'CRUMB AND CO.', { width: 400, height: 400, textArc: 180 });
     const bottom = text('b', 0, 0, 'ARTISAN BAKERY', { width: 400, height: 400, textArc: -180 });

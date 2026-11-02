@@ -16,7 +16,7 @@ import { TEMPLATES, type TemplateKind } from './templates';
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
-  it('are the fourteen use-case categories, alphabetical by label, Title Case, with even descriptions', () => {
+  it('are the thirteen use-case categories, alphabetical by label, Title Case, with even descriptions', () => {
     expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
       'Brainstorming',
       'Decisions',
@@ -24,11 +24,9 @@ describe('template categories', () => {
       'Meetings & Workshops',
       'People & Teams',
       'Planning',
-      'Processes & Workflows',
       'Product & UX',
       'Quizzes & Games',
       'Retrospectives',
-      'Software & IT',
       'Strategy',
       'Teaching & Learning',
       'Virtual Spaces',
@@ -43,7 +41,7 @@ describe('template categories', () => {
     }
   });
 
-  it('gives every template but the blanks exactly one primary category, and the blanks none', () => {
+  it('gives every template but the blank exactly one primary category, and the blank none', () => {
     for (const t of TEMPLATES) {
       const primary = templateCategory(t.kind);
       if (isBlankTemplate(t.kind)) {
@@ -59,19 +57,17 @@ describe('template categories', () => {
   it('pins the primary counts', () => {
     const counts = ids.map((id) => TEMPLATES.filter((t) => templateCategory(t.kind) === id).length);
     expect(Object.fromEntries(ids.map((id, i) => [id, counts[i]]))).toEqual({
-      ideas: 4,
-      decisions: 6,
-      goals: 3,
+      ideas: 3,
+      decisions: 2,
+      goals: 1,
       meetings: 4,
-      people: 3,
-      planning: 5,
-      processes: 1,
-      product: 10,
-      games: 6,
-      retros: 5,
-      software: 7,
-      strategy: 7,
-      learning: 3,
+      people: 1,
+      planning: 1,
+      product: 5,
+      games: 5,
+      retros: 6,
+      strategy: 5,
+      learning: 1,
       spaces: 4,
     });
   });
@@ -85,9 +81,9 @@ describe('template categories', () => {
       expect(also, kind).not.toContain(templateCategory(kind as TemplateKind));
       expect(new Set(also).size, kind).toBe(also.length);
     }
-    expect(isInTemplateCategory('okr-tree', 'strategy')).toBe(true);
-    expect(isInTemplateCategory('venn', 'learning')).toBe(true);
-    expect(isInTemplateCategory('blank', 'processes')).toBe(false);
+    expect(isInTemplateCategory('roadmap', 'strategy')).toBe(true);
+    expect(isInTemplateCategory('pub-quiz', 'learning')).toBe(true);
+    expect(isInTemplateCategory('blank-session', 'meetings')).toBe(false);
   });
 
   it('leaves no category empty in every mode, and hides one only where a mode has none', () => {
@@ -116,17 +112,14 @@ describe('template search words', () => {
     expect(find('1:1')).toContain('meeting-agenda');
     expect(find('retro')).toEqual(expect.arrayContaining(['retrospective', 'sailboat']));
     expect(find('persona')).toContain('user-persona');
-    // The words the old artefact-shaped labels carried still find their templates.
-    expect(find('technical')).toEqual(expect.arrayContaining(['network-diagram']));
-    expect(find('classroom')).toEqual(expect.arrayContaining(['kwl-chart', 'concept-map']));
-    expect(find('eisenhower')).toContain('eisenhower-matrix');
+    // A category's search words find its templates.
+    expect(find('technical')).toEqual(expect.arrayContaining(['incident-postmortem']));
+    expect(find('classroom')).toEqual(expect.arrayContaining(['kwl-chart', 'pub-quiz']));
     expect(find('pestel')).toContain('pestle-analysis');
-    expect(find('30 60 90')).toContain('onboarding-plan');
-    expect(find('lan')).toContain('network-diagram');
     // A category label finds what is cross-listed in it; every word must match.
-    expect(find('metrics tree')).toContain('metric-tree');
-    expect(find('metrics tree')).not.toContain('gantt');
-    expect(find('gantt zebra')).toEqual([]);
+    expect(find('goals tree')).toContain('opportunity-solution-tree');
+    expect(find('goals tree')).not.toContain('roadmap');
+    expect(find('roadmap zebra')).toEqual([]);
     expect(find('')).toHaveLength(TEMPLATES.length);
   });
 

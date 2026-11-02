@@ -82,8 +82,8 @@ describe('create_document intent', () => {
     ['four-ls', { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' }],
     ['incident-postmortem', { mode: 'workshop', tabKind: 'diagram' }],
     ['lean-coffee', { mode: 'workshop', tabKind: 'diagram' }],
-    ['whiteboard', { mode: 'workshop', tabKind: 'diagram' }],
-    ['gantt', { mode: 'workshop', tabKind: 'diagram' }],
+    ['blank-session', { mode: 'workshop', tabKind: 'diagram' }],
+    ['roadmap', { mode: 'workshop', tabKind: 'diagram' }],
   ])('sends the intent of a %s template tab', async (template, intent) => {
     const { run, posted } = harness(undefined);
     await run([{ name: 'Tab', template }]);

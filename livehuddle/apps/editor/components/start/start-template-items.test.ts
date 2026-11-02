@@ -17,10 +17,10 @@ describe.each(MODES)('the %s template start', (mode) => {
     (t) => !t.hidden && !isBlankTemplate(t.kind) && templateEditorMode(t.kind) === mode,
   ).map((t) => t.kind);
 
-  it("leads with Recommended, the mode's Popular shelf, its blank first, Timeline left out", () => {
+  it("leads with Recommended, the mode's Popular shelf, its blank first", () => {
     const recommended = start.groups[0]!;
     expect(recommended.id).toBe('recommended');
-    expect(recommended.kinds).toEqual(popularKindsFor(mode).filter((k) => k !== 'timeline'));
+    expect(recommended.kinds).toEqual(popularKindsFor(mode));
     expect(recommended.kinds[0]).toBe(start.blank);
   });
 
@@ -41,8 +41,6 @@ describe.each(MODES)('the %s template start', (mode) => {
     expect(start.search('  ')).toEqual([]);
     expect(start.search('zzzqqq')).toEqual([]);
     const probe = {
-      diagram: ['flow', 'flowchart'],
-      draw: ['sketch', 'sketchnote'],
       workshop: ['retro', 'retrospective'],
     }[mode];
     const kinds = start.search(probe[0]!).flatMap((g) => g.kinds);
@@ -77,11 +75,9 @@ describe('Start a Workshop', () => {
       'meetings',
       'people',
       'planning',
-      'processes',
       'product',
       'games',
       'retros',
-      'software',
       'strategy',
       'learning',
       'spaces',
@@ -89,14 +85,13 @@ describe('Start a Workshop', () => {
     const group = (id: string) => TEMPLATE_STARTS.workshop.groups.find((g) => g.id === id)!.kinds;
     // A cross-listed template shows in each of its categories.
     expect(group('retros')).toContain('incident-postmortem');
-    expect(group('software')).toContain('incident-postmortem');
+    expect(group('planning')).toContain('raci-matrix');
     expect(group('games')).toEqual([
       'pub-quiz',
       'icebreaker-questions',
       'two-truths-and-a-lie',
       'would-you-rather',
       'people-bingo',
-      'doodle-warmup',
     ]);
     expect(group('spaces')).toEqual([
       'virtual-office',
@@ -112,7 +107,7 @@ describe('Start a Workshop', () => {
 
   it('lists a search match once, under its primary category', () => {
     expect(TEMPLATE_STARTS.workshop.search('postmortem')).toEqual([
-      { group: 'software', kinds: ['incident-postmortem'] },
+      { group: 'retros', kinds: ['incident-postmortem'] },
     ]);
   });
 });

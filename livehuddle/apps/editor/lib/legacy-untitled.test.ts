@@ -10,7 +10,6 @@ import {
 describe('untitled document names', () => {
   it('names a new blank document "Untitled canvas"', () => {
     expect(UNTITLED_DOCUMENT_NAME).toBe('Untitled canvas');
-    expect(untitledNameForTemplate('blank')).toBe('Untitled canvas');
     expect(untitledNameForTemplate(null)).toBe('Untitled canvas');
   });
 

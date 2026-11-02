@@ -30,8 +30,8 @@ import { mergeAppCategories, type MergeSource } from './merge-categories';
 import type { SettingsCategory, SettingsGroupHeading } from './model';
 import { createScopesSaver, type PanelScopes, type ScopesSaver } from './saver';
 import {
-  SETTINGS_APP_IDS,
   loadAppCatalogue,
+  panelAppIds,
   settingsApiErrorMessage,
   storeFor,
   type SettingsAppId,
@@ -47,6 +47,7 @@ const APP_NAMES: Record<SettingsAppId, string> = {
   'liveplanner.app': 'liveplanner',
   'livedocuments.app': 'livedocuments',
   'livedesign.app': 'livedesign',
+  'livehuddle.app': 'livehuddle',
 };
 
 // The Phone section's host: the panel's request, and the app it opened in, shown beside the device it registers
@@ -122,7 +123,7 @@ export default function CatalogueSettingsView({
   const [load, setLoad] = useState<Load>({ state: 'loading' });
   const [attempt, setAttempt] = useState(0);
   // The apps read here: just the one in its own view; in All every app but the one whose own Settings the host
-  // already has.
+  // already has (a held app's own panel adds it: panelAppIds).
   // With the shared ones, the app's view reads every app too: Common is the settings two or more apps have.
   const apps = useMemo(
     () =>
@@ -130,7 +131,7 @@ export default function CatalogueSettingsView({
         ? current
           ? [current]
           : []
-        : SETTINGS_APP_IDS.filter((app) => !(own && app === current)),
+        : panelAppIds(current).filter((app) => !(own && app === current)),
     [mode, current, own, withShared],
   );
 
@@ -248,13 +249,13 @@ function ReadyView({
     () =>
       mode === 'all' || withShared
         ? commonCatalogue(
-            SETTINGS_APP_IDS.flatMap((app) => {
+            panelAppIds(current).flatMap((app) => {
               const catalogue = catalogues[app];
               return catalogue ? [{ app, catalogue }] : [];
             }),
           )
         : null,
-    [mode, withShared, catalogues],
+    [mode, withShared, current, catalogues],
   );
 
   // Phone notifications over the panel's own door (liveworkspace/docs/specs/003-accounts/push.md "Settings"), unless
@@ -387,9 +388,8 @@ export function panelModel({
   // An app's sub-heading inside a category: its logo and name.
   const heading = (app: SettingsAppId) => ({ label: APP_NAMES[app], icon: renderLogo(app) });
   // Common reads an app's old copy of a common setting from the app the panel was opened for first.
-  const order = current
-    ? [current, ...SETTINGS_APP_IDS.filter((app) => app !== current)]
-    : SETTINGS_APP_IDS;
+  const shownIds = panelAppIds(current);
+  const order = current ? [current, ...shownIds.filter((app) => app !== current)] : shownIds;
 
   if (mode === 'all') {
     // One set of categories (merge-categories.ts): Common's, then each app's own, the app opened for first, merged
@@ -443,7 +443,7 @@ export function panelModel({
 
   const categories: SettingsCategory[] = [];
   // The app's own view: Common's rows that app has, then its group alone.
-  const shownCommon = common && current ? commonFor(common, current) : common;
+  const shownCommon = common && current ? commonFor(common, current, own) : common;
   const shownApps = current ? [current] : [];
   if (shownCommon) {
     const listed = commonModel({
@@ -519,8 +519,15 @@ export function SettingsSkeleton() {
 }
 
 // The Common settings one app has: the rest don't touch it.
-function commonFor(common: CommonCatalogue, app: SettingsAppId): CommonCatalogue {
-  const has = (id: string) => common.apps.get(id)?.includes(app) ?? false;
+function commonFor(
+  common: CommonCatalogue,
+  app: SettingsAppId,
+  own?: readonly SettingsCategory[],
+): CommonCatalogue {
+  // An editor's own catalogue is never read (its own Settings stands in for it), so the rows it has are the ones its
+  // own Settings has.
+  const ownIds = new Set((own ?? []).flatMap((category) => category.rows.map((row) => row.key)));
+  const has = (id: string) => ownIds.has(id) || (common.apps.get(id)?.includes(app) ?? false);
   return {
     ...common,
     catalogue: {

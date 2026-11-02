@@ -221,3 +221,10 @@ It ships every platform-wide feature, as the other apps do (owner, 2026-11-02): 
 checks look at ([status.md](../009-status/status.md#where-the-checks-go)), and a Community, whose service takes its
 posts under `COMMUNITY_KEY_LIVEHUDDLE` ([Community](../007-community/community.md#adding-an-app)), with This
 Browser's conversions and the Share dialog's Community tab in its `AppItems`.
+
+A held app's Settings are its own from the start: its plain-data catalogue sits beside the listed apps'
+(`@liveworkspace/settings/catalogues/<app>`, [accounts.md](../003-accounts/accounts.md#scopes)) and its id is a
+`SettingsAppId` (`@liveworkspace/settings-ui`), so its editor's Settings panel names it and reads and writes its own
+scope. The panel's apps (`SETTINGS_APP_IDS`) are `APP_SITES`' alone, so no other app's All and no liveworkspace.app
+link (`?app=`) shows it; only the panel opened for the held app adds it ([site.md](../010-site/site.md#settings)
+"A held app"). Launch needs no settings change of its own: moving its row into `APP_SITES` lists it.

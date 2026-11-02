@@ -3,8 +3,7 @@ import type { TemplateKind } from '@livehuddle/templates';
 import { pv } from '@liveworkspace/template-previews/motion';
 import { FILL_BOX, Pop } from '@liveworkspace/template-previews/story-parts';
 
-// Group 4 of 4 (the roadmap / canvas / workshop / hierarchy / UML /
-// cloud batch). Static SVG preview tiles (one branch per TemplateKind; see
+// Group 4 (the roadmap / canvas / workshop batch). Static SVG preview tiles (one branch per TemplateKind; see
 // template-preview.tsx for who renders them). Split out of template-preview.tsx to keep
 // each file under the ~1000-line budget; TemplatePreview chains the
 // groups with ??. Shared palette: sky accents (rgb(14 165 233) stroke,
@@ -589,126 +588,6 @@ export function templatePreviewGroup4(kind: TemplateKind): ReactElement | null {
               })}
             />
           ))}
-        </svg>
-      );
-    case 'okr-tree':
-      // A bold objective over three key-result cards, each with a progress
-      // ring and coloured by health (on track, at risk, on track), and two
-      // badged initiatives dropping straight from each card's quarters.
-      return (
-        <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
-          <path
-            d="M31 10 V13.5 H14 V17 M40 10 V17 M49 10 V13.5 H66 V17"
-            fill="none"
-            stroke="rgb(100 116 139)"
-            strokeWidth="0.8"
-          />
-          <rect x="22" y="2" width="36" height="8" rx="1.5" fill="rgb(3 105 161)" />
-          {[
-            {
-              x: 2,
-              fill: 'rgb(220 252 231)',
-              hue: 'rgb(22 163 74)',
-              arc: 'M8 19.8 A3.2 3.2 0 1 1 6.12 25.59',
-              at: 900,
-            },
-            {
-              x: 28,
-              fill: 'rgb(254 243 199)',
-              hue: 'rgb(217 119 6)',
-              arc: 'M34 19.8 A3.2 3.2 0 0 1 36.8 24.54',
-              at: 1200,
-            },
-            {
-              x: 54,
-              fill: 'rgb(220 252 231)',
-              hue: 'rgb(22 163 74)',
-              arc: 'M60 19.8 A3.2 3.2 0 1 1 56.8 23',
-              at: 1500,
-            },
-          ].map((kr, i) => (
-            <g key={kr.x}>
-              <path
-                d={`M${kr.x + 6} 29 V34 M${kr.x + 18} 29 V34`}
-                fill="none"
-                stroke="rgb(100 116 139)"
-                strokeWidth="0.7"
-              />
-              <rect
-                x={kr.x}
-                y="17"
-                width="24"
-                height="12"
-                rx="1.5"
-                fill={kr.fill}
-                stroke={kr.hue}
-                strokeWidth="0.8"
-              />
-              <circle cx={kr.x + 6} cy="23" r="3.2" fill="none" stroke="white" strokeWidth="1.3" />
-              {/* Hover story: each ring fills to where its key result
-                  stands this quarter. */}
-              <path
-                d={kr.arc}
-                pathLength="1"
-                fill="none"
-                stroke={kr.hue}
-                strokeWidth="1.3"
-                className="pv-draw"
-                style={pv({ '--pv-at': `${kr.at}ms`, '--pv-dur': '900ms' })}
-              />
-              {[20.5, 23, 25.5].map((y, j) => (
-                <line
-                  key={y}
-                  x1={kr.x + 11}
-                  y1={y}
-                  x2={kr.x + (j === 0 ? 22 : 18)}
-                  y2={y}
-                  stroke={j === 0 ? kr.hue : 'rgb(148 163 184)'}
-                  strokeWidth="0.8"
-                />
-              ))}
-              {[kr.x + 1, kr.x + 13].map((ix, j) => (
-                <g key={ix}>
-                  <rect
-                    x={ix}
-                    y="34"
-                    width="10"
-                    height="6"
-                    rx="1"
-                    fill="white"
-                    stroke="rgb(14 165 233)"
-                    strokeWidth="0.7"
-                  />
-                  <rect
-                    x={ix + 6}
-                    y="32.8"
-                    width="5"
-                    height="2"
-                    rx="0.6"
-                    fill={
-                      [
-                        ['rgb(22 163 74)', 'rgb(217 119 6)'],
-                        ['rgb(217 119 6)', 'rgb(71 85 105)'],
-                        ['rgb(22 163 74)', 'rgb(217 119 6)'],
-                      ][i]![j]
-                    }
-                  />
-                </g>
-              ))}
-            </g>
-          ))}
-          {/* ...then a WIP initiative ships: its badge turns DONE. */}
-          <rect
-            className="pv-new"
-            opacity="0"
-            x="21"
-            y="32.8"
-            width="5"
-            height="2"
-            rx="0.6"
-            fill="rgb(22 163 74)"
-            style={pv({ '--pv-at': '2300ms' })}
-          />
         </svg>
       );
     default:

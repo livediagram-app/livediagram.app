@@ -14,9 +14,9 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
     'sailboat',
     'retrospective',
     'town-hall',
-    'sketchnote',
-    'gantt',
-    'timeline',
+    'lean-coffee',
+    'crazy-eights',
+    'pub-quiz',
   ],
   workshop: [
     'blank-session',

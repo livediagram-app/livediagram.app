@@ -85,7 +85,7 @@ never arrives.
   the default posture ([Offline Mode](../006-project/offline-mode.md)).
 - **Not a paid product, ever.** No tier, no billing, no feature flags gating the planner
   ([Business model + licence](../002-project-scope/business-model-and-licence.md)).
-- **Not a public codebase.** The code is MIT licensed but its repository (the liveworkspace monorepo) is private; the product is free to use.
+- **Not a closed codebase.** The code is MIT licensed and its repository (the liveworkspace monorepo) is public; the product is free to use.
 
 ## Boundaries set by other specs
 

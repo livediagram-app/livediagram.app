@@ -38,11 +38,11 @@ async function pick(kind: TemplateKind): Promise<ReturnType<typeof vi.fn>> {
 }
 
 describe('chooseTemplate and the tool in hand', () => {
-  it('puts the pen down when a Draw template lands its board', async () => {
-    expect(await pick('comic-strip')).toHaveBeenCalledOnce();
+  it('puts the tool down when a template lands its board', async () => {
+    expect(await pick('retrospective')).toHaveBeenCalledOnce();
   });
 
-  it('leaves the tool in hand on Blank, which lands nothing', async () => {
-    expect(await pick('blank')).not.toHaveBeenCalled();
+  it('leaves the tool in hand on the blank, which lands nothing', async () => {
+    expect(await pick('blank-session')).not.toHaveBeenCalled();
   });
 });

@@ -76,8 +76,6 @@ export function useTemplateFlow(opts: {
     if ((tabs.find((t) => t.id === activeId)?.elements.length ?? 0) > 0) return;
     // Telemetry (docs/specs/017-telemetry/telemetry.md): a template was applied; `type` is the kind.
     track('Template', 'Used', titleCaseType(kind));
-    // A start on a tab is the new-tab entry (docs/specs/023-draw-mode/draw-mode.md "Telemetry").
-    if (kind === 'whiteboard') track('Draw', 'Created', 'NewTab');
     confirmName();
     // Dynamic-import the heavy builders module only when the user
     // actually picks a template. The ~1700 lines of build* code stays
