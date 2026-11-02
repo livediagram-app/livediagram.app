@@ -133,7 +133,7 @@ export function AssigneePicker({
           </a>{' '}
           and join a team to assign actions to teammates.
         </p>
-      ) : signedIn && documentTeamId === null ? (
+      ) : documentTeamId === null ? (
         // Personal document: teammates couldn't open it to complete the
         // action. With teams to offer, fix it INLINE — one click files
         // the document into that team's library root and the members
@@ -174,13 +174,13 @@ export function AssigneePicker({
             </p>
           )}
         </div>
-      ) : signedIn && !memberOfDocumentTeam ? (
+      ) : !memberOfDocumentTeam ? (
         // Share-link editor on someone else's team document: they can
         // edit, but only the team's members are assignable.
         <p className="px-1 text-xs text-slate-500 dark:text-slate-400">
           Only members of this canvas&apos;s team can be assigned actions.
         </p>
-      ) : signedIn && members !== null && members.length === 0 ? (
+      ) : members !== null && members.length === 0 ? (
         <p className="px-1 text-xs text-slate-500 dark:text-slate-400">
           No other members in this team yet. Invite teammates from the team page and they become
           assignable here, even before they accept.
