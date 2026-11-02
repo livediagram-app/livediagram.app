@@ -383,7 +383,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   offlineMode: {
     title: 'Learn about Offline Mode',
-    description: 'Canvases saved only in this browser, and how to sync them.',
+    description: 'Spaces saved only in this browser, and how to sync them.',
   },
   yourFirstDiagram: {
     title: 'Learn about your first diagram',
