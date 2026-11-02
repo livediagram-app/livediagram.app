@@ -5,7 +5,6 @@
 // Avatar-mode walk needs (a room's walls and doorway, the footprints of the scenery that blocks) is
 // @liveworkspace/avatar/office-geometry, re-exported here. Pure: no React, no DOM.
 
-import type { ChairSitterFacing } from './collab-shapes';
 import type { FurnitureArt, FurniturePart, FurniturePartRole, FurnitureDrawing } from './seating';
 import {
   brokenRun,
@@ -14,6 +13,7 @@ import {
   ROOM_WALL,
   type RoomDoor,
 } from '@liveworkspace/avatar/office-geometry';
+import { MEETING_TABLE_SEATS, type TableSeat } from '@liveworkspace/avatar/seats';
 
 // The geometry the Avatar-mode walk reads (floors, drinks, seats, a room's walls and doorway, the scenery's
 // footprints) is @liveworkspace/avatar's, shared with every product that has Avatar mode.
@@ -198,11 +198,6 @@ const RUG_VIEW: FurnitureDrawing = {
   ring: { cx: 100, cy: 60, rx: 96, ry: 56 },
 };
 
-// A seat round the meeting table: its point as fractions of the grid, and which way its sitter faces.
-type TableSeat = { u: number; v: number; facing: ChairSitterFacing };
-
-const TW = 232;
-const TH = 168;
 const far = (cx: number): Part[] => [
   rect('panel', cx - 17, 8, 34, 30, 4),
   path('rail', `M${cx} 13v20`),
@@ -216,10 +211,11 @@ const near = (cx: number): Part[] => [
 ];
 
 // Six chairs round a table, every seat facing it: two beyond (their sitters face you), two in front (their
-// backs to you), one at each end in profile.
+// backs to you), one at each end in profile. Its grid and its seats (each with the way its sitter faces) are
+// @liveworkspace/avatar/seats', so a sitter lands on the chairs drawn here.
 export const MEETING_TABLE_VIEW: FurnitureDrawing & { tableSeats: readonly TableSeat[] } = {
-  width: TW,
-  height: TH,
+  width: MEETING_TABLE_SEATS.width,
+  height: MEETING_TABLE_SEATS.height,
   parts: [
     ellipse('shadow', 116, 160, 110, 6),
     ...far(86),
@@ -239,14 +235,7 @@ export const MEETING_TABLE_VIEW: FurnitureDrawing & { tableSeats: readonly Table
     ...near(146),
   ],
   seats: [],
-  tableSeats: [
-    { u: 86 / TW, v: 40 / TH, facing: 'down' },
-    { u: 146 / TW, v: 40 / TH, facing: 'down' },
-    { u: 86 / TW, v: 116 / TH, facing: 'up' },
-    { u: 146 / TW, v: 116 / TH, facing: 'up' },
-    { u: 21 / TW, v: 72 / TH, facing: 'right' },
-    { u: 211 / TW, v: 72 / TH, facing: 'left' },
-  ],
+  tableSeats: MEETING_TABLE_SEATS.seats,
   ring: { cx: 116, cy: 82, rx: 112, ry: 70 },
 };
 

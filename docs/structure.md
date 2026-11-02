@@ -462,14 +462,14 @@ Each step is its own PR, and both products build and pass their tests after ever
    `@liveworkspace/avatar` (`packages/avatar`) holds the parts of Avatar mode that read no element union: the sprite
    and head, the Avatar panel's body, the walker, walking and the camera, speech bubbles and the composer, the action
    keys, Avatar Pad arrivals, the costume and its parser, and the pure office pieces (walls and doorways, fence and
-   footprint collision, chair seats, Avatar Pad placement). It reads a board through a structural contract
+   footprint collision, chair seats, the seat points of every seating kind, Avatar Pad placement). It reads a board through a structural contract
    (`scene.ts`: an element's `id` and `type`, a shape's `shape` and box) rather than a product's union, and each
    product binds its storage key prefix, telemetry and colour maths once with `configureAvatar` (livediagram's
    `lib/avatar-bindings.ts`). The wire shapes (`AvatarPresence`, the `avatar`, `avatar-push` and `avatar-say` ops and
    their parsers) moved to `@liveworkspace/api-schema`, and the segment distance the fence and the whiteboard share to
    `@liveworkspace/model-core/segment-geometry`. livediagram re-exports what it used to own, so its callers and
-   behaviour are unchanged. Still in livediagram: the Avatar panel's frame, the seat points drawn from its furniture,
-   the room connection and the tests that build livediagram elements.
+   behaviour are unchanged. Still in livediagram: the Avatar panel's frame, the furniture drawings (which take their seat
+   grids from the package), the room connection and the tests that build livediagram elements.
 
 ## One home
 
