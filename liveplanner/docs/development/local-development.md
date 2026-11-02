@@ -11,7 +11,7 @@ Cloudflare is not required for local development. The api worker runs locally vi
 
 ## Clone and install
 
-The repository is private; clone it from the URL you were given access to.
+The repository (the liveworkspace monorepo) is public; clone it from `https://github.com/livediagram-app/livediagram.app`.
 
 ```sh
 git clone <repository-url> liveplanner

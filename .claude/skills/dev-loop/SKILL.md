@@ -249,8 +249,8 @@ title, its state, and every comment **verbatim**, with author and date and wheth
   ready (never draft), against `main`. Once verified, keep `not-ready` only for high-risk changes (D1 tables or migrations, auth, sharing or
   permissions, deleting or migrating user data, worker bindings or deploy config, or a change to what existing
   data shows people), and say why. Use `not-ready` for only two things: a PR that isn't ready yet and that you will un-label yourself (the browser check above), or a risk that really is high. Judge the real risk, not the category: if the PR can't do harm once merged, it gets no label. So a stored-shape change that only adds and still reads old data needs none, and nor does a workflow that only runs when a person starts it. Push the images to an orphan `pr-assets/<PR#>` branch and link each one pinned
-  to that branch's commit as `https://github.com/<repo>/blob/<sha>/<file>?raw=true`. The repo is private, so
-  `raw.githubusercontent.com` links 404. The description: one calm paragraph of context, then what it solves, then what was done, then
+  to that branch's commit as `https://github.com/<repo>/blob/<sha>/<file>?raw=true`. Use this blob form, not
+  `raw.githubusercontent.com` links. The description: one calm paragraph of context, then what it solves, then what was done, then
   **Answers** (one line per question: "<thread title>: <the answer, short> → <how it was built>"), Decisions, Performance
   and the screenshots. It names the card ("Work Tracker #12") and ends with
   `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
@@ -299,7 +299,7 @@ missing, send the agent back to build it (SendMessage) before you touch the card
   follow-up left there is lost. Turn every item on the agent's Follow-ups list, and anything else you noticed
   that needs doing later, into its own **new Work Item in Under Review**, in one `change_items` batch:
   `{"op": "add", "type": "Work Item", "status": "Under Review", "title": "...", "fields": {"Type": "Feature" or
-  "Bug", "App": [...], "description": "Why / What / Done when", "Related Work Item": "#12"}}`. Plain Title Case
+"Bug", "App": [...], "description": "Why / What / Done when", "Related Work Item": "#12"}}`. Plain Title Case
   titles; an owner-only action says so in its title ("Owner: set WEBHOOK_KEY before deploying #1163").
   Check the board first and skip one an existing card already covers.
 - **FAILED:** move the card to **Development Failure** and start one thread on it, in review-loop's format: what blocked it, what was tried, and lettered options for how to unblock it, with a recommendation.
