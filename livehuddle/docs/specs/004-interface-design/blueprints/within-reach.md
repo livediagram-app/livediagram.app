@@ -1,9 +1,8 @@
 # Within reach: blueprint
 
 Derived from [Within reach](../within-reach.md). The spec decides; this file adds engineering precision. The
-surfaces that use the rule own their own blueprints (the [Whiteboard dock](../../023-draw-mode/blueprints/whiteboard-dock.md)'s
-shape slots in livehuddle; the shared Explorer's Home is liveworkspace's,
-[one-explorer.md](../../../../../liveworkspace/docs/specs/004-index/one-explorer.md)); this one is the allocation they share.
+surface that uses the rule owns its own blueprint (the shared Explorer's Home is liveworkspace's,
+[one-explorer.md](../../../../../liveworkspace/docs/specs/004-index/one-explorer.md)); this one is the allocation.
 
 Scope, by file:
 
@@ -12,7 +11,6 @@ Scope, by file:
 | `../packages/api-schema/src/within-reach.ts`      | `withinReach`, `WithinReachUse`, `WithinReach`, `utcDay` (`@liveworkspace/api-schema/within-reach`) |
 | `../packages/api-schema/src/within-reach.test.ts` | The rule, its ties and its merge property                                                           |
 | `packages/api-schema/src/index.ts`                | Re-exports the module as part of `@livehuddle/api-schema`                                           |
-| `apps/editor/lib/whiteboard-shape-slots.ts`       | The whiteboard dock's shape slots, allocated by `withinReach`                                       |
 
 The rule lives in the monorepo's `@liveworkspace/api-schema` so every product's surfaces share it, and
 `@livehuddle/api-schema` re-exports it, the one package livehuddle's apps already import (`D48`).
@@ -78,23 +76,21 @@ Items are compared by identity; a caller never passes the same item twice.
 
 ## Performance and limits
 
-`O(k log k)` for `k` items: two sorts of copies. Callers pass at most a few hundred items (the dock's 20 kept shape
-kinds; Home's 8 server items plus this browser's opened local documents).
+`O(k log k)` for `k` items: two sorts of copies. Callers pass at most a few hundred items (Home's 8 server items plus this browser's opened local documents).
 
 ## Testing
 
-| Rule                                                | Test                                                                                               |
-| --------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| Most used by uses, ties to the newest, unused never | `packages/api-schema/src/within-reach.test.ts`                                                     |
-| Recent newest first, never one of the most used     | same                                                                                               |
-| Short groups, empty input, `n <= 0`, stable ties    | same                                                                                               |
-| The merge property over two lists                   | same                                                                                               |
-| The Shapes flyout unchanged                         | `apps/editor/lib/whiteboard-shape-slots.test.ts`, `apps/editor/e2e/whiteboard-shape-slots.spec.ts` |
-| Jump Back In's Most Used                            | `../liveworkspace/apps/index/src/most-used.test.ts`                                                |
+| Rule                                                | Test                                                |
+| --------------------------------------------------- | --------------------------------------------------- |
+| Most used by uses, ties to the newest, unused never | `packages/api-schema/src/within-reach.test.ts`      |
+| Recent newest first, never one of the most used     | same                                                |
+| Short groups, empty input, `n <= 0`, stable ties    | same                                                |
+| The merge property over two lists                   | same                                                |
+| Jump Back In's Most Used                            | `../liveworkspace/apps/index/src/most-used.test.ts` |
 
 ## Constants and configuration
 
-None of its own: N, the measure of a use and its window belong to each surface (Shape slots: 3; Jump Back In: 4,
+None of its own: N, the measure of a use and its window belong to each surface (Jump Back In: 4,
 over `WITHIN_REACH_USE_WINDOW_DAYS`).
 
 ## Defaults ledger

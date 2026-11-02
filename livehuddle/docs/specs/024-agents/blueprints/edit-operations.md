@@ -100,7 +100,7 @@ Scope, by file:
 
 Banned: "op" for an edit operation (that is a room `ElementOp`), "action", "command" (a CLI command is a front
 door), "batch", "patch", "query" or "filter" for a selector, "handle" or "alias" for a ref, "group" for a frame
-(there are no groups), "parent" for a container (only `mindParentId` is a parent), "section" in code (a frame),
+(there are no groups), "parent" for a container, "section" in code (a frame),
 "swimlane" in code (a lane).
 
 ## Behaviour and state
@@ -312,7 +312,7 @@ means `newElementId` ([Ids](#ids)).
 - **`rm <selector> [all] [keep-arrows]`.** Removes the targets. Arrows with an end pinned to (or `on-arrow` to) a
   removed element (`arrowReferencesAny`, repeated until no more are found) are removed too; with `keep-arrows`
   those ends become `free` at their current `endpointPosition` instead, warning `arrows_freed`. A locked arrow in
-  that cascade is `element_locked` (EO47). A `mindParentId` naming a removed element is removed (EO30).
+  that cascade is `element_locked` (EO47).
 - **`move <selector> <placement> | by=dx,dy [all]`.** As [Placement](#placement). Pinned arrows follow by
   construction; `rebindArrowAnchorsAfterMove` runs in finalise, and an arrow it re-anchors with exactly one end's
   box moved is `rerouted` (EO31: route fields dropped, `orthogonalBends` for an angled one). A target whose container (`holdersOf`, the
@@ -369,7 +369,8 @@ means `newElementId` ([Ids](#ids)).
 - **`order <selector> front|back|above=<x>|below=<x>`.** Moves the target in the element order: last, first,
   directly after x, directly before x; x the target itself is `invalid_value`. Finalise then restores I6, so a container never ends above its members and
   a member never below its container (EO37).
-- **`layout <selector> [style=flow|tree|mindmap] [direction=down|right]`.** The selection (its members taken as `wrap` takes them, `resolveMembers`, EO57): its boxed elements and the
+- **`layout <selector> [style=flow|tree] [direction=down|right]`.** A `style=mindmap` is refused naming the styles
+  there are (livehuddle has no mind node). The selection (its members taken as `wrap` takes them, `resolveMembers`, EO57): its boxed elements and the
   arrows with both ends among them are laid out by `autoLayoutElements(subset, { style, direction, originX,
 originY, fixedSizeIds })`, origin the selection's bounding-box top-left, every selected box keeping its size;
   edgeless selected boxes are swept below with `sweepEdgelessNodes` (EO38). `direction` maps `down`→`TB`,
@@ -415,8 +416,7 @@ before the node, and every step uses it:
 4. **Grow and go outward.** The scope container grows along the axis by `shift` on its far side, so every
    shifted element keeps its membership; then room is made in the scope's own holder, with the midline at the
    container's old far edge and the container itself left out, so an outer container grows in turn and what lay
-   past it shifts. A locked container does not grow, and a mind node holds but has no room to grow; room is still
-   made beyond either (EO47, EO52).
+   past it shifts. A locked container does not grow; room is still made beyond it (EO47, EO52).
 5. Annotation `make room`: each shifted element is marked moved with its summed shift (`moveElement`), never a
    target.
 
@@ -606,7 +606,7 @@ type ResultLine =
       refs: string[];
       delta?: [number, number];
       reason: 'make room' | 'carried' | 'laid out' | 'landed on a lane';
-      layout?: { style: 'flow' | 'tree' | 'mindmap'; direction?: 'down' | 'right' };
+      layout?: { style: 'flow' | 'tree'; direction?: 'down' | 'right' };
     }
   | { mark: 'container'; ref: string; joined: string[]; left: string[] }
   | { mark: '!'; warning: EditWarning };

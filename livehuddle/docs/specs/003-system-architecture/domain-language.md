@@ -5,26 +5,23 @@
 Three words describe how a document and its tabs differ. They answer different questions and are never
 interchangeable. These are design decisions, taken before any feature that uses them.
 
-| Term         | Answers                        | Values                                                      | Where it lives                                |
-| ------------ | ------------------------------ | ----------------------------------------------------------- | --------------------------------------------- |
-| **mode**     | How is a tab worked on?        | Diagram, Draw, Workshop (`EditorMode`)                      | Per tab, the same for everyone; `Tab.opensIn` |
-| **kind**     | What is a tab?                 | the general diagram tab, or Event Storming (`TabKind`)      | `Tab.kind`                                    |
-| **template** | What was a document made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation                    |
+| Term         | Answers                        | Values                                                      | Where it lives                             |
+| ------------ | ------------------------------ | ----------------------------------------------------------- | ------------------------------------------ |
+| **mode**     | How is a tab worked on?        | Workshop, the one mode (`EditorMode`)                       | Every tab; `Tab.opensIn` reads as Workshop |
+| **kind**     | What is a tab?                 | the general diagram tab, or Event Storming (`TabKind`)      | `Tab.kind`                                 |
+| **template** | What was a document made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation                 |
 
 ### Mode
 
-- An **editor mode** is how a general tab is worked on right now, by everyone on it: Diagram, Draw or Workshop.
-  (the Editor modes spec in 007-editor).
-- A mode is never a type of document or tab. Switching mode changes no content: it sets the tab's mode (one undo step) and everyone on the tab follows.
-- A tab stores the mode it **opens in**. "Opens in" is a choice among modes, not a binary, so a new mode needs no
-  new concept.
-- Whiteboarding is Draw mode. There is no whiteboard tab kind and no whiteboard document type.
-- Running a session (a retro, a town hall) is Workshop mode. A session is an activity, never a tab kind or a
-  stored thing; "Session" and "Collaborate" never name the mode, and neither does its old name, "Facilitate".
-- "Workshop" names the mode; a start's template group is never called Workshops (Workshop mode's is **Ideation**,
-  Draw's **Exercises**). The template catalogue's **Workshops** category and the community's **Workshops**
-  category stay: they say what a template is for, as **Planning** does, and most of their
-  templates open in Workshop mode.
+- An **editor mode** is how a tab is worked on. livehuddle has one, **Workshop**, so every tab is in it and there is
+  no switch ([Editor modes](../007-editor/editor-modes.md)).
+- A mode is never a type of document or tab.
+- Whiteboarding is an activity. There is no whiteboard tab kind, mode or document type.
+- Running a session (a retro, a town hall) is what Workshop mode is for. A session is an activity, never a tab kind
+  or a stored thing; "Session" and "Collaborate" never name the mode, and neither does its old name, "Facilitate".
+- "Workshop" names the mode; a start's template group is never called Workshops (Workshop's is **Ideation**). The
+  template catalogue's **Workshops** category and the community's **Workshops** category stay: they say what a
+  template is for, as **Planning** does.
 
 ### Kind
 
@@ -32,7 +29,7 @@ interchangeable. These are design decisions, taken before any feature that uses 
   general diagram tab, with their own notation, rules and data.
 - The general diagram tab is the default kind. **Event Storming** is the only other kind. (Plan's Board, Sheet,
   Dashboard and Form tabs went to liveplanner with Plan mode; a stored one reads as a general tab.)
-- A new kind is added only when no mode can serve the use.
+- A new kind is added only when the general tab cannot serve the use.
 - "Board type" means a kind. It never names a template or a mode.
 
 ### Template
@@ -54,7 +51,7 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 The words for the diagram-building elements ([The card](../009-elements/card.md), [The badge](../009-elements/badge.md),
 [The step number](../009-elements/step-number.md), [The boundary](../009-elements/boundary.md),
-[Concept graphics](../009-elements/concept-graphics.md)).
+[Timeline](../009-elements/timeline.md)).
 
 | Term                | Means                                                                                   | Never called                              |
 | ------------------- | --------------------------------------------------------------------------------------- | ----------------------------------------- |
@@ -63,10 +60,10 @@ The words for the diagram-building elements ([The card](../009-elements/card.md)
 | **Badge**           | The small pill element (`badge`)                                                        | tag (a tag is a chip inside a Card), pill |
 | **Step number**     | The numbered disc element (`step`)                                                      | marker (that is a shape's status mark)    |
 | **attachment**      | A badge or step number held on one of eight points of a host element                    | group, pin, dock                          |
-| **host**            | The element an attached badge or step number sits on                                    | parent (that is a mind node's)            |
+| **host**            | The element an attached badge or step number sits on                                    | parent                                    |
 | **Boundary**        | The titled, tinted container element (`boundary`)                                       | zone, group, frame (that is the Frame)    |
-| **concept graphic** | A Layer stack, Pyramid or Cycle: one element laying out its own rows                    | SmartArt, diagram                         |
-| **row**             | One layer, tier or step of a concept graphic (`conceptRows`)                            | item                                      |
+| **concept graphic** | The Timeline: one element laying out its own rows                                       | SmartArt, diagram                         |
+| **row**             | One milestone of a concept graphic (`conceptRows`)                                      | item                                      |
 
 ## Agents
 
@@ -93,15 +90,15 @@ The words for a program working on documents for a person ([Agents](../024-agent
 
 The words for choosing a colour ([Colour picker](../004-interface-design/colour-picker.md)).
 
-| Term                     | Means                                                                                             | Never called                          |
-| ------------------------ | ------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| **colour picker**        | The one control that chooses a colour, in any skin                                                | swatch picker, palette, colour well   |
-| **standard colours**     | The ten named colours every picker offers (Ink or White, Grey, Red ... Pink)                      | stock colours (outside Draw), presets |
-| **tone**                 | Which version of the standard colours a picker offers: `strong` (lines, text) or `soft` (fills)   | shade, variant, a drawing finish      |
-| **theme colours**        | The active theme's own colours, offered on the canvas only                                        | presets                               |
-| **Custom colours**       | The colours picked with + in the document, kept with its tabs                                     | custom swatches, recent colours       |
-| **custom colour editor** | The square, hue, hex and eyedropper panel that **Add a custom colour** (four coloured dots) opens | colour wheel, native picker           |
-| **skin**                 | Where and how a picker opens: inline, field, swatch button                                        | variant, mode                         |
+| Term                     | Means                                                                                             | Never called                        |
+| ------------------------ | ------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| **colour picker**        | The one control that chooses a colour, in any skin                                                | swatch picker, palette, colour well |
+| **standard colours**     | The ten named colours every picker offers (Ink or White, Grey, Red ... Pink)                      | stock colours, presets              |
+| **tone**                 | Which version of the standard colours a picker offers: `strong` (lines, text) or `soft` (fills)   | shade, variant, a drawing finish    |
+| **theme colours**        | The active theme's own colours, offered on the canvas only                                        | presets                             |
+| **Custom colours**       | The colours picked with + in the document, kept with its tabs                                     | custom swatches, recent colours     |
+| **custom colour editor** | The square, hue, hex and eyedropper panel that **Add a custom colour** (four coloured dots) opens | colour wheel, native picker         |
+| **skin**                 | Where and how a picker opens: inline, field, swatch button                                        | variant, mode                       |
 
 ## Drawing
 
@@ -111,18 +108,6 @@ The words for how elements are drawn, apart from their colours ([Finish](../008-
 | -------------- | ----------------------------------------------------------------------------------------------- | ------------------------------ |
 | **finish**     | The drawing style of a tab and its elements: Flexible (default), Professional, Sketch or Marker | tone, look, style, render mode |
 | **Follow Tab** | An element with no finish of its own, drawn in its tab's                                        | inherit, default               |
-
-## Flowcharts
-
-The words for a grown flowchart ([The flowchart](../009-elements/flowchart.md)).
-
-| Term          | Means                                                                     | Never called        |
-| ------------- | ------------------------------------------------------------------------- | ------------------- |
-| **flowchart** | Steps sharing a `flowchartId`, joined by connectors and laid out together | flow, diagram       |
-| **step**      | One shape of a flowchart                                                  | node, box           |
-| **step type** | What a step is (Process, Decision, ...), which is its shape kind          | node type, symbol   |
-| **lane**      | A swimlane of a flowchart: a Lane element carrying the chart's id         | swimlane (in code)  |
-| **direction** | Which way a flowchart flows: Down or Right                                | orientation, layout |
 
 ## Repositories and workbenches
 
@@ -181,8 +166,8 @@ of its own. Only what people see is renamed: code, types, API routes, URL paths 
 still finds the command or article. Canvases stored as "Untitled document" still count as untitled. "Canvas" also
 stays the word for the drawing surface of a tab; a sentence that would say both reads as "your work" instead. The tab
 menu's item for putting a tab into another canvas is **Add to Another Canvas**, apart from the palette's **Add to
-canvas**, which puts an element on the drawing surface. The flowchart **Document** shape is a shape, not an item, and
-keeps its name.
+canvas**, which puts an element on the drawing surface. The **Document** shape is a shape, not an item, and keeps its
+name.
 
 ## This Browser
 

@@ -1,10 +1,10 @@
 # Corner radius
 
-A rectangle's corners (and the other free-corner boxes: the browser frame, the banner, the
-header bar, the callout card, a stat row's cards, an image, a mind node) take a **corner
+A rectangle's corners (and the other free-corner boxes: the banner, the
+header bar, the callout card, a stat row's cards, an image) take a **corner
 preset**, `borderRadius`: **None**, **Small** (4 px), **Medium** (12 px), **Large** (24 px) or
 **Full** (a pill, or a circle on a square). Unset, each kind keeps its own default corner (8 px
-for a shape, 4 px for an image, 12 px for a mind node).
+for a shape, 4 px for an image).
 
 ## Corners scale down on small shapes
 
@@ -29,9 +29,7 @@ exported and clicked always agree.
 
 ## Where it is set
 
-- **Diagram tabs:** the context menu's Border category, as before.
-- **Whiteboards:** the quick style panel's **Corners** row (None, Small, Medium, Large), see
-  [Quick style panel](quick-style-panel.md); a whiteboard's menu does not offer corners.
+- **Every tab:** the context menu's Border category.
 - **Imports:** Excalidraw's rounded rectangles land as **Large**, which through the quarter rule
   matches Excalidraw's own rounding at every size up to its 32 px cap
   ([Excalidraw import & export](../020-import-export/excalidraw-import-export.md)).

@@ -38,7 +38,7 @@ Both renderers (the canvas `FreehandSvg` and the headless `svgFreehandShape` use
 
 ## Settings: the Quick style panel
 
-The highlighter's settings live in the [Quick style panel](quick-style-panel.md), as a whiteboard marker's do ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel stays"). Two rows:
+The highlighter's settings live in the [Quick style panel](quick-style-panel.md). Two rows:
 
 - **Highlighter colour**: five marker swatches, **Yellow** (`#fde047`, the default), **Green** (`#86efac`), **Pink** (`#f9a8d4`), **Blue** (`#93c5fd`), **Orange** (`#fdba74`). Fixed hexes, not theme colours: a highlight that changed colour with the theme would stop reading as one. The row ends with **More colours**, opening the [colour picker](../004-interface-design/colour-picker.md) with the soft standard colours, Custom colours and **Add a custom colour** (four coloured dots).
 - **Highlighter width**: **Thin** (8 px), **Medium** (14 px, the default), **Bold** (22 px), each drawn as a preview of its band.
@@ -50,9 +50,7 @@ What the rows style, in the order the panel looks:
 
 The current colour and width are **session-local editor state**, not a persisted preference: the highlighter resets to Yellow / Medium on a fresh load, like a real pen cup. Restyling a selected highlight does not change them; only choosing with the tile armed does. Nothing here is stored except on the strokes themselves.
 
-**Width is a panel-only setting.** The context menu offers a highlight's colour (Colours) but not its width; the panel holds both, as it holds a whiteboard marker's width. This is a deliberate exception to the panel's "the menu stays complete" rule, scoped to the highlighter's two rows.
-
-- Draw mode ([Draw mode](../023-draw-mode/draw-mode.md)) has no highlighter: a whiteboard's pens are its markers, and its dock replaces the palette.
+**Width is a panel-only setting.** The context menu offers a highlight's colour (Colours) but not its width; the panel holds both. This is a deliberate exception to the panel's "the menu stays complete" rule, scoped to the highlighter's two rows.
 
 ## Not a selection mode
 
@@ -62,7 +60,7 @@ A Mode Button saved while it was one still carries `mode: 'highlighter'`. The st
 
 ## Popular
 
-The tile is not in Diagram mode's Popular ([Editor modes](../007-editor/editor-modes.md#the-palette-per-mode)): Table kept the slot it took when the tile was first retired.
+The tile is not in Popular ([Editor modes](../007-editor/editor-modes.md#the-palette)).
 
 ## Everything else is inherited
 

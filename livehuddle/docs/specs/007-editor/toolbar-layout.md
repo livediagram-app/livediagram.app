@@ -6,71 +6,62 @@ Status: shipped
 
 The editor's one panel layout, on every device (see "One layout" for the retired Floating
 layout). The Palette is a single horizontal strip pinned to the top centre of the canvas, the way
-Excalidraw's tool bar works. In Diagram and Workshop the strip is the **category bar**
-(below): the mode's categories, each opening a flyout of its tiles. Draw shows its dock instead:
+Excalidraw's tool bar works. The strip is the **category bar** (below): the palette's categories, each opening a
+flyout of its tiles:
 
 ```
- ☰ ⬡|✎   ┌──────────────────────────────────────────────────────────────────────┐
- │        │ [↖ ▾] │ Shapes Write Draw │ Diagrams Concepts Layout │ Icons … │ [🔍] │   Diagram, Workshop
- ▼        └──────────────────────────────────────────────────────────────────────┘
+ ☰       ┌───────────────────────────────────────────────────────────────┐
+ │        │ [↖ ▾] │ Shapes Write Draw │ Layout │ Ask Session │ Icons … │ [🔍] │
+ ▼        └───────────────────────────────────────────────────────────────┘
  Explorer            (Undo/Redo, Layers, zoom: the bottom-right cluster)
 ```
 
-- **Top left, before the strip: the menu button and the editor mode switch**
-  ([The mode switch](editor-modes.md#the-mode-switch)), then the tab's name, in one card. The switch shows the
-  mode's icon and name; on a phone, its icon alone. On a phone that card sits at the far left of the strip's row, the strip beside it (below). In a workspace
+- **Top left, before the strip: the menu button**, then the tab's name, in one card. There is no mode switch
+  ([Editor modes](editor-modes.md)). On a phone that card sits at the far left of the strip's row, the strip beside it (below). In a workspace
   workbench frame, which has no Explorer button, the card holds **Back** instead
   ([Workbench embeds](../013-workspace/workbench-embeds.md#what-renders)).
 - **Left: the selection mode.** The canvas-tool picker (Select / Hand /
   Eraser / Format / Laser / Spotlight / Isometric / Zen (Avatar only while in it), [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger, opening the banded tile grid.
-- **Then, in Diagram and Workshop, the category bar** ("The category bar").
-- **Far right: Search** (a magnifier), in every mode's strip but an event-storming board's (see
-  "Search: every element type"). Draw mode shows its dock instead of the strip, so it has none.
+- **Then the category bar** ("The category bar").
+- **Far right: Search** (a magnifier), on every strip but an event-storming board's (see
+  "Search: every element type").
 
 ## The category bar
 
-Diagram and Workshop show their **categories** on the strip rather than one category's tiles, the way
+The strip shows the palette's **categories** rather than one category's tiles, the way
 the Icons category always showed its groups: the strip is a short row of named places, and each holds its tiles in
 a flyout. Finding a tile is one look along the bar, not a trip through a picker, and the strip never changes width
 under the pointer as a category is switched.
 
 ### What is on it
 
-- **One button per category**, its glyph and its name (13 px, medium), in the mode's layout order
-  ([Editor modes](editor-modes.md#the-palette-per-mode)), a hairline divider between the bands (Common, Structure,
+- **One button per category**, its glyph and its name (13 px, medium), in the layout's order
+  ([Editor modes](editor-modes.md#the-palette)), a hairline divider between the bands (Common, Structure,
   Decorate, Dynamic, Collaborate). No hover card: resting on a button opens its flyout, which names it.
 - **Names are one word**, never more: a layout's longer name gives way on the bar (`barLabel`): My shapes reads
   **Library**.
 - **No Popular.** With every category one press away, a pick from across them adds nothing. The layouts keep their
   Popular entry; the bar leaves it out (`barCategoriesFor`).
-- **Write and Draw are two categories**, each its own button, where both are offered (Diagram, Workshop). One button
+- **Write and Draw are two categories**, each its own button. One button
   named Draw would hold more words and comments than strokes, so its name would not say what was inside. Write holds the
   words and the notes about the canvas; Draw holds only what is made by a stroke or a drag: the pens, Polygon, Arrow
   and Line.
-- **Diagram splits Build into Diagrams and Layout**: **Diagrams** holds the structures that grow as you type (Mind
-  node, Org chart, Flowchart, Sequence, Table, Entity), **Layout** what arranges and labels them (Lane, Frame,
-  Stack, Boundary, Timeline, then Diagram key, Card, Badge, Step number), after Concepts: what you build comes first, the ideas laid out beside it, then what it is arranged in. Fifteen tiles under one name mixed what
-  you build with what you build it in. Workshop offers the same **Layout**: a board is laid out in frames and
-  lanes as a diagram is.
+- **Layout** holds what arranges and labels the board: Lane, Frame, Stack, Boundary, Timeline, then Diagram key,
+  Card, Badge, Step number. A board is laid out in frames and lanes.
 - **Session** (Workshop): the Collaborate categories Tools, Record, React, Selection Mode and Navigate gathered
   into one category, browsed as Icons is (the two-pane browse, below), searchable across all of them. **Ask** keeps
   its own button beside it: putting a question to the room is the session's main act, not one of its tools.
-- **The bars:**
-
-  | Mode     | Bar                                                                         |
-  | -------- | --------------------------------------------------------------------------- |
-  | Diagram  | Shapes, Write, Draw · Diagrams, Concepts, Layout · Icons, Tech, Media       |
-  | Workshop | Shapes, Write, Draw · Layout · Ask, Session · Icons, Stickers, Media · Data |
+- **The bar:** Shapes, Write, Draw · Layout · Ask, Session · Icons, Stickers, Media · Data.
 
   Library joins after Shapes while the person has a [shape library](../013-workspace/shape-libraries.md) to place
   from, as My shapes does in the picker.
 
 - **Names fit or go.** The bar shows its names while the strip, named, fits the room the centred strip may take
   (the editor's width less the top-left menu card, measured, on both sides); otherwise the glyphs alone
-  (`useBarLabels`). Measured, not estimated: the menu card is wider in a mode that shows the tab's name, and an
-  estimate let a long bar run under it. **Too wide even bare**, as on a tablet (768px) where Diagram's glyphs
-  need about 425px of the 382px centring leaves, the strip sits at the right instead, 12px from the edge, clear of
+  (`useBarLabels`). Measured, not estimated: the menu card is wider with a long tab name, and an
+  estimate let a long bar run under it. **Too wide even bare**, as on a tablet (768px) where the glyphs
+  need more than the centring leaves, the strip sits at the right instead, 12px from the edge, clear of
   the card (`useStripCrowded`, measured the same way); it centres again once there is room. A phone always shows the glyphs, 44 px apart, and the bar swipes
   sideways while the selection mode and Search stay put (the tile rail's rule, "On a phone"). A swiping rail (the bar,
   the tile rail) fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
@@ -110,8 +101,8 @@ scrolling when long:
   as a `CountBadge` ([Counts are badges](../004-interface-design/counts.md)).
 - **Its tiles in named groups**, each a small heading with a hairline, the groups where the category's fixed
   dividers fall ("The strip's order and dividers"), named by the tile that starts each (`Basics`, `Flowchart`, `More
-Shapes`; `Pens`, `Outlines`, `Connectors`; `Diagrams`, `Layout and Parts`; `Charts`, `Meters`; `Desktop`,
-  `Mobile`; `Pictures`, `Embeds`, `People`; ...). A category shows its groups only when every one is named, else one
+Shapes`; `Pens`, `Outlines`, `Connectors`; `Layout and Parts`; `Charts`, `Meters`; `Pictures`, `Embeds`,
+  `People`; ...). A category shows its groups only when every one is named, else one
   block, so a layout whose dividers fall elsewhere never shows half its groups headed and half bare.
 - **Pictures or cards**, by the palette's own rule ([Rows, not tiles](../010-palette/palette-top-level-categories.md#rows-not-tiles-for-most-categories)):
   Shapes as a five-column grid of 72 px picture tiles with their names under them; every other category as cards,
@@ -140,7 +131,7 @@ the window. Resting on the tile for 150 ms opens it, a press opens it at once, a
 resting on another tile closes it. On a phone it lies over the flyout. Its header names the tile and says what can
 change after a preset is placed; its presets are one column of cards, placing and dragging as any tile.
 
-### Icons, Stickers, Technology and Session: two panes
+### Icons, Stickers and Session: two panes
 
 A catalogue's flyout browses as **two panes** ([Browsing the palette by category](../010-palette/palette-category-browse.md)):
 the groups down a 188 px rail on the left, each its glyph, name and count badge, the open one raised with a brand
@@ -152,12 +143,12 @@ height, so switching group never moves the flyout. Each reopens on the group it 
 ## Search: every element type
 
 A strip shows one category at a time, so finding an element means knowing which category holds it.
-**Search** finds it by name instead, across every category, and across the other modes too.
+**Search** finds it by name instead, across every category.
 
 - **Where:** the last control on the strip, behind a divider, with a hover card ("Search Elements"). On a phone it
   stays put at the end of the strip.
 - **Not on an event-storming board:** the notation is the palette there, as the board hides the
-  pickers. Draw mode has no strip, so no Search.
+  pickers.
 - **Opening it clears the way**: a tile armed to place is let go (its "Click to drop" banner goes), and the
   session timer's pill stands aside while the panel is open, since both sit where the panel hangs.
 - **The popover** hangs from the button's right edge like More's, 26rem wide (spanning the
@@ -169,65 +160,52 @@ A strip shows one category at a time, so finding an element means knowing which 
   alias of Select. The field's clear button (×, once there is text) clears the query and returns to
   the tab's own types. Opening it focuses its search field (not on a phone, where focusing raises the keyboard over
   it).
-- **What it searches:** the element **tiles** (`PALETTE_TILES`) of every mode's palette layout,
+- **What it searches:** the element **tiles** (`PALETTE_TILES`) of the palette layout,
   each once however many categories hold it, and the tiles on no strip (`SEARCH_ONLY_TILE_IDS` in
-  `palette-layouts.ts`: the Code block, the six embeds, the Devices and the page blocks Hero, Header, Banner,
-  Stat row and Process), listed as this mode's in every mode, after its own, since Search is the strip's one way
-  to them (the search panel's Add to canvas finds them too). **Icons, Stickers and Technology** are searched too,
+  `palette-layouts.ts`: the Code block, the six embeds and the page blocks Hero, Header, Banner,
+  Stat row and Process), after the layout's own, since Search is the strip's one way
+  to them (the search panel's Add to canvas finds them too). **Icons and Stickers** are searched too,
   entry by entry, as their categories' own tiles (`palette-dynamic-tiles`, `palette-catalogue-search`):
   each catalogue at most **15** best matches (five rows; its category has the rest, with its browse),
-  merged with the element tiles of the same section by how well the name matches (exact, prefix, substring, then keyword only; element tiles first among equals), so "chart" leads with the charts, not the flowchart shapes that only carry the word. A catalogue is this mode's when the mode's
-  palette offers its category (Icons in Diagram and Workshop, Stickers in Workshop, Technology in Diagram)
-  and another mode's otherwise. Before anything is typed, the entries already on the tab list with
-  the element types (an icon or a technology mark is an icon shape carrying its id, a sticker a shape
+  merged with the element tiles of the same section by how well the name matches (exact, prefix, substring, then keyword only; element tiles first among equals), so "chart" leads with the charts, not the flowchart shapes that only carry the word. Before anything is typed, the entries already on the tab list with
+  the element types (an icon is an icon shape carrying its id, a sticker a shape
   carrying its sticker id). The catalogues load as a chunk of their own; the popover asks for it on
   opening and fills in when it lands. My shapes stays in its own category: it is the person's
   libraries, not a catalogue of the product.
-  **Draw mode's markers** join them: Draw has no palette layout (its pens are the dock's), so its
-  Marker 1, 2 and 3 are built as tiles when the popover opens, from this browser's pens, each in
-  its colour and width (`palette-marker-tiles`). They are always another mode's, since the strip is
-  never shown in Draw. Picking one picks the pen up as the dock does, held until another tool,
-  Escape or a mode switch ([Draw mode](../023-draw-mode/draw-mode.md#pens)). The dock's other
-  tools are the palette's own already (Text, the shapes, the eraser), all but the Path tool, which
-  the search does not offer. A
-  tile matches on its name, label, blurb, description and the same synonym line the global Search
+  A tile matches on its name, label, blurb, description and the same synonym line the global Search
   panel uses ("database" finds the cylinder, [Canvas and palette](../008-canvas/canvas-and-palette.md#search-panel)),
   ranked exact name, then name prefix, then name substring, then keyword only; ties keep palette
   order. The image-upload tiles are left out where the editor has none, as everywhere else.
 - **Two sections:**
-  - **This mode's elements** first, as the palette's tile grid, drawn from every tile the current
-    mode's layout offers.
-  - **Other modes**, below, as an accordion titled **"Elements From Other Modes"**, with a
-    count: the matching tiles no category of this mode offers, from the other modes' layouts and
-    the event-storming notation. **Closed by default** each time the popover opens: modes are
-    tailored on purpose, so the rest is one deliberate click away, never hidden. Opened, it stays
-    open while typing. It is absent when nothing outside the mode matches.
+  - **The palette's elements** first, as the palette's tile grid.
+  - **Elsewhere**, below, an accordion with a count: the matching tiles no category of the palette offers (on a
+    general tab, the event-storming notation). **Closed by default** each time the popover opens. Opened, it stays
+    open while typing. It is absent when nothing outside the palette matches.
 - **Before anything is typed** it lists only the element types **already on the tab**, under a
-  small "On This Tab" label, each once, in layout order (other modes' ones in their accordions, as
-  ever): the popover stays short, and the tools a tab is actually built from are one click away.
-  Listing the whole mode made a popover taller than the window. A tile and an element meet on a
+  small "On This Tab" label, each once, in layout order (the notation's in its accordion): the popover stays short, and the tools a tab is actually built from are one click away.
+  Listing the whole palette made a popover taller than the window. A tile and an element meet on a
   **signature**: the element type plus the creation-time choice the element records (a shape's
   kind and its session tool, reaction, selection mode, estimate scale or plan view; a sticky's
   workshop kind; a pen; an embed's provider; a line's missing ends). Where the element does not
   record the choice (a board's preset, a card's type) the first tile in layout order stands for
-  them all. Tiles that place no one element type (the icon, sticker and tech catalogue tiles, the
+  them all. Tiles that place no one element type (the icon and sticker catalogue tiles, the
   shape pen, a board's header widget, the hero and avatar composites) never list here. An empty
   tab shows the shared empty state "No elements on this tab yet" ("Type to find any element."); one holding only
-  other modes' types, "No Diagram elements on this tab yet" (the mode's name).
-- **Nothing matches:** the mode's section shows the shared empty state
+  notation types, "No palette elements on this tab yet".
+- **Nothing matches:** the palette's section shows the shared empty state
   ([Empty states](../004-interface-design/empty-states.md)), pointing at the accordion when that has matches ("No
-  Diagram elements match “pie chart”", "Other modes have 3 below."); with neither, "No elements match “<words>”" with
+  palette elements match “pie chart”", "3 more below."); with neither, "No elements match “<words>”" with
   **Clear Search**.
 - **Its heading** is "Search Elements", as More's is the category's name; the field reads "Search
-  elements". The accordion's line under its title: "Elements other modes offer. Any of them works
-  here too."
-- **Using a tile** from this mode's section or Elements From Other Modes runs the tile's own handler (the same `PaletteTile`, so
+  elements". The accordion's line under its title: "Elements this palette does not offer. Any of them
+  works here too."
+- **Using a tile** from either section runs the tile's own handler (the same `PaletteTile`, so
   drag-to-place, the pressed state and tinting are the palette's), and closes the popover so the
-  canvas is clear. **Enter** in the field uses the first result of this mode's section (Elements
-  From Other Modes' first, when that section is empty and the accordion is open); never an
+  canvas is clear. **Enter** in the field uses the first result of the palette's section (the
+  accordion's first, when that section is empty and the accordion is open); never an
   unavailable tile.
 - **Nothing is stored:** the query and the accordions reset each time it opens.
-- **Telemetry:** `UI`/`Opened`/`ToolbarSearch` when it opens and `UI`/`Opened`/`ToolbarSearchOtherModes`
+- **Telemetry:** `UI`/`Opened`/`ToolbarSearch` when it opens and `UI`/`Opened`/`ToolbarSearchOtherModes` (the token keeps its name)
   and `UI`/`Opened`/`ToolbarSearchUnavailable` when each accordion opens. Placing an element reports as any palette add does.
 - **Cost:** the candidate tiles are a few hundred static entries; the match is a linear filter and
   sort over them per keystroke, only while the popover is open, and the popover mounts only while
@@ -242,7 +220,7 @@ More belonged to Plan's strip, which went to liveplanner with Plan mode: the cat
 category's whole body is its flyout. The rest of this section is kept as the record of how it worked.
 
 A strip has room for about a dozen tiles. Shapes fits; Icons (~180),
-Stickers and Technology do not. More opens the current
+Stickers do not. More opens the current
 category's full Palette body in a popover hanging from the More button's own
 right edge: search, collapsed groups, everything. The popover is
 wide (26rem) rather than tall, so a body rarely has to scroll. Picking a tile
@@ -253,14 +231,14 @@ its catalogue a moment later focuses the field as soon as it appears); on a phon
 because focusing would raise the keyboard over the popover.
 
 More appears when the category has more than twelve tiles, and always for
-Icons, Stickers, Technology, Behaviour and My shapes, whose bodies carry
+Icons, Stickers, Behaviour and My shapes, whose bodies carry
 more than tiles (search, group browsing, the person's libraries; My shapes has no strip tiles
 of its own, so More is its only way in). It sits outside the
 animated tile rail, so it rides the rail's width change.
 
-**Icons, Stickers and Technology show their groups** where a strip shows their tiles (no mode's strip does since
+**Icons and Stickers show their groups** where a strip shows their tiles (no mode's strip does since
 the category bar; their flyouts browse in two panes): the strip's tiles
-for one of them are its browse groups (the Icons groups, the Sticker groups, the Technology providers),
+for one of them are its browse groups (the Icons groups, the Sticker groups),
 each drawn as an opener rather than a tile (its first entry with a chevron, as the strip's pickers are, so it reads
 as a group to open rather than an icon to drag) with the group's name on its hover card, in the browse's own order. Pressing one
 opens a popover centred under that tile (on a phone it spans the screen, as More's does), showing **that group's
@@ -271,7 +249,7 @@ closes it, as More's does. The groups and their entries are the browse's
 disagree.
 
 **On a phone More shows only for My shapes**, whose library picker has no strip tiles of its own: every other
-category's strip already holds all of it (the whole category swipes, and the three catalogues hold their groups).
+category's strip already holds all of it (the whole category swipes, and the two catalogues hold their groups).
 
 ## The strip's order and dividers
 
@@ -283,22 +261,19 @@ every add.
 
 - **Shapes**: the basics (Square, Circle, Diamond) | the flowchart shapes (Cylinder to Stadium) |
   the rest (Cloud to Bubble).
-- **Write**: Page, Text | Note, Annotation; Diagram's adds Pointer note and Callout to the notes, then Comment,
-  Action as a third group, **Comments**.
+- **Write**: Page, Text | Note, Annotation | Comment, Action, **Comments**.
 - **Draw**: Freehand, Shape Pen | Polygon | Arrow, Line.
-- **Build**: Mind node, Table | Lane, Frame, Timeline.
-- **Diagrams** (Diagram): Mind node, Org chart, Flowchart, Sequence, Table | Entity.
-- **Layout** (Diagram): Lane, Frame, Stack, Boundary, Timeline | Diagram key, Card, Badge, Step number, headed
+- **Build**: Table | Lane, Frame, Timeline.
+- **Layout**: Lane, Frame, Stack, Boundary, Timeline | Diagram key, Card, Badge, Step number, headed
   **Containers** and **Parts** in the flyout.
-- **Components**: the cards (Code, Checklist, Entity) | the website blocks.
-- **Devices**: desktop (Browser, Monitor, Laptop) | mobile (Phone, Tablet, Foldable, Watch).
+- **Components**: the cards (Code, Checklist) | the website blocks.
 - **Media**: Image | the embeds | Avatar.
 - **Data**: the charts (Pie, Bar, Line, Legend) | the meters (Progress, Donut, Rating).
 - **Behaviour**: the Selection Mode buttons | everything else.
 - **Event Storming**: the notation | Hotspot.
 
-Popular divides where its tiles' own groups do (after the Diamond), and the Icons / Stickers /
-Technology catalogues have none. A category
+Popular divides where its tiles' own groups do (after the Diamond), and the Icons and Stickers
+catalogues have none. A category
 has two at most. A divider shows only between two tiles both on the strip, and on a phone's
 swiping strip only while a tile on each side of it is at least partly in view: scrolled to where
 the tiles after it are out of sight, it is hidden, never left standing at the strip's edge beside
@@ -306,16 +281,16 @@ More's own divider (`useEdgeDividers`, re-checked as the strip scrolls or resize
 a fifth of a tile each: a category that fits whole with them shows them; one whose tiles fit only
 without them drops them before any tile; one that overflows shows as many tiles as fit with their
 dividers between them, so a divider costs a tile only when the strip's spare part-tile can't hold
-it (a 430px phone shows four of Diagram's Popular and the divider after the diamond, not three).
+it (a 430px phone shows four of Popular and the divider after the diamond, not three).
 
 The chosen category lasts the page load: the strip is hidden rather than
 unmounted while zen or the welcome flow hides the chrome. Nothing is stored,
-so a new page load starts on the mode's landing.
+so a new page load starts on the palette's landing.
 
 ## The tab's name
 
-- On a desktop, the menu box (the Explorer button and the mode switch, top left) ends with the open tab's name, after a
-  hairline, in every mode: Diagram, Draw and Workshop alike
+- On a desktop, the menu box (the Explorer button, top left) ends with the open tab's name, after a
+  hairline
   (The name rides in the menu box). It is the chrome's ink, 14 px at regular weight (never bold), cut short
   with an ellipsis past 16rem, and follows a rename at once. The box shows a name alone, never an icon beside it.
 - A click (a tap) on it renames the tab in place, for someone who may change the
@@ -339,7 +314,7 @@ other panel (AI, the minimap, Poll, Vote and the tool panels) docks in its corne
 ([Panel docking](panel-docking.md)). Layers and Collaborate render outside
 the corner layer, since a popover positions against the canvas and a corner stack would move it.
 A popover opening up from a bottom-row button (Layers, the Vote, the Poll) grows no higher than 8 px under a
-toolbar across the canvas's top whose span meets its column, the strip or Draw's dock (`usePopoverTopClearance`), and
+toolbar across the canvas's top whose span meets its column, the strip (`usePopoverTopClearance`), and
 12 px from the canvas's top otherwise: on a phone the strip spans the width, and a tall panel ran up under it with its
 header hidden.
 
@@ -359,7 +334,7 @@ There is no layout choice: one layout, the strip, so every feature is built and 
 
 - There is no `panelLayout` preference ([User preferences](user-preferences.md)). A stored value
   (`'floating'`, `'toolbar'`, `'minimal'`) is ignored and left as it is.
-- Settings has no Panel Layout row, and the [Diagram tour](editor-tour.md) no layout picker.
+- Settings has no Panel Layout row, and no tour a layout picker.
 - The Palette, the Explorer and Layers are not corner panels, so a stored panel placement that names them is ignored
   ([Panel docking](panel-docking.md)).
 - Telemetry's `PanelLayoutFloating` / `PanelLayoutToolbar` stay in the catalogue as retired
@@ -376,8 +351,7 @@ button always was. It gets the same chrome as a desktop ([Editor app](editor-app
 panels in their corners, Layers and Collaborate as popovers over
 their bottom-row buttons. What changes to fit the width:
 
-- **The menu button gets its own card, left of the strip,** with the mode switch beside it as an icon and a
-  chevron, no name, and no tab name.
+- **The menu button gets its own card, left of the strip,** with no tab name.
   The card sits at the left gutter and the strip follows it 8px to the right,
   left-aligned rather than centred, so the two read as separate toolbars on
   one row. There is no room for a corner card above a strip that needs the
@@ -389,7 +363,7 @@ their bottom-row buttons. What changes to fit the width:
   category picker and More stay put. The scrollbar is hidden ([Scrollbars](../004-interface-design/scrollbars.md)):
   a tile cut at the edge shows there is more. A new category starts scrolled to its first tile.
   More shows only for My shapes ([More](#more-the-rest-of-the-category)): the swiping strip reaches every
-  other category's tiles, and Icons, Stickers and Technology their groups.
+  other category's tiles, and Icons and Stickers their groups.
 - **More spans the screen** between the gutters instead of hanging from its
   button.
 - **Zoom drops − and +** (`pinchOnly`), as on every phone ([Editor app](editor-app.md)). Fit
@@ -433,7 +407,7 @@ their bottom-row buttons. What changes to fit the width:
   - While a mode banner sits in the tray, the top-centre stack starts below the tray instead.
   - While one of the strip's popovers is open (a category's flyout, More, a catalogue group, Search) the tray steps aside, as it does
     for the Explorer: it would cover the popover's top.
-  - Without a strip (Draw mode's dock, zen, read-only, the welcome flow) the messages stay the
+  - Without a strip (zen, read-only, the welcome flow) the messages stay the
     top-centre pills they are elsewhere.
 - Event-storming boards ([Event storming](../021-event-storming/event-storming.md)) hide the strip's pickers, and the strip shows the notation's tiles, led by
   the board's **Add from Photo** (an icon button with a hover card) where the deployment offers
@@ -441,9 +415,6 @@ their bottom-row buttons. What changes to fit the width:
 - Read-only sessions have no palette, so no strip. The menu button still
   shows.
 - Zen hides the strip and the menu button along with the rest of the chrome.
-- The Diagram tour ([Diagram tour ("Start Diagram Tour")](editor-tour.md)) follows the layout: its Palette step rings the
-  strip's card. (Its Explorer step, which opened the Explorer from the menu button, went when the
-  welcome tour became the Diagram tour.)
 
 ## Motion
 
@@ -486,8 +457,8 @@ their bottom-row buttons. What changes to fit the width:
 
 ## Decided in review
 
-- **The strip opens on the mode's landing every time**
-  ([Editor modes](editor-modes.md#the-palette-per-mode)). It does not remember the last category across documents.
+- **The strip opens on the palette's landing every time**
+  ([Editor modes](editor-modes.md#the-palette)). It does not remember the last category across documents.
 - **Twelve tiles is enough** on desktop (raised from ten, which cut Shapes and
   Popular short). Below that, the strip shows as many as fit, **measured**
   rather than estimated (`useStripTileLimit`): its own chrome (the pickers,
@@ -502,9 +473,7 @@ their bottom-row buttons. What changes to fit the width:
   resizes), the top corner stacks start below the strip, 68px down, exactly
   as they always do on a phone. Otherwise they keep their inset. Without it
   a docked panel (the Laser panel, say) sat under the strip's right end and
-  could not be reached. A whiteboard's dock at the top gets the same
-  treatment ([Where the dock sits](../023-draw-mode/draw-mode.md#where-the-dock-sits)),
-  its corners starting 76px down.
+  could not be reached.
 - **Undo / Redo stay where they are**, in the bottom-right dock.
 - **A phone's toolbar items keep their size** (`PHONE_TOOLBAR_ITEMS`): 36px, the bottom-right
   cluster's 44px, each with a 44px-tall tap area ([Touch targets](../004-interface-design/touch-targets.md)).

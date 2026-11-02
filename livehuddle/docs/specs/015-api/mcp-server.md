@@ -262,8 +262,8 @@ canvas overrides; the model then personalises labels via `update_document`'s
    "Generated" folder, then the Explorer showed a Generated view;
    provenance is a filter, not a place.)
    The create also sends the creation `intent` of the first tab it built and the
-   template it used (`{ mode: "diagram" }` unless the input makes a whiteboard, an
-   event-storming board, or a document from a template family such as a retrospective), so with no folder named the server files it in the
+   template it used (`{ mode: "workshop" }`, with its kind for an event-storming board and its family for a
+   document from a template family such as a retrospective), so with no folder named the server files it in the
    user's [default folder](../013-workspace/default-folders.md) for that intent,
    when they have one.
 4. **Persists** all tabs via `POST /api/documents` (which seeds a `tabs[]` array
@@ -339,7 +339,7 @@ in this call`); an arrow to nowhere is never stored.
 is checked as an edit operation's `set` checks a field: a field its type does not have is refused with the fields
 like it (`"icon" is not a field of a shape; fields like it: iconId, iconPosition`), a value off a closed vocabulary
 (`textSize` `sm`, `md`, `lg`, `scale` or a pixel number; the alignments, arrow styles, ends and heads, border styles
-and radii, and the diagram-building kinds' looks, media, attach points, boundary styles and pyramid variants: the
+and radii, and the diagram-building kinds' looks, media, attach points, boundary styles: the
 same list edit operations check, [Edit operations](../024-agents/edit-operations.md)) is refused naming the values,
 and an `iconId` that names no icon is refused with the icons like it and a
 pointer to `search_icons`. Each of these was once stored and drawn wrong in silence. The check passes every element
@@ -420,7 +420,7 @@ graph: {
   edges:  [{ from, to, label?, line? }],
   groups?: [{ id, label?, members?: [nodeId, ...] }],
   direction?: 'down' | 'right',
-  style?:  'flow' | 'tree' | 'mindmap' | 'lanes' | 'cycle',
+  style?:  'flow' | 'tree' | 'lanes' | 'cycle',
   lines?:  'straight' | 'angled' | 'curved',
 }
 mermaid: "flowchart LR\n  A[Idea] --> B{Worth it?} ..."
@@ -432,7 +432,7 @@ expresses only intent: which nodes exist, what points at what, how they group,
 and never touches geometry, anchors, or endpoint shapes. Off-vocabulary shape
 kinds are coerced; an edge to an unknown node id is dropped rather than
 producing a broken arrow. This is the **preferred path for any node/edge
-diagram** (flowcharts, org charts, architecture, dependency graphs); `elements`
+diagram** (flowcharts, hierarchies, architecture, dependency graphs); `elements`
 stays for deliberate arrangements (a ring, a grid) and mixed non-node content.
 Provide **one** of `graph` / `mermaid` / `elements` / `template`, not several.
 A graph holds at most 500 nodes and 1 000 edges (`GRAPH_LAYOUT_MAX_NODES` / `_EDGES`,
@@ -588,25 +588,17 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 - `style` (`flow`): `flow` is the layered layout, `tree` the tidy tree (an org
   chart, a hierarchy; a parent below the root whose two or more children are all leaves stacks them in a column
   under it, indented, joined by a bus down its lower-left quarter, the compact org chart; its lines carry no
-  arrowheads, as the org-chart template's do, since a tree shows belonging, unless an edge asks with `ends`; a node
-  with a `role` draws as the template's person card, its name in bold over the role with a person icon unless it
-  names another, in any style), `mindmap` a real mind map as the mind-map template draws one (mind nodes, so it grows with Tab
-  and Enter, laid out balanced: the root is the first node nothing enters, a bold round centre; a part no edge joins to the root hangs off it as a
-  branch of its own, its edges still the tree's; each first-level
-  branch tinted in its own hue with its icon; leaves white and edged in their branch's hue, one height for every leaf of the map (the tallest any label needs); a root
-  whose label would grow the circle past 260 px takes the next text size down, so the centre stays near the template's; curved connectors in
-  the branch hue with no arrowheads; an edge the tree leaves out drawn dashed), `lanes` a swimlane diagram (each group
+  arrowheads, since a tree shows belonging, unless an edge asks with `ends`; a node's `role` goes into its note, since livehuddle
+  has no person card), `mindmap`, livediagram's mind map, is refused naming the styles there are (livehuddle has no mind node, [Editor modes](../007-editor/editor-modes.md)), `lanes` a swimlane diagram (each group
   a lane, one under another, its label in the lane's header strip (a heading, a size up from the steps, the strip as
   wide as the longest title needs up to the swimlane template's, the columns 48 px apart); the flow runs left to right across the lanes and
-  a node outside every group gets an unnamed lane), `sequence` a sequence diagram (the nodes the participants, a
-  node shaped `actor` a stick figure; the edges the messages in order, a dashed edge a reply; Mermaid says more; a message's label and a participant's name stay whole, never cut to the 40-character heading cap, since a message is a sentence and a lifeline's head is not a box), `storm` an event-storming board ([Event storming](../021-event-storming/event-storming.md#agents)), `cycle` a ring (the nodes in order clockwise from the top, each
+  a node outside every group gets an unnamed lane), `sequence` is refused as `mindmap` is (there is no sequence diagram), `storm` an event-storming board ([Event storming](../021-event-storming/event-storming.md#agents)), `cycle` a ring (the nodes in order clockwise from the top, each
   edge a curved arrow following the ring's arc, leaving and entering its stops along the ring's tangent so every arc bows
   out alike; an edge between stops that are not ring neighbours, as a star's spokes are, goes round the outside of the
   stops between them the shorter way, each hop further a lane further out, never along the ring behind them; a node with no edge at all at the ring's centre, sized on its own so a longer centre label never grows
   the stops, the ring widened until no stop comes within half a gap of the centre's stack, a node given no shape a circle).
 - **Self-edges**: an edge from a node to itself never loses the node. The flow style (and lanes and tree) draws it as
-  a loop round the node; the mindmap and cycle styles have no place for one (a branch cannot enter its own node, and
-  a ring's arcs run between stops), so there the node shows and the self-edge is dropped, as if never given: a cycle
+  a loop round the node; the cycle style has no place for one (a ring's arcs run between stops), so there the node shows and the self-edge is dropped, as if never given: a cycle
   node whose only edge is a self-edge sits at the centre with the other nodes no edge joins.
 - `groups`: named clusters drawn as frames around their members and laid out as
   one block each (the clustered layout the editor's Mermaid import uses); an edge
@@ -618,10 +610,10 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
   naming both, rather than dropped; and a `lanes` graph refuses a node in no group, which would otherwise land in an
   unlabelled lane of its own, and a node in two lanes, which each lane would draw (`graphShapeError`). The api's `replace` with a `graph` refuses the same, so every
   caller of graph input is held to it (`graphBodyIssue`).
-- `lines` (`angled` for flow, lanes and tree, `curved` for mindmap and cycle): the
+- `lines` (`angled` for flow, lanes and tree, `curved` for cycle): the
   arrows' routing, from the editor's own arrow styles. Angled lines **bend
   twice** along the flow (down, across at half height, down into the child's
-  top), the org-chart shape; one whose ends already line up runs straight
+  top), a hierarchy's shape; one whose ends already line up runs straight
   ([Layout cleanup](../008-canvas/layout-cleanup.md) "Angled lines bend twice"). **No notch in a straight line:** an
   elbow whose ends sit within `NOTCH_MAX` (6 px) of one line, across a middle run shorter than `KINK_RUN` (12 px),
   is drawn straight, as a step that short reads as a notch (two boxes of different widths centred a pixel or two
@@ -642,9 +634,8 @@ unrelated box passes behind it with a gap, on the canvas and in the preview
 ([Arrows pass behind intervening boxes](../008-canvas/arrow-route-behind.md)).
 
 **`mermaid`** is parsed by the editor's own importer (`parseMermaid`:
-flowcharts with subgraphs, state diagrams and ER diagrams, [Mermaid](../020-import-export/mermaid.md)), or for a
-`sequenceDiagram` by the agents' sequence reader ([Sequence diagrams](../020-import-export/mermaid.md#sequence-diagrams-agents),
-drawn with lifelines, activation bars, notes and fragments as `style: "sequence"`), into the same
+flowcharts with subgraphs and state diagrams, [Mermaid](../020-import-export/mermaid.md); `erDiagram`,
+`sequenceDiagram`, `mindmap` and `classDiagram` are refused), into the same
 graph, its direction and subgraphs becoming `direction` and `groups`, and then
 takes the same path, label cap included. Mermaid's front matter title (`---` / `title: Checkout` / `---`) heads the
 diagram as `title` does on a graph, in every dialect. A dialect it cannot read comes back as
@@ -667,38 +658,32 @@ scales text to fill each box.
 
 These kinds hold content of their own, and the element format documents their
 fields so a model can fill them rather than guess: **sticky**, **table**,
-**code block**, **entity**, **lane**, the three **charts** (bar, line, pie), the
-**Sankey**, and the diagram-building kinds: **card**, **badge**, **step**,
-**boundary**, the concept graphics (**layer stack**, **pyramid**, **cycle**, **hub**, **onion**, **chevrons**, **timeline**),
-**pointer note**, **diagram key**, **stack**, the org chart's **person node**, the **sequence diagram** and the
-**image**.
+**code block**, **lane**, the three **charts** (bar, line, pie), and the diagram-building kinds: **card**,
+**badge**, **step**, **boundary**, the **timeline**, **pointer note**, **diagram key**, **stack** and the
+**image**. The kinds cut with Diagram and Draw (entity, Sankey, the other concept graphics, the person node, the
+sequence diagram, mind nodes, device frames) are not in the format, and an element of one is refused naming the
+kinds there are.
 Every other kind stays listed by name only. The field notes are facts about what
 each field does (§4.15), carried on the tools' element argument and in the
 schema resource (§4.6), short enough not to bloat every tool definition.
 
-| Kind                                        | Content fields                                                                                                                              | Facts the notes state                                                                                                                                                                                                                                                                                                                                                                                                 |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sticky` (type)                             | `label`; optional `fillColor` + `textColor`                                                                                                 | The theme never recolours a sticky, so its own colours are kept; the notes list the palette's sticky pairs (classic, lemon, peach, rose, lilac, sky, mint, teal, slate, paper, charcoal, ink). Unset, it is the classic amber note.                                                                                                                                                                                   |
-| `image` (type)                              | `imageId`, `alt`, `objectFit`                                                                                                               | `imageId` is an id from `list_images`; one not in the caller's gallery is refused, naming `list_images`. Without `imageId` the element is a placeholder the user fills in the editor. `objectFit` `contain` (the default) shows the whole picture, `cover` fills the box and crops; `alt` describes the picture. A box of the picture's own proportions (`width` and `height` from `list_images`) shows it uncropped. |
-| `table` (type)                              | `cells` (rows of strings), `headerRow`, `headerColumn`, `zebra`                                                                             | The first row is the header when `headerRow` is set.                                                                                                                                                                                                                                                                                                                                                                  |
-| `code-block` (shape)                        | `code` (up to 4000 chars), `codeLanguage`, `codeTheme`, `codeWrap`                                                                          | The languages and themes are listed; the block draws itself, so `label` is not shown.                                                                                                                                                                                                                                                                                                                                 |
-| `entity` (shape)                            | `label` (the title), `entityFields` `[{ name, type?, key? }]` (up to 40)                                                                    | `key` is `pk`, `fk`, `pk-fk` or `uk` ([The entity](../009-elements/entity.md) "Keys"); a legacy `uuid PK` type still reads as a key. A pinned arrow end may carry `field` (a field index, anchor `w` or `e`) to join that field.                                                                                                                                                                                      |
-| `lane` (shape)                              | `label` (the title), `headerFill`                                                                                                           | Contents sit inside the lane's box; lanes are placed one under another.                                                                                                                                                                                                                                                                                                                                               |
-| `bar-chart` / `pie-chart` (shape)           | `pieSlices` `[{ label, value }]`                                                                                                            | A chart draws no title: a caption is a separate `text` element. Categories show in the legend.                                                                                                                                                                                                                                                                                                                        |
-| `line-chart` (shape)                        | `lineCategories` (x labels), `lineSeries` `[{ name, values }]`                                                                              | The same, with one value per category.                                                                                                                                                                                                                                                                                                                                                                                |
-| `sankey` (shape)                            | `sankeyFlows` `[{ from, to, value }]` (up to 200), options                                                                                  | Nodes are the names; `source` / `target` and text amounts (`"1,200"`) are read too. A flow back to an earlier node is hidden. Options: `sankeyLinkColor`, `sankeyAlign`, `sankeyValueLabel`, `sankeyUnit`, `sankeyNodes`, `sankeyLeftover` (`show` by default: an unbalanced middle node draws its difference to a Leftover node), `sankeyLeftoverName`. No title.                                                    |
-| `card` (shape)                              | `pageTitle`, `pageSubtitle` (meta), `label` (body), `cardMedia`, `iconId`, `cardHeader`, `tags` (up to 6)                                   | Use cards for service and component nodes: title the thing, meta the product or runtime, tags the facts. `callout` is accepted and becomes a card with `cardMedia: 'badge'`.                                                                                                                                                                                                                                          |
-| `badge` (shape)                             | `label` (up to 24), `chipLook`, `attachedTo`, `attachAt`                                                                                    | A badge attached to a node sits on one of its eight points and is placed there by the server; no x / y needed.                                                                                                                                                                                                                                                                                                        |
-| `step` (shape)                              | `label` (the number, up to 3), `chipLook`, `attachedTo`, `attachAt`                                                                         | Number the steps of a walkthrough 1, 2, 3; place them on or beside the arrows they mark.                                                                                                                                                                                                                                                                                                                              |
-| `boundary` (shape)                          | `label` (the title), `pageSubtitle`, `iconId`, `boundaryStyle`                                                                              | A container: elements whose centre is inside it belong to it. Nest boundaries for edge, region, VPC, subnet; Inset suits a nested one, C4 a C4 diagram.                                                                                                                                                                                                                                                               |
-| `layer-stack` / `pyramid` / `cycle` (shape) | `conceptRows` `[{ label, note? }]`, `pyramidVariant`, `label` (a cycle's centre)                                                            | Rows: stack 2 to 8 (note = side note), pyramid 2 to 6 (first row the apex; note = a funnel's value), cycle 3 to 8 (clockwise from the top).                                                                                                                                                                                                                                                                           |
-| `hub` / `onion` / `chevrons` (shape)        | `conceptRows` `[{ label }]`, `hubSpokes`, `label` (a hub's centre)                                                                          | Hub 3 to 8 satellites, onion 2 to 6 rings from the core out, chevrons 2 to 8 stages left to right.                                                                                                                                                                                                                                                                                                                    |
-| `timeline-rail` (shape)                     | `conceptRows` `[{ label, note }]`                                                                                                           | A Timeline: 2 to 8 milestones left to right, `label` what happens, `note` when (a date, a quarter).                                                                                                                                                                                                                                                                                                                   |
-| `pointer-note` (shape)                      | `label`, `pointerTip` `{ x, y }`, `attachedTo`, `attachAt`                                                                                  | The tip is relative to the note's top-left, or pinned to a point of a node.                                                                                                                                                                                                                                                                                                                                           |
-| `diagram-key` (shape)                       | `label` (the title), `keyMeanings`                                                                                                          | Its rows fill in from the tab's line styles and tag colours; meanings are keyed by row id (`line:dashed`).                                                                                                                                                                                                                                                                                                            |
-| `stack` (shape)                             | `stackDirection`, `stackColumns`, `stackGap`, `stackPadding`, `stackAlign`                                                                  | Children are the elements whose centre is inside; the editor lays them out.                                                                                                                                                                                                                                                                                                                                           |
-| `mind-node` with `mindLook: person`         | `label` (the name), `pageSubtitle` (the role), `mindParentId`                                                                               | An org chart: the root takes `mindFlow: downward`.                                                                                                                                                                                                                                                                                                                                                                    |
-| `sequence` (shape)                          | `sequenceParticipants` `[{ id, label, actor? }]` (2 to 12), `sequenceMessages` `[{ from, to, label, kind }]` (up to 60), `sequenceNumbered` | It lays itself out; prefer it over loose shapes for a sequence diagram that will be edited.                                                                                                                                                                                                                                                                                                                           |
+| Kind                              | Content fields                                                                                            | Facts the notes state                                                                                                                                                                                                                                                                                                                                                                                                 |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sticky` (type)                   | `label`; optional `fillColor` + `textColor`                                                               | The theme never recolours a sticky, so its own colours are kept; the notes list the palette's sticky pairs (classic, lemon, peach, rose, lilac, sky, mint, teal, slate, paper, charcoal, ink). Unset, it is the classic amber note.                                                                                                                                                                                   |
+| `image` (type)                    | `imageId`, `alt`, `objectFit`                                                                             | `imageId` is an id from `list_images`; one not in the caller's gallery is refused, naming `list_images`. Without `imageId` the element is a placeholder the user fills in the editor. `objectFit` `contain` (the default) shows the whole picture, `cover` fills the box and crops; `alt` describes the picture. A box of the picture's own proportions (`width` and `height` from `list_images`) shows it uncropped. |
+| `table` (type)                    | `cells` (rows of strings), `headerRow`, `headerColumn`, `zebra`                                           | The first row is the header when `headerRow` is set.                                                                                                                                                                                                                                                                                                                                                                  |
+| `code-block` (shape)              | `code` (up to 4000 chars), `codeLanguage`, `codeTheme`, `codeWrap`                                        | The languages and themes are listed; the block draws itself, so `label` is not shown.                                                                                                                                                                                                                                                                                                                                 |
+| `lane` (shape)                    | `label` (the title), `headerFill`                                                                         | Contents sit inside the lane's box; lanes are placed one under another.                                                                                                                                                                                                                                                                                                                                               |
+| `bar-chart` / `pie-chart` (shape) | `pieSlices` `[{ label, value }]`                                                                          | A chart draws no title: a caption is a separate `text` element. Categories show in the legend.                                                                                                                                                                                                                                                                                                                        |
+| `line-chart` (shape)              | `lineCategories` (x labels), `lineSeries` `[{ name, values }]`                                            | The same, with one value per category.                                                                                                                                                                                                                                                                                                                                                                                |
+| `card` (shape)                    | `pageTitle`, `pageSubtitle` (meta), `label` (body), `cardMedia`, `iconId`, `cardHeader`, `tags` (up to 6) | Use cards for service and component nodes: title the thing, meta the product or runtime, tags the facts. `callout` is accepted and becomes a card with `cardMedia: 'badge'`.                                                                                                                                                                                                                                          |
+| `badge` (shape)                   | `label` (up to 24), `chipLook`, `attachedTo`, `attachAt`                                                  | A badge attached to a node sits on one of its eight points and is placed there by the server; no x / y needed.                                                                                                                                                                                                                                                                                                        |
+| `step` (shape)                    | `label` (the number, up to 3), `chipLook`, `attachedTo`, `attachAt`                                       | Number the steps of a walkthrough 1, 2, 3; place them on or beside the arrows they mark.                                                                                                                                                                                                                                                                                                                              |
+| `boundary` (shape)                | `label` (the title), `pageSubtitle`, `iconId`, `boundaryStyle`                                            | A container: elements whose centre is inside it belong to it. Nest boundaries for edge, region, VPC, subnet; Inset suits a nested one, C4 a C4 diagram.                                                                                                                                                                                                                                                               |
+| `timeline-rail` (shape)           | `conceptRows` `[{ label, note }]`                                                                         | A Timeline: 2 to 8 milestones left to right, `label` what happens, `note` when (a date, a quarter).                                                                                                                                                                                                                                                                                                                   |
+| `pointer-note` (shape)            | `label`, `pointerTip` `{ x, y }`, `attachedTo`, `attachAt`                                                | The tip is relative to the note's top-left, or pinned to a point of a node.                                                                                                                                                                                                                                                                                                                                           |
+| `diagram-key` (shape)             | `label` (the title), `keyMeanings`                                                                        | Its rows fill in from the tab's line styles and tag colours; meanings are keyed by row id (`line:dashed`).                                                                                                                                                                                                                                                                                                            |
+| `stack` (shape)                   | `stackDirection`, `stackColumns`, `stackGap`, `stackPadding`, `stackAlign`                                | Children are the elements whose centre is inside; the editor lays them out.                                                                                                                                                                                                                                                                                                                                           |
 
 **The sticky exception to "the theme owns colours".** The design rule that a
 model leaves colours to the theme (§4.6) holds for every themed element; a
@@ -713,9 +698,9 @@ wrongly:
 - **Every element takes the presentation defaults the editor's own factory
   gives a new one of its kind** for the fields it leaves out: `textSize` (`md`
   for shapes, stickies and tables, `sm` for text) and, where the kind sets
-  them, the title alignment and padding (an entity's top-left title, a lane's
+  them, the title alignment and padding (a lane's
   left title strip and `lg` padding, a frame's header). Unset, text scales to
-  fill its box, so a lane or entity title came out as one giant word across
+  fill its box, so a lane title came out as one giant word across
   its contents and a sticky's note filled it edge to edge; a box drawn in the
   editor never arrives that way. This applies to every element on these paths,
   not only the six. As graph input sizes its text by count, so do raw boxes: on a list of more than 12 labelled
@@ -730,10 +715,6 @@ wrongly:
   pass the editor runs on load), so every row renders.
 - An unknown **codeLanguage** becomes `plain` and an unknown **codeTheme** is
   dropped (the default), rather than failing the whole tab validation.
-- An **entity**'s height grows to fit its rows (`entityHeight`, the geometry
-  the canvas and the export draw with: the title bar, 13.75 px a row, 3 px
-  between rows, 6 px above and below the list), since rows past the box are not
-  drawn.
 - **Chart** data is coerced: a slice or value that is not a finite number
   becomes 0, labels become strings, and each series' `values` is padded or cut
   to the category count. Empty data draws the built-in sample, which the notes
@@ -767,8 +748,8 @@ drawing order, `closed` to close and fill it, and a `penColour` (ink, grey or a 
 with the points packed inside it ([Stroke points](../006-document/stroke-points.md)), which no model can write, so
 the MCP takes the box from the points and packs them through the stored-tab migration, before the element is
 checked, on every element path (`freehand-points.ts`), and an ops update giving a stroke new `points` sets its new box and block together, where a bare `points` field would have emptied the stroke. Points it cannot draw (none, more than
-`MAX_FREEHAND_POINTS`, or not number pairs) are refused naming the element. The format says a hand-drawn board
-starts from the `whiteboard` template, a tab in Draw mode, and that any box may carry a small `rotation`.
+`MAX_FREEHAND_POINTS`, or not number pairs) are refused naming the element. The format says any box may carry a small
+`rotation`.
 
 **Found by search.** A client that searches tools by text finds a tool by its name, description and schema, and
 ranks long ones down or leaves the largest out. So `create_document` leads with what it makes, and the single-`tab` alias
@@ -1129,8 +1110,7 @@ Worker (no DOM, no React).
   family names. The embedded Inter is upright only, so a tab with any text in italic (an element's, a run's, a
   cell's) fetches Inter's italics the same way (`INTER_ITALIC`); resvg drew italic it had no face for upright.
 - **No scaled strokes.** resvg ignores `vector-effect="non-scaling-stroke"`, so
-  the renderer never relies on it: stretched silhouettes (frames, cylinders,
-  device frames) are mapped into the element box point by point
+  the renderer never relies on it: stretched silhouettes (frames, cylinders) are mapped into the element box point by point
   (`svg-shape-fit.ts`) rather than nested in a scaled `<svg>`. Before that, a
   frame's border in the preview grew with the frame, several pixels thick on a
   large group.
@@ -1160,7 +1140,7 @@ Worker (no DOM, no React).
   (tracks / headers / zebra / per-cell text, `svg-render-table.ts`), freehand
   sketches as the canvas draws them (the same Catmull-Rom smoothing, straight
   segments for a polygon-tool path), the full shape-silhouette vocabulary (hexagon /
-  cylinder / document / cloud / devices / actor / frame ...:
+  cylinder / document / cloud / actor / frame ...:
   `svg-render-shapes.ts`, drawn from the same geometry table as the editor's
   ShapeSvgOverlay: `shape-geometry.ts`, pinned by a test per kind on each side),
   element rotation, and icon glyphs (above). The PNG/PDF canvas path

@@ -89,7 +89,7 @@ the preset tiles:
 - the **Shape** morph tiles (the single menu previews just the clicked
   element, never its whole group; the multi menu previews every morphable
   member),
-- the **Icon size** tiles on a Technology icon ([Technology icons](technology-icons.md)),
+- the **Icon size** tiles on an icon,
 - the **Icon position** cross on a shape's inline icon,
 - the **Markers** tiles and their Size row ([Shape markers](../009-elements/shape-markers.md)),
 - the **Text Alignment** 3×3 grid, and

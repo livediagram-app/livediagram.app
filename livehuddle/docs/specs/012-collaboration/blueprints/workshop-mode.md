@@ -1,24 +1,23 @@
 # Workshop mode blueprint
 
-Derived from [Workshop mode](../workshop-mode.md). The mode machinery it joins (store, switch,
-Opens in, Shift+D, peer switches) is [Editor modes](../../007-editor/blueprints/editor-modes.md);
-this blueprint adds only what the fifth mode changes.
+Derived from [Workshop mode](../workshop-mode.md) and [Editor modes](../../007-editor/editor-modes.md): Workshop is
+livehuddle's one editor mode, every tab is in it, and there is no switch.
 
 ## Domain and naming
 
-| Concept                    | Identifier                                                                                    |
-| -------------------------- | --------------------------------------------------------------------------------------------- |
-| The mode                   | `'workshop'`, a member of `EditorMode` (`packages/document/src/editor-mode.ts`)               |
-| Its catalogue entry        | `EDITOR_MODE_CATALOGUE` row `{ id: 'workshop', label: 'Workshop', description }` (D2)         |
-| Its mark                   | `FlipchartIcon` in `../packages/ui/src/icons/drawing-kinds.tsx`, `EDITOR_MODE_ICONS.workshop` |
-| Its palette layout         | `WORKSHOP: PaletteLayout` in `apps/editor/components/palette/palette-layouts.ts`              |
-| The strip's tools per mode | `sessionStripTools(mode, esBoard)` in `apps/editor/components/canvas/SessionClusterStrip.tsx` |
-| Its blank                  | template kind `'blank-session'`, label "Blank Workshop", document name "Untitled Workshop"    |
-| Its default folder key     | `'mode:workshop'`, words `{ label: 'Sessions', noun: 'sessions' }` (`MODE_WORDS`)             |
+| Concept                | Identifier                                                                                    |
+| ---------------------- | --------------------------------------------------------------------------------------------- |
+| The mode               | `'workshop'`, the only member of `EditorMode` (`packages/document/src/editor-mode.ts`)        |
+| Its catalogue entry    | `EDITOR_MODE_CATALOGUE`'s one row `{ id: 'workshop', label: 'Workshop', description }` (D2)   |
+| Its mark               | `FlipchartIcon` in `../packages/ui/src/icons/drawing-kinds.tsx`, `EDITOR_MODE_ICONS.workshop` |
+| Its palette layout     | `WORKSHOP: PaletteLayout` in `apps/editor/components/palette/palette-layouts.ts`              |
+| The strip's tools      | `sessionStripTools(mode, esBoard)` in `apps/editor/components/canvas/SessionClusterStrip.tsx` |
+| Its blank              | template kind `'blank-session'`, label "Blank Workshop", document name "Untitled Workshop"    |
+| Its default folder key | `'mode:workshop'`, words `{ label: 'Sessions', noun: 'sessions' }` (`MODE_WORDS`)             |
 
 Banned as names for the mode, in code and copy: "Session mode", "Collaborate mode", and its old
 name "Facilitate", which survives only where something stored is read: `LEGACY_EDITOR_MODES`
-(`facilitate` → `workshop`), the
+(every legacy id → `workshop`), the
 `facilitateTourSeen` preference (`upgradeLegacyPreferences`) and the router's
 `/help/canvas/facilitate-mode/` redirects. The facilitator (the baton) is a different thing and
 keeps its name. The Collaborate elements keep `toolGroup: 'behaviour'` and their `tileGroup`s
@@ -31,100 +30,69 @@ category (`session-category.tsx`), a `PaletteCategoryBrowser` whose opens and se
 
 ## Constants and configuration
 
-| Constant                           | Value                                                                                                                                                                                                                                                                                                                                                                                                                                  | Provenance                        |
-| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| `WORKSHOP.landing`                 | `'popular'`                                                                                                                                                                                                                                                                                                                                                                                                                            | spec "The palette"                |
-| `WORKSHOP` Popular tiles           | `tools:sticky`, `tools:text`, `tools:frame`, `tools:arrow`, `tools:session-timer`, `tools:session-vote`, `tools:session-poll`, `tools:reveal`, `collab:agenda`, `collab:idea-box`, `collab:qa-board`, `collab:temperature` (12, as every Popular)                                                                                                                                                                                      | spec "The palette"                |
-| `WORKSHOP` categories              | `popular`, `shapes`, `my-shapes`, `write` (less `tools:page`, `tools:annotation`), `draw` (less `tools:shape-pen`, `tools:polygon`), `build` (less `tools:lane`, `tools:timeline`), `collab-ask`, `collab-tools`, `collab-record`, `collab-react`, `collab-mode`, `collab-navigate`, `icons`, `stickers`, `media` (Diagram's: no embeds, D8)                                                                                           | spec "The palette"; D3            |
-| `DIAGRAM` categories               | Diagram's own, less `stickers` and the Collaborate elements; `write` = its own tiles then `collab:comment-pin`, `collab:action-card` (D4)                                                                                                                                                                                                                                                                                              | spec "What Diagram gives up"      |
-| `sessionStripTools`                | `workshop` or an event-storming board (`esBoard`) → `{ timer, vote, poll }` all true; else `null`                                                                                                                                                                                                                                                                                                                                      | spec "The Session strip per mode" |
-| `TEMPLATE_MODES` additions         | `retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`, `sailboat`, `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `workshop-board`, `brainstorm`, `affinity-map`, `prioritization-matrix`, `risk-matrix`, `pub-quiz`, `icebreaker-questions`, `two-truths-and-a-lie`, `would-you-rather`, `people-bingo`, `virtual-office`, `coworking-space`, `team-pod`, `all-hands-hall`, `blank-session` → `'workshop'` | spec "Templates"                  |
-| `BLANK_TEMPLATE_FOR_MODE.workshop` | `'blank-session'`                                                                                                                                                                                                                                                                                                                                                                                                                      | spec "Templates"                  |
-| `POPULAR_BY_MODE.workshop`         | `blank-session`, `sailboat`, `retrospective`, `town-hall`, `lean-coffee`, `crazy-eights`, `pub-quiz` (D5)                                                                                                                                                                                                                                                                                                                              | templates-by-mode spec            |
+| Constant                 | Value                                                                                                                                                                                                                                                                                                                                                                                            | Provenance               |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------ |
+| `WORKSHOP.landing`       | `'popular'`                                                                                                                                                                                                                                                                                                                                                                                      | spec "The palette"       |
+| `WORKSHOP` Popular tiles | `tools:sticky`, `tools:text`, `tools:frame`, `tools:arrow`, `tools:session-timer`, `tools:session-vote`, `tools:session-poll`, `tools:reveal`, `collab:agenda`, `collab:idea-box`, `collab:qa-board`, `collab:temperature` (12, as every Popular)                                                                                                                                                | spec "The palette"       |
+| `WORKSHOP` categories    | `popular`, `shapes`, `my-shapes`, `write` (less `tools:page`, `tools:annotation`, then `tools:table`, `tools:checklist`), `draw` (less `tools:shape-pen`, `tools:polygon`), `layout` (with `tools:timeline`), `collab-ask`, `collab-tools`, `collab-record`, `collab-react`, `collab-mode`, `collab-navigate`, `icons`, `stickers`, `media` (no embeds, D8), `data`; `event-storming` board only | spec "The palette"; D3   |
+| `sessionStripTools`      | `{ timer, vote, poll }` all true on every tab                                                                                                                                                                                                                                                                                                                                                    | spec "The Session strip" |
+| Template mode            | Every template kind opens in `'workshop'`                                                                                                                                                                                                                                                                                                                                                        | spec "Templates"         |
+| The blank                | `'blank-session'`                                                                                                                                                                                                                                                                                                                                                                                | spec "Templates"         |
 
 ## Behaviour and state
 
-- **No new state.** The mode is `Tab.opensIn = 'workshop'`, written by the existing switch,
-  Shift+D on an empty tab, a start's switch and template overrides. Everything else derives from the mode.
-- **Gates:** `hasBoardLook` is `false` for `workshop`; it takes Diagram's look and input. `useModeDefaultTool` starts it on Select (Hand on a phone), as
-  Diagram.
-- **Palette:** `paletteLayoutFor('workshop')` returns `WORKSHOP`; Draw keeps borrowing
-  `DIAGRAM`. A switch re-lands the palette on the new layout's `landing` (existing behaviour).
-- **Search:** unchanged code. `allElementTiles()` iterates `PALETTE_LAYOUTS`, which gains
-  `workshop`, so every Collaborate tile stays searchable; in Diagram they fall outside
-  `modeElementTiles('diagram')` and list with other modes' tiles; stickers go to the catalogue
-  search's `elsewhere` (`paletteCategoryOffered('diagram','stickers')` is false). Picking either
-  places it in the current mode with no switch.
-- **Strip:** `CanvasChrome` mounts the strip only when `sessionStripTools(mode, esBoard)` is
-  non-null, and `useCanvasChromePanels` closes a session popover whose mode no longer offers it;
-  both pass `props.esBoard`, so Diagram's strip vanishes, running tool or not, while an
-  event-storming board keeps it.
-- **Elements:** no change to faces, menus or quick menus; they never read the mode.
-- **Templates:** `templateCanvasOverrides` sets `opensIn` from `templateEditorMode(kind)`, so the
-  table above is the only template change besides the new blank.
+- **No state of its own.** Every tab reads as Workshop (`opensInOf`); the editor writes `opensIn: 'workshop'` on the
+  tabs it makes. Nothing switches, so there is no switch, Shift+D, peer-switch toast or palette re-landing.
+- **Palette:** `paletteCategoriesFor` returns `WORKSHOP`'s categories, the event-storming notation added on such a
+  board.
+- **Search:** the Toolbar strip's Search lists every tile livehuddle has (`allElementTiles()`), the search-only tiles
+  (Components, Code block, embeds) included; a pick places it.
+- **Strip:** `CanvasChrome` mounts the Session strip on every tab.
+- **Elements:** faces, menus and quick menus never read the mode.
 
 ## Interfaces and contracts
 
 ```ts
-export type EditorMode = 'diagram' | 'draw' | 'workshop'; // EDITOR_MODE_CATALOGUE, packages/document/src/editor-mode.ts
-export function sessionStripTools(
-  mode: string | undefined,
-  esBoard?: boolean,
-): SessionStripTools | null;
-export const PALETTE_LAYOUTS: { diagram; workshop };
-export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type derived from EditorMode
+export type EditorMode = 'workshop'; // EDITOR_MODE_CATALOGUE, packages/document/src/editor-mode.ts
+export function opensInOf(tab: { opensIn?: string } | undefined): EditorMode; // always 'workshop'
+export function parseEditorMode(v: unknown): EditorMode | undefined; // 'workshop' and every legacy id
 ```
 
-- Every `Record<EditorMode, …>` gains a `workshop` entry (the compiler enforces it):
-  `MODE_EVENT` (`useEditorMode.ts`), `MODE_WORDS`, `BLANK_TEMPLATE_FOR_MODE`, `POPULAR_BY_MODE`.
-- Non-exhaustive lists updated by hand: `VALUE_LABELS['opens-in']` (`packages/explorer/src/lens/dimensions.ts`), settings
-  icons, help `featureColours`, marketing `HeroMode` and `TemplateGallery` `CHOICES`.
-- OpenAPI `EditorMode` enum regenerated (`pnpm --filter @livehuddle/api gen:openapi`).
-- `TemplateKind` gains `'blank-session'`; `isBlankTemplate` covers it.
+- The OpenAPI `EditorMode` enum is `['workshop']`, regenerated (`pnpm --filter @livehuddle/api gen:openapi`).
 
 ## Data and persistence
 
-- `opensIn: 'workshop'` is stored and synced like any mode. `parseEditorMode` accepts it via
-  `isEditorMode` (catalogue-driven). An older client reading `'workshop'` falls back to Diagram
-  through `opensInOf`'s unknown-value rule: no crash, no write-back.
+- `opensIn` is stored as `'workshop'`. Any other stored value (`'diagram'`, `'draw'`, `'facilitate'`, `'pages'`,
+  `'plan'`, `'illustrate'`, `'infographic'`, an unknown string) reads as Workshop and is never rewritten on read.
 - Creation intent (`readCreationIntent`) and tab stats record `workshop`; Default Folders' Sessions entry
-  (`mode:workshop`) is generated by `DEFAULT_FOLDER_OPTIONS`.
-- No migration: existing tabs keep their stored mode (spec "Existing tabs").
+  (`mode:workshop`) is the one mode entry.
+- No migration: livehuddle had no stored spaces when Diagram and Draw were cut.
 
 ## Errors and edge cases
 
-| Case                                                  | Handling                                                                 |
-| ----------------------------------------------------- | ------------------------------------------------------------------------ |
-| A session button pressed in Diagram                   | Starts its tool as today; no strip appears (spec)                        |
-| A strip popover open when the tab switches to Diagram | Closes (existing `useCanvasChromePanels` re-check)                       |
-| Older client opens a Workshop tab                     | Reads Diagram (unknown mode), shows Diagram's palette; content intact    |
-| `/new?mode=workshop`                                  | `new-document-params` accepts any `EditorMode`; selects Blank Workshop   |
-| Event-storming board                                  | Always Diagram; no switch (unchanged)                                    |
-| Participant in Workshop                               | `participantTiles('workshop')`: sticky and text from Popular, plus image |
+| Case                            | Handling                                                               |
+| ------------------------------- | ---------------------------------------------------------------------- |
+| A tab stored as Diagram or Draw | Reads as Workshop; content intact apart from elements livehuddle lacks |
+| `/new?mode=<anything>`          | The mode is ignored; the blank is Blank Workshop                       |
+| Event-storming board            | A Workshop tab with its notation palette (until step 5.2)              |
+| Participant                     | `participantTiles`: sticky and text from Popular, plus image           |
 
 ## Security and trust
 
-- No new trust boundary. The mode is a tab field already validated server-side by
-  `parseEditorMode`; role gating is the existing switch's (`canEdit && canSwitch`), the session
-  tools' (room drops view-role mutations) and the participant palette's.
+- No new trust boundary. A stored mode is validated by `parseEditorMode`; role gating is the session tools' (room
+  drops view-role mutations) and the participant palette's.
 
 ## Performance and limits
 
-- One more static layout object (12 entries) and one more catalogue row; `allElementTiles()` is
-  memoised once per session. No hot-path work added; the strip renders less in Diagram.
-- Budget: `paletteCategoriesFor('workshop')` under 1 ms (measured with the existing modes).
+- One static layout object; `allElementTiles()` is memoised once per session. No hot-path work.
 
 ## Presentation and UX
 
-- The switch menu, tab menu Mode, tab pill and template filter gain one row/glyph each through
-  the catalogue; no layout shift (fixed-size chip).
-- Copy: label "Workshop"; description per D2; toast "<Name> switched this tab to Workshop.";
-  announcement "Workshop mode".
+- No switch, mode menu or mode filter is drawn.
 
 ## Accessibility
 
-- `FlipchartIcon` is `aria-hidden` like the other marks; the rows' names come from the label.
-- Contrast and focus as the existing mode rows; nothing new animates.
+- `FlipchartIcon` is `aria-hidden`; nothing new animates.
 
 ## Assets and external resources
 
@@ -138,25 +106,21 @@ export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type d
 
 ## Observability
 
-- Telemetry: `Editor·Changed·ModeWorkshop`, `UI·Toggled·TemplateModeWorkshop`,
-  `Folder·Changed|Cleared·DefaultModeWorkshop` (derived), each with an explanation sentence in
-  liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts.
+- No mode events fire. `UI·Toggled·TemplateModeWorkshop` and `Editor·Changed·ModeWorkshop` stay in the shared enums
+  for history only.
 
 ## Testing
 
-| Spec rule                                                                                 | Test                                                                                                                       |
-| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Five modes, order, labels, Shift+D wraps                                                  | `packages/document/src/editor-mode.test.ts`, `hooks/editor/editor-mode-shortcut.test.ts`                                   |
-| Workshop's palette layout and Popular                                                     | `components/palette/palette-layouts.test.ts`                                                                               |
-| Diagram drops Stickers + Collaborate, keeps Icons, Comment panel and Action card in Write | `palette-layouts.test.ts`                                                                                                  |
-| Search still finds them in Diagram                                                        | `palette-tile-search.test.ts`, `palette-catalogue-search.test.ts`                                                          |
-| Strip per mode; Diagram none while running                                                | `components/canvas/SessionClusterStrip.test.tsx`                                                                           |
-| Strip kept on an event-storming board                                                     | `SessionClusterStrip.test.tsx`                                                                                             |
-| Share roles in Workshop                                                                   | `SessionClusterStrip.test.tsx` (view role), `palette-layouts.test.ts` (participant tiles), `StartModeSwitch.menu.test.tsx` |
-| Templates open in Workshop; blank                                                         | `apps/editor/lib/templates.test.ts`, `packages/templates/src/popular.test.ts`                                              |
-| Default folder key + label                                                                | `default-key-entries.test.ts`, api-schema `placement-defaults.test.ts`                                                     |
-| Explorer Opens in chip                                                                    | `packages/explorer/src/lens/lens.test.ts`                                                                                  |
-| OpenAPI enum current                                                                      | `apps/api` `manifest.test.ts`                                                                                              |
+| Spec rule                                      | Test                                                                                      |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| One mode; every stored value reads as Workshop | `packages/document/src/editor-mode.test.ts`                                               |
+| Workshop's palette layout and Popular          | `components/palette/palette-layouts.test.ts`                                              |
+| Search finds every element                     | `palette-tile-search.test.ts`, `palette-catalogue-search.test.ts`                         |
+| Strip on every tab, event-storming board too   | `components/canvas/SessionClusterStrip.test.tsx`                                          |
+| Share roles                                    | `SessionClusterStrip.test.tsx` (view role), `palette-layouts.test.ts` (participant tiles) |
+| Templates open in Workshop; blank              | `apps/editor/lib/templates.test.ts`, `packages/templates/src/popular.test.ts`             |
+| Default folder key + label                     | `default-key-entries.test.ts`, api-schema `placement-defaults.test.ts`                    |
+| OpenAPI enum current                           | `apps/api` `manifest.test.ts`                                                             |
 
 ## Defaults ledger
 

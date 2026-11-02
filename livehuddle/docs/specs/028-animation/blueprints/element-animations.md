@@ -71,7 +71,7 @@ sticker classes a kept Shape value still draws.
 | `table`                                                                | `table`              |
 | `text`                                                                 | undefined            |
 | `shape` that is an icon, chart, progress or rating                     | undefined (own sets) |
-| `shape` that is a concept graphic or a sequence diagram (words: Text)  | undefined (own sets) |
+| `shape` that is the Timeline (words: Text)                             | undefined (own sets) |
 | any other `shape` (stickers and chairs too), `annotation`, `link-card` | `shape`              |
 
 `takesShapeMotions(el)` is true for `sticky`, `freehand`, `path`, `image`, `video`, `table`, and a `shape` with a set
@@ -87,10 +87,10 @@ has no body set and no `hasOwnBodySet` (a chart's older Shape value, shown as th
 `carriesWords(el)`: `text`, `sticky` and `table` are true; a `shape` is true when `takesTypedLabel(el)`, not
 `selfLabelled(el)`, not icon / chart / progress / rating, and not `chair` or `sticker`; everything else is false.
 
-`animationCategoriesOf(elements)` adds each element's own category (`ownCategoryOf`: icon, chart, sankey, progress,
-rating, concept, sequence, arrow) to `animationSetsOf` and orders all by
-`shape, sticky, drawing, media, table, icon, chart, sankey, progress, rating, concept, sequence, text, arrow`. Concept
-and Sequence render `ConceptAnimTiles` / `SequenceAnimTiles` (`apps/editor/components/palette/ElementAnimationTiles.tsx`)
+`animationCategoriesOf(elements)` adds each element's own category (`ownCategoryOf`: icon, chart, progress,
+rating, concept, arrow) to `animationSetsOf` and orders all by
+`shape, sticky, drawing, media, table, icon, chart, progress, rating, concept, text, arrow`. Concept
+renders `ConceptAnimTiles` (`apps/editor/components/palette/ElementAnimationTiles.tsx`)
 through the menu's `elementStyle` ops; Progress and Rating render `ProgressAnimTiles` / `RatingAnimTiles` with their
 `onSet*Anim*` handlers.
 
@@ -140,7 +140,7 @@ trio onto a target without words.
 
 `wrapperShapeAnimation(el)` is the Shape value the wrapper draws: a Shape member's own value; on a sticky or table
 the shared Pulse / Glow / Highlight (a note and a table are rectangles); a kept value (a motion among them) on any set;
-on a concept graphic or sequence a motion only; and a text
+on the Timeline a motion only; and a text
 element's legacy value unless it has a `textAnimation`. Annotations, stickers and chairs draw Pulse,
 Glow, Trace and Gradient on their silhouette (the `lvd-anim-text-*` / sticker classes: on the art for a sticker or
 chair, on the element for a pin or rail); shapes ShapeSvgOverlay really draws (`drawsShapeSvgOverlay`: SVG-rendered
@@ -313,7 +313,7 @@ in liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts.
 | One category per set present                                        | `apps/editor/components/palette/AnimationSections.test.tsx` |
 | Tiles, labels, kept tile                                            | `apps/editor/components/palette/AnimationSetTiles.test.tsx` |
 | Writes act on members only; None per section; Text clears legacy    | `apps/editor/lib/animation-set-writes.test.ts`              |
-| A motion plays on a photo, a chart, a concept graphic, a sequence   | `apps/editor/components/canvas/animation-routing.test.ts`   |
+| A motion plays on a photo, a chart, the Timeline                    | `apps/editor/components/canvas/animation-routing.test.ts`   |
 | Painter copies within a set, a motion to its takers, Text to words  | `apps/editor/lib/format-painter.test.ts`                    |
 | Granularity, fallbacks, counting, determinism, aria, budget         | `apps/editor/components/canvas/animated-words.test.tsx`     |
 | New stylesheets kept out of the chrome motion budget                | `apps/editor/motion-budget.test.ts`                         |

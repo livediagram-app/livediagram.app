@@ -29,7 +29,7 @@ sans-serif`. Emoji entries use `x: 12, y: 12, size: 20` in the 0..24 viewBox. Bo
 
 ## Deliberately not built
 
-No third catalogue, no id set, no MIME, no dispatch branch, no `noTint` plumbing. Those exist for Technology marks
+No third catalogue, no id set, no MIME, no dispatch branch, no `noTint` plumbing. Those existed for livediagram's Technology marks
 because brand tiles must be excluded from tinting and fold-into-shape; neither exclusion applies to emoji:
 
 - **Tinting is a natural no-op**: colour-emoji font glyphs ignore SVG stroke/fill, so the theme tint wrapper leaves

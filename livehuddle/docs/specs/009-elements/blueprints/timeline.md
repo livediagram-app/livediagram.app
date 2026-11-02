@@ -1,10 +1,27 @@
 # Timeline: blueprint
 
-Derived from [Timeline](../timeline-rail.md) and the "Timeline" section of [Concept graphics](../concept-graphics.md).
-What every concept graphic shares (row writes, the Rows section, Concept animations, the tour) is in the
-[concept graphics blueprint](concept-graphics.md); this file holds only what is the Timeline's own. The spec decides;
-this file only adds engineering precision. Defaults applied where the spec is silent are ledgered in
-[DEFAULTS.md](DEFAULTS.md) and cited as `Dn` (D13 to D16).
+Derived from [Timeline](../timeline.md). The spec decides; this file only adds engineering precision. Defaults
+applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn` (D13 to D16).
+
+## Shared concept-graphic plumbing
+
+The Timeline is the one concept graphic left (`ConceptShape` is `'timeline-rail'` alone), so the rows, writes and
+animation it used to share with the cut kinds are its own:
+
+- **Bounds:** `CONCEPT_ROWS['timeline-rail']` is 2 to 8 rows, whens drawn by the dots, the Add row saying
+  "Milestone n" (the when placeholder "When", `noteNoun`). `CONCEPT_LABEL_MAX` 60, `CONCEPT_NOTE_MAX` 40.
+  `withWebRows(el, { conceptRows })` (`packages/document/src/web-components.ts`) trims and collapses each string,
+  slices the array to the max and ignores a write below the min. An empty note stores `undefined`.
+- **Writes:** `withConceptAnim(el, anim | null)`, `withConceptAnimSpeed`, `withConceptAnimRepeat`, through the
+  menu's generic style ops; telemetry `ConceptAnim`, rows `ConceptRows` (the web rows setter).
+- **Animation** (CSS, `apps/editor/app/canvas-motion.css`): each row carries `--i`, the face `--n` and
+  `--lvd-concept-speed`. `build`: `lvd-concept-build` per row, 0.45 s × speed, delay `--i * 0.18 s × speed`, `both`;
+  Repeat loops with a 1.5 s hold. `pulse`: `lvd-concept-pulse`, duration `(--n * 0.6 + 0.8) s × speed`, delay
+  `--i * 0.6 s × speed`, `infinite`. `prefers-reduced-motion: reduce` gives `animation: none`; exports draw the rest
+  frame. A stored `conceptAnim` the Timeline does not offer (`'flow'`) renders as none, and `withConceptAnim` never
+  writes one.
+- **Invariants:** the row count stays within bounds after any write; canvas and export place every row from the same
+  `timelineLayout` call.
 
 Scope, by file:
 
@@ -14,7 +31,7 @@ Scope, by file:
 | `packages/document/src/concept.ts`                       | `ConceptShape` includes it; `CONCEPT_ROWS['timeline-rail']`; `conceptDrawsNotes` is true |
 | `packages/document/src/concept-timeline.ts`              | `timelineLayout(w, h, n)`: the pure layout the face and the export share                 |
 | `packages/document/src/svg-render-timeline.ts`           | `svgTimeline`: the headless render                                                       |
-| `packages/document/src/svg-render-concept.ts`            | Dispatches a Timeline to `svgTimeline`                                                   |
+| `packages/document/src/svg-render-timeline.ts`           | `svgTimeline`, the Timeline's export                                                     |
 | `packages/document/src/shape-factory.ts`                 | `SHAPE_DEFAULT_SIZE['timeline-rail']` (720 × 240); `createShape` starting milestones     |
 | `packages/document/src/element-normalise.ts`             | `normaliseConcept`, `railToTimeline`: point fields into milestones                       |
 | `packages/document/src/element-types.ts`                 | `ShapeElement.railCount`, `railLabels`: read once, never written                         |

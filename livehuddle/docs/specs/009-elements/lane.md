@@ -112,7 +112,7 @@ padding (24) above and below it.
 Lanes are placed like any other element and are not auto-stacked. Snapping and
 the alignment guides already make butting one under another easy, and a
 container that repositioned its neighbours would be the same "silently re-flowed
-what I arranged" problem [The mind node](mind-node.md) avoids for mind nodes.
+what I arranged" problem livediagram's mind node avoided by laying itself out.
 
 Their borders do not double up when flush, because a lane's outline is a
 single hairline drawn on the CSS box path rather than two frames' borders

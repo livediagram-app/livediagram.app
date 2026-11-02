@@ -204,7 +204,7 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   collaboration panels (estimate, temperature, done check, idea box, Q&A, agenda,
   roll call, decision, quiz), whose own presses answer them, so a dot would give
   one tap two meanings.
-  Nor the readouts (stat row, pie, bar and line charts, Sankey, progress bar and
+  Nor the readouts (stat row, pie, bar and line charts, progress bar and
   ring, legend, diagram key) or a checklist: a readout shows what the board says
   and a checklist is a to-do list, like the action panel, so neither is an idea
   to rank. A template's numbers and checklists can then sit on the Stickies layer
@@ -297,11 +297,8 @@ running, and their popovers read-only (the Timer's dial without its controls); w
 running they get no strip. While somebody else [facilitates](facilitator.md), an editor's set-up
 panes are disabled under a note naming them.
 
-**Which tools a mode offers** (`sessionStripTools`): **Workshop** has all three
-([Workshop mode](workshop-mode.md#the-session-strip-per-mode)) and on an event-storming board, a
-workshop that is always Diagram; **Diagram** and **Draw** have no strip, keeping their bottom bar to their own
-tools, even while a tool runs (a session button on the canvas still starts one there). A popover whose button
-leaves (a mode switch) closes.
+**Which tools the strip offers** (`sessionStripTools`): all three, on every tab and on an event-storming board
+([Workshop mode](workshop-mode.md)). A popover whose button leaves closes.
 
 Order, left to right: Timer, Vote, Poll. **On a phone** the strip stays in the cluster's one row, between Undo and Redo and Layers: the cluster's buttons share the row's width, each from 36px up to the usual 44px (always 44px tall to tap), with 6px gaps, so Undo, Redo, the three tools, Layers, the theme brush and Fit fill the row on a 360px screen and up. On a narrower one the cluster wraps from the right, so Undo is never pushed off the screen. Each segment opens its
 panel as a **popover hanging above it** with an arrow at the button, and a second press closes

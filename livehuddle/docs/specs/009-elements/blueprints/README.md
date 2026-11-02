@@ -11,14 +11,11 @@ Follow the references below only as needed; never upfront.
 - ./code-block.md - when implementing or changing the code block, its schemes, tokenizer, wrap or edit dialog
 - ./data-charts.md - when implementing or changing pie / bar / line charts, chart palettes, the key or the legend element
 - ./embeds.md - when implementing or changing the embed element, `embedTargetFor`, its providers or the no-load notice
-- ./entity.md - when implementing or changing the entity, its title band, fields and keys, in-place editing, field-to-field relationships or cardinality
 - ./image-reference-index.md - when implementing or changing `image_refs`, `image_grants`, their writers, backfill, or the image sweep, usage map, share read and render read
 - ./image-search.md - when implementing or changing the picker's Search tab, the Openverse client, the pick download or `ImageElement.credit`
 - ./images.md - when implementing or changing the image element, uploads, the picker, image reads or image export
-- ./flowchart.md - when implementing or changing the flowchart, its layout, growth, step types or lanes
 - ./lane.md - when implementing or changing the lane, its gutter, the seam drag or lane stacking
 - ./link-cards.md - when implementing or changing link cards, the unfurl endpoint or its SSRF guard
-- ./mind-node.md - when implementing or changing mind nodes, Tab / Enter growth, flows or collision placement
 - ./mode-button.md - when implementing or changing the Selection Mode button, its press, Leave or its palette tiles
 - ./page-element.md - when implementing or changing the Page element, its masthead, body or corner fold
 - ./portal-element.md - when implementing or changing portals, their links, names or travel
@@ -27,7 +24,6 @@ Follow the references below only as needed; never upfront.
 - ./reaction-pad.md - when implementing or changing the reaction pad, its face, bursts or their broadcast
 - ./reveal-zone.md - when implementing or changing the reveal zone, its cover, private lift or room-wide reveal
 - ./rich-text-notes.md - when implementing or changing rich-text notes, the note popover or the block-type picker
-- ./sankey.md - when implementing or changing the Sankey diagram, its layout, labels, Flows dialog, menu or export
 - ./shape-markers.md - when implementing or changing shape status markers, their menu or render
 - ./web-components.md - when implementing or changing web components, their rows, or legacy group migration
 - ./DEFAULTS.md - when an elements blueprint applies a default the spec leaves open
@@ -38,8 +34,5 @@ Follow the references below only as needed; never upfront.
 - ./tag-colours.md - when implementing or changing tag colours, the tab map or how cards render it
 - ./diagram-key.md - when implementing or changing the diagram key, its derived rows or its meanings
 - ./stack.md - when implementing or changing the stack, its layout or how it settles
-- ./org-chart.md - when implementing or changing person nodes, the org chart variant or how they grow
-- ./sequence-diagram.md - when implementing or changing the sequence diagram element, its rows or its picture
 - ./boundary.md - when implementing or changing the boundary, its styles, depth tint, containment or paint order
-- ./concept-graphics.md - when implementing or changing the layer stack, pyramid / funnel, cycle, hub, onion, chevrons or Timeline, their rows, layouts or Concept animations
-- ./timeline-rail.md - when implementing or changing the Timeline, its layout, its export or how point fields become milestones
+- ./timeline.md - when implementing or changing the Timeline, its rows, layout, export, Concept animations or how point fields become milestones

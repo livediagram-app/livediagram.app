@@ -206,8 +206,7 @@ the sticky peel, isometric depth, cursors and note ink.
   `slide-back` and `slide-fade`, on `::view-transition-old(.<class>)` and `::view-transition-new(.<class>)`, with
   `::view-transition-group(.<class>)` held still (`animation: none`). They reuse the `lvd-slide-*` keyframes and
   `--lvd-slide-ms`; the only other slide rule is the `[data-slide-move='pending']` hold.
-- **Chrome surfaces** (the start's mode switch) keep theirs in `globals.css`: `start-mode` cross-fades old and new
-  over `--transition-duration-short` (200ms) on the ease-out curve.
+- **Chrome surfaces** (the start panel) keep theirs in `globals.css`.
 - **Reduced motion** adds no CSS: the handlers start no View Transition (`prefersReducedMotion()`), so the
   pseudo-elements never exist.
 

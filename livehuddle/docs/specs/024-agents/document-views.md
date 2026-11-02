@@ -36,7 +36,7 @@ frame c991 "Services"
   square 146b "Orders service" icon=server → e4a8 "charge", d41e, 6406 "OrderPlaced"
   square e4a8 "Payments service" comments=1 resolved → e6d7 "HTTPS" ~dashed
 cylinder d41e "Orders DB"
-entity cb02 "Order" {id uuid PK; customer_id uuid FK; status text; total_cents int}
+square cb02 "Order"
 table 480a 4x3 Service | p99 latency | Availability
 sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
 ```

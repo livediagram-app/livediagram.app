@@ -33,7 +33,7 @@ felt inconsistent and janky.
 
 A picker shows up to three groups, always in this order, each under a small heading:
 
-1. **Theme Palette**, in every picker in the editor, whatever the mode or surface (an element, a Draw marker, a tag,
+1. **Theme Palette**, in every picker in the editor, whatever the surface (an element, a pen, a tag,
    the laser): the active tab's theme colours, as the
    theme derives them ([Canvas and palette](../008-canvas/canvas-and-palette.md#colours)), each named by a
    colour word, never two alike ("Blue", "Light blue", "Deep blue"). A Quick Style row's More colours shows the
@@ -53,7 +53,7 @@ A picker shows up to three groups, always in this order, each under a small head
    | Violet      | Violet    |
    | Pink        | Pink      |
    - The **strong tone** is for lines, text, markers, accents, the laser and chart
-     slices. It is the marker stock set ([Draw mode](../023-draw-mode/draw-mode.md#pens)) plus
+     slices. It is the marker stock set plus
      Grey: each colour is tuned for the surface it is drawn on, darker on light paper and lighter on dark, so
      it is at least 4.5:1 on that surface.
    - The **soft tone** is for backgrounds, fills and highlights: the same hues as washes, pale on light paper
@@ -96,9 +96,8 @@ Every picker ends Custom colours with **Add a custom colour** (four coloured dot
 swatches: a saturation and brightness square, a hue slider, a hex field, an eyedropper where the browser has
 one, and **Use**. Use (or Enter in the hex field) applies the colour and keeps it as a custom colour.
 
-- Where a line or text has to read on both appearances (a marker, the element menu's line and text rows),
-  the editor warns when a colour is under 3:1 on either and offers a readable version beside the warning
-  ([Draw mode](../023-draw-mode/draw-mode.md#pens)). Elsewhere it does not.
+- Where a line or text has to read on both appearances (the element menu's line and text rows),
+  the editor warns when a colour is under 3:1 on either and offers a readable version beside the warning. Elsewhere it does not.
 - Quick Style's custom swatch popover holds the same editor
   ([Quick Style Panel](../008-canvas/quick-style-panel.md#custom-swatches)).
 - There is **no system colour well** anywhere in the editor; the custom colour editor is the only one.
@@ -148,15 +147,15 @@ pick commits it, once, for undo.
 
 | Skin              | What it is                                                                                  | Used by                                                                                                                                  |
 | ----------------- | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| **Inline**        | The picker drawn in place, inside a flyout, panel or popover                                | Draw pen flyout                                                                                                                          |
+| **Inline**        | The picker drawn in place, inside a flyout, panel or popover                                | None in livehuddle (livediagram's Draw pen flyout)                                                                                       |
 | **Row**           | A labelled row (the colour in force on its right) opening the picker in a popover beside it | Element, selection and table cell menu colour rows (the menu is 224px, narrower than the picker), the Laser Panel's Colour               |
 | **Swatch button** | A small swatch-only trigger opening the picker in a popover                                 | Rich-text label colour, gradient From and To, chart slice and legend colours, canvas and pattern colours, Quick Style's **More colours** |
 
 ## Quick Style
 
 The [Quick Style Panel](../008-canvas/quick-style-panel.md) keeps its compact rows: a theme row's seven and
-Ink, Draw mode's Ink and eight hued stock colours in the standard order (Red to Pink; Grey is in More
-colours), the highlighter's five tints. Each row draws the one swatch, follows the
+Ink, the stock colours for content kept from another product (Ink and eight hues in the standard order, Red to
+Pink; Grey is in More colours), the highlighter's five tints. Each row draws the one swatch, follows the
 one keyboard model, and ends with **More colours**, a swatch button opening the full picker (the row's own
 colours as its Theme Palette, the standard colours, Custom colours). Its glyph is four dots of the standard
 colours (Red, Orange, Green, Blue) in a dashed square (`MoreColoursGlyph`): every trigger that opens the full

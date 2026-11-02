@@ -8,6 +8,11 @@ they are coloured filled marks rather than the single-weight, stroke-tinted line
 art the Icons catalogue holds. Mixing them would break the consistent line-art
 look of that catalogue.
 
+**In livehuddle the Technology category is gone** with Diagram mode ([Editor modes](../007-editor/editor-modes.md)):
+Workshop's palette has no Technology (or Devices) category, so a brand icon is found by the strip's Search, which
+still covers the catalogue. The element, its rendering, the painter, the Icon menu and the exports below are
+unchanged; "the Technology tab" below describes the picker the search results come from.
+
 ## Why a separate category, not more entries in Icons
 
 The Icons catalogue (`apps/editor/lib/icons.ts`, [Canvas and palette](../008-canvas/canvas-and-palette.md)) is Feather/Lucide-style:

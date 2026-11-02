@@ -23,7 +23,7 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
 | `wrap`    | `wrap <selector…> in frame\|lane [id=<id>] key=value… [tidy] [absorb\|make-room]` | Draws a frame or lane around the members; `tidy` lays them out compactly first                    |
 | `unwrap`  | `unwrap <frame>`                                                                  | Removes the frame or lane and keeps its members where they are                                    |
 | `order`   | `order <selector> front\|back\|above=<x>\|below=<x>`                              | Changes stacking; frames and lanes stay behind their contents                                     |
-| `layout`  | `layout <selector> [style=flow\|tree\|mindmap] [direction=down\|right]`           | Lays out only the selection, keeping its top-left corner                                          |
+| `layout`  | `layout <selector> [style=flow\|tree] [direction=down\|right]`                    | Lays out only the selection, keeping its top-left corner                                          |
 | `test`    | `test <selector> key=value…`                                                      | Fails the changeset unless the element holds these values                                         |
 
 - **`replace`** is the other changeset body: a whole tab from `graph`, `mermaid`, `template` or `elements`, exactly

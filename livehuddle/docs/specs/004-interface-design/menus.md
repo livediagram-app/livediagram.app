@@ -149,8 +149,7 @@ element or add one:
   "Hand Tool", "Add Green Status Marker"), so an action reads the same in search as on the toolbar.
 - **Keyboard shortcut rows that name a command or tool** ("Bring to Front", "Zoom In", "Select
   Tool (or 1)"): the name is Title Case and a trailing hint in parentheses stays as written. A row
-  that describes a gesture rather than naming a command ("Pan canvas (overrides current tool)",
-  "On a mind node: add a child") and the presentation rows, which pair with the presentation
+  that describes a gesture rather than naming a command ("Pan canvas (overrides current tool)") and the presentation rows, which pair with the presentation
   controls' tooltips, keep sentence case.
 
 Captions inside a section ("Picks from", "Move to layer"), hints, a tooltip that is not the

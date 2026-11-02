@@ -35,7 +35,7 @@ cards cache their preview in `meta` because unfurling costs a network round
 trip; parsing an id costs nothing, so caching it would only create a second
 copy of the truth that can drift from the link.
 
-**Aspect-locked to 16:9** on resize, like an icon ([Technology icons](../010-palette/technology-icons.md)) and for the same
+**Aspect-locked to 16:9** on resize, like an icon, and for the same
 reason: a letterboxed or stretched video frame is never what anyone wants.
 
 **The lock also governs placement.** The Media tiles arm the tap-or-drag draw

@@ -228,11 +228,6 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   sketched line in place of `pathD`, sketched heads in place of markers (in `arrowheadColor` when set); the
   selection halo and the hit band keep `pathD`.
 - Lettering: `CanvasElementsLayer`, `text-hug-measure` and `useTextStyleSetters` resolve fonts with `elementFontId`.
-- Mind connectors: `deriveArrowViewFrame(arrow, index, finish)` / `arrowViewGeometry(..., finish)` (finish from
-  `resolveFinish(el.finish, tabFinish)` in `CanvasElementsLayer` and `previewArrowGeometry`) draw through
-  `finishArrowEnds` (`packages/document/src/mind-connector-route.ts`, blueprint in
-  [Mind node](../../009-elements/blueprints/mind-node.md)); a routed frame has no curve, elbow or anchor handles,
-  and `beginArrowBend` refuses a routed connector.
 - New arrows: `applyCollisionAvoidance(els, arrowId, tabFinish)` gives an untouched arrow
   `arrowStyle: finishNewArrowStyle(finish)` under Professional and skips the curve when `finishCurvesNewArrows` is
   false.

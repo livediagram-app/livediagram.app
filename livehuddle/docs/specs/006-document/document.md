@@ -3,25 +3,24 @@
 A **document** is the top-level container a person creates, names, shares,
 files in a folder and deletes. It holds an ordered set of tabs, optionally
 grouped into [tab folders](tab-folders.md). Every tab has a **tab kind**,
-which fixes what that tab is. A general tab is worked on in one of two
-[editor modes](../007-editor/editor-modes.md), Diagram or Draw.
+which fixes what that tab is. Every tab is worked on in Workshop, livehuddle's one
+[editor mode](../007-editor/editor-modes.md).
 
 ## Domain language
 
-| Term                     | Means                                                                                            |
-| ------------------------ | ------------------------------------------------------------------------------------------------ |
-| **document**             | The top-level container: its name, owner, location, share links and tabs.                        |
-| **tab**                  | One page of a document, with its own canvas, layers and elements.                                |
-| **tab kind**             | What a tab is for (`TabKind`, `packages/document/src/tab-kind.ts`).                              |
-| **diagram**              | The general tab kind: every element type, worked on in Diagram or Draw mode.                     |
-| **event-storming board** | The tab kind for event storming ([Event storming](../021-event-storming/event-storming.md)).     |
-| **editor mode**          | How a general tab is worked on: Diagram or Draw ([Editor modes](../007-editor/editor-modes.md)). |
-| **whiteboard**           | The activity of Draw mode ([Draw mode](../023-draw-mode/draw-mode.md)); not a tab kind.          |
+| Term                     | Means                                                                                        |
+| ------------------------ | -------------------------------------------------------------------------------------------- |
+| **document**             | The top-level container: its name, owner, location, share links and tabs.                    |
+| **tab**                  | One page of a document, with its own canvas, layers and elements.                            |
+| **tab kind**             | What a tab is for (`TabKind`, `packages/document/src/tab-kind.ts`).                          |
+| **diagram**              | The general tab kind (a stored name): every element type, worked on in Workshop.             |
+| **event-storming board** | The tab kind for event storming ([Event storming](../021-event-storming/event-storming.md)). |
+| **editor mode**          | How a tab is worked on: always Workshop ([Editor modes](../007-editor/editor-modes.md)).     |
 
 - As a term, "diagram" names the tab kind, never the container. Prose may still say diagram
   where the text is about drawing ([Choosing the word in prose](#choosing-the-word-in-prose)).
-- "Board" on its own is not a term; say event-storming board or whiteboard.
-- A tab kind is reserved for a very specific use; anything a mode can serve stays a general tab.
+- "Board" on its own is not a term; say event-storming board.
+- A tab kind is reserved for a very specific use; anything else stays a general tab.
 - Specs, UI copy and code name the container a document.
 
 ## Choosing the word in prose
@@ -35,14 +34,11 @@ Prose follows the context:
 
 - **Document** when the text is about the container: naming, filing, sharing,
   trashing, opening, or a mix of tab kinds.
-- **Diagram** is fine when the text is about a document that is, in all
-  likelihood, a diagram tab at heart, such as drawing a flowchart in it.
-  A whiteboard or an event-storming board is never called a diagram.
-- **Diagram types** keep their names: a sequence diagram, an ER diagram,
-  an architecture diagram.
-- **Diagramming** and **diagram tool** describe the product and the activity;
-  livehuddle is built for every kind of diagram, and also does
-  whiteboarding, event storming and slideshows well.
+- **Space** is the word a person reads for the thing they make (D6 in
+  [Open decisions](../005-project-roadmap/open-decisions.md)), once the product's copy moves to it (build plan
+  step 6). An event-storming board is never called a diagram.
+- livehuddle is not a diagramming tool ([Purpose](../001-project-vision/purpose.md)); "diagram" in prose names
+  livediagram's work.
 - A new tab kind joins the table above; the container keeps its name.
 
 ## What keeps its name

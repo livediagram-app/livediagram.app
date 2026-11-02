@@ -1,58 +1,62 @@
 # Templates by mode
 
-Every template opens in one [editor mode](editor-modes.md): **Diagram**, **Draw** or
-**Workshop**. The New Canvas wizard asks for the mode itself
-([New document route](new-document-route.md) "Choosing a mode"), and each mode's templates wait on an empty tab in
-its own start ([Template starts](start-diagramming.md)), so someone who came to sketch or to run a session sees only
-what starts there. A search on a start also finds the other modes' templates, each saying which mode it opens in
-([Found in other modes](start-diagramming.md#found-in-other-modes)).
+Every template opens in Workshop, livehuddle's one [editor mode](editor-modes.md). They wait on an empty tab in Start a
+Workshop ([Template starts](start-diagramming.md)), grouped by the catalogue's categories. Templates built from the
+elements cut with Diagram and Draw are not in the catalogue
+([Templates](../012-collaboration/workshop-mode.md#templates)); step 5.4 of the
+[Build plan](../005-project-roadmap/build-plan.md) cuts the rest to Workshop's and the Spaces.
 
 ## A template's mode
 
-- A template's mode is the mode its tab **opens in** (`Tab.opensIn`, absent = Diagram).
-- `templateEditorMode(kind)` in `packages/templates` is the one place it is declared. The template's
-  canvas overrides (`templateCanvasOverrides`) take `opensIn` from it, so the mode a card shows and
-  the mode the tab opens in can never disagree.
-- Draw templates: Blank Whiteboard and the eight [Draw templates](#draw-templates) below.
-- Workshop templates: Blank Workshop and the [Workshop templates](#workshop-templates)
-  below.
-- Every other template is a Diagram template.
+- A template's tab opens in Workshop (`Tab.opensIn: 'workshop'`, through `templateCanvasOverrides`).
 
-## The mode on a card
+## The blank
 
-- On its own mode's start a card needs no mode: every card there opens in it.
-- Found from another mode's start, a card says where it leads: a quiet chip under its line, the mode's glyph
-  (`EDITOR_MODE_ICONS`, the glyphs of the mode switch) and "Opens in <Mode>", and a screen reader hears "in <Mode>"
-  **after** the title, so a card's accessible name still starts with its title
-  ([Found in other modes](start-diagramming.md#found-in-other-modes)).
+**Blank Workshop** (`blank-session`) is the one blank: an empty tab named "Untitled Workshop". It leads Popular and
+Start a Workshop's Recommended, is on no category shelf or tile, and is what a new document starts from.
 
-## Three blanks
+- livediagram's other blanks, Blank Diagram (`blank`) and Blank Whiteboard (`whiteboard`), stay in the catalogue
+  until build plan step 5.4, each an empty general tab that opens in Workshop. Neither leads Popular or a start.
+- Boards, Sheets and form templates (Blank Plan, Blank Spreadsheet, Kanban Board and the rest) are liveplanner's
+  ([Editor modes](editor-modes.md) "Stored tabs from other products' modes"). A link, an agent or a seed naming one
+  is answered as any unknown kind is (`retired-templates.test.ts`).
+- Popular, in order: Blank Workshop, Sailboat retrospective, Retrospective, Town Hall Q&A, Lean Coffee, Crazy 8s, Pub
+  Quiz ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
 
-Popular opens with one blank per mode, in mode order. Each blank also leads its mode's Recommended in that mode's
-start ([Template starts](start-diagramming.md)), and is what the New Canvas wizard creates for the mode chosen:
+## Workshop templates
 
-| Template         | Kind id         | Opens in | What it makes                                        |
-| ---------------- | --------------- | -------- | ---------------------------------------------------- |
-| Blank Diagram    | `blank`         | Diagram  | An empty canvas (was "Blank Canvas").                |
-| Blank Whiteboard | `whiteboard`    | Draw     | An empty board to draw on (was "Whiteboard").        |
-| Blank Workshop   | `blank-session` | Workshop | An empty tab in Workshop, named "Untitled Workshop". |
+The session formats ([Workshop mode](../012-collaboration/workshop-mode.md#templates)), with the Collaborate kit and
+the Session strip there when the session starts:
 
-Boards, Sheets and form templates (Blank Plan, Blank Spreadsheet, Kanban Board and the rest) are liveplanner's
-([Editor modes](editor-modes.md) "Stored tabs from other products' modes"). A link, an agent or a seed naming one is
-answered as any unknown kind is (`retired-templates.test.ts`).
+- The Retrospectives family's **Retrospective** (`retrospective`), **Start, Stop, Continue**
+  (`start-stop-continue`), **Mad, Sad, Glad** (`mad-sad-glad`), **4Ls** (`four-ls`) and **Sailboat**
+  (`sailboat`).
+- **Town Hall Q&A** (`town-hall`), **Lean Coffee** (`lean-coffee`), **Crazy Eights**
+  (`crazy-eights`), **Meeting Agenda** (`meeting-agenda`), **Workshop Board** (`workshop-board`) and
+  **Brainstorm Board** (`brainstorm`).
+- The boards that ship a dot vote: **Affinity Map** (`affinity-map`), **Prioritization Matrix**
+  (`prioritization-matrix`) and **Risk Matrix** (`risk-matrix`).
+- The boards a team fills in together in a session, rather than a diagram one person draws: **Incident
+  postmortem** (`incident-postmortem`), **User Persona** (`user-persona`), **Empathy Map** (`empathy-map`), **User
+  Journey** (`journey`), **Objectives Planner** (`objectives-planner`), **Roadmap** (`roadmap`), **RACI Matrix**
+  (`raci-matrix`), **User Story Map** (`user-story-map`), **SWOT** (`swot`), **PESTLE Analysis**
+  (`pestle-analysis`), **Business Model Canvas** (`business-model-canvas`), **Value Proposition Canvas**
+  (`value-proposition-canvas`), **Stakeholder map** (`stakeholder-map`), **Opportunity Solution Tree**
+  (`opportunity-solution-tree`) and **KWL Chart** (`kwl-chart`, a class's board). A board built from sticky notes for a group to add theirs to is a session's work: a note per voice.
+- The spaces: **Virtual Office** (`virtual-office`), **Coworking Space** (`coworking-space`), **Team Pod**
+  (`team-pod`) and **All-Hands Hall** (`all-hands-hall`), in the **Virtual Spaces** category ([Virtual Office
+  template](../012-collaboration/virtual-office-template.md)).
+- The games: **Pub Quiz** (`pub-quiz`), **Icebreaker Questions** (`icebreaker-questions`), **Two Truths and a Lie**
+  (`two-truths-and-a-lie`), **Would You Rather** (`would-you-rather`) and **Find Someone Who Bingo**
+  (`people-bingo`), in **Quizzes & Games** ([Quiz and game templates](../012-collaboration/quiz-and-game-templates.md)).
+- Start a Workshop groups them by the catalogue's categories, as every start does ([Start
+  diagramming](start-diagramming.md) "Recommended and groups").
 
-- The kind ids of the first two are unchanged, so `/new?template=blank` and
-  `/new?template=whiteboard` links keep working.
-- None of the blanks is on a category shelf or a category tile.
-- Popular under Everything, in order: Blank Diagram, Blank Whiteboard, Blank Workshop,
-  Mind map, Flowchart, Sailboat retrospective, Org chart, Sketchnote, Gantt chart, Retrospective, Timeline. Under a
-  mode, its own list ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
+## Drawn templates
 
-## Draw templates
-
-Drawn with the marks a person makes in Draw mode: freehand strokes (with a slight hand wobble, so
+Drawn in freehand strokes (with a slight hand wobble, so
 the board reads as drawn, not ruled), sticky notes, text and stickers. Each is a real example to
-draw over, not an empty frame. Each one's category is in [Template
+draw over, not an empty frame. They open in Workshop like every template; each one's category is in [Template
 categories](../008-canvas/canvas-and-palette.md#template-categories).
 
 - **Sketchnote**: visual notes from a talk ("How we ship on Fridays"): a hand-lettered
@@ -77,62 +81,22 @@ categories](../008-canvas/canvas-and-palette.md#template-categories).
 - **Idea Garden**: ideas grown as a drawn tree: the question at the roots, themes as
   branches, ideas as leaves, the best ones as fruit, and a legend.
 
-## Workshop templates
-
-Session formats open in Workshop ([Workshop mode](../012-collaboration/workshop-mode.md#templates)),
-so the Collaborate kit and the Session strip are there when the session starts. Their content is
-unchanged; only the mode they open in moved from Diagram.
-
-- The Retrospectives family's **Retrospective** (`retrospective`), **Start, Stop, Continue**
-  (`start-stop-continue`), **Mad, Sad, Glad** (`mad-sad-glad`), **4Ls** (`four-ls`) and **Sailboat**
-  (`sailboat`).
-- **Town Hall Q&A** (`town-hall`), **Lean Coffee** (`lean-coffee`), **Crazy Eights**
-  (`crazy-eights`), **Meeting Agenda** (`meeting-agenda`), **Workshop Board** (`workshop-board`) and
-  **Brainstorm Board** (`brainstorm`).
-- The boards that ship a dot vote: **Affinity Map** (`affinity-map`), **Prioritization Matrix**
-  (`prioritization-matrix`) and **Risk Matrix** (`risk-matrix`). Diagram has no Session strip, so a
-  vote on a Diagram tab could be started but not watched, ended or kept; every template carrying a
-  session tool opens in Workshop.
-- The boards a team fills in together in a session, rather than a diagram one person draws: **Incident
-  postmortem** (`incident-postmortem`), **User Persona** (`user-persona`), **Empathy Map** (`empathy-map`), **User
-  Journey** (`journey`), **Objectives Planner** (`objectives-planner`), **Roadmap** (`roadmap`), **RACI Matrix**
-  (`raci-matrix`), **User Story Map** (`user-story-map`), **SWOT** (`swot`), **PESTLE Analysis**
-  (`pestle-analysis`), **Business Model Canvas** (`business-model-canvas`), **Value Proposition Canvas**
-  (`value-proposition-canvas`), **Stakeholder map** (`stakeholder-map`), **Opportunity Solution Tree**
-  (`opportunity-solution-tree`) and **KWL Chart** (`kwl-chart`, a class's board). **A board built from sticky notes
-  for a group to add theirs to is a Workshop template**: a note per voice is the room's work. SWOT, Empathy Map and
-  User Journey moved from Diagram for it; a Diagram template may still carry a sticky or two as an annotation (Family
-  Tree, Flywheel, Sequence Diagram) and stays a diagram, and a sticky board one person keeps for themselves stays a
-  diagram too (**Eisenhower Matrix**, a person's own week, and **30-60-90 Day Plan**, a new starter's own plan).
-  Event Storming is its own kind of tab and keeps its own mode.
-- The spaces: **Virtual Office** (`virtual-office`), **Coworking Space** (`coworking-space`), **Team Pod**
-  (`team-pod`) and **All-Hands Hall** (`all-hands-hall`), in the **Virtual Spaces** category ([Virtual Office
-  template](../012-collaboration/virtual-office-template.md)).
-- The games: **Pub Quiz** (`pub-quiz`), **Icebreaker Questions** (`icebreaker-questions`), **Two Truths and a Lie**
-  (`two-truths-and-a-lie`), **Would You Rather** (`would-you-rather`) and **Find Someone Who Bingo**
-  (`people-bingo`), in **Quizzes & Games** ([Quiz and game templates](../012-collaboration/quiz-and-game-templates.md)).
-- Start a Workshop groups them by the catalogue's categories, as every start does ([Start
-  diagramming](start-diagramming.md) "Recommended and groups").
-
 ## Testing
 
-- Every template's mode equals the mode its overrides open it in (`templates.test.ts`).
-- Every template carrying a session tool (timer, vote, poll) opens in Workshop (`templates.test.ts`).
-- Every Popular list starts with its mode's blank and holds only that mode's templates (`popular.test.ts`).
-- Every category holds a template in at least one mode (`template-categories.test.ts`).
-- A card found from another mode's start shows "Opens in <Mode>" (`StartPanel.test.tsx`).
+- Every template opens in Workshop (`templates.test.ts`).
+- Popular starts with Blank Workshop (`popular.test.ts`).
+- Every category holds a template (`template-categories.test.ts`).
 
 ## The tab's name
 
-- A template picked on a start or on /new names the tab it fills after itself, in every mode (a flowchart's
-  tab is "Flowchart"): the template's title. It does
+- A template picked on a start or on /new names the tab it fills after itself, (a retrospective's tab is
+  "Retrospective"): the template's title. It does
   so whatever the tab was called before. A blank template leaves the name as it was (`templateTabName`).
 
 ## The document's name
 
 - A template picked on a start names the **document** after itself too, as /new names a document after the template
-  it is made from: "Untitled Flowchart", "Untitled Retrospective", a blank naming what it makes ("Untitled
-  Whiteboard"), Blank Diagram "Untitled document" (`untitledNameForTemplate`).
+  it is made from: "Untitled Retrospective", the blank "Untitled Workshop" (`untitledNameForTemplate`).
 - Only while the document still has a default name: one of those untitled names (`isDefaultDocumentName`, any
   template's, or the legacy "Untitled diagram"; a blank's names are the shared `isUntitledName` list, which the first label's naming uses too). A name someone gave it, or the first element's label the editor
   named it after ([Name length](../006-document/name-length.md)), is kept.

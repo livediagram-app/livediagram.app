@@ -1,88 +1,53 @@
 # Workshop mode
 
-**Workshop** is one of the three [editor modes](../007-editor/editor-modes.md), beside Diagram and
-Draw: how a general tab is worked on while a team runs a session on it, a
-retrospective, a town hall, a lean coffee, a workshop. It brings the tools that run a room into
-focus (timers, votes, polls, reveals, the Collaborate elements, stickers) and takes them out of
-Diagram, so Diagram is about diagrams.
+**Workshop** is livehuddle's one [editor mode](../007-editor/editor-modes.md): every tab is worked on in Workshop, the
+mode for running a session with a team on it, a retrospective, a town hall, a lean coffee, a workshop, a meeting in a
+space. It brings the tools that run a room into focus (timers, votes, polls, reveals, the Collaborate elements,
+stickers). There is no other mode and no switch.
 
 ## Why
 
-Diagram was the first mode, so it collected everything: shapes and arrows, and beside them a
-whole workshop kit (34 Collaborate tiles, a sticker catalogue, a Session strip of Timer, Vote and
-Poll in the bottom bar). Someone drawing an architecture diagram meets a fist-of-five gauge and
-confetti; someone running a retro has to know those tools hide in the last category of a diagram
-palette. A mode for running a session gives each audience its own surface, the way Draw does for
-sketching.
+livediagram has three modes, Diagram, Draw and Workshop, and Workshop is the one about people being together.
+livehuddle is built around that ([Purpose](../001-project-vision/purpose.md)), so it keeps Workshop alone (D2 in
+[Open decisions](../005-project-roadmap/open-decisions.md): all of Workshop), and Diagram and Draw are livediagram's.
 
 ## Domain language
 
-| Term              | Means                                                                                         | Not                                                          |
-| ----------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| **Workshop mode** | The editor mode for running a session with a team (`EditorMode` `'workshop'`)                 | Workshop mode (its old name), Session mode, Collaborate mode |
-| **session**       | The activity a team runs on a tab (a retro, a town hall); never a stored thing                | a tab kind, a document type                                  |
-| **facilitator**   | The person holding the baton ([Facilitator](facilitator.md)); unrelated to who is in the mode | anyone in Workshop mode                                      |
-| **session tools** | Timer, Vote and Poll ([Session tools](session-tools.md))                                      | the Collaborate elements as a whole                          |
-| **Collaborate**   | The session elements as a whole (`toolGroup: 'behaviour'`), offered as six categories         | the mode, or comments and presence in general                |
+| Term              | Means                                                                                 | Not                                                            |
+| ----------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **Workshop mode** | The editor mode every tab is worked in (`EditorMode` `'workshop'`)                    | Facilitate mode (its old name), Session mode, Collaborate mode |
+| **session**       | The activity a team runs on a tab (a retro, a town hall); never a stored thing        | a tab kind, a document type                                    |
+| **facilitator**   | The person holding the baton ([Facilitator](facilitator.md)); unrelated to the mode   | anyone in Workshop mode                                        |
+| **session tools** | Timer, Vote and Poll ([Session tools](session-tools.md))                              | the Collaborate elements as a whole                            |
+| **Collaborate**   | The session elements as a whole (`toolGroup: 'behaviour'`), offered as six categories | the mode, or comments and presence in general                  |
 
 - The interface says **Workshop**; specs and code say **Workshop mode** or `'workshop'`.
-- "Workshop" names the activity everyone on the tab shares, as Diagram and Draw do. It is not the
-  **facilitator**, the person holding the baton, who is unrelated to who is in the mode: a workshop has a
-  facilitator. A stored trace of an older name reads as Workshop ([Editor modes](../007-editor/editor-modes.md) "Naming in the interface").
-- "Session" and "Collaborate" are not the mode's name: both already name other things (the
-  Session strip, Session buttons and the share session; the Collaborate elements and menu
-  rows).
-- Workshop mode is a mode, never a kind: a retro is a general tab in Workshop mode, and
-  everything on it is there in every other mode.
+- "Session" and "Collaborate" are not the mode's name: both already name other things (the Session strip, Session
+  buttons and the share session; the Collaborate elements and menu rows).
+- Workshop mode is a mode, never a kind: a retro is a general tab.
 
-## What it brings into focus
+## What it brings
 
-- **Diagram mode's look and input.** No pages, no dock: the canvas, the palette and the Toolbar
-  strip as Diagram has them. Every rule, tool and shortcut not named here is Diagram mode's.
-- **Its own palette layout** (below), landing on its Popular.
+- **The canvas, the palette and the Toolbar strip** ([Canvas and palette](../008-canvas/canvas-and-palette.md),
+  [Toolbar layout](../007-editor/toolbar-layout.md)), with **its palette layout** (below), landing on its Popular.
 - **The Session strip with all three tools**, Timer, Vote and Poll, with their set-up panes
   ([Session tools](session-tools.md#the-session-strip)).
-- **It starts on Select** (Hand on a phone), like Diagram.
-- **Its mark** is a flipchart on an easel, on a start's mode switch, the tab pill, the
-  template picker's mode filter, the Explorer's Opens in and the help article.
+- **It starts on Select** (Hand on a phone).
+- **Its mark** is a flipchart on an easel, on the template picker and the help article.
 
-## What Diagram gives up
+## What every tab offers
 
-- **The Collaborate elements** (every Ask, Tools, Record, React, Selection Mode and Navigate
-  tile) and **the Stickers category** leave Diagram's palette.
-- **The Session strip** leaves Diagram entirely (below).
-- **Diagram keeps two Collaborate tiles in Write:** the **Comment panel** and the **Action card**
-  (`collab:comment-pin`, `collab:action-card`), because comments and assigned actions belong to
-  every mode (below). In Workshop they sit in the Record category.
-- **Diagram keeps Icons**, Technology, Media and everything else it has.
-- **Content stays.** A session element already on a tab (a session button, a reveal zone, an
-  agenda, a sticker) renders and works in every mode exactly as before: pressing a session button
-  in Diagram still starts its tool, a reveal zone still reveals, a quiz still takes answers. Only
-  what the palette **offers to add** changes, as with every narrowed palette.
-- **Search still finds them.** The Toolbar strip's Search keeps offering every tile of every
-  mode ([Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)), the ones
-  Diagram does not offer listed with the other modes' tiles: a timer or a sticker picked there in
-  Diagram is placed in Diagram, without switching mode.
-- **The element menus are unchanged.** A session element's own menu sections (Session, Reveal,
-  Picker, Scale, Segments, Decision, Chair) and every element's Collaborate section (Assign
-  Action, Comments) follow the element, not the mode.
-
-## What stays in every mode
-
-Collaborating on a tab is not running a session, so these are untouched and offered in every
-mode as today:
+Collaborating on a tab is part of every session:
 
 - comments, the Comment panel tile, comment threads and mentions;
 - presence, cursors, follow-me and Bring Focus;
 - Presentation mode and the Slide Deck;
-- assigned actions (the Action card tile, every element's Assign Action) and the Collaborate
-  Panel; a Decision record already on a tab works everywhere, though its tile is Workshop's;
+- assigned actions (the Action card tile, every element's Assign Action) and the Collaborate Panel;
 - the facilitator baton in the Collaborators dialog.
 
 ## The palette
 
-Workshop's layout, in order (no Concepts: concept graphics lay out an idea for a diagram, which a session does not
-stop to draw):
+Workshop's layout is livehuddle's one palette, in order:
 
 | Band        | Categories                                            |
 | ----------- | ----------------------------------------------------- |
@@ -94,17 +59,14 @@ stop to draw):
 | Dynamic     | Data                                                  |
 
 - **Popular** (the landing category), fixed: Square, Sticky note, Text, Frame, Arrow, Image, then behind a divider **Ask**,
-  **Tools**, **Record** and **React** as openers ([Editor modes](../007-editor/editor-modes.md) "Popular"): each draws its category's glyph
+  **Tools**, **Record** and **React** as openers ([Editor modes](../007-editor/editor-modes.md#the-palette)): each draws its category's glyph
   with a chevron and opens that category's tiles in a popover under it, on a desktop and a phone.
-- **Write and Draw hold what a session uses, not what a diagram or a page does.** Write is Text, Sticky note and
+- **Write and Draw hold what a session uses.** Write is Text, Sticky note and
   Pointer note, then behind a divider Table and Checklist (no Page, no Annotation); Draw is Pencil, Highlighter, Arrow
   and Line (no Shape Pen, no Polygon).
-- **Layout is Diagram's** ([The Build palette category](../010-palette/build-category.md)): Lane, Frame, Stack,
-  Boundary, the Timeline (Workshop has no Concepts, where it otherwise lives), then Diagram key, Card, Badge and
-  Step number. A board is laid out in frames and lanes, and its
-  notes labelled, as a diagram is. No Diagrams: mind maps and flowcharts build a diagram, which a session does not
-  stop for. Search still finds those left out and places them, as it
-  does any other mode's tile.
+- **Layout** ([The Build palette category](../010-palette/build-category.md)): Lane, Frame, Stack, Boundary, the
+  [Timeline](../009-elements/timeline.md), then Diagram key, Card, Badge and Step number. A board is laid out in
+  frames and lanes, and its notes labelled.
 - **The Collaborate elements are six categories, not one.** Each group of
   [Collaborate](../010-palette/palette-top-level-categories.md#collaborate-one-category-fully-grouped)
   is its own category in a **Collaborate** band (the heading names the elements, where Dynamic
@@ -124,102 +86,78 @@ stop to draw):
   click in front of each, with a group browser one level down. Six categories put every group one
   pick away in the category picker and let the toolbar strip show each group's tiles directly.
 
-- Technology, Components, Devices, Data and Event Storming are not offered: they build diagrams
-  and pages, not sessions.
+- Components and Event Storming are not categories (an event-storming board brings its own notation). The Toolbar
+  strip's Search finds every element livehuddle has, those no category offers included (the Components, the Code
+  block, the embeds), and places it ([Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)).
 - A **Participant** gets the participant palette Workshop's landing category gives
   ([Participant share role](#share-roles)): sticky notes and text, and an image.
 
-## The Session strip per mode
+## The Session strip
 
-`sessionStripTools(mode, esBoard)`:
+`sessionStripTools(mode, esBoard)` gives Timer, Vote and Poll on every tab, an event-storming board included.
 
-| Mode     | Strip tools       |
-| -------- | ----------------- |
-| Workshop | Timer, Vote, Poll |
-| Diagram  | none              |
-| Draw     | none (as today)   |
-
-- **An event-storming board keeps all three.** It is a workshop board, always Diagram, with no
-  switch, so it could never reach Workshop's strip; the tab kind brings the strip itself.
-
-- **Diagram has no strip, running or not.** A timer, vote or poll started on a Diagram tab (by a
-  session button on it, or before the tab was switched out of Workshop) runs as before and shows
-  on its own canvas element, but its strip button and popover do not: watching turnout, ending a
-  poll or keeping its results is done from Workshop. This is the
-  same rule Draw already follows, and the price of a Diagram mode with no session chrome.
-- A popover whose button leaves (a mode switch, the tool ending) closes, as today.
+- A popover whose button leaves (the tool ending) closes.
 
 ## Templates
 
-Session templates open in Workshop, as the Draw templates open in Draw
-([Templates by mode](../007-editor/templates-by-mode.md)):
+Every template opens in Workshop ([Templates by mode](../007-editor/templates-by-mode.md)). The session templates are:
 
-- the Retrospectives family's `retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls`
-  and `sailboat`;
+- the Retrospectives family's `retrospective`, `start-stop-continue`, `mad-sad-glad`, `four-ls` and `sailboat`;
 - `town-hall`, `lean-coffee`, `crazy-eights`, `meeting-agenda`, `workshop-board` and `brainstorm`;
-- the boards that ship a dot vote, `affinity-map`, `prioritization-matrix` and `risk-matrix`, since
-  only a mode with a Session strip can watch, end and keep that vote;
+- the boards that ship a dot vote, `affinity-map`, `prioritization-matrix` and `risk-matrix`;
 - the boards a team fills in together: `incident-postmortem`, `user-persona`, `empathy-map`, `journey`,
   `objectives-planner`, `roadmap`, `raci-matrix`, `user-story-map`, `swot`, `business-model-canvas`,
-  `stakeholder-map` and `opportunity-solution-tree` (grouped in Start a Workshop under Retrospectives, Workshops, Planning
-  and Strategy, [Templates by mode](../007-editor/templates-by-mode.md#workshop-templates));
+  `stakeholder-map` and `opportunity-solution-tree` (grouped in Start a Workshop under Retrospectives, Workshops,
+  Planning and Strategy, [Templates by mode](../007-editor/templates-by-mode.md#workshop-templates));
 - the quizzes and games, `pub-quiz`, `icebreaker-questions`, `two-truths-and-a-lie`, `would-you-rather` and
   `people-bingo` ([Quiz and game templates](quiz-and-game-templates.md));
 - the spaces to walk round in Avatar mode, `virtual-office`, `coworking-space`, `team-pod` and `all-hands-hall`
   ([Virtual Office template](virtual-office-template.md)).
 
-Brainstorm mind maps stay in Diagram and the drawn warm-ups (`doodle-warmup`, `pre-mortem`,
-`idea-garden`) stay in Draw.
+Templates that build with an element livehuddle no longer has (mind maps, flowcharts, sequence diagrams, Sankey
+diagrams, org charts, entities, the concept graphics but the Timeline, device frames, Technology icons) are not in the
+catalogue. The rest of the forked catalogue stays until step 5.4 of the
+[Build plan](../005-project-roadmap/build-plan.md) cuts it to Workshop's and the Spaces.
 
-**Blank Workshop** (kind `blank-session`) is Workshop's blank: a general tab that opens in
-Workshop with nothing on it, the document named "Untitled Workshop". It joins the blanks
-leading Popular in the marketing gallery and the starts, which become five. It was the fifth row of the
-sites' Start Blank menu (funnel slot `HeaderSession`, retired with the menu, [Landing funnel](../019-marketing/landing-funnel.md)).
+**Blank Workshop** (kind `blank-session`) is the blank: a general tab with nothing on it, the document named
+"Untitled Workshop".
 
 ## Share roles
 
 Following [Gate a feature by share role](../../instructions/gate-a-feature-by-share-role.md):
 
-| Role            | In Workshop mode                                                                                                                                              |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Editor**      | Switches the tab into and out of Workshop; the full palette and the Session strip's set-up; every session tool's rules as specified for it                    |
-| **Participant** | Follows the tab's mode, sees no switch; the participant palette and tools; takes part in every running tool (votes, answers, responds) as its own spec allows |
-| **Viewer**      | Follows the tab's mode, sees no switch and no palette; sees running tools' buttons read-only, as today                                                        |
+| Role            | In Workshop mode                                                                                                      |
+| --------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Editor**      | The full palette and the Session strip's set-up; every session tool's rules as specified for it                       |
+| **Participant** | The participant palette and tools; takes part in every running tool (votes, answers, responds) as its own spec allows |
+| **Viewer**      | No palette; sees running tools' buttons read-only                                                                     |
 
-Every gate reads the session's `can`, never `isReadOnly` alone. A locked tab behaves for an editor
-as for a viewer, as every mode does.
+Every gate reads the session's `can`, never `isReadOnly` alone. A locked tab behaves for an editor as for a viewer.
 
 ## Agents, MCP and the CLI
 
-- `'workshop'` is a valid stored `opensIn` everywhere a mode is read (the api's creation intent,
-  default folders, tab stats, the OpenAPI `EditorMode` enum).
-- MCP and the CLI reach Workshop through templates: a session template, or `blank-session`,
-  makes a tab that opens in Workshop. No tool takes a mode directly, as today.
-- `document-views` need no change: Workshop draws no pages.
+- `'workshop'` is the stored `opensIn` everywhere a mode is read (the api's creation intent, tab stats, the OpenAPI
+  `EditorMode` enum); every other stored value reads as Workshop.
+- No tool takes a mode. A template, or `blank-session`, makes a Workshop tab like any other.
 
 ## Workspace
 
-- **Default folders:** a `mode:workshop` key, labelled **Sessions** (noun "sessions")
+- **Default folders:** the `mode:workshop` key, labelled **Sessions** (noun "sessions")
   ([Default folders](../013-workspace/default-folders.md)).
-- **Explorer filters:** Opens in offers **Workshop** ([Explorer filters](../013-workspace/explorer-filters.md)).
-- **The template picker's mode filter** offers Workshop, with its count.
+- **Explorer filters:** Opens in offers **Workshop** alone ([Explorer filters](../013-workspace/explorer-filters.md)).
 
 ## Telemetry
 
-- `Editor` · `Changed` · `ModeWorkshop`, fired as the other modes' switches fire.
-- `UI` · `Toggled` · `TemplateModeWorkshop`, from the template picker's mode filter.
-- Both extend the existing types; no new category or action.
+- No mode-switch events: there is nothing to switch.
 
 ## Help
 
-- **Workshop mode** gets its own help article (`/help/canvas/workshop-mode/`),
-  registered per [Register a help article](../../instructions/register-a-help-article.md), and
-  **Editor Modes** covers three modes.
-- The Session tools article says the set-up lives in Workshop.
+- **Workshop mode** has its own help article (`/help/canvas/workshop-mode/`), registered per
+  [Register a help article](../../instructions/register-a-help-article.md).
+- The Session tools article says where the set-up lives.
 - An optional [Workshop tour](workshop-tour.md) shows the mode, from the footer's **Start Workshop Tour** button.
 
 ## Existing tabs
 
-- Nothing is migrated. A tab in Diagram keeps opening in Diagram, with every session element on it
-  working; its editors switch to Workshop when they want the kit.
-- A retro made from a template before this change opens in Diagram, as stored.
+- Nothing is migrated: livehuddle had no stored spaces when Diagram and Draw were cut. A tab stored with any other
+  mode reads as Workshop ([Editor modes](../007-editor/editor-modes.md#where-the-mode-lives)).

@@ -1,7 +1,7 @@
 # Board scene: blueprint
 
-Derived from [Board scene](../board-scene.md), with the element-model delta it needs from
-[Draw mode](../../023-draw-mode/draw-mode.md) "Imported and pasted content". The spec's mapping
+Derived from [Board scene](../board-scene.md), with the element-model delta livediagram's Draw mode
+"Imported and pasted content" brought (marker ink, stock colours, hugging text). The spec's mapping
 table is not restated; this file fixes the modules, types, constants, algorithms, wiring and tests.
 Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) (rows `B1` onwards).
 
@@ -273,7 +273,7 @@ widthPx` verbatim; shapes, stickies (fill verbatim), images and frames as above.
 
 ### Tab patch
 
-- Whiteboard: `{ opensIn: 'draw', name: title?.trim() || SCENE_DEFAULT_TITLE,
+- Whiteboard: `{ opensIn: 'workshop', name: title?.trim() || SCENE_DEFAULT_TITLE,
 backgroundPattern }` with plain `blank`, dots `grid`, grid `graph`, absent
   `WHITEBOARD_DEFAULT_PATTERN`.
 - Diagram: `{ name: title?.trim() || SCENE_DEFAULT_TITLE }` plus `backgroundColor` from
@@ -324,9 +324,9 @@ Returns `{ insertScene(scene, at?), notice, dismissNotice }`; composed in `useEd
 
 ### `useBoardSceneImport` (Import dialog)
 
-- `importSceneIntoActiveTab(scene, onProgress)`: profile from the active tab, `origin` placement,
+- `importSceneIntoActiveTab(scene, onProgress)`: the diagram profile, `origin` placement,
   images, then `replaceActiveTabContent` with the landed elements, the tab's own theme and the
-  patch's background colour (diagram) or pattern (whiteboard); returns `ImportOutcome` with
+  patch's background colour; returns `ImportOutcome` with
   `images` and `scene` (the report).
   Composed in `useTabActions` (with `useTabImport`'s `replaceActiveTabContent`) and returned through
   `useEditorState`.

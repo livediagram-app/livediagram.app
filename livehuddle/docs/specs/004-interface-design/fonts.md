@@ -63,7 +63,7 @@ A label's size (`textSize`) is **Scale** or an **exact px**. It is chosen on one
 - an element's **Text** flyout, single and multi selection (Typography → Size);
 - an arrow's **Caption** and a table's **Text** category, single and multi selection;
 - a table cell's context menu;
-- a chart's key, a Legend card and a Sankey's labels (no Scale: a key has nothing to fit);
+- a chart's key and a Legend card (no Scale: a key has nothing to fit);
 - the Tab Style dialog's **Size of New Text** ([Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)).
 
 The control:
@@ -82,7 +82,7 @@ The control:
   fixed px.
 
 An exact px **draws at that px on every surface**: a shape label, a note, an arrow caption, a table
-cell, a chart key and a Sankey's labels alike, on the canvas and in every export. Earlier documents
+cell and a chart key alike, on the canvas and in every export. Earlier documents
 and templates still carry the named presets **Small / Medium / Large** (`sm` / `md` / `lg`); they
 render exactly as before, each on its surface's own scale (a label's Large is 32px, a note's 22px).
 The slider shows a preset at the px it draws at on that surface (a label's Large reads `32px`

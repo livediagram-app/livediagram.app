@@ -24,7 +24,7 @@ Scope, by file (all under `apps/editor/` unless stated):
 | `lib/drawio/text-box.ts`                                           | `isAutoSized`, `autoTextRect`: a text cell draw.io sizes to itself, sized to its text                                            |
 | `lib/drawio/nearest.ts`                                            | `nearest`: the nearest preset to a px value                                                                                      |
 | `lib/drawio/vertices.ts`                                           | `buildVertex`, `captionBox`: shapes, text, notes, lines, images, icons, frames, labelled boxes                                   |
-| `lib/drawio/containers.ts`                                         | `buildLane`, `buildEntity`, `buildTable`                                                                                         |
+| `lib/drawio/containers.ts`                                         | `buildLane`, `buildTable`                                                                                                        |
 | `lib/drawio/edges.ts`                                              | `buildArrow`: ends, route shape, heads, stroke, caption                                                                          |
 | `lib/drawio/edge-pass.ts`                                          | `createEdgeBuilder`: a page's edges routed, ends resolved, riding shapes, ends on arrows placed                                  |
 | `lib/drawio/arrow-route.ts`                                        | `nearestAnchor`, `exitSide`, `simplifyRoute`, `snapRouteEnds`, `routeShape`, `curveThrough`                                      |
@@ -70,7 +70,7 @@ Scope, by file (all under `apps/editor/` unless stated):
 | Graph         | `DrawioGraph`          | A page's cells by id, the root, the layers, the background                               |
 | Layer cell    | `DrawioGraph.layerIds` | The root's children, bottom to top                                                       |
 | Vertex class  | `VertexClass`          | What `classifyVertex` decided a vertex becomes                                           |
-| Consumed cell | `ConvertState.forward` | A cell whose element is another cell's (entity row, table cell, group)                   |
+| Consumed cell | `ConvertState.forward` | A cell whose element is another cell's (table cell, group)                               |
 | Imported page | `ImportedPage`         | `{ tabId, name, elements, layers?, backgroundColor? }`                                   |
 | Report        | `DrawioReport`         | `{ pages, elements, notes: ImportNote[] }`, shown through the shared `BoardSceneReport`  |
 | Note          | `ImportNote`           | `{ kind: ImportNoteKind, count, names? }`                                                |
@@ -222,7 +222,7 @@ lower-cased; `rgb(...)` / `rgba(...)` → `{ kind: 'hex' }` of its RGB; anything
 
 In order, first match wins:
 
-1. `shapeName` is `swimlane` → `lane`, unless it is an entity stack (step 11.2) → `entity`.
+1. `shapeName` is `swimlane` → `lane` (a class or entity stack too: its rows convert as text inside it).
 2. `table` → `table`. `tableRow` / `partialRectangle` inside a table → consumed.
 3. `image` → `image` unless its `image` path matches the Azure table in `stencils.ts` → `icon`
    (tech).
@@ -290,7 +290,7 @@ flip (every kind except `square`, `circle`, `diamond`, `hexagon`, `cylinder`, `c
     side (`textAlignX: 'left'|'right'`, `textAlignY: 'top'|'bottom'`), `label-moved` += 1 when the
     label is non-empty.
 12. Ink on an own fill (`inkOnFill(fill)`): when the element (shape, text, labelled box, lane title
-    on its `headerFill`, entity, table, table cell `bg`) carries a hex fill and the label has no
+    on its `headerFill`, table, table cell `bg`) carries a hex fill and the label has no
     `fontColor`, `textColor` = `#1e293b` on a fill `isLightColor` calls light, else `#ffffff` (D29).
     A label that is empty gets none.
 13. Sticky colours (`noteStickyColours`, `sticky-colour.ts`): a `note`'s hex `fillColor` (before the
@@ -311,13 +311,7 @@ label equal to it → that id; contains `mono`, `courier`, `consol` → `roboto-
    (23 when absent). `fillColor` → `headerFill` (per step 10.1); `swimlaneFillColor` → `fillColor`
    (per step 10.1), absent or `none` → `'transparent'`. Children convert as normal elements after the
    lane, unmoved.
-2. **Entity** (`buildEntity`): a swimlane with `childLayout=stackLayout` and at least one child,
-   every child a vertex whose `shapeName` is `''` with named style `text`, or `line`, and none with
-   children of its own. `shape: 'entity'`, label = the swimlane's plain label, `entityFields` = the
-   text rows in order: plain text split at the last `:` into `name` (trimmed) and `type` (trimmed,
-   omitted when empty); rows over `ENTITY_MAX_FIELDS` dropped and text over `ENTITY_MAX_TEXT` cut,
-   each counted `text-truncated`. Rows and lines are consumed, forwarding to the entity.
-3. **Table** (`buildTable`): rows = the children whose `shapeName` is `tableRow`, cells = each row's
+2. **Table** (`buildTable`): rows = the children whose `shapeName` is `tableRow`, cells = each row's
    vertex children, in order. `cells[r][c]` = plain label; rows padded to the widest with `''`.
    `rowHeights` = row heights; `colWidths` = the first row's cell widths. The grid's box starts
    `startSize` below the table's top. Non-empty table label → a `text` element above the grid box
@@ -860,7 +854,6 @@ Refusals (the `error` string, final copy):
 | A cycle in parents                             | The walk visits each id once; the cycle is broken                 |
 | Edge source = target (self-loop)               | Both ends pinned to the element, different anchors kept as mapped |
 | Non-finite or past-`IMPORT_COORD_MAX` geometry | Treated as 0                                                      |
-| An entity with no text rows                    | Not an entity: an ordinary lane                                   |
 | A table with no rows                           | A `square` with the table's label, `shape-approximated`           |
 | `DecompressionStream` missing (old browser)    | Compressed pages refused `page-unreadable`; uncompressed import   |
 | A locked active tab                            | Refused before reading, as every format                           |
@@ -880,7 +873,7 @@ Refusals (the `error` string, final copy):
   `javascript:`, `data:` (other than page links) and everything else are dropped and counted.
 - No network: nothing is fetched while importing; web image URLs are only listed.
 - Size: 50 MB input, 100 MB inflated in total (zip bombs), 100 pages, 10 000 elements a page,
-  entity rows and text to their validate limits.
+  table cells and text to their validate limits.
 - Hosted cost: zero server work until the image pipeline uploads.
 
 ## Performance and limits
@@ -967,7 +960,7 @@ Unit tests (Vitest), files beside their modules; the DOM ones carry `// @vitest-
 | Labels, plain and HTML                                                                                                       | `label.test.ts`                                                                                                                    |
 | Shape table, stencils, unmatched                                                                                             | `shapes.test.ts`                                                                                                                   |
 | Vertex properties                                                                                                            | `vertex-props.test.ts`                                                                                                             |
-| Lanes (upright titles, square corners), entities, tables                                                                     | `containers.test.ts`                                                                                                               |
+| Lanes (upright titles, square corners), tables                                                                               | `containers.test.ts`                                                                                                               |
 | Edges                                                                                                                        | `edges.test.ts`                                                                                                                    |
 | Images, groups, hidden, collapsed, truncation, auto-sized text, report                                                       | `convert-page.test.ts`                                                                                                             |
 | Pages to tabs, page links, refusals, size limit                                                                              | `fixtures.test.ts` (via `importDrawio`)                                                                                            |

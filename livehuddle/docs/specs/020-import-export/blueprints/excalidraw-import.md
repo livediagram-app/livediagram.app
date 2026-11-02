@@ -47,7 +47,7 @@ Scope, by file:
 | Board scene     | `BoardScene`                | [Board scene](../board-scene.md); `source: 'excalidraw'`                         |
 | Embedded scene  | `ExcalidrawContainer`       | `'json' \| 'png' \| 'svg'`: where the scene was found                            |
 | Encoded wrapper | `EncodedSceneWrapper`       | `{ version?, encoding: 'bstring', compressed, encoded }`                         |
-| Profile         | `'whiteboard' \| 'diagram'` | Which landing the tab gets: Draw mode `whiteboard`, Diagram mode `diagram`       |
+| Profile         | `'whiteboard' \| 'diagram'` | `diagram` on an open tab, `whiteboard` for a new document                        |
 | Import progress | `ImportImageProgress`       | From the pipeline                                                                |
 
 ## Constants and configuration
@@ -200,7 +200,7 @@ read."
   `extractExcalidrawScene(input)` (error → `{ status: 'error', error }`);
   `sceneFromExcalidrawText(text)` (error → the same); then the dep
   `importScene(scene, onProgress)`, which is `useBoardSceneImport.importSceneIntoActiveTab`
-  (lock check, profile from the tab, images, one replace, the outcome with its report).
+  (lock check, the diagram profile, images, one replace, the outcome with its report).
 - `console.info('[excalidraw-import]', { container, items, status })`; on `done`,
   `track('Tab', 'Imported', 'Excalidraw' | 'ExcalidrawPng' | 'ExcalidrawSvg')`.
 - File accept for `excalidraw`: `.excalidraw,.json,application/json,.png,image/png,.svg,image/svg+xml`.

@@ -1,7 +1,7 @@
 # Workshop tour blueprint
 
-Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
-[Diagram tour](../../007-editor/editor-tour.md) holds.
+Derived from [Workshop tour](../workshop-tour.md). Where this is silent,
+[Tours](../../007-editor/editor-tour.md) holds.
 
 ## Domain and naming
 
@@ -27,7 +27,7 @@ Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
 - **No offer, no chain.** The host never offers the tour on entering Workshop (no delay, no welcome card), and no
   other tour carries it: `TourStage` / `TourPopover` have no `outroChoice`, and `workshopTourSeen` is written only by
   this tour.
-- **One tour at a time:** each of `TourHost` (the Diagram tour), `DrawTourHost`, `WorkshopTourHost` (and the
+- **One tour at a time:** each of `WorkshopTourHost` (and the
   avatar and element tours) treats any other
   active tour as blocking and publishes itself with `setActiveTour` while active.
 - **Steps:** `collaborate` (`band-collaborate` with `alsoHighlight`
@@ -87,9 +87,8 @@ Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
 | Never starts beside another tour on screen                                   | `WorkshopTourHost.test.tsx`                                                  |
 | Rerun in Workshop only                                                       | `WorkshopTourHost.test.tsx`                                                  |
 | Skip and completion mark it seen and send telemetry; leaving ends as skipped | `WorkshopTourHost.test.tsx`                                                  |
-| The Diagram tour is never offered in Workshop                                | `TourHost.test.tsx`                                                          |
 | Step order, anchors, Share filter, telemetry tokens                          | `workshop-tour-steps.test.ts`                                                |
-| Settings switch inverted, third in Tours                                     | `settings-catalogue.test.ts`                                                 |
+| Settings switch inverted, first in Tours                                     | `settings-catalogue.test.ts`                                                 |
 | Power user mode marks it seen                                                | `power-user-preset-rows.test.ts`, `SettingsCategoryPane.power-user.test.tsx` |
 | The slot holds `'workshop'`                                                  | `lib/tour-active.test.ts`                                                    |
 

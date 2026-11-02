@@ -17,8 +17,9 @@ The list a person sets defaults from is titled **New canvases that open as**, an
 | Canvases               | `livehuddle`                        |
 | Retrospective canvases | `livehuddle:template:retrospective` |
 
-The app's own entry holds every new canvas; a mode's entry (Diagrams, Whiteboards, Sessions) the canvases that
-open in that mode; a specific tab kind's entry (Event Storming boards) the canvases whose first tab is that kind; a
+The app's own entry holds every new canvas; the mode's entry (Sessions, `mode:workshop`) the canvases that
+open in Workshop, which is every one (the `mode:diagram` and `mode:draw` entries went with Diagram and Draw,
+[Editor modes](../007-editor/editor-modes.md)); a specific tab kind's entry (Event Storming boards) the canvases whose first tab is that kind; a
 template family's entry the canvases made from that family (`defaultEntries('livehuddle', …,
 CANVAS_TEMPLATE_FAMILIES, DEFAULT_FOLDER_OPTIONS)`, `apps/editor/lib/canvas-template-families.ts`,
 `DEFAULT_FOLDER_OPTIONS` in `@livehuddle/api-schema`). The

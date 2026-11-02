@@ -6,20 +6,19 @@ Status: shipped
 
 A flattening of the palette's category structure.
 
-In Diagram and Workshop the strip now shows these categories as a **category bar**, each opening a
+The strip now shows these categories as a **category bar**, each opening a
 flyout of its tiles, with no Popular, one-word names, Write and Draw apart, and Workshop's session tools gathered
 into Session ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)). The bands below are the bar's
 dividers there.
 
 This is the category catalogue and each category's **default** tiles. Which
-categories a palette offers, under what names and holding which tiles, is now
-per editor mode: see [Editor modes, "The palette per
-mode"](../007-editor/editor-modes.md#the-palette-per-mode).
+categories the palette offers, under what names and holding which tiles, is the
+palette layout's: see [Editor modes, "The palette"](../007-editor/editor-modes.md#the-palette).
 
 **There is no Tools tab.** Every tool group is a top-level palette category of its own.
 
-The full set, in band order: **Popular**, then **Shapes / Write / Draw /
-Devices**, then **Icons / Stickers / Technology / Media / Components**, then
+The full set, in band order: **Popular**, then **Shapes / Write / Draw**, then
+**Icons / Stickers / Media / Components**, then
 **Data / Collaborate**. (Stickers joined the Decorate band later, in
 [Stickers](stickers.md); a first Collaborate category was merged into Behaviours later
 still, and Behaviours was then renamed Collaborate; see below.)
@@ -41,14 +40,14 @@ tools plus Frame). The **User / actor** tile was deleted outright; see below.
 **The category dropdown gets bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):
 
-| Band            | Categories                                                                                                                                                                                                                                             |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| _(no heading)_  | Popular, full width                                                                                                                                                                                                                                    |
-| **Common**      | Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw                                                                                                                                             |
-| **Structure**   | Diagrams (Diagram), Layout (Diagram, Workshop), Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Event Storming (on an event-storming board only); Components and Devices are in the catalogue but on no mode's strip (Search only) |
-| **Decorate**    | Icons, Stickers, Technology, Media                                                                                                                                                                                                                     |
-| **Dynamic**     | Data (Workshop)                                                                                                                                                                                                                                        |
-| **Collaborate** | Ask, Tools, Record, React, Selection Mode, Navigate ([Workshop](../012-collaboration/workshop-mode.md#the-palette) only)                                                                                                                               |
+| Band            | Categories                                                                                                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| _(no heading)_  | Popular, full width                                                                                                                                                       |
+| **Common**      | Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw                                                                |
+| **Structure**   | Layout (with the [Timeline](../009-elements/timeline.md)), Event Storming (on an event-storming board only); Components is in the catalogue but on no strip (Search only) |
+| **Decorate**    | Icons, Stickers, Media                                                                                                                                                    |
+| **Dynamic**     | Data                                                                                                                                                                      |
+| **Collaborate** | Ask, Tools, Record, React, Selection Mode, Navigate ([Workshop](../012-collaboration/workshop-mode.md#the-palette))                                                       |
 
 ## Why flatten
 
@@ -77,15 +76,14 @@ label rather than above it.
 
 ## Rows, not tiles, for most categories
 
-Write, Draw, Collaborate, Data, Components, Concepts, Media and Devices render as **rows
+Write, Draw, Collaborate, Data, Components and Media render as **rows
 with a one-line blurb**, not as the icon-over-caption grid.
 
-The rule is whether the picture explains the thing, and only four categories
-pass it: **Shapes**, **Icons**, **Stickers** and **Technology**, where the
+The rule is whether the picture explains the thing, and only three categories
+pass it: **Shapes**, **Icons** and **Stickers**, where the
 glyph IS the answer. A square tile explains a square. A cursor-on-a-target does not explain
 a Picker, a donut does not explain "how far along something is", a wireframe
-thumbnail shows a composite's arrangement but not its job, six device outlines
-are six grey rectangles of slightly different proportions, and two picture
+thumbnail shows a composite's arrangement but not its job, and two picture
 frames at 18px do not distinguish an image from an avatar.
 
 `palette-tile-defs.test.tsx` requires a blurb on every tile in every
@@ -115,7 +113,7 @@ categories, so "where does Checklist live now" needed an answer that isn't
 "open each one". The editor's **Search** panel answers it: it searches every tile by caption,
 label, blurb and description, and picking a result arms the same placement the
 palette uses ([Canvas and palette](../008-canvas/canvas-and-palette.md)). The
-Icons, Stickers and Technology tabs still search their own catalogues
+Icons and Stickers tabs still search their own catalogues
 ([Browsing the palette by category](palette-category-browse.md)).
 
 ## The pickers unfold from their trigger
@@ -148,12 +146,10 @@ which two groups they are. A rename that broke seven live links to say
 
 ## Collaborate: one category, fully grouped
 
-**Collaborate is Workshop's, as six categories.** Only Workshop's layout ([Workshop mode](../012-collaboration/workshop-mode.md#the-palette)) offers the Collaborate elements, and it offers each group below as its
+**Collaborate, as six categories.** Workshop's layout ([Workshop mode](../012-collaboration/workshop-mode.md#the-palette)) offers the Collaborate elements, and it offers each group below as its
 own category in a **Collaborate** band of its own (`collab-ask`, `collab-tools`, `collab-record`, `collab-react`,
 `collab-mode`, `collab-navigate`), with no parent category; five of them sit behind the bar's Session category
-([Toolbar layout](../007-editor/toolbar-layout.md)). Diagram
-keeps only the Comment panel and the Action card, in its Write category. Search still finds every
-Collaborate tile from any mode.
+([Toolbar layout](../007-editor/toolbar-layout.md)). The Comment panel and the Action card are in Write.
 
 **Named Collaborate.** The category is what you open to run a session with the room, and "Collaborate" names that
 job. The internal id is `behaviour` (persisted in the strip's state, palette layouts and telemetry types such as
@@ -208,11 +204,10 @@ one shape kind each with a mode field; the choice rides the draw intent.
 
 ## The Structure band
 
-Build, Components and Devices sit in their own band above Decorate.
+Build and Components sit in their own band above Decorate.
 
-All three are things you lay a canvas OUT with rather than draw on it: Build's
-containers, the ready-made page composites, the device frames a wireframe sits
-inside. Arranging a canvas comes before dressing it, which is the order the
+Both are things you lay a canvas OUT with rather than draw on it: Build's
+containers and the ready-made page composites. Arranging a canvas comes before dressing it, which is the order the
 bands now read in: Common, Structure, Decorate, Dynamic.
 
 The category array must stay sorted by band: the category picker renders it

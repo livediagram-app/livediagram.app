@@ -81,7 +81,7 @@ edited without it); the change names the gap.
 | Resolve         | `resolveRef(input, refs) → RefResolution`                                | Input to one element, or a named refusal                                       |
 | Kind word       | `kindWordOf(el)`                                                         | The first word of a line: the shape, the notation, or the element type         |
 | Unknown kind    | `isKnownElement`, `UNKNOWN_KIND_MARK` (`?`)                              | An element type or shape kind `@livehuddle/document` does not know             |
-| Container       | `deriveContainers`, `ViewNode.container`                                 | The frame, lane or mind-map parent an element nests under                      |
+| Container       | `deriveContainers`, `ViewNode.container`                                 | The frame or lane an element nests under                                       |
 | Reading order   | `readingOrder`, `rowsOf`                                                 | Rows top to bottom, then left to right                                         |
 | Freehand run    | `FreehandRun`, `freehandRuns`                                            | Consecutive bare strokes in one container, printed as one counted line         |
 | Content summary | `contentSummaryOf`                                                       | What a content kind holds, briefly                                             |
@@ -100,7 +100,7 @@ edited without it); the change names the gap.
 
 Banned: "handle", "alias", "short id", "short code" (for a ref); "mode", "format", "snapshot", "render" (for a view;
 "render" stays the image preview's verb, and `format` names only `read_document`'s choice between a view and the
-elements); "parent" for a frame or lane (it is the container; only `mindParentId` is a parent); "group",
+elements); "parent" for a frame or lane (it is the container); "group",
 "cluster" (a frame is a container; a cluster is graph input's word); "query" or "filter" (those are selectors and
 Explorer lenses); "token" for a kind word (a token is an API token); "truncate" in copy ("hidden", "left out").
 
@@ -176,7 +176,7 @@ non-empty unique ids. The round-trip tests in [Testing](#testing) hold this.
 | ----------------------------------------- | ----------------------------------------------------------------------------- |
 | An event-storming note                    | its notation, `eventStormingKindOf(el)` (`domain-event`, `command`, …)        |
 | The notation `actor`                      | `es:actor`, so it never reads as the `actor` shape                            |
-| `type: 'shape'`, `shape` in `SHAPE_KINDS` | the shape (`square`, `frame`, `lane`, `entity`, `mind-node`, `actor`, …)      |
+| `type: 'shape'`, `shape` in `SHAPE_KINDS` | the shape (`square`, `frame`, `lane`, `actor`, …)                             |
 | `type` in `ELEMENT_TYPES`, not a shape    | the type (`text`, `sticky`, `table`, `image`, `freehand`, `path`, `arrow`, …) |
 | `type: 'shape'`, unknown `shape`          | `? <shape>` (`VW12`); `? shape` when it has none                              |
 | unknown `type`                            | `? <type>`                                                                    |
@@ -192,17 +192,14 @@ the document model knows. An event-storming note still in photo draft carries th
 container; views, the edit-operations membership reports, the lint and the editor's frame drag (through
 `containerContents`) all read it.
 
-1. **Mind parent first.** A `mind-node` whose `mindParentId` names a `mind-node` in the input nests under it.
-   Following parent links from any node, a link that returns to a node already on the chain is ignored at the node
-   with the lowest array index, which becomes a root of its tree (`VW24`).
-2. **Geometry otherwise.** Candidates are `frame` and `lane` shapes other than the element itself whose stored box
+1. **Geometry.** Candidates are `frame` and `lane` shapes other than the element itself whose stored box
    holds the element's centre (`boxHoldsPoint`, edges inclusive) and whose area is strictly greater than the
    element's (`VW23`). The smallest candidate by area wins; equal areas go to the earlier in array order.
    `smallestHolder(point, holders)` is that point query alone, the rule `mermaidFromTab` applies (smallest frame
    holding the centre, inclusive, the earlier on a tie); `deriveContainers` passes it only the strictly larger
    candidates, and that guard makes nesting acyclic. Rotation is ignored: centres and boxes are the stored
    axis-aligned ones.
-3. Elements without numeric `x`, `y`, `width`, `height` (only unknown kinds can lack them) sit at the root.
+2. Elements without numeric `x`, `y`, `width`, `height` (only unknown kinds can lack them) sit at the root.
 
 Views pass printed elements only, so a hidden frame contains nothing. Containers nest to any depth. `mermaidFromTab`
 keeps its one-level, frames-only output by calling `smallestHolder` with frames only.
@@ -763,7 +760,6 @@ the tab and its `rev`.
 | E8   | Free, on-arrow ends                            | `free`, `arrow:<ref>`; a non-pinned source prints on its own line                                |
 | E9   | Parallel arrows                                | Both on the source line                                                                          |
 | E10  | Self-loop                                      | `→ <own ref>`                                                                                    |
-| E11  | Mind map cycle or dangling parent              | Broken at the lowest index; a dangling parent reads as a root                                    |
 | E12  | Unknown type or shape                          | `? <name>` line with ref and label, counted `· n unknown`, contained by geometry when it has one |
 | E13  | Element without geometry                       | Root, after the rows, in array order                                                             |
 | E14  | Id with unsafe characters                      | `id:"…"` ref                                                                                     |
@@ -858,7 +854,7 @@ Every rule maps to a deterministic test; the spec's rules are numbered here.
 | R8 One line per element, indentation is containment                  | `packages/document-views/src/outline.test.ts`, golden `checkout.outline.txt`                                                             |
 | R9 Kind words, notations, `es:actor`                                 | `element-refs.test.ts` (kind words)                                                                                                      |
 | R10 JSON strings, cut 60 / 48 on a word boundary                     | `../packages/document-views/src/text.test.ts`                                                                                            |
-| R11 Smallest frame or lane holding the centre; mind parent wins      | `packages/document/src/containment.test.ts`; `mermaid.test.ts` unchanged; `tree.test.ts`                                                 |
+| R11 Smallest frame or lane holding the centre                        | `packages/document/src/containment.test.ts`; `mermaid.test.ts` unchanged; `tree.test.ts`                                                 |
 | R12 Arrows on the source line; free ends on their own                | `edges.test.ts`                                                                                                                          |
 | R13 Reading order                                                    | `../packages/document-views/src/reading-order.test.ts`                                                                                   |
 | R14 Content summaries and state attributes                           | `content-summary.test.ts`, `state-attribute.test.ts` (every kind in the table)                                                           |
