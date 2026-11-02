@@ -57,6 +57,11 @@ apps/editor/components/plan/widgets/use-seen.ts              one IntersectionObs
   `widgetSlotAt(zone, x, kind)` gives the slot; pointerup commits `placeWidget` when the order changed, and the
   click that follows is swallowed. Pointercancel drops it.
 - Keys on a focused wrapper: Alt+←/→ `nudgeWidget`; Delete/Backspace `removeWidget`.
+- Focus after a removal: `remove` notes the removed kind, its index and which control held the focus (the × or the
+  wrapper), and the layout effect on `widgets` that refocuses an Alt+arrow move puts it on the same control of the
+  widget now at `min(index, length - 1)`. Once none is left, `emptied` shows the zone's **+** (Add a widget) to this
+  person and the focus goes to it. Not `useFocusAfterRemoval` (packages/explorer, keyed to Explorer rows) nor
+  `focusRowAfterRemove` (workbench, which looks back before forward): the zone already owns this effect.
 - Add: widgets are not in the palette; the zone's + opens `BoardWidgetPicker` and a tile calls
   `onChange(toggleWidget(widgets, id))`: added at the end, or taken off when the board has it; a field widget past
   `FIELD_WIDGETS_MAX` is refused (its tile is `aria-disabled`). The gallery stays open; the + or Escape closes it.
