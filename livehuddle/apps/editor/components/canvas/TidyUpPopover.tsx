@@ -15,7 +15,7 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { TidyUpDrawing } from './tidy-up-drawings';
 import type { TidyUpActions } from './tidy-up-actions';
 
-// The Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The popover"): Diagram mode's layout
+// The Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The popover"): the board's layout
 // tidiers one press away, over their cluster button. A tile per Auto Layout style, each a drawing of the
 // layout it makes, then the Auto-align row. Hovering one with a mouse lays the tab out behind the popover
 // (useCleanupPreview); pressing it commits that layout as one undoable step.

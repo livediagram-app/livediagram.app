@@ -36,7 +36,7 @@ export type DockPanel =
   | 'session-timer'
   | 'session-vote'
   | 'session-poll'
-  // Diagram mode's Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
+  // The Tidy Up popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
   | 'tidy-up'
   // Avatar mode's character sheet (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
   | 'avatar';

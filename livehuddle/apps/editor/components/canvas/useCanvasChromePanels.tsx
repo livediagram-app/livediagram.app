@@ -93,7 +93,7 @@ export function useCanvasChromePanels({
   collaborateEl: ReactNode;
   // The Session strip's open popover (Timer, Vote or Poll), over its button.
   sessionPopoverEl: ReactNode;
-  // The Tidy Up popover over its button, in Diagram mode.
+  // The Tidy Up popover over its button.
   tidyUpPopoverEl: ReactNode;
   // The Avatar panel over its button (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel").
   avatarPopoverEl: ReactNode;
@@ -207,7 +207,7 @@ export function useCanvasChromePanels({
   // The six tool-config panels (avatar / laser / spotlight / eraser / format /
   // slide deck), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
-  // The Tidy Up popover belongs to its button: leaving Diagram mode, Zen or a locked-out session closes it.
+  // The Tidy Up popover belongs to its button: leaving for Zen or a locked-out session closes it.
   const tidyUp = props.tidyUp;
   const tidyUpShown = tidyUpOffered({
     actions: tidyUp,
