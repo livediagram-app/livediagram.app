@@ -159,6 +159,13 @@ picture (the card as it is, its writing included) and its name. A press flips to
   Conference Talk and Wedding Toast in Speeches and Talks (the toast also in Events and Celebrations), Product Pitch in
   Pitches and Launches and School Presentation in Lessons and Learning (both also in Speeches and Talks). Blank Flashcards is in the Start screen's Blank Pages group.
 
+  **Their previews tell apart at rest** (`packages/template-previews/src/template-preview-26.tsx`): each draws its stack
+  as the editor shows it (the front card with its title, lines and "1 of n" footer, the cards to come peeking out below),
+  with a mark of its own on a tinted badge in the front card's top right, drawn without a hover: a clock (Conference Talk,
+  indigo), a heart (Wedding Toast, rose), a rising arrow (Product Pitch, emerald) and a raindrop (School Presentation,
+  sky), so four stacks side by side in Speeches and Talks never look alike. On hover the lines write themselves and the
+  badge swells.
+
 ## Share roles
 
 ([Share roles](../013-workspace/share-roles.md))
