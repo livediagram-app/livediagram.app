@@ -29,10 +29,10 @@
   "dependencies": {
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/render-png": "workspace:*",
-    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
-    "hono": "^4.13.13",
+    "hono": "^4.13.14",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -40,7 +40,7 @@
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@vitest/coverage-v8": "^5.0.3",
-    "oxlint": "^1.88.0",
+    "oxlint": "^1.90.0",
     "typescript": "^7.0.2",
     "vitest": "^5.0.3"
   }
