@@ -186,7 +186,6 @@ export function containersBehindMembers(elements: readonly Element[]): Element[]
   const members = new Map<BoxedElement, ElementId[]>();
   for (const [id, holder] of deriveContainers(elements)) {
     const container = holder ? byId.get(holder) : undefined;
-    // A mind node holds its children by link, not by drawing behind them.
     if (!container || container.type === 'arrow' || !isContainer(container)) continue;
     const held = members.get(container);
     if (held) held.push(id);

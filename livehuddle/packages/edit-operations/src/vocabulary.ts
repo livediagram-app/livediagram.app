@@ -84,7 +84,7 @@ export const RESERVED_WORDS: ReadonlySet<string> = new Set([
   'back',
 ]);
 
-export const LAYOUT_STYLES = ['flow', 'tree', 'mindmap'] as const;
+export const LAYOUT_STYLES = ['flow', 'tree'] as const;
 export const LAYOUT_DIRECTIONS = ['down', 'right'] as const;
 export const ORDER_ENDS = ['front', 'back'] as const;
 export const WRAP_CONTAINERS = ['frame', 'lane'] as const;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createTable, ELEMENT_FIELD_NAMES, type Element } from '@livehuddle/document';
-import { arrowBetween, shapeAt } from './__fixtures__/build';
+import { ELEMENT_FIELD_NAMES, type Element } from '@livehuddle/document';
+import { shapeAt } from './__fixtures__/build';
 import { CHECKOUT_IDS, CHECKOUT_REV, checkoutTab } from './__fixtures__/checkout-tab';
 import { golden } from './__fixtures__/golden-path';
 import { buildViewModel } from './model';
@@ -27,57 +27,14 @@ describe('showView (R17, VW34)', () => {
     expect(json.fields).not.toHaveProperty('id');
   });
 
-  it("renders a table's cells, an entity's fields and a thread, root elements with no container", () => {
+  it("renders a table's cells and a thread, root elements with no container", () => {
     const model = checkout();
     const table = showView(model, elementOf(model, CHECKOUT_IDS.slos)).text.split('\n');
     expect(table).toContain('    | Service | p99 latency | Availability |');
-    const entity = showView(model, elementOf(model, CHECKOUT_IDS.order));
-    expect(entity.text.split('\n')).toContain('    - customer_id uuid FK');
-    expect(entity.json.container).toBeNull();
+    expect(showView(model, elementOf(model, CHECKOUT_IDS.order)).json.container).toBeNull();
     const sticky = showView(model, elementOf(model, CHECKOUT_IDS.sticky)).text.split('\n');
     expect(sticky).toContain('  comments: open · 2');
     expect(sticky.at(-1)).toBe('  omitted: commentThread.comments[].authorId');
-  });
-
-  it("prints an arrow's ends, rotation, odd cells and fields, and an element without geometry", () => {
-    const a = {
-      ...createTable(0, 0),
-      id: 'a',
-      width: 100,
-      height: 50,
-      cells: [['x|y', 3], 'row'],
-      rotation: 30,
-    };
-    const e = { ...shapeAt('entity', 'e', 0, 0), entityFields: [{ name: 'n' }, 'junk'] };
-    const odd = { id: 'odd', type: 'hologram', note: 'n' };
-    const arrow = {
-      ...arrowBetween('arr', 'a', 'e', { label: 'go' }),
-      from: { kind: 'free', x: 3, y: 4 },
-    };
-    const onArrow = {
-      ...arrowBetween('rider', 'e', 'e'),
-      to: { kind: 'on-arrow', arrowId: 'arr', t: 0.25 },
-    };
-    const model = buildViewModel({
-      id: 't',
-      name: 'T',
-      elements: [a, e, odd, arrow, onArrow] as unknown as Element[],
-    });
-    expect(showView(model, elementOf(model, 'a')).text.split('\n').slice(1, 3)).toEqual([
-      'table a',
-      '  at 0,0 100x50 r=30',
-    ]);
-    expect(showView(model, elementOf(model, 'a')).text).toContain('    | x\\|y |  |\n    |  |');
-    expect(showView(model, elementOf(model, 'e')).text).toContain('  fields:\n    - n\n  ← free');
-    expect(showView(model, elementOf(model, 'odd')).text.split('\n').slice(1)).toEqual([
-      '? hologram odd',
-      '  note: "n"',
-    ]);
-    const arrowText = showView(model, elementOf(model, 'arr')).text.split('\n');
-    expect(arrowText[1]).toBe('arrow arr "go"');
-    expect(arrowText[2]).toBe('  3,4 → e.w');
-    expect(arrowText).toContain('  ← e "Entity" [rider]');
-    expect(showView(model, elementOf(model, 'e')).text).toContain('  ← free label="go" [arr]');
   });
 
   it('fits a budget by whole lines', () => {

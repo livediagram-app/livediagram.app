@@ -259,7 +259,7 @@ describe('applyReplace refusals', () => {
   it('names the templates for an unknown one', () => {
     const rejection = refusal({ template: 'nope' });
     expect(rejection.details).toEqual(['template="nope": not a template']);
-    expect(rejection.hint).toContain('flowchart');
+    expect(rejection.hint).toContain('sailboat');
     expect(refusal({ template: 7 }).code).toBe('invalid_value');
   });
 

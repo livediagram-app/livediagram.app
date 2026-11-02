@@ -97,64 +97,10 @@ describe('rm', () => {
     expect(warnings[0]!.message).toBe('loop from and to freed where it was drawn: t1 was removed');
   });
 
-  it('removes a mind node parent link to a removed node (EO30)', () => {
-    const mind = (id: string, mindParentId?: string): Element => ({
-      id,
-      type: 'shape',
-      shape: 'mind-node',
-      x: 400,
-      y: 0,
-      width: 120,
-      height: 40,
-      textSize: 'md',
-      ...(mindParentId ? { mindParentId } : {}),
-    });
-    const outcome = run([rm('root')], withElements(mind('root'), mind('child', 'root')));
-    expect(applied(outcome).tab.elements.find((el) => el.id === 'child')).not.toHaveProperty(
-      'mindParentId',
-    );
-    expect(lines(outcome)).toEqual(['~ child  mindParentId root→', '- root  mind-node']);
-  });
-
-  it('removes a mind node child without touching its parent', () => {
-    const child: Element = {
-      id: 'child',
-      type: 'shape',
-      shape: 'mind-node',
-      mindParentId: 'n1',
-      x: 400,
-      y: 0,
-      width: 120,
-      height: 40,
-    };
-    const sibling = { ...child, id: 'sibling' };
-    expect(lines(run([rm('child')], withElements(child, sibling)))).toEqual(['- child  mind-node']);
-  });
-
   it('frees nothing when the removed element has no arrows', () => {
     const outcome = run([rm('t1', true)]);
     expect(applied(outcome).warnings).toEqual([]);
     expect(lines(outcome)).toEqual(['- t1  text "Retry up to 3 times"']);
-  });
-
-  it('refuses a locked mind node that would lose its parent', () => {
-    const mind = (id: string, mindParentId?: string): Element => ({
-      id,
-      type: 'shape',
-      shape: 'mind-node',
-      x: 400,
-      y: 0,
-      width: 120,
-      height: 40,
-      textSize: 'md',
-      ...(mindParentId ? { mindParentId, locked: true } : {}),
-    });
-    expect(
-      refused(run([rm('root')], withElements(mind('root'), mind('child', 'root')))),
-    ).toMatchObject({
-      code: 'element_locked',
-      details: ['locked:', '  child  mind-node (element)'],
-    });
   });
 
   it('refuses a locked target, a locked pinned arrow, and a locked arrow to free', () => {

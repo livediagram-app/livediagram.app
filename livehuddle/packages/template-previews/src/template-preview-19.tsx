@@ -50,15 +50,6 @@ const MILESTONES = [
   { x: 70.5, s: NEXT },
 ];
 
-// The pyramid's tiers, top to bottom: fill, the rail card's tint and the tier's ink.
-const TIERS = [
-  { fill: 'rgb(167 139 250)', tint: 'rgb(245 243 255)', ink: 'rgb(109 40 217)' },
-  { fill: 'rgb(129 140 248)', tint: 'rgb(238 242 255)', ink: 'rgb(67 56 202)' },
-  { fill: 'rgb(96 165 250)', tint: 'rgb(239 246 255)', ink: 'rgb(29 78 216)' },
-  { fill: 'rgb(94 234 212)', tint: 'rgb(240 253 250)', ink: 'rgb(15 118 110)' },
-  { fill: 'rgb(134 239 172)', tint: 'rgb(240 253 244)', ink: 'rgb(21 128 61)' },
-];
-
 // The fishbone's six cause families: where the bone meets the spine, above or below, and its hue.
 const BONES = [
   { j: 21, up: true, edge: 'rgb(225 29 72)', fill: 'rgb(255 228 230)' },
@@ -170,66 +161,6 @@ export function templatePreviewGroup19(kind: TemplateKind): ReactElement | null 
             stroke={DONE.edge}
             strokeWidth={0.6}
           />
-        </svg>
-      );
-    case 'pyramid':
-      // Title and how-to; five tiers graded violet to green, each named, and down the right a tinted card per tier
-      // (glyph, the question in the tier's ink, the answer) joined to its band by a dotted leader in the same ink.
-      // Hover story: read up for how, each card lights in turn from the base.
-      return (
-        <svg width="70" height="44" viewBox="0 0 80 50" aria-hidden>
-          <Title w={28} cw={44} />
-          {TIERS.map((t, i) => {
-            const y0 = 9 + i * 7.6;
-            const y1 = y0 + 7.6;
-            const half = (y: number) => (21 * (y - 9)) / 38;
-            const cy = (y0 + y1) / 2;
-            return (
-              <g key={t.fill}>
-                <polygon
-                  points={`${24 - half(y0)},${y0} ${24 + half(y0)},${y0} ${24 + half(y1)},${y1} ${24 - half(y1)},${y1}`}
-                  fill={t.fill}
-                  stroke={WHITE}
-                  strokeWidth="0.4"
-                />
-                {/* The name, narrower in the apex where the tier is thin. */}
-                <Bar
-                  x={i === 0 ? 22.4 : 21}
-                  y={cy - 0.2 + (i === 0 ? 1.4 : 0)}
-                  w={i === 0 ? 3.2 : 6}
-                  h={1}
-                  fill={INK}
-                />
-                <line
-                  x1={24 + half(cy) + 1.5}
-                  y1={cy}
-                  x2="50"
-                  y2={cy}
-                  stroke={t.ink}
-                  strokeWidth="0.45"
-                  strokeDasharray="0.4 0.8"
-                />
-                <g
-                  className="pv-pulse"
-                  style={{ ...pv({ '--pv-at': `${900 + (4 - i) * 220}ms` }), ...FILL_BOX }}
-                >
-                  <rect
-                    x="51"
-                    y={cy - 3}
-                    width="27"
-                    height="6"
-                    rx="0.8"
-                    fill={t.tint}
-                    stroke={t.ink}
-                    strokeWidth="0.55"
-                  />
-                  <circle cx="53.4" cy={cy} r="1" fill="none" stroke={t.ink} strokeWidth="0.45" />
-                  <Bar x={55.6} y={cy - 1.6} w={14} h={1.1} fill={t.ink} />
-                  <Bar x={55.6} y={cy + 0.8} w={18} h={0.6} fill={BODY} />
-                </g>
-              </g>
-            );
-          })}
         </svg>
       );
     case 'venn':

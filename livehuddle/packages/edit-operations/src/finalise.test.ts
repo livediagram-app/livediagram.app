@@ -25,14 +25,9 @@ describe('containersBehindMembers', () => {
     ]);
   });
 
-  it('leaves a container already behind its members, and a mind map as it is', () => {
+  it('leaves a container already behind its members as it is', () => {
     const elements = [box('frame', 0, 0, 100, 'frame'), box('a', 10, 10, 10)];
     expect(containersBehindMembers(elements)).toEqual(elements);
-    const mind = [
-      { ...box('child', 0, 0, 10, 'mind-node'), mindParentId: 'root' } as Element,
-      box('root', 50, 0, 10, 'mind-node'),
-    ];
-    expect(containersBehindMembers(mind).map((el) => el.id)).toEqual(['child', 'root']);
   });
 });
 

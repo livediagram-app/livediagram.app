@@ -30,16 +30,10 @@ import {
   CODE_MAX_LENGTH,
   CODE_THEMES,
   ELEMENT_TYPES,
-  ENTITY_MAX_FIELDS,
   GRAPH_LABEL_MAX,
   GRAPH_LAYOUT_MAX_EDGES,
   GRAPH_LAYOUT_MAX_NODES,
   NAME_MAX_LENGTH,
-  SANKEY_LINK_COLORS,
-  SANKEY_MAX_FLOWS,
-  SANKEY_NAME_MAX,
-  SANKEY_UNIT_MAX,
-  SANKEY_VALUE_LABELS,
   SHAPE_KINDS,
   STEP_LABEL_MAX,
   STICKY_PRESETS,
@@ -76,9 +70,6 @@ const CONTENT_KINDS =
   `shape "code-block": "code" (up to ${CODE_MAX_LENGTH} chars), "codeLanguage" (` +
   `${CODE_LANGUAGES.join(', ')}), "codeTheme" (${CODE_THEMES.map((t) => t.id).join(', ')}; ` +
   'default midnight, dark), "codeWrap"; the block draws itself and shows no label. ' +
-  'shape "entity": "label" is the title, "entityFields" is [{ "name", "type"?, "key"? }] rows (up to ' +
-  `${ENTITY_MAX_FIELDS}; "key" is "pk", "fk", "pk-fk" or "uk"); the box grows to fit its rows. A pinned ` +
-  'arrow end on an entity may add "field": a row index, with anchor "w" or "e", to join that field. ' +
   'shape "lane": a swimlane whose "label" is the title in its left strip; elements fully inside ' +
   'its box belong to it, lanes are placed one under another, and they paint behind everything. ' +
   'shape "bar-chart" / "pie-chart": "pieSlices" is [{ "label", "value" }]; categories show in ' +
@@ -93,19 +84,6 @@ const CONTENT_KINDS =
   'scale of its own, labelled on the right, so a series in the thousands and one in the tens both read. ' +
   'A chart draws no title (a caption is a ' +
   'separate "text" element) and draws sample data when its data is empty. ' +
-  'shape "sankey": a Sankey diagram, bands as wide as the amount they carry, laid out in columns ' +
-  'by itself. "sankeyFlows" is [{ "from", "to", "value" }] with node NAMES (the nodes are the ' +
-  `names; up to ${SANKEY_MAX_FLOWS} flows, names up to ${SANKEY_NAME_MAX} chars, values above ` +
-  'zero; a flow back to an earlier node is hidden, as is one into itself). Options: ' +
-  `"sankeyLinkColor" (${SANKEY_LINK_COLORS.join(', ')}; default gradient), "sankeyAlign" ` +
-  '(justify: end nodes in the last column, the default; left: each at its own step), ' +
-  `"sankeyValueLabel" (${SANKEY_VALUE_LABELS.join(', ')}), "sankeyUnit" (e.g. "£", "kWh"; up ` +
-  `to ${SANKEY_UNIT_MAX} chars), "sankeyNodes" [{ "name", "color", "leftover": false }] to colour a node or switch ` +
-  'off its own leftover, ' +
-  '"sankeyLeftover" (show, the default: a middle node that sends on less than it receives draws ' +
-  'the difference to a "Leftover" end node; hide: it does not), "sankeyLeftoverName" (that ' +
-  "node's name; do not write leftover flows yourself). Make it " +
-  'wide (about 2:1); it draws no title. ' +
   // The diagram-building kinds (docs/specs/015-api/mcp-server.md §4.7a).
   'shape "card": a node with a title, meta line and body; "pageTitle" is the title, "pageSubtitle" ' +
   'the meta (a product or runtime), "label" the body, "cardMedia" + "iconId" the glyph (a badge disc, a ' +
@@ -118,12 +96,8 @@ const CONTENT_KINDS =
   'shape "boundary": a titled container ("label" the title, "pageSubtitle" a meta line such as a CIDR, ' +
   '"iconId" in its tab); elements whose centre is inside it belong to it; nest them for edge, region, ' +
   'VPC and subnet, "boundaryStyle" inset for a nested one, c4 for a C4 diagram. ' +
-  'shape "layer-stack" / "pyramid" / "cycle": "conceptRows" is [{ "label", "note"? }]: a stack 2 to 8 ' +
-  '(note = a side note), a pyramid 2 to 6 (first row the apex; "pyramidVariant" funnel makes it a ' +
-  'funnel and its note the row\'s value), a cycle 3 to 8 clockwise from the top (its "label" is the ' +
-  'centre); "hub" 3 to 8 satellites round its "label" ("hubSpokes" false hides the lines), "onion" 2 to 6 ' +
-  'rings from the core out, "chevrons" 2 to 8 stages left to right, "timeline-rail" 2 to 8 milestones ' +
-  'left to right (label = what, note = when: a date, a quarter). They draw their own rows in the colour ramp; ' +
+  'shape "timeline-rail": "conceptRows" is [{ "label", "note"? }], 2 to 8 milestones ' +
+  'left to right (label = what, note = when: a date, a quarter). It draws its own rows; ' +
   'do not draw them from separate shapes. ' +
   // Round 2 (docs/specs/015-api/mcp-server.md §4.7a).
   'shape "pointer-note": a note ("label") with a leader to a tip; "pointerTip" { x, y } is relative to its ' +
@@ -133,11 +107,7 @@ const CONTENT_KINDS =
   'shape "stack": a container that lines up the elements whose centre is inside it; "stackDirection", ' +
   '"stackColumns" (2 to 6, grid), "stackGap" and "stackPadding" (0 to 64), "stackAlign"; place children ' +
   'anywhere inside and the editor lays them out. ' +
-  'An org chart is quickest as a graph with style "tree" and a "role" on each node (see the graph tool). ' +
-  'shape "sequence": a UML sequence diagram in one element; "sequenceParticipants" is [{ "id", "label", ' +
-  '"actor"? }] (2 to 12, left to right), "sequenceMessages" [{ "from", "to", "label", "kind": call | async | ' +
-  'reply }] (up to 60, top to bottom, from === to a self-call), "sequenceNumbered" true numbers them. It lays ' +
-  'itself out; prefer it over loose shapes and arrows for a sequence diagram you will edit.';
+  'An org chart is quickest as a graph with style "tree" and a "role" on each node (see the graph tool).';
 
 // The style fields a box or arrow takes beyond its geometry, as facts (docs/specs/015-api/mcp-server.md §4.7a "Style
 // fields"): the closed vocabularies from the one list edit operations and the value check read, so they cannot drift.
@@ -156,7 +126,7 @@ const STYLE_FIELDS =
   '360 degrees, positive bowing up: a badge\u2019s top line 180, its bottom -180); on an arrow "label", ' +
   '"strokeStyle", "arrowEnds", "arrowheadShape" (an ER line\u2019s ends: one, zero-or-one, many, zero-or-many, ' +
   'one-or-many), "arrowheadStartShape" (the start\u2019s, when it differs: a one at one table, a many at the ' +
-  'other). A Mermaid erDiagram draws these ends itself. A field a type ' +
+  'other). A field a type ' +
   'does not have, or a value off its list, is refused naming what it takes. ' +
   'Facilitation kinds and what they hold: "session-button" a "session" ({"tool": "timer" with "minutes", ' +
   '"stopwatch", "vote" with "dots", or "poll" with "question" and "options"}), drawn as what pressing it does ' +
@@ -289,11 +259,11 @@ when you ask it to (or leave nodes unplaced). The full element format is
 documented inline on each tool's element argument, so the tool definitions are
 the complete reference for it. The "graph" argument (nodes + edges by id, or the same as Mermaid text in
 "mermaid") builds any node/edge diagram (flowchart, process, architecture, org chart, state machine, swimlanes, a
-cycle, a mind map) in the template look with no coordinates: template-sized boxes, elbow lines, a decision's side
+cycle) in the template look with no coordinates: template-sized boxes, elbow lines, a decision's side
 exit level beside it, loops and skipped ranks routed round the boxes, flowchart steps toned by their "shape" (a
 stadium starts or ends, a diamond decides; a node's "role" is a person's job title, for an org chart), node tones and
 icons, and a title, subtitle and shape key when given. Its styles: flow (layered), tree (hierarchy),
-mindmap, lanes (each group a swimlane) and cycle (a ring). A node's label is its heading (up to 40 characters,
+lanes (each group a swimlane), cycle (a ring) and storm (an event-storming board). A node's label is its heading (up to 40 characters,
 longer ones shortened with the full text kept in the node's note). Raw "elements" are for content a graph cannot
 express (charts, tables, stickies, free placement). Either way:
 use a unique "id" per element, make nodes "shape" elements (a labelled box) NOT
@@ -326,7 +296,7 @@ const templateField = z
   .optional()
   .describe(
     'Start from a hand-tuned template scaffold instead of providing elements: a template ' +
-      'kind from list_templates (e.g. "swot", "flowchart", "gantt"). The server ' +
+      'kind from list_templates (e.g. "swot", "retrospective", "gantt"). The server ' +
       'materialises its curated layout ("layout" is ignored for a template tab) and paints ' +
       'it with the chosen theme. Personalise the placeholder labels afterwards with ' +
       'update_document mode "ops". Provide template OR elements, not both.',
@@ -391,8 +361,8 @@ const graphField = z
             .string()
             .optional()
             .describe(
-              "A person's role: the node draws as the org-chart template's person card, the label (their name) " +
-                'in bold over the role, with a person icon unless "icon" names another.',
+              "A person's role: the node draws as a person card, the label (their name) in bold over the " +
+                'role, with a person icon unless "icon" names another.',
             ),
           group: z
             .string()
@@ -444,9 +414,7 @@ const graphField = z
           label: z
             .string()
             .optional()
-            .describe(
-              `Optional text on the arrow, at most ${GRAPH_LABEL_MAX} characters (a sequence message stays whole).`,
-            ),
+            .describe(`Optional text on the arrow, at most ${GRAPH_LABEL_MAX} characters.`),
           line: z
             .enum(['solid', 'dashed', 'thick'])
             .optional()
@@ -491,25 +459,23 @@ const graphField = z
           'auto (a tree runs down).',
       ),
     style: z
-      .enum(['flow', 'tree', 'mindmap', 'lanes', 'cycle', 'storm', 'sequence'])
+      .enum(['flow', 'tree', 'lanes', 'cycle', 'storm'])
       .optional()
       .describe(
         'Layout: "flow" (layered, the default; the layout for processes and systems: a decision\u2019s ' +
           'side exit sits level beside it and a loop back runs round the outside), "tree" (a tidy ' +
-          'hierarchy, the layout for org charts), "mindmap" (radial around the first node), "lanes" (a ' +
+          'hierarchy, the layout for org charts), "lanes" (a ' +
           'swimlane diagram: each group a lane, the flow left to right across them) or "cycle" (a ring in ' +
           'node order, clockwise from the top; a node with no edge sits at its centre) or "storm" (an ' +
           'event-storming board: each node a workshop note of its esKind, one column per domain event in the ' +
           'order the edges imply, each kind on its own lane, no arrows; a new tab becomes an event-storming ' +
-          'board) or "sequence" (a sequence diagram: the nodes the participants, a node shaped actor a stick ' +
-          'figure; the edges the messages in order, a dashed edge a reply; Mermaid sequenceDiagram text says ' +
-          'more: activations, notes, alt/loop fragments). With groups the layout is flow unless it is lanes.',
+          'board). With groups the layout is flow unless it is lanes.',
       ),
     lines: z
       .enum(['straight', 'angled', 'curved'])
       .optional()
       .describe(
-        'Arrow routing. Default: angled (elbows) for flow, tree and lanes; curved for mindmap and cycle.',
+        'Arrow routing. Default: angled (elbows) for flow, tree and lanes; curved for cycle.',
       ),
     title: z
       .string()
@@ -543,14 +509,10 @@ const mermaidField = z
   .string()
   .optional()
   .describe(
-    'The diagram as Mermaid text: a flowchart (graph / flowchart, with subgraphs), a state ' +
-      "diagram (stateDiagram), an ER diagram (erDiagram: crow's-foot ends from the cardinality tokens, " +
-      'an entity alias in brackets is its title, BOOK_AUTHOR[Book author]) or a sequence diagram (sequenceDiagram: ' +
-      'participant / actor, ->> calls, -) async, -->> replies, +/- activations, Note over, alt/else, loop, ' +
-      'opt, par, autonumber, title). Parsed into the same graph as the "graph" input: subgraphs become ' +
-      'groups, the direction is kept, and the same label limit applies; a sequence diagram is drawn with ' +
-      'lifelines, activation bars, notes and fragments. Front matter (---, title: Text, ---) titles any of them. ' +
-      'Provide one of graph, mermaid, elements or template.',
+    'The diagram as Mermaid text: a flowchart (graph / flowchart, with subgraphs) or a state ' +
+      'diagram (stateDiagram). Parsed into the same graph as the "graph" input: subgraphs become ' +
+      'groups, the direction is kept, and the same label limit applies. Front matter (---, title: Text, ---) ' +
+      'titles either. Provide one of graph, mermaid, elements or template.',
   );
 
 // Icon search (docs/specs/015-api/mcp-server.md §4.5a): the ids "iconId" takes, found by what they show.
@@ -759,7 +721,7 @@ export const updateDocumentShape = {
         '[all]; rm <sel> [all] [keep-arrows]; move <sel> <placement>|by=dx,dy; connect <a> -> <b> [label=…] ' +
         '[line=straight|angled|curved]; rewire <arrow> from=<x> to=<y>; insert <kind> key=value… between <a> <b> ' +
         '(puts a node on the a→b arrow and makes room); wrap <sel…> in frame|lane [label=…] [tidy]; unwrap ' +
-        '<frame>; order <sel> front|back; layout <sel> [style=flow|tree|mindmap] [direction=down|right]. ' +
+        '<frame>; order <sel> front|back; layout <sel> [style=flow|tree] [direction=down|right]. ' +
         'Selectors: a ref or id, "Label text", type:sticky, shape:diamond, in:<frame>, a->b, from:<x>, to:<x>, ' +
         'downstream:<x>. Placement: right-of:<x> left-of:<x> above:<x> below:<x> [gap:<n>], after:<x>, ' +
         'inside:<frame>, align:<x>, at:x,y; inside:<frame> right-of:<x> places beside x in that frame. A box placed ' +

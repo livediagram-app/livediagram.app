@@ -116,7 +116,7 @@ export function growContainer(
 }
 
 // The container holding a grown one, grown in turn to hold it and what it moved on with HOLD_PAD, when either now
-// reaches past it. A locked one, or a holder that is no frame or lane (a mind node), stays as it is.
+// reaches past it. A locked one, or a holder that is no frame or lane, stays as it is.
 function growScope(
   state: EditState,
   scope: ElementId | null,

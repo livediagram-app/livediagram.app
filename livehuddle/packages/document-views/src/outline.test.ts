@@ -66,7 +66,7 @@ describe('outlineView on the checkout tab (R8)', () => {
 
 describe('outline budgets (R20, R21)', () => {
   it('steps down the ladder: notes, attributes, containers, then the root', () => {
-    const states = [400, 380, 300, 200, 60].map(
+    const states = [400, 350, 300, 200, 60].map(
       (budget) => outlineView(checkout(), { budget }).state,
     );
     expect(states).toEqual([
@@ -79,7 +79,7 @@ describe('outline budgets (R20, R21)', () => {
   });
 
   it('fits within the budget whenever anything is left to drop', () => {
-    for (const budget of [380, 300, 200]) {
+    for (const budget of [350, 300, 200]) {
       expect(estimateTokens(outlineView(checkout(), { budget }).text)).toBeLessThanOrEqual(budget);
     }
   });
@@ -98,7 +98,7 @@ describe('outline budgets (R20, R21)', () => {
   });
 
   it('points to the full budget when nothing collapsed', () => {
-    const { text, fullTokens } = outlineView(checkout(), { budget: 380 });
+    const { text, fullTokens } = outlineView(checkout(), { budget: 350 });
     expect(text.split('\n').at(-1)).toBe(`… notes hidden: view --budget ${fullTokens}`);
   });
 

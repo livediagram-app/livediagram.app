@@ -94,7 +94,7 @@ export type OrderOperation = { op: 'order'; target: Selector } & (
 export type LayoutOperation = {
   op: 'layout';
   target: Selector;
-  style?: 'flow' | 'tree' | 'mindmap';
+  style?: 'flow' | 'tree';
   direction?: 'down' | 'right';
 };
 

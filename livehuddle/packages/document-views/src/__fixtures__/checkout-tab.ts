@@ -125,14 +125,7 @@ export function checkoutElements(): Element[] {
     shape('cloud', ID.stripe, 'Stripe', [1360, 150, 160, 90], {
       link: { kind: 'url', url: 'https://stripe.com/docs/api' },
     }),
-    shape('entity', ID.order, 'Order', [40, 580, 220, 140], {
-      entityFields: [
-        { name: 'id', type: 'uuid PK' },
-        { name: 'customer_id', type: 'uuid FK' },
-        { name: 'status', type: 'text' },
-        { name: 'total_cents', type: 'int' },
-      ],
-    }),
+    shape('square', ID.order, 'Order', [40, 580, 220, 140]),
     {
       ...createTable(40, 760),
       id: ID.slos,

@@ -34,46 +34,6 @@ describe('findView (R17, VW35)', () => {
     expect(findView(checkout(), 'nothing like it').text.split('\n').at(-1)).toBe('0 matches');
   });
 
-  it('searches fields, items, code and comments, reprinting a chain only when it changes', () => {
-    const elements = [
-      shapeAt('frame', 'outer', 0, 0, 2000, 2000, { label: 'Outer' }),
-      shapeAt('frame', 'inner', 0, 0, 900, 900, { label: 'Inner' }),
-      shapeAt('entity', 'ent', 10, 10, 100, 50, {
-        label: 'E',
-        entityFields: [{ name: 'needle_id', type: 'uuid' }],
-      }),
-      shapeAt('checklist', 'list', 300, 10, 100, 50, {
-        checklistItems: [{ text: 'thread the needle', done: false }],
-      }),
-      shapeAt('code-block', 'code', 1000, 1000, 100, 50, { code: 'const needle = 1;' }),
-      shapeAt('square', 'talk', 3000, 0, 100, 50, {
-        commentThread: {
-          comments: [
-            { id: 'c', text: 'Needle?', createdAt: 0, authorName: 'A', authorColor: '#000' },
-          ],
-          resolved: false,
-        },
-      }),
-      {
-        ...arrowBetween('free', 'talk', 'talk', { label: 'needle' }),
-        from: { kind: 'free', x: 0, y: 0 },
-      },
-    ] as Element[];
-    const model = buildViewModel({ id: 't', name: 'T', elements });
-    const lines = findView(model, 'needle').text.split('\n').slice(1);
-    expect(lines.map((l) => /^ *\S+ ?\S*/.exec(l)![0])).toEqual([
-      'frame outer',
-      '  frame inner',
-      '    entity ent',
-      '    checklist list',
-      '  code-block code',
-      'square talk',
-      'arrow free',
-      '5 matches:',
-    ]);
-    expect(lines.at(-1)).toBe('5 matches: 1 edge, 1 field, 1 item, 1 code, 1 comment');
-  });
-
   // Whatever the budget, the totals stay, and a cut answer always says so: never a silent truncation.
   it('keeps its match count at every budget, and names what any budget left out', () => {
     const full = findView(checkout(), 'order');
@@ -102,27 +62,5 @@ describe('find on odd shapes', () => {
     const model = buildViewModel({ id: 't', name: 'T', elements });
     expect(findView(model, 'needle').text.split('\n').slice(1, 2)).toEqual(['frame box']);
     expect(findView(model, 'needle').json.matches.map((m) => m.field)).toEqual(['cell']);
-  });
-
-  it('finds a Sankey by the nodes its flows name, each once', () => {
-    const model = buildViewModel(
-      {
-        id: 't',
-        name: 'T',
-        elements: [
-          shapeAt('sankey', 'sk', 0, 0, 400, 200, {
-            sankeyFlows: [
-              { from: 'Salary', to: 'Budget', value: 3 },
-              { from: 'Budget', to: 'Savings', value: 1 },
-              'not a flow',
-            ] as never,
-          }),
-        ] as Element[],
-      },
-      { rev: 1 },
-    );
-    const { json } = findView(model, 'budget');
-    expect(json.matches.map((m) => [m.ref, m.field])).toHaveLength(1);
-    expect(json.matches[0]!.field).toBe('node');
   });
 });

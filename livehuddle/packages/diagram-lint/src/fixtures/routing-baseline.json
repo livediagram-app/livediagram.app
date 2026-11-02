@@ -109,16 +109,6 @@
     "collisions": 0,
     "extent": "3027×974"
   },
-  "graph-mindmap-24": {
-    "shared": 0,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 0,
-    "behind": 0,
-    "collisions": 0,
-    "extent": "1344×768"
-  },
   "graph-storm-23": {
     "shared": 0,
     "crossed": 0,
@@ -158,96 +148,6 @@
     "behind": 0,
     "collisions": 0,
     "extent": "1330×753"
-  },
-  "mermaid-erdiagram-1": {
-    "shared": 0,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 0,
-    "behind": 0,
-    "collisions": 0,
-    "extent": "972×855"
-  },
-  "mermaid-erdiagram-2": {
-    "shared": 165,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 0,
-    "behind": 0,
-    "collisions": 0,
-    "extent": "1144×670"
-  },
-  "mermaid-erdiagram-3": {
-    "shared": 165,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 0,
-    "behind": 0,
-    "collisions": 0,
-    "extent": "1144×670"
-  },
-  "mermaid-erdiagram-4": {
-    "shared": 0,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 0,
-    "behind": 0,
-    "collisions": 0,
-    "extent": "972×855"
-  },
-  "mermaid-sequencediagram-1": {
-    "shared": 0,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 0,
-    "behind": 0,
-    "collisions": 0,
-    "extent": "2260×1502"
-  },
-  "mermaid-sequencediagram-2": {
-    "shared": 0,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 0,
-    "behind": 0,
-    "collisions": 0,
-    "extent": "1864×1380"
-  },
-  "mermaid-sequencediagram-3": {
-    "shared": 0,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 0,
-    "behind": 0,
-    "collisions": 0,
-    "extent": "1452×1380"
-  },
-  "mermaid-sequencediagram-4": {
-    "shared": 0,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 0,
-    "behind": 0,
-    "collisions": 0,
-    "extent": "1648×1374"
-  },
-  "mermaid-sequencediagram-5": {
-    "shared": 0,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 0,
-    "behind": 0,
-    "collisions": 0,
-    "extent": "2260×1502"
   },
   "mermaid-statediagram-1": {
     "shared": 0,

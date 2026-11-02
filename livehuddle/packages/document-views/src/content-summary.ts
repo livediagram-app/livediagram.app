@@ -1,7 +1,6 @@
 // What a content kind holds, briefly (docs/specs/024-agents/blueprints/document-views.md "Content
 // summaries", VW18 to VW21).
-import { ENTITY_KEY_LABELS, type Element } from '@livehuddle/document';
-import { ENTITY_FIELDS_SHOWN } from './constants';
+import type { Element } from '@livehuddle/document';
 import {
   arrayField,
   flagField,
@@ -11,21 +10,6 @@ import {
 } from '@liveworkspace/document-views/fields';
 import { cellText } from '@liveworkspace/document-views/text';
 import { shapeKindOf } from '@liveworkspace/document-views/view-attribute';
-
-function entitySummary(el: Element): string {
-  const fields = arrayField(el, 'entityFields').filter(isObject);
-  const shown = fields.slice(0, ENTITY_FIELDS_SHOWN).map((field) => {
-    const name = cellText(stringField(field, 'name') ?? '', true);
-    const type = stringField(field, 'type');
-    const key = stringField(field, 'key');
-    const typed = type ? `${name} ${cellText(type, true)}` : name;
-    return key && key in ENTITY_KEY_LABELS
-      ? `${typed} ${ENTITY_KEY_LABELS[key as keyof typeof ENTITY_KEY_LABELS]}`
-      : typed;
-  });
-  if (fields.length > ENTITY_FIELDS_SHOWN) shown.push(`+${fields.length - ENTITY_FIELDS_SHOWN}`);
-  return `{${shown.join('; ')}}`;
-}
 
 // Columns are the longest row's length (E26); the first row's missing cells print empty.
 function tableSummary(el: Element): string {
@@ -50,40 +34,14 @@ function checklistSummary(el: Element): string {
   return `done=${items.filter((item) => flagField(item, 'done')).length}/${items.length}`;
 }
 
-// A Sankey's size (docs/specs/009-elements/sankey.md): its flows, and the distinct node names they join.
-function sankeySummary(el: Element): string {
-  const flows = arrayField(el, 'sankeyFlows').filter(isObject);
-  // Matched as the diagram matches them: spaces trimmed and collapsed.
-  const names = new Set(
-    flows
-      .flatMap((f) => [stringField(f, 'from'), stringField(f, 'to')])
-      .map((n) => (n ?? '').replace(/\s+/g, ' ').trim())
-      .filter((n) => n !== ''),
-  );
-  return `flows=${flows.length} nodes=${names.size}`;
-}
-
-// A concept graphic (docs/specs/009-elements/concept-graphics.md): its rows in order, and a pyramid's variant when set.
+// A Timeline (docs/specs/009-elements/timeline.md): its milestones in order.
 function conceptSummary(el: Element): string {
   const rows = arrayField(el, 'conceptRows').filter(isObject);
-  const labels = rows.map((r) => cellText(stringField(r, 'label') ?? '?')).join('|');
-  const variant = stringField(el, 'pyramidVariant');
-  return `rows=${labels}${variant ? ` variant=${cellText(variant)}` : ''}`;
-}
-
-// A sequence diagram (docs/specs/009-elements/sequence-diagram.md): its participants in order and its message count.
-function sequenceSummary(el: Element): string {
-  const people = arrayField(el, 'sequenceParticipants')
-    .filter(isObject)
-    .map((p) => cellText(stringField(p, 'label') ?? '?'))
-    .join('|');
-  return `participants=${people} messages=${arrayField(el, 'sequenceMessages').length}`;
+  return `rows=${rows.map((r) => cellText(stringField(r, 'label') ?? '?')).join('|')}`;
 }
 
 export function contentSummaryOf(el: Element): string | null {
   switch (shapeKindOf(el)) {
-    case 'entity':
-      return entitySummary(el);
     case 'table':
       return tableSummary(el);
     case 'code-block':
@@ -95,18 +53,8 @@ export function contentSummaryOf(el: Element): string | null {
       return `series=${arrayField(el, 'lineSeries').length} x=${arrayField(el, 'lineCategories').length}`;
     case 'checklist':
       return checklistSummary(el);
-    case 'sankey':
-      return sankeySummary(el);
-    case 'layer-stack':
-    case 'pyramid':
-    case 'cycle':
-    case 'hub':
-    case 'onion':
-    case 'chevrons':
     case 'timeline-rail':
       return conceptSummary(el);
-    case 'sequence':
-      return sequenceSummary(el);
     case 'stack':
       return `direction=${cellText(stringField(el, 'stackDirection') ?? 'row')}`;
     default:

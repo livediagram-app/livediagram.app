@@ -4,8 +4,6 @@
 
 import {
   EVENT_STORMING_NOTES,
-  SEQUENCE_MAX_ITEMS,
-  SEQUENCE_MAX_PARTICIPANTS,
   graphShapeError,
   isRecord,
   MAX_ELEMENTS_PER_TAB,
@@ -50,61 +48,7 @@ const isGroup = (g: unknown) =>
   optional(isString)(g.label) &&
   optional((v) => isListOf(v, isString))(g.members);
 
-// A sequence read from Mermaid (mermaid-sequence.ts), as the MCP sends it on: every participant and item checked,
-// since the body is untrusted and the layout trusts its input.
-const isParticipant = (p: unknown) =>
-  isRecord(p) &&
-  isId(p.id) &&
-  isString(p.label) &&
-  optional((v) => typeof v === 'boolean')(p.actor) &&
-  optional(isString)(p.icon);
-const isSequenceItem = (it: unknown): boolean => {
-  if (!isRecord(it)) return false;
-  switch (it.kind) {
-    case 'message':
-      return (
-        isId(it.from) &&
-        isId(it.to) &&
-        isString(it.label) &&
-        isOneOf(['call', 'async', 'reply'])(it.style) &&
-        optional((v) => typeof v === 'boolean')(it.activate) &&
-        optional((v) => typeof v === 'boolean')(it.deactivate)
-      );
-    case 'note':
-      return (
-        isOneOf(['over', 'left', 'right'])(it.placement) &&
-        isListOf(it.who, isId) &&
-        (it.who as unknown[]).length > 0 &&
-        isString(it.text)
-      );
-    case 'activate':
-    case 'deactivate':
-      return isId(it.who);
-    case 'fragment':
-      return isString(it.op) && isString(it.label);
-    case 'else':
-      return isString(it.label);
-    case 'end':
-      return true;
-    default:
-      return false;
-  }
-};
-const isSequence = (q: unknown) =>
-  isRecord(q) &&
-  isListOf(q.participants, isParticipant) &&
-  (q.participants as unknown[]).length <= SEQUENCE_MAX_PARTICIPANTS &&
-  isListOf(q.items, isSequenceItem) &&
-  (q.items as unknown[]).length <= SEQUENCE_MAX_ITEMS &&
-  optional(isString)(q.title) &&
-  optional((v) => typeof v === 'boolean')(q.autonumber);
-
 const MEMBER_RULES: readonly [string, (v: unknown) => boolean, string][] = [
-  [
-    'sequence',
-    optional(isSequence),
-    `a sequence: up to ${SEQUENCE_MAX_PARTICIPANTS} participants and ${SEQUENCE_MAX_ITEMS} items`,
-  ],
   ['title', optional(isString), 'a string'],
   ['subtitle', optional(isString), 'a string'],
   [
@@ -126,8 +70,8 @@ const MEMBER_RULES: readonly [string, (v: unknown) => boolean, string][] = [
   ['direction', optional(isOneOf(['down', 'right'])), 'down or right'],
   [
     'style',
-    optional(isOneOf(['flow', 'tree', 'mindmap', 'lanes', 'cycle', 'storm', 'sequence'])),
-    'flow, tree, mindmap, lanes, cycle, storm or sequence',
+    optional(isOneOf(['flow', 'tree', 'lanes', 'cycle', 'storm'])),
+    'flow, tree, lanes, cycle or storm',
   ],
   ['lines', optional(isOneOf(['straight', 'angled', 'curved'])), 'straight, angled or curved'],
 ];

@@ -65,7 +65,7 @@ export const mcpListTemplates = mcpTool('list_templates', {
   title: 'List templates',
   description:
     'Browse the template library — the same hand-tuned scaffolds the editor\u2019s Quick ' +
-    'Start offers (flowchart, SWOT, gantt, retrospective, ...). Returns categories ' +
+    'Start offers (retrospective, SWOT, gantt, town hall, ...). Returns categories ' +
     'plus { kind, title, description, category } per template. Pass a kind as "template" ' +
     'on create_document / add_tab to start from it, then personalise the labels with ' +
     'update_document.',
@@ -89,8 +89,8 @@ export const mcpCreateDocument = mcpTool('create_document', {
   behaviour: 'write',
   title: 'Create a document',
   description:
-    'Create a new document: a diagram (flowchart, architecture, org chart, mind map, sequence, ER), a whiteboard ' +
-    'or a workshop. Each tab takes a "graph" ' +
+    'Create a new document: a workshop board, a diagram (process, architecture, org chart) or a whiteboard. ' +
+    'Each tab takes a "graph" ' +
     '(nodes and edges, laid out in the template look: ' +
     'sizes, elbows, side exits, loops round the outside, title and key), "mermaid", raw "elements" (the full ' +
     'format is documented inline on the "tabs" argument below) or a "template". ' +
