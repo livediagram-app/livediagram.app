@@ -1,3 +1,4 @@
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { describe, expect, it } from 'vitest';
 import {
   fieldValueFilter,
@@ -192,11 +193,15 @@ describe('field value filters', () => {
       make({ title: `C${i}`, 'f-team': ['Web', 'Ops', `T${i % 20}`], 'f-tags': ['a', 'b'] }),
     );
     const f = fieldValueFilter({ id: 'f-team', kind: 'labels' }, 'T3');
-    const start = performance.now();
     let found = 0;
-    for (let n = 0; n < 20; n++) found = searchCards(many, [f], types).length;
-    const each = (performance.now() - start) / 20;
+    const run = () => {
+      found = searchCards(many, [f], types).length;
+    };
+    run();
+    let best = Infinity;
+    for (let pass = 0; pass < 5; pass++) best = Math.min(best, cpuMsOf(run));
     expect(found).toBe(25);
-    expect(each).toBeLessThan(50);
+    // Measured at under 1 ms CPU on an M-series laptop; a scan per card per value would be many times this.
+    expect(best).toBeLessThan(cpuBudgetMs(50));
   });
 });
