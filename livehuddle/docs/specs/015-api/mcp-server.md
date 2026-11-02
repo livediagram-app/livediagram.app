@@ -982,7 +982,7 @@ read its server card, because `/mcp` answers only a signed-in caller.
 - **Descriptor.** `livehuddle/server.json`, under the registry's `2025-12-11` schema.
   Name `io.github.livediagram-app/livehuddle`: every product lists under
   `io.github.livediagram-app`, the GitHub organisation that owns the monorepo
-  (`livediagram-app/livehuddle.app`, public), so a GitHub sign-in as one of its
+  (`livediagram-app/livediagram.app`, public), so a GitHub sign-in as one of its
   members, or the repo's own GitHub OIDC token, proves the namespace: no DNS
   record and no stored secret. `title` `livehuddle`, a `description` of at most 100
   characters, `websiteUrl` `https://www.livehuddle.app`, `repository` the monorepo with
