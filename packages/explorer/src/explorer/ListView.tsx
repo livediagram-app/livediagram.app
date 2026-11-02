@@ -103,7 +103,6 @@ export function ListView({
       </div>
       <ul
         ref={body}
-        aria-rowcount={count}
         className={`divide-y divide-slate-100 dark:divide-slate-700/60 ${cascade ? 'lw-cascade' : ''}`}
       >
         {start > 0 ? <li aria-hidden style={{ height: start * ROW_HEIGHT }} /> : null}
