@@ -18,6 +18,7 @@ changes.
 | twin                 | what `twinFor(el, pages, use)` returns                                                                   |
 | Mirror Copy          | command id `mirror-copy`; `mirrorCopies`; `LogoToolsView.mirrorCopy`                                     |
 | wordmark type        | `TextElement.letterSpacing`, `.fontWeight`, `.textCase`, `.textArc`; `hasWordmarkType(el)`               |
+| template's note      | `TextElement.templateNote` (`true`); `logoKitTab(tab)` leaves it out                                     |
 | combine              | `CombineOp` (`'unite' \| 'subtract' \| 'intersect' \| 'exclude'`); `combineElements`; `useCombineShapes` |
 | combinable           | `isCombinable(el)`; `combinableSelection(...)`                                                           |
 | contour              | `PathElement.nodes` (the first) and each of `PathElement.subpaths`; `pathContours(el)`                   |
@@ -80,6 +81,10 @@ Exclude), **Wordmark**, **Logo Kit**.
   -360..360). Listed in `element-fields.ts`; validated in `validate.ts` (`TEXT_FIELD_CHECKS`), an out
   of range value refused with its rule. The controls clamp before writing (`clampLetterSpacing`,
   `clampTextArc`) and store 0 as absent.
+- `TextElement.templateNote?: true`: words a template wrote about its page rather than for the
+  artwork (`template-builders-logo.ts` sets it on a lockup page's number and name, brand line, use
+  and how-to). Absent on everything a person makes. Listed in `element-fields.ts`; validated in
+  `validate.ts` (only `true`). Older readers ignore it, so their Logo Kit still holds the notes.
 - `PathElement` gains `subpaths?: PathNode[][]`: further contours, 3 or more nodes each on a closed
   path (`closed: true`) or 2 or more on an open one, all contours within `MAX_PATH_NODES`; refused
   as `subpaths` otherwise. Present on a closed path means even-odd fill (no stored rule).
@@ -496,7 +501,8 @@ viewportZoom })` holds `press` (the last press on a compound path while nothing 
 - `export-logo-kit.ts`: `exportLogoKit(tab, page, opts)` (the SVG through `exportTabAsSvg` so fonts
   embed; one raster at 1024 px; each PNG by `downscale`, halving then one high-quality draw;
   `favicon.ico` by `encodeIco`; zipped by `writeZip`); `logoKitFileNames`; `logoKitFileName(design,
-page, count)`.
+page, count)`. Both the kit and `LogoKitPanel`'s preview draw `logoKitTab(tab)`: the tab less its
+  `templateNote` text, one pass over its elements.
 - `ExportTabDialog`: a page's PNG and SVG preview (`seeThrough`) renders with `transparentPaper`,
   and over a `checkerboard` on a logo page.
 - `ExportTabDialog`: the `'logo-kit'` card while the tab has a logo page; `LogoKitPanel` owns the rest (a page picker when several, a checkerboard preview, Download .zip,

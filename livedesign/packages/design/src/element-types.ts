@@ -516,6 +516,10 @@ export type TextElement = {
   // Bends the text along a circle, -360 to 360 degrees: positive bows up, negative down. Absent is
   // flat. Arched text is one line.
   textArc?: number;
+  // Words a template wrote about its page rather than for the artwork (docs/specs/007-editor/logo-pages.md "Export"):
+  // a lockup's number and name, where it gets used, how to use the template. Drawn like any text; the Logo Kit leaves
+  // it out. Absent on everything a person makes.
+  templateNote?: true;
 };
 
 // --- Tables ----------------------------------------------------------------

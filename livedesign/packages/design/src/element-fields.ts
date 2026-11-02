@@ -211,6 +211,7 @@ export const ELEMENT_FIELD_NAMES = {
     'fontWeight',
     'textCase',
     'textArc',
+    'templateNote',
   ]),
   sticky: fieldsOf<StickyElement>()([
     'id',
