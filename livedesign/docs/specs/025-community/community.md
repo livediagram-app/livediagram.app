@@ -147,8 +147,8 @@ marked **Hidden**, with **Your Shares** above them totalling posts, likes and co
 ## Featured on the home page
 
 The landing page carries a **From the Community** section, like livediagram's: six designs, the most liked over the
-last three months, topped up with the best of all time. Placeholder cards hold their space while they load; with
-nothing to show it says the Community is just getting started. **Explore the Community** leads to the gallery, with
+last three months, topped up with the best of all time. Placeholder cards hold their space while they load. With
+fewer than six to show (a young Community, or the service unreachable), the section is not shown at all. **Explore the Community** leads to the gallery, with
 **How the Community Works** beside it. The service answers
 `GET liveworkspace.app/api/community/featured?app=livedesign.app`, from Cloudflare's edge cache for a minute.
 
