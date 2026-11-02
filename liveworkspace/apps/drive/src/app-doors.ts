@@ -17,7 +17,7 @@ export function createAppDoors(
   doFetch: typeof fetch = (i, init) => fetch(i, init),
 ): AppDoors {
   const doors = createDoors(
-    // Only the apps the mirror writes files for: a held app (livehuddle) has no Drive doors.
+    // Only the apps the mirror writes files for: every registered app, held livehuddle included.
     {
       origin: (app) => (isAppName(app) ? appOrigin(env, app) : undefined),
       key: (app) => (isAppName(app) ? appKey(env, app) : undefined),
