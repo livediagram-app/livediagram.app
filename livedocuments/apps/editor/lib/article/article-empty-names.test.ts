@@ -39,4 +39,14 @@ describe('empty headings and header cells', () => {
     ]);
     expect(emptyNameDecorations(s.nodes.doc.create({}, [table('Typed')]), true)).toEqual([]);
   });
+
+  it('walks a 5000-block article well inside a keystroke budget', () => {
+    const doc = s.nodes.doc.create(
+      {},
+      Array.from({ length: 5000 }, (_, i) => para(i % 10 === 0 ? 'h1' : 'body', i % 3 ? 'x' : '')),
+    );
+    const start = performance.now();
+    emptyNameDecorations(doc, true);
+    expect(performance.now() - start).toBeLessThan(50);
+  });
 });
