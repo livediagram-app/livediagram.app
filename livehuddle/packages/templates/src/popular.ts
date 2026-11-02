@@ -1,6 +1,6 @@
 // The Popular shelf (docs/specs/008-canvas/canvas-and-palette.md "Template categories", docs/specs/007-editor/
-// templates-by-mode.md "The mode filter"): where most people start, a short curated list per mode filter, each
-// opening with its blank(s). Shared by the editor's template step and the marketing gallery, so the two shelves can
+// templates-by-mode.md "The mode filter"): where most people start, a short curated list, opening with Workshop's
+// blank. Shared by the editor's template step and the marketing gallery, so the two shelves can
 // never disagree.
 import type { EditorMode } from '@livehuddle/document';
 import { TEMPLATES, type TemplateKind } from './templates';
@@ -8,36 +8,15 @@ import { TEMPLATES, type TemplateKind } from './templates';
 type PopularChoice = 'all' | EditorMode;
 
 export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKind[]>> = {
-  // The three blanks lead, one per mode in mode order (EDITOR_MODES), so the picker needs no separate blank card.
+  // Workshop's blank leads, so the picker needs no separate blank card.
   all: [
-    'blank',
-    'whiteboard',
     'blank-session',
-    'mindmap',
-    'flowchart',
     'sailboat',
-    'orgchart',
-    'sketchnote',
-    'gantt',
     'retrospective',
-    'timeline',
-  ],
-  diagram: [
-    'blank',
-    'flowchart',
-    'mindmap',
-    'orgchart',
+    'town-hall',
+    'sketchnote',
     'gantt',
     'timeline',
-    'system-architecture',
-  ],
-  draw: [
-    'whiteboard',
-    'sketchnote',
-    'journey-doodle',
-    'comic-strip',
-    'idea-garden',
-    'rich-picture',
   ],
   workshop: [
     'blank-session',

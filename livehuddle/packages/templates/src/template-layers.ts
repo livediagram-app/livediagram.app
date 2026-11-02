@@ -91,8 +91,6 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
       return layered('Canvas', 'Notes');
     case 'empathy-map':
       return layered('Quadrants', 'Notes');
-    case 'sequence-diagram':
-      return layered('Lifelines', 'Messages');
     // The board grids (template-builders-board-grid.ts): panels, headers and prompts under the notes.
     case 'eisenhower-matrix':
       return layered('Matrix', 'Tasks');

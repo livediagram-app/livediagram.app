@@ -31,7 +31,7 @@ describe('retired templates', () => {
   });
 
   it('passes a live kind through and refuses anything else', () => {
-    expect(templateKindOf('flowchart')).toBe('flowchart');
+    expect(templateKindOf('sailboat')).toBe('sailboat');
     expect(templateKindOf('not-a-template')).toBeNull();
     expect(templateKindOf(42)).toBeNull();
     expect(templateKindOf('hasOwnProperty')).toBeNull();

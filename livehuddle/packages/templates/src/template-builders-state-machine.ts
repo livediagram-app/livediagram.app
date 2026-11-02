@@ -1,6 +1,5 @@
-// The UML state machine template (docs/specs/008-canvas/canvas-and-palette.md "Templates"), split out of
-// template-builders-uml.ts once it grew a composite state, guards and
-// three exits.
+// The UML state machine template (docs/specs/008-canvas/canvas-and-palette.md "Templates"): a composite state,
+// guards and three exits.
 //
 // Pure: takes a centre (cx, cy), returns a fresh Element[].
 

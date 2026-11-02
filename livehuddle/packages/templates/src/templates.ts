@@ -3,19 +3,11 @@ import { UNTITLED_DOCUMENT_NAME, isUntitledDocumentName } from './legacy-untitle
 
 export type TemplateKind =
   | 'blank'
-  | 'mindmap'
   // Mind-map variants (docs/specs/008-canvas/canvas-and-palette.md): the radial 'mindmap' plus a left-to-right
   // tree and a central bubble map, grouped under the Mind maps category.
-  | 'mindmap-tree'
-  | 'mindmap-bubble'
-  | 'orgchart'
   | 'retrospective'
-  | 'flowchart'
   // Flowchart variants (docs/specs/008-canvas/canvas-and-palette.md): cross-functional lanes, branching decision
   // tree, an approval loop, and a data-flow diagram. Grouped under Flowcharts.
-  | 'swimlane'
-  | 'decision-tree'
-  | 'approval-workflow'
   | 'data-flow'
   | 'swot'
   | 'timeline'
@@ -28,11 +20,6 @@ export type TemplateKind =
   | 'venn'
   | 'journey'
   | 'fishbone'
-  | 'pyramid'
-  // A growth / momentum flywheel: a spinning hub and four hue-tinted
-  // stage wheels on a flowing clockwise loop, each with its metric, plus
-  // push / friction stickies. An extra.
-  | 'flywheel'
   // Gantt chart: a twelve-week plan on a month + week calendar, grouped
   // by workstream, with owners, progress bars, dependencies, a milestone
   // and a Today line. A project-planning starter, and an extra.
@@ -45,8 +32,6 @@ export type TemplateKind =
   // entity element for tables, dashed arrows for lifelines / returns)
   // so a dev audience has a first-class starting point. All extras.
   | 'system-architecture'
-  | 'er-diagram'
-  | 'sequence-diagram'
   // Impact / Effort prioritisation matrix: four named quadrants (Quick
   // wins / Big bets / Fill-ins / Money pits) with dot-voted items placed,
   // beside a vote, size, commit rail. A product / planning starter.
@@ -93,22 +78,18 @@ export type TemplateKind =
   | 'empathy-map'
   // Conversion funnel: narrowing stages with counts, derived step rates
   // and a callout on the biggest drop-off.
-  | 'funnel'
   // Sankey diagram: website visits from their channels through the pages to a paid plan, the drop-off drawn
   // as the diagram's leftovers.
-  | 'sankey'
   // OKR tree: an objective branching into measurable key results (each
   // with a progress ring) and the initiatives that move them.
   | 'okr-tree'
   // Sitemap: a website's page hierarchy (home, nav sections, pages with
   // their routes, footer and utility pages) drawn with elbow connectors.
-  | 'sitemap'
   // Cloud architecture (Technology icons, docs/specs/010-palette/technology-icons.md): an AWS stack with
   // its services grouped into edge, region, VPC and subnet frames.
   | 'cloud-architecture'
   // UML class diagram: entity classes wired by inheritance / composition /
   // aggregation / association arrows (uses the UML arrowhead shapes).
-  | 'uml-class'
   // UML state machine: initial / final pseudostates, a composite state and
   // transitions labelled event [guard] / action.
   | 'state-machine'
@@ -221,56 +202,10 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
-    kind: 'mindmap',
-    title: 'Mind Map',
-    description:
-      'A team offsite plan: five colour-coded branches with glyphs radiating from the topic.',
-  },
-  {
-    kind: 'mindmap-tree',
-    title: 'Tree Mind Map',
-    description: 'A left-to-right outline: a bold root, four branches and two sub-topics each.',
-  },
-  {
-    kind: 'mindmap-bubble',
-    title: 'Bubble Map',
-    description: 'A brand voice ringed by six adjectives, each with a line that proves it.',
-  },
-  {
-    kind: 'orgchart',
-    title: 'Org Chart',
-    description:
-      'A leadership team by person, with team bands, a dotted-line report and an open role.',
-  },
-  {
     kind: 'retrospective',
     title: 'Retrospective',
     description:
       'Went well, To improve and Ideas columns, a mood check, a vote and an Action items checklist.',
-  },
-  {
-    kind: 'flowchart',
-    title: 'Flowchart',
-    description:
-      'A checkout drawn with the five ISO symbols, retry and back-order loops, and a key.',
-  },
-  {
-    kind: 'swimlane',
-    title: 'Swimlane Flowchart',
-    description: 'An order from click to doorstep across four role lanes.',
-    extra: true,
-  },
-  {
-    kind: 'decision-tree',
-    title: 'Decision Tree',
-    description: 'Can we ship on Friday? Yes / no questions down to go, wait and stop outcomes.',
-    extra: true,
-  },
-  {
-    kind: 'approval-workflow',
-    title: 'Approval Workflow',
-    description: 'Manager and finance sign-off in role lanes, with rework and decline paths.',
-    extra: true,
   },
   {
     kind: 'data-flow',
@@ -322,19 +257,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
-    kind: 'pyramid',
-    title: 'Pyramid',
-    description: 'A five-tier strategy pyramid, purpose down to initiatives, each tier explained.',
-    extra: true,
-  },
-  {
-    kind: 'flywheel',
-    title: 'Flywheel',
-    description:
-      'A growth loop that turns: four stages feeding each other round a spinning hub, each with its number, plus the push and friction acting on it.',
-    extra: true,
-  },
-  {
     kind: 'gantt',
     title: 'Gantt Chart',
     description:
@@ -353,20 +275,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'System Architecture',
     description:
       'A vendor-neutral logical architecture in tiered lanes: clients, edge, services and data, wired with labelled protocols.',
-    extra: true,
-  },
-  {
-    kind: 'er-diagram',
-    title: 'Database Schema',
-    description:
-      'ER diagram of a food-delivery app: six tables with PK / FK columns, one-to-many relationships and their multiplicities.',
-    extra: true,
-  },
-  {
-    kind: 'sequence-diagram',
-    title: 'Sequence Diagram',
-    description:
-      'UML checkout flow: an actor, lifelines, activation bars, sync / async / reply messages and an alt fragment.',
     extra: true,
   },
   {
@@ -506,20 +414,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
-    kind: 'funnel',
-    title: 'Funnel',
-    description:
-      'Four narrowing stages with real counts and step rates, and a callout on the biggest drop-off with experiments to fix it.',
-    extra: true,
-  },
-  {
-    kind: 'sankey',
-    title: 'Sankey Diagram',
-    description:
-      'Where visitors come from and where they go: channels into pages into trials, with every drop-off drawn to Bounced.',
-    extra: true,
-  },
-  {
     kind: 'okr-tree',
     title: 'OKR Tree',
     description:
@@ -527,24 +421,10 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
-    kind: 'sitemap',
-    title: 'Sitemap',
-    description:
-      'A site page tree: nav sections, pages with type glyphs and routes, footer and utility pages.',
-    extra: true,
-  },
-  {
     kind: 'cloud-architecture',
     title: 'Cloud Architecture',
     description:
       'A food-delivery stack on AWS: real service icons nested in edge, region, VPC and subnet groups.',
-    extra: true,
-  },
-  {
-    kind: 'uml-class',
-    title: 'Class Diagram',
-    description:
-      'UML classes with visibility and types, wired by inheritance, composition, aggregation and associations.',
     extra: true,
   },
   {

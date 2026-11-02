@@ -1,7 +1,4 @@
-// Tree-scaffold templates beyond the org chart: the OKR goal tree here, and
-// the website sitemap in ./template-builders-sitemap (re-exported below so
-// imports stay put). The org chart itself lives in
-// ./template-builders-trees.
+// Tree-scaffold templates: the OKR goal tree.
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh
 // Element[]. See docs/specs/008-canvas/canvas-and-palette.md "Templates" for the catalogue.
@@ -16,8 +13,6 @@ import {
   type TextRun,
 } from '@livehuddle/document';
 import { BOTTOM_EXITS, rake } from './template-rake';
-
-export { buildSitemap } from './template-builders-sitemap';
 
 // OKR tree: a quarter's OKRs as the team would actually track them. One
 // objective (bold, a target glyph, its owner and quarter) over three key
