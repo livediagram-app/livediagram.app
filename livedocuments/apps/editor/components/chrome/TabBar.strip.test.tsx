@@ -21,6 +21,14 @@ describe('TabBar strip', () => {
     expect(screen.queryByText('Tabs')).toBeNull();
   });
 
+  it('is a named region holding the tab strip and the cluster beside it', () => {
+    render(<TabBar {...props({})} />);
+    const bar = screen.getByRole('region', { name: 'Bottom bar' });
+    expect(bar.contains(screen.getByRole('navigation', { name: 'Tab bar' }))).toBe(true);
+    // Every control of the bar, the cluster's included, is inside it.
+    for (const button of screen.getAllByRole('button')) expect(bar.contains(button)).toBe(true);
+  });
+
   it('brings the whole open tab into view on a tap, without selecting it again', () => {
     const onSelect = vi.fn();
     const scrollTo = vi.fn();
