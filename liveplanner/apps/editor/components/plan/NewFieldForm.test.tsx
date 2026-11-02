@@ -5,9 +5,10 @@ import { useRef } from 'react';
 import { ITEM_TYPE_CUSTOM_MAX, type ItemFieldId } from '@liveplanner/items';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
 import { NewFieldForm } from './NewFieldForm';
+import { GALLERY_WIDTH } from './gallery/GalleryFrame';
 
-// docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field, Pick (search, one list of kinds in an accordion, the
-// keyboard) then Shape (Ready to use, name, the kind's settings, Required, the preview, Add {Name}), Escape and back.
+// docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field, Pick (the gallery: search, the rail of categories, the
+// kinds as tiles, the keyboard) then Shape (Ready to use, name, the kind's settings, Required, the preview, Add {Name}), Escape and back.
 vi.mock('./PlanContext', () => ({ usePlan: () => null }));
 afterEach(cleanup);
 
@@ -25,7 +26,7 @@ function Harness(props: {
     <AnchoredPopover
       anchor={props.anchor}
       name="Add Field"
-      width={384}
+      width={GALLERY_WIDTH}
       onEscape={() => escape.current?.() ?? false}
       onClose={props.onClose}
     >
@@ -54,8 +55,15 @@ function open({
 
 const search = () => screen.getByRole('searchbox', { name: 'Search fields' });
 const type = (text: string) => fireEvent.change(search(), { target: { value: text } });
-const header = (name: string) => screen.getByRole('button', { name: new RegExp(`^${name}`) });
+const rail = () => within(screen.getByRole('navigation', { name: 'Field categories' }));
+const entry = (name: string) => rail().getByRole('button', { name: new RegExp(`^${name}`) });
+const current = () =>
+  screen
+    .getByRole('navigation', { name: 'Field categories' })
+    .querySelector('[aria-current="true"]')
+    ?.getAttribute('data-rail-entry');
 const kind = (name: string) => screen.getByRole('button', { name, exact: true } as never);
+const tile = (k: string) => document.querySelector<HTMLButtonElement>(`[data-kind="${k}"]`)!;
 const kindNames = () =>
   [...document.querySelectorAll('[data-kind]')].map((b) => b.getAttribute('aria-label'));
 const readyToUse = () =>
@@ -63,63 +71,95 @@ const readyToUse = () =>
     .getAllByRole('button')
     .map((b) => b.querySelector('.font-medium')?.textContent);
 const tagged = () =>
-  [...document.querySelectorAll('[data-kind]')]
-    .filter((b) => b.textContent?.includes('Ready to use'))
-    .map((b) => b.getAttribute('aria-label'));
+  [...document.querySelectorAll('[data-kind-tile]')]
+    .filter((t) => t.textContent?.includes('Ready to use'))
+    .map((t) => t.querySelector('[data-kind]')!.getAttribute('aria-label'));
 const escape = () => fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
 const preview = () => within(screen.getByRole('figure', { name: 'Preview' }));
 const name = () => screen.getByRole('textbox', { name: 'Name' });
 const addButton = () => screen.getByRole('button', { name: /^Add (?!an option)/ });
-const pick = (k: string, group?: string) => {
-  if (group && header(group).getAttribute('aria-expanded') !== 'true')
-    fireEvent.click(header(group));
-  fireEvent.click(kind(k));
-};
+const pick = (k: string) => fireEvent.click(kind(k));
+const key = (k: string) => fireEvent.keyDown(document.activeElement!, { key: k });
+
+const ALL_KINDS = [
+  'Text',
+  'Long Text',
+  'Number',
+  'Currency',
+  'Percent',
+  'Rating',
+  'Date',
+  'Date and Time',
+  'Date Range',
+  'Duration',
+  'Choice',
+  'Multiple Choice',
+  'Checkbox',
+  'Labels',
+  'Colour',
+  'Person',
+  'Checklist',
+  'Comments',
+  'Votes',
+  'Link',
+  'Email',
+  'Phone',
+  'Image',
+  'Link to Card',
+  'Calculated',
+];
 
 describe('Pick', () => {
-  it('opens on the search and the first group of one list of kinds, with their lines', () => {
+  it('opens on the search and All Fields: every kind a tile under its category, with its line and a sample', () => {
     open();
     expect(document.activeElement).toBe(search());
-    expect(screen.queryByText('Ready-made')).toBeNull();
-    expect(screen.queryByText('Your own field')).toBeNull();
-    expect(header('Text & links').getAttribute('aria-expanded')).toBe('true');
-    expect(header('Numbers & dates').getAttribute('aria-expanded')).toBe('false');
-    expect(kindNames()).toEqual(['Text', 'Long Text', 'Link', 'Email', 'Phone']);
-    expect(kind('Link').getAttribute('aria-describedby')).toBeTruthy();
-    expect(screen.getByText('A web address')).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Add Field' })).toBeTruthy();
+    expect(current()).toBe('all');
+    expect(entry('All Fields').textContent).toContain('25');
+    expect(kindNames()).toEqual(ALL_KINDS);
+    for (const c of ['Text', 'Numbers and Money', 'Dates and Time', 'Cards and Formulas'])
+      expect(screen.getByRole('heading', { name: c })).toBeTruthy();
+    expect(screen.getByText('Counts, amounts, shares and scores.')).toBeTruthy();
+    const line = document.getElementById(kind('Link').getAttribute('aria-describedby')!);
+    expect(line?.textContent).toBe('A web address');
+    // Each tile draws a sample of its kind's value.
+    const currency = document.querySelector('[data-kind-tile="currency"]')!;
+    expect(currency.textContent).toContain('£12,500');
   });
 
-  it('keeps one group open at a time, and closes the open one when pressed', () => {
+  it('shows one category from the rail, and every one again from All Fields', () => {
     open();
-    fireEvent.click(header('Choices'));
-    expect(header('Choices').getAttribute('aria-expanded')).toBe('true');
-    expect(header('Text & links').getAttribute('aria-expanded')).toBe('false');
-    expect(kindNames()).toEqual(['Choice', 'Multiple Choice', 'Checkbox', 'Labels']);
-    fireEvent.click(header('Choices'));
-    expect(kindNames()).toEqual([]);
+    fireEvent.click(entry('Choices and Tags'));
+    expect(current()).toBe('choices');
+    expect(kindNames()).toEqual(['Choice', 'Multiple Choice', 'Checkbox', 'Labels', 'Colour']);
+    expect(entry('Choices and Tags').getAttribute('aria-current')).toBe('true');
+    fireEvent.click(entry('People and Teamwork'));
+    expect(kindNames()).toEqual(['Person', 'Checklist', 'Comments', 'Votes']);
+    fireEvent.click(entry('All Fields'));
+    expect(kindNames()).toEqual(ALL_KINDS);
   });
 
-  it('lists the built-ins’ kinds in their groups, tagging those the type lacks Ready to use', () => {
+  it('tags the kinds whose built-in field the type lacks Ready to use, and says so', () => {
     open({ missing: ['assignee', 'due', 'labels', 'comments'] });
-    fireEvent.click(header('People & teamwork'));
-    expect(kindNames()).toEqual(['Person', 'Checklist', 'Comments', 'Votes']);
-    expect(tagged()).toEqual(['Person', 'Comments']);
-    fireEvent.click(header('Colour & images'));
-    expect(kindNames()).toEqual(['Colour', 'Image']);
-    fireEvent.click(header('Numbers & dates'));
-    expect(tagged()).toEqual(['Date']);
+    expect(tagged()).toEqual(['Date', 'Labels', 'Person', 'Comments']);
+    const described = kind('Date').getAttribute('aria-describedby')!.split(' ');
+    expect(described.map((id) => document.getElementById(id)?.textContent)).toEqual([
+      'A day on the calendar',
+      'Ready to use',
+    ]);
+    expect(kind('Text').getAttribute('aria-describedby')!.split(' ')).toHaveLength(1);
   });
 
   // docs/specs/026-plan/item-types.md "Comments and Votes fields": they open Shape as every kind does.
   it('opens Shape for Comments and Votes, offering the built-in while the type lacks it', () => {
     const { onAddBuiltIn, onAddCustom } = open({ missing: ['votes'] });
-    pick('Votes', 'People & teamwork');
+    pick('Votes');
     expect(readyToUse()).toEqual(['Votes']);
     expect(screen.getByText('Session votes, Top Voted and sorting')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /^Votes/ }));
     expect(onAddBuiltIn).toHaveBeenCalledWith('votes');
     fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
-    pick('Comments', 'People & teamwork');
+    pick('Comments');
     expect(screen.queryByRole('region', { name: 'Ready to use' })).toBeNull();
     fireEvent.change(name(), { target: { value: 'Design Review' } });
     fireEvent.click(addButton());
@@ -130,7 +170,7 @@ describe('Pick', () => {
 
   it('makes a Votes field from its name alone, never required, its preview a ▲ count', () => {
     const { onAddCustom } = open({ missing: [] });
-    pick('Votes', 'People & teamwork');
+    pick('Votes');
     expect(screen.queryByRole('switch', { name: 'Required' })).toBeNull();
     expect(preview().getByText('▲ 3')).toBeTruthy();
     fireEvent.change(name(), { target: { value: 'Priority Vote' } });
@@ -138,55 +178,88 @@ describe('Pick', () => {
     expect(onAddCustom).toHaveBeenCalledWith({ label: 'Priority Vote', kind: 'votes' });
   });
 
-  it('filters the kinds as you type, by a built-in’s name too, opening every group with a match', () => {
+  it('filters the kinds as you type, by a built-in’s name too, counting the matches on the rail', () => {
     open();
     type('date');
     expect(kindNames()).toEqual(['Date', 'Date and Time', 'Date Range']);
-    expect(header('Numbers & dates').getAttribute('aria-expanded')).toBe('true');
-    expect(screen.queryByRole('button', { name: /^Text & links/ })).toBeNull();
-    type('due');
-    expect(kindNames()).toEqual(['Date']);
-    type('assignee');
-    expect(kindNames()).toEqual(['Person']);
-    type('photo');
-    expect(kindNames()).toEqual(['Image']);
-    type('money');
-    expect(kindNames()).toEqual(['Currency']);
-    type('yes/no');
-    expect(kindNames()).toEqual(['Checkbox']);
-    type('parent');
-    expect(kindNames()).toEqual(['Link to Card']);
-    type('percent');
-    expect(kindNames()).toEqual(['Percent']);
-    type('url');
-    expect(kindNames()).toEqual(['Link']);
-    type('stars');
-    expect(kindNames()).toEqual(['Rating']);
-    type('dropdown');
-    expect(kindNames()).toEqual(['Choice']);
+    expect(screen.getByRole('heading', { name: 'Dates and Time' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Text' })).toBeNull();
+    expect(entry('Dates and Time').textContent).toContain('3');
+    expect(entry('All Fields').textContent).toContain('3');
+    // A category with no match is dimmed, its count gone.
+    expect(entry('Text').className).toContain('opacity-55');
+    expect(entry('Text').textContent).toBe('Text');
+    const words: [string, string[]][] = [
+      ['due', ['Date']],
+      ['assignee', ['Person']],
+      ['photo', ['Image']],
+      ['money', ['Currency']],
+      ['yes/no', ['Checkbox']],
+      ['parent', ['Link to Card']],
+      ['percent', ['Percent']],
+      ['url', ['Link']],
+      ['stars', ['Rating']],
+      ['dropdown', ['Choice']],
+    ];
+    for (const [word, kinds] of words) {
+      type(word);
+      expect(kindNames()).toEqual(kinds);
+    }
     expect(screen.getByText('1 field matches')).toBeTruthy();
-    // Clearing it brings the accordion back as it was.
     type('');
-    expect(kindNames()).toEqual(['Text', 'Long Text', 'Link', 'Email', 'Phone']);
+    expect(kindNames()).toEqual(ALL_KINDS);
   });
 
-  it('says so when nothing matches', () => {
+  it('searches every category from one, narrows the matches from the rail, and keeps the category after', () => {
+    open();
+    fireEvent.click(entry('Text'));
+    type('tags');
+    expect(current()).toBe('all');
+    expect(kindNames()).toEqual(['Multiple Choice', 'Labels']);
+    fireEvent.click(entry('Choices and Tags'));
+    expect(kindNames()).toEqual(['Multiple Choice', 'Labels']);
+    // Typing more keeps the category picked.
+    type('tags label');
+    expect(current()).toBe('choices');
+    fireEvent.click(entry('Text'));
+    expect(screen.getByRole('status').textContent).toContain('No Text fields match');
+    type('');
+    expect(current()).toBe('text');
+    expect(kindNames()).toEqual(['Text', 'Long Text']);
+  });
+
+  it('says so when nothing matches, the rail stepping aside', () => {
     open();
     type('zebra');
-    expect(screen.getByRole('status').textContent).toContain('No matches for “zebra”');
+    expect(screen.getByRole('status').textContent).toContain('No fields match');
+    expect(screen.getByRole('status').textContent).toContain('zebra');
     expect(screen.getByText('Try a word like money, date or parent.')).toBeTruthy();
+    expect(screen.queryByRole('navigation', { name: 'Field categories' })).toBeNull();
     expect(kindNames()).toEqual([]);
+    expect(screen.getByText('0 fields match')).toBeTruthy();
   });
 
-  it('moves through the results with the arrow keys, and Enter in the search picks the first', () => {
+  it('moves between the tiles with the arrow keys, and Enter in the search picks the first match', () => {
     open();
     fireEvent.keyDown(search(), { key: 'ArrowDown' });
-    expect(document.activeElement?.textContent).toMatch(/^Text & links/);
-    fireEvent.keyDown(document.activeElement!, { key: 'End' });
-    expect(document.activeElement?.textContent).toMatch(/^Linked cards/);
-    fireEvent.keyDown(document.activeElement!, { key: 'Home' });
-    fireEvent.keyDown(document.activeElement!, { key: 'ArrowUp' });
+    expect(document.activeElement).toBe(tile('text'));
+    key('ArrowRight');
+    expect(document.activeElement).toBe(tile('longtext'));
+    key('ArrowLeft');
+    expect(document.activeElement).toBe(tile('text'));
+    // Laid out with no size (jsdom), down and up move two tiles: a row.
+    key('ArrowDown');
+    expect(document.activeElement).toBe(tile('number'));
+    key('End');
+    expect(document.activeElement).toBe(tile('calculated'));
+    key('Home');
+    expect(document.activeElement).toBe(tile('text'));
+    // Up from the top row goes back to the search.
+    key('ArrowUp');
     expect(document.activeElement).toBe(search());
+    // Enter with nothing typed picks nothing.
+    fireEvent.keyDown(search(), { key: 'Enter' });
+    expect(screen.queryByRole('form')).toBeNull();
     type('due');
     fireEvent.keyDown(search(), { key: 'Enter' });
     expect(screen.getByRole('form', { name: 'New Date field' })).toBeTruthy();
@@ -199,10 +272,16 @@ describe('Pick', () => {
         `This type holds the most custom fields it can (${ITEM_TYPE_CUSTOM_MAX}). Remove one to add another.`,
       ),
     ).toBeTruthy();
-    expect(kind('Text').getAttribute('aria-disabled')).toBe('true');
-    fireEvent.click(kind('Text'));
+    expect(tile('text').getAttribute('aria-disabled')).toBe('true');
+    expect(tile('text').getAttribute('aria-label')).toBe(
+      'Text: Remove a custom field to add another',
+    );
+    expect(tile('text').hasAttribute('data-pick')).toBe(false);
+    fireEvent.click(tile('text'));
     expect(screen.queryByRole('form')).toBeNull();
-    pick('Date', 'Numbers & dates');
+    // Enter in a search skips a dimmed kind for one that can be picked.
+    type('date');
+    fireEvent.keyDown(search(), { key: 'Enter' });
     expect(readyToUse()).toEqual(['Due Date']);
     expect(screen.queryByRole('textbox', { name: 'Name' })).toBeNull();
     expect(screen.queryByText('Or make your own')).toBeNull();
@@ -227,18 +306,17 @@ describe('Pick', () => {
     expect(onClose).toHaveBeenCalled();
   });
 });
-
 describe('Shape', () => {
   it('offers the kind’s built-in fields the type lacks as Ready to use, then your own', () => {
     const { onAddBuiltIn, onAddCustom } = open({ missing: ['assignee', 'start', 'due'] });
-    pick('Date', 'Numbers & dates');
+    pick('Date');
     expect(readyToUse()).toEqual(['Start Date', 'Due Date']);
     expect(screen.getByText('Where its bar starts on the Gantt chart')).toBeTruthy();
     expect(screen.getByText('Or make your own')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /^Due Date/ }));
     expect(onAddBuiltIn).toHaveBeenCalledWith('due');
     fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
-    pick('Person', 'People & teamwork');
+    pick('Person');
     expect(readyToUse()).toEqual(['Assignee']);
     fireEvent.change(name(), { target: { value: 'Reviewer' } });
     expect(preview().getByText('Sam Rivera')).toBeTruthy();
@@ -250,7 +328,7 @@ describe('Shape', () => {
 
   it('makes more of a kind the type has, with no Ready to use', () => {
     const { onAddCustom } = open({ missing: [] });
-    pick('Colour', 'Colour & images');
+    pick('Colour');
     expect(screen.queryByRole('region', { name: 'Ready to use' })).toBeNull();
     expect(screen.queryByText('Or make your own')).toBeNull();
     fireEvent.change(name(), { target: { value: 'Theme' } });
@@ -262,16 +340,16 @@ describe('Shape', () => {
 
   it('previews each built-in kind as its field draws, and never makes an Image required', () => {
     open({ missing: [] });
-    pick('Labels', 'Choices');
+    pick('Labels');
     expect(preview().getByText('Design')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
-    pick('Checklist', 'People & teamwork');
+    pick('Checklist');
     expect(preview().getByText(/2\/5/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
-    pick('Colour', 'Colour & images');
+    pick('Colour');
     expect(preview().getByText('Teal')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
-    pick('Image', 'Colour & images');
+    pick('Image');
     expect(preview().getByText('photo.png')).toBeTruthy();
     expect(screen.queryByRole('switch', { name: 'Required' })).toBeNull();
   });
@@ -304,10 +382,35 @@ describe('Shape', () => {
     expect((search() as HTMLInputElement).value).toBe('mon');
     expect(document.activeElement).toBe(kind('Currency'));
     type('');
-    pick('Rating', 'Numbers & dates');
+    fireEvent.click(entry('Numbers and Money'));
+    pick('Rating');
+    // The rail stays beside Shape, the category marked.
+    expect(current()).toBe('numbers');
     fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
-    expect(header('Numbers & dates').getAttribute('aria-expanded')).toBe('true');
+    expect(current()).toBe('numbers');
     expect(document.activeElement).toBe(kind('Rating'));
+  });
+
+  it('goes back to Pick on a category pressed in the rail, or a search typed, the name kept', () => {
+    open();
+    pick('Text');
+    fireEvent.change(name(), { target: { value: 'Size' } });
+    fireEvent.click(entry('Numbers and Money'));
+    expect(screen.queryByRole('form')).toBeNull();
+    expect(kindNames()).toEqual(['Number', 'Currency', 'Percent', 'Rating']);
+    pick('Number');
+    expect((name() as HTMLInputElement).value).toBe('Size');
+    search().focus();
+    type('stars');
+    expect(screen.queryByRole('form')).toBeNull();
+    expect(kindNames()).toEqual(['Rating']);
+    // Typing goes on in the search: nothing takes its focus.
+    expect(document.activeElement).toBe(search());
+    // Keys in the search do nothing more while shaping.
+    pick('Rating');
+    search().focus();
+    fireEvent.keyDown(search(), { key: 'ArrowDown' });
+    expect(document.activeElement).toBe(search());
   });
 
   it('keeps the name typed when another kind is picked', () => {
@@ -315,14 +418,14 @@ describe('Shape', () => {
     pick('Text');
     fireEvent.change(name(), { target: { value: 'Size' } });
     fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
-    pick('Number', 'Numbers & dates');
+    pick('Number');
     expect((name() as HTMLInputElement).value).toBe('Size');
     expect(preview().getByText('42')).toBeTruthy();
   });
 
   it('makes a Choice from its option rows, pasted lines too', async () => {
     const { onAddCustom } = open();
-    pick('Choice', 'Choices');
+    pick('Choice');
     fireEvent.change(name(), { target: { value: 'Severity' } });
     expect(screen.getByText('Add at least one option.')).toBeTruthy();
     fireEvent.paste(screen.getByRole('textbox', { name: 'Option 1' }), {
@@ -345,7 +448,7 @@ describe('Shape', () => {
 
   it('previews a Multiple Choice with its first two options', () => {
     open();
-    pick('Multiple Choice', 'Choices');
+    pick('Multiple Choice');
     fireEvent.change(screen.getByRole('textbox', { name: 'Option 1' }), { target: { value: 'A' } });
     fireEvent.keyDown(screen.getByRole('textbox', { name: 'Option 1' }), { key: 'Enter' });
     fireEvent.change(screen.getByRole('textbox', { name: 'Option 2' }), { target: { value: 'B' } });
@@ -355,7 +458,7 @@ describe('Shape', () => {
 
   it('makes a Currency in the currency picked', () => {
     const { onAddCustom } = open();
-    pick('Currency', 'Numbers & dates');
+    pick('Currency');
     fireEvent.change(name(), { target: { value: 'Budget' } });
     fireEvent.change(screen.getByLabelText('Currency'), { target: { value: 'USD' } });
     expect(preview().getByText(/\$12,500/)).toBeTruthy();
@@ -367,7 +470,7 @@ describe('Shape', () => {
 
   it('makes a Rating out of the scale picked', () => {
     const { onAddCustom } = open();
-    pick('Rating', 'Numbers & dates');
+    pick('Rating');
     fireEvent.change(name(), { target: { value: 'Impact' } });
     fireEvent.change(screen.getByLabelText('Scale'), { target: { value: '10' } });
     fireEvent.click(addButton());
@@ -378,7 +481,7 @@ describe('Shape', () => {
 
   it('makes a Link to Card once a type is picked', () => {
     const { onAddCustom } = open();
-    pick('Link to Card', 'Linked cards');
+    pick('Link to Card');
     fireEvent.change(name(), { target: { value: 'Parent' } });
     expect(addButton()).toHaveProperty('disabled', true);
     expect(screen.getByText('Pick a card type it links to.')).toBeTruthy();
@@ -394,7 +497,7 @@ describe('Shape', () => {
   // docs/specs/026-plan/item-types.md "Calculated fields".
   it('makes a Calculated field, the first calculation chosen', () => {
     const { onAddCustom } = open();
-    pick('Calculated', 'Linked cards');
+    pick('Calculated');
     fireEvent.change(name(), { target: { value: 'Progress' } });
     const calc = screen.getByLabelText<HTMLSelectElement>('Calculation');
     expect(calc.value).toBe('childCount');
@@ -411,7 +514,7 @@ describe('Shape', () => {
   // docs/specs/026-plan/item-types.md "Percent".
   it('makes a Percent field, its preview a bar at 40%', () => {
     const { onAddCustom } = open();
-    pick('Percent', 'Numbers & dates');
+    pick('Percent');
     fireEvent.change(name(), { target: { value: 'Progress' } });
     expect(preview().getByText('40%')).toBeTruthy();
     expect(screen.getByRole('switch', { name: 'Required' })).toBeTruthy();
@@ -431,7 +534,7 @@ describe('Shape', () => {
 
   it('shows a Children Done as a Percent bar, a switch a Child Count never offers', () => {
     const { onAddCustom } = open();
-    pick('Calculated', 'Linked cards');
+    pick('Calculated');
     fireEvent.change(name(), { target: { value: 'Done' } });
     expect(screen.queryByRole('switch', { name: 'Show as Percent Bar' })).toBeNull();
     const calc = screen.getByLabelText<HTMLSelectElement>('Calculation');
@@ -470,7 +573,7 @@ describe('Shape', () => {
       expect.objectContaining({ kind: 'email', required: true }),
     );
     fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
-    pick('Checkbox', 'Choices');
+    pick('Checkbox');
     expect(screen.queryByRole('switch', { name: 'Required' })).toBeNull();
     fireEvent.click(addButton());
     expect(onAddCustom).toHaveBeenLastCalledWith(
@@ -481,7 +584,7 @@ describe('Shape', () => {
   // docs/specs/026-plan/item-types.md "Notifies".
   it('offers a Person field Notifies, off by default, and no other kind', () => {
     const { onAddCustom } = open();
-    pick('Person', 'People & teamwork');
+    pick('Person');
     fireEvent.change(name(), { target: { value: 'Reviewer' } });
     const notifies = screen.getByRole('switch', { name: 'Notifies' });
     expect(notifies.getAttribute('aria-checked')).toBe('false');
@@ -491,7 +594,7 @@ describe('Shape', () => {
       expect.objectContaining({ kind: 'person', notifies: true }),
     );
     fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
-    pick('Email', 'Text & links');
+    pick('Email');
     expect(screen.queryByRole('switch', { name: 'Notifies' })).toBeNull();
   });
 });
