@@ -34,8 +34,8 @@ describe('heroSearch', () => {
   });
 
   it('finds the blanks too, and through search words, as the editor does', () => {
-    expect(heroSearch('whiteboard').map((t) => t.kind)).toContain('whiteboard');
-    expect(heroSearch('erd').map((t) => t.kind)).toContain('er-diagram');
+    expect(heroSearch('blank').map((t) => t.kind)).toContain('blank-session');
+    expect(heroSearch('dfd').map((t) => t.kind)).toContain('data-flow');
   });
 
   it('never lists a template twice', () => {
@@ -45,7 +45,7 @@ describe('heroSearch', () => {
 });
 
 describe('the fan', () => {
-  it('deals from every listed template but the blanks, each once, across every mode', () => {
+  it('deals from every listed template but the blanks, each once, all in Workshop', () => {
     expect(new Set(HERO_FAN_POOL).size).toBe(HERO_FAN_POOL.length);
     expect([...HERO_FAN_POOL].sort()).toEqual(
       galleryTemplates()
@@ -53,7 +53,7 @@ describe('the fan', () => {
         .sort(),
     );
     const modes = new Set(HERO_FAN_POOL.map((k) => heroTemplate(k).mode));
-    expect([...modes].sort()).toEqual(['diagram', 'draw', 'workshop']);
+    expect([...modes]).toEqual(['workshop']);
     for (const kind of HERO_FAN_OPENING) expect(HERO_FAN_POOL).toContain(kind);
     expect(HERO_FAN_OPENING).toHaveLength(HERO_FAN_SLOTS);
   });
@@ -67,10 +67,10 @@ describe('the fan', () => {
   });
 
   it('deals the next kind not already showing, wrapping round the pool', () => {
-    const pool = ['gantt', 'flowchart', 'mindmap'] as const;
-    expect(nextFanKind(pool, ['gantt'], 0)).toEqual({ kind: 'flowchart', at: 1 });
-    expect(nextFanKind(pool, ['flowchart'], 0)).toEqual({ kind: 'mindmap', at: 2 });
-    expect(nextFanKind(pool, ['flowchart'], 2)).toEqual({ kind: 'gantt', at: 0 });
+    const pool = ['gantt', 'sailboat', 'town-hall'] as const;
+    expect(nextFanKind(pool, ['gantt'], 0)).toEqual({ kind: 'sailboat', at: 1 });
+    expect(nextFanKind(pool, ['sailboat'], 0)).toEqual({ kind: 'town-hall', at: 2 });
+    expect(nextFanKind(pool, ['sailboat'], 2)).toEqual({ kind: 'gantt', at: 0 });
   });
 
   it('throws for a kind the catalogue does not list', () => {

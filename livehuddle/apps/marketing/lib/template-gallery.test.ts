@@ -43,14 +43,14 @@ describe('filterGallery', () => {
   });
 
   it('matches the description and the category name', () => {
-    expect(filterGallery(all, 'offsite plan').map((t) => t.kind)).toContain('mindmap');
-    expect(filterGallery(all, 'software').map((t) => t.kind)).toContain('sequence-diagram');
+    expect(filterGallery(all, 'parking lot').map((t) => t.kind)).toContain('meeting-agenda');
+    expect(filterGallery(all, 'software').map((t) => t.kind)).toContain('system-architecture');
   });
 
   it('needs every word to hit somewhere', () => {
-    const kinds = filterGallery(all, 'mind tree').map((t) => t.kind);
-    expect(kinds).toContain('mindmap-tree');
-    expect(kinds).not.toContain('mindmap-bubble');
+    const kinds = filterGallery(all, 'milestone vertical').map((t) => t.kind);
+    expect(kinds).toContain('milestone-timeline-vertical');
+    expect(kinds).not.toContain('milestone-timeline');
     expect(filterGallery(all, 'sailboat zebra')).toEqual([]);
   });
 });
@@ -77,21 +77,17 @@ describe('groupGallery', () => {
   });
 
   it('finds a template by its search words, as the editor does', () => {
-    expect(filterGallery(galleryTemplates(), 'erd').map((t) => t.kind)).toContain('er-diagram');
+    expect(filterGallery(galleryTemplates(), 'dfd').map((t) => t.kind)).toContain('data-flow');
   });
 });
 
 // docs/specs/019-marketing/marketing-site.md "Template gallery": the editor's template step's
 // structure, Popular first.
 describe('the shelves, as the template step lays them out', () => {
-  it('opens on Blank Slate, only the blanks in mode order, then every category in catalogue order', () => {
+  it('opens on Blank Slate, only the blank, then every category in catalogue order', () => {
     const shelves = galleryShelves();
     expect(shelves[0]?.id).toBe('popular');
-    expect(shelves[0]?.templates.map((t) => t.kind)).toEqual([
-      'blank',
-      'whiteboard',
-      'blank-session',
-    ]);
+    expect(shelves[0]?.templates.map((t) => t.kind)).toEqual(['blank-session']);
     for (const t of popularTemplates()) expect(isBlankTemplate(t.kind), t.kind).toBe(true);
     expect(shelves.slice(1).map((s) => s.id)).toEqual(
       groupGallery(galleryTemplates()).map((g) => g.id),

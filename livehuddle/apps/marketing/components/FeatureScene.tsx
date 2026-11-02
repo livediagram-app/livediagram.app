@@ -22,13 +22,11 @@ import { heroSceneData, type HeroSceneKey } from './hero-scene-data';
 const BOARD_LOADERS: Record<HeroSceneKey, () => Promise<ComponentType>> = {
   diagram: () => import('./hero-diagram-board').then((m) => m.DiagramBoard),
   draw: () => import('./hero-draw-board').then((m) => m.DrawBoard),
-  mindmap: () => import('./hero-mindmap-board').then((m) => m.MindMapBoard),
   townhall: () => import('./hero-townhall-board').then((m) => m.TownHallBoard),
 };
 const BOARDS: Record<HeroSceneKey, ComponentType> = {
   diagram: dynamic(BOARD_LOADERS.diagram, { ssr: false }),
   draw: dynamic(BOARD_LOADERS.draw, { ssr: false }),
-  mindmap: dynamic(BOARD_LOADERS.mindmap, { ssr: false }),
   townhall: dynamic(BOARD_LOADERS.townhall, { ssr: false }),
 };
 

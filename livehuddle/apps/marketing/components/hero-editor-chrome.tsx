@@ -5,12 +5,7 @@
 // Everything is at the mock's scale, about five eighths of the editor's.
 
 import { MODE_GLYPHS } from '@liveworkspace/icons/mode-glyphs';
-import {
-  lucideChartColumn,
-  lucideCircleCheck,
-  lucideSettings,
-  lucideTimer,
-} from '@liveworkspace/icons/lucide';
+import { lucideChartColumn, lucideCircleCheck, lucideTimer } from '@liveworkspace/icons/lucide';
 import {
   AppearanceIcon,
   ChevronDownIcon,
@@ -24,7 +19,7 @@ import {
   ThemeLookIcon,
   UndoIcon,
 } from '@livehuddle/ui';
-import { DRAW_DOCK, HERO_MODE, MODE_BAR, type HeroMode, type Tile } from './hero-mode-palette';
+import { MODE_BAR, type HeroMode } from './hero-mode-palette';
 
 const CARD =
   'flex h-7 items-center rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900';
@@ -47,7 +42,7 @@ function Lucide({
 
 // The extra group a mode adds to the cluster, as CanvasChrome lays it out: Workshop's session
 // tools (timer, votes, poll).
-const MODE_GROUP: Partial<Record<HeroMode, Parameters<typeof Prims>[0]['prims'][]>> = {
+const MODE_GROUP: Record<HeroMode, Parameters<typeof Prims>[0]['prims'][]> = {
   workshop: [lucideTimer, lucideCircleCheck, lucideChartColumn],
 };
 
@@ -116,22 +111,16 @@ export function TabBarToolbelt() {
   );
 }
 
-// The Toolbar layout's menu card, top left, where the Explorer would float: the menu, the mode
-// switch (the mode's glyph on its brand tint, with a chevron) and the active tab's name, as the
-// editor's ToolbarExplorerButton draws them. On a phone the menu rides at the head of the strip
-// instead (the editor's menuInStrip).
-export function ToolbarMenuButton({ mode, tab }: { mode: HeroMode; tab: string }) {
-  const { Icon } = HERO_MODE[mode];
+// The Toolbar layout's menu card, top left, where the Explorer would float: the menu and the active
+// tab's name, as the editor's ToolbarExplorerButton draws them. On a phone the menu rides at the head
+// of the strip instead (the editor's menuInStrip).
+export function ToolbarMenuButton({ tab }: { tab: string }) {
   return (
     <span
       className={`${CARD} absolute left-2 top-2 z-10 hidden h-8 gap-1 px-1 text-slate-600 sm:flex dark:text-slate-300`}
     >
       <span className="flex h-6 w-6 items-center justify-center">
         <MenuIcon size={11} />
-      </span>
-      <span className="flex h-6 items-center gap-0.5 rounded bg-brand-50 px-1.5 text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">
-        <Icon size={11} />
-        <ChevronDownIcon size={7} />
       </span>
       {/* The tab's name, where the canvas is wide enough that it clears the strip. */}
       <span className="hidden items-center @[720px]:flex">
@@ -144,128 +133,62 @@ export function ToolbarMenuButton({ mode, tab }: { mode: HeroMode; tab: string }
   );
 }
 
-// The strip shows the mode's first tiles; a narrow window fewer. Measured against the window's
-// canvas (a container query, @container in hero-editor-window.tsx), not the viewport: a landing
-// beat's window is narrower than the hero's at the same screen width, and the full strip there ran
-// into the menu button beside it.
-const NARROW_TILES = 4;
-
 function StripDivider() {
   return <span aria-hidden className="mx-0.5 h-4 w-px shrink-0 bg-slate-200 dark:bg-slate-700" />;
 }
 
-// A tile with the shortcut that picks it, small under its glyph, as the editor's palette marks
-// every tile that has one.
-function StripTile({ tile, index }: { tile: Tile; index: number }) {
-  return (
-    <span
-      className={`relative h-6 w-6 shrink-0 items-center justify-center rounded ${
-        index < NARROW_TILES ? 'flex' : 'hidden @[600px]:flex'
-      } ${tile.active ? 'bg-brand-50 text-brand-700 ring-1 ring-brand-300 dark:bg-brand-500/15 dark:text-brand-300 dark:ring-brand-500/40' : ''}`}
-    >
-      {tile.glyph}
-      {tile.hint ? (
-        <span className="absolute -bottom-[1px] -right-[1px] text-[5px] font-medium leading-none text-slate-400 dark:text-slate-500">
-          {tile.hint}
-        </span>
-      ) : null}
-    </span>
-  );
-}
-
 // From which window width each bar shows its names (literal classes, so Tailwind sees them).
-const NAMED_FROM: Partial<Record<HeroMode, string>> = {
-  diagram: 'hidden @[640px]:inline',
+const NAMED_FROM: Record<HeroMode, string> = {
   workshop: 'hidden @[780px]:inline',
 };
 
 // The Palette in the Toolbar layout (docs/specs/007-editor/toolbar-layout.md): one strip at the top
-// centre of the canvas. In Diagram and Workshop it is the category bar: the selection
-// mode, then the mode's categories (each its glyph and one-word name, a hairline between bands; the
-// glyphs alone where the window is narrow), then Search. Draw shows its dock instead, its drawing
-// tools split from its shapes and its settings in a card of its own.
+// centre of the canvas, the category bar: the selection mode, then the categories (each its glyph and
+// one-word name, a hairline between bands; the glyphs alone where the window is narrow), then Search.
 export function ToolbarStrip({ mode }: { mode: HeroMode }) {
-  const { Icon } = HERO_MODE[mode];
-  const pill =
-    'flex h-6 items-center gap-1 rounded bg-brand-50 px-1.5 text-[9px] font-medium text-brand-700 dark:bg-brand-500/15 dark:text-brand-300';
   const strip =
     'flex items-center gap-0.5 rounded-lg border border-slate-200 bg-white p-0.5 text-slate-600 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300';
-  // On a phone the menu rides at the strip's start, the mode switch joined to it.
+  // On a phone the menu rides at the strip's start.
   const phoneMenu = (
-    <>
-      <span className="flex h-6 w-5 items-center justify-center sm:hidden">
-        <MenuIcon size={10} />
-      </span>
-      <span className={`${pill} sm:hidden`}>
-        <Icon size={10} />
-        <ChevronDownIcon size={7} />
-      </span>
-    </>
+    <span className="flex h-6 w-5 items-center justify-center sm:hidden">
+      <MenuIcon size={10} />
+    </span>
   );
   const select = MODE_GLYPHS.select!;
   const bands = MODE_BAR[mode];
-  if (bands) {
-    // Names fit or go, as the editor's bar measures: each bar's names need a window wide enough to clear
-    // the menu card, the longer bars a wider one; narrower, the glyphs alone.
-    const named = NAMED_FROM[mode] ?? 'hidden';
-    return (
-      <div className="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center">
-        <div className={strip}>
-          {phoneMenu}
-          <span className="contents sm:hidden">
-            <StripDivider />
-          </span>
-          <span className="flex h-6 items-center gap-0.5 px-1">
-            <Glyph size={10} units={select.units}>
-              <Prims prims={select.prims} />
-            </Glyph>
-            <ChevronDownIcon size={7} />
-          </span>
-          {bands.map((band, b) => (
-            <span key={b} className="contents">
-              <StripDivider />
-              {band.map(({ key, label, Icon: CategoryIcon }) => (
-                <span
-                  key={key}
-                  className="flex h-6 items-center gap-1 rounded px-1 text-[9px] font-medium [&_svg]:h-3 [&_svg]:w-3"
-                >
-                  <CategoryIcon />
-                  <span className={`text-optical-line ${named}`}>{label}</span>
-                </span>
-              ))}
-            </span>
-          ))}
-          <StripDivider />
-          <span className="flex h-6 w-6 items-center justify-center rounded">
-            <SearchIcon size={10} />
-          </span>
-        </div>
-      </div>
-    );
-  }
-  // Draw: the dock.
+  // Names fit or go, as the editor's bar measures: each bar's names need a window wide enough to clear
+  // the menu card, the longer bars a wider one; narrower, the glyphs alone.
+  const named = NAMED_FROM[mode] ?? 'hidden';
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center gap-1.5">
+    <div className="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center">
       <div className={strip}>
         {phoneMenu}
         <span className="contents sm:hidden">
           <StripDivider />
         </span>
-        {DRAW_DOCK.map((t, i) => (
-          <span key={t.key} className="contents">
-            {t.group && i > 0 ? (
-              // The group's divider shows only where its tiles do.
-              <span className={i < NARROW_TILES ? 'contents' : 'hidden @[600px]:contents'}>
-                <StripDivider />
+        <span className="flex h-6 items-center gap-0.5 px-1">
+          <Glyph size={10} units={select.units}>
+            <Prims prims={select.prims} />
+          </Glyph>
+          <ChevronDownIcon size={7} />
+        </span>
+        {bands.map((band, b) => (
+          <span key={b} className="contents">
+            <StripDivider />
+            {band.map(({ key, label, Icon: CategoryIcon }) => (
+              <span
+                key={key}
+                className="flex h-6 items-center gap-1 rounded px-1 text-[9px] font-medium [&_svg]:h-3 [&_svg]:w-3"
+              >
+                <CategoryIcon />
+                <span className={`text-optical-line ${named}`}>{label}</span>
               </span>
-            ) : null}
-            <StripTile tile={t} index={i} />
+            ))}
           </span>
         ))}
-      </div>
-      <div className={`${strip} hidden @[600px]:flex`}>
-        <span className="flex h-6 w-6 items-center justify-center">
-          <Lucide prims={lucideSettings} size={11} />
+        <StripDivider />
+        <span className="flex h-6 w-6 items-center justify-center rounded">
+          <SearchIcon size={10} />
         </span>
       </div>
     </div>
