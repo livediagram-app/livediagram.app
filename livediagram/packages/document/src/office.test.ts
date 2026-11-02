@@ -10,8 +10,8 @@ import {
   ROOM_WALL,
   roomParts,
 } from './office';
-import { nearestSeat, seatPoints } from './seating';
 import { isValidElement } from './validate';
+import { MEETING_TABLE_SEATS } from '@liveworkspace/avatar/seats';
 
 // docs/specs/009-elements/office.md
 describe('the office pieces', () => {
@@ -68,19 +68,10 @@ describe('the room', () => {
 });
 
 describe('the meeting table', () => {
-  const table = { x: 0, y: 0, width: 232, height: 168, shape: 'meeting-table' as const };
-
-  it('seats six, every seat facing the table', () => {
-    const seats = seatPoints(table);
-    expect(seats).toHaveLength(6);
-    expect(seats.map((s) => s.facing)).toEqual(['down', 'down', 'up', 'up', 'right', 'left']);
+  it('draws its six chairs where @liveworkspace/avatar/seats seats them', () => {
     expect(MEETING_TABLE_VIEW.tableSeats).toHaveLength(6);
-  });
-
-  it('seats you on the seat nearest where you arrived, facing the table', () => {
-    expect(nearestSeat(table, { x: 230, y: 70 })).toMatchObject({ facing: 'left' });
-    expect(nearestSeat(table, { x: 90, y: 0 })).toMatchObject({ facing: 'down' });
-    expect(nearestSeat(table, { x: 150, y: 168 })).toMatchObject({ facing: 'up' });
+    expect(MEETING_TABLE_VIEW.tableSeats).toBe(MEETING_TABLE_SEATS.seats);
+    expect([MEETING_TABLE_VIEW.width, MEETING_TABLE_VIEW.height]).toEqual([232, 168]);
   });
 });
 
