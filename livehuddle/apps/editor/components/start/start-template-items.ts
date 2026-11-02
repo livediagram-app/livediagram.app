@@ -42,9 +42,6 @@ const RECOMMENDED_LINE: Record<TemplateStartMode, string> = {
   workshop: 'The quickest ways to run a session, picked for most teams.',
 };
 
-// Recommended leaves these to their group (Timeline, under Planning).
-const NOT_RECOMMENDED: ReadonlySet<TemplateKind> = new Set(['timeline']);
-
 const byKind = new Map(TEMPLATES.map((t) => [t.kind, t]));
 
 /** A template's descriptor. */
@@ -59,7 +56,7 @@ function build(mode: TemplateStartMode): TemplateStart {
     id: 'recommended',
     name: 'Recommended',
     line: RECOMMENDED_LINE[mode],
-    kinds: popularKindsFor(mode).filter((k) => !NOT_RECOMMENDED.has(k)),
+    kinds: popularKindsFor(mode),
   };
   const rest: TemplateStartGroup[] = TEMPLATE_CATEGORIES.map((c) => ({
     id: c.id,

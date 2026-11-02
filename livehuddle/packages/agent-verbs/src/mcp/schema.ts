@@ -243,7 +243,7 @@ tabs in a create_document call.
 - Give every node an id and a short, clear label.
 - A node/edge diagram given as "graph" is laid out in the template look (sizes,
   elbows, side exits, loops round the outside, title, key). For an artefact that
-  is not a graph (SWOT, roadmap, gantt, retrospective, ...) list_templates has
+  is not a graph (SWOT, roadmap, blank-session, retrospective, ...) list_templates has
   hand-tuned scaffolds to pass as "template", then personalise with update_document.
 `;
 }
@@ -271,7 +271,7 @@ use a unique "id" per element, make nodes "shape" elements (a labelled box) NOT
 and the theme owns colours (a sticky keeps its own). Stickies, tables, code blocks,
 entities, lanes and charts carry content fields, documented on each tool's
 element argument. For a standard artefact that is not a node/edge graph (swot, roadmap,
-gantt, retrospective, ...) list_templates has hand-tuned scaffolds: pass its kind as
+blank-session, retrospective, ...) list_templates has hand-tuned scaffolds: pass its kind as
 "template" on create_document / add_tab, then fill in real labels with
 update_document. search_icons finds icon ids for "iconId" and a graph node's "icon".`;
 
@@ -296,7 +296,7 @@ const templateField = z
   .optional()
   .describe(
     'Start from a hand-tuned template scaffold instead of providing elements: a template ' +
-      'kind from list_templates (e.g. "swot", "retrospective", "gantt"). The server ' +
+      'kind from list_templates (e.g. "swot", "retrospective", "roadmap"). The server ' +
       'materialises its curated layout ("layout" is ignored for a template tab) and paints ' +
       'it with the chosen theme. Personalise the placeholder labels afterwards with ' +
       'update_document mode "ops". Provide template OR elements, not both.',

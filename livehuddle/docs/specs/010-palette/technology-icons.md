@@ -271,16 +271,8 @@ import of the catalogue data).
 
 ## Templates that seed brand tiles
 
-The **System Architecture** starter ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Templates",
-`buildSystemArchitecture` in `packages/templates/src/template-builders-technical.ts`) is
-the first catalogue consumer: it drops the gateway / service / datastore nodes
-as branded tiles (`nginx`, `docker`, `k8s`, `postgres`, `redis` from the
-vendor-neutral Generic set) so a developer audience lands on a diagram that
-already speaks their stack. The starter flows through the same theme pipeline as
-every other template, but the brand tiles are immune by construction: the
-renderer paints from the catalogue colour and ignores the element's fill /
-stroke entirely, so a theme change can't touch them. The lone non-branded node
-is the `globe` client glyph, which stays stroke-tinted and adopts the theme.
+None. The **System Architecture** starter, which dropped its gateway, service and datastore nodes as branded tiles, left
+the catalogue with step 5.4 of the [Build plan](../005-project-roadmap/build-plan.md).
 
 ## Telemetry
 

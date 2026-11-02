@@ -1,7 +1,7 @@
 // The tab-level settings a template ships with (templateCanvasOverrides): its backdrop, layers, mode and kind. Its
 // own module, apart from the template catalogue in templates.ts, which the editor reads (a template's title) on every
 // load.
-import { WHITEBOARD_DEFAULT_PATTERN, type BackgroundPattern, type Tab } from '@livehuddle/document';
+import type { BackgroundPattern, Tab } from '@livehuddle/document';
 import { templateLayers } from './template-layers';
 import { templateEditorMode } from './template-modes';
 import type { TemplateKind } from './templates';
@@ -10,40 +10,24 @@ import type { TemplateKind } from './templates';
 // Applied on top of the chosen theme (which only supplies the colours),
 // so a starter ships with a fitting canvas instead of inheriting the
 // theme's default dot grid:
-//   - graph paper for alignment-heavy scaffolds (flow / org / SWOT /
-//     Gantt) where boxes snap to a square grid,
-//   - a blank canvas for clean radial layouts (Venn) where the shapes
-//     should carry the page,
-//   - horizontal rules for the time-ordered timeline / journey,
+//   - graph paper for alignment-heavy scaffolds (SWOT, the matrices,
+//     the roadmap) where boxes snap to a square grid,
+//   - a blank canvas for drawn scenes and pages (the Sailboat, the
+//     Objectives planner) where the shapes should carry the page,
+//   - horizontal rules for the time-ordered user journey,
 //   - the dot grid (explicit, so it survives even a blank-canvas theme)
 //     for the sticky-note / freeform boards.
 // Templates not listed here fall through to the theme's pattern.
 const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
-  'data-flow': 'graph',
   swot: 'graph',
-  gantt: 'graph',
-  venn: 'blank',
-  timeline: 'lines',
-  'milestone-timeline': 'lines',
-  // The vertical variant reads best on a clean canvas: horizontal ruled
-  // lines fight a downward spine.
-  'milestone-timeline-vertical': 'blank',
   journey: 'lines',
   retrospective: 'grid',
-  fishbone: 'grid',
-  // Technical diagrams are alignment-heavy (boxes + tables snap to a
-  // grid), so they ride graph paper like the flow / org / SWOT scaffolds.
-  'system-architecture': 'graph',
   'prioritization-matrix': 'graph',
-  // The later batch splits the same three ways: alignment-heavy scaffolds
-  // ride graph paper, sticky-note workshop boards pin the dot grid, and
-  // the funnel's clean stacked silhouette gets a blank canvas.
+  // The later batch splits the same way: alignment-heavy scaffolds ride
+  // graph paper, sticky-note workshop boards pin the dot grid.
   roadmap: 'graph',
   'raci-matrix': 'graph',
   'business-model-canvas': 'graph',
-  'okr-tree': 'graph',
-  'cloud-architecture': 'graph',
-  'state-machine': 'graph',
   'user-story-map': 'grid',
   'affinity-map': 'grid',
   'lean-coffee': 'grid',
@@ -61,27 +45,14 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'would-you-rather': 'grid',
   'people-bingo': 'grid',
   // Event storming is a sticky-note workshop like the story / affinity
-  // maps, so it pins the dot grid rather than riding the other technical
-  // templates' graph paper.
+  // maps, so it pins the dot grid.
   'event-storming': 'grid',
   'empathy-map': 'grid',
-  // A new whiteboard starts on Grid (docs/specs/023-draw-mode/draw-mode.md "Board background").
-  whiteboard: WHITEBOARD_DEFAULT_PATTERN,
-  // The Draw templates start on the whiteboard's board too.
-  sketchnote: WHITEBOARD_DEFAULT_PATTERN,
-  'rich-picture': WHITEBOARD_DEFAULT_PATTERN,
-  'comic-strip': WHITEBOARD_DEFAULT_PATTERN,
-  'doodle-warmup': WHITEBOARD_DEFAULT_PATTERN,
-  'paper-prototype': WHITEBOARD_DEFAULT_PATTERN,
-  'journey-doodle': WHITEBOARD_DEFAULT_PATTERN,
-  'pre-mortem': WHITEBOARD_DEFAULT_PATTERN,
-  'idea-garden': WHITEBOARD_DEFAULT_PATTERN,
   // The twelve-starter batch follows the same split: the retro formats,
   // Crazy 8s, persona, agenda and objectives are sticky-note / workshop
   // boards on the dot grid, as is the postmortem (a dense written report,
   // where graph lines behind every card read as noise); the matrices and
-  // tree ride graph paper;
-  // the Sailboat's drawn scene gets a blank canvas like the Venn.
+  // tree ride graph paper; the Sailboat's drawn scene gets a blank canvas.
   'start-stop-continue': 'grid',
   'mad-sad-glad': 'grid',
   'four-ls': 'grid',
@@ -91,28 +62,16 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'crazy-eights': 'grid',
   'stakeholder-map': 'graph',
   'risk-matrix': 'graph',
-  // The strategy and systems batch: the drawn notations ride graph paper; the Wardley map's axes are its page, so
-  // its canvas is blank; the Value Proposition Canvas is a sticky-note board on the dot grid.
-  'threat-model': 'graph',
-  'service-blueprint': 'graph',
-  'metric-tree': 'graph',
-  'family-tree': 'graph',
-  'value-stream-map': 'graph',
-  'wardley-map': 'blank',
+  // The Value Proposition Canvas is a sticky-note board on the dot grid.
   'value-proposition-canvas': 'grid',
   'user-persona': 'grid',
   'meeting-agenda': 'grid',
   // A personal planning sheet, read closely like a page: even dots behind
   // its cards read as noise, so it gets a clean canvas.
   'objectives-planner': 'blank',
-  // The use-case batch: the four board grids are sticky-note boards on the dot grid; the concept map and the network
-  // diagram are alignment-heavy box-and-line diagrams on graph paper.
-  'eisenhower-matrix': 'grid',
+  // The board grids are sticky-note boards on the dot grid.
   'pestle-analysis': 'grid',
   'kwl-chart': 'grid',
-  'onboarding-plan': 'grid',
-  'concept-map': 'graph',
-  'network-diagram': 'graph',
 };
 
 // How far each loud backdrop pattern steps back behind a template's content
@@ -130,9 +89,9 @@ const TEMPLATE_PATTERN_OPACITY: Partial<Record<BackgroundPattern, number>> = {
 
 // Tab-level overrides a specific template ships with, applied on top
 // of whatever theme is selected. Each template carries its preferred
-// backdrop pattern (see TEMPLATE_PATTERNS); Mind map and User journey
+// backdrop pattern (see TEMPLATE_PATTERNS); User journey and the Prioritization matrix
 // additionally soften the canvas opacity so the pattern recedes behind
-// the radiating branches / the stage row. Layered templates (docs/specs/006-document/layers.md)
+// the stage row / the items. Layered templates (docs/specs/006-document/layers.md)
 // also carry their `Tab.layers` here, matching the `layerId`s their
 // builder pre-stamps, so every application path lands scaffold and
 // layers in one commit.

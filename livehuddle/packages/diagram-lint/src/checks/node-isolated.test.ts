@@ -33,6 +33,14 @@ describe('node-isolated', () => {
         'node-isolated',
       ),
     ).toEqual([]);
+    // One with no label at all is skipped the same way.
+    const bare = { ...box('bare', 0, 200), label: undefined } as never;
+    expect(
+      of(
+        lint(tabOf(box('a', 0, 0), box('b', 300, 0), arrow('x', 'a', 'b'), bare)),
+        'node-isolated',
+      ),
+    ).toEqual([]);
   });
 
   it("skips the hub of a ring of connected boxes: a cycle's theme at its centre", () => {

@@ -44,13 +44,13 @@ describe('filterGallery', () => {
 
   it('matches the description and the category name', () => {
     expect(filterGallery(all, 'parking lot').map((t) => t.kind)).toContain('meeting-agenda');
-    expect(filterGallery(all, 'software').map((t) => t.kind)).toContain('system-architecture');
+    expect(filterGallery(all, 'software').map((t) => t.kind)).toContain('incident-postmortem');
   });
 
   it('needs every word to hit somewhere', () => {
-    const kinds = filterGallery(all, 'milestone vertical').map((t) => t.kind);
-    expect(kinds).toContain('milestone-timeline-vertical');
-    expect(kinds).not.toContain('milestone-timeline');
+    const kinds = filterGallery(all, 'sailboat retro').map((t) => t.kind);
+    expect(kinds).toContain('sailboat');
+    expect(kinds).not.toContain('retrospective');
     expect(filterGallery(all, 'sailboat zebra')).toEqual([]);
   });
 });
@@ -77,7 +77,9 @@ describe('groupGallery', () => {
   });
 
   it('finds a template by its search words, as the editor does', () => {
-    expect(filterGallery(galleryTemplates(), 'dfd').map((t) => t.kind)).toContain('data-flow');
+    expect(filterGallery(galleryTemplates(), 'bmc').map((t) => t.kind)).toContain(
+      'business-model-canvas',
+    );
   });
 });
 

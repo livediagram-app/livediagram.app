@@ -26,7 +26,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "72 templates (5 default + 67 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "40 templates (2 default + 38 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -36,19 +36,9 @@ describe('TEMPLATES catalogue', () => {
   // AND the catalogue must grow; the test below catches a drift in
   // either direction.
   const ALL_KINDS: TemplateKind[] = [
-    'blank',
     'retrospective',
-    'data-flow',
     'swot',
-    'timeline',
-    'milestone-timeline',
-    'milestone-timeline-vertical',
-    'venn',
     'journey',
-    'fishbone',
-    'gantt',
-    'comparison-table',
-    'system-architecture',
     'prioritization-matrix',
     'roadmap',
     'raci-matrix',
@@ -69,9 +59,6 @@ describe('TEMPLATES catalogue', () => {
     'people-bingo',
     'business-model-canvas',
     'empathy-map',
-    'okr-tree',
-    'cloud-architecture',
-    'state-machine',
     'event-storming',
     'start-stop-continue',
     'mad-sad-glad',
@@ -82,50 +69,31 @@ describe('TEMPLATES catalogue', () => {
     'crazy-eights',
     'stakeholder-map',
     'risk-matrix',
-    'wardley-map',
-    'threat-model',
-    'service-blueprint',
-    'metric-tree',
     'value-proposition-canvas',
-    'family-tree',
-    'value-stream-map',
     'user-persona',
     'meeting-agenda',
     'objectives-planner',
-    'whiteboard',
-    'sketchnote',
-    'rich-picture',
-    'comic-strip',
-    'doodle-warmup',
-    'paper-prototype',
-    'journey-doodle',
-    'pre-mortem',
-    'idea-garden',
-    'eisenhower-matrix',
     'pestle-analysis',
     'kwl-chart',
-    'onboarding-plan',
-    'concept-map',
-    'network-diagram',
     'blank-session',
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "72 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "40 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 72 templates (5 default + 67 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(72);
+  it('lists exactly 40 templates (2 default + 38 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(40);
   });
 
-  it('splits cleanly into 5 default + 67 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 2 default + 38 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
-    expect(defaults).toHaveLength(5);
-    expect(extras).toHaveLength(67);
+    expect(defaults).toHaveLength(2);
+    expect(extras).toHaveLength(38);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/editor-tour.md has no sample)', () => {
@@ -137,7 +105,7 @@ describe('TEMPLATES catalogue', () => {
     expect(new Set(kinds).size).toBe(kinds.length);
   });
 
-  it('assigns every template but the six blanks to a known category (the picker groups templates by category)', () => {
+  it('assigns every template but the blank to a known category (the picker groups templates by category)', () => {
     const known = new Set(TEMPLATE_CATEGORIES.map((c) => c.id));
     for (const t of TEMPLATES) {
       const category = templateCategory(t.kind);
@@ -157,30 +125,15 @@ describe('TEMPLATES catalogue', () => {
   it('every kind builds without throwing (the buildTemplate switch handles every union member)', () => {
     for (const kind of ALL_KINDS) {
       const tab = buildTemplatedTab(kind, 'brand', `tab-${kind}`, 'name');
-      // 'blank' and 'whiteboard' are intentionally empty (docs/specs/007-editor/new-document-route.md,
-      // docs/specs/023-draw-mode/draw-mode.md); every other kind seeds content. Either way the
-      // switch must handle the union member.
-      const empty =
-        kind === 'blank' ||
-        kind === 'whiteboard' ||
-        // An empty session tab, in Workshop.
-        kind === 'blank-session';
+      // The blank, an empty session tab, is intentionally empty (docs/specs/007-editor/new-document-route.md);
+      // every other kind seeds content. Either way the switch must handle the union member.
+      const empty = kind === 'blank-session';
       expect(tab.elements.length).toBeGreaterThan(empty ? -1 : 0);
     }
   });
 });
 
 describe('templateCanvasOverrides', () => {
-  it('makes the whiteboard a Workshop tab on a Grid board', () => {
-    // docs/specs/007-editor/editor-modes.md: Workshop is the one mode, and the Grid lands on every creation path
-    // through here (the template, a new tab, Quick Start, the MCP worker).
-    expect(templateCanvasOverrides('whiteboard')).toEqual({
-      opensIn: 'workshop',
-      backgroundPattern: 'graph',
-      backgroundOpacity: 0.4,
-    });
-  });
-
   it('makes an event-storming board already settled on its lanes', () => {
     // docs/specs/021-event-storming/event-storming.md "Always on a lane": the seed note is built on lane 0,
     // so a new board never needs the one-time settle.
@@ -190,13 +143,7 @@ describe('templateCanvasOverrides', () => {
     });
   });
 
-  it('gives timelines ruled lines', () => {
-    expect(templateCanvasOverrides('timeline')).toEqual({
-      backgroundPattern: 'lines',
-      backgroundOpacity: 0.6,
-      layers: templateLayers('timeline'),
-      opensIn: 'workshop',
-    });
+  it('gives the user journey ruled lines', () => {
     expect(templateCanvasOverrides('journey')).toEqual({
       backgroundPattern: 'lines',
       // The quieter of the lines rule (0.6) and the stage softening (0.8).
@@ -207,7 +154,9 @@ describe('templateCanvasOverrides', () => {
   });
 
   it('leaves the blank template to inherit the theme backdrop', () => {
-    expect(templateCanvasOverrides('blank')).toEqual({ opensIn: 'workshop' });
+    // docs/specs/007-editor/editor-modes.md: Workshop is the one mode, and it lands on every creation path through
+    // here (the template, a new tab, Quick Start, the MCP worker).
+    expect(templateCanvasOverrides('blank-session')).toEqual({ opensIn: 'workshop' });
   });
 });
 
@@ -266,12 +215,6 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // three confidence dots) and the three theme lanes. Cards: nine cards of
     // body, title and outcome, plus the three Now status stickers.
     roadmap: { names: ['Lanes', 'Cards'], scaffold: 21, content: 30 },
-    // Grid: title, caption, sheet, header band, Task / Owner, 3 months, 12
-    // week dates, 3 group rows (band, glyph, name), 7 table rows (label or
-    // glyph + label, avatar, name) and 13 rules. Bars: 3 summaries, 6
-    // progress bars, the diamond with its date and rocket, 4 dependencies,
-    // the AT RISK badge and the Today line + pill.
-    gantt: { names: ['Grid', 'Bars'], scaffold: 65, content: 19 },
     // Quadrants: how-to, four axis labels, four quadrants of container,
     // header, glyph and prompt, and the So what? frame, glyph, heading and
     // hint. Notes: title, 12 stickies and four moves of card, chip and text.
@@ -284,22 +227,6 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // glyph, plus the persona card; notes are the 12 stickies plus the
     // persona's sticker, name and goal.
     'empathy-map': { names: ['Quadrants', 'Notes'], scaffold: 19, content: 15 },
-    // Tiers: title, caption, four lanes with their blurb and glyph, and the key
-    // (label plus two line samples with their words). Components: 15 nodes
-    // and the 14 edges between them.
-    'system-architecture': { names: ['Tiers', 'Components'], scaffold: 15, content: 29 }, // the key is one Diagram key (docs/specs/009-elements/diagram-key.md)
-    // Title, caption, the two spine runs (done, to come) and the three-entry
-    // status legend stay put; each of the six milestones brings a disc, its
-    // glyph, a date, a title and a detail line, plus the Today marker + pill.
-    timeline: { names: ['Spine', 'Milestones'], scaffold: 10, content: 32 },
-    // Title, caption, four phase segments and the arrowhead stay put; each
-    // of the six milestones brings a ring, a pinned stem, a date chip and a
-    // callout card, and launch day its two stickers.
-    'milestone-timeline': { names: ['Spine', 'Milestones'], scaffold: 7, content: 26 },
-    // Title, caption and spine stay put; each of the seven chapters brings a
-    // stem, a disc, its glyph, a callout card, the year and its month, plus
-    // the trophy and cake stickers.
-    'milestone-timeline-vertical': { names: ['Spine', 'Milestones'], scaffold: 3, content: 44 },
     // Title, five stage chips + their four arrows, five row bands + five
     // gutter labels, and the Feeling row's +/- cues. Content is the twenty
     // stickies, five mood faces and the four curve segments between them.
@@ -375,49 +302,16 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // people, 3 objectives (chip, sticker, sentence, KRs + bars, steps,
     // support, rating) and the Today chip.
     'objectives-planner': { names: ['Planner', 'Objectives'], scaffold: 65, content: 44 },
-    // The strategy and systems batch (canvas-and-palette.md "Templates").
-    // Map: caption, 4 stage bands with name, trait and 3 rules, 2 axes and 4 axis words, 3 panel headings (3 each),
-    // the legend's 5 labels and 5 samples. Components: title, the user, their line and name, 12 chips, 11 needs,
-    // 2 ghosts and movements, the inertia bar and caption, 3 play markers, 3 play cards (4 each), the questions.
-    'wardley-map': { names: ['Map', 'Components'], scaffold: 41, content: 52 },
-    // Model: caption, 3 trust boundaries, 9 DFD nodes, 9 flows, the STRIDE heading and six rows (3 each), the other
-    // two headings. Threats: title, 2 chips, 10 badges, 3 top-threat cards (4 each), the checklist.
-    'threat-model': { names: ['Model', 'Threats'], scaffold: 49, content: 26 },
-    // Blueprint: caption, 5 stage headers, 5 bands (3 each), 3 lines and their names, the legend's 3 samples and 3
-    // labels. Service: title, 25 cards, 4 left-to-right and 15 downward arrows, 5 evidence links, 5 faces, 4 marks
-    // and their notes, the star, the Fix first card (3).
-    'service-blueprint': { names: ['Blueprint', 'Service'], scaffold: 33, content: 67 },
-    // Levels: caption, 4 level bands with name and meaning. Tree: title, goal chip, 12 cards and their trend badges,
-    // 7 input / carried tags, the ring, 11 connectors, 6 operators, the levers card.
-    'metric-tree': { names: ['Levels', 'Tree'], scaffold: 13, content: 52 },
     // Canvas: caption, 2 titles, 3 sections, 3 headings (3 each), the circle, 2 chords, 3 headings (3 each), 3 rail
     // labels. Notes: title, 4 + 3 + 3 map notes, 12 profile notes and their ranks, 4 fit lines, the rail card,
     // timer, vote and rating.
     'value-proposition-canvas': { names: ['Canvas', 'Notes'], scaffold: 30, content: 43 },
-    // Generations: caption, 3 bands with name, the key heading, 4 line rows (2 each), the has-died sample and label,
-    // Family stories heading. People: title, 14 cards, 5 unions (dot, 2 lines, caption), 7 child lines, the how-to,
-    // 3 stories and their pins.
-    'family-tree': { names: ['Generations', 'People'], scaffold: 19, content: 50 },
-    // Map: caption, 6 process headers, 5 push arrows, 2 information cards and 3 flows, 23 ladder rungs, the key's 4
-    // samples and labels. Stream: title, 2 chips, 6 data boxes, 6 triangles and waits, 2 bursts and fixes, 12 rung
-    // figures, the totals and the future state.
-    'value-stream-map': { names: ['Map', 'Stream'], scaffold: 48, content: 39 },
-    // The use-case batch's board grids (template-builders-board-grid.ts). The scaffold is the how-to, each panel and
-    // its three header parts, the axis words, the rail's heading and steps, and the closing panel and its header;
-    // the content the title, the notes, the rail's question and two tools, and the closing checklists.
-    // Matrix: how-to, 4 axis words, 4 panels (4 each), the closing (4). Tasks: title, 16 notes, the checklist.
-    'eisenhower-matrix': { names: ['Matrix', 'Tasks'], scaffold: 25, content: 18 },
     // Lenses: how-to, the rail's heading and steps, 6 lenses (4 each), the closing (4). Notes: title, the question,
     // timer and vote, 18 notes, the checklist.
     'pestle-analysis': { names: ['Lenses', 'Notes'], scaffold: 31, content: 23 },
     // Chart: how-to, the rail's heading and steps, 3 columns (4 each). Notes: title, the question, timer and vote,
     // 12 notes.
     'kwl-chart': { names: ['Chart', 'Notes'], scaffold: 15, content: 16 },
-    // Plan: how-to, 3 stages (4 each), the closing (4). Goals: title, 12 goals, the check-ins in two checklists.
-    'onboarding-plan': { names: ['Plan', 'Goals'], scaffold: 17, content: 15 },
-    // Tiers: title and caption, 4 lanes with blurb and glyph, the key, the IP plan. Network: 3 VLAN boundaries,
-    // 14 devices and 13 links.
-    'network-diagram': { names: ['Tiers', 'Network'], scaffold: 16, content: 30 },
   };
 
   it('pins each layered template’s names and scaffold / content split', () => {
@@ -483,7 +377,7 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
 
 describe('buildTemplatedTab', () => {
   it('returns a Tab carrying the supplied id, name, and theme metadata', () => {
-    const tab = buildTemplatedTab('blank', 'slate', 'tab-1', 'My tab');
+    const tab = buildTemplatedTab('blank-session', 'slate', 'tab-1', 'My tab');
     const slate = getTheme('slate');
     expect(tab.id).toBe('tab-1');
     expect(tab.name).toBe('My tab');
@@ -650,9 +544,9 @@ describe('design + table templates (later batch)', () => {
 });
 
 describe('untitledNameForTemplate', () => {
-  it('keeps "Untitled canvas" for blank or no template', () => {
-    expect(untitledNameForTemplate('blank')).toBe('Untitled canvas');
+  it('keeps "Untitled canvas" for no template, and names the blank "Untitled Workshop"', () => {
     expect(untitledNameForTemplate(null)).toBe('Untitled canvas');
+    expect(untitledNameForTemplate('blank-session')).toBe('Untitled Workshop');
   });
 });
 

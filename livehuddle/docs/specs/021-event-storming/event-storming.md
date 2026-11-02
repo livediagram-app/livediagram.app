@@ -1638,7 +1638,8 @@ kind, kept current every session. Each should stay true on its own.
 
 ## Counts
 
-The catalogue is pinned at **88 templates (10 default + 78 extra)**:
+The catalogue was pinned at **88 templates (10 default + 78 extra)** with this addition (40 since step 5.4 of the
+[Build plan](../005-project-roadmap/build-plan.md)):
 `templates.test.ts`, [Canvas and palette](../008-canvas/canvas-and-palette.md), [Marketing site](../019-marketing/marketing-site.md), [Marketing assets](../019-marketing/marketing-assets.md), the marketing FAQ +
 landing copy, and the help centre's templates article all moved
 together with this addition.

@@ -65,7 +65,7 @@ export const mcpListTemplates = mcpTool('list_templates', {
   title: 'List templates',
   description:
     'Browse the template library — the same hand-tuned scaffolds the editor\u2019s Quick ' +
-    'Start offers (retrospective, SWOT, gantt, town hall, ...). Returns categories ' +
+    'Start offers (retrospective, SWOT, roadmap, town hall, ...). Returns categories ' +
     'plus { kind, title, description, category } per template. Pass a kind as "template" ' +
     'on create_document / add_tab to start from it, then personalise the labels with ' +
     'update_document.',

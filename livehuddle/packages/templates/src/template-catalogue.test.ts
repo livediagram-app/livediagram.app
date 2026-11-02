@@ -10,8 +10,8 @@ describe('templateCatalogue', () => {
     expect(categories.slice(0, -1)).toEqual(TEMPLATE_CATEGORIES);
     expect(categories.every((c) => templates.some((t) => t.category === c.id))).toBe(true);
     expect(categories.at(-1)!.id).toBe('blanks');
-    expect(templates.find((t) => t.kind === 'blank')!.category).toBe('blanks');
-    expect(templates.find((t) => t.kind === 'gantt')!.category).toBe('planning');
+    expect(templates.find((t) => t.kind === 'blank-session')!.category).toBe('blanks');
+    expect(templates.find((t) => t.kind === 'roadmap')!.category).toBe('planning');
     expect(templates.map((t) => t.kind)).toEqual(
       TEMPLATES.filter((t) => !t.hidden).map((t) => t.kind),
     );

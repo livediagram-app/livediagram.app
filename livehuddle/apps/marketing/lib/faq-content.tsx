@@ -21,9 +21,9 @@ import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 const ICON = 18;
 // Written out rather than read from @livehuddle/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 72;
+export const TEMPLATE_COUNT = 40;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
-export const TEMPLATE_CATEGORY_COUNT = 14;
+export const TEMPLATE_CATEGORY_COUNT = 13;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
@@ -143,7 +143,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What can I make with it?',
-        a: 'Flowcharts, mind maps, org charts, retrospectives in five formats, Lean Coffee and town hall Q&A boards, roadmaps, story maps, SWOT grids, Business Model Canvases, timelines, Gantt charts, funnels, flywheels, tables, pie, bar and line charts, UML class, sequence and state diagrams, system architecture, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas and Sankey diagrams.',
+        a: 'Retrospectives in five formats, Lean Coffee and town hall Q&A boards, brainstorms, affinity maps, roadmaps, story maps, SWOT grids, Business Model and Value Proposition Canvases, event storming, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, quizzes and icebreaker games, and virtual offices to walk round.',
       },
       {
         q: 'How many templates and themes are there?',

@@ -10,23 +10,10 @@ import { buildAllHandsHall, buildCoworkingSpace, buildTeamPod } from './template
 import { settleChips, type Element } from '@livehuddle/document';
 import type { TemplateKind } from './templates';
 import {
-  buildComicStrip,
-  buildDoodleWarmup,
-  buildIdeaGarden,
-  buildJourneyDoodle,
-  buildPaperPrototype,
-  buildPreMortem,
-  buildRichPicture,
-  buildSketchnote,
-} from './template-builders-sketch';
-import {
   buildPrioritizationMatrix,
   buildRetrospective,
   buildSwot,
 } from './template-builders-boards';
-import { buildSystemArchitecture } from './template-builders-technical';
-import { buildCloudArchitecture } from './template-builders-cloud';
-import { buildStateMachine } from './template-builders-state-machine';
 import { buildEventStorming } from './template-builders-eventstorming';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
 import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
@@ -38,16 +25,9 @@ import {
   buildWouldYouRather,
 } from './template-builders-party-games';
 import { buildBrainstorm, buildWorkshopBoard } from './template-builders-workshop-boards';
-import { buildOkrTree } from './template-builders-hierarchies';
 import { buildRoadmap } from './template-builders-roadmap';
-import { buildGanttChart } from './template-builders-gantt';
-import { buildComparisonTable, buildRaciMatrix } from './template-builders-table';
-import { buildFishbone, buildJourney, buildVenn } from './template-builders-diagrams';
-import { buildTimeline } from './template-builders-timelines';
-import { buildMilestoneTimeline } from './template-builders-milestones';
-import { buildMilestoneTimelineVertical } from './template-builders-milestones-vertical';
-import { buildBlank } from './template-builders-flows';
-import { buildDataFlow } from './template-builders-dataflow';
+import { buildRaciMatrix } from './template-builders-table';
+import { buildJourney } from './template-builders-journey';
 import {
   buildStartStopContinue,
   buildMadSadGlad,
@@ -62,16 +42,8 @@ import { buildCrazyEights } from './template-builders-crazy-eights';
 import { buildUserPersona } from './template-builders-persona';
 import { buildMeetingAgenda } from './template-builders-meeting';
 import { buildObjectivesPlanner } from './template-builders-objectives';
-import { buildWardleyMap } from './template-builders-wardley';
-import { buildThreatModel } from './template-builders-threat-model';
-import { buildServiceBlueprint } from './template-builders-service-blueprint';
-import { buildMetricTree } from './template-builders-metric-tree';
 import { buildValuePropositionCanvas } from './template-builders-value-proposition';
-import { buildFamilyTree } from './template-builders-family-tree';
-import { buildValueStreamMap } from './template-builders-value-stream';
 import { buildBoardGrid } from './template-builders-board-grid';
-import { buildConceptMap } from './template-builders-concept-map';
-import { buildNetworkDiagram } from './template-builders-network';
 
 // Build the elements for a given template, centred on the supplied canvas
 // point. Each template is intentionally small and editable; users grow them.
@@ -84,32 +56,12 @@ export function buildTemplate(kind: TemplateKind, cx: number, cy: number): Eleme
 
 function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
   switch (kind) {
-    case 'blank':
-      return buildBlank();
     case 'retrospective':
       return buildRetrospective(cx, cy);
-    case 'data-flow':
-      return buildDataFlow(cx, cy);
     case 'swot':
       return buildSwot(cx, cy);
-    case 'timeline':
-      return buildTimeline(cx, cy);
-    case 'milestone-timeline':
-      return buildMilestoneTimeline(cx, cy);
-    case 'milestone-timeline-vertical':
-      return buildMilestoneTimelineVertical(cx, cy);
-    case 'venn':
-      return buildVenn(cx, cy);
     case 'journey':
       return buildJourney(cx, cy);
-    case 'fishbone':
-      return buildFishbone(cx, cy);
-    case 'gantt':
-      return buildGanttChart(cx, cy);
-    case 'comparison-table':
-      return buildComparisonTable(cx, cy);
-    case 'system-architecture':
-      return buildSystemArchitecture(cx, cy);
     case 'prioritization-matrix':
       return buildPrioritizationMatrix(cx, cy);
     case 'start-stop-continue':
@@ -136,20 +88,8 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildMeetingAgenda(cx, cy);
     case 'objectives-planner':
       return buildObjectivesPlanner(cx, cy);
-    case 'wardley-map':
-      return buildWardleyMap(cx, cy);
-    case 'threat-model':
-      return buildThreatModel(cx, cy);
-    case 'service-blueprint':
-      return buildServiceBlueprint(cx, cy);
-    case 'metric-tree':
-      return buildMetricTree(cx, cy);
     case 'value-proposition-canvas':
       return buildValuePropositionCanvas(cx, cy);
-    case 'family-tree':
-      return buildFamilyTree(cx, cy);
-    case 'value-stream-map':
-      return buildValueStreamMap(cx, cy);
     case 'roadmap':
       return buildRoadmap(cx, cy);
     case 'raci-matrix':
@@ -188,49 +128,15 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildBusinessModelCanvas(cx, cy);
     case 'empathy-map':
       return buildEmpathyMap(cx, cy);
-    case 'okr-tree':
-      return buildOkrTree(cx, cy);
-    case 'cloud-architecture':
-      return buildCloudArchitecture(cx, cy);
-    case 'state-machine':
-      return buildStateMachine(cx, cy);
     case 'event-storming':
       return buildEventStorming(cx, cy);
-    // A whiteboard is a clean board (docs/specs/023-draw-mode/draw-mode.md): what makes it one is its
-    // kind, which templateCanvasOverrides sets, not any seeded element. Workshop's blank is an empty
-    // tab too, opened in Workshop the same way.
-    case 'whiteboard':
+    // Workshop's blank is truly blank: no seeded element. The user starts from an empty tab (with the empty-canvas
+    // hint banner, docs/specs/007-editor/new-document-route.md) and adds their first element from the palette.
     case 'blank-session':
       return [];
-    case 'sketchnote':
-      return buildSketchnote(cx, cy);
-    case 'rich-picture':
-      return buildRichPicture(cx, cy);
-    case 'comic-strip':
-      return buildComicStrip(cx, cy);
-    case 'doodle-warmup':
-      return buildDoodleWarmup(cx, cy);
-    case 'paper-prototype':
-      return buildPaperPrototype(cx, cy);
-    case 'journey-doodle':
-      return buildJourneyDoodle(cx, cy);
-    case 'pre-mortem':
-      return buildPreMortem(cx, cy);
-    case 'idea-garden':
-      return buildIdeaGarden(cx, cy);
-    // The use-case batch: four board grids over data, the concept map and the network diagram.
-    case 'eisenhower-matrix':
+    // The board grids over data: a PESTLE scan and a class's KWL chart.
     case 'pestle-analysis':
     case 'kwl-chart':
-    case 'onboarding-plan':
       return buildBoardGrid(kind, cx, cy);
-    case 'concept-map':
-      return buildConceptMap(cx, cy);
-    case 'network-diagram':
-      return buildNetworkDiagram(cx, cy);
   }
 }
-
-// The "Blank Diagram" template is truly blank: no seeded element. The user
-// starts from an empty canvas (with the empty-canvas hint banner, docs/specs/007-editor/new-document-route.md) and
-// adds their first element from the palette / Quick Start.

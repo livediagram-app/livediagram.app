@@ -87,7 +87,7 @@ describe('StartFromTemplates, switching category', () => {
     mount('workshop');
     const scroller = document.querySelector('[data-start-card]')!.closest('.overflow-y-auto')!;
     scroller.scrollTop = 300;
-    fireEvent.click(document.querySelector('[data-rail="processes"]')!);
+    fireEvent.click(document.querySelector('[data-rail="planning"]')!);
     expect(scroller.scrollTop).toBe(0);
   });
 });

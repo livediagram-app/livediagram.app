@@ -1,10 +1,10 @@
 // The board grid (docs/specs/008-canvas/canvas-and-palette.md "Templates", the use-case batch): one layout for the
 // boards that are tinted panels of sticky notes in a grid, drawn from data (template-board-grid-data.ts). A bold
 // title over a muted how-to; an optional session rail (the question, a timer and a dot vote, how it runs); the
-// panels, each a retro-kit column (a deep-hue header, a glyph, a prompt and notes in its hue); optional axis words
-// over the columns and down the rows; and an optional closing panel whose checklist is what the board produces.
+// panels, each a retro-kit column (a deep-hue header, a glyph, a prompt and notes in its hue); and an optional
+// closing panel whose checklist is what the board produces.
 //
-// Panels, headers, prompts and axis words are the scaffold layer; the title, notes, tools and checklists the content.
+// Panels, headers and prompts are the scaffold layer; the title, notes, tools and checklists the content.
 // Pure: takes a centre (cx, cy), returns a fresh Element[].
 
 import { createShape, createText, type Element } from '@livehuddle/document';
@@ -18,7 +18,6 @@ import {
   RETRO,
   RETRO_HUES,
   RETRO_INK,
-  RETRO_MUTED,
   retroHeader,
   retroHeading,
   retroNotesTop,
@@ -29,8 +28,6 @@ import {
   stickyGridHeight,
 } from './template-retro-kit';
 
-const AXIS_W = 44;
-const AXIS_H = 34;
 const QUESTION_H = 150;
 // A closing panel this wide splits a checklist of four or more in two, so a list never stretches across the board.
 const SPLIT_CLOSING_AT = 1000;
@@ -53,14 +50,12 @@ function layoutBoardGrid(grid: BoardGrid, cx: number, cy: number): Element[] {
   const bodyH = gridH + (closing ? gap + closingH : 0);
 
   const railSpan = grid.rail ? railW + gap : 0;
-  const axisW = grid.axes ? AXIS_W : 0;
-  const axisH = grid.axes ? AXIS_H : 0;
-  const totalW = railSpan + axisW + gridW;
-  const totalH = titleH + subtitleH + headGap + axisH + bodyH;
+  const totalW = railSpan + gridW;
+  const totalH = titleH + subtitleH + headGap + bodyH;
   const x0 = cx - totalW / 2;
   const y0 = cy - totalH / 2;
-  const gridX = x0 + railSpan + axisW;
-  const top = y0 + titleH + subtitleH + headGap + axisH;
+  const gridX = x0 + railSpan;
+  const top = y0 + titleH + subtitleH + headGap;
 
   const elements: Element[] = [...retroHeading(x0, y0, totalW, grid.title, grid.howTo)];
 
@@ -94,35 +89,6 @@ function layoutBoardGrid(grid: BoardGrid, cx: number, cy: number): Element[] {
         ...SCAFFOLD,
       },
       railNote(x0, stepsY + 44, railW, top + bodyH - (stepsY + 44), rail.steps.join('\n')),
-    );
-  }
-
-  // The axis words: one over each column, one down each row (turned to run along it).
-  if (grid.axes) {
-    const axisWord = (x: number, y: number, w: number, label: string, rotation?: number) =>
-      elements.push({
-        ...createText(x, y),
-        width: w,
-        height: AXIS_H - 6,
-        label,
-        textSize: 'sm',
-        textBold: true,
-        textColor: RETRO_MUTED,
-        textAlignX: 'center',
-        ...(rotation ? { rotation } : {}),
-        ...SCAFFOLD,
-      });
-    grid.axes.top.forEach((word, c) =>
-      axisWord(gridX + c * (grid.panelW + gap), top - AXIS_H, grid.panelW, word),
-    );
-    grid.axes.side.forEach((word, r) =>
-      axisWord(
-        x0 + railSpan + AXIS_W / 2 - panelH / 2 - 3,
-        top + r * (panelH + gap) + panelH / 2 - (AXIS_H - 6) / 2,
-        panelH,
-        word,
-        -90,
-      ),
     );
   }
 

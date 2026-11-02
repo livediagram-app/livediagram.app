@@ -126,7 +126,7 @@ flows**, then show the result and report its faults in words.
 | Constraint systems          | Penrose (Domain, Substance, Style, solved by numeric optimisation), Cassowary (Apple Auto Layout), D2 `near` and `grid-rows`    | Relations and objectives           | Declarative, composable                           | Solver complexity; unsatisfiable sets need explaining       |
 | Graph plus layout engine    | Graphviz `dot`, ELK layered, dagre, D2 (dagre, ELK, TALA), Mermaid, PlantUML, **livehuddle `graph` / `mermaid` input**          | Nodes, edges, groups, direction    | Matches how models think; globally tidy           | Little control; groups and long edges can go wrong (see §1) |
 | Graph plus layout **hints** | Graphviz `rank=same`, `constraint=false`, edge `weight`; ELK layer constraints (first, last) and partitions; PlantUML `-down->` | The graph, plus a few named nudges | Fixes the common faults without leaving the graph | Each hint must be honoured by our own engine                |
-| Templates and scaffolds     | livehuddle's 68 templates, Miro, Lucid and Whimsical starters                                                                   | A template kind, then content      | Curated layout for non-graph boards               | Personalising needs a readable outline of slot ids          |
+| Templates and scaffolds     | livehuddle's 40 templates, Miro, Lucid and Whimsical starters                                                                   | A template kind, then content      | Curated layout for non-graph boards               | Personalising needs a readable outline of slot ids          |
 
 What livehuddle has, by file:
 

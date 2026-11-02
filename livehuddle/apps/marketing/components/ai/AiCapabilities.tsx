@@ -19,7 +19,7 @@ const CAPABILITIES = [
   {
     icon: lucideGlyph(lucideSquareKanban, 20),
     title: 'Boards and templates',
-    body: 'Retros, roadmaps, SWOT, Gantt charts and more from the template library, filled in with your own content.',
+    body: 'Retros, roadmaps, SWOT, story maps and more from the template library, filled in with your own content.',
   },
   {
     icon: lucideGlyph(lucideTrash2, 20),

@@ -10,8 +10,6 @@ describe('closeStartForBlank', () => {
   it('closes the start of a blank in its own mode', () => {
     expect(closeStartForBlank('t', 'blank-session')).toBe(true);
     expect(emptyCardDismissed('t:workshop')).toBe(true);
-    expect(closeStartForBlank('u', 'whiteboard')).toBe(true);
-    expect(emptyCardDismissed('u:workshop')).toBe(true);
     expect(closeStartForBlank('v', 'retrospective')).toBe(false);
   });
 });
