@@ -36,6 +36,7 @@
     "./reaction-bursts": "./src/reaction-bursts.ts",
     "./reactions": "./src/reactions.ts",
     "./scene": "./src/scene.ts",
+    "./seats": "./src/seats.ts",
     "./speech": "./src/speech.ts",
     "./speech-store": "./src/speech-store.ts",
     "./status": "./src/status.ts",
