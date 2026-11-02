@@ -1,0 +1,72 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Facilitator',
+  description:
+    'Give one person the timer, the votes and the polls for a live session, hand the role on, and take it back at any time as the canvas owner.',
+  path: '/help/collaboration/facilitator/',
+});
+
+<ArticleLayout
+  title="Facilitator"
+  description="One person runs the session tools, so two people can't start timers over each other."
+  categoryTitle="Collaboration"
+  categorySlug="collaboration"
+  subArticles={getSubArticles('facilitator')}
+>
+
+A canvas full of workshop tools has no idea who is running the workshop. Two people start countdowns over each other, somebody reveals the estimates while a third is still typing one, a poll ends mid-answer. Making one person the **facilitator** settles it: the tools that run the room answer to them, and everyone else gets on with the work.
+
+Nobody is the facilitator until somebody takes the role, and a session that never uses it behaves exactly as it always has.
+
+## Making someone the facilitator
+
+Click any avatar on a tab (or the **+N** badge) to open **Collaborators**, then use the button on the person's row:
+
+- **Make Facilitator** on somebody else's row. It is offered while nobody is facilitating, to the current facilitator (to hand it on), and always to the canvas's owner.
+- **Take Facilitation** on your own row, when nobody is running the session.
+- **Step Down** on your own row when you're the facilitator and you're done.
+- **Take Over** on your own row, if you own the canvas and somebody else is facilitating. The owner can always take the session back.
+
+Whoever is running it wears a **Facilitating** badge on their row in Collaborators. A visitor on a Participant or Viewer share link can't hold the role, because running a session is an editor's job: **Make Facilitator** on their row is greyed out, and its hover card says why. There is one facilitator for the whole canvas, not one per tab.
+
+Everyone in the room gets a short notification when the role moves, like "Alex is now facilitating" or "Nobody is facilitating now", so nobody has to guess. If you've turned off **In-Editor Notifications** in [Settings](/help/user-interface/settings/) › Notifications, you won't see those, and the badge still tells you who has it.
+
+## What the facilitator runs
+
+While somebody holds the role, these are theirs:
+
+- The **timer**: start, pause, extend, reset, clear.
+- **Dot voting**: starting a round, revealing it, ending it, stepping through the results.
+- **Polls**: asking a question and ending it.
+- **Session buttons**, both pressing one and changing what it does.
+- **Agenda** items, which start that item's countdown, and resetting the agenda.
+- Running a **Q&A board**: discussing, closing, reopening and removing questions, and clearing the board.
+- Revealing and clearing an **estimate**, a **temperature check** or an **idea box**, and scattering ideas onto the canvas.
+- Running a **quiz**: editing its question, starting, locking, revealing and running it again.
+- Resetting a **done check** for a new round, taking a **roll call**, spinning a **picker**, lifting a **reveal zone** cover, and pressing **Bring Focus**.
+- [Freeing an element](/help/collaboration/live-presence/#freeing-an-element-someone-left-selected) somebody has wandered off with selected: right-click it and choose their Release row in the **In use** menu. While nobody facilitates, any Editor can do this.
+
+Two of these change shape while someone facilitates. Lifting a reveal zone's cover normally shows what is behind it to you alone; while someone facilitates, only they can lift a cover, still on their own screen, and they show it to everyone with **Reveal for All** in the element's menu. And [Bring Focus](/help/palette/behaviour/bring-focus/), which any editor can normally press, becomes the facilitator's to press.
+
+Everything else is unchanged for everyone: answering a poll, casting your dots, responding to an estimate or temperature check, adding an idea, marking yourself done, commenting, drawing, pointing with the laser, following somebody, presenting a slide deck on your own screen, and every part of editing the canvas. A tool only the facilitator can answer wouldn't be a tool.
+
+When somebody else is facilitating, the Timer, Vote and Poll set-up popovers in the [session tools](/help/collaboration/session-tools/) strip (in [Workshop mode](/help/canvas/workshop-mode/)) say so at the top ("Alex is facilitating this session. Ask them to start the timer, the vote or a poll.") and their controls are greyed until they hand it on or step down. On cards like an idea box or an estimate, the facilitator-only buttons are simply not shown to anyone else.
+
+## If they leave or refresh
+
+Refreshing changes nothing: the role comes straight back to them, usually before the page has finished loading. Same for a dropped connection or a closed laptop lid.
+
+If they leave for good, the role is released about a minute and a half later and everyone is told, so the tools open up again rather than staying locked behind somebody who has gone. The canvas's owner can also take it back at any moment, and when everyone leaves the canvas the role is simply over: the next session starts with nobody facilitating.
+
+The facilitator role is about who is driving, not a permission: it keeps two well-meaning people from starting timers at once rather than defending the canvas from anyone. A [canvas in This Browser](/help/privacy-and-security/offline-mode/) has no live room, so it has no facilitator.
+
+<Tip>
+  Building the canvas and running the session are different jobs. Make the canvas, then hand the
+  facilitator role to whoever is running the meeting; as the owner you keep the ability to take it
+  back.
+</Tip>
+
+</ArticleLayout>

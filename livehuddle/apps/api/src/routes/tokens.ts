@@ -1,0 +1,60 @@
+// /api/tokens — API tokens are the liveworkspace account's (liveworkspace/docs/specs/003-accounts/accounts.md "API
+// tokens"): made, listed and revoked on liveworkspace.app, so the management routes answer 410 with
+// where to go. What stays is the token a request presented:
+//
+//   GET    /api/tokens/current — the token this request presented (the CLI's auth status)
+//   DELETE /api/tokens/current — that token revoking itself (the CLI's auth logout)
+
+import { bearerTokenOf, type CurrentTokenResponse } from '@livehuddle/api-schema';
+import { forbidden, json, methodNotAllowed, noContent, notFound } from '../responses';
+import type { RouteContext } from './context';
+import { revokePresentedToken } from '../db';
+import { getParticipant } from '../liveworkspace/profiles';
+
+export async function handleTokens(ctx: RouteContext): Promise<Response> {
+  const { request, env, segments } = ctx;
+  if (segments[1] !== 'tokens') return notFound();
+  if (segments[2] === 'current' && segments.length === 3) return handleCurrentToken(ctx);
+  const managed =
+    (segments.length === 2 && (request.method === 'GET' || request.method === 'POST')) ||
+    (segments.length === 3 && request.method === 'DELETE');
+  if (!managed) return notFound();
+  return json(
+    {
+      error: 'tokens_moved',
+      manageAt: `${(env.ACCOUNTS_URL ?? 'https://www.liveworkspace.app').replace(/\/+$/, '')}/explorer?settings=tokens`,
+    },
+    { status: 410 },
+  );
+}
+
+// The token the request presented (docs/specs/015-api/blueprints/cli.md "Token self-service"), as liveworkspace
+// described it when it checked it. Only a token has one: a signed-in session or a guest is refused
+// `403 not_a_token`; a token since revoked never got this far (401).
+async function handleCurrentToken(ctx: RouteContext): Promise<Response> {
+  const { request, env, token } = ctx;
+  if (request.method !== 'GET' && request.method !== 'DELETE') return methodNotAllowed();
+  const owner = ctx.resolveOwner();
+  if (!token || !owner) return forbidden('not_a_token');
+  if (token.expiresAt === undefined) return notFound();
+  const current = { id: token.id, name: token.name ?? null, expiresAt: token.expiresAt };
+  if (request.method === 'GET') {
+    console.info('[tokens] current read', { tokenId: token.id });
+    const participant = await getParticipant(env, owner);
+    const body: CurrentTokenResponse = {
+      accountId: owner,
+      accountName: participant?.name ?? null,
+      tokenId: current.id,
+      tokenName: current.name,
+      role: token.readOnly ? 'read-only' : 'full',
+      expiresAt: current.expiresAt,
+    };
+    return json(body);
+  }
+  // DELETE: the token revokes itself, at liveworkspace too, so it stops in every app. Its workbench pairings and
+  // sessions are liveworkspace's, which ends them with it (liveworkspace/docs/specs/011-workbench/workbench.md "Ending access").
+  const secret = bearerTokenOf(request.headers.get('Authorization'));
+  if (secret) await revokePresentedToken(env, secret);
+  console.info('[tokens] current revoked', { tokenId: token.id });
+  return noContent();
+}

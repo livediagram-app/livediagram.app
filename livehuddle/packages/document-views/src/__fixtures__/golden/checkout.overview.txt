@@ -1,0 +1,4 @@
+doc 7f3a2c91-0000-4000-8000-000000000000 "Checkout platform" · 3 tabs · edited 3m ago
+  tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 frames, 11 arrows · threads 1 open/2 · rev 1
+  tab 51c9 "Payment sequence" · 42 elements: 18 boxes, 6 lanes, 18 arrows · rev 2
+  tab 9e02 "Incident retro" · 24 elements: 24 boxes · kind=event-storming · threads 3 open/3 · rev 3

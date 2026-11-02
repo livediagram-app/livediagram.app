@@ -1,0 +1,102 @@
+import type { Page } from '@playwright/test';
+import { auditContrast, type ContrastReport } from '../contrast';
+import { expect, expectNoPageErrors, openStartBlank, test } from '../fixtures';
+import { WEBBER } from './agent-session';
+import { freshUserId, installSession } from './session';
+
+// Contrast of the workbench pairing surfaces and the OAuth shell they share (docs/specs/013-workspace/blueprints/
+// workbench-embeds.md "Accessibility"), to WCAG 2.2 AA in both colour schemes (the pairing page itself is
+// liveworkspace.app's, liveworkspace/docs/specs/011-workbench/workbench.md): the device page (docs/specs/015-api/blueprints/cli.md "The device grant") at its code entry and its
+// consent, both drawn by OauthShell and its primary fill, and Settings > API Tokens with a paired workbench (the
+// tokens themselves are made and listed on liveworkspace.app, so the row links there and lists only pairings).
+// All need a signed-in person, so they run against the signed-in export here rather than in the guest-mode
+// audit. The api's and the MCP worker's answers are stubbed, so each surface renders exactly the state under
+// audit.
+
+const DAY = 86_400_000;
+const NOW = Date.now();
+// The token is the liveworkspace account's (made on liveworkspace.app); the app knows only its id and name.
+const TOKEN = { id: 'tok_contrast', name: 'livehuddle CLI' };
+const PAIRING = {
+  id: 'pair_contrast',
+  tokenId: TOKEN.id,
+  origin: 'https://127.0.0.1:5175',
+  name: 'Acme Editor',
+  scope: 'design',
+  pairedAt: NOW - 2 * DAY,
+};
+const VIEWPORT = { width: 1280, height: 800 };
+
+function expectAA(report: ContrastReport, screen: string): void {
+  test.info().annotations.push({
+    type: `contrast: ${screen}`,
+    description: `${report.measured} text nodes measured; skipped ${JSON.stringify(report.skipped)}`,
+  });
+  expect(report.measured, `${screen}: nothing was measured`).toBeGreaterThan(0);
+  const lines = report.failures.map(
+    (f) => `"${f.text}" ${f.fg} on ${f.bg} = ${f.ratio}:1 (needs ${f.required}) at ${f.where}`,
+  );
+  expect(lines, `${screen}: text below WCAG AA`).toEqual([]);
+}
+
+async function signedIn(page: Page, scheme: 'dark' | 'light'): Promise<void> {
+  await installSession(page, { ...WEBBER, id: freshUserId('webber') });
+  await page.addInitScript((mode) => localStorage.setItem('livehuddle:v2:ui-mode', mode), scheme);
+}
+
+const MCP = 'https://mcp.livehuddle.app';
+
+async function expectScheme(page: Page, scheme: 'dark' | 'light'): Promise<void> {
+  if (scheme === 'dark') await expect(page.locator('html')).toHaveClass(/\bdark\b/);
+  else await expect(page.locator('html')).not.toHaveClass(/\bdark\b/);
+}
+
+for (const scheme of ['dark', 'light'] as const) {
+  test.describe(`OAuth shell contrast, ${scheme} mode`, () => {
+    test.use({ colorScheme: scheme, reducedMotion: 'reduce', viewport: VIEWPORT });
+
+    test('the device page, entering the code and consenting', async ({ page, pageErrors }) => {
+      await signedIn(page, scheme);
+      await page.route(`${MCP}/oauth/device/session/*`, (route) =>
+        route.fulfill({ json: { clientName: 'livehuddle CLI' } }),
+      );
+      await page.goto('/oauth/device?code=bcdf-ghjk');
+      await expect(page.getByRole('heading', { name: 'Connect a terminal' })).toBeVisible();
+      await expectScheme(page, scheme);
+      expectAA(await auditContrast(page), `device page, code entry, ${scheme}`);
+
+      await page.getByRole('button', { name: 'Continue' }).click();
+      await expect(page.getByRole('heading', { name: 'Connect livehuddle CLI' })).toBeVisible();
+      await page.screenshot({ path: test.info().outputPath(`device-consent-${scheme}.png`) });
+      expectAA(await auditContrast(page), `device page, consent, ${scheme}`);
+      expectNoPageErrors(pageErrors);
+    });
+  });
+}
+
+for (const scheme of ['dark', 'light'] as const) {
+  test.describe(`Workbench pairing contrast, Settings, ${scheme} mode`, () => {
+    test.use({ colorScheme: scheme, reducedMotion: 'reduce', viewport: VIEWPORT });
+
+    test('the API Tokens row with a paired workbench', async ({ page, pageErrors }) => {
+      await signedIn(page, scheme);
+      await page.route('**/api/workbench/pairings', (route) =>
+        route.fulfill({ json: { pairings: [PAIRING] } }),
+      );
+      // Settings opens on its deep link wherever the editor is (a canvas here).
+      await openStartBlank(page);
+      await page.goto(`${new URL(page.url()).pathname}?settings=tokens`);
+      const pairings = page.getByRole('list', { name: 'Paired workbenches' });
+      await expect(pairings.getByText('Acme Editor')).toBeVisible();
+      await expectScheme(page, scheme);
+      await page.screenshot({ path: test.info().outputPath(`pair-settings-${scheme}.png`) });
+      // The row's body (Manage API Tokens and the paired workbenches), so the audit judges this surface and
+      // nothing behind the dialog.
+      expectAA(
+        await auditContrast(page, 'div:has(> div > ul[aria-labelledby])'),
+        `API Tokens row with a paired workbench, ${scheme}`,
+      );
+      expectNoPageErrors(pageErrors);
+    });
+  });
+}

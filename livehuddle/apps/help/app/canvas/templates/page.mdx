@@ -1,0 +1,84 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { StartSearchOtherModes } from '@/components/illustrations/canvas-basics';
+
+export const metadata = helpMetadata({
+  title: 'Templates',
+  description:
+    'Start a canvas from a ready-made template instead of a blank canvas, find one in any mode, and restyle it with any theme.',
+  path: '/help/canvas/templates/',
+});
+
+<ArticleLayout
+  title="Templates"
+  description="Begin a canvas from a ready-made starting point instead of an empty canvas, find the templates for the mode you work in, and adapt it to your needs."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  subArticles={getSubArticles("templates")}
+>
+
+A blank canvas is freeing, but sometimes you would rather start with structure already in place. Templates give you a ready-made canvas as a starting point, filled with believable example content, so you can begin from something shaped roughly like what you need and adapt it, instead of building every diagram from nothing.
+
+## Starting from a Template
+
+When you [create a new canvas](/new), the **New Canvas** wizard asks what you are making: pick a mode (Diagram, Draw or Workshop) and the canvas is made there and then, saved where new canvases go (see [Default Folders](/help/explorer/folders/default-folders/)). The empty tab then opens on that mode's start, **Start Diagramming**, **Start Drawing** or **Start a Workshop**: its **Recommended** templates first, then every template of that mode in groups beside them, with a search. Click a template and the tab fills with it; from there it is an ordinary canvas, to move, edit, add to and delete from as on any canvas.
+
+Every new tab, and every tab you empty, offers the same start. Close it with its **×** to begin from a blank canvas; while the tab is still empty, **Show Templates** in the strip under the palette brings it back. Picked the wrong mode? The mode switch at the top of the start's list changes it while the tab is empty. In Draw the start is **Start Drawing**, with the pen already in hand, and since Draw has a dock rather than the palette, **Show Templates** sits in a pill at the top of the canvas.
+
+The search at the top of a start looks in every mode, not just the tab's own. Type "sailboat" on Start Drawing and the Sailboat retrospective turns up under **In Other Modes**, in a Workshop block, its card saying **Opens in Workshop**: click it and the tab switches to Workshop with the template on it. Each mode shows up to six matches, with **Show All** for the rest, and pressing the down arrow in the search box takes you to the first card it found.
+
+<Figure caption="A start's search: nothing of Draw's matched, so it says so in one line and shows what the other modes found.">
+  <StartSearchOtherModes />
+</Figure>
+
+## What's in the Catalogue
+
+The templates are grouped by what they are for, in fourteen categories listed in alphabetical order, and a start skips a category that has nothing in it. A template lives in one category, and a few also appear in another where you would naturally look for them (a RACI Matrix is under both **People & Teams** and **Planning**), so they are listed under each:
+
+| Category                  | Templates                                                                                                                                                                                       | Also shown here                                                        |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| **Brainstorming**         | Mind Map, Tree Mind Map, Bubble Map, Affinity Map, Brainstorm Board, Crazy 8s, Idea Garden                                                                                                      | Concept Map                                                            |
+| **Decisions**             | Decision Tree, Fishbone, Comparison Table, Prioritization Matrix, Risk Matrix, Pre-Mortem, Eisenhower Matrix                                                                                    | Venn Diagram                                                           |
+| **Goals & Metrics**       | Flywheel, Funnel, Sankey Diagram, OKR Tree, Metric Tree, Objectives Planner                                                                                                                     | Opportunity Solution Tree                                              |
+| **Meetings & Workshops**  | Meeting Agenda, Workshop Board, [Lean Coffee and Town Hall Q&A](/help/palette/collaborate/qa-boards/)                                                                                           | Brainstorm Board, All-Hands Hall, Event Storming, Crazy 8s, Sketchnote |
+| **People & Teams**        | Org Chart, RACI Matrix, Family Tree, 30-60-90 Day Plan                                                                                                                                          | Stakeholder Map                                                        |
+| **Planning**              | Timeline, Horizontal Milestone Timeline, Vertical Milestone Timeline, Gantt Chart, Roadmap                                                                                                      | RACI Matrix, User Story Map, Eisenhower Matrix, 30-60-90 Day Plan      |
+| **Processes & Workflows** | Flowchart, Swimlane Flowchart, Approval Workflow, Value Stream Map                                                                                                                              | Decision Tree, Data Flow Diagram, Event Storming, Service Blueprint    |
+| **Product & UX**          | Venn Diagram, User Journey, User Story Map, Empathy Map, Sitemap, Opportunity Solution Tree, Service Blueprint, User Persona, Comic Strip, Paper Prototype, Journey Doodle                      | Affinity Map, Crazy 8s, Value Proposition Canvas                       |
+| **Quizzes & Games**       | Pub Quiz, Icebreaker Questions, Two Truths and a Lie, Would You Rather, Find Someone Who Bingo, Doodle Warm-Up                                                                                  |                                                                        |
+| **Retrospectives**        | Retrospective, Start, Stop, Continue, Mad, Sad, Glad, 4Ls Retrospective, Sailboat Retrospective                                                                                                 | Incident Postmortem, Pre-Mortem                                        |
+| **Software & IT**         | Data Flow Diagram, System Architecture, Database Schema, Sequence Diagram, Cloud Architecture, Class Diagram, State Machine, Event Storming, Incident Postmortem, Threat Model, Network Diagram |                                                                        |
+| **Strategy**              | SWOT, Pyramid, Business Model Canvas, Stakeholder Map, Wardley Map, Value Proposition Canvas, Rich Picture, PESTLE Analysis                                                                     | Flywheel, Roadmap, OKR Tree, Pre-Mortem                                |
+| **Teaching & Learning**   | Sketchnote, KWL Chart, Concept Map                                                                                                                                                              | Mind Map, Bubble Map, Timeline, Venn Diagram, Pub Quiz, Family Tree    |
+| **Virtual Spaces**        | Virtual Office, Coworking Space, Team Pod, All-Hands Hall                                                                                                                                       |                                                                        |
+
+**Find a template** finds a template by its name, its description, its category, or the everyday words people use for it: try "1:1", "retro", "erd", "vsm", "pestel" or "onboarding". Every word you type has to match.
+
+Three blanks lead the **Popular** shelf, one for each way of working, and sit apart from the categories since starting from nothing is not a kind of diagram: **Blank Diagram** (an empty canvas), **Blank Whiteboard** (a board in [Draw mode](/help/canvas/draw-mode/) for free drawing without distractions) and **Blank Workshop** (an empty tab in [Workshop mode](/help/canvas/workshop-mode/), to run a retro, town hall or workshop with timers, votes and polls to hand). After the blanks, Popular shows a few of the templates most people start from; choose a mode and Popular changes to that mode's favourites, its blank first.
+
+## Finding Templates for a Mode
+
+Every template opens in one mode: **Diagram**, **Draw** or **Workshop**, and each mode's start lists its own. To browse another mode's, switch the tab's mode with the switch at the top of the start's list while the tab is empty, or just search: a template from another mode shows which mode it opens in.
+
+- **Draw** templates are drawn by hand, ready to draw over: **Sketchnote**, **Rich Picture**, **Comic Strip**, **Doodle Warm-Up**, **Paper Prototype**, **Journey Doodle**, **Pre-Mortem** and **Idea Garden**.
+- **Workshop** templates are sessions to run with your team: **Blank Workshop**, **Retrospective**, **Start, Stop, Continue**, **Mad, Sad, Glad**, **4Ls Retrospective**, **Sailboat Retrospective**, **Town Hall Q&A**, **Lean Coffee**, **Crazy 8s**, the quizzes and games (**Pub Quiz**, **Icebreaker Questions**, **Two Truths and a Lie**, **Would You Rather** and **Find Someone Who Bingo**), the spaces to walk round together in Avatar mode (**Virtual Office**, **Coworking Space**, **Team Pod** and **All-Hands Hall**; see [Virtual Office](/help/palette/virtual-office/)), **Meeting Agenda**, **Workshop Board**, **Brainstorm Board**, the boards that come with a dot vote, **Affinity Map**, **Prioritization Matrix** and **Risk Matrix**, the boards a team fills in together in a session (**Incident Postmortem**, **Objectives Planner**, **Roadmap**, **RACI Matrix**, **User Story Map**, **Business Model Canvas**, **Stakeholder Map**, **Value Proposition Canvas**, **Opportunity Solution Tree** and **User Persona**), and the sticky-note boards a group fills in together, such as **SWOT**, **PESTLE Analysis**, **KWL Chart**, **Empathy Map** and **User Journey**. See [Workshop Mode](/help/canvas/workshop-mode/).
+- Every other template is a **Diagram** template.
+
+Each one arrives as real elements rather than a picture: a Gantt chart's bars are shapes you drag, a mind map's branches are nodes you can rearrange. Nothing in a template is locked or special.
+
+## Changing the Theme
+
+A new canvas starts on the Default theme, and a template picked on a start takes the tab's current theme. Once you are on the canvas, click the **Theme & canvas** button in the bottom-right corner to open the **Tab Style** dialog and try a different [theme](/help/canvas/themes/): it recolours the whole template at once.
+
+## Making It Your Own
+
+A template is just a head start, not a constraint. Everything in it is fully editable: rename and recolour the elements, restyle the whole thing with a different theme, or strip out the parts you do not need. Because the canvas works the same as any other, you can also add [tabs](/help/tabs/using-tabs/), invite others, and share it once you have shaped it into what you want.
+
+<Tip>
+  Templates pair naturally with themes: pick a layout that fits your content, then try a few themes
+  from the Tab Style dialog to find the look you want. Double-click a theme to apply it and close
+  the dialog in one go.
+</Tip>
+
+</ArticleLayout>

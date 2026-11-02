@@ -17,9 +17,13 @@ change reaches the workspaces whose dependencies moved. It then groups them by p
 | liveplanner   | `liveplanner/`                | `@liveplanner/editor`   |
 | livedesign    | `livedesign/`                 | `@livedesign/live`      |
 | livedocuments | `livedocuments/`              | `@livedocuments/editor` |
+| livehuddle    | `livehuddle/`                 | `@livehuddle/editor`    |
 | platform      | `packages/`, `liveworkspace/` |                         |
 
-A group the change never reached runs no jobs. The base is the pull request's base, or for a push to
+A group the change never reached runs no jobs. livehuddle is **held** until its launch
+(livehuddle/docs/specs/005-project-roadmap/build-plan.md step 8, `held: true` in `ci-plan.mjs`): its group runs only
+when a change touches `livehuddle/` itself or everything runs, never because a shared package it uses changed; it has
+no E2E yet, and none of its Workers deploy. The base is the pull request's base, or for a push to
 `main` the commit before it. Everything runs when there is no base to compare with, or when the
 change touches something every workspace leans on without turbo seeing it as theirs: `.github/`, the
 root `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, `.npmrc` or the
@@ -168,7 +172,8 @@ each product's api, sites, MCP and router, and the platform's services and site.
 **Only what changed.** Each environment remembers the commit it last deployed in full, as the tag
 `deployed/staging` or `deployed/production`. A deploy asks Turborepo which workspaces changed since
 then, with everything depending on them, using the plan CI uses (`ci-plan.mjs`, `PLAN_MODE=deploy`).
-The Workers among them build and deploy, and the rest are left as they are. A Worker none of whose
+The Workers among them build and deploy, and the rest are left as they are; a held product's Workers (livehuddle's,
+until its launch) are never among them, even with **all**. A Worker none of whose
 files or dependencies changed is never rebuilt or redeployed. A change to `.github/` or the Prettier
 config alone deploys nothing. The tag moves only when every Worker in the deploy succeeded, so a
 failed one is retried by the next deploy. With no tag yet, everything deploys.

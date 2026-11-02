@@ -1,0 +1,42 @@
+name = "livehuddle-editor"
+# The liveworkspace Cloudflare account, which also hosts livehuddle.app, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+main = "src/worker.ts"
+compatibility_date = "2026-05-29"
+
+# The worker fronts the static-export `./out` directory via an assets
+# binding so it can rewrite `/document/<id>` paths onto the single
+# placeholder build artefact (docs/specs/007-editor/new-document-route.md). Static export can't enumerate
+# user-minted document ids at build time, so one HTML file backs every
+# `/document/*` URL and the client reads the id from the pathname.
+[assets]
+directory = "./out"
+binding = "ASSETS"
+not_found_handling = "404-page"
+# Assets are served BEFORE the worker by default, so without this the
+# security headers in src/worker.ts (X-Frame-Options DENY et al.) only
+# reached paths that matched no file: every real page, including the
+# MCP OAuth consent screen, shipped frameable. Run the worker first for
+# everything but the hashed /_next/ bundles, which need no page headers.
+run_worker_first = ["/*", "!/_next/*"]
+
+# A share link's preview names its document from liveworkspace's previews (liveworkspace/docs/specs/006-media/previews.md), at
+# https://www.liveworkspace.app unless PREVIEWS_ORIGIN says otherwise (staging below).
+
+# Staging (docs/specs/016-platform/staging-environment.md): same path-rewrite worker, same static `./out`, deployed
+# as `livehuddle-editor-staging`. `main` is inheritable; the assets binding is
+# restated so this block describes the staging worker in full.
+# Named explicitly: wrangler would append "-staging" to the top-level
+# name on its own, but nothing in `--dry-run` prints the name it resolved,
+# and the router's service bindings depend on this exact string.
+[env.staging]
+name = "livehuddle-editor-staging"
+
+[env.staging.assets]
+directory = "./out"
+binding = "ASSETS"
+not_found_handling = "404-page"
+run_worker_first = ["/*", "!/_next/*"]
+
+[env.staging.vars]
+PREVIEWS_ORIGIN = "https://staging.liveworkspace.app"

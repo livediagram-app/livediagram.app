@@ -1,0 +1,54 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Folders',
+  description:
+    'Organise your library into a tree of folders in the Explorer: create them, nest them, move canvases between them, and rename or delete them.',
+  path: '/help/explorer/folders/',
+});
+
+<ArticleLayout title="Folders" description="Group your canvases into a tree of folders so a growing library stays easy to navigate." categoryTitle="Explorer" categorySlug="explorer" subArticles={getSubArticles("folders")}>
+
+Folders are how you organise a growing library in the Explorer. Every item lives in exactly one folder, or in none (at the root of its space), and folders can nest inside other folders. A team has folders of its own too ([Team Spaces](/help/explorer/team-spaces/)), which work the same way.
+
+Folders belong to your liveworkspace library rather than to one app, so one folder can hold a canvas beside a Document from livedocuments and a Design from livedesign. Choose **All Apps** at the top of the page to see everything a folder holds; with **livehuddle** chosen, only its canvases are listed.
+
+## Creating a folder
+
+Open **My Work** or a folder in the Explorer and use the **Create** button at the top right:
+
+- **New Folder** adds a folder at the top level of My Work.
+- Inside a folder, the same entry reads **New Subfolder**, so you can nest as deep as you need. A folder's own menu offers **New Subfolder** too, including from the sidebar.
+
+A new folder starts named "New Folder" with its name ready to type over: type a name and press `Enter`. Your folder tree shows under **My Work** in the sidebar, so every folder is one click away.
+
+## Putting canvases in folders
+
+- **Move an existing canvas.** Open its menu (its **⋯** button or a right-click) and choose **Change Folder**. The picker opens on your spaces: pick **My Work** or a team first, then click into the folder you want. A **New Folder** entry at the bottom creates one on the spot (**New Subfolder** inside a folder). Press **Move Here** to move it.
+- **Drag it.** On the Explorer page, drag a canvas's row or card onto a folder in the sidebar or the list, onto **My Work** to put it back at the root, or onto a team to move it there. A note says where it went, with an **Undo**. Rest the dragged canvas on a closed folder in the sidebar for a moment and it opens, so you can drop into a subfolder. In the editor's [Explorer panel](/help/explorer/explorer-panel/), drag it onto a folder in the pane, or onto My Work or a team in the rail. Folders themselves move with **Move Folder**, not by dragging.
+- **Create straight into a folder.** Open the folder first, then **Create**, **New Canvas**, and the new canvas lands inside it. **Import from** files what it brings in there too.
+
+## Renaming, moving and deleting
+
+Each folder has a menu (its **⋯** button, a right-click, or **Shift+F10** in the sidebar) with **Open**, **Rename**, **New Subfolder**, **Move Folder** (to move the folder and everything in it), **Use as Default for…** (see [Default Folders](/help/explorer/folders/default-folders/)) and **Delete Folder**.
+
+Deleting a folder asks you to confirm first, and it doesn't delete what is inside: the items and subfolders directly inside it move up a level, into the folder it sat in or to the root of [My Work](/help/explorer/personal-space/). A subfolder keeps everything inside it, so a whole branch moves up one level intact.
+
+## Telling folders apart
+
+In the [card view](/help/explorer/list-and-card-views/) a folder shows a small mosaic of what's inside it (the snapshots of the items it holds, then its subfolders), so you can tell two similarly named folders apart by sight rather than by reading. An empty folder keeps the plain folder glyph. A folder that is one of your default folders also carries a small mark after its name.
+
+<Note>
+  A canvas that isn't filed in any folder sits at the root of{' '}
+  <a href="/help/explorer/personal-space/">My Work</a>, beside your folders. Moving it into a folder
+  takes it off the root.
+</Note>
+
+<Tip>
+  Keep the tree shallow at first. A handful of top-level folders by project or client is easier to
+  scan than deep nesting, and you can always add subfolders as a folder fills up.
+</Tip>
+
+</ArticleLayout>

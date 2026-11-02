@@ -1,0 +1,471 @@
+'use client';
+
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties } from 'react';
+import type { App, IndexClient } from '@liveworkspace/index-client';
+import { appLabel, everyAppResults, useItemSearch } from '@liveworkspace/explorer/item-search';
+import { ThisBrowserPill } from '@liveworkspace/workbench/components/primitives/ThisBrowserPill';
+import { CloseIcon, NoMatches, SearchIcon, useEscape, useFocusTrap } from '@livehuddle/ui';
+import type { Tab } from '@livehuddle/document';
+import {
+  buildSearchResults,
+  type CommandSearchItem,
+  type HelpSearchItem,
+  type SettingSearchItem,
+  type PaletteAdd,
+  type PaletteSearchItem,
+  type SearchGroup,
+  type SearchResultItem,
+} from '@/lib/search';
+import { titleCaseType, track } from '@/lib/telemetry';
+import { SearchResultIcon } from './search-panel-icons';
+import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
+import type {
+  SearchPanelDocument,
+  SearchPanelFolder,
+  SearchPanelShared,
+  SearchPanelTeam,
+  SearchPanelTeamDocument,
+  SearchPanelTeamFolder,
+} from './search-panel-sources';
+
+// Global search panel: triggered from a footer button, blurs the
+// canvas behind it, pops up near the top-centre. The scope is
+// contextual (docs/specs/008-canvas/canvas-and-palette.md "Search panel"):
+//   - Always: documents (user's list) + folders.
+//   - When supplied: "Shared with you" documents + teams (docs/specs/013-workspace/teams.md).
+//   - When inside a document: also tabs + elements on the current
+//     document (table text matches by cell).
+// Selection navigates to the right surface (open the document /
+// switch tabs / select the element / jump to the team). Esc +
+// outside-click close; Enter on the first match picks it.
+
+type SearchPanelProps = {
+  documents: SearchPanelDocument[];
+  folders: SearchPanelFolder[];
+  // Documents shared with the current owner. Optional so surfaces
+  // without the list (or guests with an empty one) can omit it.
+  shared?: SearchPanelShared[];
+  // Teams the signed-in user belongs to (docs/specs/013-workspace/teams.md). Optional: guests
+  // have none.
+  teams?: SearchPanelTeam[];
+  // Team-library folders (docs/specs/013-workspace/team-shared-documents.md), rendered in the Teams group with
+  // an "in <team>" suffix. Optional: guests have none.
+  teamFolders?: SearchPanelTeamFolder[];
+  // Team-library documents (docs/specs/013-workspace/team-shared-documents.md), also in the Teams group with an
+  // "in <team>" suffix. Optional: guests have none.
+  teamDocuments?: SearchPanelTeamDocument[];
+  // When the user is inside a document editor these provide the
+  // tab + element scope. Omitted on routes (e.g. the dashboard)
+  // where only documents + folders should match.
+  tabs?: Tab[];
+  // Tab id where the element matches' active state should apply
+  // (the current tab — so the user knows whether a hit is on
+  // their current view).
+  currentTabId?: string;
+  onSelectDocument: (id: string) => void;
+  // Receives the document id AND its share code: a non-owner can only
+  // open the document on the visitor URL the code builds.
+  onSelectShared?: (id: string, shareCode: string) => void;
+  onSelectFolder?: (id: string) => void;
+  onSelectTeam?: (id: string) => void;
+  // A team-library folder pick: receives the team AND folder ids so
+  // the host can land on the team page with that folder open.
+  onSelectTeamFolder?: (teamId: string, folderId: string) => void;
+  onSelectTab?: (tabId: string) => void;
+  // Receives the tab id AND element id when the user picks an
+  // element match. The host route is responsible for switching
+  // tabs + selecting the element.
+  onSelectElement?: (tabId: string, elementId: string) => void;
+  // Editor-only: the palette catalogue to surface as "Add to canvas"
+  // results, plus the handler that adds the picked one (it arms the same
+  // placement gesture the palette uses, then the panel closes).
+  paletteItems?: PaletteSearchItem[];
+  onAddPaletteItem?: (add: PaletteAdd) => void;
+  // The help-centre catalogue surfaced as "Help" results. Passed by both the
+  // editor and the Explorer (help is global); picking one opens the article
+  // in a new tab.
+  helpItems?: HelpSearchItem[];
+  // The settings catalogue (docs/specs/007-editor/user-preferences.md), and what to do when one is picked:
+  // open the Settings dialog on that row. Surfaces without a Settings
+  // dialog to open simply omit both and get no Settings group.
+  settingItems?: SettingSearchItem[];
+  onSelectSetting?: (categoryId: string, rowKey: string) => void;
+  // Editor-only: the contextual command catalogue (delete / lock / rotate /
+  // share / rename / ...) surfaced as "Actions" results, plus the dispatcher
+  // that runs the picked command's id. The editor builds the list selection-
+  // aware (useEditorCommands); view-only sessions get the view-safe subset
+  // (zen / fit / export) rather than nothing.
+  commandItems?: CommandSearchItem[];
+  onRunCommand?: (id: string) => void;
+  // Every app's work (Work Tracker #63): the index the panel asks, once the typing pauses, for what the person can
+  // open in any app, listed under Every App with each app's mark; and what to do when one is picked (open it in its
+  // own app). Without it the panel finds only what its host lists.
+  workspace?: { client: IndexClient };
+  onSelectWorkspaceItem?: (item: { id: string; app: App; sharedVia: string | null }) => void;
+  onClose: () => void;
+};
+
+// How many the index is asked for: more than the group shows, since this app's own documents (listed above) come back
+// too and are left out.
+const EVERY_APP_ASK = 24;
+
+// Result-grouping logic (matching, capping, fallbacks) lives in
+// `lib/search.ts`; the panel just renders.
+
+export function SearchPanel({
+  documents: liveDocs,
+  folders,
+  shared,
+  teams,
+  teamFolders,
+  teamDocuments,
+  tabs,
+  currentTabId,
+  onSelectDocument,
+  onSelectShared,
+  onSelectFolder,
+  onSelectTeam,
+  onSelectTeamFolder,
+  onSelectTab,
+  onSelectElement,
+  paletteItems,
+  onAddPaletteItem,
+  helpItems,
+  settingItems,
+  onSelectSetting,
+  commandItems,
+  onRunCommand,
+  workspace,
+  onSelectWorkspaceItem,
+  onClose,
+}: SearchPanelProps) {
+  const [query, setQuery] = useState('');
+  // Every app's finds for what is typed now: the index's answer for an older query is never shown.
+  const trimmed = query.trim();
+  const found = useItemSearch(workspace?.client ?? null, null, trimmed, EVERY_APP_ASK);
+  const workspaceItems = useMemo(() => {
+    if (!found || found.q !== trimmed) return undefined;
+    const shown = new Set<string>();
+    for (const d of liveDocs) shown.add(d.id);
+    for (const d of shared ?? []) shown.add(d.id);
+    for (const d of teamDocuments ?? []) shown.add(d.id);
+    return everyAppResults(found.items, shown);
+  }, [found, trimmed, liveDocs, shared, teamDocuments]);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const searchedRef = useRef(false);
+  const openedRef = useRef(false);
+  // A modal: Tab stays inside it, and closing hands focus back to what opened it (the Search button), not the page.
+  // Declared before the field's focus below, so it records the opener rather than the field.
+  const panelRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(panelRef);
+  // The field is a combobox over the results' listbox: the highlight the arrow keys move is its active option, so a
+  // screen reader follows it (it saw nothing as the highlight moved).
+  const listId = useId();
+  const optionId = (idx: number) => `${listId}-${idx}`;
+
+  useEffect(() => {
+    inputRef.current?.focus();
+    // Guard so React strict mode's dev-only effect double-invoke
+    // doesn't double-emit Search / Opened. Focus is idempotent so
+    // it stays outside the guard.
+    if (openedRef.current) return;
+    openedRef.current = true;
+    track('Search', 'Opened');
+  }, []);
+
+  // A full-screen modal that does not use the Dialog shell, so it registers with the modal guard itself: the
+  // canvas shortcuts behind it go quiet and the tours wait for it (docs/specs/007-editor/editor-tour.md).
+  useModalGuard(true);
+
+  // Esc closes. Capture phase + stopPropagation so the modal owns
+  // the key even when the editor's global shortcuts are listening.
+  useEscape(onClose, { capture: true, stopPropagation: true });
+
+  // The arrival cascade is for the panel OPENING, not for typing.
+  // Results re-mount on every keystroke, so leaving the class on would
+  // slide the whole list on each character — motion fighting the thing
+  // it decorates, and it would make fast typing feel laggy. The panel
+  // mounts when it opens, so this window starts there and closes once
+  // the cascade has played out.
+  const [cascade, setCascade] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setCascade(false), 900);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const groups = useMemo<SearchGroup[]>(
+    () =>
+      buildSearchResults({
+        query,
+        documents: liveDocs,
+        folders,
+        shared,
+        teams,
+        teamFolders,
+        teamDocuments,
+        tabs,
+        currentTabId,
+        paletteItems,
+        commandItems,
+        helpItems,
+        settingItems,
+        workspaceItems,
+      }),
+    [
+      query,
+      liveDocs,
+      folders,
+      shared,
+      teams,
+      teamFolders,
+      teamDocuments,
+      tabs,
+      currentTabId,
+      paletteItems,
+      commandItems,
+      helpItems,
+      settingItems,
+      workspaceItems,
+    ],
+  );
+
+  const flatItems = useMemo(() => groups.flatMap((g) => g.items), [groups]);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  // Reset highlight when the query changes, during render.
+  const [highlightedFor, setHighlightedFor] = useState(query);
+  if (query !== highlightedFor) {
+    setHighlightedFor(query);
+    setActiveIndex(0);
+  }
+
+  const handleSelect = (item: SearchResultItem) => {
+    // Help opens the article in a new tab and records the SAME per-article
+    // UI/Opened telemetry every other help link fires (keyed by the article
+    // leaf), so help analytics are unified regardless of entry point.
+    if (item.kind === 'help') {
+      window.open(item.href, '_blank', 'noopener,noreferrer');
+      track('UI', 'Opened', item.leaf);
+      onClose();
+      return;
+    }
+    if (item.kind === 'setting' && onSelectSetting) {
+      onSelectSetting(item.categoryId, item.rowKey);
+      track('Search', 'Selected', 'Setting');
+      onClose();
+      return;
+    }
+    if (item.kind === 'document') onSelectDocument(item.id);
+    else if (item.kind === 'shared' && onSelectShared) onSelectShared(item.id, item.shareCode);
+    else if (item.kind === 'folder' && item.team && onSelectTeamFolder)
+      onSelectTeamFolder(item.team.id, item.id);
+    else if (item.kind === 'folder' && !item.team && onSelectFolder) onSelectFolder(item.id);
+    else if (item.kind === 'team' && onSelectTeam) onSelectTeam(item.id);
+    else if (item.kind === 'tab' && onSelectTab) onSelectTab(item.id);
+    else if (item.kind === 'element' && onSelectElement)
+      onSelectElement(item.tabId, item.elementId);
+    else if (item.kind === 'palette' && onAddPaletteItem) onAddPaletteItem(item.add);
+    else if (item.kind === 'command' && onRunCommand) onRunCommand(item.id);
+    else if (item.kind === 'workspace' && onSelectWorkspaceItem) onSelectWorkspaceItem(item);
+    track('Search', 'Selected', titleCaseType(item.kind));
+    onClose();
+  };
+
+  const handleInputKey = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIndex((i) => Math.min(flatItems.length - 1, i + 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex((i) => Math.max(0, i - 1));
+    } else if (e.key === 'Enter') {
+      const item = flatItems[activeIndex];
+      if (item) {
+        e.preventDefault();
+        handleSelect(item);
+      }
+    }
+  };
+
+  return (
+    <div
+      onPointerDown={(e) => {
+        // Outside-click closes (any click on the backdrop, not
+        // inside the panel itself).
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="absolute inset-0 z-[var(--z-modal)] flex items-start justify-center bg-slate-900/30 px-4 pt-[12vh] backdrop-blur-sm dark:bg-slate-950/50"
+    >
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Search"
+        tabIndex={-1}
+        className="flex w-[34rem] max-w-full animate-fly-up-in flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/20 outline-none dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+      >
+        <div className="flex items-center gap-2 border-b border-slate-100 px-3 py-2 dark:border-slate-800">
+          <span className="text-slate-400 dark:text-slate-400" aria-hidden>
+            <SearchIcon />
+          </span>
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(e) => {
+              const next = e.target.value;
+              setQuery(next);
+              if (!searchedRef.current && next.trim()) {
+                searchedRef.current = true;
+                track('Search', 'Searched');
+              }
+            }}
+            onKeyDown={handleInputKey}
+            role="combobox"
+            aria-label="Search"
+            aria-autocomplete="list"
+            aria-expanded={flatItems.length > 0}
+            aria-controls={listId}
+            aria-activedescendant={flatItems.length > 0 ? optionId(activeIndex) : undefined}
+            placeholder={
+              tabs
+                ? 'Search canvases, folders, teams, tabs, elements, help...'
+                : 'Search canvases, folders, teams, help...'
+            }
+            className="flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400"
+          />
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="relative touch-target -mr-1 flex h-7 w-7 shrink-0 items-center justify-center rounded text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+          >
+            {/* The key that closes it, on a keyboard's screen; a touch screen has no Esc, so it shows a plain ×. */}
+            <kbd className="text-[10px] font-medium pointer-coarse:hidden">Esc</kbd>
+            <CloseIcon size={14} aria-hidden className="hidden pointer-coarse:block" />
+          </button>
+        </div>
+        {/* How many it found, said once the reader pauses on a query. */}
+        <p aria-live="polite" className="sr-only">
+          {query.trim()
+            ? `${flatItems.length} ${flatItems.length === 1 ? 'result' : 'results'}`
+            : ''}
+        </p>
+        <div
+          id={listId}
+          role="listbox"
+          aria-label="Results"
+          className="max-h-[60vh] overflow-y-auto py-1"
+        >
+          {groups.length === 0 ? (
+            query.trim() ? (
+              // The shared empty state (docs/specs/004-interface-design/empty-states.md), naming what is searched.
+              <NoMatches
+                size="regular"
+                className="py-6"
+                things={
+                  tabs
+                    ? 'canvases, tabs, elements or help articles'
+                    : 'canvases, folders or help articles'
+                }
+                query={query}
+                onClear={() => setQuery('')}
+              />
+            ) : (
+              <p className="px-3 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
+                Start typing to search.
+              </p>
+            )
+          ) : (
+            groups.map((group) => {
+              const baseIndex = flatItems.findIndex((f) => f === group.items[0]);
+              return (
+                <div
+                  key={group.key}
+                  role="group"
+                  aria-label={group.label}
+                  className={cascade ? 'lvd-cascade' : undefined}
+                >
+                  <p
+                    aria-hidden
+                    className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                  >
+                    {group.label}
+                  </p>
+                  {group.items.map((item, i) => {
+                    const idx = baseIndex + i;
+                    const active = idx === activeIndex;
+                    return (
+                      <button
+                        key={item.kind === 'element' ? `${item.tabId}:${item.elementId}` : item.id}
+                        id={optionId(idx)}
+                        type="button"
+                        role="option"
+                        aria-selected={active}
+                        tabIndex={-1}
+                        onClick={() => handleSelect(item)}
+                        onMouseEnter={() => setActiveIndex(idx)}
+                        className={
+                          active
+                            ? 'flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs bg-brand-100 text-brand-800 dark:bg-brand-500/15 dark:text-brand-100'
+                            : 'flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800'
+                        }
+                      >
+                        <SearchResultIcon item={item} />
+                        <span className="min-w-0 flex-1 truncate">
+                          {item.kind === 'element' ? item.label : item.name}
+                        </span>
+                        {/* A plain label: a link cannot sit inside this result button. */}
+                        {item.kind === 'document' && item.localOnly ? (
+                          <ThisBrowserPill asLabel />
+                        ) : null}
+                        {item.kind === 'element' ? (
+                          <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">
+                            on {item.tabName}
+                          </span>
+                        ) : null}
+                        {/* Which Settings category it lives in: "Theme" alone
+                            does not say where picking it will land you, and
+                            two settings can read alike out of context. */}
+                        {item.kind === 'setting' ? (
+                          <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">
+                            in {item.categoryLabel}
+                          </span>
+                        ) : null}
+                        {(item.kind === 'folder' || item.kind === 'document') && item.team ? (
+                          <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">
+                            in {item.team.name}
+                          </span>
+                        ) : null}
+                        {/* Which app it opens in: the app's name in its colour (its deep shade on light, its
+                            accent on dark), beside its logo. */}
+                        {item.kind === 'workspace' ? <AppWord app={item.app} /> : null}
+                        {item.kind === 'tab' && item.isCurrent ? (
+                          <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">
+                            current
+                          </span>
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** The app a result from every app opens in, by name in the app's own colour. */
+function AppWord({ app }: { app: App }) {
+  const { name, accent, deep } = appLabel(app);
+  return (
+    <span
+      style={{ '--app-deep': deep, '--app-accent': accent } as CSSProperties}
+      className="shrink-0 text-[10px] font-semibold text-[var(--app-deep)] dark:text-[var(--app-accent)]"
+    >
+      {name}
+    </span>
+  );
+}

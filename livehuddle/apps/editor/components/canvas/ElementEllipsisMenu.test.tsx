@@ -1,0 +1,188 @@
+// @vitest-environment jsdom
+
+// The `…` panel's event containment.
+//
+// The panel is PORTALLED to document.body, which moves it in the DOM but not in
+// the React tree — React still bubbles its events to whatever component
+// rendered the trigger, i.e. the canvas element the menu belongs to, however
+// far apart the two are on screen. That is the whole hazard this file guards:
+// the panel looks detached and behaves attached.
+//
+// It bit on double-click. The poll's panel is a form with text inputs, so
+// double-clicking to select a word in a choice reached the element underneath,
+// put it into text-edit mode, and the re-render took the panel away — the
+// gesture for editing a choice was the gesture that closed the editor.
+
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ElementEllipsisMenu, ElementMenuItem } from './ElementEllipsisMenu';
+
+afterEach(cleanup);
+
+// The menu as the canvas mounts it: inside an element face that listens for the
+// gestures the canvas cares about. The handlers stand in for select / enter
+// text-edit-mode.
+function mountInFace(handlers: {
+  onClick?: () => void;
+  onDoubleClick?: () => void;
+  onContextMenu?: () => void;
+}) {
+  return render(
+    <div
+      onClick={handlers.onClick}
+      onDoubleClick={handlers.onDoubleClick}
+      onContextMenu={handlers.onContextMenu}
+    >
+      <ElementEllipsisMenu label="Poll options" kind="control">
+        {(close) => (
+          <>
+            <input aria-label="Choice" defaultValue="Ariel" />
+            <ElementMenuItem onPress={close}>All Settings…</ElementMenuItem>
+          </>
+        )}
+      </ElementEllipsisMenu>
+    </div>,
+  );
+}
+
+function openMenu() {
+  fireEvent.click(screen.getByRole('button', { name: 'Poll options' }));
+  return screen.getByRole('dialog', { name: 'Poll options' });
+}
+
+describe('ElementEllipsisMenu event containment', () => {
+  it('does not leak a double-click in the panel to the element beneath', () => {
+    const onDoubleClick = vi.fn();
+    mountInFace({ onDoubleClick });
+    const panel = openMenu();
+    fireEvent.doubleClick(panel);
+    expect(onDoubleClick).not.toHaveBeenCalled();
+  });
+
+  it('does not leak a double-click INSIDE an input — selecting a word stays local', () => {
+    // The reported symptom, at the exact target: you double-click a word in a
+    // choice field, and the element underneath must not notice.
+    const onDoubleClick = vi.fn();
+    mountInFace({ onDoubleClick });
+    openMenu();
+    fireEvent.doubleClick(screen.getByLabelText('Choice'));
+    expect(onDoubleClick).not.toHaveBeenCalled();
+    // And the panel is still open, which is the half the user actually feels.
+    expect(screen.getByRole('dialog', { name: 'Poll options' })).toBeTruthy();
+  });
+
+  it('does not leak a right-click in a field, and leaves the browser menu alone', () => {
+    // The element's own handler would arm its context menu (and suppress the
+    // browser's), so right-click-to-paste in a choice field opened the wrong menu.
+    const onContextMenu = vi.fn();
+    mountInFace({ onContextMenu });
+    openMenu();
+    const notPrevented = fireEvent.contextMenu(screen.getByLabelText('Choice'));
+    expect(onContextMenu).not.toHaveBeenCalled();
+    expect(notPrevented).toBe(true);
+  });
+
+  it('does not leak a click on the panel background', () => {
+    const onClick = vi.fn();
+    mountInFace({ onClick });
+    const panel = openMenu();
+    fireEvent.click(panel);
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it('still lets its own rows work', () => {
+    // Containment must not come at the cost of the menu doing its job: the row
+    // closes the panel.
+    mountInFace({});
+    openMenu();
+    fireEvent.click(screen.getByRole('button', { name: 'All Settings…' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+});
+
+// docs/specs/004-interface-design/menus.md: a menu of verbs is a command menu, a menu holding a
+// session tool's form is a control menu, and each row takes the role of the kind it sits in.
+describe('ElementEllipsisMenu kinds', () => {
+  it('is a menu of menu items for verbs, focused on open and closed by Escape', () => {
+    render(
+      <ElementEllipsisMenu label="Q&A board options" kind="command">
+        {(close) => <ElementMenuItem onPress={close}>Empty the Board</ElementMenuItem>}
+      </ElementEllipsisMenu>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Q&A board options' });
+    expect(trigger.getAttribute('aria-haspopup')).toBe('menu');
+    trigger.focus();
+    fireEvent.click(trigger);
+    const item = screen.getByRole('menuitem', { name: 'Empty the Board' });
+    expect(document.activeElement).toBe(item);
+    fireEvent.keyDown(item, { key: 'Escape' });
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('is a named dialog for settings', () => {
+    mountInFace({});
+    expect(screen.getByRole('button', { name: 'Poll options' }).getAttribute('aria-haspopup')).toBe(
+      'dialog',
+    );
+    openMenu();
+    expect(screen.queryByRole('menuitem')).toBeNull();
+  });
+});
+
+// A right-anchored panel opens leftward from its trigger. A Timer near the left of the screen put its 288px
+// panel mostly off the left edge; the panel is nudged back inside the viewport instead.
+describe('ElementEllipsisMenu placement', () => {
+  it('nudges a panel that would open past the left edge back on screen', () => {
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        // The trigger sits 20px from the left; the panel, right-anchored to it, is 288px wide.
+        if (this.getAttribute('role') === 'dialog')
+          return DOMRect.fromRect({ x: 40 - 288, y: 60, width: 288, height: 200 });
+        return DOMRect.fromRect({ x: 20, y: 40, width: 20, height: 20 });
+      });
+    mountInFace({});
+    const panel = openMenu();
+    rect.mockRestore();
+    const shift = /translate\((-?[\d.]+)px, (-?[\d.]+)px\)/.exec(panel.style.transform);
+    expect(shift).not.toBeNull();
+    expect(40 - 288 + Number(shift![1])).toBeGreaterThanOrEqual(0);
+  });
+
+  // A Timer's panel opens narrow and grows once its dial loads: measured only on open, the full-width panel still
+  // stood at x = -120.
+  it('nudges the panel again when it grows after opening', () => {
+    let resized: () => void = () => {};
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(cb: () => void) {
+          resized = cb;
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    let width = 100;
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.getAttribute('role') === 'dialog') {
+          const shift = /translate\((-?[\d.]+)px/.exec(this.style.transform);
+          const x = 40 - width + (shift ? Number(shift[1]) : 0);
+          return DOMRect.fromRect({ x, y: 60, width, height: 200 });
+        }
+        return DOMRect.fromRect({ x: 20, y: 40, width: 20, height: 20 });
+      });
+    mountInFace({});
+    const panel = openMenu();
+    width = 288;
+    act(() => resized());
+    rect.mockRestore();
+    vi.unstubAllGlobals();
+    const shift = /translate\((-?[\d.]+)px, (-?[\d.]+)px\)/.exec(panel.style.transform);
+    expect(shift).not.toBeNull();
+    expect(40 - 288 + Number(shift![1])).toBeGreaterThanOrEqual(0);
+  });
+});

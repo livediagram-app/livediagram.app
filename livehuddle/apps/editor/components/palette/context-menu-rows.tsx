@@ -1,0 +1,236 @@
+'use client';
+
+// Leaf presentational building blocks for the editor context menu (rows,
+// tiles, glyphs, and the small inline data-element editors), extracted from
+// EditorContextMenu.tsx to keep that file focused on the menu's structure.
+// Each is purely presentational: props in, JSX out, with every action a
+// callback. Siblings of context-menu-tiles.tsx / context-menu-icons.tsx.
+import { type ReactNode } from 'react';
+import { SHAPE_MARKERS, type ShapeMarker, type TextSizePreset } from '@livehuddle/document';
+
+import { SizeButton } from '@/components/palette/palette-controls';
+import { onMouseHover } from '@liveworkspace/workbench/components/primitives/hover-preview';
+import { DotsIcon, ScaleIcon } from '@/components/palette/palette-icons';
+
+import { MARKER_LABELS, ShapeMarkerGlyph } from '@/components/canvas/ShapeMarker';
+import { withNone } from '@/components/palette/context-menu-tiles';
+
+// Stable no-op for ColourRow callers that don't supply a preview-end handler,
+// so useRevertOnUnmount has a constant reference.
+
+// Colour / icon-position / toggle input rows live in their own module;
+// re-exported here so the context-menu row imports stay a single source.
+import { ColourRow, IconPositionGrid, MenuToggleRow } from './context-menu-input-rows';
+import { NoMarkerGlyph, PercentSliderRow } from './context-menu-data-rows';
+import { lucideGlyph } from '@livehuddle/ui';
+import { lucideCircleDot } from '@liveworkspace/icons/lucide';
+import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
+import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
+
+// Data-shape rows (rail / rating / pie / progress editors + AnimTiles)
+// live in context-menu-data-rows.tsx; re-exported so importers keep
+// resolving.
+export {
+  ChecklistRowsEditor,
+  CodeSummary,
+  LegendDataEditor,
+  LineDataSummary,
+  PieDataEditor,
+} from './context-menu-data-editors';
+export { EntityFieldsEditor } from './EntityFieldsEditor';
+export {
+  ChartMenuGlyph,
+  DataMenuGlyph,
+  PieAnimTiles,
+  ProgressAnimTiles,
+  ProgressRow,
+  RatingAnimTiles,
+  RatingMenuGlyph,
+  RatingPickerRow,
+} from './context-menu-data-rows';
+export { ColourRow, IconPositionGrid, MenuToggleRow };
+export function BorderGrid({
+  label,
+  cols,
+  children,
+}: {
+  label: string;
+  cols: 2 | 3 | 4 | 5;
+  children: ReactNode;
+}) {
+  const colClass =
+    cols === 5
+      ? 'grid-cols-5'
+      : cols === 4
+        ? 'grid-cols-4'
+        : cols === 3
+          ? 'grid-cols-3'
+          : 'grid-cols-2';
+  return (
+    <div className="mb-1.5 last:mb-0">
+      <p className="px-1 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+        {label}
+      </p>
+      <div className={`grid gap-1 ${colClass}`}>{children}</div>
+    </div>
+  );
+}
+
+// The "Markers" category glyph — a small filled status dot.
+export const MarkersMenuGlyph = lucideGlyph(lucideCircleDot, MENU_ICON_PX);
+
+// Markers control (docs/specs/009-elements/shape-markers.md): a None option + one illustrated tile per marker,
+// then a Size row (Scale / S / M / L: a marker is a dot, so it keeps the presets the Text Size
+// slider replaced).
+// 'scale' tracks the element's text size. The Size row is always present —
+// see the note on it below (docs/specs/004-interface-design/flyout-height-stability.md).
+export function MarkerTiles({
+  marker,
+  size,
+  onSet,
+  onSetSize,
+  onPreview,
+  onPreviewSize,
+  onPreviewEnd,
+}: {
+  marker: ShapeMarker | null;
+  size: TextSizePreset;
+  onSet: (v: ShapeMarker | null) => void;
+  onSetSize: (v: TextSizePreset) => void;
+  // Optional hover-preview pair (docs/specs/010-palette/style-presets.md flow) for the marker tiles and the
+  // Size row: hovering shows the marker live, leaving reverts.
+  onPreview?: (v: ShapeMarker | null) => void;
+  onPreviewSize?: (v: TextSizePreset) => void;
+  onPreviewEnd?: () => void;
+}) {
+  return (
+    <>
+      <div className="grid grid-cols-3 gap-1 px-2 py-1.5">
+        {withNone(SHAPE_MARKERS).map((v) => (
+          <SizeButton
+            key={v ?? 'none'}
+            active={marker === v}
+            onClick={() => onSet(v)}
+            onPointerEnter={onPreview ? onMouseHover(() => onPreview(v)) : undefined}
+            onPointerLeave={onPreviewEnd ? onMouseHover(onPreviewEnd) : undefined}
+          >
+            <span className="flex flex-col items-center gap-0.5">
+              {v ? <ShapeMarkerGlyph marker={v} size={18} /> : <NoMarkerGlyph />}
+              <span className="text-[9px] leading-none">{v ? MARKER_LABELS[v] : 'None'}</span>
+            </span>
+          </SizeButton>
+        ))}
+      </div>
+      {/* The Size row is ALWAYS rendered, dimmed and inert until a marker is
+          chosen, rather than mounted on demand. Mounting it changed the
+          flyout's height mid-hover: the panel grew (or, when bottom-aligned,
+          shifted up), which slid its edge past a stationary pointer, the
+          hover-dismiss fired, the marker preview reverted, the panel shrank
+          back under the pointer — and the whole thing oscillated. A fixed
+          height can't chase the cursor. */}
+      <div
+        className={
+          'transition-opacity ' + (marker ? '' : 'pointer-events-none select-none opacity-40')
+        }
+        aria-hidden={marker ? undefined : true}
+      >
+        <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">Size</p>
+        <MarkerSizeTiles
+          current={size}
+          onSet={onSetSize}
+          onPreview={onPreviewSize}
+          onPreviewEnd={onPreviewEnd}
+        />
+      </div>
+    </>
+  );
+}
+
+// Grid wrapper for MenuTiles. Literal column classes so Tailwind keeps them.
+
+// Opacity slider row inside the context menu. Doesn't close the menu on
+// interaction (it isn't an action row): dragging fires pointer events inside
+// the menu, so the ContextMenu's outside-click guard keeps it open.
+export function OpacityRow({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (opacity: number) => void;
+}) {
+  return (
+    <PercentSliderRow
+      label="Opacity"
+      pct={Math.round(value * 100)}
+      onPct={(p) => onChange(p / 100)}
+    />
+  );
+}
+
+// A square toggle for the arrow Text category (B / I / U / S).
+export function TextToggle({
+  active,
+  label,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      aria-pressed={active}
+      onClick={onClick}
+      className={`flex h-8 w-8 items-center justify-center rounded-md transition ${
+        active
+          ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
+          : TOOLBAR_CONTROL_REST
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+// The marker's four-up size picker (Scale / Small / Medium / Large). `current` is the
+// already-resolved size to highlight (the caller decides its default).
+function MarkerSizeTiles({
+  current,
+  onSet,
+  onPreview,
+  onPreviewEnd,
+}: {
+  current: TextSizePreset | undefined;
+  onSet: (size: TextSizePreset) => void;
+  // Optional hover-preview pair (docs/specs/010-palette/style-presets.md flow): hovering a tile shows the
+  // size live, leaving reverts. Callers without preview (table cells) omit.
+  onPreview?: (size: TextSizePreset) => void;
+  onPreviewEnd?: () => void;
+}) {
+  return (
+    <div className="grid grid-cols-4 gap-1 px-2 pb-1.5">
+      {(
+        [
+          ['scale', <ScaleIcon key="s" />],
+          ['sm', <DotsIcon key="1" count={1} />],
+          ['md', <DotsIcon key="2" count={2} />],
+          ['lg', <DotsIcon key="3" count={3} />],
+        ] as const
+      ).map(([size, glyph]) => (
+        <SizeButton
+          key={size}
+          active={current === size}
+          onClick={() => onSet(size)}
+          onPointerEnter={onPreview ? onMouseHover(() => onPreview(size)) : undefined}
+          onPointerLeave={onPreviewEnd ? onMouseHover(onPreviewEnd) : undefined}
+        >
+          {glyph}
+        </SizeButton>
+      ))}
+    </div>
+  );
+}

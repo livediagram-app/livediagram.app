@@ -1,0 +1,76 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { TabFolderStates, AddToFolderMenu } from '@/components/illustrations/tabs';
+
+export const metadata = helpMetadata({
+  title: 'Tab Folders',
+  description:
+    'Group related tabs in a canvas under a named folder that opens in place on the tab bar, so a long tab bar stays organised and readable.',
+  path: '/help/tabs/tab-folders/',
+});
+
+<ArticleLayout title="Tab Folders" description="Once a canvas grows past a handful of tabs, group the related ones under a named folder that takes up a single chip on the tab bar." categoryTitle="Tabs" categorySlug="tabs">
+
+When a canvas's tab bar fills up, a flat list of tabs gets hard to scan. A **tab folder** gathers related tabs under one named chip that takes the room of a single tab. Put three tabs under "Organisation" and two under "Plans", and the bar stays calm however many tabs each folder holds.
+
+## How folders work
+
+A few things are worth knowing about how tab folders behave:
+
+- **One level.** A folder holds tabs. Folders never contain other folders.
+- **A folder is just a name.** There is no separate folder object to create or delete. A folder exists as long as at least one tab carries its name, and it disappears when the last tab leaves it.
+- **Per-canvas.** If a tab is [shared into more than one canvas](/help/tabs/add-to-document/), it can sit in a folder in one canvas and be loose in another. The folder belongs to the canvas, not to the tab's content.
+- **Folders are contiguous.** A folder's tabs always sit together in the tab order, behind a single chip in the folder's colour with its name and a count of its tabs.
+- **Shared with collaborators.** Folder names and membership are part of the canvas, so everyone sees the same folders.
+
+## Opening a folder
+
+A folder takes up one chip on the bar, however many tabs it holds:
+
+- **Click the chip** to open the folder in place: its tabs slide out on the bar right after the chip, in order, and the tabs after the folder slide along to make room. Click the chip again to tuck them away. Nothing pops up over the canvas.
+- **The tab you are on stays visible.** When the open tab lives in a folder, it stays on the bar right beside the chip even while the folder is shut, and a pale wash in the folder's colour behind them shows it belongs there.
+- **Each folder has its own colour**, picked from its name, so "Plans" looks the same every time you come back. The chip shows a folder, the name and a count of its tabs, open or shut.
+- **A folder opens for this visit.** Folders start shut each time you open the canvas, so the bar starts calm. On a phone, opening a folder scrolls the bar so its tabs are in view.
+- **Presence comes along.** If collaborators are on tabs tucked inside a shut folder, their avatars show beside the chip.
+- **From the keyboard**, the arrow keys move between the tabs and chips on the bar, and Enter or Space opens or shuts the folder you are on.
+
+<Figure caption="A folder on the tab bar. Its chip always counts its tabs. Shut, the tab you are on stays beside it; open, all its tabs sit after the chip.">
+  <TabFolderStates />
+</Figure>
+
+## Putting tabs in folders
+
+There are two ways to change which folder a tab belongs to.
+
+<Step n={1}>
+  Drag and drop. Drag a tab onto a folder's tabs (or onto its chip, which files it at the front of
+  the folder) to join that folder. Hold it over a shut folder's chip for a moment and the folder
+  opens, so you can drop it exactly where you want. Drop it among the loose tabs to make it loose
+  again, or among a different folder's tabs to move it there.
+</Step>
+
+<Step n={2}>
+  The tab menu. Open the tab's **⋯** or right-click menu and choose **Organise in Tab Folder**. In
+  the dialog, pick an existing folder's tile to file the tab there, the **No Folder** tile to make
+  it loose on the bar, or the **New Folder** tile to type a fresh name in place. Typing an existing
+  folder's name simply files the tab into that folder, since same name means same folder.
+</Step>
+
+<Figure caption="Organise in Tab Folder opens a dialog with a No Folder tile, a tile per folder (the current one marked), and a New Folder tile.">
+  <AddToFolderMenu />
+</Figure>
+
+## Renaming a folder
+
+**Double-click the chip** to rename the folder. Renaming rewrites the name on every tab in it, so the folder keeps all its tabs. Renaming it to another folder's name merges the two.
+
+To get rid of a folder, move its tabs out (drag them to the loose tabs, or choose **No Folder**): the folder disappears with its last tab. Its tabs are never deleted.
+
+On a share link for a Viewer or a Participant, or a link scoped to one tab, you can open folders and switch tabs, but you can't drag tabs between folders or rename them.
+
+<Tip>
+  Give folders short names like "Plans" or "Back office". The name shows on the chip with a count
+  badge, so a tight name keeps the bar readable.
+</Tip>
+
+</ArticleLayout>

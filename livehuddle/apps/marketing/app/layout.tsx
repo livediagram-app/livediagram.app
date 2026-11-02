@@ -1,0 +1,180 @@
+import type { Metadata, Viewport } from 'next';
+import type { ReactNode } from 'react';
+import './globals.css';
+import {
+  APPEARANCE_BOOT_SCRIPT,
+  BRAND_ICONS,
+  DARK_READER_LOCK,
+  JsonLd,
+  PageViewBoot,
+  PUBLIC_VIEWPORT,
+  REPO_URL,
+  SITE_NAME,
+  SITE_URL,
+  SITE_DESCRIPTION,
+  SITE_TITLE,
+  WebVitalsBoot,
+  trustedHtml,
+  trustedTypesBootScript,
+} from '@livehuddle/ui';
+import { NON_MARKETING_SEGMENTS, SIGNED_IN_HINT_COOKIE } from '@livehuddle/api-schema';
+import { viewTransitionGuardScript } from '@liveworkspace/marketing-site/lib/view-transition-guard';
+import { HERO_FAN_BOOT_SCRIPT } from '@liveworkspace/marketing-site/lib/hero-fan-boot';
+import { marketingSilentSignInScript } from '@liveworkspace/marketing-site/lib/silent-sign-in';
+
+// Skips a view transition into this product's other apps (viewTransitionGuardScript).
+const VIEW_TRANSITION_GUARD_SCRIPT = viewTransitionGuardScript(NON_MARKETING_SEGMENTS);
+
+// SEO and social-card metadata. See docs/specs/019-marketing/marketing-site.md
+// for the policy. metadataBase lets the per-page canonical and
+// openGraph fields use relative URLs and have Next resolve them
+// against the production origin; without it Next logs a warning
+// and falls back to localhost in dev (which would otherwise leak
+// into preview builds).
+// The shared words for what livehuddle is (packages/ui site.ts).
+const TITLE = SITE_TITLE;
+const DESCRIPTION = SITE_DESCRIPTION;
+
+// Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
+// violation log, and this app's own scripts under its asset prefix.
+const TRUSTED_TYPES_BOOT = trustedTypesBootScript('');
+
+// Signing in without a click (@liveworkspace/marketing-site/lib/silent-sign-in): someone signed in to liveworkspace
+// is signed in here too, by a bounce that waits until the page has painted and gone idle.
+const SILENT_SIGN_IN_SCRIPT = marketingSilentSignInScript(SIGNED_IN_HINT_COOKIE);
+
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    url: '/',
+    siteName: SITE_NAME,
+    title: TITLE,
+    description: DESCRIPTION,
+    locale: 'en_GB',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  // Favicon set: the SVG mark (app/icon.svg), a raster PNG fallback and the
+  // opaque iOS tile from app/apple-icon.tsx. Shared with telemetry + the
+  // editor; see BRAND_ICONS in @livehuddle/ui for why each entry is there.
+  icons: BRAND_ICONS,
+  other: DARK_READER_LOCK,
+};
+
+// Brand-tinted mobile chrome + light colour scheme, shared with the help
+// centre and the dashboard (docs/specs/019-marketing/marketing-site.md "SEO and metadata").
+export const viewport: Viewport = PUBLIC_VIEWPORT;
+
+// JSON-LD structured data, see docs/specs/019-marketing/marketing-site.md "SEO and
+// metadata". Two schemas under one @graph: WebSite for brand-name
+// search results, SoftwareApplication for "diagramming tool"
+// category browse. Both restate facts already on the page; the
+// free-tier offer is truthful (the hosted product is currently
+// free to use).
+// Image URL the schemas reference: the OG card pre-rendered by
+// `apps/marketing/app/opengraph-image.tsx` at build time. Google
+// uses this for the brand card visual and Knowledge Graph
+// preview when the WebSite / SoftwareApplication entities surface
+// in search.
+const OG_IMAGE = `${SITE_URL}/opengraph-image`;
+// The brand mark, served from public/ at the origin root. Used as the
+// Organization logo so a brand SERP / Knowledge Graph can show it.
+const LOGO_URL = `${SITE_URL}/livehuddle-icon-512.png`;
+
+const JSON_LD = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    // Organization anchors the brand entity: name + logo + the same
+    // GitHub sameAs the app node carries, so Google can resolve
+    // "livehuddle" to one thing across the site, the repo, and social
+    // mentions. publisher/url on the other nodes point back at this @id.
+    {
+      '@type': 'Organization',
+      '@id': `${SITE_URL}/#org`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: LOGO_URL,
+      sameAs: [REPO_URL],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE_URL}/#website`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      description: DESCRIPTION,
+      inLanguage: 'en-GB',
+      image: OG_IMAGE,
+      publisher: { '@id': `${SITE_URL}/#org` },
+    },
+    {
+      '@type': 'SoftwareApplication',
+      '@id': `${SITE_URL}/#app`,
+      name: SITE_NAME,
+      url: SITE_URL,
+      description: DESCRIPTION,
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'Web',
+      inLanguage: 'en-GB',
+      image: OG_IMAGE,
+      // Links the brand entity to the open-source codebase Google
+      // already indexes. Connecting the two helps the Knowledge
+      // Graph recognise "livehuddle" as a single thing across the
+      // public marketing site, the GitHub repo, and the social
+      // mentions that cite either.
+      sameAs: [REPO_URL],
+      publisher: { '@id': `${SITE_URL}/#org` },
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'USD',
+      },
+    },
+  ],
+};
+
+// The cross-page transition opt-in (page-motion.css, docs/specs/019-marketing/marketing-site.md), inline in the
+// <head>. The browser only runs a cross-document view transition if the NEW
+// page has opted in by its first paint; from the bundled stylesheet the rule
+// sometimes landed after that, the transition was skipped, and the old page
+// logged "Transition was skipped". Inline, it is parsed before anything draws.
+const VIEW_TRANSITION_OPT_IN =
+  '@media (prefers-reduced-motion: no-preference) { @view-transition { navigation: auto; } }';
+
+// VIEW_TRANSITION_GUARD_SCRIPT skips that transition when the link leaves for another app.
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    // suppressHydrationWarning: the pre-paint script may add `dark` to <html>.
+    <html lang="en-GB" suppressHydrationWarning>
+      <head>
+        {/* Trusted Types before anything else (docs/specs/016-platform/trusted-types.md). */}
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(TRUSTED_TYPES_BOOT) }} />
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(SILENT_SIGN_IN_SCRIPT) }} />
+        <style>{VIEW_TRANSITION_OPT_IN}</style>
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(VIEW_TRANSITION_GUARD_SCRIPT) }} />
+        {/* The hero fan deals a shuffled hand once script runs (components/HeroFan.tsx). */}
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(HERO_FAN_BOOT_SCRIPT) }} />
+      </head>
+      <body className="bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-200">
+        {/* Appearance before first paint (docs/specs/004-interface-design/appearance.md). */}
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(APPEARANCE_BOOT_SCRIPT) }} />
+        <JsonLd data={JSON_LD} />
+        <PageViewBoot />
+        <WebVitalsBoot />
+        {children}
+      </body>
+    </html>
+  );
+}

@@ -1,0 +1,71 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'The Diagram Tour',
+  description:
+    'Take the interactive Diagram tour of the Palette, element menu, tabs and themes, started from the Start Diagram Tour button in the editor’s bottom bar.',
+  path: '/help/getting-started/diagram-tour/',
+});
+
+<ArticleLayout
+  title="The Diagram Tour"
+  description="A short interactive walkthrough of diagramming, started from the Start Diagram Tour button in the bottom bar."
+  categoryTitle="Getting Started"
+  categorySlug="getting-started"
+>
+
+The Diagram tour is a guided, interactive introduction to [Diagram mode](/help/canvas/editor-modes/): building a diagram from shapes, arrows and the palette. Rather than showing screenshots, it opens the real panels and menus one at a time, spotlighting each with a highlight ring and a short explanation. It takes about a minute, and you can leave at any point. (It was called the Welcome Tour until October 2026.)
+
+## Starting the Tour
+
+The tour never starts or pops up on its own. To take it, press Start Diagram Tour in the bar along the bottom of the editor, just left of **Search**. On a phone the button shows only its play icon.
+
+The button appears on a **Diagram tab** you can edit, once any **Start Diagramming** panel is closed or a template picked. It doesn't appear on a view-only canvas or in an embed. Draw and Workshop have tours of their own, on the same button: see [The Workshop Tour](/help/canvas/workshop-mode/workshop-tour/) and [The Draw Tour](/help/canvas/draw-mode/draw-tour/). When you have a complex element selected, such as a Sankey diagram or a flowchart step, the button offers that element's tour instead (Start Sankey Tour, for example). Switching the tab to another mode partway through ends the tour.
+
+The button stays there after you've taken the tour, so you can press it again whenever you want a refresher. Pressing it while another tour is running does nothing.
+
+## What It Covers
+
+The tour walks the diagramming chrome in a natural order:
+
+1. **The Palette**: the strip across the top that every shape, arrow, and icon comes from.
+2. **Selection Modes**: the dropdown that changes what your pointer does (Select, Hand, Eraser, and friends). See [Selection Modes](/help/selection-modes/).
+3. **Palette Categories**: the Palette's categories along the strip, with the first one, Shapes, open to show its elements in their groups.
+4. **The Element Menu**: the right-click menu (long-press on touch) where styling, links, notes, comments, and actions live. On an empty tab the tour adds a square to show it on, and takes it away again when the tour ends.
+5. **Tabs**: one canvas holds many tabs, each with its own work in its own mode, plus the **+** button and the tab menu (rename, duplicate, lock, export, side by side).
+6. **Theme & Canvas**: the button in the bottom-right corner, drawn as a painter's palette, that restyles the whole tab.
+
+A closing **You're ready to diagram** card then offers **Help** or **Start**.
+
+On a phone the tour is shorter: it skips the Theme & Canvas step. On an [Event Storming board](/help/canvas/event-storming-boards/) it skips Selection Modes and Palette Categories, since the board offers neither.
+
+## During the Tour
+
+- Each step shows a **step counter** ("2 of 6") with progress dots, a title, a sentence or two of copy, and a **Next** button (with **Back** from the second step on), with **Skip tour** always available.
+- The highlight ring **never blocks your pointer**: you're free to poke at whatever is highlighted while the step is up. The tour opens real menus, so what you see is exactly what you'll use afterwards.
+- Opening a dialog partway through (Share, say) hides the tour while the dialog is up. Close it and the tour comes back on the same step. A dialog the tour opens itself to show you something stays part of the tour.
+- Finishing (or skipping) closes anything the tour opened and returns you to a quiet editor, ready to work.
+
+## Replaying the Tour
+
+The quickest way to rerun the tour is the Start Diagram Tour button. You can also start it from Settings:
+
+<Step n={1}>Open **Settings** from the editor and go to **Tours**.</Step>
+
+<Step n={2}>Switch **Diagram Tour** back on.</Step>
+
+<Step n={3}>
+  Close Settings. On a Diagram tab the tour starts straight away; on a tab in another mode, nothing
+  happens, and the Start Diagram Tour button is there when you get to a Diagram tab.
+</Step>
+
+Finishing (or skipping) the tour switches **Diagram Tour** off again; the switch only records whether you've taken it. The other modes have tours of their own, replayed the same way from **Draw** and **Workshop**: see [The Draw Tour](/help/canvas/draw-mode/draw-tour/) and [The Workshop Tour](/help/canvas/workshop-mode/workshop-tour/).
+
+<Tip>
+  Prefer learning by doing? [Your First Diagram](/help/getting-started/your-first-diagram/) builds a
+  small connected flow from scratch, and [Keyboard
+  Essentials](/help/getting-started/keyboard-essentials/) covers the shortcuts that make it fast.
+</Tip>
+
+</ArticleLayout>

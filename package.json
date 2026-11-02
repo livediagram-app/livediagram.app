@@ -26,7 +26,8 @@
     "dev:drive": "turbo run dev --filter=@liveworkspace/drive-service",
     "dev:site": "turbo run dev --filter=@liveworkspace/site",
     "dev:design": "turbo run dev --filter=@livedesign/*",
-    "dev:documents": "turbo run dev --filter=@livedocuments/*"
+    "dev:documents": "turbo run dev --filter=@livedocuments/*",
+    "dev:huddle": "turbo run dev --filter=@livehuddle/*"
   },
   "devDependencies": {
     "@liveworkspace/prettier-config": "workspace:*",

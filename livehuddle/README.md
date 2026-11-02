@@ -1,0 +1,54 @@
+# livehuddle
+
+A collaborative diagram editor that works without signing in. Open a link, draw, share. Real-time presence, cursors, comments, undo and redo. The canvas never sits behind an auth wall, so the friction to start is "open the link, start drawing."
+
+**Live at [livehuddle.app](https://livehuddle.app).** MIT-licensed.
+
+```
+apps/        marketing site + editor + help centre + community + api + mcp server + router + cli
+packages/    this product's document model, wire-format types, UI, template catalogue + template previews, help-article registry, agent verbs, the edit-operations engine, document views, the diagram lint, sticky-note photo detection and its model, telemetry client and licence tables (the api client, icons, configs and the rest are the monorepo's shared @liveworkspace/* packages)
+scripts/     repo-wide dev tooling (shared Next.js dev launcher)
+docs/        guides, product specs (docs/specs, read these before adding features) and instructions
+marketing/   off-site copy + media for listings and promotion (see docs/specs/019-marketing/marketing-assets.md)
+```
+
+## Start here
+
+| If you want to...                                    | Read                                                                           |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Understand what livehuddle does and where it's going | [docs/README.md](docs/README.md)                                               |
+| Run it on your machine                               | [docs/development/local-development.md](docs/development/local-development.md) |
+| See the repo's shape (apps, packages, deploy)        | [docs/development/architecture.md](docs/development/architecture.md)           |
+| Propose a change                                     | [docs/development/contributing.md](docs/development/contributing.md)           |
+| Read the spec for a specific behaviour               | [docs/specs/README.md](docs/specs/README.md)                                   |
+
+## The 30-second tour
+
+- **Marketing** at `/` is the pitch and feature tour.
+- **Editor** is the canvas, served at clean routes (`/new`, `/document/<id>`, `/explorer/...`; no `/live` prefix). Guests get a per-browser identity and full persistence; signed-in users get the same plus cross-device sync. `/explorer` opens on **Home** ([Explorer Home](docs/specs/013-workspace/explorer-home.md)); the **Inbox** beneath it lists what is still outstanding for you (open actions assigned to or by you, comment threads you are in) across every document ([Inbox](docs/specs/013-workspace/inbox.md)), and the **Timeline** is a day-grouped feed of everything that happened across your documents, teams and account ([Timeline](docs/specs/013-workspace/timeline.md)). Signed-in users can keep a copy of their work in their own Google Drive, with liveworkspace's [Google Drive sync](../liveworkspace/docs/specs/005-drive/drive.md).
+- **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per document, each document's content in its own Durable Object; liveworkspace's index files documents and decides who may open them).
+- **Telemetry** is anonymous usage events sent to liveworkspace's telemetry service, published on its public dashboard (`/telemetry` redirects there; off in OSS forks by default).
+- **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
+- **Community** at `/community` is the public gallery of shared documents: browse, like and copy what people publish ([Community](docs/specs/025-community/community.md)).
+- **MCP** at `mcp.livehuddle.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth, on its own host rather than a router path.
+- **Router** stitches the five web apps (marketing, editor, help, community, api) under one hostname.
+- **CLI** (`apps/cli`) is `livehuddle`, the command line agents and scripts read, lint and change documents with, published on npm as `@livehuddle/cli`. It also links a repository to its diagrams and opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Repositories](docs/specs/027-repositories/README.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
+
+The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR, no Next.js API routes.
+
+## The rules that keep the repo honest
+
+- **Specs first**: every product decision lives in [`docs/specs/`](docs/specs/). Write or update the spec before the code. See [docs/development/contributing.md](docs/development/contributing.md).
+- **Static-only frontends**: Next.js `output: 'export'`. Server logic goes in the api worker, never in Next.js.
+- **Reuse over duplication**: shared code lives in [`packages/`](packages/), never copied across apps.
+- **No secrets in source**: the repo is public. Env vars, `wrangler secret put`, GitHub Actions secrets only. See [`docs/specs/002-project-scope/secrets-policy.md`](docs/specs/002-project-scope/secrets-policy.md).
+
+## Security
+
+Found a vulnerability? Please report it privately through [GitHub's advisory form](https://github.com/livediagram-app/livediagram.app/security/advisories/new), never in a public issue. See [`SECURITY.md`](SECURITY.md) and the [full policy](https://www.livehuddle.app/help/policies/report-a-vulnerability/).
+
+## License
+
+[MIT](LICENSE). A free hosted version runs at [livehuddle.app](https://livehuddle.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional (the liveworkspace accounts Worker for sign-in, Cloudflare Email Service for transactional email, gated on its `send_email` binding, and a vision model for reading sticky-note photos, Google AI Studio or any OpenAI-compatible endpoint, gated on its key), and the editor runs fully without any of them: without a key, the photo import reads notes with a model in the browser.
+
+Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://livehuddle.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

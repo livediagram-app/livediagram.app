@@ -1,0 +1,104 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { LiveCursors, PresenceSelection } from '@liveworkspace/help-site/art/illustrations/collaboration';
+import { ReleaseHold } from '@liveworkspace/help-site/art/illustrations/release-hold';
+
+export const metadata = helpMetadata({
+  title: 'Live Presence',
+  description:
+    "See who is in a canvas with you in real time: live cursors with names, each person's selection, who is on which tab, agents at work and laser pointers.",
+  path: '/help/collaboration/live-presence/',
+});
+
+<ArticleLayout
+  title="Live Presence"
+  description="When more than one person opens the same canvas, you see each other live: cursors, names, selections, and who is where."
+  categoryTitle="Collaboration"
+  categorySlug="collaboration"
+  subArticles={getSubArticles("live-presence")}
+>
+
+Open a canvas with other people and it comes alive. Everyone sees each other move, select, and edit in real time, so it feels like working at the same whiteboard. Nothing needs setting up: as soon as two or more people are in a shared canvas, presence just appears.
+
+## Live cursors
+
+You see everyone else's pointer move around the canvas, each labelled with their name in their own colour. Cursors are tied to a tab, so you only see the cursors of the people looking at the same tab as you. When someone moves to a different tab, their cursor follows them there.
+
+If a cursor or its name is in the way of what you want to see, move your pointer onto it: it fades out while your pointer is there and comes back when you move on. It never blocks a click, so you can click straight through it. On a touch screen there is no pointer to hover, so cursors stay put.
+
+<Figure caption="Live cursors carry each person's name and colour, and each tab shows the initials of who is on it.">
+  <LiveCursors />
+</Figure>
+
+## Moving things together
+
+When someone drags, resizes or reshapes something, you see it move as they do, with any arrows attached to it following along, and it settles where they let go. If they press Escape halfway, it simply goes back. Editors can move anything, Participants only what they added themselves, and Viewers nothing.
+
+## Who is here, and where
+
+Each person is given a colour and a name. Signed-in people show their account name; everyone else gets a friendly auto-generated name like "Curious Otter". You can see who is around in two places:
+
+- **On each tab**, small initials show who is currently looking at that tab, so you can tell at a glance where everyone is working.
+- A coloured ring around someone shows whether they are **active**, **away** (after five quiet minutes), or have gone **offline**. Hover an avatar for their name and status.
+
+## Collaborators
+
+Click any avatar on a tab, or the **+N** badge when a tab is busy, to open **Collaborators**. It lists everyone in the canvas grouped by the tab they are on, so you can see where the whole room is at once rather than hovering tab by tab. The person you clicked is highlighted.
+
+- Your own tab is marked **You're Here**. Every other tab has a **Go to Tab** button that takes you straight there.
+- Each person shows their name, their role when it is known, whether they are online, away or offline, and how long ago they were last active.
+- **Hide Participant Cursors**, at the foot of Collaborators, stops showing everyone else's cursor and name on your screen, for when a busy session gets distracting. Avatars and Follow stay, and others still see your cursor. It is the same switch as in **Settings**, under **Collaborate**, and it is remembered in this browser only.
+- **Follow** beside someone makes your view follow theirs (it changes to **Stop Following** while you do). See [Following someone](/help/canvas/follow-along/) for how it works.
+- The buttons to hand out the [facilitator](/help/collaboration/facilitator/) role live here too, on each person's row.
+
+## Seeing what others have selected
+
+When someone selects an element, a small disc with their initials appears on its top-left corner, so you always know what a teammate is working on. While an Editor or Participant has it selected, that element is gently locked for everyone else, so two people can't fight over the same shape at once. A Viewer's selection only shows the disc. It frees up again the moment they click away. When you zoom far out, the discs hide until you zoom back in.
+
+<Figure caption="A teammate's selection is badged with their initials and gently locked to them while they edit.">
+  <PresenceSelection />
+</Figure>
+
+## Freeing an element someone left selected
+
+The lock clears by itself when the person clicks away, switches tab or leaves. What it can't fix on its own is someone who is still connected but has wandered off with something selected, leaving an element nobody else can touch. When that happens, it can be freed:
+
+<Step n={1}>Right-click the locked element.</Step>
+<Step n={2}>
+  A small **In use** menu opens, with one row per person holding it, such as "Release Jae's Hold".
+</Step>
+<Step n={3}>Choose that row. The element frees up for everyone straight away.</Step>
+
+<Figure caption="Right-clicking an element a teammate is holding opens the In use menu, naming whose hold you would release.">
+  <ReleaseHold />
+</Figure>
+
+**Who can do it.** While someone is the [facilitator](/help/collaboration/facilitator/), only they can. While nobody is facilitating, any Editor can. Participants and Viewers can't free a hold: for them, right-clicking a locked element opens nothing, as it does for an Editor while somebody else is facilitating.
+
+**What the holder sees.** As the menu says: "They keep their work; it just stops being theirs to edit." Their selection is dropped, and if they were typing into the element, that editing ends too, but the element itself is not changed. A short notification tells them "The facilitator freed an element you were holding", so it doesn't look like a glitch. Nobody else in the room is told anything; the element simply stops looking locked.
+
+## Agents at work
+
+An AI agent or a script working on a canvas with an [API token](/help/account-and-data/api-tokens/) can show itself while it works. It appears as an avatar of its own, named after its owner ("Webber's Agent") in their colour and marked with a small star, on the tab it last read or changed:
+
+- **What it is doing** shows in its hover card, on its row in Collaborators, and in what a screen reader announces. Everyone sees it, its owner included.
+- **What it is looking at** is outlined with a thin ring in its owner's colour. The ring never locks anything: you can keep working on those elements.
+- **It leaves on its own** a few minutes after it last read or changed the canvas, so a finished or stopped agent never lingers.
+
+Agents are listed in Collaborators, but they are not counted as people, can't be followed, and never hold the facilitator role.
+
+## Shared laser pointer
+
+The [Laser Pointer](/help/selection-modes/laser/) is built for presenting together: when you draw with it, everyone on the same tab sees your glowing trail in real time, then it fades away. It is perfect for "look over here" without changing anything on the canvas.
+
+## Who can see presence
+
+Live presence works for everyone in a shared canvas, including guests and people opening a [share link](/help/collaboration/sharing/) to view, not just signed-in editors. A private canvas you have not shared has no presence, since it is just you, except for your own agent while it works on it.
+
+<Tip>
+  Names and colours are chosen automatically, and a colour is nudged if two people happen to get the
+  same one, so everyone stays easy to tell apart.
+</Tip>
+
+</ArticleLayout>

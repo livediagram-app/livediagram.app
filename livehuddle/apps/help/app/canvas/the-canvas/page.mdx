@@ -1,0 +1,48 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { AddingElements } from '@/components/illustrations/canvas';
+import { CanvasPaletteOverview } from '@/components/illustrations/canvas-basics';
+
+export const metadata = helpMetadata({
+  title: 'The Canvas',
+  description:
+    'The infinite canvas where you build diagrams, with the palette strip across the top for adding shapes and tools.',
+  path: '/help/canvas/the-canvas/',
+});
+
+<ArticleLayout
+  title="The Canvas"
+  description="The infinite canvas where every diagram comes together, with the palette always within reach."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  subArticles={getSubArticles("the-canvas")}
+>
+
+The canvas is where you actually build diagrams in livehuddle. It is an open, scrollable surface you can pan and zoom freely, with the palette pinned across the top of it for adding elements and switching tools. Everything works straight away, no sign-in required, so you can [open a fresh canvas](/new) and start placing shapes in seconds.
+
+<Figure caption="The canvas with the menu button top-left, the Palette strip across the top, and Undo and Redo, Layers, the Theme & canvas button and zoom in the bottom-right corner.">
+  <CanvasPaletteOverview />
+</Figure>
+
+## The Palette
+
+The **Palette** is a strip pinned to the top centre of the canvas, holding everything you add to it. It starts with the canvas tool (**Select**, **Hand**, **Laser** and the other [selection modes](/help/selection-modes/)), then the palette's categories by name, each opening a panel of its elements as you rest on it, and ends with **Search** for finding any element by name. See [Toolbar Layout](/help/palette/toolbar-layout/) for the details.
+
+In the top-left corner, beside the strip, the **menu button** opens the [Explorer](/help/explorer/explorer-panel/), with the tab's name beside it on a computer. A tab's mode (**Diagram**, **Draw** or **Workshop**) is chosen on its start while it is empty: see [Editor Modes](/help/canvas/editor-modes/#choosing-a-mode).
+
+## Adding Elements
+
+Most elements are added straight from the palette, whose categories sit along the strip by name. In Diagram mode they are **Shapes**, **Write** (text, notes and comments), **Draw** (the pens and arrows), **Diagrams** (mind nodes, flowcharts, tables), **Concepts** (pyramids, funnels, cycles and the Sankey), **Layout** (lanes, frames, cards), **Icons**, **Tech** and **Media**. Rest on one, or click it, and its elements open in a panel underneath. Each mode offers its own set: **Stickers**, **Data** (charts) and **Session** belong to [Workshop mode](/help/canvas/workshop-mode/), for example. Clicking an element arms a combined gesture: a tap drops the element at your pointer, and a drag sizes it as you go. Single-key shortcuts skip the palette altogether, such as `R` for a rectangle, `T` for text and `N` for a sticky note. See [Adding Elements](/help/canvas/the-canvas/adding-elements/) for the full walkthrough.
+
+<Figure caption="Click a shape tile in the palette, then drop it on the canvas; it lands selected, ready to move or resize.">
+  <AddingElements />
+</Figure>
+
+## Moving Around
+
+The canvas is effectively infinite, so you are never boxed in. Use the Hand tool, a middle-click drag, two fingers on a trackpad, or hold Space and drag to pan, and `Cmd` / `Ctrl` + scroll, a pinch, or the zoom controls in the bottom-right corner to scale the view. The [Panning and Zooming](/help/canvas/the-canvas/pan-and-zoom/) article covers every way to navigate.
+
+Each tab has its own backdrop and theme. The **Theme & canvas** button beside the zoom controls opens the **Tab Style** dialog, where you can [change the canvas background](/help/canvas/the-canvas/changing-the-background/) or [pick a theme](/help/canvas/themes/).
+
+</ArticleLayout>
