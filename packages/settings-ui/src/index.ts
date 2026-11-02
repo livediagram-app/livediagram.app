@@ -102,6 +102,7 @@ export {
   storeFor,
   isSettingsAppId,
   loadAppCatalogue,
+  panelAppIds,
   SETTINGS_APP_IDS,
   settingsApiErrorMessage,
   type SettingsApiResult,

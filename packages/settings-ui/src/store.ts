@@ -5,15 +5,18 @@
 // page's lifetime, so opening the panel again, or switching back to All, costs nothing.
 import type { SettingsBlob } from '@liveworkspace/settings';
 import type { AppCatalogue } from '@liveworkspace/settings/catalogue';
+import { APP_SITES } from '@liveworkspace/sites';
 import type { AppScopes } from './catalogue-model';
 
 import type { SettingsApiResult, SettingsRequest } from './request';
 
 export type { SettingsApiResult, SettingsRequest } from './request';
 
-// The apps whose settings the panel shows, as the accounts API names their scopes (`APP_SITES` ids).
+// The apps whose settings the panel shows, as the accounts API names their scopes (`APP_SITES` ids), and an app
+// registered before its launch (`HELD_APP_SITES`: liveworkspace/docs/specs/002-architecture/integrating-an-app.md
+// "Registered before launch"), whose own editor's panel shows its own settings.
 export type SettingsAppId =
-  'livediagram.app' | 'liveplanner.app' | 'livedocuments.app' | 'livedesign.app';
+  'livediagram.app' | 'liveplanner.app' | 'livedocuments.app' | 'livedesign.app' | 'livehuddle.app';
 
 // Each app's catalogue, as its own chunk: fetched only when that app's settings are first shown here.
 const CATALOGUES: Record<SettingsAppId, () => Promise<{ CATALOGUE: AppCatalogue }>> = {
@@ -21,12 +24,29 @@ const CATALOGUES: Record<SettingsAppId, () => Promise<{ CATALOGUE: AppCatalogue 
   'liveplanner.app': () => import('@liveworkspace/settings/catalogues/liveplanner'),
   'livedocuments.app': () => import('@liveworkspace/settings/catalogues/livedocuments'),
   'livedesign.app': () => import('@liveworkspace/settings/catalogues/livedesign'),
+  'livehuddle.app': () => import('@liveworkspace/settings/catalogues/livehuddle'),
 };
 
-export const SETTINGS_APP_IDS = Object.keys(CATALOGUES) as SettingsAppId[];
+const hasCatalogue = (id: string): id is SettingsAppId => Object.hasOwn(CATALOGUES, id);
 
+// The apps every panel lists, in APP_SITES' order: the launched ones. A held app is in none of them (no other app's
+// All, no liveworkspace.app link) until its row moves into APP_SITES (liveworkspace/docs/specs/010-site/site.md
+// "Settings", "A held app").
+export const SETTINGS_APP_IDS: readonly SettingsAppId[] = APP_SITES.map((site) => site.id).filter(
+  hasCatalogue,
+);
+
+/** Whether `value` names a listed app, one a link or a list may name. A held app is not one until launch. */
 export function isSettingsAppId(value: unknown): value is SettingsAppId {
-  return typeof value === 'string' && Object.hasOwn(CATALOGUES, value);
+  return typeof value === 'string' && SETTINGS_APP_IDS.includes(value as SettingsAppId);
+}
+
+/** The apps a panel opened for `current` shows: the listed ones, and `current` first when it is a held app (its own
+ *  editor's panel is the one place it shows before launch). */
+export function panelAppIds(current: SettingsAppId | null): readonly SettingsAppId[] {
+  return current && !SETTINGS_APP_IDS.includes(current)
+    ? [current, ...SETTINGS_APP_IDS]
+    : SETTINGS_APP_IDS;
 }
 
 export function loadAppCatalogue(app: SettingsAppId): Promise<AppCatalogue> {

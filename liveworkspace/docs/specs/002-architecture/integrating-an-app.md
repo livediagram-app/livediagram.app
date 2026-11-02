@@ -219,3 +219,10 @@ Held today: **livehuddle** (`livehuddle.app`, port block 3500, its item a **Spac
 [livehuddle's platform registration](../../../../livehuddle/docs/specs/016-platform/platform-registration.md).
 It ships no MCP server in its first version, so the status checks treat the MCP server as optional per app
 ([status.md](../009-status/status.md#where-the-checks-go)).
+
+A held app's Settings are its own from the start: its plain-data catalogue sits beside the listed apps'
+(`@liveworkspace/settings/catalogues/<app>`, [accounts.md](../003-accounts/accounts.md#scopes)) and its id is a
+`SettingsAppId` (`@liveworkspace/settings-ui`), so its editor's Settings panel names it and reads and writes its own
+scope. The panel's apps (`SETTINGS_APP_IDS`) are `APP_SITES`' alone, so no other app's All and no liveworkspace.app
+link (`?app=`) shows it; only the panel opened for the held app adds it ([site.md](../010-site/site.md#settings)
+"A held app"). Launch needs no settings change of its own: moving its row into `APP_SITES` lists it.
