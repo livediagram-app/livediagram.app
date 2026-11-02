@@ -490,6 +490,16 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
   the editor (appearance, shortcuts, the editors' shared chrome such as UI scale) is in the editor's own Settings.
   Opened for no app, the panel is All alone, with no switch. The side last chosen is kept in this browser
   (`liveworkspace:settings-scope:v1`); a link that names one wins.
+  In an editor, the Common settings its side shows are the ones its own Settings has too, drawn as its own rows, so
+  a common setting the editor has is never left out of its side (before 2 November 2026 they were missed whenever
+  the editor's own catalogue was not read, which in an editor it never is).
+- **A held app.** An app registered before its launch
+  ([integrating-an-app.md](../002-architecture/integrating-an-app.md#registered-before-launch), livehuddle today)
+  has its own catalogue and scope like any other (`@liveworkspace/settings/catalogues/livehuddle`,
+  `livehuddle.app`), so its editor's panel names it ("livehuddle Settings", its own heading in the rail) and reads
+  and writes its own settings. It is held out of every other list: the panel's apps (`SETTINGS_APP_IDS`) are
+  `APP_SITES`' alone, so it is in no other app's All and no `?app=` link here opens it. The panel opened for the held
+  app adds it to its own All, first, beside the listed apps. Launch lists it with no change here.
 - **All.** Every setting, in one set of categories (merged on 25 October 2026; before, All listed Common and then
   a group per app). The rail has **Account** first, under its heading (liveworkspace's logo), a single-open
   accordion laid out as a category row (the same padding, icon column and type size) that eases open and shut,

@@ -769,7 +769,11 @@ and the dialog stays as the one complete, browsable index of them.
   (appearance, shortcuts, tokens and pairings, identity, delete account, trash, default folders, Cloud Sync).
   liveworkspace.app renders the same view over this app's derived catalogue
   ([liveworkspace/docs/specs/010-site/site.md](../../../../liveworkspace/docs/specs/010-site/site.md) "Settings"), so the app's
-  settings look the same there as here.
+  settings look the same there as here. That copy is `@liveworkspace/settings/catalogues/livehuddle`, this app's own
+  (never livediagram's), kept in step by `settings-site-catalogue.test.ts` (`UPDATE_SITE_CATALOGUE=1` writes it
+  again), and its scope is `livehuddle.app`. Until launch livehuddle is held
+  ([liveworkspace/docs/specs/010-site/site.md](../../../../liveworkspace/docs/specs/010-site/site.md) "A held app"): only
+  this editor's own panel shows it, so no other app's All and no liveworkspace.app link lists it yet.
 
   **This app or All.** The dialog is the package's `SettingsPanel`, the one Settings panel every app
   and liveworkspace.app open. Its header carries a switch like the Explorer's filter: **livehuddle**
@@ -798,7 +802,7 @@ and the dialog stays as the one complete, browsable index of them.
   reload (`announceProfileSaved` / `onProfileSaved`), and opening the editor again never overwrites
   a stored name with the account name. Sign-in Methods and devices link to liveworkspace.app, whose
   session holds them. Nothing of All is fetched
-  until All is first chosen: its code and the three other apps' catalogues are their own chunks, one
+  until All is first chosen: its code and the four listed apps' catalogues are their own chunks, one
   read per other app, kept for the page's lifetime. All is offered only to a signed-in account
   outside a workbench (a guest's settings stay in this browser); a targeted open (a search result,
   `?settings=`) lands on livehuddle; otherwise the dialog opens on the side this device chose last
