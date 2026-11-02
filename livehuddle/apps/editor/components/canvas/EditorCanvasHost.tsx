@@ -317,11 +317,6 @@ export function EditorCanvasHost() {
     drag,
     editorMode,
     loadedTabIds,
-    autoAlignTab,
-    autoLayoutTab,
-    previewCleanup,
-    endCleanupPreview,
-    assessCleanupKind,
   } = useEditorContext();
   // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
   const { setPointerTip } = usePointerNoteSetters(commitElements, activeTab.elements);
@@ -843,20 +838,7 @@ export function EditorCanvasHost() {
                     track('UI', 'Opened', 'ThemePicker');
                   }
             }
-            // The Tidy Up button (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button"): an
-            // Editor's, so a Participant or Viewer (read-only for structure) and an embed get no button.
-            tidyUp={
-              isReadOnly || embedMode
-                ? undefined
-                : {
-                    run: (kind, judged) =>
-                      kind === 'align' ? autoAlignTab({ judged }) : autoLayoutTab(kind, { judged }),
-                    preview: previewCleanup,
-                    endPreview: endCleanupPreview,
-                    assess: assessCleanupKind,
-                    blocked: activeTabLocked,
-                  }
-            }
+            // No Tidy Up button: it was Diagram mode's (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
             onSelectLayer={setActiveLayer}
             onAddLayer={addLayer}
             onRemoveLayer={removeLayer}

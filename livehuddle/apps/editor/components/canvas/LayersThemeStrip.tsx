@@ -15,8 +15,8 @@ import { useDockNames } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 // they sit together in every mode. A session without Layers (a view-only visitor) or without the Theme & canvas
 // button (a view-only visitor, a whiteboard) keeps whichever of the two it has.
 //
-// An Editor's strip starts with Tidy Up (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up
-// button"), left of Layers: how the tab is arranged sits with how it looks.
+// Given a Tidy Up button it leads the strip, left of Layers; livehuddle gives none, since it was Diagram
+// mode's (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button").
 //
 // Layers opens its panel as a popover above it (docs/specs/006-document/layers.md); the palette
 // opens the CanvasThemeDialog (docs/specs/011-theme/canvas-and-theme-dialog.md).

@@ -275,17 +275,20 @@ a component's nodes are positioned:
 
 ## The Tidy Up button
 
-**Tidy Up** is a button in the bottom-right cluster, the segment immediately **left of Layers** in the Layers and
-Theme strip ([Editor app](../007-editor/editor-app.md)): Tidy Up, Layers, the Theme & Canvas brush, all three about how
-the tab is arranged and how it looks rather than what is on it. Its glyph is a broom. It opens the **Tidy Up popover**
-above it, like the strip's other buttons (one open at a time, a second press or a press outside closes it).
+Diagram mode has a **Tidy Up** button in the bottom-right cluster, the segment immediately
+**left of Layers** in the Layers and Theme strip ([Editor app](../007-editor/editor-app.md)): Tidy Up,
+Layers, the Theme & Canvas brush, all three about how the tab is arranged and how it looks rather
+than what is on it. Its glyph is a broom. It opens the **Tidy Up popover** above it, like the
+strip's other buttons (one open at a time, a second press or a press outside closes it).
 
 ### Where it shows
 
-- **On every board.** livediagram showed it in Diagram mode only; with one mode ([Editor modes](../007-editor/editor-modes.md))
-  and the process and flow templates now Workshop boards, livehuddle shows it on every tab.
-- **On a phone too.** The phone cluster is one row with room for it: Undo and Redo, the Tidy Up, Layers and Theme
-  strip, then Fit. There is no hover on touch, so a tap on a tile is the press; the popover fits the screen's width.
+- **Diagram mode only.** Draw and Workshop arranged their content another way
+  (strokes, a session board), so the button is not there; the command palette still
+  reaches the tidiers.
+- **On a phone too.** Diagram mode's phone cluster is one row with room for it: Undo and Redo, the
+  Tidy Up, Layers and Theme strip, then Fit. There is no hover on touch, so a tap on a tile is the
+  press; the popover fits the screen's width.
 - **Not in Zen**, not during the welcome flow: the strip itself is hidden there.
 - **A locked tab** shows the button, with every tile inert under a "This tab is locked" note, since
   unlocking it is the one step that makes the tidiers work.
