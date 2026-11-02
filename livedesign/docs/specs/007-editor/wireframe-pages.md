@@ -301,6 +301,9 @@ inspect it." With one, under the element's name (its kind, and its words when it
   what it is measured to (an element's kind, or **Screen**).
 - **Colours**: **Fill** and **Border**, each a swatch and its hex, the colour the element is drawn in
   (its own, or the theme's when it keeps none); a part with none reads **None**.
+  An element that paints its own body (a chart, an icon, a progress bar, a concept graphic, a tab window)
+  sits in no box, so it has no **Border** or **Radius**; a chart, a Sankey, an icon and a tab window draw
+  nothing in a fill either, so their **Fill** reads **None** too.
 - **Border**: its **Width**, **Style** and **Radius** (the corners as drawn, a pill's half its height).
 - **Text**, when it carries words: **Font**, **Size**, **Weight**, **Line Height**, **Colour** and
   **Align**.

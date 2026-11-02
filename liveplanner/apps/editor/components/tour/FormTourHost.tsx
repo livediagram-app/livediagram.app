@@ -131,6 +131,18 @@ export function FormTourHost() {
     !ctx.embedMode &&
     tab.locked !== true;
 
+  // Taken (the synced formTourSeen, which Settings' Forms Tour row reads): off the button until that row is on again.
+  const seen = ctx.userPreferences?.formTourSeen === true;
+  // Records the tour as taken, onto the freshest preferences, not this render's: the whole blob is written.
+  const markTaken = () => {
+    const next = rebaseUserPreferences(ctx.userPreferences, {
+      ...ctx.userPreferences,
+      formTourSeen: true,
+    });
+    ctx.setUserPreferences(next);
+    ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
+  };
+
   const endTour = (outcome: TourOutcome) => {
     apiRef.current.backToForm();
     // The form is left as the person had it: out of Preview, the example question gone.
@@ -138,12 +150,7 @@ export function FormTourHost() {
     removeQuestion();
     formTabRef.current = null;
     destTabRef.current = null;
-    const next = rebaseUserPreferences(ctx.userPreferences, {
-      ...ctx.userPreferences,
-      formTourSeen: true,
-    });
-    ctx.setUserPreferences(next);
-    ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
+    markTaken();
     debugLog('[form-tour] end', { outcome });
     track('UI', 'Ended', outcome === 'completed' ? 'FormTourCompleted' : 'FormTourSkipped');
   };
@@ -157,10 +164,12 @@ export function FormTourHost() {
     setShape({ destination: destKind });
     debugLog('[form-tour] start');
     engineRef.current.start();
+    // Taken as it starts, so a reload mid-tour does not put it back on the button.
+    if (!seen) markTaken();
   };
   const canStart = onForm && canWork;
-  // The footer's Start Tour button: offered on a Form tab the person can edit, taken or not (it is how it is taken
-  // again).
+  // The footer's Start Tour button: offered on a Form tab the person can edit, until it is taken (Show Me Around and
+  // the Settings row still run it).
   useOfferTour(
     'form',
     canStart
@@ -169,6 +178,7 @@ export function FormTourHost() {
           rank: TOUR_OFFER_RANK.mode,
           start,
           onShown: () => track('UI', 'Opened', 'FormTourOffer'),
+          seen,
         }
       : null,
   );

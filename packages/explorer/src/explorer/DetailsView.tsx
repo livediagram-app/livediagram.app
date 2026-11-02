@@ -18,6 +18,7 @@ import { InlineRenameInput } from '../ui/InlineRenameInput';
 import { EllipsisTriggerButton, useRowMenu } from '../ui/RowMenu';
 import { FolderSolidIcon, ItemIcon } from '../ui/icons';
 import { useCascade } from '../ui/useCascade';
+import { rowKeys, useFocusAfterRemoval } from '../ui/useFocusAfterRemoval';
 import { kindWords, siteOf } from '../words';
 import { AppMark, FavouriteMarker, MadeByAiBadge } from './badges';
 import { useExplorer } from './context';
@@ -131,6 +132,10 @@ export function DetailsView({
   const body = useRef<HTMLUListElement>(null);
   const count = sorted.folders.length + sorted.items.length;
   const range = useWindowedRange(body, count, ROW_HEIGHT);
+  useFocusAfterRemoval(
+    body,
+    useMemo(() => rowKeys(sorted.folders, sorted.items), [sorted]),
+  );
   // The range trails a shrinking list by one render (an item trashed): clamp it to what is there.
   const end = Math.min(range.end, count);
   const start = Math.min(range.start, end);

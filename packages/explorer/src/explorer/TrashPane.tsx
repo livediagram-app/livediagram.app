@@ -5,7 +5,8 @@
 // when it was deleted and how long it has left, Restore, and Delete Forever. Your group's header empties
 // your Trash. The list is the Trash view's own paged list, so nothing more is fetched.
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import { rowKeys, useFocusAfterRemoval } from '../ui/useFocusAfterRemoval';
 import type { ShownItem } from '../data/overlay';
 import { Button, ConfirmDialog } from '@liveworkspace/ui';
 import { DAY_MONTH } from '@liveworkspace/ui/date-format';
@@ -15,6 +16,7 @@ import type { Words } from '../words';
 import { useExplorer } from './context';
 import { EmptyPane } from './EmptyPane';
 import { ThisBrowserTrashGroup, useThisBrowserTrashed } from './ThisBrowser';
+import { quoted } from '../quoted';
 
 export const TRASH_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -88,11 +90,23 @@ export function TrashPane({
   const groups = useMemo(() => trashGroups(items, teamName, words), [items, teamName, words]);
 
   const localTrashed = useThisBrowserTrashed();
+  const list = useRef<HTMLDivElement>(null);
+  useFocusAfterRemoval(
+    list,
+    useMemo(
+      () =>
+        rowKeys(
+          [],
+          groups.flatMap((g) => g.rows),
+        ),
+      [groups],
+    ),
+  );
 
   if (groups.length === 0 && localTrashed === 0)
     return <EmptyPane view={{ kind: 'trash' }} words={words} />;
   return (
-    <div className="flex flex-col gap-5">
+    <div ref={list} className="flex flex-col gap-5">
       {groups.map((group) => (
         <section key={group.key} aria-labelledby={`trash-${group.key}`} className={LIST_CARD}>
           <header className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-700/60">
@@ -170,7 +184,7 @@ export function TrashPane({
       {purging ? (
         <ConfirmDialog
           open
-          title={`Delete “${purging.title || 'Untitled'}” for good?`}
+          title={`Delete ${quoted(purging.title || 'Untitled')} for good?`}
           message="This cannot be undone."
           confirmLabel="Delete permanently"
           onCancel={() => setPurging(null)}

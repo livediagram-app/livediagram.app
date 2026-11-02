@@ -24,6 +24,7 @@ import { pageTexts } from '@/lib/page-texts';
 import { track } from '@/lib/telemetry';
 import { useRowReorderDrag } from '@liveworkspace/workbench/hooks/ui/useRowReorderDrag';
 import {
+  focusRowAfterRemove,
   pageRowModel,
   type PageRowModel,
 } from '@liveworkspace/workbench/components/canvas/PageRowMenu';
@@ -202,7 +203,15 @@ export function usePageContents({
       ...(edit.canMove(row.id, 1) ? { moveDown: () => edit.movePage(row.id, 1) } : {}),
       locked: row.locked,
       toggleLock: () => edit.setLocked(row.id, !row.locked),
-      ...(edit.removePage && !row.locked ? { remove: () => edit.removePage!(row.id) } : {}),
+      ...(edit.removePage && !row.locked
+        ? {
+            remove: () => {
+              const order = shown.map((r) => r.id);
+              edit.removePage!(row.id);
+              focusRowAfterRemove(order, row.id, (id) => buttons.current.get(id));
+            },
+          }
+        : {}),
     });
   };
   const focusFirst = () => {

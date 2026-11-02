@@ -87,6 +87,21 @@ describe('inspectElement', () => {
     expect(inspectElement(shape(), { origin }).text).toBeNull();
   });
 
+  it('reads no box off a kind that paints its own body, as the canvas and export draw none', () => {
+    // A chart draws its plot in the theme's ramp with no frame: no fill, border or corner to build.
+    const chart = inspectElement(shape({ shape: 'line-chart' }), { origin });
+    expect([chart.fill, chart.border, chart.radius]).toEqual([null, null, null]);
+    expect(inspectCss(chart)).not.toMatch(/background|border/);
+    const icon = inspectElement(shape({ shape: 'icon' }), { origin });
+    expect([icon.fill, icon.border, icon.radius]).toEqual([null, null, null]);
+    // A pyramid's tiers are painted in its fill, but its wrapper carries no border or corner.
+    const pyramid = inspectElement(shape({ shape: 'pyramid' }), { origin });
+    expect(pyramid.fill).not.toBeNull();
+    expect([pyramid.border, pyramid.radius]).toEqual([null, null]);
+    // A badge's pill is drawn in its colours, so it keeps them.
+    expect(inspectElement(shape({ shape: 'badge' }), { origin }).fill).not.toBeNull();
+  });
+
   it('reads a turned, faded element and the UI sans when no face is named', () => {
     const spec = inspectElement(shape({ rotation: 15, opacity: 0.5, label: 'Hi' }), { origin });
     expect(spec.rotation).toBe(15);

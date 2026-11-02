@@ -6,7 +6,7 @@
 // (docs/specs/026-plan/plan-tour.md "The Dashboards tour").
 import { useEffect, useRef, useState } from 'react';
 import { useOptionalEditorContext } from '@/app/project/[id]/EditorContext';
-import { markPlanTracksSeen } from '@/lib/plan-tour';
+import { markPlanTracksSeen, planTrackSeen } from '@/lib/plan-tour';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
 import { rebaseUserPreferences } from '@/lib/user-preferences';
@@ -21,6 +21,17 @@ import {
 import { TOUR_OFFER_RANK, useOfferTour } from '@liveworkspace/workbench/components/tour/tour-offer';
 
 type SlotsNow = { hasEmpty: boolean; hasFilled: boolean };
+type Ctx = NonNullable<ReturnType<typeof useOptionalEditorContext>>;
+
+// Marks the Dashboards track taken, onto the freshest preferences, not this render's: the whole blob is written.
+function markDashboardsTaken(ctx: Ctx): void {
+  const next = rebaseUserPreferences(
+    ctx.userPreferences,
+    markPlanTracksSeen(ctx.userPreferences ?? {}, ['dashboards']),
+  );
+  ctx.setUserPreferences(next);
+  ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
+}
 
 // The tour, and `freeze`, which fixes its steps from the dashboard as it is when Show Me is pressed: filling the empty
 // slot mid-tour must not pull the Fill step out from under the person. `hidden`: the page is covered (a slot
@@ -44,13 +55,7 @@ export function useDashboardTour(hidden: boolean): {
     onFinish: (outcome) => {
       if (offeredRef.current && ctx) {
         offeredRef.current = false;
-        // Onto the freshest preferences, not this render's: the whole blob is written.
-        const next = rebaseUserPreferences(
-          ctx.userPreferences,
-          markPlanTracksSeen(ctx.userPreferences ?? {}, ['dashboards']),
-        );
-        ctx.setUserPreferences(next);
-        ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
+        markDashboardsTaken(ctx);
       }
       track(
         'UI',
@@ -80,7 +85,8 @@ export function useDashboardTour(hidden: boolean): {
 }
 
 // The Dashboards tour's way in (docs/specs/026-plan/plan-tour.md "The Dashboards tour"): the footer's Start Tour button,
-// offered while an Editor has a dashboard open in Plan, taken or not; a press starts it. It never starts on its own.
+// offered while an Editor has a dashboard open in Plan, until the track is taken (its Settings row puts it back); a
+// press starts it and records it. It never starts on its own.
 export function useDashboardTourOffer({
   tour,
   freeze,
@@ -108,8 +114,11 @@ export function useDashboardTourOffer({
             freeze(slots(), true);
             tour.start();
             track('UI', 'Started', 'DashboardTour');
+            // Taken as it starts, so a reload mid-tour does not put it back on the button.
+            if (!planTrackSeen(ctx.userPreferences, 'dashboards')) markDashboardsTaken(ctx);
           },
           onShown: () => track('UI', 'Opened', 'DashboardTourOffer'),
+          seen: planTrackSeen(ctx.userPreferences, 'dashboards'),
         }
       : null,
   );

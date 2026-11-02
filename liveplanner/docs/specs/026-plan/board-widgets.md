@@ -122,7 +122,7 @@ A team that opens the same slice every standup ("My Bugs", "Due This Week") save
   of the header and the gallery stays open, so several can be added in a row; picking one already on the board takes
   it off. The + pressed again, Escape or a press outside closes it.
 - **Reorder**: drag a widget left or right along the zone; the others make way at the bar, and it lands there.
-  From the keyboard, a focused widget moves with Alt+← and Alt+→.
+  From the keyboard, a focused widget moves with Alt+← and Alt+→, and the focus stays on it for the next move.
 - **Remove**: **Edit Widgets** puts the zone in **edit mode**: every widget shows a × at its top right, on any
   pointer and on any board (selected or not, on the canvas, maximised or filling its tab), and the pencil becomes
   **Done** (a check in the brand colour, named "Done Editing Widgets", pressed). A × takes its widget off at once and
@@ -180,7 +180,7 @@ board, so each one can be a widget.
 - **A field gone** (taken off every type the board takes, or the board no longer taking its types) leaves its widget
   in place, quiet and dashed: "This field was removed", with **Remove** (a cross named "Remove widget") for someone
   who may edit. A field whose kind changed so the view no longer fits reads "This field changed kind", with the same
-  Remove.
+  Remove, even when no view reads its new kind (a Rating made Text is still on the board, so it has changed, not gone).
 - A board holds each field and view at most once, and at most **12** field widgets.
 
 ## The widget gallery

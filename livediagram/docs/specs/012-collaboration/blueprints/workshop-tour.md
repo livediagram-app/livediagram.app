@@ -81,17 +81,17 @@ Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
 
 ## Testing
 
-| Rule                                                                           | Test                                                                         |
-| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
-| On the button in Workshop, never starting on its own; stays on offer once seen | `WorkshopTourHost.test.tsx`                                                  |
-| Never starts beside another tour on screen                                     | `WorkshopTourHost.test.tsx`                                                  |
-| Rerun in Workshop only                                                         | `WorkshopTourHost.test.tsx`                                                  |
-| Skip and completion mark it seen and send telemetry; leaving ends as skipped   | `WorkshopTourHost.test.tsx`                                                  |
-| The Diagram tour is never offered in Workshop                                  | `TourHost.test.tsx`                                                          |
-| Step order, anchors, Share filter, telemetry tokens                            | `workshop-tour-steps.test.ts`                                                |
-| Settings switch inverted, third in Tours                                       | `settings-catalogue.test.ts`                                                 |
-| Power user mode marks it seen                                                  | `power-user-preset-rows.test.ts`, `SettingsCategoryPane.power-user.test.tsx` |
-| The slot holds `'workshop'`                                                    | `lib/tour-active.test.ts`                                                    |
+| Rule                                                                         | Test                                                                         |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| On the button in Workshop, never starting on its own; off it once seen       | `WorkshopTourHost.test.tsx`                                                  |
+| Never starts beside another tour on screen                                   | `WorkshopTourHost.test.tsx`                                                  |
+| Rerun in Workshop only                                                       | `WorkshopTourHost.test.tsx`                                                  |
+| Skip and completion mark it seen and send telemetry; leaving ends as skipped | `WorkshopTourHost.test.tsx`                                                  |
+| The Diagram tour is never offered in Workshop                                | `TourHost.test.tsx`                                                          |
+| Step order, anchors, Share filter, telemetry tokens                          | `workshop-tour-steps.test.ts`                                                |
+| Settings switch inverted, third in Tours                                     | `settings-catalogue.test.ts`                                                 |
+| Power user mode marks it seen                                                | `power-user-preset-rows.test.ts`, `SettingsCategoryPane.power-user.test.tsx` |
+| The slot holds `'workshop'`                                                  | `lib/tour-active.test.ts`                                                    |
 
 ## Constants and configuration
 

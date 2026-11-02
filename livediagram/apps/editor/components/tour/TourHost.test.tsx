@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // The Diagram tour's way in (docs/specs/007-editor/editor-tour.md "Where it appears"): the footer's Start Tour button
-// offers it on a Diagram tab the person can work on, taken or not; a press there (or the Settings row) starts it, and it
+// offers it on a Diagram tab the person can work on until it is taken; a press there (or the Settings row) starts it, and it
 // never starts on its own. Leaving Diagram mid-tour ends it as skipped.
 
 import { act, cleanup, render } from '@testing-library/react';
@@ -101,10 +101,22 @@ describe('TourHost offer', () => {
     expect(started()).toBe(true);
   });
 
-  it('stays on offer once the tour has been taken, so it can be taken again', () => {
+  // Work Tracker #177: a taken tour leaves the button; its Settings › Tours switch (clearing the record) brings it back.
+  it('leaves the button once taken, and comes back when its Settings switch is on again', () => {
     editor({ userPreferences: { tourSeen: true } });
-    render(<TourHost />);
+    const { rerender } = render(<TourHost />);
+    expect(tourOffer()).toBeNull();
+    editor({ userPreferences: { tourSeen: false } });
+    rerender(<TourHost />);
     expect(tourOffer()?.name).toBe('Diagram');
+  });
+
+  it('records it taken as a press starts it, before it is finished or skipped', () => {
+    editor({ userPreferences: { tourSeen: false } });
+    render(<TourHost />);
+    act(() => tourOffer()!.start());
+    expect(writeUserPreferences).toHaveBeenCalledTimes(1);
+    expect(writeUserPreferences).toHaveBeenCalledWith({ tourSeen: true }, 'me');
   });
 
   it.each([

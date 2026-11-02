@@ -21,7 +21,7 @@
     "@liveworkspace/migration": "workspace:*"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261007.1",
+    "@cloudflare/workers-types": "^5.20261023.1",
     "@liveworkspace/api-kit": "workspace:^",
     "@types/node": "^26.6.4",
     "oxlint": "^1.88.0",

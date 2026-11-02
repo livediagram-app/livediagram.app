@@ -26,14 +26,17 @@ card as every other tour, so the tours read as one product. Where this spec is s
   Start Planning) and a Dashboard tab have nothing to show, so the button names another tour or is not drawn. The
   editor has to be usable (hydrated, no welcome overlay, not read-only, not an embed), and the tab not locked.
 - **One track on the button.** The button names one track, **Start Boards Tour** or **Start Sheets Tour**: of the
-  ones with work on the tab, the first not yet taken, Boards between equals. A press runs that track on the board
+  ones with work on the tab, the first not yet taken, Boards between equals. Once every track with work on the tab is
+  taken, the Plan tour is off the button (it names another tour, or is not drawn). A press runs that track on the board
   or Sheet on screen (the [tour subject](#tour-subject)). There is no choice card.
 - **On the person's own board or Sheet, never an example.** The tour places no board or Sheet: it runs on the
   tour subject (see [Tour subject](#tour-subject)).
 - **Taken, on every device**, through the synced `planTourTracks` user preference
   ([User preferences](../007-editor/user-preferences.md)): however a run ends (completed or skipped mid-way), the
-  track it ran is taken. That record only picks which track the button names and feeds Settings' rows; it never
-  hides the button, and pressing it again reruns the tour. The old single flag `planTourSeen` stands for both
+  track it ran is taken, and it is written as the run starts too, so a reload mid-tour leaves it taken. That
+  record picks which track the button names, takes a taken track off the button, and feeds Settings' rows: turning
+  a track's row back on puts it back on the button. Until 1 November 2026 it never hid the button (Work Tracker
+  #177). The old single flag `planTourSeen` stands for both
   tracks only while [Power user mode](../007-editor/power-user-mode.md) is on.
 - **Replayable from Settings**: in Settings' **Tours** category, **Plan Tours** switches every track at once, and
   one switch per track sits nested beneath it: **Boards Tour**, **Sheets Tour** and **Dashboards Tour** (never
@@ -52,9 +55,10 @@ started from the footer's **Start Dashboards Tour** button. Its cards read **Sho
 
 - **On offer** while an Editor's dashboard is on screen: not to a Participant or a Viewer, not in an embed, not
   while a maximised slot covers the page. It ranks above the Plan and Forms tours, so on a dashboard the button
-  names it. It stays on offer once taken, and never offers itself on a banner.
-- **However it ends** (completed or skipped), a run from the button marks the `dashboards` track taken
-  (`planTourTracks`), on every device. Show Me from Dashboard Settings runs the same steps and records nothing.
+  names it. Once taken it is off the button until its **Dashboards Tour** row is on again, and it never offers
+  itself on a banner.
+- **As it starts, and however it ends** (completed or skipped), a run from the button marks the `dashboards` track
+  taken (`planTourTracks`), on every device. Show Me from Dashboard Settings runs the same steps and records nothing.
 - **Telemetry**: `UI` · `Opened` · `DashboardTourOffer` the first time the button shows it in a page load,
   `UI` · `Started` · `DashboardTour` on a press (as on Show Me's), and Show Me's `DashboardTourCompleted` |
   `DashboardTourSkipped` at the end.

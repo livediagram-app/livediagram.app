@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // The Dashboards tour's way in (docs/specs/026-plan/plan-tour.md "The Dashboards tour"): the footer's Start Tour button,
-// while an Editor has a dashboard open in Plan, taken or not; a press starts it, never beside another tour, and its
+// while an Editor has a dashboard open in Plan, until it is taken; a press starts it, never beside another tour, and its
 // track is taken however it ends. It never starts on its own.
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -83,10 +83,22 @@ describe('useDashboardTourOffer', () => {
     expect(written.planTourTracks).toContain('dashboards');
   });
 
-  it('stays on offer once taken, so it can be taken again', () => {
+  // Work Tracker #177: a taken track leaves the button; its Settings row (clearing the record) brings it back.
+  it('leaves the button once taken, and comes back when its Settings row is on again', () => {
     editor({ userPreferences: { planTourTracks: ['dashboards'] } });
-    renderHook(() => useOffered(true));
+    const { rerender } = renderHook(() => useOffered(true));
+    expect(tourOffer()).toBeNull();
+    editor({ userPreferences: { planTourTracks: [] } });
+    rerender();
     expect(tourOffer()?.name).toBe('Dashboards');
+  });
+
+  it('records the track taken as a press starts it', () => {
+    renderHook(() => useOffered(true));
+    act(() => tourOffer()!.start());
+    expect(writeUserPreferences).toHaveBeenCalledTimes(1);
+    const written = writeUserPreferences.mock.calls[0]![0] as { planTourTracks?: string[] };
+    expect(written.planTourTracks).toEqual(['dashboards']);
   });
 
   it.each([

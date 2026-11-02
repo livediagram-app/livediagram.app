@@ -20,6 +20,7 @@ import {
   thisBrowserDeleteCopy,
   type ThisBrowserConversion,
 } from './this-browser';
+import { quoted } from './quoted';
 
 export type HandoffDoc = { id: string; name: string };
 
@@ -81,7 +82,7 @@ export function useConversionHandoff(options: ConversionHandoffOptions): void {
         return;
       }
       const ok = await confirm({
-        title: `Sync “${doc.name}” to Your Account?`,
+        title: `Sync ${quoted(doc.name)} to Your Account?`,
         message:
           'It moves into your account, where it is backed up and opens on your other devices, and leaves this browser.',
         confirmLabel: `Sync ${capitalised(noun)}`,

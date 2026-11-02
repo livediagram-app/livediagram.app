@@ -21,8 +21,9 @@ import { CommunityPostTileSkeleton } from '../tile/CommunityPostTileSkeleton';
 // "The landing page"; each product's 025-community "Featured on the home page"): six documents people are proud of,
 // the most liked over the last three months topped up with the best of all time, picked by the liveworkspace
 // Community service from the app's posts. The page is a static export, so the six arrive after it loads: placeholder
-// cards hold their space meanwhile (no layout shift), and with nothing to show (an empty Community, the service
-// unreachable) the section invites the first share. While the Community is switched off the section is not shown.
+// cards hold their space meanwhile (no layout shift once there are six). A Community with fewer than six to feature
+// (a young one, the service unreachable) is not shown yet, and nor is one switched off: a half-empty showcase sells it
+// short.
 
 // The gallery, and a post's page, on the app's own site (every app serves its Community at /community).
 const COMMUNITY_HOME_PATH = '/community/';
@@ -80,10 +81,10 @@ export function CommunityShowcase({
   const featured = useFeatured(url, useNearViewport(sectionRef));
   // One clock reading for the six, so their "2 days ago" agree.
   const [now] = useState(Date.now);
-  // Switched off, the featured answer is a 404 and the section is not there.
+  // Switched off (the featured answer is a 404), or with fewer than six to feature, the section is not there.
   if (featured.status === 'off') return null;
   const posts = featured.status === 'ready' ? featured.posts : [];
-  const empty = featured.status === 'ready' && posts.length === 0;
+  if (featured.status === 'ready' && posts.length < COMMUNITY_FEATURED_COUNT) return null;
   const Nouns = words.nouns.charAt(0).toUpperCase() + words.nouns.slice(1);
   return (
     <section
@@ -100,38 +101,30 @@ export function CommunityShowcase({
           </p>
         </div>
 
-        {empty ? (
-          <div className="mx-auto mt-12 max-w-md rounded-2xl border border-dashed border-slate-300 p-8 text-center dark:border-slate-700">
-            <p className="text-slate-600 dark:text-slate-300">
-              The Community is just getting started. Be one of the first to share a {words.noun}.
-            </p>
-          </div>
-        ) : (
-          <ul className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.status === 'loading'
-              ? Array.from({ length: COMMUNITY_FEATURED_COUNT }, (_, i) => (
-                  <li key={i} className="flex">
-                    <CommunityPostTileSkeleton />
-                  </li>
-                ))
-              : posts.map((post) => (
-                  <li key={post.id} className="flex">
-                    <CommunityPostTile
-                      post={post}
-                      href={postPath(post.id)}
-                      imageUrl={imageUrl(post.shareCode)}
-                      stats={
-                        <>
-                          <CommunityLikeCount count={post.likeCount} />
-                          <CommunityCopyCount count={post.copyCount} />
-                        </>
-                      }
-                      now={now}
-                    />
-                  </li>
-                ))}
-          </ul>
-        )}
+        <ul className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {featured.status === 'loading'
+            ? Array.from({ length: COMMUNITY_FEATURED_COUNT }, (_, i) => (
+                <li key={i} className="flex">
+                  <CommunityPostTileSkeleton />
+                </li>
+              ))
+            : posts.map((post) => (
+                <li key={post.id} className="flex">
+                  <CommunityPostTile
+                    post={post}
+                    href={postPath(post.id)}
+                    imageUrl={imageUrl(post.shareCode)}
+                    stats={
+                      <>
+                        <CommunityLikeCount count={post.likeCount} />
+                        <CommunityCopyCount count={post.copyCount} />
+                      </>
+                    }
+                    now={now}
+                  />
+                </li>
+              ))}
+        </ul>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
           <a

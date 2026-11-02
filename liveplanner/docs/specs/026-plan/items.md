@@ -511,7 +511,8 @@ A card's history marks an agent's changes with the same sparkle, worded by what 
   ("Titled “Gentle Falcon: Basket empties…”", muted; it takes no room until there is text), and **Cancel** and
   **Start Thread** (off until there is text) on a row close under the field, spaced as the reply composer's.
   ⌘ Enter or Ctrl Enter starts it, Escape cancels; mentions work as in any composer. The new thread lands at the top,
-  open.
+  open, and the keyboard goes on into its reply box; Cancel or Escape puts it back on **New Thread** (never down to the
+  page, [Busy buttons](../004-interface-design/busy-buttons.md)).
 - **Open threads** come first, the most recently active at the top. Each is a rounded card (a hairline ring, a soft
   shadow when open) whose header row opens and closes it (a disclosure button, `aria-expanded`), drawn in the same
   language as the Activity timeline:

@@ -79,6 +79,10 @@ describe('starting a thread', () => {
     expect(screen.getByText('Sam: started')).toBeTruthy();
     expect(screen.getByRole('textbox', { name: 'Reply to “Sam: started”' })).toBeTruthy();
     expect(screen.getByText('1 Open')).toBeTruthy();
+    // The starter is gone: the keyboard goes on into the new thread's reply box, never down to the page.
+    expect(document.activeElement).toBe(
+      screen.getByRole('textbox', { name: 'Reply to “Sam: started”' }),
+    );
   });
 
   it('cancels with Escape or Cancel', () => {
@@ -86,9 +90,12 @@ describe('starting a thread', () => {
     fireEvent.click(screen.getByRole('button', { name: 'New Thread' }));
     fireEvent.keyDown(screen.getByRole('textbox', { name: 'Start a thread' }), { key: 'Escape' });
     expect(screen.queryByRole('textbox', { name: 'Start a thread' })).toBeNull();
+    // Focus goes back to New Thread, as it would from a closed popover.
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'New Thread' }));
     fireEvent.click(screen.getByRole('button', { name: 'New Thread' }));
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(screen.getByText('No threads yet')).toBeTruthy();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'New Thread' }));
   });
 });
 

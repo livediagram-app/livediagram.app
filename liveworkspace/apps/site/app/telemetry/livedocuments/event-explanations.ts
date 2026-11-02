@@ -1251,6 +1251,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Article Tour" in Settings, so the Pages tour\'s article track is offered again.',
   'UI|Toggled|ArticleTourSeenOn':
     'Someone switched off Tours › "Article Tour" in Settings, marking the Pages tour\'s article track as answered.',
+  'UI|Toggled|FlashcardsTourSeenOff':
+    'Someone switched on Tours › "Flashcards Tour" in Settings (a row since 1 November 2026), so the Pages tour\'s flashcards track is offered again.',
+  'UI|Toggled|FlashcardsTourSeenOn':
+    'Someone switched off Tours › "Flashcards Tour" in Settings (a row since 1 November 2026), marking the Pages tour\'s flashcards track as answered.',
   'UI|Toggled|ElementToursSeenOff':
     'Someone switched on Tours › Element Tours in Settings, so every element tour is offered again.',
   'UI|Toggled|ElementToursSeenOn':

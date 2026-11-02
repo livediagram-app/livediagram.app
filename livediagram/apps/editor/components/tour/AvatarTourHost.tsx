@@ -64,15 +64,21 @@ export function AvatarTourHost() {
   const startPanelOpen = useStartPanelOpen();
   const canWork = ctx.hydrated && !startPanelOpen && !ctx.anyWelcomeOpen && !ctx.embedMode;
 
-  const endTour = (outcome: TourOutcome) => {
-    tidyAvatarTour();
-    // Onto the freshest preferences, not this render's: the whole blob is written.
+  // Taken (the synced avatarTourSeen, which Settings' Avatar Tour row reads): off the button until that row is on again.
+  const seen = ctx.userPreferences?.avatarTourSeen === true;
+  // Records the tour as taken, onto the freshest preferences, not this render's: the whole blob is written.
+  const markTaken = () => {
     const next = rebaseUserPreferences(ctx.userPreferences, {
       ...ctx.userPreferences,
       avatarTourSeen: true,
     });
     ctx.setUserPreferences(next);
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
+  };
+
+  const endTour = (outcome: TourOutcome) => {
+    tidyAvatarTour();
+    markTaken();
     debugLog('[avatar-tour] end', { outcome });
     track('UI', 'Ended', outcome === 'completed' ? 'AvatarTourCompleted' : 'AvatarTourSkipped');
   };
@@ -83,9 +89,11 @@ export function AvatarTourHost() {
     if (active || otherTour) return;
     debugLog('[avatar-tour] start');
     engineRef.current.start();
+    // Taken as it starts, so a reload mid-tour does not put it back on the button.
+    if (!seen) markTaken();
   };
-  // The footer's Start Tour button: offered whenever the tour could run here, taken or not (it is how it is taken
-  // again). The tour never starts on its own.
+  // The footer's Start Tour button: offered whenever the tour could run here, until it is taken (its Settings row puts
+  // it back). The tour never starts on its own.
   useOfferTour(
     'avatar',
     inAvatar && canWork
@@ -94,6 +102,7 @@ export function AvatarTourHost() {
           rank: TOUR_OFFER_RANK.tool,
           start,
           onShown: () => track('UI', 'Opened', 'AvatarTourOffer'),
+          seen,
         }
       : null,
   );

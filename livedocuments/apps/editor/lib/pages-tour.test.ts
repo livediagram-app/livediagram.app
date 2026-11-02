@@ -11,7 +11,7 @@ describe('the Pages tour’s seen kinds', () => {
 
   it('owes nothing once every kind is answered', () => {
     let prefs = {};
-    for (const kind of ['slide', 'infographic', 'article'] as const)
+    for (const kind of ['slide', 'infographic', 'article', 'flashcard'] as const)
       prefs = markPagesKindSeen(prefs, kind);
     expect(PAGES_TOUR_KINDS.every((k) => pagesKindSeen(prefs, k))).toBe(true);
   });

@@ -84,7 +84,9 @@ describe('drag and drop on the Explorer page', () => {
         { folderId: 'f1' },
       ]),
     );
-    expect(await screen.findByText('Moved “Item 1” to Specs.')).toBeTruthy();
+    expect(
+      await screen.findByText('Moved “\u2068Item 1\u2069” to \u2068Specs\u2069.'),
+    ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
     await waitFor(() => expect(index.count('updateItem')).toBe(2));
     expect(index.calls.at(-1)!.args).toEqual(['item-1', { folderId: null }]);
@@ -175,7 +177,7 @@ describe('drag and drop on the Explorer page', () => {
     fireEvent.drop(trash, { dataTransfer: dt });
     fireEvent.dragEnd(row, { dataTransfer: dt });
     await waitFor(() => expect(index.count('deleteItem')).toBe(1));
-    expect(await screen.findByText('Moved “Item 1” to the Trash.')).toBeTruthy();
+    expect(await screen.findByText('Moved “\u2068Item 1\u2069” to the Trash.')).toBeTruthy();
     expect(within(trash).getByText('Trash')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
     await waitFor(() => expect(index.count('restoreItem')).toBe(1));
@@ -186,7 +188,7 @@ describe('drag and drop on the Explorer page', () => {
     renderPage(index);
     const dt = dragOnto(await findRow('Specs'), rowOf('Trash'));
     expect(dt.types).toContain(FOLDER_DRAG_MIME);
-    expect(await screen.findByRole('dialog', { name: /Delete “Specs”/ })).toBeTruthy();
+    expect(await screen.findByRole('dialog', { name: /Delete “\u2068Specs\u2069”/ })).toBeTruthy();
   });
 
   it('opens a closed folder a drag rests on', async () => {

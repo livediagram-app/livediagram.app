@@ -24,10 +24,13 @@ Draw tour's rules hold.
   canvas is the mode's normal state, not a reason to hold off.
 - **Never on its own.** Until 25 October 2026 it offered itself, once ever, the first time a person walked as an
   avatar ("Meet Your Avatar", **No** / **Yes**); the button replaced that offer.
-- **It stays on offer once taken.** Pressing the button again reruns it; a press while another tour is on screen
-  does nothing. A press starts the first step.
-- **Taken, on every device.** However a run ends, the synced `avatarTourSeen` user preference
-  ([User preferences](../007-editor/user-preferences.md)) records it, for Settings' row only.
+- **Gone once taken, back from Settings.** A press starts the first step; a press while another tour is on screen
+  does nothing. Once started the tour is off the button ([Diagram tour](../007-editor/editor-tour.md) "Where it
+  appears") until its Settings switch is turned on again. A Viewer's or a guest's preferences are kept the same way
+  (synced to their account or guest id), so the button leaves for them too.
+- **Taken, on every device.** As a run starts and however it ends, the synced `avatarTourSeen` user preference
+  ([User preferences](../007-editor/user-preferences.md)) records it: Settings' row reads off and the button stops
+  offering it.
 - **Rerun from Settings**: the **Avatar Tour** switch in Settings' **Tours** category, beside **Draw**, built the
   same way (on means "not seen yet"). Turning it on from off and closing Settings runs the tour straight away when
   the person is in Avatar mode and it is on offer; otherwise the button is there when they get there.

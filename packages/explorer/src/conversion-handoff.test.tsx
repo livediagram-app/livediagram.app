@@ -140,7 +140,7 @@ describe('Take Offline and Sync handed over by the Explorer', () => {
     expect(h.confirm).toHaveBeenCalledWith({
       title: 'Delete this plan from this browser?',
       message:
-        '“Notes” is kept only in this browser. Deleting it removes this browser’s copy, the only one, for good. Nothing in your account changes.',
+        '“\u2068Notes\u2069” is kept only in this browser. Deleting it removes this browser’s copy, the only one, for good. Nothing in your account changes.',
       confirmLabel: 'Delete',
     });
     expect(window.location.search).toBe('');

@@ -5,6 +5,7 @@
 // list loads once every loaded card is shown, so a 2,000-item list never mounts 2,000 previews at once.
 
 import { useCascade } from '../ui/useCascade';
+import { rowKeys, useFocusAfterRemoval } from '../ui/useFocusAfterRemoval';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Folder } from '@liveworkspace/index-client';
 import type { ShownItem } from '../data/overlay';
@@ -40,6 +41,11 @@ export function CardView({
   const limit = shown.key === resetKey ? shown.count : CARD_BATCH;
   const count = folders.length + items.length;
   const sentinel = useRef<HTMLDivElement>(null);
+  const grid = useRef<HTMLDivElement>(null);
+  useFocusAfterRemoval(
+    grid,
+    useMemo(() => rowKeys(folders, items), [folders, items]),
+  );
   const more = count > limit || hasMore;
 
   const showMore = () => {
@@ -98,7 +104,9 @@ export function CardView({
 
   return (
     <>
-      <div className={`${CARD_GRID} ${cascade ? 'lw-cascade' : ''}`}>{cards}</div>
+      <div ref={grid} className={`${CARD_GRID} ${cascade ? 'lw-cascade' : ''}`}>
+        {cards}
+      </div>
       {more ? (
         <div ref={sentinel} className="mt-4 flex justify-center">
           <Button variant="secondary" size="sm" onClick={showMore} busy={loadingMore}>

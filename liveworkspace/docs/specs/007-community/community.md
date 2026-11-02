@@ -31,7 +31,8 @@ Each app offers the same Community, in its own words and look, built from the sa
 - **The gallery**: the app's own Community pages at `/community` on its site: search, categories, tags, sorts and
   My Shares; a post page with a read-only preview, Make a Copy, likes and reports.
 - **The landing page**: the app's home page carries a **From the Community** section, its six featured posts (the
-  most liked over three months, topped up) leading to the gallery.
+  most liked over three months, topped up) leading to the gallery. Until an app's Community has six to feature, or
+  while its service cannot be reached, the section is not shown at all: a half-empty showcase sells it short.
 - **The link's doors**: the read-only view, the card image and copying, through a community link the post owns.
 - **Moderation**: reports alone, as below, the same for every app.
 - **Categories**: each app has its own closed set (below), so a gallery's filters speak its product's language.

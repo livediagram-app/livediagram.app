@@ -153,6 +153,16 @@ describe('BoardWidgetZone +', () => {
     expect(screen.queryByRole('dialog', { name: 'Add a Widget' })).toBeNull();
   });
 
+  // The gallery is a dialog (a search, a rail and tiles), not a menu: a screen reader told "menu" expects menu items
+  // and arrow keys from the button.
+  it('says the + opens a dialog', () => {
+    show(true);
+    const add = screen.getByRole('button', { name: 'Add a widget' });
+    expect(add.getAttribute('aria-haspopup')).toBe('dialog');
+    fireEvent.click(add);
+    expect(screen.getByRole('dialog', { name: 'Add a Widget' })).toBeTruthy();
+  });
+
   it('works out For You only as the gallery opens', () => {
     const suggest = vi.fn(() => [
       { id: 'due' as const, score: 1, reason: '3 cards have due dates' },
@@ -258,5 +268,31 @@ describe('BoardWidgetZone, empty', () => {
   it('offers nothing to someone who may not edit', () => {
     empty({ offerAdd: true, canEdit: false });
     expect(screen.queryByRole('button', { name: 'Add a widget' })).toBeNull();
+  });
+});
+
+// board-widgets.md "Reorder": a focused widget moves with Alt+← and Alt+→, and the keyboard stays on it.
+describe('BoardWidgetZone keyboard reorder', () => {
+  const widget = (name: string) => screen.getByRole('listitem', { name: `${name} widget` });
+  it.each([
+    ['ArrowRight', ['count', 'filter', 'progress'], 'count', ['filter', 'count', 'progress']],
+    ['ArrowLeft', ['count', 'filter', 'progress'], 'filter', ['filter', 'count', 'progress']],
+  ] as const)('Alt+%s keeps the focus on the moved widget', (key, before, moved, after) => {
+    const onChange = show(false, true, [...before]);
+    const el = widget(labelOf(moved));
+    el.focus();
+    fireEvent.keyDown(el, { key, altKey: true });
+    expect(onChange).toHaveBeenCalledWith(after);
+    onChange.rerender([...after]);
+    expect(document.activeElement).toBe(widget(labelOf(moved)));
+  });
+
+  it('changes nothing at the end of the row, and keeps the focus there', () => {
+    const onChange = show(false, true, ['count', 'filter']);
+    const el = widget(labelOf('filter'));
+    el.focus();
+    fireEvent.keyDown(el, { key: 'ArrowRight', altKey: true });
+    expect(onChange).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(el);
   });
 });

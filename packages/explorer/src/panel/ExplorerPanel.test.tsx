@@ -171,7 +171,9 @@ describe('<ExplorerPanel>', () => {
     fireEvent.click(within(rail()).getByRole('button', { name: 'Trash' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Delete Forever' }));
     const confirm = screen.getByRole('dialog');
-    expect(within(confirm).getByRole('heading').textContent).toBe('Delete “Item 1” for good?');
+    expect(within(confirm).getByRole('heading').textContent).toBe(
+      'Delete “\u2068Item 1\u2069” for good?',
+    );
     expect(within(confirm).getByText('This cannot be undone.')).toBeTruthy();
   });
 
