@@ -44,6 +44,38 @@ const PLACEHOLDER: Record<string, string> = {
 };
 const FIRST_BODY_PLACEHOLDER = 'Start writing, or press / for blocks';
 
+const HEADING_STYLES = new Set(['title', 'h1', 'h2', 'h3']);
+
+/** An empty heading or table header cell, named for a screen reader (docs/specs/007-editor/article-pages.md
+ *  "Blocks"): a writer hears the placeholder, a reader has the empty heading hidden. A decoration, not
+ *  schema output, so the name goes the moment the block holds text. */
+export function emptyNameDecorations(doc: PMNode, editable: boolean): Decoration[] {
+  const decos: Decoration[] = [];
+  doc.descendants((node, pos) => {
+    if (!node.isTextblock) return true;
+    if (node.content.size === 0) {
+      if (node.type === articleSchema.nodes.table_header) {
+        decos.push(Decoration.node(pos, pos + node.nodeSize, { 'aria-label': 'Column header' }));
+      } else if (
+        node.type === articleSchema.nodes.paragraph &&
+        HEADING_STYLES.has(node.attrs.style as string)
+      ) {
+        decos.push(
+          Decoration.node(
+            pos,
+            pos + node.nodeSize,
+            editable
+              ? { 'aria-label': PLACEHOLDER[node.attrs.style as string] ?? 'Heading' }
+              : { 'aria-hidden': 'true' },
+          ),
+        );
+      }
+    }
+    return false;
+  });
+  return decos;
+}
+
 function decorations(state: EditorState, editable: boolean): DecorationSet {
   const decos: Decoration[] = [];
   const blocks: {
@@ -107,6 +139,7 @@ function decorations(state: EditorState, editable: boolean): DecorationSet {
       );
     });
   }
+  decos.push(...emptyNameDecorations(state.doc, editable));
   return DecorationSet.create(state.doc, decos);
 }
 
