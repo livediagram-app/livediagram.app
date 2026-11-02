@@ -41,12 +41,12 @@ export function heroSearch(query: string, limit = HERO_SEARCH_LIMIT): HeroMatch[
 // (HERO_FAN_FULL_MIN_PX), the middle five on a laptop, the middle three on a phone.
 export const HERO_FAN_OPENING: readonly TemplateKind[] = [
   'retrospective',
-  'gantt',
+  'crazy-eights',
   'lean-coffee',
   'sailboat',
-  'system-architecture',
+  'virtual-office',
   'swot',
-  'sketchnote',
+  'pub-quiz',
 ];
 
 // How many cards the fan holds at once, and the window width from which all of them show: seven

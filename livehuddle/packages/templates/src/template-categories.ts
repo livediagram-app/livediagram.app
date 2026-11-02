@@ -1,8 +1,7 @@
-// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): fourteen,
+// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): thirteen,
 // grouped by what a person is using the template for (the use case), never by the shape of artefact it is. Every
-// template but the three blanks has exactly one primary category and may be cross-listed in others where people would
-// genuinely look for it. Read by every template start (Diagram, Draw and Workshop), the marketing gallery and the
-// agents' catalogue. Pure data plus three lookups; a Record over every non-blank kind, so a new template does not
+// template but the blank has exactly one primary category and may be cross-listed in others where people would
+// genuinely look for it. Read by Start a Workshop, the marketing gallery and the agents' catalogue. Pure data plus three lookups; a Record over every non-blank kind, so a new template does not
 // compile until it has a home.
 import type { TemplateKind } from './templates';
 
@@ -13,7 +12,6 @@ export type TemplateCategory =
   | 'meetings'
   | 'people'
   | 'planning'
-  | 'processes'
   | 'product'
   | 'games'
   | 'retros'
@@ -25,8 +23,7 @@ export type TemplateCategory =
 // Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions
 // are kept to a similar length (40 to 50 characters) so the folded category tiles read as an even set. No id is stored
 // anywhere, so ids follow the meaning. Kanban, Finance, Spreadsheets and Forms went with Plan mode to liveplanner.
-// `searchWords`: what a search also finds the category's templates by, beyond its label: the words the old,
-// artefact-shaped labels carried (Flowcharts, Org Charts, Technical), so the regroup never loses a search.
+// `searchWords`: what a search also finds the category's templates by, beyond its label.
 type CategoryInfo = {
   id: TemplateCategory;
   label: string;
@@ -39,19 +36,19 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'ideas',
     label: 'Brainstorming',
     searchWords: 'brainstorm ideation',
-    description: 'Mind maps and boards for getting ideas out.',
+    description: 'Boards for getting ideas out and sorting them.',
   },
   {
     id: 'decisions',
     label: 'Decisions',
     searchWords: 'priorities prioritise prioritize risk',
-    description: 'Priorities, trade-offs, risks and root causes.',
+    description: 'Priorities, trade-offs and the risks ahead.',
   },
   {
     id: 'goals',
     label: 'Goals & Metrics',
-    searchWords: 'okrs kpis growth',
-    description: 'OKRs, metric trees, funnels and growth loops.',
+    searchWords: 'okr okrs objectives outcomes',
+    description: 'Objectives, outcomes and the results to aim at.',
   },
   {
     id: 'meetings',
@@ -62,26 +59,20 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   {
     id: 'people',
     label: 'People & Teams',
-    searchWords: 'org chart hr hiring onboarding structure hierarchies',
-    description: 'Org charts, roles, onboarding and family trees.',
+    searchWords: 'hr roles responsibilities ownership',
+    description: 'Roles, responsibilities and stakeholders.',
   },
   {
     id: 'planning',
     label: 'Planning',
-    searchWords: 'timelines roadmaps project schedule',
-    description: 'Gantt charts, roadmaps and timelines of work.',
-  },
-  {
-    id: 'processes',
-    label: 'Processes & Workflows',
-    searchWords: 'flowcharts flowchart process',
-    description: 'Flowcharts and workflows for how work gets done.',
+    searchWords: 'roadmaps project plan releases',
+    description: 'Roadmaps, release slices and who does what.',
   },
   {
     id: 'product',
     label: 'Product & UX',
     searchWords: 'design ux research discovery',
-    description: 'Prototypes, personas, journeys and discovery.',
+    description: 'Personas, journeys, story maps and discovery.',
   },
   {
     id: 'games',
@@ -99,7 +90,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'software',
     label: 'Software & IT',
     searchWords: 'technical engineering developer devops infrastructure',
-    description: 'Architecture, data, networks and incidents.',
+    description: 'Incidents, outages and the systems behind them.',
   },
   {
     id: 'strategy',
@@ -111,7 +102,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'learning',
     label: 'Teaching & Learning',
     searchWords: 'school classroom students teachers lesson education study',
-    description: 'Concept maps, KWL charts and visual notes.',
+    description: 'KWL charts and quizzes for the classroom.',
   },
   {
     id: 'spaces',
@@ -130,89 +121,56 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
   .sort((a, b) => a.label.localeCompare(b.label, 'en', { sensitivity: 'base' }))
   .map(({ id, label, description }) => ({ id, label, description }));
 
-// The blanks: in no category, reached from Popular or by search (docs/specs/007-editor/templates-by-mode.md "The blanks").
-// Mirrors isBlankTemplate (BLANK_TEMPLATE_FOR_MODE); the categories test pins them together.
-type BlankKind = 'blank' | 'whiteboard' | 'blank-session';
-
-// Every non-blank template's primary category: the job it is for.
-const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCategory> = {
+// Every template but the blank's primary category: the job it is for. Blank Workshop is in none, reached from
+// Popular or by search (docs/specs/007-editor/templates-by-mode.md "The blank"); isBlankTemplate names it.
+const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, 'blank-session'>, TemplateCategory> = {
+  // Brainstorming: getting ideas out, then sorting them.
   brainstorm: 'ideas',
-  'idea-garden': 'ideas',
   'affinity-map': 'ideas',
   'crazy-eights': 'ideas',
-  // Decisions: what comes first, which option, what could go wrong and why it went wrong.
+  // Decisions: what comes first and what could go wrong.
   'prioritization-matrix': 'decisions',
-  'eisenhower-matrix': 'decisions',
-  'comparison-table': 'decisions',
   'risk-matrix': 'decisions',
-  'pre-mortem': 'decisions',
-  fishbone: 'decisions',
-  // Goals and Metrics: what to aim at, and the numbers that say how it is going.
-  'okr-tree': 'goals',
+  // Goals and Metrics: what to aim at.
   'objectives-planner': 'goals',
-  'metric-tree': 'goals',
   // Meetings and Workshops: running a session with the room.
   'meeting-agenda': 'meetings',
   'workshop-board': 'meetings',
   'lean-coffee': 'meetings',
   'town-hall': 'meetings',
+  // People and Teams: who does what.
   'raci-matrix': 'people',
-  'onboarding-plan': 'people',
-  'family-tree': 'people',
   // Planning: work laid out in time.
-  gantt: 'planning',
   roadmap: 'planning',
-  timeline: 'planning',
-  'milestone-timeline': 'planning',
-  'milestone-timeline-vertical': 'planning',
-  'value-stream-map': 'processes',
-  // Product and UX: screens, research, journeys and discovery.
-  'paper-prototype': 'product',
+  // Product and UX: research, journeys and discovery.
   journey: 'product',
-  'journey-doodle': 'product',
   'user-persona': 'product',
   'empathy-map': 'product',
   'user-story-map': 'product',
-  'service-blueprint': 'product',
   'opportunity-solution-tree': 'product',
-  // A comic strip tells a user's story in panels, as a storyboard does.
-  'comic-strip': 'product',
-  // The design-thinking lenses: is this idea worth building?
-  venn: 'product',
   // Quizzes and Games: the lighter end of running a room.
   'pub-quiz': 'games',
   'icebreaker-questions': 'games',
   'two-truths-and-a-lie': 'games',
   'would-you-rather': 'games',
   'people-bingo': 'games',
-  'doodle-warmup': 'games',
   // Retrospectives: a team looking back to change what comes next.
   retrospective: 'retros',
   'start-stop-continue': 'retros',
   'mad-sad-glad': 'retros',
   'four-ls': 'retros',
   sailboat: 'retros',
-  // Software and IT: the developer's and the IT team's diagrams.
-  'system-architecture': 'software',
-  'cloud-architecture': 'software',
-  'network-diagram': 'software',
-  'state-machine': 'software',
-  'data-flow': 'software',
+  // Software and IT: an engineering team's sessions.
   'event-storming': 'software',
-  'threat-model': 'software',
   'incident-postmortem': 'software',
   // Strategy: where the business stands and where it goes.
   swot: 'strategy',
   'pestle-analysis': 'strategy',
   'business-model-canvas': 'strategy',
   'value-proposition-canvas': 'strategy',
-  'wardley-map': 'strategy',
-  'rich-picture': 'strategy',
   'stakeholder-map': 'strategy',
-  // Teaching and Learning: a topic taught, studied or taken notes on.
-  'concept-map': 'learning',
+  // Teaching and Learning: a topic taught or studied.
   'kwl-chart': 'learning',
-  sketchnote: 'learning',
   // Virtual Spaces: the spaces to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
   'virtual-office': 'spaces',
   'coworking-space': 'spaces',
@@ -230,41 +188,28 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'crazy-eights': ['meetings', 'product'],
   // Research synthesis is product work too.
   'affinity-map': ['product'],
-  // A concept map is a map of ideas, as a mind map is.
-  'concept-map': ['ideas'],
-  // Visual notes are taken in meetings and talks.
-  sketchnote: ['meetings'],
-  // Event storming is a workshop, and maps a business process.
-  'event-storming': ['meetings', 'processes'],
+  // Event storming is a workshop.
+  'event-storming': ['meetings'],
   // An all-hands is a meeting.
   'all-hands-hall': ['meetings'],
-  // Looking back at an incident, or forward at a failure, is a retro's job.
+  // Looking back at an incident is a retro's job.
   'incident-postmortem': ['retros'],
-  'pre-mortem': ['retros', 'strategy'],
-  'data-flow': ['processes'],
-  'service-blueprint': ['processes'],
-  // Planned work: who does what, the release slices, a new starter's months, a week sorted.
+  // Planned work: who does what, and the release slices.
   'raci-matrix': ['planning'],
   'user-story-map': ['planning'],
-  'onboarding-plan': ['planning'],
-  'eisenhower-matrix': ['planning'],
-  // Goals and a growth loop are strategy as much as tracking; a roadmap is strategy in time.
+  // A roadmap is strategy in time.
   roadmap: ['strategy'],
-  'okr-tree': ['strategy'],
   // Discovery is aimed at an outcome.
   'opportunity-solution-tree': ['goals'],
   // A value proposition is product design.
   'value-proposition-canvas': ['product'],
   // Stakeholders are people.
   'stakeholder-map': ['people'],
-  // Weighing an idea through three lenses is a decision, and the Venn is taught in class.
-  venn: ['decisions', 'learning'],
-  timeline: ['learning'],
-  'family-tree': ['learning'],
+  // A quiz is how a class checks what it learned.
   'pub-quiz': ['learning'],
 };
 
-/** A template's primary category; null for the blanks, which are in none. */
+/** A template's primary category; null for the blank, which is in none. */
 export function templateCategory(kind: TemplateKind): TemplateCategory | null {
   return (TEMPLATE_CATEGORY as Partial<Record<TemplateKind, TemplateCategory>>)[kind] ?? null;
 }

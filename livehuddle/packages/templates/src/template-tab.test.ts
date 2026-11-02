@@ -33,14 +33,10 @@ describe('buildTemplateTab', () => {
 // docs/specs/007-editor/templates-by-mode.md: every template makes a general tab that opens in Workshop; there is
 // no whiteboard kind.
 describe('buildTemplateTab: every template opens in Workshop', () => {
-  it('makes the Whiteboard a general tab', () => {
-    const tab = buildTemplateTab('tab-wb', 'Whiteboard', 'whiteboard');
+  it('makes the blank a general tab that opens in Workshop', () => {
+    const tab = buildTemplateTab('tab-b', 'Blank', 'blank-session');
     expect(tab.kind).toBe('diagram');
     expect(tab.opensIn).toBe('workshop');
-  });
-
-  it('opens the other templates in Workshop too', () => {
-    expect(buildTemplateTab('tab-b', 'Blank', 'blank').opensIn).toBe('workshop');
   });
 });
 
@@ -61,7 +57,7 @@ describe('resolveTemplate', () => {
 describe('closestTemplateKinds', () => {
   it('offers the kinds with a word starting with a word of it', () => {
     expect(closestTemplateKinds('retro')).toEqual(['retrospective', 'four-ls', 'sailboat']);
-    expect(closestTemplateKinds('Gantt Chart')).toContain('gantt');
+    expect(closestTemplateKinds('Risk Matrix')).toContain('risk-matrix');
     expect(closestTemplatesHint('retro')).toBe('Closest: retrospective, four-ls, sailboat. ');
   });
 
@@ -72,6 +68,6 @@ describe('closestTemplateKinds', () => {
   });
 
   it('offers at most CLOSEST_TEMPLATES_MAX', () => {
-    expect(closestTemplateKinds('map')).toHaveLength(CLOSEST_TEMPLATES_MAX);
+    expect(closestTemplateKinds('map matrix')).toHaveLength(CLOSEST_TEMPLATES_MAX);
   });
 });

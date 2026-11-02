@@ -35,7 +35,7 @@ export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
     title: 'Plan a launch',
     prompt:
-      'Create a livehuddle Gantt chart for launching our new website, with bars for design, copy, build, testing and go-live, and share a link I can send the team.',
+      'Create a livehuddle roadmap for launching our new website, with cards for design, copy, build, testing and go-live, and share a link I can send the team.',
   },
   {
     title: 'Brainstorm an offsite',

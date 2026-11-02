@@ -35,7 +35,8 @@ describe('heroSearch', () => {
 
   it('finds the blanks too, and through search words, as the editor does', () => {
     expect(heroSearch('blank').map((t) => t.kind)).toContain('blank-session');
-    expect(heroSearch('dfd').map((t) => t.kind)).toContain('data-flow');
+    expect(heroSearch('ishikawa').map((t) => t.kind)).toEqual([]);
+    expect(heroSearch('bmc').map((t) => t.kind)).toContain('business-model-canvas');
   });
 
   it('never lists a template twice', () => {
@@ -67,10 +68,10 @@ describe('the fan', () => {
   });
 
   it('deals the next kind not already showing, wrapping round the pool', () => {
-    const pool = ['gantt', 'sailboat', 'town-hall'] as const;
-    expect(nextFanKind(pool, ['gantt'], 0)).toEqual({ kind: 'sailboat', at: 1 });
+    const pool = ['roadmap', 'sailboat', 'town-hall'] as const;
+    expect(nextFanKind(pool, ['roadmap'], 0)).toEqual({ kind: 'sailboat', at: 1 });
     expect(nextFanKind(pool, ['sailboat'], 0)).toEqual({ kind: 'town-hall', at: 2 });
-    expect(nextFanKind(pool, ['sailboat'], 2)).toEqual({ kind: 'gantt', at: 0 });
+    expect(nextFanKind(pool, ['sailboat'], 2)).toEqual({ kind: 'roadmap', at: 0 });
   });
 
   it('throws for a kind the catalogue does not list', () => {

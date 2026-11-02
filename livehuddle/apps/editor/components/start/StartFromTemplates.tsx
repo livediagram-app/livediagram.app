@@ -21,7 +21,6 @@ import {
   lucideStar,
   lucideUsers,
   lucideVote,
-  lucideWorkflow,
 } from '@liveworkspace/icons/lucide';
 import type { TemplateCategory, TemplateKind } from '@livehuddle/templates';
 import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
@@ -48,7 +47,6 @@ const RAIL_ICONS: Readonly<
   meetings: glyph(lucideMessagesSquare),
   people: glyph(lucideUsers),
   planning: glyph(lucideCalendarRange),
-  processes: glyph(lucideWorkflow),
   product: glyph(lucidePenTool),
   games: glyph(lucideDices),
   retros: glyph(lucideRefreshCw),

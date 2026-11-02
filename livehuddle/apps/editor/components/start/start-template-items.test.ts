@@ -17,10 +17,10 @@ describe.each(MODES)('the %s template start', (mode) => {
     (t) => !t.hidden && !isBlankTemplate(t.kind) && templateEditorMode(t.kind) === mode,
   ).map((t) => t.kind);
 
-  it("leads with Recommended, the mode's Popular shelf, its blank first, Timeline left out", () => {
+  it("leads with Recommended, the mode's Popular shelf, its blank first", () => {
     const recommended = start.groups[0]!;
     expect(recommended.id).toBe('recommended');
-    expect(recommended.kinds).toEqual(popularKindsFor(mode).filter((k) => k !== 'timeline'));
+    expect(recommended.kinds).toEqual(popularKindsFor(mode));
     expect(recommended.kinds[0]).toBe(start.blank);
   });
 
@@ -41,8 +41,6 @@ describe.each(MODES)('the %s template start', (mode) => {
     expect(start.search('  ')).toEqual([]);
     expect(start.search('zzzqqq')).toEqual([]);
     const probe = {
-      diagram: ['flow', 'flowchart'],
-      draw: ['sketch', 'sketchnote'],
       workshop: ['retro', 'retrospective'],
     }[mode];
     const kinds = start.search(probe[0]!).flatMap((g) => g.kinds);
@@ -77,7 +75,6 @@ describe('Start a Workshop', () => {
       'meetings',
       'people',
       'planning',
-      'processes',
       'product',
       'games',
       'retros',
@@ -96,7 +93,6 @@ describe('Start a Workshop', () => {
       'two-truths-and-a-lie',
       'would-you-rather',
       'people-bingo',
-      'doodle-warmup',
     ]);
     expect(group('spaces')).toEqual([
       'virtual-office',

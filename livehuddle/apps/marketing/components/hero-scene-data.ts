@@ -41,7 +41,7 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
   {
     key: 'diagram',
     word: 'Diagram',
-    build: '/new?q=system',
+    build: '/new?q=journey',
     short: 'Diagram',
     title: 'Onboarding',
     label: 'Diagram: map a flow together, with arrows that connect and shapes that snap',
@@ -57,7 +57,7 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
   {
     key: 'draw',
     word: 'Whiteboard',
-    build: '/new?q=sketchnote',
+    build: '/new?q=retro',
     short: 'Draw',
     title: 'Sprint retro',
     label: 'Draw: sketch on a whiteboard together, markers, stickies and all',

@@ -377,7 +377,8 @@ default document name) without walking the wizard:
   the moment identity resolves and lands on the editor, with the same
   opening screen, in-place handoff, bfcache-restore redirect, placement params and error card
   as `?blank=1`. `blank` wins when both are present. `blank` and `whiteboard`
-  (livediagram's Blank Diagram and Blank Whiteboard) make an empty tab that opens in Workshop. An unknown kind is
+  (livediagram's Blank Diagram and Blank Whiteboard) left the catalogue with build plan step 5.4, so they are
+  unknown kinds now. An unknown kind is
   ignored and the plain wizard shows (the pre-hydration guard can't
   validate a kind, so the layout effect lifts it), so a stale link never
   strands anyone. Both params are read by one helper,

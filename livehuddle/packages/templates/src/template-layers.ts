@@ -54,20 +54,8 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
       return layered('Grid', 'Stakeholders');
     case 'risk-matrix':
       return layered('Matrix', 'Risks');
-    case 'wardley-map':
-      return layered('Map', 'Components');
-    case 'threat-model':
-      return layered('Model', 'Threats');
-    case 'service-blueprint':
-      return layered('Blueprint', 'Service');
-    case 'metric-tree':
-      return layered('Levels', 'Tree');
     case 'value-proposition-canvas':
       return layered('Canvas', 'Notes');
-    case 'family-tree':
-      return layered('Generations', 'People');
-    case 'value-stream-map':
-      return layered('Map', 'Stream');
     case 'user-persona':
       return layered('Card', 'Details');
     case 'meeting-agenda':
@@ -83,8 +71,6 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
     case 'roadmap':
       return layered('Lanes', 'Cards');
     // Fixed grids / frameworks with sliding or fill-in content.
-    case 'gantt':
-      return layered('Grid', 'Bars');
     case 'swot':
       return layered('Quadrants', 'Notes');
     case 'business-model-canvas':
@@ -92,23 +78,10 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
     case 'empathy-map':
       return layered('Quadrants', 'Notes');
     // The board grids (template-builders-board-grid.ts): panels, headers and prompts under the notes.
-    case 'eisenhower-matrix':
-      return layered('Matrix', 'Tasks');
     case 'pestle-analysis':
       return layered('Lenses', 'Notes');
     case 'kwl-chart':
       return layered('Chart', 'Notes');
-    case 'onboarding-plan':
-      return layered('Plan', 'Goals');
-    case 'network-diagram':
-      return layered('Tiers', 'Network');
-    // Tier lanes stay put while components and their wiring move.
-    case 'system-architecture':
-      return layered('Tiers', 'Components');
-    case 'timeline':
-    case 'milestone-timeline':
-    case 'milestone-timeline-vertical':
-      return layered('Spine', 'Milestones');
     case 'journey':
       return layered('Stages', 'Notes');
     // Event storming (docs/specs/021-event-storming/event-storming.md) is the one four-layer template: a hidden

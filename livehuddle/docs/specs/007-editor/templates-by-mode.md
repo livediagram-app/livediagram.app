@@ -2,9 +2,9 @@
 
 Every template opens in Workshop, livehuddle's one [editor mode](editor-modes.md). They wait on an empty tab in Start a
 Workshop ([Template starts](start-diagramming.md)), grouped by the catalogue's categories. Templates built from the
-elements cut with Diagram and Draw are not in the catalogue
-([Templates](../012-collaboration/workshop-mode.md#templates)); step 5.4 of the
-[Build plan](../005-project-roadmap/build-plan.md) cuts the rest to Workshop's and the Spaces.
+elements cut with Diagram and Draw are not in the catalogue, and step 5.4 of the
+[Build plan](../005-project-roadmap/build-plan.md) cut the rest to Workshop's and the Spaces: the catalogue is the
+templates below and nothing else ([Templates](../012-collaboration/workshop-mode.md#templates)).
 
 ## A template's mode
 
@@ -15,8 +15,8 @@ elements cut with Diagram and Draw are not in the catalogue
 **Blank Workshop** (`blank-session`) is the one blank: an empty tab named "Untitled Workshop". It leads Popular and
 Start a Workshop's Recommended, is on no category shelf or tile, and is what a new document starts from.
 
-- livediagram's other blanks, Blank Diagram (`blank`) and Blank Whiteboard (`whiteboard`), stay in the catalogue
-  until build plan step 5.4, each an empty general tab that opens in Workshop. Neither leads Popular or a start.
+- livediagram's other blanks, Blank Diagram (`blank`) and Blank Whiteboard (`whiteboard`), left with step 5.4. A link,
+  an agent or a seed naming either is answered as any unknown kind is, with Blank Workshop.
 - Boards, Sheets and form templates (Blank Plan, Blank Spreadsheet, Kanban Board and the rest) are liveplanner's
   ([Editor modes](editor-modes.md) "Stored tabs from other products' modes"). A link, an agent or a seed naming one
   is answered as any unknown kind is (`retired-templates.test.ts`).
@@ -52,40 +52,13 @@ the Session strip there when the session starts:
 - Start a Workshop groups them by the catalogue's categories, as every start does ([Start
   diagramming](start-diagramming.md) "Recommended and groups").
 
-## Drawn templates
-
-Drawn in freehand strokes (with a slight hand wobble, so
-the board reads as drawn, not ruled), sticky notes, text and stickers. Each is a real example to
-draw over, not an empty frame. They open in Workshop like every template; each one's category is in [Template
-categories](../008-canvas/canvas-and-palette.md#template-categories).
-
-- **Sketchnote**: visual notes from a talk ("How we ship on Fridays"): a hand-lettered
-  banner title, the speaker and date, a cloud holding the big idea at the centre, three framed
-  areas (Key points, Quotes, Questions) joined to it by drawn arrows, a lightbulb doodle and a
-  takeaway banner along the bottom.
-- **Rich Picture**: a systems-thinking rich picture of a problem (a hospital's
-  discharge delays): stick-figure stakeholders with what they say in speech bubbles, the system in
-  a drawn cloud, crossed swords where interests clash, an eye for who is watching, and a legend
-  that teaches the symbols.
-- **Comic Strip**: a six-panel product story ("Maya finds the bug") in hand-drawn panels,
-  each with a caption, speech bubbles and a sticker for the moment it shows.
-- **Doodle Warm-Up**: a meeting icebreaker, "Draw your teammate in 60 seconds": six
-  hand-drawn frames each named for a teammate, the rules on a sticky note, a timer and a
-  "best likeness" vote with sticker stars.
-- **Paper Prototype**: three hand-drawn phone screens of a made-up app, lo-fi UI in
-  marker, tap arrows from one screen to the next, and stickies with what to test with users.
-- **Journey Doodle**: a customer's day as a winding drawn road, each stop a doodle with
-  a face for how it felt, the dip where it goes wrong ringed, and opportunities on stickies.
-- **Pre-Mortem**: "It's a year from now and the project failed": a drawn wreck in the
-  middle, the reasons on stickies round it by theme, and what to do now with tick boxes.
-- **Idea Garden**: ideas grown as a drawn tree: the question at the roots, themes as
-  branches, ideas as leaves, the best ones as fruit, and a legend.
-
 ## Testing
 
 - Every template opens in Workshop (`templates.test.ts`).
 - Popular starts with Blank Workshop (`popular.test.ts`).
 - Every category holds a template (`template-categories.test.ts`).
+- The catalogue is the Workshop templates above, forty with the blank and Event Storming (`templates.test.ts`'s
+  kind list, the `TemplateKind` union and `TEMPLATES` move together).
 
 ## The tab's name
 

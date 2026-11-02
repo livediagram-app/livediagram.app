@@ -76,7 +76,7 @@ One PR per cut, each removing code, tests, palette entries, templates, help arti
    element union. livehuddle has no stored spaces yet, so nothing needs migrating.
 2. Event Storming, repositories, Offline Mode. The Drive mirror stays: it is in v1 (owner, 2026-11-02).
 3. The `community` app; and the `mcp` and `cli` apps if the owner takes D3.
-4. Templates down to Workshop's and the Spaces.
+4. Templates down to Workshop's and the Spaces (done: forty, with Blank Workshop and Event Storming).
 
 ### 6. Make it livehuddle
 
