@@ -425,6 +425,13 @@ describe('text box validation', () => {
     expect(isValidElement({ ...text, sizing: 'grow' })).toBe(false);
     expect(isValidElement({ ...text, sizing: true })).toBe(false);
   });
+
+  // docs/specs/007-editor/logo-pages.md "Export": a template's note about its page is marked true, or not at all.
+  it("takes a template's note mark only as true", () => {
+    expect(isValidElement({ ...text, templateNote: true })).toBe(true);
+    expect(elementValidationIssue({ ...text, templateNote: 'yes' })?.field).toBe('templateNote');
+    expect(isValidElement({ ...text, templateNote: false })).toBe(false);
+  });
 });
 
 // docs/specs/024-agents/blueprints/edit-operations.md "invalid_result": a refusal names the field

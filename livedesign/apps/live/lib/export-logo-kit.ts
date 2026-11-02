@@ -1,7 +1,8 @@
 // The logo kit (docs/specs/007-editor/logo-pages.md "Export"): a logo page as one .zip of an SVG,
 // PNGs at the common icon sizes and a favicon.ico. The plain paper is see-through. One raster at
 // the artboard's full size is drawn and every smaller PNG is stepped down from it (halving, then
-// one last high-quality scale), rather than drawing the page ten times.
+// one last high-quality scale), rather than drawing the page ten times. A template's notes about the
+// page are left out of every file.
 import type { LaidOutPage, Tab } from '@livedesign/design';
 import { sanitizeFilename } from './export-pages';
 import { encodeIco } from './ico-writer';
@@ -10,6 +11,13 @@ import { writeZip } from '@liveworkspace/workbench/lib/zip-writer';
 
 export const LOGO_KIT_PNG_SIZES = [16, 32, 48, 64, 128, 180, 192, 256, 512, 1024] as const;
 export const LOGO_ICO_SIZES = [16, 32, 48] as const;
+
+/** The tab as the kit draws it: less the text a template wrote about its pages (`templateNote`), so
+ *  every file holds the logo alone. One pass over the elements; the tab itself when it has none. */
+export function logoKitTab(tab: Tab): Tab {
+  const elements = tab.elements.filter((el) => !(el.type === 'text' && el.templateNote));
+  return elements.length === tab.elements.length ? tab : { ...tab, elements };
+}
 
 /** The kit's file names, in the zip's order. */
 export function logoKitFileNames(): string[] {
@@ -59,9 +67,10 @@ export async function exportLogoKit(
   opts: ImageExportOpts = {},
 ): Promise<Blob> {
   const own = { ...opts, page, transparentPaper: true };
+  const logo = logoKitTab(tab);
   // Through the SVG download, so the faces it uses travel inside the file.
-  const svg = new Uint8Array(await (await exportTabAsSvg(tab, own)).arrayBuffer());
-  const full = await renderTabToCanvas(tab, {
+  const svg = new Uint8Array(await (await exportTabAsSvg(logo, own)).arrayBuffer());
+  const full = await renderTabToCanvas(logo, {
     ...own,
     scale: page.rect.width > 0 ? 1024 / page.rect.width : 1,
   });
