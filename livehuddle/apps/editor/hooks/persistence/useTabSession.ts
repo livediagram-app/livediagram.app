@@ -279,10 +279,11 @@ export function useTabSession(deps: TabSessionDeps) {
   // (docs/specs/017-telemetry/telemetry.md), and a flag set inside an updater is unreliable (React may run
   // it later, or twice). The updater keeps its own guard so the write can
   // never exceed the budget either way.
-  const castVote = (elementId: string) => {
-    if (editsBlocked) return;
+  // Says whether a dot moved, for the keyboard's answer (docs/specs/012-collaboration/blueprints/vote-keys.md).
+  const castVote = (elementId: string): boolean => {
+    if (editsBlocked) return false;
     const current = deps.activeTab.vote;
-    if (!current || !canCastVote(current, selfId, elementId)) return;
+    if (!current || !canCastVote(current, selfId, elementId)) return false;
     patchActive((t) => {
       const vote = t.vote;
       if (!vote || !canCastVote(vote, selfId, elementId)) return t;
@@ -292,6 +293,7 @@ export function useTabSession(deps: TabSessionDeps) {
     // dot stops waiting behind a debounce it can lose a race inside.
     emitVote(activeId, elementId, 1, current.round);
     track('Element', 'Voted');
+    return true;
   };
 
   // Move the shared results walkthrough to a rank. Host-only: the room
@@ -305,17 +307,21 @@ export function useTabSession(deps: TabSessionDeps) {
 
   // Remove ONE of my dots from an element (if any). Decided from the rendered
   // tab for the same reason as castVote.
-  const retractVote = (elementId: string) => {
-    if (editsBlocked) return;
-    const mine = deps.activeTab.vote?.votes[elementId] ?? [];
-    if (!mine.includes(selfId)) return;
+  // A closed vote keeps its dots: the stepper is gone once casting closes, and a key must not reach past it.
+  const retractVote = (elementId: string): boolean => {
+    if (editsBlocked) return false;
+    const current = deps.activeTab.vote;
+    if (!current?.active) return false;
+    const mine = current.votes[elementId] ?? [];
+    if (!mine.includes(selfId)) return false;
     patchActive((t) =>
       t.vote ? { ...t, vote: applyVoteDelta(t.vote, elementId, selfId, -1) } : t,
     );
-    emitVote(activeId, elementId, -1, deps.activeTab.vote?.round);
+    emitVote(activeId, elementId, -1, current.round);
     // The counterpart to Element·Voted, so "dots cast" can be read net of
     // second thoughts. Only when a dot actually came off.
     track('Element', 'Removed', 'Vote');
+    return true;
   };
 
   return {

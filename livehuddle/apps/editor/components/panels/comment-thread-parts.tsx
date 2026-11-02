@@ -60,7 +60,7 @@ export function CommentResolveToggle({
       <button
         type="button"
         onClick={onResolve}
-        className="inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+        className="relative touch-target-y inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
       >
         <CheckIcon size={12} />
         Resolve
@@ -75,7 +75,7 @@ export function CommentResolveToggle({
       <button
         type="button"
         onClick={onUnresolve}
-        className="cursor-pointer rounded-md px-2 py-0.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+        className="relative touch-target-y cursor-pointer rounded-md px-2 py-0.5 text-[11px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
       >
         Reopen
       </button>

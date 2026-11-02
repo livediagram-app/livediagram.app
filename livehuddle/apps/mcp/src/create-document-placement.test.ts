@@ -190,3 +190,43 @@ describe('create_document themes', () => {
     expect(tabs).toEqual(['mocha', 'ocean']);
   });
 });
+
+// A tree takes a direction as a flow does (docs/specs/015-api/mcp-server.md §4.7 "Layout choices").
+describe('create_document tree direction', () => {
+  const org = (direction?: 'down' | 'right') => ({
+    name: 'Org',
+    graph: {
+      style: 'tree',
+      ...(direction ? { direction } : {}),
+      nodes: ['ceo', 'cto', 'coo', 'a', 'b'].map((id) => ({ id, label: id.toUpperCase() })),
+      edges: [
+        { from: 'ceo', to: 'cto' },
+        { from: 'ceo', to: 'coo' },
+        { from: 'cto', to: 'a' },
+        { from: 'cto', to: 'b' },
+      ],
+    },
+  });
+  type Box = { id: string; x: number; y: number; width: number; height: number };
+  const boxes = async (direction?: 'down' | 'right') => {
+    const { run, posted } = harness(undefined);
+    await run([org(direction)]);
+    const tab = (posted[0]!.tabs as { elements: Box[] }[])[0]!;
+    return (id: string) => tab.elements.find((e) => e.id === id)!;
+  };
+
+  it('runs a tree left to right when asked right', async () => {
+    const at = await boxes('right');
+    expect(at('cto').x).toBeGreaterThan(at('ceo').x + at('ceo').width);
+    expect(at('a').x).toBeGreaterThan(at('cto').x + at('cto').width);
+    expect(at('a').x).toBe(at('b').x);
+  });
+
+  it('runs a tree down when asked down, and with no direction', async () => {
+    for (const direction of ['down', undefined] as const) {
+      const at = await boxes(direction);
+      expect(at('cto').y).toBeGreaterThan(at('ceo').y + at('ceo').height);
+      expect(at('cto').y).toBe(at('coo').y);
+    }
+  });
+});
