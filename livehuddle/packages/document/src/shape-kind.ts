@@ -1,6 +1,6 @@
 // The shape vocabulary: every kind a shape element can be, from the basic
-// geometry through the flowchart set, the UML set, the device frames and the
-// self-drawing data shapes.
+// geometry through the flowchart symbols, the UML set and the self-drawing data
+// shapes.
 //
 // Split out of index.ts the same way element-types.ts and arrow-types.ts were,
 // and it is the easiest of the three to justify: one union, ~100 members, and
@@ -23,13 +23,8 @@ export type ShapeKind =
   // Document element (docs/specs/009-elements/page-element.md). Named 'page' because 'document' above is
   // the flowchart output symbol.
   | 'page'
-  // Mind node (docs/specs/009-elements/mind-node.md): a labelled node that knows its parent, grown from
-  // the keyboard with Tab (child) and Enter (sibling).
-  | 'mind-node'
   // Lane (docs/specs/009-elements/lane.md): a titled horizontal band that carries its contents.
   | 'lane'
-  // Record (docs/specs/009-elements/entity.md): a UML class / ER entity box — a title over rows.
-  | 'entity'
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md): single elements that lay themselves out,
   // replacing the grouped composites the Components palette used to build.
   // Banner: an accent bar, title (the label) over a subtitle line.
@@ -49,19 +44,8 @@ export type ShapeKind =
   | 'diagram-key'
   // Stack (docs/specs/009-elements/stack.md): a container that lays out what it holds in a row, column or grid.
   | 'stack'
-  // Sequence diagram (docs/specs/009-elements/sequence-diagram.md): participants and messages laid out as UML.
-  | 'sequence'
   // Boundary (docs/specs/009-elements/boundary.md): a titled, tinted container (a region, a VPC, a C4 system).
   | 'boundary'
-  // Concept graphics (docs/specs/009-elements/concept-graphics.md): one element laying out its own rows
-  // (`conceptRows`): a stack of layers, a pyramid (or inverted, or a funnel), a cycle of steps.
-  | 'layer-stack'
-  | 'pyramid'
-  | 'cycle'
-  // Round 2: satellites round a hub, concentric rings, chevron stages in a row.
-  | 'hub'
-  | 'onion'
-  | 'chevrons'
   // Stat row: KPI cards, a big value over a caption each, in `stats`.
   | 'stat-row'
   // Process steps: numbered circles joined by arrows, captions in
@@ -167,22 +151,11 @@ export type ShapeKind =
   // Frame / section: a transparent outlined container with its label in the
   // top-left, drawn around a cluster of elements. See docs/specs/008-canvas/canvas-and-palette.md.
   | 'frame'
-  // UI device frames (wireframing). See docs/specs/008-canvas/canvas-and-palette.md "Devices" accordion.
-  | 'browser'
-  | 'monitor'
-  | 'laptop'
-  | 'phone'
-  | 'tablet'
-  // A book-style foldable phone, shown OPEN on its inner screen: a
-  // near-square panel with the hinge crease down the middle. Folded it is
-  // just `phone`, so only the unfolded state earns its own frame.
-  | 'foldable'
-  | 'smartwatch'
   // Progress elements (docs/specs/009-elements/progress.md): a horizontal bar + a donut ring that show a
   // 0–100 percentage. They carry `progress` / `progressAnim` (below).
   | 'progress-bar'
   | 'progress-ring'
-  // The Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): milestones along a spine, a concept graphic.
+  // The Timeline (docs/specs/009-elements/timeline.md): milestones along a spine.
   | 'timeline-rail'
   // Rating (docs/specs/009-elements/rating.md): a row of five stars showing a 1–5 score. Carries
   // `rating` / `ratingAnim` (below).
@@ -203,9 +176,6 @@ export type ShapeKind =
   // Legend (docs/specs/009-elements/pie-chart.md): a card of colour-coded rows (a swatch + a label), the
   // key you put beside a chart or a colour-coded board.
   | 'legend'
-  // Sankey diagram (docs/specs/009-elements/sankey.md): flows between named nodes, each band as wide as
-  // the amount it carries. Carries `sankeyFlows` (below); lays itself out in columns.
-  | 'sankey'
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): press it and everyone else in the room is offered
   // a jump to it, on your tab.
   | 'focus-button'

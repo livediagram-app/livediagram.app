@@ -21,8 +21,7 @@ artefact rather than a picture of a whiteboard.
 
 A **shape kind**, `decision`. Its `label` is the decision **statement** ("Use
 Cloudflare D1 for durable storage"), so it edits, formats, wraps and exports
-like any other label: the same reasoning the record box uses for its title
-([The entity](../009-elements/entity.md)).
+like any other label: the same reasoning livediagram's record box (the entity) used for its title.
 
 - **`ShapeElement.decisionStatus`**: `'proposed' | 'accepted' | 'rejected' |
 'superseded'`. Absent = proposed, so a card dropped mid-discussion is honest
@@ -39,7 +38,7 @@ The statement is the element's ordinary `label`, but the card **owns its own
 layout** rather than letting that label flow over the box with the chip and
 drivers drawn around it.
 
-That was the first shape, copied from the record box ([The entity](../009-elements/entity.md)), and the
+That was the first shape, copied from livediagram's record box, and the
 difference is what the label holds: a record's title is a name, a decision's is
 a sentence. A three-line statement ran straight under the status chip and over
 the drivers, because nothing constrained it to a band. Owning the layout means
@@ -81,7 +80,7 @@ on accept fights every other element on a themed canvas.
 
 ## Why not a record box
 
-The record ([The entity](../009-elements/entity.md)) renders `name: Type` rows and would technically hold
+livediagram's record (the entity, not in livehuddle) rendered `name: Type` rows and would technically have held
 this. It would lose all four things that make the card useful: a status that
 renders as a chip and can be scanned across a canvas, a date that means a date,
 drivers that read as reasons rather than fields, and the possibility of

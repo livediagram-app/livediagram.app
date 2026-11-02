@@ -144,20 +144,6 @@ describe('useTabCanvas applyTabLook', () => {
 // judged; one that would not help is refused with a notice and nothing is committed.
 describe('useTabCanvas tidiers', () => {
   const tidy = [box('a', { width: 100, height: 50 }), box('b', { y: 200, width: 100, height: 50 })];
-  const loop = [
-    box('a', { width: 100, height: 50 }),
-    box('b', { y: 200, width: 100, height: 50 }),
-    box('c', { x: 300, y: 100, width: 100, height: 50 }),
-    ...(['a>b', 'b>c', 'c>a'].map((id) => {
-      const [from, to] = id.split('>');
-      return {
-        id,
-        type: 'arrow',
-        from: { kind: 'pinned', elementId: from, anchor: 's' },
-        to: { kind: 'pinned', elementId: to, anchor: 'n' },
-      };
-    }) as Element[]),
-  ];
 
   it('refuses Auto-align on a tab already on the grid, saying so', () => {
     const notify = vi.fn();
@@ -165,14 +151,6 @@ describe('useTabCanvas tidiers', () => {
     h.api.autoAlignTab();
     expect(h.commit).not.toHaveBeenCalled();
     expect(notify).toHaveBeenCalledWith('Auto-align: the tab is already tidy, so nothing moved.');
-  });
-
-  it('refuses a mindmap of a loop, saying why', () => {
-    const notify = vi.fn();
-    const h = setup(loop, false, notify);
-    h.api.autoLayoutTab('mindmap');
-    expect(h.commit).not.toHaveBeenCalled();
-    expect(notify.mock.calls[0]![0]).toMatch(/^Mindmap needs a centre to branch from/);
   });
 
   it('runs a judged press from the popover without judging it again', () => {

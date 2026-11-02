@@ -21,7 +21,7 @@ const FILE = new URL('../../templates/welcome.json', import.meta.url);
 const WELCOME_TEMPLATES_MAX = 8;
 const WELCOME_BLANKS_MAX = 5;
 const BLANKS: readonly TemplateKind[] = EDITOR_MODES.map((mode) => BLANK_TEMPLATE_FOR_MODE[mode]);
-const FAN: readonly TemplateKind[] = ['flowchart', 'mindmap', 'retrospective'];
+const FAN: readonly TemplateKind[] = ['sailboat', 'retrospective', 'town-hall'];
 
 function start(kind: TemplateKind) {
   const t = TEMPLATES.find((d) => d.kind === kind);

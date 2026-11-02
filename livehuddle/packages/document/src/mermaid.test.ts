@@ -1024,12 +1024,12 @@ describe('startsWithMermaidHeader', () => {
     expect(startsWithMermaidHeader('%% comment\n\nflowchart LR\n  a --> b')).toBe(true);
     expect(startsWithMermaidHeader('graph TD\na-->b')).toBe(true);
     expect(startsWithMermaidHeader('stateDiagram-v2\n[*] --> A')).toBe(true);
-    expect(startsWithMermaidHeader('erDiagram\nA ||--o{ B : has')).toBe(true);
   });
 
   it('is false for edit operations, an unsupported dialect and nothing at all', () => {
     expect(startsWithMermaidHeader('add square id=web label=Web\nconnect web -> api')).toBe(false);
     expect(startsWithMermaidHeader('sequenceDiagram\nA->>B: hi')).toBe(false);
+    expect(startsWithMermaidHeader('erDiagram\nA ||--o{ B : has')).toBe(false);
     expect(startsWithMermaidHeader('\n  \n')).toBe(false);
   });
 });

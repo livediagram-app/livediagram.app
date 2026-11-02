@@ -272,20 +272,14 @@ export * from './pointer-note';
 export * from './tag-colours';
 export * from './diagram-key';
 export * from './stack';
-export * from './sequence-element';
-export * from './sequence-text';
-export { sequenceDrawing, type SequenceLook } from './svg-render-sequence';
-export * from './person-node';
 export * from './boundary';
 export * from './concept';
 export * from './concept-timeline';
-export * from './concept-ramp';
 export * from './shape-variants';
 export * from '@liveworkspace/model-core/title-caption';
 export * from './editor-mode';
 export * from './tab-stats';
 export * from './wordmark';
-export * from './editor-mode-switch';
 export * from './tab-has-drawing';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
 export { downgradeLinks, upgradeLegacyLinks } from './legacy-links';
@@ -342,19 +336,7 @@ export * from './animation';
 export * from './animation-membership';
 export * from '@liveworkspace/model-core/arrow-avoidance';
 export * from './nearest-towards';
-export * from './flowchart';
-export * from './flowchart-layout';
-export * from './flowchart-grow';
-export * from './flowchart-settle';
-export * from './mind-flow';
-export * from './mind-connector-route';
-export * from './mind-map';
-export * from './mind-layout';
-export * from './mind-grow';
-export * from './mind-fit';
-export * from './mind-outline-text';
-export * from './mind-outline-marks';
-export * from './mind-outline';
+export * from './arrow-ends';
 export * from './youtube';
 export * from './arrow-path';
 export * from './arrow-dash';
@@ -368,7 +350,6 @@ export * from '@liveworkspace/model-core/table-cell-font';
 export * from './lane-gutter';
 export * from './arrow-style';
 export * from './er-heads';
-export * from './er-hub-first';
 export * from '@liveworkspace/model-core/border-style';
 // Element drop shadows (docs/specs/008-canvas/element-shadows.md): model, presets + render builders.
 export * from './shadow';
@@ -413,14 +394,6 @@ export * from '@liveworkspace/model-core/plural';
 // Per-element assigned actions (docs/specs/012-collaboration/assigned-actions.md).
 export * from './element-action';
 export * from './data-shapes';
-export * from './sankey-model';
-export * from './sankey-layout';
-export * from './sankey-frame';
-export * from './sankey-text';
-export * from './entity-geometry';
-export * from './entity-fields';
-export * from './entity-look';
-export * from './entity-related';
 export * from '@liveworkspace/model-core/code-themes';
 export * from './chart-palettes';
 export * from './chart-frame';
@@ -508,7 +481,7 @@ export * from './element-fields';
 // Deterministic auto-layout for AI-generated diagrams (docs/specs/015-api/mcp-server.md).
 export * from './auto-layout';
 // The editor's Tidy Up profile (docs/specs/008-canvas/layout-cleanup.md): whether a style suits a tab.
-export { tidyLayoutElements, tidyMindmapFits } from './auto-layout-tidy';
+export { tidyLayoutElements } from './auto-layout-tidy';
 
 // Cluster-aware graph layout (docs/specs/020-import-export/mermaid.md): Mermaid subgraphs as frames.
 export * from './auto-layout-clusters';
@@ -530,15 +503,7 @@ export * from './tab-builders';
 // shared by the in-app export and the MCP worker's inline image render.
 export * from './svg-render';
 export { borderOf } from './svg-render-border';
-export {
-  isSequenceDiagram,
-  parseSequenceDiagram,
-  SEQUENCE_MAX_ITEMS,
-  SEQUENCE_MAX_PARTICIPANTS,
-  type SequenceDiagram,
-} from './mermaid-sequence';
 export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
-export { buildMindTemplate, MIND_HUES, type MindHue, type MindSpec } from './mind-template';
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
 export { SKETCH_ART_FILTER_ID, SKETCH_FACE_FILTER, svgSketchArtFilter } from './svg-render-sketch';
 export * from './svg-render-table';

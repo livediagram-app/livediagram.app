@@ -1,52 +1,32 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { editorModeLabel, type EditorMode } from '@livehuddle/document';
 import { NewDocumentWizard } from './NewDocumentWizard';
 
-// docs/specs/007-editor/new-document-route.md "One-step wizard": the wizard asks what you are making, and choosing a
-// mode creates the document at once; it never asks where the document goes or what it is called.
+// docs/specs/007-editor/new-document-route.md "One-step wizard": with one mode there is no question, so Create makes a
+// Blank Workshop at once; it never asks where the document goes or what it is called.
 afterEach(cleanup);
 
-function wizard(over: { busy?: boolean; initialMode?: EditorMode | null } = {}) {
+function wizard(over: { busy?: boolean } = {}) {
   const props = { onCreate: vi.fn(), onSkip: vi.fn(), onBackOut: vi.fn(), onOpenExisting: vi.fn() };
   render(<NewDocumentWizard {...props} {...over} />);
   return props;
 }
 
 describe('NewDocumentWizard', () => {
-  it('asks only what you are making: no Location step, no name, no rail', () => {
+  it('asks nothing: no mode, no Location step, no name, no rail', () => {
     wizard();
-    expect(screen.getByRole('group', { name: 'What are you making?' })).toBeTruthy();
+    expect(screen.queryByRole('group', { name: 'What are you making?' })).toBeNull();
     expect(screen.queryByText('Location')).toBeNull();
     expect(screen.queryByRole('button', { name: /^Next/ })).toBeNull();
     expect(screen.queryByRole('textbox')).toBeNull();
     expect(screen.queryByRole('radiogroup', { name: 'Save location' })).toBeNull();
   });
 
-  it("creates a chosen mode's blank at once", () => {
+  it('creates a Blank Workshop from Create', () => {
     const p = wizard();
-    fireEvent.click(screen.getByRole('button', { name: /^Draw:/ }));
-    expect(p.onCreate).toHaveBeenCalledWith('whiteboard');
-  });
-
-  it('creates from the number keys too', () => {
-    const p = wizard();
-    fireEvent.keyDown(screen.getByRole('group', { name: 'What are you making?' }), { key: '3' });
-    expect(p.onCreate).toHaveBeenCalledWith('blank-session');
-  });
-
-  it("creates the preset mode's blank from Create, else a Blank Diagram", () => {
-    const p = wizard({ initialMode: 'workshop' });
-    expect(screen.getByRole('button', { name: /^Workshop:/ }).getAttribute('aria-pressed')).toBe(
-      'true',
-    );
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));
     expect(p.onCreate).toHaveBeenCalledWith('blank-session');
-    cleanup();
-    const q = wizard();
-    fireEvent.click(screen.getByRole('button', { name: 'Create' }));
-    expect(q.onCreate).toHaveBeenCalledWith('blank');
   });
 
   it('Skips to the blank defaults', () => {
@@ -72,14 +52,10 @@ describe('NewDocumentWizard', () => {
   });
 
   it('while creating, shows it, and creates nothing more nor backs out', () => {
-    const p = wizard({ busy: true, initialMode: 'workshop' });
-    expect(screen.getByRole('button', { name: /Creating/ }).getAttribute('aria-busy')).toBe('true');
-    expect(
-      screen
-        .getByRole('button', { name: new RegExp(`^${editorModeLabel('workshop')}:`) })
-        .getAttribute('aria-busy'),
-    ).toBe('true');
-    fireEvent.click(screen.getByRole('button', { name: /^Draw:/ }));
+    const p = wizard({ busy: true });
+    const create = screen.getByRole('button', { name: /Creating/ });
+    expect(create.getAttribute('aria-busy')).toBe('true');
+    fireEvent.click(create);
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(p.onCreate).not.toHaveBeenCalled();
     expect(p.onBackOut).not.toHaveBeenCalled();

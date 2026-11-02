@@ -11,30 +11,27 @@ import {
   type ShapeAnimation,
 } from './animation-sets';
 import { isChartShape, isProgressShape, isRatingShape } from './data-shapes';
-import { isSankeyShape } from './sankey-model';
 import { isConceptShape } from './concept';
 import { takesTypedLabel } from './element-types';
 import type { Element } from './index';
 import { selfLabelled } from './svg-render-describe';
 
-// Shapes with a set of their own (Icon, Chart, Sankey, Progress, Rating), owned outside these catalogues.
+// Shapes with a set of their own (Icon, Chart, Progress, Rating), owned outside these catalogues.
 function hasOwnShapeSet(el: Element): boolean {
   return (
     el.type === 'shape' &&
     (el.shape === 'icon' ||
       isChartShape(el.shape) ||
-      isSankeyShape(el.shape) ||
       isProgressShape(el.shape) ||
       isRatingShape(el.shape))
   );
 }
 
-// Shapes whose rows are what moves, not the box (Concept, Sequence), so they take their own set instead of Shape. One
-// that carries words of its own beyond its rows (a layer stack, pyramid, onion or chevrons) takes the Text set too; a
-// self-labelled one (sequence, cycle, hub) does not. A Shape `animation` stored on one before it had its own set plays
-// only when it is a motion (takesShapeMotions): the menu has no tile for the rest to change or clear it.
+// Shapes whose rows are what moves, not the box (the Timeline), so they take their own set instead of Shape. A Shape
+// `animation` stored on one before it had its own set plays only when it is a motion (takesShapeMotions): the menu
+// has no tile for the rest to change or clear it.
 export function hasOwnBodySet(el: Element): boolean {
-  return el.type === 'shape' && (isConceptShape(el.shape) || el.shape === 'sequence');
+  return el.type === 'shape' && isConceptShape(el.shape);
 }
 
 /** The body set that animates the element itself, or undefined when it takes none of these. */
@@ -101,8 +98,8 @@ export function animationSectionOf(
   const body = bodyAnimationSetOf(el);
   if (value != null && takesShapeMotions(el)) {
     if ((SHAPE_MOTIONS as readonly string[]).includes(value)) return 'shape';
-    // A chart, Sankey, progress bar or rating has no body set of its own: an older Shape value on it plays as it did,
-    // so its Shape section shows it as the kept tile. A concept graphic or sequence does not play one (hasOwnBodySet).
+    // A chart, progress bar or rating has no body set of its own: an older Shape value on it plays as it did, so its
+    // Shape section shows it as the kept tile. A Timeline does not play one (hasOwnBodySet).
     if (body === undefined && !hasOwnBodySet(el)) return 'shape';
   }
   return body;

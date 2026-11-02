@@ -17,7 +17,7 @@ import {
 } from '@livehuddle/document';
 
 /** The tab kinds a document can be created with. The legacy `whiteboard` kind is not one: a
- *  whiteboard is a general tab that opens in Draw mode. */
+ *  whiteboard is a general tab. */
 export const CREATION_TAB_KINDS = [
   'diagram',
   'event-storming',
@@ -45,8 +45,6 @@ export type CreationIntent = {
 
 type EntryWords = { label: string; noun: string };
 const MODE_WORDS: Record<EditorMode, EntryWords> = {
-  diagram: { label: 'Diagrams', noun: 'diagrams' },
-  draw: { label: 'Whiteboards', noun: 'whiteboards' },
   workshop: { label: 'Sessions', noun: 'sessions' },
 };
 const KIND_WORDS: Record<SpecificTabKind, EntryWords> = {
@@ -54,9 +52,8 @@ const KIND_WORDS: Record<SpecificTabKind, EntryWords> = {
 };
 
 /** Default Folders' entries for each editor mode and specific tab kind, as the shared Explorer takes them
- *  (@liveworkspace/explorer DefaultFolderOption), between "Canvases" and the template families: "Whiteboards" holds
- *  new canvases that open in Draw mode (`livehuddle:mode:draw` at the index). Typed per dimension, so a new mode
- *  or kind does not compile until it is named here. */
+ *  (@liveworkspace/explorer DefaultFolderOption), between "Canvases" and the template families. Typed per
+ *  dimension, so a new mode or kind does not compile until it is named here. */
 export const DEFAULT_FOLDER_OPTIONS: readonly {
   dimension: 'mode' | 'kind';
   value: string;
@@ -87,16 +84,15 @@ export function isTemplateFamily(value: unknown): value is TemplateFamily {
 
 /**
  * The creation intent of a new document, from its first tab and the family of the template it was
- * made from. Structural, so it reads a tab from before editor modes (a legacy `kind: 'whiteboard'`
- * opens in Draw mode) and one after (`opensIn`); the tab kind is read the way the document model
- * reads it, legacy event-storming boards included.
+ * made from. Every board is Workshop; the tab kind is read the way the document model reads it,
+ * legacy event-storming boards included.
  */
 export function creationIntentOf(
   tab: { kind?: string; opensIn?: string; layers?: Layer[] } | undefined,
   templateFamily: TemplateFamily | null = null,
 ): CreationIntent {
   const intent: CreationIntent = {
-    mode: parseEditorMode(tab?.opensIn) ?? (tab?.kind === 'whiteboard' ? 'draw' : 'diagram'),
+    mode: 'workshop',
     tabKind: isEventStormingTab(tab) ? 'event-storming' : 'diagram',
   };
   return templateFamily ? { ...intent, templateFamily } : intent;

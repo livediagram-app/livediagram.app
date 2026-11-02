@@ -1,8 +1,7 @@
 # Layout cleanup
 
-The two layout tidiers, **Auto Layout** (in each style) and **Auto-align**, are one press
-away in Diagram mode on the **Tidy Up** button ([The Tidy Up button](#the-tidy-up-button)), and
-anywhere through the [command palette](../007-editor/command-palette.md)'s actions. They are
+The two layout tidiers, **Auto Layout** (in each style) and **Auto-align**, are reached through the
+[command palette](../007-editor/command-palette.md)'s actions. They are
 complementary, not duplicates: one snaps current positions, the other recomputes them from the
 graph. Both are editor-only (they mutate) and run a single undoable operation.
 
@@ -114,7 +113,7 @@ In the flow and tree layouts, an edge to a later rank leaves by the face that
 points down the flow and lands on the opposite one (`s` to `n` top to bottom,
 `e` to `w` left to right), however far across the rank its target sits. Picked
 by angle alone, a parent with wide-spread children left by its side and entered
-each child's side. Same-rank and backward edges, and every mindmap spoke, still
+each child's side. Same-rank and backward edges still
 pick by angle (`reanchorArrow`'s `axis`).
 
 ### Angled lines bend twice
@@ -230,8 +229,7 @@ through the fewest boxes:
   bottom as a last resort.
 - An arrow pinned to a shape inside a unit routes from that shape. The result is ordinary arrow
   data: angled arrows threaded through their corners (`curvePoints`), with any dragged elbow,
-  curve or label position cleared, since it fitted the old route. The mindmap keeps its straight
-  spokes.
+  curve or label position cleared, since it fitted the old route.
 
 ### A tidy never trashes the work
 
@@ -244,41 +242,36 @@ the author has it. It is **not offered** when its result would:
 | `leaves-container` | A shape that sat inside a bigger box comes out of it, the box staying behind                                                                                                                                                           | Would pull shapes out of their lanes       |
 | `rearranges-lanes` | Lanes (two or more boxes holding wired shapes, alike in length, in line, stacked at most 48 px apart) reorder, fall out of line, or a gap between them changes by more than 16 px. Not judged for Auto-align, whose few px tidy a lane | Would rearrange your lanes                 |
 | `covers`           | A moved box newly overlaps another box                                                                                                                                                                                                 | Would cover a shape / Would cover N shapes |
-| `unsuited`         | Mindmap on a graph that loops back on itself (`tidyMindmapFits`)                                                                                                                                                                       | For ideas that branch, not loop            |
 
 The Tidy Up popover greys such a tile out with its line in amber; the command palette refuses the
 command with an info notice naming the tidier (`verdictNotice`), and nothing is committed. So
 lanes, which the layouts move only as rigid blocks, are protected: a swimlane offers Auto-align
 and says why the layouts are not offered.
 
-One layered layout can't express every diagram: a mindmap wants its root in the
-middle, an org chart wants parents centred over their reports. So Auto Layout is a
+One layered layout can't express every board: a hierarchy wants parents centred over their
+children. So Auto Layout is a
 family of **styles**, all sharing the same pipeline (graph extraction → per-component
 positioning → origin pinning → arrow re-anchor → grid snap) and differing only in how
 a component's nodes are positioned:
 
-| Style                 | `AutoLayoutOptions`                  | Positioning                                                                                                                                                                                                                                                |
-| --------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Smart** (default)   | `{}`                                 | The layered layout with direction auto-detected from the elements' current rough positions. What plain "Auto Layout" always did.                                                                                                                           |
-| **Flowchart (down)**  | `{ style: 'flow', direction: 'TB' }` | Layered, direction forced top-to-bottom.                                                                                                                                                                                                                   |
-| **Flowchart (right)** | `{ style: 'flow', direction: 'LR' }` | Layered, direction forced left-to-right.                                                                                                                                                                                                                   |
-| **Tree**              | `{ style: 'tree' }`                  | Tidy tree / org chart: a spanning tree from the roots (in-degree 0), each parent centred over its subtree, depth = rank, top-to-bottom; `direction: 'LR'` turns it left-to-right (graph input and the `layout` edit operation pass it; the tile does not). |
-| **Mindmap**           | `{ style: 'mindmap' }`               | Radial: the highest-degree node sits at the centre, each subtree gets an angular wedge sized by its leaf count, depth = ring radius.                                                                                                                       |
+| Style                 | `AutoLayoutOptions`                  | Positioning                                                                                                                                                                                                                                    |
+| --------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Smart** (default)   | `{}`                                 | The layered layout with direction auto-detected from the elements' current rough positions. What plain "Auto Layout" always did.                                                                                                               |
+| **Flowchart (down)**  | `{ style: 'flow', direction: 'TB' }` | Layered, direction forced top-to-bottom.                                                                                                                                                                                                       |
+| **Flowchart (right)** | `{ style: 'flow', direction: 'LR' }` | Layered, direction forced left-to-right.                                                                                                                                                                                                       |
+| **Tree**              | `{ style: 'tree' }`                  | Tidy tree: a spanning tree from the roots (in-degree 0), each parent centred over its subtree, depth = rank, top-to-bottom; `direction: 'LR'` turns it left-to-right (graph input and the `layout` edit operation pass it; the tile does not). |
 
 - The style lives in `AutoLayoutOptions` on `autoLayoutElements`: importers and the
   MCP server keep calling it with no style and get Smart, unchanged.
-- **UI:** each style is a tile on the [Tidy Up](#the-tidy-up-button) popover, and the command
-  palette carries one command per style (Smart is the plain "Auto Layout (tidy up)", then
-  "Auto Layout: Mindmap", ...). All styles are the same single undoable op.
-- **Mindmap order** is measured clockwise from 12 o'clock, where its first branch is placed, so a
-  second tidy keeps the map still (measured from 9 o'clock, every tidy turned it a little).
-- Tree and Mindmap consume the same directed edge set as the layered layout; on a
-  graph that isn't a tree (extra in-edges, cycles) they lay out a BFS/longest-path
+- **UI:** the command palette carries one command per style (Smart is the plain "Auto Layout
+  (tidy up)", then "Auto Layout: Tree", ...). All styles are the same single undoable op.
+- Tree consumes the same directed edge set as the layered layout; on a
+  graph that isn't a tree (extra in-edges, cycles) it lays out a BFS/longest-path
   spanning tree and let the extra arrows re-anchor across it (deterministic, never
   an error).
 - Telemetry: the existing `Tab` / `Aligned` event gains the style as its `type`
-  (`Smart`, `FlowchartDown`, `FlowchartRight`, `Tree`, `Mindmap`; Auto-align keeps
-  the bare event).
+  (`Smart`, `FlowchartDown`, `FlowchartRight`, `Tree`; Auto-align keeps
+  the bare event). `Mindmap` stays in the catalogue for its stored rows.
 
 ## The Tidy Up button
 
@@ -290,7 +283,7 @@ strip's other buttons (one open at a time, a second press or a press outside clo
 
 ### Where it shows
 
-- **Diagram mode only.** Draw and Workshop arrange their content another way
+- **Diagram mode only.** Draw and Workshop arranged their content another way
   (strokes, a session board), so the button is not there; the command palette still
   reaches the tidiers.
 - **On a phone too.** Diagram mode's phone cluster is one row with room for it: Undo and Redo, the
@@ -316,8 +309,7 @@ The gate is the structural one Layers uses (a Participant is read-only for struc
 A titled popover, **Tidy Up**, with a help link to the Layout Cleanup article. Two groups:
 
 1. **Auto Layout**, captioned "Rearrange shapes from the arrows between them.": a two-column grid
-   of five **tiles**, one per style, in this order: Smart, Flowchart Down, Flowchart Right, Tree,
-   Mindmap. Each tile is a small drawing of the layout it makes (boxes and arrows in the brand
+   of four **tiles**, one per style, in this order: Smart, Flowchart Down, Flowchart Right, Tree. Each tile is a small drawing of the layout it makes (boxes and arrows in the brand
    colours, readable in light and dark), its name, and one line saying what it does:
 
    | Tile            | Line                         |
@@ -326,7 +318,6 @@ A titled popover, **Tidy Up**, with a help link to the Layout Cleanup article. T
    | Flowchart Down  | Top to bottom, in layers     |
    | Flowchart Right | Left to right, in layers     |
    | Tree            | Parents above their children |
-   | Mindmap         | Branches around a centre     |
 
 2. **Auto-align**, a full-width row under a hairline: its glyph, the name, and "Snap to the grid.
    Nothing moves far."
@@ -347,8 +338,8 @@ gave them." A tile pressed before its turn is judged at the press, as the palett
 
 On a desktop pointer, hovering a tile (or the Auto-align row) lays the tab out **live behind the
 popover**; the layout only sticks on press, and taking the pointer off the tile puts everything
-back. Five styles that can only be told apart by doing them is five undos to find the one you
-wanted, and the names ("Tree", "Mindmap") describe a shape the author has to imagine. Showing it is
+back. Four styles that can only be told apart by doing them is four undos to find the one you
+wanted, and the names ("Tree", "Smart") describe a shape the author has to imagine. Showing it is
 cheaper than explaining it.
 
 It is the style-preset preview ([Style presets](../010-palette/style-presets.md)) one level up: that

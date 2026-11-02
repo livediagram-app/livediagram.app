@@ -2,12 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { faceFinishOf, finishFaceCornerPx, finishFaceShadows } from './finish';
 import { faceAttrs, isPillRect } from '@liveworkspace/model-core/face-finish';
 import { createShape } from './shape-factory';
-import { svgBoxed } from './svg-render';
 import { svgMarkerFace, svgProfessionalFace } from './svg-render-face-finish';
 
 // docs/specs/008-canvas/finish.md "Faces".
 describe('faceFinishOf', () => {
-  const board = { ...createShape('layer-stack', 0, 0), id: 'b' };
+  const board = { ...createShape('timeline-rail', 0, 0), id: 'b' };
   const square = { ...createShape('square', 0, 0), id: 's' };
 
   it('names the finish of a face that draws its own parts', () => {
@@ -79,14 +78,6 @@ describe('svgProfessionalFace', () => {
     expect(svgProfessionalFace('<circle r="9" stroke-width="2"/><path stroke-width="3"/>')).toBe(
       '<circle r="9" stroke-width="1"/><path stroke-width="3"/>',
     );
-  });
-
-  it("squares a layer stack's bands in the export", () => {
-    const stack = { ...createShape('layer-stack', 0, 0), id: 'ls' };
-    const flexible = svgBoxed(stack, {});
-    const professional = svgBoxed(stack, { tabFinish: 'professional' });
-    expect(flexible).toMatch(/rx="8"/);
-    expect(professional).not.toMatch(/rx="8"/);
   });
 });
 

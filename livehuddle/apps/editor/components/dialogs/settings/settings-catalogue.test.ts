@@ -36,28 +36,6 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('offers the Draw mode dock position in the Editor › Draw sub-category', () => {
-    // docs/specs/023-draw-mode/draw-mode.md "Where the dock sits": top by default, bottom by choice;
-    // the sub-category says Draw, as the mode switch does (docs/specs/007-editor/editor-modes.md
-    // "Naming in the interface").
-    const draw = SETTINGS_CATEGORIES.find((c) => c.id === 'draw')!;
-    expect(settingsCategoryPath(draw)).toBe('Editor › Draw');
-    const row = draw.rows.find((r) => r.key === 'whiteboardDockPosition');
-    if (row?.kind !== 'choice') throw new Error('no Dock Position choice row');
-    expect(row.section).toBeUndefined();
-    expect(row.keywords).toContain('draw mode');
-    expect(row.keywords).toContain('whiteboard');
-    expect(row.helpArticle).toBe('drawMode');
-    expect(row.label).toBe('Dock Position');
-    expect(row.options.map((o) => [o.id, o.label])).toEqual([
-      ['top', 'Top'],
-      ['bottom', 'Bottom'],
-    ]);
-    expect(row.read({})).toBe('top');
-    expect(row.write({}, 'bottom')).toEqual({ whiteboardDockPosition: 'bottom' });
-    expect(row.event).toEqual({ category: 'UI', changed: 'WhiteboardDockPosition' });
-  });
-
   it('round-trips every toggle through read/write in both directions', () => {
     // The catalogue is the only place that knows how a setting maps onto
     // UserPreferences, so a row whose write does not land where its read
@@ -83,22 +61,6 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('inverts the Diagram tour row against the stored preference', () => {
-    // The row asks "show me the tour?"; `tourSeen` records "already seen".
-    // Getting this backwards would re-offer the tour to everyone who has
-    // taken it, so it is worth pinning both directions explicitly.
-    const row = SWITCHES.find((r) => r.key === 'tourSeen')!;
-    expect(row.read({ tourSeen: true })).toBe(false);
-    expect(row.read({ tourSeen: false })).toBe(true);
-    expect(row.read({})).toBe(true);
-    expect(row.write({}, true).tourSeen).toBe(false);
-    expect(row.write({}, false).tourSeen).toBe(true);
-    // And the tokens still describe the PREFERENCE, so the dashboard series
-    // keeps its meaning: switching the row on means "not seen".
-    expect(row.event.on).toBe('TourSeenOff');
-    expect(row.event.off).toBe('TourSeenOn');
-  });
-
   it('inverts the Workshop tour row the same way', () => {
     // docs/specs/012-collaboration/workshop-tour.md "Where it appears".
     const row = SWITCHES.find((r) => r.key === 'workshopTourSeen')!;
@@ -115,29 +77,14 @@ describe('settings catalogue', () => {
   it('gives the tours a category of their own, a switch each with its own article', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => [r.key, r.kind, r.label, r.helpArticle])).toEqual([
-      ['tourSeen', 'toggle', 'Diagram Tour', 'diagramTour'],
       ['workshopTourSeen', 'toggle', 'Workshop Tour', 'workshopTour'],
-      ['drawTourSeen', 'toggle', 'Draw Tour', 'drawTour'],
       ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
       // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
       // linking that element's article.
       ['elementToursSeen', 'toggle', 'Show Me on Every Element', undefined],
-      ['elementTour-sankey', 'toggle', 'Sankey Diagram', 'sankeyDiagram'],
-      ['elementTour-layer-stack', 'toggle', 'Layer Stack', 'conceptGraphics'],
-      ['elementTour-pyramid', 'toggle', 'Pyramid', 'conceptGraphics'],
-      ['elementTour-funnel', 'toggle', 'Funnel', 'conceptGraphics'],
-      ['elementTour-cycle', 'toggle', 'Cycle', 'conceptGraphics'],
-      ['elementTour-hub', 'toggle', 'Hub and Spoke', 'conceptGraphics'],
-      ['elementTour-onion', 'toggle', 'Onion', 'conceptGraphics'],
-      ['elementTour-chevrons', 'toggle', 'Chevrons', 'conceptGraphics'],
-      ['elementTour-timeline', 'toggle', 'Timeline', 'conceptGraphics'],
-      ['elementTour-mind-node', 'toggle', 'Mind Map', 'mindMaps'],
-      ['elementTour-flowchart', 'toggle', 'Flowchart', 'flowcharts'],
-      ['elementTour-org-chart', 'toggle', 'Org Chart', 'orgCharts'],
-      ['elementTour-sequence', 'toggle', 'Sequence', 'sequenceDiagram'],
+      ['elementTour-timeline', 'toggle', 'Timeline', 'timelineRail'],
       ['elementTour-chart', 'toggle', 'Chart', 'dataElements'],
       ['elementTour-stack', 'toggle', 'Stack', 'stacks'],
-      ['elementTour-entity', 'toggle', 'Entity', 'entities'],
       ['elementTour-lane', 'toggle', 'Lane', 'lanes'],
       ['elementTour-boundary', 'toggle', 'Boundary', 'boundaries'],
       ['elementTour-diagram-key', 'toggle', 'Diagram Key', 'diagramKeys'],
@@ -153,27 +100,12 @@ describe('settings catalogue', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => (r.kind === 'toggle' ? [r.event.on, r.event.off] : null))).toEqual(
       [
-        ['TourSeenOff', 'TourSeenOn'],
         ['WorkshopTourSeenOff', 'WorkshopTourSeenOn'],
-        ['DrawTourSeenOff', 'DrawTourSeenOn'],
         ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
         ['ElementToursSeenOff', 'ElementToursSeenOn'],
-        ['SankeyTourSeenOff', 'SankeyTourSeenOn'],
-        ['LayerStackTourSeenOff', 'LayerStackTourSeenOn'],
-        ['PyramidTourSeenOff', 'PyramidTourSeenOn'],
-        ['FunnelTourSeenOff', 'FunnelTourSeenOn'],
-        ['CycleTourSeenOff', 'CycleTourSeenOn'],
-        ['HubTourSeenOff', 'HubTourSeenOn'],
-        ['OnionTourSeenOff', 'OnionTourSeenOn'],
-        ['ChevronsTourSeenOff', 'ChevronsTourSeenOn'],
         ['TimelineTourSeenOff', 'TimelineTourSeenOn'],
-        ['MindMapTourSeenOff', 'MindMapTourSeenOn'],
-        ['FlowchartTourSeenOff', 'FlowchartTourSeenOn'],
-        ['OrgChartTourSeenOff', 'OrgChartTourSeenOn'],
-        ['SequenceTourSeenOff', 'SequenceTourSeenOn'],
         ['ChartTourSeenOff', 'ChartTourSeenOn'],
         ['StackTourSeenOff', 'StackTourSeenOn'],
-        ['EntityTourSeenOff', 'EntityTourSeenOn'],
         ['LaneTourSeenOff', 'LaneTourSeenOn'],
         ['BoundaryTourSeenOff', 'BoundaryTourSeenOn'],
         ['DiagramKeyTourSeenOff', 'DiagramKeyTourSeenOn'],
@@ -412,10 +344,10 @@ describe('settings catalogue', () => {
 
 // Editor and Panels hold sub-categories (docs/specs/007-editor/user-preferences.md), each its own pane.
 describe('settings sub-categories', () => {
-  it('nests one sub-category per mode with settings of its own under Editor (Draw; no Diagram yet), then Presenting', () => {
+  it('nests Presenting under Editor, directly after it', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor').map((c) => c.id);
-    expect(children).toEqual(['draw', 'presenting']);
+    expect(children).toEqual(['presenting']);
     const at = ids.indexOf('editor');
     expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
   });

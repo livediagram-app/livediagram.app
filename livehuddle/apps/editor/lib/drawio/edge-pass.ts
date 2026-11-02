@@ -114,7 +114,7 @@ export function createEdgeBuilder(input: EdgeContext) {
       const geo = child.geometry!;
       const at = pointAlong(route.state, geo.x, geo.y, geo.offset);
       const rect = input.clampRect({ x: at.x, y: at.y, width: geo.width, height: geo.height });
-      const el = buildVertex(child, rect, classifyVertex(child, graph), ctx, mint());
+      const el = buildVertex(child, rect, classifyVertex(child), ctx, mint());
       if (el) out.push(el);
     }
     return out;

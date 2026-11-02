@@ -19,9 +19,7 @@ import { useCapabilities } from '@/hooks/persistence/useCapabilities';
 import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import { requestTourRelaunch } from '@/lib/diagram-tour';
 import { requestWorkshopTourRelaunch } from '@/lib/workshop-tour';
-import { requestDrawTourRelaunch } from '@/lib/draw-tour';
 import { requestAvatarTourRelaunch } from '@/lib/avatar-tour';
 import { track } from '@/lib/telemetry';
 import { visibleCategories } from '@/components/dialogs/settings/settings-catalogue';
@@ -166,23 +164,15 @@ export function SettingsDialog({
     track('UI', 'Opened', `Settings${id.charAt(0).toUpperCase()}${id.slice(1)}`);
   }, []);
 
-  // Tours › "Diagram Tour" (docs/specs/007-editor/editor-tour.md): turning its row on from off and closing reruns the
-  // tour in place, as the footer's Start Tour button does.
-  const tourSeen = settings.tourSeen === true;
-  const tourSeenAtOpen = useRef(tourSeen);
-  // Tours › "Workshop Tour" (docs/specs/012-collaboration/workshop-tour.md): as the Diagram tour's.
+  // Tours › "Workshop Tour" (docs/specs/012-collaboration/workshop-tour.md): turning its row on from off and closing
+  // reruns the tour in place, as the footer's Start Tour button does.
   const workshopTourSeen = settings.workshopTourSeen === true;
   const workshopTourSeenAtOpen = useRef(workshopTourSeen);
-  // Tours › "Draw Tour" (docs/specs/023-draw-mode/draw-tour.md): as the Workshop tour's.
-  const drawTourSeen = settings.drawTourSeen === true;
-  const drawTourSeenAtOpen = useRef(drawTourSeen);
   // Tours › "Avatar Tour" (docs/specs/008-canvas/avatar-tour.md): as the Workshop tour's.
   const avatarTourSeen = settings.avatarTourSeen === true;
   const avatarTourSeenAtOpen = useRef(avatarTourSeen);
   const close = () => {
-    if (!tourSeen && tourSeenAtOpen.current) requestTourRelaunch();
     if (!workshopTourSeen && workshopTourSeenAtOpen.current) requestWorkshopTourRelaunch();
-    if (!drawTourSeen && drawTourSeenAtOpen.current) requestDrawTourRelaunch();
     if (!avatarTourSeen && avatarTourSeenAtOpen.current) requestAvatarTourRelaunch();
     onClose();
   };

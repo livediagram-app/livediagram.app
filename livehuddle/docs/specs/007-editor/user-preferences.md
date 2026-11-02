@@ -67,9 +67,7 @@ table of its own for them.
   - **It fits.** The blob is trimmed to 4,096 characters of
     `{"prefs":...}` before it is cached or sent:
     the oldest hidden-from-Recent ids go first
-    ([Hide from Recent](../013-workspace/hide-from-recent.md)), then the
-    least recently used shape picks
-    ([Draw mode, Shape slots](../023-draw-mode/draw-mode.md)); every
+    ([Hide from Recent](../013-workspace/hide-from-recent.md)); every
     other key stays whole. A full account measured 4,967 characters.
     A trim logs `[preferences] trimmed to fit dropped=<n> length=<n>`.
     The api takes a patch of up to 8,192 characters (a blob plus a
@@ -268,18 +266,12 @@ type UserPreferences = {
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;
 
-  // The Diagram tour's taken record (docs/specs/007-editor/editor-tour.md). True once a run has ended
+  // The Workshop tour's taken record (docs/specs/012-collaboration/workshop-tour.md). True once a run has ended
   // (completed or skipped; written as a run starts too). While true the footer's Start Tour button
-  // does not offer the tour; Settings' Tours › "Diagram Tour" row (inverted) clears it, and turning
+  // does not offer the tour; Settings' Tours › "Workshop Tour" row (inverted) clears it, and turning
   // it on and closing Settings reruns the tour when it could run. Missing / undefined === not seen.
-  tourSeen?: boolean;
-  // The Workshop tour's taken record (docs/specs/012-collaboration/workshop-tour.md), as `tourSeen`.
-  // Surfaced in Settings as Tours › "Workshop Tour" (inverted). Missing / undefined === not seen.
   workshopTourSeen?: boolean;
-  // The Draw tour's taken record (docs/specs/023-draw-mode/draw-tour.md), as `workshopTourSeen`.
-  // Surfaced in Settings as Tours › "Draw Tour" (inverted). Missing / undefined === not seen.
-  drawTourSeen?: boolean;
-  // The Avatar tour's taken record (docs/specs/008-canvas/avatar-tour.md), as `drawTourSeen`.
+  // The Avatar tour's taken record (docs/specs/008-canvas/avatar-tour.md), as `workshopTourSeen`.
   // Surfaced in Settings as Tours › "Avatar Tour" (inverted). Missing / undefined === not seen.
   avatarTourSeen?: boolean;
   // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose tour has been started.
@@ -306,29 +298,11 @@ type UserPreferences = {
     s?: Record<1 | 2 | 3 | 4 | 5 | 6, string>;
     f?: Record<1 | 2 | 3 | 4 | 5 | 6, string>;
   }[];
-  // The whiteboard dock (../023-draw-mode/draw-mode.md "Shape slots"): up to
-  // seven pinned shape keys (unset is the default pins, an empty list an
-  // emptied side), and per shape key [times picked, last picked ms] for the
-  // Shapes flyout's slots, at most 20 kept. Keys outside the whiteboard's
-  // shape catalogue are dropped on read (lib/whiteboard-dock-prefs).
-  whiteboardPinnedShapes?: string[];
-  whiteboardShapePicks?: Record<string, [number, number]>;
-  // DEAD, like `customSwatches`: the markers' Custom colours are the document's
-  // (../004-interface-design/colour-picker.md). Kept because it is already stored.
-  whiteboardYourColours?: string[];
-  // Where a whiteboard's dock sits (../023-draw-mode/draw-mode.md "Where the
-  // dock sits"): 'top' or 'bottom'. Unset, or anything but 'bottom', is the
-  // top (lib/whiteboard-dock-prefs).
-  whiteboardDockPosition?: 'top' | 'bottom';
   // How an element shows its link, note, action and comments
   // (../008-canvas/element-indicators.md): glyphs inside its top-right corner
   // ('top'), a row along its bottom edge ('footer') or none ('off'). Unset, or anything
   // else, is Top (lib/element-indicator-style).
   elementIndicatorStyle?: 'top' | 'footer' | 'off';
-  // Draw mode's pattern, the person's own (./editor-modes.md "One look"): Plain, Dots
-  // or Grid, as last chosen from the dock's Settings; never stored on a tab. Unset, or
-  // anything else, is Grid (lib/whiteboard-dock-prefs).
-  drawPattern?: 'blank' | 'grid' | 'graph';
 
   // Power user mode (docs/specs/007-editor/power-user-mode.md). True while the mode is on.
   // Switching it on applies the preset once; see powerUserBaseline.
@@ -375,8 +349,6 @@ Missing key === undefined === default behaviour. Concretely:
   changes either.
 - `panelLayout` and `minimalPanels`, if a stored blob carries them, are
   ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
-- `whiteboardDockPosition` undefined → a whiteboard's dock at the top (the
-  default). Only `'bottom'` moves it to the bottom.
 - `elementIndicatorStyle` undefined → Top: an element's link, note, action
   and comment glyphs sit inside it along its top, top-right on a box and centred
   on a round or pointed shape (the default). `'footer'` moves them to a labelled
@@ -388,9 +360,6 @@ Missing key === undefined === default behaviour. Concretely:
   alone, each still named in its hover card. A phone shows icons alone
   whatever it says, so its Settings row is desktop only. Emits
   `UI`/`Toggled`/`DockButtonNames{On,Off}`.
-- `drawPattern` undefined → Grid (`graph`) behind every tab the person works
-  on in Draw mode. The dock's Background row writes it; it emits the same
-  Background events as before and changes nothing on the tab.
 - `alignmentGuides` undefined → guides on (the default). Setting it
   to `false` hides the faint guide lines during a move / resize; the
   snap behaviour itself is unchanged.
@@ -423,12 +392,13 @@ Missing key === undefined === default behaviour. Concretely:
 - **Retired keys.** `upgradeLegacyPreferences` (`packages/api-schema/src/legacy-preferences.ts`) drops these on
   read, so the next write stores the blob without them: `activityPanelEnabled` and `activityRevertHoverPreview` (there
   is no Activity panel; Undo and Redo always show in the bottom-right cluster), `illustrateModeEnabled`,
-  `infographicModeEnabled` and `planModeEnabled` (every mode is always offered,
-  [Editor modes](editor-modes.md#every-mode-always-offered)), `skipLocationStep` (the New Document wizard never asks
+  `infographicModeEnabled` and `planModeEnabled` (there is one editor mode, [Editor modes](editor-modes.md)), `skipLocationStep` (the New Document wizard never asks
   where a document goes, [New document route](new-document-route.md#one-step-wizard)), and `aiAssistanceEnabled` and
   `aiSuggestedPrompts` (there is no in-editor AI assistant; connected AI tools work through the
   [MCP server](../015-api/mcp-server.md)). Keys of other products' modes (`pagesTourSeen`, `pagesTourKinds`,
-  `contentsPlacement`, the logo guide switches) are read by nothing here
+  `contentsPlacement`, the logo guide switches) and livediagram's Diagram and Draw keys (`tourSeen`, `drawTourSeen`,
+  `whiteboardPinnedShapes`, `whiteboardShapePicks`, `whiteboardYourColours`, `whiteboardDockPosition`, `drawPattern`)
+  are read by nothing here
   ([Editor modes](editor-modes.md#stored-tabs-from-other-products-modes)).
 - `quickAddOnHover` undefined / false → click to open an element's quick-add
   `+` menu (the default; hover-open can feel twitchy, so it's opt-in). `true`
@@ -587,8 +557,8 @@ and the dialog stays as the one complete, browsable index of them.
   **Editor** (a **Canvas** section: alignment guides, auto-attach arrows,
   element indicators; a **Mouse** section: quick-add on hover, middle-mouse
   pan; then **Power User**: power user mode, with Minimal chrome and the preset
-  readout nested under it while the mode is on; with the sub-categories
-  **Draw** (dock position, Top or Bottom) and **Presenting** (the presenter settings: Slides, Playback and While Presenting,
+  readout nested under it while the mode is on; with the sub-category
+  **Presenting** (the presenter settings: Slides, Playback and While Presenting,
   [Presentation mode](../012-collaboration/presentation-mode.md) "Presenter settings")), **Appearance** (theme, then an **Interface** section:
   Button Labels, and UI scale with a slider per part nested under it), **Keyboard**
   (the Keyboard Shortcuts on/off switch, then the full shortcut catalogue as
@@ -621,14 +591,8 @@ and the dialog stays as the one complete, browsable index of them.
   would otherwise carry in a gear popover live here, and only here - see **UI placement** below.
 
   A category can hold **sub-categories** (`parent` on the sub-category's
-  spec). **Editor** holds one per editor mode whose settings apply only to
-  that mode ([Editor modes](editor-modes.md)): **Draw** holds Dock Position,
-  since only Draw mode has a dock. A setting that applies in both modes
-  stays on Editor itself; quick-add on hover, alignment guides, auto-attach
-  arrows, middle-mouse pan and power user mode all act in both. There is no
-  **Diagram** sub-category while no setting applies only to Diagram mode: a
-  category with no rows is never shown, and one is added beside Draw the day
-  a Diagram-only setting lands. **Account** holds **Notifications** and
+  spec). **Editor** holds **Presenting**; a category with no rows is never
+  shown. **Account** holds **Notifications** and
   **API Tokens**: both belong to the person rather than the editor. Their
   category ids (`notifications`, `tokens`) predate the nesting and are
   kept, so every `?settings=notifications` / `?settings=tokens` deep link
@@ -671,11 +635,10 @@ and the dialog stays as the one complete, browsable index of them.
   sub-category carries a plain 16px glyph rather than a tile: its panel's own
   mark in the editor (Lucide layers for Layers, the Collaborate button's
   glyph; the Map and Quick Style, which have no
-  toolbar button, take Lucide map and Lucide palette; Draw takes the
-  marker the editor mode switch shows for Draw mode; Notifications and
+  toolbar button, take Lucide map and Lucide palette; Notifications and
   API Tokens keep the bell and key they carried as top-level tiles). Search matches a
   sub-category's rows on its parent's name too, and the canvas search names
-  it by path ("in Panels › Layers", "in Editor › Draw", "in Account ›
+  it by path ("in Panels › Layers", "in Editor › Presenting", "in Account ›
   API Tokens").
 
   Within a category, rows carry an optional **`section`** so a category
@@ -742,8 +705,8 @@ and the dialog stays as the one complete, browsable index of them.
   and read as broken. So are the Mouse section's (Quick-Add on Hover, Middle-Mouse
   Pan): a phone has no hover and no middle button.
 
-  **Tours** is a category of its own: one switch per guided tour, **Diagram
-  Tour**, **Workshop Tour**, **Draw Tour** and **Avatar Tour**, each with a line saying where it is on offer and a **Learn more**
+  **Tours** is a category of its own: one switch per guided tour, **Workshop
+  Tour** and **Avatar Tour**, each with a line saying where it is on offer and a **Learn more**
   to its article, under one **Offer Again** section note: switch one back on
   and close Settings to take it again, straight away if it is on offer where you
   are, otherwise from the footer's Start Tour button when you get there. (Until
@@ -751,8 +714,7 @@ and the dialog stays as the one complete, browsable index of them.
   it would offer itself again; from then until 1 November 2026 every tour stayed
   on the Start Tour button whenever it could run, taken or not. Now a taken tour
   leaves the button, and its switch is what brings it back: on puts the tour back
-  on the button, off takes it away, [Diagram tour](editor-tour.md) "Where it
-  appears".) (The tours used
+  on the button, off takes it away, [Tours](editor-tour.md#where-it-appears).) (The tours used
   to be an Onboarding Tutorials grid of five switches inside
   Accessibility, where nobody looked for them: a tour is not an accessibility
   setting.) Every switch is inverted: on means "not taken yet", the
@@ -760,19 +722,14 @@ and the dialog stays as the one complete, browsable index of them.
   PREFERENCE (switching on is `...SeenOff`), so each dashboard series keeps its
   meaning.
 
-  **Diagram Tour** (the [Diagram tour](editor-tour.md)) is inverted
-  against the stored `tourSeen`. Turning it on from off and closing the dialog relaunches the tour in place
-  on a Diagram tab where it is on offer (`livehuddle:tour-relaunch`); on a tab in another mode it does
-  nothing, and the button offers it on a Diagram tab. **Workshop Tour** is inverted against
-  `workshopTourSeen` ([Workshop tour](../012-collaboration/workshop-tour.md)), **Draw Tour** against
-  `drawTourSeen` ([Draw tour](../023-draw-mode/draw-tour.md)) and **Avatar Tour** against `avatarTourSeen`
-  ([Avatar tour](../008-canvas/avatar-tour.md)); closing the dialog with one turned on from off reruns it when it is on offer where you are.
+  **Workshop Tour** is inverted against `workshopTourSeen` ([Workshop tour](../012-collaboration/workshop-tour.md))
+  and **Avatar Tour** against `avatarTourSeen` ([Avatar tour](../008-canvas/avatar-tour.md)); closing the dialog with one turned on from off reruns it when it is on offer where you are.
 
-  Below the mode tours, **Show Me** (element tours, named Show Me in the interface) is its own section, a closed
+  Below those tours, **Show Me** (element tours, named Show Me in the interface) is its own section, a closed
   accordion naming how many are on ([Element tours](element-tours.md#settings)): **Show Me on Every Element**, built
   as a tour of several tracks (`tourTracksSwitch`, `apps/editor/lib/tour-tracks.ts`: on while any track is not yet taken, off
   marks every track taken, on forgets every run) against `elementToursSeen` and `elementTourKinds`, with one switch per toured
-  kind nested under it, named for the element (**Sankey Diagram**). Element tours
+  kind nested under it, named for the element (**Timeline**). Element tours
   need no relaunch: the Start Tour button offers one whenever such an element is selected. A category may mark any section
   closed this way (`collapsedSections`); Settings opened on one of its rows opens it.
 

@@ -911,97 +911,7 @@
     var(--lvd-pie-iter, infinite);
 }
 
-/* Sankey diagram (docs/specs/009-elements/sankey.md "The menu"): Grow sweeps the diagram in from the left
- * once, revealing it with a clip rather than scaling it, so the bands never distort; Flow runs a soft
- * current along each band's middle line (a dashed stroke marching from source to target), looping. Speed
- * and iteration from the inline --lvd-sankey-* custom properties. */
-@keyframes lvd-sankey-grow {
-  from {
-    clip-path: inset(0 100% 0 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-.lvd-sankey-grow {
-  animation: lvd-sankey-grow calc(0.9s * var(--lvd-sankey-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1)
-    var(--lvd-sankey-iter, 1) both;
-}
-@keyframes lvd-sankey-flow {
-  to {
-    stroke-dashoffset: -48;
-  }
-}
-.lvd-sankey-flow .lvd-sankey-current {
-  animation: lvd-sankey-flow calc(1.4s * var(--lvd-sankey-speed, 1)) linear
-    var(--lvd-sankey-iter, infinite);
-}
-/* The staggered three: each part carries its column as --lvd-sk-col (a plain value, never animated), which
- * delays it so the motion runs left to right. Cascade brings the columns in one after another, sliding a
- * little from the left, once; Pulse dims and restores the bands in a slow wave, looping; Rise grows each
- * column's node bars from their middles, then fades their bands and labels in, once. Opacity and transform
- * only, so nothing is laid out again while they run. */
-@keyframes lvd-sankey-cascade {
-  from {
-    opacity: 0;
-    transform: translateX(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-.lvd-sankey-cascade .lvd-sk-band,
-.lvd-sankey-cascade .lvd-sk-node,
-.lvd-sankey-cascade .lvd-sk-label {
-  animation: lvd-sankey-cascade calc(0.55s * var(--lvd-sankey-speed, 1))
-    cubic-bezier(0.22, 1, 0.36, 1) calc(var(--lvd-sk-col, 0) * 0.28s * var(--lvd-sankey-speed, 1))
-    var(--lvd-sankey-iter, 1) both;
-}
-@keyframes lvd-sankey-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.4;
-  }
-}
-.lvd-sankey-pulse .lvd-sk-band {
-  animation: lvd-sankey-pulse calc(2.2s * var(--lvd-sankey-speed, 1)) ease-in-out
-    calc(var(--lvd-sk-col, 0) * 0.35s * var(--lvd-sankey-speed, 1)) var(--lvd-sankey-iter, infinite)
-    both;
-}
-@keyframes lvd-sankey-rise {
-  from {
-    transform: scaleY(0);
-  }
-  to {
-    transform: scaleY(1);
-  }
-}
-@keyframes lvd-sankey-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-.lvd-sankey-rise .lvd-sk-node {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: lvd-sankey-rise calc(0.5s * var(--lvd-sankey-speed, 1)) cubic-bezier(0.22, 1, 0.36, 1)
-    calc(var(--lvd-sk-col, 0) * 0.3s * var(--lvd-sankey-speed, 1)) var(--lvd-sankey-iter, 1) both;
-}
-.lvd-sankey-rise .lvd-sk-band,
-.lvd-sankey-rise .lvd-sk-label {
-  animation: lvd-sankey-fade-in calc(0.5s * var(--lvd-sankey-speed, 1)) ease-out
-    calc((var(--lvd-sk-col, 0) * 0.3s + 0.3s) * var(--lvd-sankey-speed, 1))
-    var(--lvd-sankey-iter, 1) both;
-}
-
-/* Concept graphics (docs/specs/009-elements/concept-graphics.md "Animation"): each row carries its place in
+/* Concept graphics (docs/specs/009-elements/timeline.md "Animation"): each row carries its place in
  * reading order as --lvd-cg-i (a plain value, never animated) and the face its row count as --lvd-cg-n, speed
  * and iteration as --lvd-concept-*. Build brings the rows in one after another, once; with Repeat it builds,
  * holds and clears on a steady cycle (every row the same length, so the stagger survives each loop). Pulse
@@ -1082,44 +992,6 @@
   animation: lvd-pointer-tip-pulse 1.6s ease-out infinite;
 }
 
-/* A sequence diagram's Play (docs/specs/009-elements/sequence-diagram.md "Animation"): the picture is uncovered top
- * to bottom, 0.4 s per message scaled by Speed (--lvd-seq-dur, set by the face), so messages appear in the order they
- * happen. Once, or with Repeat a reveal, hold and clear on a loop. A clip-path on one layer per diagram. */
-@keyframes lvd-seq-play {
-  from {
-    clip-path: inset(0 0 100% 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-@keyframes lvd-seq-play-loop {
-  0% {
-    clip-path: inset(0 0 100% 0);
-  }
-  70%,
-  92% {
-    clip-path: inset(0 0 0 0);
-    opacity: 1;
-  }
-  100% {
-    clip-path: inset(0 0 0 0);
-    opacity: 0;
-  }
-}
-.lvd-seq-play {
-  animation: lvd-seq-play var(--lvd-seq-dur, 2s) linear 1 both;
-}
-.lvd-seq-play-loop {
-  animation: lvd-seq-play-loop calc(var(--lvd-seq-dur, 2s) / 0.7) linear infinite both;
-}
-@media (prefers-reduced-motion: reduce) {
-  .lvd-seq-play,
-  .lvd-seq-play-loop {
-    animation: none;
-  }
-}
-
 @keyframes lvd-concept-flow {
   to {
     stroke-dashoffset: -24;
@@ -1173,15 +1045,6 @@
   .lvd-pie-pop,
   .lvd-pie-spin,
   .lvd-pie-pulse,
-  .lvd-sankey-grow,
-  .lvd-sankey-flow .lvd-sankey-current,
-  .lvd-sankey-cascade .lvd-sk-band,
-  .lvd-sankey-cascade .lvd-sk-node,
-  .lvd-sankey-cascade .lvd-sk-label,
-  .lvd-sankey-pulse .lvd-sk-band,
-  .lvd-sankey-rise .lvd-sk-node,
-  .lvd-sankey-rise .lvd-sk-band,
-  .lvd-sankey-rise .lvd-sk-label,
   .lvd-concept-build .lvd-cg-row,
   .lvd-concept-build-loop .lvd-cg-row,
   .lvd-concept-pulse .lvd-cg-row,

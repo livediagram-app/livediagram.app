@@ -3,15 +3,13 @@
 // state; the size is ESTIMATED from fixed glyph, gap and character widths rather than measured,
 // so placement is pure and runs before anything is drawn (blueprint D76).
 
-export type IndicatorKind = 'outline' | 'tidy' | 'link' | 'note' | 'action' | 'comment';
+export type IndicatorKind = 'link' | 'note' | 'action' | 'comment';
 
 export type IndicatorItem = {
   kind: IndicatorKind;
   // The button's accessible name.
   label: string;
   onClick: () => void;
-  // A command (a mind root's Edit Outline / Tidy Map): hidden until hovered or selected.
-  command?: boolean;
   // Unresolved comments.
   count?: number;
   // The footer's word beside the glyph.
@@ -60,7 +58,6 @@ export function clusterSize(
     };
   }
   const widths = items.map((item) => {
-    if (item.command) return TOP_BUTTON_PX;
     const lead = item.assignee ? FOOTER_DISC_PX : FOOTER_GLYPH_PX;
     if (item.count) return lead + FOOTER_WORD_GAP_PX + countPx(item.count);
     if (form === 'footer' && item.word) {
@@ -75,34 +72,14 @@ export function clusterSize(
   };
 }
 
-/** The element's items, commands first, then link, note, action, comment. */
+/** The element's items: link, note, action, comment. */
 export function buildIndicatorItems(input: {
-  outline?: () => void;
-  tidy?: () => void;
   link?: { onFollow: () => void; destination?: string };
   note?: () => void;
   action?: { onOpen: () => void; assigneeName: string; initials: string; color: string };
   comments?: { count: number; onOpen: () => void };
 }): IndicatorItem[] {
   const items: IndicatorItem[] = [];
-  if (input.outline) {
-    items.push({
-      kind: 'outline',
-      label: 'Edit Outline',
-      onClick: input.outline,
-      command: true,
-      hoverCard: { title: 'Edit Outline', description: 'Edit the whole map as a list.' },
-    });
-  }
-  if (input.tidy) {
-    items.push({
-      kind: 'tidy',
-      label: 'Tidy Map',
-      onClick: input.tidy,
-      command: true,
-      hoverCard: { title: 'Tidy Map', description: 'Lay the whole map out neatly again.' },
-    });
-  }
   if (input.link) {
     items.push({
       kind: 'link',

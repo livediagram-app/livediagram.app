@@ -165,7 +165,6 @@ const COMPONENT_LABELS: Record<ComponentKind, string> = {
   stat: 'Stat row',
   process: 'Process steps',
   avatar: 'Avatar',
-  flowchart: 'Flowchart',
 };
 
 // Banner copy per draw intent. Shape intents include the kind name

@@ -258,13 +258,13 @@ export type WebRows = {
   navLinks?: string[];
   // A card's tag chips (docs/specs/009-elements/card.md).
   tags?: string[];
-  // A concept graphic's rows (docs/specs/009-elements/concept-graphics.md).
+  // A Timeline's milestones (docs/specs/009-elements/timeline.md).
   conceptRows?: ConceptRow[];
   // One diagram key row's meaning (docs/specs/009-elements/diagram-key.md).
   keyMeaning?: { rowId: string; text: string };
 };
 
-// The kind each single-kind row field lands on; concept rows land on any of the three concept graphics.
+// The kind each single-kind row field lands on; concept rows land on a Timeline.
 const ROW_KIND: Record<Exclude<keyof WebRows, 'conceptRows' | 'keyMeaning'>, ShapeKind> = {
   stats: 'stat-row',
   processSteps: 'process',

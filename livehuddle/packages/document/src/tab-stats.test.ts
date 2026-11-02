@@ -9,7 +9,7 @@ const thread = (n: number, resolved = false) => ({
 });
 
 describe('tabStatsOf', () => {
-  it('counts elements, every comment and the stored bytes, in the tab mode', () => {
+  it('counts elements, every comment and the stored bytes, in Workshop', () => {
     const body = {
       opensIn: 'draw',
       elements: [
@@ -20,7 +20,7 @@ describe('tabStatsOf', () => {
     };
     const data = JSON.stringify(body);
     expect(tabStatsOf(body, data)).toEqual({
-      mode: 'draw',
+      mode: 'workshop',
       elementCount: 3,
       commentCount: 3,
       dataBytes: new TextEncoder().encode(data).length,
@@ -32,13 +32,13 @@ describe('tabStatsOf', () => {
     expect(tabStatsOf({ elements: [] }, data).dataBytes).toBe(data.length + 2);
   });
 
-  it('reads Diagram for a tab with no mode, an event-storming board and a legacy mode as today', () => {
-    expect(tabStatsOf({ elements: [] }, '{}').mode).toBe('diagram');
+  it('reads Workshop for a tab with no mode, an event-storming board and every legacy mode', () => {
+    expect(tabStatsOf({ elements: [] }, '{}').mode).toBe('workshop');
     expect(tabStatsOf({ kind: 'event-storming', opensIn: 'draw', elements: [] }, '{}').mode).toBe(
-      'diagram',
+      'workshop',
     );
-    expect(tabStatsOf({ opensIn: 'infographic', elements: [] }, '{}').mode).toBe('diagram');
-    expect(tabStatsOf({ opensIn: 'pages', elements: [] }, '{}').mode).toBe('diagram');
+    expect(tabStatsOf({ opensIn: 'diagram', elements: [] }, '{}').mode).toBe('workshop');
+    expect(tabStatsOf({ opensIn: 'pages', elements: [] }, '{}').mode).toBe('workshop');
   });
 
   it('counts a body without an elements array as empty', () => {

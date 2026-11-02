@@ -14,28 +14,14 @@ import { LOOK_MD_MAX_NODES } from '@liveworkspace/model-core/look-size';
 import { CODE_LANGUAGES } from './data-shapes';
 import { isCodeThemeId } from '@liveworkspace/model-core/code-themes';
 import { variantFitsKind } from './chart-types';
-import { entityHeight } from './entity-geometry';
 import { settleChips } from './attachment';
 import { createShape } from './shape-factory';
 import { createSticky, createTable, createText } from './factories';
 import { migrateStoredElementsUnsettled } from './stored-elements';
 import { normalizeTable } from './table';
 import { coerceShapeKind } from './validate';
-import type { Element as DocElement, TableElement, TextSize } from './index';
+import type { Element as DocElement, TableElement } from './index';
 import { isRecord } from '@liveworkspace/model-core/is-record';
-import {
-  cleanSankeyName,
-  SANKEY_ALIGNS,
-  SANKEY_LEFTOVERS,
-  SANKEY_ANIMS,
-  SANKEY_LINK_COLORS,
-  SANKEY_MAX_FLOWS,
-  SANKEY_MAX_NODES,
-  SANKEY_UNIT_MAX,
-  SANKEY_VALUE_LABELS,
-  SANKEY_VALUE_MAX,
-} from './sankey-model';
-import { readSankeyNumber } from './sankey-text';
 import { CONCEPT_ROWS, isConceptShape, type ConceptShape } from './concept';
 
 type Raw = Record<string, unknown>;
@@ -64,14 +50,6 @@ function normaliseCodeBlock(el: Raw): Raw {
   return out;
 }
 
-// An entity grows to show every row: the render stops drawing rows that run
-// past the box.
-function normaliseEntity(el: Raw): Raw {
-  const rows = Array.isArray(el.entityFields) ? el.entityFields.length : 0;
-  const needed = entityHeight(rows, el.textSize as TextSize | undefined);
-  return typeof el.height === 'number' && el.height < needed ? { ...el, height: needed } : el;
-}
-
 function normaliseChart(el: Raw): Raw {
   const out = { ...el };
   // A variant its kind does not take (docs/specs/009-elements/pie-chart.md "Chart types") draws as the kind's first
@@ -95,58 +73,6 @@ function normaliseChart(el: Raw): Raw {
       const { axis, ...rest } = s;
       return { ...rest, name: str(s.name), values: fitted, ...(axis === 'right' ? { axis } : {}) };
     });
-  }
-  return out;
-}
-
-// A Sankey's flows as a model writes them (docs/specs/009-elements/sankey.md): `source` / `target` (the
-// d3-sankey spelling) read as `from` / `to`, an amount given as text ("3,200") is read as a number, names are
-// cleaned as the editor cleans them, and the lists are capped. An option the diagram does not know is dropped,
-// so it draws its default rather than failing the call.
-function normaliseSankey(el: Raw): Raw {
-  const out = { ...el };
-  if (Array.isArray(el.sankeyFlows))
-    out.sankeyFlows = el.sankeyFlows
-      .filter(isRecord)
-      .slice(0, SANKEY_MAX_FLOWS)
-      .map((f) => {
-        const raw = f.value ?? f.amount;
-        const value = typeof raw === 'number' ? raw : readSankeyNumber(str(raw));
-        return {
-          from: cleanSankeyName(str(f.from ?? f.source)),
-          to: cleanSankeyName(str(f.to ?? f.target)),
-          value: Number.isFinite(value)
-            ? Math.max(-SANKEY_VALUE_MAX, Math.min(SANKEY_VALUE_MAX, value))
-            : 0,
-        };
-      });
-  if (Array.isArray(el.sankeyNodes))
-    out.sankeyNodes = el.sankeyNodes
-      .filter(isRecord)
-      .slice(0, SANKEY_MAX_NODES)
-      .map((n) => ({
-        name: cleanSankeyName(str(n.name)),
-        ...(typeof n.color === 'string' && n.color ? { color: n.color.slice(0, 64) } : {}),
-        ...(n.leftover === false ? { leftover: false } : {}),
-      }));
-  const options: [string, readonly string[]][] = [
-    ['sankeyLinkColor', SANKEY_LINK_COLORS],
-    ['sankeyAlign', SANKEY_ALIGNS],
-    ['sankeyValueLabel', SANKEY_VALUE_LABELS],
-    ['sankeyAnim', SANKEY_ANIMS],
-    ['sankeyLeftover', SANKEY_LEFTOVERS],
-  ];
-  for (const [field, values] of options)
-    if (out[field] !== undefined && !values.includes(out[field] as string)) delete out[field];
-  if (out.sankeyUnit !== undefined) {
-    const unit = str(out.sankeyUnit).trim().slice(0, SANKEY_UNIT_MAX);
-    if (unit) out.sankeyUnit = unit;
-    else delete out.sankeyUnit;
-  }
-  if (out.sankeyLeftoverName !== undefined) {
-    const name = cleanSankeyName(str(out.sankeyLeftoverName));
-    if (name) out.sankeyLeftoverName = name;
-    else delete out.sankeyLeftoverName;
   }
   return out;
 }
@@ -202,9 +128,8 @@ function factoryOf(el: Raw): Raw | undefined {
 }
 
 // The presentation fields the factory sets that raw JSON usually leaves out.
-// Unset, text falls back to 'scale' (filling the box), so a lane or entity
-// title came out as one giant word across its contents, and a lane or entity
-// with no title alignment put its title in the wrong place; a box drawn in the
+// Unset, text falls back to 'scale' (filling the box), so a lane's title came
+// out as one giant word across its contents, and a lane with no title alignment put its title in the wrong place; a box drawn in the
 // editor never arrives that way.
 const FACTORY_DEFAULTS = ['textSize', 'textAlignX', 'textAlignY', 'padding'] as const;
 
@@ -223,23 +148,18 @@ function normaliseContent(el: Raw): unknown {
   switch (el.shape) {
     case 'code-block':
       return normaliseCodeBlock(el);
-    case 'entity':
-      return normaliseEntity(el);
     case 'bar-chart':
     case 'pie-chart':
     case 'line-chart':
       return normaliseChart(el);
-    case 'sankey':
-      return normaliseSankey(el);
     default:
       return typeof el.shape === 'string' && isConceptShape(el.shape) ? normaliseConcept(el) : el;
   }
 }
 
-// A concept graphic's rows within its own kind's range (docs/specs/009-elements/concept-graphics.md): validation
-// takes any 0 to 8, but every edit keeps a kind to its range and drops one outside it, so an agent's pyramid of 8
-// would lose two tiers at its first edit, and a cycle of 2 could never be edited. Past the most, the rest are dropped;
-// short of the fewest, rows named as the menu's Add names them ("Step 3") fill the gap.
+// A Timeline's milestones within its range (docs/specs/009-elements/timeline.md): validation takes any 0 to 8, but
+// every edit keeps it to 2 to 8. Past the most, the rest are dropped; short of the fewest, rows named as the menu's
+// Add names them ("Milestone 3") fill the gap.
 function normaliseConcept(el: Raw): Raw {
   if (!Array.isArray(el.conceptRows)) return el.shape === 'timeline-rail' ? railToTimeline(el) : el;
   const { min, max, noun } = CONCEPT_ROWS[el.shape as ConceptShape];
@@ -248,7 +168,7 @@ function normaliseConcept(el: Raw): Raw {
   return rows.length === el.conceptRows.length ? el : { ...el, conceptRows: rows };
 }
 
-// A timeline rail saved before it was a Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): its points
+// A timeline rail saved before it was a Timeline (docs/specs/009-elements/timeline.md): its points
 // become milestones, each point's label its name (an unnamed one "Milestone 2"), and the point count and labels go.
 function railToTimeline(el: Raw): Raw {
   const { min, max, noun } = CONCEPT_ROWS['timeline-rail'];
@@ -297,12 +217,10 @@ const PLAIN_BOX_EXCLUDED = new Set([
   'frame',
   'lane',
   'boundary',
-  'entity',
   'code-block',
   'bar-chart',
   'pie-chart',
   'line-chart',
-  'sankey',
   'legend',
 ]);
 const isPlainBox = (el: unknown): el is Raw =>

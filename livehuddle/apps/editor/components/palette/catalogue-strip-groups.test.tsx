@@ -13,18 +13,18 @@ import { BrowseStartGroup, PaletteCategoryBrowser } from './PaletteCategoryBrows
 beforeAll(() => ensureIconCatalogs());
 
 describe('catalogueStripGroups', () => {
-  it('is the browse groups for the three catalogues, in their order', () => {
+  it('is the browse groups for the two catalogues, in their order', () => {
     expect(catalogueStripGroups('icons')?.map((g) => g.id)).toEqual(
       ICON_CATEGORIES.map((c) => c.id),
     );
     expect(catalogueStripGroups('stickers')?.map((g) => g.id)).toEqual(
       STICKER_CATEGORIES.map((c) => c.id),
     );
-    expect(catalogueStripGroups('technology')?.length).toBeGreaterThan(0);
+    expect(catalogueStripGroups('technology')).toBeNull();
   });
 
   it('is built once the catalogues have loaded, not on every strip render', () => {
-    expect(catalogueStripGroups('technology')).toBe(catalogueStripGroups('technology'));
+    expect(catalogueStripGroups('icons')).toBe(catalogueStripGroups('icons'));
     const t = performance.now();
     for (let i = 0; i < 1000; i++) catalogueStripGroups('icons');
     expect(performance.now() - t).toBeLessThan(50);

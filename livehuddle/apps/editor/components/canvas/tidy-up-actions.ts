@@ -1,8 +1,7 @@
-import type { EditorMode } from '@livehuddle/document';
 import type { CleanupKind } from '@/lib/tab-cleanup';
 import type { CleanupVerdict } from '@/lib/tidy-verdict';
 
-// What Diagram mode's Tidy Up button hands its popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up
+// What the Tidy Up button hands its popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up
 // button"). The editor builds it only for a session that may tidy (an Editor, not an embed); the chrome
 // adds the rest of the gate (tidyUpOffered).
 export type TidyUpActions = {
@@ -20,12 +19,11 @@ export type TidyUpActions = {
   blocked: boolean;
 };
 
-// Whether the cluster shows the button: Diagram mode, out of Zen, and only for a session the editor handed
+// Whether the cluster shows the button: out of Zen, and only for a session the editor handed
 // actions to. Phones too: there a tap is the press, with no hover preview.
 export function tidyUpOffered(input: {
   actions: TidyUpActions | undefined;
-  editorMode: EditorMode | undefined;
   zenMode: boolean;
 }): boolean {
-  return !!input.actions && input.editorMode === 'diagram' && !input.zenMode;
+  return !!input.actions && !input.zenMode;
 }

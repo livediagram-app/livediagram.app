@@ -89,28 +89,25 @@ An Editor's `el` op is relayed as today. A Participant's `el` op takes the parti
 `applyParticipantOp(tab, op, adderKey)` (pure), returning `{ result: 'applied', tab, op } | { result: 'refused',
 correction: ElementOp | null, reason }`:
 
-| Op        | Applied when                                                                                                                                                    | Result                                                                                                                                                                              | Refusal correction                       |
-| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| `add`     | `addableOn(tab, element)`; `adderKey` present; id unused; layer (if any) exists and unlocked                                                                    | The element with `addedBy = adderKey`, inserted at `clamp(at)`                                                                                                                      | `remove` of the id (unless id existed)   |
-| `update`  | The stored element exists, same type, not `locked`, its layer not locked                                                                                        | **Own** (`stored.addedBy === adderKey`): incoming, with `id`, `type`, `addedBy` and live fields kept from stored. **Other**: stored, with the permitted fields copied from incoming | `update` with the stored element         |
-| `remove`  | The stored element exists, `addedBy === adderKey` or `removableByAnyone(tab, stored)` (any mind node; a mind connector, ends a mind node or gone), not `locked` | Element removed                                                                                                                                                                     | `add` of the stored element at its index |
-| `reorder` | never                                                                                                                                                           | n/a                                                                                                                                                                                 | `reorder` with the stored ids            |
+| Op        | Applied when                                                                                 | Result                                                                                                                                                                              | Refusal correction                       |
+| --------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `add`     | `addableOn(tab, element)`; `adderKey` present; id unused; layer (if any) exists and unlocked | The element with `addedBy = adderKey`, inserted at `clamp(at)`                                                                                                                      | `remove` of the id (unless id existed)   |
+| `update`  | The stored element exists, same type, not `locked`, its layer not locked                     | **Own** (`stored.addedBy === adderKey`): incoming, with `id`, `type`, `addedBy` and live fields kept from stored. **Other**: stored, with the permitted fields copied from incoming | `update` with the stored element         |
+| `remove`  | The stored element exists, `addedBy === adderKey`, not `locked`                              | Element removed                                                                                                                                                                     | `add` of the stored element at its index |
+| `reorder` | never                                                                                        | n/a                                                                                                                                                                                 | `reorder` with the stored ids            |
 
 Permitted fields on another's element:
 
-| Element                   | Fields                                                                                                                                                                                                    |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Any element carrying text | `label`, `richText` (`PARTICIPANT_TEXT_FIELDS`); never on a Behaviour (`participantWritesOn`, `BEHAVIOUR_SHAPES`)                                                                                         |
-| `table`                   | also `cells`, only when every row keeps its length and the row count is unchanged                                                                                                                         |
-| `sticky`, `image`         | also `x`, `y` (finite), `width`, `height` (positive) (`PARTICIPANT_PLACE_FIELDS`, `isParticipantPlaceable`)                                                                                               |
-| `sticky`                  | also `fillColor`, `strokeColor`, `textColor`, `penTextColour` (`PARTICIPANT_STICKY_FIELDS`)                                                                                                               |
-| `text` with `sizing` set  | also `width` and `height`: a text box that hugs its words follows them (SR10)                                                                                                                             |
-| mind node                 | also `x`, `y` (`PARTICIPANT_MIND_FIELDS`): growing a map re-lays it; a taller `height` with a changed label, up to the stored height plus `MIND_GROW_PX_PER_CHAR` (`TEXT_PX_MAX` × 2) per label character |
-| mind connector            | the `anchor` of `from` and `to`, each end still pinned to the same node                                                                                                                                   |
-| `image`                   | also `imageId`, `naturalWidth`, `naturalHeight`, `alt`, `credit` (`PARTICIPANT_IMAGE_FIELDS`): its picture                                                                                                |
+| Element                   | Fields                                                                                                            |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Any element carrying text | `label`, `richText` (`PARTICIPANT_TEXT_FIELDS`); never on a Behaviour (`participantWritesOn`, `BEHAVIOUR_SHAPES`) |
+| `table`                   | also `cells`, only when every row keeps its length and the row count is unchanged                                 |
+| `sticky`, `image`         | also `x`, `y` (finite), `width`, `height` (positive) (`PARTICIPANT_PLACE_FIELDS`, `isParticipantPlaceable`)       |
+| `sticky`                  | also `fillColor`, `strokeColor`, `textColor`, `penTextColour` (`PARTICIPANT_STICKY_FIELDS`)                       |
+| `text` with `sizing` set  | also `width` and `height`: a text box that hugs its words follows them (SR10)                                     |
+| `image`                   | also `imageId`, `naturalWidth`, `naturalHeight`, `alt`, `credit` (`PARTICIPANT_IMAGE_FIELDS`): its picture        |
 
-`addableOn(tab, el)`: `sticky`, `text` and `image` anywhere; a `shape` only as a mind node whose `mindParentId` names
-a mind node on the tab; an `arrow` only pinned at both ends to mind nodes on the tab (a mind connector). An own
+`addableOn(tab, el)`: `sticky`, `text` and `image` anywhere. An own
 element's update must leave it `addableOn` the tab, else `refused` (`not-holdable`).
 
 - An `update` whose merge equals the stored element is `applied` with no write (`unchanged`) and no relay.
@@ -151,15 +148,15 @@ Editor state:
 
 `EditorCapabilities` for a session that is not an Editor; an Editor holds every flag:
 
-| Flag            | participate                                                    | view  |
-| --------------- | -------------------------------------------------------------- | ----- |
-| `takePart`      | true                                                           | false |
-| `addContent`    | true (sticky and text)                                         | false |
-| `writeText(el)` | true unless `el.locked` or a Behaviour                         | false |
-| `move(el)`      | a sticky, image, mind node or own; not locked                  | false |
-| `resize(el)`    | a sticky, image or own; not locked                             | false |
-| `recolour(el)`  | `el.type === 'sticky'` or own                                  | false |
-| `remove(el)`    | own (`el.addedBy === selfAdderKey`) or a mind node; not locked | false |
+| Flag            | participate                                     | view  |
+| --------------- | ----------------------------------------------- | ----- |
+| `takePart`      | true                                            | false |
+| `addContent`    | true (sticky and text)                          | false |
+| `writeText(el)` | true unless `el.locked` or a Behaviour          | false |
+| `move(el)`      | a sticky, image or own; not locked              | false |
+| `resize(el)`    | a sticky, image or own; not locked              | false |
+| `recolour(el)`  | `el.type === 'sticky'` or own                   | false |
+| `remove(el)`    | own (`el.addedBy === selfAdderKey`); not locked | false |
 
 A Participant's commit: `editsBlocked` is false for a Participant (its gestures open through `can`), so every commit
 passes `guardCommit`, which runs `participantTabChange(before, after, adderKey)`: the change lands, with `addedBy`
@@ -173,8 +170,7 @@ which the autosave retries as today; the unload flush sends the same ops at once
 
 Hooks that write a tab's structure, or write without passing `commit`, take `structureBlocked`
 (`editsBlocked || isReadOnly`) or `structureCreateBlocked` (`createBlocked || isReadOnly`), never the opened
-`editsBlocked`: layers, lane settling, element helpers, tab canvas, images, paths, mind maps,
-snap colours, the whiteboard, the eraser, swatch overrides, the cleanup preview, board scenes and library inserts.
+`editsBlocked`: layers, lane settling, element helpers, tab canvas, images, paths, the eraser, swatch overrides, the cleanup preview, board scenes and library inserts.
 A held-back commit shows `HELD_BACK_NOTICE` at most once per `HELD_BACK_NOTICE_MS`.
 
 Gestures opened for a Participant, each beside `isReadOnly`: the palette strip in its `participant` variant
@@ -212,9 +208,7 @@ export const LEVEL_TELEMETRY_TYPE: Record<AccessLevel, 'View' | 'Participate' | 
 `packages/document/src/participant-content.ts`:
 
 ```ts
-export const PARTICIPANT_ADDABLE_TYPES: readonly ['sticky', 'text', 'image', 'shape', 'arrow'];
-export const PARTICIPANT_MIND_FIELDS: readonly ['x', 'y'];
-export const MIND_GROW_PX_PER_CHAR: number; // TEXT_PX_MAX * 2
+export const PARTICIPANT_ADDABLE_TYPES: readonly ['sticky', 'text', 'image'];
 export const PARTICIPANT_IMAGE_FIELDS: readonly [
   'imageId',
   'naturalWidth',
@@ -224,7 +218,6 @@ export const PARTICIPANT_IMAGE_FIELDS: readonly [
 ];
 export function addableOn(tab: Tab, el: Element): boolean;
 export function participantWritesOn(el: Element): boolean;
-export function removableByAnyone(tab: Tab, el: Element): boolean;
 export const PARTICIPANT_TEXT_FIELDS: readonly ['label', 'richText'];
 export const PARTICIPANT_PLACE_TYPES: readonly ['sticky', 'image'];
 export const PARTICIPANT_PLACE_FIELDS: readonly ['x', 'y', 'width', 'height'];
@@ -365,7 +358,7 @@ Share dialog cards, in `LEVEL_ORDER = ['edit', 'participate', 'view']`:
 - Pill: **Participating**, `bg-teal-100 text-teal-800 dark:bg-teal-500/15 dark:text-teal-200`, the vote glyph; static.
 - A Participant's palette strip: the selection-mode dropdown (Select, Hand, Laser, Spotlight, Avatar, Isometric,
   Zen), the category picker holding **Participate** alone (ballot glyph, "Add stickies and text to the board."),
-  and its tiles; the mode switch, tab add, rename and delete and context menus' structural rows are absent.
+  and its tiles; tab add, rename and delete and context menus' structural rows are absent.
 - A Viewer sees no comment composer, resolve or delete (`CommentThreadPopover canComment`), no poll prompt, no Q&A
   add or upvote, no reactions. Its selection holds nothing
   (`RemoteSelector.holds`, `lockedByOther`).

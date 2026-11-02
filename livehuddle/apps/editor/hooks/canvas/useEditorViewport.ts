@@ -107,8 +107,7 @@ type EditorViewportApi = {
     bw: number,
     bh: number,
     // `sideMargin` (screen px) widens the side band to clear the floating
-    // panels, for reveals that should land in the open canvas (a grown mind
-    // node, docs/specs/009-elements/mind-node.md "Following the growth"). Capped at a quarter of the
+    // panels, for reveals that should land in the open canvas. Capped at a quarter of the
     // canvas so a narrow window still has a band to reveal into.
     opts?: { center?: boolean; sideMargin?: number },
   ) => void;

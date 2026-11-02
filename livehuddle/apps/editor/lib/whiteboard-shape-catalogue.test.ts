@@ -5,7 +5,6 @@ import {
   WHITEBOARD_SHAPE_CATALOGUE,
   whiteboardShapeEntry,
 } from './whiteboard-shape-catalogue';
-import { SHAPE_TILES } from './palette-search';
 
 describe('the whiteboard shape catalogue', () => {
   it('opens with the Shapes flyout kinds under their dock names', () => {
@@ -20,21 +19,6 @@ describe('the whiteboard shape catalogue', () => {
   it('files Line and Arrow under Draw, as the palette files its arrow', () => {
     const draw = WHITEBOARD_SHAPE_CATALOGUE.filter((e) => e.group === 'draw').map((e) => e.key);
     expect(draw).toEqual(['line', 'arrow']);
-  });
-
-  it('offers every palette shape tile except the Components category', () => {
-    const keys = new Set(WHITEBOARD_SHAPE_CATALOGUE.map((e) => e.key));
-    for (const tile of SHAPE_TILES) {
-      if (tile.section === 'components') continue;
-      const kind = (tile.action as { kind: string }).kind;
-      const found = [...keys].some((k) => k === kind || k.startsWith(`${kind}:`));
-      const docked = kind === 'square' || kind === 'circle';
-      expect(found || docked, kind).toBe(true);
-    }
-    expect(keys.has('code-block')).toBe(false);
-    expect(keys.has('checklist')).toBe(false);
-    expect(keys.has('entity')).toBe(false);
-    expect([...keys].some((k) => k.startsWith('plan-'))).toBe(false);
   });
 
   it('keys each creation choice apart, so a poll is not a timer', () => {
@@ -63,8 +47,6 @@ describe('the whiteboard shape catalogue', () => {
       'write',
       'draw',
       'build',
-      'concepts',
-      'devices',
       'data',
       'collab-ask',
       'collab-tools',

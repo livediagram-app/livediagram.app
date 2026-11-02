@@ -8,7 +8,7 @@ const classify = (style: string, value = '', children = '') => {
   const g = readGraph(
     model(vertex('v', style, 'width="100" height="60"', `parent="1" value="${value}"`) + children),
   );
-  return classifyVertex(g.cells.get('v')!, g);
+  return classifyVertex(g.cells.get('v')!);
 };
 const child = (id: string, style: string) =>
   vertex(id, style, 'width="10" height="10"', 'parent="v"');
@@ -129,7 +129,7 @@ describe('classifyVertex', () => {
     });
   });
 
-  it('tells a group, a lane and an entity stack apart', () => {
+  it('tells a group, a lane and a table apart, a stacked swimlane a lane', () => {
     expect(classify('group', '', child('a', ''))).toEqual({ kind: 'group' });
     expect(classify('group', '')).toMatchObject({ kind: 'shape', shape: 'square' });
     expect(classify('swimlane;', 'Lane')).toEqual({ kind: 'lane' });
@@ -139,7 +139,7 @@ describe('classifyVertex', () => {
         'Order',
         child('r1', 'text;') + child('s', 'line;'),
       ),
-    ).toEqual({ kind: 'entity' });
+    ).toEqual({ kind: 'lane' });
     expect(classify('swimlane;childLayout=stackLayout;', 'Pool', child('l1', 'swimlane;'))).toEqual(
       { kind: 'lane' },
     );

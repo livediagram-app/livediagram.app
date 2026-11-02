@@ -26,9 +26,6 @@ import {
   rgbToHex,
   shade,
   supportsBorderRadius,
-  shownBorderRadius,
-  BORDER_RADIUS_PX,
-  MIND_NODE_RADIUS_PX,
   supportsFillColor,
   type ArrowElement,
   type Element,
@@ -261,7 +258,7 @@ describe('supportsBorderRadius', () => {
   // Only the free-corner rectangles expose a user-adjustable radius;
   // every other shape bakes its rounding into the silhouette or is an
   // SVG outline, so the Radius control is hidden for them.
-  const RADIUS_SHAPES: ShapeKind[] = ['square', 'browser', 'mind-node'];
+  const RADIUS_SHAPES: ShapeKind[] = ['square'];
   const NO_RADIUS_SHAPES: ShapeKind[] = [
     'circle',
     'diamond',
@@ -272,10 +269,6 @@ describe('supportsBorderRadius', () => {
     'stadium',
     'actor',
     'cloud',
-    'monitor',
-    'laptop',
-    'phone',
-    'tablet',
   ];
 
   it('is true for the free-corner rectangle shapes', () => {
@@ -297,24 +290,6 @@ describe('supportsBorderRadius', () => {
 
   it('is false for non-shape elements', () => {
     expect(supportsBorderRadius(arrow())).toBe(false);
-  });
-
-  // docs/specs/009-elements/mind-node.md "Round nodes": the Radius control offers mind nodes.
-  it('is true for a mind node', () => {
-    expect(supportsBorderRadius(createShape('mind-node', 0, 0))).toBe(true);
-  });
-});
-
-describe('shownBorderRadius', () => {
-  it("shows the element's own preset when set", () => {
-    const node = { ...createShape('mind-node', 0, 0), borderRadius: 'full' as const };
-    expect(shownBorderRadius(node)).toBe('full');
-  });
-
-  it('shows Medium for an unset mind node (its 12 px default) and Small for other kinds', () => {
-    expect(BORDER_RADIUS_PX.md).toBe(MIND_NODE_RADIUS_PX);
-    expect(shownBorderRadius(createShape('mind-node', 0, 0))).toBe('md');
-    expect(shownBorderRadius(createShape('square', 0, 0))).toBe('sm');
   });
 });
 

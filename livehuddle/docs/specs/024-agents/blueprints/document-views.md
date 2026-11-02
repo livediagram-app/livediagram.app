@@ -32,7 +32,7 @@ Scope, by file:
 | `packages/document-views/src/tree.ts`                                     | `buildViewTree`: `deriveContainers`, then reading order per container                                                                                                                                               |
 | `../packages/document-views/src/reading-order.ts`                         | `readingOrder`, `rowsOf` over any element (shared); `packages/document-views/src/reading-order.ts` binds `Placed` to this product's `Element`                                                                       |
 | `../packages/document-views/src/freehand-runs.ts`                         | `freehandRuns`: consecutive bare strokes folded into one line (shared); `packages/document-views/src/freehand-runs.ts` binds `FreehandRun` to this product's `Placed`                                               |
-| `packages/document-views/src/content-summary.ts`                          | `contentSummaryOf`: entity, table, code block, charts, checklist, Sankey                                                                                                                                            |
+| `packages/document-views/src/content-summary.ts`                          | `contentSummaryOf`: table, code block, charts, checklist, timeline, stack                                                                                                                                           |
 | `packages/document-views/src/state-attribute.ts`                          | `stateAttributeOf`: the one state attribute of each content kind that has one                                                                                                                                       |
 | `packages/document-views/src/attributes.ts`                               | `attributesOf`: the ordered attribute list of one element                                                                                                                                                           |
 | `packages/document-views/src/style-attributes.ts`                         | `styleAttributesOf` for `style`                                                                                                                                                                                     |
@@ -81,7 +81,7 @@ edited without it); the change names the gap.
 | Resolve         | `resolveRef(input, refs) → RefResolution`                                | Input to one element, or a named refusal                                       |
 | Kind word       | `kindWordOf(el)`                                                         | The first word of a line: the shape, the notation, or the element type         |
 | Unknown kind    | `isKnownElement`, `UNKNOWN_KIND_MARK` (`?`)                              | An element type or shape kind `@livehuddle/document` does not know             |
-| Container       | `deriveContainers`, `ViewNode.container`                                 | The frame, lane or mind-map parent an element nests under                      |
+| Container       | `deriveContainers`, `ViewNode.container`                                 | The frame or lane an element nests under                                       |
 | Reading order   | `readingOrder`, `rowsOf`                                                 | Rows top to bottom, then left to right                                         |
 | Freehand run    | `FreehandRun`, `freehandRuns`                                            | Consecutive bare strokes in one container, printed as one counted line         |
 | Content summary | `contentSummaryOf`                                                       | What a content kind holds, briefly                                             |
@@ -100,7 +100,7 @@ edited without it); the change names the gap.
 
 Banned: "handle", "alias", "short id", "short code" (for a ref); "mode", "format", "snapshot", "render" (for a view;
 "render" stays the image preview's verb, and `format` names only `read_document`'s choice between a view and the
-elements); "parent" for a frame or lane (it is the container; only `mindParentId` is a parent); "group",
+elements); "parent" for a frame or lane (it is the container); "group",
 "cluster" (a frame is a container; a cluster is graph input's word); "query" or "filter" (those are selectors and
 Explorer lenses); "token" for a kind word (a token is an API token); "truncate" in copy ("hidden", "left out").
 
@@ -176,7 +176,7 @@ non-empty unique ids. The round-trip tests in [Testing](#testing) hold this.
 | ----------------------------------------- | ----------------------------------------------------------------------------- |
 | An event-storming note                    | its notation, `eventStormingKindOf(el)` (`domain-event`, `command`, …)        |
 | The notation `actor`                      | `es:actor`, so it never reads as the `actor` shape                            |
-| `type: 'shape'`, `shape` in `SHAPE_KINDS` | the shape (`square`, `frame`, `lane`, `entity`, `mind-node`, `actor`, …)      |
+| `type: 'shape'`, `shape` in `SHAPE_KINDS` | the shape (`square`, `frame`, `lane`, `actor`, …)                             |
 | `type` in `ELEMENT_TYPES`, not a shape    | the type (`text`, `sticky`, `table`, `image`, `freehand`, `path`, `arrow`, …) |
 | `type: 'shape'`, unknown `shape`          | `? <shape>` (`VW12`); `? shape` when it has none                              |
 | unknown `type`                            | `? <type>`                                                                    |
@@ -192,17 +192,14 @@ the document model knows. An event-storming note still in photo draft carries th
 container; views, the edit-operations membership reports, the lint and the editor's frame drag (through
 `containerContents`) all read it.
 
-1. **Mind parent first.** A `mind-node` whose `mindParentId` names a `mind-node` in the input nests under it.
-   Following parent links from any node, a link that returns to a node already on the chain is ignored at the node
-   with the lowest array index, which becomes a root of its tree (`VW24`).
-2. **Geometry otherwise.** Candidates are `frame` and `lane` shapes other than the element itself whose stored box
+1. **Geometry.** Candidates are `frame` and `lane` shapes other than the element itself whose stored box
    holds the element's centre (`boxHoldsPoint`, edges inclusive) and whose area is strictly greater than the
    element's (`VW23`). The smallest candidate by area wins; equal areas go to the earlier in array order.
    `smallestHolder(point, holders)` is that point query alone, the rule `mermaidFromTab` applies (smallest frame
    holding the centre, inclusive, the earlier on a tie); `deriveContainers` passes it only the strictly larger
    candidates, and that guard makes nesting acyclic. Rotation is ignored: centres and boxes are the stored
    axis-aligned ones.
-3. Elements without numeric `x`, `y`, `width`, `height` (only unknown kinds can lack them) sit at the root.
+2. Elements without numeric `x`, `y`, `width`, `height` (only unknown kinds can lack them) sit at the root.
 
 Views pass printed elements only, so a hidden frame contains nothing. Containers nest to any depth. `mermaidFromTab`
 keeps its one-level, frames-only output by calling `smallestHolder` with frames only.
@@ -278,7 +275,7 @@ Invariants:
 
 ```text
 header      := "tab" SP tabRef SP jsonString(name) " · " total " element" ["s"] [": " buckets]
-               [" · kind=" tabKind] [" · mode=" editorMode] [" · finish=" finish]
+               [" · kind=" tabKind] [" · finish=" finish]
                [" · " hidden " hidden"] [" · " unknown " unknown"]
                [" · threads " open " open/" threadTotal] [" · rev " rev]
 buckets     := bucket {", " bucket}                       (non-zero only, in the order boxes, frames, lanes, arrows)
@@ -295,8 +292,8 @@ style       := "~" (strokeStyle | "none" | "both" | "from")
 attribute   := key "=" attrValue | flag
 ```
 
-`kind=` prints only for a tab whose `tabKindOf` is not `diagram`; `mode=` only for a tab whose `opensInOf` is not
-`diagram`; `finish=` only when the tab sets one;
+`kind=` prints only for a tab whose `tabKindOf` is not `diagram` (every tab is worked in Workshop, so no mode prints);
+`finish=` only when the tab sets one;
 `threads` only when the tab has a thread; `rev`
 only when the context gives one (`VW8`). A blank label (after trim) prints nothing (`VW17`).
 
@@ -320,16 +317,15 @@ are escaped as `\;` and `\}` too.
 
 **Content summaries** (`contentSummaryOf`), printed after the label:
 
-| Element                           | Summary                                                                                                                      | Ledger |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------ |
-| `entity`                          | `{` first `ENTITY_FIELDS_SHOWN` fields as `name[ type]`, joined `; ` (`; +N` when more) `}`                                  | `VW19` |
-| `table`                           | `<rows>x<cols>` then the first row's cells joined `\|`; `0x0` when empty                                                     | `VW18` |
-| `code-block`                      | `lang=<codeLanguage, else plain> lines=<line count, 0 when empty>`                                                           | `VW20` |
-| `pie-chart`, `bar-chart`          | `slices=<pieSlices.length>`                                                                                                  | `VW21` |
-| `line-chart`                      | `series=<lineSeries.length> x=<lineCategories.length>`                                                                       | `VW21` |
-| `checklist`                       | `done=<done>/<total>`                                                                                                        |        |
-| `sankey`                          | `flows=<sankeyFlows.length> nodes=<distinct from / to names, trimmed and space-collapsed>`                                   |        |
-| `layer-stack`, `pyramid`, `cycle` | `rows=` then each row's `label` (`?` when it has none) as `cellText`, joined `\|`; then ` variant=<pyramidVariant>` when set |        |
+| Element                  | Summary                                                                                 | Ledger |
+| ------------------------ | --------------------------------------------------------------------------------------- | ------ |
+| `table`                  | `<rows>x<cols>` then the first row's cells joined `\|`; `0x0` when empty                | `VW18` |
+| `code-block`             | `lang=<codeLanguage, else plain> lines=<line count, 0 when empty>`                      | `VW20` |
+| `pie-chart`, `bar-chart` | `slices=<pieSlices.length>`                                                             | `VW21` |
+| `line-chart`             | `series=<lineSeries.length> x=<lineCategories.length>`                                  | `VW21` |
+| `checklist`              | `done=<done>/<total>`                                                                   |        |
+| `timeline-rail`          | `rows=` then each milestone's `label` (`?` when it has none) as `cellText`, joined `\|` |        |
+| `stack`                  | `direction=<stackDirection, else row>`                                                  |        |
 
 The table line prints its label first when it has one. Every text a summary prints from the document goes through
 `cellText` (JSON escapes, `|` escaped), so a newline in a column name can never forge a line of the view.
@@ -447,7 +443,6 @@ them with `all`; with `all` they print with `· resolved ·`. `authorId` never p
   at <x>,<y> <w>x<h> [r=<deg>]                (content-origin coordinates; arrows print their ends instead)
   <field>: <compact JSON value>                every remaining stored field, keys sorted by code unit
   cells:                                       a table: one "  | a | b |" line per row, cellText escaped
-  fields:                                      an entity: one "  - name type" line per field
   comments: <open|resolved> · <count>          then each comment as in the comments view
   ← <source ref> <source label> [label=<arrow label>] [<arrow ref>]
   → <target ref> <target label> [label=<arrow label>] [<arrow ref>]
@@ -477,12 +472,12 @@ reserved words of edit operations are (EO10); an element whose id is `selected` 
    (`VW67`). Its JSON is `ShowSelectedView`.
 
 **`find`** (`VW35`): `q` is NFKC-normalised and lower-cased; it matches a printed element's label, note, table
-cells, entity field names and types, checklist item text, a Sankey's node names (field `node`), code and comment text, and a printed arrow's label, each
+cells, checklist item text, code and comment text, and a printed arrow's label, each
 NFKC-normalised and lower-cased, as a substring. Each match prints its container chain (each ancestor as
 `<kindWord> <ref> <label>`, indented by depth, printed once for siblings) and then its own outline line; a matching
 arrow prints as an own-line arrow under its source's chain. The closing line (kept at any budget, before the
 elision line) is
-`<n> matches: <count> <field>[s], …` with fields `label`, `note`, `edge`, `cell`, `field`, `item`, `code`,
+`<n> matches: <count> <field>[s], …` with fields `label`, `note`, `edge`, `cell`, `item`, `code`,
 `comment`. No match prints `0 matches`.
 
 **`diff`** (`VW36`): `diffView(before, after)` compares by element id.
@@ -763,7 +758,6 @@ the tab and its `rev`.
 | E8   | Free, on-arrow ends                            | `free`, `arrow:<ref>`; a non-pinned source prints on its own line                                |
 | E9   | Parallel arrows                                | Both on the source line                                                                          |
 | E10  | Self-loop                                      | `→ <own ref>`                                                                                    |
-| E11  | Mind map cycle or dangling parent              | Broken at the lowest index; a dangling parent reads as a root                                    |
 | E12  | Unknown type or shape                          | `? <name>` line with ref and label, counted `· n unknown`, contained by geometry when it has one |
 | E13  | Element without geometry                       | Root, after the rows, in array order                                                             |
 | E14  | Id with unsafe characters                      | `id:"…"` ref                                                                                     |
@@ -858,7 +852,7 @@ Every rule maps to a deterministic test; the spec's rules are numbered here.
 | R8 One line per element, indentation is containment                  | `packages/document-views/src/outline.test.ts`, golden `checkout.outline.txt`                                                             |
 | R9 Kind words, notations, `es:actor`                                 | `element-refs.test.ts` (kind words)                                                                                                      |
 | R10 JSON strings, cut 60 / 48 on a word boundary                     | `../packages/document-views/src/text.test.ts`                                                                                            |
-| R11 Smallest frame or lane holding the centre; mind parent wins      | `packages/document/src/containment.test.ts`; `mermaid.test.ts` unchanged; `tree.test.ts`                                                 |
+| R11 Smallest frame or lane holding the centre                        | `packages/document/src/containment.test.ts`; `mermaid.test.ts` unchanged; `tree.test.ts`                                                 |
 | R12 Arrows on the source line; free ends on their own                | `edges.test.ts`                                                                                                                          |
 | R13 Reading order                                                    | `../packages/document-views/src/reading-order.test.ts`                                                                                   |
 | R14 Content summaries and state attributes                           | `content-summary.test.ts`, `state-attribute.test.ts` (every kind in the table)                                                           |

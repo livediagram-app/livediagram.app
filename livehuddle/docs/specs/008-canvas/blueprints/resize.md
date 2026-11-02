@@ -3,8 +3,7 @@
 Derived from [Canvas and palette](../canvas-and-palette.md) "Resize", "Aspect ratio lock",
 "Rotation" and "Adding elements", for the resize of boxed elements and multi-selections, the
 Shift constraint on draw-to-size, and where every selection grip draws ("The handles are always on
-top"). Reshaping a recognised whiteboard shape is owned by the
-[whiteboard blueprint](../../023-draw-mode/blueprints/whiteboard-round-one.md).
+top").
 
 ## Domain and naming
 
@@ -66,7 +65,7 @@ unionMinScale)` where `unionMinScale` is the largest `minUniformScale` of the re
   square of side `max(|dx|, |dy|)` in the drag's direction, then `snapLeadingAxis(box, corner, lead,
 snapEdge)` with `lead` from the raw pointer, so the square survives the snap; without Shift each
   moving edge snaps on its own.
-- Whiteboard: `useCanvasSurfaceGestures` turns a Shift press into an additive marquee unless the
+- Shift press: `useCanvasSurfaceGestures` turns a Shift press into an additive marquee unless the
   target is inside `[data-canvas-handle]`. `ResizeHandles`, `EdgeResizeHandle` and
   `UnionResizeHandles` all carry `data-canvas-handle`, so every handle reaches its resize with Shift.
 

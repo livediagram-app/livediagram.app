@@ -87,10 +87,6 @@ export function edgeCasesTab(): Tab {
     strokeAt('run-1', ...cell(14)),
     strokeAt('run-2', ...cell(15)),
     strokeAt('run-3', cell(15)[0] + 30, cell(15)[1], true),
-    shapeAt('mind-node', 'mind-a', ...cell(16), 100, 50, { label: 'A', mindParentId: 'mind-c' }),
-    shapeAt('mind-node', 'mind-b', ...cell(17), 100, 50, { label: 'B', mindParentId: 'mind-a' }),
-    shapeAt('mind-node', 'mind-c', ...cell(18), 100, 50, { label: 'C', mindParentId: 'mind-b' }),
-    shapeAt('mind-node', 'mind-d', ...cell(19), 100, 50, { label: 'D', mindParentId: 'gone' }),
     ...STATE_KINDS.map(([kind, state], i) =>
       shapeAt(kind, `state-${kind}`, ...cell(24 + i), 100, 50, state),
     ),

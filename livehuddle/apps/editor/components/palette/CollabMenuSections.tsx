@@ -121,8 +121,8 @@ const NO_DRIVERS: string[] = [];
 
 // --- Agenda (docs/specs/012-collaboration/agenda.md) -----------------------------------------------------
 
-// Mirrors the checklist's row editor (docs/specs/009-elements/checklist.md) and the record's field editor
-// (docs/specs/009-elements/entity.md) rather than inventing a third row-editing idiom.
+// Mirrors the checklist's row editor (docs/specs/009-elements/checklist.md) rather than inventing another
+// row-editing idiom.
 export function AgendaMenuSection({
   target,
   sectionProps,

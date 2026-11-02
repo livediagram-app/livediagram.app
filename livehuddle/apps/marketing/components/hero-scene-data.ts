@@ -4,12 +4,12 @@
 // the one that shows its feature (FeatureScene.tsx), so a scene is declared once, here.
 //
 // The data alone, without the boards: a page that shows one scene (FeatureScene) loads only that
-// scene's board, never all four. hero-scenes.tsx pairs each with its board for the hero stage.
+// scene's board, never all three. hero-scenes.tsx pairs each with its board for the hero stage.
 
 import type { TabDef } from './hero-editor-window';
 import type { HeroMode } from './hero-mode-palette';
 
-export type HeroSceneKey = 'diagram' | 'draw' | 'mindmap' | 'townhall';
+export type HeroSceneKey = 'diagram' | 'draw' | 'townhall';
 
 export type HeroSceneData = {
   key: HeroSceneKey;
@@ -21,8 +21,8 @@ export type HeroSceneData = {
   short: string;
   // The hero headline's word while this window is centred (lib/hero-word-pin.ts).
   word: string;
-  // Where its Build yours button goes: the template step narrowed to this kind
-  // (docs/specs/007-editor/new-document-route.md "?mode= and ?q=").
+  // Where its Build yours button goes: the template step searched for this kind
+  // (docs/specs/007-editor/new-document-route.md "?q=").
   build: string;
   mode: HeroMode;
   tabs: TabDef[];
@@ -41,11 +41,11 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
   {
     key: 'diagram',
     word: 'Diagram',
-    build: '/new?mode=diagram',
+    build: '/new?q=system',
     short: 'Diagram',
     title: 'Onboarding',
     label: 'Diagram: map a flow together, with arrows that connect and shapes that snap',
-    mode: 'diagram',
+    mode: 'workshop',
     tabs: [
       { name: 'Sign-up', color: '#0ea5e9', active: true },
       { name: 'Checkout', color: '#ec4899' },
@@ -57,11 +57,11 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
   {
     key: 'draw',
     word: 'Whiteboard',
-    build: '/new?mode=draw',
+    build: '/new?q=sketchnote',
     short: 'Draw',
     title: 'Sprint retro',
     label: 'Draw: sketch on a whiteboard together, markers, stickies and all',
-    mode: 'draw',
+    mode: 'workshop',
     tabs: [
       { name: 'Went well', color: '#10b981', active: true },
       { name: 'To improve', color: '#f59e0b' },
@@ -70,25 +70,10 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
     portraitViewBox: PORTRAIT,
   },
   {
-    key: 'mindmap',
-    word: 'Brainstorm',
-    build: '/new?mode=diagram&q=mind%20map',
-    short: 'Mind map',
-    title: 'Launch plan',
-    label: 'Mind map: grow ideas out from the centre, one Tab at a time',
-    mode: 'diagram',
-    tabs: [
-      { name: 'Ideas', color: '#0ea5e9', active: true },
-      { name: 'Actions', color: '#10b981' },
-    ],
-    shared: true,
-    portraitViewBox: PORTRAIT,
-  },
-  {
     key: 'townhall',
     word: 'Workshop',
     short: 'Town hall',
-    build: '/new?mode=workshop&q=town%20hall',
+    build: '/new?q=town%20hall',
     title: 'Q3 all-hands',
     label: 'Town hall: questions in, votes up, answered live with the whole room',
     mode: 'workshop',

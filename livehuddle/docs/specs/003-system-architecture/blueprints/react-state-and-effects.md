@@ -57,7 +57,6 @@ What stays, with where it runs, is the allow-list in `apps/editor/render-browser
 
 | Site                                                        | The wrapper carried          | Becomes                                                          |
 | ----------------------------------------------------------- | ---------------------------- | ---------------------------------------------------------------- |
-| `apps/editor/components/canvas/whiteboard/ShapesFlyout.tsx` | focus for the search field   | `<Fragment ref>`; `FragmentInstance.focus()` lands on the input  |
 | `apps/editor/components/panels/LayerRowMenu.tsx` (two rows) | the confirm popover's anchor | the click's `currentTarget` (`MenuActionRow` hands its click on) |
 
 Stay, carrying more than a ref: `../packages/ui/src/Tooltip.tsx` (React pointer and focus handlers, capture-phase

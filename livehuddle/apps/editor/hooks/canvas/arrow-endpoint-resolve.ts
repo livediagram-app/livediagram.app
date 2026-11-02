@@ -6,7 +6,6 @@ import {
   snapToAlignment,
   snapToAnchor,
   snapToArrowPoint,
-  snapToEntityField,
   type AlignmentGuide,
   type ArrowElement,
   type Element,
@@ -65,27 +64,6 @@ export function resolveArrowEndpointDrag({
   // outcome when both are plausible.
   const arrow = elements.find((e): e is ArrowElement => e.id === arrowId && e.type === 'arrow');
   const otherEnd = arrow ? arrow[end === 'from' ? 'to' : 'from'] : null;
-  // Over an entity's field row, the end joins that field (docs/specs/009-elements/entity.md "Field to
-  // field"), on the side facing its other end. Within the row, a field beats the anchors along the
-  // entity's sides; Cmd / Ctrl leaves the end free, as it does every snap.
-  const fieldSnap =
-    noSnap || !otherEnd
-      ? null
-      : snapToEntityField(
-          cursor,
-          elements,
-          endpointPosition(otherEnd, elements),
-          otherEnd.kind === 'pinned' ? otherEnd.elementId : null,
-        );
-  if (fieldSnap) {
-    const { elementId, anchor, field, point } = fieldSnap;
-    return {
-      endpoint: { kind: 'pinned', elementId, anchor, field },
-      guides: [],
-      snapTargets: [{ x: point.x, y: point.y, active: true }],
-      arrowConnected: false,
-    };
-  }
   const anchorSnap = snapToAnchor(cursor, elements, SNAP_THRESHOLD);
   // No element anchor nearby → look for a nearby arrow line to connect to
   // (docs/specs/008-canvas/arrow-to-arrow.md). REVEAL distance shows the line's snap dots as you approach;

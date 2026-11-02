@@ -5,7 +5,6 @@
 // the in-app canvas drawer consume. The emitters stay in svg-render.ts.
 
 import type { TagColour } from './tag-colours';
-import { isPersonNode } from './person-node';
 import { imageCornerPx } from './drawn-outline-finish';
 import { ownColours } from './behaviour-skin';
 import {
@@ -416,15 +415,8 @@ export function selfLabelled(el: BoxedElement): boolean {
     isWebComponentShape(el.shape) ||
     // A boundary writes its own title in its tab or corner (docs/specs/009-elements/boundary.md).
     el.shape === 'boundary' ||
-    // A cycle and a hub write their centre label themselves (docs/specs/009-elements/concept-graphics.md).
-    el.shape === 'cycle' ||
-    el.shape === 'hub' ||
     // A diagram key writes its title above its rows (docs/specs/009-elements/diagram-key.md).
-    el.shape === 'diagram-key' ||
-    // A sequence diagram's names are in its picture (docs/specs/009-elements/sequence-diagram.md).
-    el.shape === 'sequence' ||
-    // A person node writes its name beside its initials (docs/specs/009-elements/org-chart.md).
-    isPersonNode(el)
+    el.shape === 'diagram-key'
   );
 }
 

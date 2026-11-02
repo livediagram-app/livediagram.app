@@ -7,7 +7,6 @@ import {
   flyoutGroups,
   flyoutKeyTarget,
   flyoutLayout,
-  flyoutTagline,
   SHORT_CARD_LIST,
 } from './category-flyout-groups';
 import { paletteCategoriesFor } from './palette-layouts';
@@ -15,7 +14,7 @@ import type { PaletteTileDef } from './palette-tile-defs';
 
 // The category flyout's arrangement (docs/specs/007-editor/toolbar-layout.md "The category bar").
 
-const tiles = (mode: 'diagram' | 'workshop', id: string): PaletteTileDef[] =>
+const tiles = (mode: 'workshop', id: string): PaletteTileDef[] =>
   paletteCategoriesFor(mode).find((c) => c.id === id)?.tiles ?? [];
 
 const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
@@ -29,8 +28,8 @@ const tile = (id: string, dividerAfter = false): PaletteTileDef => ({
 });
 
 describe('the category bar', () => {
-  it('is Diagram’s and Workshop’s strip, not Plan’s or Draw’s', () => {
-    expect([...CATEGORY_BAR_MODES].sort()).toEqual(['diagram', 'workshop']);
+  it('is Workshop’s strip', () => {
+    expect([...CATEGORY_BAR_MODES]).toEqual(['workshop']);
   });
 
   it('names every category in one word', () => {
@@ -55,31 +54,20 @@ describe('a flyout’s layout', () => {
     expect(flyoutCardColumns(SHORT_CARD_LIST)).toBe(1);
     expect(flyoutCardColumns(SHORT_CARD_LIST + 1)).toBe(2);
   });
-
-  it('words a line its own way where a mode fills the category differently', () => {
-    expect(flyoutTagline('write', 'fallback', 'workshop')).toBe(
-      'Words, notes, tables and checklists.',
-    );
-    expect(flyoutTagline('write', 'fallback', 'diagram')).toBe(
-      'Words on the canvas: text, notes and comments.',
-    );
-    expect(flyoutTagline('unknown', 'fallback')).toBe('fallback');
-  });
 });
 
 describe('a flyout’s groups', () => {
   it('heads Shapes, Draw, Layout, Data and Components by the tile that starts each group', () => {
-    expect(flyoutGroups('shapes', tiles('diagram', 'shapes')).map((g) => g.title)).toEqual([
+    expect(flyoutGroups('shapes', tiles('workshop', 'shapes')).map((g) => g.title)).toEqual([
       'Basics',
       'Flowchart',
       'More Shapes',
     ]);
-    expect(flyoutGroups('draw', tiles('diagram', 'draw')).map((g) => g.title)).toEqual([
+    expect(flyoutGroups('draw', tiles('workshop', 'draw')).map((g) => g.title)).toEqual([
       'Pens',
-      'Outlines',
       'Connectors',
     ]);
-    expect(flyoutGroups('layout', tiles('diagram', 'layout')).map((g) => g.title)).toEqual([
+    expect(flyoutGroups('layout', tiles('workshop', 'layout')).map((g) => g.title)).toEqual([
       'Containers',
       'Parts',
     ]);
@@ -104,7 +92,7 @@ describe('a flyout’s groups', () => {
   });
 
   it('never splits Popular, and has nothing to show for no tiles', () => {
-    expect(flyoutGroups('popular', tiles('diagram', 'popular'))).toHaveLength(1);
+    expect(flyoutGroups('popular', tiles('workshop', 'popular'))).toHaveLength(1);
     expect(flyoutGroups('shapes', [])).toEqual([]);
     // One group: no heading, whatever its first tile is called.
     expect(flyoutGroups('shapes', [tile('shapes:square')])[0]!.title).toBeNull();

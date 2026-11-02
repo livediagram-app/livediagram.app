@@ -14,8 +14,8 @@ import {
 } from './toolbar-strip-tiles';
 
 const NONE = { hasImage: true };
-// Diagram mode's Popular, as its palette layout fills it.
-const diagramPopular = paletteCategoriesFor('diagram').find((c) => c.id === 'popular')!.tiles!;
+// Workshop's Popular, as its palette layout fills it.
+const workshopPopular = paletteCategoriesFor('workshop').find((c) => c.id === 'popular')!.tiles!;
 
 describe('stripTilesFor', () => {
   it('never shows more than the limit', () => {
@@ -33,18 +33,19 @@ describe('stripTilesFor', () => {
   });
 
   it('always offers More for the categories whose body is more than tiles', () => {
-    // The three searchable catalogues and My shapes (no strip tiles of its own) can only be fully
+    // The two searchable catalogues and My shapes (no strip tiles of its own) can only be fully
     // reached through More.
-    for (const id of ['icons', 'stickers', 'technology', 'my-shapes']) {
+    for (const id of ['icons', 'stickers', 'my-shapes']) {
       expect(stripTilesFor(id, NONE).hasMore, id).toBe(true);
     }
   });
 
   it('shows a short category whole, with no More', () => {
-    const devices = tilesForCategory('devices');
-    expect(devices.length).toBeLessThanOrEqual(STRIP_TILE_LIMIT);
-    const strip = stripTilesFor('devices', NONE);
-    expect(strip.tiles.map((t) => t.id)).toEqual(devices.map((t) => t.id));
+    const write = tilesForCategory('write');
+    expect(write.length).toBeGreaterThan(0);
+    expect(write.length).toBeLessThanOrEqual(STRIP_TILE_LIMIT);
+    const strip = stripTilesFor('write', NONE);
+    expect(strip.tiles.map((t) => t.id)).toEqual(write.map((t) => t.id));
     expect(strip.hasMore).toBe(false);
   });
 
@@ -68,21 +69,17 @@ describe('stripTilesFor', () => {
     ['shapes', ['shapes:diamond', 'shapes:stadium']],
     ['write', ['tools:text']],
     ['draw', ['tools:highlighter', 'tools:polygon']],
-    ['devices', ['devices:laptop']],
     ['media', ['media:embed-website']],
     ['data', ['data:legend']],
   ])('divides %s into its groups', (category, after) => {
     expect([...stripTilesFor(category, NONE).dividersAfter]).toEqual(after);
   });
 
-  it('drops the dividers of a category that exactly fills the strip, keeping every tile', () => {
-    // Components holds the strip's full twelve tiles (with the Card, Badge and Step number), so its
-    // divider after the entity gives way rather than a tile.
+  it('keeps every tile of a category short of the strip', () => {
     const components = stripTilesFor('components', NONE);
-    expect(components.tiles).toHaveLength(STRIP_TILE_LIMIT);
+    expect(components.tiles).toHaveLength(11);
     expect([...components.dividersAfter]).toEqual([]);
-    // Build, short of it since the Timeline moved to Concepts, keeps every tile on the strip.
-    expect(stripTilesFor('build', NONE).tiles).toHaveLength(11);
+    expect(stripTilesFor('build', NONE).tiles).toHaveLength(7);
   });
 
   it('gives a divided category one tile less when it overflows, to make room', () => {
@@ -92,12 +89,12 @@ describe('stripTilesFor', () => {
   });
 
   it('spends part-tile slack on a divider rather than a whole tile', () => {
-    // Diagram's Popular divides after the diamond (the third tile). With room
+    // Workshop's Popular divides after the text (the third tile). With room
     // for 4.26 tiles, four tiles and that divider (4.2) fit.
-    const popular = { ...NONE, tiles: diagramPopular };
+    const popular = { ...NONE, tiles: workshopPopular };
     const roomy = stripTilesFor('popular', { ...popular, limit: 4.26 });
     expect(roomy.tiles).toHaveLength(4);
-    expect([...roomy.dividersAfter]).toEqual(['shapes:diamond']);
+    expect([...roomy.dividersAfter]).toEqual(['tools:text']);
     // Without the slack the divider costs the fourth tile, as before.
     expect(stripTilesFor('popular', { ...popular, limit: 4 }).tiles).toHaveLength(3);
   });

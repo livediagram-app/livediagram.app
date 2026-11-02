@@ -27,12 +27,10 @@ import {
 } from '@livehuddle/ui';
 import { lucideSearch, lucideX } from '@liveworkspace/icons/lucide';
 import { useChromeFloor } from '@liveworkspace/workbench/components/toast/useToastFloor';
-import type { EditorMode } from '@livehuddle/document';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { CHOSEN_HOVER_TINT, CHOSEN_TINT, chosenLabel, type StartPalette } from './start-palette';
 import { StartCardGrid, startTint, type StartPanelCard } from './StartCard';
-import { StartOtherModes, type StartPanelElsewhere } from './StartOtherModes';
 import { takeStartQuery } from '@liveworkspace/workbench/components/start/start-query';
 import { liftBestMatch } from '@liveworkspace/workbench/components/start/best-match';
 import {
@@ -79,10 +77,7 @@ export function StartPanel<C extends string>({
   cardsIn,
   search,
   onChoose,
-  elsewhere,
-  onChooseElsewhere,
   onClose,
-  lead,
   footer,
 }: {
   titleId: string;
@@ -104,14 +99,8 @@ export function StartPanel<C extends string>({
   // A quiet strip under the choices, in the panel's colours: the Sync to Server switch
   // (save-locations.md "On the start screen").
   footer?: ((palette: StartPalette) => ReactNode) | undefined;
-  // Found in other modes (start-diagramming.md): the other modes' matches for a search, and choosing one, which
-  // switches the tab to that mode. Absent where the tab's mode may not change: the search keeps to its own mode.
-  elsewhere?: ((query: string) => readonly StartPanelElsewhere[]) | undefined;
-  onChooseElsewhere?: ((mode: EditorMode, cardId: string) => void) | undefined;
   // Absent where the panel cannot be closed: no × in its header.
   onClose?: (() => void) | undefined;
-  // Leading the rail, over a hairline: the mode switch.
-  lead?: ReactNode;
 }) {
   // A category's flyout, More or Search hangs from the palette: the start steps aside for it (palette-popover-open).
   const paletteOpen = usePalettePopoverOpen();
@@ -142,7 +131,6 @@ export function StartPanel<C extends string>({
   const { best, groups: results } = searching
     ? liftBestMatch<StartPanelCard, StartPanelResult<C>>(search(query), query)
     : { best: [], groups: [] };
-  const others = searching && elsewhere && onChooseElsewhere ? elsewhere(query) : [];
   const nameOf = (id: C) => categories.find((c) => c.id === id)?.name ?? id;
   // The cards' scroller: a category picked opens at its top, never part way down the last one's cards.
   const cardsScroller = useRef<HTMLDivElement>(null);
@@ -396,11 +384,6 @@ export function StartPanel<C extends string>({
             className="flex shrink-0 flex-col max-sm:contents sm:w-60 sm:border-r"
             style={{ borderColor: palette.border }}
           >
-            {lead ? (
-              <div className="shrink-0 border-b" style={{ borderColor: palette.border }}>
-                {lead}
-              </div>
-            ) : null}
             <nav
               aria-label="Categories"
               className="flex shrink-0 gap-1 overflow-x-auto p-3 sm:min-h-0 sm:flex-1 sm:flex-col sm:overflow-y-auto sm:overflow-x-hidden sm:p-4 max-sm:border-b max-sm:px-2 max-sm:py-2 max-sm:[scrollbar-width:none]"
@@ -434,7 +417,7 @@ export function StartPanel<C extends string>({
             className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 max-sm:p-3"
           >
             {searching ? (
-              best.length === 0 && results.length === 0 && others.length === 0 ? (
+              best.length === 0 && results.length === 0 ? (
                 // The shared empty state in the board's colours (docs/specs/004-interface-design/empty-states.md).
                 <CompactEmptyState
                   role="status"
@@ -446,38 +429,8 @@ export function StartPanel<C extends string>({
                 />
               ) : (
                 <>
-                  {best.length === 0 && results.length === 0 ? (
-                    // Nothing of this mode, something of another's: one line, then the other modes' blocks.
-                    <p
-                      role="status"
-                      className="mb-5 flex items-start gap-2.5 rounded-xl px-3 py-2.5 text-[13px]"
-                      style={{ backgroundColor: palette.column }}
-                    >
-                      <span aria-hidden className="mt-px shrink-0" style={{ color: palette.muted }}>
-                        <SearchGlyph />
-                      </span>
-                      <span>
-                        <span className="font-semibold">{noMatchTitle(noMatchNoun, query)}.</span>{' '}
-                        <span style={{ color: palette.muted }}>Found in other modes.</span>
-                      </span>
-                    </p>
-                  ) : (
-                    <>
-                      {best.length > 0 ? section('best-match', 'Best Match', best) : null}
-                      {results.map((g) => section(g.category, nameOf(g.category), g.cards))}
-                    </>
-                  )}
-                  {others.length && onChooseElsewhere ? (
-                    <StartOtherModes
-                      // A new search starts folded.
-                      key={query.trim().toLowerCase()}
-                      groups={others}
-                      palette={palette}
-                      divided={best.length + results.length > 0}
-                      cascade={!calm}
-                      onChoose={onChooseElsewhere}
-                    />
-                  ) : null}
+                  {best.length > 0 ? section('best-match', 'Best Match', best) : null}
+                  {results.map((g) => section(g.category, nameOf(g.category), g.cards))}
                 </>
               )
             ) : (

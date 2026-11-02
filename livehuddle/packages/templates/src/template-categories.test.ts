@@ -59,18 +59,18 @@ describe('template categories', () => {
   it('pins the primary counts', () => {
     const counts = ids.map((id) => TEMPLATES.filter((t) => templateCategory(t.kind) === id).length);
     expect(Object.fromEntries(ids.map((id, i) => [id, counts[i]]))).toEqual({
-      ideas: 7,
-      decisions: 7,
-      goals: 6,
+      ideas: 4,
+      decisions: 6,
+      goals: 3,
       meetings: 4,
-      people: 4,
+      people: 3,
       planning: 5,
-      processes: 4,
-      product: 11,
+      processes: 1,
+      product: 10,
       games: 6,
       retros: 5,
-      software: 11,
-      strategy: 8,
+      software: 8,
+      strategy: 7,
       learning: 3,
       spaces: 4,
     });
@@ -116,20 +116,17 @@ describe('template search words', () => {
     expect(find('1:1')).toContain('meeting-agenda');
     expect(find('retro')).toEqual(expect.arrayContaining(['retrospective', 'sailboat']));
     expect(find('persona')).toContain('user-persona');
-    expect(find('erd')).toContain('er-diagram');
-    expect(find('org')).toContain('orgchart');
     // The words the old artefact-shaped labels carried still find their templates.
-    expect(find('flowcharts')).toEqual(expect.arrayContaining(['flowchart', 'swimlane']));
-    expect(find('technical')).toEqual(expect.arrayContaining(['er-diagram', 'network-diagram']));
+    expect(find('technical')).toEqual(expect.arrayContaining(['network-diagram']));
     expect(find('classroom')).toEqual(expect.arrayContaining(['kwl-chart', 'concept-map']));
     expect(find('eisenhower')).toContain('eisenhower-matrix');
     expect(find('pestel')).toContain('pestle-analysis');
     expect(find('30 60 90')).toContain('onboarding-plan');
     expect(find('lan')).toContain('network-diagram');
     // A category label finds what is cross-listed in it; every word must match.
-    expect(find('metrics funnel')).toContain('funnel');
-    expect(find('metrics funnel')).not.toContain('orgchart');
-    expect(find('flowchart zebra')).toEqual([]);
+    expect(find('metrics tree')).toContain('metric-tree');
+    expect(find('metrics tree')).not.toContain('gantt');
+    expect(find('gantt zebra')).toEqual([]);
     expect(find('')).toHaveLength(TEMPLATES.length);
   });
 
@@ -138,8 +135,8 @@ describe('template search words', () => {
       TEMPLATES.filter((t) => templateMatchesQuery(t, q)).map((t) => t.kind);
     expect(find('1-on-1')).toContain('meeting-agenda');
     expect(find('one-on-one')).toContain('meeting-agenda');
-    // Run together, a hyphenated name is found too ("er diagram" from the kind er-diagram).
-    expect(find('erdiagram')).toContain('er-diagram');
+    // Run together, a hyphenated name is found too ("risk matrix" from the kind risk-matrix).
+    expect(find('riskmatrix')).toContain('risk-matrix');
     // A query of punctuation alone is no query.
     expect(find(' - ')).toHaveLength(TEMPLATES.length);
   });

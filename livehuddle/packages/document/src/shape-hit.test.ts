@@ -30,7 +30,6 @@ describe('pickedByOutline', () => {
     'square',
     'circle',
     'stadium',
-    'browser',
     'page',
     'diamond',
     'cylinder',
@@ -39,7 +38,6 @@ describe('pickedByOutline', () => {
     'cloud',
     'speech-bubble',
     'frame',
-    'laptop',
     'actor',
   ])('picks a %s by its drawn outline', (kind) => {
     expect(pickedByOutline(shape(kind))).toBe(true);
@@ -164,13 +162,6 @@ describe('shapeTouchesBrush', () => {
     expect(hits({ ...actor, fillColor: '#fff' }, { x: 45, y: 22 })).toBe(true);
   });
 
-  it('picks a browser by its frame and its chrome divider', () => {
-    const b = shape('browser', { width: 400, height: 300 });
-    // The strip's 1px bottom rule, inside the medium border.
-    expect(hits(b, { x: 200, y: 49.5 })).toBe(true);
-    expect(hits(b, { x: 200, y: 150 }, 10)).toBe(false);
-  });
-
   it('touches the whole box of a kind that paints its own face', () => {
     expect(hits(shape('pie-chart'), { x: 50, y: 50 })).toBe(true);
     expect(hits(shape('pie-chart', { rotation: 45 }), { x: 2, y: 2 })).toBe(false);
@@ -188,10 +179,6 @@ describe('shapeHitOutline', () => {
 
   it('adds the fill regions when the fill is visible', () => {
     expect(shapeHitOutline(shape('cylinder', { fillColor: '#fff' })).fills).toHaveLength(2);
-  });
-
-  it('draws every stroked part, the laptop keys included', () => {
-    expect(shapeHitOutline(shape('laptop', { width: 160 })).lines.length).toBeGreaterThan(40);
   });
 });
 

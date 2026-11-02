@@ -37,16 +37,6 @@ describe('self-edges', () => {
     expect(selfArrows(els)).toHaveLength(1);
   });
 
-  it.each(['mindmap', 'cycle'] as const)(
-    'shows the node and drops its self-edge in the %s style',
-    (style) => {
-      const els = layoutGraph({ style, nodes, edges });
-      expect(els.filter(isBoxed).map((b) => b.id)).toEqual(expect.arrayContaining(['a', 'b', 'c']));
-      expect(selfArrows(els)).toEqual([]);
-      expect(arrows(els)).toHaveLength(2);
-    },
-  );
-
   it('puts a cycle node whose only edge is a self-edge at the centre, as a node with no edge', () => {
     const els = layoutGraph({
       style: 'cycle',

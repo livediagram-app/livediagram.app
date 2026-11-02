@@ -98,8 +98,8 @@ export function isQuickStyleTarget(el: Element): el is QuickStyleTarget {
 
 export function supportsQuickSection(el: QuickStyleTarget, section: QuickSectionId): boolean {
   switch (section) {
-    // A chart or a Sankey paints from its palette per datum or node (docs/specs/009-elements/pie-chart.md,
-    // docs/specs/009-elements/sankey.md): a stroke or fill swatch would write a colour nothing draws.
+    // A chart paints from its palette per datum (docs/specs/009-elements/pie-chart.md): a stroke or fill swatch
+    // would write a colour nothing draws.
     case 'stroke':
       return (
         el.type === 'arrow' ||

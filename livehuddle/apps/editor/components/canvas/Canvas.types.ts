@@ -327,7 +327,6 @@ export type CanvasProps = {
   onAddCallout: () => void;
   onAddStatRow: () => void;
   onAddProcess: () => void;
-  onAddFlowchart: () => void;
   onAddAvatar: () => void;
   onAddText: () => void;
   // Optional fill + kind: an Event Storming note (docs/specs/021-event-storming/event-storming.md).
@@ -490,7 +489,7 @@ export type CanvasProps = {
   // Bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
   // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
   onOpenCanvasTheme?: () => void;
-  // Diagram mode's Tidy Up button and popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up
+  // The Tidy Up button and popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up
   // button"). Absent in a session that may not tidy (a Participant, a Viewer, an embed): no button.
   tidyUp?: TidyUpActions;
   onSelectLayer: (layerId: string) => void;
@@ -598,24 +597,8 @@ export type CanvasProps = {
   onAddTableColumn: () => void;
   // Toggle one checklist row's done state (docs/specs/009-elements/checklist.md). Omitted in read-only.
   onToggleChecklistItem?: (elementId: string, index: number) => void;
-  // Entities (docs/specs/009-elements/entity.md): fields saved in place, relationships drawn from a field,
-  // the ring's Add Field / Add Related Entity and the arrow toolbar's Cardinality. Omitted in read-only.
-  entityActions?: import('@/hooks/canvas/useEntityActions').EntityActions;
   // The Page masthead (docs/specs/009-elements/page-element.md): its heading and subtitle are their own
   // fields, so they commit through here rather than the label editor.
-  // Mind map (docs/specs/009-elements/mind-node.md): grows the next node from the label editor.
-  onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
-  // Flowchart (docs/specs/009-elements/flowchart.md): a step's type and lane from its toolbar. An
-  // Editor's only, so absent for anyone else (who still grows a chart through onGrowMindNode).
-  flowchartActions?: import('@/hooks/canvas/useFlowchartSetters').FlowchartActions;
-  // Edit Outline (docs/specs/009-elements/mind-node.md): whether `id` is a root whose outline may be
-  // edited, and opening it.
-  canEditMindOutline?: (id: string) => boolean;
-  onEditMindOutline?: (id: string) => void;
-  // Tidy Map on the map `id` belongs to (the badge on a map's root).
-  onTidyMindMap?: (id: string) => void;
-  // Escape on the empty node a Tab made one time too many removes it.
-  onAbandonMindNode: (id: string) => boolean;
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md): a row edited in place, one more row from
   // the quick-connect ring, and a hero's caption line. Omitted in read-only.
@@ -662,8 +645,8 @@ export type CanvasProps = {
   // Open the link picker for a link-card element (docs/specs/009-elements/link-cards.md), on double-click.
   // Omitted for read-only viewers.
   onEditLink?: (id: string) => void;
-  // Open an element's own edit dialog on double-click: a code block's code (docs/specs/009-elements/code-block.md),
-  // a Sankey's flows (docs/specs/009-elements/sankey.md). Omitted for read-only viewers.
+  // Open an element's own edit dialog on double-click: a code block's code (docs/specs/009-elements/code-block.md).
+  // Omitted for read-only viewers.
   onOpenEditDialog?: (id: string) => void;
   // Per-render context for image elements: identity + auth bits the
   // ImageElementView needs to fetch bitmap bytes. Optional so the

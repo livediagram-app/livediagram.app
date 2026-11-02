@@ -93,7 +93,7 @@ is what an arrow already says on this canvas. Not a bespoke link: a second
 kind of connection would be a second thing to lay out, export and explain.
 It also means the pair behaves like anything else: move the element and the
 arrow follows; delete the arrow and the panel is a note that floated free.
-The panel is added from the palette only: Workshop's **Record** category, or Diagram's **Write**. The
+The panel is added from the palette only: Workshop's **Record** category, or **Write**. The
 element menu has no `Comment Panel` tile: a second way in from every element's menu would be one more tile to read
 past on the way to the thread (the menu keeps `Add Comment`, the anchored popover).
 

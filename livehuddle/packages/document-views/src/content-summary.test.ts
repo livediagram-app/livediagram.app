@@ -7,35 +7,6 @@ const shape = (kind: Parameters<typeof shapeAt>[0], extra: Record<string, unknow
   ({ ...shapeAt(kind, 'x', 0, 0), ...extra }) as Element;
 
 describe('contentSummaryOf (R14)', () => {
-  it("lists an entity's first 8 fields and counts the rest, escaping ; and }", () => {
-    const fields = Array.from({ length: 10 }, (_, i) => ({
-      name: `f${i}`,
-      ...(i === 0 ? { type: 'uuid PK' } : {}),
-    }));
-    expect(contentSummaryOf(shape('entity', { entityFields: fields }))).toBe(
-      '{f0 uuid PK; f1; f2; f3; f4; f5; f6; f7; +2}',
-    );
-    expect(
-      contentSummaryOf(shape('entity', { entityFields: [{ name: 'a;b', type: 'map{}' }, 7] })),
-    ).toBe('{a\\;b map{\\}}');
-    expect(contentSummaryOf(shape('entity', { entityFields: [{ type: 'int' }] }))).toBe('{ int}');
-    expect(contentSummaryOf(shape('entity', { entityFields: undefined }))).toBe('{}');
-  });
-
-  it("writes a field's key after its type, and ignores one it does not know", () => {
-    expect(
-      contentSummaryOf(
-        shape('entity', {
-          entityFields: [
-            { name: 'id', type: 'uuid', key: 'pk' },
-            { name: 'org', key: 'pk-fk' },
-            { name: 'x', key: 'primary' },
-          ],
-        }),
-      ),
-    ).toBe('{id uuid PK; org PK FK; x}');
-  });
-
   it('sizes a table and prints its header row, ragged rows padded (E26)', () => {
     const table = {
       ...createTable(0, 0),
@@ -76,53 +47,12 @@ describe('contentSummaryOf (R14)', () => {
     expect(contentSummaryOf(createText(0, 0))).toBeNull();
   });
 
-  it("counts a Sankey's flows and the distinct nodes they join, as the diagram matches names", () => {
-    expect(
-      contentSummaryOf(
-        shape('sankey', {
-          sankeyFlows: [
-            { from: 'Salary', to: 'Budget ', value: 3 },
-            { from: ' Budget', to: 'Rent', value: 1 },
-            { from: 'Rent' },
-            'not a flow',
-          ],
-        }),
-      ),
-    ).toBe('flows=3 nodes=3');
-  });
-
-  it("lists a concept graphic's rows in order, and a pyramid's variant (docs/specs/009-elements/concept-graphics.md)", () => {
-    const rows = [{ label: 'Visited', note: '12,400' }, { label: 'Signed up' }, { label: 'a|b' }];
-    expect(
-      contentSummaryOf(shape('pyramid', { conceptRows: rows, pyramidVariant: 'funnel' })),
-    ).toBe('rows=Visited|Signed up|a\\|b variant=funnel');
-    expect(contentSummaryOf(shape('cycle', { conceptRows: [{ label: 'Plan' }, {}] }))).toBe(
-      'rows=Plan|?',
+  it("lists a timeline's milestones in order, and a stack's direction", () => {
+    const rows = [{ label: 'Kick-off' }, {}, { label: 'a|b' }];
+    expect(contentSummaryOf(shape('timeline-rail', { conceptRows: rows }))).toBe(
+      'rows=Kick-off|?|a\\|b',
     );
-    expect(contentSummaryOf(shape('layer-stack', { conceptRows: undefined }))).toBe('rows=');
-    expect(contentSummaryOf(shape('chevrons', { conceptRows: [{ label: 'Build' }] }))).toBe(
-      'rows=Build',
-    );
-  });
-
-  it("lists a sequence diagram's participants and counts its messages (docs/specs/009-elements/sequence-diagram.md)", () => {
-    expect(
-      contentSummaryOf(
-        shape('sequence', {
-          sequenceParticipants: [
-            { id: 'a', label: 'Browser' },
-            { id: 'b', label: 'API' },
-          ],
-          sequenceMessages: [{ from: 'a', to: 'b', label: 'GET', kind: 'call' }],
-        }),
-      ),
-    ).toBe('participants=Browser|API messages=1');
-    // A participant with no label reads as `?`, as a concept row does.
-    expect(
-      contentSummaryOf(
-        shape('sequence', { sequenceParticipants: [{ id: 'a' }], sequenceMessages: [] }),
-      ),
-    ).toBe('participants=? messages=0');
     expect(contentSummaryOf(shape('stack', {}))).toBe('direction=row');
+    expect(contentSummaryOf(shape('stack', { stackDirection: 'column' }))).toBe('direction=column');
   });
 });

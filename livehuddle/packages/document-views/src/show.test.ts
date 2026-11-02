@@ -27,19 +27,17 @@ describe('showView (R17, VW34)', () => {
     expect(json.fields).not.toHaveProperty('id');
   });
 
-  it("renders a table's cells, an entity's fields and a thread, root elements with no container", () => {
+  it("renders a table's cells and a thread, root elements with no container", () => {
     const model = checkout();
     const table = showView(model, elementOf(model, CHECKOUT_IDS.slos)).text.split('\n');
     expect(table).toContain('    | Service | p99 latency | Availability |');
-    const entity = showView(model, elementOf(model, CHECKOUT_IDS.order));
-    expect(entity.text.split('\n')).toContain('    - customer_id uuid FK');
-    expect(entity.json.container).toBeNull();
+    expect(showView(model, elementOf(model, CHECKOUT_IDS.order)).json.container).toBeNull();
     const sticky = showView(model, elementOf(model, CHECKOUT_IDS.sticky)).text.split('\n');
     expect(sticky).toContain('  comments: open · 2');
     expect(sticky.at(-1)).toBe('  omitted: commentThread.comments[].authorId');
   });
 
-  it("prints an arrow's ends, rotation, odd cells and fields, and an element without geometry", () => {
+  it("prints an arrow's ends, rotation and odd cells, and an element without geometry", () => {
     const a = {
       ...createTable(0, 0),
       id: 'a',
@@ -48,7 +46,7 @@ describe('showView (R17, VW34)', () => {
       cells: [['x|y', 3], 'row'],
       rotation: 30,
     };
-    const e = { ...shapeAt('entity', 'e', 0, 0), entityFields: [{ name: 'n' }, 'junk'] };
+    const e = shapeAt('square', 'e', 0, 0, 100, 50, { label: 'Box' });
     const odd = { id: 'odd', type: 'hologram', note: 'n' };
     const arrow = {
       ...arrowBetween('arr', 'a', 'e', { label: 'go' }),
@@ -68,7 +66,6 @@ describe('showView (R17, VW34)', () => {
       '  at 0,0 100x50 r=30',
     ]);
     expect(showView(model, elementOf(model, 'a')).text).toContain('    | x\\|y |  |\n    |  |');
-    expect(showView(model, elementOf(model, 'e')).text).toContain('  fields:\n    - n\n  ← free');
     expect(showView(model, elementOf(model, 'odd')).text.split('\n').slice(1)).toEqual([
       '? hologram odd',
       '  note: "n"',
@@ -76,7 +73,7 @@ describe('showView (R17, VW34)', () => {
     const arrowText = showView(model, elementOf(model, 'arr')).text.split('\n');
     expect(arrowText[1]).toBe('arrow arr "go"');
     expect(arrowText[2]).toBe('  3,4 → e.w');
-    expect(arrowText).toContain('  ← e "Entity" [rider]');
+    expect(arrowText).toContain('  ← e "Box" [rider]');
     expect(showView(model, elementOf(model, 'e')).text).toContain('  ← free label="go" [arr]');
   });
 
@@ -131,17 +128,7 @@ describe('person ids (security)', () => {
 
   it('leaves no top-level field holding an id unaccounted for', () => {
     // An idea card's id is a random UUID per card, never its poster's (docs/specs/012-collaboration/idea-box.md).
-    const notPeople = new Set([
-      'layerId',
-      'iconId',
-      'stickerId',
-      'imageId',
-      'mindParentId',
-      // A flowchart's id (its first step's) and a step's lane (docs/specs/009-elements/flowchart.md).
-      'flowchartId',
-      'flowLaneId',
-      'ideaCardIds',
-    ]);
+    const notPeople = new Set(['layerId', 'iconId', 'stickerId', 'imageId', 'ideaCardIds']);
     const roots = new Set(PERSON_ID_FIELDS.map((p) => p.split(/[.[{]/)[0]));
     const idLike = Object.values(ELEMENT_FIELD_NAMES)
       .flat()
@@ -158,7 +145,6 @@ describe('show on malformed and mirrored fields', () => {
       actions: 'junk',
       responses: [[], 'x'],
       noteRich: [{ text: 'n' }],
-      entityFields: [{ type: 'int' }],
       commentThread: {
         comments: [{ id: 'c', text: 'ok', createdAt: 0, authorName: 'A', authorColor: '#000' }],
         resolved: true,
@@ -168,6 +154,6 @@ describe('show on malformed and mirrored fields', () => {
     const { text, json } = showView(model, el);
     expect(json.omitted).toEqual(['noteRich']);
     expect(json.fields).toMatchObject({ action: 'junk', actions: 'junk', responses: [[], 'x'] });
-    expect(text).toContain('  fields:\n    -  int\n  comments: resolved · 1');
+    expect(text).toContain('  comments: resolved · 1');
   });
 });

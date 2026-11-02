@@ -173,30 +173,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       const key = e.key;
       const lower = key.toLowerCase();
 
-      // --- Mind map growth (docs/specs/009-elements/mind-node.md) ---
-      // Tab adds a child, Enter a sibling, both off the selected mind node.
-      // Placed before every other branch because Tab is otherwise the
-      // browser's focus key: left to bubble it would walk the chrome behind
-      // the canvas, which is never what someone mid-mind-map wants.
-      //
-      // Only ever fires with a single mind node selected and no editor open,
-      // so Tab keeps its normal meaning everywhere else in the app.
-      if (
-        (key === 'Tab' || key === 'Enter') &&
-        !inText &&
-        !mod &&
-        !e.shiftKey &&
-        (!live.isReadOnly || live.participant) &&
-        live.editingId === null &&
-        selectedId !== null &&
-        multiSelectedIds.size === 0 &&
-        live.canGrowMindNode(selectedId)
-      ) {
-        e.preventDefault();
-        live.onGrowMindNode(selectedId, key === 'Tab' ? 'child' : 'sibling');
-        return;
-      }
-
       // --- Zen mode exit (docs/specs/007-editor/zen-mode.md) ---
       // Escape leaves zen mode. Only when actually in zen, not mid-
       // edit / typing (there Escape cancels the label edit instead),
@@ -221,20 +197,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       ) {
         e.preventDefault();
         live.onToggleZen();
-        return;
-      }
-
-      // --- Escape drops an empty, just-grown mind node ---
-      // (docs/specs/009-elements/mind-node.md "Escape keeps what you typed")
-      if (
-        key === 'Escape' &&
-        !inText &&
-        live.editingId === null &&
-        selectedId !== null &&
-        multiSelectedIds.size === 0 &&
-        live.onEscapeMindNode(selectedId)
-      ) {
-        e.preventDefault();
         return;
       }
 
@@ -374,17 +336,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
           e.preventDefault();
           return;
         }
-      }
-
-      // --- Editor mode (Shift+D, docs/specs/007-editor/editor-modes.md) ---
-      // After type-to-edit, so a capital D still types into a selected
-      // label; before the dock keys, so it works in Draw mode too. Where no
-      // switch is offered it does nothing (it is never Diamond's D).
-      if (e.shiftKey && !e.altKey && lower === 'd') {
-        if (!live.onCycleEditorMode) return;
-        e.preventDefault();
-        live.onCycleEditorMode();
-        return;
       }
 
       // Walking, the Avatar Panel's action keys are the character's (docs/specs/008-canvas/avatar-mode.md

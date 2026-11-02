@@ -167,7 +167,7 @@ describe('validateEditOperations', () => {
       ]).map((e) => e.details[0]),
     ).toEqual([
       'member "to": expected a non-empty string',
-      'member "style": expected flow, tree, mindmap',
+      'member "style": expected flow, tree',
       'member "direction": expected down or right',
     ]);
   });

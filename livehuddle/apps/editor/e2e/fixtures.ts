@@ -59,8 +59,7 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   );
 }
 
-// The Draw, Avatar and element tours (docs/specs/023-draw-mode/draw-tour.md, docs/specs/008-canvas/avatar-tour.md,
-// docs/specs/007-editor/element-tours.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
+// The Avatar and element tours (docs/specs/008-canvas/avatar-tour.md, docs/specs/007-editor/element-tours.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
 // their own unit tests. Marked seen for every page of the context.
 async function markModeToursSeen(context: BrowserContext): Promise<void> {
   await context.addInitScript(() => {
@@ -68,7 +67,7 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
       if (
-        prefs.drawTourSeen !== true ||
+        prefs.workshopTourSeen !== true ||
         prefs.avatarTourSeen !== true ||
         !Array.isArray(prefs.elementTourKinds)
       )
@@ -76,25 +75,13 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
           key,
           JSON.stringify({
             ...prefs,
-            drawTourSeen: true,
+            workshopTourSeen: true,
             avatarTourSeen: true,
-            // Element tours (docs/specs/007-editor/element-tours.md): the offer beside a Sankey's toolbar.
+            // Element tours (docs/specs/007-editor/element-tours.md): every toured kind.
             elementTourKinds: [
-              'sankey',
-              'layer-stack',
-              'pyramid',
-              'funnel',
-              'cycle',
-              'hub',
-              'onion',
-              'chevrons',
-              'mind-node',
-              'flowchart',
-              'org-chart',
-              'sequence',
+              'timeline',
               'chart',
               'stack',
-              'entity',
               'lane',
               'boundary',
               'diagram-key',
@@ -177,11 +164,11 @@ export async function createInMode(page: Page, mode: string, url?: string): Prom
   return new URL(page.url()).pathname.split('/').pop()!;
 }
 
-// The start screen over a new tab, by its mode's title (Start Diagramming, ...).
+// The start screen over a new tab, by its title (Start a Workshop).
 const startScreen = (page: Page, title: RegExp = /^Start /) =>
   page.getByRole('region', { name: title });
 
-// Start a document from a named TEMPLATE in a named group of Start Diagramming: a Diagram document from the
+// Start a document from a named TEMPLATE in a named group of Start a Workshop: a document from the
 // wizard, then the template picked on its start screen, so template creation (builders, layers, per-template
 // canvas overrides, the tab kind) is its own path, as a person takes it.
 export async function startTemplateDocument(
@@ -189,8 +176,8 @@ export async function startTemplateDocument(
   group: string,
   template: RegExp,
 ): Promise<void> {
-  await createInMode(page, 'diagram');
-  const start = startScreen(page, /^Start Diagramming$/);
+  await createInMode(page, 'workshop');
+  const start = startScreen(page, /^Start a Workshop$/);
   const rail = start.locator(`[data-rail]`).filter({ hasText: group }).first();
   await untilHydrated(rail);
   await rail.click();
@@ -279,8 +266,8 @@ export async function openBlankSession(page: Page): Promise<void> {
 // A blank Diagram document through the wizard: Diagram on the Mode step, Create, then the start screen's × (a blank
 // canvas, docs/specs/007-editor/start-diagramming.md "Bringing it back").
 export async function startBlankDocument(page: Page): Promise<void> {
-  await createInMode(page, 'diagram');
-  const start = startScreen(page, /^Start Diagramming$/);
+  await createInMode(page, 'workshop');
+  const start = startScreen(page, /^Start a Workshop$/);
   await start.getByRole('button', { name: 'Close' }).click();
   await start.waitFor({ state: 'detached' });
 }

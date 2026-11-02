@@ -105,7 +105,7 @@ function shiftScope(
   if (scope === null) return;
   const holder = state.byId.get(scope)!;
   const farEdge = farEdgeOf(boxOf(holder)!, axis);
-  // A mind node holds its children but has no room to grow; a locked container stays as it is.
+  // A locked container stays as it is.
   if (holder.type !== 'arrow' && isContainer(holder) && !state.locked.has(scope))
     grow(pass, holder);
   shiftScope(pass, holders.get(scope) ?? null, farEdge, new Set([...exclude, scope]));

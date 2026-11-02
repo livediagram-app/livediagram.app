@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { handDrawnArrow, handDrawnElementPaint } from './hand-drawn';
 import { MARKER_INK_OPACITY, MARKER_STREAK_OPACITY } from './marker';
 import { MARKER_LINE_PX } from './finish';
-import { createSticky, createTable } from './factories';
+import { createSticky } from './factories';
 import { createShape } from './shape-factory';
 import { renderElementsToSvg } from './index';
 import { sketchBackdropIds } from './sketch-backdrop';
@@ -56,19 +56,6 @@ describe('handDrawnElementPaint', () => {
     const clear = handDrawnElementPaint(box(), 'marker', 'transparent');
     if (clear?.drawing.pen !== 'marker') throw new Error('expected marker');
     expect(clear.drawing.solid).toBe('');
-  });
-
-  it('draws a table’s frame and a silhouette’s chrome in marker', () => {
-    const table = handDrawnElementPaint({ ...createTable(0, 0), id: 't' }, 'marker', '#fff');
-    if (table?.drawing.pen !== 'marker') throw new Error('expected marker');
-    expect(table.drawing.ink.join('')).not.toBe('');
-    const laptop = handDrawnElementPaint(
-      { ...createShape('laptop', 0, 0), id: 'l' },
-      'marker',
-      '#fff',
-    );
-    if (laptop?.drawing.pen !== 'marker') throw new Error('expected marker');
-    expect(laptop.drawing.details).not.toBe('');
   });
 
   it('leaves a self-painting face as it is', () => {

@@ -9,8 +9,6 @@ import {
   type FacePartPaint,
 } from './marker-face';
 import { outlineOfEllipse, outlineOfPath, outlineOfRect } from './sketch';
-import { createShape } from './shape-factory';
-import { svgBoxed } from './svg-render';
 import { svgMarkerFace } from './svg-render-face-finish';
 
 // docs/specs/008-canvas/finish.md "Marker", "Faces: frames and shapes".
@@ -260,16 +258,5 @@ describe('svgMarkerFace', () => {
       face,
     );
     expect(out).toContain('<g data-marker-part="shape"');
-  });
-
-  it("draws a chevron process's stages in marker in the export", () => {
-    const chevrons = { ...createShape('chevrons', 0, 0), id: 'ch' };
-    expect(svgBoxed(chevrons, { tabFinish: 'marker' })).toContain('data-marker-part="shape"');
-  });
-
-  it("draws a layer stack's bands in marker in the export", () => {
-    const stack = { ...createShape('layer-stack', 0, 0), id: 'ls' };
-    expect(svgBoxed(stack, {})).not.toContain('data-marker-part');
-    expect(svgBoxed(stack, { tabFinish: 'marker' })).toContain('data-marker-part="shape"');
   });
 });

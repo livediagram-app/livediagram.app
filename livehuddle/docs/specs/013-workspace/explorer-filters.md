@@ -73,24 +73,21 @@ Every list view shows one row of chips under its page header and breadcrumb:
 
 ## Dimensions
 
-| Dimension | Key        | Chip label  | Values and their labels                                                                                  | Index filter |
-| --------- | ---------- | ----------- | -------------------------------------------------------------------------------------------------------- | ------------ |
-| Text      | (none)     | (the field) | Free words                                                                                               | `q`          |
-| Opens in  | `opens-in` | Opens in    | `canvas` livehuddle, `document` liveplanner, `document` livedocuments, `design` livedesign: its app      | `apps`       |
-| Mode      | `mode`     | Mode        | `diagram` Diagram, `draw` Draw, `workshop` Workshop: the mode the canvas opens in (its summary's `mode`) | `modes`      |
-| Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the last word of the canvas's creation intent            | `intent`     |
-| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the item's `source` is `ai`, an AI tool through the MCP server (not the CLI)            | `source=ai`  |
-| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year         | `since`      |
-| People    | `people`   | People      | `me` Me, `others` Others: the item's owner                                                               | `owner`      |
-| Space     | `space`    | Space       | `mine` My Work, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only               | `space`      |
+| Dimension | Key        | Chip label  | Values and their labels                                                                             | Index filter |
+| --------- | ---------- | ----------- | --------------------------------------------------------------------------------------------------- | ------------ |
+| Text      | (none)     | (the field) | Free words                                                                                          | `q`          |
+| Opens in  | `opens-in` | Opens in    | `canvas` livehuddle, `document` liveplanner, `document` livedocuments, `design` livedesign: its app | `apps`       |
+| Mode      | `mode`     | Mode        | `workshop` Workshop: the mode the canvas opens in (its summary's `mode`)                            | `modes`      |
+| Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the last word of the canvas's creation intent       | `intent`     |
+| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the item's `source` is `ai`, an AI tool through the MCP server (not the CLI)       | `source=ai`  |
+| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year    | `since`      |
+| People    | `people`   | People      | `me` Me, `others` Others: the item's owner                                                          | `owner`      |
+| Space     | `space`    | Space       | `mine` My Work, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only          | `space`      |
 
-- **Mode** is the editor mode a canvas opens in, the one its room last reported to the index (`summary.mode`, the
-  mode of the tab written last, `diagram` when none says otherwise), so a canvas switched to Draw is found by
-  `mode:draw` once it is saved. The values are the host's (`lensModes`); livehuddle's are its `EDITOR_MODES`.
-  A canvas that has never been saved has no mode yet and matches no Mode value. The old Explorer wrote the mode as
-  `opens-in:draw`: that spelling still reads, as the Mode token (`mode:draw`), so an old link or habit lands on the
-  same list; written back, it is `mode:draw`. A list mixing apps and modes (`opens-in:plan,draw`) is not an old
-  spelling and reads as before.
+- **Mode** is the editor mode a canvas opens in, the one its room last reported to the index (`summary.mode`).
+  livehuddle's one value is `workshop` (`EDITOR_MODES`, [Editor modes](../007-editor/editor-modes.md)), so the
+  filter offers no choice and a canvas that has never been saved matches no Mode value. A `mode:diagram` or
+  `mode:draw` token (or the old `opens-in:draw` spelling), from an old link, is dropped.
 - **Template** is the template family a canvas was made from, read from the creation intent the index keeps
   (`template:retrospective`): livehuddle's one family, labelled Retrospective
   (`CANVAS_TEMPLATE_FAMILIES`, `apps/editor/lib/canvas-template-families.ts`; liveworkspace.app's Explorer names the

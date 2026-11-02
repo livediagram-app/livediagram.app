@@ -33,7 +33,6 @@ import { QUIZ_DEFAULT_SECONDS } from './quiz';
 import { DEFAULT_SEATING_FACING } from './seating';
 import { FENCE_DEFAULT_SIZE } from '@liveworkspace/avatar/fence';
 import { AVATAR_PAD_DEFAULT_SIZE } from '@liveworkspace/avatar/pad-art';
-import { SANKEY_DEFAULT_FLOWS } from './sankey-model';
 import { NAV_DEFAULT_LINKS, PROCESS_DEFAULT_STEPS, STAT_DEFAULTS } from './web-components';
 import type { ShapeElement, ShapeKind } from './index';
 
@@ -55,11 +54,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Document (docs/specs/009-elements/page-element.md): 420x594 is the A-series root-2 ratio, at a size that
   // reads as a page beside a 120px square without swallowing the canvas.
   page: { width: 420, height: 594 },
-  // Mind node (docs/specs/009-elements/mind-node.md): a caption-width pill. Wide enough for a phrase,
-  // short enough that a column of siblings stays readable. 170x48 fitted a
-  // couple of words and made anything longer wrap or overflow, which is not
-  // what people actually type into a mind map.
-  'mind-node': { width: 250, height: 80 },
   // Lane (docs/specs/009-elements/lane.md): a band, not a box — wide enough to lay a flow across and
   // tall enough for a row of steps.
   lane: { width: 900, height: 200 },
@@ -76,9 +70,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // TWO rosters (done and waiting) plus the all-done line. At 190 a two-person
   // room already overflowed by a few pixels and the body grew a scrollbar.
   'done-check': { width: 280, height: 220 },
-  // Record (docs/specs/009-elements/entity.md): a class box — wide enough for "name: Type" rows,
-  // tall enough for a title plus four of them before it needs resizing.
-  entity: { width: 240, height: 170 },
   // Stadium / pill — the conventional flowchart "Start / End" terminator
   // shape. Wider than tall by default; the CSS `border-radius: 9999px`
   // render path means the ends stay perfectly semicircular at any
@@ -103,23 +94,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Frame / section: a large container drawn around content, so it starts
   // big. Transparent by default (see defaultFillColor) with a top-left label.
   frame: { width: 360, height: 260 },
-  // UI device frames. Sized to evoke each device's natural aspect
-  // ratio at a glance: browser + monitor land on a 4:3-ish landscape
-  // (with the monitor a touch taller to leave room for its stand);
-  // laptop is wider with a flatter total profile (screen + keyboard
-  // base stacked); phone + tablet are portrait at typical phone /
-  // tablet ratios.
-  browser: { width: 240, height: 160 },
-  monitor: { width: 220, height: 170 },
-  laptop: { width: 240, height: 150 },
-  phone: { width: 90, height: 170 },
-  tablet: { width: 140, height: 180 },
-  // Foldable, unfolded: the two panels side by side make a nearly square
-  // inner screen, a little wider than it is tall, which is what separates it
-  // at a glance from the portrait phone and tablet above.
-  foldable: { width: 190, height: 170 },
-  // Smartwatch: a square-ish face with bands above + below, so portrait.
-  smartwatch: { width: 110, height: 150 },
   // Curated glyph. Square + aspect-locked on create (set in createShape) so
   // the line art never distorts; the label sits below. Sized generously so a
   // two-line caption (e.g. "Durable Objects") clears the glyph rather than
@@ -133,7 +107,7 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // (aspect-locked on create so it stays circular).
   'progress-bar': { width: 220, height: 44 },
   'progress-ring': { width: 130, height: 130 },
-  // Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): four milestones, words above and below.
+  // Timeline (docs/specs/009-elements/timeline.md): four milestones, words above and below.
   'timeline-rail': { width: 720, height: 240 },
   // Rating: a row of five stars.
   rating: { width: 200, height: 44 },
@@ -151,9 +125,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Legend (docs/specs/009-elements/pie-chart.md): narrower than a checklist, because a key is a swatch and
   // a word, and short enough to sit in a corner beside the thing it explains.
   legend: { width: 180, height: 132 },
-  // Sankey (docs/specs/009-elements/sankey.md): wide, because a Sankey reads left to right across its
-  // columns, and the starter budget has four of them, each with a label beside its bar.
-  sankey: { width: 560, height: 300 },
   // Mode button (docs/specs/009-elements/mode-button.md): a square-ish tile, sized for an icon ABOVE its
   // label — the shape a toolbar button has, rather than a wide pill that read
   // as just another labelled box.
@@ -235,17 +206,8 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   'diagram-key': { width: 260, height: 68 },
   // Stack (docs/specs/009-elements/stack.md): an empty row to drop into (D192).
   stack: { width: 360, height: 160 },
-  // Sequence diagram (docs/specs/009-elements/sequence-diagram.md): three lifelines and five messages (D194).
-  sequence: { width: 560, height: 340 },
   // Boundary (docs/specs/009-elements/boundary.md): room for a few nodes inside.
   boundary: { width: 480, height: 300 },
-  // Concept graphics (docs/specs/009-elements/concept-graphics.md).
-  'layer-stack': { width: 360, height: 260 },
-  pyramid: { width: 320, height: 260 },
-  cycle: { width: 300, height: 300 },
-  hub: { width: 340, height: 320 },
-  onion: { width: 320, height: 320 },
-  chevrons: { width: 600, height: 150 },
   // Three 150px cards and two 16px gaps.
   'stat-row': { width: 482, height: 96 },
   process: { width: 420, height: 110 },
@@ -467,23 +429,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       shadow: { offsetX: 0, offsetY: 2, blur: 6, opacity: 0.18 },
     };
   }
-  // Document (docs/specs/009-elements/page-element.md): prose sits TOP-LEFT. Centred body text is the
-  // strongest tell that something is a label pretending to be a document,
-  // and every other shape defaults to centred.
-  if (kind === 'entity') {
-    return {
-      ...base,
-      // The title sits in its own bar and the rows read left to right, so
-      // neither wants the centred default every other shape has.
-      textAlignX: 'left',
-      textAlignY: 'top',
-      label: 'Entity',
-      entityFields: [
-        { name: 'id', type: 'string', key: 'pk' },
-        { name: 'name', type: 'string' },
-      ],
-    };
-  }
   // Quiz (docs/specs/012-collaboration/quiz.md): arrives as a real question so a dropped card
   // demonstrates what it does, with its aspect locked because a stretched
   // ring stops being a ring.
@@ -645,70 +590,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       borderRadius: 'lg',
     };
   }
-  // Concept graphics (docs/specs/009-elements/concept-graphics.md): rows to start from, so the first one reads as
-  // what it is.
-  if (kind === 'layer-stack')
-    return {
-      ...base,
-      conceptRows: [
-        { label: 'Presentation', note: 'Next.js' },
-        { label: 'API', note: 'Workers' },
-        { label: 'Domain', note: 'packages/document' },
-        { label: 'Storage', note: 'D1' },
-      ],
-    };
-  if (kind === 'pyramid')
-    return {
-      ...base,
-      conceptRows: [
-        { label: 'Vision' },
-        { label: 'Strategy' },
-        { label: 'Objectives' },
-        { label: 'Daily work' },
-      ],
-    };
-  if (kind === 'cycle')
-    return {
-      ...base,
-      label: 'Weekly loop',
-      textSize: 'sm',
-      aspectLocked: true,
-      conceptRows: [{ label: 'Plan' }, { label: 'Do' }, { label: 'Check' }, { label: 'Act' }],
-    };
-  if (kind === 'hub')
-    return {
-      ...base,
-      label: 'Orders',
-      textSize: 'sm',
-      textBold: true,
-      conceptRows: ['Payments', 'Stock', 'Email', 'Search', 'Analytics', 'Support'].map(
-        (label) => ({
-          label,
-        }),
-      ),
-    };
-  if (kind === 'onion')
-    return {
-      ...base,
-      aspectLocked: true,
-      conceptRows: [
-        { label: 'Domain' },
-        { label: 'Application' },
-        { label: 'Adapters' },
-        { label: 'Infrastructure' },
-      ],
-    };
-  if (kind === 'chevrons')
-    return {
-      ...base,
-      conceptRows: [
-        { label: 'Commit', note: 'push to main' },
-        { label: 'Build', note: '2 min' },
-        { label: 'Test', note: '8,400 tests' },
-        { label: 'Release', note: 'manual gate' },
-      ],
-    };
-  // A Timeline's milestones, each with its when (docs/specs/009-elements/concept-graphics.md "Timeline").
+  // A Timeline's milestones, each with its when (docs/specs/009-elements/timeline.md).
   if (kind === 'timeline-rail')
     return {
       ...base,
@@ -748,24 +630,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       textSize: 'sm',
       textAlignX: 'left',
       textAlignY: 'top',
-    };
-  if (kind === 'sequence')
-    return {
-      ...base,
-      label: '',
-      strokeWidth: 'thin',
-      sequenceParticipants: [
-        { id: 'browser', label: 'Browser' },
-        { id: 'api', label: 'API' },
-        { id: 'db', label: 'Database' },
-      ],
-      sequenceMessages: [
-        { from: 'browser', to: 'api', label: 'Place order', kind: 'call' },
-        { from: 'api', to: 'api', label: 'Validate', kind: 'call' },
-        { from: 'api', to: 'db', label: 'Insert order', kind: 'call' },
-        { from: 'db', to: 'api', label: 'Order id', kind: 'reply' },
-        { from: 'api', to: 'browser', label: '201 Created', kind: 'reply' },
-      ],
     };
   if (kind === 'diagram-key')
     return {
@@ -847,11 +711,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // legend beside a chart matches it without being told to. See docs/specs/009-elements/pie-chart.md.
   if (kind === 'legend') {
     return { ...base, legendItems: LEGEND_DEFAULT_ITEMS.map((i) => ({ ...i })) };
-  }
-  // Sankey: the starter household budget (docs/specs/009-elements/sankey.md), so it drops as a real
-  // diagram to edit rather than an empty box to fill. Copied, so no two diagrams share the array.
-  if (kind === 'sankey') {
-    return { ...base, sankeyFlows: SANKEY_DEFAULT_FLOWS.map((f) => ({ ...f })) };
   }
   return base;
 }

@@ -1,56 +1,17 @@
 'use client';
 
 // The empty-canvas card's picture (docs/specs/007-editor/new-document-route.md "The empty-canvas hint"): a small scene
-// of what the tab's mode makes, in the brand's tints. Diagram: two shapes joined
-// by an arrow to a decision; Workshop: a board of stickies with a vote. Decorative. (The card never shows in Draw,
-// whose dock is its own hint.)
-import type { EditorMode } from '@livehuddle/document';
+// of a Workshop board, stickies with a vote, in the brand's tints. Decorative.
 
 const BRAND = 'var(--color-brand-500)';
 const SOFT = 'color-mix(in srgb, var(--color-brand-500) 14%, transparent)';
-const LINE = 'color-mix(in srgb, var(--color-brand-500) 55%, transparent)';
 
-export function EmptyCanvasArt({ mode }: { mode: EditorMode }) {
+export function EmptyCanvasArt() {
   return (
     <svg aria-hidden viewBox="0 0 120 72" className="h-[72px] w-[120px]" fill="none">
       <rect x="1" y="1" width="118" height="70" rx="12" fill={SOFT} />
-      {mode === 'workshop' ? <WorkshopScene /> : <DiagramScene />}
+      <WorkshopScene />
     </svg>
-  );
-}
-
-function DiagramScene() {
-  return (
-    <g strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <rect
-        x="14"
-        y="16"
-        width="30"
-        height="18"
-        rx="4"
-        className="fill-white dark:fill-slate-900"
-        stroke={BRAND}
-      />
-      <path d="M21 25h16" stroke={LINE} />
-      <rect
-        x="14"
-        y="42"
-        width="30"
-        height="16"
-        rx="4"
-        className="fill-white dark:fill-slate-900"
-        stroke={LINE}
-      />
-      <path d="M44 25h18" stroke={BRAND} />
-      <path d="m58 21.5 4 3.5-4 3.5" stroke={BRAND} />
-      <path
-        d="M80 13 97 30 80 47 63 30Z"
-        className="fill-white dark:fill-slate-900"
-        stroke={BRAND}
-      />
-      <path d="M44 50h28c4 0 8-3 8-7v-2" stroke={LINE} strokeDasharray="3 3" />
-      <circle cx="80" cy="30" r="3" fill={BRAND} />
-    </g>
   );
 }
 

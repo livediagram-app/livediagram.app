@@ -58,7 +58,7 @@ describe('stateAttributeOf (R14, VW22)', () => {
     expect(state('rating', { rating: undefined })).toBe('rating=3/5');
     expect(state('progress-bar', { progress: 40 })).toBe('progress=40');
     expect(state('progress-ring', { progress: undefined })).toBe('progress=50');
-    // A Timeline counts its milestones (docs/specs/009-elements/concept-graphics.md "Timeline").
+    // A Timeline counts its milestones (docs/specs/009-elements/timeline.md "Timeline").
     expect(state('timeline-rail', {})).toBe('milestones=4');
     expect(state('timeline-rail', { conceptRows: [{ label: 'A' }, { label: 'B' }] })).toBe(
       'milestones=2',

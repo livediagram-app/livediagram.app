@@ -27,15 +27,11 @@ describe('layout', () => {
     expect(lines(run('layout n5 n6 n7 n8')).at(-1)).toBe('» n6 n7 n8  laid out (flow, down)');
   });
 
-  it('lays out as a tree or mind map', () => {
+  it('lays out as a tree, and refuses the mind map style', () => {
     expect(lines(run('layout type:square style=tree')).at(-2)).toBe(
       '» n3 n4 n5 n7  laid out (tree)',
     );
-    expect(
-      lines(run('layout n1 n2 n3 style=mindmap')).some((line) =>
-        line.endsWith('laid out (mindmap)'),
-      ),
-    ).toBe(true);
+    expect(run('layout n1 n2 n3 style=mindmap')).toHaveProperty('errors');
   });
 
   it('runs a tree across when asked right, down when asked down (EO38)', () => {

@@ -18,9 +18,6 @@ import {
 import { helpArticleHref } from '@/lib/help-articles';
 import { setConceptTourPreview } from '@liveworkspace/workbench/lib/concept-tour-preview';
 import { chartDataDialog } from '@liveworkspace/workbench/lib/chart-data-dialog-handle';
-import { sankeyFlowsDialog } from '@liveworkspace/workbench/lib/sankey-flows-dialog-handle';
-import { sequenceDialog } from '@liveworkspace/workbench/lib/sequence-dialog-handle';
-import { setSankeyTourFocus } from '@liveworkspace/workbench/lib/sankey-tour-focus';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { track } from '@/lib/telemetry';
 import { setActiveTour, useActiveTour } from '@/lib/tour-active';
@@ -47,7 +44,7 @@ import {
 const singleOf = (s: Selection) => (s.multiSelectedIds.size > 0 ? null : s.selectedId);
 
 // Element tours (docs/specs/007-editor/element-tours.md): decides whether the selected element is offered its tour,
-// offers it on the footer's Start Tour button ("Start Sankey Tour", ahead of the mode's own tour), and runs the tour
+// offers it on the footer's Start Tour button ("Start Timeline Tour", ahead of the mode's own tour), and runs the tour
 // when the button is pressed. It never starts or prompts on its own. Mounted once in
 // EditorView beside the other tour hosts. Each toured kind's steps, copy and token are its ELEMENT_TOUR_DEFS entry.
 export function ElementTourHost() {
@@ -68,27 +65,6 @@ export function ElementTourHost() {
   const touringRef = useLatest(touring);
 
   const api: ElementTourApi = {
-    showTable: sankeyFlowsDialog.showTable,
-    showText: sankeyFlowsDialog.showText,
-    focus: (part, index) => {
-      const id = touringRef.current?.id;
-      if (id) setSankeyTourFocus({ elementId: id, part, index });
-    },
-    clearFocus: () => setSankeyTourFocus(null),
-    openFlows: () => {
-      const id = touringRef.current?.id;
-      if (id && ctx.sankeyFlowsOpenForId !== id) ctx.setSankeyFlowsOpenForId(id);
-    },
-    // As the dialog's own Done: what is being typed is stored first.
-    closeFlows: () => sankeyFlowsDialog.close(),
-    openSequence: () => {
-      const id = touringRef.current?.id;
-      if (id && ctx.sequenceOpenForId !== id) ctx.setSequenceOpenForId(id);
-    },
-    // As the dialog's own Done: what is being typed is stored first.
-    closeSequence: () => sequenceDialog.close(),
-    showSequenceTab: (tab) =>
-      tab === 'text' ? sequenceDialog.showText() : sequenceDialog.showMessages(),
     openChartData: () => {
       const id = touringRef.current?.id;
       if (id && ctx.lineDataOpenForId !== id) ctx.setLineDataOpenForId(id);
@@ -98,10 +74,6 @@ export function ElementTourHost() {
     previewConcept: (anim) => {
       const id = touringRef.current?.id;
       if (id) setConceptTourPreview({ elementId: id, anim, run: Date.now() });
-    },
-    showStageBar: (index) => {
-      const id = touringRef.current?.id;
-      if (id) setConceptTourPreview({ elementId: id, bar: index, run: Date.now() });
     },
     clearPreview: () => setConceptTourPreview(null),
     openElementMenu: async () => {
@@ -135,9 +107,8 @@ export function ElementTourHost() {
   const engineRef = useLatest(engine);
 
   const endTour = (outcome: TourOutcome) => {
-    setSankeyTourFocus(null);
     setConceptTourPreview(null);
-    // Done on the closing card puts away what the tour opened (the Sankey's Flows dialog); a Skip leaves the person
+    // Done on the closing card puts away what the tour opened (a chart's data dialog); a Skip leaves the person
     // where they are.
     if (def && outcome === 'completed') def.onDone?.(apiRef.current);
     setTouring(null);
@@ -232,7 +203,6 @@ export function ElementTourHost() {
   useEffect(
     () => () => {
       setActiveTour('element', false);
-      setSankeyTourFocus(null);
       setConceptTourPreview(null);
     },
     [],

@@ -94,7 +94,6 @@ export type PaletteProps = {
   onAddCallout: () => void;
   onAddStatRow: () => void;
   onAddProcess: () => void;
-  onAddFlowchart: () => void;
   onAddAvatar: () => void;
   // Spawn an image placeholder + open the picker. Optional so
   // deployments without R2 (or view-role visitors) can omit it; the

@@ -7,9 +7,7 @@ import { setPowerUserMode } from '@/lib/power-user-mode';
 const ALL = new Set([
   'alignmentGuides',
   'autoRebindArrows',
-  'tourSeen',
   'workshopTourSeen',
-  'drawTourSeen',
   'avatarTourSeen',
   'pagesTourSeen',
   'elementToursSeen',
@@ -22,9 +20,7 @@ describe('presetSummaryLines', () => {
     expect(lines.map((l) => [l.label, l.value, l.categoryLabel])).toEqual([
       ['Alignment Guides', 'On', 'Editor'],
       ['Auto-Attach Arrows', 'On', 'Editor'],
-      ['Diagram Tour', 'Off', 'Tours'],
       ['Workshop Tour', 'Off', 'Tours'],
-      ['Draw Tour', 'Off', 'Tours'],
       ['Avatar Tour', 'Off', 'Tours'],
       ['Show Me on Every Element', 'Off', 'Tours'],
     ]);

@@ -955,21 +955,6 @@ describe('chrome the canvas draws on a box', () => {
     expect(svg).toMatch(/<g transform="rotate\(-90 0 200\)">[^]*Approvals/);
   });
 
-  it('gives a browser frame its window chrome', () => {
-    const svg = renderElementsToSvg(
-      tab([shape('br', { shape: 'browser', width: 300, height: 200 })]),
-    );
-    // Three window dots and the URL pill, the two marks that say "browser".
-    expect((svg.match(/<circle/g) ?? []).length).toBeGreaterThanOrEqual(3);
-    expect(svg).toContain('rx="10"');
-  });
-
-  it('rounds a mind node the way the canvas does', () => {
-    // 12px outside the border, so 11 at the centre of the inset 2px stroke.
-    const svg = renderElementsToSvg(tab([shape('mn', { shape: 'mind-node' })]));
-    expect(svg).toContain('rx="11"');
-  });
-
   it("draws a shape's own border width, dash and radius, inside the box", () => {
     const svg = renderElementsToSvg(
       tab([shape('s', { strokeWidth: 'thick', strokeStyle: 'dashed', borderRadius: 'lg' })]),

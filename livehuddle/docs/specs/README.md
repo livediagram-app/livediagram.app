@@ -10,8 +10,8 @@ going: its [vision](./001-project-vision/purpose.md), [v1 scope](./002-project-s
 [apps and storage](./003-system-architecture/apps-and-storage.md), [roadmap](./005-project-roadmap/README.md),
 [share roles](./013-workspace/share-roles.md) and [platform registration](./016-platform/platform-registration.md).
 Every other spec was forked from livediagram's at the commit the code was (`.forked-from`, `fd73b2c921`), with the
-code fork's renames, so it describes the code exactly as forked: Diagram and Draw modes, Event Storming, the
-Community and the rest are still here until their cuts ([Build plan](./005-project-roadmap/build-plan.md) step 5).
+code fork's renames, so it describes the code as forked less the cuts made so far (Diagram and Draw modes went in step 5.1): Event
+Storming, the Community and the rest are still here until their cuts ([Build plan](./005-project-roadmap/build-plan.md) step 5).
 Each cut removes its specs in the same PR as its code, so the tree never describes a feature livehuddle no longer
 has. The decisions still open are in [Open decisions for the owner](./005-project-roadmap/open-decisions.md).
 
@@ -43,7 +43,6 @@ place. The specs themselves are unnumbered and named by subject.
 - ./020-import-export/README.md - when working on Markdown, Mermaid, Excalidraw or draw.io import/export, pasting from Excalidraw, imported images, board scenes and board imports from Miro or Microsoft Whiteboard, or export fidelity
 - ./021-event-storming/README.md - when working on the event-storming board, its lanes or its photo import
 - ./022-drive-mirror/README.md - when looking for livehuddle's Google Drive sync (now liveworkspace's, for every app)
-- ./023-draw-mode/README.md - when working on Draw mode: its pens, dock, snap colours, text boxes and path tool
 - ./024-agents/README.md - when an agent reads, writes or comments on documents: changesets, presence, views, edit operations, lint
 - ./025-community/README.md - when working on Community: publishing documents to the public gallery, the Community app, likes, copies, and reports (moderation by reports alone)
 - ./027-repositories/README.md - when linking a code repository to livehuddle: `livehuddle.toml`, mirrors, sync and merge, git, diagram-as-code sources

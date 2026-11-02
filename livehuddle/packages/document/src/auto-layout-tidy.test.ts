@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  clearPlacement,
-  tidyDirection,
-  tidyLayoutElements,
-  tidyMindmapFits,
-} from './auto-layout-tidy';
+import { clearPlacement, tidyDirection, tidyLayoutElements } from './auto-layout-tidy';
 import { createPinnedArrow, createText } from './factories';
 import { createShape } from './shape-factory';
 import { arrowPathPolyline } from './arrow-path';
@@ -249,19 +244,5 @@ describe('placement clear of what stays put', () => {
     );
     expect(dx).toBe(0);
     expect(dy).toBeGreaterThan(0);
-  });
-});
-
-describe('tidyMindmapFits', () => {
-  it('fits branches, not loops', () => {
-    const tree = [
-      box('r', 0, 0),
-      box('a', 300, 0),
-      box('b', 0, 300),
-      link('r', 'e', 'a', 'w'),
-      link('r', 's', 'b', 'n'),
-    ];
-    expect(tidyMindmapFits(tree)).toBe(true);
-    expect(tidyMindmapFits([...tree, link('a', 's', 'b', 'e')])).toBe(false);
   });
 });

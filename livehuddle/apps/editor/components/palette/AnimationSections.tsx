@@ -9,14 +9,12 @@ import {
   PIE_LOOPING_ANIMS,
   PROGRESS_LOOPING_ANIMS,
   RATING_LOOPING_ANIMS,
-  SANKEY_LOOPING_ANIMS,
   animLoops,
   animationSetsOf,
   isChartShape,
   isConceptShape,
   isProgressShape,
   isRatingShape,
-  isSankeyShape,
   type ConceptShape,
   type AnimationSetId,
   type Element,
@@ -30,12 +28,8 @@ import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitive
 import { AnimationMenuGlyph } from '@/components/palette/context-menu-icons';
 import { FlowTiles, IconAnimationTiles } from '@/components/palette/context-menu-tiles';
 import { PieAnimTiles } from '@/components/palette/context-menu-rows';
-import {
-  ProgressAnimTiles,
-  RatingAnimTiles,
-  SankeyAnimTiles,
-} from '@/components/palette/context-menu-data-rows';
-import { ConceptAnimTiles, SequenceAnimTiles } from '@/components/palette/ElementAnimationTiles';
+import { ProgressAnimTiles, RatingAnimTiles } from '@/components/palette/context-menu-data-rows';
+import { ConceptAnimTiles } from '@/components/palette/ElementAnimationTiles';
 import { AnimationSetTiles } from '@/components/palette/AnimationSetTiles';
 import { setAnimationState } from '@/lib/animation-set-writes';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
@@ -65,14 +59,12 @@ type Handlers = Pick<
   | 'onSetRatingAnimSpeed'
   | 'onSetRatingAnimRepeat'
   | 'elementStyle'
-  | 'sankey'
 >;
 
 type SectionProps = { open: boolean; onToggle: () => void; flush?: boolean };
 
 // The categories in menu order. Body sets come before the words they carry; arrows come last.
-type OwnCategory =
-  'icon' | 'chart' | 'sankey' | 'progress' | 'rating' | 'concept' | 'sequence' | 'arrow';
+type OwnCategory = 'icon' | 'chart' | 'progress' | 'rating' | 'concept' | 'arrow';
 type Category = AnimationSetId | OwnCategory;
 const ORDER: readonly Category[] = [
   'shape',
@@ -82,22 +74,18 @@ const ORDER: readonly Category[] = [
   'table',
   'icon',
   'chart',
-  'sankey',
   'progress',
   'rating',
   'concept',
-  'sequence',
   'text',
   'arrow',
 ];
 const OWN_NAME: Record<OwnCategory, string> = {
   icon: 'Icon',
   chart: 'Chart',
-  sankey: 'Sankey',
   progress: 'Progress',
   rating: 'Rating',
   concept: 'Concept',
-  sequence: 'Sequence',
   arrow: 'Arrow',
 };
 
@@ -107,11 +95,9 @@ function ownCategoryOf(el: Element): OwnCategory | undefined {
   if (el.type !== 'shape') return undefined;
   if (el.shape === 'icon') return 'icon';
   if (isChartShape(el.shape)) return 'chart';
-  if (isSankeyShape(el.shape)) return 'sankey';
   if (isProgressShape(el.shape)) return 'progress';
   if (isRatingShape(el.shape)) return 'rating';
   if (isConceptShape(el.shape)) return 'concept';
-  if (el.shape === 'sequence') return 'sequence';
   return undefined;
 }
 
@@ -157,8 +143,7 @@ export function AnimationSections({
   flyoutProps: (id: string) => SectionProps;
   handlers: Handlers;
 }) {
-  // A Sankey's animation is offered only where its edits are (h.sankey: an Editor, one diagram selected).
-  const categories = animationCategoriesOf(elements).filter((c) => c !== 'sankey' || !!h.sankey);
+  const categories = animationCategoriesOf(elements);
   if (categories.length === 0) return null;
   const sections = categories.map((c) => (
     <MenuAccordionSection
@@ -224,23 +209,6 @@ function CategoryBody({
       />
     );
   }
-  if (category === 'sankey') {
-    const sankey = elements.find(
-      (el): el is ShapeElement => el.type === 'shape' && isSankeyShape(el.shape),
-    );
-    if (!sankey || !h.sankey) return null;
-    const set = h.sankey.onSetOption;
-    return (
-      <SankeyAnimTiles
-        anim={sankey.sankeyAnim ?? null}
-        speed={sankey.sankeyAnimSpeed ?? DEFAULT_ANIMATION_SPEED}
-        repeat={animLoops(sankey.sankeyAnim, sankey.sankeyAnimRepeat, SANKEY_LOOPING_ANIMS)}
-        onSet={(v) => set({ sankeyAnim: v ?? undefined })}
-        onSetSpeed={(v) => set({ sankeyAnimSpeed: v })}
-        onSetRepeat={(v) => set({ sankeyAnimRepeat: v })}
-      />
-    );
-  }
   if (category === 'progress' || category === 'rating') {
     const el = elements.find((e): e is ShapeElement => ownCategoryOf(e) === category)!;
     return category === 'progress' ? (
@@ -268,10 +236,6 @@ function CategoryBody({
       (e): e is ShapeElement & { shape: ConceptShape } => ownCategoryOf(e) === 'concept',
     )!;
     return <ConceptAnimTiles target={el} ops={h.elementStyle} />;
-  }
-  if (category === 'sequence') {
-    const el = elements.find((e): e is ShapeElement => ownCategoryOf(e) === 'sequence')!;
-    return <SequenceAnimTiles target={el} ops={h.elementStyle} />;
   }
   if (category === 'arrow') {
     const arrow = elements.find((el) => el.type === 'arrow');

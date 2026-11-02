@@ -38,7 +38,6 @@ function setup(over: Partial<ShapeElement>) {
         els = fn(els);
       },
       elements: () => els,
-      notify: vi.fn(),
     }),
   );
   return { set: result.current.setAgendaItemsSelected, el: () => els[0] as ShapeElement };

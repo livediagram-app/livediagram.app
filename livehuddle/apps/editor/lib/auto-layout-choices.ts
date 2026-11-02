@@ -5,7 +5,7 @@
 
 import type { AutoLayoutOptions } from '@livehuddle/document';
 
-export type AutoLayoutChoice = 'smart' | 'flow-down' | 'flow-right' | 'tree' | 'mindmap';
+export type AutoLayoutChoice = 'smart' | 'flow-down' | 'flow-right' | 'tree';
 
 type ChoiceSpec = {
   // Command palette entry name + extra search keywords.
@@ -53,19 +53,11 @@ export const AUTO_LAYOUT_CHOICES: Record<AutoLayoutChoice, ChoiceSpec> = {
     options: { style: 'tree' },
     telemetryType: 'Tree',
   },
-  mindmap: {
-    commandName: 'Auto Layout: Mindmap',
-    keywords: 'auto layout mindmap mind map radial hub spoke brainstorm arrange',
-    tileName: 'Mindmap',
-    tileLine: 'Branches around a centre',
-    options: { style: 'mindmap' },
-    telemetryType: 'Mindmap',
-  },
 };
 
 // The explicit styles shown as their own commands, in display order.
 // 'smart' stays the plain "Auto Layout" entry rather than joining this row.
-export const AUTO_LAYOUT_STYLE_IDS = ['flow-down', 'flow-right', 'tree', 'mindmap'] as const;
+export const AUTO_LAYOUT_STYLE_IDS = ['flow-down', 'flow-right', 'tree'] as const;
 
 // The Tidy Up popover's tiles, in the order the spec gives: Smart first, then the explicit styles.
 export const AUTO_LAYOUT_TILE_ORDER: readonly AutoLayoutChoice[] = [

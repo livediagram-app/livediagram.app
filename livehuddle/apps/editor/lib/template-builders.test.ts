@@ -27,15 +27,7 @@ import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 // other direction. `logo-design` slipped past the check that way.
 const ALL_KINDS = [
   'blank',
-  'mindmap',
-  'mindmap-tree',
-  'mindmap-bubble',
-  'orgchart',
   'retrospective',
-  'flowchart',
-  'swimlane',
-  'decision-tree',
-  'approval-workflow',
   'data-flow',
   'swot',
   'timeline',
@@ -44,13 +36,9 @@ const ALL_KINDS = [
   'venn',
   'journey',
   'fishbone',
-  'pyramid',
-  'flywheel',
   'gantt',
   'comparison-table',
   'system-architecture',
-  'er-diagram',
-  'sequence-diagram',
   'prioritization-matrix',
   'roadmap',
   'raci-matrix',
@@ -71,12 +59,8 @@ const ALL_KINDS = [
   'town-hall',
   'business-model-canvas',
   'empathy-map',
-  'funnel',
-  'sankey',
   'okr-tree',
-  'sitemap',
   'cloud-architecture',
-  'uml-class',
   'state-machine',
   'event-storming',
   'start-stop-continue',
@@ -235,41 +219,6 @@ describe('buildTemplate translation invariance', () => {
   });
 });
 
-describe('buildTemplatedTab', () => {
-  it('stamps the tab id, name, theme, and templateChosen flag', () => {
-    const tab = buildTemplatedTab('flowchart', 'slate', 'tab-xyz', 'My flow');
-    expect(tab.id).toBe('tab-xyz');
-    expect(tab.name).toBe('My flow');
-    expect(tab.theme).toBe('slate');
-    // templateChosen tracks "the user has explicitly picked a
-    // template for this tab" so the picker doesn't pop again on a
-    // re-render. A regression that forgets to set it would loop
-    // the picker over a freshly-built tab.
-    expect(tab.templateChosen).toBe(true);
-    expect(tab.elements.length).toBeGreaterThan(0);
-  });
-
-  it('mindmap template carries its canvas override (backgroundOpacity 0.8)', () => {
-    // Only mindmap currently customises the canvas via
-    // `templateCanvasOverrides`. Pinning the value here catches
-    // the regression where the override stops getting spread onto
-    // the returned tab (the templateCanvasOverrides call moves
-    // out of the function or the spread gets reordered such that
-    // the theme's default overwrites it).
-    const tab = buildTemplatedTab('mindmap', 'slate', 'tab-1', 'mindmap');
-    expect(tab.backgroundOpacity).toBe(0.8);
-  });
-
-  it('non-mindmap templates do not inherit mindmap-specific overrides', () => {
-    // A dot-grid board carries no opacity at all; a graph-paper one only the
-    // quiet-pattern step back (0.4), never the mind map's 0.8.
-    expect(
-      buildTemplatedTab('retrospective', 'slate', 'tab-1', 'retro').backgroundOpacity,
-    ).toBeUndefined();
-    expect(buildTemplatedTab('flowchart', 'slate', 'tab-1', 'flow').backgroundOpacity).toBe(0.4);
-  });
-});
-
 describe('gantt workstream bars survive theming', () => {
   // The six progress bars carry their workstream's tint as the track fill.
   // They opt out of theme recolouring via `themeLockFill` so a non-brand
@@ -304,36 +253,6 @@ describe('gantt workstream bars survive theming', () => {
     const tab = buildTemplatedTab('gantt', 'slate', 'tab-g', 'Gantt');
     expect(new Set(bars(tab.elements).map((b) => b.fillColor)).size).toBe(3);
   });
-});
-
-describe('the lane-based process templates give each role its own hue', () => {
-  // Swimlane flowchart and approval workflow (docs/specs/008-canvas/canvas-and-palette.md):
-  // one lane per role, each tinted its own colour, under a title and over a key.
-  const lanesOf = (kind: TemplateKind) =>
-    buildTemplate(kind, 0, 0).filter(
-      (el): el is Extract<Element, { type: 'shape' }> => el.type === 'shape' && el.shape === 'lane',
-    );
-
-  it.each([
-    ['swimlane', ['Customer', 'Sales', 'Warehouse', 'Courier']],
-    ['approval-workflow', ['Requester', 'Manager', 'Finance']],
-  ] as const)('%s: one lane per role, each in its own hue', (kind, roles) => {
-    const lanes = lanesOf(kind);
-    expect(lanes.map((l) => l.label)).toEqual(roles);
-    expect(new Set(lanes.map((l) => l.fillColor)).size).toBe(roles.length);
-    expect(new Set(lanes.map((l) => l.headerFill)).size).toBe(roles.length);
-  });
-
-  it.each(['swimlane', 'approval-workflow'] as const)(
-    '%s: opens with a title and a key',
-    (kind) => {
-      const texts = buildTemplate(kind, 0, 0).filter(
-        (el): el is Extract<Element, { type: 'text' }> => el.type === 'text',
-      );
-      expect(texts.some((t) => t.textSize === 'lg' && t.textBold)).toBe(true);
-      expect(texts.map((t) => t.label)).toContain('Key');
-    },
-  );
 });
 
 describe('system architecture is a vendor-neutral tiered diagram', () => {

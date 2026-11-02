@@ -20,7 +20,7 @@ describe('setPowerUserMode on', () => {
       powerUserMode: true,
       alignmentGuides: true,
       autoRebindArrows: true,
-      tourSeen: true,
+      workshopTourSeen: true,
       minimalChrome: true,
     });
   });
@@ -39,7 +39,10 @@ describe('setPowerUserMode on', () => {
       applied: { alignmentGuides: true },
     });
     // An absent key stays absent in `before`, so restoring can delete it.
-    expect(next.powerUserBaseline?.tourSeen).toEqual({ before: {}, applied: { tourSeen: true } });
+    expect(next.powerUserBaseline?.workshopTourSeen).toEqual({
+      before: {},
+      applied: { workshopTourSeen: true },
+    });
     expect(Object.keys(next.powerUserBaseline ?? {}).sort()).toEqual(
       Object.keys(POWER_USER_PRESET).sort(),
     );
@@ -57,7 +60,7 @@ describe('setPowerUserMode off', () => {
     const before: UserPreferences = {
       alignmentGuides: false,
       autoRebindArrows: false,
-      tourSeen: false,
+      workshopTourSeen: false,
     };
     const { prefs, restored, kept } = off(on(before));
     expect(prefs).toEqual(before);

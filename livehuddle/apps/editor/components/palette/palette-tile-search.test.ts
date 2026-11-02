@@ -6,13 +6,10 @@ import {
   elementSignature,
   elementTileSections,
   mergeByName,
-  modeElementTiles,
   rankTiles,
-  searchElementTiles,
   tileSignature,
 } from './palette-tile-search';
 import { PALETTE_TILES, tileById, type PaletteTileDef } from './palette-tile-defs';
-import { SEARCH_ONLY_TILE_IDS } from './palette-layouts';
 import { markerTiles } from './palette-marker-tiles';
 import { DEFAULT_WHITEBOARD_PREFS } from '@/lib/whiteboard-prefs';
 
@@ -23,134 +20,15 @@ const el = (e: Record<string, unknown>) =>
   ({ id: 'x', x: 0, y: 0, width: 1, height: 1, ...e }) as unknown as Element;
 
 describe('elementTileSections', () => {
-  it('lists every tile of the mode once, in layout order', () => {
-    const tiles = modeElementTiles('diagram');
-    expect(new Set(ids(tiles)).size).toBe(tiles.length);
-    // Popular leads, so its square comes first.
-    expect(tiles[0]?.id).toBe('shapes:square');
-    // Then the tiles on no strip, which only the Search reaches.
-    expect(ids(elementTileSections({ mode: 'diagram', hasImage: true }).here)).toEqual([
-      ...ids(tiles),
-      ...SEARCH_ONLY_TILE_IDS,
-    ]);
-  });
-
-  it("finds the tiles on no strip in every mode, as this mode's", () => {
-    expect(SEARCH_ONLY_TILE_IDS.length).toBe(19);
-    for (const mode of ['diagram', 'workshop'] as const) {
-      const { here, elsewhere } = elementTileSections({ mode, hasImage: true });
-      for (const id of SEARCH_ONLY_TILE_IDS) {
-        expect(ids(here), `${mode} ${id}`).toContain(id);
-        expect(ids(elsewhere), `${mode} ${id}`).not.toContain(id);
-      }
-    }
-    for (const [query, id] of [
-      ['code', 'tools:code-block'],
-      ['youtube', 'media:embed-youtube'],
-      ['website', 'media:embed-website'],
-      ['phone', 'devices:phone'],
-      ['hero', 'components:hero'],
-      ['banner', 'components:banner'],
-    ] as const)
-      expect(
-        ids(searchElementTiles({ query, mode: 'diagram', hasImage: true }).here),
-        query,
-      ).toContain(id);
-  });
-
-  it('puts the tiles only another mode offers in the other section, never in both', () => {
-    const { here, elsewhere } = elementTileSections({ mode: 'diagram', hasImage: true });
-    // Charts are Workshop's; the event-storming notation is a board's.
-    expect(ids(elsewhere)).toEqual(expect.arrayContaining(['data:pie', 'tools:es-domain-event']));
-    expect(ids(here)).not.toContain('data:pie');
-    const mine = new Set(ids(here));
-    expect(elsewhere.filter((t) => mine.has(t.id))).toEqual([]);
-  });
-
   it('flips with the mode', () => {
     const { here, elsewhere } = elementTileSections({ mode: 'workshop', hasImage: true });
     expect(ids(here)).toContain('data:pie');
     expect(ids(elsewhere)).not.toContain('data:pie');
   });
-
-  it('covers every tile of every mode between its two sections', () => {
-    const { here, elsewhere } = elementTileSections({ mode: 'diagram', hasImage: true });
-    const all = new Set([...ids(here), ...ids(elsewhere)]);
-    for (const mode of ['diagram', 'workshop'] as const) {
-      for (const t of modeElementTiles(mode)) expect(all.has(t.id), t.id).toBe(true);
-    }
-  });
-
-  it('leaves out the image-upload tiles where the editor has none', () => {
-    const { here, elsewhere } = elementTileSections({ mode: 'diagram', hasImage: false });
-    const needsImage = PALETTE_TILES.filter((t) => t.needsImage).map((t) => t.id);
-    expect([...ids(here), ...ids(elsewhere)].filter((id) => needsImage.includes(id))).toEqual([]);
-  });
-});
-
-describe('searchElementTiles', () => {
-  it('finds a tile by a synonym', () => {
-    const { here } = searchElementTiles({ query: 'database', mode: 'diagram', hasImage: true });
-    expect(ids(here)).toContain('shapes:cylinder');
-  });
-
-  it("finds another mode's tile in the other section", () => {
-    const { here, elsewhere } = searchElementTiles({
-      query: 'pie',
-      mode: 'diagram',
-      hasImage: true,
-    });
-    expect(ids(here)).toEqual([]);
-    expect(ids(elsewhere)).toEqual(['data:pie']);
-  });
-
-  it('finds nothing for nonsense, in either section', () => {
-    expect(searchElementTiles({ query: 'zzqqxx', mode: 'diagram', hasImage: true })).toEqual({
-      here: [],
-      elsewhere: [],
-    });
-  });
-
-  it('lists only the element types on the tab before anything is typed', () => {
-    const { here, elsewhere } = searchElementTiles({
-      query: '  ',
-      mode: 'diagram',
-      hasImage: true,
-      tabElements: [
-        el({ type: 'shape', shape: 'circle' }),
-        el({ type: 'shape', shape: 'circle' }),
-        el({ type: 'sticky' }),
-        el({ type: 'shape', shape: 'pie-chart' }),
-      ],
-    });
-    // Layout order (Popular first), each type once.
-    expect(ids(here)).toEqual(['shapes:circle', 'tools:sticky']);
-    expect(ids(elsewhere)).toEqual(['data:pie']);
-  });
-
-  it('lists nothing before typing on an empty tab', () => {
-    expect(searchElementTiles({ query: '', mode: 'diagram', hasImage: true })).toEqual({
-      here: [],
-      elsewhere: [],
-    });
-  });
 });
 
 describe("Draw mode's markers", () => {
   const drawTiles = markerTiles(DEFAULT_WHITEBOARD_PREFS, 'light');
-
-  it("are found by name, always as another mode's", () => {
-    const { here, elsewhere } = searchElementTiles({
-      query: 'marker',
-      mode: 'diagram',
-      hasImage: true,
-      drawTiles,
-    });
-    expect(ids(here)).not.toContain('draw:marker-main');
-    expect(ids(elsewhere)).toEqual(
-      expect.arrayContaining(['draw:marker-main', 'draw:marker-second', 'draw:marker-third']),
-    );
-  });
 
   it('name each pen by its place, and say its colour and width', () => {
     expect(drawTiles.map((t) => t.caption)).toEqual(['Marker 1', 'Marker 2', 'Marker 3']);
@@ -161,18 +39,6 @@ describe("Draw mode's markers", () => {
       colour: 'blue',
       width: 1.5,
     });
-  });
-
-  it('give way to the pencil on the tab, a stroke being a stroke', () => {
-    const { here, elsewhere } = searchElementTiles({
-      query: '',
-      mode: 'diagram',
-      hasImage: true,
-      drawTiles,
-      tabElements: [el({ type: 'freehand' })],
-    });
-    expect(ids(here)).toEqual(['tools:pencil']);
-    expect(ids(elsewhere)).toEqual([]);
   });
 });
 
@@ -204,9 +70,10 @@ describe('mergeByName', () => {
   const t = (id: string) => tileById(id)!;
 
   it('puts a name match from a later list above a keyword-only match from an earlier one', () => {
-    // "flowchart" is a keyword of the diamond; "Org Chart" is the org chart's name.
-    expect(ids(mergeByName('chart', [t('shapes:diamond')], [t('tools:org-chart')]))).toEqual([
-      'tools:org-chart',
+    // "flowchart" is a keyword of the diamond; "Pie Chart" names the pie (its caption here, to read in full).
+    const pie = { ...t('data:pie'), caption: 'Pie Chart' };
+    expect(ids(mergeByName('chart', [t('shapes:diamond')], [pie]))).toEqual([
+      'data:pie',
       'shapes:diamond',
     ]);
   });
@@ -235,35 +102,5 @@ describe('rankTiles', () => {
   it('keeps input order between equal ranks', () => {
     // Both names start with "c".
     expect(ids(rankTiles('c', tiles)).slice(0, 2)).toEqual(['shapes:cylinder', 'shapes:circle']);
-  });
-});
-
-describe('a worst-case query', () => {
-  it('ranks every tile of every mode well inside a keystroke budget', () => {
-    const start = performance.now();
-    for (let i = 0; i < 50; i++)
-      searchElementTiles({ query: 'e', mode: 'diagram', hasImage: true });
-    // 50 searches matching most of the catalogue; a keystroke runs one.
-    expect((performance.now() - start) / 50).toBeLessThan(16);
-  });
-});
-
-// Workshop mode (docs/specs/012-collaboration/workshop-mode.md "What Diagram gives up"): the
-// Collaborate tiles leave Diagram's palette but Search still finds them, with the other modes'.
-describe('the session kit from Diagram', () => {
-  it("lists Collaborate tiles in Diagram's other-modes section and Workshop's own", () => {
-    const diagram = elementTileSections({ mode: 'diagram', hasImage: true });
-    expect(ids(diagram.here)).not.toContain('tools:session-timer');
-    expect(ids(diagram.elsewhere)).toContain('tools:session-timer');
-    expect(ids(diagram.elsewhere)).toContain('collab:quiz');
-    const workshop = elementTileSections({ mode: 'workshop', hasImage: true });
-    expect(ids(workshop.here)).toContain('tools:session-timer');
-    expect(ids(workshop.here)).toContain('collab:quiz');
-  });
-
-  it("keeps the Comment panel and the Action card in Diagram's own section", () => {
-    const here = ids(elementTileSections({ mode: 'diagram', hasImage: true }).here);
-    expect(here).toContain('collab:comment-pin');
-    expect(here).toContain('collab:action-card');
   });
 });

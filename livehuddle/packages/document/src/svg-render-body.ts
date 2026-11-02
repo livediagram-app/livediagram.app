@@ -19,10 +19,7 @@ import {
 } from './data-shapes';
 import { defaultPadding, PADDING_PX } from './index';
 import { svgBarChart, svgLineChart, svgPieChart } from './svg-render-charts';
-import { svgSankey } from './svg-render-sankey';
-import { isSankeyShape } from './sankey-model';
 import { svgProgressBar, svgProgressRing, svgRating } from './svg-render-data';
-import { svgEntityRows } from './svg-render-entity';
 import { svgPageMasthead } from './svg-render-page';
 import { progressTrackColour } from './progress-colours';
 import { BEHAVIOUR_FACE_SHAPES, svgBehaviourFace, svgFace } from './svg-render-faces';
@@ -32,14 +29,11 @@ import { isWebComponentShape } from './web-components';
 import { isChipShape } from './chip';
 import { svgChip } from './svg-render-chip';
 import { svgBoundary } from './svg-render-boundary';
-import { svgConcept } from './svg-render-concept';
+import { svgTimeline } from './svg-render-timeline';
 import type { TagColour } from './tag-colours';
 import type { Finish } from './finish';
 import { svgPointerNote } from './svg-render-pointer-note';
-import { svgPersonNode } from './svg-render-person-node';
-import { isPersonNode } from './person-node';
 import { svgDiagramKey } from './svg-render-diagram-key';
-import { svgSequencePicture } from './svg-render-sequence';
 import { isConceptShape } from './concept';
 import type { BoxedElement, ShapeKind } from './index';
 import { defaultTextColor, type CanvasSurface } from './colors';
@@ -57,12 +51,9 @@ export function shapeHasBespokeBody(kind: ShapeKind): boolean {
     kind === 'boundary' ||
     kind === 'pointer-note' ||
     kind === 'diagram-key' ||
-    kind === 'sequence' ||
     isConceptShape(kind) ||
-    kind === 'entity' ||
     kind === 'page' ||
-    kind === 'lane' ||
-    kind === 'browser'
+    kind === 'lane'
   );
 }
 
@@ -102,7 +93,6 @@ export function svgElementBody(
   if (isPieShape(el.shape)) return svgPieChart(el, labelColor, chartPalette, fontFamily);
   if (isBarShape(el.shape)) return svgBarChart(el, labelColor, chartPalette, fontFamily);
   if (isLineShape(el.shape)) return svgLineChart(el, labelColor, chartPalette, fontFamily);
-  if (isSankeyShape(el.shape)) return svgSankey(el, labelColor, chartPalette, fontFamily);
   // The empty track is the element's OWN fill, else the paper's default track,
   // the one the canvas's ProgressView draws (docs/specs/009-elements/progress.md).
   const track = progressTrackColour(el, o.surface);
@@ -110,25 +100,13 @@ export function svgElementBody(
   if (el.shape === 'progress-ring')
     return svgProgressRing(el, stroke, track, labelColor, fontFamily);
   if (isRatingShape(el.shape)) return svgRating(el, stroke);
-  if (el.shape === 'entity')
-    return svgEntityRows(el, { textColor: labelColor, stroke, fontFamily, finish: o.finish });
-  // A layer stack, pyramid or cycle's rows (docs/specs/009-elements/concept-graphics.md).
-  if (isConceptShape(el.shape))
-    return svgConcept(el, { stroke, fill, labelColor, label, fontFamily });
+  // A Timeline's milestones (docs/specs/009-elements/timeline.md).
+  if (isConceptShape(el.shape)) {
+    const rows = el.conceptRows ?? [];
+    return rows.length > 0 ? svgTimeline(el, rows, { stroke, fill, labelColor, fontFamily }) : '';
+  }
   // A pointer note's leader and tip (docs/specs/009-elements/pointer-note.md); its box and label are the usual.
   if (el.shape === 'pointer-note') return svgPointerNote(el, { stroke });
-  // A person node's disc, name and role (docs/specs/009-elements/org-chart.md); its box is the mind node's.
-  if (isPersonNode(el)) return svgPersonNode(el, { stroke, labelColor, label, fontFamily });
-  // A sequence diagram's picture, fitted (docs/specs/009-elements/sequence-diagram.md).
-  // It is drawn in the element's own colours, face and finish (its participants in the accent, its words in the ink).
-  if (el.shape === 'sequence')
-    return svgSequencePicture(el, {
-      paper: fill,
-      stroke,
-      ink: el.textColor ?? labelColor,
-      fontFamily,
-      finish: o.finish,
-    });
   // A diagram key's title and rows (docs/specs/009-elements/diagram-key.md); its box is the usual.
   if (el.shape === 'diagram-key')
     return svgDiagramKey(el, { stroke, fill, labelColor, label, fontFamily });

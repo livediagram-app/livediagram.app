@@ -1,20 +1,19 @@
 # Show Me
 
 **Show Me** is a guided tour of one surface, run there and then on the surface itself, when the person presses
-the **Show Me** button. It is the on-demand cousin of the mode tours (the [Diagram tour](editor-tour.md), the
-[Draw tour](../023-draw-mode/draw-tour.md) and the [Workshop tour](../012-collaboration/workshop-tour.md)), which
-start from the footer's Start Tour button; Show Me starts from its own button on the surface. It exists for surfaces
+the **Show Me** button. It is the on-demand cousin of the [Workshop tour](../012-collaboration/workshop-tour.md) and the other
+[tours](editor-tour.md), which start from the footer's Start Tour button; Show Me starts from its own button on the surface. It exists for surfaces
 where people make something real in several steps whose ideas are not visible at a glance. An
 [element tour](element-tours.md) is on the footer's button too, while its element is selected. (Until 25 October 2026
-the mode tours offered themselves once, and element tours from a small toolbar beside the selection.)
+the Workshop tour offered itself once, and element tours from a small toolbar beside the selection.)
 
 ## Domain language
 
-| Term                | Means                                                                                             |
-| ------------------- | ------------------------------------------------------------------------------------------------- |
-| **Show Me**         | This pattern, and the button that starts it. In the interface: **Show Me**                        |
-| **Show Me surface** | A surface that carries a Show Me button (the list below)                                          |
-| **mode tour**       | One of the tours on the footer's Start Tour button, in a mode (Diagram, Draw, Workshop); not this |
+| Term                | Means                                                                      |
+| ------------------- | -------------------------------------------------------------------------- |
+| **Show Me**         | This pattern, and the button that starts it. In the interface: **Show Me** |
+| **Show Me surface** | A surface that carries a Show Me button (the list below)                   |
+| **mode tour**       | The Workshop tour on the footer's Start Tour button; not this              |
 
 ## Where it lives
 
@@ -22,7 +21,6 @@ the mode tours offered themselves once, and element tours from a small toolbar b
 | ---------------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------- |
 | [Share dialog](editor-app.md#share-dialog)                             | The dialog's title row (not on the offline gate)          | The owner (only the owner can open it)      |
 | [Photo import review](../021-event-storming/event-storming.md#show-me) | The review's top-left corner, once the stickies are found | Whoever reaches the review (edit access)    |
-| [Sankey Flows dialog](../009-elements/sankey.md#show-me)               | The dialog's title row                                    | An Editor (only an Editor opens the dialog) |
 | [Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#show-me)    | The dialog's title row                                    | An Editor (only an Editor opens the dialog) |
 
 A new Show Me surface is added to this table, and its own spec says its steps.
@@ -51,7 +49,7 @@ A new Show Me surface is added to this table, and its own spec says its steps.
   one-tab document, a box on a photo where nothing was found) are left out when the tour starts, so the count
   is right from the first step; a target that still never appears skips its step.
 - **Escape belongs to the tour** while it runs over a dialog or an overlay (the Share dialog, the photo review, the
-  Sankey Flows and Tab Style dialogs): it never closes the surface under it. The surface stops closing on Escape for the duration;
+  and the Tab Style dialog): it never closes the surface under it. The surface stops closing on Escape for the duration;
   the tour's own Skip ends it.
 - **Ending.** Done ends it as completed, Skip as skipped; closing the surface under it (Cancel, a finished save)
   ends the tour with it and sends no Ended event. Nothing is remembered: Show Me runs again every time it is pressed, and Settings' Show Tours does not list it.
@@ -67,7 +65,7 @@ points only at controls that person can use. Each surface's spec names who that 
 
 Each surface sends three literal events under its own token `<Surface>Tour`: `UI` · `Started` · `<Surface>Tour`
 when the button is pressed, and `UI` · `Ended` · `<Surface>TourCompleted` or `<Surface>TourSkipped`. The tokens:
-`ShareTour`, `PhotoReviewTour`, `SankeyFlowsTour`, `TabStyleTour`. Each has its stack (Started,
+`ShareTour`, `PhotoReviewTour`, `TabStyleTour`. Each has its stack (Started,
 Completed, Skipped) on the telemetry dashboard, with its explanations.
 
 ## Code

@@ -37,13 +37,16 @@ async function openWhiteboard(page: Page) {
   await page.goto(await serverNewUrl(page, '/new?template=whiteboard'));
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
-  await page.locator('[data-whiteboard-dock]').waitFor();
+  // The Pencil (docs/specs/023-draw-mode/draw-mode.md "Pens"), in hand from its key for every stroke.
+  await page.keyboard.press('p');
 }
 
-async function drawStroke(page: Page) {
-  await page.mouse.move(500, 450);
+// A stroke `dy` px below the first, so a second never starts on the first one's ink.
+async function drawStroke(page: Page, dy = 0) {
+  await page.mouse.move(500, 450 + dy);
   await page.mouse.down();
-  for (let i = 1; i <= 40; i++) await page.mouse.move(500 + i * 10, 450 + Math.sin(i / 5) * 50);
+  for (let i = 1; i <= 40; i++)
+    await page.mouse.move(500 + i * 10, 450 + dy + Math.sin(i / 5) * 50);
   await page.mouse.up();
 }
 
@@ -75,7 +78,10 @@ test.describe('new version prompt', () => {
     // It never takes focus; the keyboard reaches it.
     const reload = prompt(page).getByRole('button', { name: 'Reload' });
     await expect(reload).not.toBeFocused();
-    await drawStroke(page);
+    // Workshop's Pencil is one-shot: the stroke is selected and the tool put down. Step off it, pick it up again.
+    await page.keyboard.press('Escape');
+    await page.keyboard.press('p');
+    await drawStroke(page, 150);
     const reloaded = page.waitForEvent('load');
     await reload.focus();
     await page.keyboard.press('Enter');

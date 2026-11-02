@@ -420,10 +420,10 @@
     {
       "ref": "cb02",
       "id": "cb020000-0000-4000-8000-000000000011",
-      "kind": "entity",
+      "kind": "square",
       "unknown": false,
       "label": "Order",
-      "summary": "{id uuid PK; customer_id uuid FK; status text; total_cents int}",
+      "summary": null,
       "attributes": [],
       "edges": [],
       "children": [],

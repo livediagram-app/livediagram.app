@@ -19,7 +19,6 @@ Scope, by file:
 | `packages/workbench/src/hooks/canvas/useFillPress.ts` (monorepo root) | The press: release within the slop, pinch and cancel rules (shared with livedesign)        |
 | `apps/editor/hooks/canvas/usePaintBucket.ts`                          | The press landing: gates, hint, one `commit`, telemetry                                    |
 | `apps/editor/hooks/canvas/useWhiteboard.ts`                           | `fill`, `pickFill`, `setFill` on the dock model                                            |
-| `apps/editor/components/canvas/whiteboard/DrawingToolsGroup.tsx`      | The Fill button (`FillToolIcon`, `@liveworkspace/ui`), between the divider and the Eraser  |
 | `apps/editor/components/canvas/whiteboard/FillColourPicker.tsx`       | The one colour picker, set for a fill                                                      |
 | `apps/editor/components/canvas/boxed-element-overlays.tsx`            | `FreehandSvg` draws a filled loop's fill under its ink                                     |
 | `apps/editor/hooks/canvas/editor-shortcut-keys.ts`                    | `f` on a whiteboard                                                                        |

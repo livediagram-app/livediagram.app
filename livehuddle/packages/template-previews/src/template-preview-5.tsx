@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livehuddle/templates';
 import { pv } from '@liveworkspace/template-previews/motion';
-import { FILL_BOX, Pop } from '@liveworkspace/template-previews/story-parts';
+import { FILL_BOX } from '@liveworkspace/template-previews/story-parts';
 
 // Group 5 of 5 (the cloud / UML / state / event storming / whiteboard batch), split out of template-preview-4.tsx when the hover
 // stories pushed it past the ~1000-line budget. Static SVG preview tiles, one
@@ -126,99 +126,6 @@ export function templatePreviewGroup5(kind: TemplateKind): ReactElement | null {
                 '--pv-at': `${at}ms`,
                 '--pv-dur': `${dur}ms`,
               })}
-            />
-          ))}
-        </svg>
-      );
-    case 'uml-class':
-      // Classes in a plus around Order: a hollow-triangle generalisation
-      // pair under the abstract Payment, a filled composition diamond on
-      // Order, a hollow aggregation diamond on Restaurant, and open-headed
-      // associations.
-      return (
-        <svg width="76" height="46" viewBox="0 0 80 50" aria-hidden>
-          {[
-            { x: 31, y: 2, h: 10 },
-            { x: 4, y: 17, h: 13, italic: true },
-            { x: 31, y: 17, h: 15, hub: true },
-            { x: 58, y: 18, h: 11 },
-            { x: 1, y: 39, h: 9, w: 12 },
-            { x: 15, y: 39, h: 9, w: 12 },
-            { x: 31, y: 38, h: 10 },
-            { x: 58, y: 38, h: 10 },
-          ].map((c) => (
-            <g key={`${c.x}-${c.y}`}>
-              <rect
-                x={c.x}
-                y={c.y}
-                width={c.w ?? 18}
-                height={c.h}
-                rx="1"
-                fill={c.hub ? 'rgb(224 242 254)' : 'white'}
-                stroke="rgb(14 165 233)"
-                strokeWidth="0.8"
-                strokeDasharray={c.italic ? '1.6 0.8' : undefined}
-              />
-              <line
-                x1={c.x}
-                y1={c.y + 3.4}
-                x2={c.x + (c.w ?? 18)}
-                y2={c.y + 3.4}
-                stroke="rgb(186 230 253)"
-                strokeWidth="0.6"
-              />
-            </g>
-          ))}
-          <path
-            d="M40 12 L40 17 M31 23.5 L22 23.5 M49 23.5 L58 23.5 M40 32 L40 38 M67 29 L67 38 M49 43 L58 43 M7 39 L11 30 M21 39 L15 30"
-            fill="none"
-            stroke="rgb(100 116 139)"
-            strokeWidth="0.8"
-          />
-          {/* Heads: open Vs for associations, triangles at Payment, a filled
-              diamond at Order, a hollow diamond at Restaurant. */}
-          <path
-            d="M38.6 15.2 L40 17 L41.4 15.2 M23.8 22.1 L22 23.5 L23.8 24.9 M56.2 22.1 L58 23.5 L56.2 24.9 M56.2 41.6 L58 43 L56.2 44.4"
-            fill="none"
-            stroke="rgb(100 116 139)"
-            strokeWidth="0.8"
-          />
-          <polygon
-            points="11,30 9.2,32.6 12.2,33"
-            fill="white"
-            stroke="rgb(100 116 139)"
-            strokeWidth="0.7"
-          />
-          <polygon
-            points="15,30 13.8,33 16.8,32.6"
-            fill="white"
-            stroke="rgb(100 116 139)"
-            strokeWidth="0.7"
-          />
-          <polygon points="40,32 41.3,33.8 40,35.6 38.7,33.8" fill="rgb(51 65 85)" />
-          <polygon
-            points="67,29 68.3,30.8 67,32.6 65.7,30.8"
-            fill="white"
-            stroke="rgb(100 116 139)"
-            strokeWidth="0.7"
-          />
-          {/* Hover story: Order gains an operation, then each subclass an
-              attribute of its own. */}
-          {[
-            [33, 29.6, 11, 1000],
-            [3, 44.5, 7, 1500],
-            [17, 44.5, 8, 1750],
-            [60, 44.5, 10, 2000],
-          ].map(([x, y, w, at]) => (
-            <Pop
-              key={at}
-              at={at!}
-              x={x}
-              y={y}
-              width={w}
-              height="1.2"
-              rx="0.5"
-              fill="rgb(100 116 139)"
             />
           ))}
         </svg>

@@ -48,10 +48,9 @@ It is **compact** (no header, 258 px wide), not draggable and with no collapse b
 it leaves when the selection does. The colour swatches are the colour picker's one swatch
 ([Colour picker](../004-interface-design/colour-picker.md)): a 20 px chip in a **24 × 24 px target**
 (WCAG 2.2, 2.5.8 target size), ten to a row with the targets touching. **The width is fixed, never
-the content's**, so the panel never resizes as its rows change, nor when the editor mode changes:
-every colour row lays out on the same ten columns (the theme's seven, Ink and **More colours** in
-Diagram mode, Ink, the eight hued stock colours and More colours in Draw mode, a Background row's
-seven and More colours), a row of swatches never wraps and is never clipped (the
+the content's**, so the panel never resizes as its rows change, :
+every colour row lays out on the same ten columns (the theme's seven, Ink and **More colours**, a
+Background row's seven and More colours), a row of swatches never wraps and is never clipped (the
 width counts the targets, their gaps, 8 px of padding a side and a 1 px border a side, exactly). The panel-opacity preference
 ([User preferences](../007-editor/user-preferences.md)) fades it.
 
@@ -99,7 +98,6 @@ Top to bottom, each a small title over one row of option buttons:
 |                    | Arrows                                             | Solid / Dashed / Flowing              |
 | Text alignment     | Shapes with a label it moves (`supportsTextAlign`) | Left / Centre / Right (horizontal)    |
 | Icon alignment     | Shapes with icon                                   | Before / Above / After the label      |
-| Corners            | Free-corner shapes (Draw mode only)                | None / Small / Medium / Large         |
 | Highlighter colour | Highlight strokes, or the armed Highlighter        | Yellow / Green / Pink / Blue / Orange |
 | Highlighter width  | Highlight strokes, or the armed Highlighter        | Thin / Medium / Bold                  |
 | Actions            | Shapes + arrows + text elements                    | Clear Styles                          |
@@ -113,18 +111,6 @@ opens nothing.
 - **Flowing** is a dashed line with the marching-dashes flow animation (`strokeStyle: 'dashed'`,
   `flow: 'dashes'`). So the plain arrow and the animated dashed arrow are each one click, the two
   arrow looks people build most. Solid and Dashed clear any flow.
-- **Corners** (Draw mode only) sets the corner preset ([Corner radius](corner-radius.md)) of
-  every selected element that takes one (`supportsBorderRadius`: rectangles, the browser frame,
-  the web components with a rectangular surface) and leaves the rest. It earns its place on a
-  whiteboard and nowhere else: a whiteboard's context menu offers no corners, so the panel is the
-  only place a board's corners can change, and every imported or drawn rectangle carries them.
-  On a diagram tab the menu's Border category already holds them and corners are not among the
-  most-used choices, so the row is not shown there. It offers four options, not three: dropping
-  None would leave no way back to square, and Full is a pill rather than a corner, so it stays in
-  the menu's set. That one row of four is the operator's decision; the rhythm rule below still
-  holds for every other row. An element with no preset (its kind's default corner) marks none.
-  On a whiteboard, Clear Styles returns corners to the kind's default too, and the board's style
-  memory remembers them for the next rectangle.
 - **Highlighter colour** and **Highlighter width** are the [Highlighter](highlighter.md)'s settings, shown above the other rows for selected highlight strokes, and on their own (captioned "Highlighter") while the Highlighter tile is armed with nothing selected, where they set the next stroke. Five colours and three widths: the marker's own set, not the theme's. The width row has no context-menu twin, a deliberate exception scoped to these rows ([Highlighter](highlighter.md) "Settings").
 - **Icon alignment** shows only when a selected shape carries an inline icon. Before / Above / After
   map to `iconPosition` left / above / right. "Below" stays in the context menu: it is the rarest
@@ -177,7 +163,7 @@ The seven colours are **theme-relative**:
   diagram's green is a muted green) while still offering six distinct colours, and it puts the six in
   the same order a multi-colour palette runs, so slot 4 means green everywhere.
 - **Then Ink**, on the Stroke and Text colour rows only, the eighth swatch
-  ([One look](../007-editor/editor-modes.md#one-look)): the same drawing colour on every theme,
+  ([Editor modes](../007-editor/editor-modes.md#what-a-tab-written-elsewhere-keeps)): the same drawing colour on every theme,
   stored by name (`ink`) and drawn in its version for the canvas, named "Ink" (its accessible name
   and tooltip). It is not a theme colour, so it takes no custom colour in its place, and a fill
   has none. Ink is marked when every styled element stores it.
@@ -282,25 +268,9 @@ over, never refused, so they never hide the panel from the rest.
   the elements that do.
 - An option is **highlighted** when every supporting element has that value. When they disagree,
   nothing is highlighted: a mixed row claiming one value would be a lie.
-- **In Draw mode the Stroke and Text colour rows are the stock colours**: Ink, the eight hued
-  colours and More colours (custom colours live in its picker), as Marker colour offers them
-  ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel stays"); a stock colour,
-  Ink included, is stored by name and marked by name, each swatch in its version for the canvas.
-  A line with no colour of its own wears its theme default and marks none. Background keeps the
-  theme's fills.
-- **A colour stored by name** shown in Diagram mode matches no theme swatch, so it marks none;
-  choosing a swatch replaces the name with the swatch's colour. It is drawn in its version for the
-  canvas in both modes ([One look](../007-editor/editor-modes.md#one-look)).
-- **On a whiteboard**, a mixed selection shows the **Marker colour** and **Marker width** rows for
-  its marker strokes ([Draw mode](../023-draw-mode/draw-mode.md) "The quick style panel
-  stays") above the rows for everything else: Stroke, Background, Text colour, Stroke width, Stroke
-  style, Text alignment and Icon alignment, each where it fits. The marker rows style only the
-  strokes; the others never touch a stroke.
-- **The caption** above the rows on a whiteboard names what they style when marker strokes are
-  among it: "Marker stroke" or "3 marker strokes" when only strokes are styled, and the count of
-  styled elements when strokes mix with other kinds ("12 elements"). Elements passed over are not
-  counted, and a selection without strokes keeps no caption: its rows name themselves. Power user
-  mode leaves it out, as it does every caption.
+- **A colour stored by name** (a stock colour from a tab made in livediagram's Draw mode) matches no
+  theme swatch, so it marks none; choosing a swatch replaces the name with the swatch's colour. It
+  is drawn in its version for the canvas ([Editor modes](../007-editor/editor-modes.md#what-a-tab-written-elsewhere-keeps)).
 - **Stroke style on a mixed selection** of shapes and arrows offers the shape row (Solid / Dashed /
   Dotted): each of those means something for both kinds (arrows draw dotted lines too), whereas
   Flowing means nothing for a shape. Flowing is offered when every style-supporting element is an
@@ -342,7 +312,7 @@ element of the same kind you draw.
 
 The Actions section's first button. It resets the selected elements' quick-style fields to the
 tab theme's default (stroke, background and label colour, width, style, text alignment, icon
-alignment; on an arrow its stroke colour, width, style and flow; on a text element its text colour; on a whiteboard any stock colour stored by name, too) **and** forgets the memory of every
+alignment; on an arrow its stroke colour, width, style and flow; on a text element its text colour) **and** forgets the memory of every
 kind it touched, so the next shape of those kinds is the default again. A one-off style stays a
 one-off: without the second half, clearing a shape would leave its style waiting in memory for the
 next one. One undo step.
@@ -394,7 +364,7 @@ WCAG 2.2 AA.
 Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md), each panel choice emits
 `Element·Changed` with its own token, distinct from the context menu's, so panel use can be read
 against menu use (which is the evidence the Actions section asks for): `QuickStroke`,
-`QuickBackground`, `QuickTextColour`, `QuickStrokeWidth`, `QuickStrokeStyle`, `QuickTextAlign`, `QuickIconAlign`, `QuickCorners`, and
+`QuickBackground`, `QuickTextColour`, `QuickStrokeWidth`, `QuickStrokeStyle`, `QuickTextAlign`, `QuickIconAlign`, and
 `QuickClearStyles`. Editing the palette is a setting, not a style change: `UI·Changed·QuickSwatchCustom`
 when a swatch is overridden, `UI·Changed·QuickSwatchReset` when an override is cleared, both
 counted as Custom Swatches in the dashboard's Look & Feel stack.

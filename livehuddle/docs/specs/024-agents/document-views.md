@@ -36,7 +36,7 @@ frame c991 "Services"
   square 146b "Orders service" icon=server → e4a8 "charge", d41e, 6406 "OrderPlaced"
   square e4a8 "Payments service" comments=1 resolved → e6d7 "HTTPS" ~dashed
 cylinder d41e "Orders DB"
-entity cb02 "Order" {id uuid PK; customer_id uuid FK; status text; total_cents int}
+square cb02 "Order"
 table 480a 4x3 Service | p99 latency | Availability
 sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
 ```
@@ -44,8 +44,8 @@ sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
 The example is abridged; a real outline prints every element.
 
 - **Header** names the tab, its counts (boxes, frames, lanes, arrows), the tab kind when it is not a diagram
-  (`kind=event-storming`), its mode when not Diagram and its finish when set (`mode=draw · finish=sketch`), elements on hidden layers and elements of unknown kinds, open threads and the revision.
-- **Kind** is the shape for shapes (`square`, `cylinder`, `frame`, `lane`, `entity`), an event-storming note's
+  (`kind=event-storming`), its finish when set (`finish=sketch`), elements on hidden layers and elements of unknown kinds, open threads and the revision.
+- **Kind** is the shape for shapes (`square`, `cylinder`, `frame`, `lane`), an event-storming note's
   notation (`domain-event`, `command`; `es:actor` so it never reads as the actor shape), else the element type
   (`text`, `sticky`, `table`, `arrow`, `image`, `freehand`).
 - **Labels and notes** are JSON strings. Labels are cut at 60 characters, notes at 48, both on a word boundary
@@ -56,7 +56,7 @@ The example is abridged; a real outline prints every element.
 - **Arrows** print on their source line as `→ target "label" ~style`; an arrow with a free end prints on its own
   line. The arrow's own id is in the `graph` view.
 - **Order** within a level is reading order: rows top to bottom, then left to right.
-- **Content kinds** say what they hold briefly: an entity its first 8 fields, a table its size and header row, a
+- **Content kinds** say what they hold briefly: a table its size and header row, a
   code block its language and line count, a chart its slice or series count, a checklist `done=2/5`.
 - **Live and structured kinds** carry one state attribute: an estimate card `votes=4 revealed`, a decision
   `status=accepted`, a progress bar `progress=40`, and likewise for the rest of the collaboration family, stat rows,

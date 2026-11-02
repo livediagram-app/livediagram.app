@@ -80,16 +80,6 @@ describe('useCleanupPreview', () => {
     expect(h.previewingRef.current).toBe(true);
   });
 
-  it('lays out every hover from the first snapshot, so a sweep never stacks layouts', () => {
-    const h = harness();
-    const before = h.tab('tab1').elements;
-    h.api().previewCleanup('tree');
-    h.api().endCleanupPreview();
-    h.api().previewCleanup('mindmap');
-    h.api().previewCleanup('flow-right');
-    expect(h.tab('tab1').elements).toEqual(cleanupElements(before, 'flow-right'));
-  });
-
   it('puts the tab back as it was and clears the flag', () => {
     const h = harness();
     const before = h.tab('tab1').elements;

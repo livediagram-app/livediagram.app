@@ -32,7 +32,7 @@ export type MoveReason = 'make room' | 'carried' | 'laid out' | 'landed on a lan
 
 // `moved` marks an element only moved along, which prints as a » line and is not normalised.
 // How `layout` laid elements out, as its `»` line says.
-export type LaidOut = { style: 'flow' | 'tree' | 'mindmap'; direction?: 'down' | 'right' };
+export type LaidOut = { style: 'flow' | 'tree'; direction?: 'down' | 'right' };
 
 export type Touch = {
   operation: number;

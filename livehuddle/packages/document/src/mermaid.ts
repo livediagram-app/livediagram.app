@@ -20,7 +20,6 @@
 
 import type { GraphCluster, GraphEdge, GraphNode } from './graph-authoring';
 import { readFlowchartHeader, readInlineLabel } from './mermaid-scan';
-import { parseErDiagram } from './mermaid-er';
 import {
   cleanLine,
   mermaidStatements,
@@ -256,14 +255,13 @@ function readEdgeOp(s: string): { op: EdgeOp; rest: string } | null {
 
 const SKIP_RE = /^\s*(?:classDef|class|style|linkStyle|%%|direction)\b/i;
 const STATE_HEADER_RE = /^\s*stateDiagram(?:-v2)?\b/i;
-const ER_HEADER_RE = /^\s*erDiagram\b/i;
 // Every other diagram type Mermaid draws, by its header. The newer types' headers end in `-beta` (or stand alone on
 // their line, as `kanban` does): read as a headerless flowchart, `block-beta` imported boxes named "block" and
 // "columns", and `gitGraph` or `C4Context` were told to add a flowchart header.
 const UNSUPPORTED_RE =
-  /^\s*(?:(?:sequenceDiagram|classDiagram|gantt|pie|journey|mindmap|timeline|quadrantChart|gitGraph|requirementDiagram|zenuml|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b|(?:xychart|sankey|block|packet|architecture|radar|treemap)-beta\b|(?:kanban|xychart|sankey|block|packet|architecture|radar|treemap)\s*$)/i;
+  /^\s*(?:(?:sequenceDiagram|classDiagram|erDiagram|gantt|pie|journey|mindmap|timeline|quadrantChart|gitGraph|requirementDiagram|zenuml|C4Context|C4Container|C4Component|C4Dynamic|C4Deployment)\b|(?:xychart|sankey|block|packet|architecture|radar|treemap)-beta\b|(?:kanban|xychart|sankey|block|packet|architecture|radar|treemap)\s*$)/i;
 export const MERMAID_UNSUPPORTED_ERROR =
-  'Only Mermaid flowcharts (graph / flowchart), state diagrams (stateDiagram) and ER diagrams (erDiagram) are supported, not sequence, class, gantt or other diagram types.';
+  'Only Mermaid flowcharts (graph / flowchart) and state diagrams (stateDiagram) are supported, not sequence, class, ER, gantt or other diagram types.';
 
 // Whether the first meaningful line is a header the importer reads as a graph: a flowchart, a state diagram or an
 // ER diagram. The CLI tells a Mermaid file from edit operations by it (docs/specs/015-api/blueprints/cli.md CLI71).
@@ -272,9 +270,7 @@ export function startsWithMermaidHeader(text: string): boolean {
     .map(cleanLine)
     .find((line) => line !== '');
   if (first === undefined) return false;
-  return (
-    readFlowchartHeader(first) !== null || STATE_HEADER_RE.test(first) || ER_HEADER_RE.test(first)
-  );
+  return readFlowchartHeader(first) !== null || STATE_HEADER_RE.test(first);
 }
 
 export function parseMermaid(text: string): ParseMermaidResult {
@@ -288,8 +284,8 @@ export function parseMermaid(text: string): ParseMermaidResult {
 function parseMermaidDialect(text: string): ParseMermaidResult {
   const lines = mermaidStatements(text);
 
-  // Dispatch on the diagram-type header: the state + ER dialects get their
-  // own parsers (they're still node/edge graphs); non-graph types get a
+  // Dispatch on the diagram-type header: the state dialect gets its own
+  // parser (it's still a node/edge graph); other types get a
   // clear error. No header at all falls through to the flowchart parser (a
   // headerless edge list still imports).
   for (const rawLine of lines) {
@@ -297,7 +293,6 @@ function parseMermaidDialect(text: string): ParseMermaidResult {
     if (!line) continue;
     if (readFlowchartHeader(line) !== null) break; // flowchart — parse below
     if (STATE_HEADER_RE.test(line)) return parseStateDiagram(lines);
-    if (ER_HEADER_RE.test(line)) return parseErDiagram(lines);
     if (UNSUPPORTED_RE.test(line)) return { ok: false, error: MERMAID_UNSUPPORTED_ERROR };
   }
   return parseFlowchart(lines);
@@ -399,7 +394,7 @@ function parseFlowchart(lines: string[]): ParseMermaidResult {
     }
     // Another dialect's header mid-document means this isn't a flowchart
     // after all (the dispatcher only sees headers before the flowchart's).
-    if (UNSUPPORTED_RE.test(line) || STATE_HEADER_RE.test(line) || ER_HEADER_RE.test(line)) {
+    if (UNSUPPORTED_RE.test(line) || STATE_HEADER_RE.test(line)) {
       sawOtherDialect = true;
       break;
     }

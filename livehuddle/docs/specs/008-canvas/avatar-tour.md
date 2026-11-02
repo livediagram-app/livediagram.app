@@ -1,9 +1,9 @@
 # Avatar tour ("Start Avatar Tour")
 
 A short, optional guided tour of [Avatar mode](avatar-mode.md), started from the footer's **Start Avatar Tour**
-button. It is the [Draw tour](../023-draw-mode/draw-tour.md)'s sibling: the same Start Tour button, anchored step
-cards, glide, dimming ring, Skip, Back and closing card, driven by the same engine. Where this spec is silent, the
-Draw tour's rules hold.
+button. It is built like every tour ([Tours](../007-editor/editor-tour.md)): the same Start Tour button, anchored
+step cards, glide, dimming ring, Skip, Back and closing card, driven by the same engine. Where this spec is silent,
+the shared tour rules hold.
 
 ## Domain language
 
@@ -17,22 +17,21 @@ Draw tour's rules hold.
 
 - **On the Start Tour button, in Avatar mode**, which a person enters by pressing a
   [Selection Mode button](../009-elements/mode-button.md) set to Avatar. The footer's button, left of Search
-  ([Diagram tour](../007-editor/editor-tour.md) "Where it appears"), reads **Start Avatar Tour** while the avatar is
-  the tool in hand: ahead of the tab's mode tour, behind a selected element's own tour (`TOUR_OFFER_RANK.tool`). The
-  editor has to be usable (hydrated, no welcome overlay, no start panel on screen, not an embed). Unlike the Draw tour
+  ([Tours](../007-editor/editor-tour.md#where-it-appears)), reads **Start Avatar Tour** while the avatar is
+  the tool in hand: ahead of the Workshop tour, behind a selected element's own tour (`TOUR_OFFER_RANK.tool`). The
+  editor has to be usable (hydrated, no welcome overlay, no start panel on screen, not an embed). Unlike the Workshop tour
   it is on offer **whatever the person's role**: the mode is a Viewer's as much as an Editor's, and a read-only
   canvas is the mode's normal state, not a reason to hold off.
 - **Never on its own.** Until 25 October 2026 it offered itself, once ever, the first time a person walked as an
   avatar ("Meet Your Avatar", **No** / **Yes**); the button replaced that offer.
 - **Gone once taken, back from Settings.** A press starts the first step; a press while another tour is on screen
-  does nothing. Once started the tour is off the button ([Diagram tour](../007-editor/editor-tour.md) "Where it
-  appears") until its Settings switch is turned on again. A Viewer's or a guest's preferences are kept the same way
+  does nothing. Once started the tour is off the button ([Tours](../007-editor/editor-tour.md#where-it-appears))
+  until its Settings switch is turned on again. A Viewer's or a guest's preferences are kept the same way
   (synced to their account or guest id), so the button leaves for them too.
 - **Taken, on every device.** As a run starts and however it ends, the synced `avatarTourSeen` user preference
   ([User preferences](../007-editor/user-preferences.md)) records it: Settings' row reads off and the button stops
   offering it.
-- **Rerun from Settings**: the **Avatar Tour** switch in Settings' **Tours** category, beside **Draw**, built the
-  same way (on means "not seen yet"). Turning it on from off and closing Settings runs the tour straight away when
+- **Rerun from Settings**: the **Avatar Tour** switch in Settings' **Tours** category, built like the others (on means "not seen yet"). Turning it on from off and closing Settings runs the tour straight away when
   the person is in Avatar mode and it is on offer; otherwise the button is there when they get there.
 
 ## Tour content
@@ -62,7 +61,7 @@ element by its `data-tour-id`. The exact strings live in `apps/editor/components
 6. **You're Ready to Roam** (outro): a help-centre link to the Avatar mode article (new tab) and **Start**,
    which completes the tour.
 
-- A step whose target never appears is skipped, as in the Draw tour.
+- A step whose target never appears is skipped, as in every tour.
 - Step 2 opens the panel the way a person would (pressing the Avatar button); step 5 closes it so the character is
   in view. Back from step 5 opens it again. Leaving the tour (Skip, the outro) closes it if the tour opened it.
 - If the tour can no longer run where it started (the person leaves Avatar mode, or opens another tab) it ends as
@@ -80,7 +79,7 @@ bottom bar as the other tours' do.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-The Draw tour's funnel, with its own tokens:
+Every tour's funnel, with its own tokens:
 
 - **Offer**: `UI` · `Opened` · `AvatarTourOffer` the first time the Start Tour button shows this tour in a page
   load. Until 25 October 2026 it counted the welcome card showing, and `UI` · `Closed` · `AvatarTourOffer` counted
@@ -94,5 +93,5 @@ The Draw tour's funnel, with its own tokens:
 
 ## Power user mode
 
-[Power user mode](../007-editor/power-user-mode.md) marks the Avatar tour seen alongside the Diagram,
-Workshop and Draw tours.
+[Power user mode](../007-editor/power-user-mode.md) marks the Avatar tour seen alongside the Workshop
+tour.

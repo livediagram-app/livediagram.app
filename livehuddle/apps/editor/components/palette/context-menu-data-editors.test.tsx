@@ -6,9 +6,8 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactElement } from 'react';
-import type { ChecklistItem, EntityField, LegendItem, PieSlice } from '@livehuddle/document';
+import type { ChecklistItem, LegendItem, PieSlice } from '@livehuddle/document';
 import { ChecklistRowsEditor, LegendDataEditor, PieDataEditor } from './context-menu-data-editors';
-import { EntityFieldsEditor } from './EntityFieldsEditor';
 
 afterEach(() => cleanup());
 
@@ -38,14 +37,6 @@ const cases = [
     input: () => screen.getByLabelText('Legend row 1 label'),
     valueOf: (rows: LegendItem[]) => rows[0]!.label,
   } satisfies Case<LegendItem>,
-  {
-    name: 'EntityFieldsEditor',
-    editor: (rows: EntityField[]) => <EntityFieldsEditor fields={rows} onChange={vi.fn()} />,
-    rows: [{ name: 'id', type: 'uuid' }],
-    changed: [{ name: 'email', type: 'text' }],
-    input: () => screen.getByLabelText('Field 1 name'),
-    valueOf: (rows: EntityField[]) => rows[0]!.name,
-  } satisfies Case<EntityField>,
   {
     name: 'ChecklistRowsEditor',
     editor: (rows: ChecklistItem[]) => <ChecklistRowsEditor items={rows} onChange={vi.fn()} />,

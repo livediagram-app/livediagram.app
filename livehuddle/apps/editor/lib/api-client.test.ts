@@ -483,20 +483,6 @@ describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Plac
     expect(input).toHaveProperty('folderId', null);
   });
 
-  it('carries the creation intent (docs/specs/013-workspace/default-folders.md)', async () => {
-    const intent = {
-      mode: 'diagram',
-      tabKind: 'diagram',
-      templateFamily: 'retrospective',
-    } as const;
-    const body = await sentBody({ id: 'd1', name: 'N', intent });
-    expect(body.intent).toEqual(intent);
-    // The index files by the intent's words (its default folders key on them).
-    expect(index.createItem).toHaveBeenLastCalledWith(
-      expect.objectContaining({ intent: 'diagram:diagram:retrospective' }),
-    );
-  });
-
   it('leaves the intent out when the create keeps a place', async () => {
     const body = await sentBody({ id: 'd1', name: 'N' });
     expect(body).not.toHaveProperty('intent');

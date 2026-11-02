@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, entityHeight, isValidElement, isValidTab } from './index';
+import { createShape, isValidElement, isValidTab } from './index';
 import {
   lanesToFront,
   mergeElementUpdate,
@@ -39,18 +39,6 @@ describe('content kinds', () => {
     expect(els[0]).toMatchObject({ codeLanguage: 'plain' });
     expect(els[0]).not.toHaveProperty('codeTheme');
     expect(valid(els)).toBe(true);
-  });
-
-  it('aligns an entity title top-left and grows the box to its rows', () => {
-    const fields = Array.from({ length: 6 }, (_, i) => ({ name: `f${i}`, type: 'text' }));
-    const [e] = normaliseElements([
-      { id: 'e', type: 'shape', shape: 'entity', ...box, label: 'User', entityFields: fields },
-    ]);
-    expect(e).toMatchObject({
-      textAlignX: 'left',
-      textAlignY: 'top',
-      height: entityHeight(6, 'md'),
-    });
   });
 
   it('keeps an alignment the model chose', () => {
@@ -269,7 +257,7 @@ describe('settling an agent’s chips', () => {
   });
 });
 
-describe('an agent’s concept graphic', () => {
+describe('an agent’s Timeline', () => {
   const concept = (shape: string, n: number) =>
     normaliseElement({
       ...createShape(shape as never, 0, 0),
@@ -277,16 +265,8 @@ describe('an agent’s concept graphic', () => {
     }) as { conceptRows: { label: string }[] };
 
   it('keeps its rows within its kind’s range, so every later edit takes', () => {
-    // A pyramid holds at most 6 tiers; a cycle at least 3 steps.
-    expect(concept('pyramid', 8).conceptRows.map((r) => r.label)).toEqual([
-      'R1',
-      'R2',
-      'R3',
-      'R4',
-      'R5',
-      'R6',
-    ]);
-    expect(concept('cycle', 2).conceptRows.map((r) => r.label)).toEqual(['R1', 'R2', 'Step 3']);
-    expect(concept('hub', 5).conceptRows).toHaveLength(5);
+    // A Timeline holds at most 8 milestones.
+    expect(concept('timeline-rail', 10).conceptRows).toHaveLength(8);
+    expect(concept('timeline-rail', 5).conceptRows).toHaveLength(5);
   });
 });

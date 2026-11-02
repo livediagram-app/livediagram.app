@@ -176,13 +176,13 @@ describe('swimlanes.drawio', () => {
 });
 
 describe('uml.drawio', () => {
-  it('imports class boxes as entities, the ER table as a table', async () => {
+  it('imports class boxes as lanes of text rows, the ER table as a table', async () => {
     const { pages, report } = await load('uml.drawio');
     const page = pages[0]!;
     expectSound(page);
     expect(report).toEqual({
       pages: 1,
-      elements: 13,
+      elements: 20,
       notes: [{ kind: 'shape-approximated', count: 2 }],
     });
     // The actor's name sits under the figure, as in draw.io: the box grows to hold it.
@@ -193,15 +193,8 @@ describe('uml.drawio', () => {
     expect(shopper.y).toBeCloseTo(320 * k, 3);
     expect(shopper.x + shopper.width / 2).toBeCloseTo(735 * k, 3);
     expect(shopper.width).toBeGreaterThan(30 * k);
-    expect(byLabel(page, 'Order')).toMatchObject({
-      shape: 'entity',
-      entityFields: [
-        { name: '+ id', type: 'UUID' },
-        { name: '+ total', type: 'Money' },
-        { name: '+ place()', type: 'void' },
-        { name: '+ cancel(reason: String)', type: 'void' },
-      ],
-    });
+    expect(byLabel(page, 'Order')).toMatchObject({ shape: 'lane' });
+    expect(byLabel(page, '+ id: UUID')).toMatchObject({ type: 'text' });
     const table = page.elements.find((e) => e.type === 'table')!;
     expectScaled(table, { y: 110 }, k);
     expect((table as { colWidths: number[] }).colWidths.map((w) => w / k)).toEqual([
@@ -226,10 +219,11 @@ describe('uml.drawio', () => {
     expect(inherit.to).toMatchObject({ kind: 'pinned', elementId: order.id });
     const compose = arrows(page).find((a) => a.label === 'contains')!;
     expect(compose).toMatchObject({ arrowEnds: 'from', arrowheadShape: 'diamond' });
-    expect(compose.to).toMatchObject({ elementId: byLabel(page, 'LineItem')!.id });
+    // Pinned to the row draw.io pinned it to, a text row in the LineItem lane.
+    expect(compose.to).toMatchObject({ elementId: byLabel(page, '+ quantity: Int')!.id });
     const places = arrows(page).find((a) => a.label === 'places')!;
     expect(places.from).toMatchObject({ elementId: table.id });
-    expect(places.to).toMatchObject({ elementId: order.id });
+    expect(places.to).toMatchObject({ elementId: byLabel(page, '+ id: UUID')!.id });
     expect(byLabel(page, 'Totals include VAT.')).toMatchObject({
       type: 'sticky',
       // draw.io's default note yellow, as the nearest sticky colour.

@@ -11,10 +11,10 @@ const HOME = { kind: 'explorer', node: { kind: 'home' } } as const;
 
 describe('createInPlaceOf', () => {
   it('takes the wizard href’s place and template first', () => {
-    expect(createInPlaceOf('/new?folder=f1&template=flowchart', ORIGIN, HOME)).toEqual({
+    expect(createInPlaceOf('/new?folder=f1&template=retrospective', ORIGIN, HOME)).toEqual({
       folderId: 'f1',
       teamId: null,
-      templateKind: 'flowchart',
+      templateKind: 'retrospective',
     });
     expect(createInPlaceOf('/new?team=t1', ORIGIN, HOME)).toEqual({
       folderId: undefined,
@@ -32,7 +32,7 @@ describe('createInPlaceOf', () => {
         kind: 'explorer',
         node: { kind: 'team', id: 't2' },
       }),
-    ).toEqual({ folderId: null, teamId: 't2', templateKind: 'blank' });
+    ).toEqual({ folderId: null, teamId: 't2', templateKind: 'blank-session' });
     expect(createInPlaceOf('/new?q=roadmap', ORIGIN, HOME)).toEqual({
       folderId: undefined,
       teamId: null,
@@ -60,19 +60,6 @@ describe('createDocumentInPlace', () => {
     expect(made.tabs).toHaveLength(1);
     expect(made.tabs?.[0]?.templateChosen).toBeUndefined();
     expect(made.tabs?.[0]?.elements).toEqual([]);
-  });
-
-  it('makes the asked template as /new makes it', async () => {
-    await createDocumentInPlace('user_1', {
-      folderId: undefined,
-      teamId: null,
-      templateKind: 'flowchart',
-    });
-
-    const [, made] = api.apiCreateDocument.mock.calls[0]!;
-    expect(made.name).not.toBe('Untitled canvas');
-    expect(made.tabs?.[0]?.templateChosen).toBe(true);
-    expect(made.intent).toBeDefined();
   });
 
   it('lets a refused create through to the caller', async () => {

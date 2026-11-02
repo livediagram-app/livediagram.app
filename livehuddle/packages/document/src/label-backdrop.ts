@@ -108,7 +108,7 @@ export function labelBackdrops(
     if (!isLabel(b)) return;
     const ink = inkOf(b, surface);
     if (!ink) return;
-    if (b.type === 'shape' && b.shape !== 'cycle') {
+    if (b.type === 'shape') {
       const own = fillOf(b, surface);
       if (own) {
         out.set(i, { ink, behind: own });

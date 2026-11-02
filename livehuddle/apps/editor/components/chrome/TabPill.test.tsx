@@ -66,17 +66,6 @@ describe('TabPill out of scope', () => {
   });
 });
 
-// docs/specs/007-editor/editor-modes.md "The tab pill shows no mode icon": the name alone, whatever the mode.
-describe('TabPill mode icon', () => {
-  it.each([undefined, 'draw' as const])(
-    'shows no icon before the name (opens in %s)',
-    (opensIn) => {
-      render(<TabPill tab={{ ...tab('t2', 'Board'), opensIn }} ctx={ctx()} />);
-      expect(screen.getByRole('button', { name: 'Board' }).querySelector('svg')).toBeNull();
-    },
-  );
-});
-
 // docs/specs/004-interface-design/touch-targets.md: the tab's name reaches a 44px-tall tap area on a
 // touch screen, vertically only, since the tabs sit side by side.
 describe('TabPill tap area', () => {

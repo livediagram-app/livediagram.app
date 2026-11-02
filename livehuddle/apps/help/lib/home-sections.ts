@@ -57,7 +57,7 @@ const popular: HelpHomeLayout['popular'] = [
   { label: 'Keyboard shortcuts', path: 'tips-and-tricks/keyboard-shortcuts' },
   { label: 'Templates', path: 'canvas/templates' },
   { label: 'Exporting', path: 'account-and-data/exporting-diagrams' },
-  { label: 'Editor modes', path: 'canvas/editor-modes' },
+  { label: 'Workshop mode', path: 'canvas/workshop-mode' },
 ];
 
 export const HOME: HelpHomeLayout = { sections, startHere, stillStuck, popular };

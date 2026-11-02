@@ -8,13 +8,11 @@ import type { Participant } from '@/lib/identity';
 import { landTemplateOnTab } from './template-tab-set';
 
 type SetState<T> = Dispatch<SetStateAction<T>>;
-// The mode a chosen template's tab opens in (docs/specs/007-editor/editor-modes.md "Where the
-// mode lives"): the Whiteboard draws, every other template is a diagram, Blank included, even on
-// a tab that opened in Draw. An event-storming board has no mode to give (it is always Diagram).
-// Undefined leaves the tab as is.
+// The mode a chosen template's tab opens in (docs/specs/007-editor/editor-modes.md): Workshop, the one mode. An
+// event-storming board has no mode to give. Undefined leaves the tab as is.
 export function templateOpensIn(overrides: Pick<Tab, 'opensIn' | 'kind'>): EditorMode | undefined {
   if (overrides.opensIn) return overrides.opensIn;
-  return overrides.kind ? undefined : 'diagram';
+  return overrides.kind ? undefined : 'workshop';
 }
 
 // Template and identity actions, lifted out of editor-page.tsx: choose a template from a start (mint the scaffold via

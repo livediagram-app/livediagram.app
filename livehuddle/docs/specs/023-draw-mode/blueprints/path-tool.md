@@ -49,7 +49,6 @@ Scope, by file:
 | `apps/editor/hooks/canvas/usePathCommits.ts`                           | Editor side: `commitPath`, `commitPathEdit`, telemetry                                                                            |
 | `apps/editor/hooks/canvas/useWhiteboard.ts`                            | `pickPath`, `pathEditing`, `leavePathEdit`                                                                                        |
 | `apps/editor/hooks/canvas/editor-shortcut-keys.ts`                     | `P` on a whiteboard; `WHITEBOARD_TOOL_KEYS.path`                                                                                  |
-| `apps/editor/components/canvas/whiteboard/WhiteboardDock.tsx`          | The Path tool button (`ShapePenIcon`); Select's edit-mode glyph (`EditPointsIcon`)                                                |
 | `apps/editor/components/palette/palette-icons.tsx`                     | `ShapePenIcon` (the Shape Pen tile's icon, shared with the dock), `EditPointsIcon`                                                |
 | liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts | Sentences for the four events                                                                                                     |
 | `apps/help/app/canvas/draw-mode/page.mdx`                              | The Path tool section                                                                                                             |
@@ -510,7 +509,6 @@ numbers only).
 | Edit gesture: select, drag, keys, one commit                                                    | `apps/editor/components/canvas/path/usePathEditGesture.test.tsx`                                                    |
 | Commit: new, continued, edit, delete, telemetry                                                 | `apps/editor/hooks/canvas/usePathCommits.test.tsx`                                                                  |
 | Tool derivation                                                                                 | `apps/editor/lib/whiteboard-tool.test.ts`                                                                           |
-| Dock button, key, edit glyph                                                                    | `apps/editor/components/canvas/whiteboard/WhiteboardDock.test.tsx`                                                  |
 | `pickPath`                                                                                      | `apps/editor/hooks/canvas/useWhiteboard.test.tsx`                                                                   |
 | Quick style and memory                                                                          | `apps/editor/lib/quick-style.test.ts`, `style-memory.test.ts`                                                       |
 | Accessible name                                                                                 | `apps/editor/lib/element-names.test.ts`                                                                             |
@@ -525,7 +523,6 @@ numbers only).
 | No text cursor, no lift, no menu in edit mode                                                   | `apps/editor/components/canvas/element-variant.test.ts`, `apps/editor/hooks/canvas/useEditModeContextMenu.test.tsx` |
 | The eraser takes a path whole                                                                   | `packages/document/src/whiteboard-stroke.test.ts`, `apps/editor/lib/whiteboard-erase.test.ts`                       |
 | Export in the board's ink                                                                       | `apps/editor/lib/export-as-seen.test.ts`                                                                            |
-| The Shape Pen icon, one component                                                               | `apps/editor/components/canvas/whiteboard/WhiteboardDock.test.tsx`                                                  |
 | End to end (every drawing and editing gesture, touch, cursors, overlay order, SVG / PNG export) | Playwright, Chromium and WebKit, dark and light, on the shared stack                                                |
 
 ## Constants and configuration

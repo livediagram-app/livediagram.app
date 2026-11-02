@@ -22,7 +22,7 @@ that happen". What people actually wanted from them is covered by the marquee mu
 The one real dependency is the palette's Components. A component built as grouped primitives
 comes apart the moment a user drags the wrong piece, resizes as a
 uniform zoom of loose boxes (so text and padding scale together), and can only be edited by
-drilling into the group. The Entity ([The entity](entity.md)) shows the better answer for the UML
+drilling into the group. livediagram's Entity showed the better answer for the UML
 class box: make it one element.
 
 ## The elements

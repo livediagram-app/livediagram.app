@@ -37,7 +37,7 @@ describe('graphBodyIssue', () => {
       'graph.direction: expected down or right',
     );
     expect(graphBodyIssue({ nodes, edges, style: 'radial' })).toBe(
-      'graph.style: expected flow, tree, mindmap, lanes, cycle, storm or sequence',
+      'graph.style: expected flow, tree, lanes, cycle or storm',
     );
     expect(graphBodyIssue({ nodes, edges, lines: 'wavy' })).toBe(
       'graph.lines: expected straight, angled or curved',
@@ -77,54 +77,15 @@ describe('graphBodyIssue, the graph look', () => {
   });
 });
 
-describe('graphBodyIssue, a sequence', () => {
-  const sequence = {
-    participants: [
-      { id: 'u', label: 'User', actor: true },
-      { id: 's', label: 'Server', icon: 'server' },
-    ],
-    items: [
-      { kind: 'message', from: 'u', to: 's', label: 'GET', style: 'call', activate: true },
-      { kind: 'message', from: 's', to: 'u', label: '200', style: 'reply', deactivate: true },
-      { kind: 'note', placement: 'over', who: ['u', 's'], text: 'cached' },
-      { kind: 'activate', who: 's' },
-      { kind: 'deactivate', who: 's' },
-      { kind: 'fragment', op: 'alt', label: 'ok' },
-      { kind: 'else', label: 'error' },
-      { kind: 'end' },
-    ],
-    title: 'Fetch',
-    autonumber: true,
-  };
-
-  it('takes every kind of item, and a key of meanings', () => {
-    expect(
-      graphBodyIssue({
-        nodes: [],
-        edges: [],
-        style: 'sequence',
-        sequence,
-        key: { square: 'Step' },
-      }),
-    ).toBeNull();
+describe('graphBodyIssue, a key', () => {
+  it('takes a key of meanings, and refuses a malformed one', () => {
+    expect(graphBodyIssue({ nodes: [], edges: [], key: { square: 'Step' } })).toBeNull();
     expect(graphBodyIssue({ nodes: [], edges: [], key: true })).toBeNull();
+    expect(graphBodyIssue({ nodes: [], edges: [], key: { square: 1 } })).toMatch(/^graph\.key/);
   });
 
-  it('refuses a malformed item, participant or key', () => {
-    const bad = [
-      { ...sequence, items: [{ kind: 'message', from: 'u', to: 's', label: 'x', style: 'shout' }] },
-      { ...sequence, items: [{ kind: 'note', placement: 'over', who: [], text: 'x' }] },
-      { ...sequence, items: [{ kind: 'wobble' }] },
-      { ...sequence, items: ['end'] },
-      { ...sequence, participants: [{ id: 'u' }] },
-      { ...sequence, autonumber: 'yes' },
-      'u -> s',
-    ];
-    for (const q of bad)
-      expect(graphBodyIssue({ nodes: [], edges: [], sequence: q }), JSON.stringify(q)).toMatch(
-        /^graph\.sequence: expected a sequence/,
-      );
-    expect(graphBodyIssue({ nodes: [], edges: [], key: { square: 1 } })).toMatch(/^graph\.key/);
+  it('refuses the sequence style, which livehuddle does not draw', () => {
+    expect(graphBodyIssue({ nodes: [], edges: [], style: 'sequence' })).toMatch(/^graph\.style/);
   });
 });
 

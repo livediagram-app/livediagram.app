@@ -11,10 +11,10 @@ const actions: TidyUpActions = {
   assess: () => ({ kind: 'ok' }),
   blocked: false,
 };
-const base = { actions, editorMode: 'diagram' as const, zenMode: false };
+const base = { actions, zenMode: false };
 
 describe('tidyUpOffered', () => {
-  it('offers the button to an Editor in Diagram mode on a desktop', () => {
+  it('offers the button to an Editor on a desktop', () => {
     expect(tidyUpOffered(base)).toBe(true);
   });
 
@@ -24,10 +24,6 @@ describe('tidyUpOffered', () => {
 
   it('offers nothing to a Participant, a Viewer or an embed, which get no actions', () => {
     expect(tidyUpOffered({ ...base, actions: undefined })).toBe(false);
-  });
-
-  it.each(['draw', 'workshop'] as const)('is not in %s mode', (editorMode) => {
-    expect(tidyUpOffered({ ...base, editorMode })).toBe(false);
   });
 
   it('is not in Zen', () => {

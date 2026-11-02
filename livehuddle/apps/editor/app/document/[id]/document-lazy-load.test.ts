@@ -21,7 +21,6 @@ describe('the document page’s first load', () => {
     ['app/document/[id]/editor-page.tsx', '@/components/panels/Explorer'],
     ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/Explorer'],
     ['components/canvas/useCanvasChromePanels.tsx', '@/components/panels/LayersPanel'],
-    ['components/canvas/CanvasChrome.tsx', '@/components/canvas/whiteboard/WhiteboardDock'],
     ['components/canvas/ElementFaceRouter.tsx', '@/components/canvas/TableView'],
     ['components/canvas/ElementFaceRouter.tsx', '@/components/canvas/collab/CollabFaceRouter'],
     ['components/canvas/QuickStyleHost.tsx', '@/components/canvas/QuickStylePanel'],

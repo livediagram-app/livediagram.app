@@ -10,7 +10,7 @@
 //   2. Per-component positioning in the requested STYLE (docs/specs/008-canvas/layout-cleanup.md "Layout
 //      styles"): the default layered (Sugiyama-lite) flow — sources at the
 //      top (or left), each successive rank below (or right) — or the tidy
-//      tree (auto-layout-tree.ts) or radial mindmap (auto-layout-mindmap.ts).
+//      tree (auto-layout-tree.ts).
 //   3. Re-anchored straight arrows — face chosen from the final relative
 //      positions (down → s→n, right → e→w, ...).
 //
@@ -38,20 +38,18 @@ import { LABEL_PAD as LABEL_GAP_PAD, labelRoom } from './auto-layout-tidy-flow';
 import { reduceCrossings } from './auto-layout-crossings';
 import { LANE_WIDTH, splitLongEdges } from './auto-layout-long-edges';
 import { placeCrossAxis } from './auto-layout-placement';
-import { positionMindmapComponent } from './auto-layout-mindmap';
 
 export type LayoutDirection = 'TB' | 'LR';
 
 // How each connected component's nodes are positioned (docs/specs/008-canvas/layout-cleanup.md "Layout
 // styles"). 'flow' is the layered layout every existing caller gets.
-export type LayoutStyle = 'flow' | 'tree' | 'mindmap';
+export type LayoutStyle = 'flow' | 'tree';
 
 export type AutoLayoutOptions = {
   // Top-left of the laid-out block in canvas space (defaults to 0,0).
   originX?: number;
   originY?: number;
   // Force a direction; omit to auto-detect from the model's positions (flow) or run down (tree).
-  // Meaningful for 'flow' and 'tree'; a mindmap is radial (docs/specs/015-api/mcp-server.md §4.7 "Layout choices").
   direction?: LayoutDirection;
   // Positioning style; omit for the layered flow (the long-standing default).
   style?: LayoutStyle;
@@ -373,14 +371,11 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
   const centers = new Map<ElementId, Pt>(
     nodes.map((n) => [n.id, { x: n.x + n.width / 2, y: n.y + n.height / 2 }]),
   );
-  // A flow detects its axis; a tree runs down unless asked across; a mindmap has none, and its components stack
-  // horizontally, the same as a TB flow.
+  // A flow detects its axis; a tree runs down unless asked across.
   const dir =
     style === 'flow'
       ? (opts.direction ?? detectDirection(centers, edges))
-      : style === 'tree'
-        ? (opts.direction ?? 'TB')
-        : 'TB';
+      : (opts.direction ?? 'TB');
   // A tree across the page is the tree down it with the axes swapped: laid out on transposed boxes, then turned
   // back (transposed once here, not per component).
   const across = style === 'tree' && dir === 'LR';
@@ -404,8 +399,6 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
       placed = across
         ? transposedPlacement(positionTreeComponent(comp, edges, treeSize, treeCenters))
         : positionTreeComponent(comp, edges, size, centers, opts.stackedParents);
-    } else if (style === 'mindmap') {
-      placed = positionMindmapComponent(comp, edges, size, centers);
     } else {
       placed = positionComponent(
         comp,
@@ -448,9 +441,7 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
       if (!p || !s) return el;
       return { ...el, x: p.x + dx, y: p.y + dy, width: s.w, height: s.h };
     }
-    // Mindmap spokes run every way, so only flow and tree have an axis.
-    if (el.type === 'arrow' && !locked?.has(el.id))
-      return reanchorArrow(el, finalCenters, style === 'mindmap' ? undefined : dir);
+    if (el.type === 'arrow' && !locked?.has(el.id)) return reanchorArrow(el, finalCenters, dir);
     return el;
   });
 }

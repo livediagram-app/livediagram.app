@@ -18,7 +18,6 @@ import {
   sendManyToBack,
   isBoxed,
   withAttachedArrows,
-  withMindBranches,
   type Element,
   type Tab,
 } from '@livehuddle/document';
@@ -92,9 +91,7 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     // Locked elements can't be deleted: drop them from the delete set so
     // only the unlocked part of the selection (and arrows pinned to it)
     // goes. If the whole selection is locked, the delete is a no-op.
-    // A mind node takes its branch (docs/specs/009-elements/mind-node.md "Deleting"); a locked node in it stays, as a
-    // root.
-    const targetIds = deletableIds(withMindBranches(activeTab.elements, ids, isProtected));
+    const targetIds = deletableIds(ids);
     if (targetIds.size === 0) return;
     removeSelected(targetIds);
   };
@@ -188,10 +185,8 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     if (multiSelectedIds.size === 0) return;
     if (activeTab.locked === true) return;
     // Same lock rule as deleteSelected: protect locked members, delete the
-    // rest. A fully-locked marquee is a no-op (selection stays put). A mind node takes its branch, as above.
-    const targetIds = deletableIds(
-      withMindBranches(activeTab.elements, multiSelectedIds, isProtected),
-    );
+    // rest. A fully-locked marquee is a no-op (selection stays put).
+    const targetIds = deletableIds(multiSelectedIds);
     if (targetIds.size === 0) return;
     removeMultiSelected(targetIds);
   };

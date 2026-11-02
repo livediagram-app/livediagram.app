@@ -8,7 +8,6 @@ import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { getLineArtIconCatalog } from '@/lib/icons';
 import { searchStickers } from '@liveworkspace/workbench/lib/stickers';
-import { searchTechIcons } from '@liveworkspace/workbench/lib/tech-icons';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
 import type { CanvasTool, PaletteProps } from './palette.types';
 import { buildCanvasToolOptions } from './canvas-tool-options';
@@ -23,7 +22,6 @@ import {
 } from './palette-layouts';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { AddShapeOptions } from '@/lib/draw-mode';
-import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 
 // Everything a palette SURFACE needs that isn't how it is drawn: the tile
 // add-handler bundle, the category catalogue with each category's body, the
@@ -75,7 +73,6 @@ export function usePaletteCatalogue({
   onAddCallout,
   onAddStatRow,
   onAddProcess,
-  onAddFlowchart,
   onAddAvatar,
   onAddImage,
   onAddArrow,
@@ -98,8 +95,8 @@ export function usePaletteCatalogue({
   // appears / disappears as the viewport crosses the breakpoint; a client
   // mount reads it synchronously, so there's no flicker.
   const { libraries } = useShapeLibraries();
-  // The viewer's editor mode picks the palette layout (palette-layouts).
-  const editorMode = useEditorModeState()?.mode ?? DEFAULT_EDITOR_MODE;
+  // The editor mode picks the palette layout (palette-layouts): Workshop, the one mode.
+  const editorMode = DEFAULT_EDITOR_MODE;
   const isMobile = useIsMobileViewport();
   // If the viewport shrinks into mobile while Spotlight is active (desktop ->
   // resize / rotate), revert to Select: the option has just left the picker,
@@ -155,7 +152,6 @@ export function usePaletteCatalogue({
       callout: onAddCallout,
       stat: onAddStatRow,
       process: onAddProcess,
-      flowchart: onAddFlowchart,
     } as const;
     armed(byKind[kind])();
   };
@@ -217,10 +213,6 @@ export function usePaletteCatalogue({
   // as the Icons tab — a search box over a drill-in browse.
   const [stickerQuery, setStickerQuery] = useState('');
   const stickerResults = searchStickers(stickerQuery);
-  // Technology tab (docs/specs/010-palette/technology-icons.md): full-colour brand icons. Mirrors the Icons
-  // tab — a search box over provider categories.
-  const [techQuery, setTechQuery] = useState('');
-  const techResults = searchTechIcons(techQuery, 'all');
 
   // Ordered by BAND (docs/specs/010-palette/palette-top-level-categories.md): Common, then Decorate, then Dynamic
   // (the headings CATEGORY_BANDS names).
@@ -250,10 +242,6 @@ export function usePaletteCatalogue({
     stickerQuery,
     setStickerQuery,
     stickerResults,
-    addTechIcon,
-    techQuery,
-    setTechQuery,
-    techResults,
     insertLibraryShape: (item) => armed(() => onInsertLibraryShape(item))(),
   });
 

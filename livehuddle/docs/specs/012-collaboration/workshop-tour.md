@@ -1,36 +1,35 @@
 # Workshop tour ("Start Workshop Tour")
 
 A short, optional guided tour of [Workshop mode](workshop-mode.md), started from the footer's **Start Workshop Tour**
-button. It is the [Diagram tour](../007-editor/editor-tour.md)'s sibling, as the
-[Draw tour](../023-draw-mode/draw-tour.md) is: the same Start Tour button, anchored step cards, glide, dimming ring,
-Skip, Back and closing card, driven by the same engine. Where this spec is silent, the Diagram tour's rules hold.
+button. It is built like every tour ([Tours](../007-editor/editor-tour.md)): the same Start Tour button, anchored
+step cards, glide, dimming ring, Skip, Back and closing card, driven by the same engine. Where this spec is silent, the
+shared tour rules hold.
 
 ## Domain language
 
-| Term              | Means                                                                                      |
-| ----------------- | ------------------------------------------------------------------------------------------ |
-| **Workshop tour** | This tour. On the Start Tour button: **Start Workshop Tour**                               |
-| **Diagram tour**  | The Diagram mode tour ("Start Diagram Tour"), [Diagram tour](../007-editor/editor-tour.md) |
+| Term              | Means                                                        |
+| ----------------- | ------------------------------------------------------------ |
+| **Workshop tour** | This tour. On the Start Tour button: **Start Workshop Tour** |
 
 ## Where it appears
 
-- **On the Start Tour button, in Workshop mode.** The footer's button, left of Search
-  ([Diagram tour](../007-editor/editor-tour.md) "Where it appears"), reads **Start Workshop Tour** while the open tab
-  is in Workshop on a tab the person may edit, unless something more specific is on offer (a selected element's own
-  tour). The editor has to be usable, as for the Diagram tour (hydrated, no welcome overlay, no start on screen, not
+- **On the Start Tour button.** The footer's button, left of Search
+  ([Tours](../007-editor/editor-tour.md#where-it-appears)), reads **Start Workshop Tour** on a tab the person may
+  edit, unless something more specific is on offer (a selected element's own
+  tour). The editor has to be usable, as for every tour (hydrated, no welcome overlay, no start on screen, not
   read-only, not an embed), and the tab not locked.
 - **Never on its own.** The tour does not offer or start itself. Until 25 October 2026 it offered itself, once ever,
-  the first time a person was in Workshop ("Getting started with Workshop?", **No** / **Yes**); the button replaced
+  the first time a person opened a tab ("Getting started with Workshop?", **No** / **Yes**); the button replaced
   that offer.
 - **Gone once taken, back from Settings.** A press starts the first step; a press while another tour is on screen
   does nothing. Once started, and so taken or skipped, the tour is off the button
-  ([Diagram tour](../007-editor/editor-tour.md) "Where it appears") until its Settings switch is turned on again.
+  ([Tours](../007-editor/editor-tour.md#where-it-appears)) until its Settings switch is turned on again.
 - **Taken, on every device.** As a run starts and however it ends, the synced `workshopTourSeen` user preference
   ([User preferences](../007-editor/user-preferences.md)) records it: Settings' row reads off and the button stops
   offering it.
-- **Rerun from Settings**: the **Workshop Tour** switch in Settings' **Tours** category, beside **Diagram Tour** and
-  built the same way (on means "not seen yet"). Turning it on from off and closing Settings runs the tour straight
-  away when the person is in Workshop and it is on offer; otherwise the button is there when they get there.
+- **Rerun from Settings**: the **Workshop Tour** switch in Settings' **Tours** category, built like the others (on
+  means "not seen yet"). Turning it on from off and closing Settings runs the tour straight away when it could run;
+  otherwise the button is there when they get there.
 
 ## Tour content
 
@@ -41,8 +40,7 @@ taken away when the tour ends, however it ends. Nothing reaches the document's h
 ## The steps
 
 Six steps, then an outro card, which sits outside the step count. There is no welcome card: a press of the button
-starts the first step. The palette
-itself is the Diagram tour's, so this tour does not repeat it. The exact strings live in `apps/editor/components/tour/workshop-tour-steps.ts`.
+starts the first step. It tours what a session needs, not every palette category. The exact strings live in `apps/editor/components/tour/workshop-tour-steps.ts`.
 
 1. **Collaborate**: rings **Ask** and **Session** on the palette's category bar
    ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)), the session kit: Ask puts a question to
@@ -63,7 +61,7 @@ itself is the Diagram tour's, so this tour does not repeat it. The exact strings
 
 - Back from a step goes to the step before. Leaving a step closes what it opened (the category picker).
 - A step whose target is missing on this surface (no Share button for this person, a phone layout without it) is
-  left out up front, so the count stays honest; one that never appears is skipped, as in the Diagram tour.
+  left out up front, so the count stays honest; one that never appears is skipped, as in every tour.
 - If the tour can no longer run where it started (the person's edit rights go, they leave Workshop, or they
   open another tab) it ends as skipped.
 
@@ -75,7 +73,7 @@ not theirs to use.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-The Diagram tour's funnel, with its own tokens:
+Every tour's funnel, with its own tokens:
 
 - **Offer**: `UI` · `Opened` · `WorkshopTourOffer` the first time the Start Tour button shows this tour in a page
   load. Until 25 October 2026 it counted the welcome card showing, and `UI` · `Closed` · `WorkshopTourOffer` counted
@@ -89,5 +87,5 @@ The Diagram tour's funnel, with its own tokens:
 
 ## Power user mode
 
-[Power user mode](../007-editor/power-user-mode.md) marks the Workshop tour seen alongside the Diagram, Draw and Avatar
-tours.
+[Power user mode](../007-editor/power-user-mode.md) marks the Workshop tour seen alongside the Avatar
+tour.

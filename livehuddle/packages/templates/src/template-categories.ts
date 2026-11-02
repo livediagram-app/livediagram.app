@@ -38,7 +38,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   {
     id: 'ideas',
     label: 'Brainstorming',
-    searchWords: 'brainstorm ideation mind maps',
+    searchWords: 'brainstorm ideation',
     description: 'Mind maps and boards for getting ideas out.',
   },
   {
@@ -136,10 +136,6 @@ type BlankKind = 'blank' | 'whiteboard' | 'blank-session';
 
 // Every non-blank template's primary category: the job it is for.
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCategory> = {
-  // Brainstorming: getting ideas out of heads and into some order.
-  mindmap: 'ideas',
-  'mindmap-tree': 'ideas',
-  'mindmap-bubble': 'ideas',
   brainstorm: 'ideas',
   'idea-garden': 'ideas',
   'affinity-map': 'ideas',
@@ -147,7 +143,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   // Decisions: what comes first, which option, what could go wrong and why it went wrong.
   'prioritization-matrix': 'decisions',
   'eisenhower-matrix': 'decisions',
-  'decision-tree': 'decisions',
   'comparison-table': 'decisions',
   'risk-matrix': 'decisions',
   'pre-mortem': 'decisions',
@@ -156,16 +151,11 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'okr-tree': 'goals',
   'objectives-planner': 'goals',
   'metric-tree': 'goals',
-  funnel: 'goals',
-  flywheel: 'goals',
-  sankey: 'goals',
   // Meetings and Workshops: running a session with the room.
   'meeting-agenda': 'meetings',
   'workshop-board': 'meetings',
   'lean-coffee': 'meetings',
   'town-hall': 'meetings',
-  // People and Teams: who is who, who does what, and a new starter's first months.
-  orgchart: 'people',
   'raci-matrix': 'people',
   'onboarding-plan': 'people',
   'family-tree': 'people',
@@ -175,10 +165,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   timeline: 'planning',
   'milestone-timeline': 'planning',
   'milestone-timeline-vertical': 'planning',
-  // Processes and Workflows: how work gets done, step by step.
-  flowchart: 'processes',
-  swimlane: 'processes',
-  'approval-workflow': 'processes',
   'value-stream-map': 'processes',
   // Product and UX: screens, research, journeys and discovery.
   'paper-prototype': 'product',
@@ -188,7 +174,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'empathy-map': 'product',
   'user-story-map': 'product',
   'service-blueprint': 'product',
-  sitemap: 'product',
   'opportunity-solution-tree': 'product',
   // A comic strip tells a user's story in panels, as a storyboard does.
   'comic-strip': 'product',
@@ -211,9 +196,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'system-architecture': 'software',
   'cloud-architecture': 'software',
   'network-diagram': 'software',
-  'er-diagram': 'software',
-  'sequence-diagram': 'software',
-  'uml-class': 'software',
   'state-machine': 'software',
   'data-flow': 'software',
   'event-storming': 'software',
@@ -227,7 +209,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'wardley-map': 'strategy',
   'rich-picture': 'strategy',
   'stakeholder-map': 'strategy',
-  pyramid: 'strategy',
   // Teaching and Learning: a topic taught, studied or taken notes on.
   'concept-map': 'learning',
   'kwl-chart': 'learning',
@@ -260,8 +241,6 @@ export const TEMPLATE_ALSO_IN: Readonly<
   // Looking back at an incident, or forward at a failure, is a retro's job.
   'incident-postmortem': ['retros'],
   'pre-mortem': ['retros', 'strategy'],
-  // Flows of a process, drawn as a tree, a DFD or a blueprint.
-  'decision-tree': ['processes'],
   'data-flow': ['processes'],
   'service-blueprint': ['processes'],
   // Planned work: who does what, the release slices, a new starter's months, a week sorted.
@@ -272,7 +251,6 @@ export const TEMPLATE_ALSO_IN: Readonly<
   // Goals and a growth loop are strategy as much as tracking; a roadmap is strategy in time.
   roadmap: ['strategy'],
   'okr-tree': ['strategy'],
-  flywheel: ['strategy'],
   // Discovery is aimed at an outcome.
   'opportunity-solution-tree': ['goals'],
   // A value proposition is product design.
@@ -281,9 +259,6 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'stakeholder-map': ['people'],
   // Weighing an idea through three lenses is a decision, and the Venn is taught in class.
   venn: ['decisions', 'learning'],
-  // What a class uses: mind maps, timelines, family trees and a quiz.
-  mindmap: ['learning'],
-  'mindmap-bubble': ['learning'],
   timeline: ['learning'],
   'family-tree': ['learning'],
   'pub-quiz': ['learning'],

@@ -22,7 +22,8 @@ const diagram: Tab = { id: 'd', name: 'Diagram', kind: 'diagram', elements: [] }
 function setup(tab: Tab, pendingDraw: PendingDraw | null) {
   const deps = {
     activeTab: tab,
-    drawMode: tab.opensIn === 'draw',
+    // The whiteboard engine's flag (Draw mode is gone; the engine stays until it is removed).
+    drawMode: tab.id === 'wb',
     canvasTool: 'select' as const,
     pendingDraw,
     editsBlocked: false,

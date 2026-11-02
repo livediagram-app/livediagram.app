@@ -14,7 +14,6 @@ import {
   isRatingShape,
   isSelfDrawingShape,
 } from './data-shapes';
-import { isSankeyShape } from './sankey-model';
 
 // The self-drawing shape family decides real behaviour: BoxedElementView picks
 // a renderer off it, elementSupportsText uses isSelfDrawingShape to decide
@@ -43,7 +42,6 @@ const FAMILIES: { name: string; guard: (k: ShapeKind) => boolean }[] = [
   { name: 'code block', guard: isCodeBlockShape },
   { name: 'checklist', guard: isChecklistShape },
   { name: 'legend', guard: isLegendShape },
-  { name: 'sankey', guard: isSankeyShape },
 ];
 
 const kindsMatching = (guard: (k: ShapeKind) => boolean) => ALL.filter(guard).sort();
@@ -51,28 +49,6 @@ const kindsMatching = (guard: (k: ShapeKind) => boolean) => ALL.filter(guard).so
 describe('the self-drawing shape family', () => {
   it('reads the real vocabulary (guard against an empty enumeration)', () => {
     expect(ALL.length).toBeGreaterThan(40);
-  });
-
-  it('claims exactly the kinds its members claim, plus the sticker, the label-less web components and concept graphics', () => {
-    const fromMembers = new Set(FAMILIES.flatMap((f) => kindsMatching(f.guard)));
-    fromMembers.add('sticker');
-    // docs/specs/009-elements/web-components-and-no-groups.md: their text is their rows, so there is no label to edit.
-    fromMembers.add('stat-row');
-    fromMembers.add('process');
-    // docs/specs/009-elements/concept-graphics.md: a layer stack, a pyramid, an onion and a chevron process draw all
-    // their own text.
-    fromMembers.add('layer-stack');
-    fromMembers.add('pyramid');
-    fromMembers.add('onion');
-    fromMembers.add('chevrons');
-    // docs/specs/009-elements/fence.md: a fence is posts and rails, with nothing to write on.
-    fromMembers.add('fence');
-    // docs/specs/009-elements/avatar-pad.md: an Avatar Pad is pixels, with nothing to write on.
-    fromMembers.add('avatar-pad');
-    // docs/specs/009-elements/office.md: the scenery and machines have nothing to write on.
-    for (const k of ['plant', 'bookshelf', 'water-cooler', 'coffee-machine', 'rug'] as const)
-      fromMembers.add(k);
-    expect(kindsMatching(isSelfDrawingShape)).toEqual([...fromMembers].sort());
   });
 
   it('puts every member in exactly one family', () => {

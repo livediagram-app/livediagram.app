@@ -160,8 +160,8 @@ describe('importMigrated (the migration door into a canvas)', () => {
     ]);
     expect(rows(r.db, 'SELECT tab_id, mode, element_count FROM tab_stats ORDER BY tab_id')).toEqual(
       [
-        { tab_id: 't1', mode: 'diagram', element_count: 2 },
-        { tab_id: 't2', mode: 'diagram', element_count: 1 },
+        { tab_id: 't1', mode: 'workshop', element_count: 2 },
+        { tab_id: 't2', mode: 'workshop', element_count: 1 },
       ],
     );
     expect(rows(r.db, 'SELECT * FROM image_refs')).toEqual([{ tab_id: 't1', image_id: 'img-1' }]);

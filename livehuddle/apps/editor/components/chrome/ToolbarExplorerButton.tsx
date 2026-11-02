@@ -6,7 +6,6 @@ import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 import { TabNameInBox } from '@liveworkspace/workbench/components/chrome/TabNameInBox';
 import { NAME_MAX_LENGTH } from '@livehuddle/document';
 import { ToolbarMenuCard } from './ToolbarMenuCard';
-import { EditorModeSwitch } from './editor-mode/EditorModeSwitch';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
 // the Explorer panel would float. It toggles that same Explorer panel open as
@@ -58,7 +57,6 @@ export function ToolbarExplorerButton({
     <ToolbarMenuCard inline={inline} dockButton tourId="dock-explorer">
       {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}
       {button}
-      <EditorModeSwitch iconOnly={phone || inline} />
       {/* The open tab's name, in every mode (not on a phone). */}
       {phone || inline ? null : <TabNameInBox maxLength={NAME_MAX_LENGTH} />}
     </ToolbarMenuCard>

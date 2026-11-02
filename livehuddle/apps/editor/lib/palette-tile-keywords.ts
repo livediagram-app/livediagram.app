@@ -33,25 +33,15 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'speech-bubble': 'comment callout chat note',
   frame: 'section container group region',
   page: 'document doc write article heading',
-  'mind-node': 'mind map brainstorm branch idea tree',
   lane: 'swimlane band row track process',
-  entity: 'record table uml class er schema field',
   card: 'node service component box tile persona tag title',
   badge: 'tag pill label chip status version beta new count',
   step: 'number numbered sequence order walkthrough marker 1 2 3',
   stack: 'stack row column grid auto layout flex align distribute even gap spacing container list',
-  sequence:
-    'sequence diagram uml lifeline message call reply request response interaction api flow',
   'diagram-key': 'legend key line styles dashed solid meaning tag colours colour code explain',
   'pointer-note':
     'annotation callout leader line pointer note comment explain here arrow pin label',
   boundary: 'region zone vpc network container group cloud system c4 subnet cluster',
-  'layer-stack': 'layers stack tiers osi architecture levels bands',
-  pyramid: 'pyramid tiers hierarchy maslow funnel triangle levels conversion',
-  cycle: 'cycle loop flywheel pdca circle steps process iteration',
-  hub: 'hub spoke satellites ecosystem stakeholders integrations centre radial star',
-  onion: 'onion rings concentric layers clean hexagonal architecture core maturity trust',
-  chevrons: 'chevron arrows stages pipeline value chain phases process lifecycle',
   'mode-button': 'mode switch button press avatar',
   portal: 'teleport jump link warp travel',
   'session-button': 'timer vote poll session start',
@@ -84,13 +74,6 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'done-check': 'complete finished tick ready everyone signed off',
   'reaction-pad': 'emoji react clap applause celebrate burst',
   actor: 'person stick figure user role uml',
-  browser: 'web page window chrome site',
-  monitor: 'screen desktop display computer',
-  laptop: 'macbook notebook computer',
-  phone: 'mobile iphone android handset',
-  tablet: 'ipad slate',
-  foldable: 'fold flip unfolded hinge dual screen book phone',
-  smartwatch: 'watch wearable wrist',
   'progress-bar': 'bar meter percent loading completion',
   'progress-ring': 'donut ring percent gauge dial',
   'timeline-rail': 'timeline roadmap milestones track history plan dates schedule',
@@ -101,9 +84,6 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   'line-chart': 'trend series graph chart plot area scatter xy',
   'code-block': 'code snippet syntax monospace program',
   checklist: 'todo tasks tick checkbox list',
-  // Sankey (docs/specs/009-elements/sankey.md): what people call it, and what they draw with it.
-  sankey:
-    'sankey flow flows alluvial energy budget money income spending funnel conversion journey migration supply chain allocation breakdown',
 };
 
 /** A tile's search keywords: for a shape, its kind's synonyms; for any other tile, its label and

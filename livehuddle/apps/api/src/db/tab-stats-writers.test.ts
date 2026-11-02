@@ -78,7 +78,7 @@ describe('upsertTab and upsertTabAtRev', () => {
   it('write the stats of the stored body', async () => {
     const db = withDocument();
     await upsertTab(db.env, 'A', tab('t1', 'draw', 2, 0, 1), 0);
-    expect(statsRow(db.sql, 't1')).toEqual({ ...expected(db.sql, 't1'), mode: 'draw' });
+    expect(statsRow(db.sql, 't1')).toEqual({ ...expected(db.sql, 't1'), mode: 'workshop' });
     expect(statsRow(db.sql, 't1')).toMatchObject({ element_count: 3, comment_count: 3 });
   });
 

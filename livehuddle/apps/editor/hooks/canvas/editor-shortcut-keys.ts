@@ -87,15 +87,6 @@ export type EditorKeyboardShortcutsDeps = {
   // drag), but it lives next to them in the keyboard surface so the
   // user reaches for the same row of letters for every tool.
   onBeginFreehand: () => void;
-  // Mind map (docs/specs/009-elements/mind-node.md): whether Tab / Enter should grow from this element,
-  // and the grower itself. Asked per keystroke rather than held as a flag so
-  // it can't go stale against the selection.
-  canGrowMindNode: (id: string) => boolean;
-  onGrowMindNode: (id: string, kind: 'child' | 'sibling') => void;
-  // Escape on the empty node a growth just made (the Tab one time too many):
-  // removes it and selects its parent. False when that is not the case, so
-  // Escape deselects as usual.
-  onEscapeMindNode: (id: string) => boolean;
   // S arms the shape pen — the same gesture as the pencil, but the stroke is
   // run through shape recognition on release (docs/specs/008-canvas/two-pens.md).
   onBeginShapePen: () => void;
@@ -118,9 +109,6 @@ export type EditorKeyboardShortcutsDeps = {
   // Shift+1: fit all content on the active tab to the viewport. A pure
   // view action (allowed for view-role).
   onFitToScreen: () => void;
-  // Shift+D: move to the next editor mode (docs/specs/007-editor/editor-modes.md). Null where
-  // the mode switch is not offered (view role, event-storming boards).
-  onCycleEditorMode: (() => void) | null;
   // Escape with a live selection and no transient mode to cancel clears
   // the selection (single + multi). Mirrors clicking empty canvas.
   onDeselect: () => void;

@@ -7,7 +7,7 @@ document, a mint racing the identity round trip).
 
 ## Goals
 
-- `/new` owns the welcome, mode choice and create flow end-to-end.
+- `/new` owns the welcome and create flow end-to-end.
 - The editor route only hydrates a document id or a share code and never has to consider minting an id.
 - "New Canvas" buttons (the Explorer, the not-found card) navigate to `/new`. Share and open flows stay on the editor
   route.
@@ -17,7 +17,7 @@ document, a mint racing the identity round trip).
 - The visitor `?s=<code>` flow: visitors land on `/document/shared?s=<code>` and confirm their name there; the
   identity confirmation (`identityOnlyScreenOpen`) stays on the editor route because it is about the visitor's
   session, not about creating a document.
-- An empty tab on an existing document: its templates are on its mode's start, on the editor route, because the
+- An empty tab on an existing document: its templates are on Start a Workshop, on the editor route, because the
   document is already loaded ([Template starts](start-diagramming.md)).
 - What is persisted on create: `/new` POSTs `/api/documents` with the chosen tab seeded.
 
@@ -125,7 +125,7 @@ knowing about when adding another.
 1. User clicks **New Canvas** in the Explorer.
 2. Browser navigates to `/new`.
 3. `/new` renders the welcome card immediately, no spinner.
-4. User picks a mode, which creates the document at once, where new documents go by default
+4. User presses **Create**, which creates the document at once, where new documents go by default
    ([One-step wizard](#one-step-wizard)). The header **X** backs out to the page that opened
    `/new`, creating nothing, as Escape does; see [Escape backs out](#escape-backs-out).
 5. Page mints a UUID, POSTs `/api/documents` with the seeded tab(s),
@@ -133,7 +133,7 @@ knowing about when adding another.
    the editor with the new document already on the server.
 6. On the editor route, hydration extracts the id from the pathname
    and fetches the document + tab content. No mint, no welcome gate. The empty tab
-   opens on its mode's start, where its templates are
+   opens on Start a Workshop, where its templates are
    ([Template starts](start-diagramming.md)).
 
 ### Owner opens an existing document
@@ -152,8 +152,7 @@ knowing about when adding another.
 
 1. User clears the active tab's content (or opens a tab that was
    created empty).
-2. An Editor sees the mode's start in the middle of the canvas (Start Diagramming,
-   Start Drawing, Start a Workshop; [Template starts](start-diagramming.md));
+2. An Editor sees Start a Workshop in the middle of the canvas ([Template starts](start-diagramming.md));
    a Participant or Viewer the empty-canvas card ([The empty-canvas hint](#the-empty-canvas-hint)).
 
 ### Canvas not found
@@ -176,7 +175,6 @@ navigation completes. It keeps:
 The route owns:
 
 - The participant-identity bootstrap (the `livehuddle:v2:self-id` localStorage key, `apiLoadSelf` / `apiSaveSelf`).
-- The mode choice (as the mode's blank template) until the user commits.
 - The "name confirmed" persistence (the `livehuddle:v2:name-confirmed` localStorage key).
 - On commit: mint a UUID, POST `/api/documents` with the templated tab(s) inline, navigate to `/document/<id>`.
 - On Skip: mint a UUID, POST an empty-tab document, navigate to `/document/<id>` so the user lands on the editor
@@ -189,7 +187,7 @@ creates anything:
 
 - **On `/new`:** back to the screen that opened it, at once (the step has
   no search; a `?q=` preset waits for the new document's start). When the
-  browser came from another page of this site (the home page's Diagram or Brainstorm,
+  browser came from another page of this site (the home page,
   the header's Choose Template, the Explorer's New Canvas), it goes back there,
   as the browser's Back would (`history.back()`), so that page returns as it was.
   With nothing of ours to go back to (the URL typed, or opened from another site),
@@ -246,39 +244,14 @@ A footer link **"Open Explorer"** goes to `/explorer/recent`, the same list
 uncapped, so users with more history than the card shows have a way into the
 full library. Component: `apps/editor/app/new/RecentDocumentsCard.tsx`.
 
-## Choosing a mode
-
-The wizard's first step asks **what you are making**, as the three editor modes, never a template
-(`NewDocumentModeStep`, `components/palette/NewDocumentModeStep.tsx`). The templates wait on the canvas, in the
-mode's own start ([Template starts](start-diagramming.md)); the marketing site's gallery is where every template is
-browsed before signing up.
-
-- **Heading:** "What are you making today?"
-- **Three mode cards**, in the order every mode list shows them (`EDITOR_MODES`: Diagram, Draw,
-  Workshop), in a grid from 640px (`modeCardSpan`; one column on a phone). Every card has the same build and the same
-  height (`auto-rows-fr`), so **Diagram**, first there and where most start, leads as an equal rather than a wide,
-  short strip. The cards carry no template names and no "Most Popular" badge.
-- **Each card:** a fan of its own templates' previews on top (`PreviewFan`, the mode's Popular shelf less its blank)
-  wider on hover, then the mode's mark, its name and its **number key** (1 to 4, a small key cap at the row's end,
-  hidden on a phone, which has no keys), then a line on what it makes in the words of the work ("Flowcharts, mind
-  maps, org charts and architecture, snapped neatly into place."). The number is `aria-hidden`; the card carries it
-  as `aria-keyshortcuts`.
-- **Choosing a card creates the document at once**, as an empty tab of the mode's blank (`BLANK_TEMPLATE_FOR_MODE`),
-  which opens on its start.
-- **Keyboard:** the chosen (else the first) card is focused on a fine pointer; the arrow keys move between cards,
-  and 1 to 4 choose one straight away, wherever the focus is on the page (after a click on the backdrop too), except
-  in a field being typed in or with Cmd, Ctrl or Alt held.
-- **`?mode=`** preselects that mode's card (and its blank for **Create**); **`?q=`** is handed to the new document's
-  start as its search ([Template starts](start-diagramming.md) "Search handed over").
-
 ## One-step wizard
 
-The welcome screen asks **one question**, what you are making, and creates the document as soon as it is
-answered. It does not ask where the document goes or what it is called:
+The welcome screen asks **no question**: livehuddle has one editor mode ([Editor modes](editor-modes.md)), so there
+is no mode to choose, and the templates wait on the new document's start. It shows the heading "What are you making
+today?" over **Create**, and creates the document when it is pressed:
 
-- **Mode.** [Choosing a mode](#choosing-a-mode). Footer: **Open Existing Canvas** on the left, then **Skip**
-  and **Create**. Choosing a card creates at once; **Create** creates the chosen card (a `?mode=` preset), else a
-  Blank Diagram.
+- **Create** makes a Blank Workshop document (`blank-session`) that opens on Start a Workshop
+  ([Template starts](start-diagramming.md)). Footer: **Open Existing Canvas** on the left, then **Skip**.
 - **No Location step.** The document goes where new documents go by default, so the person is never asked:
   - **Stored** where [Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating)
     says: This Browser for a guest (with sign-in enabled), livehuddle for everyone else. Decided at commit by
@@ -287,7 +260,7 @@ answered. It does not ask where the document goes or what it is called:
   - **Filed** (livehuddle) in the `/new?folder=` / `?team=` context when there is one, an explicit placement;
     otherwise the create carries no placement and the server files it in the person's
     [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Work.
-  - **Named** after its template ("Untitled Diagram", `untitledNameForTemplate`); it is renamed in the editor.
+  - **Named** after its template ("Untitled Workshop", `untitledNameForTemplate`); it is renamed in the editor.
   - People change where documents go in **Settings > Documents > Default Folders**, and move a document between
     livehuddle and this browser afterwards ([Offline Mode](../006-document/offline-mode.md)).
   - Why: the step asked three questions (name, store, folder) most people answer with the default, before they
@@ -297,53 +270,46 @@ answered. It does not ask where the document goes or what it is called:
 - **There is no theme step.** A new document starts on the **Default** theme,
   and the Theme and canvas controls change it later; asking for a theme before
   anything is on the canvas was a decision most people could not yet make.
-- **Skip** commits the documented defaults straight away: the **Blank** template and the **Default** theme, with
-  its start closed. The header **X** backs out without creating anything ([Escape backs out](#escape-backs-out)).
+- **Skip** commits the documented defaults straight away: Blank Workshop and the **Default** theme, with its start
+  closed. The header **X** backs out without creating anything ([Escape backs out](#escape-backs-out)).
 - A bottom-left **Open Existing Canvas** button navigates to `/explorer`. The
   `/new` route therefore does **not** render an Explorer panel of its own; the
   button is the single, unambiguous way out.
 - The **Create** button shows an inline spinner and disables while the
   create is in flight (`busy` prop, fed from the page's `submitting`
-  state), so a slow network gives feedback and can't double-submit; a mode card chosen meanwhile creates nothing.
+  state), so a slow network gives feedback and can't double-submit.
 
-The wizard renders **immediately** with no identity spinner: the step is static
-mode data, so there's nothing to wait for. Identity resolves in the
+The wizard renders **immediately** with no identity spinner: the step is static, so
+there's nothing to wait for. Identity resolves in the
 background, and the create waits for it (`resolveSelf`) only when it has to.
 
-There is **no template picker over the editor**. An empty tab's templates are on its mode's own start
+There is **no template picker over the editor**. An empty tab's templates are on its start
 ([Template starts](start-diagramming.md)); the visitor name prompt (`IdentityPrompt`) is the only card the editor
-shows over the canvas. (The in-editor **Quick Start**, the whole catalogue across every mode in one modal, was
-removed with the starts' **Something Else**: each start already holds every template of its mode, and the mode
-switch reaches the others.)
+shows over the canvas.
 
-**Where it will be saved.** Under the modes, the wizard shows the **Sync Canvas to Server** switch, which chooses
+**Where it will be saved.** Under Create, the wizard shows the **Sync Canvas to Server** switch, which chooses
 where the create goes rather than asking: it starts at the default for who is creating and moves nothing, as nothing
 exists yet ([Save Locations → On the start screen](../006-document/save-locations.md#on-the-start-screen)). It is not
 drawn when a `/new?folder=` / `?team=` context names a server place.
 
-### A choice before hydration
+### A press before hydration
 
-`/new` is a static export, so the mode cards are on screen before React attaches their handlers. A card clicked in
-that gap is **kept, not lost**: an inline script in the page (`app/new/early-mode-choice.ts`), running as the HTML
-parses, takes a click on a mode card until the wizard mounts, remembers the mode, and shows the progress cursor. The
-wizard's first layout effect turns the script off and creates the remembered mode, exactly as if the click had landed
-after hydration. The script listens on `window` in the capture phase, ahead of React's root listener, so a click it
-takes never also reaches the card, and only one document is made. Before this, a click in the gap did nothing and said
-nothing, and the slower the device the wider the gap (issue #238). Number keys pressed before hydration are not kept:
-the cards are not focused until the wizard mounts.
+`/new` is a static export, so **Create** is on screen before React attaches its handler. A press in that gap is
+**kept, not lost**: an inline script in the page (`app/new/early-mode-choice.ts`), running as the HTML parses, takes
+it until the wizard mounts and shows the progress cursor; the wizard's first layout effect turns the script off and
+creates the document, exactly as if the press had landed after hydration, and only one document is made (issue #238).
 
 ### The empty-canvas hint
 
 The **empty-canvas hint** is a calm **card in the middle of the canvas** (`EmptyCanvasBanner`), shown while the
-active tab has no elements to someone who cannot edit it: an Editor gets the mode's start instead ([Template
+active tab has no elements to someone who cannot edit it: an Editor gets the start instead ([Template
 starts](start-diagramming.md)). A **Viewer** reads "Nothing here yet. The owner can build it out, and your view
-updates live."; a **Participant** is pointed at a sticky, text or an image. It shows in Diagram and Workshop; Draw
-(its dock is the hint, [Draw mode](../023-draw-mode/draw-mode.md)) shows none. It offers no action
+updates live."; a **Participant** is pointed at a sticky, text or an image. It offers no action
 of its own: an Editor's empty tab shows its start instead, and **Help** on a desktop. It goes once the
 canvas has content, and a **Close** (×) in its top right corner closes it for good on that tab for this person in
 this browser (a per-browser list of the last 200 closed keys, `livehuddle:v2:empty-card-dismissed` in localStorage,
 shared with the starts' own close). It takes presses only on itself: the canvas around it still pans. It hides while
-a draw tool is armed. The card: a small picture of what the tab's mode makes, in the brand's
+a draw tool is armed. The card: a small picture of a session board, in the brand's
 tints on a soft panel (`EmptyCanvasArt`), "Tab 1 is empty" (15 px semibold), then its one line, in full. **On a
 phone** it is the same card, narrower (18rem). On a **short screen** (480px tall or less, a phone on its side) the card
 drops its picture, so it clears the toolbars above and below instead of sliding under the Palette strip.
@@ -356,12 +322,11 @@ animated `stroke-dashoffset`. It is pure SVG + CSS (no per-frame JS),
 
 ## Start Blank (skip the wizard)
 
-**Start Blank** is the name of the `?blank=1` bypass (and of Explorer Home's first-run blanks), and of the public sites' link to the wizard, `/new?start=blank` ([Start Blank after a mode](#start-blank-after-a-mode)); it was
+**Start Blank** is the name of the `?blank=1` bypass (and of Explorer Home's first-run blanks), and of the public sites' link to the wizard, `/new?start=blank` ([Start Blank on the wizard](#start-blank-on-the-wizard)); it was
 "Just Draw" until the hero's **Drawing** came to mean a whiteboard. Its telemetry token stays
 `JustDraw`, so the funnel's history reads on unbroken.
 
-Some users don't want to choose even a mode: they want
-an empty canvas right now. Two affordances serve them, both committing the
+Some users want an empty canvas right now, without the wizard. Two affordances serve them, both committing the
 documented Skip defaults (Blank template, Default theme, the template's
 default document name) without walking the wizard:
 
@@ -375,7 +340,7 @@ default document name) without walking the wizard:
   Start Blank straight into a folder or team library. A failed create shows
   the same retryable error card as the wizard path. This is the URL a
   start that wants no choice links to (Explorer Home's first-run Start Blank; the public sites'
-  Start Blank asks for a mode first, see [Start Blank after a mode](#start-blank-after-a-mode)).
+  Start Blank shows the wizard first, see [Start Blank on the wizard](#start-blank-on-the-wizard)).
   - The handoff replaces the `/new?blank=1` history entry with
     `/document/<id>`, so Back from the editor returns to the page before
     `/new` (usually the marketing site), never to a page that would mint
@@ -385,7 +350,7 @@ default document name) without walking the wizard:
     another blank document or trapping the user behind a page that always
     navigates forward again.
   - No tour is queued on this path, nor on any other: tours start only from
-    the footer's Start Tour button ([Diagram tour ("Start Diagram Tour")](editor-tour.md) "Handoff"),
+    the footer's Start Tour button ([Tours](editor-tour.md)),
     so no create waits for the document count.
   - **The wizard must never paint on this path, not even for a frame.**
     `/new` is a static export, so its prerendered HTML is the wizard and
@@ -411,7 +376,8 @@ default document name) without walking the wizard:
   page commits that template (Default theme, the template's default name)
   the moment identity resolves and lands on the editor, with the same
   opening screen, in-place handoff, bfcache-restore redirect, placement params and error card
-  as `?blank=1`. `blank` wins when both are present. An unknown kind is
+  as `?blank=1`. `blank` wins when both are present. `blank` and `whiteboard`
+  (livediagram's Blank Diagram and Blank Whiteboard) make an empty tab that opens in Workshop. An unknown kind is
   ignored and the plain wizard shows (the pre-hydration guard can't
   validate a kind, so the layout effect lifts it), so a stale link never
   strands anyone. Both params are read by one helper,
@@ -419,16 +385,12 @@ default document name) without walking the wizard:
   page, its restore cleanup and the guard agree on what counts. This is
   the URL the marketing site's template gallery links every card to
   ([Marketing site](../019-marketing/marketing-site.md)); it fires `UI / Used / TemplateLink`.
-- **`/new?mode=<mode>` and `/new?q=<words>`**: `mode` (any editor mode) preselects that mode's
-  card, and its blank, so **Create** starts in it; `q` (trimmed, at most 60 characters)
-  is handed to the new document's start as its search, so the templates it meant are the ones shown
-  ([Template starts](start-diagramming.md) "Search handed over"). They compose with each other and
-  with the placement params, and are not a bypass: nothing is committed until the author chooses.
-  An unknown mode, or an empty `q`, is ignored. The static page's HTML is the unselected step, so a
-  pre-paint guard (`data-wizard-preset`, like the bypass's) hides the wizard card (`visibility`, so
-  nothing moves) until React has rendered the preset. Read by
-  `wizardPresetMode` and `wizardPresetQuery` in `apps/editor/lib/new-document-params.ts`. The
-  marketing hero's **Build yours** buttons link here ([Marketing site](../019-marketing/marketing-site.md)).
+- **`/new?q=<words>`**: `q` (trimmed, at most 60 characters) is handed to the new document's start as its search, so
+  the templates it meant are the ones shown ([Template starts](start-diagramming.md) "Search handed over"). It
+  composes with the placement params and is not a bypass: nothing is committed until the author presses Create. An
+  empty `q` is ignored. Read by `wizardPresetQuery` in `apps/editor/lib/new-document-params.ts`. The marketing hero's
+  **Build yours** buttons link here ([Marketing site](../019-marketing/marketing-site.md)). A `mode` param
+  (`/new?mode=draw`) is ignored: there is one mode.
 - **`?welcome=1`** is not read: a `/new?blank=1&welcome=1` link opens as `?blank=1` does.
 - **`/new?via=<Surface>.<Slot>`**: the landing funnel's source
   ([Landing funnel](../019-marketing/landing-funnel.md)), added by a public page's CTA and
@@ -442,18 +404,17 @@ default document name) without walking the wizard:
   Start Blank now lives only on the surfaces that link to
   `/new?blank=1`.
 
-### Start Blank after a mode
+### Start Blank on the wizard
 
 **`/new?start=blank`** is the public sites' **Start Blank** ([Marketing site](../019-marketing/marketing-site.md#start-blank)),
 and the Start Blank in Explorer Home's first-run field ([Explorer Home](../013-workspace/explorer-home.md)).
-It is **not a bypass**: the wizard shows as usual and asks for a mode. The mode chosen (a card, a number key, a card
-clicked before hydration, or **Create**) makes that mode's blank exactly as without the flag, but opens it **with its
-start closed** (`closeStartForBlank`), as Skip's Blank Diagram does, so whoever asked for a blank is not shown
-templates again.
+It is **not a bypass**: the wizard shows as usual. **Create** (pressed, or before hydration) makes the Blank Workshop
+exactly as without the flag, but opens it **with its start closed** (`closeStartForBlank`), as Skip does, so whoever
+asked for a blank is not shown templates again.
 
 - Read by `wizardStartsBlank` (`lib/new-document-params.ts`) at the moment of the create: only the exact value
   `blank` counts; any other `start` value, or none, keeps the start.
-- Composes with the placement context (`?folder=`, `?team=`) and `?via=`, and with `?mode=` (the preset card).
+- Composes with the placement context (`?folder=`, `?team=`) and `?via=`.
 - `?blank=1` and `?template=` still win: with either, the wizard is bypassed and the flag has nothing to change.
 
 ### In-place handoff to the editor
@@ -534,10 +495,10 @@ The URL's placement context travels in the create body as
 follow-up placement request, so a document asked for in a team can never be left personal
 by a request that failed quietly.
 
-The create also carries the new document's creation `intent` (its first tab's editor mode
+The create also carries the new document's creation `intent` (its first tab's editor mode, always Workshop,
 its first tab's kind and its template family), so a create with no place chosen lands in the person's
-[default folder](../013-workspace/default-folders.md) for it, resolved by the server. A mode's blank made by the
-wizard is filed by its mode; the template picked later on its start screen may then move it to that template's
+[default folder](../013-workspace/default-folders.md) for it, resolved by the server. The blank made by the
+wizard is filed as a Workshop; the template picked later on its start screen may then move it to that template's
 default ([Default folders](../013-workspace/default-folders.md) "A template picked after creation").
 
 - **A refused placement** shows the error card with copy for the reason, eyebrow
@@ -573,7 +534,7 @@ caller's: `brand` on `/new`, the source tab's theme for a new tab.
 
 - `/document/placeholder` with no `?s=` → redirects to `/new`, no flash.
 - `/new` → welcome card on first paint.
-- Pick a mode → Create → editor loads on `/document/<id>`, on the mode's start.
+- Create → editor loads on `/document/<id>`, on Start a Workshop.
 - Close the welcome via the header X → back to the page that opened `/new`
   (or home), no document created.
 - `/document/<id>` (existing) → editor hydrates as before.
@@ -582,22 +543,17 @@ caller's: `brand` on `/new`, the source tab's theme for a new tab.
 - "New Canvas" from Explorer → goes to `/new`.
 - `/new` from the home page, Escape → back on the home page, no document created.
 - `/new` typed in, Escape → the home page.
-- `/new`, choose a mode → the document is created at once, This Browser for a guest, filed in the
+- `/new`, Create → the document is created at once, This Browser for a guest, filed in the
   signed-in person's default folder for it.
 - `/new?blank=1` → no wizard; blank document created and editor loads on
   `/document/<id>`.
 - `/new?blank=1&folder=<id>` → the blank document files into that folder.
-- `/new?template=flowchart` → no wizard; a Flowchart diagram created and the
+- `/new?template=retrospective` → no wizard; a Retrospective created and the
   editor loads on `/document/<id>`.
 - `/new?template=not-a-kind` (a retired one, such as `kanban`, too) → the plain wizard.
-- `/new?template=whiteboard` → no wizard; a document created whose tab opens
-  in Draw mode ([Editor modes](editor-modes.md)), the Ink pen in hand.
-- `/new?mode=draw` → the wizard, the Draw card chosen; Create makes a Draw tab.
-- `/new?mode=workshop&q=retro` → the wizard, Workshop chosen; on the new document Start a Workshop
-  opens with its search reading "retro".
-- `/new?mode=pages` (or `illustrate`, `infographic`) → the wizard, Diagram chosen: livehuddle has no Pages mode, and
-  those ids read as Diagram (`parseEditorMode`).
-- `/new?mode=sideways` → the plain wizard, no card chosen.
+- `/new?template=whiteboard` (or `blank`) → no wizard; an empty Workshop tab created.
+- `/new?q=retro` → the wizard; on the new document Start a Workshop opens with its search reading "retro".
+- `/new?mode=draw` → the plain wizard: the mode is ignored.
 - `/new?browse=brainstorm` → the plain wizard: the Brainstorm collection (and `?browse=`) was
   removed with the landing hero's Brainstorm button, its only link; the Brainstorm category remains.
 

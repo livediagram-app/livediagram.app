@@ -5,8 +5,7 @@ import { isDefaultDocumentName, untitledNameForTemplate } from './templates';
 // it after itself while its name is still a default one.
 describe('untitledNameForTemplate', () => {
   it('names a document after its template', () => {
-    expect(untitledNameForTemplate('flowchart')).toBe('Untitled Flowchart');
-    expect(untitledNameForTemplate('orgchart')).toBe('Untitled Org Chart');
+    expect(untitledNameForTemplate('sailboat')).toBe('Untitled Sailboat Retrospective');
     expect(untitledNameForTemplate('whiteboard')).toBe('Untitled Whiteboard');
     expect(untitledNameForTemplate('blank-session')).toBe('Untitled Workshop');
     expect(untitledNameForTemplate('blank')).toBe('Untitled canvas');
@@ -22,7 +21,7 @@ describe('isDefaultDocumentName', () => {
       'Untitled Session',
       'Untitled Workshop',
       'Untitled Whiteboard',
-      'Untitled Flowchart',
+      'Untitled Sailboat Retrospective',
     ])
       expect(isDefaultDocumentName(name)).toBe(true);
   });

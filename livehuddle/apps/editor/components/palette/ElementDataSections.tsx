@@ -13,20 +13,15 @@
 // inline version used). The page owns the open/closed state + the
 // handlers; this component only decides which items to show.
 
-import dynamic from 'next/dynamic';
 import { CardMenuSection } from '@/components/palette/CardMenuSection';
 import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
 import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSection';
 import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
 import { StackMenuSection } from '@/components/palette/StackMenuSection';
 import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
-import { ConceptMenuSection } from '@/components/palette/ConceptMenuSection';
-import { SequenceMenuSection } from '@/components/palette/SequenceMenuSection';
 import {
   isChipShape,
   isConceptShape,
-  type ConceptShape,
-  type ShapeElement,
   LINE_DEFAULT_SERIES,
   chartRamp,
   chartTypeOf,
@@ -35,7 +30,6 @@ import {
   DEFAULT_BUTTON_MODE,
   SELECTION_MODES,
   type ChecklistItem,
-  type EntityField,
   type LegendItem,
   type PieSlice,
 } from '@livehuddle/document';
@@ -52,8 +46,6 @@ import {
 import { MODE_LABEL } from '@/components/canvas/ModeButtonFace';
 import { ProgressMenuGlyph, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
-import { MindMapMenuSections } from './MindMapMenuSections';
-import { FlowchartMenuSections } from '@/components/flowchart/FlowchartMenuSections';
 import { AnimationSections } from '@/components/palette/AnimationSections';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@liveworkspace/workbench/components/primitives/MenuFlyoutSection';
@@ -85,7 +77,6 @@ import {
 import {
   ChartMenuGlyph,
   ChecklistRowsEditor,
-  EntityFieldsEditor,
   CodeSummary,
   DataMenuGlyph,
   LegendDataEditor,
@@ -99,11 +90,6 @@ import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 import { ChartPalettePresets } from './StylePresets';
 
-// A Sankey's sections (docs/specs/009-elements/sankey.md "The menu") load only when a Sankey's menu opens.
-const SankeyMenuSections = dynamic(
-  () => import('./SankeyMenuSection').then((m) => m.SankeyMenuSections),
-  { ssr: false },
-);
 type Scaffold = ReturnType<typeof useContextMenuScaffold>;
 
 // The element menu's data-shape sections: Progress, Timeline Rail, Rating, and
@@ -120,10 +106,6 @@ type ElementDataSectionsProps = {
   isCodeBlock: boolean;
   isChecklist: boolean;
   isLegend: boolean;
-  // Sankey diagram (docs/specs/009-elements/sankey.md): its Sankey and Display sections.
-  isSankey: boolean;
-  isMindNode: boolean;
-  isEntity: boolean;
   isModeButton: boolean;
   isPortal: boolean;
   isSessionButton: boolean;
@@ -144,7 +126,6 @@ type ElementDataSectionsProps = {
 // Row editors re-seed their draft when handed a different array, so the fallbacks for an element
 // without rows are one stable array each rather than a fresh one per render (which reset the draft).
 const DEFAULT_PIE_ROWS: PieSlice[] = PIE_DEFAULT_SLICES.map((s) => ({ ...s }));
-const NO_ENTITY_FIELDS: EntityField[] = [];
 const NO_CHECKLIST_ITEMS: ChecklistItem[] = [];
 const NO_LEGEND_ITEMS: LegendItem[] = [];
 
@@ -171,9 +152,6 @@ export function ElementDataSections({
   isCodeBlock,
   isChecklist,
   isLegend,
-  isSankey,
-  isMindNode,
-  isEntity,
   isModeButton,
   isPortal,
   isSessionButton,
@@ -204,7 +182,6 @@ export function ElementDataSections({
     shapeTarget?.shape === 'boundary' ||
     shapeTarget?.shape === 'pointer-note' ||
     shapeTarget?.shape === 'stack' ||
-    shapeTarget?.shape === 'sequence' ||
     (shapeTarget ? isConceptShape(shapeTarget.shape) : false) ||
     isProgress ||
     isRating ||
@@ -212,9 +189,6 @@ export function ElementDataSections({
     isCodeBlock ||
     isChecklist ||
     isLegend ||
-    isSankey ||
-    isMindNode ||
-    isEntity ||
     isModeButton ||
     isPortal ||
     isSessionButton ||
@@ -225,8 +199,7 @@ export function ElementDataSections({
     isAgenda ||
     isDecision ||
     isChair ||
-    shapeTarget?.shape === 'room' ||
-    !!props.flowchart;
+    shapeTarget?.shape === 'room';
   return (
     <>
       {showTools ? (
@@ -351,14 +324,6 @@ export function ElementDataSections({
           ) : null}
           {/* Web components (docs/specs/009-elements/web-components-and-no-groups.md) — a stat row's cards, a process's
             steps, a header's links: add / remove / reorder. */}
-          {/* A concept graphic's variant; its animation is in the Animation row (docs/specs/009-elements/concept-graphics.md). */}
-          {shapeTarget && isConceptShape(shapeTarget.shape) ? (
-            <ConceptMenuSection
-              target={shapeTarget as ShapeElement & { shape: ConceptShape }}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-            />
-          ) : null}
           {/* A boundary's style (docs/specs/009-elements/boundary.md). */}
           {shapeTarget?.shape === 'boundary' ? (
             <BoundaryMenuSection
@@ -384,16 +349,6 @@ export function ElementDataSections({
               target={shapeTarget}
               ops={props.elementStyle}
               sectionProps={sectionProps}
-            />
-          ) : null}
-          {/* A sequence diagram's summary, Edit Sequence and Numbered; Play is in the Animation row
-              (docs/specs/009-elements/sequence-diagram.md "The menu"). */}
-          {shapeTarget?.shape === 'sequence' ? (
-            <SequenceMenuSection
-              target={shapeTarget}
-              ops={props.elementStyle}
-              sectionProps={sectionProps}
-              onEdit={props.onEditSequence}
             />
           ) : null}
           {/* A pointer note's Detach (docs/specs/009-elements/pointer-note.md). */}
@@ -428,19 +383,6 @@ export function ElementDataSections({
               sectionProps={sectionProps}
               onSetRows={props.onSetWebRows}
             />
-          ) : null}
-          {/* Record (docs/specs/009-elements/entity.md) — the fields: name + optional type, add / remove. */}
-          {isEntity ? (
-            <MenuAccordionSection
-              title="Fields"
-              icon={<DataMenuGlyph />}
-              {...sectionProps('entity')}
-            >
-              <EntityFieldsEditor
-                fields={shapeTarget?.entityFields ?? NO_ENTITY_FIELDS}
-                onChange={props.onSetEntityFields}
-              />
-            </MenuAccordionSection>
           ) : null}
           {/* Checklist (docs/specs/009-elements/checklist.md) — the rows: done toggles, text, add / remove. */}
           {isChecklist ? (
@@ -491,43 +433,6 @@ export function ElementDataSections({
                 onReset={() => props.onApplyChartPalette(null)}
               />
             </MenuAccordionSection>
-          ) : null}
-          {/* Sankey (docs/specs/009-elements/sankey.md): its flows and node colours, then how it draws. Only
-            for someone who may edit it (an Editor, on an unlocked diagram). */}
-          {isSankey && shapeTarget && props.sankey ? (
-            <SankeyMenuSections
-              target={shapeTarget}
-              handlers={props.sankey}
-              sectionProps={sectionProps}
-              flyoutProps={flyoutProps('sankey')}
-              onPreviewTextSize={props.onPreviewTextSize}
-              onPreviewEnd={props.onPreviewStyleEnd}
-            />
-          ) : null}
-          {/* Mind map (docs/specs/009-elements/mind-node.md "The Mind Map menu"): a flyout of Outline, Branching and Spacing.
-            Branching and Spacing set the ROOT's, so one pick re-shapes the whole map rather than half of it. */}
-          {isMindNode ? (
-            <MindMapMenuSections
-              flow={props.mindFlow}
-              spacing={props.mindSpacing}
-              onSetFlow={props.onSetMindFlow}
-              onSetSpacing={props.onSetMindSpacing}
-              onTidy={props.onTidyMindMap}
-              onEditOutline={props.onEditMindOutline}
-              onSelectBranch={props.onSelectMindBranch}
-              onSelectMap={props.onSelectMindMap}
-              sectionProps={sectionProps}
-              flyoutProps={flyoutProps('mind-map')}
-            />
-          ) : null}
-          {/* Flowchart (docs/specs/009-elements/flowchart.md "The Flowchart menu"): a flyout of Chart (lanes and
-            tidy), the step's Step Type and the chart's Direction. */}
-          {props.flowchart ? (
-            <FlowchartMenuSections
-              {...props.flowchart}
-              sectionProps={sectionProps}
-              flyoutProps={flyoutProps('flowchart')}
-            />
           ) : null}
           {/* Mode button (docs/specs/009-elements/mode-button.md) — which selection mode pressing it hands
             whoever clicked. Tiles rather than a list so the icons match the

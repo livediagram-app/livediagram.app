@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { EDITOR_MODES } from '@livehuddle/document';
 import { showsEmptyCanvasCard } from './empty-canvas-card';
 
 // docs/specs/007-editor/new-document-route.md "The empty-canvas hint".
@@ -8,14 +7,12 @@ const empty = {
   zen: false,
   embed: false,
   drawToolArmed: false,
-  mode: 'diagram' as const,
   elementCount: 0,
 };
 
 describe('the empty-canvas card', () => {
-  it('shows on an empty Diagram or Workshop tab, and in no other mode', () => {
-    const shown = EDITOR_MODES.filter((mode) => showsEmptyCanvasCard({ ...empty, mode }));
-    expect(shown).toEqual(['diagram', 'workshop']);
+  it('shows on an empty tab', () => {
+    expect(showsEmptyCanvasCard(empty)).toBe(true);
   });
 
   it('hides once there is content, in zen or embed, or with a draw tool armed', () => {

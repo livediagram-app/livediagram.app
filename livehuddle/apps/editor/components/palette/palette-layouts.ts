@@ -1,14 +1,11 @@
-// The palette per editor mode (docs/specs/007-editor/editor-modes.md "The palette per mode"): which
-// categories each mode's palette offers, in order, what each is called there, and which tiles it
-// holds. A category's identity (its glyph, and the label, blurb and band it wears by default)
-// lives in PALETTE_CATEGORIES; a tile's identity in PALETTE_TILES. A layout only arranges them,
-// so the same tile can sit in different categories in different modes, and a category can be
-// renamed or re-filled for one mode without touching another.
+// The palette (docs/specs/012-collaboration/workshop-mode.md "The palette"): which categories Workshop's palette
+// offers, in order, what each is called there, and which tiles it holds. A category's identity (its glyph, and the
+// label, blurb and band it wears by default) lives in PALETTE_CATEGORIES; a tile's identity in PALETTE_TILES. The
+// layout only arranges them.
 //
-// An entry with no `tiles` holds its category's own tiles (tilesForCategory), so a layout spells
-// out only where a mode differs. The catalogue categories (My shapes, Icons, Stickers, Tech) are
-// bodies with their own content and take no tile list. Every mode lands on its own Popular, a
-// fixed pick of twelve tiles from across its categories.
+// An entry with no `tiles` holds its category's own tiles (tilesForCategory), so the layout spells out only where it
+// differs. The catalogue categories (My shapes, Icons, Stickers) are bodies with their own content and take no tile
+// list. The palette lands on Popular, a fixed pick of tiles from across its categories.
 import type { EditorMode } from '@livehuddle/document';
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
@@ -42,7 +39,6 @@ export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set([
   'my-shapes',
   'icons',
   'stickers',
-  'technology',
 ]);
 
 /** A category's own tile ids, less the named ones: for a layout that drops a tile or two. A dropped tile that ends a
@@ -66,31 +62,8 @@ const EMBED_TILES = [
   'media:embed-website',
 ];
 
-// Write's own tiles and the Callout (a headed note, as much a diagram's as a page's), then the Comment
-// panel and the Action card as their own group: comments and assigned actions belong to every mode, so Diagram
-// keeps them though their Collaborate category is Workshop's.
-const WRITE_WITH_COMMENTS = [
-  ...tilesForCategory('write').map((t) => t.id),
-  'components:callout',
-  DIVIDE,
-  'collab:comment-pin',
-  'collab:action-card',
-];
-
-// Diagram's Build as two categories (docs/specs/010-palette/build-category.md "In Diagram: Diagrams and Layout").
-// Diagrams: the structures that grow as you type, the Entity (a class or table, a data model's node) last; it was
-// Popular's alone, and the category bar has no Popular.
-const DIAGRAM_DIAGRAMS = [
-  'tools:mind-node',
-  'tools:org-chart',
-  'tools:flowchart',
-  'tools:sequence',
-  'tools:table',
-  'tools:entity',
-];
-
-// Layout (Diagram and Workshop): the containers a diagram or a board is arranged in, then the parts that label
-// it, the Card, Badge and Step number borrowed from Components.
+// Layout: the containers a board is arranged in, then the parts that label it, the Card, Badge and Step number
+// borrowed from Components.
 const LAYOUT_TILES = [
   'tools:lane',
   'tools:frame',
@@ -103,28 +76,23 @@ const LAYOUT_TILES = [
   'components:step',
 ];
 
-// Workshop's Layout: the same, with the Timeline after the containers, as Workshop has no Concepts (where the
-// Timeline lives, docs/specs/009-elements/concept-graphics.md "Timeline") and a session plans along one as often.
+// Workshop's Layout: the same, with the Timeline (docs/specs/009-elements/timeline.md) after the containers, as a
+// session plans along one as often.
 const WORKSHOP_LAYOUT_TILES = [
   ...LAYOUT_TILES.slice(0, LAYOUT_TILES.indexOf(DIVIDE)),
   'tools:timeline',
   ...LAYOUT_TILES.slice(LAYOUT_TILES.indexOf(DIVIDE)),
 ];
 
-// The concept graphics, then the Sankey (Diagram's Concepts).
-const CONCEPTS_WITH_SANKEY = [...tilesForCategory('concepts').map((t) => t.id), 'tools:sankey'];
-
 // Image and Avatar; no embedded pages.
 const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES);
 
 // The tiles no mode's strip holds, found only by searching (docs/specs/007-editor/toolbar-layout.md "Search: every
-// element type"): the Code block, the embeds, the devices and the page blocks (Hero, Header, Banner, Stat row,
-// Process). Pages mode's palette was their home; they still work in every mode, so the strip's Search lists them as
-// this mode's wherever it is shown, as the search panel's Add to canvas does.
+// element type"): the Code block, the embeds and the page blocks (Hero, Header, Banner, Stat row, Process). They
+// still work, so the strip's Search lists them, as the search panel's Add to canvas does.
 export const SEARCH_ONLY_TILE_IDS: readonly string[] = [
   'tools:code-block',
   ...EMBED_TILES,
-  ...tilesForCategory('devices').map((t) => t.id),
   'components:hero',
   'components:header',
   'components:banner',
@@ -132,56 +100,10 @@ export const SEARCH_ONLY_TILE_IDS: readonly string[] = [
   'components:process',
 ];
 
-// Diagram mode: Popular, then every category but the mock-up kit (Components, Devices), the charts
-// (Data) and the session kit (Stickers, Collaborate: Workshop's, docs/specs/012-collaboration/
-// workshop-mode.md), each with its own tiles but Media's embeds.
-const DIAGRAM: PaletteLayout = {
-  landing: 'popular',
-  categories: [
-    {
-      // The twelve a diagram is most often built from: the basic shapes, words, an arrow and a frame, the
-      // structures (a mind node, a flowchart node, a Sankey, a table), the AWS marks (an opener, palette-openers) and
-      // the entity.
-      id: 'popular',
-      tiles: [
-        'shapes:square',
-        'shapes:circle',
-        'shapes:diamond',
-        'tools:text',
-        'tools:arrow',
-        'tools:frame',
-        'tools:mind-node',
-        'tools:flowchart',
-        'tools:sankey',
-        'tools:table',
-        'open:technology/aws',
-        'tools:entity',
-      ],
-    },
-    { id: 'shapes' },
-    { id: 'my-shapes' },
-    // Comments and assigned actions belong to every mode, so their two Collaborate tiles stay here.
-    { id: 'write', tiles: WRITE_WITH_COMMENTS },
-    { id: 'draw' },
-    // Build as Diagrams and Layout, with the diagram-building elements from Components (docs/specs/009-elements/card.md
-    // and its siblings).
-    { id: 'diagrams', tiles: DIAGRAM_DIAGRAMS },
-    // Concept graphics (docs/specs/009-elements/concept-graphics.md), and the Sankey: a flow drawn as wide as what it
-    // carries explains an idea the way a funnel or a cycle does, so it sits with them rather than with the builders.
-    { id: 'concepts', tiles: CONCEPTS_WITH_SANKEY },
-    // Layout after Concepts: what is built, then the ideas laid out beside it, then what it is all arranged in.
-    { id: 'layout', tiles: LAYOUT_TILES },
-    { id: 'event-storming', boardOnly: true },
-    { id: 'icons' },
-    { id: 'technology' },
-    { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },
-  ],
-};
-
-// Workshop mode (docs/specs/012-collaboration/workshop-mode.md "The palette"): running a session
-// with a team. Popular, the drawing basics a session uses (no Page or Annotation, no Shape Pen or
-// Polygon), Diagram's Layout, the Collaborate elements as six categories, one per group, ahead of the
-// decorations a room reaches for and the charts; no tech icons, mock-up kit or workshop notation.
+// Workshop (docs/specs/012-collaboration/workshop-mode.md "The palette"): running a session with a team. Popular, the
+// drawing basics a session uses (no Page or Annotation, no Shape Pen or Polygon), the Layout, the Collaborate
+// elements as six categories, one per group, ahead of the decorations a room reaches for and the charts; the
+// Event Storming notation on an event-storming board only.
 const WORKSHOP: PaletteLayout = {
   landing: 'popular',
   categories: [
@@ -206,8 +128,7 @@ const WORKSHOP: PaletteLayout = {
     },
     { id: 'shapes' },
     { id: 'my-shapes' },
-    // Words and notes, then a table and a checklist to keep them in. No Page or Annotation; and a Sankey reports on a
-    // flow, mind maps and flowcharts build a diagram: a session does not stop for them.
+    // Words and notes, then a table and a checklist to keep them in. No Page or Annotation.
     {
       id: 'write',
       description: 'Text, sticky notes, tables and checklists.',
@@ -219,9 +140,10 @@ const WORKSHOP: PaletteLayout = {
       ],
     },
     { id: 'draw', tiles: tilesExcept('draw', 'tools:shape-pen', 'tools:polygon') },
-    // Diagram's Layout (docs/specs/010-palette/build-category.md): a board is laid out in frames and lanes and its
-    // notes labelled with badges and step numbers, as a diagram is, with the Timeline (Workshop has no Concepts).
+    // The Layout (docs/specs/010-palette/build-category.md): a board is laid out in frames and lanes and its notes
+    // labelled with badges and step numbers, with the Timeline.
     { id: 'layout', tiles: WORKSHOP_LAYOUT_TILES },
+    { id: 'event-storming', boardOnly: true },
     // The session kit next, before the decorations: running the room is what the mode is for, so Ask and Session
     // (the other five, gathered on the bar) come right after the board's structure.
     { id: 'collab-ask' },
@@ -230,8 +152,6 @@ const WORKSHOP: PaletteLayout = {
     { id: 'collab-react' },
     { id: 'collab-mode' },
     { id: 'collab-navigate' },
-    // No Concepts: concept graphics lay out an idea for a diagram (docs/specs/009-elements/concept-graphics.md),
-    // which a session does not stop to draw.
     { id: 'icons' },
     { id: 'stickers' },
     { id: 'media', tiles: MEDIA_WITHOUT_EMBEDS },
@@ -240,14 +160,12 @@ const WORKSHOP: PaletteLayout = {
   ],
 };
 
-export const PALETTE_LAYOUTS = {
-  diagram: DIAGRAM,
+export const PALETTE_LAYOUTS: Record<EditorMode, PaletteLayout> = {
   workshop: WORKSHOP,
-} as const;
+};
 
-/** The layout a mode's palette shows. Draw mode shows its own tools, so it borrows Diagram's. */
 function paletteLayoutFor(mode: EditorMode): PaletteLayout {
-  return mode === 'draw' ? DIAGRAM : PALETTE_LAYOUTS[mode];
+  return PALETTE_LAYOUTS[mode];
 }
 
 export type ResolvedPaletteCategory = (typeof PALETTE_CATEGORIES)[number] & {

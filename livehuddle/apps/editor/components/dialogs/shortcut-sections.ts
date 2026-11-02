@@ -9,12 +9,9 @@
 // editor knows"), and it is a hand-kept list beside the hand-kept key maps in
 // hooks/canvas/editor-shortcut-keys.ts. The test pins the two together.
 
-import { EDITOR_MODES, editorModeLabel, REACTION_LABEL, REACTIONS } from '@livehuddle/document';
+import { REACTION_LABEL, REACTIONS } from '@livehuddle/document';
 import { AVATAR_BEHAVIOUR_KEYS, AVATAR_BURST_KEYS } from '@liveworkspace/avatar/action-keys';
 import { AVATAR_REACTIONS } from '@liveworkspace/avatar/reactions';
-
-// The mode key's row names the modes it moves through, from the mode catalogue so a new mode cannot go missing.
-const CYCLED_MODES = EDITOR_MODES.map(editorModeLabel).join(', ');
 
 export type ShortcutRow = {
   keys: string[];
@@ -55,15 +52,13 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['I'], label: 'Isometric View' },
       { keys: ['⇧', 'drag'], label: 'Rotate Isometric Camera' },
       { keys: ['Z'], label: 'Zen Mode (focus)' },
-      { keys: ['⇧', 'D'], label: `Next Editor Mode on an Empty Tab (${CYCLED_MODES})` },
     ],
   },
   {
     heading: 'Add elements',
     rows: [
-      // Named as each mode's palette names them: the Diagram tiles, then Draw's toolbar.
-      { keys: ['R'], label: 'Square (Rectangle in Draw)' },
-      { keys: ['O'], label: 'Circle (Ellipse in Draw)' },
+      { keys: ['R'], label: 'Square' },
+      { keys: ['O'], label: 'Circle' },
       { keys: ['D'], label: 'Diamond' },
       { keys: ['C'], label: 'Cylinder' },
       { keys: ['G'], label: 'Parallelogram' },
@@ -83,19 +78,11 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['⌘', '-'], label: 'Zoom Out' },
       { keys: ['⌘', '0'], label: 'Reset Zoom to 100%' },
       { keys: ['⇧', '1'], label: 'Zoom to Fit' },
-      // A selected mind node claims plain Tab for growth (docs/specs/009-elements/mind-node.md), so the
-      // caveat is on the row rather than in a footnote nobody reads.
       { keys: ['Tab'], label: 'Select Next Element  (Shift: previous)' },
       {
         keys: ['F6'],
         label: 'Next Region: Header, Palette, Canvas, Controls, Tabs  (Shift: previous)',
       },
-      { keys: ['Tab'], label: 'On a mind node: add a child' },
-      { keys: ['Enter'], label: 'On a mind node: add a sibling' },
-      { keys: ['⇧', 'Enter'], label: 'In a mind node’s label: new line' },
-      // A flowchart step grows the same way (docs/specs/009-elements/flowchart.md).
-      { keys: ['Tab'], label: 'On a flowchart step: add the next step' },
-      { keys: ['Enter'], label: 'On a flowchart step: add a parallel step' },
       { keys: ['Arrow'], label: 'Nudge selection 1 px  (Shift: 10 px)' },
       { keys: ['Shift', 'Click'], label: 'Toggle element in multi-selection' },
       { keys: ['Shift', 'drag'], label: 'Drop a duplicate (original stays put)' },

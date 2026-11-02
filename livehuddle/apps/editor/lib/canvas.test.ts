@@ -2,7 +2,6 @@ import {
   arrowReferencesAny,
   createAnnotation,
   createShape,
-  createTable,
   type ArrowElement,
   type BoxedElement,
 } from '@livehuddle/document';
@@ -126,25 +125,6 @@ describe('inheritedSizeFor', () => {
     });
   });
 
-  it('keeps a step number, boundary, concept graphic, sequence and key their own size', () => {
-    const card = { ...createShape('card', 0, 0), width: 300, height: 150 } as BoxedElement;
-    for (const kind of [
-      'step',
-      'boundary',
-      'stack',
-      'cycle',
-      'pyramid',
-      'sequence',
-      'diagram-key',
-    ] as const) {
-      const fresh = createShape(kind, 0, 0) as BoxedElement;
-      expect(inheritedSizeFor(fresh, card), kind).toEqual({
-        width: fresh.width,
-        height: fresh.height,
-      });
-    }
-  });
-
   it('keeps a chart, a meter, a rating, a timeline rail and a legend their own size', () => {
     const legend = { ...createShape('legend', 0, 0), width: 200, height: 170 } as BoxedElement;
     for (const kind of [
@@ -174,14 +154,6 @@ describe('inheritedSizeFor', () => {
         height: square.height,
       });
     }
-  });
-
-  it('drops a table at its own size, and never hands a table size on', () => {
-    const table = createTable(0, 0);
-    const card = { ...createShape('card', 0, 0), width: 300, height: 90 } as BoxedElement;
-    expect(inheritedSizeFor(table, card)).toEqual({ width: table.width, height: table.height });
-    const node = createShape('mind-node', 0, 0);
-    expect(inheritedSizeFor(node, table)).toEqual({ width: node.width, height: node.height });
   });
 
   it('inherits the selected element size for a normal shape', () => {

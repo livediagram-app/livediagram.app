@@ -13,22 +13,13 @@ import {
   scaledPolygonPoints,
   svgChecklistShape,
   svgLaneGutter,
-  svgBrowserChrome,
   svgLegendShape,
   svgCodeBlockShape,
   svgFreehandShape,
   svgPathElementShape,
   svgShapeSilhouette,
 } from './svg-render-shapes';
-import { MIND_NODE_RADIUS_PX, cornerRadiusPx } from '@liveworkspace/model-core/border-style';
-import {
-  finishCornerFallbackPx,
-  faceFinishOf,
-  finishWobblesArt,
-  isHandDrawn,
-  resolveFinish,
-  type Finish,
-} from './finish';
+import { faceFinishOf, finishWobblesArt, isHandDrawn, resolveFinish, type Finish } from './finish';
 import {
   SKETCH_ART_FILTER_ID,
   svgSketchArtDefs,
@@ -134,7 +125,6 @@ import { borderedRect, borderOf, strokeAttrs } from './svg-render-border';
 import { resolvedAccentEdge, svgAccentEdge } from './accent-edge';
 import { resolveStockColours } from './stock-colours';
 import { isPointerNote, pointerTipOf } from './pointer-note';
-import { isPersonNode } from './person-node';
 import { rotationOf } from './rotation';
 import { tagColoursOf, withTagAccent } from './tag-colours';
 
@@ -317,7 +307,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
     );
     shapeStr = `<polygon points="${points}" fill="${xmlEscape(shape.fill)}"${strokeAttrs(shape.stroke, b.width, b.dash)} stroke-linejoin="round"/>`;
   } else if (shape.kind === 'rect') {
-    // Shape silhouettes (hexagon / cylinder / document / devices / actor /
+    // Shape silhouettes (hexagon / cylinder / document / actor /
     // frame ...) mirror the editor overlay's geometry; kinds without one
     // (square / sticky / text-box / cards) stay a rounded rect, with the
     // stadium's full pill radius as the one native special case.
@@ -331,20 +321,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
         : // A sticky is die-cut paper: square corners, matching the canvas.
           el.type === 'sticky'
           ? 0
-          : // A mind node is a soft-cornered pill-ish box (docs/specs/009-elements/mind-node.md), the one
-            // rect kind the canvas rounds further than the usual 6, and the one
-            // that honours its corner-radius pick (a round bubble-map node).
-            el.type === 'shape' && el.shape === 'mind-node'
-            ? Math.min(
-                cornerRadiusPx(
-                  el.borderRadius,
-                  el.width,
-                  el.height,
-                  finishCornerFallbackPx(MIND_NODE_RADIUS_PX, finish),
-                ),
-                Math.min(el.width, el.height) / 2,
-              )
-            : 6;
+          : 6;
     // What this element draws INSTEAD of (or under) a plain label: its plot,
     // its value, its rows, its face. See svg-render-body.
     const face = svgElementBody(el, {
@@ -383,20 +360,17 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
               el,
               shape.fill,
               shape.stroke,
-              el.shape === 'stadium' || el.shape === 'mind-node' ? rx : undefined,
+              el.shape === 'stadium' ? rx : undefined,
               finish,
             )
           : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`);
-    // What the canvas draws ON the box: a lane's title gutter (docs/specs/009-elements/lane.md) and a
-    // browser frame's chrome strip (docs/specs/008-canvas/canvas-and-palette.md).
+    // What the canvas draws ON the box: a lane's title gutter (docs/specs/009-elements/lane.md) and a page's fold.
     const onBox =
       el.type === 'shape' && el.shape === 'lane'
         ? svgLaneGutter(el, shape.stroke)
-        : el.type === 'shape' && el.shape === 'browser'
-          ? svgBrowserChrome(el, shape.stroke)
-          : el.type === 'shape' && el.shape === 'page'
-            ? svgPageFold(el, shape.fill, shape.stroke, opts.paper ?? '#ffffff')
-            : '';
+        : el.type === 'shape' && el.shape === 'page'
+          ? svgPageFold(el, shape.fill, shape.stroke, opts.paper ?? '#ffffff')
+          : '';
     // An accent edge (docs/specs/008-canvas/accent-edge.md): over the fill, inside the border, under the label.
     const edgeBorder = el.type === 'shape' ? borderOf(el, finish) : null;
     const edge =
@@ -404,7 +378,7 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
         ? svgAccentEdge(el, {
             stroke: shape.stroke,
             borderWidth: edgeBorder.width,
-            radius: el.shape === 'stadium' || el.shape === 'mind-node' ? rx : edgeBorder.radius,
+            radius: el.shape === 'stadium' ? rx : edgeBorder.radius,
           })
         : '';
     shapeStr = box + edge + onBox + face;
@@ -548,8 +522,6 @@ export function boxedNeedsSvgRaster(
   // plain boxes while the SVG export drew them properly, which is the same
   // inconsistency one file down.
   if (el.type === 'shape' && shapeHasBespokeBody(el.shape)) return true;
-  // A person node's disc and lines (docs/specs/009-elements/org-chart.md) are drawn by the SVG alone.
-  if (isPersonNode(el)) return true;
   if (el.type === 'shape' && el.shape === 'icon' && el.iconId && resolveIconArt?.(el.iconId))
     return true;
   // An inline icon beside a label (svg-render-inline-icon) is drawn by the SVG alone.

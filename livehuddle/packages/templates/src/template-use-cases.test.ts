@@ -43,8 +43,8 @@ describe.each(Object.keys(BOARD_GRIDS) as BoardGridKind[])('the %s board grid', 
       expect(labels(els)).toContain(word);
     const buttons = shapes(els, 'session-button');
     expect(buttons).toHaveLength(grid.rail ? 2 : 0);
-    // A session tool needs the Session strip, so a board with a rail opens in Workshop.
-    expect(templateEditorMode(kind)).toBe(grid.rail ? 'workshop' : 'diagram');
+    // A session tool needs the Session strip, which every board has: each opens in Workshop.
+    expect(templateEditorMode(kind)).toBe('workshop');
     const items = shapes(els, 'checklist').flatMap((c) => c.checklistItems!.map((i) => i.text));
     expect(items).toEqual([...(grid.closing?.items ?? [])]);
   });

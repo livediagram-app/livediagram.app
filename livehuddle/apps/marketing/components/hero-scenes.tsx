@@ -6,7 +6,6 @@
 import type { ComponentType } from 'react';
 import { DiagramBoard } from './hero-diagram-board';
 import { DrawBoard } from './hero-draw-board';
-import { MindMapBoard } from './hero-mindmap-board';
 import { HERO_SCENE_DATA, type HeroSceneData, type HeroSceneKey } from './hero-scene-data';
 import { TownHallBoard } from './hero-townhall-board';
 
@@ -18,7 +17,6 @@ type HeroScene = HeroSceneData & { Board: ComponentType<{ portrait?: boolean }> 
 const BOARDS: Record<HeroSceneKey, ComponentType<{ portrait?: boolean }>> = {
   diagram: DiagramBoard,
   draw: DrawBoard,
-  mindmap: MindMapBoard,
   townhall: TownHallBoard,
 };
 

@@ -167,46 +167,27 @@ export function duplicateElements(
   }
 
   // Element-to-element references on the BOXED copies, rewired last because
-  // they need the finished idMap (a mind child and its parent are both in it,
-  // and a portal's partner may be an arrow's id).
+  // they need the finished idMap (a portal's partner may be an arrow's id).
   //
   // These were missed for a long time, and the failure was quiet in the way
   // duplicate bugs usually are: the copy looked right and behaved wrong.
-  // Duplicating a mind-map subtree gave you nodes whose `mindParentId` still
-  // named the ORIGINAL parent, so the copy re-parented itself onto the tree it
-  // came from; duplicating a linked pair of portals gave you two portals that
-  // both stepped through to the originals. Paste made it worse, because a
+  // Duplicating a linked pair of portals gave you two portals that both stepped
+  // through to the originals. Paste made it worse, because a
   // cross-tab paste points those ids at elements that are not in the tab at
   // all.
   //
-  // A reference to something OUTSIDE the copied set is left alone: copying one
-  // child of a mind map and pasting it back should still hang off that parent.
-  // Only references whose target was itself copied follow the copy.
-  // A copied chart is a new chart (docs/specs/009-elements/flowchart.md, blueprint D172): each source
-  // chart maps to ONE fresh id, the copy of its first step when that was copied, else the first copy's
-  // id. Leaving the old id would graft the copies onto the original, unconnected, and its next layout
-  // would rake them into a column beside it.
-  const chartIds = new Map<string, string>();
-  for (const el of newBoxed) {
-    if (el.type !== 'shape' || el.flowchartId === undefined || chartIds.has(el.flowchartId))
-      continue;
-    chartIds.set(el.flowchartId, idMap.get(el.flowchartId) ?? el.id);
-  }
+  // A reference to something OUTSIDE the copied set is left alone: only
+  // references whose target was itself copied follow the copy.
   const rewired = newBoxed.map((el) => {
     let next = { ...el };
-    // mindParentId (docs/specs/009-elements/mind-node.md) and portalTarget (docs/specs/009-elements/portal-element.md) live on the shape
-    // element only, so narrow before reaching for them.
+    // portalTarget (docs/specs/009-elements/portal-element.md) lives on the shape element only, so narrow before
+    // reaching for it.
     if (next.type === 'shape') {
       const shape = { ...next };
-      if (shape.mindParentId !== undefined) {
-        const mapped = idMap.get(shape.mindParentId);
-        if (mapped !== undefined) shape.mindParentId = mapped;
-      }
       if (shape.portalTarget !== undefined) {
         const mapped = idMap.get(shape.portalTarget);
         if (mapped !== undefined) shape.portalTarget = mapped;
       }
-      if (shape.flowchartId !== undefined) shape.flowchartId = chartIds.get(shape.flowchartId)!;
       // An attached badge or step (docs/specs/009-elements/badge.md) follows its host's copy; copied alone it lands
       // detached.
       if (shape.attachedTo !== undefined) {
@@ -216,13 +197,6 @@ export function duplicateElements(
           delete shape.attachedTo;
           delete shape.attachAt;
         }
-      }
-      // The lane follows the copy when it was copied too; otherwise the copy is in no lane of its
-      // new chart.
-      if (shape.flowLaneId !== undefined) {
-        const lane = idMap.get(shape.flowLaneId);
-        if (lane !== undefined) shape.flowLaneId = lane;
-        else delete shape.flowLaneId;
       }
       next = shape;
     }
@@ -239,17 +213,10 @@ export function duplicateElements(
   return { newElements: [...rewired, ...newArrows], idMap };
 }
 
-// The element-id fields this product's elements hold besides an arrow's ends: a mind node's parent
-// (docs/specs/009-elements/mind-node.md), a portal's partner (docs/specs/009-elements/portal-element.md), a flowchart's
-// first step and a step's lane (both rename with it), and an attached badge's, step's or pointer note's host
+// The element-id fields this product's elements hold besides an arrow's ends: a portal's partner
+// (docs/specs/009-elements/portal-element.md) and an attached badge's, step's or pointer note's host
 // (docs/specs/009-elements/badge.md).
-const ELEMENT_REF_FIELDS = [
-  'mindParentId',
-  'portalTarget',
-  'flowchartId',
-  'flowLaneId',
-  'attachedTo',
-] as const;
+const ELEMENT_REF_FIELDS = ['portalTarget', 'attachedTo'] as const;
 
 // Re-point element-to-element references after a caller renamed some element ids (old to new in `idMap`), by the
 // shared walk (`@liveworkspace/model-core/id-remap`). duplicateElements has its own richer pass (offsets, dropping

@@ -13,22 +13,9 @@ import {
   SendToBackIcon,
   TextIcon,
 } from '@liveworkspace/workbench/components/canvas/selection-popover-icons';
-import { MIND_CHILD_OPTION, MIND_SIBLING_OPTION } from '@/components/canvas/quick-connect-options';
 import { EditPointsIcon } from '@/components/palette/palette-icons';
-import {
-  FlowchartStepButtons,
-  type FlowchartStepToolbar,
-} from '@/components/flowchart/FlowchartStepButtons';
-import dynamic from 'next/dynamic';
-import type { CardinalityToolbar } from '@/components/canvas/entity/CardinalityButton';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
 import type { Rect } from '@livehuddle/document';
-
-// A relationship's Cardinality group shows only on a selected arrow between two entities: loaded then.
-const CardinalityButton = dynamic(
-  () => import('@/components/canvas/entity/CardinalityButton').then((m) => m.CardinalityButton),
-  { ssr: false },
-);
 
 type SelectionPopoverProps = {
   bounds: Rect;
@@ -52,16 +39,6 @@ type SelectionPopoverProps = {
   hasText?: boolean;
   // Open a path's edit mode (docs/specs/023-draw-mode/path-tool.md "Editing"): a path only.
   onEditPoints?: () => void;
-  // Mind map growth (docs/specs/009-elements/mind-node.md): Add child / Add sibling on a mind node.
-  // The same actions as Tab / Enter and the "+" ring, given a one-click home
-  // on the toolbar. Passed only for an editable, unlocked mind node.
-  onAddMindChild?: () => void;
-  onAddMindSibling?: () => void;
-  // A flowchart step's group (docs/specs/009-elements/flowchart.md): Add Step, Add Branch, and an
-  // Editor's Step Type and Lane menus. Passed only for an unlocked step someone may grow.
-  flowchartStep?: FlowchartStepToolbar;
-  // A relationship between two entities (docs/specs/009-elements/entity.md "Cardinality ends").
-  cardinality?: CardinalityToolbar;
   // Duplicate the selected element, a one-click toolbar action (it used to
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
@@ -113,10 +90,6 @@ export function SelectionPopover({
   onEditText,
   hasText = true,
   onEditPoints,
-  onAddMindChild,
-  flowchartStep,
-  cardinality,
-  onAddMindSibling,
   onDuplicate,
   onBringToFront,
   onSendToBack,
@@ -237,30 +210,6 @@ export function SelectionPopover({
               <Divider />
             </>
           ) : null}
-
-          {onAddMindChild && onAddMindSibling ? (
-            <>
-              <PopoverButton
-                label={MIND_CHILD_OPTION.label}
-                description={MIND_CHILD_OPTION.description}
-                onClick={onAddMindChild}
-              >
-                {MIND_CHILD_OPTION.icon}
-              </PopoverButton>
-              <PopoverButton
-                label={MIND_SIBLING_OPTION.label}
-                description={MIND_SIBLING_OPTION.description}
-                onClick={onAddMindSibling}
-              >
-                {MIND_SIBLING_OPTION.icon}
-              </PopoverButton>
-              <Divider />
-            </>
-          ) : null}
-
-          {flowchartStep ? <FlowchartStepButtons {...flowchartStep} menuAnchor="toolbar" /> : null}
-
-          {cardinality ? <CardinalityButton {...cardinality} menuAnchor="toolbar" /> : null}
 
           {onDuplicate ? (
             <>

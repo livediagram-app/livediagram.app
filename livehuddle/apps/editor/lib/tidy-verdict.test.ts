@@ -6,9 +6,7 @@ import {
   type Element,
   type ShapeElement,
 } from '@livehuddle/document';
-import { buildTemplate } from '@livehuddle/templates';
-import { assessCleanup, cleanupVerdict, verdictLine, verdictNotice } from './tidy-verdict';
-import { cleanupElements, type CleanupKind } from './tab-cleanup';
+import { cleanupVerdict, verdictLine, verdictNotice } from './tidy-verdict';
 
 // docs/specs/008-canvas/layout-cleanup.md "A tidy never trashes the work".
 
@@ -62,62 +60,6 @@ describe('cleanupVerdict', () => {
   });
 });
 
-describe('assessCleanup on the templates', () => {
-  it('judges a mindmap of a looping flowchart unsuited', () => {
-    expect(assessCleanup(buildTemplate('flowchart', 600, 400), 'mindmap')).toEqual({
-      kind: 'unsuited',
-    });
-  });
-
-  it('refuses every layout that would string a swimlane out', () => {
-    const els = buildTemplate('swimlane', 600, 400);
-    expect(assessCleanup(els, 'smart').kind).toBe('rearranges-lanes');
-    expect(assessCleanup(els, 'flow-right').kind).toBe('rearranges-lanes');
-  });
-
-  // The regression the user reported: on the checkout flowchart, Auto-align leaned the arrows and
-  // swelled the decisions, and Flowchart Down threw the flow over the title.
-  it('keeps the checkout flowchart intact under Auto-align, Smart and Flowchart Down', () => {
-    const els = buildTemplate('flowchart', 600, 400);
-    for (const kind of ['align', 'smart', 'flow-down'] as CleanupKind[]) {
-      const out = cleanupElements(els, kind);
-      expect(cleanupVerdict(els, out).kind, kind).toMatch(/ok|unchanged/);
-      const byLabel = (label: string) =>
-        out.find((e) => 'label' in e && e.label === label) as ShapeElement;
-      const was = (label: string) =>
-        els.find((e) => 'label' in e && e.label === label) as ShapeElement;
-      // Decisions keep the size they were drawn.
-      expect(byLabel('Payment OK?').width, kind).toBe(was('Payment OK?').width);
-      expect(byLabel('Payment OK?').height, kind).toBe(was('Payment OK?').height);
-      // Every arrow along the spine runs dead straight down, to the first decision: the template is a live
-      // flowchart, so its Yes branch steps aside (docs/specs/009-elements/flowchart.md "The layout").
-      const spine = ['Checkout', 'Enter card details', 'Charge card', 'Payment OK?'];
-      const centres = spine.map((l) => byLabel(l).x + byLabel(l).width / 2);
-      expect(new Set(centres).size, kind).toBe(1);
-      // Nothing lands on the title.
-      const title = out.find((e) => 'label' in e && e.label === 'Checkout flow') as ShapeElement;
-      expect(byLabel('Checkout').y, kind).toBeGreaterThan(title.y + title.height);
-    }
-  });
-});
-
-describe('a second press', () => {
-  it('finds every tidied template already tidy', () => {
-    for (const template of [
-      'flowchart',
-      'orgchart',
-      'decision-tree',
-      'approval-workflow',
-    ] as const) {
-      const els = buildTemplate(template, 600, 400);
-      for (const kind of ['align', 'smart'] as CleanupKind[]) {
-        const once = cleanupElements(els, kind);
-        expect(assessCleanup(once, kind).kind, `${template} ${kind}`).toBe('unchanged');
-      }
-    }
-  });
-});
-
 describe('verdict copy', () => {
   it('has a line and a notice for every verdict but ok', () => {
     expect(verdictLine({ kind: 'ok' })).toBeNull();
@@ -130,10 +72,9 @@ describe('verdict copy', () => {
     for (const v of [
       { kind: 'leaves-container', count: 2 },
       { kind: 'rearranges-lanes' },
-      { kind: 'unsuited' },
     ] as const) {
       expect(verdictLine(v)).toBeTruthy();
-      expect(verdictNotice('Mindmap', v)).toMatch(/^Mindmap .*nothing moved\.$/);
+      expect(verdictNotice('Tree', v)).toMatch(/^Tree .*nothing moved\.$/);
     }
   });
 });

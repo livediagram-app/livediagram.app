@@ -25,9 +25,6 @@ type TopCenterChromeProps = Pick<
   | 'canvasTool'
   | 'formatSourceId'
 > & {
-  // A whiteboard's dock at the top (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits"):
-  // the stack starts beneath it.
-  dockOnTop?: boolean;
   // Follow-me (docs/specs/012-collaboration/follow-me-viewport.md): who we are following, so the pill can say so and
   // offer the way out. Any canvas gesture also ends it silently — this is the
   // explicit door, not the only one.
@@ -43,7 +40,6 @@ export function TopCenterChrome({
   onExitFormatTool,
   canvasTool,
   formatSourceId,
-  dockOnTop = false,
   followingName,
   onStopFollowing,
 }: TopCenterChromeProps) {
@@ -55,13 +51,9 @@ export function TopCenterChrome({
   // The strip is on screen for an Editor and for a Participant's own palette (docs/specs/013-workspace/share-roles.md):
   // either way the stack starts beneath it, or the timer and banners sit on the palette.
   const stripShown = !readOnly || participantPalette;
-  const tray = stripShown && !dockOnTop ? strip : null;
+  const tray = stripShown ? strip : null;
   return (
-    <TopCenterStack
-      below={
-        dockOnTop ? 'dock' : stripShown ? (tray && modeBanner ? 'tray' : 'toolbar') : undefined
-      }
-    >
+    <TopCenterStack below={stripShown ? (tray && modeBanner ? 'tray' : 'toolbar') : undefined}>
       {/* Offline (docs/specs/007-editor/load-recovery.md "Offline"): first, since it says whether
           anything else on screen is being saved. */}
       <OfflineBanner readOnly={readOnly === true} />

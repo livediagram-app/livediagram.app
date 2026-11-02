@@ -6,8 +6,8 @@ import type { PaletteTileDef } from './palette-tile-defs';
 
 import type { EditorMode } from '@livehuddle/document';
 
-/** The modes whose strip is a category bar: Diagram and Workshop (Draw's strip is its pens). */
-export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set(['diagram', 'workshop']);
+/** The modes whose strip is a category bar: Workshop, the one mode. */
+export const CATEGORY_BAR_MODES: ReadonlySet<EditorMode> = new Set(['workshop']);
 
 // The bar names every category in one word, so a name never wraps or crowds its neighbours: a layout's longer
 // name gives way to its short one here (the flyout's header uses the same, so the two never disagree).

@@ -7,7 +7,7 @@ outputs. Unlike the Markdown outline import ([Markdown import](markdown-import.m
 diagram's structure, not just its labels. Mermaid is livehuddle's text form for a diagram: human-editable, connection-preserving and round-trip, in a
 standard people already have, so there is no bespoke text DSL.
 
-## Scope: flowcharts, state diagrams, ER diagrams
+## Scope: flowcharts and state diagrams
 
 We support the diagram types that are **node/edge graphs at heart**, because
 they map onto livehuddle's model losslessly: `graphToElements`
@@ -20,19 +20,18 @@ arrows.
 - **State diagrams** (`stateDiagram` / `stateDiagram-v2`): **import only**.
   States and transitions are nodes and edges; composite states reuse the
   cluster/frame machinery.
-- **ER diagrams** (`erDiagram`): **import only**. Entities and
-  relationships are nodes and edges; each entity becomes an Entity element
-  with its attributes as field rows.
 
 Import is per-dialect; **export always emits flowchart text**. The canvas has
 no semantic layer (a state and a flowchart node are both just shapes once
-imported), so exporting back to `stateDiagram` / `erDiagram` would mean
+imported), so exporting back to `stateDiagram` would mean
 guessing meaning from geometry: the flowchart export preserves the
 connection graph, which is the part that's real.
 
-Sequence diagrams are drawn by the agents' graph input only (below, [Sequence diagrams](#sequence-diagrams-agents));
-the editor's import does not take them yet. Other non-graph Mermaid types (gantt, pie, journey, timeline, quadrant, git graph, C4, requirement, ZenUML and the
-`-beta` types: xychart, sankey, block, packet, architecture, radar, treemap, plus kanban) and class diagrams remain
+**Refused with the cut elements** ([Editor modes](../007-editor/editor-modes.md)): livehuddle has no entity, sequence
+diagram or mind node, so `erDiagram`, `sequenceDiagram`, `mindmap` and `classDiagram` are refused, by the editor's
+import and by the agents' `mermaid` input alike, with the error naming the supported types. Other non-graph Mermaid
+types (gantt, pie, journey, timeline, quadrant, git graph, C4, requirement, ZenUML and the
+`-beta` types: xychart, sankey, block, packet, architecture, radar, treemap, plus kanban) remain
 out of scope; importing one reports a clear error naming the supported types, never a graph of its header words.
 
 Also deliberately out of scope: `classDef` / `style` / `linkStyle` (the tab
@@ -134,78 +133,6 @@ LR` line sets the layout direction (TB default).
   (`foldedEdgeEnds` in `mermaid-shared.ts`).
 - Notes, concurrency separators (`--`), and history states are skipped.
 
-## ER diagram coverage (import)
-
-- **Header**: `erDiagram`; a `direction LR` (or `RL`) line lays it out left to right, otherwise top to bottom.
-- **Entities**: [Entity](../009-elements/entity.md) elements (`shape:
-'entity'`), the canvas's own record box: the entity name is the title and
-  each attribute (`CUSTOMER { string name PK "comment" }`) is a field row,
-  `name` with its type as the row's type text. Key markers become the field's
-  key (`PK` primary, `FK` foreign, both `PK FK`, `UK` unique; [The entity](../009-elements/entity.md)
-  "Keys"), drawn in the key gutter as the ER template's are; comments are dropped. The box is sized to its rows (a title band plus a row
-  each). This replaced square boxes whose label held the name and every
-  attribute on its own line, which read as a paragraph and did not survive a
-  label cap (the MCP's, [MCP server](../015-api/mcp-server.md) §4.7, flattened
-  it to "SHARE_LINK text code text document_id…"). An alias in square brackets after the name (`BOOK_AUTHOR[Book
-author]`, `a["Customer account"]`), wherever the entity is named (its block, a relationship, a bare line), is
-  the title shown; the name stays its id. Without one the title is the name.
-- **Every way Mermaid's own docs write them**: a name in double quotes (`"Order line"`, a bare line or either end
-  of a relationship) is an entity named by its words; a `:::class` after a name is styling and is skipped, never
-  the reason a line is missed; a relationship's operator may sit against its names (`id1||--||id2`); and the words
-  Mermaid allows for a cardinality read as its symbols do (`only one` / `1` as `||`, `zero or one` / `one or zero`
-  as `|o`, `zero or more` / `zero or many` / `many(0)` / `0+` as `}o`, `one or more` / `one or many` / `many(1)` /
-  `1+` as `}|`), joined by `to` (identifying) or `optionally to` (non-identifying, dashed):
-  `CAR 1 to zero or more NAMED-DRIVER : allows`. Found importing the examples in Mermaid's ER documentation, five
-  of which were refused as "No entities found".
-- **Relationships**: `A ||--o{ B : label` becomes an edge labelled with its verb alone (none with no verb): the
-  ER ends say the multiplicity, which the label spelled out in words (`places · 1 : 0..*`) while the heads could
-  only say "many".
-  Cardinality maps onto the ER arrow ends at both tables (`ends: 'both'`): `||` One, `|o` Zero or One, `}o` / `o{`
-  Zero or Many, `}|` / `|{` One or Many, the line's start taking its left token and its end its right
-  (`arrowheadStartShape` and `arrowheadShape`). Non-identifying (dotted `..`) relationships render dashed.
-  **Hub first**: each relationship is oriented away from the best-connected entity (most relationships, the first
-  declared on a tie), by its distance from it, each separate cluster from its own best-connected entity, so the
-  layered layout puts the hub at the top with its neighbours round it rather than last with every line reaching
-  back to it. A relationship draws an end at each table, so turning it round (its two ends swapped with it) draws
-  the same thing; on the bookstore fixtures it took crossings from one to none and shared runs from 280 px to 30.
-  Only the layout sees the turn: each laid-out arrow is turned back after (its ends, heads, bends and label place
-  swapped, the line unchanged), so the stored relationship reads as written (`AUTHOR -> BOOK_AUTHOR "writes"`), never
-  "Book publishes Publisher". Two entities related both ways (one relationship turned, the other not) are told apart
-  by order, so only the turned one is turned back.
-
-## Sequence diagrams (agents)
-
-The MCP's `mermaid` input (and graph input's `style: "sequence"`, [MCP server](../015-api/mcp-server.md) §4.7) takes
-a `sequenceDiagram` and draws it the way the sequence diagram template does.
-
-- **Syntax**: `participant A` / `participant A as Label`, `actor A` (a UML stick figure with its name beneath);
-  participants appear in the order declared, then first mentioned. Messages `A->>B: text` (a call: solid, filled
-  head), `A-)B: text` (async: solid, open head), `A-->>B: text` and `A-->B: text` (a reply: dashed, open head),
-  `A->B` and `A-xB` (calls); `A->>A` is a self-call. `+` and `-` after the arrow (`A->>+B`, `B-->>-A`) and
-  `activate B` / `deactivate B` start and end activations at the message the line follows; a message into B that
-  `activate B` follows ends on the bar it starts, not on B's lifeline inside it. An activation the author opened (`+`,
-  `activate`) stays open until its `-` or `deactivate`; a reply on the way does not close it. `Note over A,B: text`, `Note right of A: text`,
-  `Note left of A: text`; a note over one participant whose bar is open sits beside the bar, as a right-of note
-  does (left of it on the last participant, the side with room), since centred it hid the bar, and a beside note keeps clear of the bars. Fragments `loop`, `alt` (with `else`), `opt`, `par` (with `and`), `critical`, `break`,
-  each closed by `end`. `autonumber` numbers the messages; `title Text` (or front matter `title:`) heads the
-  diagram. `rect` blocks, `box` groupings, links and styling are read and skipped, never an error.
-- **Activations without markers**: a call to another participant activates it from that message until it replies
-  to its caller; one never closed ends after the participant's last message. A self-call nests an activation,
-  stepped right. Nested activations step right by half a bar. A diagram that activates anything itself (`activate`, `deactivate`, `+`, `-`) draws
-  only those bars: answered calls add none, so an author's bars are never doubled.
-- **The look**: participants in a row of headed boxes (bold, the node text size) each over a dashed lifeline, the
-  pitch wide enough for the longest message label in one gap (up to 520 px), as a message keeps its label in its
-  first gap; messages a row each, edge to edge of the activation bars, labels above their line, wrapped to the gap
-  and lifted by however many lines they take so no plate cuts its own line; a self-call loops out of the bar and back
-  into its nested one; a note is a sticky over or beside its participants, as tall as its text needs (one line, 48
-  px) with the text centred; a fragment is a frame across the lifelines its messages and notes involve (every
-  lifeline when they involve none), wide enough to hold its notes whole and every fragment nested in it a step
-  inside, with its operator as its label and
-  each guard in muted text, operands split by a dashed divider.
-- **Limits**: at most 30 participants and 300 messages, notes and fragment lines; past them the parser refuses
-  naming the limit. Graph input's `style: "sequence"` is held to the same caps (its nodes the participants, its
-  edges the messages), refused the same way by the MCP and the api's changeset.
-
 ## Layout
 
 The editor's import lays a graph out exactly as an agent's Mermaid is laid out ([MCP server](../015-api/mcp-server.md)
@@ -213,7 +140,7 @@ The editor's import lays a graph out exactly as an agent's Mermaid is laid out (
 lines that bend round the boxes, a line back to an earlier step going round the outside rather than straight behind
 the boxes between. One difference: an import keeps every label **as written** (`layoutGraph`'s `wholeLabels`),
 where an agent's long label is cut to a heading with its full text in the node's note. A front-matter `title:`
-heads the drawing, as it does for an agent. A sequence diagram is still refused by the editor's import (above).
+heads the drawing, as it does for an agent.
 
 A loop through a group starts where the Mermaid starts it: the contracted layout takes its blocks in the order the
 graph wrote them (a group where its first member was), so the first-written node leads, not whichever group came
@@ -226,7 +153,7 @@ Pure, tested, reusable (import UI today; the MCP or public API could adopt it):
 - **`parseMermaid(text)`** → `{ ok: true, graph: DiagramGraph, direction }` or
   `{ ok: false, error }`. Detects the diagram type from the header and
   dispatches: flowcharts parse in `mermaid.ts`, state diagrams in
-  `mermaid-state.ts`, ER diagrams in `mermaid-er.ts` (shared line/label
+  `mermaid-state.ts` (shared line/label
   helpers in `mermaid-shared.ts`; every dialect returns the same
   `DiagramGraph`, so the import path doesn't care which it was).
   `DiagramGraph` carries subgraphs / composite states as optional

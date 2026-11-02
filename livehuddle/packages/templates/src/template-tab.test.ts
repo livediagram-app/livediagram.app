@@ -30,23 +30,23 @@ describe('buildTemplateTab', () => {
   });
 });
 
-// docs/specs/007-editor/editor-modes.md: the Whiteboard template makes a general tab that opens in
-// Draw mode; there is no whiteboard kind.
-describe('buildTemplateTab: the Whiteboard template', () => {
-  it('makes a general tab that opens in Draw', () => {
+// docs/specs/007-editor/templates-by-mode.md: every template makes a general tab that opens in Workshop; there is
+// no whiteboard kind.
+describe('buildTemplateTab: every template opens in Workshop', () => {
+  it('makes the Whiteboard a general tab', () => {
     const tab = buildTemplateTab('tab-wb', 'Whiteboard', 'whiteboard');
     expect(tab.kind).toBe('diagram');
-    expect(tab.opensIn).toBe('draw');
+    expect(tab.opensIn).toBe('workshop');
   });
 
-  it('leaves every other template opening in Diagram', () => {
-    expect(buildTemplateTab('tab-b', 'Blank', 'blank').opensIn).toBeUndefined();
+  it('opens the other templates in Workshop too', () => {
+    expect(buildTemplateTab('tab-b', 'Blank', 'blank').opensIn).toBe('workshop');
   });
 });
 
 describe('resolveTemplate', () => {
   it('resolves a catalogue kind and refuses an unknown one', () => {
-    expect(resolveTemplate('flowchart')).toBe('flowchart');
+    expect(resolveTemplate('sailboat')).toBe('sailboat');
     expect(resolveTemplate('nope')).toBeNull();
   });
 
@@ -61,7 +61,7 @@ describe('resolveTemplate', () => {
 describe('closestTemplateKinds', () => {
   it('offers the kinds with a word starting with a word of it', () => {
     expect(closestTemplateKinds('retro')).toEqual(['retrospective', 'four-ls', 'sailboat']);
-    expect(closestTemplateKinds('Org Chart')).toContain('orgchart');
+    expect(closestTemplateKinds('Gantt Chart')).toContain('gantt');
     expect(closestTemplatesHint('retro')).toBe('Closest: retrospective, four-ls, sailboat. ');
   });
 

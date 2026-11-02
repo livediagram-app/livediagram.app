@@ -10,7 +10,6 @@
 // './index', so the public package surface is unchanged.
 
 import type { ShapeKind } from './index';
-import { isSankeyShape } from './sankey-model';
 import { REACTIONS, type Reaction } from '@liveworkspace/avatar/reaction-bursts';
 
 // The two progress ShapeKinds, grouped so renderers + context-menu gates can
@@ -19,8 +18,7 @@ export function isProgressShape(kind: ShapeKind): boolean {
   return kind === 'progress-bar' || kind === 'progress-ring';
 }
 
-// The Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"), a concept graphic since it outgrew the rail;
-// it keeps the kind, so every saved one opens.
+// The Timeline (docs/specs/009-elements/timeline.md); it keeps the rail's kind, so every saved one opens.
 export function isRailShape(kind: ShapeKind): boolean {
   return kind === 'timeline-rail';
 }
@@ -123,22 +121,6 @@ export const CHECKLIST_MAX_ITEMS = 30;
 // clamps it to one line anyway, so anything longer is a paste accident.
 export const PAGE_HEADING_MAX = 200;
 
-// Record (docs/specs/009-elements/entity.md): a UML class / ER entity box. One row per field, each a
-// name with an optional type. Bounded like the checklist so a paste can't
-// produce an element nobody can scroll.
-export const ENTITY_MAX_FIELDS = 40;
-export const ENTITY_MAX_TEXT = 80;
-
-// A field's role in a data model (docs/specs/009-elements/entity.md "Keys"): primary, foreign, both (a
-// join table's composite key) or unique. One value, not a set: these four are the combinations a schema
-// uses, and one value is one press to cycle.
-export const ENTITY_KEYS = ['pk', 'fk', 'pk-fk', 'uk'] as const;
-export type EntityKey = (typeof ENTITY_KEYS)[number];
-
-// A row in a record box. `type` is optional because half the uses (an ER
-// entity's attribute list, a rough class sketch) don't carry one, and an empty
-// column reads better than a placeholder. `key` is absent for a field with no key.
-export type EntityField = { name: string; type?: string; key?: EntityKey };
 export const CHECKLIST_MAX_TEXT = 200;
 // All three seed rows are unchecked, per docs/specs/009-elements/checklist.md. A seeded `done: true` made
 // a freshly-dropped checklist render its first row ticked and struck through,
@@ -185,10 +167,9 @@ export function isChartShape(kind: ShapeKind): boolean {
 }
 
 // The kinds whose Presets grid is a chart palette (docs/specs/009-elements/pie-chart.md "Chart palettes"):
-// the charts, and the Sankey diagram (docs/specs/009-elements/sankey.md), whose nodes take the same ladder.
-// Both colour per datum or per node, so a fill-and-border look has nothing to set on them.
+// the charts, which colour per datum, so a fill-and-border look has nothing to set on them.
 export function takesChartPalette(kind: ShapeKind): boolean {
-  return isChartShape(kind) || isSankeyShape(kind);
+  return isChartShape(kind);
 }
 
 // The "self-drawing" shape kinds: progress (bar / ring), timeline rail, rating,
@@ -215,7 +196,6 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     isCodeBlockShape(kind) ||
     isChecklistShape(kind) ||
     isLegendShape(kind) ||
-    isSankeyShape(kind) ||
     kind === 'sticker' ||
     // A fence (docs/specs/009-elements/fence.md) is posts and rails, with nothing to write on.
     kind === 'fence' ||
@@ -227,13 +207,7 @@ export function isSelfDrawingShape(kind: ShapeKind): boolean {
     kind === 'bookshelf' ||
     kind === 'water-cooler' ||
     kind === 'coffee-machine' ||
-    kind === 'rug' ||
-    // A layer stack, a pyramid, an onion and a chevron process draw all their own text
-    // (docs/specs/009-elements/concept-graphics.md); a cycle and a hub keep their label, the words at the centre.
-    kind === 'layer-stack' ||
-    kind === 'pyramid' ||
-    kind === 'onion' ||
-    kind === 'chevrons'
+    kind === 'rug'
   );
 }
 

@@ -5,21 +5,20 @@ import {
   placementParamsFromSearch,
   wizardBypassKind,
   SEARCH_PRESET_MAX,
-  wizardPresetMode,
   wizardPresetQuery,
   wizardStartsBlank,
 } from './new-document-params';
 
 describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () => {
-  it('reads ?blank as the blank template, whatever its value', () => {
-    expect(wizardBypassKind('?blank=1')).toBe('blank');
-    expect(wizardBypassKind('?blank')).toBe('blank');
-    expect(wizardBypassKind('?folder=f1&blank=true')).toBe('blank');
+  it('reads ?blank as the Blank Workshop template, whatever its value', () => {
+    expect(wizardBypassKind('?blank=1')).toBe('blank-session');
+    expect(wizardBypassKind('?blank')).toBe('blank-session');
+    expect(wizardBypassKind('?folder=f1&blank=true')).toBe('blank-session');
   });
 
   it('reads ?template=<kind> for a catalogue kind', () => {
     expect(wizardBypassKind('?template=sailboat')).toBe('sailboat');
-    expect(wizardBypassKind('?team=t1&template=er-diagram')).toBe('er-diagram');
+    expect(wizardBypassKind('?team=t1&template=retrospective')).toBe('retrospective');
   });
 
   it('falls back to the wizard for an unknown kind or no bypass', () => {
@@ -30,7 +29,7 @@ describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () =>
   });
 
   it('lets blank win when both are present', () => {
-    expect(wizardBypassKind('?template=kanban&blank=1')).toBe('blank');
+    expect(wizardBypassKind('?template=kanban&blank=1')).toBe('blank-session');
   });
 
   it('reads back the link the templates package builds for the gallery', () => {
@@ -56,15 +55,6 @@ describe('choosePlacementAgainUrl (docs/specs/007-editor/new-document-route.md)'
 
 // docs/specs/007-editor/new-document-route.md "?mode= and ?q=": the template step's presets.
 describe('wizardPresetMode / wizardPresetQuery', () => {
-  it('reads a known mode, and ignores an unknown one', () => {
-    expect(wizardPresetMode('?mode=draw')).toBe('draw');
-    expect(wizardPresetMode('?folder=f1&mode=workshop&via=Home.HeroBuild')).toBe('workshop');
-    // A retired mode's stale link opens on Diagram.
-    expect(wizardPresetMode('?mode=pages')).toBe('diagram');
-    expect(wizardPresetMode('?mode=sideways')).toBeNull();
-    expect(wizardPresetMode('')).toBeNull();
-  });
-
   it('reads the words, trimmed and capped, and ignores none', () => {
     expect(wizardPresetQuery('?q=mind%20map')).toBe('mind map');
     expect(wizardPresetQuery('?q=%20%20article%20')).toBe('article');

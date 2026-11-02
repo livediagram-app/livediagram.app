@@ -12,24 +12,17 @@ import type { TemplateKind } from './templates';
 // theme's default dot grid:
 //   - graph paper for alignment-heavy scaffolds (flow / org / SWOT /
 //     Gantt) where boxes snap to a square grid,
-//   - a blank canvas for clean radial layouts (Venn, flywheel,
-//     pyramid) where the shapes should carry the page,
+//   - a blank canvas for clean radial layouts (Venn) where the shapes
+//     should carry the page,
 //   - horizontal rules for the time-ordered timeline / journey,
 //   - the dot grid (explicit, so it survives even a blank-canvas theme)
 //     for the sticky-note / freeform boards.
 // Templates not listed here fall through to the theme's pattern.
 const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
-  flowchart: 'graph',
-  swimlane: 'graph',
-  'decision-tree': 'graph',
-  'approval-workflow': 'graph',
   'data-flow': 'graph',
-  orgchart: 'graph',
   swot: 'graph',
   gantt: 'graph',
   venn: 'blank',
-  flywheel: 'blank',
-  pyramid: 'blank',
   timeline: 'lines',
   'milestone-timeline': 'lines',
   // The vertical variant reads best on a clean canvas: horizontal ruled
@@ -38,16 +31,9 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   journey: 'lines',
   retrospective: 'grid',
   fishbone: 'grid',
-  mindmap: 'grid',
-  // Tree map rides the dot grid like the radial map; the bubble map is a
-  // clean radial layout, so it gets a blank canvas like Venn / pyramid.
-  'mindmap-tree': 'grid',
-  'mindmap-bubble': 'blank',
   // Technical diagrams are alignment-heavy (boxes + tables snap to a
   // grid), so they ride graph paper like the flow / org / SWOT scaffolds.
   'system-architecture': 'graph',
-  'er-diagram': 'graph',
-  'sequence-diagram': 'graph',
   'prioritization-matrix': 'graph',
   // The later batch splits the same three ways: alignment-heavy scaffolds
   // ride graph paper, sticky-note workshop boards pin the dot grid, and
@@ -56,9 +42,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'raci-matrix': 'graph',
   'business-model-canvas': 'graph',
   'okr-tree': 'graph',
-  sitemap: 'graph',
   'cloud-architecture': 'graph',
-  'uml-class': 'graph',
   'state-machine': 'graph',
   'user-story-map': 'grid',
   'affinity-map': 'grid',
@@ -81,8 +65,6 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   // templates' graph paper.
   'event-storming': 'grid',
   'empathy-map': 'grid',
-  funnel: 'blank',
-  sankey: 'blank',
   // A new whiteboard starts on Grid (docs/specs/023-draw-mode/draw-mode.md "Board background").
   whiteboard: WHITEBOARD_DEFAULT_PATTERN,
   // The Draw templates start on the whiteboard's board too.
@@ -99,7 +81,7 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   // boards on the dot grid, as is the postmortem (a dense written report,
   // where graph lines behind every card read as noise); the matrices and
   // tree ride graph paper;
-  // the Sailboat's drawn scene gets a blank canvas like the flywheel.
+  // the Sailboat's drawn scene gets a blank canvas like the Venn.
   'start-stop-continue': 'grid',
   'mad-sad-glad': 'grid',
   'four-ls': 'grid',
@@ -163,17 +145,8 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // louder the pattern, the further it steps back (TEMPLATE_PATTERN_OPACITY);
   // a few radial / stage layouts soften further still, and the lower of the
   // two wins.
-  // A whiteboard draws its own quiet board pattern (docs/specs/023-draw-mode/draw-mode.md "Board
-  // background"), so it never takes a template's dimming.
-  const mode = templateEditorMode(kind);
-  const quiet = pattern && mode !== 'draw' ? TEMPLATE_PATTERN_OPACITY[pattern] : undefined;
-  const soft =
-    kind === 'mindmap' ||
-    kind === 'mindmap-tree' ||
-    kind === 'journey' ||
-    kind === 'prioritization-matrix'
-      ? 0.8
-      : undefined;
+  const quiet = pattern ? TEMPLATE_PATTERN_OPACITY[pattern] : undefined;
+  const soft = kind === 'journey' || kind === 'prioritization-matrix' ? 0.8 : undefined;
   const opacity = Math.min(quiet ?? 1, soft ?? 1);
   if (opacity < 1) overrides.backgroundOpacity = opacity;
   const layers = templateLayers(kind);
@@ -182,10 +155,8 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // The kind, not a layer id, is what the editor reads to decide it is a
   // workshop board, so it must land on every application path: the picker,
   // /new, and the MCP worker all go through here.
-  // A template's mode (docs/specs/007-editor/templates-by-mode.md): the Draw templates are general
-  // tabs that OPEN in Draw mode (docs/specs/007-editor/editor-modes.md "Where the mode lives";
-  // whiteboarding is no kind), and the Workshop ones in Workshop.
-  if (mode !== 'diagram') overrides.opensIn = mode;
+  // A template's mode (docs/specs/007-editor/templates-by-mode.md): every template opens in Workshop.
+  overrides.opensIn = templateEditorMode(kind);
   if (kind === 'event-storming') {
     overrides.kind = 'event-storming';
     // The seed note is built on a lane, so the board is born settled and the

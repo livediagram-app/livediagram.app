@@ -6,7 +6,7 @@ look, independent of their colours. There are four:
 | Finish           | Reads as                      | What it changes                                                                                                 |
 | ---------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | **Flexible**     | Today's look (the default)    | Nothing: soft 8 px corners, 2 px lines, a soft default shadow on boxes, a peel under stickies                   |
-| **Professional** | Crisp, print-ready            | Square corners, thin lines, Inter lettering, no default shadows, new arrows and mind maps drawn right-angled    |
+| **Professional** | Crisp, print-ready            | Square corners, thin lines, Inter lettering, no default shadows, new arrows drawn right-angled                  |
 | **Sketch**       | Drawn by hand on a whiteboard | Wobbly double-stroked outlines, pencil-shaded fills, a handwriting font, arrowheads drawn as two loose strokes  |
 | **Marker**       | Drawn in felt-tip marker      | One bold, slightly see-through stroke per edge, darker where strokes cross, fills coloured in, marker lettering |
 
@@ -31,7 +31,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 ### Professional
 
 - **Corners:** an unset corner on a free-corner box draws square (0 px) instead of the kind's default (8 px for a
-  shape, 12 px for a mind node, 4 px for an image, 10 px for a video) ([Corner radius](corner-radius.md)). Fixed
+  shape, 4 px for an image, 10 px for a video) ([Corner radius](corner-radius.md)). Fixed
   silhouettes (the stadium's pill, the circle, an avatar's circle) keep their shape. The corner a kind is created
   with (a panel's, a card's, a banner's) is a default, not a pick, so it goes square too; a corner changed on the
   element wins.
@@ -51,11 +51,6 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
   flattened the same way: every rectangle in it draws with square corners, its shadows and hover lift are not drawn,
   and its 2 px borders draw at 1 px. Circles, discs and true pills (avatars, toggles, status dots) keep their shape,
   since their roundness carries meaning. The canvas and every export agree.
-- **Mind maps:** a mind map's connectors that are still in the map's default look (curved, never bowed or bent by
-  hand) are drawn right-angled, as a neat bracket off each parent; the bubble flow draws them as straight spokes
-  ([The mind node](../009-elements/mind-node.md) "Connectors"). It is drawn, not stored: switching back to
-  Flexible or Sketch shows the curves again. A connector given a style, bow or bend of its own keeps it, and one
-  given its own Flexible finish keeps its curve.
 
 ### Sketch
 
@@ -66,7 +61,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 - **Fills** of shapes keep their solid colour, shaded over with faint diagonal pencil hatching in the outline colour,
   like coloured pencil on paper. The fill never goes away, so a label keeps the contrast it was coloured for on a
   light or a dark canvas. Every box with a body of its own is shaded (cards, panels, records, pages, lanes and
-  frames included); stickies, tables and self-painting faces (charts, code blocks, concept graphics) are not, their
+  frames included); stickies, tables and self-painting faces (charts, code blocks, the Timeline) are not, their
   own parts being their drawing.
 - **Backdrops** keep a solid fill too: a shape that other elements sit on (another element drawn above it has its
   centre inside the shape, such as a flowchart key's card under its captions) is not shaded, so what sits on it
@@ -87,10 +82,8 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 - **Icons and stickers** (line-art icons, technology icons and stickers) keep their own art, drawn through the same
   hand-drawn wobble as the palette's Sketch tiles, so their lines tremble like pencil. The canvas and browser exports
   both draw it (an SVG displacement filter, defined once per export and only when something needs it).
-- **Sequence diagrams** draw their participants' boxes and their message lines by hand too, since they are the
-  same boxes and arrows the canvas draws ([The sequence diagram](../009-elements/sequence-diagram.md) "Look").
 - **Every other face is drawn by hand too.** Whatever an element draws beyond its sketched body is split into two
-  layers: charts, legends, progress, rating, checklists, code blocks, concept graphics, Sankey,
+  layers: charts, legends, progress, rating, checklists, code blocks, the Timeline,
   badges, steps, cards, pointer notes, stacks, boundaries, diagram keys, people, web components, office furniture
   and rooms, collaboration panels, buttons, pickers, reveals, portals, quizzes,
   link cards, a video's frame, annotation markers, a table's grid, a lane's gutter, a record's
@@ -151,8 +144,7 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
     `MARKER_FACE_FRAME_MIN_PX` on both sides) loses its own border and shadow and is outlined in one marker stroke
     per edge, its fill kept solid behind its words. The face's own box (a panel's, a banner's, a timer's), whichever
     part paints it, is coloured in as a shape's body is.
-  - A **shape** (a concept graphic's band, tier, disc, ring or arc, a chart's bar, slice or ring, a Sankey's
-    node) is coloured in and outlined in marker in its own colour: the outline in its stroke, or its fill when it
+  - A **shape** (a Timeline's rail or milestone, a chart's bar, slice or ring) is coloured in and outlined in marker in its own colour: the outline in its stroke, or its fill when it
     has none, the colouring in streaks over its solid fill. A ring or arc drawn as a line is one bold marker
     stroke along it.
   - **Small parts** (chips, pills, badges, inputs, buttons, check boxes, glyphs, axes, grid lines, anything under
@@ -180,8 +172,8 @@ shadow under Marker (a badge's pill coloured in), wobbled with its art under Ske
 
 ### Polygons and paths
 
-A Polygon-tool outline ([Polygon tool](polygon-tool.md)) and a Path-tool curve
-([Path tool](../023-draw-mode/path-tool.md)) are placed point by point, so they are drawings like a shape's outline,
+A Polygon-tool outline ([Polygon tool](polygon-tool.md)) and a stored path (from livediagram's Path tool, or a
+combined path) are placed point by point, so they are drawings like a shape's outline,
 not a hand's stroke, and follow their tab's finish as a shape does:
 
 - **Professional:** an unset line draws Thin (1 px).

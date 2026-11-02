@@ -42,8 +42,8 @@ export function heroSearch(query: string, limit = HERO_SEARCH_LIMIT): HeroMatch[
 export const HERO_FAN_OPENING: readonly TemplateKind[] = [
   'retrospective',
   'gantt',
-  'flowchart',
-  'mindmap',
+  'lean-coffee',
+  'sailboat',
   'system-architecture',
   'swot',
   'sketchnote',

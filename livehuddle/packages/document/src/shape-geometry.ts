@@ -145,26 +145,6 @@ const FIXED_GEOMETRY: Partial<Record<ShapeKind, ShapeGeometry>> = {
   // and it takes the element's fill like every other shape: a frame defaults
   // to transparent, so the see-through look is the default, not a rule.
   frame: stretch(rect(1, 1, 98, 98, undefined, 'outline')),
-  // Screen on top, trapezoid stand below.
-  monitor: stretch(rect(1, 1, 98, 80, 3), path('M 32 88 L 68 88 L 76 99 L 24 99 Z')),
-  // Heavy corners are the tell of "phone"; the inset line is the bezel.
-  phone: stretch(rect(2, 2, 96, 96, 10), rect(6, 10, 88, 80, 3, 'detail')),
-  // The phone's skeleton with a thinner bezel and gentler corners.
-  tablet: stretch(rect(2, 2, 96, 96, 6), rect(5, 6, 90, 88, 3, 'detail')),
-  // Unfolded: the crease down the middle is what says "not a tablet".
-  foldable: stretch(
-    rect(2, 2, 96, 96, 5),
-    rect(5, 6, 90, 88, 3, 'detail'),
-    path('M 50 6 L 50 94', 'detail'),
-  ),
-  // Straps above and below, a crown on the right, the face, its bezel.
-  smartwatch: stretch(
-    rect(36, 0, 28, 20),
-    rect(36, 80, 28, 20),
-    rect(76, 43, 7, 14, 2),
-    rect(22, 14, 56, 72, 14),
-    rect(29, 21, 42, 58, 9, 'detail'),
-  ),
   // UML final state: a ring (the line colour, unfilled) round a solid dot (the fill), kept round in any box.
   'final-state': {
     viewBox: '0 0 100 100',
@@ -208,93 +188,15 @@ export function shapePolygonVertices(kind: ShapeKind): [number, number][] | null
   return only.points.split(' ').map((pt) => pt.split(',').map(Number) as [number, number]);
 }
 
-// Open-clamshell laptop: lid with an even display bezel, a slim hinge, a
-// keyboard deck, a generated key grid, spacebar and trackpad. The bezel is
-// the one size-dependent mark: the stretch lands equal viewBox insets
-// unevenly, so the horizontal inset scales by 1/aspect (H/W) to keep the
-// margin even in screen pixels.
-function laptopGeometry(aspect: number): ShapeGeometry {
-  const lid = { x: 8, y: 2, w: 84, h: 60 };
-  const insetY = 3;
-  const insetX = Math.max(1, Math.min(8, insetY / aspect));
-  // A rectangle that fits inside the trapezoid deck at every row.
-  const kb = { left: 20, right: 80, top: 69, bottom: 84 };
-  const cols = 12;
-  const rows = 4;
-  const cellW = (kb.right - kb.left) / cols;
-  const cellH = (kb.bottom - kb.top) / rows;
-  const gapX = cellW * 0.2;
-  const gapY = cellH * 0.22;
-  const keys: ShapePart[] = [];
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      keys.push(
-        rect(
-          kb.left + c * cellW + gapX / 2,
-          kb.top + r * cellH + gapY / 2,
-          cellW - gapX,
-          cellH - gapY,
-          0.6,
-          'detail',
-        ),
-      );
-    }
-  }
-  return stretch(
-    rect(lid.x, lid.y, lid.w, lid.h, 4),
-    rect(lid.x + insetX, lid.y + insetY, lid.w - insetX * 2, lid.h - insetY * 2, 2, 'detail'),
-    rect(lid.x + 2, lid.y + lid.h, lid.w - 4, 3, 1.5),
-    path('M 14 66 L 86 66 L 94 96 L 6 96 Z'),
-    ...keys,
-    rect(38, 85.5, 24, 3, 0.8, 'detail'),
-    rect(43, 90, 14, 4, 1, 'detail'),
-  );
-}
-
 /** Every kind this table draws. */
-export const SHAPE_GEOMETRY_KINDS: readonly ShapeKind[] = [
-  ...(Object.keys(FIXED_GEOMETRY) as ShapeKind[]),
-  'laptop',
-];
+export const SHAPE_GEOMETRY_KINDS: readonly ShapeKind[] = Object.keys(
+  FIXED_GEOMETRY,
+) as ShapeKind[];
 
 /** A kind's drawn geometry, or null for a kind drawn some other way (a CSS
- *  box, a self-painting face). `aspect` is the element's width / height; only
- *  the laptop reads it. */
-export function shapeGeometry(kind: ShapeKind, aspect = 1.6): ShapeGeometry | null {
-  if (kind === 'laptop') return laptopGeometry(aspect > 0 && Number.isFinite(aspect) ? aspect : 1);
+ *  box, a self-painting face). */
+export function shapeGeometry(kind: ShapeKind): ShapeGeometry | null {
   return FIXED_GEOMETRY[kind] ?? null;
-}
-
-// A browser frame's chrome strip (docs/specs/008-canvas/canvas-and-palette.md Devices), in fixed PIXELS rather
-// than a stretched viewBox so the dots stay round and the URL pill grows with
-// the width. The strip is pinned to the top: [pad][3 dots][gap][nav][gap][pill][pad].
-export const BROWSER_CHROME = {
-  heightPx: 48,
-  padXPx: 16,
-  dotPx: 12,
-  dotGapPx: 6,
-  groupGapPx: 10,
-  pillHeightPx: 20,
-  nav: {
-    viewBox: '0 0 44 14',
-    widthPx: 56,
-    heightPx: 18,
-    strokeWidth: 1.6,
-    // Back, forward, reload.
-    paths: [
-      'M 7 3 L 3 7 L 7 11',
-      'M 15 11 L 19 7 L 15 3',
-      'M 30 4 A 4 4 0 1 1 27 11 M 30 4 L 33 4 M 30 4 L 30 7',
-    ],
-  },
-} as const;
-
-/** Where each mark of the chrome strip starts, in px from the strip's left. */
-export function browserChromeLayout(): { dotX: number[]; navX: number; pillX: number } {
-  const c = BROWSER_CHROME;
-  const dotX = [0, 1, 2].map((i) => c.padXPx + i * (c.dotPx + c.dotGapPx));
-  const navX = c.padXPx + 3 * c.dotPx + 2 * c.dotGapPx + c.groupGapPx;
-  return { dotX, navX, pillX: navX + c.nav.widthPx + c.groupGapPx };
 }
 
 /** A chair's seat colour: its own fill, or with none (the default is

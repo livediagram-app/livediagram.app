@@ -22,8 +22,6 @@ import { chartRamp } from './chart-palettes';
 import { isLaneBand, laneEdgeOfElement, laneSizeOfElement } from './lane-gutter';
 import { legendFontPx } from '@liveworkspace/model-core/label-font';
 import {
-  BROWSER_CHROME,
-  browserChromeLayout,
   SHAPE_DETAIL_STROKE_PX,
   shapeGeometry,
   type ShapePart,
@@ -121,7 +119,7 @@ export function svgShapeSilhouette(
   finish: Finish = 'flexible',
 ): string | null {
   if (!hasShapeSilhouette(el.shape)) return null;
-  const geometry = shapeGeometry(el.shape, el.height > 0 ? el.width / el.height : 1);
+  const geometry = shapeGeometry(el.shape);
   if (!geometry) return null;
   const strokeWidth = BORDER_STROKE_PX[finishBorderStroke(el.strokeWidth, finish)] || 2;
   const dash = BORDER_DASH_ARRAY[el.strokeStyle ?? 'solid'] ?? undefined;
@@ -462,36 +460,4 @@ export function svgLaneGutter(el: BoxedElement & { type: 'shape' }, stroke: stri
     rule(left, el.y, left, el.y + el.height) +
     rule(left + size, el.y, left + size, el.y + el.height)
   );
-}
-
-// A browser frame's chrome (docs/specs/008-canvas/canvas-and-palette.md Devices): the fixed-height strip pinned to
-// the top, its three window dots, the nav glyphs and the URL pill. Fixed pixel
-// geometry from the shared table (BROWSER_CHROME), laid out the way the
-// canvas's flex strip lays it out, so it doesn't deform with the box's aspect.
-export function svgBrowserChrome(el: BoxedElement, stroke: string): string {
-  const c = BROWSER_CHROME;
-  const at = browserChromeLayout();
-  const h = Math.min(c.heightPx, el.height);
-  const color = xmlEscape(stroke);
-  const midY = el.y + h / 2;
-  const dots = at.dotX
-    .map(
-      (dx) =>
-        `<circle cx="${r2(el.x + dx + c.dotPx / 2)}" cy="${r2(midY)}" r="${c.dotPx / 2}" fill="${color}"/>`,
-    )
-    .join('');
-  const line = ` fill="none" stroke="${color}" stroke-width="${c.nav.strokeWidth}" stroke-linecap="round" stroke-linejoin="round"`;
-  // The nav group, on its own viewBox grid, sized and centred like the canvas.
-  const nav =
-    `<svg x="${r2(el.x + at.navX)}" y="${r2(midY - c.nav.heightPx / 2)}" width="${c.nav.widthPx}" height="${c.nav.heightPx}" viewBox="${c.nav.viewBox}" overflow="visible">` +
-    c.nav.paths.map((d) => `<path d="${d}"${line}/>`).join('') +
-    `</svg>`;
-  const pillX = el.x + at.pillX;
-  const pillW = Math.max(0, el.x + el.width - c.padXPx - pillX);
-  const pill =
-    pillW > 8
-      ? `<rect x="${r2(pillX)}" y="${r2(midY - c.pillHeightPx / 2)}" width="${r2(pillW)}" height="${c.pillHeightPx}" rx="${c.pillHeightPx / 2}" fill="none" stroke="${color}" stroke-width="1"/>`
-      : '';
-  const divider = `<path d="M ${r2(el.x)} ${r2(el.y + h)} L ${r2(el.x + el.width)} ${r2(el.y + h)}" stroke="${color}" stroke-width="1"/>`;
-  return dots + nav + pill + divider;
 }

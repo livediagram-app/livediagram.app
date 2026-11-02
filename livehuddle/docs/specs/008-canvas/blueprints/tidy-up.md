@@ -1,7 +1,8 @@
 # Tidy Up: blueprint
 
-Derived from [Layout cleanup](../layout-cleanup.md#the-tidy-up-button). The spec decides; this file only adds
-engineering precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and
+Derived from [Layout cleanup](../layout-cleanup.md#the-tidy-up-button). livehuddle shows no Tidy Up button (it was
+Diagram mode's); this file is kept as the record of livediagram's, and of the choices the command palette still
+runs. The spec decides; this file only adds engineering precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and
 cited as `Dn`.
 
 Scope, by file:
@@ -89,7 +90,7 @@ type TidyUpActions = {
   blocked: boolean;
 };
 
-assessCleanup(elements, kind, layers?): CleanupVerdict; // 'unsuited' first for a mindmap that does not fit
+assessCleanup(elements, kind, layers?): CleanupVerdict;
 cleanupVerdict(before, after, { lanes?: boolean }): CleanupVerdict; // lanes: false for Auto-align
 verdictLine(v): string | null; // the tile line; null for 'ok'
 verdictNotice(name, v): string | null; // the palette's notice; null for 'ok'

@@ -13,12 +13,7 @@ import {
   type WebRows,
 } from '@livehuddle/document';
 
-import {
-  ConceptRowsEditor,
-  hasWebRowsSection,
-  TextRowsEditor,
-  WebRowsMenuSection,
-} from './context-menu-web-editors';
+import { ConceptRowsEditor, TextRowsEditor, WebRowsMenuSection } from './context-menu-web-editors';
 
 afterEach(cleanup);
 
@@ -37,17 +32,6 @@ function renderSection(shape: Parameters<typeof createShape>[0], patch: object =
 }
 
 describe('WebRowsMenuSection (docs/specs/009-elements/web-components-and-no-groups.md)', () => {
-  it('only the row-carrying kinds get a section', () => {
-    expect(hasWebRowsSection(createShape('stat-row', 0, 0))).toBe(true);
-    expect(hasWebRowsSection(createShape('process', 0, 0))).toBe(true);
-    expect(hasWebRowsSection(createShape('site-header', 0, 0))).toBe(true);
-    expect(hasWebRowsSection(createShape('banner', 0, 0))).toBe(false);
-    expect(hasWebRowsSection(createShape('square', 0, 0))).toBe(false);
-    // docs/specs/009-elements/concept-graphics.md "Editing": chevrons edit their stages on the canvas instead.
-    expect(hasWebRowsSection(createShape('cycle', 0, 0))).toBe(true);
-    expect(hasWebRowsSection(createShape('chevrons', 0, 0))).toBe(false);
-  });
-
   it('adds a step and removes one', () => {
     const onSetRows = renderSection('process');
     fireEvent.click(screen.getByRole('button', { name: 'Add Step' }));
@@ -97,7 +81,7 @@ describe('WebRowsMenuSection (docs/specs/009-elements/web-components-and-no-grou
   });
 });
 
-// docs/specs/009-elements/concept-graphics.md: a concept graphic's rows, a label each and a note where its kind
+// docs/specs/009-elements/timeline.md: a concept graphic's rows, a label each and a note where its kind
 // draws one.
 describe('ConceptRowsEditor', () => {
   const rows = [{ label: 'Plan', note: 'Q1' }, { label: 'Build' }];

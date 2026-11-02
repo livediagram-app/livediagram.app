@@ -1,7 +1,7 @@
 # Draw mode, round one: blueprint
 
 Derived from [Draw mode](../draw-mode.md), with [Editor modes](../../007-editor/editor-modes.md) (and
-its [blueprint](../../007-editor/blueprints/editor-modes.md)) for how Draw mode is entered, left and
+its blueprint (removed with Draw mode; see [Editor modes](../../007-editor/editor-modes.md))) for how Draw mode is entered, left and
 stored, [Highlighter](../../008-canvas/highlighter.md) for the marker recipe,
 [Eraser panel](../../008-canvas/eraser-panel.md) for the erase gesture and
 [Two pens instead of a pen and a mode](../../008-canvas/two-pens.md) for recognition. The spec decides;
@@ -46,7 +46,6 @@ Scope, by file:
 | `apps/telemetry/app/*`                                              | `Whiteboard` colour, description, sentences and the Whiteboards stack     |
 | `apps/editor/components/canvas/boxed-element-overlays.tsx`          | `FreehandSvg` honours `penWidth` on every stroke                          |
 | `apps/editor/lib/style-presets.ts`                                  | A border width clears a stroke's `penWidth`                               |
-| `apps/editor/lib/view-backdrop.ts`                                  | `resolveViewBackdrop`: the person's Draw pattern in Draw mode             |
 | `apps/editor/components/canvas/EditorCanvasHost.tsx`                | Ink projection; whiteboard props                                          |
 | `apps/editor/components/canvas/CanvasChrome.tsx` and friends        | Hidden chrome; the dock's mount                                           |
 | `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`              | Pen versus touch; the eraser frame                                        |
@@ -84,7 +83,7 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
 ### Mode
 
 - Draw mode is the person's effective editor mode on a general tab
-  ([editor-modes blueprint](../../007-editor/blueprints/editor-modes.md)): `useEditorState` derives
+  (editor-modes blueprint (removed with Draw mode)): `useEditorState` derives
   `drawMode = editorMode.mode === 'draw'` and hands it to every gate below. A tab stored with
   `kind: 'whiteboard'` is migrated on read to a general tab that opens in Draw.
 
@@ -122,7 +121,7 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
     (`opensForTyping(intent, whiteboard)` in `draw-mode.ts`). A text box hugs its text:
     [text-boxes](text-boxes.md).
   - **Shapes**: toggle the shapes flyout; picking a shape arms its intent (one-shot) and closes it.
-    The pinned and frequent slots and the Shapes search are [whiteboard-dock](whiteboard-dock.md)'s.
+    The pinned and frequent slots and the Shapes search are the whiteboard-dock blueprint (removed with Draw mode)'s.
   - **Recognition**: flip `recognise`, re-arm the pen intent when a pen is held, track
     `RecognitionOn` / `RecognitionOff`.
   - **Settings**: toggle the Settings flyout (a press only); picking a background writes the person's
@@ -343,7 +342,7 @@ chroma, contrast? }` in OKLCH: blue (255, 0.18), red (25, 0.19), orange (50, 0.1
 - The Shapes button opens its flyout on `pointerenter` (not touch) as a hover flyout; leaving the
   button or the flyout schedules a close after `HOVER_CLOSE_MS` (250 ms, `useHoverClose`), cancelled
   by entering either. A press on a hover flyout makes it sticky. Its search field takes the focus
-  even on a hover, the one exception ([whiteboard-dock](whiteboard-dock.md) "Flyouts").
+  even on a hover, the one exception (the whiteboard-dock blueprint (removed with Draw mode) "Flyouts").
 - The Settings flyout (`hideTitle`, accessible name "Settings", opened by the cog on a press only)
   holds three headed sections, top to bottom: Background (Plain / Dots / Grid), Cursor (Crosshair
   - nib first, the default, then Dot) and Drawing (Basic / Shape recognition, `setRecognition(on)`).
@@ -671,7 +670,7 @@ outline is rebuilt per update, as Excalidraw does.
   `useEditorState` passes the dock's actions.
 - On a whiteboard the listener consults only `WHITEBOARD_VIEW_KEYS` (V select, H hand, Z zen) and,
   for editors, `WHITEBOARD_EDIT_KEYS` (1, 2, 3 pens; E eraser; N note; T text; R, O, D, C, L, A the dock
-  shapes via `pickShape(key)`, plain ink; S the Shapes flyout, [whiteboard-dock](whiteboard-dock.md)),
+  shapes via `pickShape(key)`, plain ink; S the Shapes flyout, the whiteboard-dock blueprint (removed with Draw mode)),
   then stops: the diagram tab's
   `VIEW_TOOL_KEYS` / `EDIT_KEYS` never run there. Type-to-edit and modifier shortcuts run first,
   unchanged.
@@ -899,7 +898,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
   objects on first sight (cache).
 - Eraser: per pointer sample, O(strokes) bbox rejects plus O(points) for the survivors; Partial
   densifies only touched strokes. A 2,000-stroke board stays within a frame on the samples tried.
-- Dock: fixed-size buttons in three groups; see [whiteboard-dock](whiteboard-dock.md).
+- Dock: fixed-size buttons in three groups; see the whiteboard-dock blueprint (removed with Draw mode).
 - Live stroke, per input event: one rect read, one sample pushed, and the whole outline rebuilt
   (`freehandGeometry`, perfect-freehand, the path string): O(samples), as Excalidraw does. No React
   render of the stroke. Measured with synthetic moves: Chromium p50 0.2 / 0.8 / 2.2 ms per event at
@@ -909,14 +908,14 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 ## Presentation and UX
 
 - Dock: top centre (or bottom, by choice), three groups; placement, separators and copy in
-  [whiteboard-dock](whiteboard-dock.md). Dock buttons 36 × 36 px (the strip's tiles) on the editor's panel
+  the whiteboard-dock blueprint (removed with Draw mode). Dock buttons 36 × 36 px (the strip's tiles) on the editor's panel
   surface tokens.
 - Pen buttons: a filled nib in the pen's colour (the main pen shows the ink colour), a thickness bar below
   scaled to its width.
 - Flyouts sit on the board side of their button, never move the dock, and point at their button with a tip; portalled and `fixed`,
   placed with `left` / `top` in viewport px, clamped 12 px inside the viewport (measured from the
   layout size before paint, since the pop-in starts at `scale(0)`): `offDock` in
-  [whiteboard-dock](whiteboard-dock.md).
+  the whiteboard-dock blueprint (removed with Draw mode).
 - Dock buttons and flyout options carry the house `Tooltip` (their accessible name).
 - Copy: buttons "Select", "Marker 1", "Marker 2", "Marker 3" (2 and 3 adding their colour, e.g. "Marker 2, blue, medium"; `PEN_NAMES`), "Eraser", "Sticky note", "Text", "Shapes", "Shape recognition"; pen flyout "Colour" (second and third pens only), "Width" with "Fine", "Medium", "Bold", "Thick", "Heavy", "Broad"; eraser flyout
   "Stroke", "Partial" with hints "Remove whole strokes" / "Erase part of a stroke"; Settings flyout
@@ -929,7 +928,7 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 
 - Each group a `role="toolbar"` ("Drawing tools", "Shapes", "Settings"),
   `aria-orientation="horizontal"`; roving tabindex per group:
-  one tab stop, ArrowLeft / ArrowRight move (wrapping), Home / End jump ([whiteboard-dock](whiteboard-dock.md)).
+  one tab stop, ArrowLeft / ArrowRight move (wrapping), Home / End jump (the whiteboard-dock blueprint (removed with Draw mode)).
 - Tool buttons carry `aria-pressed`; a pen's name includes its place, colour (second and third pens) and width ("Marker 3, red, medium");
   flyout openers carry `aria-expanded` and `aria-controls`.
 - A flyout is a `role="group"` labelled by its title; opening moves focus to its selected control;
@@ -1006,13 +1005,12 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Pen commit (open, colour, width, held, recognition)                                           | `apps/editor/hooks/canvas/commit-freehand.test.ts`                                                                     |
 | Border width clears `penWidth`                                                                | `apps/editor/lib/style-presets.test.ts`                                                                                |
 | Backdrop on a whiteboard                                                                      | `apps/editor/lib/default-scheme.test.ts`                                                                               |
-| Dock a11y, keyboard, flyouts                                                                  | `apps/editor/components/canvas/whiteboard/WhiteboardDock.test.tsx`                                                     |
-| Dock state, entering, telemetry                                                               | `apps/editor/hooks/canvas/useWhiteboard.test.tsx`, `e2e/whiteboard-opening-tool.spec.ts`                               |
+| Dock state, entering, telemetry                                                               | `apps/editor/hooks/canvas/useWhiteboard.test.tsx`                                                                      |
 | Stock colour projection cache                                                                 | `apps/editor/lib/stock-colour-projector.test.ts`                                                                       |
 | Eraser steps                                                                                  | `apps/editor/lib/whiteboard-erase.test.ts`                                                                             |
 | Shape outline: kinds, fill, radius, rotation, sweep                                           | `packages/document/src/shape-hit.test.ts`, `svg-path-outline.test.ts`                                                  |
 | Unselected whiteboard shape picked by its outline, 6 px a side                                | `apps/editor/components/canvas/ShapeHitOutline.test.tsx`                                                               |
-| A double-click inside a shape edits it, selected or not                                       | `whiteboard-edit-target.test.ts`, `e2e/whiteboard-shape-text-and-dots.spec.ts`                                         |
+| A double-click inside a shape edits it, selected or not                                       | `whiteboard-edit-target.test.ts`                                                                                       |
 | Selected: box and line both catch, outside the box too                                        | `BoxedElementView.whiteboard-hit.test.tsx`                                                                             |
 | A tap is a round dot the pen's width                                                          | `pen-stroke.test.ts`, `commit-freehand.test.ts`, `useWhiteboardPenGesture.test.tsx`                                    |
 | Pen versus touch on the canvas                                                                | `apps/editor/hooks/canvas/useCanvasSurfaceGestures.whiteboard.test.tsx`                                                |

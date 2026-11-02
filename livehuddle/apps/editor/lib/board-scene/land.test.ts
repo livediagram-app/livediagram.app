@@ -244,7 +244,7 @@ describe('the tab patch', () => {
       options(),
     );
     expect(r.ok && r.tabPatch).toEqual({
-      opensIn: 'draw',
+      opensIn: 'workshop',
       name: 'Retro',
       backgroundPattern: 'grid',
     });
@@ -253,7 +253,7 @@ describe('the tab patch', () => {
   it('starts an untitled whiteboard on Grid as "Whiteboard"', () => {
     const r = landBoardScene(boardScene([]), options());
     expect(r.ok && r.tabPatch).toEqual({
-      opensIn: 'draw',
+      opensIn: 'workshop',
       name: 'Whiteboard',
       backgroundPattern: 'graph',
     });

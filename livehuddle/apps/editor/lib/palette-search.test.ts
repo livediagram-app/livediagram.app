@@ -68,7 +68,7 @@ describe('buildPaletteSearchItems', () => {
     // regression that dropped these from the PALETTE_TILES filter still fails
     // rather than agreeing with itself.
     const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
-    for (const kind of ['lane', 'entity', 'mind-node', 'page', 'phone', 'bar-chart', 'portal']) {
+    for (const kind of ['lane', 'page', 'bar-chart', 'portal']) {
       expect(ids.has(`shape:${kind}`)).toBe(true);
     }
     // And the split kinds, one entry per choice (docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reaction-pad.md).

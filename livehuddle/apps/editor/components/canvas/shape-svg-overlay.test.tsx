@@ -8,15 +8,7 @@
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import {
-  BROWSER_CHROME,
-  CHAIR_ART,
-  SHAPE_GEOMETRY_KINDS,
-  shapeGeometry,
-  type ShapeElement,
-  type ShapeKind,
-} from '@livehuddle/document';
-import { BrowserChrome } from './boxed-element-overlays';
+import { CHAIR_ART, type ShapeElement } from '@livehuddle/document';
 import { FurnitureView } from './collab/FurnitureView';
 import { ShapeSvgOverlay } from './shape-svg-overlay';
 
@@ -29,25 +21,6 @@ const marks = (svg: Element) =>
   );
 
 describe('ShapeSvgOverlay draws the shared table', () => {
-  it.each(SHAPE_GEOMETRY_KINDS)('%s', (kind: ShapeKind) => {
-    const { container } = render(
-      <ShapeSvgOverlay shape={kind} fill="#fff" stroke="#000" aspect={1.6} />,
-    );
-    const svg = container.querySelector('svg')!;
-    const geometry = shapeGeometry(kind, 1.6)!;
-    expect(svg.getAttribute('viewBox')).toBe(geometry.viewBox);
-    expect(svg.getAttribute('preserveAspectRatio')).toBe(geometry.preserveAspectRatio);
-    // One element per part, in table order, with the table's path data.
-    expect(svg.querySelectorAll('path, polygon, rect, ellipse, circle')).toHaveLength(
-      geometry.parts.length,
-    );
-    expect(marks(svg)).toEqual(
-      geometry.parts
-        .filter((p) => p.tag === 'path' || p.tag === 'polygon')
-        .map((p) => (p.tag === 'path' ? p.d : p.tag === 'polygon' ? p.points : '')),
-    );
-  });
-
   it.each(['diamond', 'parallelogram', 'hexagon', 'document', 'cylinder', 'cloud'] as const)(
     'insets the %s by half its stroke so it stays inside the box',
     (shape) => {
@@ -81,11 +54,6 @@ describe('ShapeSvgOverlay draws the shared table', () => {
 });
 
 describe('the fixed-pixel drawings read the table too', () => {
-  it('BrowserChrome draws the table nav glyphs', () => {
-    const { container } = render(<BrowserChrome stroke="#000" />);
-    expect(marks(container.querySelector('svg')!)).toEqual([...BROWSER_CHROME.nav.paths]);
-  });
-
   it('FurnitureView draws the table chair, upright at every facing', () => {
     const chair = (chairFacing: 'n' | 'e' | 's' | 'w') =>
       ({

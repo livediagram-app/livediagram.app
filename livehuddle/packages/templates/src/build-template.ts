@@ -26,9 +26,6 @@ import {
 } from './template-builders-boards';
 import { buildSystemArchitecture } from './template-builders-technical';
 import { buildCloudArchitecture } from './template-builders-cloud';
-import { buildErDiagram } from './template-builders-er';
-import { buildSequenceDiagram } from './template-builders-sequence';
-import { buildUmlClass } from './template-builders-uml';
 import { buildStateMachine } from './template-builders-state-machine';
 import { buildEventStorming } from './template-builders-eventstorming';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
@@ -41,31 +38,16 @@ import {
   buildWouldYouRather,
 } from './template-builders-party-games';
 import { buildBrainstorm, buildWorkshopBoard } from './template-builders-workshop-boards';
-import { buildOkrTree, buildSitemap } from './template-builders-hierarchies';
-import { buildFunnel } from './template-builders-funnel';
-import { buildSankey } from './template-builders-sankey';
+import { buildOkrTree } from './template-builders-hierarchies';
 import { buildRoadmap } from './template-builders-roadmap';
 import { buildGanttChart } from './template-builders-gantt';
 import { buildComparisonTable, buildRaciMatrix } from './template-builders-table';
-import {
-  buildFishbone,
-  buildFlywheel,
-  buildJourney,
-  buildPyramid,
-  buildVenn,
-} from './template-builders-diagrams';
+import { buildFishbone, buildJourney, buildVenn } from './template-builders-diagrams';
 import { buildTimeline } from './template-builders-timelines';
 import { buildMilestoneTimeline } from './template-builders-milestones';
 import { buildMilestoneTimelineVertical } from './template-builders-milestones-vertical';
-import {
-  buildApprovalWorkflow,
-  buildBlank,
-  buildDecisionTree,
-  buildSwimlane,
-} from './template-builders-flows';
+import { buildBlank } from './template-builders-flows';
 import { buildDataFlow } from './template-builders-dataflow';
-import { buildFlowchart, buildOrgChart } from './template-builders-trees';
-import { buildBubbleMap, buildMindMap, buildMindMapTree } from './template-builders-mindmaps';
 import {
   buildStartStopContinue,
   buildMadSadGlad,
@@ -104,24 +86,8 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
   switch (kind) {
     case 'blank':
       return buildBlank();
-    case 'mindmap':
-      return buildMindMap(cx, cy);
-    case 'mindmap-tree':
-      return buildMindMapTree(cx, cy);
-    case 'mindmap-bubble':
-      return buildBubbleMap(cx, cy);
-    case 'orgchart':
-      return buildOrgChart(cx, cy);
     case 'retrospective':
       return buildRetrospective(cx, cy);
-    case 'flowchart':
-      return buildFlowchart(cx, cy);
-    case 'swimlane':
-      return buildSwimlane(cx, cy);
-    case 'decision-tree':
-      return buildDecisionTree(cx, cy);
-    case 'approval-workflow':
-      return buildApprovalWorkflow(cx, cy);
     case 'data-flow':
       return buildDataFlow(cx, cy);
     case 'swot':
@@ -138,20 +104,12 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildJourney(cx, cy);
     case 'fishbone':
       return buildFishbone(cx, cy);
-    case 'pyramid':
-      return buildPyramid(cx, cy);
-    case 'flywheel':
-      return buildFlywheel(cx, cy);
     case 'gantt':
       return buildGanttChart(cx, cy);
     case 'comparison-table':
       return buildComparisonTable(cx, cy);
     case 'system-architecture':
       return buildSystemArchitecture(cx, cy);
-    case 'er-diagram':
-      return buildErDiagram(cx, cy);
-    case 'sequence-diagram':
-      return buildSequenceDiagram(cx, cy);
     case 'prioritization-matrix':
       return buildPrioritizationMatrix(cx, cy);
     case 'start-stop-continue':
@@ -230,18 +188,10 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildBusinessModelCanvas(cx, cy);
     case 'empathy-map':
       return buildEmpathyMap(cx, cy);
-    case 'funnel':
-      return buildFunnel(cx, cy);
-    case 'sankey':
-      return buildSankey(cx, cy);
     case 'okr-tree':
       return buildOkrTree(cx, cy);
-    case 'sitemap':
-      return buildSitemap(cx, cy);
     case 'cloud-architecture':
       return buildCloudArchitecture(cx, cy);
-    case 'uml-class':
-      return buildUmlClass(cx, cy);
     case 'state-machine':
       return buildStateMachine(cx, cy);
     case 'event-storming':

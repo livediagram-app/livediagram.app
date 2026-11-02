@@ -10,7 +10,7 @@ upload the image pipeline already owns.
 
 Two promises shape the design:
 
-- **Near-lossless for everyday diagrams.** Flowcharts, swimlanes, UML-ish class and entity boxes,
+- **Near-lossless for everyday diagrams.** Flowcharts, swimlanes,
   tables, architecture diagrams with cloud stencils, and multi-page files keep their shapes, text,
   colours, connections and structure.
 - **Nothing degrades silently.** Every difference between the draw.io file and the imported tab is
@@ -201,7 +201,7 @@ counted (`shape-approximated`), and anything not in the table is **unmatched** (
 | `image`                                                                                                                                                                                                                                                                                       | `image` (below)                                                               | exact        |
 | `umlFrame`                                                                                                                                                                                                                                                                                    | `frame`                                                                       | exact        |
 | `mxgraph.android.phone2`, `mxgraph.ios7.misc.iphone`                                                                                                                                                                                                                                          | `phone`                                                                       | exact        |
-| `mxgraph.mockup.containers.browserWindow`                                                                                                                                                                                                                                                     | `browser`                                                                     | exact        |
+| `mxgraph.mockup.containers.browserWindow`                                                                                                                                                                                                                                                     | `square`                                                                      | approximated |
 | `doubleEllipse`, `orEllipse`, `sumEllipse`, `or`, `xor`, `mxgraph.flowchart.or`, `mxgraph.flowchart.or_2`, `mxgraph.flowchart.summing_function`, `mxgraph.flowchart.summing_junction`, `umlBoundary`, `umlEntity`, `umlControl`, `mxgraph.bpmn.event`, `lineEllipse`                          | `circle`                                                                      | approximated |
 | `process`, `internalStorage`, `card`, `cube`, `folder`, `component`, `module`, `offPageConnector`, `mxgraph.flowchart.predefined_process`, `mxgraph.flowchart.off-page_reference`, `umlLifeline`, `partialRectangle`, `singleArrow`, `doubleArrow`, `mxgraph.bpmn.task`, `mxgraph.bpmn.shape` | `square`                                                                      | approximated |
 | `delay`, `display`, `mxgraph.flowchart.delay`, `mxgraph.flowchart.display`                                                                                                                                                                                                                    | `stadium`                                                                     | approximated |
@@ -259,11 +259,9 @@ When the cell has no label, the box is labelled with the stencil's readable name
   `horizontal=0` one down the left (`textAlignX: 'left'`), and `headerSize` takes `startSize`. The
   swimlane's `fillColor` is its title strip (`headerFill`), `swimlaneFillColor` its body (`fillColor`,
   transparent when absent). A pool is a swimlane of swimlanes: every level becomes a lane.
-- **Class and entity stacks.** A swimlane with `childLayout=stackLayout` whose children are all text
-  rows or separator lines is a UML class or an entity box: it becomes an `entity`, its title the
-  swimlane's label and its rows the `entityFields` (a row `name: type` splits at the last colon; a
-  separator line is dropped). Connections to a row attach to the entity. Rows beyond
-  `ENTITY_MAX_FIELDS`, and text beyond `ENTITY_MAX_TEXT`, are cut and counted (`text-truncated`).
+- **Class and entity stacks.** A swimlane with `childLayout=stackLayout` whose children are all text rows or
+  separator lines (a UML class or an entity box) imports as an ordinary lane with its rows as text inside it:
+  livehuddle has no entity element ([Editor modes](../007-editor/editor-modes.md)).
 - **Tables** (`shape=table` with `shape=tableRow` children) become a `table`: one row per row, one
   cell per cell, the row heights and the first row's column widths carried over, and each cell's fill,
   text colour, bold / italic / underline and alignment. A table's own label (the title draw.io draws in

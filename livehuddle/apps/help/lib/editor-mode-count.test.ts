@@ -5,7 +5,7 @@ import { BLANK_TEMPLATE_FOR_MODE } from '@livehuddle/templates';
 
 // An article that counts the editor modes must count the ones there are. Plan, Pages and Illustrate left, and the
 // Draw mode article's figure still said "the five modes" with three in the switch it drew. Every editor mode has a
-// blank template, so that table's keys are the modes.
+// blank template, so that table's keys are the modes. livehuddle has one, Workshop, so any count above one is wrong.
 const APP_DIR = fileURLToPath(new URL('../app', import.meta.url));
 const WORDS = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
 const modeCount = Object.keys(BLANK_TEMPLATE_FOR_MODE).length;
@@ -17,7 +17,7 @@ const articles = readdirSync(APP_DIR, { recursive: true })
 describe('help articles counting the editor modes', () => {
   it('finds the articles and the modes', () => {
     expect(articles.length).toBeGreaterThan(200);
-    expect(modeCount).toBeGreaterThan(1);
+    expect(modeCount).toBeGreaterThan(0);
   });
 
   it('give the number there is', () => {

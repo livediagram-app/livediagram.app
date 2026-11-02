@@ -1,4 +1,4 @@
-// `layout <selector> [style=flow|tree|mindmap] [direction=down|right]`
+// `layout <selector> [style=flow|tree] [direction=down|right]`
 // (docs/specs/024-agents/blueprints/edit-operations.md "Operations", EO38): the selected boxes and the
 // arrows between them are laid out from the selection's top-left, every box keeping its size; boxes
 // no arrow joins are swept into rows below (from the top-left when none is joined). Nothing outside
@@ -68,14 +68,9 @@ export function layOut(
       ids.has(el.from.elementId) &&
       ids.has(el.to.elementId),
   );
-  // A flow detects its axis when none is asked; a tree runs down unless asked; a mindmap is radial (EO38).
+  // A flow detects its axis when none is asked; a tree runs down unless asked.
   const asked = direction ? DIRECTIONS[direction] : undefined;
-  const axis =
-    style === 'flow'
-      ? (asked ?? flowDirectionOf([...boxes, ...arrows]))
-      : style === 'tree'
-        ? asked
-        : undefined;
+  const axis = style === 'flow' ? (asked ?? flowDirectionOf([...boxes, ...arrows])) : asked;
   const how: LaidOut = axis ? { style, direction: axis === 'TB' ? 'down' : 'right' } : { style };
   for (const el of laidOut(boxes, arrows, style, axis)) {
     if (el.type === 'arrow') putElement(state, el, operation);

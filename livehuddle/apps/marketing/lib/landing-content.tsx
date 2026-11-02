@@ -18,7 +18,6 @@ import {
   DragDuplicateArt,
   DrawDockArt,
   EmbedArt,
-  EntityArt,
   ErasersArt,
   FillArt,
   EventStormingArt,
@@ -45,7 +44,6 @@ import {
   MarqueeArt,
   McpArt,
   MermaidArt,
-  MindMapArt,
   NotesArt,
   PalmRejectionArt,
   PathToolArt,
@@ -60,7 +58,6 @@ import {
   RotateArt,
   SearchPaletteArt,
   SelectionGlowArt,
-  SequenceArt,
   SessionToolsArt,
   ShapesArt,
   ShareLinksArt,
@@ -382,7 +379,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     highlights: [
       'Arrows that bend your way',
       'Guides that line things up',
-      'Mind maps from the keyboard',
+      'Swimlanes that hold their contents',
       'Build diagrams with AI',
     ],
     items: [
@@ -427,36 +424,12 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Pin a note to any shape for the context that should not clutter the canvas. It travels with the element and opens when you need it.',
       },
       {
-        art: <MindMapArt />,
-        href: '/help/palette/mind-maps/',
-        group: 'More than boxes and arrows',
-        title: 'Mind maps from the keyboard',
-        description:
-          'Type a thought, press Tab for a child or Enter for a sibling, and keep typing. Every node arrives already connected, already selected, and ready for the next word, so a whole branch goes down at the speed you can say it. Nothing re-flows underneath you; tidy it with Auto Layout when you are done, or open Edit Outline to rename, nest and reorder the whole map as an indented list and save it back in one step.',
-      },
-      {
         art: <LanesArt />,
         href: '/help/palette/lanes/',
         group: 'More than boxes and arrows',
         title: 'Swimlanes that hold their contents',
         description:
           'Drop a lane for each role, team, or system, and lay the flow inside it. Drag the band and everything fully inside comes along, so reordering a process is one gesture rather than a careful multi-select. The title lives in its own gutter, clear of the work.',
-      },
-      {
-        art: <EntityArt />,
-        href: '/help/palette/entities/',
-        group: 'More than boxes and arrows',
-        title: 'Class and entity boxes',
-        description:
-          'A title bar over a list of name and type rows: the box at the heart of a UML class diagram and an ER model alike. Edit the fields from its menu, join them with the hollow triangle and diamond arrowheads UML expects, and skip building one out of stacked tables.',
-      },
-      {
-        art: <SequenceArt />,
-        href: '/help/palette/sequence-diagrams/',
-        group: 'More than boxes and arrows',
-        title: 'Sequence diagrams you type',
-        description:
-          'List who talks to whom and it draws the lifelines, arrows, activation bars and loops for you. Type a conversation straight down, one message per line, or paste it as text (A -> B: words). Calls, async messages and dashed replies, numbered on request so a review can say \u201cstep 4\u201d.',
       },
       {
         art: <CanvasChartsArt />,
@@ -500,7 +473,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <TechIconsArt />,
-        href: '/help/palette/technology/',
+        href: '/help/palette/icons/',
         group: 'More than boxes and arrows',
         title: 'Full-colour technology icons',
         description:
@@ -550,9 +523,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
         group: 'Templates & themes',
-        title: 'Eighty-eight starter templates',
+        title: 'Seventy-two starter templates',
         description:
-          'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and roadmaps, org charts and timelines, meeting agendas and risk matrices, pub quizzes and icebreakers, architecture and UML. Browse them by the job to be done in the picker, edit one, or start blank.',
+          'Start from a board that already makes sense: retrospectives and roadmaps, timelines and journey maps, meeting agendas and risk matrices, pub quizzes and icebreakers, virtual offices and architecture. Browse them by the job to be done in the picker, edit one, or start blank.',
       },
       {
         art: <ThemesArt />,
@@ -807,63 +780,63 @@ export const LANDING_SECTIONS: LandingSection[] = [
     items: [
       {
         art: <MarkersArt />,
-        href: '/help/canvas/draw-mode/',
+        href: '/help/palette/tools/drawing/',
         title: 'Three markers in hand',
         description:
           'Keys 1, 2 and 3 pick up three markers, each in six widths from Fine to Broad. Marker 1 is ink; the other two take any of nine stock colours or a colour of your own.',
       },
       {
         art: <DrawDockArt />,
-        href: '/help/canvas/draw-mode/',
+        href: '/help/palette/tools/drawing/',
         title: 'Shapes and text in the dock',
         description:
           'Draw mode swaps the palette for a dock across the top: select, the three markers, text, the Path tool, the Fill bucket and the eraser, each on its own key, then the shapes you use. Pin up to seven favourites, an arrow and a rectangle to start, and the Shapes button offers the ones you pick most.',
       },
       {
         art: <PressureArt />,
-        href: '/help/canvas/draw-mode/',
+        href: '/help/palette/tools/drawing/',
         title: 'Pressure-sensitive pens',
         description:
           'Draw with a stylus and the line thins and swells with how hard you press, the way ink does. A mouse or a finger keeps the width you chose.',
       },
       {
         art: <PencilArt />,
-        href: '/help/canvas/draw-mode/#shape-recognition',
+        href: '/help/palette/tools/drawing/',
         title: 'Sketch freehand, or let it snap to shape',
         description:
           'Switch on shape recognition and a rough circle, rectangle, triangle, diamond or line becomes a clean shape the moment you lift the pen. Hold still for half a second to preview it first. It starts off, so a sketch stays a sketch until you ask.',
       },
       {
         art: <ErasersArt />,
-        href: '/help/canvas/draw-mode/#the-two-erasers',
+        href: '/help/selection-modes/eraser/',
         title: 'Two erasers',
         description:
           'The stroke eraser lifts a whole stroke in one touch; the partial eraser rubs out only what it passes over. Stickies, text and shapes are never cut in half.',
       },
       {
         art: <FillArt />,
-        href: '/help/canvas/draw-mode/#the-fill-tool',
+        href: '/help/palette/tools/drawing/',
         title: 'Colour it in with one press',
         description:
           'Press F for the Fill bucket, pick a colour, and press inside a shape or a loop you drew: it fills, with your ink kept as the outline. A loop whose ends nearly meet still counts, and anything open says so instead of guessing.',
       },
       {
         art: <PathToolArt />,
-        href: '/help/canvas/draw-mode/#the-path-tool',
+        href: '/help/palette/tools/drawing/',
         title: 'Clean curves with the Path tool',
         description:
           'Press P for a vector pen, like the one in your design tool: draw a smooth curve, then edit any point as a corner, mirrored or aligned. For the line that has to be exact.',
       },
       {
         art: <PalmRejectionArt />,
-        href: '/help/canvas/draw-mode/#pen-finger-and-mouse',
+        href: '/help/palette/tools/drawing/',
         title: 'Rest your palm on the screen',
         description:
           'Once you pick up a stylus, a single finger pans rather than draws, so a resting palm leaves no mark. Two fingers always pan and zoom.',
       },
       {
         art: <CanvasBackdropArt />,
-        href: '/help/canvas/draw-mode/#backgrounds',
+        href: '/help/canvas/the-canvas/changing-the-background/',
         title: 'A board in light or dark',
         description:
           'Put Plain, Dots or Grid behind your ink, a choice that is yours alone. Ink and the stock marker colours adjust so they read on a light board and a dark one.',

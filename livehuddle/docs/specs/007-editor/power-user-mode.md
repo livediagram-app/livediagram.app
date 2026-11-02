@@ -19,9 +19,7 @@ Switching the mode **on** writes these values, once:
 | ------------------ | ------------------ | ----- |
 | Alignment guides   | `alignmentGuides`  | on    |
 | Auto-attach arrows | `autoRebindArrows` | on    |
-| Diagram tour       | `tourSeen`         | seen  |
 | Workshop tour      | `workshopTourSeen` | seen  |
-| Draw tour          | `drawTourSeen`     | seen  |
 | Avatar tour        | `avatarTourSeen`   | seen  |
 | Element tours      | `elementToursSeen` | seen  |
 | Minimal chrome     | `minimalChrome`    | on    |
@@ -29,7 +27,7 @@ Switching the mode **on** writes these values, once:
 The [element tours](element-tours.md) record each toured kind once taken (`elementTourKinds`); their seen
 flag counts every track only while the mode is on, so switching it off gives back every track not yet taken. Marking
 a tour seen turns its Settings row off and takes it off the footer's Start Tour button until the row is on again
-([Diagram tour](editor-tour.md) "Where it appears"), so the mode's preset leaves no tour on the button.
+([Tours](editor-tour.md#where-it-appears)), so the mode's preset leaves no tour on the button.
 
 Panel opacity is not part of the preset. Motion is not part of the mode: every transition is snappy for everyone
 ([Motion](../004-interface-design/motion.md)).
@@ -61,7 +59,7 @@ directly, indented beneath it as one group named "Power User Mode settings":
 
 1. The power-user-only settings: **Minimal Chrome**.
 2. **Set By Power User Mode**: a readout of the preset, one line per preset setting other than Minimal chrome (Alignment
-   Guides, Auto-Attach Arrows, the Diagram and Workshop tours), each with its current value
+   Guides, Auto-Attach Arrows, the Workshop and Avatar tours), each with its current value
    and the category it lives in. Each is still changed in its own row, and a **Change** button on the line goes to
    that row, ringed. A line whose value the user has changed since switching on says so ("Changed: kept when you
    switch off"); the others read "Restored when you switch off". With no baseline to restore from (the mode was switched on by a client that recorded none), the lines make no promise

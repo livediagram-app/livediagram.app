@@ -2,7 +2,6 @@
 // model"), built once per render.
 import {
   computeRefs,
-  opensInOf,
   isKnownElement,
   kindWordOf,
   tabKindOf,
@@ -58,7 +57,6 @@ function headerFacts(
     unknown: printed.filter((el) => !isKnownElement(el)).length,
     threads: threadCounts(printed),
     rev: rev ?? null,
-    ...(opensInOf(tab) !== 'diagram' ? { mode: opensInOf(tab) } : {}),
     ...(tab.finish ? { finish: tab.finish } : {}),
   };
 }

@@ -56,36 +56,6 @@ const SHAPE_GLYPH: Partial<Record<ShapeKind, { sw: number; body: ReactNode }>> =
       <path d="M5 12 C3 12 2 10.5 3.2 9.3 C2.3 8 3.7 6.6 5 7.2 C5.4 5.2 8.4 5 8.8 7.1 C10.6 6.3 12 8 10.9 9.3 C12 10.2 11.2 12 9.6 12 Z" />
     ),
   },
-  browser: {
-    sw: 1.3,
-    body: (
-      <>
-        <rect x="2" y="3" width="12" height="10" rx="1.5" />
-        <path d="M2 6 L14 6" />
-      </>
-    ),
-  },
-  monitor: {
-    sw: 1.3,
-    body: (
-      <>
-        <rect x="2" y="2.5" width="12" height="8" rx="1" />
-        <path d="M5.5 13.5 L10.5 13.5" />
-        <path d="M8 10.5 L8 13.5" />
-      </>
-    ),
-  },
-  laptop: {
-    sw: 1.3,
-    body: (
-      <>
-        <rect x="3" y="3" width="10" height="7" rx="0.8" />
-        <path d="M1.5 12.5 L14.5 12.5 L13.5 10 L2.5 10 Z" />
-      </>
-    ),
-  },
-  phone: { sw: 1.3, body: <rect x="5" y="1.5" width="6" height="13" rx="1.4" /> },
-  tablet: { sw: 1.3, body: <rect x="3" y="2" width="10" height="12" rx="1" /> },
   triangle: { sw: 1.3, body: <polygon points="8,2.5 14,13.5 2,13.5" /> },
   trapezoid: { sw: 1.3, body: <polygon points="4,3.5 12,3.5 15,12.5 1,12.5" /> },
   star: {
@@ -98,15 +68,6 @@ const SHAPE_GLYPH: Partial<Record<ShapeKind, { sw: number; body: ReactNode }>> =
     sw: 1.3,
     body: (
       <path d="M3 2.5 H13 a1.5 1.5 0 0 1 1.5 1.5 V9 a1.5 1.5 0 0 1 -1.5 1.5 H6.5 L4 14 L5 11.5 H3 a1.5 1.5 0 0 1 -1.5 -1.5 V4 a1.5 1.5 0 0 1 1.5 -1.5 Z" />
-    ),
-  },
-  smartwatch: {
-    sw: 1.3,
-    body: (
-      <>
-        <rect x="5" y="3.5" width="6" height="9" rx="2" />
-        <path d="M6.5 3.5 V1.5 M9.5 3.5 V1.5 M6.5 12.5 V14.5 M9.5 12.5 V14.5 M11 7 H12.3" />
-      </>
     ),
   },
 };

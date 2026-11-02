@@ -85,9 +85,7 @@ Banned: "pro mode", "expert mode", "compact chrome", "clean mode"; "badge" for t
 const POWER_USER_PRESET = {
   alignmentGuides: { alignmentGuides: true },
   autoRebindArrows: { autoRebindArrows: true },
-  tourSeen: { tourSeen: true },
   workshopTourSeen: { workshopTourSeen: true },
-  drawTourSeen: { drawTourSeen: true },
   avatarTourSeen: { avatarTourSeen: true },
   elementToursSeen: { elementToursSeen: true },
   minimalChrome: { minimalChrome: true },

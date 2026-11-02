@@ -41,10 +41,10 @@ const pagesTab = () =>
   }) as unknown as Tab;
 
 describe('dropRetiredPages', () => {
-  it('opens a Pages tab in Diagram, drops its pages and articles, and keeps its ordinary elements', () => {
+  it('opens a Pages tab in Workshop, drops its pages and articles, and keeps its ordinary elements', () => {
     const out = dropRetiredPages(pagesTab()) as unknown as Record<string, unknown>;
     expect('opensIn' in out).toBe(false);
-    expect(opensInOf(out)).toBe('diagram');
+    expect(opensInOf(out)).toBe('workshop');
     expect('pages' in out).toBe(false);
     expect('articles' in out).toBe(false);
     expect('pageOrientation' in out).toBe(false);
@@ -86,9 +86,9 @@ describe('dropRetiredPages', () => {
 });
 
 describe('a stored Pages tab on the way in', () => {
-  it('is read by the stored-tab migration as a valid Diagram tab', () => {
+  it('is read by the stored-tab migration as a valid Workshop tab', () => {
     const out = migrateStoredTab(pagesTab());
-    expect(opensInOf(out)).toBe('diagram');
+    expect(opensInOf(out)).toBe('workshop');
     expect(out.elements.map((e) => e.id)).toEqual(['sq', 'tx']);
     expect(isValidTab(out)).toBe(true);
   });

@@ -19,7 +19,6 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const board = (id = 'wb', over: Partial<Tab> = {}): Tab => ({
   id,
   name: 'Board',
-  opensIn: 'draw',
   elements: [],
   ...over,
 });
@@ -35,7 +34,8 @@ const diagram: Tab = { id: 'd', name: 'Diagram', kind: 'diagram', elements: [] }
 function setup(tab: Tab, pendingDraw: PendingDraw | null = null, canvasTool = 'select' as const) {
   const deps = {
     activeTab: tab,
-    drawMode: tab.opensIn === 'draw',
+    // The whiteboard engine's flag (Draw mode is gone; the engine stays until it is removed).
+    drawMode: tab.kind !== 'diagram',
     canvasTool: canvasTool as 'select' | 'eraser',
     pendingDraw,
     editsBlocked: false,

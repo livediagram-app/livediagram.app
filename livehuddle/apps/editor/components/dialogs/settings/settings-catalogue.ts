@@ -48,11 +48,6 @@ import {
   type UiScalePart,
 } from '@liveworkspace/workbench/lib/ui-scale';
 import { setUiScalePreview } from '@liveworkspace/workbench/lib/ui-scale-preview';
-import {
-  readWhiteboardDockPosition,
-  withWhiteboardDockPosition,
-  type WhiteboardDockPosition,
-} from '@/lib/whiteboard-dock-prefs';
 import type { SettingsIllustrationId } from '@liveworkspace/workbench/components/dialogs/settings/settings-illustrations';
 
 // One email notification switch (docs/specs/014-identity/profile-and-email-notifications.md): only
@@ -422,8 +417,7 @@ function tourTracksSwitch(
   };
 }
 
-type TourSeenKey =
-  'tourSeen' | 'workshopTourSeen' | 'drawTourSeen' | 'avatarTourSeen' | 'elementToursSeen';
+type TourSeenKey = 'workshopTourSeen' | 'avatarTourSeen' | 'elementToursSeen';
 
 // A presenter setting's row (docs/specs/012-collaboration/presentation-mode.md "Settings"): read and written through
 // lib/presentation-config, which keeps the whole config in one preference. The telemetry token is the one the
@@ -578,36 +572,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'Change any of them in its own row.',
         parent: 'powerUserMode',
         available: (ctx) => ctx.powerUserMode === true,
-      },
-    ],
-  },
-  {
-    // Settings that apply only in Draw mode (docs/specs/007-editor/user-preferences.md):
-    // a setting that acts in both modes stays on Editor itself. Named Draw, as the mode
-    // switch names it (docs/specs/007-editor/editor-modes.md "Naming in the interface").
-    // There is no Diagram sibling while no setting applies only to Diagram mode.
-    id: 'draw',
-    label: 'Draw',
-    parent: 'editor',
-    rows: [
-      {
-        // docs/specs/023-draw-mode/draw-mode.md "Where the dock sits": only Draw mode has a dock,
-        // so only Draw mode moves with this.
-        kind: 'choice',
-        key: 'whiteboardDockPosition',
-        keywords:
-          'draw mode drawing mode whiteboard dock toolbar tools pens top bottom position tablet ipad drawing',
-        label: 'Dock Position',
-        description:
-          'Where the dock of pens, shapes and tools sits. Bottom is closer to hand on a tablet.',
-        helpArticle: 'drawMode',
-        options: [
-          { id: 'top', label: 'Top' },
-          { id: 'bottom', label: 'Bottom' },
-        ],
-        read: readWhiteboardDockPosition,
-        write: (p, v) => withWhiteboardDockPosition(p, v as WhiteboardDockPosition),
-        event: { category: 'UI', changed: 'WhiteboardDockPosition' },
       },
     ],
   },
@@ -999,28 +963,12 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
     },
     rows: [
-      tourSwitch('tourSeen', {
-        // The Diagram tour (docs/specs/007-editor/editor-tour.md; the welcome tour until October 2026).
-        label: 'Diagram Tour',
-        event: { category: 'UI', on: 'TourSeenOff', off: 'TourSeenOn' },
-        keywords:
-          'tour walkthrough onboarding tutorial intro welcome getting started diagram shapes arrows palette replay',
-        description: 'On a Diagram tab: the palette, selecting, the element menu and tabs.',
-        helpArticle: 'diagramTour',
-      }),
       tourSwitch('workshopTourSeen', {
         label: 'Workshop Tour',
         event: { category: 'UI', on: 'WorkshopTourSeenOff', off: 'WorkshopTourSeenOn' },
         keywords: 'tour walkthrough onboarding tutorial workshop facilitate session retro replay',
         description: 'In Workshop.',
         helpArticle: 'workshopTour',
-      }),
-      tourSwitch('drawTourSeen', {
-        label: 'Draw Tour',
-        event: { category: 'UI', on: 'DrawTourSeenOff', off: 'DrawTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial draw whiteboard pen sketch replay',
-        description: 'In Draw.',
-        helpArticle: 'drawTour',
       }),
       tourSwitch('avatarTourSeen', {
         label: 'Avatar Tour',
@@ -1040,110 +988,18 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         {
           label: 'Show Me on Every Element',
           event: { category: 'UI', on: 'ElementToursSeenOff', off: 'ElementToursSeenOn' },
-          keywords: 'tour walkthrough tutorial element sankey how to use learn replay',
+          keywords: 'tour walkthrough tutorial element timeline chart how to use learn replay',
           description: 'Every element’s Show Me at once.',
         },
         ELEMENT_TOURS_SECTION,
       ),
-      elementTourSwitch('sankey', {
-        label: 'Sankey Diagram',
-        event: { category: 'UI', on: 'SankeyTourSeenOff', off: 'SankeyTourSeenOn' },
-        keywords: 'tour walkthrough tutorial sankey flows bands nodes leftover replay',
-        description: 'With a Sankey diagram selected.',
-        helpArticle: 'sankeyDiagram',
-      }),
-      elementTourSwitch('layer-stack', {
-        label: 'Layer Stack',
-        event: { category: 'UI', on: 'LayerStackTourSeenOff', off: 'LayerStackTourSeenOn' },
-        keywords: 'tour walkthrough tutorial layer stack layers bands concept rows replay',
-        description: 'With a layer stack selected.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('pyramid', {
-        label: 'Pyramid',
-        event: { category: 'UI', on: 'PyramidTourSeenOff', off: 'PyramidTourSeenOn' },
-        keywords: 'tour walkthrough tutorial pyramid tiers triangle inverted concept rows replay',
-        description: 'With a pyramid selected.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('funnel', {
-        label: 'Funnel',
-        event: { category: 'UI', on: 'FunnelTourSeenOff', off: 'FunnelTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial funnel conversion stages bands values concept rows replay',
-        description: 'With a funnel selected.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('cycle', {
-        label: 'Cycle',
-        event: { category: 'UI', on: 'CycleTourSeenOff', off: 'CycleTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial cycle loop ring flywheel pdca steps clockwise flow concept replay',
-        description: 'With a cycle selected.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('hub', {
-        label: 'Hub and Spoke',
-        event: { category: 'UI', on: 'HubTourSeenOff', off: 'HubTourSeenOn' },
-        keywords: 'tour walkthrough tutorial hub spoke satellites ecosystem centre concept replay',
-        description: 'With a hub and spoke selected.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('onion', {
-        label: 'Onion',
-        event: { category: 'UI', on: 'OnionTourSeenOff', off: 'OnionTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial onion rings concentric core layers architecture concept replay',
-        description: 'With an onion selected.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('chevrons', {
-        label: 'Chevrons',
-        event: { category: 'UI', on: 'ChevronsTourSeenOff', off: 'ChevronsTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial chevrons chevron process stages pipeline value chain stage bar concept replay',
-        description: 'With a chevron process selected.',
-        helpArticle: 'conceptGraphics',
-      }),
       elementTourSwitch('timeline', {
         label: 'Timeline',
         event: { category: 'UI', on: 'TimelineTourSeenOff', off: 'TimelineTourSeenOn' },
         keywords:
           'tour walkthrough tutorial timeline milestones roadmap dates history concept replay',
         description: 'With a timeline selected.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('mind-node', {
-        label: 'Mind Map',
-        event: { category: 'UI', on: 'MindMapTourSeenOff', off: 'MindMapTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial mind map node tab enter child sibling branch tidy outline replay',
-        description: 'With a mind map node selected.',
-        helpArticle: 'mindMaps',
-      }),
-      elementTourSwitch('flowchart', {
-        label: 'Flowchart',
-        event: { category: 'UI', on: 'FlowchartTourSeenOff', off: 'FlowchartTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial flowchart step tab enter branch decision step type lane swimlane direction replay',
-        description: 'With a flowchart step selected.',
-        helpArticle: 'flowcharts',
-      }),
-      elementTourSwitch('org-chart', {
-        label: 'Org Chart',
-        event: { category: 'UI', on: 'OrgChartTourSeenOff', off: 'OrgChartTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial org chart organisation organization person role initials report peer team replay',
-        description: 'With a person in an org chart selected.',
-        helpArticle: 'orgCharts',
-      }),
-      elementTourSwitch('sequence', {
-        label: 'Sequence',
-        event: { category: 'UI', on: 'SequenceTourSeenOff', off: 'SequenceTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial sequence diagram participants messages call reply async lifeline numbered uml replay',
-        description: 'With a sequence diagram selected.',
-        helpArticle: 'sequenceDiagram',
+        helpArticle: 'timelineRail',
       }),
       elementTourSwitch('chart', {
         label: 'Chart',
@@ -1158,13 +1014,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'stack row column grid layout container reflow tour',
         description: 'With a stack selected.',
         helpArticle: 'stacks',
-      }),
-      elementTourSwitch('entity', {
-        label: 'Entity',
-        event: { category: 'UI', on: 'EntityTourSeenOff', off: 'EntityTourSeenOn' },
-        keywords: 'entity uml class er table fields record tour',
-        description: 'With an entity selected.',
-        helpArticle: 'entities',
       }),
       elementTourSwitch('lane', {
         label: 'Lane',

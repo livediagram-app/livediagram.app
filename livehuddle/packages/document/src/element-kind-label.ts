@@ -1,4 +1,3 @@
-import { FLOWCHART_STEP_LABEL, flowchartStepTypeOf, isFlowchartStep } from './flowchart';
 import type { Element, ShapeKind } from './index';
 import { eventStormingKindOf } from './event-storming';
 import { CHART_TYPE_LABELS, chartTypeOf } from './chart-types';
@@ -19,8 +18,6 @@ const SHAPE_LABELS: Partial<Record<ShapeKind, string>> = {
   // docs/specs/012-collaboration/decision-record.md).
   decision: 'Decision Record',
   temperature: 'Temperature Check',
-  // 'Sankey' alone names a person, not a picture (docs/specs/009-elements/sankey.md).
-  sankey: 'Sankey Diagram',
 };
 
 function titleCase(s: string): string {
@@ -36,10 +33,6 @@ function titleCase(s: string): string {
 export function elementKindLabel(el: Element): string {
   switch (el.type) {
     case 'shape': {
-      // A flowchart step IS its step type (docs/specs/009-elements/flowchart.md): "Selected Decision",
-      // never "Selected Diamond".
-      const step = isFlowchartStep(el) ? flowchartStepTypeOf(el.shape) : undefined;
-      if (step) return FLOWCHART_STEP_LABEL[step];
       // A chart IS its chart type (docs/specs/009-elements/pie-chart.md "Chart types"): the palette's "Column Chart"
       // was "Selected Bar Chart", from its stored kind, and an area chart read as a line chart.
       const chart = chartTypeOf(el);

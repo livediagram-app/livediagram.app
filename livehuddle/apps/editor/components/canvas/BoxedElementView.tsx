@@ -3,7 +3,6 @@ import { PhotoDraftRing, PhotoMatchedBadge } from '@/components/canvas/photo-bad
 import {
   BORDER_DASH_ARRAY,
   DEFAULT_BOX_RADIUS_PX,
-  MIND_NODE_RADIUS_PX,
   cornerRadiusPx,
   finishBorderStroke,
   finishCornerFallbackPx,
@@ -32,8 +31,6 @@ import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { LaneGutter } from '@/components/canvas/LaneGutter';
 import { uprightTitleFrame } from '@/components/canvas/upright-title';
-import { EntityView } from '@/components/canvas/entity/EntityView';
-import { openEntityFieldAt } from '@/components/canvas/entity/entity-double-click';
 import { elementAriaLabel, elementRole } from '@/lib/element-names';
 import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
@@ -42,7 +39,6 @@ import { ShapeHitOutline, outlineHit } from '@/components/canvas/ShapeHitOutline
 import { useCanvasPicksByOutline } from '@/components/canvas/CanvasStillContext';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { useTextHug } from '@/components/canvas/useTextHug';
-import { useMindLabelFit } from '@/components/canvas/useMindLabelFit';
 import { PageCornerFold } from '@liveworkspace/workbench/components/canvas/PageCornerFold';
 import { ReactionBurst } from '@/components/canvas/ReactionBurst';
 import { FenceView } from '@/components/canvas/collab/FenceView';
@@ -75,7 +71,6 @@ import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconD
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
 import { clearingInset } from '@/components/canvas/InsetContent';
-import { BrowserChrome } from '@/components/canvas/boxed-element-overlays';
 
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { isPanThrough } from '@liveworkspace/workbench/hooks/canvas/pan-through';
@@ -119,8 +114,6 @@ function BoxedElementViewImpl({
   onCommitHeaderSize,
   onSnapSeam,
   onToggleChecklistItem,
-  onSetEntityFields,
-  onStartFieldArrow,
   onSetPageHeading,
   onSetWebRows,
   onSetPointerTip,
@@ -344,12 +337,8 @@ function BoxedElementViewImpl({
     element.type === 'shape' ? finishOwnCorner(element, finish) : undefined,
     element.width,
     element.height,
-    // A mind node's default corner (docs/specs/009-elements/mind-node.md "Round nodes"), sharper under
-    // Professional (docs/specs/008-canvas/finish.md).
-    finishCornerFallbackPx(
-      shapeKind === 'mind-node' ? MIND_NODE_RADIUS_PX : DEFAULT_BOX_RADIUS_PX,
-      finish,
-    ),
+    // The default corner, sharper under Professional (docs/specs/008-canvas/finish.md).
+    finishCornerFallbackPx(DEFAULT_BOX_RADIUS_PX, finish),
   );
 
   // An inline icon sits beside the label on a regular shape (the
@@ -386,8 +375,6 @@ function BoxedElementViewImpl({
 
   // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
   const textHug = useTextHug(element, isEditing, fontFamily);
-  // A mind node grows taller with its label's lines while typed (useMindLabelFit).
-  const mindFit = useMindLabelFit(element, isEditing, fontFamily);
 
   const labelPadding = uprightStrip
     ? // A one-line strip has no room for a roomy padding across it.
@@ -428,7 +415,6 @@ function BoxedElementViewImpl({
     labelAnimClass,
     textHug.label,
     textAnim,
-    mindFit.onLiveText,
   );
 
   // Palette-icon drop target (docs/specs/008-canvas/canvas-and-palette.md inline icons) — see
@@ -470,22 +456,6 @@ function BoxedElementViewImpl({
         handleShapeDown(e);
       }}
       onDoubleClick={(e) => {
-        // An Editor's double-click on an entity's fields edits that field in place
-        // (docs/specs/009-elements/entity.md "Editing on the canvas"); on its title, the title.
-        if (
-          element.type === 'shape' &&
-          element.shape === 'entity' &&
-          !readOnly &&
-          !isLocked &&
-          !remotelyLocked &&
-          !element.rotation &&
-          onSetEntityFields &&
-          wrapperRef.current &&
-          openEntityFieldAt(element, wrapperRef.current.getBoundingClientRect(), e.clientY)
-        ) {
-          e.stopPropagation();
-          return;
-        }
         handleDoubleClick(e);
       }}
       onContextMenu={handleContextMenu}
@@ -508,7 +478,7 @@ function BoxedElementViewImpl({
         left: element.x,
         top: element.y,
         width: textHug.box?.width ?? element.width,
-        height: textHug.box?.height ?? mindFit.height ?? element.height,
+        height: textHug.box?.height ?? element.height,
         color: textColor,
         // Every word on the element in its face, so a face that writes its own (a progress value, a panel's
         // rows, a button) wears the tab's font and finish like its label does (docs/specs/008-canvas/finish.md).
@@ -609,27 +579,6 @@ function BoxedElementViewImpl({
               radiusPx={cornerPx}
             />
           ) : null}
-          {/* A Record's rows (docs/specs/009-elements/entity.md), under its title label. */}
-          {element.type === 'shape' && element.shape === 'entity' ? (
-            <EntityView
-              element={element}
-              textColor={textColor}
-              fontFamily={fontFamily}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              actions={
-                // An Editor's selected, unlocked, upright entity edits in place (docs/specs/009-elements/entity.md).
-                isSelected &&
-                !readOnly &&
-                !isLocked &&
-                !remotelyLocked &&
-                !element.rotation &&
-                onSetEntityFields &&
-                onStartFieldArrow
-                  ? { setFields: onSetEntityFields, startFieldArrow: onStartFieldArrow }
-                  : undefined
-              }
-            />
-          ) : null}
           {/* A chair, a desk or a sofa (docs/specs/009-elements/chair.md "Facing"): the furniture itself,
           drawn for its facing, plus whoever presence says is sitting in it. */}
           {element.type === 'shape' && isFurnitureViewShape(element.shape) ? (
@@ -691,18 +640,6 @@ function BoxedElementViewImpl({
               height={element.height}
               fill={element.fillColor ?? '#ffffff'}
               stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
-            />
-          ) : null}
-          {/* Browser-only HTML chrome overlay. SVG handles only the
-          outer frame + divider so the user's border style applies;
-          the dots / nav / URL bar render here so their geometry is
-          fixed-pixel and doesn't deform with the box's aspect
-          ratio. */}
-          {element.type === 'shape' && element.shape === 'browser' ? (
-            <BrowserChrome
-              stroke={
-                remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
-              }
             />
           ) : null}
 

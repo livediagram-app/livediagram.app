@@ -32,27 +32,6 @@ describe('wrapperShapeAnimation', () => {
     expect(wrapperShapeAnimation(sticky('bounce'))).toBe('bounce');
     expect(wrapperShapeAnimation(sticky('flutter'))).toBeUndefined();
   });
-  it('draws a Shape motion on a photo, a chart, a concept graphic and a sequence', () => {
-    const image = { ...createShape('square', 0, 0), type: 'image' } as unknown as BoxedElement;
-    expect(wrapperShapeAnimation({ ...image, animation: 'bounce' })).toBe('bounce');
-    expect(wrapperShapeAnimation({ ...image, animation: 'kenburns' })).toBeUndefined();
-    for (const shape of ['pie-chart', 'chevrons', 'cycle', 'sequence'] as const)
-      expect(
-        wrapperShapeAnimation({ ...createShape(shape, 0, 0), animation: 'bounce' }),
-        shape,
-      ).toBe('bounce');
-  });
-  it('drops an outline Shape value on a concept graphic or sequence, which animate by their own fields', () => {
-    for (const shape of ['chevrons', 'cycle', 'sequence'] as const)
-      expect(
-        wrapperShapeAnimation({ ...createShape(shape, 0, 0), animation: 'pulse' }),
-        shape,
-      ).toBeUndefined();
-    // An icon keeps its old value playing, as before.
-    expect(wrapperShapeAnimation({ ...createShape('icon', 0, 0), animation: 'pulse' })).toBe(
-      'pulse',
-    );
-  });
 
   it('drops a text element’s legacy value once it has a Text animation', () => {
     const text = { ...createText(0, 0), animation: 'glow' as const };

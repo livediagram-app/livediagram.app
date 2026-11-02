@@ -5,7 +5,7 @@ import { isBoxed, type Element, type ElementId } from './index';
 // parent/child field — hierarchy is implicit in PINNED arrows (an
 // arrow whose endpoints anchor to elements). This module turns that
 // arrow graph into a branch index per boxed element so a palette theme
-// can tint each limb of a mind map / org chart a different hue.
+// can tint each limb of a tree a different hue.
 //
 // Pure + dependency-free so the assignment is unit-testable without
 // rendering (hierarchy.test.ts) and reusable by every theme-apply path

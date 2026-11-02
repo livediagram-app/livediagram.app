@@ -90,15 +90,6 @@ describe('colour-on-themed', () => {
     expect(logged).toContain('[lint] theme unresolved');
   });
 
-  it("leaves a mind map's branch hues alone: the colour is which branch it is", () => {
-    const node = (id: string, x: number) =>
-      box(id, x, 0, { shape: 'mind-node', fillColor: '#d1fae5', strokeColor: '#10b981' }) as never;
-    const link = arrow('c', 'r', 'k', ['e', 'w'], { strokeColor: '#10b981' });
-    expect(
-      of(lint(themed('ocean', node('r', 0), node('k', 300), link)), 'colour-on-themed'),
-    ).toEqual([]);
-  });
-
   it('passes a fill locked against the theme, still reporting its stroke', () => {
     const locked = box('a', 0, 0, {
       fillColor: '#123456',

@@ -7,7 +7,6 @@ import {
   isTextSize,
   LABEL_FONT_PX,
   labelFontPx,
-  legendFontPx,
   NOTE_FONT_PX,
   TEXT_PX_MAX,
   TEXT_PX_MIN,
@@ -17,8 +16,6 @@ import {
   scaleCellFontPx,
   tableCellFontPx,
 } from '@liveworkspace/model-core/table-cell-font';
-import { arrowLabelFontSize } from '@liveworkspace/model-core/arrow-label';
-import { sankeyLabelPx } from './sankey-frame';
 import { svgBoxed } from './svg-render';
 import { createShape } from './factories';
 
@@ -51,12 +48,6 @@ describe('an exact px draws at itself on every surface', () => {
   it('on a label and on a note alike', () => {
     expect(labelFontPx(9)).toBe(9);
     expect(labelFontPx(9, true)).toBe(9);
-  });
-
-  it('on a chart key, an arrow caption and a Sankey', () => {
-    expect(legendFontPx(20)).toBe(20);
-    expect(arrowLabelFontSize(20)).toBe(20);
-    expect(sankeyLabelPx(20)).toBe(20);
   });
 
   it('in an export, where the label carries its font-size', () => {

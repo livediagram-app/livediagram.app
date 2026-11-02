@@ -4,7 +4,6 @@ import {
   lucideChartPie,
   lucideCircleDot,
   lucideClock,
-  lucideCpu,
   lucideFilePlus,
   lucideFolder,
   lucideFootprints,
@@ -175,41 +174,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="8" y="4" width="8" height="7" rx="1" />
     </Glyph>
   ),
-  'mind-maps': (
-    <Glyph>
-      <circle cx="5.5" cy="12" r="2.5" />
-      <circle cx="18.5" cy="6" r="2.5" />
-      <circle cx="18.5" cy="12" r="2.5" />
-      <circle cx="18.5" cy="18" r="2.5" />
-      <path d="M8 11l8-4M8 12h8M8 13l8 4" />
-    </Glyph>
-  ),
-  // A flowchart's own vocabulary: a Start over a Decision diamond, its two exits leaving by the
-  // corners. `auto-layout` draws plain boxes; the diamond is what makes this one a flowchart.
-  flowcharts: (
-    <Glyph>
-      <rect x="7.5" y="2.5" width="9" height="4" rx="2" />
-      <path d="M12 6.5v2.5" />
-      <path d="M12 9l4 3.5-4 3.5-4-3.5z" />
-      <path d="M8 12.5H5v5M16 12.5h3v5" />
-      <rect x="2.5" y="17.5" width="5" height="4" rx="0.5" />
-      <rect x="16.5" y="17.5" width="5" height="4" rx="0.5" />
-    </Glyph>
-  ),
-  // The same map as an indented list: a bold root line, then bullets stepping
-  // in a level each. The stepped indent is what makes it an outline rather
-  // than the plain bullet list `checklists` or `markdown-import` would be.
-  'edit-outline': (
-    <Glyph>
-      <path d="M3 5h11" />
-      <circle cx="6" cy="10.5" r="1.2" fill="currentColor" stroke="none" />
-      <path d="M9 10.5h10" />
-      <circle cx="10" cy="15" r="1.2" fill="currentColor" stroke="none" />
-      <path d="M13 15h8" />
-      <circle cx="6" cy="19.5" r="1.2" fill="currentColor" stroke="none" />
-      <path d="M9 19.5h8" />
-    </Glyph>
-  ),
   // Two bubbles rather than two people: the Collaborate tiles are the things
   // a group leaves on the canvas, not the people leaving them (the
   // Collaboration category owns that glyph).
@@ -257,13 +221,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="3" y="4" width="18" height="16" rx="2" />
       <path d="M3 9.5h18M3 15h18" />
       <path d="M6.5 4v16" />
-    </Glyph>
-  ),
-  entities: (
-    <Glyph>
-      <rect x="4" y="4" width="16" height="16" rx="2" />
-      <path d="M4 8.5h16" />
-      <path d="M7.5 12h9M7.5 16h9" />
     </Glyph>
   ),
   'embed-elements': (
@@ -318,13 +275,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M17.5 14v7M14 17.5h7" />
     </Glyph>
   ),
-  devices: (
-    <Glyph>
-      <rect x="2" y="4" width="14" height="10" rx="1" />
-      <path d="M2 17h12" />
-      <rect x="17" y="9" width="5" height="11" rx="1" />
-    </Glyph>
-  ),
   icons: (
     <Glyph>
       <circle cx="12" cy="12" r="9" />
@@ -377,24 +327,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="8" y="13.5" width="8" height="8" rx="1" transform="rotate(-3 12 17.5)" />
     </Glyph>
   ),
-  // A board on its stand with a marker scribble.
-  // One canvas, two ways of working on it: a clean shape on one side of the split, a hand-drawn
-  // stroke on the other.
-  'editor-modes': (
-    <Glyph>
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <path d="M3 3l18 18" />
-      <rect x="13.5" y="5.5" width="5" height="5" rx="1" />
-      <path d="M5.5 17.5c1-2.2 2-2.2 2.8 0s1.9 2.2 2.8-0.3" />
-    </Glyph>
-  ),
-  'draw-mode': (
-    <Glyph>
-      <rect x="3" y="3.5" width="18" height="12" rx="1.5" />
-      <path d="M6.5 10c1-2.2 2.3-2.2 3 0s2 2.2 3 0 2-2.2 3 0" />
-      <path d="M9 15.5 7.5 21M15 15.5l1.5 5.5" />
-    </Glyph>
-  ),
   // Three people round a speech bubble: a team in a session, someone asking the room.
   'workshop-mode': (
     <Glyph>
@@ -411,14 +343,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="4" y="3" width="16" height="12" rx="1.5" />
       <path d="M8 15l-2.5 6M16 15l2.5 6M12 15v6" />
       <rect x="7" y="6" width="10" height="6" rx="1.5" strokeDasharray="1.6 1.4" />
-    </Glyph>
-  ),
-  // A pen over a squiggle with a dashed spotlight ring round it: a guided look at Draw.
-  'draw-tour': (
-    <Glyph>
-      <path d="M4 17c2-3 4 1 6-2s3-4 5-1" />
-      <path d="M15 4l5 5-7 7h-5v-5z" />
-      <circle cx="12" cy="12" r="9" strokeDasharray="1.6 1.4" />
     </Glyph>
   ),
   // A speech bubble over a little figure, under a dashed spotlight ring: a guided look at Avatar mode.
@@ -898,17 +822,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <circle cx="12" cy="19.5" r="1.8" fill="currentColor" stroke="none" />
     </Glyph>
   ),
-  // The four that finish the Palette — the largest category in the help centre.
-  //
-  // A labelled container that sits BEHIND its contents. `lanes` is banded; the
-  // label tab is what makes this one a Frame.
-  // Two inputs merging into a node and splitting three ways: the shape of every Sankey.
-  'sankey-diagram': (
-    <Glyph>
-      <path d="M3 5h2M3 13h2M11 7v10M19 4v4M19 11v3M19 17v3" />
-      <path d="M5 4c4 0 2 4 6 4M5 14c4 0 2 2 6 2M11 9c4 0 4-3 8-3M11 12c4 0 4 0 8 1M11 15c4 0 4 3 8 3" />
-    </Glyph>
-  ),
   // A node with its slots: a tile at the top left, a title and a meta line beside it, a tag along the bottom.
   'cards-and-callouts': (
     <Glyph>
@@ -957,32 +870,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <rect x="3" y="4" width="18" height="16" rx="2" />
       <path d="M6 9.5h4M13 9.5h5M13 14.5h5" />
       <path d="M6 14.5h4" strokeDasharray="1.6 1.4" />
-    </Glyph>
-  ),
-  // One box over two, joined by an elbow trunk.
-  'org-charts': (
-    <Glyph>
-      <rect x="8" y="2.5" width="8" height="5" rx="1.5" />
-      <rect x="2" y="16.5" width="8" height="5" rx="1.5" />
-      <rect x="14" y="16.5" width="8" height="5" rx="1.5" />
-      <path d="M12 7.5V12M6 16.5V12h12v4.5" />
-    </Glyph>
-  ),
-  // Two heads over dashed lifelines, a call across and a reply back.
-  'sequence-diagrams': (
-    <Glyph>
-      <rect x="2" y="2" width="6" height="4" rx="1" />
-      <rect x="16" y="2" width="6" height="4" rx="1" />
-      <path d="M5 6v16M19 6v16" strokeDasharray="2 2" />
-      <path d="M5 11h12.5M15.5 9l2.5 2-2.5 2" />
-      <path d="M19 17H6.5" strokeDasharray="2 1.5" />
-    </Glyph>
-  ),
-  // A pyramid cut into three tiers.
-  'concept-graphics': (
-    <Glyph>
-      <path d="M12 3.5L21 20H3Z" />
-      <path d="M8.2 10.5h7.6M5.9 15h12.2" />
     </Glyph>
   ),
   frames: (
@@ -1164,7 +1051,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A tidied flowchart: boxes and arrows, which is what the graph becomes.
-  // `mind-maps` and `multicolour-themes` both use circles for their nodes.
+  // `multicolour-themes` uses circles for its nodes.
   'auto-layout': (
     <Glyph>
       <rect x="8.5" y="3" width="7" height="4.5" rx="1" />
@@ -1316,11 +1203,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <circle cx="12" cy="12" r="9" />
       <path d="M12 8v4M12 16h.01" />
-    </Glyph>
-  ),
-  technology: (
-    <Glyph>
-      <Prims prims={lucideCpu} />
     </Glyph>
   ),
   // Two overlapping panels with the back one showing through.

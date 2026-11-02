@@ -1,4 +1,3 @@
-import type { EntityCanvasActions } from '@/components/canvas/entity/entity-actions';
 import type { LaneGutterEdge, LaneLike } from '@/components/canvas/LaneGutter';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { PointerEvent as ReactPointerEvent } from 'react';
@@ -219,15 +218,11 @@ export type BoxedElementViewProps = {
   // Omitted for read-only viewers.
   onEditLink?: (id: string) => void;
   // Open an element's own edit dialog on double-click: a code block's code (docs/specs/009-elements/code-block.md),
-  // a Sankey's flows (docs/specs/009-elements/sankey.md). Omitted for read-only viewers.
+  // Omitted for read-only viewers.
   onOpenEditDialog?: (id: string) => void;
   // Toggle one checklist row's done state (docs/specs/009-elements/checklist.md), from the on-canvas
   // checkbox. Omitted for read-only viewers.
   onToggleChecklistItem?: (elementId: string, index: number) => void;
-  // An entity's canvas verbs (docs/specs/009-elements/entity.md): save its fields, draw a relationship from
-  // a field. Omitted for read-only viewers; offered by the view only on a selected, unlocked entity.
-  onSetEntityFields?: EntityCanvasActions['setFields'];
-  onStartFieldArrow?: EntityCanvasActions['startFieldArrow'];
   // Paint index within the elements layer. Isometric mode only: it stops
   // overlapping elements sharing a z-plane (docs/specs/008-canvas/isometric-view.md).
   isoDepth: number;

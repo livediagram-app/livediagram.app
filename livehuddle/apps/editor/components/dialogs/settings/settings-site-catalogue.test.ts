@@ -1,7 +1,5 @@
-import { readFileSync, writeFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { catalogueSource, deriveCatalogue } from '@liveworkspace/settings/catalogue';
+import { deriveCatalogue } from '@liveworkspace/settings/catalogue';
 import { CATALOGUE } from '@liveworkspace/settings/catalogues/livediagram';
 import { DEVICE_PREFERENCES } from '@liveworkspace/settings/device';
 import { STORAGE_KEY } from '@/lib/user-preferences';
@@ -9,24 +7,28 @@ import { PREFERENCES_UNSYNCED_KEY } from '@/lib/preferences-sync';
 import { SETTINGS_CATEGORIES } from './settings-catalogue';
 import { SETTINGS_TILES } from './settings-icons';
 
-// liveworkspace.app shows this app's own settings in a dialog on its settings page, from a plain-data
-// copy of this catalogue (packages/settings/src/catalogue.ts). This keeps the copy in step: change a
-// setting here and run this test with UPDATE_SITE_CATALOGUE=1 to write the copy again.
-const FILE = fileURLToPath(
-  new URL('../../../../../../packages/settings/src/catalogues/livediagram.ts', import.meta.url),
-);
+// liveworkspace.app shows an app's settings from a plain-data copy of its catalogue (packages/settings/src/catalogue.ts).
+// livehuddle is held out until launch, so it borrows livediagram's copy and cloud scope (settings-panel-host.tsx); since
+// Diagram and Draw mode left (docs/specs/007-editor/editor-modes.md) it has fewer settings than livediagram, so every
+// setting it does keep must be one that copy knows, or a change made on the site could never reach this editor. The
+// copy is livediagram's to write, never this test's.
+const keysOf = (value: unknown, into = new Set<string>()): Set<string> => {
+  if (Array.isArray(value)) value.forEach((item) => keysOf(item, into));
+  else if (value && typeof value === 'object') {
+    for (const [name, child] of Object.entries(value)) {
+      if (name === 'key' && typeof child === 'string') into.add(child);
+      else keysOf(child, into);
+    }
+  }
+  return into;
+};
 
-// The fork borrows livediagram's catalogue (settings-panel-host.tsx), so its settings must still match it.
 describe("liveworkspace.app's copy of this app's settings", () => {
   const derived = deriveCatalogue(SETTINGS_CATEGORIES, { tiles: SETTINGS_TILES });
 
-  it('matches the catalogue', () => {
-    if (process.env.UPDATE_SITE_CATALOGUE) {
-      writeFileSync(FILE, catalogueSource('livediagram', derived));
-      expect(readFileSync(FILE, 'utf8')).toContain('CATALOGUE');
-      return;
-    }
-    expect(CATALOGUE).toEqual(derived);
+  it('names only settings the borrowed copy knows', () => {
+    const known = keysOf(CATALOGUE);
+    expect([...keysOf(derived)].filter((key) => !known.has(key))).toEqual([]);
   });
 
   it('shows at least one setting of its own', () => {

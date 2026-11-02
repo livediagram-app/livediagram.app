@@ -9,7 +9,6 @@ import { boundaryTourSteps } from './boundary-tour-steps';
 import { diagramKeyTourSteps } from './diagram-key-tour-steps';
 import { ELEMENT_TOUR_DEFS } from './element-tour-defs';
 import type { ElementTourApi } from './element-tour-api';
-import { entityTourSteps } from './entity-tour-steps';
 import { laneTourSteps } from './lane-tour-steps';
 import { menuStep, type MenuTourEnv } from './menu-tour-step';
 import { portalTourSteps } from './portal-tour-steps';
@@ -44,19 +43,6 @@ describe('stackTourSteps', () => {
     expect(full[0]!.body).toContain('in a grid');
     const empty = stackTourSteps({ ...env, direction: 'row', firstChildId: null });
     expect(ids(empty)).toEqual(['stack', 'drop', 'carry', 'menu', 'outro']);
-  });
-});
-
-describe('entityTourSteps', () => {
-  it('rings its fields when it has some, and always names the Fields menu', () => {
-    const steps = entityTourSteps({ ...env, hasFields: true });
-    expect(ids(steps)).toEqual(['entity', 'title', 'rows', 'menu', 'relate', 'outro']);
-    expect(ringed(step(steps, 'rows'))).toBe('[data-element-id="el"] [data-entity-fields]');
-    expect(step(steps, 'menu').body).toContain('Fields');
-    expect(ids(entityTourSteps({ ...env, hasFields: false }))).not.toContain('rows');
-    expect(step(entityTourSteps({ ...env, touch: true, hasFields: false }), 'title').body).toMatch(
-      /^Double-tap/,
-    );
   });
 });
 

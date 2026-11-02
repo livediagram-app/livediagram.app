@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-// Element tours (docs/specs/007-editor/element-tours.md): the footer's Start Tour button offering a selected Sankey's
-// tour until it is taken, a press starting it, the share-role gate, one tour at a time, and the tour ending when its diagram goes.
+// Element tours (docs/specs/007-editor/element-tours.md): the footer's Start Tour button offering a selected timeline's
+// tour until it is taken, a press starting it, the share-role gate, one tour at a time, and the tour ending when its element goes.
 
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -11,7 +11,6 @@ import {
   resetTourOffersForTests,
   tourOffer,
 } from '@liveworkspace/workbench/components/tour/tour-offer';
-import { registerSankeyFlowsDialog } from '@liveworkspace/workbench/lib/sankey-flows-dialog-handle';
 import {
   createSelectionStore,
   type SelectionStore,
@@ -19,14 +18,14 @@ import {
 import { setActiveTour, activeTour } from '@/lib/tour-active';
 import { setStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import type { TourEngine } from '@liveworkspace/workbench/components/tour/useTourEngine';
-import type { SankeyElementTourApi } from './sankey-element-tour-steps';
 import { ElementTourHost } from './ElementTourHost';
+import type { ElementTourApi } from './element-tour-api';
 
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
-const stage = vi.hoisted(() => ({ engine: null as TourEngine<SankeyElementTourApi> | null }));
+const stage = vi.hoisted(() => ({ engine: null as TourEngine<ElementTourApi> | null }));
 vi.mock('./TourStage', () => ({
-  TourStage: ({ engine }: { engine: TourEngine<SankeyElementTourApi> }) => {
+  TourStage: ({ engine }: { engine: TourEngine<ElementTourApi> }) => {
     stage.engine = engine;
     return null;
   },
@@ -45,11 +44,9 @@ vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ct
 
 const setUserPreferences = vi.fn();
 const writeUserPreferences = vi.fn();
-const setSankeyFlowsOpenForId = vi.fn();
 
-const sankey = { ...createShape('sankey', 0, 0), id: 'sk1' } as Element;
+const timeline = { ...createShape('timeline-rail', 0, 0), id: 'tl1' } as Element;
 const square = { ...createShape('square', 0, 0), id: 'sq1' } as Element;
-const stack = { ...createShape('layer-stack', 0, 0), id: 'ls1' } as Element;
 
 const editor = (over: Record<string, unknown> = {}) => {
   ctx.current = {
@@ -58,13 +55,11 @@ const editor = (over: Record<string, unknown> = {}) => {
     anyWelcomeOpen: false,
     embedMode: false,
     can: { level: 'edit' },
-    activeTab: { id: 'tab1', elements: [sankey, square, stack] },
+    activeTab: { id: 'tab1', elements: [timeline, square] },
     userPreferences: {},
     setUserPreferences,
     writeUserPreferences,
     selfParticipant: { id: 'me' },
-    sankeyFlowsOpenForId: null,
-    setSankeyFlowsOpenForId,
     ...over,
   };
 };
@@ -99,29 +94,29 @@ afterEach(() => {
 });
 
 describe('ElementTourHost offer', () => {
-  it('offers the tour for a selected Sankey, and nothing for a square', () => {
+  it('offers the tour for a selected timeline, and nothing for a square', () => {
     editor();
     mount();
     expect(tourOffer()).toBeNull();
     act(() => store.setSelectedId('sq1'));
     expect(tourOffer()).toBeNull();
-    act(() => store.setSelectedId('sk1'));
-    expect(tourOffer()).toMatchObject({ name: 'Sankey' });
+    act(() => store.setSelectedId('tl1'));
+    expect(tourOffer()).toMatchObject({ name: 'Timeline' });
     act(() => tourOffer()!.onShown!());
-    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'SankeyTourOffer');
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'TimelineTourOffer');
   });
 
   it.each([
     ['a Participant', { can: { level: 'participate' } }],
     ['a Viewer', { can: { level: 'view' } }],
-    ['locked', { activeTab: { id: 'tab1', elements: [{ ...sankey, locked: true }] } }],
+    ['locked', { activeTab: { id: 'tab1', elements: [{ ...timeline, locked: true }] } }],
     ['not hydrated', { hydrated: false }],
     ['embedded', { embedMode: true }],
     ['under a welcome overlay', { anyWelcomeOpen: true }],
   ])('offers nothing when %s', (_why, over) => {
     editor(over);
     mount();
-    act(() => store.setSelectedId('sk1'));
+    act(() => store.setSelectedId('tl1'));
     expect(tourOffer()).toBeNull();
   });
 
@@ -129,15 +124,15 @@ describe('ElementTourHost offer', () => {
     viewport.phone = true;
     editor();
     mount();
-    act(() => store.setSelectedId('sk1'));
+    act(() => store.setSelectedId('tl1'));
     expect(tourOffer()).toBeNull();
-    expect(track).not.toHaveBeenCalledWith('UI', 'Started', 'SankeyTour');
+    expect(track).not.toHaveBeenCalledWith('UI', 'Started', 'TimelineTour');
   });
 
   it('makes no offer for a multi-selection', () => {
     editor();
     mount();
-    act(() => store.setMultiSelectedIds(new Set(['sk1', 'sq1'])));
+    act(() => store.setMultiSelectedIds(new Set(['tl1', 'sq1'])));
     expect(tourOffer()).toBeNull();
   });
 
@@ -145,28 +140,28 @@ describe('ElementTourHost offer', () => {
     editor();
     mount();
     act(() => setActiveTour('draw', true));
-    act(() => store.setSelectedId('sk1'));
+    act(() => store.setSelectedId('tl1'));
     act(() => tourOffer()!.start());
     expect(stage.engine?.active).toBe(false);
   });
 
   // Work Tracker #177: a taken element tour leaves the button; its Settings › Show Me switch brings it back.
   it('leaves the button once taken, and comes back when its Settings switch is on again', () => {
-    editor({ userPreferences: { elementTourKinds: ['sankey'] } });
+    editor({ userPreferences: { elementTourKinds: ['timeline'] } });
     const r = mount();
-    act(() => store.setSelectedId('sk1'));
+    act(() => store.setSelectedId('tl1'));
     expect(tourOffer()).toBeNull();
     editor({ userPreferences: { elementTourKinds: [] } });
     rerenderWith(r);
-    expect(tourOffer()?.name).toBe('Sankey');
+    expect(tourOffer()?.name).toBe('Timeline');
   });
 
   it('never starts on its own', () => {
     editor();
     mount();
-    act(() => store.setSelectedId('sk1'));
+    act(() => store.setSelectedId('tl1'));
     expect(stage.engine?.active).toBe(false);
-    expect(track).not.toHaveBeenCalledWith('UI', 'Started', 'SankeyTour');
+    expect(track).not.toHaveBeenCalledWith('UI', 'Started', 'TimelineTour');
   });
 });
 
@@ -174,103 +169,34 @@ describe('ElementTourHost tour', () => {
   it('a press records the kind as taken, starts on the first step and holds the tour slot', () => {
     editor();
     mount();
-    act(() => store.setSelectedId('sk1'));
+    act(() => store.setSelectedId('tl1'));
     act(() => tourOffer()!.start());
-    expect(writeUserPreferences).toHaveBeenCalledWith({ elementTourKinds: ['sankey'] }, 'me');
-    expect(track).toHaveBeenCalledWith('UI', 'Started', 'SankeyTour');
+    expect(writeUserPreferences).toHaveBeenCalledWith({ elementTourKinds: ['timeline'] }, 'me');
+    expect(track).toHaveBeenCalledWith('UI', 'Started', 'TimelineTour');
     expect(stage.engine?.active).toBe(true);
-    expect(stage.engine?.step?.id).toBe('bands');
-    expect(track).toHaveBeenCalledWith('UI', 'View', 'SankeyTourStepBands');
+    expect(stage.engine?.step?.id).toBe('line');
+    expect(track).toHaveBeenCalledWith('UI', 'View', 'TimelineTourStepLine');
     expect(activeTour()).toBe('element');
-  });
-
-  it('opens the Flows dialog for its diagram on the dialog steps', async () => {
-    editor();
-    mount();
-    act(() => store.setSelectedId('sk1'));
-    act(() => tourOffer()!.start());
-    const seen: string[] = [];
-    while (stage.engine?.active && !stage.engine.step?.id.startsWith('flows-')) {
-      seen.push(stage.engine.step!.id);
-      await act(async () => stage.engine!.next());
-    }
-    // The starter budget sends everything on (no leftover), and no More button is on screen here.
-    expect(seen).toEqual(['bands', 'flows']);
-    expect(stage.engine?.step?.id).toBe('flows-nodes');
-    expect(setSankeyFlowsOpenForId).toHaveBeenCalledWith('sk1');
   });
 
   it('ends as skipped when its diagram is deleted', () => {
     editor();
     const r = mount();
-    act(() => store.setSelectedId('sk1'));
+    act(() => store.setSelectedId('tl1'));
     act(() => tourOffer()!.start());
     editor({ activeTab: { id: 'tab1', elements: [square] } });
     rerenderWith(r);
     expect(stage.engine?.active).toBe(false);
-    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'SankeyTourSkipped');
+    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'TimelineTourSkipped');
   });
 
   it('ends as skipped on another tab', () => {
     editor();
     const r = mount();
-    act(() => store.setSelectedId('sk1'));
+    act(() => store.setSelectedId('tl1'));
     act(() => tourOffer()!.start());
-    editor({ activeTab: { id: 'tab2', elements: [sankey] } });
+    editor({ activeTab: { id: 'tab2', elements: [timeline] } });
     rerenderWith(r);
     expect(stage.engine?.active).toBe(false);
-  });
-
-  it('Done completes it and puts the Flows dialog away', async () => {
-    const close = vi.fn();
-    const unregister = registerSankeyFlowsDialog({ showTable: vi.fn(), showText: vi.fn(), close });
-    editor();
-    mount();
-    act(() => store.setSelectedId('sk1'));
-    act(() => tourOffer()!.start());
-    while (stage.engine?.step?.card !== 'outro') await act(async () => stage.engine!.next());
-    close.mockClear();
-    await act(async () => stage.engine!.next());
-    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'SankeyTourCompleted');
-    expect(activeTour()).toBeNull();
-    expect(close).toHaveBeenCalledTimes(1);
-    unregister();
-  });
-
-  it('Skip leaves the Flows dialog where it is', async () => {
-    const close = vi.fn();
-    const unregister = registerSankeyFlowsDialog({ showTable: vi.fn(), showText: vi.fn(), close });
-    editor();
-    mount();
-    act(() => store.setSelectedId('sk1'));
-    act(() => tourOffer()!.start());
-    while (!stage.engine?.step?.id.startsWith('flows-'))
-      await act(async () => stage.engine!.next());
-    close.mockClear();
-    act(() => stage.engine!.skip());
-    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'SankeyTourSkipped');
-    expect(close).not.toHaveBeenCalled();
-    unregister();
-  });
-});
-
-// A second toured kind runs through the same host, under its own token (docs/specs/007-editor/element-tours.md).
-describe('ElementTourHost with a layer stack', () => {
-  it('offers, plays and completes the Layer Stack tour under its own token', async () => {
-    editor();
-    mount();
-    act(() => store.setSelectedId('ls1'));
-    expect(tourOffer()).toMatchObject({ name: 'Layer Stack' });
-    act(() => tourOffer()!.onShown!());
-    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'LayerStackTourOffer');
-    act(() => tourOffer()!.start());
-    expect(writeUserPreferences).toHaveBeenCalledWith({ elementTourKinds: ['layer-stack'] }, 'me');
-    expect(track).toHaveBeenCalledWith('UI', 'Started', 'LayerStackTour');
-    expect(stage.engine?.step?.id).toBe('layers');
-    expect(track).toHaveBeenCalledWith('UI', 'View', 'LayerStackTourStepLayers');
-    while (stage.engine?.active) await act(async () => stage.engine!.next());
-    expect(track).toHaveBeenCalledWith('UI', 'Ended', 'LayerStackTourCompleted');
-    // Nothing of the Sankey's is put away for a layer stack.
-    expect(setSankeyFlowsOpenForId).not.toHaveBeenCalled();
   });
 });

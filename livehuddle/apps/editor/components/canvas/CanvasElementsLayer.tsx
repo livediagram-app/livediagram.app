@@ -13,7 +13,6 @@ import { useFontEpoch } from '@liveworkspace/workbench/components/canvas/useFont
 import {
   elementFontId,
   resolveFontStack,
-  resolveFinish,
   isSelectionMode,
   alignmentCoordinates,
   buildElementIndex,
@@ -113,7 +112,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onAddTableRow,
     onAddTableColumn,
     onToggleChecklistItem,
-    entityActions,
     onSetPageHeading,
     onSetWebRows,
     onSetPointerTip,
@@ -233,10 +231,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             alignment: alignmentCoordinates(elements, axis, excludeId),
           }).value,
     onToggleChecklistItem: readOnly ? undefined : onToggleChecklistItem,
-    onSetEntityFields: readOnly ? undefined : entityActions?.setFields,
-    onStartFieldArrow: readOnly ? undefined : entityActions?.startFieldArrow,
-    onAddEntityField: readOnly ? undefined : entityActions?.addFieldSelected,
-    onAddRelatedEntity: readOnly ? undefined : entityActions?.addRelatedSelected,
     onSetPageHeading,
     onSetWebRows: readOnly ? undefined : onSetWebRows,
     onSetPointerTip: readOnly ? undefined : onSetPointerTip,
@@ -393,8 +387,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onCommitHeaderSize: h.onCommitHeaderSize,
       onSnapSeam: h.onSnapSeam,
       onToggleChecklistItem: h.onToggleChecklistItem,
-      onSetEntityFields: h.onSetEntityFields,
-      onStartFieldArrow: h.onStartFieldArrow,
       onSetPageHeading: h.onSetPageHeading,
       onSetWebRows: h.onSetWebRows,
       onSetPointerTip: h.onSetPointerTip,
@@ -474,14 +466,10 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     if (!elementIndex) return out;
     const grid = gridTracker.gridFor(drawnElements);
     for (const el of drawnElements) {
-      if (el.type === 'arrow')
-        out.set(
-          el.id,
-          arrowViewGeometry(el, elementIndex, grid, resolveFinish(el.finish, tabFinish)),
-        );
+      if (el.type === 'arrow') out.set(el.id, arrowViewGeometry(el, elementIndex, grid));
     }
     return out;
-  }, [drawnElements, elementIndex, gridTracker, tabFinish]);
+  }, [drawnElements, elementIndex, gridTracker]);
   const arrowLinks = useMemo(
     () => (hasArrows ? buildArrowLinks(drawnElements) : null),
     [hasArrows, drawnElements],
@@ -626,8 +614,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
               onAddTableRow,
               onAddTableColumn,
               onAppendWebRow,
-              onAddEntityField: h.onAddEntityField,
-              onAddRelatedEntity: h.onAddRelatedEntity,
             }}
             onBeginDrag={onBeginDrag}
           />

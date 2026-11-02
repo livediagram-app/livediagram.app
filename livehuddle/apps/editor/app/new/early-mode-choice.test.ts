@@ -19,7 +19,7 @@ beforeEach(() => {
   // React's listeners sit on the root container, below window.
   root = document.createElement('div');
   root.innerHTML =
-    '<button data-new-mode="draw"><span>Draw</span></button><button id="other">Other</button>';
+    '<button data-new-mode="workshop"><span>Create</span></button><button id="other">Other</button>';
   document.body.appendChild(root);
   reactSaw = vi.fn<() => void>();
   root.addEventListener('click', () => reactSaw());
@@ -37,10 +37,10 @@ const click = (selector: string) => {
 describe('a mode chosen before hydration', () => {
   it('is kept and answered once, and the card never also handles it', () => {
     runScript();
-    click('[data-new-mode="draw"] span');
+    click('[data-new-mode="workshop"] span');
     expect(reactSaw).not.toHaveBeenCalled();
     expect(document.documentElement.hasAttribute(EARLY_MODE_ATTRIBUTE)).toBe(true);
-    expect(takeEarlyModeChoice()).toBe('draw');
+    expect(takeEarlyModeChoice()).toBe('workshop');
     expect(document.documentElement.hasAttribute(EARLY_MODE_ATTRIBUTE)).toBe(false);
     expect(takeEarlyModeChoice()).toBeNull();
   });
@@ -48,7 +48,7 @@ describe('a mode chosen before hydration', () => {
   it('lets every click through once the wizard has taken over', () => {
     runScript();
     expect(takeEarlyModeChoice()).toBeNull();
-    click('[data-new-mode="draw"]');
+    click('[data-new-mode="workshop"]');
     expect(reactSaw).toHaveBeenCalledTimes(1);
     expect(takeEarlyModeChoice()).toBeNull();
   });
@@ -64,7 +64,7 @@ describe('a mode chosen before hydration', () => {
     runScript();
     runScript();
     root.insertAdjacentHTML('beforeend', '<button data-new-mode="workshop">Workshop</button>');
-    click('[data-new-mode="draw"]');
+    click('[data-new-mode="workshop"]');
     click('[data-new-mode="workshop"]');
     expect(takeEarlyModeChoice()).toBe('workshop');
   });

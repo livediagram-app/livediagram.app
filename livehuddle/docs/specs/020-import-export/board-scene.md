@@ -13,8 +13,7 @@ is a change here, never a parser-local workaround.
 Content that lands on a whiteboard looks and behaves as if it had been drawn
 there: marker strokes with pressure, ink and stock colours that follow light
 and dark boards, text boxes that hug their text, stickies, shapes, lines,
-arrows, images and frames. See [Draw mode](../023-draw-mode/draw-mode.md)
-"Imported and pasted content".
+arrows, images and frames, on a Workshop tab ([Editor modes](../007-editor/editor-modes.md#what-a-tab-written-elsewhere-keeps)).
 
 ## Where it lives
 
@@ -56,10 +55,12 @@ lives in hooks and components, see "In the editor" below.
 
 ## Profiles
 
-The landing has two profiles, chosen by the tab the scene lands on:
+The landing has two profiles, chosen by where the scene lands (livehuddle has no Draw mode to choose by, [Editor
+modes](../007-editor/editor-modes.md)):
 
-- **Whiteboard**: whiteboard-native marks, the rules below.
-- **Diagram**: the Excalidraw file mapping (size buckets, freedraw as a pencil
+- **Whiteboard**: a board that becomes **its own new document** (an Explorer import of whole boards), in
+  whiteboard-native marks, the rules below.
+- **Diagram**: anything landing on an open tab (a paste, a drop, the Import dialog): the Excalidraw file mapping (size buckets, freedraw as a pencil
   freehand, multi-point lines as straight-edged freehands). Colours: near-black
   ink (the ink rule under Colours) lands as the **theme's ink** (no colour of its
   own, so it follows the tab's theme), every other colour as its **exact hex**,
@@ -85,11 +86,8 @@ Each scene colour resolves to one of three things, in this order:
 3. **Its hex**: anything else keeps its exact `#rrggbb`, a custom colour, the
    same on both boards (Excalidraw's grey `#868e96`, pastels, browns).
 
-"Nearest stock colour" means the whiteboard's one definition, the one
-[Snap colours](../023-draw-mode/draw-mode.md) uses. The two rules differ on
-purpose: the snap is **always nearest** (a grey becomes Ink, a pastel its
-hue's stock colour), the import **keeps the exact hex unless the colour is
-clearly a stock colour**, so a board arrives as it was drawn and its custom
+"Nearest stock colour" means the whiteboard's one definition (livediagram's Snap colours used it too). The
+import **keeps the exact hex unless the colour is clearly a stock colour**, so a board arrives as it was drawn and its custom
 colours can be snapped afterwards, in one press, if wanted.
 
 - A colour's `alpha` multiplies into the element's opacity; a colour with no
@@ -179,7 +177,7 @@ colours can be snapped afterwards, in one press, if wanted.
 ## The tab
 
 A landing also says what the tab it fills should be: on the whiteboard
-profile, `opensIn: 'draw'`, its background pattern from the scene
+profile, `opensIn: 'workshop'`, its background pattern from the scene
 (Plain, Dots, Grid), else the new-board default (Grid), and its name from the
 scene's title, else "Whiteboard"; on the diagram profile, the scene's
 background colour, when it has one.
@@ -254,7 +252,7 @@ the landing writes no more than the drawing needs:
   its images upload belongs to that tab, so it does not land on another.
 - **Import a board** (the Import dialog): replace the active tab (the
   Excalidraw card, one undo step), or make each board **its own new document**
-  with one tab that opens in Draw mode (the Microsoft Whiteboard card), named after the board
+  with one Workshop tab (the Microsoft Whiteboard card), named after the board
   and dated as it (the scene's `createdAt` / `modifiedAt`; a date that cannot
   be read is left out, so the document is dated today, and the report says so:
   "Board dates that couldn't be read were set to today"). An untitled board is

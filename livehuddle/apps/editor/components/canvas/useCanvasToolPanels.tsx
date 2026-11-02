@@ -94,9 +94,8 @@ export function useCanvasToolPanels({
     activeTabId,
     readOnly,
   } = props;
-  // Draw mode keeps its eraser settings in the dock's flyouts
-  // and has no format painter (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
-  const whiteboard = props.editorMode === 'draw';
+  // Draw mode, which kept its eraser settings in the dock, is gone (docs/specs/007-editor/editor-modes.md).
+  const whiteboard = false;
 
   const laserWiring = panelWiringFor('laser', laserPanelPosition ?? null, () =>
     onResetLaserPanel?.(),

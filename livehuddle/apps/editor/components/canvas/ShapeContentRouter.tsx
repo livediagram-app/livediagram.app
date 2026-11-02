@@ -14,7 +14,6 @@ import {
   isBarShape,
   isChecklistShape,
   isLegendShape,
-  isSankeyShape,
   isCodeBlockShape,
   isLineShape,
   isPieShape,
@@ -24,7 +23,6 @@ import {
   isRatingShape,
   type ShapeKind,
 } from '@livehuddle/document';
-import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
@@ -47,11 +45,6 @@ import type { BoxedElementViewProps } from '@/components/canvas/BoxedElementView
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 
-// A Sankey (docs/specs/009-elements/sankey.md) loads only when one is drawn: most boards have none.
-const SankeyView = dynamic(
-  () => import('@/components/canvas/SankeyView').then((m) => m.SankeyView),
-  { ssr: false },
-);
 type ShapeContentRouterProps = Pick<
   BoxedElementViewProps,
   | 'element'
@@ -88,7 +81,6 @@ export function drawsShapeSvgOverlay(kind: ShapeKind): boolean {
     !isBarShape(kind) &&
     !isCodeBlockShape(kind) &&
     !isLegendShape(kind) &&
-    !isSankeyShape(kind) &&
     !isChecklistShape(kind) &&
     !isLineShape(kind)
   );
@@ -237,16 +229,6 @@ export function ShapeContentRouter({
       fontFamily={fontFamily}
       editable={!readOnly && !isLocked}
       onToggle={onToggleChecklistItem}
-    />
-  ) : element.type === 'shape' && isSankeyShape(element.shape) ? (
-    // Sankey diagram (docs/specs/009-elements/sankey.md): flows between nodes, laid out in columns.
-    <SankeyView
-      element={element}
-      fontFamily={fontFamily}
-      textColor={textColor}
-      palette={chartPalette}
-      editable={!readOnly && !isLocked}
-      onCanvas
     />
   ) : element.type === 'shape' && isLineShape(element.shape) ? (
     // Line chart (docs/specs/009-elements/pie-chart.md): multi-series lines + a legend.

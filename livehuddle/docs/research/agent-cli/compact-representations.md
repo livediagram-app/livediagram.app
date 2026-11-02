@@ -180,7 +180,7 @@ frame ca76 "Data"
   cylinder d41e "Orders DB" note="Postgres 16, primary + 1 replica."
   cylinder 822f "Inventory DB"
 cloud e6d7 "Stripe" link=https://stripe.com/docs/api
-entity cb02 "Order" {id uuid PK; customer_id uuid FK; status text; total_cents int}
+square cb02 "Order"
 table 480a 4x3 Service | p99 latency | Availability
 sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
 ```
@@ -420,7 +420,7 @@ tab 0b34 "Checkout platform" · since your last read 3m ago · by Sam, Webber
 + arrow 202b → 7180 [5d21]
 - arrow 6406 → 0556 "Event bus" → "Notification worker"
 ~ sticky 0c84 comments open → resolved
-~ entity cb02 moved (+200,0)
+~ square cb02 moved (+200,0)
 ```
 
 The api has no tab revision history today (the element-level Activity panel was removed; see

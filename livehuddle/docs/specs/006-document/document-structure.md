@@ -35,7 +35,7 @@ Activating a tab/element/document link is a navigation action; a `url` link open
 ### Use cases
 
 - **Drill-down.** A "Database" node on the Overview tab links to the "Database internals" tab; clicking it dives into detail.
-- **Mindmap deep-dives.** A leaf branch on the mindmap links to its own tab for deeper structure.
+- **Room deep-dives.** A portal or a note in the space links to its own tab for a breakout.
 - **Cross-references.** A process step links to a related decision elsewhere in the document, without duplicating the content.
 
 ## Data model
@@ -89,9 +89,9 @@ type Tab = {
   name: string;
   kind?: TabKind; // 'diagram' | 'event-storming' (docs/specs/021-event-storming/event-storming.md); absent = 'diagram'
   // The tab's editor mode, the same for everyone on it, which it also opens in
-  // (docs/specs/007-editor/editor-modes.md "Where the mode lives"); absent = 'diagram'. A stored kind 'whiteboard' reads as
-  // kind 'diagram' with opensIn 'draw'.
-  opensIn?: EditorMode; // 'diagram' | 'draw' | 'workshop'
+  // (docs/specs/007-editor/editor-modes.md "Where the mode lives"); every stored value, and absent, reads as
+  // 'workshop'. A stored kind 'whiteboard' reads as kind 'diagram'.
+  opensIn?: EditorMode; // 'workshop'
   // The tab's bound source (docs/specs/027-repositories/diagram-sources.md): its format and whether it may hold
   // residue; absent = not bound. The source's path lives in the repository, never here.
   source?: { format: SourceFormat; compatibility: 'relaxed' | 'strict' };
@@ -101,10 +101,9 @@ type Tab = {
 
 // Concrete element kinds, see packages/document for the full shape of each:
 //   ShapeElement     (shape: square / circle / diamond / cylinder / parallelogram / hexagon
-//                            / document / stadium / actor / cloud / browser / monitor / laptop
-//                            / phone / tablet)
+//                            / document / stadium / actor / cloud ...)
 //   TextElement      (optionally sizing: 'fit' | 'wrap', how the box hugs its text, absent = a
-//                     fixed box, docs/specs/007-editor/editor-modes.md "A text box's sizing"; and
+//                     fixed box, docs/specs/007-editor/editor-modes.md "What a tab written elsewhere keeps"; and
 //                     textScale, the Shift-resize scale. A stored autoWidth: true reads as 'fit')
 //   StickyElement    (optionally esKind: the event-storming note kind, docs/specs/021-event-storming/event-storming.md)
 //   ImageElement     (boxed, references an R2-stored bitmap by imageId, see docs/specs/009-elements/images.md)

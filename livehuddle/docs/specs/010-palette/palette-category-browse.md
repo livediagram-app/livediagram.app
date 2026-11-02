@@ -4,11 +4,11 @@ Status: shipped
 
 ## What
 
-The Icons and Technology tabs browse the same way the Tools tab does: a grid of
+The Icons tab browses the same way the Tools tab does: a grid of
 category tiles, click one to open it, a breadcrumb back, and a search box that
 cuts across every category at once.
 
-Those two tabs have no category **filter dropdowns** and no "All" entry.
+It has no category **filter dropdowns** and no "All" entry.
 
 ## Why
 
@@ -26,15 +26,15 @@ Category tiles put that structure on the first screen, and each tile carries the
 category's **first glyph** as its artwork, so a category looks like what it
 holds, and no separate icon set can drift from the contents.
 
-## No descriptions on Icons / Technology
+## No descriptions on Icons
 
 Tool categories get a hover card describing what's inside ("Blocks: code blocks,
 checklists, …"), because the label alone doesn't answer "is the thing I want in
 here?".
 
-"People", "Arrows", "AWS" and "Azure" already answer it. A hover card that restates
+"People" and "Arrows" already answer it. A hover card that restates
 the label under the glyph is a delay in exchange for nothing, so `description`
-on a category is now optional and those two tabs omit it: no hover card renders at
+on a category is now optional and the Icons tab omits it: no hover card renders at
 all.
 
 ## Search is never narrowed
@@ -50,7 +50,7 @@ the breadcrumb would be lying about where the results came from.
 
 ## Two panes in the category bar's flyouts
 
-On the category bar ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)), Icons, Stickers, Technology
+On the category bar ([Toolbar layout](../007-editor/toolbar-layout.md#the-category-bar)), Icons, Stickers
 and Session browse as **two panes** instead of the drill-in: the groups down a rail on the left (each its glyph,
 name and count badge, the open one raised with a brand edge), the open group's entries on the right under a sticky
 heading, and the search across the top. There is no breadcrumb and no grid of group tiles: every group is in view

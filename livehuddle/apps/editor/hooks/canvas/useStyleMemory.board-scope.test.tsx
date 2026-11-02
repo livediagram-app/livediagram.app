@@ -1,13 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  createShape,
-  defaultScheme,
-  opensInOf,
-  type Element,
-  type Tab,
-} from '@livehuddle/document';
+import { createShape, defaultScheme, type Element, type Tab } from '@livehuddle/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { boardShape, whiteboardShapeIntent } from '@/lib/whiteboard-tool';
 import { useQuickStyle } from './useQuickStyle';
@@ -28,8 +22,8 @@ type Props = { documentId: string; tab: Tab; intent: PendingDraw | null };
 function setup(initial: Props) {
   return renderHook(
     ({ documentId, tab, intent }: Props) => {
-      // The viewer's editor mode, as the editor resolves it: here the tab's opening mode.
-      const drawMode = opensInOf(tab) === 'draw';
+      // The whiteboard engine's flag (Draw mode is gone; the engine stays until it is removed).
+      const drawMode = tab.id === 'wb';
       const memory = useStyleMemory({ documentId, theme, board: drawMode });
       const quick = useQuickStyle({
         activeTab: tab,

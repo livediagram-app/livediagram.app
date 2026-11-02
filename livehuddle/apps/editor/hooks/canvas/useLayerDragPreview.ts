@@ -169,7 +169,7 @@ export function createLayerPreviewStore(): LayerPreviewStore {
       if (!arrow || arrow.type !== 'arrow') continue;
       const entry: PreviewEntry = {
         element: arrow,
-        geometry: previewArrowGeometry(arrow, index, grid, overlay, inputs.tabFinish),
+        geometry: previewArrowGeometry(arrow, index, grid, overlay),
       };
       if (arrow.label) {
         virtual ??= shownWithOverlay(inputs.ordered, overlay).map((o) => o.element);

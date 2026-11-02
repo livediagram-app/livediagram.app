@@ -8,10 +8,6 @@ import {
   elementSupportsText,
   isBoxed,
   isCompoundPath,
-  cardinalityLabel,
-  isFlowchartStep,
-  isMindNode,
-  joinsEntities,
   type Element,
 } from '@livehuddle/document';
 import { elementMenuAnchor } from '@liveworkspace/workbench/lib/context-menu-anchor';
@@ -25,7 +21,6 @@ import { selectionMoving, useCanvasGesture } from '@/lib/canvas-gesture';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
-import { flowchartStepToolbarFor } from '@/components/flowchart/flowchart-step-toolbar';
 import { SelectionPopover } from '@/components/canvas/SelectionPopover';
 import { useInsertionSlot } from '@/lib/insertion-preview';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
@@ -152,47 +147,6 @@ export function CanvasSelectionToolbars({
                 ? () => {
                     if (props.pendingDraw) props.onCancelDraw();
                     props.onBeginEdit(selected.id);
-                  }
-                : undefined
-            }
-            // Mind map (docs/specs/009-elements/mind-node.md): Add child / Add sibling, the toolbar home
-            // for Tab / Enter. Not on a locked node: growing re-lays the map. A Participant grows maps too
-            // (docs/specs/013-workspace/share-roles.md).
-            {...((!readOnly || !!props.participantPalette) &&
-            !selectedLocked &&
-            selected &&
-            isMindNode(selected)
-              ? {
-                  onAddMindChild: () => props.onGrowMindNode(selected.id, 'child'),
-                  onAddMindSibling: () => props.onGrowMindNode(selected.id, 'sibling'),
-                }
-              : {})}
-            // Flowchart (docs/specs/009-elements/flowchart.md): Add Step / Add Branch for whoever grows
-            // the chart; Step Type and Lane for an Editor. Not on a locked step: growing re-lays the chart.
-            {...((!readOnly || !!props.participantPalette) &&
-            !selectedLocked &&
-            selected &&
-            isFlowchartStep(selected)
-              ? {
-                  flowchartStep: flowchartStepToolbarFor(
-                    props.elements,
-                    selected,
-                    props.onGrowMindNode,
-                    props.flowchartActions,
-                  ),
-                }
-              : {})}
-            // A relationship (docs/specs/009-elements/entity.md "Cardinality ends"): an Editor's arrow
-            // joining two entities offers the cardinality presets.
-            cardinality={
-              !readOnly &&
-              !selectedLocked &&
-              props.entityActions &&
-              selected?.type === 'arrow' &&
-              joinsEntities(selected, elements)
-                ? {
-                    current: cardinalityLabel(selected),
-                    onPick: props.entityActions.setCardinalitySelected,
                   }
                 : undefined
             }

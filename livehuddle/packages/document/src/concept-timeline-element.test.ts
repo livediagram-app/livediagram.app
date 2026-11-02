@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { normaliseElement } from './element-normalise';
 import { createShape, isConceptShape, type ShapeElement } from './index';
-import { svgConcept } from './svg-render-concept';
+import { svgTimeline } from './svg-render-timeline';
 
-// docs/specs/009-elements/concept-graphics.md "Timeline"
+// docs/specs/009-elements/timeline.md
 describe('the Timeline element', () => {
-  it('is a concept graphic, made with four milestones and their whens', () => {
+  it('is a Timeline, made with four milestones and their whens', () => {
     const t = createShape('timeline-rail', 0, 0);
     expect(isConceptShape(t.shape)).toBe(true);
     expect(t.conceptRows).toEqual([
@@ -47,11 +47,10 @@ describe('the Timeline element', () => {
 
   it('exports its spine, a dot per milestone and every name and when', () => {
     const t = createShape('timeline-rail', 0, 0) as ShapeElement & { type: 'shape' };
-    const svg = svgConcept(t, {
+    const svg = svgTimeline(t, t.conceptRows!, {
       stroke: '#2563eb',
       fill: '#ffffff',
       labelColor: '#0f172a',
-      label: '',
     });
     expect(svg.match(/<circle /g)?.length).toBeGreaterThanOrEqual(4);
     for (const word of ['Kick-off', 'Launch', 'Jan', 'Sep']) expect(svg).toContain(word);

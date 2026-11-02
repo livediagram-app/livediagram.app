@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { ENTITY_MAX_FIELDS } from '@livehuddle/document';
 import { ReportTally } from './notes';
 import { readGraph } from './cells';
 import { convertPage } from './convert-page';
@@ -27,27 +26,10 @@ const row = (id: string, parent: string, value: string, y: number) =>
     `parent="${parent}" value="${value}"`,
   );
 
-describe('entities', () => {
-  it('cuts rows and text beyond the entity limits, and counts them', () => {
-    const rows = Array.from({ length: ENTITY_MAX_FIELDS + 2 }, (_, i) =>
-      row(`r${i}`, 'c', i === 0 ? `${'n'.repeat(90)}: T` : `f${i}`, 26 + i * 26),
-    ).join('');
-    const { elements, notes } = convert(
-      vertex(
-        'c',
-        'swimlane;childLayout=stackLayout;',
-        'width="160" height="2000"',
-        'parent="1" value="Big"',
-      ) + rows,
-    );
-    expect(elements).toHaveLength(1);
-    const entity = elements[0] as { entityFields: { name: string }[] };
-    expect(entity.entityFields).toHaveLength(ENTITY_MAX_FIELDS);
-    expect(entity.entityFields[0]!.name).toHaveLength(80);
-    expect(notes).toEqual([{ kind: 'text-truncated', count: 3 }]);
-  });
-
-  it('keeps a row with no colon as a name', () => {
+// An ER table or class box (a stack of text rows in a swimlane) imports as a lane holding its rows: the entity
+// element is gone with Diagram mode (docs/specs/007-editor/editor-modes.md).
+describe('a stacked swimlane', () => {
+  it('lands as a lane with its rows as text', () => {
     const { elements } = convert(
       vertex(
         'c',
@@ -57,7 +39,10 @@ describe('entities', () => {
       ) + // draw.io escapes an HTML label's text, then the file escapes the HTML.
         row('r', 'c', '&amp;lt;&amp;lt;interface&amp;gt;&amp;gt;', 26),
     );
-    expect(elements[0]).toMatchObject({ entityFields: [{ name: '<<interface>>' }] });
+    expect(elements[0]).toMatchObject({ shape: 'lane' });
+    expect(elements).toContainEqual(
+      expect.objectContaining({ type: 'text', label: '<<interface>>' }),
+    );
   });
 });
 

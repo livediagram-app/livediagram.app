@@ -17,7 +17,7 @@ type Line = (
   opts: { note?: boolean; align?: 'left' | 'center'; bold?: boolean; muted?: boolean },
 ) => ReactNode;
 
-// The Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): the spine and its arrowhead in the accent,
+// The Timeline (docs/specs/009-elements/timeline.md "Timeline"): the spine and its arrowhead in the accent,
 // then each milestone in reading order (so Build brings them in left to right), a dot in the accent ringed in the fill,
 // its stem, its when in the accent and its name in the ink, taking turns above and below the spine. The export draws
 // the same from the same layout (svg-render-timeline.ts).

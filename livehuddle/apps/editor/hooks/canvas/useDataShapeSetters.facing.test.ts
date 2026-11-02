@@ -17,7 +17,6 @@ describe('the facing setter', () => {
         els = map(els);
       },
       elements: () => els,
-      notify: () => {},
     });
     setChairFacingSelected('w');
     expect(els.find((e) => e.id === 'table')).not.toHaveProperty('chairFacing');
