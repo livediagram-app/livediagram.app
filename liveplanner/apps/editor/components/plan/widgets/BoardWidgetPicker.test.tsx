@@ -193,7 +193,23 @@ describe('BoardWidgetPicker', () => {
     show();
     const list = document.querySelector<HTMLElement>('[data-gallery-list]')!;
     const people = section('people')!;
-    Object.defineProperty(people, 'offsetTop', { value: 400 });
+    // The list starts under the gallery's header (120 px down the screen); People 400 px into it. Its offsetTop is
+    // from the list itself (the list is `relative`), so taking the list's own offset off too landed it 120 px short.
+    const at = (top: number) => () =>
+      ({
+        top,
+        bottom: top + 10,
+        left: 0,
+        right: 10,
+        x: 0,
+        y: top,
+        width: 10,
+        height: 10,
+      }) as DOMRect;
+    list.getBoundingClientRect = at(120);
+    people.getBoundingClientRect = at(520);
+    Object.defineProperty(people, 'offsetTop', { value: 400, configurable: true });
+    Object.defineProperty(list, 'offsetTop', { value: 120, configurable: true });
     fireEvent.click(rail().querySelector('[data-rail-entry="people"]')!);
     expect(list.scrollTop).toBe(400);
     expect(rail().querySelector('[aria-current="true"]')?.getAttribute('data-rail-entry')).toBe(
@@ -205,6 +221,42 @@ describe('BoardWidgetPicker', () => {
     });
     expect(rail().querySelector('[aria-current="true"]')?.getAttribute('data-rail-entry')).not.toBe(
       'people',
+    );
+  });
+
+  it('marks the last section current once the list is scrolled to its end, though it never reaches the top', () => {
+    show();
+    const list = document.querySelector<HTMLElement>('[data-gallery-list]')!;
+    const all = [...document.querySelectorAll<HTMLElement>('[data-gallery-section]')];
+    const last = all[all.length - 1]!;
+    Object.defineProperty(list, 'scrollHeight', { value: 1000, configurable: true });
+    Object.defineProperty(list, 'clientHeight', { value: 600, configurable: true });
+    list.scrollTop = 400;
+    const at = (top: number) => () =>
+      ({
+        top,
+        bottom: top + 10,
+        left: 0,
+        right: 10,
+        x: 0,
+        y: top,
+        width: 10,
+        height: 10,
+      }) as DOMRect;
+    list.getBoundingClientRect = at(0);
+    // Every other section above the top; the last starts 300 px down the view.
+    for (const el of all) {
+      el.getBoundingClientRect = at(el === last ? 300 : -50);
+      Object.defineProperty(el, 'offsetTop', {
+        value: el === last ? 700 : 350,
+        configurable: true,
+      });
+    }
+    act(() => {
+      fireEvent.scroll(list);
+    });
+    expect(rail().querySelector('[aria-current="true"]')?.getAttribute('data-rail-entry')).toBe(
+      last.dataset.gallerySection,
     );
   });
 

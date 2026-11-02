@@ -4,7 +4,10 @@
 // reading of the model that could drift from them.
 import { FONTS } from '@liveworkspace/model-core/fonts';
 import { DEFAULT_BORDER_STYLE } from '@liveworkspace/model-core/border-style';
-import type { CanvasSurface } from './colors';
+import { SELF_PAINTING_SHAPES, supportsFillColor, type CanvasSurface } from './colors';
+import { isChipShape } from './chip';
+import { isChartShape } from './data-shapes';
+import { isSankeyShape } from './sankey-model';
 import { elementFontId, resolveFinish, type Finish } from './finish';
 import type { BoxedElement } from './index';
 import { rotationOf } from './rotation';
@@ -110,8 +113,20 @@ export function inspectElement(el: BoxedElement, ctx: InspectContext): InspectSp
   });
   const finish = resolveFinish(finishOf(el), ctx.tabFinish);
   const shape = described.shape;
-  const paints = shape.kind === 'rect' || shape.kind === 'ellipse' || shape.kind === 'diamond';
-  const fill = paints ? inspectColour(shape.fill) : null;
+  // A kind that paints its own body sits in a wrapper with no border, background or corner (the canvas's
+  // element-variant, the export's frame skip), so none is read off it. A chart, a Sankey, an icon and a tab
+  // window paint nothing in the element's fill either. A badge or step number draws its pill in them, so
+  // it keeps its reading.
+  const selfPainting =
+    el.type === 'shape' && SELF_PAINTING_SHAPES.has(el.shape) && !isChipShape(el.shape);
+  const noFill =
+    !supportsFillColor(el) ||
+    (el.type === 'shape' && (isChartShape(el.shape) || isSankeyShape(el.shape)));
+  const paints =
+    !selfPainting &&
+    (shape.kind === 'rect' || shape.kind === 'ellipse' || shape.kind === 'diamond');
+  const fill =
+    (paints || selfPainting) && !noFill && 'fill' in shape ? inspectColour(shape.fill) : null;
   const strokeColour = paints ? inspectColour(shape.stroke) : null;
   // A shape's border is its own; every other boxed kind is drawn with the export's 1.5px line.
   const borderWidth = el.type === 'shape' ? borderOf(el, finish).width : 1.5;
@@ -144,7 +159,9 @@ export function inspectElement(el: BoxedElement, ctx: InspectContext): InspectSp
     opacity: inspectNumber(described.opacity),
     fill,
     border,
-    radius: radiusOf(el, shape.kind, finish, shape.kind === 'image' ? shape.radius : 0),
+    radius: selfPainting
+      ? null
+      : radiusOf(el, shape.kind, finish, shape.kind === 'image' ? shape.radius : 0),
     text,
   };
 }

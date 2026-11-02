@@ -41,4 +41,19 @@ describe('FirstPageChoice', () => {
     expect(kindCardIsWide(2, 3)).toBe(true);
     expect(kindCardIsWide(1, 3)).toBe(false);
   });
+
+  // A 375 px phone cut both edges off a fixed 420 px card: it keeps a 16 px gutter a side.
+  it('is never wider than the screen less a 16 px gutter a side', () => {
+    render(<FirstPageChoice zoom={0.4} onChoose={vi.fn()} />);
+    const card = document.querySelector('[data-first-page-choice]')!;
+    expect(card.className).toContain('w-[min(420px,calc(100vw-32px))]');
+    expect(card.className).not.toMatch(/(^|\s)w-\[420px\]/);
+  });
+
+  // On a phone the page is narrower than the card and the canvas's + after it sat over the Article card.
+  it('sits above the canvas layer it shares with the + after the page', () => {
+    render(<FirstPageChoice zoom={0.4} onChoose={vi.fn()} />);
+    const layer = document.querySelector('[data-first-page-choice]')!.parentElement!;
+    expect(layer.className.split(/\s+/)).toContain('z-10');
+  });
 });

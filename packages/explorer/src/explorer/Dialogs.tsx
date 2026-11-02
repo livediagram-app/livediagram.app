@@ -20,6 +20,7 @@ import { useExplorer } from './context';
 import { useHostExtras } from './host';
 import { SIDEBAR_LABELS } from '../views';
 import { useTeams } from '../teams/context';
+import { quoted } from '../quoted';
 
 // History loads when it is first opened: its timeline, runs and chips are only for the one who asks.
 const HistoryDialog = lazy(() =>
@@ -189,7 +190,7 @@ export function ExplorerDialogs() {
       return (
         <ConfirmDialog
           open
-          title={`Delete “${item.title || 'Untitled'}” for good?`}
+          title={`Delete ${quoted(item.title || 'Untitled')} for good?`}
           message="This cannot be undone."
           confirmLabel="Delete permanently"
           onCancel={close}
@@ -236,7 +237,7 @@ export function ExplorerDialogs() {
       return (
         <ConfirmDialog
           open
-          title={`Sync “${name}” to your account?`}
+          title={`Sync ${quoted(name)} to your account?`}
           message={
             sync
               ? `It’s kept only in this browser. To go into ${place} it moves to your account first, and then it’s on every device you sign in on.`

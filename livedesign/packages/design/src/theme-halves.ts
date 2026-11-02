@@ -8,6 +8,7 @@ import { DEFAULT_SCHEME_ID, defaultScheme, type Appearance, type ThemeDefinition
 import type { ShapeKind } from './index';
 import { reachContrast, THEME_LINE_CONTRAST, THEME_TEXT_CONTRAST } from './readable-colour';
 import { legacyShapeColorPresets, shapeColorPresets } from './theme-presets';
+import { isOpaqueHex } from './page-ink-contrast';
 
 type Role = 'background' | 'pattern' | 'fill' | 'stroke' | 'text';
 
@@ -182,8 +183,13 @@ const VIEWED_FIELDS = ['fillColor', 'strokeColor', 'textColor', 'arrowheadColor'
 
 /** An element drawn in a theme half: each colour that is one of the theme's (per `map`, from themeColourMap) becomes
  *  that slot's colour in the half; any other colour is someone's choice and stays. The same object when nothing
- *  changes, so a memoised view keeps its identity. */
-export function viewElementInTheme<T extends object>(el: T, map: ReadonlyMap<string, string>): T {
+ *  changes, so a memoised view keeps its identity. `paper` is the tone of the filled page the element sits on, if
+ *  any: a label with no fill of its own is read against it (sinksIntoPaper). */
+export function viewElementInTheme<T extends object>(
+  el: T,
+  map: ReadonlyMap<string, string>,
+  paper?: string,
+): T {
   if (map.size === 0) return el;
   let patch: Record<string, string> | null = null;
   const preset = (el as { colorPreset?: unknown }).colorPreset;
@@ -200,7 +206,29 @@ export function viewElementInTheme<T extends object>(el: T, map: ReadonlyMap<str
     delete patch.textColor;
     if (Object.keys(patch).length === 0) patch = null;
   }
+  if (patch && paper && sinksIntoPaper(el as Record<string, unknown>, patch, paper)) {
+    delete patch.textColor;
+    if (Object.keys(patch).length === 0) patch = null;
+  }
   return patch ? { ...el, ...patch } : el;
+}
+
+// A label with no fill of its own sits on its page (docs/specs/011-theme/light-and-dark.md "A page's own paper"), so
+// its text is read against the page as a box's is against its fill: a theme slot can share a template's own colour
+// (pale slate words on a dark cover, a light half's stroke), and that slot's colour in the half can sink the words into
+// the page. True when the view would put the text on the page below the floor and read worse than the stored ink.
+function sinksIntoPaper(
+  el: Record<string, unknown>,
+  patch: Record<string, string>,
+  paper: string,
+): boolean {
+  const text = el.textColor;
+  if (!patch.textColor || typeof text !== 'string') return false;
+  const fill = patch.fillColor ?? el.fillColor;
+  const onPaper = typeof fill === 'string' ? !isOpaqueHex(fill) : el.type === 'text';
+  if (!onPaper) return false;
+  const viewed = pairContrast(patch.textColor, paper);
+  return viewed < THEME_TEXT_CONTRAST && viewed < pairContrast(text, paper);
 }
 
 // A box's text and fill are drawn as a pair (docs/specs/011-theme/light-and-dark.md "What a viewer sees"): redrawing

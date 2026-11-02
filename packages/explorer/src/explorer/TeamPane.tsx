@@ -4,11 +4,11 @@
 // place, over the team's library, then the team's own feed (TeamActivity.tsx), closed until opened. A team the person is not in (gone, left, never joined) is a not-found card instead.
 
 import type { ReactNode } from 'react';
-import { Button } from '@liveworkspace/ui';
 import { LIST_CARD } from '../ui/classes';
 import { TeamCard, useTeamDetails } from '../teams/TeamCard';
 import { useExplorer } from './context';
 import { TeamActivity } from './TeamActivity';
+import { NotFoundCard } from './NotFoundCard';
 
 export { initialsOf, teamHeadline } from '../teams/TeamCard';
 export { memberName } from '../teams/rules';
@@ -55,24 +55,12 @@ function TeamMembersSkeleton() {
 }
 
 function TeamNotFound() {
-  const { navigate, words } = useExplorer();
+  const { words } = useExplorer();
   return (
-    <div className="flex items-center justify-center px-6 py-16" data-team-not-found="">
-      <div className="flex max-w-md flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/30">
-        <p className="text-[10px] font-semibold uppercase tracking-wider text-rose-600 dark:text-rose-400">
-          404
-        </p>
-        <h1 className="mt-1 text-xl font-semibold text-slate-900 dark:text-slate-100">
-          Team not found
-        </h1>
-        <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-          This team doesn’t exist, or you’re not a member of it. Ask an admin for an invite, or head
-          back to your own {words.lowerMany}.
-        </p>
-        <Button size="md" className="mt-6" onClick={() => navigate({ kind: 'all' })}>
-          Back to your {words.lowerMany}
-        </Button>
-      </div>
+    <div data-team-not-found="">
+      <NotFoundCard title="Team not found">
+        {`This team doesn’t exist, or you’re not a member of it. Ask an admin for an invite, or head back to your own ${words.lowerMany}.`}
+      </NotFoundCard>
     </div>
   );
 }

@@ -43,6 +43,9 @@ export function useFieldWidgets({
 }) {
   const addTypes = setup.addTypes;
   const fields = useMemo(() => boardFields({ addTypes }, types), [addTypes, types]);
+  // Every custom field the board's types offer, those no view reads too: what a widget on the board is judged against,
+  // so a field made Text reads "This field changed kind" rather than "removed" (board-widgets.md "A field gone").
+  const everyField = useMemo(() => boardFields({ addTypes }, types, false), [addTypes, types]);
   const plan = usePlan();
   const calculated = fields.some((f) => f.def.kind === 'calculated');
   const planItems = plan?.items;
@@ -58,17 +61,17 @@ export function useFieldWidgets({
   const labelOf = useCallback(
     (id: BoardWidgetId): string => {
       if (isBoardWidgetKind(id)) return BOARD_WIDGET_INFO[id].label;
-      const state = isFieldWidgetKey(id) ? fieldWidgetState(id, fields) : null;
+      const state = isFieldWidgetKey(id) ? fieldWidgetState(id, everyField) : null;
       if (state && state.state !== 'removed')
         return fieldWidgetLabel(state.field, parseFieldWidget(id)!.view);
       const view = parseFieldWidget(id)?.view;
       return view ? `Removed field ${FIELD_WIDGET_VIEW_INFO[view].label}` : 'Widget';
     },
-    [fields],
+    [everyField],
   );
   const suggest = useCallback(
     (): WidgetSuggestion[] => suggestWidgets({ setup, items, types, fields, widgets, now, read }),
     [setup, items, types, fields, widgets, now, read],
   );
-  return { fields, read, labelOf, suggest };
+  return { fields, everyField, read, labelOf, suggest };
 }

@@ -11,6 +11,7 @@ import type { ItemOverlay, ItemPatch } from './overlay';
 import { failureText } from './errors';
 import type { ToastApi } from '../ui/Toasts';
 import type { OrganiseTelemetry } from '../types';
+import { isolated, quoted } from '../quoted';
 
 // Whose Trash an item sits in, as Trash events report it.
 const trashOf = (item: { teamId: string | null }) => (item.teamId ? 'Team' : 'Personal');
@@ -60,7 +61,7 @@ export function createItemActions({
   onOrganise?: OrganiseTelemetry;
 }): ItemActions {
   // Every toast names what it acted on.
-  const named = (item: Item) => `“${item.title || 'Untitled'}”`;
+  const named = (item: Item) => quoted(item.title || 'Untitled');
   // Patch, call, and on a refusal take the patch back and say why.
   async function optimistic(
     item: Item,
@@ -132,7 +133,7 @@ export function createItemActions({
       }
       // Said with an Undo that moves it back, from Change Folder and a drop alike.
       if (ok && placeName) {
-        toast.show(`Moved ${named(item)} to ${placeName(to)}.`, {
+        toast.show(`Moved ${named(item)} to ${isolated(placeName(to))}.`, {
           tone: 'success',
           action: {
             label: 'Undo',
@@ -190,7 +191,7 @@ export function createItemActions({
       try {
         const { item: copy } = await client.copyItem(item.id, { title }, sharedAccess(item));
         reloadLists();
-        toast.show(`Made “${copy.title}”.`, { tone: 'success' });
+        toast.show(`Made ${quoted(copy.title)}.`, { tone: 'success' });
         return copy;
       } catch (e) {
         toast.error(failureText(e, 'Couldn’t duplicate it. Try again.'));

@@ -23,6 +23,13 @@ describe('the card in front', () => {
     expect(cardInFrontOf(cards, null)).toBe('a');
   });
 
+  it('brings the card before its place to the front when the card asked for has gone', () => {
+    // An undone split took away card 3 of 4, the card in front: card 2 comes to the front, not card 1.
+    expect(cardInFrontOf(cards, 'gone', 2)).toBe('b');
+    expect(cardInFrontOf(cards, 'gone', 0)).toBe('a');
+    expect(cardInFrontOf(cards, 'gone', 9)).toBe('d');
+  });
+
   it('is none off a stack', () => {
     expect(cardInFrontOf([{ id: 'p', kind: 'slide' }], 'p')).toBeNull();
     expect(cardInFrontOf([], null)).toBeNull();

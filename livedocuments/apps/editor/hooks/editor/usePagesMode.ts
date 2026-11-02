@@ -212,7 +212,18 @@ export function usePagesMode(deps: {
   // A tab of flashcards shows one card at a time, the card in front (docs/specs/007-editor/
   // flashcards.md "The stack"): the one gone to on this tab, else the first.
   const [wantedCard, setWantedCard] = useState<{ tabId: string; id: string } | null>(null);
-  const cardId = cardInFrontOf(pages, wantedCard?.tabId === tabId ? wantedCard.id : null);
+  // Where the card in front last stood, so a card taken away under it (an undo, a peer) hands the
+  // front to the card before it.
+  const frontAt = useRef(0);
+  const wanted = wantedCard?.tabId === tabId ? wantedCard.id : null;
+  const cardId = cardInFrontOf(pages, wanted, frontAt.current);
+  // The card standing in for one gone becomes the one asked for (set while rendering, as React derives
+  // state from a change in its inputs), so the next render keeps it rather than stepping back again.
+  if (wanted && cardId && cardId !== wanted) setWantedCard({ tabId, id: cardId });
+  useEffect(() => {
+    const at = pages.findIndex((p) => p.id === cardId);
+    if (at >= 0) frontAt.current = at;
+  }, [pages, cardId]);
   const cardStage = useMemo(() => cardStageOf(pages, cardId), [pages, cardId]);
   // The card that was in front, pictured as it went, flipped away once its successor is drawn.
   const flipFrom = useRef<{ picture: CardPicture | null; forward: boolean } | null>(null);

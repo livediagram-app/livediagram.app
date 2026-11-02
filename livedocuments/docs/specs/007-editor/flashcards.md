@@ -57,7 +57,9 @@ alignment. Nothing else can be put on it.
   **Bulleted list**, **Numbered list**, **To-do list**, **Quote**, **Code** and **Divider**. Never a page break, an
   image, a table, a chart, a drawing, a callout or a sticky note.
 - **Paste** keeps the text (headings, lists, quotes, code, links and the inline marks, as in an article); a pasted
-  picture and pasted canvas elements are dropped, and the paste says so once ("Flashcards hold text only.").
+  table (HTML, or tab-separated text) comes as a list, a row an item with its cells joined by " · ", as an agent's
+  does; a pasted picture, page break and canvas elements are dropped, and the paste says so once ("Flashcards hold
+  text only.").
 - **Nothing lands on a card**: an element drawn, dropped, pasted or placed so its centre lands on a card is not added,
   and one moved onto it goes back, with a short notice, "Flashcards hold text only.", shown at most once every few
   seconds (as a locked page's is). An element already on a card (made before this rule, or by an agent) stays where it
@@ -116,6 +118,8 @@ framed); the card changes.
   card that was in front. The same 420 ms, mirrored.
 - A flip to a card several places away is one flip, forward or back.
 - A second flip while one is under way finishes the first at once and starts the next.
+- **The card in front taken away** (an undo of the split that made it, a peer's delete): the card before its place
+  comes to the front (the first, when it was first), as a delete lands on the page before; never the stack's first card.
 - **Reduced motion**: no flip; the card in front changes at once.
 - The flip is drawn over the canvas, holding no presses; the new card in front is ready for the caret and presses at
   once.

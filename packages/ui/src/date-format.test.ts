@@ -71,6 +71,28 @@ describe('dateFormat', () => {
     expect(gb(MEDIUM_DATE_TIME)).toMatch(/^3 Nov 2026, \d\d:\d\d$/);
     expect(gb(TIME)).toMatch(/^\d\d:\d\d$/);
     expect(gb(TIME_SECONDS)).toMatch(/^\d\d:\d\d:\d\d$/);
-    expect(TIME.format(AT, 'en-US')).toMatch(/^\d\d:\d\d [AP]M$/);
+    expect(TIME.format(AT, 'en-US')).toMatch(/^\d{1,2}:\d\d\s[AP]M$/);
+  });
+
+  it('writes a morning time as the locale does: never a padded 12-hour clock', () => {
+    // 09:05:09 wherever the test runs, so the hour has one digit.
+    const morning = new Date(2026, 10, 3, 9, 5, 9).getTime();
+    expect(TIME.format(morning, 'en-US')).toMatch(/^9:05\sAM$/);
+    expect(TIME_SECONDS.format(morning, 'en-US')).toMatch(/^9:05:09\sAM$/);
+    expect(TIME.format(morning, 'en-GB')).toBe('09:05');
+    expect(TIME_SECONDS.format(morning, 'en-GB')).toBe('09:05:09');
+    // A format with a date and a two-digit hour too (Recent Deliveries, the status page's incidents).
+    const stamp = dateFormat({
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    expect(stamp.format(morning, 'en-US')).toMatch(/^Nov 3, 9:05\sAM$/);
+    expect(stamp.format(morning, 'en-GB')).toBe('3 Nov, 09:05');
+    // A 12-hour clock asked for in a 24-hour locale is unpadded too.
+    expect(
+      dateFormat({ hour: '2-digit', minute: '2-digit', hour12: true }).format(morning, 'en-GB'),
+    ).toMatch(/^9:05\sam$/);
   });
 });

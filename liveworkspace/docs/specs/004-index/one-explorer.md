@@ -381,12 +381,27 @@ next one names it.
 
 **Dates.** Every date the Explorer, the Settings panel and liveworkspace.app's own pages show is written in the
 browser's locale (its language and region order: "3 Nov 2026" in the UK, "Nov 3, 2026" in the US), never a fixed
-one, through one shared formatter (`@liveworkspace/ui/date-format`). It keeps one `Intl.DateTimeFormat` per set of
+one, through one shared formatter (`@liveworkspace/ui/date-format`). A time is written as the locale's clock writes it: "09:05" on a 24-hour clock, "9:05 AM" on a
+12-hour one, never a padded "09:05 AM". It keeps one `Intl.DateTimeFormat` per set of
 options and locale, made the first time it is asked for, so a list of thousands of rows makes none per row. A date
 that has to be a given zone's day keeps its zone (the status page's days are UTC). Text a prerender would write
 can't know the reader's locale, so dates are written only in the browser: the lists that carry them read their data
 in the browser (the Explorer's items, This Browser's list, the status history, the Settings rows), and a prerender
 shows none.
+
+**Names in sentences.** A toast or a confirmation that names an item, a folder, a team or a picture ("Moved “Plan”
+to the Trash.", "Delete “Plan” for good?") isolates the name (FSI … PDI, `quoted` and `isolated` in the package): a
+right-to-left name, or one holding a bidi override, stays inside its own run and never turns the words after it
+around.
+
+**Focus when a row leaves.** When the row keyboard focus was on leaves the list (deleted, moved to another folder or
+team, restored or deleted for good from the Trash, dismissed from Shared With Me), focus goes to the same control on
+the row that took its place, or on the row before when it was the last, never to the page's body. A row the list
+only scrolled out of view isn't counted; focus is never pulled back to the list from elsewhere.
+
+**A folder or team that is gone.** A folder link the index answers 404 for (deleted, out of reach, a stale
+bookmark) shows a "Folder not found" card, an h2 under the pane's h1, with a button back to the person's own
+work, the same card a missing team shows. Only other failures offer Try again.
 
 ### 5. Comments, actions and the Inbox live in liveworkspace
 

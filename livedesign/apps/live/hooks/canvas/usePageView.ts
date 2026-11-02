@@ -2,8 +2,8 @@
 // "A page's own paper"): the page's surface, and the tab theme's map for each surface. Undefined off Pages
 // mode or where no page has a fill, so the canvas keeps its one-map fast path.
 import { useMemo } from 'react';
-import { elementPageSurfaces, type Element, type LaidOutPage } from '@livedesign/design';
-import type { PageView } from '@/lib/stock-colour-projector';
+import type { Element, LaidOutPage } from '@livedesign/design';
+import { pageViewOf, type PageView } from '@/lib/stock-colour-projector';
 import { themeViewMap } from '@/lib/themes';
 
 export function usePageView(
@@ -18,7 +18,6 @@ export function usePageView(
   const maps = useMemo(() => ({ light, dark }), [light, dark]);
   return useMemo(() => {
     if (!pages) return undefined;
-    const surfaces = elementPageSurfaces(elements, pages);
-    return surfaces.size ? { surfaces, maps } : undefined;
+    return pageViewOf(elements, pages, maps);
   }, [elements, pages, maps]);
 }

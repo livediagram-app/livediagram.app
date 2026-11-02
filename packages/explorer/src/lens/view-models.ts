@@ -6,6 +6,7 @@ import { DIMENSION_LABELS, LENS_MAX_INPUT_LENGTH, type LensDimension } from './d
 import { valueLabel, valueOptions } from './labels';
 import { availableDimensions } from './suggest';
 import type { LensContext, LensIssue, ParsedLens, TokenState } from './types';
+import { quoted } from '../quoted';
 
 const ANY = 'Any';
 
@@ -112,13 +113,13 @@ function withArticle(noun: string): string {
 export function issueMessage(issue: LensIssue, _words: Words): string {
   switch (issue.reason) {
     case 'unknown_dimension':
-      return `“${issue.raw}” isn’t a filter, so it’s searched as text.`;
+      return `${quoted(issue.raw)} isn’t a filter, so it’s searched as text.`;
     case 'too_long':
       return `The search is cut to ${LENS_MAX_INPUT_LENGTH} characters.`;
     case 'missing_value':
-      return `“${issue.raw}” needs a value, so it’s searched as text.`;
+      return `${quoted(issue.raw)} needs a value, so it’s searched as text.`;
     case 'unknown_value':
-      return `“${issue.value}” isn’t ${withArticle(DIMENSION_LABELS[issue.dimension])} option, so it’s searched as text.`;
+      return `${quoted(String(issue.value))} isn’t ${withArticle(DIMENSION_LABELS[issue.dimension])} option, so it’s searched as text.`;
     case 'unknown_team':
       return 'That team isn’t one of yours, so it’s searched as text.';
     case 'space_not_here':

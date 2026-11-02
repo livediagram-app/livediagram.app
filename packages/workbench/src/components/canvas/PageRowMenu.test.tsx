@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { LONG_PRESS_MS } from '../../hooks/ui/useLongPress';
 import {
+  focusRowAfterRemove,
   LIFT_CLICK_MS,
   PageRowMenu,
   PageRowMenuButton,
@@ -58,6 +59,7 @@ function List({
     <>
       {Object.entries(models).map(([id, model]) => (
         <div key={id} data-testid={`row-${id}`} {...menu.rowProps(id)} onClick={() => go(id)}>
+          <span data-contents-grip="" data-testid={`grip-${id}`} />
           {stack ? (
             <PageRowStack
               id={id}
@@ -183,6 +185,45 @@ describe('PageRowMenu', () => {
     }
   });
 
+  it("opens nothing for a finger held on the row's grip, which is starting a drag", () => {
+    vi.useFakeTimers();
+    try {
+      render(<List models={{ a: model().model }} />);
+      fireEvent.pointerDown(screen.getByTestId('grip-a'), {
+        pointerType: 'touch',
+        clientX: 5,
+        clientY: 5,
+      });
+      act(() => {
+        vi.advanceTimersByTime(LONG_PRESS_MS * 2);
+      });
+      expect(screen.queryByRole('menu')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps its own keys from the list, but lets Undo and Redo chords through', () => {
+    const outer = vi.fn<(key: string) => void>();
+    render(
+      <div
+        onKeyDown={(e) => {
+          outer(e.key);
+        }}
+      >
+        <List models={{ a: model().model }} stack />
+      </div>,
+    );
+    for (const name of ['More Actions for Page a', 'Delete Page a']) {
+      const button = screen.getByRole('button', { name });
+      fireEvent.keyDown(button, { key: 'Home' });
+      fireEvent.keyDown(button, { key: 'Backspace' });
+      fireEvent.keyDown(button, { key: 'z', metaKey: true });
+      fireEvent.keyDown(button, { key: 'y', ctrlKey: true });
+    }
+    expect(outer.mock.calls.map((c) => c[0])).toEqual(['z', 'y', 'z', 'y']);
+  });
+
   it('ignores a long press that ends before its menu could open', () => {
     vi.useFakeTimers();
     try {
@@ -218,5 +259,68 @@ describe('PageRowStack', () => {
     render(<List models={{ a: pageRowModel({ locked: true, toggleLock: vi.fn() }) }} stack />);
     expect(screen.queryByRole('button', { name: 'Delete Page a' })).toBeNull();
     expect(screen.getByRole('button', { name: 'More Actions for Page a' })).toBeTruthy();
+  });
+});
+
+describe('row keys', () => {
+  // Cmd+Z did nothing after a Move Down from the menu: focus was back on the ⋯, which stopped every key.
+  it("hands a Cmd or Ctrl chord on ⋯ or Delete to the editor, and keeps a row's arrows its own", () => {
+    const a = model();
+    render(<List models={{ a: a.model }} stack />);
+    const seen: string[] = [];
+    const onKey = (e: KeyboardEvent) =>
+      seen.push(`${e.metaKey ? 'Meta+' : ''}${e.ctrlKey ? 'Ctrl+' : ''}${e.key}`);
+    window.addEventListener('keydown', onKey);
+    try {
+      for (const name of ['More Actions for Page a', 'Delete Page a']) {
+        const el = screen.getByRole('button', { name });
+        fireEvent.keyDown(el, { key: 'z', metaKey: true });
+        fireEvent.keyDown(el, { key: 'z', ctrlKey: true });
+        fireEvent.keyDown(el, { key: 'Home' });
+      }
+    } finally {
+      window.removeEventListener('keydown', onKey);
+    }
+    expect(seen).toEqual(['Meta+z', 'Ctrl+z', 'Meta+z', 'Ctrl+z']);
+  });
+});
+
+describe('focusRowAfterRemove', () => {
+  const rows = (ids: string[]) => {
+    const els = new Map<string, HTMLButtonElement>();
+    for (const id of ids) {
+      const b = document.createElement('button');
+      document.body.append(b);
+      els.set(id, b);
+    }
+    return els;
+  };
+  const flush = () => {
+    act(() => {
+      vi.runAllTimers();
+    });
+  };
+
+  it('moves focus to the row before, else the next, passing rows gone with the page', () => {
+    vi.useFakeTimers({ toFake: ['requestAnimationFrame'] });
+    try {
+      const els = rows(['a', 'b', 'c', 'd']);
+      els.get('c')!.remove();
+      focusRowAfterRemove(['a', 'b', 'c', 'd'], 'c', (id) => els.get(id));
+      flush();
+      expect(document.activeElement).toBe(els.get('b'));
+      els.get('a')!.remove();
+      focusRowAfterRemove(['a', 'b', 'd'], 'a', (id) => els.get(id));
+      flush();
+      expect(document.activeElement).toBe(els.get('b'));
+      // An article's other page, gone with it, is passed by.
+      els.get('b')!.remove();
+      focusRowAfterRemove(['b', 'x', 'd'], 'b', (id) => (id === 'x' ? undefined : els.get(id)));
+      flush();
+      expect(document.activeElement).toBe(els.get('d'));
+    } finally {
+      vi.useRealTimers();
+      document.body.replaceChildren();
+    }
   });
 });

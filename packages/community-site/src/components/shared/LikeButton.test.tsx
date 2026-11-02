@@ -76,6 +76,17 @@ describe('LikeButton', () => {
     expect(button().getAttribute('aria-label')).toBe('Like (9 likes)');
   });
 
+  it('reads at AA once liked: rose-700 on its rose-50 wash, not rose-600 (4.26:1)', async () => {
+    fetchMock.mockReturnValue(new Promise(() => {}));
+    await act(async () => root.render(<Harness />));
+    await click();
+    const classes = button().className.split(/\s+/);
+    expect(classes).toContain('bg-rose-50');
+    expect(classes).toContain('text-rose-700');
+    expect(classes).not.toContain('text-rose-600');
+    expect(classes).not.toContain('hover:text-rose-600');
+  });
+
   it('rolls back when the request fails', async () => {
     fetchMock.mockResolvedValue(Response.json({ error: 'rate_limited' }, { status: 429 }));
     await act(async () => root.render(<Harness />));

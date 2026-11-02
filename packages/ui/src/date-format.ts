@@ -21,6 +21,21 @@ export type DateFormat = {
 // The runtime's default locale has no name here: `undefined` is its key.
 const DEFAULT = '';
 
+// `hour: '2-digit'` asks for a 24-hour clock's "09:05", but a 12-hour locale pads with it too ("09:05 AM", where the
+// US writes "9:05 AM"). So a two-digit hour is asked for only where the locale's clock runs 0 to 23.
+function clockOptions(
+  locale: string | undefined,
+  options: Intl.DateTimeFormatOptions,
+): Intl.DateTimeFormatOptions {
+  if (options.hour !== '2-digit') return options;
+  const { hourCycle } = new Intl.DateTimeFormat(locale, {
+    hour: 'numeric',
+    hour12: options.hour12,
+    hourCycle: options.hourCycle,
+  }).resolvedOptions();
+  return hourCycle === 'h11' || hourCycle === 'h12' ? { ...options, hour: 'numeric' } : options;
+}
+
 /** One date format, declared once: its formatters are made lazily, one per locale, and reused. */
 export function dateFormat(options: Intl.DateTimeFormatOptions): DateFormat {
   const byLocale = new Map<string, Intl.DateTimeFormat>();
@@ -28,7 +43,7 @@ export function dateFormat(options: Intl.DateTimeFormatOptions): DateFormat {
     const key = locale ?? DEFAULT;
     let made = byLocale.get(key);
     if (!made) {
-      made = new Intl.DateTimeFormat(locale, options);
+      made = new Intl.DateTimeFormat(locale, clockOptions(locale, options));
       byLocale.set(key, made);
     }
     return made;

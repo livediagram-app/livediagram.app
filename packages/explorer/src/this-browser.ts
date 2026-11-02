@@ -8,6 +8,7 @@
 // Plain TypeScript, no React: the apps' offline stores import it to write the list.
 
 import type { App } from '@liveworkspace/index-client';
+import { quoted } from './quoted';
 
 // The Inbox's rows from the same items, kept beside the list for the page (this-browser-inbox.ts).
 export * from './this-browser-inbox';
@@ -286,7 +287,7 @@ export function thisBrowserDeleteCopy(
 ): { title: string; message: string; confirmLabel: string } {
   return {
     title: `Delete this ${kind} from this browser?`,
-    message: `“${title || 'Untitled'}” is kept only in this browser. Deleting it removes this browser’s copy, the only one, for good. Nothing in your account changes.`,
+    message: `${quoted(title || 'Untitled')} is kept only in this browser. Deleting it removes this browser’s copy, the only one, for good. Nothing in your account changes.`,
     confirmLabel: 'Delete',
   };
 }
