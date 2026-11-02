@@ -37,8 +37,15 @@ the other modes have tours of their own (the [Draw tour](../023-draw-mode/draw-t
   starts](start-diagramming.md) "The tours wait"), not read-only and not an embed. Leaving Diagram mid-tour
   (switching the tab's mode, or opening a tab in another mode) ends it as skipped, since its steps point at chrome
   the other modes do not show.
-- **It stays on offer once taken.** Finishing or skipping the tour does not take the button away: pressing it again
-  is how the tour is taken again.
+- **Gone once taken, back from Settings.** A tour taken is off the button: once the person starts it (and so
+  finishes or skips it), its host stops offering it, so the button makes room for a tour not yet taken, or is not
+  drawn at all. It comes back when its switch in Settings' **Tours** category is turned on again (on means "offer
+  me this tour", [User preferences](user-preferences.md) "Tours"), and turning a switch on and closing Settings
+  also runs that tour if it could run right then. Every tour's host reads the same synced record its Settings row
+  reads, so the button and the row never disagree, and Power user mode, which answers every tour, clears the button
+  too. The rule lives once in the shared offer (`useOfferTour`'s `seen`, `tour-offer.ts`): a host passes whether its
+  tour is taken, and a taken tour is never published. Until 1 November 2026 a taken tour stayed on the button for
+  good (Work Tracker #177).
 - **A press starts the first step.** There is no welcome card: the button already said what it starts. A press
   while another tour is on screen does nothing ("One tour at a time").
 - **The last card is a step card.** "You're ready to diagram" is drawn in the same popover as the steps
@@ -56,8 +63,9 @@ the other modes have tours of their own (the [Draw tour](../023-draw-mode/draw-t
   (`TourPopover`), so this holds for all of them. It leaves the key alone while it is editing a field, where an
   element tour asks for Escape to put text back, and when another surface has already taken it.
 - **Taken, on every device.** However a run ends (skipped mid-tour or completed), the synced `tourSeen` user
-  preference ([User preferences](user-preferences.md)) records it, so Settings' **Diagram Tour** row reads off. It no
-  longer hides the button: it is a record, kept for the Settings row. The preference keeps the welcome tour's name.
+  preference ([User preferences](user-preferences.md)) records it, so Settings' **Diagram Tour** row reads off and the
+  button no longer offers it. It is written as the run starts, too, so a reload mid-tour leaves it taken. The
+  preference keeps the welcome tour's name.
 - **Rerun from Settings.** The Settings dialog's **Tours** category has a **Diagram Tour** switch that surfaces
   `tourSeen` (inverted: on means not seen). Turning a previously-off switch on and closing Settings starts the tour
   from the top when the open tab is in Diagram and the tour is on offer there; otherwise it does nothing, and the

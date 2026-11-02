@@ -28,8 +28,8 @@ Switching the mode **on** writes these values, once:
 
 The [element tours](element-tours.md) record each toured kind once taken (`elementTourKinds`); their seen
 flag counts every track only while the mode is on, so switching it off gives back every track not yet taken. Marking
-a tour seen only turns its Settings row off: the footer's Start Tour button still offers every tour
-([Diagram tour](editor-tour.md) "Where it appears").
+a tour seen turns its Settings row off and takes it off the footer's Start Tour button until the row is on again
+([Diagram tour](editor-tour.md) "Where it appears"), so the mode's preset leaves no tour on the button.
 
 Panel opacity is not part of the preset. Motion is not part of the mode: every transition is snappy for everyone
 ([Motion](../004-interface-design/motion.md)).
