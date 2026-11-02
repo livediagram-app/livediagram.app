@@ -4,6 +4,7 @@ import type { Folder } from '@liveworkspace/index-client';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
 import { matchAll, SEARCH_DEBOUNCE_MS, SEARCH_GROUP_MAX } from './match';
 import { SearchPanel, type SearchEntry } from './SearchPanel';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 const folder = (id: string, name: string, teamId: string | null = null): Folder => ({
   id,
@@ -169,8 +170,7 @@ describe('matchAll', () => {
 
   it('runs over a large list well within a frame', () => {
     const folders = Array.from({ length: 20_000 }, (_, i) => `Folder number ${i} of many`);
-    const start = performance.now();
-    matchAll(folders, ['number', 'zzz'], (n) => n);
-    expect(performance.now() - start).toBeLessThan(50);
+    const spent = cpuMsOf(() => matchAll(folders, ['number', 'zzz'], (n) => n));
+    expect(spent).toBeLessThan(cpuBudgetMs(50));
   });
 });
