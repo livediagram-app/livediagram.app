@@ -672,13 +672,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "string"
   },
   "ChairFacing": {
-    "enum": [
-      "n",
-      "e",
-      "s",
-      "w"
-    ],
-    "type": "string"
+    "$ref": "#/components/schemas/SeatFacing"
   },
   "ChangesetAuthor": {
     "additionalProperties": false,
@@ -5136,6 +5130,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "value",
       "percent",
       "none"
+    ],
+    "type": "string"
+  },
+  "SeatFacing": {
+    "description": "Where a piece's back is: 'n' at the top, so its sitter faces down the canvas.",
+    "enum": [
+      "n",
+      "e",
+      "s",
+      "w"
     ],
     "type": "string"
   },
