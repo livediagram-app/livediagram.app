@@ -11,6 +11,10 @@ import {
   isValidTelemetryEvent as isLivediagramEvent,
 } from '@livediagram/api-schema';
 import {
+  isServerEmittedEvent as isLivehuddleServerEvent,
+  isValidTelemetryEvent as isLivehuddleEvent,
+} from '@livehuddle/api-schema';
+import {
   isServerEmittedEvent as isLivedocumentsServerEvent,
   isValidTelemetryEvent as isLivedocumentsEvent,
 } from '@livedocuments/api-schema';
@@ -74,11 +78,10 @@ export const VOCABULARIES: Record<TelemetrySender, Vocabulary> = {
     isValid: isLivedesignEvent as Vocabulary['isValid'],
     isServerOnly: isLivedesignServerEvent,
   },
-  // livehuddle, registered before its launch, is forked from livediagram and sends livediagram's events until its own
-  // api-schema lands with the fork (livehuddle/docs/specs/005-project-roadmap/build-plan.md step 3).
+  // livehuddle, registered before its launch, is checked against its own api-schema.
   'livehuddle.app': {
-    isValid: isLivediagramEvent as Vocabulary['isValid'],
-    isServerOnly: isLivediagramServerEvent,
+    isValid: isLivehuddleEvent as Vocabulary['isValid'],
+    isServerOnly: isLivehuddleServerEvent,
   },
 };
 
