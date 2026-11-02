@@ -158,7 +158,7 @@ test('This Browser lists the canvases kept here, opens one, and deletes one afte
   await rail.getByRole('button', { name: 'This Browser (1)' }).click();
   await expect(page.getByRole('region', { name: 'Current canvas' })).toHaveCount(1);
   await page.getByRole('button', { name: 'Delete Kept on this laptop' }).click();
-  const confirm = page.getByRole('dialog', { name: 'Delete this canvas?' });
+  const confirm = page.getByRole('dialog', { name: 'Delete this canvas from this browser?' });
   await expect(confirm).toBeVisible();
   await confirm.getByRole('button', { name: 'Delete', exact: true }).click();
   await expect(rail.getByRole('button', { name: /^This Browser/ })).toHaveCount(0);

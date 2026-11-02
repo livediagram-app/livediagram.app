@@ -60,3 +60,21 @@ describe('PollPromptSheet Escape', () => {
     expect(onAnswer).not.toHaveBeenCalled();
   });
 });
+
+// A question or answer of one long word (pasted, or typed as a joke) wraps inside the sheet instead of running off it.
+describe('PollPromptSheet long words', () => {
+  it('breaks a long unbroken question and answer inside the sheet', () => {
+    const word = 'x'.repeat(200);
+    const answer = 'y'.repeat(60);
+    const { getByRole } = render(
+      <PollPromptSheet
+        poll={{ ...POLL, question: word, options: [answer, 'B'] }}
+        onAnswer={vi.fn()}
+      />,
+    );
+    expect(getByRole('heading', { name: word }).className).toContain('[overflow-wrap:anywhere]');
+    const button = getByRole('button', { name: answer });
+    expect(button.className).toContain('[overflow-wrap:anywhere]');
+    expect(button.className).toContain('min-w-0');
+  });
+});

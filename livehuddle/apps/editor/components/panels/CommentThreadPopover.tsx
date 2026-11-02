@@ -145,7 +145,7 @@ export function CommentThreadPopover({
               type="button"
               aria-label="Close comments"
               onClick={onClose}
-              className="rounded p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              className="relative touch-target-y cursor-pointer rounded p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
             >
               <CloseIcon size={12} />
             </button>

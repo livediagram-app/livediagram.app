@@ -141,7 +141,11 @@ export function PresentationHud({
   const hasNotes = (notes ?? '').trim().length > 0;
   return (
     <>
+      {/* A landmark of its own: while presenting it is the only chrome on screen, and its
+          counter and name sat outside every landmark (axe region). */}
       <div
+        role="region"
+        aria-label="Presentation controls"
         className={`pointer-events-auto fixed right-4 top-4 z-[65] flex items-center gap-2 rounded-xl bg-slate-900/70 px-3 py-1.5 backdrop-blur transition-opacity duration-long ${
           hidden ? 'opacity-0' : 'opacity-100'
         }`}

@@ -65,9 +65,11 @@ export function PathEditToolbar({
       >
         <div role="radiogroup" aria-label="Node type" className="flex items-center gap-0.5">
           {NODE_TYPES.map((t) => (
-            <Tip key={t.id} label={`${t.label} point`}>
+            <Tip key={t.id} label={`${t.label} Point`}>
               <button
                 type="button"
+                // The tooltip's words, so it repeats the name (Tooltip warns when it does not).
+                aria-label={`${t.label} Point`}
                 role="radio"
                 aria-checked={view.type === t.id}
                 disabled={!view.hasSelection}

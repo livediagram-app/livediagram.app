@@ -143,6 +143,10 @@ export type EditorKeyboardShortcutsDeps = {
   // for a non-labelable selection (image / freehand) so the tool
   // shortcuts still fire there.
   onTypeIntoSelected: (elementId: string, char: string) => boolean;
+  // Dot voting from the keyboard (docs/specs/012-collaboration/session-tools.md "Casting from the keyboard"): `+`
+  // or `-` on the one selected element. True when the vote took the key; false leaves it to type-to-edit. Absent
+  // for a session that cannot cast (a Viewer).
+  onVoteKey?: (elementId: string, delta: 1 | -1) => boolean;
   // Zoom controls. Allowed for view-role visitors (zooming doesn't
   // change the document). Ctrl/Cmd + = / + zooms in, - zooms out,
   // 0 resets to 100%. Mirrors the ZoomControls buttons.
