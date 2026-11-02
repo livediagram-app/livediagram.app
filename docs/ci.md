@@ -85,6 +85,8 @@ result.
   JavaScript/TypeScript) on every pull request, every push to `main` and weekly on Mondays, so newly
   released queries also run against an unchanged `main`. It is an advanced setup, so the repository's
   CodeQL default setup stays off, or GitHub rejects the upload. The `main` ruleset requires its results.
+  The job may run for 60 minutes: since the livehuddle fork a full analysis takes 21 to over 30, and a run
+  cancelled at its limit leaves the PR's required CodeQL result missing until it runs again.
 
 - **MCP Registry** (`mcp-registry.yml`): only by hand (`workflow_dispatch`), never on a push. It publishes the
   chosen product's `server.json` (livediagram, liveplanner, livedocuments or livedesign) to the official MCP
