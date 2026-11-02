@@ -1,0 +1,2 @@
+tab 0b34 "Checkout platform ×10" · 300 elements: 160 boxes, 30 frames, 110 arrows · threads 10 open/20
+… notes hidden; attributes hidden; 13 elements in frame 82f7 hidden; 13 elements in frame 6b96 hidden; 13 elements in frame 9914 hidden; 181 elements in 27 other containers hidden; 80 elements hidden: view --only 82f7

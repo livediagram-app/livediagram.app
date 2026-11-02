@@ -1,0 +1,100 @@
+// @vitest-environment jsdom
+import { afterEach, describe, expect, it } from 'vitest';
+import { act, cleanup, render, screen } from '@testing-library/react';
+import { CommentThreadPopover } from './CommentThreadPopover';
+
+// The comment thread popover (docs/specs/012-collaboration/comment-pin.md): the composer takes the caret when the
+// popover opens, including when its anchor lands a render after it, so what is typed next is the comment.
+
+const noop = () => {};
+
+function renderPopover(elementId: string) {
+  render(
+    <CommentThreadPopover
+      elementId={elementId}
+      thread={undefined}
+      onAddComment={noop}
+      onDeleteComment={noop}
+      onResolve={noop}
+      onUnresolve={noop}
+      onClose={noop}
+      selfId="me"
+    />,
+  );
+}
+
+function addAnchor(id: string) {
+  const anchor = document.createElement('div');
+  anchor.dataset.elementId = id;
+  document.body.appendChild(anchor);
+  return anchor;
+}
+
+afterEach(() => {
+  cleanup();
+  document.body.innerHTML = '';
+});
+
+describe('CommentThreadPopover', () => {
+  it('focuses the composer when it opens on an anchor already there', () => {
+    addAnchor('a');
+    renderPopover('a');
+    expect(document.activeElement).toBe(screen.getByPlaceholderText('Add a comment…'));
+  });
+
+  // Portalled to the body, its header was a second page banner, and the dialog had no name.
+  it('is a dialog named by its heading, with no banner landmark of its own', () => {
+    addAnchor('a');
+    renderPopover('a');
+    expect(screen.getByRole('dialog', { name: /^Comments/ })).toBeTruthy();
+    expect(screen.queryByRole('banner')).toBeNull();
+  });
+
+  it('focuses the composer once an anchor that lands later places it', () => {
+    renderPopover('late');
+    expect(screen.queryByRole('dialog')).toBeNull();
+    addAnchor('late');
+    act(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+    expect(document.activeElement).toBe(screen.getByPlaceholderText('Add a comment…'));
+  });
+});
+
+// docs/specs/013-workspace/share-roles.md: a Viewer only looks.
+describe('CommentThreadPopover for a Viewer', () => {
+  it('reads the thread with no composer, no resolve and no delete', () => {
+    addAnchor('a');
+    const thread = {
+      resolved: false,
+      comments: [
+        {
+          id: 'c1',
+          text: 'Mine',
+          createdAt: 0,
+          authorName: 'Me',
+          authorColor: '#000',
+          authorId: 'me',
+        },
+      ],
+    };
+    render(
+      <CommentThreadPopover
+        elementId="a"
+        thread={thread as never}
+        onAddComment={noop}
+        onDeleteComment={noop}
+        onResolve={noop}
+        onUnresolve={noop}
+        onClose={noop}
+        readOnly
+        canComment={false}
+        selfId="me"
+      />,
+    );
+    expect(screen.getByText('Mine')).toBeTruthy();
+    expect(screen.queryByPlaceholderText('Add a comment…')).toBeNull();
+    expect(screen.queryByRole('button', { name: /resolve/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /delete/i })).toBeNull();
+  });
+});

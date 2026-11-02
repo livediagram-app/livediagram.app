@@ -1,0 +1,26 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.livediagram-app/livehuddle",
+  "title": "livehuddle",
+  "description": "Create, edit, share and render real-time collaborative diagrams and mind maps on livehuddle.app.",
+  "version": "0.2.0",
+  "websiteUrl": "https://www.livehuddle.app",
+  "repository": {
+    "url": "https://github.com/livediagram-app/livediagram.app",
+    "source": "github",
+    "subfolder": "livehuddle/apps/mcp"
+  },
+  "icons": [
+    {
+      "src": "https://www.livehuddle.app/livehuddle-icon-512.png",
+      "mimeType": "image/png",
+      "sizes": ["512x512"]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.livehuddle.app/mcp"
+    }
+  ]
+}

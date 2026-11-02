@@ -1,0 +1,52 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Roles and Invites',
+  description: 'How team roles work, and how to invite people to a team from the Explorer.',
+  path: '/help/collaboration/teams/roles-and-invites/',
+});
+
+<ArticleLayout title="Roles and Invites" description="Admin and Member roles, and inviting people to a team." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Teams", slug: "teams" }} subArticles={getSubArticles("teams").filter((a) => a.slug !== "roles-and-invites")}>
+
+Teams belong to your liveworkspace account, so a team is the same in every liveworkspace app, livehuddle included. You make and run them in livehuddle's Explorer: **New Team** at the bottom of the sidebar's **Spaces** group makes one, and a team's card, at the top of its view (or behind **Members** in the editor's Explorer panel), runs it. Everything here needs a signed-in account.
+
+## Admin and Member
+
+The person who creates a team is its first **Admin**. On the team's card, Admins can:
+
+- rename the team (**Edit Team** on its ⋯ menu),
+- invite people by email,
+- change a member's role,
+- remove a member or withdraw an invite,
+- turn on a join link (**Invite by Link**),
+- delete the team.
+
+**Members** can see the team and its member list, work in the shared library, and leave the team.
+
+A team always keeps an Admin: the last Admin can't step down or leave while others remain. Deleting a team gives its canvases back to their owners (see [Team Shared Canvases](/help/collaboration/teams/team-shared-documents/#when-a-team-is-deleted)).
+
+**Invite by Link** gives a join link that works for 7 days: anyone signed in who opens it joins as a Member. **Copy** it, make a **New Link** (the old one stops working), or **Turn Off** the link.
+
+## Inviting by email
+
+<Step n={1}>
+  Open your team in the Explorer, enter the person's email address at the foot of its card, choose
+  Member or Admin, and press **Invite**.
+</Step>
+<Step n={2}>
+  They get an email from liveworkspace with a link to the Explorer's **Invites**, where the
+  invitation waits. They don't need an account yet: it waits until they sign up with that address.
+  Signed in to livehuddle, they also see it under **Invites** in the Explorer sidebar, with a
+  count.
+</Step>
+<Step n={3}>
+  They press **Accept** (which opens the team) or **Decline** on the invitation's card in Invites.
+  Accepting takes a signed-in account whose verified email address is the one invited. The email's
+  own decline link works without an account.
+</Step>
+
+Once they've joined, the team shows up in livehuddle within a few minutes, usually at once.
+
+</ArticleLayout>

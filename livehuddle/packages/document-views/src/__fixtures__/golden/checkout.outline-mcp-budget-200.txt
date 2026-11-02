@@ -1,0 +1,15 @@
+tab 0b34 "Checkout platform" · 30 elements: 16 boxes, 3 frames, 11 arrows · threads 1 open/2 · rev 41
+text 98eb "Checkout platform: production"
+frame 048c "Edge"
+  actor b811 "Customer" → a3cf
+  square a3cf "Web app" → 649c
+  hexagon 649c "API gateway" → 202b "JWT", 146b
+frame c991 "Services"
+frame ca76 "Data"
+  cylinder d41e "Orders DB"
+  cylinder 822f "Inventory DB"
+cloud e6d7 "Stripe"
+entity cb02 "Order"
+table 480a
+sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
+… notes hidden; attributes hidden; 13 elements in frame c991 hidden: read_document {"only":"c991"}

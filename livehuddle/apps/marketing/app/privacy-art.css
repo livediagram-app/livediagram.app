@@ -1,0 +1,25 @@
+/* The privacy illustrations' palette (components/PrivacyArt.tsx), in both appearances
+ * (docs/specs/004-interface-design/appearance.md). Their SVG reads these through presentation
+ * attributes, so one switch recolours every piece. Light sits on the white band card; dark keeps
+ * the cool sky-on-night palette the pieces were drawn in. */
+:root {
+  --pa-sky: #0284c7;
+  --pa-sky-faint: rgba(14, 165, 233, 0.12);
+  --pa-slate: #94a3b8;
+  --pa-slate-faint: rgba(148, 163, 184, 0.3);
+  --pa-rose: #e11d48;
+  --pa-rose-faint: rgba(225, 29, 72, 0.08);
+  --pa-on-sky: #ffffff;
+  --pa-surface: #ffffff;
+}
+
+.dark {
+  --pa-sky: #38bdf8;
+  --pa-sky-faint: rgba(56, 189, 248, 0.16);
+  --pa-slate: #94a3b8;
+  --pa-slate-faint: rgba(148, 163, 184, 0.25);
+  --pa-rose: #fb7185;
+  --pa-rose-faint: rgba(251, 113, 133, 0.12);
+  --pa-on-sky: #0c1929;
+  --pa-surface: #0f172a;
+}

@@ -1,0 +1,48 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { OrgChartFigure } from '@/components/illustrations/palette-diagram-elements-2';
+
+export const metadata = helpMetadata({
+  title: 'Org Charts',
+  description:
+    'An org chart is a mind map of people: each node shows initials, a name and a role. Tab adds a report, Enter a peer, and the chart lays itself out top down.',
+  path: '/help/palette/org-charts/',
+});
+
+<ArticleLayout
+  title="Org Charts"
+  description="A tree of people with names and roles that lays itself out."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles('org-charts')}
+>
+
+An **Org Chart** is a [mind map](/help/palette/mind-maps/) of people. Each node shows an initials disc, the person's name and their role, and the chart grows downward with each report hung off an elbow line under their manager. Use it for teams, service ownership or any tree of things with a name and a role.
+
+It sits in the palette's **Diagrams** category ([Build Elements](/help/palette/build/)), after Mind Node.
+
+<Figure caption="A head of engineering with three reports, each hung off one trunk.">
+  <OrgChartFigure />
+</Figure>
+
+## Take the tour
+
+Select a person in an org chart and press Start Org Chart Tour in the bar along the bottom of the editor, just left of **Search**, for a short walkthrough on your own chart: the name, role and initials, adding a report (Tab) or a peer (Enter), moving a whole team, and the **Mind Map** menu. The button stays there while it is selected, so you can take the tour again whenever you like. (Element tours aren't offered on a phone.)
+
+## Building one
+
+Place the **Org Chart** tile and it drops one person, ready to rename. With a person selected:
+
+- **Tab** adds a report below them.
+- **Enter** adds a peer beside them.
+
+Type the name straight away. The chart lays itself out after every change.
+
+To write a role, select the person and click the line under their name. The initials come from the name: "Ana Kim" shows "AK".
+
+## Everything a mind map does
+
+An org chart is a mind map with a person look, so everything in [Mind Maps](/help/palette/mind-maps/) works here: drag a manager and their whole team comes too, **Tidy Map** straightens it, and **Edit Outline** edits it as indented text.
+
+</ArticleLayout>

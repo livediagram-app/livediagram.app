@@ -1,0 +1,74 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ModeSwitchScene } from '@/components/illustrations/editor-mode-switch';
+
+export const metadata = helpMetadata({
+  title: 'Editor Modes',
+  description:
+    "Diagram, Draw and Workshop modes explained: what each is for, switching from beside the menu button or an empty tab's start, and why modes are shared.",
+  path: '/help/canvas/editor-modes/',
+});
+
+<ArticleLayout
+  title="Editor Modes"
+  description="Diagram, Draw and Workshop: three ways of working on the same tab."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+>
+
+An **editor mode** is how you work on a tab right now. There are three: **Diagram**, **Draw** and **Workshop**. A mode decides which tools are in front of you. Switch it any time from the mode switch beside the menu button: a drawing can become a diagram, with everything on it kept exactly where it is.
+
+Three words describe how canvases and tabs differ, and they mean different things:
+
+- **Mode** is how a tab is worked on. It belongs to the tab, so everyone on the tab is in the same mode.
+- **Kind** is what a tab is. Almost every tab is a general tab that works in every mode; the [Event Storming board](/help/canvas/event-storming-boards/) is the one tab with its own kind, its own notation and no modes.
+- **Template** is what a canvas was made from. A flowchart or a retrospective is a general tab made from a template, never a kind of tab of its own. See [Templates](/help/canvas/templates/).
+
+## The Three Modes
+
+- **Diagram**: shapes, arrows, the palette and snapping. The palette offers Shapes, Write, Draw, Diagrams, Concepts, Layout, Icons, Tech and Media, and shapes snap into line with alignment guides. This is where every new canvas starts unless its template says otherwise.
+- **Draw**: pens, the eraser and shape recognition, for sketching by hand. The palette strip gives way to Draw's own tools: Select, three markers, Text, the Path tool, the Eraser (whole strokes or just part of one) and your pinned shapes, in a dock across the top. See [Draw Mode](/help/canvas/draw-mode/).
+- **Workshop**: running a session with your team, such as a retro, a town hall or a workshop. The palette adds **Stickers**, **Data**, **Ask** and **Session** (timers, votes, polls, reveals, quizzes and the rest of the session kit), and the bottom-right corner gains the **Timer**, **Vote** and **Poll** buttons. See [Workshop Mode](/help/canvas/workshop-mode/).
+
+Every mode is on for everyone, with nothing to turn on in Settings.
+
+Slides, articles and other pages are made in [livedocuments](https://www.livedocuments.app), livehuddle's sister app for documents, and logos, wireframes and photos in [livedesign](https://www.livedesign.app), its sister app for design. Boards of cards, spreadsheets, dashboards and forms are made in [liveplanner](https://www.liveplanner.app), its sister app for planning work. A tab that was in Plan before Plan moved to liveplanner now opens in Diagram, keeping any ordinary elements it had; its boards, cards, sheets and forms are no longer shown.
+
+## Choosing a Mode
+
+The **mode switch** sits right of the menu button (☰), at the top left of the canvas, on every tab, empty or not. It shows the mode you are in, its icon and name (on a phone, its icon alone, to save room). An empty tab's start (**Start Diagramming**, **Start Drawing** or **Start a Workshop**) has the same switch at the top of its list; the two always agree, so switching in one changes the other. Press either to open the mode menu: the three modes down the left, the current one ticked, and beside them a preview of the mode under your pointer, with a picture, a line on what it is for and its main tools. Choosing a mode in the list (a click, or **Enter** on the highlighted one) switches the tab and its start at once; **Escape** or a click elsewhere closes the menu without switching. On a narrow screen the preview is left out and each mode shows its line under its name.
+
+<Figure caption="The mode switch at the top of Start Diagramming, open: the three modes, Diagram ticked, and a preview of Draw with ⇧D and its tools.">
+  <ModeSwitchScene />
+</Figure>
+
+**Shift+D** moves the tab to the next mode: Diagram, then Draw, Workshop and back to Diagram. The preview shows **⇧D** on the mode it leads to, and screen readers announce the mode you land in ("Draw mode"). Shift+D is listed under **Settings** › **Keyboard**, and it stops working with every other shortcut when you [turn shortcuts off](/help/tips-and-tricks/keyboard-shortcuts/#turning-shortcuts-off).
+
+**Switching never changes what is on the tab.** Strokes drawn in Draw stay put in Diagram, and shapes placed in Diagram stay put in Draw; only the palette and the tools change. The tab menu has no mode choice: the switch is the one place to change it.
+
+## One Mode for Everyone
+
+- **The mode belongs to the tab.** Everyone on a tab works in the same mode at once, so what you see always matches what your collaborators see.
+- **Switching switches everyone.** When you switch a tab's mode, everyone on it follows straight away, and a message tells them who switched ("Ada switched this tab to Draw."). Anything they were typing is kept.
+- **Undo switches back.** Switching is one step in your [undo history](/help/canvas/undo/): **Undo** puts the tab back in the mode it was in, exactly as it was, for everyone, and **Redo** switches again.
+- **The mode switch shows the tab's mode.** The switch beside the menu button shows the mode's icon and name, and it changes the moment the tab switches.
+- **A tab opens in its mode**, for everyone, Diagram unless something set it otherwise.
+- **New canvases open in the mode you choose** in the New Canvas wizard, and **new tabs open in the mode of the tab you were on**, on that mode's own start (a Draw tab's **+** makes a Draw tab on **Start Drawing**), unless the template you pick opens somewhere else: **Blank Whiteboard** opens in Draw, and **Blank Workshop** and the session templates (the retrospectives, Town Hall Q&A, Lean Coffee, Crazy Eights and Meeting Agenda, the boards with a dot vote: Affinity Map, Prioritization Matrix and Risk Matrix, and the boards a team fills in together, such as SWOT, Roadmap, RACI Matrix and Business Model Canvas) in Workshop. [Templates](/help/canvas/templates/#finding-templates-for-a-mode) lists them all.
+- In the Explorer, the **Opens in** filter finds canvases by the mode they were created to open in. See [Filters](/help/explorer/filters/).
+
+## On a Phone
+
+A phone switches mode the same way, from the switch beside the menu button, which shows just the mode's icon there, or from the top of an empty tab's start. On a phone every mode starts on the [Hand](/help/selection-modes/hand/) tool, so a drag moves the canvas.
+
+## Who Can Switch
+
+- **Editors** of a general tab get the mode switch and Shift+D, on an empty tab or one with content.
+- **Participants and people who can only view** a tab follow its mode, with no switch, and Shift+D does nothing.
+- On a [locked tab](/help/tabs/locking-tabs/) nobody can switch: the tab stays in its mode until it is unlocked.
+- **Event Storming boards** have no modes: they keep their own tools and notation, and show no switch.
+
+## Templates and Modes
+
+An empty tab opens on its mode's start (**Start Diagramming**, **Start Drawing**, **Start a Workshop**), where that mode's templates are, and the mode switch at the top of the start's list changes the tab's mode before you begin. Every template opens in one mode. A start's search also finds the other modes' templates, each card saying which mode it opens in, and choosing one switches the tab there. Each start's **Recommended** leads with a blank of its mode, to start from nothing. See [Finding Templates for a Mode](/help/canvas/templates/#finding-templates-for-a-mode).
+
+</ArticleLayout>

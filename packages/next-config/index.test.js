@@ -126,6 +126,7 @@ describe('local dev behind a router', () => {
       'www.livediagram.app',
       'livedocuments.app',
       'livedesign.app',
+      'www.livehuddle.app',
       'localhost',
     ]) {
       expect(

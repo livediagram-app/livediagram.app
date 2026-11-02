@@ -1,0 +1,58 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { DiagramTypes } from '@/components/illustrations/about';
+
+export const metadata = helpMetadata({
+  title: 'Who is livehuddle For?',
+  description:
+    'livehuddle is for teams who think visually and need to do that thinking together: engineering, product, design, and cross-functional groups.',
+  path: '/help/about/who-is-it-for/',
+});
+
+<ArticleLayout title="Who is livehuddle For?" description="Teams who think visually and need to do that thinking together, from engineering and product to workshops and retros." categoryTitle="About livehuddle" categorySlug="about">
+
+livehuddle is for teams who think visually and need to do that thinking **together**. A single-player diagramming tool is not the point. The product shines when several people are on the same canvas at once, building one shared diagram in [real time](/help/collaboration/sharing/). That said, it works just as well for one person sketching something out, and the [canvas always works without signing in](/help/getting-started/guest-vs-account/).
+
+## The teams it serves
+
+A few groups feel right at home:
+
+- **Engineering teams** sketching architecture, sequence flows, and system designs. Use [shapes](/help/palette/shapes/) and [arrows](/help/palette/arrows/), [technology icons](/help/palette/technology/) for cloud and infrastructure marks, and [tabs](/help/tabs/using-tabs/) to keep related views together.
+- **Product and design teams** mapping user journeys, information architecture, and brainstorms with [shapes](/help/palette/shapes/), [text and fonts](/help/canvas/text-and-fonts/), and [themes](/help/canvas/themes/).
+- **Cross-functional groups** in workshops, planning sessions, and retrospectives, where everyone needs to contribute at once and see each other's input live. [Workshop mode](/help/canvas/workshop-mode/) puts timers, dot votes and polls in front of whoever runs the session.
+
+## Ways people use it
+
+The same canvas covers a wide range of work:
+
+<Figure caption="One canvas, many kinds of diagram: flowcharts, mind maps, and wireframes.">
+  <DiagramTypes />
+</Figure>
+
+<FeatureGrid>
+  <Feature slug="shapes" title="Flowcharts and process maps">
+    Boxes, connectors, and labelled arrows for any structured flow.
+  </Feature>
+  <Feature slug="canvas" title="Architecture diagrams">
+    System designs, service maps, and sequence flows.
+  </Feature>
+  <Feature slug="mind-maps" title="Brainstorms and mind maps">
+    Quick freehand sketches and fast, keyboard-driven nodes.
+  </Feature>
+  <Feature slug="session-tools" title="Workshops and retros">
+    Switch a tab to Workshop mode to run a shared timer, a live dot-vote or a quick poll while the
+    group works together.
+  </Feature>
+</FeatureGrid>
+
+## Whether you sign in or not
+
+livehuddle is friction-free on purpose. A first-time visitor can build a real diagram as a [guest](/help/getting-started/guest-vs-account/) and only later create an account to sync across devices and join [teams](/help/collaboration/teams/). A signed-in user can still hand a share link to a guest who edits without any account at all.
+
+<Tip>
+  Not sure where to begin? Start with [Your first
+  diagram](/help/getting-started/your-first-diagram/), it walks you through creating one in a couple
+  of minutes.
+</Tip>
+
+</ArticleLayout>

@@ -1,0 +1,7 @@
+tab 0b34 "Checkout platform" · since rev 41 · rev 47 · 6 changes
+- arrow 6406 → 0556 [0cee]
+~ square e4a8 label "Payments service" → "Payments"
+~ entity cb02 moved +200,+0
+~ sticky 0c84 comments 2 open → 2 resolved
++ cylinder 7180 "Redis cache" in c991 "Services"
++ arrow 202b → 7180 [5d21]

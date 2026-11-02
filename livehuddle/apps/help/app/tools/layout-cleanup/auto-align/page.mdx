@@ -1,0 +1,59 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { AutoAlignGrid } from '@/components/illustrations/tools';
+
+export const metadata = helpMetadata({
+  title: 'Auto-Align',
+  description:
+    "Snap every element's position and size onto a tidy grid so near-aligned shapes line up exactly and drift disappears.",
+  path: '/help/tools/layout-cleanup/auto-align/',
+});
+
+<ArticleLayout title="Auto-Align" description="A quick grid snap for when shapes are nearly lined up but a few pixels off." categoryTitle="Tools" categorySlug="tools" parentArticle={{ title: "Layout Cleanup", slug: "layout-cleanup" }} subArticles={getSubArticles("layout-cleanup").filter((a) => a.slug !== "auto-align")}>
+
+Auto-Align is the gentle tidier. It rounds every boxed element's size to a 10 px grid and lines shapes up on the grid by the edges and centres they already (nearly) share, so shapes that were almost aligned become exactly aligned and tiny drift collapses, while shapes that were already lined up stay lined up. The use case is "these things are a few pixels off", not "this diagram has no layout".
+
+<Figure caption="Shapes that sit a few pixels off the grid snap onto the nearest grid lines.">
+  <AutoAlignGrid />
+</Figure>
+
+## What it does
+
+- It **keeps what is lined up, lined up.** Shapes whose centres or edges sit within a few pixels of each other snap onto one shared grid line, so a column of steps of different widths stays centred and the arrows down it stay dead straight. Two shapes joined by a straight arrow line up from a little further apart.
+- It **keeps even spacing even.** Rows that were an equal step apart, like the rows of a key, stay an equal step apart.
+- It **never moves anything far**: a shape moves at most the few pixels to the line it already nearly shares, so a shape that was roughly in place stays roughly in place, only neater.
+- It **never makes things worse.** A snap that would make two shapes overlap, or nudge a shape part-way out of the lane or frame it sits in, is skipped for both.
+- It works on **every element on the active tab**, not just a selection.
+- **Arrows follow their shapes.** An arrow attached to a shape stays attached as the shape snaps; only loose arrow ends snap on their own.
+- **Locked elements stay put.** A [locked element](/help/canvas/locking/), or anything on a [locked layer](/help/canvas/layers-visibility-and-locking/), is not snapped.
+- **Shapes keep their proportions.** A circle, diamond or actor drawn square stays square; one drawn wide stays wide, so a flowchart's decision diamonds keep their shape. An element whose aspect ratio you locked keeps its ratio.
+- **Running it again changes nothing.** Once a tab is tidy, the **Tidy Up** panel shows Auto-align greyed out with "Already tidy".
+
+## Running it
+
+<Step n={1}>
+  In Diagram mode, press the **Tidy Up** button in the bottom-right corner. Or open the [command
+  palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K) and type
+  **Auto-align**.
+</Step>
+
+<Step n={2}>
+  Choose **Auto-align** at the bottom of the Tidy Up panel, or **Auto-align to Grid** under the
+  palette's **Actions**.
+</Step>
+
+<Step n={3}>Everything on the tab snaps to the grid in a single undoable step.</Step>
+
+If the result isn't what you wanted, one undo (⌘Z / Ctrl+Z) restores the previous positions exactly. Auto-Align needs edit access and leaves a locked tab alone.
+
+## When to use it instead of Auto Layout
+
+Reach for Auto-Align when the diagram already looks right and you just want it crisp: rows that should share a baseline, columns that should share an edge, shapes that should be the same size. If instead the diagram has no real layout, or you want positions computed from how shapes are connected, use [Auto Layout](/help/tools/layout-cleanup/auto-layout/) instead. Auto Layout already lands every shape's centre on the grid, so its result needs no Auto-Align afterwards.
+
+<Tip>
+  Auto-Align is safe to run often. Since running it again changes nothing and it never moves
+  anything far, it's a low-risk way to keep a diagram looking tidy as you work.
+</Tip>
+
+</ArticleLayout>

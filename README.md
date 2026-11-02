@@ -11,7 +11,7 @@ livediagram/     livediagram.app
 liveplanner/     liveplanner.app
 livedocuments/   livedocuments.app: articles, slides and infographics
 livedesign/      livedesign.app: logos, wireframes and photos
-livehuddle/      livehuddle.app (planned): meetings and workshops; its product spec only, awaiting approval
+livehuddle/      livehuddle.app (held until launch): meetings and workshops, forked from livediagram in-tree
 docs/            how this repo is laid out, CI and deploys, and the move from the historical livediagram.app
 ```
 
@@ -32,6 +32,7 @@ corepack pnpm dev:diagram        # livediagram's apps
 corepack pnpm dev:planner        # liveplanner's apps
 corepack pnpm dev:documents      # livedocuments' apps, on the 33xx ports
 corepack pnpm dev:design         # livedesign's apps, on the 34xx ports
+corepack pnpm dev:huddle         # livehuddle's apps, on the 35xx ports
 corepack pnpm dev:workspace      # liveworkspace.app on :3000, with its seven services behind it
 corepack pnpm dev:site           # liveworkspace.app's pages alone on :3000
 corepack pnpm dev:accounts       # the accounts API alone on :8787

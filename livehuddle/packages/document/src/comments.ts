@@ -1,0 +1,320 @@
+// Per-element comment threads: the Comment / CommentThread shapes plus the
+// helpers that create a comment and count the active (unresolved) ones. Split
+// out of index.ts so the comments model lives in one focused module. Re-exported
+// from ./index, so the public `@livehuddle/document` surface is unchanged.
+// (The ./index import below is type-only — erased at compile — so it can't
+// re-introduce the runtime module cycle this split avoided.)
+
+import type { Element, ShapeElement, Tab } from './index';
+import type { ElementAction } from './element-action';
+import type { CommentMention } from '@liveworkspace/model-core/comment-mentions';
+import type { CommentReaction } from '@liveworkspace/model-core/comment-reactions';
+import { isComment, keepLocalTicks } from './element-deltas';
+import { reconcileRestoredElement } from './undo-live-reconcile';
+
+// A single comment inside a thread. The author is the participant who
+// wrote it (per `apps/editor/lib/identity.ts`). The participant model is
+// local-session-only today; the comment carries a denormalised copy of
+// the name + colour so the badge keeps rendering even if the participant
+// list later evolves (e.g. user renames themselves mid-session).
+export type Comment = {
+  id: string;
+  text: string;
+  createdAt: number; // unix ms
+  authorName: string;
+  authorColor: string;
+  // Stable id of the participant who wrote it (their account id or guest
+  // owner id). Server-stamped and server-trusted, never read from the
+  // client. Lets a view-role visitor delete their OWN comments without
+  // being able to touch anyone else's. When serving a document to a
+  // non-owner the API blanks this on comments they didn't write (same
+  // anti-claim redaction `redactOwner` applies to the document owner id),
+  // so a visitor only ever sees their own author id. Optional so
+  // comments written before this field existed still parse.
+  authorId?: string;
+  // Teammates this comment @-tags (docs/specs/012-collaboration/comment-mentions.md). The handles also sit in
+  // `text` as typed; this is who they resolve to. Absent when none.
+  mentions?: CommentMention[];
+  // The API token a comment was posted with, for the audit trail (docs/specs/024-agents/agent-presence.md
+  // "Attribution"). Server-stamped, kept by every later save, seen only by its author; never sent to a room.
+  tokenId?: string;
+  // Who reacted with which of the six emoji (docs/specs/012-collaboration/comment-reactions.md), in the order
+  // they did; one each per person, under their public collab key. Absent when none, so older comments read as
+  // they always did.
+  reactions?: CommentReaction[];
+};
+
+// Threads live on elements (currently boxed only). `resolved` is sticky:
+// users can resolve and unresolve a thread without losing the comments.
+export type CommentThread = {
+  comments: Comment[];
+  resolved: boolean;
+};
+
+export function createComment(
+  text: string,
+  author: { id?: string; name: string; color: string },
+  mentions?: CommentMention[],
+): Comment {
+  return {
+    id: crypto.randomUUID(),
+    text,
+    createdAt: Date.now(),
+    authorName: author.name,
+    authorColor: author.color,
+    authorId: author.id,
+    ...(mentions?.length ? { mentions } : {}),
+  };
+}
+
+// Count of comments shown on the badge. Resolved threads return 0 so the
+// badge hides — the comments still exist and reappear on unresolve.
+export function activeCommentCount(thread: CommentThread | undefined): number {
+  if (!thread || thread.resolved) return 0;
+  return thread.comments.length;
+}
+
+// A comment's `authorId` is its author's OWNER id, and for a guest that id is
+// the credential their api calls carry. D1 keeps it (the delete-own check
+// needs it) and a tab GET redacts it for everyone but the author, so the one
+// place it could still escape is the realtime room, which fans every element
+// op out to every socket. Everything the editor sends the room goes through
+// this first (docs/specs/012-collaboration/collab-race-hardening.md); the author's own local copy keeps it.
+export function withoutCommentAuthorId(comment: Comment): Comment {
+  if (comment.authorId === undefined && comment.tokenId === undefined) return comment;
+  const { authorId: _drop, tokenId: _token, ...rest } = comment;
+  return rest;
+}
+
+function withoutCommentAuthorIds<E extends Element>(el: E): E {
+  const thread = (el as { commentThread?: CommentThread }).commentThread;
+  if (!thread?.comments.some((c) => c.authorId !== undefined || c.tokenId !== undefined)) return el;
+  return {
+    ...el,
+    commentThread: { ...thread, comments: thread.comments.map(withoutCommentAuthorId) },
+  };
+}
+
+// A room op with every comment author id taken out, whichever kind carries
+// one: an element add / update, a whole tab, or a posted comment. The ONE
+// definition of what may not reach the wire (docs/specs/012-collaboration/collab-race-hardening.md): the editor applies it
+// to everything it sends, and the room to everything it relays, so neither a
+// new send path nor an old client can leak one. Anything else passes through
+// untouched (same object back).
+export function opForTheWire(op: unknown): unknown {
+  const o = op as {
+    kind?: unknown;
+    tab?: { elements?: Element[] };
+    op?: { kind?: unknown; element?: Element };
+    delta?: { kind?: unknown; comment?: unknown };
+    elementOps?: unknown[];
+  } | null;
+  if (!o || typeof o !== 'object') return op;
+  if (o.kind === 'tab' && Array.isArray(o.tab?.elements)) {
+    return { ...o, tab: { ...o.tab, elements: o.tab.elements.map(withoutCommentAuthorIds) } };
+  }
+  if (o.kind === 'el' && (o.op?.kind === 'add' || o.op?.kind === 'update') && o.op.element) {
+    return { ...o, op: { ...o.op, element: withoutCommentAuthorIds(o.op.element) } };
+  }
+  // An agent changeset (docs/specs/024-agents/agent-changesets.md): every element an add or an
+  // update carries.
+  if (o.kind === 'changeset' && Array.isArray(o.elementOps)) {
+    return { ...o, elementOps: o.elementOps.map(elementOpForTheWire) };
+  }
+  if (o.kind === 'el-delta' && o.delta?.kind === 'comment-add' && isComment(o.delta.comment)) {
+    return { ...o, delta: { ...o.delta, comment: withoutCommentAuthorId(o.delta.comment) } };
+  }
+  return op;
+}
+
+function elementOpForTheWire(op: unknown): unknown {
+  const o = op as { kind?: unknown; element?: Element } | null;
+  if (!o || (o.kind !== 'add' && o.kind !== 'update') || !o.element) return op;
+  const element = withoutCommentAuthorIds(o.element);
+  return element === o.element ? op : { ...o, element };
+}
+
+// Stamp a comment an editor posts with the name and colour of the session
+// that sent it, the identity everyone already sees on that person's cursor
+// (docs/specs/012-collaboration/collab-race-hardening.md). The room holds no verified identity (docs/specs/015-api/public-api-and-tokens.md §6); this makes
+// the comment's name agree with the session it came from rather than with
+// whatever the frame said. Run after `opForTheWire`, which has already taken
+// any author id out.
+//
+// A reaction (docs/specs/012-collaboration/comment-reactions.md) is stamped the same way: the name the session
+// shows, and the collab key its hello published, so nobody reacts in somebody else's name.
+export function stampCommentAuthor(
+  op: unknown,
+  presence: { name: string; color: string; key?: string },
+): unknown {
+  const o = op as { kind?: unknown; delta?: { kind?: unknown; comment?: unknown } };
+  if (o?.kind === 'el-delta' && o.delta?.kind === 'comment-react') {
+    return {
+      ...o,
+      delta: {
+        ...o.delta,
+        name: presence.name,
+        ...(presence.key ? { by: presence.key } : {}),
+      },
+    };
+  }
+  if (o?.kind !== 'el-delta' || o.delta?.kind !== 'comment-add') return op;
+  if (!isComment(o.delta.comment)) return op;
+  return {
+    ...o,
+    delta: {
+      ...o.delta,
+      comment: { ...o.delta.comment, authorName: presence.name, authorColor: presence.color },
+    },
+  };
+}
+
+// The per-element fields that mutate OUTSIDE undo history and therefore
+// need re-grafting onto restored snapshots: comment threads (docs/specs/008-canvas/canvas-and-palette.md),
+// assigned actions (docs/specs/012-collaboration/assigned-actions.md: Cmd+Z must never silently unassign work), and
+// everything a collaborative press writes (docs/specs/012-collaboration/collab-race-hardening.md): answers, reveals, idea
+// cards, the roll, the agenda's current row and the picker's result. A
+// snapshot from before somebody answered would otherwise take their answer
+// away from the whole room the moment anyone pressed undo.
+//
+// Also what an element fingerprint leaves out (docs/specs/024-agents/agent-changesets.md): people
+// change these through deltas that never conflict with an agent's edit.
+export const LIVE_ELEMENT_FIELDS = [
+  'commentThread',
+  'action',
+  'actions',
+  'responses',
+  'responsesRevealed',
+  'collabRound',
+  'ideaCards',
+  'ideaCardIds',
+  'ideasRevealed',
+  'rollCall',
+  'agendaCurrent',
+  'agendaTimerStartedAt',
+  'pickerResult',
+  // A quiz round's state (docs/specs/012-collaboration/quiz.md): started, locked and revealed are room
+  // presses, not edits, so an undo must not un-start somebody's round.
+  'quizStartedAt',
+  'quizLockedAt',
+  'quizRevealed',
+  // The Q&A board's notes (docs/specs/012-collaboration/qa-board.md) are written by its endpoint, never by
+  // an undoable edit, so a snapshot's copy is only ever older.
+  'qaNotes',
+  'qaRev',
+] as const;
+type LiveFieldBag = {
+  commentThread?: CommentThread;
+  action?: ElementAction;
+  actions?: ElementAction[];
+} & Pick<
+  ShapeElement,
+  | 'responses'
+  | 'responsesRevealed'
+  | 'collabRound'
+  | 'ideaCards'
+  | 'ideaCardIds'
+  | 'ideasRevealed'
+  | 'rollCall'
+  | 'agendaCurrent'
+  | 'agendaTimerStartedAt'
+  | 'pickerResult'
+  | 'quizStartedAt'
+  | 'quizLockedAt'
+  | 'quizRevealed'
+  | 'qaNotes'
+  | 'qaRev'
+>;
+
+function applyLiveField<K extends keyof LiveFieldBag>(
+  target: LiveFieldBag,
+  field: K,
+  value: LiveFieldBag[K],
+): void {
+  if (value === undefined) delete target[field];
+  else target[field] = value;
+}
+
+// Full live-state graft for undo/redo: comment threads + assigned actions
+// (above) PLUS the per-tab session tools (docs/specs/012-collaboration/session-tools.md `timer` / `vote`), which
+// also mutate outside undo history — a timer start or a vote dot isn't
+// undoable, so a restored snapshot predates them and would silently wipe
+// them for the whole room (autosave persists + broadcasts the restored tab).
+export function graftLiveTabState(
+  from: Tab[],
+  onto: Tab[],
+  // `mintRound` makes the new round id a reset needs (a quiz whose edit is
+  // undone); a test passes a fixed one.
+  opts: { sessionFields?: boolean; mintRound?: () => string } = {},
+): Tab[] {
+  const sessionFields = opts.sessionFields !== false;
+  const mintRound = opts.mintRound ?? (() => crypto.randomUUID());
+  return onto.map((tab) => {
+    const src = from.find((t) => t.id === tab.id);
+    if (!src) return tab;
+    const srcById = new Map(src.elements.map((el) => [el.id, el] as const));
+    const liveFields = new Map<string, LiveFieldBag>(
+      src.elements.map((el) => {
+        const bag: LiveFieldBag = {};
+        for (const field of LIVE_ELEMENT_FIELDS) {
+          if (field in el) applyLiveField(bag, field, (el as LiveFieldBag)[field]);
+        }
+        return [el.id, bag];
+      }),
+    );
+    let changed = false;
+    const elements = tab.elements.map((el): Element => {
+      const live = liveFields.get(el.id);
+      if (!live) return el;
+      let next = el;
+      for (const field of LIVE_ELEMENT_FIELDS) {
+        const liveValue = live[field];
+        const current = (el as LiveFieldBag)[field];
+        if (liveValue === current) continue;
+        changed = true;
+        if (next === el) next = { ...el };
+        applyLiveField(next as LiveFieldBag, field, liveValue);
+      }
+      // Checklist ticks are live too (docs/specs/012-collaboration/collab-race-hardening.md), but the rows themselves are
+      // authored and undoable, so only the `done` flags carry over, row by row.
+      const liveEl = srcById.get(el.id);
+      if (
+        next.type === 'shape' &&
+        liveEl?.type === 'shape' &&
+        liveEl.checklistItems &&
+        next.checklistItems
+      ) {
+        const items = keepLocalTicks(liveEl.checklistItems, next.checklistItems);
+        if (items !== next.checklistItems) {
+          changed = true;
+          next = { ...next, checklistItems: items };
+        }
+      }
+      // Presses that were about the authored fields follow them back.
+      if (next.type === 'shape' && liveEl?.type === 'shape') {
+        const reconciled = reconcileRestoredElement(next, liveEl, mintRound);
+        if (reconciled !== next) {
+          changed = true;
+          next = reconciled;
+        }
+      }
+      return next;
+    });
+    let next = changed ? { ...tab, elements } : tab;
+    if (sessionFields && (src.timer !== tab.timer || src.vote !== tab.vote)) {
+      next = next === tab ? { ...tab } : next;
+      if (src.timer !== undefined) next.timer = src.timer;
+      else delete next.timer;
+      if (src.vote !== undefined) next.vote = src.vote;
+      else delete next.vote;
+    }
+    // The lane settle mark (docs/specs/021-event-storming/event-storming.md "Always on a lane") is set once and
+    // never cleared: undoing the settle restores the notes' positions, and the
+    // mark stays so the board does not settle them again.
+    if (src.esLanesSettled === true && next.esLanesSettled !== true) {
+      next = next === tab ? { ...tab } : next;
+      next.esLanesSettled = true;
+    }
+    return next;
+  });
+}

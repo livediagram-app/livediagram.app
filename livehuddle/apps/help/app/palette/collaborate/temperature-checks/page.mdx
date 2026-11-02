@@ -1,0 +1,42 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { TemperatureCheckCard } from '@/components/illustrations/palette-collaborate';
+
+export const metadata = helpMetadata({
+  title: 'Temperature Checks',
+  description:
+    'A fist-of-five gauge on the canvas: everyone registers 1 to 5, and the bars and the average move as the answers land.',
+  path: '/help/palette/collaborate/temperature-checks/',
+});
+
+<ArticleLayout
+  title="Temperature Checks"
+  description="A fist-of-five gauge that shows the shape of the room, not just its average."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Collaborate elements', slug: 'collaborate' }}
+  subArticles={getSubArticles('collaborate').filter((a) => a.slug !== 'temperature-checks')}
+>
+
+A fist-of-five check-in. Everyone taps the face that fits, from a frown (1, blocked) to a beam (5, all in), and the bars and the mood meter move as the answers land. Tap another face to change your reading. It sits in the palette's **Ask** category, one of Workshop mode's [Collaborate](/help/palette/collaborate/) categories.
+
+The label is the question; a new card asks "How are we feeling?". Double-click it to ask your own.
+
+<Figure caption="Five faces, the bars they fill, and the room's average on the mood meter.">
+  <TemperatureCheckCard />
+</Figure>
+
+- **The bars** show how many people chose each value, with the count over each one.
+- **The mood meter** under them runs cool to warm, with a marker at the average and the average itself, to one decimal, beside the number of people who answered.
+- **Empty**, the card says "No readings yet" rather than drawing an average of zero.
+
+The five values and their colours are fixed: fist of five is a ritual with a shared meaning, so the card doesn't offer a different range, and the colours don't change with the tab theme.
+
+Editors and anyone on a Participant pass can answer. Viewers see the readings but can't add one, and nobody else's Ctrl+Z can take your reading back.
+
+## It is never hidden
+
+This one is **never hidden**, deliberately. Watching the shape of the room appear is the reading: a flat 3 across the board and a split between 1s and 5s have the same average and mean opposite things. There is no reveal. To start a fresh reading, open the card's **…** menu and choose **Reset Answers**; the menu only appears once someone has answered. Like the other presses that run a round, it belongs to the [facilitator](/help/collaboration/facilitator/) while somebody holds that role.
+
+</ArticleLayout>

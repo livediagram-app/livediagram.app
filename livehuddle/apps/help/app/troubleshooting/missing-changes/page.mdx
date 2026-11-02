@@ -1,0 +1,68 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { SaveFailedToast } from '@liveworkspace/help-site/art/illustrations/troubleshooting';
+import { UndoStep } from '@liveworkspace/help-site/art/illustrations/undo-redo';
+
+export const metadata = helpMetadata({
+  title: 'My Changes Are Missing',
+  description:
+    'A checklist for recovering apparently lost work in livehuddle, using autosave, per-tab storage, and undo.',
+  path: '/help/troubleshooting/missing-changes/',
+});
+
+<ArticleLayout title="My Changes Are Missing" description="What to check when work seems to have vanished, and how to recover it with autosave and undo." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
+
+Work in livehuddle is saved automatically as you go, so missing changes are usually hiding rather than gone: you may be looking at a different tab, a different canvas, or a different identity than the one you edited under. This checklist walks through finding them and, where needed, recovering them with undo or the Trash.
+
+## First, find them
+
+1. **Check the right tab.** Each tab stores its own content. If a tab looks empty, confirm you are on the tab you actually edited. See [tabs](/help/tabs/using-tabs/).
+2. **Check the right canvas.** It is easy to have two similar canvases open. Open [your canvases](/explorer/recent) and confirm you are in the one you edited.
+3. **Check the right identity.** Guest work is tied to the browser that made it. If you switched browsers or devices, you are looking at a different guest identity's canvases. If you just signed in, your guest canvases move into your account; if they have not appeared, reload, and if they still do not show, [contact us](/help/contact/) with the report from **Copy Diagnostics**. See [working as a guest](/help/getting-started/guest-vs-account/).
+4. **Reload the page.** A refresh reloads your saved canvas and clears any temporary display issue.
+5. **Check whether the tab held boards or sheets.** Boards, cards, sheets, dashboards and forms belong to [liveplanner](https://www.liveplanner.app), livehuddle's sister app for planning work. livehuddle opens such a tab in Diagram with its ordinary elements and does not show those parts. See [Editor Modes](/help/canvas/editor-modes/).
+
+## How saving works
+
+Changes are saved automatically after you make them, per tab: to the server for a synced canvas, and to this browser's storage for a canvas in [This Browser](/help/privacy-and-security/offline-mode/). There is no manual "save" to forget. Because saving is per tab, editing one tab never disturbs another, and an empty, never-loaded tab is prevented from overwriting a tab that still has content.
+
+There is no "saved" indicator to watch, because saving is the normal state. What you will see is a failure: if a save cannot reach the server, a message at the bottom of the screen says **Couldn't save your changes. Check your connection.** (If your browser is offline it says **You're offline. Keep this tab open to save when you reconnect.**) Autosave keeps trying, so reconnect and leave the tab open until your changes go through. Two other messages mean retrying will not help on its own:
+
+- **Your sign-in has lapsed**: sign in again to keep the changes.
+- **You can no longer edit this**: the share link was revoked or you were removed from the team, so autosave has stopped. Export a copy of the tab to keep your recent work.
+
+<Figure caption="A save that did not reach the server shows a message at the bottom of the screen; autosave keeps retrying.">
+  <SaveFailedToast />
+</Figure>
+
+### "A new version of livehuddle is ready"
+
+When livehuddle is updated while you have a canvas open, and the update changes how canvases are stored, a small notice at the bottom of the screen asks you to reload. Nothing happens until you choose: **Reload** first waits until your latest changes are saved, then reloads, and if they cannot be saved yet it tells you so and stays put. **Not now** hides the notice; reload whenever suits you.
+
+## Recover a recent step
+
+If you have just undone, moved or deleted something by mistake, [Redo](/help/canvas/redo/) and [Undo](/help/canvas/undo/) are your recovery tools.
+
+<Figure caption="Undo steps back your most recent change; redo puts it back.">
+  <UndoStep />
+</Figure>
+
+1. **Press Undo** (**Cmd/Ctrl+Z**, or the undo button at the bottom-right) to step back your most recent changes, one at a time.
+2. **Press Redo** (**Cmd/Ctrl+Shift+Z**, or **Ctrl+Y**) if you went back too far.
+3. Undo covers your own recent steps in this session. It is cleared when you reload, and it never reaches into someone else's edits.
+
+A deleted canvas is not gone either: it waits in the [Trash](/help/account-and-data/trash/) for 30 days until you restore it. A canvas left empty for 30 days moves there on its own, so look there too.
+
+If an [AI tool](/help/account-and-data/connect-ai-mcp/) or a script changed the canvas, the note that appears with its change has an **Undo** that puts it back, separately from your own undo history.
+
+## What collaboration does and doesn't protect
+
+**Two people editing different elements on the same tab is safe.** Edits travel as changes to individual elements and merge by element, so your move of one box cannot overwrite somebody's edit to another.
+
+**Two people editing the _same_ element is the case to know about.** There the last edit to arrive wins. In practice the editor heads this off by showing an element as locked while another editor has it selected, so you can see that it is spoken for before you start.
+
+If a connection drops, the editor **catches up on reconnect** rather than reloading: it asks for what it missed and applies it. Your viewport, your selection and your undo history survive, so a wobbly connection doesn't cost you your place. If it has been away too long to catch up, it re-fetches the canvas, still without a page reload.
+
+If you have checked the right tab, canvas, and identity, reloaded, and the change is still missing, [contact us](/help/contact/) with the canvas URL and roughly when you made the edit.
+
+</ArticleLayout>

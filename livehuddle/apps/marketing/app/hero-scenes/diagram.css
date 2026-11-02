@@ -1,0 +1,28 @@
+/* The diagram scene's own keyframes and classes (components/hero-*-board.tsx); the shared hm-* build lives in ../hero-mode-animations.css. */
+
+/* The picked step's icon and label take the green's ink with its fill (hm-recolour, 7.8s). */
+.hd-pick {
+  animation: hd-pick 0.3s ease-out 7.8s both;
+}
+@keyframes hd-pick {
+  from {
+    --hd-ink-text: var(--art-ink-text);
+    --hd-ink-stroke: var(--art-ink-stroke);
+  }
+  to {
+    --hd-ink-text: var(--art-pick-text);
+    --hd-ink-stroke: var(--art-pick-stroke);
+  }
+}
+.hero-static .hd-pick {
+  animation: none;
+  --hd-ink-text: var(--art-pick-text);
+  --hd-ink-stroke: var(--art-pick-stroke);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hd-pick {
+    animation: none;
+    --hd-ink-text: var(--art-pick-text);
+    --hd-ink-stroke: var(--art-pick-stroke);
+  }
+}

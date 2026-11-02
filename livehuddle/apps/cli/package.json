@@ -1,0 +1,41 @@
+{
+  "name": "@livehuddle/cli",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "livehuddle": "./src/bin.ts"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage dist"
+  },
+  "dependencies": {
+    "@livehuddle/agent-verbs": "workspace:*",
+    "@livehuddle/api-schema": "workspace:*",
+    "@livehuddle/diagram-lint": "workspace:*",
+    "@livehuddle/document": "workspace:*",
+    "@livehuddle/document-views": "workspace:*",
+    "@liveworkspace/api-client": "workspace:*",
+    "@liveworkspace/cli-kit": "workspace:*",
+    "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/render-png": "workspace:*",
+    "smol-toml": "^1.9.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@liveworkspace/oxlint-config": "workspace:*",
+    "@liveworkspace/vitest-config": "workspace:*",
+    "@resvg/resvg-wasm": "^2.6.2",
+    "@types/node": "^26.6.4",
+    "@vitest/coverage-v8": "^5.0.3",
+    "esbuild": "^0.28.2",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

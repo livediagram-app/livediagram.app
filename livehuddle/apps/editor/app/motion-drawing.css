@@ -1,0 +1,238 @@
+/*
+ * The Drawing animation set (docs/specs/028-animation/element-animations.md "Drawing"), for
+ * freehand strokes and paths (useDrawingAnimation in components/canvas/drawing-animation.tsx). The
+ * set class sits on the drawing's main path; a pen stroke (filled ink) also carries .lvd-draw-pen.
+ * Draw (and Dash on pen ink) animate a mask's centre line; Trace and Shimmer run lights along the
+ * line in an overlay; Ink, Dash, Boil and Glow animate the line itself.
+ *
+ * Variables: --lvd-anim-speed, --lvd-anim-iter and --lvd-anim-color from the wrapper; on the line,
+ * --lvd-sw (its width, px), --lvd-dash (a dash length, px), --lvd-ink (its colour) and, for Boil,
+ * --lvd-boil-0..2 (its three filter frames).
+ *
+ * At rest nothing applies: the masks reveal everything, the overlays are invisible, and every dash
+ * and filter lives inside the keyframes.
+ */
+
+/* Draw (reveal): the line draws itself on from its start, holds, draws off from its start, and is
+ * whole again at 100%. A closed drawing's fill joins once the line is drawn. The mask's <defs>
+ * carries the set class. */
+.lvd-draw-draw .lvd-draw-reveal {
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 0;
+  animation: lvd-draw-reveal calc(4s * var(--lvd-anim-speed, 1)) linear
+    var(--lvd-anim-iter, infinite) both;
+}
+@keyframes lvd-draw-reveal {
+  0% {
+    stroke-dashoffset: 1;
+    animation-timing-function: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  }
+  45%,
+  86% {
+    stroke-dashoffset: 0;
+    animation-timing-function: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  }
+  95%,
+  99.9% {
+    stroke-dashoffset: -1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+.lvd-draw-draw .lvd-draw-reveal.lvd-once {
+  animation: lvd-draw-reveal-once calc(1.8s * var(--lvd-anim-speed, 1))
+    cubic-bezier(0.45, 0.05, 0.55, 0.95) 1 both;
+}
+@keyframes lvd-draw-reveal-once {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.lvd-draw-draw .lvd-draw-fill {
+  animation: lvd-draw-fill calc(4s * var(--lvd-anim-speed, 1)) linear var(--lvd-anim-iter, infinite)
+    both;
+}
+@keyframes lvd-draw-fill {
+  0%,
+  42% {
+    opacity: 0;
+  }
+  50%,
+  86% {
+    opacity: 1;
+  }
+  90%,
+  99.9% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+.lvd-draw-draw .lvd-draw-fill.lvd-once {
+  animation: lvd-draw-fill-once calc(1.8s * var(--lvd-anim-speed, 1)) linear 1 both;
+}
+@keyframes lvd-draw-fill-once {
+  0%,
+  85% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Trace: a bright head with a wider, fainter tail runs along the line. */
+@keyframes lvd-draw-run {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.lvd-draw-run {
+  opacity: 0;
+  stroke: color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 20%, white);
+}
+.lvd-draw-trace .lvd-draw-tail {
+  stroke: color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 55%, white);
+  stroke-dasharray: 0.28 0.72;
+  stroke-opacity: 0.5;
+}
+.lvd-draw-trace .lvd-draw-head {
+  stroke-dasharray: 0 0.16 0.12 0.72;
+}
+.lvd-draw-trace .lvd-draw-run {
+  animation:
+    lvd-draw-run calc(2.4s * var(--lvd-anim-speed, 1)) linear var(--lvd-anim-iter, infinite),
+    lvd-shown calc(2.4s * var(--lvd-anim-speed, 1)) linear var(--lvd-anim-iter, infinite);
+}
+
+/* Shimmer: an occasional glint runs along the line, then rests. */
+@keyframes lvd-draw-glint {
+  0% {
+    stroke-dashoffset: 1;
+    opacity: 1;
+  }
+  30% {
+    stroke-dashoffset: -0.1;
+    opacity: 1;
+  }
+  31%,
+  100% {
+    stroke-dashoffset: -0.1;
+    opacity: 0;
+  }
+}
+.lvd-draw-shimmer .lvd-draw-head {
+  stroke: rgb(255 255 255 / 0.85);
+  stroke-dasharray: 0.1 0.9;
+  animation: lvd-draw-glint calc(3s * var(--lvd-anim-speed, 1)) cubic-bezier(0.45, 0, 0.55, 1)
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Dash: marching dashes run along the line. A stroked line dashes itself; pen ink is dashed by a
+ * marching dashed mask. */
+@keyframes lvd-draw-march {
+  from {
+    stroke-dasharray: calc(var(--lvd-dash, 8) * 1px) calc(var(--lvd-dash, 8) * 0.75px);
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dasharray: calc(var(--lvd-dash, 8) * 1px) calc(var(--lvd-dash, 8) * 0.75px);
+    stroke-dashoffset: calc(var(--lvd-dash, 8) * -1.75px);
+  }
+}
+.lvd-draw-dash:not(.lvd-draw-pen),
+.lvd-draw-dash .lvd-draw-dashmask {
+  animation: lvd-draw-march calc(0.6s * var(--lvd-anim-speed, 1)) linear
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Boil: the line jitters like hand-drawn animation, three frames at 8 a second (EA9). */
+@keyframes lvd-draw-boil {
+  0% {
+    filter: var(--lvd-boil-0);
+  }
+  33.333% {
+    filter: var(--lvd-boil-1);
+  }
+  66.667% {
+    filter: var(--lvd-boil-2);
+  }
+}
+.lvd-draw-boil {
+  animation: lvd-draw-boil calc(0.375s * var(--lvd-anim-speed, 1)) step-end
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Ink: the line swells to about twice its width and eases back, like a pen pressing harder. Pen ink
+ * grows an outline of its own colour. */
+@keyframes lvd-draw-ink {
+  0%,
+  100% {
+    stroke-width: calc(var(--lvd-sw, 2) * 1px);
+  }
+  50% {
+    stroke-width: calc(var(--lvd-sw, 2) * 2.2px);
+  }
+}
+@keyframes lvd-draw-ink-pen {
+  0%,
+  100% {
+    stroke: var(--lvd-ink, currentColor);
+    stroke-width: 0;
+  }
+  50% {
+    stroke: var(--lvd-ink, currentColor);
+    stroke-width: calc(var(--lvd-sw, 4) * 0.9px);
+  }
+}
+.lvd-draw-ink {
+  animation: lvd-draw-ink calc(2.4s * var(--lvd-anim-speed, 1)) cubic-bezier(0.37, 0, 0.63, 1)
+    var(--lvd-anim-iter, infinite);
+}
+.lvd-draw-ink.lvd-draw-pen {
+  stroke-linejoin: round;
+  animation-name: lvd-draw-ink-pen;
+}
+
+/* Glow: a soft halo hugging the line breathes. */
+@keyframes lvd-draw-glow {
+  0%,
+  100% {
+    filter: drop-shadow(
+      0 0 1px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 30%, transparent)
+    );
+  }
+  50% {
+    filter: drop-shadow(
+      0 0 6px color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 75%, transparent)
+    );
+  }
+}
+.lvd-draw-glow {
+  animation: lvd-draw-glow calc(2.4s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lvd-draw-draw .lvd-draw-reveal,
+  .lvd-draw-draw .lvd-draw-reveal.lvd-once,
+  .lvd-draw-draw .lvd-draw-fill,
+  .lvd-draw-draw .lvd-draw-fill.lvd-once,
+  .lvd-draw-trace .lvd-draw-run,
+  .lvd-draw-shimmer .lvd-draw-head,
+  .lvd-draw-dash:not(.lvd-draw-pen),
+  .lvd-draw-dash .lvd-draw-dashmask,
+  .lvd-draw-boil,
+  .lvd-draw-ink,
+  .lvd-draw-glow {
+    animation: none;
+  }
+}

@@ -47,6 +47,29 @@ export function wallClockAdditions(diff) {
   return found;
 }
 
+// The product folders: a forked product's file at the same path as another's is a copy of it.
+const PRODUCTS = ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'];
+
+/**
+ * The finds that aren't copies: a line another product already has, at the same path under its folder, in the
+ * base (a fork's copy of an older budget) is left for the same pass as the original.
+ * @param {string[]} found `file:line: text`
+ * @param {(path: string) => string | null} readBase the file's text at the base, or null when it has none
+ * @returns {string[]}
+ */
+export function notCopied(found, readBase) {
+  return found.filter((entry) => {
+    const match = entry.match(/^([^/]+)\/(.+?):\d+: (.*)$/);
+    if (!match || !PRODUCTS.includes(match[1])) return true;
+    const [, product, rest, text] = match;
+    return !PRODUCTS.some((other) => {
+      if (other === product) return false;
+      const base = readBase(`${other}/${rest}`);
+      return base !== null && base.split('\n').some((line) => line.trim() === text);
+    });
+  });
+}
+
 function main() {
   const base = (process.env.BASE ?? '').trim();
   if (!base) {
@@ -63,7 +86,18 @@ function main() {
       maxBuffer: 1 << 28,
     },
   );
-  const found = wallClockAdditions(diff);
+  const readBase = (path) => {
+    try {
+      return execFileSync('git', ['show', `${base}:${path}`], {
+        encoding: 'utf8',
+        maxBuffer: 1 << 26,
+        stdio: ['ignore', 'pipe', 'ignore'],
+      });
+    } catch {
+      return null;
+    }
+  };
+  const found = notCopied(wallClockAdditions(diff), readBase);
   if (found.length === 0) {
     console.log('[cpu-budget-guard] no new wall-clock timings in tests');
     return;

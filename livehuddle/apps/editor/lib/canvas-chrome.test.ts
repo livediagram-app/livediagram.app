@@ -1,0 +1,147 @@
+import { describe, expect, it } from 'vitest';
+import { canvasCursorClass, computeDockAnchor } from './canvas-chrome';
+
+describe('computeDockAnchor', () => {
+  const canvas = { left: 0, top: 0, width: 1000 };
+  const popover = 256;
+  const rightAligned = 1000 - 256 - 8; // 736
+
+  it("hangs a button's popover from the button itself", () => {
+    // The Toolbar layout's menu button, top-left (docs/specs/007-editor/toolbar-layout.md): the Explorer
+    // opens under it, not tucked against the far right edge.
+    const a = computeDockAnchor({ left: 16, bottom: 58, width: 36 }, canvas, popover, 'button');
+    expect(a.left).toBe(16);
+    expect(a.top).toBe(58);
+    expect(a.arrowOffset).toBe(34 - 16); // button centre 34
+  });
+
+  it("keeps a button's popover on the canvas near the right edge", () => {
+    const a = computeDockAnchor({ left: 900, bottom: 40, width: 40 }, canvas, popover, 'button');
+    expect(a.left).toBe(rightAligned);
+    expect(a.arrowOffset).toBe(920 - rightAligned); // button centre 920
+  });
+
+  it('clamps to 8px from the left edge on a canvas narrower than the popover', () => {
+    const narrow = { left: 0, top: 0, width: 200 };
+    const a = computeDockAnchor({ left: 150, bottom: 30, width: 40 }, narrow, popover, 'button');
+    expect(a.left).toBe(8); // 200 - 256 - 8 = -64, clamped to 8
+  });
+
+  it('clamps the arrow to stay on the popover', () => {
+    const a = computeDockAnchor({ left: 0, bottom: 30, width: 10 }, canvas, popover, 'button');
+    expect(a.left).toBe(8);
+    expect(a.arrowOffset).toBe(14);
+  });
+
+  it('subtracts the canvas offset so the anchor is canvas-relative', () => {
+    const offsetCanvas = { left: 100, top: 50, width: 1000 };
+    const a = computeDockAnchor(
+      { left: 300, bottom: 90, width: 40 },
+      offsetCanvas,
+      popover,
+      'button',
+    );
+    expect(a.top).toBe(40); // 90 - 50
+    expect(a.left).toBe(200); // 300 - 100
+    expect(a.arrowOffset).toBe(20); // centre 320 - 100 - 200
+  });
+
+  it("opens a cluster button's popover up from the button", () => {
+    // Activity / Layers in the bottom-right cluster: hang from the button's
+    // left, and `bottom` is the canvas bottom edge to the button's top.
+    const a = computeDockAnchor(
+      { left: 600, top: 700, bottom: 744, width: 44 },
+      { left: 0, top: 50, width: 1000, height: 750 },
+      popover,
+      'above',
+    );
+    expect(a.left).toBe(600);
+    expect(a.bottom).toBe(750 - (700 - 50)); // 100
+    expect(a.arrowOffset).toBe(22); // button centre 622
+  });
+
+  it("keeps a cluster button's popover on the canvas near the right edge", () => {
+    const a = computeDockAnchor(
+      { left: 900, top: 700, bottom: 744, width: 44 },
+      { left: 0, top: 0, width: 1000, height: 800 },
+      popover,
+      'above',
+    );
+    expect(a.left).toBe(rightAligned);
+    expect(a.arrowOffset).toBe(922 - rightAligned);
+  });
+
+  it('leaves `bottom` unset for a popover that opens down', () => {
+    expect(
+      computeDockAnchor({ left: 900, bottom: 40, width: 40 }, canvas, popover, 'button').bottom,
+    ).toBe(undefined);
+  });
+});
+
+describe('canvasCursorClass', () => {
+  const rest = {
+    pendingDraw: false,
+    pan: false,
+    marquee: false,
+    canvasTool: 'pan',
+    spaceHeld: false,
+    isPaintMode: false,
+  };
+
+  it('a pending draw wins over everything', () => {
+    expect(canvasCursorClass({ ...rest, pendingDraw: true, pan: true })).toBe('cursor-crosshair');
+  });
+  it('an active pan shows the grabbing cursor', () => {
+    expect(canvasCursorClass({ ...rest, pan: true })).toBe('cursor-grabbing');
+  });
+  it('an active marquee shows crosshair', () => {
+    expect(canvasCursorClass({ ...rest, marquee: true })).toBe('cursor-crosshair');
+  });
+  it('the laser tool shows crosshair unless Space is held', () => {
+    expect(canvasCursorClass({ ...rest, canvasTool: 'laser' })).toBe('cursor-crosshair');
+    // Space held suppresses the laser cursor, falling through to the rest
+    // (pan tool here -> grab).
+    expect(canvasCursorClass({ ...rest, canvasTool: 'laser', spaceHeld: true })).toBe(
+      'cursor-grab',
+    );
+  });
+  it('the spotlight tool shows the glowing-dot cursor unless Space is held', () => {
+    expect(canvasCursorClass({ ...rest, canvasTool: 'spotlight' })).toBe('cursor-spotlight');
+    // Space held suppresses the spotlight cursor, falling through to the rest
+    // (pan tool here -> grab) for a temporary pan.
+    expect(canvasCursorClass({ ...rest, canvasTool: 'spotlight', spaceHeld: true })).toBe(
+      'cursor-grab',
+    );
+  });
+  it('avatar mode shows the pointer cursor (click to walk) unless Space is held', () => {
+    expect(canvasCursorClass({ ...rest, canvasTool: 'avatar' })).toBe('cursor-pointer');
+    expect(canvasCursorClass({ ...rest, canvasTool: 'avatar', spaceHeld: true })).toBe(
+      'cursor-grab',
+    );
+  });
+  it('the eraser tool shows the eraser cursor unless Space is held', () => {
+    expect(canvasCursorClass({ ...rest, canvasTool: 'eraser' })).toBe('cursor-eraser');
+    // Space held suppresses the eraser cursor, falling through to the rest
+    // (pan tool here -> grab) for a temporary pan.
+    expect(canvasCursorClass({ ...rest, canvasTool: 'eraser', spaceHeld: true })).toBe(
+      'cursor-grab',
+    );
+  });
+  it('the format tool shows the copy cursor unless Space is held', () => {
+    expect(canvasCursorClass({ ...rest, canvasTool: 'format' })).toBe('cursor-copy');
+    // Space held suppresses it, falling through to the rest (pan -> grab).
+    expect(canvasCursorClass({ ...rest, canvasTool: 'format', spaceHeld: true })).toBe(
+      'cursor-grab',
+    );
+  });
+  it('the resting pan tool shows grab; select shows crosshair', () => {
+    expect(canvasCursorClass({ ...rest, canvasTool: 'pan' })).toBe('cursor-grab');
+    expect(canvasCursorClass({ ...rest, canvasTool: 'select' })).toBe('cursor-crosshair');
+  });
+  it('format-paint mode shows copy', () => {
+    expect(canvasCursorClass({ ...rest, canvasTool: 'x', isPaintMode: true })).toBe('cursor-copy');
+  });
+  it('falls back to grab', () => {
+    expect(canvasCursorClass({ ...rest, canvasTool: 'x' })).toBe('cursor-grab');
+  });
+});
