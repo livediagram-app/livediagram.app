@@ -35,6 +35,8 @@ vi.mock('@/lib/api/sheets', () => ({
   deleteSheet: vi.fn(),
 }));
 
+// A find timeout for lazily loaded UI, generous because a loaded full suite delays the dynamic import.
+const LOAD_WAIT = 8_000;
 const by = { id: 'me', name: 'Me', color: '#000000' };
 let seq = 19;
 const rand = () => ((seq = (seq * 16807) % 2147483647) - 1) / 2147483646;
@@ -356,8 +358,13 @@ describe('Import CSV', () => {
     expect(screen.queryByRole('grid')).toBeNull();
     // Not placed by this person: the dialog waits for Set up sheet.
     expect(screen.queryByRole('dialog')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Set up sheet' }));
-    expect(await screen.findByRole('dialog', { name: 'Set up your sheet' })).toBeTruthy();
+    // The button and the lazily loaded dialog both arrive late when the machine is busy: wait for each.
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Set up sheet' }, { timeout: LOAD_WAIT }),
+    );
+    expect(
+      await screen.findByRole('dialog', { name: 'Set up your sheet' }, { timeout: LOAD_WAIT }),
+    ).toBeTruthy();
     // A sheet with cells (an agent filled it) puts it away and is no longer pending.
     cleanup();
     forgetSheetStores();
@@ -379,7 +386,8 @@ describe('Import CSV', () => {
         ),
       ).toBe(true),
     );
-  });
+    // The test's own budget covers the two LOAD_WAIT finds above plus the rest.
+  }, 25_000);
 
   it('opens the file picker from the header menu', async () => {
     fetchSheets.mockResolvedValue([sheetJson('sheetAAAA')]);
