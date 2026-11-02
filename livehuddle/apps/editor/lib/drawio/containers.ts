@@ -5,9 +5,6 @@
 // forwards their connections to the container.
 
 import {
-  ENTITY_MAX_FIELDS,
-  ENTITY_MAX_TEXT,
-  type EntityField,
   type ShapeElement,
   type TableCellStyle,
   type TableElement,
@@ -55,44 +52,6 @@ export function buildLane(
     textAlignY: horizontal ? 'top' : 'middle',
     // A horizontal=0 lane writes its title upright in its strip, as draw.io does.
     ...(horizontal ? {} : { titleOrientation: 'upright' as const }),
-  };
-}
-
-const cut = (text: string, ctx: PageContext) => {
-  if (text.length <= ENTITY_MAX_TEXT) return text;
-  ctx.tally.add('text-truncated');
-  return text.slice(0, ENTITY_MAX_TEXT);
-};
-
-function fieldOf(row: DrawioCell, ctx: PageContext): EntityField {
-  const text = cellLabel(row).plain.replace(/\n/g, ' ').trim();
-  const colon = text.lastIndexOf(':');
-  const name = colon < 0 ? text : text.slice(0, colon).trim();
-  const type = colon < 0 ? '' : text.slice(colon + 1).trim();
-  return { name: cut(name, ctx), ...(type ? { type: cut(type, ctx) } : {}) };
-}
-
-export function buildEntity(
-  cell: DrawioCell,
-  rect: Rect,
-  graph: DrawioGraph,
-  ctx: PageContext,
-  id: string,
-): ShapeElement {
-  const rows = cell.children
-    .map((childId) => graph.cells.get(childId)!)
-    .filter((row) => row.visible && shapeName(row.style) !== 'line');
-  const fields = rows.slice(0, ENTITY_MAX_FIELDS).map((row) => fieldOf(row, ctx));
-  ctx.tally.add('text-truncated', rows.length - fields.length);
-  const props = boxedProps(cell, ctx);
-  return {
-    id,
-    type: 'shape',
-    shape: 'entity',
-    ...rect,
-    ...props,
-    ...textProps(cell, ctx, { ...TITLE, onFill: props.fillColor }),
-    entityFields: fields,
   };
 }
 

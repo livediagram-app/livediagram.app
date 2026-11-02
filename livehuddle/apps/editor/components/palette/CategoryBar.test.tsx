@@ -4,8 +4,6 @@
 // browse with its memory.
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { EditorMode } from '@livehuddle/document';
-import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
 import { HOVER_CLOSE_MS, HOVER_OPEN_MS } from './CategoryBar';
@@ -28,21 +26,19 @@ afterEach(() => {
   cleanup();
 });
 
-function show(mode: EditorMode = 'diagram', { minimal = false }: { minimal?: boolean } = {}) {
+function show({ minimal = false }: { minimal?: boolean } = {}) {
   const h = Object.fromEntries(
     PALETTE_ADD_HANDLER_KEYS.map((k) => [k, vi.fn()]),
   ) as unknown as PaletteAddHandlers;
   render(
     <MinimalChromeProvider value={minimal}>
-      <EditorModeProvider value={{ mode, setMode: vi.fn(), canSwitch: true, canEdit: true }}>
-        <ToolbarPalette
-          canvasTool="select"
-          onSetCanvasTool={vi.fn()}
-          canvasEmpty={false}
-          pendingDraw={null}
-          {...h}
-        />
-      </EditorModeProvider>
+      <ToolbarPalette
+        canvasTool="select"
+        onSetCanvasTool={vi.fn()}
+        canvasEmpty={false}
+        pendingDraw={null}
+        {...h}
+      />
     </MinimalChromeProvider>,
   );
   return h;
@@ -74,10 +70,10 @@ describe('hover intent', () => {
     show();
     fireEvent.pointerEnter(button('Shapes'), mouse);
     wait(HOVER_OPEN_MS);
-    fireEvent.pointerEnter(button('Concepts'), mouse);
-    expect(heading()).toBe('Concepts');
+    fireEvent.pointerEnter(button('Draw'), mouse);
+    expect(heading()).toBe('Draw');
     fireEvent.pointerEnter(button('Layout'), { pointerType: 'touch' });
-    expect(heading()).toBe('Concepts');
+    expect(heading()).toBe('Draw');
   });
 
   it('closes once the pointer has left both the bar and the flyout, after a grace', () => {
@@ -176,7 +172,7 @@ describe('hover intent', () => {
   });
 
   it('stays open while its search holds a query', () => {
-    show('workshop');
+    show();
     fireEvent.pointerEnter(button('Session'), mouse);
     wait(HOVER_OPEN_MS);
     const field = within(flyout()!).getByRole('textbox') as HTMLInputElement;
@@ -185,19 +181,6 @@ describe('hover intent', () => {
     fireEvent.pointerLeave(flyout()!.firstElementChild!, mouse);
     wait(HOVER_CLOSE_MS * 2);
     expect(flyout()).not.toBeNull();
-  });
-});
-
-describe('minimal chrome (docs/specs/007-editor/power-user-mode.md)', () => {
-  it('shows a picture tile’s icon alone, keeping its name, and a card its name', () => {
-    show('diagram', { minimal: true });
-    fireEvent.click(button('Shapes'), { detail: 1 });
-    const square = within(flyout()!).getByRole('button', { name: 'Add Square' });
-    expect(square.textContent).not.toContain('Square');
-    fireEvent.click(button('Diagrams'), { detail: 1 });
-    expect(
-      within(flyout()!).getAllByRole('button', { name: /Mind Node/ })[0]!.textContent,
-    ).toContain('Mind Node');
   });
 });
 
@@ -210,9 +193,9 @@ describe('the keyboard', () => {
     fireEvent.keyDown(button('Write'), { key: 'ArrowLeft' });
     fireEvent.keyDown(button('Shapes'), { key: 'ArrowLeft' });
     // Wraps round to the last.
-    expect(document.activeElement).toBe(button('Media'));
-    fireEvent.keyDown(button('Media'), { key: 'ArrowDown' });
-    expect(heading()).toBe('Media');
+    expect(document.activeElement).toBe(button('Data'));
+    fireEvent.keyDown(button('Data'), { key: 'ArrowDown' });
+    expect(heading()).toBe('Data');
     expect(document.activeElement?.hasAttribute('data-flyout-item')).toBe(true);
   });
 
@@ -298,7 +281,7 @@ describe('a tile’s side panel', () => {
 
 describe('Session’s browse', () => {
   it('lists its groups down a rail with their counts as badges, and opens on the first', () => {
-    show('workshop');
+    show();
     fireEvent.click(button('Session'), { detail: 1 });
     const rail = within(flyout()!).getByRole('navigation');
     const groups = within(rail).getAllByRole('button');
@@ -314,7 +297,7 @@ describe('Session’s browse', () => {
   });
 
   it('switches group from the rail, finds across every group, and remembers the group it was left on', () => {
-    show('workshop');
+    show();
     fireEvent.click(button('Session'), { detail: 1 });
     const rail = () => within(flyout()!).getByRole('navigation');
     fireEvent.click(within(rail()).getByRole('button', { name: /^React/ }));

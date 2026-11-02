@@ -1,4 +1,3 @@
-import type { EditorMode } from '@livehuddle/document';
 import type { CleanupKind } from '@/lib/tab-cleanup';
 import type { CleanupVerdict } from '@/lib/tidy-verdict';
 
@@ -24,8 +23,7 @@ export type TidyUpActions = {
 // actions to. Phones too: there a tap is the press, with no hover preview.
 export function tidyUpOffered(input: {
   actions: TidyUpActions | undefined;
-  editorMode: EditorMode | undefined;
   zenMode: boolean;
 }): boolean {
-  return !!input.actions && input.editorMode === 'diagram' && !input.zenMode;
+  return !!input.actions && !input.zenMode;
 }

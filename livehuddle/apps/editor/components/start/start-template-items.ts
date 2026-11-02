@@ -8,6 +8,7 @@ import {
   BLANK_TEMPLATE_FOR_MODE,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
+  isBlankTemplate,
   isInTemplateCategory,
   popularKindsFor,
   templateCategory,
@@ -17,7 +18,8 @@ import {
   type TemplateKind,
 } from '@livehuddle/templates';
 
-export type TemplateStartMode = 'diagram' | 'draw' | 'workshop';
+// Workshop, the one editor mode (docs/specs/007-editor/editor-modes.md).
+export type TemplateStartMode = 'workshop';
 
 type TemplateStartGroup = {
   id: string;
@@ -37,8 +39,6 @@ type TemplateStart = {
 };
 
 const RECOMMENDED_LINE: Record<TemplateStartMode, string> = {
-  diagram: 'The quickest ways to start, picked for most diagrams.',
-  draw: 'The quickest ways to start sketching, picked for most people.',
   workshop: 'The quickest ways to run a session, picked for most teams.',
 };
 
@@ -53,7 +53,7 @@ export const templateOf = (kind: TemplateKind): TemplateDescriptor => byKind.get
 function build(mode: TemplateStartMode): TemplateStart {
   const blank = BLANK_TEMPLATE_FOR_MODE[mode];
   const listed = TEMPLATES.filter(
-    (t) => !t.hidden && t.kind !== blank && templateEditorMode(t.kind) === mode,
+    (t) => !t.hidden && !isBlankTemplate(t.kind) && templateEditorMode(t.kind) === mode,
   ).map((t) => t.kind);
   const recommended: TemplateStartGroup = {
     id: 'recommended',
@@ -79,7 +79,5 @@ function build(mode: TemplateStartMode): TemplateStart {
 }
 
 export const TEMPLATE_STARTS: Readonly<Record<TemplateStartMode, TemplateStart>> = {
-  diagram: build('diagram'),
-  draw: build('draw'),
   workshop: build('workshop'),
 };

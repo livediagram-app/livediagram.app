@@ -1,4 +1,3 @@
-import { parseEditorMode, type EditorMode } from '@livehuddle/document';
 import { templateKindOf, type TemplateKind } from '@livehuddle/templates';
 
 // The /new query params that skip the wizard (docs/specs/007-editor/new-document-route.md): `?blank=1` commits
@@ -18,19 +17,13 @@ export const WIZARD_BYPASS_PARAMS = ['blank', 'template'] as const;
 // guessed, so a stale marketing link falls back to the wizard, not a 404.
 export function wizardBypassKind(search: string): TemplateKind | null {
   const params = new URLSearchParams(search);
-  if (params.has('blank')) return 'blank';
+  if (params.has('blank')) return 'blank-session';
   return templateKindOf(params.get('template'));
 }
 
-// The template step's presets (`?mode=`, `?q=`; docs/specs/007-editor/new-document-route.md): the
-// mode filter to open on, and words to open the search with. Not a bypass: the author still picks.
-// An unknown mode, or empty words, is ignored; a retired mode's name (`?mode=pages`) reads as Diagram.
+// The start's search preset (`?q=`; docs/specs/007-editor/new-document-route.md): words to open the new document's
+// start with. Not a bypass: the author still picks. Empty words are ignored, and so is a `?mode=`: there is one mode.
 export const SEARCH_PRESET_MAX = 60;
-
-export function wizardPresetMode(search: string): EditorMode | null {
-  const mode = new URLSearchParams(search).get('mode');
-  return parseEditorMode(mode) ?? null;
-}
 
 export function wizardPresetQuery(search: string): string | null {
   const q = new URLSearchParams(search).get('q')?.trim().slice(0, SEARCH_PRESET_MAX);

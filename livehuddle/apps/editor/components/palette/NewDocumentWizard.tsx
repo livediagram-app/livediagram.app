@@ -1,27 +1,24 @@
 'use client';
 
-import { useLayoutEffect, useState, type ReactNode } from 'react';
+import { useLayoutEffect, type ReactNode } from 'react';
 import { Button, CloseIcon, useEscape } from '@livehuddle/ui';
-import type { EditorMode } from '@livehuddle/document';
 import { BLANK_TEMPLATE_FOR_MODE, type TemplateKind } from '@livehuddle/templates';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import { takeEarlyModeChoice } from '@/app/new/early-mode-choice';
+import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
 import { CanvasModalCard } from '@liveworkspace/workbench/components/palette/CanvasModalCard';
-import { NewDocumentModeStep } from './NewDocumentModeStep';
 import {
   FolderOpenIcon,
   SparkleIcon,
   Spinner,
 } from '@liveworkspace/workbench/components/palette/template-picker-icons';
 
-// The New Document wizard (docs/specs/007-editor/new-document-route.md "One-step wizard"): one question, what you are
-// making, answered by choosing a mode, which creates the document at once. It asks nothing about where the document
-// goes or what it is called: /new stores and files it by default (Save Locations, Default folders), and it opens on
-// its mode's start, where the templates are. Escape and the X back out, creating nothing; Skip makes a Blank Diagram.
+// The New Document wizard (docs/specs/007-editor/new-document-route.md "One-step wizard"): no question, as there is
+// one mode; Create makes a Blank Workshop document at once. It asks nothing about where the document goes or what it
+// is called: /new stores and files it by default (Save Locations, Default folders), and it opens on its start, where
+// the templates are. Escape and the X back out, creating nothing; Skip makes a Blank Workshop with its start closed.
 export function NewDocumentWizard({
   busy = false,
-  initialMode = null,
   onCreate,
   onSkip,
   onBackOut,
@@ -30,32 +27,26 @@ export function NewDocumentWizard({
 }: {
   // The create is in flight: Create shows its spinner and nothing else creates.
   busy?: boolean;
-  // A `/new?mode=` preset: its card is chosen, and Create makes its blank.
-  initialMode?: EditorMode | null;
-  // Make the document from a mode's blank.
+  // Make the document from the blank.
   onCreate: (kind: TemplateKind) => void;
-  // Make a Blank Diagram with its start closed (the documented Skip defaults).
+  // Make a Blank Workshop with its start closed (the documented Skip defaults).
   onSkip: () => void;
   // Back to the page that opened /new, creating nothing.
   onBackOut: () => void;
   // To the Explorer, to open a document that exists.
   onOpenExisting?: () => void;
-  // Where the new canvas will be saved: the Sync Canvas to Server switch, under the modes
+  // Where the new canvas will be saved: the Sync Canvas to Server switch, under Create
   // (docs/specs/006-document/save-locations.md "On the start screen"). Absent where /new names a server place.
   saveSwitch?: ReactNode;
 }) {
   useModalGuard(true);
-  const [chosen, setChosen] = useState<EditorMode | null>(null);
-  const mode = chosen ?? initialMode;
-  const create = (next: EditorMode | null) => {
+  const create = () => {
     if (busy) return;
-    if (next) setChosen(next);
-    onCreate(BLANK_TEMPLATE_FOR_MODE[next ?? 'diagram']);
+    onCreate(BLANK_TEMPLATE_FOR_MODE.workshop);
   };
-  // A card clicked before hydration is chosen now, before the browser can hand React another event.
+  // Create pressed before hydration is pressed now, before the browser can hand React another event.
   useLayoutEffect(() => {
-    const early = takeEarlyModeChoice();
-    if (early) create(early);
+    if (takeEarlyModeChoice()) create();
     // Once, as the wizard mounts.
     // oxlint-disable-next-line react/exhaustive-deps
   }, []);
@@ -91,9 +82,6 @@ export function NewDocumentWizard({
           </button>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto px-6 pb-6 pt-4">
-        <NewDocumentModeStep selected={mode} creating={busy} onChoose={create} />
-      </div>
       {saveSwitch ? (
         <div className="border-t border-slate-100 px-6 py-1.5 dark:border-slate-800">
           {saveSwitch}
@@ -123,8 +111,10 @@ export function NewDocumentWizard({
         </Button>
         <Button
           size="xs"
-          onClick={() => create(mode)}
+          onClick={create}
           busy={busy}
+          // The early script's target: a press before hydration is kept (early-mode-choice.ts).
+          data-new-mode="workshop"
           className="gap-1.5 rounded-lg px-4 py-2 shadow-sm"
         >
           {busy ? <Spinner /> : <SparkleIcon />}

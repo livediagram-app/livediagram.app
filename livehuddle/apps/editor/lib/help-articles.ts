@@ -26,18 +26,11 @@ export const HELP_ARTICLES = {
   community: COMMUNITY_HELP.sharing.path,
   // Palette behaviour
   autoAttachArrows: 'palette/auto-attach-arrows',
-  // Of the elements added in docs/specs/009-elements/youtube-video.md and docs/specs/009-elements/mind-node.md, docs/specs/009-elements/lane.md, docs/specs/009-elements/entity.md, docs/specs/009-elements/embed-providers.md, only the embed has a
-  // surface that links its article (the link picker, when it is restricted to
-  // a URL). Lanes and entities had keys here and no placement, so they were
-  // removed; their element tours brought them back, below. The mind map's Edit
-  // Outline dialog links its own sub-article from its header, and the mind
-  // map's, the flowchart's and the org chart's element tours (docs/specs/007-editor/element-tours.md) link their
-  // articles.
+  // Of the elements added in docs/specs/009-elements/youtube-video.md, docs/specs/009-elements/lane.md and
+  // docs/specs/009-elements/embed-providers.md, only the embed has a surface that links its article (the link picker,
+  // when it is restricted to a URL). Lanes had a key here and no placement, so it was removed; its element tour
+  // brought it back, below.
   embedElements: 'palette/embed-elements',
-  mindMaps: 'palette/mind-maps',
-  flowcharts: 'palette/flowcharts',
-  orgCharts: 'palette/org-charts',
-  mindMapOutline: 'palette/mind-maps/edit-outline',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
   quickAddOnHover: 'palette/quick-add-on-hover',
@@ -72,7 +65,6 @@ export const HELP_ARTICLES = {
   workshopTour: 'canvas/workshop-mode/workshop-tour',
   // The event-storming board, its photo import review included (docs/specs/021-event-storming/event-storming.md).
   eventStormingBoards: 'canvas/event-storming-boards',
-  drawTour: 'canvas/draw-mode/draw-tour',
   avatarTour: 'selection-modes/avatar-mode/avatar-tour',
   links: 'canvas/links',
   comments: 'collaboration/comments',
@@ -104,26 +96,21 @@ export const HELP_ARTICLES = {
   teamSpaces: 'explorer/team-spaces',
   explorerPage: 'explorer/explorer-page',
   dataElements: 'palette/tools/data-elements',
-  sankeyDiagram: 'palette/build/sankey-diagram',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
   stacks: 'palette/stacks',
-  entities: 'palette/entities',
   lanes: 'palette/lanes',
   boundaries: 'palette/boundaries',
   diagramKeys: 'palette/diagram-keys',
   portals: 'palette/tools/portals',
-  sequenceDiagram: 'palette/sequence-diagrams',
-  conceptGraphics: 'palette/concept-graphics',
+  timelineRail: 'palette/timeline-rail',
   palette: 'palette',
   // Settings
   powerUserMode: 'user-interface/power-user-mode',
-  diagramTour: 'getting-started/diagram-tour',
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
   yourFirstDiagram: 'getting-started/your-first-diagram',
   templates: 'canvas/templates',
-  drawMode: 'canvas/draw-mode',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
@@ -145,10 +132,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   workshopTour: {
     title: 'Learn about the Workshop Tour',
-    description: 'What the tour shows you and how replaying works.',
-  },
-  drawTour: {
-    title: 'Learn about the Draw Tour',
     description: 'What the tour shows you and how replaying works.',
   },
   avatarTour: {
@@ -300,22 +283,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about layers',
     description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
   },
-  orgCharts: {
-    title: 'Learn about org charts',
-    description: 'People and roles in a tree: reports, peers, and the downward flow.',
-  },
-  flowcharts: {
-    title: 'Learn about flowcharts',
-    description: 'Growing a chart a step at a time, step types, swimlanes and direction.',
-  },
-  mindMaps: {
-    title: 'Learn about mind maps',
-    description: 'Growing a map with Tab and Enter, its branching shapes, spacing and Tidy Map.',
-  },
-  mindMapOutline: {
-    title: 'Learn about editing an outline',
-    description: 'Rewrite a mind map as an indented list and save it back in one go.',
-  },
   minimap: {
     title: 'Learn about the Map',
     description: 'Tips for finding your way around a big canvas.',
@@ -384,17 +351,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about data elements',
     description: 'Charts and data-driven elements, and how to edit their data.',
   },
-  sankeyDiagram: {
-    title: 'Learn about Sankey diagrams',
-    description: 'Writing flows, reading the bands, and styling nodes and labels.',
-  },
   stacks: {
     title: 'Learn about stacks',
     description: 'Rows, columns and grids that lay out what you drop in them.',
-  },
-  entities: {
-    title: 'Learn about entities',
-    description: 'UML classes and ER tables: a title over name and type fields.',
   },
   lanes: {
     title: 'Learn about lanes',
@@ -412,14 +371,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about portals',
     description: 'Linked rings that take you across the canvas or to another tab.',
   },
-  conceptGraphics: {
-    title: 'Learn about concept graphics',
-    description:
-      'Stacks, pyramids, funnels, cycles, hubs, onions and chevrons, and editing their rows.',
-  },
-  sequenceDiagram: {
-    title: 'Learn about sequence diagrams',
-    description: 'Writing participants and messages, and the three kinds of arrow.',
+  timelineRail: {
+    title: 'Learn about timelines',
+    description: 'Milestones along a line, each with when and what, and editing its rows.',
   },
   palette: {
     title: 'Learn about the Palette',
@@ -428,10 +382,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   powerUserMode: {
     title: 'Learn about power user mode',
     description: 'The recommended settings it applies, and Minimal chrome.',
-  },
-  diagramTour: {
-    title: 'Learn about the Diagram Tour',
-    description: 'What the tour covers and how replaying works.',
   },
   whatWeCollect: {
     title: 'Learn about what we collect',
@@ -448,10 +398,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   templates: {
     title: 'Learn about templates',
     description: 'How templates give you a themed starting point.',
-  },
-  drawMode: {
-    title: 'Learn about Draw mode',
-    description: 'Switching modes, the dock, its pens and shapes, and where it sits.',
   },
   livePresence: {
     title: 'Learn about live presence',

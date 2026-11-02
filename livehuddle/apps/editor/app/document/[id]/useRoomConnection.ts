@@ -11,7 +11,7 @@ import {
   syncRemoteBesideTabs,
 } from '@liveworkspace/workbench/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
-import type { EditorMode, QaNote, Tab } from '@livehuddle/document';
+import type { QaNote, Tab } from '@livehuddle/document';
 import {
   type AgentPresence,
   type AvatarPresence,
@@ -39,7 +39,6 @@ import type { RemoteSelection } from '@/lib/presence-rows';
 import { pruneMapToPresent } from './editor-page-helpers';
 import { applyRoomOpToTabs, type PendingIdeaIds } from './room-op-apply';
 import { keepUnsavedTabChanges } from './meta-keep-local';
-import { peerModeSwitchOf } from '@/lib/peer-mode-switch';
 import { migrateRoomOp } from './room-op-migrate';
 import { roomOpIsWellFormed } from './room-op-shape';
 import { foldRemoteOpIntoBaseline, type SaveBaselineRefs } from './save-baseline';
@@ -170,10 +169,6 @@ export function useRoomConnection(opts: {
   // (docs/specs/012-collaboration/resync-without-reload.md). Stable, like the poll handlers, so it can't reopen the
   // socket — the effect's dep list stays [hydrated, documentId, shareable].
   resyncFromServer: () => Promise<void>;
-  // A peer switched a tab's editor mode (docs/specs/007-editor/editor-modes.md "Where the mode
-  // lives"): already applied with the op; told so the editor can say who switched. `name` is the
-  // peer's presence name, null when the room has not given one.
-  receivePeerModeSwitch?: (name: string | null, tabId: string, mode: EditorMode) => void;
   // An agent's changeset (docs/specs/024-agents/agent-changesets.md "In the editor"), relayed by the
   // worker; useChangesetFeed decides what to do with it.
   receiveChangeset: (op: ChangesetRoomOp) => void;
@@ -231,7 +226,6 @@ export function useRoomConnection(opts: {
     receiveDocumentTrashed,
     resyncFromServer,
     receiveChangeset,
-    receivePeerModeSwitch,
     onRoomJoined,
     onAdderKey,
   } = opts;
@@ -430,11 +424,6 @@ export function useRoomConnection(opts: {
             : applyRoomOpToTabs(prev, op, pendingIdeaIds),
         );
         foldRemoteOpIntoBaseline(saveBaseline, op);
-        const switched = peerModeSwitchOf(op);
-        if (switched) {
-          const name = nameByPresenceRef.current.get(from) ?? null;
-          receivePeerModeSwitch?.(name, switched.tabId, switched.mode);
-        }
         // In the same batch as the tabs update, so the render that shows the op also counts it.
         countAppliedOp();
       } else if (op.kind === 'select') {

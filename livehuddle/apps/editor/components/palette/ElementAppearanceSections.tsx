@@ -24,8 +24,6 @@ import {
   isChecklistShape,
   isCodeBlockShape,
   isLegendShape,
-  isSankeyShape,
-  isMindNode,
   isLineShape,
   isProgressShape,
   isRatingShape,
@@ -130,10 +128,7 @@ export function ElementAppearanceSections({
   const isLine = target.type === 'shape' && isLineShape(target.shape);
   const isCodeBlock = target.type === 'shape' && isCodeBlockShape(target.shape);
   const isLegend = target.type === 'shape' && isLegendShape(target.shape);
-  const isSankey = target.type === 'shape' && isSankeyShape(target.shape);
-  const isMind = isMindNode(target);
   const isChecklist = target.type === 'shape' && isChecklistShape(target.shape);
-  const isEntity = target.type === 'shape' && target.shape === 'entity';
   // Mode button (docs/specs/009-elements/mode-button.md): its one setting is which mode it hands out.
   const isModeButton = target.type === 'shape' && target.shape === 'mode-button';
   // Portal (docs/specs/009-elements/portal-element.md): its one setting is which portal it leads to.
@@ -189,7 +184,7 @@ export function ElementAppearanceSections({
     hasStylePresets(target) ||
     target.type === 'sticky' ||
     target.type === 'arrow' ||
-    (boxed && supportsColours(target) && !isChart && !isSankey) ||
+    (boxed && supportsColours(target) && !isChart) ||
     (borderable && !isChart) ||
     // An image has no colours, border or looks, only a Shadow (docs/specs/008-canvas/element-shadows.md),
     // which sits in this flyout: without this it was never reachable on one.
@@ -243,10 +238,7 @@ export function ElementAppearanceSections({
         isLine={isLine}
         isCodeBlock={isCodeBlock}
         isLegend={isLegend}
-        isSankey={isSankey}
-        isMindNode={isMind}
         isChecklist={isChecklist}
-        isEntity={isEntity}
         isModeButton={isModeButton}
         isPortal={isPortal}
         isSessionButton={isSessionButton}

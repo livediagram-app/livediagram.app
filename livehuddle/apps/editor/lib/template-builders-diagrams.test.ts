@@ -18,37 +18,6 @@ const centreOf = (el: { x: number; y: number; width: number; height: number }) =
   y: el.y + el.height / 2,
 });
 
-describe('pyramid template', () => {
-  const els = buildTemplate('pyramid', 0, 0);
-  const [pyramid] = shapesOf(els, 'pyramid');
-
-  it('is one theme-locked Pyramid element with the five tiers, peak first', () => {
-    expect(shapesOf(els, 'triangle')).toHaveLength(0);
-    expect(pyramid?.conceptRows?.map((r) => r.label)).toEqual([
-      'Purpose',
-      'Vision',
-      'Strategy',
-      'Goals',
-      'Initiatives',
-    ]);
-    expect(pyramid?.themeLockFill).toBe(true);
-  });
-
-  it('gives each tier a guiding question card on the rail', () => {
-    const cards = shapesOf(els, 'card');
-    expect(cards.map((c) => c.pageTitle?.endsWith('?'))).toEqual(Array(5).fill(true));
-    expect(cards.every((c) => c.iconId && c.cardMedia === 'tile' && c.themeLockFill)).toBe(true);
-    expect(cards.every((c) => c.accentEdge === 'left')).toBe(true);
-    // The rail sits clear of the pyramid, to its right.
-    expect(cards.every((c) => c.x > pyramid!.x + pyramid!.width)).toBe(true);
-  });
-
-  it('opens with a bold title', () => {
-    const title = els.find((el) => el.type === 'text' && el.textSize === 'lg');
-    expect(title).toMatchObject({ textBold: true });
-  });
-});
-
 describe('venn template', () => {
   const els = buildTemplate('venn', 0, 0);
   const circles = shapesOf(els, 'circle');

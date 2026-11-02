@@ -9,7 +9,7 @@ import {
   SettingsSubcategoryGlyph,
   type SettingsTileId,
 } from '@liveworkspace/settings-ui';
-import { lucideGlyph, EDITOR_MODE_ICONS } from '@livehuddle/ui';
+import { lucideGlyph } from '@livehuddle/ui';
 import { lucideLayers, lucideMap, lucidePalette } from '@liveworkspace/icons/lucide';
 import { CollaborateGlyph } from '@liveworkspace/workbench/components/panels/collaborate/CollaborateGlyph';
 import { SlideDeckIcon } from '@/components/palette/palette-icons';
@@ -30,7 +30,6 @@ export type SettingsIconId =
 
 // The sub-categories, nested under a top-level category (Editor, Panels, Account).
 export type SettingsSubcategoryId =
-  | 'draw'
   | 'presenting'
   | 'layers'
   | 'map'
@@ -62,15 +61,11 @@ export const SETTINGS_TILES: Record<SettingsIconId, SettingsTileId> = {
 // are the toolbar's own (Lucide layers, as LayersStackIcon; the Collaborate
 // button's glyph), at 16px. The Map and Quick Style
 // have no toolbar button, so they take Lucide's map and palette from the
-// same family. Draw is the marker the editor mode switch shows for Draw
-// mode, so the row reads as that mode's settings. Notifications and API
-// Tokens keep the shared bell and key.
+// same family. Notifications and API Tokens keep the shared bell and key.
 const LayersSubGlyph = lucideGlyph(lucideLayers, 16);
 const MapSubGlyph = lucideGlyph(lucideMap, 16);
 const QuickStyleSubGlyph = lucideGlyph(lucidePalette, 16);
-const DrawSubGlyph = EDITOR_MODE_ICONS.draw;
 const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
-  draw: () => <DrawSubGlyph size={16} />,
   presenting: () => <SlideDeckIcon />,
   layers: () => <LayersSubGlyph />,
   map: () => <MapSubGlyph />,

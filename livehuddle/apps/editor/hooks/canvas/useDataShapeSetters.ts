@@ -6,9 +6,6 @@ import {
   LEGEND_MAX_TEXT,
   type LegendItem,
   CHECKLIST_MAX_TEXT,
-  isEntity,
-  withEntityFields,
-  type FieldRemap,
   AGENDA_MAX_ITEMS,
   AGENDA_MAX_TEXT,
   DECISION_MAX_DRIVERS,
@@ -17,7 +14,6 @@ import {
   type ChairFacing,
   type DecisionStatus,
   type EstimateScale,
-  type EntityField,
   clampPercent,
   CODE_MAX_LENGTH,
   isProgressShape,
@@ -36,7 +32,6 @@ import {
 } from '@livehuddle/document';
 import { track } from '@/lib/telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
-import { useMindMapSetters } from '@/hooks/canvas/useMindMapSetters';
 import { useWebComponentSetters } from '@/hooks/canvas/useWebComponentSetters';
 import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
 
@@ -46,9 +41,8 @@ const MASTHEAD_SHAPES = new Set<string>(['page', 'banner', 'callout', 'card', 'b
 type DataShapeSetterDeps = {
   currentSelectionIds: () => Set<string>;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
-  // For Tidy Map's notification (useMindMapSetters).
+  // The board as it stands (useWebComponentSetters).
   elements: () => Element[];
-  notify: (tone: 'success' | 'info', message: string) => void;
 };
 
 // The selection-wide setters for the data-bearing shapes: progress bars,
@@ -68,7 +62,6 @@ export function useDataShapeSetters({
   currentSelectionIds,
   commit,
   elements,
-  notify,
 }: DataShapeSetterDeps) {
   // Progress elements (docs/specs/009-elements/progress.md): the percentage + how its fill animates, all
   // gated to progress shapes. The four setters differ only in the patched
@@ -187,31 +180,12 @@ export function useDataShapeSetters({
     commit((els) =>
       els.map((el) => {
         if (el.id !== elementId || el.type !== 'shape') return el;
-        // A person node's role is its meta line (docs/specs/009-elements/org-chart.md).
-        const personRole =
-          el.shape === 'mind-node' && el.mindLook === 'person' && field === 'pageSubtitle';
-        if (!MASTHEAD_SHAPES.has(el.shape) && !personRole) return el;
+        if (!MASTHEAD_SHAPES.has(el.shape)) return el;
         // An empty line stores as undefined rather than '', so a page that was
         // typed into and cleared serialises the same as one never touched.
         return { ...el, [field]: value.trim() ? value : undefined };
       }),
     );
-  };
-
-  // Entity fields (docs/specs/009-elements/entity.md). Bounded on write like the checklist's rows, so
-  // a paste into the menu can't produce an element nobody can read.
-  // Entity fields (docs/specs/009-elements/entity.md "The Fields menu"): cleaned and bounded, each box refitted
-  // to its fields, and ends pinned to a removed field let go (withEntityFields).
-  const setEntityFieldsSelected = (fields: EntityField[], remap?: FieldRemap) => {
-    const ids = currentSelectionIds();
-    if (ids.size === 0) return;
-    commit((els) => {
-      let next = els;
-      for (const el of els)
-        if (ids.has(el.id) && isEntity(el)) next = withEntityFields(next, el.id, fields, remap);
-      return next;
-    });
-    track('Element', 'Changed', 'Entity');
   };
 
   // --- The collaboration elements (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130) ----------------
@@ -346,14 +320,11 @@ export function useDataShapeSetters({
 
   // Rating (docs/specs/009-elements/rating.md) + the charts (docs/specs/009-elements/pie-chart.md) — see useChartSetters.
   const chartSetters = useChartSetters({ currentSelectionIds, commit });
-  // Mind map flow + Tidy Map (docs/specs/009-elements/mind-node.md) — see useMindMapSetters.
-  const mindSetters = useMindMapSetters({ currentSelectionIds, commit, elements, notify });
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md) — see useWebComponentSetters.
   const webSetters = useWebComponentSetters({ currentSelectionIds, commit, elements });
 
   return {
     ...chartSetters,
-    ...mindSetters,
     ...webSetters,
     setProgressSelected,
     setProgressAnimSelected,
@@ -366,7 +337,6 @@ export function useDataShapeSetters({
     setLegendItemsSelected,
     setPageHeading,
     setChecklistItemsSelected,
-    setEntityFieldsSelected,
     setEstimateScaleSelected,
     setAgendaItemsSelected,
     setDecisionStatusSelected,

@@ -18,9 +18,7 @@ import { PaletteMyShapesTab } from './PaletteMyShapesTab';
 import type { ShapeLibraryItem } from '@livehuddle/api-schema';
 import { IconPickerTab } from '@/components/palette/IconPickerTab';
 import { StickerPickerTab } from '@/components/palette/StickerPickerTab';
-import { TechPickerTab } from '@/components/palette/TechPickerTab';
 import {
-  DevicePickerTab,
   PaletteCollaborateTab,
   PaletteDataTab,
   PaletteMediaTab,
@@ -48,10 +46,6 @@ type StickerDeps = Pick<
   ComponentProps<typeof StickerPickerTab>,
   'addSticker' | 'stickerQuery' | 'setStickerQuery' | 'stickerResults'
 >;
-type TechDeps = Pick<
-  ComponentProps<typeof TechPickerTab>,
-  'addTechIcon' | 'techQuery' | 'setTechQuery' | 'techResults'
->;
 
 export { PALETTE_CATEGORIES };
 
@@ -67,8 +61,7 @@ export function paletteCategoryTabs(
     // Places a shape from My shapes (docs/specs/013-workspace/shape-libraries.md).
     insertLibraryShape: (item: ShapeLibraryItem) => void;
   } & IconDeps &
-    StickerDeps &
-    TechDeps,
+    StickerDeps,
 ) {
   const {
     categories,
@@ -85,10 +78,6 @@ export function paletteCategoryTabs(
     stickerQuery,
     setStickerQuery,
     stickerResults,
-    addTechIcon,
-    techQuery,
-    setTechQuery,
-    techResults,
   } = deps;
   // The Icons body takes `loading`; the caller holds the loaded flag.
   const iconCatalogsLoaded = !iconCatalogsLoadedInverse;
@@ -122,16 +111,6 @@ export function paletteCategoryTabs(
             loading={!iconCatalogsLoaded}
           />
         );
-      case 'technology':
-        return (
-          <TechPickerTab
-            addTechIcon={addTechIcon}
-            techQuery={techQuery}
-            setTechQuery={setTechQuery}
-            techResults={techResults}
-            loading={!iconCatalogsLoaded}
-          />
-        );
       case 'shapes':
         return <PaletteShapesTab {...tab} tiles={tiles} />;
       case 'build':
@@ -140,8 +119,6 @@ export function paletteCategoryTabs(
         return <PaletteWriteTab {...tab} tiles={tiles} />;
       case 'draw':
         return <PaletteDrawTab {...tab} tiles={tiles} />;
-      case 'devices':
-        return <DevicePickerTab {...tab} tiles={tiles} />;
       case 'event-storming':
         return <PaletteEventStormingTab {...tab} tiles={tiles} board={esBoardControls} />;
       case 'media':

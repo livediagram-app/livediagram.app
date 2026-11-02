@@ -2,18 +2,12 @@
 
 import dynamic from 'next/dynamic';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { TourHost } from '@/components/tour/TourHost';
 import { useEverTrue } from '@liveworkspace/workbench/hooks/ui/useEverTrue';
 
-// The Workshop tour (docs/specs/012-collaboration/workshop-tour.md) loads the first time the person
-// enters Workshop, and stays mounted after, so leaving Workshop mid-tour still runs its clean-up.
+// The Workshop tour (docs/specs/012-collaboration/workshop-tour.md) loads with the editor's first board, and stays
+// mounted after.
 const WorkshopTourHost = dynamic(
   () => import('@/components/tour/WorkshopTourHost').then((m) => m.WorkshopTourHost),
-  { ssr: false },
-);
-// The Draw tour (docs/specs/023-draw-mode/draw-tour.md): the same, the first time the person enters Draw.
-const DrawTourHost = dynamic(
-  () => import('@/components/tour/DrawTourHost').then((m) => m.DrawTourHost),
   { ssr: false },
 );
 // Element tours (docs/specs/007-editor/element-tours.md): offered beside the selection toolbar of a toured element
@@ -28,19 +22,16 @@ const AvatarTourHost = dynamic(
   { ssr: false },
 );
 
-// The editor's tours (docs/specs/007-editor/editor-tour.md), each mounted the first time its mode or kind is
-// worked in and kept mounted after, so leaving mid-tour still runs its clean-up.
+// The editor's tours (docs/specs/007-editor/editor-tour.md), each mounted the first time it could be taken and kept
+// mounted after, so leaving mid-tour still runs its clean-up.
 export function EditorTours() {
   const { editorMode, canvasTool } = useEditorContext();
   const mountWorkshopTour = useEverTrue(editorMode.mode === 'workshop');
-  const mountDrawTour = useEverTrue(editorMode.mode === 'draw');
   const mountAvatarTour = useEverTrue(canvasTool === 'avatar');
   return (
     <>
-      <TourHost />
       {/* The Workshop tour (docs/specs/012-collaboration/workshop-tour.md): the first time a person works in Workshop. */}
       {mountWorkshopTour ? <WorkshopTourHost /> : null}
-      {mountDrawTour ? <DrawTourHost /> : null}
       {/* The Avatar tour (docs/specs/008-canvas/avatar-tour.md): the first time a person walks as an avatar. */}
       {mountAvatarTour ? <AvatarTourHost /> : null}
       <ElementTourHost />

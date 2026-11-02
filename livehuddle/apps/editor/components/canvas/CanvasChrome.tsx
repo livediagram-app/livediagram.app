@@ -32,14 +32,7 @@ import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
 import { tidyUpOffered } from '@/components/canvas/tidy-up-actions';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import {
-  Fragment,
-  useCallback,
-  useState,
-  type Dispatch,
-  type RefObject,
-  type SetStateAction,
-} from 'react';
+import { Fragment, useCallback, type Dispatch, type RefObject, type SetStateAction } from 'react';
 import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { PanelSnapSlot } from '@liveworkspace/workbench/components/canvas/PanelSnapSlot';
@@ -52,19 +45,16 @@ import { STRIP_SELECTOR, useStripCrowdsCorners } from '@/hooks/ui/useStripCrowds
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-items';
 import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
-import { WHITEBOARD_DOCK_SELECTOR } from '@/lib/whiteboard-dock-prefs';
 import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
 import { AvatarClusterButton } from '@liveworkspace/avatar/components/AvatarClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
-import { loadWhiteboardDock } from '@/lib/editor-deferred-code';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
 
 // Draw mode's dock shows only on a Draw tab, so its code loads on demand (lib/editor-deferred-code.ts
 // fetches it as the editor mounts).
-const WhiteboardDock = dynamic(loadWhiteboardDock, { ssr: false });
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
@@ -304,31 +294,22 @@ export function CanvasChrome(props: CanvasChromeProps) {
     penPoints,
     snapGuides,
     snapTargets,
-    whiteboard: props.editorMode === 'draw',
+    whiteboard: false,
   });
 
-  // Draw mode trades the palette, the strip and the theme controls for its
-  // dock (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
-  const whiteboard = props.editorMode === 'draw';
   // The Vote button, which a starting results walkthrough opens for whoever drives it.
   const voteButtonRef = useVoteReviewOpener(!!props.voteReview?.canControl, {
     activeDockPanel,
     handleDockButtonClick,
   });
-  // The palette strip: an editor's (not read-only), never on a whiteboard, which has its dock; or a Participant's
-  // (docs/specs/013-workspace/share-roles.md), on every mode, since it has no dock.
-  const paletteShown = (!readOnly && !whiteboard) || !!props.participantPalette;
+  // The palette strip: an editor's (not read-only), or a Participant's (docs/specs/013-workspace/share-roles.md).
+  const paletteShown = !readOnly || !!props.participantPalette;
   // The strip only renders with the chrome up.
   const stripShown = paletteShown && !chromeHidden;
-  // The whiteboard's dock, absent for a view-role visitor (nothing to draw with) and while the
-  // chrome is away; at the top unless the user chose the bottom (docs/specs/023-draw-mode/draw-mode.md
-  // "Where the dock sits").
-  const dockShown = whiteboard && !!props.whiteboardDock && !readOnly && !chromeHidden;
-  const dockOnTop = dockShown && props.whiteboardDock?.position === 'top';
   // The Explorer menu button: top-left on desktop; on a phone, its own card at
   // the left of the strip's row, the strip beside it (no room for a corner card
   // above a strip that needs the whole top row). A read-only visitor has no
-  // strip, and nor does a whiteboard, so it keeps the corner there.
+  // strip, so it keeps the corner there.
   const menuInStrip = isMobile && paletteShown;
   // A workspace frame puts its Back in the menu button's place (WB59), held sideways too: it is the frame's way out.
   const { workbenchBack } = props;
@@ -377,19 +358,8 @@ export function CanvasChrome(props: CanvasChromeProps) {
   const toolbarScale = useUiScale('toolbar');
   const panelScale = useUiScale('panels');
   const cornerScale = useUiScale('cornerButtons');
-  // The dock's code loads on demand, so it is drawn a moment after the chrome: the top corners
-  // measure against it from the commit it is first drawn in (its onDrawn), never before, when there
-  // is nothing on the page to measure. Once drawn its code is in, so a later mount is immediate.
-  const [dockDrawn, setDockDrawn] = useState(false);
-  const markDockDrawn = useCallback(() => setDockDrawn(true), []);
-  // The bar across the top that the top corners give way to: the strip, or a dock at the top.
-  const topBar = isMobile
-    ? null
-    : stripShown
-      ? STRIP_SELECTOR
-      : dockOnTop && dockDrawn
-        ? WHITEBOARD_DOCK_SELECTOR
-        : null;
+  // The bar across the top that the top corners give way to: the strip.
+  const topBar = !isMobile && stripShown ? STRIP_SELECTOR : null;
   const topBarCrowds = useStripCrowdsCorners(
     cornerRefs,
     topBar,
@@ -397,7 +367,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
     `${toolbarScale}/${panelScale}`,
   );
   const stripSpansTop = stripShown && (isMobile || topBarCrowds);
-  const dockSpansTop = dockOnTop && topBarCrowds;
   // Bucketing keys off the persisted placement ONLY (not which panel is
   // mid-drag): a dragged panel must stay in the same DOM parent for the
   // whole gesture — reparenting it would remount the component and drop
@@ -427,7 +396,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
               ...(corner === 'bottom-right'
                 ? { bottom: cornerBottomInset(corner, cornerScale) }
                 : // The Draw dock is the strip's twin (its height, its scale), so the same clearance.
-                  (stripSpansTop || dockSpansTop) && corner.startsWith('top')
+                  stripSpansTop && corner.startsWith('top')
                   ? { top: toolbarTopClearancePx(toolbarScale) }
                   : undefined),
             }}
@@ -497,7 +466,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
         polygonCursor={polygonCursor}
         pendingDraw={pendingDraw}
         stamp={stamp}
-        whiteboardInk={whiteboard ? props.whiteboardInk : undefined}
         wrapperRef={wrapperRef}
         mainSize={props.mainSize}
       />
@@ -505,7 +473,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {/* Top-of-canvas floating chrome (docs/specs/008-canvas/canvas-and-palette.md): owner / role badge, the
           active editor-mode banner, multi-selection toolbar, session timer
           and vote banner — laid out as one non-overlapping stack. */}
-      <TopCenterChrome {...props} dockOnTop={dockOnTop} />
+      <TopCenterChrome {...props} />
 
       {/* The menu button (docs/specs/007-editor/toolbar-layout.md) opens the Explorer as a popover
           (zen hides it, the welcome flow doesn't), and Layers opens as a popover over its cluster
@@ -542,16 +510,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
           themeTint={paletteTint}
           leading={menuInStrip ? explorerMenuButton : undefined}
           tabElements={elements}
-        />
-      ) : null}
-
-      {/* The whiteboard's dock (docs/specs/023-draw-mode/draw-mode.md): top or bottom centre, in place
-          of the palette. */}
-      {dockShown && props.whiteboardDock ? (
-        <WhiteboardDock
-          model={props.whiteboardDock}
-          ink={props.whiteboardInk ?? '#1c1917'}
-          onDrawn={markDockDrawn}
         />
       ) : null}
 
@@ -680,7 +638,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 tidyUp={
                   tidyUpOffered({
                     actions: props.tidyUp,
-                    editorMode: props.editorMode,
                     zenMode: !!zenMode,
                   })
                     ? {
@@ -697,7 +654,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                       }
                     : undefined
                 }
-                onOpenTheme={onOpenCanvasTheme && !whiteboard ? onOpenCanvasTheme : undefined}
+                onOpenTheme={onOpenCanvasTheme}
               />
             ) : null}
             <ViewZoomControls

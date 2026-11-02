@@ -14,8 +14,6 @@ import type { PresentationOverlay as PresentationOverlayComponent } from '@/comp
 export const loadAvatarSpeechLayer = () =>
   import('@liveworkspace/avatar/components/AvatarSpeechLayer').then((m) => m.AvatarSpeechLayer);
 
-export const loadWhiteboardDock = () =>
-  import('@/components/canvas/whiteboard/WhiteboardDock').then((m) => m.WhiteboardDock);
 export const loadTableView = () => import('@/components/canvas/TableView').then((m) => m.TableView);
 export const loadCollabFaceRouter = () =>
   import('@/components/canvas/collab/CollabFaceRouter').then((m) => m.CollabFaceRouter);
@@ -40,11 +38,7 @@ export const loadToolPanels = () => import('@/components/canvas/tool-panels');
 export const loadSessionElementSettings = () =>
   import('@/components/canvas/SessionElementSettings');
 
-export const DOCUMENT_CONTENT_CODE = [
-  loadWhiteboardDock,
-  loadTableView,
-  loadCollabFaceRouter,
-] as const;
+export const DOCUMENT_CONTENT_CODE = [loadTableView, loadCollabFaceRouter] as const;
 
 export const EDITOR_SURFACE_CODE = [
   loadExplorerPanel,

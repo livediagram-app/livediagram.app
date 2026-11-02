@@ -1,22 +1,13 @@
-// @vitest-environment jsdom
-import { render } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
-
-const ensure = vi.hoisted(() => vi.fn(() => Promise.resolve()));
-vi.mock('@liveworkspace/workbench/lib/icon-registry', async (real) => ({
-  ...(await real<typeof import('@liveworkspace/workbench/lib/icon-registry')>()),
-  ensureIconCatalogs: ensure,
-}));
-
+import { describe, expect, it } from 'vitest';
+import { PALETTE_CATEGORIES } from './palette-categories';
 import { openerById } from './palette-openers';
 
-// docs/specs/007-editor/editor-modes.md "The palette per mode": a catalogue group's opener draws that group's artwork,
-// so it must fetch the catalogues itself rather than rely on the editor's one prefetch (a failed prefetch left the
-// AWS opener blank).
+// docs/specs/007-editor/editor-modes.md "The palette per mode": an opener stands for a whole category.
 describe('openerById', () => {
-  it('starts the catalogue load when a group opener draws', () => {
-    render(<>{openerById('open:technology/aws')!.icon}</>);
-    expect(ensure).toHaveBeenCalled();
+  it("draws its category's glyph and opens that category", () => {
+    const opener = openerById('open:collab-ask')!;
+    expect(opener.icon).toBe(PALETTE_CATEGORIES.find((c) => c.id === 'collab-ask')!.icon);
+    expect(opener.action).toEqual({ type: 'open', category: 'collab-ask' });
   });
 
   it('is undefined for a tile id', () => {

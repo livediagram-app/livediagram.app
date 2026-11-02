@@ -12,31 +12,14 @@ import {
 } from '@livehuddle/document';
 import type { ElementTourKind } from '@/lib/element-tours';
 import type { HelpArticleKey } from '@/lib/help-articles';
-import { layerStackTourSteps } from './layer-stack-tour-steps';
-import { pyramidTourSteps } from './pyramid-tour-steps';
-import { funnelTourSteps } from './funnel-tour-steps';
-import { cycleTourSteps } from './cycle-tour-steps';
-import { hubTourSteps } from './hub-tour-steps';
-import { onionTourSteps } from './onion-tour-steps';
 import { timelineTourSteps } from './timeline-tour-steps';
-import { chevronsTourSteps } from './chevrons-tour-steps';
-import { mindNodeTourSteps } from './mind-node-tour-steps';
-import { flowchartTourSteps } from './flowchart-tour-steps';
-import { orgChartTourSteps } from './org-chart-tour-steps';
-import { sequenceTourSteps } from './sequence-tour-steps';
 import { chartTourSteps } from './chart-tour-steps';
 import { stackTourSteps } from './stack-tour-steps';
-import { entityTourSteps } from './entity-tour-steps';
 import { laneTourSteps } from './lane-tour-steps';
 import { boundaryTourSteps } from './boundary-tour-steps';
 import { diagramKeyTourSteps } from './diagram-key-tour-steps';
 import { portalTourSteps } from './portal-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
-import {
-  sankeyElementTourSteps,
-  sankeyFlowsContextOf,
-  sankeyTourParts,
-} from './sankey-element-tour-steps';
 import {
   stepTelemetryType,
   type TourStepOf,
@@ -72,127 +55,11 @@ const inDom = (selector: string) =>
   typeof document !== 'undefined' && document.querySelector(selector) !== null;
 
 export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
-  sankey: {
-    token: 'SankeyTour',
-    eyebrow: 'Sankey tour',
-    helpArticle: 'sankeyDiagram',
-    steps: (el, env) =>
-      sankeyElementTourSteps({
-        elementId: el.id,
-        ...sankeyTourParts(el as ShapeElement),
-        hasMore: env.hasMore,
-        touch: env.touch,
-        flows: sankeyFlowsContextOf(el as ShapeElement),
-      }),
-    onDone: (api) => api.closeFlows(),
-  },
-  'layer-stack': {
-    token: 'LayerStackTour',
-    eyebrow: 'Layer stack tour',
-    helpArticle: 'conceptGraphics',
-    steps: (el, env) => layerStackTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
-  },
-  pyramid: {
-    token: 'PyramidTour',
-    eyebrow: 'Pyramid tour',
-    helpArticle: 'conceptGraphics',
-    steps: (el, env) =>
-      pyramidTourSteps({
-        elementId: el.id,
-        rows: conceptRows(el),
-        inverted: (el as ShapeElement).pyramidVariant === 'inverted',
-        ...env,
-      }),
-  },
-  funnel: {
-    token: 'FunnelTour',
-    eyebrow: 'Funnel tour',
-    helpArticle: 'conceptGraphics',
-    steps: (el, env) => funnelTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
-  },
-  cycle: {
-    token: 'CycleTour',
-    eyebrow: 'Cycle tour',
-    helpArticle: 'conceptGraphics',
-    steps: (el, env) => cycleTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
-  },
-  hub: {
-    token: 'HubTour',
-    eyebrow: 'Hub and spoke tour',
-    helpArticle: 'conceptGraphics',
-    steps: (el, env) => hubTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
-  },
-  onion: {
-    token: 'OnionTour',
-    eyebrow: 'Onion tour',
-    helpArticle: 'conceptGraphics',
-    steps: (el, env) => onionTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
-  },
-  chevrons: {
-    token: 'ChevronsTour',
-    eyebrow: 'Chevrons tour',
-    helpArticle: 'conceptGraphics',
-    steps: (el, env) => chevronsTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
-  },
   timeline: {
     token: 'TimelineTour',
     eyebrow: 'Timeline tour',
-    helpArticle: 'conceptGraphics',
+    helpArticle: 'timelineRail',
     steps: (el, env) => timelineTourSteps({ elementId: el.id, rows: conceptRows(el), ...env }),
-  },
-  'mind-node': {
-    token: 'MindMapTour',
-    eyebrow: 'Mind map tour',
-    helpArticle: 'mindMaps',
-    steps: (el, env) =>
-      mindNodeTourSteps({
-        elementId: el.id,
-        hasChildren: env.elements.some((e) => (e as ShapeElement).mindParentId === el.id),
-        hasMore: env.hasMore,
-        touch: env.touch,
-      }),
-  },
-  flowchart: {
-    token: 'FlowchartTour',
-    eyebrow: 'Flowchart tour',
-    helpArticle: 'flowcharts',
-    steps: (el, env) =>
-      flowchartTourSteps({
-        elementId: el.id,
-        hasLanes: env.elements.some(
-          (e) =>
-            e.type === 'shape' &&
-            e.shape === 'lane' &&
-            e.flowchartId === (el as ShapeElement).flowchartId,
-        ),
-        hasMore: env.hasMore,
-        touch: env.touch,
-      }),
-  },
-  'org-chart': {
-    token: 'OrgChartTour',
-    eyebrow: 'Org chart tour',
-    helpArticle: 'orgCharts',
-    steps: (el, env) =>
-      orgChartTourSteps({
-        elementId: el.id,
-        hasReports: env.elements.some((e) => (e as ShapeElement).mindParentId === el.id),
-        hasMore: env.hasMore,
-        touch: env.touch,
-      }),
-  },
-  sequence: {
-    token: 'SequenceTour',
-    eyebrow: 'Sequence tour',
-    helpArticle: 'sequenceDiagram',
-    steps: (el, env) =>
-      sequenceTourSteps({
-        elementId: el.id,
-        hasMessages: ((el as ShapeElement).sequenceMessages ?? []).length > 0,
-        hasMore: env.hasMore,
-        touch: env.touch,
-      }),
-    onDone: (api) => api.closeSequence(),
   },
   chart: {
     token: 'ChartTour',
@@ -216,18 +83,6 @@ export const ELEMENT_TOUR_DEFS: Record<ElementTourKind, ElementTourDef> = {
         elementId: el.id,
         direction: stackSettingsOf(el as ShapeElement).direction,
         firstChildId: stackChildren(env.elements, el as ShapeElement)[0]?.id ?? null,
-        hasMore: env.hasMore,
-        touch: env.touch,
-      }),
-  },
-  entity: {
-    token: 'EntityTour',
-    eyebrow: 'Entity tour',
-    helpArticle: 'entities',
-    steps: (el, env) =>
-      entityTourSteps({
-        elementId: el.id,
-        hasFields: ((el as ShapeElement).entityFields ?? []).length > 0,
         hasMore: env.hasMore,
         touch: env.touch,
       }),

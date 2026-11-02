@@ -302,7 +302,7 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
   it('offers a command per layout style and passes the choice through', () => {
     const h = handlers();
     const cmds = buildEditorCommands(base, h);
-    for (const styleId of ['flow-down', 'flow-right', 'tree', 'mindmap'] as const) {
+    for (const styleId of ['flow-down', 'flow-right', 'tree'] as const) {
       cmds.find((c) => c.id === `auto-layout-${styleId}`)!.run();
       expect(h.autoLayout).toHaveBeenLastCalledWith(styleId);
     }
@@ -312,7 +312,7 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
   });
 
   it('withholds the layout style commands from read-only sessions', () => {
-    expect(ids({ ...base, isReadOnly: true })).not.toContain('auto-layout-mindmap');
+    expect(ids({ ...base, isReadOnly: true })).not.toContain('auto-layout-tree');
   });
 });
 

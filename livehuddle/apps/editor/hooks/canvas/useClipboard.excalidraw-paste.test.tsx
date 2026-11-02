@@ -100,21 +100,6 @@ afterEach(() => {
 });
 
 describe('pasting an Excalidraw copy on the canvas', () => {
-  it.each([['draw' as const], [undefined]])(
-    'hands the scene to the board-scene insert (tab opening in %s)',
-    async (opensIn) => {
-      const h = harness({ opensIn });
-      const event = paste(document.body, { 'text/plain': copy() });
-      expect(event.defaultPrevented).toBe(true);
-      await vi.waitFor(() => expect(h.insertBoardScene).toHaveBeenCalledTimes(1));
-      const scene = h.insertBoardScene.mock.calls[0]![0];
-      expect(scene.source).toBe('excalidraw');
-      expect(scene.items.map((i) => i.kind)).toEqual(['shape', 'ink']);
-      expect(h.elements()).toEqual([]);
-      expect(track).toHaveBeenCalledWith('Element', 'Imported', 'Excalidraw');
-    },
-  );
-
   it("reads Excalidraw's own clipboard type first", async () => {
     const h = harness();
     paste(document.body, { [EXCALIDRAW_CLIPBOARD_MIME]: copy(), 'text/plain': 'something else' });

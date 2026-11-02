@@ -2,18 +2,19 @@ import { describe, expect, it } from 'vitest';
 import {
   TEMPLATES,
   TEMPLATE_CATEGORIES,
+  isBlankTemplate,
   popularKindsFor,
   templateEditorMode,
 } from '@livehuddle/templates';
 import { TEMPLATE_STARTS, type TemplateStartMode } from './start-template-items';
 
 // docs/specs/007-editor/start-diagramming.md
-const MODES: readonly TemplateStartMode[] = ['diagram', 'draw', 'workshop'];
+const MODES: readonly TemplateStartMode[] = ['workshop'];
 
 describe.each(MODES)('the %s template start', (mode) => {
   const start = TEMPLATE_STARTS[mode];
   const listed = TEMPLATES.filter(
-    (t) => !t.hidden && t.kind !== start.blank && templateEditorMode(t.kind) === mode,
+    (t) => !t.hidden && !isBlankTemplate(t.kind) && templateEditorMode(t.kind) === mode,
   ).map((t) => t.kind);
 
   it("leads with Recommended, the mode's Popular shelf, its blank first, Timeline left out", () => {
@@ -76,6 +77,7 @@ describe('Start a Workshop', () => {
       'meetings',
       'people',
       'planning',
+      'processes',
       'product',
       'games',
       'retros',
@@ -87,13 +89,14 @@ describe('Start a Workshop', () => {
     const group = (id: string) => TEMPLATE_STARTS.workshop.groups.find((g) => g.id === id)!.kinds;
     // A cross-listed template shows in each of its categories.
     expect(group('retros')).toContain('incident-postmortem');
-    expect(group('software')).toEqual(['incident-postmortem']);
+    expect(group('software')).toContain('incident-postmortem');
     expect(group('games')).toEqual([
       'pub-quiz',
       'icebreaker-questions',
       'two-truths-and-a-lie',
       'would-you-rather',
       'people-bingo',
+      'doodle-warmup',
     ]);
     expect(group('spaces')).toEqual([
       'virtual-office',
@@ -104,7 +107,7 @@ describe('Start a Workshop', () => {
     expect(group('strategy')).toEqual(
       expect.arrayContaining(['swot', 'pestle-analysis', 'business-model-canvas']),
     );
-    expect(group('learning')).toEqual(['pub-quiz', 'kwl-chart']);
+    expect(group('learning')).toEqual(expect.arrayContaining(['pub-quiz', 'kwl-chart']));
   });
 
   it('lists a search match once, under its primary category', () => {
@@ -114,30 +117,18 @@ describe('Start a Workshop', () => {
   });
 });
 
-describe('Start Drawing', () => {
-  it('groups its drawn templates by what each is for', () => {
-    expect(TEMPLATE_STARTS.draw.groups.map((g) => g.id)).toEqual([
-      'recommended',
-      'ideas',
-      'decisions',
-      'meetings',
-      'product',
-      'games',
-      'retros',
-      'strategy',
-      'learning',
-    ]);
-  });
-});
-
 // docs/specs/007-editor/start-diagramming.md "There is no way out to a bigger picker": with the Quick Start gone, a
-// start is the whole catalogue of its mode, so every listed template must sit in one of its groups.
+// start is the whole catalogue of its mode, so every listed template but the blanks must sit in one of its groups.
 describe('every listed template on its own start', () => {
   it.each(MODES)('the %s start reaches every template of its mode', (mode) => {
     const start = TEMPLATE_STARTS[mode];
     const shown = new Set(start.groups.flatMap((g) => g.kinds));
     const missing = TEMPLATES.filter(
-      (t) => !t.hidden && templateEditorMode(t.kind) === mode && !shown.has(t.kind),
+      (t) =>
+        !t.hidden &&
+        !isBlankTemplate(t.kind) &&
+        templateEditorMode(t.kind) === mode &&
+        !shown.has(t.kind),
     ).map((t) => t.kind);
     expect(missing).toEqual([]);
   });

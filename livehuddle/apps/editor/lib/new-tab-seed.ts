@@ -19,15 +19,12 @@ export function newTabSeed(source: Tab | undefined): Partial<Tab> {
   };
 }
 
-// How a new tab opens for its maker (docs/specs/007-editor/editor-modes.md "A new tab opens in the mode it was made
-// from"). Asked for in a `mode`, it opens in that mode; otherwise in `creatorMode`, the mode of the tab its maker
-// was on, for everyone: a Draw tab's + makes a Draw tab. Diagram is left unwritten (an absent `opensIn` reads as
-// Diagram). Every mode's empty tab starts on its own chooser (Start Diagramming, Start Drawing, Start a Workshop:
-// start-diagramming.md).
+// How a new tab opens for its maker (docs/specs/007-editor/editor-modes.md): in `mode` when asked, otherwise in
+// `creatorMode`, the mode of the tab its maker was on. Workshop is the one mode, written so the tab says so.
 export function newTabOpening(
   creatorMode: EditorMode,
   mode?: EditorMode,
 ): { opensIn?: EditorMode } {
   const opensIn = mode ?? creatorMode;
-  return opensIn !== 'diagram' ? { opensIn } : {};
+  return { opensIn };
 }

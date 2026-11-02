@@ -82,29 +82,6 @@ describe('the Keyboard settings list matches the keys the editor binds', () => {
   });
 });
 
-describe('the editor mode key', () => {
-  it('lists Shift+D as moving to the next editor mode', () => {
-    const rows = EDITOR_SECTIONS.flatMap((section) => section.rows);
-    expect(rows).toContainEqual({
-      keys: ['⇧', 'D'],
-      label: 'Next Editor Mode on an Empty Tab (Diagram, Draw, Workshop)',
-    });
-  });
-});
-
-// docs/specs/009-elements/mind-node.md "New lines": Enter grows a mind map, so the key for a new
-// line in a node's label has a row of its own, beside Tab and Enter.
-describe('the mind node keys', () => {
-  it('lists Tab, Enter and Shift+Enter together', () => {
-    const rows = EDITOR_SECTIONS.flatMap((section) => section.rows);
-    const at = (label: string) => rows.findIndex((row) => row.label === label);
-    const newLine = at('In a mind node’s label: new line');
-    expect(rows[newLine]?.keys).toEqual(['⇧', 'Enter']);
-    expect(at('On a mind node: add a sibling')).toBe(newLine - 1);
-    expect(at('On a mind node: add a child')).toBe(newLine - 2);
-  });
-});
-
 describe('the While walking rows match the Avatar action keys', () => {
   it('lists each action key once, on a key that plays it', () => {
     const walking = SHORTCUT_SECTIONS.find((s) => s.heading.startsWith('While walking'))!;

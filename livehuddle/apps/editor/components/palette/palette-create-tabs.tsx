@@ -147,11 +147,3 @@ export function PaletteComponentsTab({ pendingDraw, actions, tiles: components }
     </div>
   );
 }
-
-// Wireframing device-frame primitives (browser / monitor / laptop / phone /
-// tablet / smartwatch) — see docs/specs/008-canvas/canvas-and-palette.md "Devices". Rows with a blurb: the frames
-// are six grey rectangles of slightly different proportions, so the name and
-// what it is for do the work the outline cannot.
-export function DevicePickerTab({ pendingDraw, actions, tiles }: TabProps) {
-  return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
-}

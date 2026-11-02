@@ -80,7 +80,7 @@ describe('importScenesAsNewDocuments', () => {
     expect(retro!.tabs).toHaveLength(1);
     expect(retro!.tabs[0]).toMatchObject({
       name: 'Whiteboard',
-      opensIn: 'draw',
+      opensIn: 'workshop',
       backgroundPattern: 'blank',
       templateChosen: true,
     });

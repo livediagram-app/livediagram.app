@@ -52,14 +52,12 @@ describe('animationCategoriesOf (one category per set present)', () => {
 
   // docs/specs/028-animation/element-animations.md "The menu": an element's own animation is a category of the
   // Animation row, never a picker in its own section.
-  it('progress, rating, concept graphics and sequence diagrams take their own category, with the Shape motions', () => {
+  it('progress, rating and the timeline take their own category, with the Shape motions', () => {
     const own = (shape: string) =>
       animationCategoriesOf([createShape(shape as never, 0, 0)]).filter((c) => c !== 'text');
     expect(own('progress-bar')).toEqual(['shape', 'progress']);
     expect(own('rating')).toEqual(['shape', 'rating']);
-    for (const kind of ['chevrons', 'cycle', 'hub', 'onion', 'pyramid', 'layer-stack'])
-      expect(own(kind)).toEqual(['shape', 'concept']);
-    expect(own('sequence')).toEqual(['shape', 'sequence']);
+    expect(own('timeline-rail')).toEqual(['shape', 'concept']);
   });
 });
 

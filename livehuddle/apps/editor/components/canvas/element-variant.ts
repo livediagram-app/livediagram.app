@@ -2,7 +2,6 @@ import type { CSSProperties } from 'react';
 import {
   SELF_PAINTING_SHAPES,
   DEFAULT_BOX_RADIUS_PX,
-  MIND_NODE_RADIUS_PX,
   cornerRadiusPx,
   finishBorderStroke,
   finishCornerFallbackPx,
@@ -91,7 +90,7 @@ export function describeVariant(
           style: { borderRadius: '4px', ...filterShadow },
         };
       }
-      // Timeline rail (docs/specs/009-elements/timeline-rail.md) + rating (docs/specs/009-elements/rating.md) + charts (docs/specs/009-elements/pie-chart.md) +
+      // Timeline rail (docs/specs/009-elements/timeline.md) + rating (docs/specs/009-elements/rating.md) + charts (docs/specs/009-elements/pie-chart.md) +
       // code block (docs/specs/009-elements/code-block.md) + checklist (docs/specs/009-elements/checklist.md) paint their own content,
       // so the wrapper carries no box border / background — just the
       // selection ring.
@@ -123,14 +122,6 @@ export function describeVariant(
           ? cornerRadiusPx(ownCorner, element.width, element.height, 0)
           : null;
       const fallbackPx = finishCornerFallbackPx(DEFAULT_BOX_RADIUS_PX, finish);
-      // A mind node (docs/specs/009-elements/mind-node.md) is a soft-cornered pill-ish box by default:
-      // rounded enough to read as a node in a tree rather than a flowchart
-      // box. Unlike the fixed silhouettes above it honours a radius pick, so a
-      // full radius on a square node draws a bubble-map circle.
-      const mindRadius =
-        element.shape === 'mind-node'
-          ? `${cornerRadiusPx(element.borderRadius, element.width, element.height, finishCornerFallbackPx(MIND_NODE_RADIUS_PX, finish))}px`
-          : null;
       const strokePx = BORDER_STROKE_PX[finishBorderStroke(element.strokeWidth, finish)];
       const style = element.strokeStyle ?? DEFAULT_BORDER_STYLE;
       // The composite dash patterns can't be drawn by a CSS border, so
@@ -156,7 +147,6 @@ export function describeVariant(
           ...(fill === 'transparent' ? filterShadow : boxShadow),
           borderRadius:
             fixedRadius ??
-            mindRadius ??
             `${userRadius ?? cornerRadiusPx(undefined, element.width, element.height, fallbackPx)}px`,
           backgroundColor: sketched ? 'transparent' : fill,
           borderColor: remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface),

@@ -28,7 +28,7 @@ const elements = (): Element[] => [
 ];
 
 describe('cleanup leaves locked elements alone', () => {
-  for (const kind of ['align', 'smart', 'tree', 'mindmap'] as const) {
+  for (const kind of ['align', 'smart', 'tree'] as const) {
     it(`${kind} keeps locked and locked-layer elements in place`, () => {
       const before = elements();
       const after = cleanupElements(before, kind, LAYERS);

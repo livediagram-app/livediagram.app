@@ -14,7 +14,7 @@ import {
   type Layer,
 } from '@livehuddle/document';
 import { absoluteRect, type DrawioCell, type DrawioGraph, type Rect } from './cells';
-import { buildEntity, buildLane, buildTable } from './containers';
+import { buildLane, buildTable } from './containers';
 import { createEdgeBuilder, type EdgeSlot } from './edge-pass';
 import { cellLabel } from './label';
 import { classifyVertex } from './shapes';
@@ -121,7 +121,7 @@ export function convertPage(graph: DrawioGraph, input: PageContext): ConvertedPa
       forward.set(id, '');
       return;
     }
-    const cls = classifyVertex(cell, graph);
+    const cls = classifyVertex(cell);
     // Text draw.io sizes to itself comes in sized to its text (blueprint step 15.3).
     const rect = clampRect(
       cls.kind === 'text' && isAutoSized(rawRect)
@@ -139,7 +139,6 @@ export function convertPage(graph: DrawioGraph, input: PageContext): ConvertedPa
 
     let built: BoxedElement | null;
     if (cls.kind === 'lane') built = buildLane(cell, rect, ctx, elementId);
-    else if (cls.kind === 'entity') built = buildEntity(cell, rect, graph, ctx, elementId);
     else if (cls.kind === 'table') {
       const { title, table } = buildTable(cell, rect, graph, ctx, {
         table: elementId,
@@ -165,7 +164,7 @@ export function convertPage(graph: DrawioGraph, input: PageContext): ConvertedPa
       if (caption) place(caption, layerId);
     }
 
-    if (cls.kind === 'entity' || cls.kind === 'table') {
+    if (cls.kind === 'table') {
       forwardSubtree(id, id);
     } else if (cell.collapsed) {
       ctx.tally.add('collapsed-skipped', countSubtree(id));

@@ -30,9 +30,13 @@ import { answeringKeys, participantKey, selfInRoom } from '@/lib/identity';
 import { useQuickConnectStart } from '@/hooks/canvas/useQuickConnectStart';
 import { useEditModeContextMenu } from '@/hooks/canvas/useEditModeContextMenu';
 import { track } from '@/lib/telemetry';
-import { getTheme, themeChartPalette, themeViewMap, type ThemeId } from '@/lib/themes';
-import { resolveViewBackdrop } from '@/lib/view-backdrop';
-import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
+import {
+  getTheme,
+  resolveTabBackdrop,
+  themeChartPalette,
+  themeViewMap,
+  type ThemeId,
+} from '@/lib/themes';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsLandscapePhone } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
@@ -42,8 +46,6 @@ import { useSessionTools } from '@/components/chrome/useSessionTools';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 import { useStableCollab } from '@/components/canvas/element-layer-props';
-import { canEditSankey } from '@/lib/sankey-edit';
-import { canEditSequence } from '@/lib/sequence-edit';
 import { CanvasThemeProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
@@ -115,7 +117,6 @@ export function EditorCanvasHost() {
     addLinkCard,
     addVideo,
     addProcess,
-    addFlowchart,
     addShape,
     addStatRow,
     addSticky,
@@ -285,8 +286,6 @@ export function EditorCanvasHost() {
     setExportOpen,
     setExportScope,
     setCodeEditOpenForId,
-    setSankeyFlowsOpenForId,
-    setSequenceOpenForId,
     setFormatSourceId,
     setLinkPickerOpenForId,
     setMapPosition,
@@ -297,12 +296,6 @@ export function EditorCanvasHost() {
     setWebRows,
     appendWebRowTo,
     setHeroCaptionLine,
-    growMindNode,
-    flowchartActions,
-    entityActions,
-    mindOutline,
-    tidyMindMap,
-    abandonMindNode,
     setTextAlignSelected,
     setViewportOffset,
     setViewportZoom,
@@ -332,9 +325,8 @@ export function EditorCanvasHost() {
   } = useEditorContext();
   // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
   const { setPointerTip } = usePointerNoteSetters(commitElements, activeTab.elements);
-  // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Draw brings the dock and its
-  // rules into focus; the board look keys on it through hasBoardLook.
-  const drawMode = editorMode.mode === 'draw';
+  // Draw mode is gone (docs/specs/007-editor/editor-modes.md); the whiteboard tools still take its flag.
+  const drawMode = false;
   // A shape dragged from My shapes (docs/specs/013-workspace/shape-libraries.md): resolved against the
   // owner's libraries, then placed at the drop point.
   const { libraries } = useShapeLibraries();
@@ -398,14 +390,11 @@ export function EditorCanvasHost() {
     scrollIntoView(el.x, el.y, el.width, el.height, { center: true });
     return true;
   };
-  // Double-click on an element with its own edit dialog (docs/specs/009-elements/code-block.md,
-  // docs/specs/009-elements/sankey.md): which dialog depends on the kind.
+  // Double-click on an element with its own edit dialog (docs/specs/009-elements/code-block.md).
   const openEditDialog = (id: string) => {
     const el = activeTab.elements.find((e) => e.id === id);
     if (!el || el.type !== 'shape') return;
     if (el.shape === 'code-block') setCodeEditOpenForId(id);
-    else if (el.shape === 'sankey' && canEditSankey(can, el)) setSankeyFlowsOpenForId(id);
-    else if (el.shape === 'sequence' && canEditSequence(can, el)) setSequenceOpenForId(id);
   };
   // How a comment change made on a Comment panel is kept: shared with the anchored popover.
   const commentPersist = commentPersisters({
@@ -419,11 +408,7 @@ export function EditorCanvasHost() {
     const el = activeTab.elements.find((e) => e.id === elementId);
     return el && isBoxed(el) ? el.commentThread : undefined;
   };
-  const backdrop = resolveViewBackdrop(
-    activeTab,
-    { mode: editorMode.mode, drawPattern: readDrawPattern(userPreferences) },
-    appearance,
-  );
+  const backdrop = resolveTabBackdrop(activeTab, appearance);
   // Stock colours stored by name are drawn in their version for this canvas, on every tab and in
   // either mode (docs/specs/007-editor/editor-modes.md "One look"). Display only: the projector
   // caches per element, so an unchanged element keeps its identity and the memoised views stay quiet.
@@ -740,7 +725,6 @@ export function EditorCanvasHost() {
             onAddCallout={addCallout}
             onAddStatRow={addStatRow}
             onAddProcess={addProcess}
-            onAddFlowchart={addFlowchart}
             onAddAvatar={addAvatar}
             onAddText={addText}
             onAddSticky={addSticky}
@@ -1050,13 +1034,6 @@ export function EditorCanvasHost() {
             onSetPointerTip={isReadOnly ? undefined : setPointerTip}
             onAppendWebRow={isReadOnly ? undefined : appendWebRowTo}
             onSetHeroCaptionLine={isReadOnly ? undefined : setHeroCaptionLine}
-            onGrowMindNode={growMindNode}
-            flowchartActions={isReadOnly ? undefined : flowchartActions}
-            entityActions={isReadOnly ? undefined : entityActions}
-            canEditMindOutline={mindOutline.canEdit}
-            onEditMindOutline={mindOutline.open}
-            onTidyMindMap={tidyMindMap}
-            onAbandonMindNode={abandonMindNode}
             chartPalette={themeChartPalette(activeTheme)}
             onCancelEdit={cancelEdit}
             onBeginEndpointDrag={beginEndpointDrag}

@@ -131,7 +131,7 @@ function tabPatchOf(scene: BoardScene, profile: BoardSceneProfile): BoardSceneTa
   if (profile === 'whiteboard') {
     const pattern = scene.background?.pattern;
     return {
-      opensIn: 'draw',
+      opensIn: 'workshop',
       name,
       backgroundPattern: pattern ? PATTERNS[pattern] : WHITEBOARD_DEFAULT_PATTERN,
     };

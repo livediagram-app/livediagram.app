@@ -6,7 +6,6 @@ import {
   pinFromMenu,
   recordShapePick,
   resolveSlotDrop,
-  SHAPE_PICKS_KEPT,
   shapeSlots,
   slotDropTarget,
   NARROW_DOCK_MAX_PX,
@@ -94,44 +93,6 @@ describe('recordShapePick', () => {
     const once = recordShapePick({}, 'star', 100);
     expect(once).toEqual({ star: [1, 100] });
     expect(recordShapePick(once, 'star', 200)).toEqual({ star: [2, 200] });
-  });
-
-  it('keeps a bounded record, dropping the least recent kind that is not among the most picked', () => {
-    let picks: ShapePicks = {};
-    const catalogue: WhiteboardShapeKey[] = [
-      'rectangle',
-      'ellipse',
-      'diamond',
-      'cylinder',
-      'line',
-      'arrow',
-      'triangle',
-      'star',
-      'hexagon',
-      'cloud',
-      'document',
-      'stadium',
-      'trapezoid',
-      'parallelogram',
-      'speech-bubble',
-      'page',
-      'mind-node',
-      'lane',
-      'frame',
-      'timeline-rail',
-    ];
-    // Rectangle is picked often but long ago; the rest once each, later.
-    for (let i = 0; i < 5; i++) picks = recordShapePick(picks, 'rectangle', i);
-    catalogue.slice(1).forEach((k, i) => {
-      picks = recordShapePick(picks, k, 10 + i);
-    });
-    expect(Object.keys(picks)).toHaveLength(SHAPE_PICKS_KEPT);
-    const next = recordShapePick(picks, 'browser', 100);
-    expect(Object.keys(next)).toHaveLength(SHAPE_PICKS_KEPT);
-    expect(next.browser).toEqual([1, 100]);
-    // The heavy hitter survives; the least recent single pick goes.
-    expect(next.rectangle).toEqual([5, 4]);
-    expect(next.ellipse).toBeUndefined();
   });
 });
 

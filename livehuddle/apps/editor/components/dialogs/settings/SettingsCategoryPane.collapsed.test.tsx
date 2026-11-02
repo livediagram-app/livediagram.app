@@ -21,9 +21,9 @@ describe('Show Me section (element tours)', () => {
   it('starts closed, saying how many tours are on', () => {
     render(<SettingsCategoryPane category={TOURS} settings={{}} onChange={vi.fn()} />);
     expect(header().getAttribute('aria-expanded')).toBe('false');
-    expect(header().textContent).toContain('20 of 20 On');
+    expect(header().textContent).toContain('7 of 7 On');
     // The mode tours stay open above it.
-    expect(screen.getByRole('switch', { name: 'Draw Tour' })).toBeTruthy();
+    expect(screen.getByRole('switch', { name: 'Avatar Tour' })).toBeTruthy();
   });
 
   it('opens from its heading, the master switch over each element', () => {
@@ -31,18 +31,7 @@ describe('Show Me section (element tours)', () => {
     fireEvent.click(header());
     expect(header().getAttribute('aria-expanded')).toBe('true');
     const group = screen.getByRole('group', { name: 'Show Me on Every Element settings' });
-    expect(group.textContent).toContain('Sankey Diagram');
-  });
-
-  it('counts an answered tour as off', () => {
-    render(
-      <SettingsCategoryPane
-        category={TOURS}
-        settings={{ elementTourKinds: ['sankey'] }}
-        onChange={vi.fn()}
-      />,
-    );
-    expect(header().textContent).toContain('19 of 20 On');
+    expect(group.textContent).toContain('Diagram Key');
   });
 
   it('opens on its own when Settings lands on one of its rows', () => {
@@ -51,24 +40,10 @@ describe('Show Me section (element tours)', () => {
         category={TOURS}
         settings={{}}
         onChange={vi.fn()}
-        focusRowKey="elementTour-sankey"
+        focusRowKey="elementTour-timeline"
       />,
     );
     expect(header().getAttribute('aria-expanded')).toBe('true');
-  });
-
-  it('offers the Sankey tour again when its switch is turned on', () => {
-    const onChange = vi.fn();
-    render(
-      <SettingsCategoryPane
-        category={TOURS}
-        settings={{ elementTourKinds: ['sankey'] }}
-        onChange={onChange}
-        focusRowKey="elementTour-sankey"
-      />,
-    );
-    fireEvent.click(screen.getByRole('switch', { name: 'Sankey Diagram' }));
-    expect(onChange).toHaveBeenCalledWith({ elementTourKinds: [], elementToursSeen: false });
   });
 
   it('brings what it unfolded into view once it has eased open', () => {

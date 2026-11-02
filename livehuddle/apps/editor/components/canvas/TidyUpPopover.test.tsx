@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// docs/specs/008-canvas/layout-cleanup.md "The popover" and "Hover to see it first": five Auto Layout tiles
+// docs/specs/008-canvas/layout-cleanup.md "The popover" and "Hover to see it first": four Auto Layout tiles
 // in the spec's order and the Auto-align row; a press ends the preview, runs the tidier and closes, in that
 // order; a mouse hover previews and a touch does not; closing mid-hover reverts; an empty or locked tab
 // shows every tidier inert under its note.
@@ -65,7 +65,7 @@ const tiles = () =>
   }));
 
 describe('TidyUpPopover', () => {
-  it('lists the five layout styles in order, then Auto-align', () => {
+  it('lists the four layout styles in order, then Auto-align', () => {
     setup();
     expect(screen.getByText('Tidy Up')).toBeTruthy();
     expect(screen.getByText(TIDY_CAPTION)).toBeTruthy();
@@ -74,7 +74,6 @@ describe('TidyUpPopover', () => {
       { kind: 'flow-down', name: 'Flowchart Down', disabled: false },
       { kind: 'flow-right', name: 'Flowchart Right', disabled: false },
       { kind: 'tree', name: 'Tree', disabled: false },
-      { kind: 'mindmap', name: 'Mindmap', disabled: false },
       { kind: 'align', name: ALIGN_NAME, disabled: false },
     ]);
   });
@@ -88,8 +87,8 @@ describe('TidyUpPopover', () => {
 
   it('ends the preview, runs the tidier, then closes, in that order', () => {
     const { calls } = setup();
-    fireEvent.click(screen.getByRole('button', { name: /Mindmap/ }));
-    expect(calls).toEqual(['end', 'run:mindmap', 'close']);
+    fireEvent.click(screen.getByRole('button', { name: /Tree/ }));
+    expect(calls).toEqual(['end', 'run:tree', 'close']);
     cleanup();
     const align = setup();
     fireEvent.click(screen.getByRole('button', { name: new RegExp(ALIGN_NAME) }));
@@ -144,8 +143,8 @@ describe('TidyUpPopover', () => {
     vi.useFakeTimers();
     const { calls } = setup({
       verdicts: {
-        mindmap: { kind: 'unsuited' },
         'flow-right': { kind: 'rearranges-lanes' },
+        tree: { kind: 'covers', count: 2 },
         align: { kind: 'unchanged' },
       },
     });
@@ -157,17 +156,16 @@ describe('TidyUpPopover', () => {
       smart: false,
       'flow-down': false,
       'flow-right': true,
-      tree: false,
-      mindmap: true,
+      tree: true,
       align: true,
     });
-    expect(screen.getByText('For ideas that branch, not loop')).toBeTruthy();
+    expect(screen.getByText('Would cover 2 shapes')).toBeTruthy();
     expect(screen.getByText('Would rearrange your lanes')).toBeTruthy();
     expect(screen.getByText('Already tidy')).toBeTruthy();
     // A greyed-out tile neither previews nor runs.
-    const mindmap = document.querySelector<HTMLButtonElement>('[data-tidy-kind="mindmap"]')!;
-    fireEvent.pointerEnter(mindmap, { pointerType: 'mouse' });
-    fireEvent.click(mindmap);
+    const tree = document.querySelector<HTMLButtonElement>('[data-tidy-kind="tree"]')!;
+    fireEvent.pointerEnter(tree, { pointerType: 'mouse' });
+    fireEvent.click(tree);
     expect(calls).toEqual([]);
   });
 
@@ -184,7 +182,7 @@ describe('TidyUpPopover', () => {
     await judgeAll();
     view.rerender(<TidyUpPopover actions={actions} empty={false} onClose={() => {}} />);
     await judgeAll();
-    expect(actions.assess).toHaveBeenCalledTimes(6);
+    expect(actions.assess).toHaveBeenCalledTimes(5);
   });
 
   it('passes on whether a pressed tidier was judged already', async () => {
@@ -213,7 +211,6 @@ describe('TidyUpPopover', () => {
         'flow-down': { kind: 'rearranges-lanes' },
         'flow-right': { kind: 'rearranges-lanes' },
         tree: { kind: 'rearranges-lanes' },
-        mindmap: { kind: 'rearranges-lanes' },
       },
     });
     await judgeAll();

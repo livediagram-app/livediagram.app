@@ -9,14 +9,9 @@ import {
   EMBED_PROVIDER_HINT,
   EMBED_PROVIDER_LABEL,
   embedTargetFor,
-  parseMindOutline,
-  summariseMindOutline,
 } from '@livehuddle/document';
 
 import { track } from '@/lib/telemetry';
-import { canEditSankey } from '@/lib/sankey-edit';
-import { canEditSequence } from '@/lib/sequence-edit';
-import { getTheme, themeChartPalette } from '@/lib/themes';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useCloseVanishedDialogs } from '@/components/dialogs/useCloseVanishedDialogs';
 
@@ -28,20 +23,8 @@ const LineDataDialog = dynamic(
   () => import('@/components/dialogs/LineDataDialog').then((m) => m.LineDataDialog),
   { ssr: false },
 );
-const MindOutlineDialog = dynamic(
-  () => import('@/components/dialogs/MindOutlineDialog').then((m) => m.MindOutlineDialog),
-  { ssr: false },
-);
 const CodeEditDialog = dynamic(
   () => import('@/components/dialogs/CodeEditDialog').then((m) => m.CodeEditDialog),
-  { ssr: false },
-);
-const SequenceDialog = dynamic(
-  () => import('@/components/dialogs/SequenceDialog').then((m) => m.SequenceDialog),
-  { ssr: false },
-);
-const SankeyFlowsDialog = dynamic(
-  () => import('@/components/dialogs/SankeyFlowsDialog').then((m) => m.SankeyFlowsDialog),
   { ssr: false },
 );
 const ImagePicker = dynamic(
@@ -75,13 +58,6 @@ export function EditorElementDialogs() {
     codeEditOpenForId,
     setCodeSelected,
     setCodeEditOpenForId,
-    sankeyFlowsOpenForId,
-    setSankeyFlowsOpenForId,
-    sequenceOpenForId,
-    setSequenceOpenForId,
-    sankey,
-    sequence,
-    mindOutline,
     imagePickerOpenFor,
     selfParticipant,
     removeImageFromElement,
@@ -93,8 +69,7 @@ export function EditorElementDialogs() {
   } = useEditorContext();
 
   // Each dialog closes whenever its own render check below fails, not only when its element goes: hidden by a lock
-  // or a role change, it would otherwise reopen by itself when that is undone. Edit Outline closes itself
-  // (useMindOutline), so it is not listed.
+  // or a role change, it would otherwise reopen by itself when that is undone.
   const editable = () => !isReadOnly;
   useCloseVanishedDialogs(
     activeTab.elements,
@@ -114,16 +89,6 @@ export function EditorElementDialogs() {
         codeEditOpenForId,
         () => setCodeEditOpenForId(null),
         (el) => !isReadOnly && el.type === 'shape',
-      ],
-      [
-        sankeyFlowsOpenForId,
-        () => setSankeyFlowsOpenForId(null),
-        (el) => el.type === 'shape' && el.shape === 'sankey' && canEditSankey(can, el),
-      ],
-      [
-        sequenceOpenForId,
-        () => setSequenceOpenForId(null),
-        (el) => el.type === 'shape' && el.shape === 'sequence' && canEditSequence(can, el),
       ],
       [
         imagePickerOpenFor?.forElementId ?? null,
@@ -249,21 +214,6 @@ export function EditorElementDialogs() {
             );
           })()
         : null}
-      {/* Edit Outline (docs/specs/009-elements/mind-node.md "Edit Outline"): the open root's map as text. */}
-      {mindOutline.openForId !== null && !isReadOnly ? (
-        <MindOutlineDialog
-          key={mindOutline.openForId}
-          initialText={mindOutline.text()}
-          summarise={(text) => {
-            const outline = parseMindOutline(text);
-            return outline
-              ? summariseMindOutline(activeTab.elements, mindOutline.openForId!, outline)
-              : null;
-          }}
-          onSave={mindOutline.save}
-          onClose={mindOutline.close}
-        />
-      ) : null}
       {/* Code block edit modal (docs/specs/009-elements/code-block.md): edits the block whose id is open. */}
       {codeEditOpenForId !== null && !isReadOnly
         ? (() => {
@@ -275,42 +225,6 @@ export function EditorElementDialogs() {
                 language={el.codeLanguage ?? 'plain'}
                 onCommit={setCodeSelected}
                 onClose={() => setCodeEditOpenForId(null)}
-              />
-            );
-          })()
-        : null}
-      {/* Sankey Flows dialog (docs/specs/009-elements/sankey.md "The Flows dialog"): an Editor's, on an
-          unlocked diagram; it closes itself if the diagram goes (deleted, or the tab changed). */}
-      {sankeyFlowsOpenForId !== null
-        ? (() => {
-            const el = activeTab.elements.find((e) => e.id === sankeyFlowsOpenForId);
-            if (!el || el.type !== 'shape' || el.shape !== 'sankey' || !canEditSankey(can, el))
-              return null;
-            return (
-              <SankeyFlowsDialog
-                key={el.id}
-                element={el}
-                palette={themeChartPalette(getTheme(activeTab.theme))}
-                onCommit={(flows, nodes) => sankey.setSankeyFlows(el.id, flows, nodes)}
-                onClose={() => setSankeyFlowsOpenForId(null)}
-              />
-            );
-          })()
-        : null}
-      {/* The Sequence dialog (docs/specs/009-elements/sequence-diagram.md "The Sequence dialog"): an Editor's, on
-          an unlocked diagram; it closes itself if the diagram goes (deleted, or the tab changed). */}
-      {sequenceOpenForId !== null
-        ? (() => {
-            const el = activeTab.elements.find((e) => e.id === sequenceOpenForId);
-            if (!el || el.type !== 'shape' || el.shape !== 'sequence' || !canEditSequence(can, el))
-              return null;
-            return (
-              <SequenceDialog
-                key={el.id}
-                element={el}
-                onCommit={(rows, type) => sequence.setSequenceRows(el.id, rows, type)}
-                onNumbered={(on) => sequence.setSequenceNumbered(el.id, on)}
-                onClose={() => setSequenceOpenForId(null)}
               />
             );
           })()

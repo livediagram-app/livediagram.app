@@ -4,15 +4,8 @@
 // held it is greyed out in the Tidy Up popover with the reason, and refused with a notice from the
 // command palette. Pure.
 
-import {
-  isBoxed,
-  tidyMindmapFits,
-  type BoxedElement,
-  type Element,
-  type Layer,
-} from '@livehuddle/document';
+import { isBoxed, type BoxedElement, type Element, type Layer } from '@livehuddle/document';
 import { cleanupElements, type CleanupKind } from '@/lib/tab-cleanup';
-import { lockedElementIds } from '@/lib/locked-element-ids';
 
 export type CleanupVerdict =
   | { kind: 'ok' }
@@ -20,9 +13,7 @@ export type CleanupVerdict =
   | { kind: 'covers'; count: number }
   | { kind: 'leaves-container'; count: number }
   // A set of lanes would come out in another order or arrangement.
-  | { kind: 'rearranges-lanes' }
-  // The style does not suit this graph (a mindmap of a graph that loops back on itself).
-  | { kind: 'unsuited' };
+  | { kind: 'rearranges-lanes' };
 
 // Movement below this is rounding, not a change.
 const EPSILON = 0.5;
@@ -191,8 +182,6 @@ export function assessCleanup(
   layers?: Layer[],
 ): CleanupVerdict {
   if (elements.length === 0) return { kind: 'unchanged' };
-  if (kind === 'mindmap' && !tidyMindmapFits(elements, lockedElementIds(elements, layers)))
-    return { kind: 'unsuited' };
   return cleanupVerdict(elements, cleanupElements(elements, kind, layers), {
     lanes: kind !== 'align',
   });
@@ -211,8 +200,6 @@ export function verdictLine(v: CleanupVerdict): string | null {
       return 'Would pull shapes out of their lanes';
     case 'rearranges-lanes':
       return 'Would rearrange your lanes';
-    case 'unsuited':
-      return 'For ideas that branch, not loop';
   }
 }
 
@@ -229,7 +216,5 @@ export function verdictNotice(name: string, v: CleanupVerdict): string | null {
       return `${name} would pull shapes out of their lanes or frames, so nothing moved.`;
     case 'rearranges-lanes':
       return `${name} would rearrange your lanes, so nothing moved.`;
-    case 'unsuited':
-      return `${name} needs a centre to branch from; these arrows loop, so nothing moved.`;
   }
 }

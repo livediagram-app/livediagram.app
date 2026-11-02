@@ -38,17 +38,6 @@ function duplicate(elements: Element[], selected: string[]): Element[] {
 }
 
 describe('duplicateMultiSelected', () => {
-  it('re-parents a copied mind-map child onto the copied parent', () => {
-    const copies = duplicate(
-      [shape('root'), shape('child', { mindParentId: 'root' })],
-      ['root', 'child'],
-    ) as ShapeElement[];
-    const rootCopy = copies.find((c) => c.mindParentId === undefined)!;
-    const childCopy = copies.find((c) => c.mindParentId !== undefined)!;
-    expect(rootCopy.id).not.toBe('root');
-    expect(childCopy.mindParentId).toBe(rootCopy.id);
-  });
-
   it('brings along a connector between two copied boxes', () => {
     const arrow = {
       id: 'a',

@@ -59,8 +59,7 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   );
 }
 
-// The Draw, Avatar and element tours (docs/specs/023-draw-mode/draw-tour.md, docs/specs/008-canvas/avatar-tour.md,
-// docs/specs/007-editor/element-tours.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
+// The Avatar and element tours (docs/specs/008-canvas/avatar-tour.md, docs/specs/007-editor/element-tours.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
 // their own unit tests. Marked seen for every page of the context.
 async function markModeToursSeen(context: BrowserContext): Promise<void> {
   await context.addInitScript(() => {

@@ -14,9 +14,7 @@ import {
   PROGRESS_ANIMS,
   RATING_ANIMS,
   RATING_MAX,
-  SANKEY_ANIMS,
   type AnimationSpeed,
-  type SankeyAnim,
   type PieAnim,
   type ProgressAnim,
   type RatingAnim,
@@ -33,7 +31,6 @@ export function NoMarkerGlyph() {
 }
 import { AnimationPreviewTile } from '@/components/palette/AnimationPreviewTile';
 import {
-  SankeyAnimPreview,
   PieAnimPreview,
   ProgressAnimPreview,
   RatingAnimPreview,
@@ -183,14 +180,6 @@ export const ChartMenuGlyph = lucideGlyph(lucideChartColumn, MENU_ICON_PX);
 // + Repeat once one is picked (mirrors ProgressAnimTiles / RatingAnimTiles).
 export function PieAnimTiles(props: AnimTilesProps<PieAnim>) {
   return <AnimTiles {...props} anims={PIE_ANIMS} glyphFor={(v) => <PieAnimPreview anim={v} />} />;
-}
-
-// Sankey animation tiles (docs/specs/009-elements/sankey.md "The menu"): None, Grow (sweeps in once) and
-// Flow (a current along the bands, looping), then Speed + Repeat once one is picked.
-export function SankeyAnimTiles(props: AnimTilesProps<SankeyAnim>) {
-  return (
-    <AnimTiles {...props} anims={SANKEY_ANIMS} glyphFor={(v) => <SankeyAnimPreview anim={v} />} />
-  );
 }
 
 // A labelled 0–100 range slider with a right-aligned `{pct}%` readout. Shared

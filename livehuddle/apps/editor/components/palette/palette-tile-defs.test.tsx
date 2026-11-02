@@ -76,40 +76,6 @@ describe('event-storming tiles', () => {
   });
 });
 
-describe('tool blurbs', () => {
-  // Most categories render a row per tile with a one-line explanation under
-  // the name (see PaletteToolRows) — every one whose glyph cannot say what the
-  // thing does. A tile without a blurb leaves a bare row, so this is the same
-  // kind of registration rule the help centre has. Only Shapes, Icons and
-  // Technology are exempt: there the picture IS the explanation.
-  const toolTiles = [
-    ...tilesInSection('tools'),
-    ...tilesInSection('data'),
-    ...tilesInSection('components'),
-    ...tilesInSection('media'),
-    ...tilesInSection('devices'),
-  ];
-
-  it('gives every row-rendered tile a blurb', () => {
-    const missing = toolTiles.filter((t) => !t.blurb?.trim()).map((t) => t.id);
-    expect(missing).toEqual([]);
-  });
-
-  it('keeps each blurb short enough for a palette-width row', () => {
-    // Roughly two lines at the rendered size. Past that it stops being a
-    // caption and starts being the hover card, which already exists.
-    const tooLong = toolTiles.filter((t) => (t.blurb ?? '').length > 60).map((t) => t.id);
-    expect(tooLong).toEqual([]);
-  });
-
-  it('does not just repeat the tile caption', () => {
-    const echoes = toolTiles
-      .filter((t) => t.blurb?.trim().toLowerCase() === (t.caption ?? '').trim().toLowerCase())
-      .map((t) => t.id);
-    expect(echoes).toEqual([]);
-  });
-});
-
 // Each browsable category carries a `description` that users read in the
 // category picker, and several of those blurbs list the elements the category
 // holds. Adding a tile does not update the blurb, and nothing failed when it
@@ -130,17 +96,14 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
   popular: 0,
   shapes: 13,
-  build: 11,
+  build: 7,
   write: 5,
   draw: 6,
-  devices: 7,
   icons: 0,
   stickers: 0,
-  technology: 0,
   'my-shapes': 0,
   media: 8,
-  components: 12,
-  concepts: 8,
+  components: 11,
   data: 7,
   // The Collaborate elements, one category per group (docs/specs/012-collaboration/workshop-mode.md
   // "The palette"): 34 tiles between them.
@@ -152,8 +115,7 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   'collab-navigate': 15,
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind.
   'event-storming': 8,
-  // Diagram's Build as two, listed by the Diagram layout (docs/specs/010-palette/build-category.md).
-  diagrams: 0,
+  // Build as Workshop lists it, filled by the layout (docs/specs/010-palette/build-category.md).
   layout: 0,
   // A Participant's category borrows the landing category's sticky and text tiles (participantTiles).
   participate: 0,

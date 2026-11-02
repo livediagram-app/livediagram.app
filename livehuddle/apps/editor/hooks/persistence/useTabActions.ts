@@ -150,7 +150,7 @@ export function useTabActions(deps: TabActionsDeps) {
   const { importSceneIntoActiveTab, importScenesAsNewDocuments } = useBoardSceneImport({
     tabs,
     activeId,
-    drawMode: deps.editorMode === 'draw',
+    drawMode: false,
     ownerId,
     documentId,
     replaceActiveTabContent,

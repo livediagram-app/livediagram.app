@@ -114,22 +114,6 @@ function TreeDrawing() {
   );
 }
 
-// Mindmap: one centre, branches all round it.
-function MindmapDrawing() {
-  return (
-    <Frame>
-      <Links d="M29 19c-6-6-9-9-14-10M29 25c-6 6-9 9-14 10M43 19c6-6 9-9 14-10M43 25c6 6 9 9 14 10M36 17v-6M36 27v6" />
-      <Node x={27} y={17} w={18} h={10} />
-      <Node x={1} y={4} w={14} h={8} />
-      <Node x={1} y={32} w={14} h={8} />
-      <Node x={57} y={4} w={14} h={8} />
-      <Node x={57} y={32} w={14} h={8} />
-      <Node x={30} y={2} w={12} h={8} />
-      <Node x={30} y={34} w={12} h={8} />
-    </Frame>
-  );
-}
-
 // Auto-align: boxes sitting on a dot grid.
 function AlignDrawing() {
   const dots: ReactNode[] = [];
@@ -163,8 +147,6 @@ export function TidyUpDrawing({ kind }: { kind: CleanupKind }) {
       return <FlowRightDrawing />;
     case 'tree':
       return <TreeDrawing />;
-    case 'mindmap':
-      return <MindmapDrawing />;
     case 'align':
       return <AlignDrawing />;
   }

@@ -5,7 +5,6 @@ import {
   CONCEPT_LABEL_MAX,
   CONCEPT_NOTE_MAX,
   CONCEPT_ROWS,
-  conceptDrawsNotes,
   isConceptShape,
   type ConceptRow,
   CARD_TAG_MAX,
@@ -232,7 +231,7 @@ export function TextRowsEditor({
   );
 }
 
-// A concept graphic's rows (docs/specs/009-elements/concept-graphics.md): a label each, and a note where the kind
+// A concept graphic's rows (docs/specs/009-elements/timeline.md): a label each, and a note where the kind
 // draws one (a layer's side note, a funnel tier's value). Same row controls as the web components'.
 export function ConceptRowsEditor({
   rows,
@@ -343,7 +342,7 @@ export function WebRowsMenuSection({
     );
   }
   // Chevrons edit their stages on the canvas (ConceptRowBar), so they have no Rows section.
-  if (isConceptShape(target.shape) && target.shape !== 'chevrons') {
+  if (isConceptShape(target.shape)) {
     const bounds = CONCEPT_ROWS[target.shape];
     return (
       <MenuAccordionSection title="Rows" icon={<DataMenuGlyph />} {...sectionProps('concept-rows')}>
@@ -353,7 +352,7 @@ export function WebRowsMenuSection({
           min={bounds.min}
           max={bounds.max}
           noun={bounds.noun}
-          notes={conceptDrawsNotes(target)}
+          notes
           onChange={(conceptRows) => onSetRows({ conceptRows })}
         />
       </MenuAccordionSection>

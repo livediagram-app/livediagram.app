@@ -2,18 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { templateCanvasOverrides } from '@livehuddle/templates';
 import { templateOpensIn } from './useTemplateFlow';
 
-// docs/specs/007-editor/editor-modes.md "Where the mode lives": a template decides the mode.
+// docs/specs/007-editor/editor-modes.md: Workshop is the one mode, so every template opens in it.
 describe('templateOpensIn', () => {
-  it('opens every template but the Whiteboard in Diagram, Blank included', () => {
-    expect(templateOpensIn(templateCanvasOverrides('mindmap'))).toBe('diagram');
-    expect(templateOpensIn(templateCanvasOverrides('blank'))).toBe('diagram');
-  });
-
-  it('opens the Whiteboard in Draw', () => {
-    expect(templateOpensIn(templateCanvasOverrides('whiteboard'))).toBe('draw');
-  });
-
-  it('gives an event-storming board no mode (it is always Diagram)', () => {
-    expect(templateOpensIn(templateCanvasOverrides('event-storming'))).toBeUndefined();
+  it('opens every template in Workshop, the blanks and an event-storming board included', () => {
+    for (const kind of ['blank', 'whiteboard', 'retrospective', 'event-storming'] as const) {
+      expect(templateOpensIn(templateCanvasOverrides(kind))).toBe('workshop');
+    }
   });
 });

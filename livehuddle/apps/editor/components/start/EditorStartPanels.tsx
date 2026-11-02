@@ -1,15 +1,12 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import type { EditorMode } from '@livehuddle/document';
-import type { TemplateKind } from '@livehuddle/templates';
+import type { TemplateStartMode } from '@/components/start/start-template-items';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
-import { track } from '@/lib/telemetry';
 import { showsEmptyCanvasCard } from '@/components/canvas/empty-canvas-card';
 import { StartAgainTray } from '@/components/start/StartAgainTray';
 import { StartViewTransition } from '@/components/start/StartViewTransition';
-import { templateStartMode } from '@/components/start/template-start-mode';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
 
 // The template starts (docs/specs/007-editor/start-diagramming.md) carry every template's preview: loaded the first time
@@ -32,10 +29,9 @@ export function EditorStartPanels() {
     zen: zenMode,
     embed: embedMode,
     drawToolArmed: !!pendingDraw,
-    mode: ctx.editorMode.mode,
     elementCount: activeTab.elements.length,
   });
-  // An editor's empty Diagram, Workshop or Pages tab: its template start (docs/specs/007-editor/start-diagramming.md).
+  // An editor's empty tab: its template start (docs/specs/007-editor/start-diagramming.md).
   // A template picked from a start screen on a document /new just made goes to its default folder
   // (docs/specs/013-workspace/default-folders.md "A template picked after creation").
   const moveOnTemplatePick = useTemplatePickMove({
@@ -43,36 +39,24 @@ export function EditorStartPanels() {
     tabId: activeTab.id,
     tabHasContent: activeTab.elements.length > 0,
   });
-  const templateStart = templateStartMode({
-    hydrated,
-    zen: zenMode,
-    embed: embedMode,
-    readOnly: isReadOnly,
-    drawToolArmed: !!pendingDraw,
-    mode: ctx.editorMode.mode,
-    elementCount: activeTab.elements.length,
-  });
-  // A template a start's search found in another mode (docs/specs/007-editor/start-diagramming.md "Found in other
-  // modes"): it lands as any pick does, and its mode comes with it (templateCanvasOverrides' opensIn), switching the
-  // tab. A blank closes its mode's start first (closeStartForBlank), as a start's own blank does, so the tab opens on
-  // the empty canvas asked for. Imported at the pick: the template catalogue it reads stays out of the editor's first
-  // load (it is in the start's own chunk, already loaded behind the panel).
-  const tabId = activeTab.id;
-  const chooseFromOtherMode = (_mode: EditorMode, kind: TemplateKind) => {
-    track('UI', 'Used', 'StartOtherMode');
-    moveOnTemplatePick(kind);
-    void import('@/components/start/close-start-for-blank').then(({ closeStartForBlank }) => {
-      closeStartForBlank(tabId, kind);
-      return ctx.chooseTemplate(kind);
-    });
-  };
+  // Its template start (docs/specs/007-editor/start-diagramming.md "When it shows"): to someone who can edit, while
+  // the tab is empty, outside zen and embed, with no draw tool armed.
+  const templateStart: TemplateStartMode | null =
+    hydrated &&
+    !zenMode &&
+    !embedMode &&
+    !isReadOnly &&
+    !pendingDraw &&
+    activeTab.elements.length === 0
+      ? 'workshop'
+      : null;
   return (
     <>
-      {/* One View Transition around every start, so a mode change turns the panel in place. */}
+      {/* One View Transition around the start, so it turns in place. */}
       <StartViewTransition>
         {/* Empty-canvas hint (docs/specs/007-editor/new-document-route.md): a calm card in the
       middle of an empty canvas, so a blank document reads as intentionally blank. */}
-        {/* An editor's empty Diagram, Workshop or Pages tab offers its template start, in
+        {/* An editor's empty tab offers its template start, in
       the card's place (docs/specs/007-editor/start-diagramming.md). */}
         {templateStart ? (
           <>
@@ -84,7 +68,6 @@ export function EditorStartPanels() {
                 void ctx.chooseTemplate(kind);
                 moveOnTemplatePick(kind);
               }}
-              onOtherModeTemplate={chooseFromOtherMode}
             />
             {/* Closed, it can be brought back from the palette tray (StartAgainTray). */}
             <StartAgainTray

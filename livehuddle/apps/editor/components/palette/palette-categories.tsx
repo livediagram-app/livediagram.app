@@ -9,11 +9,8 @@
 
 import {
   BuildTabIcon,
-  ConceptsTabIcon,
   ComponentsTabIcon,
   DataTabIcon,
-  DevicesTabIcon,
-  DiagramsTabIcon,
   DrawTabIcon,
   PopularTabIcon,
   IconsTabIcon,
@@ -21,7 +18,6 @@ import {
   MyShapesTabIcon,
   ShapesTabIcon,
   StickersTabIcon,
-  TechTabIcon,
   WriteTabIcon,
   EventStormingTabIcon,
   ParticipateTabIcon,
@@ -112,35 +108,15 @@ export const PALETTE_CATEGORIES: {
     label: 'Build',
     group: 1,
     description:
-      'The structural elements: mind nodes, org charts, flowcharts, sequence diagrams, lanes, frames, stacks, boundaries, a diagram key, tables, and Sankey diagrams.',
+      'The structural elements: lanes, frames, stacks, boundaries, a timeline, a diagram key and tables.',
     icon: <BuildTabIcon />,
-  },
-  {
-    // Diagrams and Layout (docs/specs/010-palette/build-category.md "In Diagram: Diagrams and Layout"): Diagram mode's
-    // Build as two, what is built apart from what it is laid out in. No tiles of their own: Diagram's layout lists
-    // Build's (and a few of Components') in them.
-    id: 'diagrams',
-    label: 'Diagrams',
-    group: 1,
-    description:
-      'The structures that grow as you type: mind nodes, org charts, flowcharts, sequence diagrams, tables and entities.',
-    icon: <DiagramsTabIcon />,
-  },
-  {
-    // Concept graphics (docs/specs/009-elements/concept-graphics.md): the shapes ideas come in, as single elements.
-    id: 'concepts',
-    label: 'Concepts',
-    group: 1,
-    description:
-      'Concept graphics that lay out their own rows: a layer stack, a pyramid, a funnel, a cycle, a hub and spoke, onion rings, chevrons and a timeline. Add, reorder and retitle rows in place.',
-    icon: <ConceptsTabIcon />,
   },
   {
     id: 'layout',
     label: 'Layout',
     group: 1,
     description:
-      'What a diagram is arranged and labelled with: lanes, frames, stacks, boundaries, a diagram key, cards, badges and step numbers.',
+      'What a board is arranged and labelled with: lanes, frames, stacks, boundaries, a timeline, a diagram key, cards, badges and step numbers.',
     icon: <BuildTabIcon />,
   },
   {
@@ -148,16 +124,8 @@ export const PALETTE_CATEGORIES: {
     label: 'Components',
     group: 1,
     description:
-      'Ready-made blocks that follow the tab theme: the Card, Badge and Step number, the web components (Banner, Callout, Stat row, Process, Hero, Header) and the code block, checklist and entity. Each is one element that re-flows as you resize it, with every line of text editable in place.',
+      'Ready-made blocks that follow the tab theme: the Card, Badge and Step number, the web components (Banner, Callout, Stat row, Process, Hero, Header) and the code block and checklist. Each is one element that re-flows as you resize it, with every line of text editable in place.',
     icon: <ComponentsTabIcon />,
-  },
-  {
-    id: 'devices',
-    label: 'Devices',
-    group: 1,
-    description:
-      'Wireframing device frames: browser, monitor, laptop, phone, tablet, foldable, smartwatch.',
-    icon: <DevicesTabIcon />,
   },
   {
     // Event Storming (docs/specs/021-event-storming/event-storming.md): the workshop notation as a first-class
@@ -184,14 +152,6 @@ export const PALETTE_CATEGORIES: {
     description:
       'Colour emoji for reacting, showing how you feel, marking status, pointing at things, celebrating, and prettying the canvas up.',
     icon: <StickersTabIcon />,
-  },
-  {
-    id: 'technology',
-    label: 'Tech',
-    group: 2,
-    description:
-      'Full-colour AWS, Azure, Cloudflare, Firebase, and generic-infrastructure icons for system-architecture diagrams.',
-    icon: <TechTabIcon />,
   },
   {
     id: 'media',

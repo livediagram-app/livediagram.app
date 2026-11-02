@@ -30,10 +30,8 @@ export function remintElements(elements: Element[]): {
     ids.set(el.id, id);
     return { ...el, id };
   });
-  // Arrow endpoints, mind-map parents (docs/specs/009-elements/mind-node.md) and portal partners
-  // (docs/specs/009-elements/portal-element.md) follow the new ids. Missed, a duplicated tab's mind-map
-  // nodes named parents on the SOURCE tab and paired portals lost their
-  // partner. Element links are left alone: a link names its tab too, and
+  // Arrow endpoints and portal partners (docs/specs/009-elements/portal-element.md) follow the new ids. Missed,
+  // a duplicated tab's paired portals lost their partner. Element links are left alone: a link names its tab too, and
   // that is still the source tab, where the original element still is.
   return { elements: remapElementRefs(minted, ids), ids };
 }
@@ -206,17 +204,10 @@ export function useTabImport({
     if (format === 'excalidraw') return importExcalidraw(text, onProgress);
 
     if (format === 'mermaid') {
-      const {
-        graphFromMermaid,
-        layoutGraph,
-        MERMAID_UNSUPPORTED_ERROR,
-        rederiveColorPresetForTheme,
-      } = await import('@livehuddle/document');
+      const { graphFromMermaid, layoutGraph, rederiveColorPresetForTheme } =
+        await import('@livehuddle/document');
       const parsed = graphFromMermaid(text);
       if (!parsed.ok) return { status: 'error', error: parsed.error };
-      // Sequence diagrams are the agents' only, for now (docs/specs/020-import-export/mermaid.md).
-      if (parsed.graph.style === 'sequence')
-        return { status: 'error', error: MERMAID_UNSUPPORTED_ERROR };
       // The layout an agent's Mermaid gets (graph-input.ts layoutGraph): the flowchart direction, subgraphs as
       // frames, and lines that bend round the boxes, a line back to an earlier step round the outside. Labels stay
       // as written. Uncoloured elements inherit the tab's theme at render, so no explicit recolour is needed; only

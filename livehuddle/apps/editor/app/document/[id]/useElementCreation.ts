@@ -257,11 +257,6 @@ export function useElementCreation(opts: {
     if (editsBlocked) return;
     beginDraw({ type: 'component', kind: 'avatar' });
   };
-  // A flowchart's first step (docs/specs/009-elements/flowchart.md).
-  const addFlowchart = () => {
-    if (editsBlocked) return;
-    beginDraw({ type: 'component', kind: 'flowchart' });
-  };
 
   const addText = () => {
     if (editsBlocked) return;
@@ -461,7 +456,6 @@ export function useElementCreation(opts: {
     addCallout,
     addStatRow,
     addProcess,
-    addFlowchart,
     addAvatar,
     dropPaletteItem,
     addText,

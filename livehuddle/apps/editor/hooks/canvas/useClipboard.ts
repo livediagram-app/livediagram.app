@@ -31,13 +31,7 @@
 
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import {
-  duplicateElements,
-  withMindBranches,
-  withAttached,
-  type Element,
-  type Tab,
-} from '@livehuddle/document';
+import { duplicateElements, withAttached, type Element, type Tab } from '@livehuddle/document';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { watchPrimarySelectionPaste } from '@liveworkspace/workbench/lib/primary-selection-paste';
 import {
@@ -178,9 +172,8 @@ export function useClipboard(deps: ClipboardDeps) {
   // this window's own and not another's.
   const copyId = useRef('');
 
-  // A Cut copies what its delete takes: a mind node's branch with it (docs/specs/009-elements/mind-node.md
-  // "Deleting"), so the paste puts the whole branch back. A plain Copy takes only what is selected. `opts` may be a
-  // click event: only a literal `cut: true` counts.
+  // A Cut copies what its delete takes, so the paste puts it all back. A plain Copy takes only what is selected.
+  // `opts` may be a click event: only a literal `cut: true` counts.
   const copySelection = (opts?: { cut?: boolean }) => {
     if (isReadOnly) return;
     const { selectedId, multiSelectedIds } = readSelection();
@@ -192,10 +185,10 @@ export function useClipboard(deps: ClipboardDeps) {
           : null;
     if (!idSet || idSet.size === 0) return;
     // What a Cut's delete leaves (useElementSelectionActions): a locked element, or one on a locked layer. A Cut
-    // copies none of it, nor the branch under it, so a paste never doubles what stayed.
+    // copies none of it, so a paste never doubles what stayed.
     const isProtected = (el: Element) => el.locked === true || !!layerLockedIds?.has(el.id);
     const cutIds = () => {
-      const taken = new Set(withMindBranches(activeTab.elements, idSet, isProtected));
+      const taken = new Set(idSet);
       for (const el of activeTab.elements)
         if (taken.has(el.id) && isProtected(el)) taken.delete(el.id);
       return taken;

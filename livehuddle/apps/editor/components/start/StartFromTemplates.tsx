@@ -23,20 +23,16 @@ import {
   lucideVote,
   lucideWorkflow,
 } from '@liveworkspace/icons/lucide';
-import type { EditorMode } from '@livehuddle/document';
 import type { TemplateCategory, TemplateKind } from '@livehuddle/templates';
-import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@liveworkspace/workbench/components/canvas/useEmptyCardDismissed';
 import type { HelpArticleKey } from '@/lib/help-articles';
 import { StartPanel } from './StartPanel';
 import { StartSaveSwitch } from './StartSaveSwitch';
-import { otherModeMatches } from './other-mode-matches';
 import { templateCard } from './template-card';
 import { setStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { startClosedKey } from './start-closed-key';
 import { TEMPLATE_STARTS, type TemplateStartMode } from './start-template-items';
-import { StartModeSwitch } from '@/components/start/StartModeSwitch';
 import { useStartPalette } from '@/components/start/useStartPalette';
 
 const glyph = (icon: Parameters<typeof lucideGlyph>[0]) => lucideGlyph(icon, 16);
@@ -66,18 +62,6 @@ const COPY: Record<
   TemplateStartMode,
   { title: string; line: string; noMatch: string; help: HelpArticleKey }
 > = {
-  diagram: {
-    title: 'Start Diagramming',
-    line: 'Pick a template to build on, or close this to start from a blank canvas.',
-    noMatch: 'diagram templates',
-    help: 'yourFirstDiagram',
-  },
-  draw: {
-    title: 'Start Drawing',
-    line: 'Pick something to sketch on, or close this to start from a blank whiteboard.',
-    noMatch: 'drawing templates',
-    help: 'drawMode',
-  },
   workshop: {
     title: 'Start a Workshop',
     line: 'Pick a session format to run, or close this to start from a blank workshop.',
@@ -90,18 +74,13 @@ export function StartFromTemplates({
   mode,
   tabId,
   onTemplate,
-  onOtherModeTemplate,
 }: {
   mode: TemplateStartMode;
   tabId: string;
   onTemplate: (kind: TemplateKind) => void;
-  // A template found in another mode (start-diagramming.md "Found in other modes"): it lands, switching the tab there.
-  onOtherModeTemplate: (mode: EditorMode, kind: TemplateKind) => void;
 }) {
   // The tab's own colours (start-palette.ts).
   const palette = useStartPalette();
-  // Other modes are searched only where the tab's mode may change.
-  const canSwitch = useEditorModeState()?.canSwitch === true;
   const start = TEMPLATE_STARTS[mode];
   const copy = COPY[mode];
   const categories = useMemo(
@@ -115,8 +94,7 @@ export function StartFromTemplates({
     [start],
   );
   // The × starts from nothing: the panel stays closed on this tab in this mode, for this person (empty-card-dismissed.ts),
-  // until the palette tray's Show Templates brings it back (StartAgainTray). Remembered per mode: closing Start
-  // Diagramming leaves Start a Workshop to show when the tab switches to it.
+  // until the palette tray's Show Templates brings it back (StartAgainTray).
   const closedKey = startClosedKey(tabId, mode);
   const closed = useEmptyCardDismissed(closedKey);
   // On screen: the tours hold their offer until it goes (start-panel-open.ts).
@@ -149,17 +127,6 @@ export function StartFromTemplates({
         if (kind === start.blank) close();
         onTemplate(kind as TemplateKind);
       }}
-      elsewhere={
-        canSwitch
-          ? (query) =>
-              otherModeMatches(mode, query).map((m) => ({
-                mode: m.mode,
-                cards: m.kinds.map(templateCard),
-              }))
-          : undefined
-      }
-      onChooseElsewhere={(m, kind) => onOtherModeTemplate(m, kind as TemplateKind)}
-      lead={<StartModeSwitch />}
       onClose={close}
       // Where the new item lives, and a switch to move it while it is empty (save-locations.md "On the start screen").
       footer={(palette) => <StartSaveSwitch palette={palette} />}

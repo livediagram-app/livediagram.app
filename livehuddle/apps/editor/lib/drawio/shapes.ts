@@ -4,7 +4,7 @@
 // becomes a labelled box.
 
 import type { ShapeKind } from '@livehuddle/document';
-import type { DrawioCell, DrawioGraph } from './cells';
+import type { DrawioCell } from './cells';
 import { readColour, readFill } from './colour';
 import { shapeName, type DrawioStyle } from './style';
 import { azureImageIcon, readableStencilName, stencilIcon, type IconMatch } from './stencils';
@@ -16,7 +16,6 @@ export type VertexClass =
   // `spine`: a curly bracket, drawn as the line down its middle.
   | { kind: 'line'; spine?: true }
   | { kind: 'lane' }
-  | { kind: 'entity' }
   | { kind: 'table' }
   | { kind: 'image' }
   | ({ kind: 'icon' } & IconMatch)
@@ -66,9 +65,6 @@ const SHAPES: Record<string, Row> = {
   'mxgraph.basic.star': exact('star'),
   callout: exact('speech-bubble'),
   wedgeCallout: exact('speech-bubble'),
-  'mxgraph.android.phone2': exact('phone'),
-  'mxgraph.ios7.misc.iphone': exact('phone'),
-  'mxgraph.mockup.containers.browserWindow': exact('browser'),
   // Approximated: a draw.io shape livehuddle draws differently.
   doubleEllipse: near('circle'),
   orEllipse: near('circle'),
@@ -125,25 +121,14 @@ const SHAPES: Record<string, Row> = {
   [f('extract_or_measurement')]: near('triangle'),
 };
 
-// A class / entity box: a stack of text rows and separator lines, nothing nested.
-function isEntityStack(cell: DrawioCell, graph: DrawioGraph): boolean {
-  if (cell.style.str('childLayout') !== 'stackLayout' || cell.children.length === 0) return false;
-  return cell.children.every((id) => {
-    const child = graph.cells.get(id);
-    if (!child?.vertex || child.children.length > 0) return false;
-    const name = shapeName(child.style);
-    return name === 'line' || (name === '' && child.style.has('text'));
-  });
-}
-
 const isGcpGroup = (name: string) =>
   name.startsWith('mxgraph.gcp2.') && /(group|container)$/i.test(name);
 
-export function classifyVertex(cell: DrawioCell, graph: DrawioGraph): VertexClass {
+export function classifyVertex(cell: DrawioCell): VertexClass {
   const style = cell.style;
   const name = shapeName(style);
-  if (name === 'swimlane')
-    return isEntityStack(cell, graph) ? { kind: 'entity' } : { kind: 'lane' };
+  // A draw.io ER table (a stack of text rows) is a lane here too, its rows its texts.
+  if (name === 'swimlane') return { kind: 'lane' };
   if (name === 'table') return { kind: 'table' };
   if (name === 'image') {
     const azure = azureImageIcon(style.str('image') ?? '');

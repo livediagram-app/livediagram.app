@@ -10,7 +10,6 @@ import {
 } from '@liveworkspace/settings-ui';
 import type { UserPreferences } from '@/lib/user-preferences';
 import { setPowerUserMode } from '@/lib/power-user-mode';
-import { TOUR_RELAUNCH_EVENT } from '@/lib/diagram-tour';
 
 const VIEW_KEY = 'livehuddle:settings-view:v1';
 const readSettingsView = () => readView(VIEW_KEY);
@@ -181,17 +180,6 @@ describe('SettingsDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Editor' }));
     fireEvent.click(screen.getByRole('switch', { name: 'Quick-Add on Hover' }));
     expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ quickAddOnHover: true }));
-  });
-
-  it('leaves the Diagram tour be when its row was on already', () => {
-    setViewport(false);
-    const relaunch = vi.fn();
-    window.addEventListener(TOUR_RELAUNCH_EVENT, relaunch);
-    renderDialog({ tourSeen: false });
-    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
-    // Left on, not turned on from off: nothing reruns.
-    expect(relaunch).not.toHaveBeenCalled();
-    window.removeEventListener(TOUR_RELAUNCH_EVENT, relaunch);
   });
 
   describe('reopening where it was left', () => {

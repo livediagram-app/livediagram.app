@@ -15,11 +15,11 @@ import {
 import { EditorHeader } from '@/components/chrome/EditorHeader';
 import { ApiErrorPage } from '@liveworkspace/workbench/components/chrome/ApiErrorPage';
 import { NewDocumentWizard } from '@/components/palette/NewDocumentWizard';
+import { EARLY_MODE_SCRIPT, EARLY_MODE_STYLE } from './early-mode-choice';
 import type { NewDocumentSettings } from './new-document-settings';
 import { DocumentLoading } from '@/components/chrome/DocumentLoading';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { RecentDocumentsCard } from './RecentDocumentsCard';
-import { EARLY_MODE_SCRIPT, EARLY_MODE_STYLE } from './early-mode-choice';
 import { AnimatedLinesBackdrop } from '@/components/canvas/AnimatedLinesBackdrop';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useCtaAttribution } from './useCtaAttribution';
@@ -55,7 +55,6 @@ import {
   choosePlacementAgainUrl,
   placementParamsFromSearch,
   wizardBypassKind,
-  wizardPresetMode,
   wizardPresetQuery,
   wizardStartsBlank,
 } from '@/lib/new-document-params';
@@ -82,8 +81,7 @@ const EditorPage = dynamic(loadEditor, {
 // not change under the page, so nothing needs to subscribe.
 const subscribeNever = () => () => {};
 const bypassKindFromUrl = () => wizardBypassKind(window.location.search);
-// The template step's presets (`?mode=`, `?q=`), read the same way.
-const presetModeFromUrl = () => wizardPresetMode(window.location.search);
+// The start's search preset (`?q=`), read the same way.
 const presetQueryFromUrl = () => wizardPresetQuery(window.location.search);
 const noPreset = () => null;
 const noBypass = () => null;
@@ -196,16 +194,14 @@ export default function NewDocumentPage() {
     if (!bypassKindFromUrl()) document.documentElement.removeAttribute('data-just-draw');
   }, []);
 
-  // `?mode=` / `?q=` (docs/specs/007-editor/new-document-route.md): the template step opens
-  // narrowed. The prerendered step is unfiltered, so the wizard card stays hidden (the pre-paint
-  // `data-wizard-preset` flag) until the render that shows the preset.
-  const presetMode = useSyncExternalStore(subscribeNever, presetModeFromUrl, noPreset);
+  // `?q=` (docs/specs/007-editor/new-document-route.md): the new document's start opens searched. The wizard card
+  // stays hidden (the pre-paint `data-wizard-preset` flag) until the render that has read it.
   const presetQuery = useSyncExternalStore(subscribeNever, presetQueryFromUrl, noPreset);
   useLayoutEffect(() => {
-    if (presetModeFromUrl() === presetMode && presetQueryFromUrl() === presetQuery) {
+    if (presetQueryFromUrl() === presetQuery) {
       document.documentElement.removeAttribute('data-wizard-preset');
     }
-  }, [presetMode, presetQuery]);
+  }, [presetQuery]);
 
   const backOut = () => {
     if (submitting || preparing) return;
@@ -434,7 +430,7 @@ export default function NewDocumentPage() {
     // Wizard-bypass adoption signal (docs/specs/017-telemetry/telemetry.md): a fixed preset per entry
     // point, never user content. (The template itself is reported by the
     // usual Document / Created event the commit fires.)
-    track('UI', 'Used', kind === 'blank' ? 'JustDraw' : 'TemplateLink');
+    track('UI', 'Used', kind === 'blank-session' ? 'JustDraw' : 'TemplateLink');
     void createByDefault(kind, true);
   });
   useEffect(() => {
@@ -497,12 +493,12 @@ export default function NewDocumentPage() {
       <script
         dangerouslySetInnerHTML={{
           __html: trustedHtml(
-            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','');if(p.has('mode')||p.has('q'))document.documentElement.setAttribute('data-wizard-preset','')}catch(e){}",
+            "try{var p=new URLSearchParams(location.search);if(p.has('blank')||p.has('template'))document.documentElement.setAttribute('data-just-draw','');if(p.has('q'))document.documentElement.setAttribute('data-wizard-preset','')}catch(e){}",
           ),
         }}
       />
       <style>{`html[data-just-draw] [data-wizard-only],html[data-wizard-preset] [data-wizard-only]{visibility:hidden}`}</style>
-      {/* A mode card chosen before hydration is kept, not lost (early-mode-choice.ts). */}
+      {/* Create pressed before hydration is kept, not lost (early-mode-choice.ts). */}
       <script dangerouslySetInnerHTML={{ __html: trustedHtml(EARLY_MODE_SCRIPT) }} />
       <style>{EARLY_MODE_STYLE}</style>
       <EditorHeader
@@ -524,12 +520,11 @@ export default function NewDocumentPage() {
         <div data-wizard-only className="contents">
           <NewDocumentWizard
             busy={submitting || preparing}
-            initialMode={presetMode}
-            // A mode chosen after a Start Blank link (`?start=blank`) opens its blank with the start closed.
+            // Create after a Start Blank link (`?start=blank`) opens the blank with its start closed.
             onCreate={(kind) =>
               void createByDefault(kind, wizardStartsBlank(window.location.search))
             }
-            onSkip={() => void createByDefault('blank', true)}
+            onSkip={() => void createByDefault('blank-session', true)}
             onOpenExisting={() => window.location.assign('/explorer/recent')}
             // Escape backs out to the page that opened /new, creating nothing
             // (docs/specs/007-editor/new-document-route.md "Escape backs out").

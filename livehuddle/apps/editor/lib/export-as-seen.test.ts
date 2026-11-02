@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  DARK_CANVAS_BACKGROUND_COLOR,
-  DEFAULT_BACKGROUND_COLOR,
   PEN_INK,
   createFreehand,
   createPath,
@@ -25,21 +23,6 @@ const path = createPath(
 );
 
 describe('tabAsSeen', () => {
-  it('paints the tab’s own backdrop, with its stored pattern, for the appearance', () => {
-    const tab = {
-      id: 't',
-      name: 'Board',
-      opensIn: 'draw',
-      backgroundPattern: 'blank',
-      elements: [path],
-    } as Tab;
-    expect(tabAsSeen(tab, 'dark')).toMatchObject({
-      backgroundColor: DARK_CANVAS_BACKGROUND_COLOR,
-      backgroundPattern: 'blank',
-    });
-    expect(tabAsSeen(tab, 'light').backgroundColor).toBe(DEFAULT_BACKGROUND_COLOR);
-  });
-
   it('draws a themed tab’s canvas in the export’s half, and a picked canvas as it is', () => {
     const tab = { id: 't', name: 'Tab', theme: 'slate', backgroundColor: '#fdf2f8' } as Tab;
     expect(tabAsSeen({ ...tab, elements: [] }, 'light').backgroundColor).toBe('#fdf2f8');

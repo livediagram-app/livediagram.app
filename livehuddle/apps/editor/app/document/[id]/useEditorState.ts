@@ -63,15 +63,12 @@ import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
 import type { QuickStyleDeps } from '@/hooks/canvas/useQuickStyle';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
 import { getTheme } from '@/lib/themes';
-import { DEFAULT_SCHEME_ID, settleFlowcharts } from '@livehuddle/document';
+import { DEFAULT_SCHEME_ID } from '@livehuddle/document';
 import { settleChipsInTabs } from '@/lib/settle-tabs';
-import { lockedElementIds } from '@/lib/tab-cleanup';
 import { useEditorMode } from '@/hooks/editor/useEditorMode';
 import { selectAllIds } from '@/lib/select-all-ids';
-import { editorModeShortcut } from '@/hooks/editor/editor-mode-shortcut';
 import { announce } from '@liveworkspace/workbench/lib/announcer';
 import { voteKeyHandler } from '@/lib/vote-by-key';
-import { peerModeSwitchMessage } from '@/lib/peer-mode-switch';
 import { useAddCustomColour } from '@/hooks/editor/useAddCustomColour';
 import { useTagColourSetter } from '@/hooks/editor/useTagColourSetter';
 import { usePortalSetters } from '@/hooks/canvas/usePortalSetters';
@@ -175,12 +172,6 @@ import { useEditorDialogs } from './useEditorDialogs';
 import { useElementHelpers } from './useElementHelpers';
 import { usePruneInertSelection } from '@liveworkspace/workbench/hooks/canvas/usePruneInertSelection';
 import { useElementCreation } from './useElementCreation';
-import { useMindGrowth } from './useMindGrowth';
-import { useFlowchartGrowth } from './useFlowchartGrowth';
-import { routeGrowth } from './growth-routing';
-import { useFlowchartSetters } from '@/hooks/canvas/useFlowchartSetters';
-import { useEntityActions } from '@/hooks/canvas/useEntityActions';
-import { useMindOutline } from './useMindOutline';
 import { useLayersState } from './useLayersState';
 import { useInlineIconMutators } from './useInlineIconMutators';
 import { usePresenceBroadcast } from './usePresenceBroadcast';
@@ -259,21 +250,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       // are stamped: an untouched tab may be a placeholder whose content has not loaded, and stamping it would make
       // it look edited to the autosave (docs/specs/006-document/per-tab-storage.md).
       const before = new Set<Tab>(ts);
-      // Flowcharts (docs/specs/009-elements/flowchart.md "The layout"): a chart whose structure this
-      // commit changed (an arrow drawn between steps, a step deleted, a step dragged into another
-      // lane) is laid out again in the same commit, whichever path made the change.
-      const mapped = mapTabs(ts).map((t) => {
-        if (before.has(t)) return t;
-        const prev = ts.find((p) => p.id === t.id);
-        const settled = prev
-          ? settleFlowcharts(prev.elements, t.elements, () =>
-              lockedElementIds(t.elements, t.layers),
-            )
-          : t.elements;
-        return stampTabKind(settled === t.elements ? t : { ...t, elements: settled });
-      });
-      // Badges and step numbers (docs/specs/009-elements/badge.md "Attachment"), after any chart re-layout moved
-      // their hosts.
+      const mapped = mapTabs(ts).map((t) => (before.has(t) ? t : stampTabKind(t)));
+      // Badges and step numbers (docs/specs/009-elements/badge.md "Attachment").
       const next = settleChipsInTabs(ts, mapped);
       const stamp = activeLayerStampRef.current;
       if (!stamp) return next;
@@ -1110,10 +1088,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     receiveFocusHere: (from, tabId, at) => receiveFocusRef.current?.(from, tabId, at),
     receiveFacilitator: facilitator.receiveFacilitator,
     receiveSelectionReleased,
-    // Everyone follows a collaborator's switch of the tab's mode; the one on this tab is said.
-    receivePeerModeSwitch: (name, tabId, mode) => {
-      if (tabId === activeId) toast.info(peerModeSwitchMessage(name, mode));
-    },
     readFacilitatorToken: facilitator.readFacilitatorToken,
     setFollowerIds,
     readFollowing: () => followingRef.current,
@@ -1189,18 +1163,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     selfName: selfParticipant.name,
     canReact: participant.can.takePart && realtime.sessionCommunity === null,
   });
-  // The tab's editor mode, the same for everyone on it (docs/specs/007-editor/editor-modes.md): every
-  // tool and rule gate keys on it, never on what the tab is. A switch is one tab edit.
-  const editorMode = useEditorMode(activeTab, {
-    canEdit,
-    commitTabs,
-    toastInfo: toast.info,
-  });
+  // The tab's editor mode (docs/specs/007-editor/editor-modes.md): Workshop, on every tab.
+  const editorMode = useEditorMode(canEdit);
   // A colour picked with + joins the tab's custom colours, which every picker offers.
   const addCustomColour = useAddCustomColour({ activeId: activeTab.id, canEdit, tickTabs });
   // A card tag's colour for the tab (docs/specs/009-elements/tag-colours.md).
   const setTagColour = useTagColourSetter({ activeTab, canEdit, commitTabs });
-  const drawMode = editorMode.mode === 'draw';
+  // Draw mode is gone (docs/specs/007-editor/editor-modes.md); the whiteboard tools below still take its flag.
+  const drawMode = false;
   // The tool a mode starts with: Select, or Hand on a phone (docs/specs/007-editor/editor-modes.md).
   useModeDefaultTool(editorMode.mode, canvasTool, setCanvasTool, embedMode);
 
@@ -2409,40 +2379,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setSelectedId,
   });
 
-  // Mind-map growth (docs/specs/009-elements/mind-node.md) and flowchart growth
-  // (docs/specs/009-elements/flowchart.md): Tab / Enter / the "+" ring, routed through one API
-  // (growth-routing.ts) so the keyboard and label-editor plumbing serves both.
-  const growthOpts = {
-    // A Participant grows a mind map or a flowchart (docs/specs/013-workspace/share-roles.md): branches
-    // and steps are content.
-    editsBlocked: contentAddBlocked({
-      participating: participant.participating,
-      canAddContent: participant.can.addContent,
-      blocked: createBlocked,
-      structureBlocked: structureCreateBlocked,
-    }),
-    participating: participant.participating,
-    activeId,
-    activeTab,
-    commitTabs,
-    setSelectedId,
-    setEditingId,
-    scrollIntoView,
-  };
-  const flowchartGrowth = useFlowchartGrowth(growthOpts);
-  const { canGrowMindNode, growMindNode, abandonMindNode, escapeGrownMindNode } = routeGrowth(
-    useMindGrowth(growthOpts),
-    flowchartGrowth,
-  );
-
-  // Edit Outline (docs/specs/009-elements/mind-node.md "Edit Outline"). See useMindOutline.
-  const mindOutline = useMindOutline({
-    editsBlocked: structureCreateBlocked,
-    activeId,
-    activeTab,
-    commitTabs,
-  });
-
   // Palette element-creation handlers. See useElementCreation.
   const {
     addShape,
@@ -2460,7 +2396,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addCallout,
     addStatRow,
     addProcess,
-    addFlowchart,
     addAvatar,
     dropPaletteItem,
     addText,
@@ -2646,10 +2581,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setCodeSelected,
     setCodeWrapSelected,
     setLegendItemsSelected,
-    setMindFlowSelected,
-    setMindSpacingSelected,
-    tidyMindMapSelected,
-    tidyMindMap,
     setPageHeading,
     setWebRows,
     appendWebRowTo,
@@ -2657,7 +2588,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setHeroCaptionLine,
     setHeroCaptionSelected,
     setChecklistItemsSelected,
-    setEntityFieldsSelected,
     setEstimateScaleSelected,
     setAgendaItemsSelected,
     setDecisionStatusSelected,
@@ -2681,8 +2611,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setChartLegendPositionSelected,
     setChartTypeSelected,
     setLineDataSelected,
-    sankey,
-    sequence,
     resetShapeStyleSelected,
     resetArrowStyleSelected,
     clearAnimationsSelected,
@@ -2711,17 +2639,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitActiveTab,
     tickTabs: rememberingTickTabs,
     checkpointBurst,
-    notify: (tone, message) => toast[tone](message),
-  });
-
-  // The flowchart's step type, direction, lanes and Tidy (docs/specs/009-elements/flowchart.md): one
-  // bundle the step toolbar and the Flowchart menu section read from the editor context.
-  const flowchartActions = useFlowchartSetters({
-    currentSelectionIds,
-    commitActiveTab,
-    elements: () => activeTab.elements,
-    editsBlocked,
-    notify: (tone, message) => toast[tone](message),
   });
 
   // The quick style panel (docs/specs/008-canvas/quick-style-panel.md): its view of the selection and one
@@ -2930,7 +2847,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     lockedByOther,
     layerInertIds,
     scrollIntoView,
-    ownsTabKey: canGrowMindNode,
   });
 
   // Vote-results review (docs/specs/012-collaboration/session-tools.md): the local walkthrough of revealed top
@@ -3027,19 +2943,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
   });
 
-  // The entity's verbs (docs/specs/009-elements/entity.md): fields saved from the canvas, relationships drawn
-  // from a field, the ring's Add Field and Add Related Entity, and the Cardinality presets.
-  const entityActions = useEntityActions({
-    activeTab,
-    readSelection,
-    commit,
-    styleNewElement: styleMemory.styleNewElement,
-    setSelectedId,
-    setEditingId,
-    beginAnchorDrag,
-    editsBlocked,
-  });
-
   // Copy / paste (in-app element clipboard + OS-clipboard image
   // paste). `copySelection` feeds the keyboard hook below; paste is
   // driven by a native `paste` listener the hook owns. See
@@ -3131,9 +3034,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addArrow,
     onAddImage: addImage ?? null,
     onBeginFreehand: beginFreehand,
-    canGrowMindNode,
-    onGrowMindNode: growMindNode,
-    onEscapeMindNode: escapeGrownMindNode,
     onBeginShapePen: beginShapePen,
     onBeginEditSelected: beginEdit,
     onNudgeSelection: nudgeSelection,
@@ -3193,7 +3093,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     onBringToFront: bringSelectedToFront,
     onSendToBack: sendSelectedToBack,
     onFitToScreen: fitToScreen,
-    onCycleEditorMode: editorModeShortcut(editorMode, announce),
     onDeselect: () => {
       setSelectedId(null);
       setMultiSelectedIds(new Set());
@@ -3364,7 +3263,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addCallout,
     addStatRow,
     addProcess,
-    addFlowchart,
     addAvatar,
     dropPaletteItem,
     getViewportCenter,
@@ -3665,10 +3563,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setCodeSelected,
     setCodeWrapSelected,
     setLegendItemsSelected,
-    setMindFlowSelected,
-    setMindSpacingSelected,
-    tidyMindMapSelected,
-    tidyMindMap,
     toggleChecklistItem,
     setPageHeading,
     setWebRows,
@@ -3676,13 +3570,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setWebRowsSelected,
     setHeroCaptionLine,
     setHeroCaptionSelected,
-    growMindNode,
-    abandonMindNode,
-    flowchartActions,
-    entityActions,
-    mindOutline,
     setChecklistItemsSelected,
-    setEntityFieldsSelected,
     setEstimateScaleSelected,
     setAgendaItemsSelected,
     setDecisionStatusSelected,
@@ -3722,8 +3610,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setChartLegendPositionSelected,
     setChartTypeSelected,
     setLineDataSelected,
-    sankey,
-    sequence,
     resetShapeStyleSelected,
     resetArrowStyleSelected,
     clearAnimationsSelected,

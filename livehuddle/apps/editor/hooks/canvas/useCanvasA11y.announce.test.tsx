@@ -41,7 +41,6 @@ function setup(elements = [a, b]) {
         lockedByOther: () => false,
         layerInertIds: new Set<string>(),
         scrollIntoView: () => {},
-        ownsTabKey: () => false,
       }),
     { initialProps: { els: elements } },
   );

@@ -32,11 +32,6 @@ import {
 //   - square: rounded rectangle
 //   - circle: border-radius 50% (forced 1:1 so it stays a circle)
 //   - stadium: border-radius 9999px, always semicircular ends
-//   - browser: rounded rectangle frame (the HTML BrowserChrome strip
-//     paints the address bar on top). It MUST be CSS so the corner
-//     radius is a real pixel radius: an SVG rect rx in the stretched
-//     0..100 viewBox warps into big asymmetric arcs on a wide box,
-//     and the user's border-radius control would do nothing.
 export function isSvgRenderedShape(kind: ShapeKind): boolean {
   // An unknown / off-vocabulary kind (e.g. a stray "rectangle" from an external
   // source — the ShapeSvgOverlay has no case for it and would draw nothing) is
@@ -54,7 +49,6 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     kind !== 'square' &&
     kind !== 'circle' &&
     kind !== 'stadium' &&
-    kind !== 'browser' &&
     kind !== 'page' &&
     kind !== 'mode-button' &&
     // Bring Focus (docs/specs/012-collaboration/bring-focus.md) is a filled rounded box with a glyph + label on
@@ -73,10 +67,8 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     kind !== 'comment-pin' &&
     // An action panel (docs/specs/012-collaboration/action-panel.md) is the same card, for an assigned action.
     kind !== 'action-card' &&
-    // A mind node (docs/specs/009-elements/mind-node.md) is a rounded filled box with a label, same as
-    // the four above. This predicate is allow-BY-DEFAULT, so a new CSS-drawn
-    // kind that isn't listed here renders as a transparent nothing.
-    kind !== 'mind-node' &&
+    // This predicate is allow-BY-DEFAULT, so a new CSS-drawn kind that isn't listed here renders as a
+    // transparent nothing.
     // A lane (docs/specs/009-elements/lane.md) is a filled band with a gutter drawn on top — CSS box
     // path, same as the rest of this list.
     kind !== 'lane' &&
@@ -88,14 +80,10 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     kind !== 'diagram-key' &&
     // A stack (docs/specs/009-elements/stack.md) is a CSS box (a dashed outline) behind what it holds.
     kind !== 'stack' &&
-    // A sequence diagram (docs/specs/009-elements/sequence-diagram.md) is a CSS box with its picture on top.
-    kind !== 'sequence' &&
-    // A record (docs/specs/009-elements/entity.md) is a filled box with rows drawn on top.
-    kind !== 'entity' &&
     // The collaboration elements (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) are filled rounded
     // cards with their own face drawn on top — the CSS box path, like every
     // kind above. Left off this list they rendered as a transparent nothing,
-    // exactly as the mind-node comment above warns.
+    // exactly as the comment above warns.
     !isCollabPanelShape(kind) &&
     // The web components (docs/specs/009-elements/web-components-and-no-groups.md): a callout is a bordered card with its
     // content on top, and the rest paint their own surfaces (they are
@@ -131,8 +119,7 @@ export function ShapeSvgOverlay({
   strokeDasharray?: string;
   // Element width / height. The svg uses preserveAspectRatio="none",
   // so a fixed viewBox inset renders unevenly once the box is
-  // stretched. The laptop bezel reads this to keep its margin even in
-  // screen pixels on all four sides (see laptopGeometry in the table).
+  // stretched, so Trace re-measures its dashes when it changes.
   // Defaults to a typical landscape ratio for callers that don't pass it.
   aspect?: number;
   // The Shape set's Pulse, Glow, Trace and Gradient (docs/specs/028-animation/element-animations.md),
@@ -150,9 +137,7 @@ export function ShapeSvgOverlay({
   // The geometry lives in the shared table (@livehuddle/document
   // shape-geometry.ts), the same data the headless export draws from, so
   // the canvas and an exported image can't disagree about a silhouette.
-  // Browser is NOT in it: it is a CSS-rendered rounded rectangle (see
-  // isSvgRenderedShape) with the HTML BrowserChrome strip on top.
-  const geometry = shapeGeometry(shape, aspect);
+  const geometry = shapeGeometry(shape);
   // Each part's paint by its role. The user's dash rides every outline; the thin detail chrome
   // (bezels, keys, creases) keeps its own solid stroke, which reads correctly: a dotted phone still
   // has a solid screen edge.

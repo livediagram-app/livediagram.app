@@ -79,14 +79,6 @@ describe('QuickConnectRing menu', () => {
     });
     expect(menu(container)?.style.opacity).toBe('1');
   });
-
-  it('offers a mind node only its growth actions and Duplicate', () => {
-    const { container } = render(ring(true, { onGrowMind: vi.fn() }));
-    const labels = [...container.querySelectorAll('button[aria-label]')]
-      .map((b) => b.getAttribute('aria-label'))
-      .filter((l) => l !== 'Quick add and connect');
-    expect(labels).toEqual(['Add Child', 'Add Sibling', 'Duplicate']);
-  });
 });
 
 // A ring beside an element that reaches the edge of a phone fanned its menu past the edge, out of reach

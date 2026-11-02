@@ -31,14 +31,7 @@ function bigDiagram(n: number): Element[] {
 
 describe('Tidy Up hover budget', () => {
   const els = bigDiagram(TIDY_PREVIEW_WORST_CASE_NODES);
-  for (const kind of [
-    'smart',
-    'flow-down',
-    'flow-right',
-    'tree',
-    'mindmap',
-    'align',
-  ] as CleanupKind[]) {
+  for (const kind of ['smart', 'flow-down', 'flow-right', 'tree', 'align'] as CleanupKind[]) {
     // Named with the budget it holds here, so a CI failure names CI's.
     it(`${kind} lays out ${TIDY_PREVIEW_WORST_CASE_NODES} nodes inside ${cpuBudgetMs(TIDY_PREVIEW_BUDGET_MS)} ms`, () => {
       // Untimed warm-ups first: `cpuUsage` bills the whole process, so while V8 still compiles and

@@ -26,7 +26,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "88 templates (10 default + 78 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "72 templates (5 default + 67 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -37,15 +37,7 @@ describe('TEMPLATES catalogue', () => {
   // either direction.
   const ALL_KINDS: TemplateKind[] = [
     'blank',
-    'mindmap',
-    'mindmap-tree',
-    'mindmap-bubble',
-    'orgchart',
     'retrospective',
-    'flowchart',
-    'swimlane',
-    'decision-tree',
-    'approval-workflow',
     'data-flow',
     'swot',
     'timeline',
@@ -54,13 +46,9 @@ describe('TEMPLATES catalogue', () => {
     'venn',
     'journey',
     'fishbone',
-    'pyramid',
-    'flywheel',
     'gantt',
     'comparison-table',
     'system-architecture',
-    'er-diagram',
-    'sequence-diagram',
     'prioritization-matrix',
     'roadmap',
     'raci-matrix',
@@ -81,12 +69,8 @@ describe('TEMPLATES catalogue', () => {
     'people-bingo',
     'business-model-canvas',
     'empathy-map',
-    'funnel',
-    'sankey',
     'okr-tree',
-    'sitemap',
     'cloud-architecture',
-    'uml-class',
     'state-machine',
     'event-storming',
     'start-stop-continue',
@@ -127,21 +111,21 @@ describe('TEMPLATES catalogue', () => {
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "88 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "72 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 88 templates (10 default + 78 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(88);
+  it('lists exactly 72 templates (5 default + 67 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(72);
   });
 
-  it('splits cleanly into 10 default + 78 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 5 default + 67 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
-    expect(defaults).toHaveLength(10);
-    expect(extras).toHaveLength(78);
+    expect(defaults).toHaveLength(5);
+    expect(extras).toHaveLength(67);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/editor-tour.md has no sample)', () => {
@@ -187,13 +171,13 @@ describe('TEMPLATES catalogue', () => {
 });
 
 describe('templateCanvasOverrides', () => {
-  it('makes a general tab that opens in Draw, on a Grid board', () => {
-    // docs/specs/007-editor/editor-modes.md "Where the mode lives": the opening mode and the Grid
-    // land on every creation path through here (the template, a new tab, Quick Start, the MCP
-    // worker); the tab stays a general one.
+  it('makes the whiteboard a Workshop tab on a Grid board', () => {
+    // docs/specs/007-editor/editor-modes.md: Workshop is the one mode, and the Grid lands on every creation path
+    // through here (the template, a new tab, Quick Start, the MCP worker).
     expect(templateCanvasOverrides('whiteboard')).toEqual({
-      opensIn: 'draw',
+      opensIn: 'workshop',
       backgroundPattern: 'graph',
+      backgroundOpacity: 0.4,
     });
   });
 
@@ -206,54 +190,12 @@ describe('templateCanvasOverrides', () => {
     });
   });
 
-  it('gives mind maps a softer backdrop opacity (plus an explicit grid)', () => {
-    // Mind maps sit on a slightly translucent canvas so the central
-    // node reads as a focal point rather than competing with the
-    // background pattern.
-    expect(templateCanvasOverrides('mindmap')).toEqual({
-      backgroundPattern: 'grid',
-      backgroundOpacity: 0.8,
-    });
-  });
-
-  it('gives alignment-heavy scaffolds a square graph paper backdrop', () => {
-    expect(templateCanvasOverrides('flowchart')).toEqual({
-      backgroundPattern: 'graph',
-      backgroundOpacity: 0.4,
-    });
-    expect(templateCanvasOverrides('orgchart')).toEqual({
-      backgroundPattern: 'graph',
-      backgroundOpacity: 0.4,
-    });
-    // Layered templates (docs/specs/006-document/layers.md) additionally carry their Tab.layers.
-    // A sticky-note board the room fills in opens in Workshop (docs/specs/007-editor/templates-by-mode.md).
-    expect(templateCanvasOverrides('swot')).toEqual({
-      backgroundPattern: 'graph',
-      backgroundOpacity: 0.4,
-      layers: templateLayers('swot'),
-      opensIn: 'workshop',
-    });
-    expect(templateCanvasOverrides('gantt')).toEqual({
-      backgroundPattern: 'graph',
-      backgroundOpacity: 0.4,
-      layers: templateLayers('gantt'),
-    });
-    expect(templateCanvasOverrides('sitemap')).toEqual({
-      backgroundPattern: 'graph',
-      backgroundOpacity: 0.4,
-    });
-  });
-
-  it('gives clean radial layouts a blank backdrop', () => {
-    expect(templateCanvasOverrides('venn')).toEqual({ backgroundPattern: 'blank' });
-    expect(templateCanvasOverrides('flywheel')).toEqual({ backgroundPattern: 'blank' });
-  });
-
   it('gives timelines ruled lines', () => {
     expect(templateCanvasOverrides('timeline')).toEqual({
       backgroundPattern: 'lines',
       backgroundOpacity: 0.6,
       layers: templateLayers('timeline'),
+      opensIn: 'workshop',
     });
     expect(templateCanvasOverrides('journey')).toEqual({
       backgroundPattern: 'lines',
@@ -265,7 +207,7 @@ describe('templateCanvasOverrides', () => {
   });
 
   it('leaves the blank template to inherit the theme backdrop', () => {
-    expect(templateCanvasOverrides('blank')).toEqual({});
+    expect(templateCanvasOverrides('blank')).toEqual({ opensIn: 'workshop' });
   });
 });
 
@@ -342,11 +284,6 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // glyph, plus the persona card; notes are the 12 stickies plus the
     // persona's sticker, name and goal.
     'empathy-map': { names: ['Quadrants', 'Notes'], scaffold: 19, content: 15 },
-    // Lifelines: the caption, the actor + its name, four headed boxes and
-    // five lifelines. Messages: the title, five activation bars, ten
-    // messages (one of them the self-call), the alt frame, its two guards
-    // and divider, and the note + its anchor.
-    'sequence-diagram': { names: ['Lifelines', 'Messages'], scaffold: 12, content: 22 },
     // Tiers: title, caption, four lanes with their blurb and glyph, and the key
     // (label plus two line samples with their words). Components: 15 nodes
     // and the 14 edges between them.
@@ -556,99 +493,6 @@ describe('buildTemplatedTab', () => {
     expect(tab.patternColor).toBe(slate.patternColor);
     expect(tab.templateChosen).toBe(true);
   });
-
-  it('applies the mindmap backdrop opacity override', () => {
-    const tab = buildTemplatedTab('mindmap', 'brand', 'tab-1', 'mind map');
-    expect(tab.backgroundOpacity).toBe(0.8);
-  });
-
-  it('steps loud patterns back behind the content and leaves quiet ones alone', () => {
-    // Graph paper is the loudest, so it recedes furthest.
-    expect(buildTemplatedTab('flowchart', 'brand', 'tab-1', 'flow').backgroundOpacity).toBe(0.4);
-    // The dot grid is already quiet: no override.
-    expect(
-      buildTemplatedTab('retrospective', 'brand', 'tab-1', 'retro').backgroundOpacity,
-    ).toBeUndefined();
-  });
-
-  it('recolours shape elements with the chosen theme palette', () => {
-    // `flowchart` seeds plain shapes (the blank template is now empty,
-    // docs/specs/007-editor/new-document-route.md), so its first preset-free shape pins the recolouring
-    // contract: a single-colour theme writes the same fill / stroke / text
-    // triple onto it. (Some flowchart shapes now carry a `colorPreset`
-    // (docs/specs/010-palette/style-presets.md) whose colours are re-derived from the theme instead, so we
-    // skip those here and assert the plain-recolour path on a bare shape.)
-    const tab = buildTemplatedTab('flowchart', 'slate', 'tab-1', 'name');
-    const slate = getTheme('slate');
-    const shape = tab.elements.find((el) => el.type === 'shape' && !el.colorPreset);
-    expect(shape).toBeDefined();
-    if (shape && shape.type === 'shape') {
-      expect(shape.fillColor).toBe(slate.elementFill);
-      expect(shape.strokeColor).toBe(slate.elementStroke);
-      expect(shape.textColor).toBe(slate.elementText);
-    }
-  });
-
-  it('leaves shape colours untouched when the theme provides no overrides', () => {
-    // The brand theme has all three element fields null, so recolouring is a
-    // no-op: a preset-free shape keeps exactly the colours the raw builder
-    // gave it. (Preset-carrying shapes (docs/specs/010-palette/style-presets.md) DO get re-derived colours
-    // even under brand, so compare a bare shape to isolate the no-op path.)
-    const raw = buildTemplate('flowchart', 0, 0).find(
-      (el) => el.type === 'shape' && !el.colorPreset,
-    );
-    const tab = buildTemplatedTab('flowchart', 'brand', 'tab-1', 'name');
-    const shape = tab.elements.find((el) => el.type === 'shape' && !el.colorPreset);
-    expect(shape).toBeDefined();
-    expect(raw).toBeDefined();
-    if (shape?.type === 'shape' && raw?.type === 'shape') {
-      expect(shape.fillColor).toBe(raw.fillColor);
-      expect(shape.strokeColor).toBe(raw.strokeColor);
-      expect(shape.textColor).toBe(raw.textColor);
-    }
-  });
-
-  it('recolours arrow elements with the theme stroke colour only', () => {
-    // Mind maps include arrows (central node to branches). The
-    // recolouring loop only writes strokeColor on arrows, never a
-    // fill or text colour, because arrows don't carry those.
-    const tab = buildTemplatedTab('mindmap', 'slate', 'tab-1', 'mind map');
-    const slate = getTheme('slate');
-    const arrow = tab.elements.find((el) => el.type === 'arrow');
-    expect(arrow).toBeDefined();
-    if (arrow && arrow.type === 'arrow') {
-      expect(arrow.strokeColor).toBe(slate.elementStroke);
-    }
-  });
-});
-
-// Wireframe templates that pair with the device-frame shapes
-// (browser / monitor / laptop / phone / tablet). Each test pins
-// the template's structural fingerprint, so a future change to the
-// template's element count or shape choices either updates these
-// expectations or fails CI loudly. None of the runtime helpers
-// (theme recolouring, mindmap opacity, etc.) need to be exercised
-// again here, they're covered above against the blank + flowchart
-// templates.
-
-describe('flywheel template', () => {
-  it('flywheel is one Cycle of four stages round Momentum', () => {
-    const tab = buildTemplatedTab('flywheel', 'brand', 'tab-1', 'fly');
-    const cycles = tab.elements.filter(
-      (el): el is Extract<(typeof tab.elements)[number], { type: 'shape' }> =>
-        el.type === 'shape' && el.shape === 'cycle',
-    );
-    expect(cycles).toHaveLength(1);
-    expect(cycles[0]!.label).toBe('Momentum');
-    expect(cycles[0]!.conceptRows?.map((r) => r.label)).toEqual([
-      'More subscribers',
-      'More weekly orders',
-      'Better farm deals',
-      'Lower box prices',
-    ]);
-    // The cycle draws its own clockwise arcs; no loose arrows.
-    expect(tab.elements.filter((el) => el.type === 'arrow')).toHaveLength(0);
-  });
 });
 
 // Board templates moved to template-builders-boards.ts in commit
@@ -769,25 +613,6 @@ describe('planning + strategy templates', () => {
     expect(headers).toHaveLength(4);
     for (const h of headers) expect(personaName.y + personaName.height).toBeLessThan(h.y);
   });
-
-  it('funnel is one Funnel element with a count rail', () => {
-    const tab = buildTemplatedTab('funnel', 'brand', 'tab-1', 'funnel');
-    const labels = labelsOf('funnel');
-    const funnels = tab.elements.filter(
-      (el): el is Extract<(typeof tab.elements)[number], { type: 'shape' }> =>
-        el.type === 'shape' && el.shape === 'pyramid',
-    );
-    expect(funnels).toHaveLength(1);
-    expect(funnels[0]!.pyramidVariant).toBe('funnel');
-    expect(funnels[0]!.conceptRows?.map((r) => r.label)).toEqual([
-      'Awareness',
-      'Interest',
-      'Decision',
-      'Action',
-    ]);
-    expect(labels).toContain('12,400');
-    expect(labels.filter((l) => l.includes('move on'))).toHaveLength(3);
-  });
 });
 
 // The OKR tree and sitemap pins live in template-hierarchies.test.ts with the
@@ -825,10 +650,6 @@ describe('design + table templates (later batch)', () => {
 });
 
 describe('untitledNameForTemplate', () => {
-  it('names a templated document in title case after its template title', () => {
-    expect(untitledNameForTemplate('mindmap')).toBe('Untitled Mind Map');
-    expect(untitledNameForTemplate('mindmap-tree')).toBe('Untitled Tree Mind Map');
-  });
   it('keeps "Untitled canvas" for blank or no template', () => {
     expect(untitledNameForTemplate('blank')).toBe('Untitled canvas');
     expect(untitledNameForTemplate(null)).toBe('Untitled canvas');

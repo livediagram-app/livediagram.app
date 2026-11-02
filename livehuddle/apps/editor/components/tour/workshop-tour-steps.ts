@@ -2,13 +2,19 @@
 // and Session on the category bar, then the session's key elements shown on the canvas (a Timer, a Dot Vote and a
 // Poll, placed by the tour and taken away when it ends), the Session strip and Share, then the outro.
 
-import { ensurePaletteOpen } from './tour-steps';
+import { waitForSelector } from '@liveworkspace/workbench/components/tour/tour-dom';
 import {
   stepTelemetryType,
   type TourStepOf,
 } from '@liveworkspace/workbench/components/tour/tour-step';
 import { opensFrom } from '@liveworkspace/workbench/components/tour/tour-open';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
+
+// Wait for the palette strip (docs/specs/007-editor/toolbar-layout.md), always open while the chrome is up, so
+// callers can chain.
+async function ensurePaletteOpen() {
+  await waitForSelector('[data-tour-id="palette"]');
+}
 
 // The session elements the tour shows (spec "Tour content"): placed once, in a row in view, with no history, and taken
 // away when the tour ends, however it ends (WorkshopTourHost).

@@ -70,12 +70,9 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Draw·Selected',
   'Draw·Toggled',
   'Document·Undone',
-  // Editor modes (docs/specs/007-editor/editor-modes.md): a tab switched to Diagram or Draw.
-  'Editor·Changed',
   'Element·Added',
   'Element·Changed',
   'Element·Copied',
-  'Element·Created',
   'Element·Deleted',
   'Element·Duplicated',
   'Element·Imported',
