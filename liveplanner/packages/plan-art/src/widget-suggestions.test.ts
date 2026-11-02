@@ -47,6 +47,22 @@ const suggest = (items: readonly Item[], widgets: PlanBoardSetup['widgets'] = []
   suggestWidgets({ setup, items, types, fields, widgets: widgets ?? [], now: NOW });
 
 describe('suggestWidgets', () => {
+  it('reads a plural field name naturally', () => {
+    const platforms = def('f-platforms', 'labels');
+    const ts = [type('feature', [platforms])];
+    const out = suggestWidgets({
+      setup: { ...board, addTypes: ['feature'] },
+      items: [card({ status: 'todo', 'f-platforms': ['Web'] }, 'feature')],
+      types: ts,
+      fields: boardFields({ ...board, addTypes: ['feature'] }, ts),
+      widgets: [],
+      now: NOW,
+    });
+    expect(out.find((s) => s.id === 'field:breakdown:f-platforms')?.reason).toBe(
+      'Every Feature card has a Platforms field',
+    );
+  });
+
   it('puts a field filled on most of its cards ahead of every built-in, with why', () => {
     const items = [
       card({ status: 'todo', 'f-budget': 10, 'f-severity': 'High', assignee: ANA }, 'feature'),
@@ -58,11 +74,11 @@ describe('suggestWidgets', () => {
     expect(out[0]).toEqual({
       id: 'field:sum:f-budget',
       score: 2,
-      reason: 'Every Feature card has a Budget',
+      reason: 'Every Feature card has a Budget field',
     });
     // Severity is filled on one of four Feature and Bug cards: among the built-ins, not ahead of them.
     const sev = out.find((s) => s.id === 'field:breakdown:f-severity');
-    expect(sev?.reason).toBe('25% of Feature and Bug cards have a Severity');
+    expect(sev?.reason).toBe('25% of Feature and Bug cards have a Severity field');
     expect(sev!.score).toBeLessThan(0.9);
     expect(out.map((s) => s.id)).toContain('progress');
     expect(out.find((s) => s.id === 'people')?.reason).toBe('2 people have cards here');

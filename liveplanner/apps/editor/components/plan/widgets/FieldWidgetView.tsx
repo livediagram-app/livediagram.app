@@ -6,7 +6,9 @@
 // the field or the day change. A field gone from the board, or whose kind no longer fits the view, leaves a quiet,
 // dashed pill with Remove for someone who may edit.
 import {
+  fieldValueFilter,
   fieldWidgetState,
+  toggleFieldFilter,
   parseFieldWidget,
   type BoardField,
   type CalculatedRead,
@@ -14,6 +16,7 @@ import {
   type FieldWidgetView,
   type Item,
   type PlanBoardSetup,
+  type QuickFilter,
 } from '@liveplanner/items';
 import {
   fieldNumberText,
@@ -32,7 +35,7 @@ import { choiceColour } from '../choice-options';
 import { LABEL_COLOURS, labelColour } from '../label-colour';
 import { OVERDUE_RED, PHASE_COLOURS } from '../views/view-frame';
 import { MiniBars, Ring, SplitBar, Stars, type Segment } from './field-widget-charts';
-import { WIDGET_PILL } from './BoardWidgetView';
+import { PRESSABLE, WIDGET_PILL } from './BoardWidgetView';
 
 const DONE_GREEN = PHASE_COLOURS.done;
 const SOON_AMBER = '#d97706';
@@ -51,6 +54,9 @@ export type FieldWidgetContext = {
   now: Date;
   read?: CalculatedRead | undefined;
   canEdit: boolean;
+  // This viewer's quick filter: a Breakdown's or Donut's value presses into its field chips (any role: a personal view).
+  quick: QuickFilter;
+  onQuick: (q: QuickFilter) => void;
   onRemove: (id: FieldWidgetKey) => void;
 };
 
@@ -124,7 +130,17 @@ export function FieldWidgetView({ id, ctx }: { id: FieldWidgetKey; ctx: FieldWid
     read: ctx.read,
   });
   const title = fieldWidgetTitle(field, view);
-  return <FieldPill view={view} field={field} summary={summary} title={title} palette={palette} />;
+  return (
+    <FieldPill
+      view={view}
+      field={field}
+      summary={summary}
+      title={title}
+      palette={palette}
+      quick={ctx.quick}
+      onQuick={ctx.onQuick}
+    />
+  );
 }
 
 // The pill for a field that reads: its picture, name and figure, or "no values yet".
@@ -134,12 +150,16 @@ function FieldPill({
   summary,
   title,
   palette,
+  quick,
+  onQuick,
 }: {
   view: FieldWidgetView;
   field: BoardField;
   summary: FieldSummary | undefined;
   title: string;
   palette: PlanPalette;
+  quick: QuickFilter;
+  onQuick: (q: QuickFilter) => void;
 }) {
   const pill = { borderColor: palette.border, color: palette.muted };
   const name = <span className="max-w-[9rem] truncate">{field.def.label}</span>;
@@ -153,13 +173,14 @@ function FieldPill({
       <FieldWidgetArt view={view} size={14} />
     </span>
   );
-  const shell = (spoken: string, children: React.ReactNode, extra = '') => (
+  const shell = (spoken: string, children: React.ReactNode, extra = '', pressable = false) => (
     <Tooltip label={title}>
       <span
         data-field-widget={view}
         className={`${WIDGET_PILL} ${extra}`}
         style={pill}
-        role="img"
+        // A pill with values to press is a group of buttons, not a picture.
+        role={pressable ? 'group' : 'img'}
         aria-label={`${title}: ${spoken}`}
       >
         {children}
@@ -182,7 +203,13 @@ function FieldPill({
     case 'number':
       return numberPill(view, summary, { name, strong, lead, shell, palette });
     case 'category':
-      return categoryPill(view, summary, field, { name, strong, lead, shell, palette });
+      return categoryPill(
+        view,
+        summary,
+        field,
+        { name, strong, lead, shell, palette },
+        { quick, onQuick },
+      );
     case 'ticked':
       return tickedPill(summary, { name, strong, shell, palette });
     case 'date':
@@ -194,7 +221,12 @@ type Parts = {
   name: React.ReactNode;
   strong: (text: string) => React.ReactNode;
   lead: (color: string) => React.ReactNode;
-  shell: (spoken: string, children: React.ReactNode, extra?: string) => React.ReactNode;
+  shell: (
+    spoken: string,
+    children: React.ReactNode,
+    extra?: string,
+    pressable?: boolean,
+  ) => React.ReactNode;
   palette: PlanPalette;
 };
 
@@ -260,7 +292,62 @@ function numberPill(view: FieldWidgetView, s: NumberSummary, p: Parts) {
   }
 }
 
-function categoryPill(view: FieldWidgetView, s: CategorySummary, field: BoardField, p: Parts) {
+// A value of a category field that narrows the board when pressed (docs/specs/026-plan/board-widgets.md "Pressing a
+// value"): a field chip of the Filter widget, pressed while the quick filter holds it, taken off by pressing it again.
+function ValueButton({
+  field,
+  value,
+  filter,
+  children,
+  p,
+}: {
+  field: BoardField;
+  value: { key: string; label: string };
+  filter: FilterPress;
+  children: React.ReactNode;
+  p: Parts;
+}) {
+  const chip = fieldValueFilter({ id: field.def.id, kind: field.def.kind }, value.key);
+  const filters = filter.quick.filters ?? [];
+  const on = filters.some((f) => f.field === chip.field && f.key === chip.key);
+  const next = toggleFieldFilter(filters, chip, STACKING.has(field.def.kind));
+  // At the chip cap with nothing of this field to replace: nothing more fits.
+  const full = !on && !next.some((f) => f.field === chip.field && f.key === chip.key);
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      aria-label={`Only ${field.def.label}: ${value.label}`}
+      disabled={full}
+      className={`${PRESSABLE} -mx-1 ${on ? 'font-semibold' : ''}`}
+      style={{
+        color: p.palette.muted,
+        backgroundColor: on ? `${p.palette.focus}1f` : undefined,
+        boxShadow: on ? `inset 0 0 0 1px ${p.palette.focus}` : undefined,
+      }}
+      onClick={() => {
+        const q: QuickFilter = { ...filter.quick };
+        if (next.length) q.filters = next;
+        else delete q.filters;
+        filter.onQuick(q);
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+type FilterPress = { quick: QuickFilter; onQuick: (q: QuickFilter) => void };
+// The kinds whose cards hold several values: pressing a second value keeps the first.
+const STACKING = new Set(['labels', 'multichoice']);
+
+function categoryPill(
+  view: FieldWidgetView,
+  s: CategorySummary,
+  field: BoardField,
+  p: Parts,
+  filter: FilterPress,
+) {
   const segments = segmentsOf(s, field, p.palette);
   const spoken = s.values.map((v) => `${v.count} ${v.label}`).join(', ');
   const top = s.values[0]!;
@@ -271,12 +358,15 @@ function categoryPill(view: FieldWidgetView, s: CategorySummary, field: BoardFie
       <>
         <Ring segments={segments} palette={p.palette} />
         {p.name}
-        <span className="max-w-[7rem] truncate" style={{ color: p.palette.text }}>
-          {top.label}
-        </span>
-        {p.strong(`${share}%`)}
+        <ValueButton field={field} value={top} filter={filter} p={p}>
+          <span className="max-w-[7rem] truncate" style={{ color: p.palette.text }}>
+            {top.label}
+          </span>
+          {p.strong(`${share}%`)}
+        </ValueButton>
       </>,
       'pl-1.5',
+      true,
     );
   }
   const named = s.values.slice(0, BREAKDOWN_NAMED);
@@ -287,7 +377,7 @@ function categoryPill(view: FieldWidgetView, s: CategorySummary, field: BoardFie
       {p.name}
       <SplitBar segments={segments} palette={p.palette} width={48} />
       {named.map((v, i) => (
-        <span key={v.key} className="inline-flex items-center gap-1">
+        <ValueButton key={v.key} field={field} value={v} filter={filter} p={p}>
           <span
             className="h-1.5 w-1.5 shrink-0 rounded-full"
             style={{ backgroundColor: segments[i]!.color }}
@@ -296,11 +386,12 @@ function categoryPill(view: FieldWidgetView, s: CategorySummary, field: BoardFie
           <CountBadge size="md" background={p.palette.column} color={p.palette.text}>
             {v.count}
           </CountBadge>
-        </span>
+        </ValueButton>
       ))}
       {rest > 0 ? <span>+{rest}</span> : null}
     </>,
     'gap-2',
+    true,
   );
 }
 

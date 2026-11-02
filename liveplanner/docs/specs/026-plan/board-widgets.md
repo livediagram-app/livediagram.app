@@ -44,6 +44,7 @@ header; they are not in the palette.
   board has a card, so the two never contradict each other.
   One narrowing of each kind at a time, pressed while it is on. While anything narrows the board, Item Count reads
   `3 of 14 · Show all`, and pressing it clears every narrowing (the Filter text and Only Mine too).
+- **Pressing a value** in a field widget does the same with a field chip (see "Pressing a value" under Field widgets).
 - **Completion without a done column** offers **Set Done Column** to someone who may edit: it makes the board's
   last column count as done ([Done columns](plan-board.md#done-columns)).
 - **Completion's percent** (and Points', and the dashboard tiles') is the share done, rounded, but reads 100% only when
@@ -169,6 +170,16 @@ board, so each one can be a widget.
     then the two commonest values with their counts and "+n" for the rest. A Multiple Choice or Labels card counts
     once under each of its values.
   - **Donut**: a ring split the same way, then the commonest value and its share ("High 40%").
+  - **Pressing a value** (Breakdown's two named values, Donut's commonest): a button that narrows the board to the
+    cards holding that value, as picking it in the Filter widget's **Add Filter** does: it adds the same **field
+    chip** ("Severity: High") to this viewer's quick filter, so the chip shows in the Filter widget (with its cross to
+    remove it) and Item Count reads `3 of 14 · Show all`. It reads **pressed** (`aria-pressed`, the brand colour
+    outline) while its chip is on; pressing it again takes the chip off. The pill is then a group of buttons rather
+    than a picture; each button is named "Only Severity: High", is reached by Tab, and shows the focus ring. A Choice
+    or Person field holds one value a card, so pressing another value of it replaces the chip; Labels and Multiple
+    Choice stack, and a chip on them matches a card holding the value among several, not only its first. At 8 chips an unpressed value is disabled. Like the Filter widget,
+    it is **each viewer's own and unsaved**: a Viewer, Participant or Editor may all press, and nothing is written to
+    the board. The counts keep reading the cards before the quick filter, so a pressed value's count does not change.
   - **Ticked**: a ring filled to the share ticked, and "7/12" (a Checklist: its rows ticked of all its rows).
   - **Upcoming**: among cards not done, how many are overdue (red) and due in the next 7 days (amber), as Due Soon
     counts them; "Nothing due" when neither.
@@ -222,7 +233,8 @@ the header's end. Its frame (header, rail, list) is shared with [Add Field](item
 - **For You** suggests up to 6 widgets the board does not hold yet, most useful first:
   - each field with values on the board's cards, in its first view (Sum, Average for a Percent, Average Stars,
     Breakdown, Ticked, Upcoming), ranked by the share of its cards holding a value; a field no card fills is never
-    suggested. Its line: "64% of Feature cards have a Budget" ("Every Feature card has a Budget" at 100%).
+    suggested. Its line names the field as a field, so a plural name still reads: "64% of Feature cards have a Budget
+    field" ("Every Feature card has a Platforms field" at 100%).
   - the built-in widgets the board's cards would make read true: Completion (a done column, and cards: "This board has
     a done column"), WIP Alerts (a column with a limit: "Columns here have WIP limits"), Due Soon (cards with a Due
     date: "12 cards have due dates"), Points ("Cards here carry estimates"), People (two or more people: "4 people

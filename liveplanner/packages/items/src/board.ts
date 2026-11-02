@@ -284,6 +284,8 @@ export interface LaneField {
   // A Person or Card field that holds several: a card sits in each of its values' rows (item-types.md "Holds
   // Several").
   several?: boolean;
+  // A Multiple Choice field, offered to filters only (`laneGroups`' `everyValue`): a row per value.
+  multi?: true;
 }
 
 const BUILT_IN_LANE_FIELDS: readonly LaneField[] = [
@@ -326,11 +328,11 @@ const calculatedLaneKind = (c: CustomFieldDef): LaneFieldKind | undefined =>
 
 // The fields a board can lane by, of the types it shows: the built-ins those types offer, then every grouping
 // custom field in catalogue order, each once (named as the first type that offers it names it).
-export function laneFieldsOf(types: readonly ItemTypeDef[]): LaneField[] {
+export function laneFieldsOf(types: readonly ItemTypeDef[], withMulti = false): LaneField[] {
   // A built-in lane field only when one of the types offers it (docs/specs/026-plan/plan-board.md "Swimlanes by a
   // field"): a board or chart lanes by what its own cards can hold.
   // The stamps with any type at all: every type offers them.
-  return everyLaneField(types).filter((f) =>
+  return everyLaneField(types, withMulti).filter((f) =>
     f.readOnly
       ? types.length > 0
       : !BUILT_IN_LANE_FIELDS.includes(f) || types.some((t) => t.fields.includes(f.id)),
@@ -339,10 +341,21 @@ export function laneFieldsOf(types: readonly ItemTypeDef[]): LaneField[] {
 
 // Every field a board could lane by, offered or not: what a board already laned by a field looks it up in. The
 // stamps come after the built-ins, before the custom fields.
-function everyLaneField(types: readonly ItemTypeDef[]): LaneField[] {
+function everyLaneField(types: readonly ItemTypeDef[], withMulti = false): LaneField[] {
   const out: LaneField[] = [...BUILT_IN_LANE_FIELDS, ...STAMP_LANE_FIELDS];
   for (const t of types)
     for (const c of t.custom ?? []) {
+      if (withMulti && c.kind === 'multichoice' && t.fields.includes(c.id)) {
+        if (!out.some((f) => f.id === c.id))
+          out.push({
+            id: c.id,
+            label: c.label,
+            kind: 'choice',
+            multi: true,
+            ...(c.options ? { options: c.options } : {}),
+          });
+        continue;
+      }
       const worked = calculatedLaneKind(c);
       if (worked && t.fields.includes(c.id) && !out.some((f) => f.id === c.id)) {
         out.push({ id: c.id, label: c.label, kind: worked, readOnly: true, calculated: true });
@@ -365,8 +378,9 @@ function everyLaneField(types: readonly ItemTypeDef[]): LaneField[] {
 export function laneFieldOf(
   id: string | undefined,
   types: readonly ItemTypeDef[],
+  withMulti = false,
 ): LaneField | undefined {
-  return id ? everyLaneField(types).find((f) => f.id === id) : undefined;
+  return id ? everyLaneField(types, withMulti).find((f) => f.id === id) : undefined;
 }
 
 // An item's value for a field lane, or undefined for the No row (a checkbox is never undefined); a worked-out field's
@@ -734,7 +748,15 @@ function lanesOf(
   statusNames?: ReadonlyMap<string, string>,
   field?: LaneField,
   calc?: LaneCalc,
+  everyValue = false,
 ): LaneHead[] {
+  if (everyValue && by === 'field' && field && (field.kind === 'labels' || field.multi)) {
+    const raw = field.multi ? item.fields[field.id] : labelsIn(field.id, item);
+    const values = Array.isArray(raw)
+      ? raw.filter((x): x is string => typeof x === 'string' && x !== '')
+      : [];
+    return values.length ? values.map((v) => fieldLane(field, v)) : [fieldLane(field, undefined)];
+  }
   if (by === 'field' && !field?.readOnly && field?.kind === 'person')
     return personLanes(field, item);
   if (by === 'field' && !field?.readOnly && field?.kind === 'card')
@@ -821,14 +843,16 @@ export function laneGroups(
   statusNames?: ReadonlyMap<string, string>,
   // The boards' done rule, for a Rollup's Count Done (none without it).
   isDone?: IsDoneStatus,
+  // A Labels or Multiple Choice card sits in a row per value, not its first (a filter's reading, never a board's).
+  everyValue = false,
 ): LaneGroups {
-  const field = swimlaneBy === 'field' ? laneFieldOf(swimlaneField, types) : undefined;
+  const field = swimlaneBy === 'field' ? laneFieldOf(swimlaneField, types, everyValue) : undefined;
   const by: SwimlaneBy = swimlaneBy === 'field' && !field ? 'none' : swimlaneBy;
   const laneMap = new Map<string, LaneHead>();
   const lanesOfItem = new Map<string, readonly string[]>();
   const calc = field?.calculated ? laneCalcOf(items, types, isDone) : undefined;
   for (const it of list) {
-    const heads = lanesOf(by, it, items, types, statusNames, field, calc);
+    const heads = lanesOf(by, it, items, types, statusNames, field, calc, everyValue);
     for (const lane of heads) if (!laneMap.has(lane.key)) laneMap.set(lane.key, lane);
     lanesOfItem.set(
       it.id,
@@ -910,7 +934,7 @@ export function cardsMatchingFilters(
   let out = [...cards];
   for (const f of filters) {
     if (out.length === 0) break;
-    const groups = laneGroups(f.by, f.field, out, all, types, statusNames);
+    const groups = laneGroups(f.by, f.field, out, all, types, statusNames, undefined, true);
     // A card holding several values matches a filter on any of them (item-types.md "Holds Several").
     out = out.filter((c) => inLane(groups, c.id, f.key));
   }
