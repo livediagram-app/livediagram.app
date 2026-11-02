@@ -6734,6 +6734,9 @@ importers:
       '@livedocuments/api-schema':
         specifier: workspace:*
         version: link:../../../livedocuments/packages/api-schema
+      '@livehuddle/api-schema':
+        specifier: workspace:*
+        version: link:../../../livehuddle/packages/api-schema
       '@liveplanner/api-schema':
         specifier: workspace:*
         version: link:../../../liveplanner/packages/api-schema
