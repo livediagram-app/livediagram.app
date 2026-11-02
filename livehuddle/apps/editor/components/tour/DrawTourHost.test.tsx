@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // The Draw tour's way in (docs/specs/023-draw-mode/draw-tour.md "Where it appears"): the footer's Start Tour button
-// offers it in Draw, taken or not; a press there (or the Settings row) starts it, never beside another tour, and it
+// offers it in Draw until it is taken; a press there (or the Settings row) starts it, never beside another tour, and it
 // never starts on its own.
 
 import { act, cleanup, render } from '@testing-library/react';
@@ -106,10 +106,22 @@ describe('DrawTourHost offer', () => {
     expect(stage.helpHref).toBe('/help/canvas/draw-mode/');
   });
 
-  it('stays on offer once seen, so it can be taken again', () => {
+  // Work Tracker #177: a taken tour leaves the button; its Settings › Tours switch (clearing the record) brings it back.
+  it('leaves the button once taken, and comes back when its Settings switch is on again', () => {
     editor({ userPreferences: { tourSeen: true, drawTourSeen: true } });
-    render(<DrawTourHost />);
+    const { rerender } = render(<DrawTourHost />);
+    expect(tourOffer()).toBeNull();
+    editor({ userPreferences: { tourSeen: true } });
+    rerender(<DrawTourHost />);
     expect(tourOffer()?.name).toBe('Draw');
+  });
+
+  it('records it taken as a press starts it, before it is finished or skipped', () => {
+    editor({ userPreferences: { tourSeen: true } });
+    render(<DrawTourHost />);
+    act(() => tourOffer()!.start());
+    expect(writeUserPreferences).toHaveBeenCalledTimes(1);
+    expect(writeUserPreferences).toHaveBeenCalledWith({ tourSeen: true, drawTourSeen: true }, 'me');
   });
 
   it.each([
