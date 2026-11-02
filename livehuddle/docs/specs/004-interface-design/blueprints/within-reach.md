@@ -11,7 +11,7 @@ Scope, by file:
 | ------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | `../packages/api-schema/src/within-reach.ts`      | `withinReach`, `WithinReachUse`, `WithinReach`, `utcDay` (`@liveworkspace/api-schema/within-reach`) |
 | `../packages/api-schema/src/within-reach.test.ts` | The rule, its ties and its merge property                                                           |
-| `packages/api-schema/src/index.ts`                | Re-exports the module as part of `@livehuddle/api-schema`                                          |
+| `packages/api-schema/src/index.ts`                | Re-exports the module as part of `@livehuddle/api-schema`                                           |
 | `apps/editor/lib/whiteboard-shape-slots.ts`       | The whiteboard dock's shape slots, allocated by `withinReach`                                       |
 
 The rule lives in the monorepo's `@liveworkspace/api-schema` so every product's surfaces share it, and

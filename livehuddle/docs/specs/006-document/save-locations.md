@@ -14,7 +14,7 @@ document in This Browser says what it is on the document itself: the editor head
 
 | Location         | What it means                                                                                                |
 | ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| **livehuddle**  | A normal cloud document, saved to the api (its Durable Object), reachable from any device.                   |
+| **livehuddle**   | A normal cloud document, saved to the api (its Durable Object), reachable from any device.                   |
 | **This Browser** | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
 
 ## The default depends on who is creating
@@ -22,7 +22,7 @@ document in This Browser says what it is on the document itself: the editor head
 | Who                | Default          |
 | ------------------ | ---------------- |
 | A guest            | **This Browser** |
-| A signed-in person | **livehuddle**  |
+| A signed-in person | **livehuddle**   |
 
 Why a guest starts local: [Auth + guest access → Guest documents start local](../014-identity/auth-and-guest-access.md#guest-documents-start-local).
 

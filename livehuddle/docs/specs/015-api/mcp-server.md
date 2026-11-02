@@ -882,8 +882,8 @@ Every post (these reports and `Mcp·Used`) is handed to the request's
 The MCP worker reads three bindings and two out-of-band values. Bindings
 (`API` service binding, `OAUTH_KV`) are declared in `wrangler.toml`; the rest:
 
-| Name               | Where                          | Absent means                                                                                                                                                                      |
-| ------------------ | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Name               | Where                          | Absent means                                                                                                                                                                     |
+| ------------------ | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CONSENT_BASE_URL` | `[vars]` (not secret)          | Defaults to `https://livehuddle.app`, so a deployment's OAuth callers land on the hosted consent screen instead of their own. Also the host of every tool's `url` and share link |
 | `TELEMETRY_KEY`    | worker secret, **also on api** | livehuddle's key on the liveworkspace telemetry service; unset, this worker sends no telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))      |
 

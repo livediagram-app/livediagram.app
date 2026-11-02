@@ -6,30 +6,30 @@ cited as `Dn`.
 
 Scope, by file:
 
-| File                                                        | Role                                                                                                                           |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/document/src/flowchart.ts`                        | Step types, sizes, membership, edges, anchor, lanes, direction, `decisionExitLabel`, `createFlowchartStart`                    |
-| `packages/document/src/flowchart-layout.ts`                 | `layoutFlowchart`, `applyFlowchartLayout`: the unlaned and laned layouts                                                       |
-| `packages/document/src/flowchart-spread.ts`                 | `spreadDecisionExits`, `FLOWCHART_CORNER_CLEARANCE`: a Decision's steps beyond its corners                                     |
-| `packages/document/src/flowchart-grow.ts`                   | `planFlowchartStep`, `retypeFlowchartStep`, `setFlowchartDirection`, `addFlowchartLane`, `moveStepToLane`, `relayoutFlowchart` |
-| `packages/document/src/auto-layout.ts`                      | `autoLayoutElements` takes `fixedSizeIds` (the layered positioning with sizes kept); exports `layerComponent`                  |
-| `packages/document/src/element-types.ts`                    | `flowchartId`, `flowDirection`, `flowLaneId` on `ShapeElement`                                                                 |
-| `packages/document/src/element-fields.ts`                   | The three fields in the shape's field list                                                                                     |
-| `packages/document/src/validate-shape.ts`                   | The three fields validated                                                                                                     |
-| `packages/document/src/duplicate.ts`                        | Copies remap the three ids                                                                                                     |
-| `packages/document/src/participant-content.ts`              | A Participant's growth may move the chart's steps, connectors and lanes                                                        |
-| `apps/editor/app/document/[id]/useFlowchartGrowth.ts`         | Tab / Enter / toolbar / ring growth, Escape removal, one commit each                                                           |
-| `apps/editor/app/document/[id]/useGrowthLanding.ts`           | Shared with mind growth: reveal, typed-ahead landing, Escape on an empty grown node                                            |
-| `apps/editor/hooks/canvas/useFlowchartSetters.ts`             | Step type, direction, Add Lane, lane move, Tidy Flowchart from the menu and toolbar                                            |
-| `apps/editor/lib/flowchart-dress.ts`                          | `dressFlowchartStep`, `dressFlowchartConnector`: the look a new step and connector take                                        |
-| `apps/editor/components/palette/palette-tile-defs.tsx`        | `tools:flowchart` tile (component action `flowchart`)                                                                          |
-| `apps/editor/components/canvas/SelectionPopover.tsx`          | Add Step, Add Branch, Step Type, Lane                                                                                          |
-| `apps/editor/components/canvas/quick-connect-options.tsx`     | The ring's Add Step and Add Branch                                                                                             |
-| `apps/editor/components/flowchart/FlowchartMenuSections.tsx`  | The Flowchart flyout row: Chart, Step Type and Direction categories                                                            |
-| `packages/templates/src/template-builders-flowchart.ts`     | Live Flowchart template                                                                                                        |
-| `packages/templates/src/template-builders-decision-tree.ts` | Live Decision tree template                                                                                                    |
-| `packages/templates/src/template-builders-swimlane.ts`      | Live Swimlane template                                                                                                         |
-| `packages/templates/src/template-builders-approval.ts`      | Live Approval workflow template                                                                                                |
+| File                                                         | Role                                                                                                                           |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| `packages/document/src/flowchart.ts`                         | Step types, sizes, membership, edges, anchor, lanes, direction, `decisionExitLabel`, `createFlowchartStart`                    |
+| `packages/document/src/flowchart-layout.ts`                  | `layoutFlowchart`, `applyFlowchartLayout`: the unlaned and laned layouts                                                       |
+| `packages/document/src/flowchart-spread.ts`                  | `spreadDecisionExits`, `FLOWCHART_CORNER_CLEARANCE`: a Decision's steps beyond its corners                                     |
+| `packages/document/src/flowchart-grow.ts`                    | `planFlowchartStep`, `retypeFlowchartStep`, `setFlowchartDirection`, `addFlowchartLane`, `moveStepToLane`, `relayoutFlowchart` |
+| `packages/document/src/auto-layout.ts`                       | `autoLayoutElements` takes `fixedSizeIds` (the layered positioning with sizes kept); exports `layerComponent`                  |
+| `packages/document/src/element-types.ts`                     | `flowchartId`, `flowDirection`, `flowLaneId` on `ShapeElement`                                                                 |
+| `packages/document/src/element-fields.ts`                    | The three fields in the shape's field list                                                                                     |
+| `packages/document/src/validate-shape.ts`                    | The three fields validated                                                                                                     |
+| `packages/document/src/duplicate.ts`                         | Copies remap the three ids                                                                                                     |
+| `packages/document/src/participant-content.ts`               | A Participant's growth may move the chart's steps, connectors and lanes                                                        |
+| `apps/editor/app/document/[id]/useFlowchartGrowth.ts`        | Tab / Enter / toolbar / ring growth, Escape removal, one commit each                                                           |
+| `apps/editor/app/document/[id]/useGrowthLanding.ts`          | Shared with mind growth: reveal, typed-ahead landing, Escape on an empty grown node                                            |
+| `apps/editor/hooks/canvas/useFlowchartSetters.ts`            | Step type, direction, Add Lane, lane move, Tidy Flowchart from the menu and toolbar                                            |
+| `apps/editor/lib/flowchart-dress.ts`                         | `dressFlowchartStep`, `dressFlowchartConnector`: the look a new step and connector take                                        |
+| `apps/editor/components/palette/palette-tile-defs.tsx`       | `tools:flowchart` tile (component action `flowchart`)                                                                          |
+| `apps/editor/components/canvas/SelectionPopover.tsx`         | Add Step, Add Branch, Step Type, Lane                                                                                          |
+| `apps/editor/components/canvas/quick-connect-options.tsx`    | The ring's Add Step and Add Branch                                                                                             |
+| `apps/editor/components/flowchart/FlowchartMenuSections.tsx` | The Flowchart flyout row: Chart, Step Type and Direction categories                                                            |
+| `packages/templates/src/template-builders-flowchart.ts`      | Live Flowchart template                                                                                                        |
+| `packages/templates/src/template-builders-decision-tree.ts`  | Live Decision tree template                                                                                                    |
+| `packages/templates/src/template-builders-swimlane.ts`       | Live Swimlane template                                                                                                         |
+| `packages/templates/src/template-builders-approval.ts`       | Live Approval workflow template                                                                                                |
 
 ## Domain and naming
 

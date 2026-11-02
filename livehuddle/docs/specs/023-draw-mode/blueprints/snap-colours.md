@@ -6,15 +6,15 @@ whiteboard shows"). Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                                                                                   | Role                                                                          |
-| ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `packages/document/src/pen-colours.ts`                                                                                 | `hexOklch`, `PEN_NEUTRAL_CHROMA`, `penColourAtHue`, `nearestPenColour` (pure) |
-| `packages/document/src/snap-colours.ts`                                                                                | `SNAP_COLOUR_FIELDS`, `snappableCustomColours`, `snapTabColours` (pure)       |
-| `apps/editor/hooks/canvas/useSnapColours.ts`                                                                             | The board's snappable colours and the one-commit `snap()`                     |
-| `apps/editor/components/canvas/whiteboard/SnapColoursSection.tsx`                                                        | The Settings flyout's Colours section                                         |
-| `apps/editor/components/canvas/whiteboard/dock-flyouts.tsx`                                                              | Renders the section last in `SettingsFlyoutBody`                              |
-| `apps/editor/hooks/canvas/useWhiteboard.ts`                                                                              | Carries `snapColours` on the dock model                                       |
-| `apps/editor/app/document/[id]/useEditorState.ts`                                                                        | Builds `useSnapColours` and hands it to `useWhiteboard`                       |
+| File                                                                                                                  | Role                                                                          |
+| --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `packages/document/src/pen-colours.ts`                                                                                | `hexOklch`, `PEN_NEUTRAL_CHROMA`, `penColourAtHue`, `nearestPenColour` (pure) |
+| `packages/document/src/snap-colours.ts`                                                                               | `SNAP_COLOUR_FIELDS`, `snappableCustomColours`, `snapTabColours` (pure)       |
+| `apps/editor/hooks/canvas/useSnapColours.ts`                                                                          | The board's snappable colours and the one-commit `snap()`                     |
+| `apps/editor/components/canvas/whiteboard/SnapColoursSection.tsx`                                                     | The Settings flyout's Colours section                                         |
+| `apps/editor/components/canvas/whiteboard/dock-flyouts.tsx`                                                           | Renders the section last in `SettingsFlyoutBody`                              |
+| `apps/editor/hooks/canvas/useWhiteboard.ts`                                                                           | Carries `snapColours` on the dock model                                       |
+| `apps/editor/app/document/[id]/useEditorState.ts`                                                                     | Builds `useSnapColours` and hands it to `useWhiteboard`                       |
 | `packages/api-schema/src/telemetry-schema.ts`, liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts | The `SnapColours` token's comment and its dashboard sentence                  |
 
 ## Domain and naming
@@ -171,21 +171,21 @@ export function snapTabColours(
 
 ## Testing
 
-| Rule                                                                   | Test                                            |
-| ---------------------------------------------------------------------- | ----------------------------------------------- |
-| Each stock hue's own colours map to it                                 | `pen-colours.test.ts` "nearestPenColour" table  |
-| Neutrals (black, white, greys, slate) map to Ink                       | same                                            |
-| Near-boundary hues go to the nearer; ties to the earlier               | same                                            |
-| Invalid input is null; case-insensitive                                | same                                            |
-| Each field-table row snaps; Ink removes the named field                | `snap-colours.test.ts`                          |
-| Text, path, unfilled label and arrow label rows; text on a fill kept   | `snap-colours.test.ts`                          |
-| Untouched elements by identity; counts                                 | same                                            |
-| Highlighter, stock, ink, locked, skipped, fills, text on a fill kept   | same                                            |
-| `strokeSwatch` cleared                                                 | same                                            |
-| Snappable colours: distinct, lower-cased, newest first                 | same                                            |
-| Hook: one commit, telemetry, blocked no-op                             | `useSnapColours.test.tsx`                       |
-| Section: hidden, offer copy, press, done status, disabled              | `SnapColoursSection.test.tsx`                   |
-| Settings flyout shows the section only with custom colours             | `WhiteboardDock.test.tsx`                       |
+| Rule                                                                   | Test                                              |
+| ---------------------------------------------------------------------- | ------------------------------------------------- |
+| Each stock hue's own colours map to it                                 | `pen-colours.test.ts` "nearestPenColour" table    |
+| Neutrals (black, white, greys, slate) map to Ink                       | same                                              |
+| Near-boundary hues go to the nearer; ties to the earlier               | same                                              |
+| Invalid input is null; case-insensitive                                | same                                              |
+| Each field-table row snaps; Ink removes the named field                | `snap-colours.test.ts`                            |
+| Text, path, unfilled label and arrow label rows; text on a fill kept   | `snap-colours.test.ts`                            |
+| Untouched elements by identity; counts                                 | same                                              |
+| Highlighter, stock, ink, locked, skipped, fills, text on a fill kept   | same                                              |
+| `strokeSwatch` cleared                                                 | same                                              |
+| Snappable colours: distinct, lower-cased, newest first                 | same                                              |
+| Hook: one commit, telemetry, blocked no-op                             | `useSnapColours.test.tsx`                         |
+| Section: hidden, offer copy, press, done status, disabled              | `SnapColoursSection.test.tsx`                     |
+| Settings flyout shows the section only with custom colours             | `WhiteboardDock.test.tsx`                         |
 | End to end: snap, undo, light and dark, dock at the top and the bottom | `apps/editor/e2e/whiteboard-snap-colours.spec.ts` |
 
 ## Constants and configuration

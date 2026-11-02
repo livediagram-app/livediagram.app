@@ -4,43 +4,43 @@ Derived from [Stale builds](../stale-builds.md).
 
 ## Domain and naming
 
-| Term              | Identifier                              | Meaning                                                        |
-| ----------------- | --------------------------------------- | -------------------------------------------------------------- |
-| Build id          | `NEXT_PUBLIC_BUILD_ID`, `BUILD_ID`      | The deploy's commit, in the editor build and the api worker    |
+| Term              | Identifier                              | Meaning                                                       |
+| ----------------- | --------------------------------------- | ------------------------------------------------------------- |
+| Build id          | `NEXT_PUBLIC_BUILD_ID`, `BUILD_ID`      | The deploy's commit, in the editor build and the api worker   |
 | Build header      | `BUILD_ID_HEADER`                       | `X-Livehuddle-Build`, on every api response beside the format |
-| Editor build      | `EDITOR_BUILD_ID`                       | The id this page was built with                                |
-| Server build      | `serverBuild()`                         | The latest id the server release signal carried                |
-| Stale             | `runningStaleBuild()`                   | Both known and different                                       |
-| Navigation intent | `navigationIntents`                     | Where the app was last asked to go, and when                   |
-| Chunk failure     | `isChunkLoadError`                      | A code chunk or module that could not be fetched               |
-| Recovery          | `recoverFromChunkError`                 | A full page load of the destination, guarded                   |
-| Unsaved work      | `registerUnsavedWork`, `hasUnsavedWork` | What a full page load the app starts waits for                 |
+| Editor build      | `EDITOR_BUILD_ID`                       | The id this page was built with                               |
+| Server build      | `serverBuild()`                         | The latest id the server release signal carried               |
+| Stale             | `runningStaleBuild()`                   | Both known and different                                      |
+| Navigation intent | `navigationIntents`                     | Where the app was last asked to go, and when                  |
+| Chunk failure     | `isChunkLoadError`                      | A code chunk or module that could not be fetched              |
+| Recovery          | `recoverFromChunkError`                 | A full page load of the destination, guarded                  |
+| Unsaved work      | `registerUnsavedWork`, `hasUnsavedWork` | What a full page load the app starts waits for                |
 
 ## Modules
 
-| File                                                                  | Responsibility                                                                                                                                            |
-| --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/api-schema/src/build-id.ts`                                 | `BUILD_ID_HEADER`, `parseBuildId`                                                                                                                         |
-| `packages/api-schema/src/room-messages.ts`                            | `FormatMessage.build?`                                                                                                                                    |
-| `apps/api/src/server-release-header.ts`                               | `withServerRelease(response, env.BUILD_ID)`                                                                                                               |
-| `apps/api/src/document-room/document-room.ts`                         | The room's `format` message carries `build`                                                                                                               |
-| root `.github/workflows/deploy-worker.yml`                            | One commit id to `NEXT_PUBLIC_BUILD_ID` and the api's `BUILD_ID`                                                                                          |
-| `apps/editor/lib/server-release.ts`                                   | The server release store: format and build, `runningStaleBuild`                                                                                           |
-| `../packages/workbench/src/lib/stale-chunks.ts`                       | Pure core: detection, loop guard, intents, recovery                                                                                                       |
-| `../packages/workbench/src/lib/stale-build-navigation.ts`             | Browser wiring: clicks, back and forward, chunk failures, `navigateTo`                                                                                    |
-| `../packages/workbench/src/lib/unsaved-work.ts`                       | The unsaved work registry                                                                                                                                 |
-| `../packages/workbench/src/components/providers/StaleBuildBoot.tsx`   | Installs the wiring from the root layout, hands over the router                                                                                           |
-| `../packages/workbench/src/hooks/navigation/useAppNavigation.ts`      | `push` / `replace` for the app's programmatic navigations                                                                                                 |
-| `apps/editor/components/primitives/AreaErrorBoundary.tsx`             | Recovers a chunk failure an area caught                                                                                                                   |
-| `apps/editor/app/global-error.tsx`                                    | The root error boundary: recovers, else a calm page                                                                                                       |
-| `apps/editor/app/document/[id]/EditorView.tsx`                        | Registers the autosave's `hasUnsavedChanges`                                                                                                              |
+| File                                                                 | Responsibility                                                                                                                                            |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/api-schema/src/build-id.ts`                                | `BUILD_ID_HEADER`, `parseBuildId`                                                                                                                         |
+| `packages/api-schema/src/room-messages.ts`                           | `FormatMessage.build?`                                                                                                                                    |
+| `apps/api/src/server-release-header.ts`                              | `withServerRelease(response, env.BUILD_ID)`                                                                                                               |
+| `apps/api/src/document-room/document-room.ts`                        | The room's `format` message carries `build`                                                                                                               |
+| root `.github/workflows/deploy-worker.yml`                           | One commit id to `NEXT_PUBLIC_BUILD_ID` and the api's `BUILD_ID`                                                                                          |
+| `apps/editor/lib/server-release.ts`                                  | The server release store: format and build, `runningStaleBuild`                                                                                           |
+| `../packages/workbench/src/lib/stale-chunks.ts`                      | Pure core: detection, loop guard, intents, recovery                                                                                                       |
+| `../packages/workbench/src/lib/stale-build-navigation.ts`            | Browser wiring: clicks, back and forward, chunk failures, `navigateTo`                                                                                    |
+| `../packages/workbench/src/lib/unsaved-work.ts`                      | The unsaved work registry                                                                                                                                 |
+| `../packages/workbench/src/components/providers/StaleBuildBoot.tsx`  | Installs the wiring from the root layout, hands over the router                                                                                           |
+| `../packages/workbench/src/hooks/navigation/useAppNavigation.ts`     | `push` / `replace` for the app's programmatic navigations                                                                                                 |
+| `apps/editor/components/primitives/AreaErrorBoundary.tsx`            | Recovers a chunk failure an area caught                                                                                                                   |
+| `apps/editor/app/global-error.tsx`                                   | The root error boundary: recovers, else a calm page                                                                                                       |
+| `apps/editor/app/document/[id]/EditorView.tsx`                       | Registers the autosave's `hasUnsavedChanges`                                                                                                              |
 | liveworkspace/apps/site/app/telemetry/livehuddle/catalogue/health.ts | The Stale Build Reloads card                                                                                                                              |
-| `apps/router/src/cache-policy.ts`                                     | The caching rules: `cacheRule`, `applyCachePolicy`, `isBuildAsset`                                                                                        |
-| `apps/router/src/index.ts`                                            | Applies the caching rules to every site's response (the api's excepted)                                                                                   |
-| `apps/editor/lib/stale-html-guard.ts`                                 | `STALE_HTML_GUARD_SCRIPT` (static source) and `STALE_HTML_GUARD_ATTRIBUTES` (its settings as data): the pre-boot guard, first script in the layout's head |
-| `../packages/workbench/src/lib/reload-guard.ts`                       | The one reload guard: `claimReloadIn`, `claimReload`, `RELOAD_GUARD_KEY`, `APP_RECOVERY_FLAG`                                                             |
-| `../packages/workbench/src/lib/api/base.ts`                           | `API_BASE`, browser-free, for the guard                                                                                                                   |
-| `scripts/e2e-stack.mjs`                                               | Production's caching, the router's rules, and the deploy simulation                                                                                       |
+| `apps/router/src/cache-policy.ts`                                    | The caching rules: `cacheRule`, `applyCachePolicy`, `isBuildAsset`                                                                                        |
+| `apps/router/src/index.ts`                                           | Applies the caching rules to every site's response (the api's excepted)                                                                                   |
+| `apps/editor/lib/stale-html-guard.ts`                                | `STALE_HTML_GUARD_SCRIPT` (static source) and `STALE_HTML_GUARD_ATTRIBUTES` (its settings as data): the pre-boot guard, first script in the layout's head |
+| `../packages/workbench/src/lib/reload-guard.ts`                      | The one reload guard: `claimReloadIn`, `claimReload`, `RELOAD_GUARD_KEY`, `APP_RECOVERY_FLAG`                                                             |
+| `../packages/workbench/src/lib/api/base.ts`                          | `API_BASE`, browser-free, for the guard                                                                                                                   |
+| `scripts/e2e-stack.mjs`                                              | Production's caching, the router's rules, and the deploy simulation                                                                                       |
 
 ## Interfaces and contracts
 
@@ -196,7 +196,7 @@ The build id grants nothing; a forged value can only make navigations full page 
 | Links, back and forward, programmatic, window failures                            | `../packages/workbench/src/lib/stale-build-navigation.test.ts`                                                                                                   |
 | Unsaved work registry                                                             | `../packages/workbench/src/lib/unsaved-work.test.ts`                                                                                                             |
 | Root error page recovers and shows the calm page                                  | `apps/editor/app/global-error.test.tsx`                                                                                                                          |
-| Recovery is a recovery, not an exception                                          | liveworkspace/apps/site/app/telemetry/livehuddle/ranking-rules.test.ts                                                                                          |
+| Recovery is a recovery, not an exception                                          | liveworkspace/apps/site/app/telemetry/livehuddle/ranking-rules.test.ts                                                                                           |
 | A stale build in the browser (Playwright)                                         | `apps/editor/e2e/stale-builds.spec.ts`                                                                                                                           |
 | Caching rules: pages, build assets, missing assets, the api untouched             | `apps/router/src/cache-policy.test.ts`, `apps/router/src/index.test.ts`                                                                                          |
 | Pre-boot guard: failed assets, look-back at DOMContentLoaded, bfcache, loop guard | `apps/editor/lib/stale-html-guard.test.ts`                                                                                                                       |

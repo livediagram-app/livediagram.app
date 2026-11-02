@@ -30,7 +30,7 @@ Scope, by file:
 | `apps/api/src/document-room/document-outbox.ts`         | Sends a document's image set to the service as it changes               |
 | `apps/api/src/thumbnail.ts`                             | `loadEmbeddedImages` for the drawing the export door gives the previews |
 | `apps/api/wrangler.toml`                                | `MEDIA_KEY` note (no bucket of its own)                                 |
-| `apps/api/hosted-vars.json`                             | Hosted livehuddle.app's `MEDIA_URL` per environment                    |
+| `apps/api/hosted-vars.json`                             | Hosted livehuddle.app's `MEDIA_URL` per environment                     |
 | `apps/editor/lib/api/images.ts`                         | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiImageUsage`, … |
 | `apps/editor/lib/upload-image.ts`                       | `uploadImageFile`, `addImageFileForDocument`, `ImageUploadError`        |
 | `apps/editor/hooks/canvas/useEditorImages.ts`           | Picker state, attach, detach, place-from-gallery                        |
@@ -506,8 +506,8 @@ O6 to O9 exist; the cap, R2 and retention logs are the service's own ([media.md]
 | `ACCEPTED_IMAGE_TYPES`        | png, jpeg, webp, gif                      | Spec whitelist; SVG must never join                         |
 | `MAX_BODY_BYTES`              | `8 * 1024 * 1024`                         | Non-image write cap in `limits.ts`                          |
 | `MEDIA_URL`                   | `https://www.liveworkspace.app/api/media` | Client default; hosted per environment (`hosted-vars.json`) |
-| `MEDIA_KEY`                   | secret                                    | Matches the service's `MEDIA_KEY_LIVEHUDDLE`; unset = off  |
-| `MEDIA_APP`                   | `'livehuddle.app'`                       | The service's app name for this api                         |
+| `MEDIA_KEY`                   | secret                                    | Matches the service's `MEDIA_KEY_LIVEHUDDLE`; unset = off   |
+| `MEDIA_APP`                   | `'livehuddle.app'`                        | The service's app name for this api                         |
 | `MEDIA_REFS_PER_DOCUMENT_MAX` | 1000                                      | `@liveworkspace/media`; ten times the gallery cap           |
 | Reference push                | at most once a minute per document        | The room's alarm (`document-room.ts`)                       |
 | `IMAGE_EMBED_BUDGET_BYTES`    | `3 * 1024 * 1024`                         | Spec; 1 to 8 MiB keeps snapshots streamable                 |
@@ -516,4 +516,4 @@ O6 to O9 exist; the cap, R2 and retention logs are the service's own ([media.md]
 | Gallery placement size        | `240` px on the longer side               | D40; literal `max` in `addImageFromGallery`                 |
 | `createImage` size            | 200 × 150                                 | D49                                                         |
 | `WRITE_RATE_LIMITER`          | 300 per 60 s                              | `wrangler.toml`, namespace `1001`                           |
-| Buckets                       | `livehuddle-images`, `…-images-staging`  | Legacy image bytes only; separate per environment           |
+| Buckets                       | `livehuddle-images`, `…-images-staging`   | Legacy image bytes only; separate per environment           |

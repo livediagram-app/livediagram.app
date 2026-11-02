@@ -12,11 +12,11 @@ reaches people's documents.
 
 |              | Production                                      | Staging                                    |
 | ------------ | ----------------------------------------------- | ------------------------------------------ |
-| Hostname     | `livehuddle.app`                               | `staging.livehuddle.app`                  |
-| MCP host     | `mcp.livehuddle.app`                           | `mcp-staging.livehuddle.app`              |
+| Hostname     | `livehuddle.app`                                | `staging.livehuddle.app`                   |
+| MCP host     | `mcp.livehuddle.app`                            | `mcp-staging.livehuddle.app`               |
 | Trigger      | By hand                                         | Automatic, on every green CI run on `main` |
 | Workflow     | `deploy-production.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
-| Worker names | `livehuddle-<app>`                             | `livehuddle-<app>-staging`                |
+| Worker names | `livehuddle-<app>`                              | `livehuddle-<app>-staging`                 |
 | Index        | `liveworkspace.app`                             | `staging.liveworkspace.app`                |
 | Indexable    | Yes                                             | **No**: `X-Robots-Tag: noindex, nofollow`  |
 
@@ -123,8 +123,8 @@ Two deliberate non-changes:
 its own build**: each environment's deploy builds its own sites. Staging's build differs
 from production's in exactly one value:
 
-| Variable                 | Production                                        | Staging                                     |
-| ------------------------ | ------------------------------------------------- | ------------------------------------------- |
+| Variable                 | Production                                       | Staging                                     |
+| ------------------------ | ------------------------------------------------ | ------------------------------------------- |
 | `NEXT_PUBLIC_MCP_ORIGIN` | empty (blank falls back to `mcp.livehuddle.app`) | the staging MCP worker's `workers.dev` host |
 
 Everything else matches, on purpose: `NEXT_PUBLIC_API_BASE` stays unset so staging
@@ -141,7 +141,7 @@ Cloudflare Email Service it reports `emailEnabled: true` on staging as on produc
 
 | Integration       | Staging setup                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Sign-in**: ON   | Staging is its **own OAuth client** of the liveworkspace accounts Worker (its own `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET`) with its **own resource** (`API_RESOURCE`), so its access tokens carry an audience production's api refuses: a staging session cannot reach production data. The client's registered redirect URI is `https://staging.livehuddle.app/api/auth/callback`.                                                                             |
+| **Sign-in**: ON   | Staging is its **own OAuth client** of the liveworkspace accounts Worker (its own `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET`) with its **own resource** (`API_RESOURCE`), so its access tokens carry an audience production's api refuses: a staging session cannot reach production data. The client's registered redirect URI is `https://staging.livehuddle.app/api/auth/callback`.                                                                              |
 | **Telemetry**: ON | Events land in liveworkspace's staging telemetry service, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                                                     |
 | **Email**: ON     | Cloudflare Email Service, through the `[[env.staging.send_email]]` binding `EMAIL` ([Email](../../../../liveworkspace/docs/specs/003-accounts/email.md)), restated because bindings don't inherit. No key. `APP_BASE_URL` and `EMAIL_FROM` are set, so every link points back at staging. Staging sends the same notification emails as production, from the same sender, so it mails **real people** (see the warning below). To turn it off, drop the staging binding. |
 | **AI models**: ON | Keyed by hand, as production is: `wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging`, which turns on the server reader for the event-storming photo import ([Note reader](../021-event-storming/note-reader.md)). `AI_ALLOWED_ORIGINS` restricts the endpoint to the staging origin. It spends real money per request; `GET /api/capabilities` reports whether it is on.                                                                                        |
@@ -199,8 +199,8 @@ Deploys fail loudly until these exist. Resource ids are committed to `wrangler.t
 
 **Done**: the data store exists:
 
-| Resource | Name                            | Where the id lives       |
-| -------- | ------------------------------- | ------------------------ |
+| Resource | Name                           | Where the id lives       |
+| -------- | ------------------------------ | ------------------------ |
 | KV       | `livehuddle-mcp-oauth-staging` | `apps/mcp/wrangler.toml` |
 
 Note the KV **title** is `livehuddle-mcp-oauth-staging`, matching production's

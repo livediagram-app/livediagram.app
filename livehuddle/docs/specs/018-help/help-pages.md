@@ -71,7 +71,7 @@ livehuddle's scenes:
 | Developers           | shared, with its own | `POST /api/documents` making a Service map                                           |
 | Account and Data     | shared, with its own | a profile, synced diagrams, and PNG, SVG, PDF and JSON                               |
 | Troubleshooting      | shared, with its own | a canvas that didn't load and the checklist fixing it                                |
-| Privacy and Security | shared, with its own | a livehuddle.app share link with its safeguards                                     |
+| Privacy and Security | shared, with its own | a livehuddle.app share link with its safeguards                                      |
 | Policies             | shared, the same     | the terms and the privacy policy, sealed                                             |
 
 ## Home page

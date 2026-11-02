@@ -184,14 +184,14 @@ hint }) → { paintBucket }`; `CanvasProps.onPaintBucket?(point)`.
 
 ## Constants and configuration
 
-| Constant                     | Value                            | Where                  |
-| ---------------------------- | -------------------------------- | ---------------------- |
-| `STROKE_LOOP_MIN_POINTS`     | 4                                | model-core stroke-loop |
-| `STROKE_LOOP_MIN_GAP_PX`     | 16                               | model-core stroke-loop |
-| `STROKE_LOOP_GAP_PEN_WIDTHS` | 3                                | model-core stroke-loop |
-| `STROKE_LOOP_GAP_RATIO`      | 0.15                             | model-core stroke-loop |
-| `STROKE_LOOP_MIN_ROUNDNESS`  | 0.1                              | model-core stroke-loop |
-| `FILL_PRESS_SLOP_PX`         | 6                                | workbench useFillPress |
+| Constant                     | Value                           | Where                  |
+| ---------------------------- | ------------------------------- | ---------------------- |
+| `STROKE_LOOP_MIN_POINTS`     | 4                               | model-core stroke-loop |
+| `STROKE_LOOP_MIN_GAP_PX`     | 16                              | model-core stroke-loop |
+| `STROKE_LOOP_GAP_PEN_WIDTHS` | 3                               | model-core stroke-loop |
+| `STROKE_LOOP_GAP_RATIO`      | 0.15                            | model-core stroke-loop |
+| `STROKE_LOOP_MIN_ROUNDNESS`  | 0.1                             | model-core stroke-loop |
+| `FILL_PRESS_SLOP_PX`         | 6                               | workbench useFillPress |
 | `FILL_CHOICE_KEY`            | `livehuddle:v2:whiteboard-fill` | useWhiteboard          |
 
 ## Defaults ledger

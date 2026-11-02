@@ -37,7 +37,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 | slug                   | title                | icon      | kind    |
 | ---------------------- | -------------------- | --------- | ------- |
-| `about`                | About livehuddle    | info      | support |
+| `about`                | About livehuddle     | info      | support |
 | `getting-started`      | Getting Started      | rocket    | support |
 | `tips-and-tricks`      | Tips and Tricks      | lightbulb | support |
 | `account-and-data`     | Account and Data     | user      | support |

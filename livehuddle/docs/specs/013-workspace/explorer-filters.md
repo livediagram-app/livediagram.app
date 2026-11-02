@@ -76,7 +76,7 @@ Every list view shows one row of chips under its page header and breadcrumb:
 | Dimension | Key        | Chip label  | Values and their labels                                                                                  | Index filter |
 | --------- | ---------- | ----------- | -------------------------------------------------------------------------------------------------------- | ------------ |
 | Text      | (none)     | (the field) | Free words                                                                                               | `q`          |
-| Opens in  | `opens-in` | Opens in    | `canvas` livehuddle, `document` liveplanner, `document` livedocuments, `design` livedesign: its app     | `apps`       |
+| Opens in  | `opens-in` | Opens in    | `canvas` livehuddle, `document` liveplanner, `document` livedocuments, `design` livedesign: its app      | `apps`       |
 | Mode      | `mode`     | Mode        | `diagram` Diagram, `draw` Draw, `workshop` Workshop: the mode the canvas opens in (its summary's `mode`) | `modes`      |
 | Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the last word of the canvas's creation intent            | `intent`     |
 | Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the item's `source` is `ai`, an AI tool through the MCP server (not the CLI)            | `source=ai`  |

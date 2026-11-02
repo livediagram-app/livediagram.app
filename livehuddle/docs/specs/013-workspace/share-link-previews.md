@@ -18,10 +18,10 @@ gave nobody a reason to tell them apart or click.
 | Link                                                                  | Title               | Description        | Image                  |
 | --------------------------------------------------------------------- | ------------------- | ------------------ | ---------------------- |
 | A working share link (`/document/shared?s=<code>`), no share password | The document's name | The share pitch    | The share card (below) |
-| A share link to a document with a share password                      | livehuddle         | The editor's pitch | The brand card         |
-| An unknown, revoked or expired code; a trashed document               | livehuddle         | The editor's pitch | The brand card         |
-| A Community post's link while the post is not public                  | livehuddle         | The editor's pitch | The brand card         |
-| Any other editor address (`/document/<id>`, the Explorer, ...)        | livehuddle         | The editor's pitch | The brand card         |
+| A share link to a document with a share password                      | livehuddle          | The editor's pitch | The brand card         |
+| An unknown, revoked or expired code; a trashed document               | livehuddle          | The editor's pitch | The brand card         |
+| A Community post's link while the post is not public                  | livehuddle          | The editor's pitch | The brand card         |
+| Any other editor address (`/document/<id>`, the Explorer, ...)        | livehuddle          | The editor's pitch | The brand card         |
 
 - **The share pitch** is `Open it in livehuddle: diagrams, whiteboards and documents, made together.`
 - **The editor's pitch** is the editor's own description, unchanged.

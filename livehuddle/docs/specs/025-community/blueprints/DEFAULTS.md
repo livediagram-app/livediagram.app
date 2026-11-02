@@ -12,7 +12,7 @@ One row per default applied where a spec is silent or qualitative.
 | C6  | community | Shape of the community key             | A UUID v4 from `crypto.randomUUID`, validated by pattern at the service (`COMMUNITY_KEY_PATTERN`)                            |
 | C7  | community | Rate for likes and reports             | 30 writes per 60 s per network, the Community service's own limiter                                                          |
 | C8  | community | Order of More Like This                | Same category, most liked first, newest as the tie-break, the post itself excluded                                           |
-| C9  | community | Port for local development             | 3505 (livehuddle's block, 3500 onward)                                                                                      |
+| C9  | community | Port for local development             | 3505 (livehuddle's block, 3500 onward)                                                                                       |
 | C10 | community | Whether a post is anonymous by default | New posts default to anonymous; the author can show their name                                                               |
 | C11 | community | How long search waits                  | 300 ms after the last keystroke (`SEARCH_DEBOUNCE_MS`, `packages/community-site/src/lib/session.ts`); Enter filters at once  |
 | C12 | community | How long My Shares waits for sign-in   | 10 s (`SESSION_LOAD_TIMEOUT_MS`, `packages/community-site/src/lib/session.ts`), then the error state with Try Again (reload) |

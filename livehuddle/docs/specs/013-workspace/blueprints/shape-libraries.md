@@ -210,19 +210,19 @@ CREATE TABLE shape_libraries (
 
 ## Constants and configuration
 
-| Constant                          | Value                                     | Provenance / safe range                                                           |
-| --------------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------- |
-| `MAX_SHAPE_LIBRARIES_PER_OWNER`   | 100                                       | Spec; 10 to 1 000                                                                 |
-| `MAX_SHAPE_LIBRARY_ITEMS`         | 1 000                                     | Spec; draw.io's own libraries rarely pass a few hundred                           |
-| `MAX_SHAPE_LIBRARY_NAME_CHARS`    | 120                                       | Spec                                                                              |
-| `MAX_SHAPE_LIBRARY_TITLE_CHARS`   | 200                                       | Spec                                                                              |
-| `MAX_SHAPE_LIBRARY_ITEM_ID_CHARS` | 64                                        | A UUID is 36 (D9)                                                                 |
-| `MAX_SHAPE_LIBRARY_ITEM_SIDE`     | 100 000                                   | Far past any real shape (D10)                                                     |
-| Items byte budget                 | `MAX_TAB_BYTES`                           | Spec: one row, as a tab                                                           |
+| Constant                          | Value                                    | Provenance / safe range                                                           |
+| --------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------- |
+| `MAX_SHAPE_LIBRARIES_PER_OWNER`   | 100                                      | Spec; 10 to 1 000                                                                 |
+| `MAX_SHAPE_LIBRARY_ITEMS`         | 1 000                                    | Spec; draw.io's own libraries rarely pass a few hundred                           |
+| `MAX_SHAPE_LIBRARY_NAME_CHARS`    | 120                                      | Spec                                                                              |
+| `MAX_SHAPE_LIBRARY_TITLE_CHARS`   | 200                                      | Spec                                                                              |
+| `MAX_SHAPE_LIBRARY_ITEM_ID_CHARS` | 64                                       | A UUID is 36 (D9)                                                                 |
+| `MAX_SHAPE_LIBRARY_ITEM_SIDE`     | 100 000                                  | Far past any real shape (D10)                                                     |
+| Items byte budget                 | `MAX_TAB_BYTES`                          | Spec: one row, as a tab                                                           |
 | `LIBRARY_SHAPE_DND_MIME`          | `application/x-livehuddle-library-shape` | Beside the palette's other drag MIMEs                                             |
-| `SHAPE_LIBRARY_CARD_PREVIEWS`     | 8                                         | Spec ("the first eight")                                                          |
-| `LIBRARY_INSERT_GAP`              | 24                                        | The paste offset (`PASTE_OFFSET`), as the gap between consecutive clicked inserts |
-| `DRAWIO_MAX_LIBRARY_ITEMS`        | `MAX_SHAPE_LIBRARY_ITEMS`                 | The importer keeps what the api accepts                                           |
+| `SHAPE_LIBRARY_CARD_PREVIEWS`     | 8                                        | Spec ("the first eight")                                                          |
+| `LIBRARY_INSERT_GAP`              | 24                                       | The paste offset (`PASTE_OFFSET`), as the gap between consecutive clicked inserts |
+| `DRAWIO_MAX_LIBRARY_ITEMS`        | `MAX_SHAPE_LIBRARY_ITEMS`                | The importer keeps what the api accepts                                           |
 
 ## Assets and external resources
 

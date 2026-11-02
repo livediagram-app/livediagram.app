@@ -2,13 +2,13 @@
 
 Derived from [The diagram key](../diagram-key.md). Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
-| File                                              | Role                                                |
-| ------------------------------------------------- | --------------------------------------------------- |
-| `packages/document/src/diagram-key.ts`            | Rows derived from a tab, settling, meanings, layout |
-| `packages/document/src/svg-render-diagram-key.ts` | Headless body                                       |
-| `apps/editor/lib/settle-tabs.ts`                    | Settles keys first (before stacks), per changed tab |
-| `packages/document/src/stored-tab.ts`             | Settles keys on read                                |
-| `apps/editor/components/canvas/DiagramKeyFace.tsx`  | Canvas face, meanings edited in place               |
+| File                                               | Role                                                |
+| -------------------------------------------------- | --------------------------------------------------- |
+| `packages/document/src/diagram-key.ts`             | Rows derived from a tab, settling, meanings, layout |
+| `packages/document/src/svg-render-diagram-key.ts`  | Headless body                                       |
+| `apps/editor/lib/settle-tabs.ts`                   | Settles keys first (before stacks), per changed tab |
+| `packages/document/src/stored-tab.ts`              | Settles keys on read                                |
+| `apps/editor/components/canvas/DiagramKeyFace.tsx` | Canvas face, meanings edited in place               |
 
 ## Domain and naming
 
@@ -103,10 +103,10 @@ Each meaning is a `role="textbox"` named "<row starting meaning> meaning".
 
 ## Testing
 
-| Rule                        | Test file                                             |
-| --------------------------- | ----------------------------------------------------- |
-| Rows, settle (I1), meanings | `packages/document/src/diagram-key.test.ts`           |
-| Export (I2)                 | same                                                  |
+| Rule                        | Test file                                               |
+| --------------------------- | ------------------------------------------------------- |
+| Rows, settle (I1), meanings | `packages/document/src/diagram-key.test.ts`             |
+| Export (I2)                 | same                                                    |
 | Face and in-place meaning   | `apps/editor/components/canvas/DiagramKeyFace.test.tsx` |
 
 ## Constants and configuration

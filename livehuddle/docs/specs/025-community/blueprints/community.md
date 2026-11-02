@@ -35,7 +35,7 @@ the pages' `NEXT_PUBLIC_COMMUNITY_API` and their Worker's `COMMUNITY_URL`. Witho
 | report         | `CommunityReportReason`, `COMMUNITY_REPORT_REASONS` (`{ id, label, type }[]`)                                                                     |
 | hidden         | `CommunityPostState = 'listed' \| 'hidden'`; the canvas's `community_post.hidden_at`                                                              |
 | community link | an index share link (view, never expiring, public) whose code is `community_post.share_code`; `SharePurpose = 'share' \| 'community'` on the wire |
-| community key  | header `X-Community-Key` (`COMMUNITY_KEY_HEADER`), localStorage `livehuddle:v2:community-key` (`COMMUNITY_KEY_STORAGE`)                          |
+| community key  | header `X-Community-Key` (`COMMUNITY_KEY_HEADER`), localStorage `livehuddle:v2:community-key` (`COMMUNITY_KEY_STORAGE`)                           |
 | sort           | `CommunitySort = 'new' \| 'loved' \| 'copied'`, `COMMUNITY_SORTS` (`{ id, label, type }[]`)                                                       |
 | Edit Listing   | the same `PUT /api/documents/:id/community` as publishing; the editor names the act, the api does not                                             |
 

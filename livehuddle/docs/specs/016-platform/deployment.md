@@ -6,8 +6,8 @@ There is a second environment, **staging**, which does deploy on its own: when C
 
 ## Apps and their Cloudflare Workers
 
-| App              | Cloudflare Worker       | Type                                                                                                                                |
-| ---------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| App              | Cloudflare Worker      | Type                                                                                                                                |
+| ---------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `apps/marketing` | `livehuddle-marketing` | Static assets only (Next.js `output: 'export'`).                                                                                    |
 | `apps/editor`    | `livehuddle-editor`    | Static assets + a tiny path-rewrite worker.                                                                                         |
 | `apps/help`      | `livehuddle-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).                                                              |
@@ -108,10 +108,10 @@ A deploy writes code and plain vars only. Each Worker's secrets (`ACCOUNTS_URL`,
 
 Production is **`https://www.livehuddle.app`**. The `livehuddle.app` zone is on the liveworkspace Cloudflare account, and the router and mcp workers declare their hostnames in their `wrangler.toml` as Workers custom domains (`routes` with `custom_domain = true`), as liveplanner's do, so `wrangler deploy` attaches them:
 
-| Worker               | Production                               | Staging (`[env.staging]`)     |
-| -------------------- | ---------------------------------------- | ----------------------------- |
+| Worker              | Production                             | Staging (`[env.staging]`)    |
+| ------------------- | -------------------------------------- | ---------------------------- |
 | `livehuddle-router` | `livehuddle.app`, `www.livehuddle.app` | `staging.livehuddle.app`     |
-| `livehuddle-mcp`    | `mcp.livehuddle.app`                    | `mcp-staging.livehuddle.app` |
+| `livehuddle-mcp`    | `mcp.livehuddle.app`                   | `mcp-staging.livehuddle.app` |
 
 The list in each `wrangler.toml` is the whole list: a deploy detaches a custom domain the file no longer names.
 

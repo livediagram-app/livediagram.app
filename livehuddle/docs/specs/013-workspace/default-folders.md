@@ -12,8 +12,8 @@ sets, shows and clears them.
 
 The list a person sets defaults from is titled **New canvases that open as**, and holds, in this order:
 
-| Entry                  | Key                                  |
-| ---------------------- | ------------------------------------ |
+| Entry                  | Key                                 |
+| ---------------------- | ----------------------------------- |
 | Canvases               | `livehuddle`                        |
 | Retrospective canvases | `livehuddle:template:retrospective` |
 

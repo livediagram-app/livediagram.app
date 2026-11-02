@@ -7,7 +7,7 @@ Derived from [Trusted Types](../trusted-types.md).
 | Term               | Identifier                                           | Meaning                                                                                                                                |
 | ------------------ | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
 | The header value   | `TRUSTED_TYPES_CSP`                                  | `require-trusted-types-for 'script'; trusted-types liveworkspace-markup liveworkspace-inert-parse nextjs ProseMirrorClipboard default` |
-| Markup policy      | `MARKUP_POLICY` (`'liveworkspace-markup'`)           | Makes `TrustedHTML` from livehuddle's own builders' markup                                                                            |
+| Markup policy      | `MARKUP_POLICY` (`'liveworkspace-markup'`)           | Makes `TrustedHTML` from livehuddle's own builders' markup                                                                             |
 | Inert-parse policy | `INERT_PARSE_POLICY` (`'liveworkspace-inert-parse'`) | Lets `DOMParser` read a file a person opened                                                                                           |
 | Default policy     | `'default'`                                          | The browser's fallback for a plain string at a sink                                                                                    |
 | Boot script        | `trustedTypesBootScript(assetPrefix, origins)`       | Inline, first in each layout's `<head>`: the default policy and the violation log                                                      |
@@ -17,17 +17,17 @@ Derived from [Trusted Types](../trusted-types.md).
 
 ## Modules
 
-| File                                                         | Responsibility                                                                                                                                                           |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/ui/src/trusted-types-csp.ts`                       | `TRUSTED_TYPES_CSP`, `MARKUP_POLICY`, `INERT_PARSE_POLICY`; import-free, so `scripts/e2e-stack.mjs` runs it as is                                                        |
+| File                                                         | Responsibility                                                                                                                                                         |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/ui/src/trusted-types-csp.ts`                       | `TRUSTED_TYPES_CSP`, `MARKUP_POLICY`, `INERT_PARSE_POLICY`; import-free, so `scripts/e2e-stack.mjs` runs it as is                                                      |
 | `packages/ui/src/trusted-types.ts`                           | `trustedHtml`, `parseInert`, `isAllowedScriptUrl`, `trustedScriptOrigins`, `trustedTypesBootScript`; exported from `@livehuddle/ui` and `@livehuddle/ui/trusted-types` |
-| `apps/*/app/layout.tsx` (all five)                           | `TRUSTED_TYPES_BOOT` (the boot script for the app's prefix and key), first in `<head>`; help, community and telemetry gain a `<head>` for it                             |
-| `apps/editor/src/worker.ts`                                  | `Content-Security-Policy: TRUSTED_TYPES_CSP` among its security headers                                                                                                  |
-| `apps/{marketing,help,community,telemetry}/public/_headers`  | The same header on `/*`                                                                                                                                                  |
-| `scripts/e2e-stack.mjs`                                      | Sends the header on every HTML response, as production does                                                                                                              |
-| Every `dangerouslySetInnerHTML` site                         | `__html: trustedHtml(markup)`                                                                                                                                            |
-| Every `innerHTML`, `outerHTML` or `insertAdjacentHTML` write | `el.innerHTML = trustedHtml(markup) as string` (`useFaceFinishPass.ts`, the Marker and Sketch face ink)                                                                  |
-| `apps/editor/lib/drawio/{envelope,label,library}.ts`         | `parseInert` in place of `new DOMParser().parseFromString`                                                                                                               |
+| `apps/*/app/layout.tsx` (all five)                           | `TRUSTED_TYPES_BOOT` (the boot script for the app's prefix and key), first in `<head>`; help, community and telemetry gain a `<head>` for it                           |
+| `apps/editor/src/worker.ts`                                  | `Content-Security-Policy: TRUSTED_TYPES_CSP` among its security headers                                                                                                |
+| `apps/{marketing,help,community,telemetry}/public/_headers`  | The same header on `/*`                                                                                                                                                |
+| `scripts/e2e-stack.mjs`                                      | Sends the header on every HTML response, as production does                                                                                                            |
+| Every `dangerouslySetInnerHTML` site                         | `__html: trustedHtml(markup)`                                                                                                                                          |
+| Every `innerHTML`, `outerHTML` or `insertAdjacentHTML` write | `el.innerHTML = trustedHtml(markup) as string` (`useFaceFinishPass.ts`, the Marker and Sketch face ink)                                                                |
+| `apps/editor/lib/drawio/{envelope,label,library}.ts`         | `parseInert` in place of `new DOMParser().parseFromString`                                                                                                             |
 
 ## Behaviour and state
 

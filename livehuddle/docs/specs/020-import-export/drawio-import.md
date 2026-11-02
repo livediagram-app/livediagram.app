@@ -174,7 +174,7 @@ The style string names a shape by its first token (`ellipse;...`, `swimlane;...`
 The mapping is one table; a row marked **exact** is not counted, a row marked **approximated** is
 counted (`shape-approximated`), and anything not in the table is **unmatched** (next section).
 
-| draw.io                                                                                                                                                                                                                                                                                       | livehuddle                                                                   | Fidelity     |
+| draw.io                                                                                                                                                                                                                                                                                       | livehuddle                                                                    | Fidelity     |
 | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- | ------------ |
 | default rectangle, `rect`, `label`, `mxgraph.flowchart.process`, `mxgraph.basic.rect`                                                                                                                                                                                                         | `square`; `rounded=1` maps `arcSize` to the nearest `borderRadius`            | exact        |
 | `ellipse`, `mxgraph.flowchart.start_1`, `mxgraph.flowchart.start_2`, `startState`, `mxgraph.flowchart.on-page_reference`                                                                                                                                                                      | `circle` (fills its box, so a wide one is an ellipse)                         | exact        |
@@ -506,24 +506,24 @@ a rule with its count, changes first and things left out after, then how the ima
 [import image pipeline](import-image-pipeline.md)'s report). The importer tallies closed note kinds
 (`ImportNoteKind`) and `lib/drawio/report.ts` gives each its rule, in this order:
 
-| Kind                      | Rule (the report shows "count · rule")                                          | Shown as |
-| ------------------------- | ------------------------------------------------------------------------------- | -------- |
+| Kind                      | Rule (the report shows "count · rule")                                         | Shown as |
+| ------------------------- | ------------------------------------------------------------------------------ | -------- |
 | `shape-unmatched`         | Shapes with no livehuddle match came in as labelled boxes (the top 5 stencils) | changed  |
 | `shape-approximated`      | Shapes came in as the nearest livehuddle shape                                 | changed  |
 | `icon-substituted`        | Vendor icons came in as the matching livehuddle icon                           | changed  |
-| `image-unavailable`       | Images linked outside the diagram came in as placeholders or were left out      | changed  |
+| `image-unavailable`       | Images linked outside the diagram came in as placeholders or were left out     | changed  |
 | `arrowhead-approximated`  | Arrowheads livehuddle doesn't draw took the nearest one                        | changed  |
-| `connection-loosened`     | Connection ends that couldn't stay attached were left where they were           | changed  |
-| `label-moved`             | Labels were moved inside their shapes or merged onto one line                   | changed  |
-| `group-flattened`         | Groups were dropped                                                             | changed  |
+| `connection-loosened`     | Connection ends that couldn't stay attached were left where they were          | changed  |
+| `label-moved`             | Labels were moved inside their shapes or merged onto one line                  | changed  |
+| `group-flattened`         | Groups were dropped                                                            | changed  |
 | `link-dropped`            | Links of a kind livehuddle can't follow were dropped                           | changed  |
-| `text-truncated`          | Texts were shortened to fit                                                     | changed  |
-| `text-below-xs`           | Text smaller than 10 px came in at 10 px                                        | changed  |
-| `auto-layout`             | Positions and styles weren't in the file; the layout is automatic (pages)       | changed  |
-| `hidden-skipped`          | Hidden items were left out                                                      | left out |
-| `collapsed-skipped`       | Items inside collapsed containers were left out                                 | left out |
-| `library-item-unreadable` | Library shapes that couldn't be read were left out                              | left out |
-| `content-truncated`       | Pages or items beyond the import limits were left out                           | left out |
+| `text-truncated`          | Texts were shortened to fit                                                    | changed  |
+| `text-below-xs`           | Text smaller than 10 px came in at 10 px                                       | changed  |
+| `auto-layout`             | Positions and styles weren't in the file; the layout is automatic (pages)      | changed  |
+| `hidden-skipped`          | Hidden items were left out                                                     | left out |
+| `collapsed-skipped`       | Items inside collapsed containers were left out                                | left out |
+| `library-item-unreadable` | Library shapes that couldn't be read were left out                             | left out |
+| `content-truncated`       | Pages or items beyond the import limits were left out                          | left out |
 
 When the report has a rule, or met any image, the Import dialog does not close: it shows the report,
 so the person sees what changed before they carry on. A clean import closes the dialog as before.

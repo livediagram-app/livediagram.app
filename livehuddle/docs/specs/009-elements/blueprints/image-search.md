@@ -24,8 +24,8 @@ Scope, by file:
 | `apps/editor/hooks/canvas/useEditorImages.ts`                            | `applyImageToElement` sets / drops `credit`; detach drops it            |
 | `apps/editor/components/palette/ImageCreditRow.tsx`                      | Credit line, mounted in `ElementContentSections`' Image section         |
 | `apps/editor/lib/telemetry-manifest.ts`                                  | `Element·Searched` in the emitted-pairs manifest                        |
-| liveworkspace/apps/site/app/telemetry/livehuddle/catalogue/content.ts   | `IMAGE_SEARCHES`, `IMAGE_SEARCH_PICKS` in Element Editing               |
-| liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts  | Sentences for the two events                                            |
+| liveworkspace/apps/site/app/telemetry/livehuddle/catalogue/content.ts    | `IMAGE_SEARCHES`, `IMAGE_SEARCH_PICKS` in Element Editing               |
+| liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts   | Sentences for the two events                                            |
 | `apps/help/app/palette/tools/images/page.mdx`                            | "Searching for an image" section                                        |
 | liveworkspace.app/privacy (the shared policy, in the liveworkspace site) | Openverse named under Service providers                                 |
 

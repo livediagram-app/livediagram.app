@@ -13,7 +13,7 @@ Scope, by file:
 
 | File                                                                              | Role                                                                                                                                                                                                                                                    |
 | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/edit-operations/{package.json,tsconfig.json,oxlint.config.ts,...}`      | Private workspace package `@livehuddle/edit-operations`, laid out like the former explorer-lens package (EO1)                                                                                                                                          |
+| `packages/edit-operations/{package.json,tsconfig.json,oxlint.config.ts,...}`      | Private workspace package `@livehuddle/edit-operations`, laid out like the former explorer-lens package (EO1)                                                                                                                                           |
 | `packages/edit-operations/src/index.ts`                                           | The public surface (listed under [Interfaces and contracts](#interfaces-and-contracts))                                                                                                                                                                 |
 | `packages/edit-operations/src/types.ts`                                           | `EditOperation` and one type per operation, `Selector`, `Placement`, `FieldValue`, `ApplyOptions`, outcomes                                                                                                                                             |
 | `packages/edit-operations/src/vocabulary.ts`                                      | `EDIT_OPERATION_NAMES`, `OPERATION_MEMBERS`, `PLACEMENT_RELATIONS`, `SELECTOR_KEYS`, `FLAG_MEMBERS`, `RESERVED_WORDS`, constants; the bounds (cuts, caps, distances, `PROTOTYPE_KEYS`) re-exported from `@liveworkspace/edit-operations/limits`         |
@@ -58,7 +58,7 @@ Scope, by file:
 | `apps/editor/lib/canvas.ts`                                                       | `withFrameContents` and `isFrameEl` removed; `framesFirst` reads `isContainer`                                                                                                                                                                          |
 | `apps/editor/hooks/canvas/useBoxedDragHandlers.ts`                                | The drag's move set is `containerContents(elements, ids)`                                                                                                                                                                                               |
 | `apps/editor/lib/canvas.test.ts`                                                  | The `withFrameContents` suite gives way to `containment.test.ts` and `useEditorDrag.frames.test.tsx`                                                                                                                                                    |
-| `apps/api/package.json`                                                           | Depends on `@livehuddle/edit-operations`; the changeset route is the [Agent changesets](agent-changesets.md) blueprint's                                                                                                                               |
+| `apps/api/package.json`                                                           | Depends on `@livehuddle/edit-operations`; the changeset route is the [Agent changesets](agent-changesets.md) blueprint's                                                                                                                                |
 | `docs/development/architecture.md`, `README.md`                                   | The package in the package list                                                                                                                                                                                                                         |
 
 ## Domain and naming
@@ -79,7 +79,7 @@ Scope, by file:
 | Content origin     | `contentOrigin(tab)` (shared)                       | The point coordinates shown and taken are relative to                                                                        |
 | Field              | `fields` member, `FieldValue`                       | A key and its value; `null` unsets                                                                                           |
 | Field alias        | `FIELD_ALIASES`                                     | A spec-named key (`label`, `note`, `shape`, `fill`, `text`, `line`) or a view's style key (`stroke`, `text-color`, `border`) |
-| Live field         | `LIVE_ELEMENT_FIELDS` (`@livehuddle/document`)     | A multi-writer field that travels as a delta; never written by an operation                                                  |
+| Live field         | `LIVE_ELEMENT_FIELDS` (`@livehuddle/document`)      | A multi-writer field that travels as a delta; never written by an operation                                                  |
 | Theme slot         | `fillSlotNames`, `resolveColourValue`               | `theme` or one of the theme's six quick-swatch hues, written as a binding                                                    |
 | Container          | `isContainer` (frame or lane)                       | A shape whose box holds members                                                                                              |
 | Member, membership | `deriveContainers` (shared) over `smallestHolder`   | An element and the smallest frame or lane holding its centre                                                                 |
@@ -678,7 +678,7 @@ and by the api for the tab byte cap.
 | `not_connected`     | `no arrow <a>→<b>`; the arrows touching a and b as `ref  from→to "label"`                                   | `connect <a> -> <b> first, or insert between the ends of one of these` |
 | `frame_captures`    | `the <frame> @x,y w×h would hold non-members:` and each bystander                                           | `add them to the members, or add absorb or make-room`                  |
 | `test_failed`       | `<ref> <key>: expected <value>, actual <value>`                                                             | `re-read <ref>: it changed since you read it`                          |
-| `invalid_result`    | `<ref> <field>: <rule>` from `elementValidationIssue`                                                       | `see the format: livehuddle schema <kind>`                            |
+| `invalid_result`    | `<ref> <field>: <rule>` from `elementValidationIssue`                                                       | `see the format: livehuddle schema <kind>`                             |
 | `too_large`         | `<n> operations; the cap is <CHANGESET_MAX_OPERATIONS>`                                                     | `split it into several changesets, or send a replace`                  |
 
 Every rejection prints `error <code> · op <n> · <formatOperation(op)>` (parse errors: `· line <n>`), its detail
@@ -840,14 +840,14 @@ Every suite uses `packages/edit-operations/src/fixtures/checkout-flow.ts` and a 
 
 | Constant                   | Value                     | Provenance                                                                            | Safe range      |
 | -------------------------- | ------------------------- | ------------------------------------------------------------------------------------- | --------------- |
-| `CHANGESET_MAX_OPERATIONS` | 500                       | [Agent changesets](../agent-changesets.md), imported from `@livehuddle/api-schema`   | owned there     |
+| `CHANGESET_MAX_OPERATIONS` | 500                       | [Agent changesets](../agent-changesets.md), imported from `@livehuddle/api-schema`    | owned there     |
 | `GRAPH_LABEL_MAX`          | 40                        | Spec; the MCP's graph input                                                           | 24 to 80        |
 | `PLACEMENT_GAP`            | `LAYER_GAP` (90)          | The layout engine's rank gap (EO23)                                                   | 16 to 200       |
 | `PLACEMENT_GAP_MAX`        | 2,000                     | Larger reads as a separate drawing (EO23)                                             | 500 to 10,000   |
 | `INSERT_MIN_GAP`           | 16                        | Below it boxes read as touching (EO32)                                                | 8 to 40         |
 | `FRAME_PAD`, `FRAME_TOP`   | 32, 64                    | The clustered layout's frame padding and header band                                  | 16 to 96        |
-| `SLUG_ID_PATTERN`          | `^[a-z][a-z0-9_-]{0,23}$` | [Document views](../document-views.md), from `@livehuddle/document`                  | fixed           |
-| `REF_MIN_LENGTH`           | 4                         | [Document views](../document-views.md), from `@livehuddle/document`                  | fixed           |
+| `SLUG_ID_PATTERN`          | `^[a-z][a-z0-9_-]{0,23}$` | [Document views](../document-views.md), from `@livehuddle/document`                   | fixed           |
+| `REF_MIN_LENGTH`           | 4                         | [Document views](../document-views.md), from `@livehuddle/document`                   | fixed           |
 | `EDIT_LINE_MAX_CHARS`      | 16,384                    | A 4,000-character code value with escapes and its other fields fits (EO3)             | 8,192 to 65,536 |
 | `EDIT_MAX_ERRORS`          | 10                        | Enough to fix a batch of typos in one round (EO7)                                     | 1 to 50         |
 | `REJECTION_CANDIDATES_MAX` | 10                        | A readable list; the rest counted (EO45)                                              | 5 to 25         |

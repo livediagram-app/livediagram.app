@@ -6,12 +6,12 @@ engineering precision. Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                    | Role                                                                                     |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `packages/document/src/element-types.ts`                | `TextElement.sizing`, `TextElement.textScale`                                            |
-| `packages/document/src/validate.ts`                     | `TEXT_SCALE_MIN`, `TEXT_SCALE_MAX`; the two fields' checks                               |
-| `packages/document/src/svg-render-describe.ts`          | An export draws a text box's label at its scale                                          |
-| `apps/api/src/openapi/schemas.generated.ts`             | Regenerated: the two fields on `TextElement`                                             |
+| File                                                      | Role                                                                                     |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `packages/document/src/element-types.ts`                  | `TextElement.sizing`, `TextElement.textScale`                                            |
+| `packages/document/src/validate.ts`                       | `TEXT_SCALE_MIN`, `TEXT_SCALE_MAX`; the two fields' checks                               |
+| `packages/document/src/svg-render-describe.ts`            | An export draws a text box's label at its scale                                          |
+| `apps/api/src/openapi/schemas.generated.ts`               | Regenerated: the two fields on `TextElement`                                             |
 | `apps/editor/lib/text-hug.ts`                             | Pure geometry: padding, font px, hug size, placement, commit, resize                     |
 | `apps/editor/components/canvas/text-hug-measure.ts`       | The DOM measurer: `measureTextHug`, `measureDrawnText`, `labelRuns`                      |
 | `apps/editor/components/canvas/useTextHug.ts`             | The element view's live size while typing                                                |
@@ -202,9 +202,9 @@ copy of the editor's nodes; per resize frame: one layout. Both well under a fram
 
 | Rule                                                  | Test                                                                 |
 | ----------------------------------------------------- | -------------------------------------------------------------------- |
-| Padding, font px, hug size, wrap at 480               | `apps/editor/lib/text-hug.test.ts`                                     |
-| Placement: tap caret-sized, drag width, one line      | `apps/editor/lib/draw-commit.test.ts`, `text-hug.test.ts`              |
-| Commit hugs; empty removed; set width kept            | `apps/editor/lib/text-hug.test.ts` (`hugCommittedText`)                |
+| Padding, font px, hug size, wrap at 480               | `apps/editor/lib/text-hug.test.ts`                                   |
+| Placement: tap caret-sized, drag width, one line      | `apps/editor/lib/draw-commit.test.ts`, `text-hug.test.ts`            |
+| Commit hugs; empty removed; set width kept            | `apps/editor/lib/text-hug.test.ts` (`hugCommittedText`)              |
 | Resize: width set, height hugs, anchors, Shift scale  | `text-hug.test.ts`, `hooks/canvas/boxed-drag-resolve.resize.test.ts` |
 | Style changes re-hug; a picked size drops the scale   | `hooks/canvas/useTextStyleSetters.test.ts`                           |
 | No menu beside a whiteboard text box being typed into | `hooks/canvas/useEditModeContextMenu.test.tsx`                       |

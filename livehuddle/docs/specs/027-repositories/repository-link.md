@@ -112,11 +112,11 @@ the document now:
 | State        | Means                                                                                    | A sync                                       |
 | ------------ | ---------------------------------------------------------------------------------------- | -------------------------------------------- |
 | `in-step`    | Local hashes match the recorded ones; the revisions are the document's                   | Nothing                                      |
-| `behind`     | Local unchanged; livehuddle has newer revisions                                         | Writes the newer snapshot                    |
-| `ahead`      | Local changed; livehuddle unchanged since the recorded revisions                        | Sends the local change ([Merging](#merging)) |
+| `behind`     | Local unchanged; livehuddle has newer revisions                                          | Writes the newer snapshot                    |
+| `ahead`      | Local changed; livehuddle unchanged since the recorded revisions                         | Sends the local change ([Merging](#merging)) |
 | `diverged`   | Both changed                                                                             | Merges, then sends ([Merging](#merging))     |
 | `new`        | Covered, never mirrored                                                                  | Writes it                                    |
-| `local-new`  | A file in `dir` holding a document envelope with no `livehuddleSync`: written by hand   | Creates the document in the link's folder    |
+| `local-new`  | A file in `dir` holding a document envelope with no `livehuddleSync`: written by hand    | Creates the document in the link's folder    |
 | `gone`       | The api answers `410 document_trashed`, or the document is readable and outside coverage | Removes its files; git history keeps them    |
 | `unreadable` | The api answers `404` for the file's document: purged, or not this person's to open      | Nothing; reported once per sync              |
 
@@ -192,7 +192,7 @@ report and the changeset's summary.
 
 | Command                                             | Does                                                                                 |
 | --------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `link init [--folder <f>] [--doc <d>]... [--level]` | Writes `livehuddle.toml`; with no folder, a picker of the person's folders          |
+| `link init [--folder <f>] [--doc <d>]... [--level]` | Writes `livehuddle.toml`; with no folder, a picker of the person's folders           |
 | `link status`                                       | Every covered document with its state; exits 0 ([In CI](#in-ci) for `--fail-behind`) |
 | `link ls`                                           | The covered documents, as `document ls` prints them                                  |
 | `sync [--watch] [--relocate] [--dry-run] [--all]`   | One sync of the link; `--watch` keeps syncing until interrupted                      |
@@ -249,7 +249,7 @@ livehuddle's history from local changes by each copy's own record: a tab whose h
 | Ours           | Theirs         | Result                                                                              |
 | -------------- | -------------- | ----------------------------------------------------------------------------------- |
 | clean snapshot | clean snapshot | The higher revision's tab, verbatim                                                 |
-| local change   | clean snapshot | Ours, with its own recorded revision; the next sync merges it with livehuddle      |
+| local change   | clean snapshot | Ours, with its own recorded revision; the next sync merges it with livehuddle       |
 | clean snapshot | local change   | Theirs, likewise                                                                    |
 | local change   | local change   | Ours; theirs is kept as a **pending proposal** in the local sync state and reported |
 

@@ -169,8 +169,8 @@ started on a folder shows that folder; its empty state is the Explorer's own, wi
 `window.postMessage` between the page and its workbench, each `{ type, v: 1, ... }`, sent only to the bound origin
 and accepted only from it. Unknown types are ignored, and logged once each.
 
-| Type                    | From      | Carries                                                              |
-| ----------------------- | --------- | -------------------------------------------------------------------- |
+| Type                   | From      | Carries                                                              |
+| ---------------------- | --------- | -------------------------------------------------------------------- |
 | `livehuddle:hello`     | page      | Nothing; asks the workbench to answer                                |
 | `livehuddle:hello-ack` | workbench | The workbench's name, shown in copy ("Reconnect in Acme Editor")     |
 | `livehuddle:ready`     | page      | `documentId`, `documentName`, `tabId`, `tabName`, `role`             |
