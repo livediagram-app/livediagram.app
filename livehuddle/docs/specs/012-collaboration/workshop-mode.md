@@ -86,7 +86,7 @@ Workshop's layout is livehuddle's one palette, in order:
   click in front of each, with a group browser one level down. Six categories put every group one
   pick away in the category picker and let the toolbar strip show each group's tiles directly.
 
-- Components and Event Storming are not categories (an event-storming board brings its own notation). The Toolbar
+- Components is not a category. The Toolbar
   strip's Search finds every element livehuddle has, those no category offers included (the Components, the Code
   block, the embeds), and places it ([Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)).
 - A **Participant** gets the participant palette Workshop's landing category gives
@@ -94,7 +94,7 @@ Workshop's layout is livehuddle's one palette, in order:
 
 ## The Session strip
 
-`sessionStripTools(mode, esBoard)` gives Timer, Vote and Poll on every tab, an event-storming board included.
+`sessionStripTools(mode)` gives Timer, Vote and Poll on every tab.
 
 - A popover whose button leaves (the tool ending) closes.
 

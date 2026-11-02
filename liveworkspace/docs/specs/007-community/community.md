@@ -1,7 +1,7 @@
 # Community
 
-Every liveworkspace product has a Community: **livediagram**, **liveplanner**, **livedocuments** and
-**livedesign**. Each keeps its listings in one service, whose API is **liveworkspace.app/api/community**. The
+Every liveworkspace product has a Community: **livediagram**, **liveplanner**, **livedocuments**,
+**livedesign** and **livehuddle** (registered before its launch; owner, 2026-11-02). Each keeps its listings in one service, whose API is **liveworkspace.app/api/community**. The
 service stores them in its own D1 database. It is an API only: liveworkspace.app has no Community pages. Each app
 hosts its own gallery and post pages, in its own look, and they show that app's posts only.
 
@@ -21,8 +21,9 @@ Each app offers the same Community, in its own words and look, built from the sa
 "Shared pieces"). The product specs say what differs: livediagram's
 [025-community](../../../../livediagram/docs/specs/025-community/community.md), liveplanner's
 [025-community](../../../../liveplanner/docs/specs/025-community/community.md), livedocuments'
-[025-community](../../../../livedocuments/docs/specs/025-community/community.md) and livedesign's
-[025-community](../../../../livedesign/docs/specs/025-community/community.md).
+[025-community](../../../../livedocuments/docs/specs/025-community/community.md), livedesign's
+[025-community](../../../../livedesign/docs/specs/025-community/community.md) and livehuddle's
+[025-community](../../../../livehuddle/docs/specs/025-community/community.md).
 
 - **Publishing**: a signed-in owner shares a document of theirs to the Community from the **Community** tab of
   the Share dialog, beside Passes. The tab is the same wherever the Share dialog opens: in the app's editor, in the
@@ -51,6 +52,7 @@ the search.
 | `liveplanner.app`   | `projects`: Project Plans, `roadmaps`: Roadmaps & Timelines, `workflows`: Kanban & Workflows, `trackers`: Trackers & Sheets, `budgets`: Budgets & Finance, `events`: Events & Schedules, `forms`: Forms & Surveys, `dashboards`: Dashboards & Reports, `personal`: Personal & Home, `other`: Something Else |
 | `livedocuments.app` | `articles`: Articles & Reports, `decks`: Slide Decks, `infographics`: Infographics, `guides`: Guides & How-Tos, `proposals`: Proposals & Briefs, `newsletters`: Newsletters & Updates, `learning`: Learning & Teaching, `other`: Something Else                                                             |
 | `livedesign.app`    | `logos`: Logos & Branding, `wireframes`: Wireframes & Mockups, `photos`: Photo Edits, `social`: Social & Marketing, `posters`: Posters & Flyers, `illustrations`: Icons & Illustrations, `other`: Something Else                                                                                            |
+| `livehuddle.app`    | `offices`: Offices & Spaces, `meetings`: Meetings, `retrospectives`: Retrospectives, `workshops`: Workshops, `decisions`: Votes & Decisions, `games`: Quizzes & Games, `learning`: Learning & Teaching, `other`: Something Else                                                                             |
 
 Each category's one-line description (shown under the publish dialog's chips) is in the product spec.
 
@@ -86,7 +88,8 @@ Every route is under `/api/community`. Answers are JSON; errors are `{ "error": 
 
 ### Public routes
 
-Each one names its app with `?app=livediagram.app` (or `liveplanner.app`, `livedocuments.app`, `livedesign.app`); without one the answer is
+Each one names its app with `?app=livediagram.app` (or `liveplanner.app`, `livedocuments.app`, `livedesign.app`,
+`livehuddle.app`); without one the answer is
 `400 invalid_app`, and another app's post answers `404`. Likes and reports carry the browser's
 community key as `X-Community-Key`, never an owner id.
 
@@ -180,8 +183,8 @@ corepack pnpm dev                     # the API, http://localhost:8791/api/commu
 `corepack pnpm dev:workspace` from the repo root runs it behind the site at
 http://localhost:3000/api/community, and `corepack pnpm dev:community` runs it alone. Point livediagram's
 api at it with `COMMUNITY_URL=http://localhost:8791/api/community` and
-`COMMUNITY_KEY=dev-livediagram-community-key` in `apps/api/.dev.vars` (livedocuments' and livedesign's apis the same, with
-`dev-livedocuments-community-key` and `dev-livedesign-community-key`), and its pages with
+`COMMUNITY_KEY=dev-livediagram-community-key` in `apps/api/.dev.vars` (livedocuments', livedesign's and livehuddle's apis
+the same, with `dev-livedocuments-community-key`, `dev-livedesign-community-key` and `dev-livehuddle-community-key`), and its pages with
 `NEXT_PUBLIC_COMMUNITY_API=http://localhost:8791/api/community`. Development accepts writes from any
 `localhost` page and skips the edge cache.
 
@@ -193,8 +196,8 @@ databases are `liveworkspace-community` and `liveworkspace-community-staging`, w
 `apps/community/wrangler.toml`.
 
 Secrets are set once per environment with `wrangler secret put` and survive every deploy: one key per app,
-`COMMUNITY_KEY_LIVEDIAGRAM`, `COMMUNITY_KEY_LIVEPLANNER`, `COMMUNITY_KEY_LIVEDOCUMENTS` and
-`COMMUNITY_KEY_LIVEDESIGN` (each `openssl rand -hex 32`), with the same value as that app's api Worker's
+`COMMUNITY_KEY_LIVEDIAGRAM`, `COMMUNITY_KEY_LIVEPLANNER`, `COMMUNITY_KEY_LIVEDOCUMENTS`,
+`COMMUNITY_KEY_LIVEDESIGN` and `COMMUNITY_KEY_LIVEHUDDLE` (each `openssl rand -hex 32`), with the same value as that app's api Worker's
 `COMMUNITY_KEY`. An app whose key is not set yet answers its app routes 401 and has no Community, the others are
 unaffected.
 

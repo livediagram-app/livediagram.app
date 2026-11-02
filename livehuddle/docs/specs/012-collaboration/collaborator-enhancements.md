@@ -103,7 +103,7 @@ person who just wants to read or work without the movement had no way to turn th
 - **Only where cursors are drawn.** The switch shows, in Settings and in the Collaborators modal, only while
   the tab you are on draws other people's cursors. Where none are drawn it is absent from both, and from search
   (the Settings dialog's and the editor's), since there it could change nothing. The stored value is untouched:
-  back on a tab that draws cursors, the switch is there again as you left it. In livehuddle every tab kind draws them (a diagram tab and an Event Storming tab share the one canvas), so the switch always shows.
+  back on a tab that draws cursors, the switch is there again as you left it. In livehuddle every tab draws them, so the switch always shows.
 
 ### Implementation notes
 

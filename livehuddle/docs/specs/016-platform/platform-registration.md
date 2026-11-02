@@ -15,27 +15,27 @@ build changes, and in what order.
 
 Each is a step of its own in the [Build plan](../005-project-roadmap/build-plan.md), made before the code it covers.
 
-| Platform spec                                                                              | What changes                                                                                                                                                                                                                                                        |
-| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Platform](../../../../liveworkspace/docs/specs/001-platform-scope/platform.md)            | livehuddle joins the list of apps                                                                                                                                                                                                                                   |
-| [Architecture](../../../../liveworkspace/docs/specs/002-architecture/architecture.md)      | The fifth app, its Workers and port block                                                                                                                                                                                                                           |
-| [Sign-in](../../../../liveworkspace/docs/specs/003-accounts/sign-in.md#registering-an-app) | livehuddle's API in `RESOURCES`; the "one account signs you in to ..." line names it                                                                                                                                                                                |
-| [Index](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)                    | `livehuddle` in the index's apps, its noun (Space, Spaces) and its paths in the Explorer                                                                                                                                                                            |
-| [Media](../../../../liveworkspace/docs/specs/006-media/media.md)                           | livehuddle among the apps that upload images                                                                                                                                                                                                                        |
-| [Telemetry](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md#adding-an-app) | Its vocabulary, key and dashboard, by that spec's "Adding an app" steps                                                                                                                                                                                             |
-| [Status](../../../../liveworkspace/docs/specs/009-status/README.md)                        | Its checks. Status today assumes every app has an MCP Worker (`MCP_DEV_PORTS` is keyed by every app site); with no MCP in v1 that check becomes optional per app, or livehuddle ships its MCP in v1 ([Open decisions](../005-project-roadmap/open-decisions.md) D3) |
-| [Site switcher](../../../../liveworkspace/docs/specs/010-site/site-switcher.md)            | One row: livehuddle's name, URL, pitch and colours                                                                                                                                                                                                                  |
-| [Workbench](../../../../liveworkspace/docs/specs/011-workbench/workbench.md)               | livehuddle as a fifth editor on the shared workbench                                                                                                                                                                                                                |
-| [Community](../../../../liveworkspace/docs/specs/007-community/community.md#adding-an-app) | **Not in v1.** Later, by that spec's "Adding an app" steps                                                                                                                                                                                                          |
-| [Drive](../../../../liveworkspace/docs/specs/005-drive/drive.md)                           | **In v1** (owner, 2026-11-02; Work Tracker #326): livehuddle among the mirrored apps, a Space as a `.livehuddle` file (`application/vnd.livehuddle+json`, its `livehuddle.document` envelope) in the person's one folder tree; signed-in people only                |
+| Platform spec                                                                              | What changes                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Platform](../../../../liveworkspace/docs/specs/001-platform-scope/platform.md)            | livehuddle joins the list of apps                                                                                                                                                                                                                                                                                                  |
+| [Architecture](../../../../liveworkspace/docs/specs/002-architecture/architecture.md)      | The fifth app, its Workers and port block                                                                                                                                                                                                                                                                                          |
+| [Sign-in](../../../../liveworkspace/docs/specs/003-accounts/sign-in.md#registering-an-app) | livehuddle's API in `RESOURCES`; the "one account signs you in to ..." line names it                                                                                                                                                                                                                                               |
+| [Index](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)                    | `livehuddle` in the index's apps, its noun (Space, Spaces) and its paths in the Explorer                                                                                                                                                                                                                                           |
+| [Media](../../../../liveworkspace/docs/specs/006-media/media.md)                           | livehuddle among the apps that upload images                                                                                                                                                                                                                                                                                       |
+| [Telemetry](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md#adding-an-app) | Its vocabulary, key and dashboard, by that spec's "Adding an app" steps                                                                                                                                                                                                                                                            |
+| [Status](../../../../liveworkspace/docs/specs/009-status/README.md)                        | Its checks: the site, the api and livehuddle's MCP server (`MCP_DEV_PORTS`, `9088` locally, `mcp.livehuddle.app` live), as every app's (owner, 2026-11-02; [Open decisions](../005-project-roadmap/open-decisions.md) D3)                                                                                                          |
+| [Site switcher](../../../../liveworkspace/docs/specs/010-site/site-switcher.md)            | One row: livehuddle's name, URL, pitch and colours                                                                                                                                                                                                                                                                                 |
+| [Workbench](../../../../liveworkspace/docs/specs/011-workbench/workbench.md)               | livehuddle as a fifth editor on the shared workbench                                                                                                                                                                                                                                                                               |
+| [Community](../../../../liveworkspace/docs/specs/007-community/community.md#adding-an-app) | **In v1** (owner, 2026-11-02; Work Tracker #184), by that spec's "Adding an app" steps: `livehuddle.app` in `COMMUNITY_APPS` with its own categories for meetings and workshops, a `COMMUNITY_KEY_LIVEHUDDLE` key (**owner only**), the api's Community routes, the `community` app's pages, and `communityPath` in its `AppItems` |
+| [Drive](../../../../liveworkspace/docs/specs/005-drive/drive.md)                           | **In v1** (owner, 2026-11-02; Work Tracker #326): livehuddle among the mirrored apps, a Space as a `.livehuddle` file (`application/vnd.livehuddle+json`, its `livehuddle.document` envelope) in the person's one folder tree; signed-in people only                                                                               |
 
 ## Registration steps, by service
 
 In the order the build makes them (code locations as on `main` today):
 
 1. **Sites and brand.** `packages/sites/src/index.ts`: `SiteId`, `LOCAL_PORTS` (`'livehuddle.app': 3500`), an
-   `APP_SITES` row, `AppName` and its `AppItems` (noun **Space**, `apiNoun: 'document'`, no offline path, no offline
-   conversions). `packages/brand/src/apps.ts`: the `BrandApp` entry with its prism tint
+   `APP_SITES` row, `AppName` and its `AppItems` (noun **Space**, `apiNoun: 'document'`, This Browser at
+   `/explorer/offline` with its conversions, and the Community's `communityPath`). `packages/brand/src/apps.ts`: the `BrandApp` entry with its prism tint
    ([Open decisions](../005-project-roadmap/open-decisions.md) D5).
 2. **Accounts.** `liveworkspace/apps/accounts/src/resources.ts` (production and staging API resources),
    `clients.ts` (the accepted apps), `email.ts` (the sign-in email's list of apps), `telemetry.ts` (its key name).
@@ -49,17 +49,21 @@ In the order the build makes them (code locations as on `main` today):
    site's `/telemetry`.
 6. **Settings.** `packages/settings/src/device.ts` (`keysFor('livehuddle')`) and the Settings panel's catalogue in
    `packages/settings-ui`.
-7. **Status.** `liveworkspace/packages/status/src/services.ts`: livehuddle's checks (see the Status row above).
+7. **Status.** `liveworkspace/packages/status/src/services.ts`: livehuddle's checks, its MCP Worker's local port
+   (`9088`) in `MCP_DEV_PORTS` among them (see the Status row above).
 8. **Drive.** `packages/drive/src/formats.ts` (`APP_FILE_FORMATS.livehuddle`), the drive Worker's env
    (`DRIVE_KEY_LIVEHUDDLE`, `APP_ORIGIN_LIVEHUDDLE`) and `wrangler.toml` (the origins and livehuddle's API in
    `INDEX_AUDIENCES`). The api's internal door answers the file (`handlers.export`, `format: 'file'`) and the import
    (`handlers.import`), keyed by its `DRIVE_KEY` secret (**owner only**, the service's `DRIVE_KEY_LIVEHUDDLE`). The
    editor's Explorer marks and Settings' Cloud Sync row come from `@liveworkspace/explorer` and
    `@liveworkspace/settings-ui`, shown to an account only.
-9. **Shared marketing and help.** `packages/marketing-site` and `packages/help-site` guards and lists that name every
-   app, as the build finds them (`grep` for `livedesign` across `packages/` and `liveworkspace/` is the checklist; on
-   `main` today it lists the files above plus `packages/community`, `packages/community-ui`,
-   `packages/mcp-kit` and `packages/migration`, which v1 leaves alone).
+9. **Community.** `packages/community/src` (`COMMUNITY_APPS`, `COMMUNITY_APP_CATEGORIES.livehuddle.app`), the
+   Community Worker's `liveworkspace/apps/community/src/env.ts` and `appKey` (`COMMUNITY_KEY_LIVEHUDDLE`, **owner only**), the Share dialog's words
+   in `packages/community-ui`, and `communityPath` in `packages/sites`' `AppItems`. In livehuddle, the api's
+   `COMMUNITY_APP` and the `community` app's `CommunitySite` binding name `livehuddle.app`.
+10. **Shared marketing and help.** `packages/marketing-site` and `packages/help-site` guards and lists that name every
+    app, as the build finds them (`grep` for `livedesign` across `packages/` and `liveworkspace/` is the checklist; on
+    `main` today it lists the files above plus `packages/mcp-kit` and `packages/migration`, which v1 leaves alone).
 
 ## The monorepo
 
@@ -77,14 +81,14 @@ forked scripts change only their hundreds digit.
 
 Wrangler's own ports sit outside the 35xx block, one range per product (the api at livediagram 8687, liveplanner
 8887, livedocuments 8987, livedesign 8989; inspectors at 91xx to 95xx): livehuddle takes **9087** for the api,
-**9088** for the MCP in v1.1, and inspector ports **9630** onward, all free on `main` today.
+**9088** for the MCP, and inspector ports **9630** onward, all free on `main` today.
 
 ## CI
 
 **In place since the code fork (build plan step 3), held:**
 
 - **A fifth group** in `.github/scripts/ci-plan.mjs`: `livehuddle`, folder `livehuddle/`, editor
-  `@livehuddle/editor` (sharded), and its CLI (`livehuddle/apps/cli`, until the cut that may remove it). The
+  `@livehuddle/editor` (sharded), and its CLI (`livehuddle/apps/cli`). The
   root-files pattern that reaches everything has `livehuddle` beside the other product folders.
 - **Held until launch** (`held: true`): the group runs only when a change touches `livehuddle/` itself or everything
   runs, never because a shared package it uses changed; it has no E2E, and none of its Workers deploy, even with
@@ -92,8 +96,8 @@ Wrangler's own ports sit outside the 35xx block, one range per product (the api 
 - **docs/ci.md**'s group table has the row, and says what held means.
 - **The spec checks run** since the specs were forked (step 4): the help app's repo-paths check over `docs/specs/` and
   `docs/`, and the suites that pin prose to code (the router's routes against `016-platform/router-app.md`, the CLI's
-  command table against `015-api/cli.md`, the preferences cap against `015-api/api.md`, the image cap and the reader's
-  errors against `009-elements/images.md` and `021-event-storming/note-reader.md`). Each cut removes the specs of
+  command table against `015-api/cli.md`, the preferences cap against `015-api/api.md`, and the image cap against
+  `009-elements/images.md`). Each cut removes the specs of
   what it removes in the same PR, so these stay green.
 
 **At launch (step 8):**
@@ -110,8 +114,8 @@ Wrangler's own ports sit outside the 35xx block, one range per product (the api 
 Through CI only, never by hand (docs/ci.md "Deploys"), to the liveworkspace Cloudflare account every `wrangler.toml`
 pins (`851be7d244b76a6557bcbe6c4ded80f5`):
 
-- Tier 1: `livehuddle-api` (Durable Objects and their migrations; no D1).
-- Tier 2: `livehuddle-editor`, `livehuddle-marketing`, `livehuddle-help`.
+- Tier 1: `livehuddle-api` (Durable Objects and their migrations; no D1), `livehuddle-mcp`.
+- Tier 2: `livehuddle-editor`, `livehuddle-marketing`, `livehuddle-help`, `livehuddle-community`.
 - Tier 3: `livehuddle-router`.
 
 Staging is `staging.livehuddle.app`; production is `www.livehuddle.app`, with the bare domain redirecting to `www.`
@@ -129,6 +133,8 @@ D8 so nothing ships waiting on one.
 - **Telemetry key:** set `TELEMETRY_KEY_LIVEHUDDLE` on the telemetry Worker and livehuddle's.
 - **Drive key:** one value, set as `DRIVE_KEY_LIVEHUDDLE` on the drive Worker and `DRIVE_KEY` on livehuddle's api;
   and `application/vnd.livehuddle+json` (`.livehuddle`) added to the Google Cloud project's Drive UI MIME types.
+- **Community key:** one value (`openssl rand -hex 32`), set as `COMMUNITY_KEY_LIVEHUDDLE` on the Community service
+  and as `COMMUNITY_KEY` on livehuddle's api (the `COMMUNITY_KEY` / `COMMUNITY_KEY_STAGING` deploy secrets).
 - **Any third-party keys** the fork carries over (Turnstile, Google sign-in origins), added for the new domain.
 - **Billing:** Durable Object requests and duration for a fifth product on the account's Workers paid plan; later,
   TURN and SFU usage for audio and video ([Future work](../005-project-roadmap/future-work.md)).

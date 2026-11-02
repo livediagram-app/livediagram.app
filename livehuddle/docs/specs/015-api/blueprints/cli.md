@@ -54,7 +54,7 @@ Scope, by file:
 | `packages/templates/src/template-catalogue.ts` (+ test)                                                                                      | `templateCatalogue()`, shared by the MCP's `list_templates` and `GET /api/templates`                                                                                                                                                                                                                                                                                |
 | `apps/cli/{package.json,tsconfig.json,oxlint.config.ts,vitest.config.ts,README.md}`                                                          | New app `@livehuddle/cli`, published as `@livehuddle/cli`, command `livehuddle` (CLI1)                                                                                                                                                                                                                                                                              |
 | `apps/cli/scripts/build.mjs`, `apps/cli/PACKAGE_README.md`                                                                                   | esbuild bundle `dist/livehuddle.mjs`; `dist/package.json` named `@livehuddle/cli`, `LICENSE`, the user README, `THIRD_PARTY_LICENSES` from the metafile and the licences page's embedded works; `resvg.wasm`, `Inter-Regular.ttf`, `Inter-Bold.otf` and `Inter-OFL.txt` beside the bundle (CLI31); a bundled package without a licence fails the build (CLI1, CLI2) |
-| `apps/cli/src/bin.ts`, `main.ts`, `io.ts`, `node-io.ts` (on `../packages/cli-kit/src/node-io.ts`)                                            | Process wiring; `run(argv, io): Promise<ExitCode>`; `CliIo` (with `openSocket`, `timer`, `onInterrupt` for the room stream, `stdoutIsTTY` for `workbench pair`); the real `nodeIo()`                                                                                                                                                                                |
+| `apps/cli/src/bin.ts`, `main.ts`, `io.ts` (on `../packages/cli-kit/src/io.ts` and `node-io.ts`)                                              | Process wiring; `run(argv, io): Promise<ExitCode>`; `CliIo` (with `openSocket`, `timer`, `onInterrupt` for the room stream, `stdoutIsTTY` for `workbench pair`); the real `nodeIo()`                                                                                                                                                                                |
 | `apps/cli/src/{debug,transport}.ts`                                                                                                          | `debugLog` (CLI44); the api client per token with the CLI's headers and share code (CLI45)                                                                                                                                                                                                                                                                          |
 | `apps/cli/src/testing/fake-io.ts` (on `../packages/cli-kit/src/testing/fake-io.ts`)                                                          | `fakeIo`, the in-memory `CliIo` every suite runs on                                                                                                                                                                                                                                                                                                                 |
 | `apps/cli/src/dispatch/{route,parse-flags,globals,fields,did-you-mean}.ts`                                                                   | Resource and verb routing, `parseArgs` options from each verb's input (`fieldsOf`, `flagOf`), global flags, suggestions                                                                                                                                                                                                                                             |
@@ -294,7 +294,7 @@ answers after it cannot write it back as pending, whatever KV's cross-region sta
   `GET .../tabs/:tabId/render.svg` (`apps/api/src/routes/tab-render-route.ts`, `renderTabSvg` in
   `apps/api/src/thumbnail.ts`), two tabs of one name told apart by `-<id8>`.
 - **CLI27a** Before writing, `pull` reads this document's file at the path it would write; when `isLocallyChanged`
-  (`apps/cli/src/link/sync-state.ts`, the test `sync` uses for `ahead`) finds a tab hashing other than its pulled
+  (`apps/cli/src/sync/pull-file.ts`) finds a tab hashing other than its pulled
   record, or a tab added or gone, nothing is written and the pull exits 1 with `unpushed_changes`. `--force` skips
   the check and overwrites.
 - `push <file>`: parses the pull file (`parsePullFile`), refuses another host than the profile's (exit 2); for each
@@ -497,7 +497,7 @@ refusal prints the api's message.
 - **Top** (`livehuddle`, `livehuddle --help`), final copy, within `HELP_TOP_MAX_TOKENS`:
 
 ```text
-livehuddle: read, build, edit and discuss documents.
+livehuddle: read, build, edit and discuss Spaces, the boards a team meets on.
 
 Usage: livehuddle <resource> <verb> [args] [flags]
 
@@ -511,7 +511,7 @@ Resources
   presence        set, clear
   wait, watch     block until, or stream, comments and changes
   graph           lint, render: a graph or Mermaid file, before writing
-  pull, push      one document to a file and back; export --all
+  pull, push      one Space to a file and back; export --all
   template, icon, schema, guide, skill, api, auth, telemetry
 
 Addressing
@@ -527,10 +527,10 @@ Output
   5 conflict, 6 rate limited, 7 network or server.
 
 Start
-  livehuddle document ls auth        find a document
-  livehuddle tab view "Auth flow"    its first tab, as an outline
-  livehuddle edit "Auth flow" -f -   edit operations from stdin
-  livehuddle guide build             build a diagram from scratch
+  livehuddle document ls retro       find a Space
+  livehuddle tab view "Sprint retro" its first tab, as an outline
+  livehuddle tab lint "Sprint retro" what is wrong with how it is drawn
+  livehuddle guide edit              change a tab with edit operations
 
 Sign in: LIVEHUDDLE_TOKEN, or livehuddle auth login. Never prompts.
 More: livehuddle <resource> --help, livehuddle guide <topic>

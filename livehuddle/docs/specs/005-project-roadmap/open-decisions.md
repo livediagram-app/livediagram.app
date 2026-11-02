@@ -41,14 +41,16 @@ in the [Build plan](build-plan.md#keeping-the-two-products-from-drifting) matter
 
 ## D3. Which apps does v1 ship?
 
+**Settled: (b)** (owner, 2026-11-02; Work Tracker #184). livehuddle keeps every platform-wide feature (Offline Mode,
+Google Drive, the Community, the MCP server and the CLI) and cuts only what is livediagram's own (Event Storming,
+repositories).
+
 - (a) editor, api, router, marketing, help; MCP and CLI in v1.1; Community later.
 - (b) Everything livediagram has: editor, api, router, marketing, help, MCP, CLI, Community.
 - (c) editor, api and router only; marketing and help after launch.
 
-**Recommendation: (a).** A meeting is people in a room, which is the part to get right first; the MCP and CLI are
-cheap to keep later because they fork with the rest. (a) needs the status service's MCP check made optional per app
-(a platform spec change, [Platform registration](../016-platform/platform-registration.md#the-platform-specs-that-change));
-if that is unwelcome, (b) without the Community is the alternative.
+(b) needs no change to the status service: livehuddle ships an MCP server, so its status group checks it as every
+other app's does ([Platform registration](../016-platform/platform-registration.md)).
 
 ## D4. Audio, video and screen sharing
 

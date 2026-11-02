@@ -107,9 +107,10 @@ each app's router and MCP Worker.
 
 The MCP server is optional per app: an app is checked for one only when it ships one (it has an MCP Worker's local
 port in `MCP_DEV_PORTS`). An app without one has no MCP row at all, rather than a row that is always down or
-skipped. Every app listed today ships one; livehuddle, registered but held until launch
-([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)), ships none in
-its first version and is not on the page until it launches.
+skipped. Every app ships one, livehuddle's included (its MCP Worker on `9088` locally; owner, 2026-11-02); livehuddle,
+registered but held until launch
+([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)), is not on the page
+until it launches.
 
 ## The database
 

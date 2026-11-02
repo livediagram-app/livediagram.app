@@ -12,16 +12,21 @@ mints. No new authorization model; an OAuth front door onto the existing token.
 Let a person connect livehuddle to whatever AI tool they already drive (Claude
 desktop/web, Claude Code, any MCP client) and, from inside that tool:
 
-1. **Find and view** the documents they already have: search by name, get back a
-   link to open in the editor **and an inline image** of the document.
-2. **Create** a new document from a request: e.g. point the AI at a codebase and
-   have it produce a diagram of the control flow.
-3. **Edit** an existing document: full rework of a tab, or a small adjustment.
+1. **Find and view** the Spaces they already have: search by name, get back a
+   link to open in the editor **and an inline image** of the Space.
+2. **Create** a new Space from a request: e.g. hand the AI the plan for a
+   workshop and have it set up the board, a tab per part of the session.
+3. **Edit** an existing Space: full rework of a tab, or a small adjustment.
+
+A **Space** is what a person makes in livehuddle: a shared board a team meets and runs workshops on. The api calls
+it a document, and so do the tool names and arguments (`create_document`, `documentId`): renaming a tool breaks the
+clients that call it. Every tool title and description, the server instructions, the schema resource and the
+prompts say Space.
 
 **The calling LLM does the thinking; the MCP is only the bridge.** This is the
 load-bearing decision. livehuddle has no model of its own to proxy to (there is no
 in-editor AI assistant). The user already has a capable model in front of them; the
-MCP's job is to (a) hand that model the diagram **schema** so it can emit
+MCP's job is to (a) hand that model the element **schema** so it can emit
 well-formed elements, (b) **validate + lay out** what it produces, and (c)
 **persist** it through the same REST API the web app uses. The MCP carries no
 model of its own and makes no LLM calls.
@@ -175,7 +180,7 @@ browser. A token minted for the CLI is named "livehuddle CLI".
 
 ## 4. Tools
 
-Thirteen tools, all for documents, besides the deprecated names ([§4.18](#418-deprecated-tool-names)). The search/view capability is two tools (find, then read); create,
+Thirteen tools, all for Spaces (named for documents, as above). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates)), search_icons the icon catalogue
 ([§4.5a](#45a-search_icons)) and list_images the user's image gallery ([§4.5b](#45b-list_images));
@@ -262,7 +267,7 @@ canvas overrides; the model then personalises labels via `update_document`'s
    "Generated" folder, then the Explorer showed a Generated view;
    provenance is a filter, not a place.)
    The create also sends the creation `intent` of the first tab it built and the
-   template it used (`{ mode: "workshop" }`, with its kind for an event-storming board and its family for a
+   template it used (`{ mode: "workshop" }`, with its family for a
    document from a template family such as a retrospective), so with no folder named the server files it in the
    user's [default folder](../013-workspace/default-folders.md) for that intent,
    when they have one.
@@ -394,10 +399,10 @@ A static, cacheable MCP **resource** (e.g. `livehuddle://schema/elements`)
 returning a compact description of the element schema: the element types
 (`shape` / `text` / `sticky` / `arrow` / `table` / …), the shape vocabulary,
 required fields, the pinned-arrow anchor convention (`from.e → to.w` etc.), and
-the design rules that make diagrams read well (don't set colours: the theme
+the design rules that make boards read well (don't set colours: the theme
 owns them, a sticky's own colours excepted; size siblings consistently; prefer
 pinned arrows), and the content fields of the kinds that carry content (§4.7a). This is **how the
-model produces high-quality diagrams**: the schema is presented once, declaratively,
+model produces high-quality boards**: the schema is presented once, declaratively,
 rather than baked verbatim into every tool description. The same essentials are
 also summarised in the MCP server `instructions` and in the `create`/`update`
 input-schema field descriptions, so a client that ignores resources still gets
@@ -581,18 +586,17 @@ unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.m
 - `direction` (auto): `down` (ranks top to bottom) or `right` (left to right), for `flow` and `tree` alike. Auto is
   `down` for a flowchart (it reads down the page, as the template does) and for a graph of more than 150 nodes; any
   other flow is laid out both ways and keeps the one whose aspect is nearer a landscape page (3:2). A tree's auto is
-  `down`, the org chart; `right` puts its roots at the left and each generation in a column to the right of the one
+  `down`, a hierarchy; `right` puts its roots at the left and each generation in a column to the right of the one
   before, every parent centred beside its own children, its angled lines bending across rather than down, and no
   leaves stacked (across the page a family is already a column). The other styles have a shape of their own (a
-  ring, lanes left to right, a radial map, a board, lifelines) and take no direction.
-- `style` (`flow`): `flow` is the layered layout, `tree` the tidy tree (an org
-  chart, a hierarchy; a parent below the root whose two or more children are all leaves stacks them in a column
-  under it, indented, joined by a bus down its lower-left quarter, the compact org chart; its lines carry no
-  arrowheads, since a tree shows belonging, unless an edge asks with `ends`; a node's `role` goes into its note, since livehuddle
-  has no person card), `mindmap`, livediagram's mind map, is refused naming the styles there are (livehuddle has no mind node, [Editor modes](../007-editor/editor-modes.md)), `lanes` a swimlane diagram (each group
+  ring, lanes left to right) and take no direction.
+- `style` (`flow`): `flow` is the layered layout, `tree` the tidy tree (a hierarchy; a parent below the root whose two or more children are all leaves stacks them in a column
+  under it, indented, joined by a bus down its lower-left quarter, the compact tree; its lines carry no
+  arrowheads, since a tree shows belonging, unless an edge asks with `ends`; a graph node takes no `role`, since
+  livehuddle has no person card), `mindmap`, livediagram's mind map, is refused naming the styles there are (livehuddle has no mind node, [Editor modes](../007-editor/editor-modes.md)), `lanes` a swimlane diagram (each group
   a lane, one under another, its label in the lane's header strip (a heading, a size up from the steps, the strip as
   wide as the longest title needs up to the swimlane template's, the columns 48 px apart); the flow runs left to right across the lanes and
-  a node outside every group gets an unnamed lane), `sequence` is refused as `mindmap` is (there is no sequence diagram), `storm` an event-storming board ([Event storming](../021-event-storming/event-storming.md#agents)), `cycle` a ring (the nodes in order clockwise from the top, each
+  a node outside every group gets an unnamed lane), `sequence` is refused as `mindmap` is (there is no sequence diagram), `storm` is not a style (livehuddle has no Event Storming board), `cycle` a ring (the nodes in order clockwise from the top, each
   edge a curved arrow following the ring's arc, leaving and entering its stops along the ring's tangent so every arc bows
   out alike; an edge between stops that are not ring neighbours, as a star's spokes are, goes round the outside of the
   stops between them the shorter way, each hop further a lane further out, never along the ring behind them; a node with no edge at all at the ring's centre, sized on its own so a longer centre label never grows
@@ -821,11 +825,12 @@ commands / quick actions, so a user finds what the server does without knowing
 the tool names. Pure text (no api calls, no auth to list); each steers the model
 to the right tools and the graph-first path:
 
-- **`diagram_this`** `{ description }`: create a diagram from a description via
-  create_document + the graph input, and return a link.
+- **`set_up_session`** `{ description }`: set up a Space for a meeting or workshop from its plan, a tab per part
+  of the session from list_templates' session boards via create_document, then the labels via update_document,
+  and return a link.
 - **`flowchart_from_steps`** `{ steps }`: turn an ordered step list (with
   branches) into a flowchart (diamond decisions, labelled branch edges).
-- **`show_my_document`** `{ name }`: find a document by name and read_document it
+- **`show_my_document`** `{ name }` ("Show my Space"): find a Space by name and read_document it
   inline.
 
 Registered in `apps/mcp/src/prompts.ts` (the show-my prompt by `registerShowMyPrompt`, `../packages/mcp-kit/src/prompts.ts`), wired in `buildServer` beside the tools
@@ -1047,26 +1052,6 @@ directories prefer dot-notation trees (`document.create`); it is not adopted,
 because several clients restrict a tool name to `[a-zA-Z0-9_-]`, and a rename
 would break every existing connection and the cross-references between tool
 descriptions.
-
-<!-- legacy-names -->
-
-### 4.18 Deprecated tool names
-
-The tools named for the container were `*_diagram` / `find_diagrams` before it became a document ([Document](../006-document/document.md)). Each `*_document` tool is also registered under its old name until **30 April 2027** (`apps/mcp/src/legacy-tool-names.ts`, wired in `registerTool`):
-
-- The alias is the same tool: the same handler, behaviour annotations and output schema, and its input checked
-  against the same schema, refused in the SDK's own words (`Input validation error: Invalid arguments for tool <old
-name>: ...`).
-- Its title ends in "(deprecated)" and its description is one line: "Deprecated: use `<new name>` instead; this name
-  is removed on 2027-04-30. It takes the same input as `<new name>`.", so a model reading the tool list prefers the
-  new name.
-- It lists an open input (any object), so the tool list carries each input schema once. The element format inside
-  `create_document` and `update_document` is most of the list: listing it again under the old names made them 22% of
-  every tool list (67,937 of 308,741 characters); without it they are 4% (10,733 of 251,537).
-- A call logs `[mcp] deprecated tool name <old> -> <new>` and counts as `Mcp·Used·<NewName>`, so the feature's history stays one line.
-
-The output literals that named the container changed with it: `renamed`, `deleted` and `restored` report `document` where they reported `diagram`.
-<!-- /legacy-names -->
 
 - **Previews**: an emoji icon, sticker or reaction pad, which needs a colour-emoji font a Worker lacks,
   draws from its Twemoji SVG (release 15.1.0 on jsDelivr, CC-BY 4.0, in `THIRD_PARTY_NOTICES.md`), fetched by its

@@ -1,7 +1,7 @@
 # Console logging
 
 How the editor (`apps/editor`) writes to the browser console. Every decision point logs a line with
-a recognisable fingerprint (`[board-scene] landed`, `[photo-detect] classical`), so a behaviour is
+a recognisable fingerprint (`[board-scene] landed`), so a behaviour is
 traceable from the console. A production console stays clean all the same: the people using the
 app are not reading it, and a page that writes a dozen lines on every load hides the one warning
 that matters.
@@ -14,7 +14,7 @@ that matters.
   - always in development and in tests (any build but production);
   - in a production build only when the **debug flag** is set for the browser:
     `localStorage['livehuddle:debug']` holding `*` (everything) or a comma-separated list of
-    fingerprint scopes (`board-scene,photo-detect`; the scope is the text in the message's leading
+    fingerprint scopes (`board-scene`; the scope is the text in the message's leading
     brackets, or the word before its first colon). The flag is read once per page load: set it in
     the console, then reload.
 - **Warnings** (`console.warn`): something went wrong but the app carried on. Always shown.
@@ -30,13 +30,11 @@ under `apps/editor` (a fixture generator) writes its own output with `process.st
 
 A web worker has no `localStorage`, so in a production build its own trace lines are off; in
 development they show as anywhere else. A trace line a spec or a user relies on is therefore
-written by the page, from the worker's answer: the boundary model's `[photo-model] ready on …` and
-`[photo-model] N notes on … in … ms` are written by its client (`apps/editor/lib/photo-model/client.ts`)
-as the `ready` and `cues` answers arrive.
+written by the page, from the worker's answer.
 
 ## End-to-end tests
 
 The end-to-end suite runs the production build, so its fixture sets the debug flag (`*`) on every
-page of every browser context it creates. Specs that wait for a trace line (the photo
-reader's `[photo-…]`) see it exactly as before, while a real
+page of every browser context it creates. Specs that wait for a trace line see it exactly as before,
+while a real
 production page never writes it.

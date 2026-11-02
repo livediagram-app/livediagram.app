@@ -219,13 +219,12 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps,
     Mermaid import/export (flowchart, state, ER), graph authoring, freehand +
     shape recognition, rich text, tables, comments + mentions, element ops and
-    deltas, sessions (Q&A, polls, quizzes), slide decks, tab kinds and the
-    event-storming lanes + photo placement, names, themes, element shadows,
+    deltas, sessions (Q&A, polls, quizzes), slide decks, tab kinds, names, themes, element shadows,
     the headless SVG renderer's fidelity and coverage, validation.
   - `apps/editor`: the lib layer's helpers (api client + Offline Mode store,
     auto-align, canvas geometry + backgrounds, export/import,
     search, templates + theme catalogues, user preferences, telemetry policy,
-    placement, help deep links, the photo-model worker's plumbing), the pure
+    placement, help deep links), the pure
     helpers behind hooks, and a large jsdom layer of hook and component tests
     (below). Cross-app guards: every `HELP_ARTICLES` deep link resolves to a
     real help page.
@@ -241,20 +240,13 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     (cascades, the schema), the `DocumentRoom` Durable Object's rules, ledger
     and multiplayer paths, every route family (documents, tabs, share, images,
     thumbnails, folders, teams, trash, timeline, activity, tokens, OAuth, unfurl,
-    events, AI incl. the photo reader), the Timeline's writers and its catalogue
+    events), the Timeline's writers and its catalogue
     against its spec, the image reference index, email lifecycle, the OpenAPI
     manifest ↔ dispatch drift guards, response helpers, MIME sniffing.
   - `packages/api-schema`: the wire contracts both sides share: the SHA-256
     contract (FIPS 180-4 vectors), the telemetry-event validator's closed
     vocabulary + type-pattern gate, request auth, image limits, trash and poll
     shapes, error telemetry and page views.
-  - `packages/sticky-vision`: the classical sticky-note detector for the photo
-    import ([Event storming](../021-event-storming/event-storming.md)): colour
-    classification, contours, seams, necks and spill, the boundary-model hybrid,
-    and a ground-truth set of photos scored against their truth.
-  - `packages/sticky-model`: the learned boundary model's browser-safe parts
-    and training helpers: cues, tiling, stride, resize, quantisation, decode and
-    the wall / notes layout.
   - `packages/ui`: the shared primitives (Button, Tooltip, HoverCard, hints),
     appearance boot + store, SEO helpers, icons and glyph ink, optical centring,
     and the Timeline's cards, stacking, grouping, tones and categories, rendered

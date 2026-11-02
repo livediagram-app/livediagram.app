@@ -18,9 +18,8 @@ with the elements only they offered ([Purpose](../001-project-vision/purpose.md#
 
 ## Kinds versus modes
 
-- **A tab kind is for a very specific use** whose notation, rules and data are its own: the
-  [event-storming board](../021-event-storming/event-storming.md) is one. It is a Workshop tab that keeps its own
-  notation palette.
+- **A tab kind is for a very specific use** whose notation, rules and data are its own. livehuddle has none: its
+  Event Storming boards stayed with livediagram.
 - **Everything else is the general tab** (`kind: 'diagram'`, the default, a stored name kept for compatibility).
 
 ## There is no switch
@@ -80,10 +79,9 @@ There is one palette layout, Workshop's (`apps/editor/components/palette/palette
 - **Identity is shared, arrangement is the layout's.** A category's glyph and its default label, blurb and band live
   in the category catalogue (`PALETTE_CATEGORIES`); a tile's identity in the tile catalogue (`PALETTE_TILES`).
 - **A layout entry** names a category and may override its `label`, `description` and `band`, and list its `tiles` by
-  id, in order. With no list it holds the category's own tiles (`tilesForCategory`). `boardOnly` keeps a category to
-  event-storming boards.
+  id, in order. With no list it holds the category's own tiles (`tilesForCategory`).
 - **Catalogue categories** (My shapes, Icons, Stickers) are bodies with their own content and take no tile list.
-- **Popular** is the landing category (an event-storming board lands on its notation): Square, Sticky note, Text,
+- **Popular** is the landing category: Square, Sticky note, Text,
   Frame, Arrow, Image, then behind a divider (`DIVIDE`) the openers **Ask**, **Tools**, **Record** and **React**
   (`palette-openers`), each opening its Collaborate category in a popover under it.
 - The tool a tab starts with is **Select**; on a phone **Hand**. An embedded viewer always starts on Hand.
@@ -101,5 +99,5 @@ There is one palette layout, Workshop's (`apps/editor/components/palette/palette
 ## References
 
 [Document](../006-document/document.md), [Workshop mode](../012-collaboration/workshop-mode.md),
-[Event storming](../021-event-storming/event-storming.md), [Toolbar layout](toolbar-layout.md),
+[Toolbar layout](toolbar-layout.md),
 [Zen mode](zen-mode.md).

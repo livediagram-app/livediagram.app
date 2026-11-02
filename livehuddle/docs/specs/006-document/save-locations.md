@@ -7,7 +7,7 @@ one of them: it is a mirror of cloud documents, not a place a document is stored
 
 **Nobody is asked.** The New Canvas wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
 has no Location step: every new document is stored in the default location for who is creating it, below. A document
-moves between the two afterwards with [Offline Mode](offline-mode.md)'s **Sync Canvas** and **Take Offline**.
+moves between the two afterwards with [Offline Mode](offline-mode.md)'s **Sync Space** and **Take Offline**.
 (A Location step would be answered with the default by most people before they had anything on the canvas.) A
 document in This Browser says what it is on the document itself: the editor header's
 **This Browser** badge and its legend, [Offline Mode](offline-mode.md#this-browser-badge--explorer).)
@@ -45,7 +45,7 @@ Why a guest starts local: [Auth + guest access → Guest documents start local](
 
 ## On the start screen
 
-Nobody is asked, but the start screen offers one switch, **Sync Canvas to Server**, in a quiet strip under its choices
+Nobody is asked, but the start screen offers one switch, **Sync Space to Server**, in a quiet strip under its choices
 (a mode's start), so a new canvas can change place while it is still empty without a trip to the Explorer. It reflects
 where the canvas is **now**, so it starts as the default above: **off** for a guest (This Browser), **on** for a signed-in
 person (livehuddle).
@@ -72,7 +72,7 @@ person (livehuddle).
 - **When it shows** (`showsSaveSwitch`): the canvas has loaded and the reader and their sign-in are known; the reader
   owns it and can edit it; it has one tab with nothing on it; it has no live share link, is not open through one and
   is not in a team; nobody else is in it; and the editor is not embedded or in another app's workbench. Anywhere else
-  the row is hidden, and the Explorer's Sync Canvas and Take Offline stay the way to move it. Once a move has started the
+  the row is hidden, and the Explorer's Sync Space and Take Offline stay the way to move it. Once a move has started the
   row stays until it lands.
 - **Built once.** The switch (`Switch`) and the row (`SaveSwitch`, `SaveSwitchRow`, its words and `showsSaveSwitch`)
   are `@liveworkspace/ui`'s (`packages/ui/src/Switch.tsx`, `packages/ui/src/save-switch/`), shared by every app. This
@@ -140,7 +140,7 @@ is.
 
 - `apps/editor/lib/save-locations.ts` (+ test): the ids and helpers above.
 - `apps/editor/app/new/useNewDocumentLocation.ts`: `resolveSaveLocation`, the location every create from `/new` uses.
-- `apps/editor/components/start/StartSaveSwitch.tsx`: the start screen's Sync Canvas to Server switch, over `@liveworkspace/ui`'s `SaveSwitch` ([On the start screen](#on-the-start-screen)).
+- `apps/editor/components/start/StartSaveSwitch.tsx`: the start screen's Sync Space to Server switch, over `@liveworkspace/ui`'s `SaveSwitch` ([On the start screen](#on-the-start-screen)).
 - `apps/editor/app/new/NewSaveSwitch.tsx`: the same row in `/new`'s wizard, choosing the create's location.
 - `apps/editor/app/new/page.tsx`: derives the offline create branch from the location id.
 

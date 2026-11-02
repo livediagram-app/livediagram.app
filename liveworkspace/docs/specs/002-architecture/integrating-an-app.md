@@ -217,5 +217,7 @@ person sees lists it.
 
 Held today: **livehuddle** (`livehuddle.app`, port block 3500, its item a **Space**, its index kind `space`), by
 [livehuddle's platform registration](../../../../livehuddle/docs/specs/016-platform/platform-registration.md).
-It ships no MCP server in its first version, so the status checks treat the MCP server as optional per app
-([status.md](../009-status/status.md#where-the-checks-go)).
+It ships every platform-wide feature, as the other apps do (owner, 2026-11-02): its MCP server, which the status
+checks look at ([status.md](../009-status/status.md#where-the-checks-go)), and a Community, whose service takes its
+posts under `COMMUNITY_KEY_LIVEHUDDLE` ([Community](../007-community/community.md#adding-an-app)), with This
+Browser's conversions and the Share dialog's Community tab in its `AppItems`.

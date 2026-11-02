@@ -218,7 +218,7 @@ Importers depend on `index.ts` (the types, `attachImportImages`, `describeImport
 
 No new persisted fields. A stored image sets the existing `ImageElement.imageId`, `naturalWidth`,
 `naturalHeight`. Cloud: an image in the media service through the existing endpoint. Offline: the
-`data:` URL lives in the tab body in IndexedDB and re-homes on Sync Canvas (existing
+`data:` URL lives in the tab body in IndexedDB and re-homes on Sync Space (existing
 `uploadEmbeddedImages`). No migration.
 
 ## Errors and edge cases

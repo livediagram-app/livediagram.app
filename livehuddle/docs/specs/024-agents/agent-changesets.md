@@ -141,13 +141,6 @@ person lets go. The CLI's `--wait-held <seconds>` retries for it.
 
 The room's answer is the source; when the room cannot be reached, nothing counts as held and the api logs it.
 
-## Strict sources
-
-A changeset on a tab bound to a source in strict compatibility
-([Diagram sources](../027-repositories/diagram-sources.md#strict)) is compiled, then checked against the bridge's
-capabilities before the write; a result holding residue is refused `422 not_expressible`, naming each element and
-field, and nothing is applied. A relaxed tab is never refused for residue.
-
 ## Revert
 
 - `POST /api/documents/:id/changesets/:changesetId/revert` applies the changeset's inverse as a new changeset by the
@@ -190,7 +183,7 @@ erases nothing:
   at call time. A person's change between `read_document` and the call is overwritten only on the fields the ops
   set.
 - `remove` is the edit operation `rm`: arrows pinned to the element go with it and are listed.
-- Landing event-storming notes on lanes and coercing shapes are the engine's, for every front door.
+- Coercing shapes is the engine's, for every front door.
 - `rename_document` with a tab renames through the tab name route.
 
 ## Limits

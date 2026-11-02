@@ -226,7 +226,7 @@ A guest's new document is **This Browser** by default ([Offline Mode](../006-doc
 **Why.** A guest cloud document is keyed to the guest token held in this browser's `localStorage`. Clearing site data loses that token, and with it every document under its guest: the server keeps the rows for good, but nobody can reach them again. Many first visits are someone trying the product out, so most of those rows are orphans the moment they are written. A document in This Browser is exactly as durable for a guest (the same clear wipes IndexedDB), costs the server nothing, and opens without a round trip ([Offline Mode → Instant open](../006-document/offline-mode.md#instant-open)).
 
 - **Signed-in people are unchanged.** Their default stays livehuddle.
-- **Moving to the server is always the guest's own act**: Sync Canvas (from the Share dialog, which explains why first, [Offline Mode → Sharing a document in This Browser](../006-document/offline-mode.md#sharing-a-document-in-this-browser), or the Explorer), or the prompt after signing in (below). No guest document is uploaded silently.
+- **Moving to the server is always the guest's own act**: Sync Space (from the Share dialog, which explains why first, [Offline Mode → Sharing a document in This Browser](../006-document/offline-mode.md#sharing-a-document-in-this-browser), or the Explorer), or the prompt after signing in (below). No guest document is uploaded silently.
 - **Nothing is purged.** Guest cloud documents already on the server stay where they are; this changes where new ones start, not what happens to old ones.
 
 ### Who is a guest, before sign-in answers
@@ -256,10 +256,10 @@ asking the api.
 
 Signing in never moves a document in This Browser by itself ([Offline Mode → Auth / guest interaction](../006-document/offline-mode.md#auth--guest-interaction)). Instead, once auth has settled signed in, a page that shows the Explorer or the editor checks this browser's documents in This Browser. If there are any, it offers to move them:
 
-- **Move Canvases in This Browser to Your Account?** A dialog lists each document in This Browser (name, last edited), every one ticked, with **Move** and **Not Now**.
-- **Move** runs Sync Canvas ([Offline Mode → Save to server](../006-document/offline-mode.md#save-to-server-offline--cloud)) on each ticked document in turn, showing progress. A document that fails stays This Browser and is named in the result; the rest move.
+- **Move Spaces in This Browser to Your Account?** A dialog lists each document in This Browser (name, last edited), every one ticked, with **Move** and **Not Now**.
+- **Move** runs Sync Space ([Offline Mode → Save to server](../006-document/offline-mode.md#save-to-server-offline--cloud)) on each ticked document in turn, showing progress. A document that fails stays This Browser and is named in the result; the rest move.
 - **Not Now** is remembered for this account in this browser (`livehuddle:v2:local-move-dismissed:<userId>`), with the count of documents in This Browser at the time. The dialog comes back only when that count grows, so a person who keeps a deliberate document in This Browser is not asked again about it.
-- The same move is always reachable by hand: **Sync Canvas** on any document in This Browser.
+- The same move is always reachable by hand: **Sync Space** on any document in This Browser.
 
 ## Implications for how we build
 

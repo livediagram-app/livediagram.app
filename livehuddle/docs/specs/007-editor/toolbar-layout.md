@@ -24,8 +24,7 @@ flyout of its tiles:
   Eraser / Format / Laser / Spotlight / Isometric / Zen (Avatar only while in it), [Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md))
   as a compact icon trigger, opening the banded tile grid.
 - **Then the category bar** ("The category bar").
-- **Far right: Search** (a magnifier), on every strip but an event-storming board's (see
-  "Search: every element type").
+- **Far right: Search** (a magnifier), on every strip (see "Search: every element type").
 
 ## The category bar
 
@@ -147,16 +146,13 @@ A strip shows one category at a time, so finding an element means knowing which 
 
 - **Where:** the last control on the strip, behind a divider, with a hover card ("Search Elements"). On a phone it
   stays put at the end of the strip.
-- **Not on an event-storming board:** the notation is the palette there, as the board hides the
-  pickers.
 - **Opening it clears the way**: a tile armed to place is let go (its "Click to drop" banner goes), and the
   session timer's pill stands aside while the panel is open, since both sit where the panel hangs.
 - **The popover** hangs from the button's right edge like More's, 26rem wide (spanning the
   screen between the gutters on a phone), and is capped to the window, scrolling when long. It is a
   strip menu: opening it closes any other (More, the pickers), and a press outside or Escape closes
   it; Escape hands the focus back to the button that opened it (a press leaves focus where it landed), where it
-  had fallen to the page. **S** opens it too, wherever the strip is shown (an editor, not an
-  event-storming board, the chrome not hidden); everywhere else S keeps its old meaning, the legacy
+  had fallen to the page. **S** opens it too, wherever the strip is shown (an editor, the chrome not hidden); everywhere else S keeps its old meaning, the legacy
   alias of Select. The field's clear button (×, once there is text) clears the query and returns to
   the tab's own types. Opening it focuses its search field (not on a phone, where focusing raises the keyboard over
   it).
@@ -178,11 +174,10 @@ A strip shows one category at a time, so finding an element means knowing which 
   order. The image-upload tiles are left out where the editor has none, as everywhere else.
 - **Two sections:**
   - **The palette's elements** first, as the palette's tile grid.
-  - **Elsewhere**, below, an accordion with a count: the matching tiles no category of the palette offers (on a
-    general tab, the event-storming notation). **Closed by default** each time the popover opens. Opened, it stays
+  - **Elsewhere**, below, an accordion with a count: the matching tiles no category of the palette offers. **Closed by default** each time the popover opens. Opened, it stays
     open while typing. It is absent when nothing outside the palette matches.
 - **Before anything is typed** it lists only the element types **already on the tab**, under a
-  small "On This Tab" label, each once, in layout order (the notation's in its accordion): the popover stays short, and the tools a tab is actually built from are one click away.
+  small "On This Tab" label, each once, in layout order: the popover stays short, and the tools a tab is actually built from are one click away.
   Listing the whole palette made a popover taller than the window. A tile and an element meet on a
   **signature**: the element type plus the creation-time choice the element records (a shape's
   kind and its session tool, reaction, selection mode, estimate scale or plan view; a sticky's
@@ -270,7 +265,6 @@ every add.
 - **Media**: Image | the embeds | Avatar.
 - **Data**: the charts (Pie, Bar, Line, Legend) | the meters (Progress, Donut, Rating).
 - **Behaviour**: the Selection Mode buttons | everything else.
-- **Event Storming**: the notation | Hotspot.
 
 Popular divides where its tiles' own groups do (after the Diamond), and the Icons and Stickers
 catalogues have none. A category
@@ -409,9 +403,6 @@ their bottom-row buttons. What changes to fit the width:
     for the Explorer: it would cover the popover's top.
   - Without a strip (zen, read-only, the welcome flow) the messages stay the
     top-centre pills they are elsewhere.
-- Event-storming boards ([Event storming](../021-event-storming/event-storming.md)) hide the strip's pickers, and the strip shows the notation's tiles, led by
-  the board's **Add from Photo** (an icon button with a hover card) where the deployment offers
-  photo import.
 - Read-only sessions have no palette, so no strip. The menu button still
   shows.
 - Zen hides the strip and the menu button along with the rest of the chrome.

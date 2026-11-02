@@ -8,18 +8,16 @@ which fixes what that tab is. Every tab is worked on in Workshop, livehuddle's o
 
 ## Domain language
 
-| Term                     | Means                                                                                        |
-| ------------------------ | -------------------------------------------------------------------------------------------- |
-| **document**             | The top-level container: its name, owner, location, share links and tabs.                    |
-| **tab**                  | One page of a document, with its own canvas, layers and elements.                            |
-| **tab kind**             | What a tab is for (`TabKind`, `packages/document/src/tab-kind.ts`).                          |
-| **diagram**              | The general tab kind (a stored name): every element type, worked on in Workshop.             |
-| **event-storming board** | The tab kind for event storming ([Event storming](../021-event-storming/event-storming.md)). |
-| **editor mode**          | How a tab is worked on: always Workshop ([Editor modes](../007-editor/editor-modes.md)).     |
+| Term            | Means                                                                                    |
+| --------------- | ---------------------------------------------------------------------------------------- |
+| **document**    | The top-level container: its name, owner, location, share links and tabs.                |
+| **tab**         | One page of a document, with its own canvas, layers and elements.                        |
+| **tab kind**    | What a tab is for (`TabKind`, `packages/document/src/tab-kind.ts`).                      |
+| **diagram**     | The general tab kind (a stored name): every element type, worked on in Workshop.         |
+| **editor mode** | How a tab is worked on: always Workshop ([Editor modes](../007-editor/editor-modes.md)). |
 
 - As a term, "diagram" names the tab kind, never the container. Prose may still say diagram
   where the text is about drawing ([Choosing the word in prose](#choosing-the-word-in-prose)).
-- "Board" on its own is not a term; say event-storming board.
 - A tab kind is reserved for a very specific use; anything else stays a general tab.
 - Specs, UI copy and code name the container a document.
 
@@ -36,7 +34,7 @@ Prose follows the context:
   trashing, opening, or a mix of tab kinds.
 - **Space** is the word a person reads for the thing they make (D6 in
   [Open decisions](../005-project-roadmap/open-decisions.md)), once the product's copy moves to it (build plan
-  step 6). An event-storming board is never called a diagram.
+  step 6).
 - livehuddle is not a diagramming tool ([Purpose](../001-project-vision/purpose.md)); "diagram" in prose names
   livediagram's work.
 - A new tab kind joins the table above; the container keeps its name.

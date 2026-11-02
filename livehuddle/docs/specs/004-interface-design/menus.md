@@ -135,9 +135,8 @@ The same rule covers the close cousins of a menu item, the controls that name an
 element or add one:
 
 - **Palette tiles**: every add-tile's name and caption ("Add Sticky Note" captioned "Sticky
-  Note", "Add Domain Event Note"), the Toolbar strip's **Add Page** and **Add from Photo**, and
-  the Draw dock's shapes. A catalogue entry (an icon, a sticker, a technology, an Event Storming
-  note kind) keeps its own sentence-case name and its tile Title Cases it on the way
+  Note"), the Toolbar strip's **Add Page**, and the Draw dock's shapes. A catalogue entry (an icon,
+  a sticker, a technology) keeps its own sentence-case name and its tile Title Cases it on the way
   (`headlineCase` in `@livehuddle/api-schema`).
 - **The quick-add ring's options**: "Add Row", "Add Column", "Add Child", "Add Sibling", "Add
   Point", "Add Stat".

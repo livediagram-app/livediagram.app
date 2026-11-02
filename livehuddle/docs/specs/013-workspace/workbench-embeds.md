@@ -23,8 +23,8 @@ A workbench embed has a **scope**, chosen when it is minted and fixed for the li
 | `document`  | `/embed/workbench?d=<id>`                 | that document (or its asked tab)   | one document                                       |
 | `workspace` | `/embed/workbench/explorer[/folder/<id>]` | Explorer Home, or the asked folder | the person's whole workspace, as the Explorer does |
 
-The **workspace** scope is the Explorer itself inside the workbench: a workbench keeps the person's diagrams one
-click away, and a project's folder (a [repository link](../027-repositories/repository-link.md)'s) beside its code.
+The **workspace** scope is the Explorer itself inside the workbench: a workbench keeps the person's boards one
+click away, and a project's folder beside its code.
 It never starts on `/new` or the landing page: a frame with no folder starts on Explorer Home
 ([Explorer Home](explorer-home.md)). Where this page says "the document" without a scope, it means the document
 scope's document, or the document open in a workspace frame.
@@ -123,7 +123,7 @@ second, explicit approval, never an existing pairing widened in silence.
   cannot probe the owner's gallery, [Images](../009-elements/images.md) "Size cap") and reading its images; reading the person's display identity, preferences
   and shape libraries; the catalogues. Everything else is refused `403 workbench_confined`: ownership powers
   (share links, password, move, delete, publish, copy), other documents, the person's library and folders,
-  writing preferences or the profile, the guest migration, tokens, teams, the account and the photo reader. The
+  writing preferences or the profile, the guest migration, tokens, teams and the account. The
   editor offers none of them in a workbench embed: the person's agent sits beside it.
 - **Revocable.** Revoking the minting token ends its sessions; the page learns it on its next request or the room's
   close and turns read-only.
@@ -141,7 +141,7 @@ The bullets above are the document scope. A **workspace** session is confined di
   is one click away for it.
 - **Never the account.** Refused `403 workbench_confined`, as in the document scope: the profile, preferences'
   writes, the guest migration, API tokens and pairings, team administration (invites, members, roles, plans,
-  billing), the account itself, and the photo reader (the person's agent sits beside the frame).
+  billing) and the account itself (the person's agent sits beside the frame).
 - **Never more than the token.** Each request is capped by the minting token's level and by the person's own access
   now, as in the document scope: a view token gives a frame that browses and reads.
 
@@ -226,7 +226,7 @@ read: livehuddle tab view 3h9x2a --tab 0b34 --view show --ref 146b
 
 What a workbench does to fit this contract (its own documentation holds the detail):
 
-- **Opening.** A workbench opens a document in a view of its own: from a `*.livehuddle.json` mirror file (with its JSON
+- **Opening.** A workbench opens a document in a view of its own: from a `*.livehuddle.json` pull file (with its JSON
   one step away) or from a livehuddle document link. It mints through the person's own CLI
   (`livehuddle workbench open ... --origin <its origin> --json`), so it never holds a livehuddle credential, and
   shows the one command that fixes a missing CLI or sign-in.
