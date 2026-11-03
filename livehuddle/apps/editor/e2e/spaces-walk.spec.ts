@@ -92,6 +92,10 @@ test('two people walk a Space and each sees the other move', async ({ page, brow
     .poll(() => leftOf(peer(ownerPage)), { timeout: 10_000 })
     .toBeGreaterThan(guestSeenAt + 20);
 
+  // Each side as its person sees it, for the report.
+  await ownerPage.screenshot({ path: test.info().outputPath('owner.png') });
+  await guestPage.screenshot({ path: test.info().outputPath('guest.png') });
+
   await ownerPage.context().close();
   await guestPage.context().close();
 });
