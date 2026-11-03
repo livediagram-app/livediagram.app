@@ -78,6 +78,9 @@ export type SessionAttachment = {
   //     room asks for a fresh one ROOM_GRANT_ASK_BEFORE_MS before (`renewAsked`) and drops the socket after.
   grantExp?: number | null;
   renewAsked?: boolean;
+  //   - `batches`: the session's editor takes a busy room's coalesced `batch` frames, from its `hello`
+  //     (docs/specs/015-api/api.md "A busy room bounds its presence fan-out").
+  batches?: boolean;
 };
 
 // A person tag is a SHA-256 hex digest; the clamp keeps a forged header from bloating the attachment.

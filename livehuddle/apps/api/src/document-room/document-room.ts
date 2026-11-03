@@ -105,6 +105,7 @@ import {
   type DocumentOutline,
 } from './document-content';
 import { DOCUMENT_OUTBOX, drainOutbox } from './document-outbox';
+import { PresenceRelay, type RelaySession } from '@liveworkspace/api-kit/room-presence-relay';
 import { exportDocumentFile, importDocumentFile, type DocumentFileImport } from './document-file';
 import { importMigratedDocument } from './document-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
@@ -1167,6 +1168,21 @@ export class DocumentRoom extends DurableObject<Env> {
   // made that a structured-clone read per peer per packet. Lost with the
   // object when the room hibernates, and read again on the next frame.
   private readonly scopes = new WeakMap<WebSocket, string | null>();
+  // The sample streams, walking characters and cursors (docs/specs/015-api/api.md "A busy room bounds its
+  // presence fan-out"): sent to a character's tab only, and coalesced per socket in a busy room.
+  private readonly presenceRelay = new PresenceRelay<WebSocket>({
+    sockets: () => this.state.getWebSockets(),
+    sessionOf: (ws) => relaySessionOf(this.readSession(ws)),
+    frameFor: (ws, payload, serialized) => this.frameFor(ws, payload, serialized),
+    send: (ws, frame) => {
+      try {
+        ws.send(frame);
+      } catch {
+        this.opRates.delete(ws);
+      }
+    },
+    schedule: (fn, ms) => void setTimeout(fn, ms),
+  });
   private scopeOf(ws: WebSocket): string | null {
     if (this.scopes.has(ws)) return this.scopes.get(ws) ?? null;
     const scope = this.readSession(ws)?.tabScope ?? null;
@@ -1405,7 +1421,10 @@ export class DocumentRoom extends DurableObject<Env> {
       // smuggle arbitrary keys or oversize strings into the attachment —
       // see the size note on SessionAttachment.
       const presence = helloPresence(msg.participant, session);
-      ws.serializeAttachment({ ...session, presence } satisfies SessionAttachment);
+      const batches = (msg as { batches?: unknown }).batches === true;
+      const hello = { ...session, presence, batches } satisfies SessionAttachment;
+      ws.serializeAttachment(hello);
+      this.presenceRelay.noteSession(ws, relaySessionOf(hello));
       // Where the ordered stream stands as this session joins, so a later
       // reconnect asks for what came after it, not for the whole log.
       this.sendTo(ws, { kind: 'cursor', epoch: this.epoch, seq: this.seq });
@@ -1499,7 +1518,10 @@ export class DocumentRoom extends DurableObject<Env> {
           if (typeof besideTabId === 'string' && !session.tabScope)
             sender.besideTabId = besideTabId.slice(0, MAX_TAB_ID_LEN);
           else delete sender.besideTabId;
-          ws.serializeAttachment({ ...session, presence: sender } satisfies SessionAttachment);
+          const moved = { ...session, presence: sender } satisfies SessionAttachment;
+          ws.serializeAttachment(moved);
+          this.presenceRelay.noteSession(ws, relaySessionOf(moved));
+          this.presenceRelay.catchUp(ws, sender.id);
         }
       }
       // A follow is the room's to keep, never relayed: it tells the people followed, on their own sockets.
@@ -1535,6 +1557,7 @@ export class DocumentRoom extends DurableObject<Env> {
           }
           return;
         }
+        if (this.presenceRelay.relay(ws, sender.id, msg.op)) return;
         this.broadcast({ kind: 'op', from: sender.id, op: msg.op }, ws);
       } else {
         // No comment author id leaves the room, whatever a client sent: it is
@@ -1755,6 +1778,7 @@ export class DocumentRoom extends DurableObject<Env> {
     // A follower leaving is one fewer for the person they followed.
     if (leaving?.following) this.sendFollowers(leaving.following, ws);
     const presenceId = leaving?.presence?.id;
+    this.presenceRelay.forget(ws, presenceId);
     if (presenceId) {
       this.baton.startGrace(presenceId);
       void this.selections.drop(presenceId).catch(() => {});
@@ -1845,4 +1869,15 @@ export class DocumentRoom extends DurableObject<Env> {
       }
     }
   }
+}
+
+// What the presence relay reads of a session: its tab, the other pane of a split, and whether it batches.
+function relaySessionOf(session: SessionAttachment | null): RelaySession | null {
+  const presence = session?.presence;
+  if (!presence) return null;
+  return {
+    ...(presence.tabId ? { tabId: presence.tabId } : {}),
+    ...(presence.besideTabId ? { besideTabId: presence.besideTabId } : {}),
+    batches: session.batches === true,
+  };
 }
