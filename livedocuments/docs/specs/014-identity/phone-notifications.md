@@ -9,7 +9,7 @@ gives each notification its link. The install that iPhone and iPad need first is
 ## When livedocuments notifies
 
 - **A comment** in a tab save, a changeset or the REST comment routes: each new comment the writer wrote (at most 5 a
-  save) tells the people it @mentions (a team document, from one of its joined people), who wrote earlier in its
+  save, all sent to accounts in one request) tells the people it @mentions (a team document, from one of its joined people), who wrote earlier in its
   thread, and the document's owner, one notification each, the strongest kind first. Beside the comment and
   mention emails, but not behind them: a deployment without email still notifies, and the switches are the person's
   own (`pushComments`, `pushMentions`, `pushThreadReplies`).

@@ -303,6 +303,36 @@ describe('who may hear (share roles)', () => {
     expect(requestGrant).not.toHaveBeenCalled();
   });
 
+  it('a save of several comments asks accounts once, and the index once a person', async () => {
+    vi.mocked(requestGrant).mockImplementation(async (_env, caller) =>
+      caller.kind === 'delegate' && caller.personId === 'user_viewer'
+        ? { ok: true, grant: {} as never }
+        : { ok: false, status: 404, error: 'not_found' },
+    );
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    const places = ['e1', 'e2', 'e3'];
+    const at = (id: string, comments: Comment[]): Element => ({ ...box(comments), id });
+    const earlier = (id: string) => comment(`old-${id}`, 'user_viewer');
+    await pushNewComments(db.env, {
+      document: { id: 'solo', name: 'Solo', ownerId: OWNER, teamId: null },
+      tabId: 't1',
+      authorId: OWNER,
+      authorName: 'Owen',
+      previous: places.map((id) => at(id, [earlier(id)])),
+      next: places.map((id) => at(id, [earlier(id), comment(`new-${id}`, OWNER)])),
+    });
+    expect(fake.pushes.map((p) => [p.userId, p.tag])).toEqual(
+      places.map((id) => ['user_viewer', `solo:${id}`]),
+    );
+    const urlOf = (input: unknown) => (input instanceof Request ? input.url : String(input));
+    const pushCalls = fetchSpy.mock.calls.filter(([input]) =>
+      urlOf(input).endsWith('/internal/push'),
+    );
+    expect(pushCalls).toHaveLength(1);
+    expect(requestGrant).toHaveBeenCalledTimes(1);
+    fetchSpy.mockRestore();
+  });
+
   it('a guest’s comment notifies no one', async () => {
     await pushNewComments(db.env, {
       document: { id: 'd1', name: 'Roadmap', ownerId: OWNER, teamId: TEAM },

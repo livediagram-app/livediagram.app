@@ -42,8 +42,13 @@ export interface PushMessage {
   tag?: string;
 }
 
-// The most notifications one request to accounts carries; a caller with more sends more requests.
-export const MAX_PUSH_NOTIFICATIONS = 50;
+// The most notifications one request to accounts carries: a save's 5 new comments, each reaching at most 50 people
+// (@liveworkspace/index-app's PUSH_COMMENTS_PER_SAVE_MAX and PUSH_RECIPIENTS_MAX), so a save is one request. A caller
+// with more sends more requests.
+export const MAX_PUSH_NOTIFICATIONS = 250;
+// What an accounts Worker from before took: one that refuses a larger request with `too_many_notifications` is sent
+// the same notifications again this many a request, so an app and accounts can deploy in either order.
+export const LEGACY_MAX_PUSH_NOTIFICATIONS = 50;
 // A notification's title, in UTF-16 units: one line on a lock screen.
 export const PUSH_TITLE_MAX = 120;
 export const PUSH_TAG_MAX = 64;

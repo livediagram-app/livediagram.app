@@ -29,13 +29,27 @@ const TEAM = [
   person('user_dee', 'invited'),
 ];
 
-function setup(opts: { team?: TeamPerson[] | null; grants?: string[]; teamFails?: boolean } = {}) {
+function setup(
+  opts: {
+    team?: TeamPerson[] | null;
+    grants?: string[];
+    teamFails?: boolean;
+    sendFails?: boolean;
+  } = {},
+) {
   const sent: PushNotification[] = [];
+  const sends: number[] = [];
   const indexAsks: string[] = [];
+  let teamReads = 0;
   const deps: PusherDeps<Env> = {
-    send: async (_env, notifications) => void sent.push(...notifications),
+    send: async (_env, notifications) => {
+      if (opts.sendFails) throw new Error('accounts down');
+      sends.push(notifications.length);
+      sent.push(...notifications);
+    },
     isAccount: (id) => id.startsWith('user_'),
     teamPeople: async () => {
+      teamReads += 1;
       if (opts.teamFails) throw new Error('down');
       return opts.team === undefined ? TEAM : opts.team;
     },
@@ -45,7 +59,7 @@ function setup(opts: { team?: TeamPerson[] | null; grants?: string[]; teamFails?
       return (opts.grants ?? []).includes(id);
     },
   };
-  return { pusher: createPusher(deps), sent, indexAsks };
+  return { pusher: createPusher(deps), sent, sends, indexAsks, teamReads: () => teamReads };
 }
 
 const item = { id: 'doc1', name: 'Roadmap', ownerId: 'user_own', teamId: 'team1' };
@@ -179,6 +193,67 @@ describe('pushComment', () => {
     const { pusher, sent } = setup({ team: null, grants: ['user_own'] });
     await pusher.pushComment({}, { ...base, threadAuthorIds: ['user_boom'] });
     expect(sent.map((n) => n.userId)).toEqual(['user_own']);
+  });
+});
+
+describe('pushComments (a save’s comments)', () => {
+  const save = (n: number, threadAuthorIds: string[]) =>
+    Array.from({ length: n }, (_, i) => ({
+      ...base,
+      threadAuthorIds,
+      url: `${base.url}${i}`,
+      tag: `doc1:e${i}`,
+    }));
+
+  it('reads the team once, asks the index once a person, and sends once for every comment', async () => {
+    const { pusher, sent, sends, indexAsks, teamReads } = setup({ grants: ['user_link'] });
+    await pusher.pushComments(
+      {},
+      save(PUSH_COMMENTS_PER_SAVE_MAX, ['user_bea', 'user_link', 'user_gone']),
+    );
+    expect(teamReads()).toBe(1);
+    expect(indexAsks.sort()).toEqual(['user_gone', 'user_link']);
+    expect(sends).toEqual([PUSH_COMMENTS_PER_SAVE_MAX * 3]);
+    expect(sent.map((n) => [n.userId, n.kind, n.tag]).slice(0, 3)).toEqual([
+      ['user_bea', 'threadReply', 'doc1:e0'],
+      ['user_link', 'threadReply', 'doc1:e0'],
+      ['user_own', 'comment', 'doc1:e0'],
+    ]);
+  });
+
+  it('stays one send at the bounds: five comments each reaching the most people', async () => {
+    const many = Array.from({ length: PUSH_RECIPIENTS_MAX + 10 }, (_, i) => `user_${i}`);
+    const { pusher, sends } = setup({ team: many.map((id) => person(id)) });
+    await pusher.pushComments(
+      {},
+      save(PUSH_COMMENTS_PER_SAVE_MAX, many).map((c) => ({
+        ...c,
+        item: { ...item, ownerId: 'user_0' },
+      })),
+    );
+    // 250: what accounts takes in one request (MAX_PUSH_NOTIFICATIONS).
+    expect(sends).toEqual([PUSH_COMMENTS_PER_SAVE_MAX * PUSH_RECIPIENTS_MAX]);
+  });
+
+  it('sends nothing for nothing, leaves out a comment that fails, and never throws', async () => {
+    const { pusher, sends } = setup();
+    await pusher.pushComments({}, []);
+    await pusher.pushComments(
+      {},
+      save(2, []).map((c) => ({ ...c, authorId: 'guest_x' })),
+    );
+    expect(sends).toEqual([]);
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const partly = setup({ grants: ['user_own'] });
+    const broken = { ...base, threadAuthorIds: null as unknown as string[] };
+    await partly.pusher.pushComments({}, [broken, { ...base, item: { ...item, teamId: null } }]);
+    expect(partly.sent.map((n) => n.userId)).toEqual(['user_own']);
+    expect(warn).toHaveBeenCalledWith('[push] comment_failed', expect.anything());
+    warn.mockClear();
+    const down = setup({ sendFails: true });
+    await expect(down.pusher.pushComments({}, save(2, ['user_bea']))).resolves.toBeUndefined();
+    expect(warn).toHaveBeenCalledWith('[push] comment_failed', expect.anything());
+    warn.mockRestore();
   });
 });
 
