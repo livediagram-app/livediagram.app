@@ -207,12 +207,20 @@ describe('the catalogue', () => {
       types: [{ ...task, custom: [{ id: 'f-a', label: 'A', ...field }], fields: ['title', 'f-a'] }],
     });
 
-  it('keeps a calculated field only with a calculation it knows', () => {
+  it('reads a calculated field only with a calculation it knows; another is a newer field, kept as stored', () => {
     const ok = read({ kind: 'calculated', calculation: 'childrenDone' });
     if (!ok.ok) throw new Error(ok.reason);
     expect(ok.catalogue.types[0]!.custom![0]).toMatchObject({ calculation: 'childrenDone' });
-    expect(read({ kind: 'calculated' }).ok).toBe(false);
-    expect(read({ kind: 'calculated', calculation: 'sum' }).ok).toBe(false);
+    // docs/specs/026-plan/item-types.md "Fields from a newer version" (newer-fields.test.ts).
+    const newer = read({ kind: 'calculated', calculation: 'sum' });
+    if (!newer.ok) throw new Error(newer.reason);
+    expect(newer.catalogue.types[0]!.custom![0]).toEqual({
+      id: 'f-a',
+      label: 'A',
+      kind: 'calculated',
+      calculation: 'sum',
+    });
+    expect(read({ kind: 'calculated' }).ok).toBe(true);
     const text = read({ kind: 'text', calculation: 'childCount' });
     if (!text.ok) throw new Error(text.reason);
     expect(text.catalogue.types[0]!.custom![0]).not.toHaveProperty('calculation');

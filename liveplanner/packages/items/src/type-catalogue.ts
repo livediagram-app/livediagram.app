@@ -5,6 +5,7 @@
 import { readCardDisplay } from './card-display';
 import { isPlanGlyphId } from './glyphs';
 import { isCalculation } from './calculated-fields';
+import { readNewerField } from './newer-fields';
 import { isAggregate } from './rollup-fields';
 import { FORMULA_MAX, FORMULA_RESULT_DEFAULT, isFormulaResult } from './formula/limits';
 import { canShowAsPercent } from './percent-fields';
@@ -20,6 +21,7 @@ import {
   ITEM_TYPES,
   PARENT_FIELD,
   PARENT_FIELD_ID,
+  type Calculation,
   type CustomFieldDef,
   type CustomFieldKind,
   type ItemFieldId,
@@ -255,14 +257,26 @@ export const defaultNewTitle = (label: string) => `New ${label.toLowerCase()}`;
 
 type Result = { ok: true; catalogue: ItemTypeCatalogue } | { ok: false; reason: string };
 
-function readCustom(input: unknown, at: string): CustomFieldDef | string {
+// What a catalogue read does with a field of a kind, or a calculation, this build does not know (docs/specs/026-plan/
+// item-types.md "Fields from a newer version"): every reader keeps it, as stored and read-only; the api's writes, the
+// newest build's, refuse it, so a mistyped kind never lands.
+export type ValidateCatalogueOptions = { newerFields?: 'keep' | 'refuse' };
+type NewerFields = NonNullable<ValidateCatalogueOptions['newerFields']>;
+
+function readCustom(input: unknown, at: string, newer: NewerFields): CustomFieldDef | string {
   if (!isObj(input)) return `${at}: not an object`;
   const id = input['id'];
   if (typeof id !== 'string' || !CUSTOM_FIELD_ID_PATTERN.test(id)) return `${at}.id`;
   const label = typeof input['label'] === 'string' ? input['label'].trim() : '';
   if (!label || label.length > CUSTOM_FIELD_LABEL_MAX) return `${at}.label`;
   const kind = input['kind'];
-  if (!(CUSTOM_FIELD_KINDS as readonly unknown[]).includes(kind)) return `${at}.kind`;
+  if (typeof kind !== 'string' || !kind) return `${at}.kind`;
+  const newerCalculation = kind === 'calculated' && !isCalculation(input['calculation']);
+  if (!(CUSTOM_FIELD_KINDS as readonly unknown[]).includes(kind) || newerCalculation) {
+    const reason = newerCalculation ? `${at}.calculation` : `${at}.kind`;
+    if (newer === 'refuse') return reason;
+    return readNewerField(input, id, label) ?? reason;
+  }
   const field: { -readonly [K in keyof CustomFieldDef]: CustomFieldDef[K] } = {
     id,
     label,
@@ -319,9 +333,8 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
     if (code !== CURRENCY_DEFAULT) field.currency = code;
   }
   if (kind === 'calculated') {
-    // From the fixed menu (calculated-fields.ts): one this reader does not know is refused, as an unknown kind is.
-    const calculation = input['calculation'];
-    if (!isCalculation(calculation)) return `${at}.calculation`;
+    // From the fixed menu (calculated-fields.ts): one this reader does not know was kept above, as a newer field.
+    const calculation = input['calculation'] as Calculation;
     field.calculation = calculation;
     if (calculation === 'rollup' || calculation === 'lookup') {
       // Its settings (docs/specs/026-plan/item-types.md "Rollup and Lookup fields"): ids kept as written, even ones no
@@ -378,7 +391,7 @@ function readCustom(input: unknown, at: string): CustomFieldDef | string {
   return field;
 }
 
-function readType(input: unknown, at: string): ItemTypeDef | string {
+function readType(input: unknown, at: string, newer: NewerFields): ItemTypeDef | string {
   if (!isObj(input)) return `${at}: not an object`;
   const id = input['id'];
   if (typeof id !== 'string' || !ITEM_TYPE_PATTERN.test(id) || id === FALLBACK_ITEM_TYPE.id)
@@ -394,7 +407,7 @@ function readType(input: unknown, at: string): ItemTypeDef | string {
     return `${at}.custom`;
   const custom: CustomFieldDef[] = [];
   for (const [i, c] of customIn.entries()) {
-    const field = readCustom(c, `${at}.custom[${i}]`);
+    const field = readCustom(c, `${at}.custom[${i}]`, newer);
     if (typeof field === 'string') return field;
     if (custom.some((f) => f.id === field.id)) return `${at}.custom[${i}].id`;
     custom.push(field);
@@ -601,7 +614,10 @@ export function statusRefusal(typeLabel: string, statusName: string): string {
 
 // The api's and the editor's check of a whole catalogue: its shape, ids, counts and lengths. Title
 // and Status are put first in every type; the stored form is the normalised one.
-export function validateItemTypeCatalogue(input: unknown): Result {
+export function validateItemTypeCatalogue(
+  input: unknown,
+  { newerFields = 'keep' }: ValidateCatalogueOptions = {},
+): Result {
   if (!isObj(input)) return { ok: false, reason: 'not an object' };
   if (input['version'] !== ITEM_TYPE_CATALOGUE_VERSION) return { ok: false, reason: 'version' };
   const typesIn = input['types'];
@@ -609,7 +625,7 @@ export function validateItemTypeCatalogue(input: unknown): Result {
     return { ok: false, reason: 'types' };
   const types: ItemTypeDef[] = [];
   for (const [i, t] of typesIn.entries()) {
-    const type = readType(t, `types[${i}]`);
+    const type = readType(t, `types[${i}]`, newerFields);
     if (typeof type === 'string') return { ok: false, reason: type };
     if (types.some((x) => x.id === type.id)) return { ok: false, reason: `types[${i}].id` };
     if (types.some((x) => x.label.toLowerCase() === type.label.toLowerCase()))

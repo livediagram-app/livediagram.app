@@ -1073,6 +1073,25 @@ describe('the type catalogue', () => {
     expect((await db.getProject(sql.env, 'd1'))?.itemTypes?.types[0]?.id).toBe('customer-call');
   });
 
+  // docs/specs/026-plan/item-types.md "Fields from a newer version": the api is the newest build, so a kind it does not
+  // know is a mistake, refused, never kept as a newer field.
+  it('refuses a field kind or calculation it does not know', async () => {
+    const withField = (field: object) => ({
+      ...catalogue,
+      types: [{ ...catalogue.types[0], custom: [field], fields: ['f-x'] }],
+    });
+    const kind = await put(withField({ id: 'f-x', label: 'X', kind: 'signature' }));
+    expect(kind.status).toBe(400);
+    expect(kind.body).toEqual({ error: 'item_types_invalid', reason: 'types[0].custom[0].kind' });
+    const calc = await put(
+      withField({ id: 'f-x', label: 'X', kind: 'calculated', calculation: 'forecast' }),
+    );
+    expect(calc.body).toEqual({
+      error: 'item_types_invalid',
+      reason: 'types[0].custom[0].calculation',
+    });
+  });
+
   it('needs edit access to the whole project', async () => {
     expect((await put(catalogue, { owner: 'v', code: 'VIEW' })).status).toBe(403);
     expect((await put(catalogue, { owner: 'v', code: 'TAB1' })).status).toBe(403);

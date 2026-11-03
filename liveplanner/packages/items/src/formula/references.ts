@@ -2,6 +2,7 @@
 // people write it, with names, and as stored, each field its id in braces (`{f-budget} - {f-spent}`), so renaming a
 // field never breaks a formula. Both ways go through the tokenizer and parser, never a regex over the text.
 import type { CustomFieldDef, CustomFieldKind, ItemTypeDef } from '../item-types';
+import { isNewerField } from '../newer-fields';
 import { FORMULA_MAX } from './limits';
 import { functionNamed } from './functions';
 import { parseFormula, type FormulaNode } from './parse';
@@ -38,6 +39,8 @@ const UNREADABLE: Partial<Record<CustomFieldKind, string>> = {
   votes: 'A Votes field',
 };
 
+const NEWER_UNREADABLE = 'A field from a newer version of liveplanner';
+
 export interface FormulaField {
   id: string;
   name: string;
@@ -70,7 +73,9 @@ export function formulaScopeOf(type: ScopeType): FormulaScope {
   for (const id of type.fields) {
     const custom = type.custom?.find((c) => c.id === id);
     if (custom) {
-      const why = UNREADABLE[custom.kind];
+      // A field a newer liveplanner made holds a value this build cannot read (item-types.md "Fields from a newer
+      // version").
+      const why = isNewerField(custom) ? NEWER_UNREADABLE : UNREADABLE[custom.kind];
       if (why) {
         const reason = `${why} can't be used in a formula`;
         unreadable.set(custom.label.toLowerCase(), reason);
