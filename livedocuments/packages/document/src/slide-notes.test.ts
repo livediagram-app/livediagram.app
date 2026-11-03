@@ -91,14 +91,21 @@ describe('withNoteCards', () => {
 
 describe('newNoteCardId', () => {
   it('counts past the highest c-number and ignores other ids', () => {
-    expect(newNoteCardId([])).toBe('c1');
+    expect(newNoteCardId([])).toMatch(/^c1_[0-9a-z]{4}$/);
     expect(
       newNoteCardId([
         { id: LEGACY_NOTE_CARD_ID, text: '' },
         { id: 'cz', text: '' },
-        { id: 'c3', text: '' },
+        { id: 'c3_ab12', text: '' },
       ]),
-    ).toBe('c10');
+    ).toMatch(/^c10_[0-9a-z]{4}$/);
+    expect(newNoteCardId([{ id: 'c11_x9y8', text: '' }])).toMatch(/^c12_/);
+  });
+
+  it('differs between two editors adding a card to the same list at once', () => {
+    const cards = [{ id: 'c1_aaaa', text: 'one' }];
+    const ids = new Set(Array.from({ length: 50 }, () => newNoteCardId(cards)));
+    expect(ids.size).toBeGreaterThan(45);
   });
 });
 

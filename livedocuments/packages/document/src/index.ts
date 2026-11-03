@@ -561,6 +561,7 @@ export * from '@liveworkspace/model-core/fonts';
 export * from './slide-deck';
 export * from './slide-deck-pages';
 export * from './slide-notes';
+export * from './slide-notes-merge';
 // Refs, slug ids, kind words, derived containment and the style keys (docs/specs/024-agents/document-views.md):
 // how views, edit operations and the lint name and place elements alike.
 export * from './element-refs';

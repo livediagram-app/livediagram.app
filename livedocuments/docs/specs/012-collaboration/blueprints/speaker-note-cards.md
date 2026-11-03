@@ -207,7 +207,7 @@ cards, one point each. You flip through them while you present.", "Add First Car
 | Parse, read old notes, mirror, limits                                                                | `packages/document/src/slide-notes.test.ts`                                                     |
 | Merge by card id (each rule), deck merge, unique ids                                                 | `packages/document/src/slide-notes-merge.test.ts`, `slide-notes.test.ts`                        |
 | Two clients writing different cards on one slide both survive; no base is as sent                    | `apps/api/src/routes/deck-note-card-merge.test.ts`                                              |
-| The editor sends the deck it built on, then moves it on                                              | `apps/editor/lib/api/documents.test.ts`                                                         |
+| The editor sends the deck it built on                                                                | `apps/editor/lib/api-client.test.ts`                                                            |
 | List edits                                                                                           | `apps/editor/lib/note-card-edits.test.ts`                                                       |
 | The list: empty state, add, open one at a time, blank removed, keys, reorder, remove and undo, limit | `components/slide-notes/NoteCardList.test.tsx`                                                  |
 | Title-bar button names, popover, phone sheet, Esc to the open card first                             | `components/canvas/PageNotesButton.test.tsx`                                                    |
