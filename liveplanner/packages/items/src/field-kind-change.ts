@@ -81,6 +81,18 @@ const CLEARED: ValueChange = { kind: 'cleared' };
 const rewritten = (value: ItemFieldValue | undefined, trimmed = false): ValueChange =>
   value === undefined || value === null ? CLEARED : { kind: 'rewritten', value, trimmed };
 
+/** A Long Text's lines run together on one line: each line break, with the spaces around it, becomes one space.
+ *  Linear, line by line (a `\s*\n\s*` pattern backtracks on long runs of spaces). */
+export function oneLine(text: string): string {
+  const lines = text.split('\n');
+  if (lines.length === 1) return text;
+  const middle = lines
+    .slice(1, -1)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  return [lines[0]!.trimEnd(), ...middle, lines[lines.length - 1]!.trimStart()].join(' ');
+}
+
 /** Whether a stored value holds anything (an empty list or text holds nothing). */
 export function holdsValue(value: ItemFieldValue | undefined): boolean {
   if (value === undefined || value === null || value === '') return false;
@@ -190,7 +202,7 @@ export function changedValue(
     case 'longtext': {
       const text = textOf(from, value, ctx) ?? '';
       // One line on a Text field: a Long Text's lines run together.
-      const line = to.kind === 'text' ? text.replace(/\s*\n\s*/g, ' ') : text;
+      const line = to.kind === 'text' ? oneLine(text) : text;
       return rewritten(line.slice(0, ITEM_UNKNOWN_STRING_MAX) || undefined);
     }
     case 'choice': {

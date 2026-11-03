@@ -6,6 +6,7 @@ import {
   fieldKindChange,
   fieldValues,
   holdsValue,
+  oneLine,
   kindChangeRefusal,
   optionsFromValues,
   fieldCardsOf,
@@ -325,5 +326,19 @@ describe('a type’s save', () => {
     // A refused change (to Comments) writes nothing.
     const refused = { ...BASE, custom: [{ id: 'f-x', label: 'X', kind: 'comments' as const }] };
     expect(retypedValuePatches(BASE, refused, [BASE], [a])).toEqual([]);
+  });
+});
+
+describe('oneLine', () => {
+  it('runs lines together as the old pattern did, in linear time', () => {
+    expect(oneLine('one line')).toBe('one line');
+    expect(oneLine('a \n \n b')).toBe('a b');
+    expect(oneLine('a\r\nb')).toBe('a b');
+    expect(oneLine('\nb')).toBe(' b');
+    expect(oneLine('a\n')).toBe('a ');
+    const spaces = 'x' + ' '.repeat(50_000) + 'y';
+    expect(oneLine(spaces)).toBe(spaces);
+    const ms = cpuMsOf(() => oneLine(`a${'\t'.repeat(100_000)}\n${'\t'.repeat(100_000)}b`));
+    expect(ms).toBeLessThan(cpuBudgetMs(50));
   });
 });
