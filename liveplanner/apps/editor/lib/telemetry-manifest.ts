@@ -51,6 +51,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Activity·Opened',
   'Activity·Resolved',
   'Activity·Selected',
+  'Project·Changed',
   'Project·Created',
   'Project·Deleted',
   'Project·Duplicated',
