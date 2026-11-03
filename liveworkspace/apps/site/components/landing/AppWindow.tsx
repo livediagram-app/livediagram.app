@@ -336,7 +336,7 @@ export function HuddleScene() {
           key={person.initials}
           className={`absolute flex size-7 items-center justify-center rounded-full text-[10px] font-semibold text-white shadow-md ring-2 ring-white sm:size-9 sm:text-xs dark:ring-slate-900 ${person.tone} ${person.at}`}
         >
-          {person.initials}
+          <span className="text-optical-centre">{person.initials}</span>
         </span>
       ))}
       <span className="absolute top-[58%] left-[19%] rounded-lg rounded-bl-none bg-white px-2 py-1 text-[10px] font-medium text-slate-800 shadow-md ring-1 ring-slate-200 sm:text-[11px] dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700">
