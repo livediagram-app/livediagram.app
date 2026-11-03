@@ -12,13 +12,8 @@ import {
 } from '@/components/palette/palette-icons';
 import type { PaletteDropdownOption } from '@liveworkspace/workbench/components/palette/PaletteDropdown';
 
-// The modes only a Selection Mode button on the board hands out (docs/specs/008-canvas/avatar-mode.md "Where it
-// lives"): the dropdown lists one only while you are in it, so the picker names the mode you are in and any other
-// pick leaves it. No key and no search command enters them either.
-const BOARD_ONLY_TOOLS: ReadonlySet<string> = new Set(['avatar']);
-
-// The canvas-tool dropdown's option set (Select / Hand / Eraser / Format /
-// Laser / Spotlight / Isometric / Zen, plus Avatar while in it), grouped (group index drives
+// The canvas-tool dropdown's option set (Select / Hand / Avatar / Eraser / Format /
+// Laser / Spotlight / Isometric / Zen), grouped (group index drives
 // the menu dividers): editing tools, then presenter tools, then the view modes.
 // Eraser and everything after act on existing content, so they disable on an
 // empty canvas; Spotlight and Slide Deck are desktop-only. Zen is an ACTION, not a persistent
@@ -30,27 +25,18 @@ export function buildCanvasToolOptions({
   canvasEmpty,
   isMobile,
   includeZen,
-  currentTool,
 }: {
   canvasEmpty?: boolean;
   isMobile: boolean;
   includeZen?: boolean;
-  // The tool in force: a board-only mode (Avatar) is listed only while it is the one in force.
-  currentTool?: string;
 }): PaletteDropdownOption[] {
-  return buildAll(canvasEmpty, isMobile, includeZen).filter(
-    (o) => !BOARD_ONLY_TOOLS.has(o.id) || o.id === currentTool,
-  );
-}
-
-function buildAll(
-  canvasEmpty: boolean | undefined,
-  isMobile: boolean,
-  includeZen: boolean | undefined,
-): PaletteDropdownOption[] {
   return [
     { id: 'select', label: 'Select', shortcut: 'V', icon: <SelectIcon />, group: 0 },
     { id: 'pan', label: 'Hand', shortcut: 'H', icon: <PanIcon />, group: 0 },
+    // Avatar mode (docs/specs/008-canvas/avatar-mode.md "Where it lives"): walking is the point of a meeting app, so
+    // it sits with the ways of being on the board, straight after Hand, on every viewport and for every role. Never
+    // disabled (an empty board is still a place to stand in) and no key: the arrows and Space are the walk's.
+    { id: 'avatar', label: 'Avatar', icon: <AvatarModeIcon />, group: 0 },
     // Eraser / Format / Laser / Spotlight / Isometric all act on
     // existing content, so they're disabled on an empty canvas —
     // only Select + Hand stay available until something's drawn.
@@ -93,15 +79,6 @@ function buildAll(
             disabled: canvasEmpty,
           },
         ]),
-    // Avatar mode (docs/specs/008-canvas/avatar-mode.md): a walking character you steer to whatever
-    // you're narrating. Entered only from a Selection Mode button on the board, so it is listed only while in
-    // force (see BOARD_ONLY_TOOLS), never disabled, and has no key.
-    {
-      id: 'avatar',
-      label: 'Avatar',
-      icon: <AvatarModeIcon />,
-      group: 1,
-    },
     // Slide Deck (docs/specs/012-collaboration/presentation-mode.md). In the Present band with the Laser and Spotlight:
     // like them it is a tool for showing a document to somebody rather than
     // for changing it. Needs content for the same reason they do — there is

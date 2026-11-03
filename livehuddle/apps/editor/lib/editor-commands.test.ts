@@ -248,6 +248,8 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
       // Reads the room, writes nothing — a viewer may ask who else is here.
       'collaborators',
       'tool:pan',
+      // Walking writes nothing, so Avatar mode is every role's (docs/specs/008-canvas/avatar-mode.md "Where it lives").
+      'tool:avatar',
       'tool:laser',
       'tool:spotlight',
       // Slide Deck is an Editor's (docs/specs/013-workspace/share-roles.md).
@@ -321,6 +323,7 @@ describe('canvas tool commands', () => {
     const got = ids(base).filter((id) => id.startsWith('tool:'));
     expect(got).toEqual([
       'tool:pan',
+      'tool:avatar',
       'tool:eraser',
       'tool:format',
       'tool:laser',
@@ -344,9 +347,9 @@ describe('canvas tool commands', () => {
 
   it('drops the content-dependent tools on an empty canvas', () => {
     const got = ids({ ...base, canvasEmpty: true }).filter((id) => id.startsWith('tool:'));
-    // Only Hand survives: Select is current, and everything else acts on
-    // existing content, the same gating the tool dropdown applies.
-    expect(got).toEqual(['tool:pan']);
+    // Only Hand and Avatar survive: Select is current, and everything else acts on existing content, the same gating
+    // the tool dropdown applies. An empty board is still a place to stand in.
+    expect(got).toEqual(['tool:pan', 'tool:avatar']);
   });
 
   it('withholds Spotlight on mobile', () => {
@@ -411,9 +414,9 @@ describe('buildEditorCommands — locked tab', () => {
     expect(got).toEqual(expect.arrayContaining(['auto-align', 'tool:eraser', 'tool:format']));
   });
 
-  it('never offers Avatar Mode (docs/specs/008-canvas/avatar-mode.md "Where it lives")', () => {
-    expect(ids(base)).not.toContain('tool:avatar');
-    expect(ids({ ...base, isReadOnly: true })).not.toContain('tool:avatar');
+  it('offers Avatar Mode on a locked tab, read-only or not, but not while in it (avatar-mode.md)', () => {
+    expect(ids({ ...base, tabLocked: true })).toContain('tool:avatar');
+    expect(ids({ ...base, tabLocked: true, isReadOnly: true })).toContain('tool:avatar');
     expect(ids({ ...base, canvasTool: 'avatar' })).not.toContain('tool:avatar');
   });
 });

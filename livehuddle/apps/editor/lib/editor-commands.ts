@@ -136,6 +136,13 @@ export const CANVAS_TOOLS: {
 }[] = [
   { id: 'select', name: 'Select Tool', keywords: 'select pointer arrow cursor pick v' },
   { id: 'pan', name: 'Hand Tool', keywords: 'hand pan grab drag move canvas scroll h' },
+  // Avatar mode is first-class here (docs/specs/008-canvas/avatar-mode.md "Where it lives"): findable as the picker
+  // offers it, on every viewport and an empty board, for every role (it writes nothing).
+  {
+    id: 'avatar',
+    name: 'Avatar Mode',
+    keywords: 'avatar walk walking character person figure move around office room meet hop',
+  },
   {
     id: 'eraser',
     name: 'Eraser Tool',
@@ -288,15 +295,15 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   });
   out.push({
     id: 'rename-document',
-    name: 'Rename Canvas',
-    keywords: 'rename canvas document diagram title name relabel',
+    name: 'Rename Space',
+    keywords: 'rename space canvas document diagram title name relabel',
     run: h.renameDocument,
   });
   if (!ctx.workbench) {
     out.push({
       id: 'delete-document',
-      name: 'Delete Canvas',
-      keywords: 'delete canvas document diagram remove trash destroy',
+      name: 'Delete Space',
+      keywords: 'delete space canvas document diagram remove trash destroy',
       run: h.deleteDocument,
     });
   }
@@ -315,8 +322,8 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',
-      name: 'Share Canvas',
-      keywords: 'share canvas document diagram link invite collaborate publish embed export',
+      name: 'Share Space',
+      keywords: 'share space canvas document diagram link invite collaborate publish embed export',
       run: h.openShare,
     });
   }
