@@ -22,6 +22,7 @@ import {
   REQUIRED_TYPE_FIELDS,
   requiredFieldsOf,
   requiredCustomFieldsOf,
+  isNewerField,
   newCustomFieldId,
   type ItemFieldId,
 } from '@liveplanner/items';
@@ -59,6 +60,8 @@ const coarsePointer = () => window.matchMedia?.('(pointer: coarse)').matches ===
 const NAME_INPUT =
   'min-w-0 flex-1 rounded-md border bg-transparent px-1.5 py-0.5 text-[13px] font-semibold text-slate-900 placeholder:font-normal placeholder:text-slate-400 hover:border-slate-300 focus:border-brand-500 focus:bg-white focus:outline-none dark:text-slate-50 dark:hover:border-slate-600 dark:focus:bg-slate-900';
 const isRequired = (f: string) => (REQUIRED_TYPE_FIELDS as readonly string[]).includes(f);
+// What a newer field's lock says (docs/specs/026-plan/item-types.md "Fields from a newer version").
+export const NEWER_FIELD_LOCK = 'Made in a newer version of liveplanner. Reload to change it.';
 
 export function ItemTypeLayoutEditor({
   typeId,
@@ -139,17 +142,27 @@ export function ItemTypeLayoutEditor({
             const c = customOf(id);
             const at = movable.indexOf(id);
             const locked = isInherited(id);
+            // A field a newer liveplanner made (item-types.md "Fields from a newer version"): moves, never changes.
+            const newer = !!c && isNewerField(c);
             return (
               <FieldRow
                 key={id}
                 id={id}
                 label={labelOf(id)}
                 icon={fieldIconOf(id, c)}
-                removable={!locked && !kept.includes(id) && !isRequired(id)}
-                lockLabel={locked && inherited ? `Inherited from ${inherited.from}` : undefined}
+                removable={!locked && !newer && !kept.includes(id) && !isRequired(id)}
+                lockLabel={
+                  newer
+                    ? NEWER_FIELD_LOCK
+                    : locked && inherited
+                      ? `Inherited from ${inherited.from}`
+                      : undefined
+                }
                 required={!!c && requiredCustomFieldsOf({ fields: [id], custom: [c] }).length > 0}
                 editing={editing === id}
-                onEdit={c && !locked ? () => setEditing(editing === id ? null : id) : undefined}
+                onEdit={
+                  c && !locked && !newer ? () => setEditing(editing === id ? null : id) : undefined
+                }
                 moveTargets={
                   group === undefined || lockedLayout ? [] : groups.filter((g) => g.id !== group)
                 }
@@ -167,7 +180,7 @@ export function ItemTypeLayoutEditor({
                 onRemove={() => onChange(removeField(draft, id))}
                 notifies={id === 'assignee' && !locked ? assigneeNotifies : undefined}
               >
-                {c && editing === id ? (
+                {c && !newer && editing === id ? (
                   <CustomFieldForm
                     field={c}
                     formulaDraft={formulaDraft}
