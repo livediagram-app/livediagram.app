@@ -7,8 +7,10 @@ import {
   CALCULATION_LABELS,
   AGGREGATES,
   AGGREGATE_LABELS,
+  BOARD_WIDGET_KINDS,
   CARD_SIZES,
   CUSTOM_FIELD_KINDS,
+  FIELD_WIDGETS_MAX,
   FORMULA_MAX,
   FORMULA_RESULTS,
   FUNCTION_NAMES,
@@ -25,6 +27,9 @@ const cardSizeArg = z.preprocess(
   (v) => (typeof v === 'string' && v.trim().toLowerCase() === 'compact' ? readCardSize(v) : v),
   z.enum(CARD_SIZES),
 );
+
+// The most widgets one change_board names in `add` or `remove`: every widget a board can hold.
+const WIDGETS_CHANGE_MAX = BOARD_WIDGET_KINDS.length + FIELD_WIDGETS_MAX;
 
 const url = z.string().describe('Link that opens the plan in the liveplanner editor.');
 const projectId = z.string().describe('The plan (from find_projects).');
@@ -229,6 +234,27 @@ export const changeBoardShape = {
     .describe(
       'The card types it shows and takes, by name; "every type" shows every type again, and an empty list ' +
         'takes none (no card shows on it).',
+    ),
+  widgets: z
+    .object({
+      add: z
+        .array(z.string())
+        .max(WIDGETS_CHANGE_MAX)
+        .optional()
+        .describe('Widgets to add at the end of its header; one it has stays where it is.'),
+      remove: z
+        .array(z.string())
+        .max(WIDGETS_CHANGE_MAX)
+        .optional()
+        .describe('Widgets to take off (read before add); one it does not show changes nothing.'),
+    })
+    .optional()
+    .describe(
+      `Its header widgets. Name a built-in widget by id (${BOARD_WIDGET_KINDS.join(', ')}) or a field widget ` +
+        'by its field and view ("Budget Sum", "Severity Breakdown"; the field name alone takes its first view): ' +
+        'a custom field of the card types the board takes. Number fields read Sum, Average, Range, Spread; ' +
+        'Percent Average, Range, Spread; Rating Average Stars, Spread; Choice, Labels and Person Breakdown, ' +
+        `Donut; Checkbox and Checklist Ticked; dates Upcoming, Timeline. Up to ${FIELD_WIDGETS_MAX} field widgets.`,
     ),
 };
 
@@ -851,6 +877,12 @@ export const changeBoardOutput = {
   sortBy: z
     .array(z.string())
     .describe('Sort Cards now, as "Priority (Highest First)"; empty for hand order.'),
+  widgets: z
+    .array(z.string())
+    .describe(
+      'Its header widgets now, in order, by name ("Item Count", "Budget Sum"); a field widget whose field is gone, ' +
+        'by its key (field:<view>:<fieldId>), which remove takes.',
+    ),
   changesetId: z.string().nullable().describe('The changeset that changed it (revertible).'),
   rev: z.number().nullable().describe('The tab revision after it.'),
   url,

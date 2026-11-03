@@ -445,7 +445,8 @@ status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status
   `{ item }`. A refusal answers what was applied before it. Each change reaches open boards at once.
 - **`add_board`** (write): a Plan board on a tab, from a preset or columns by name, as one changeset
   ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)).
-- **`change_board`** (write): a board's title, columns (by name) or the card types it takes, as one changeset.
+- **`change_board`** (write): a board's title, columns (by name), the card types it takes or its header widgets
+  (`widgets` `{ add, remove }`, by kind id or field widget name), as one changeset.
 - **`import_board`** (write): a board from a Trello, Asana, Jira or Linear export (`content`, the file's text), in a
   new Board tab of `projectId` or a new plan, with its card type, cards and imported comments; `preview` writes
   nothing ([Importing from another tool](../026-plan/tracker-import.md#agents)).
@@ -739,7 +740,7 @@ says why by its status (no such tab, view only, the last tab).
 | `list_threads`      | `threads[]` of `{ id, title, state, resolvedBy?, cards[], field?, comments[] { id, author, at, text, ai?, edited?, reactions?[] { emoji, name, count, by[] } } }`, `count`, `url`                                       |
 | `change_threads`    | `applied[]` (one line per change), `url`                                                                                                                                                                                |
 | `add_board`         | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `changesetId`, `rev`, `url`                                                                                                                           |
-| `change_board`      | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `takes`, `changesetId`, `rev`, `url`                                                                                                                  |
+| `change_board`      | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `takes`, `widgets[]`, `changesetId`, `rev`, `url`                                                                                                     |
 | `import_board`      | `projectId`, `tabId`, `title`, `source`, `columns[]` of `{ name, cards }`, `cards`, `leftOut[]` of `{ reason, count }`, `preview?`, `url`                                                                               |
 | `change_card_types` | `applied[]` (with the ids made), `trashed[]`, `types[]`, `url`                                                                                                                                                          |
 | `list_sheets`       | `sheets[]` of `{ id, title, tabId, tabName, rows, cols, filled, elementId }`, `url`                                                                                                                                     |

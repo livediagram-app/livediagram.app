@@ -162,6 +162,19 @@ Every write takes what a person would say, and stores the ids:
   tool descriptions say so.
 - Card types are named as everywhere; `"every type"` (the CLI's `all`) shows every type again, and an empty list
   takes none, as turning a board's last type off does in the editor. `add_board` reads an empty list the same way.
+- `widgets` (`{ "add": [...], "remove": [...] }`) adds and takes off the board's header
+  [widgets](board-widgets.md). A widget is named by a built-in kind's id (`count`, `progress`, `due`, ...; its
+  gallery name, "Item Count", reads the same) or a [field widget](board-widgets.md#field-widgets) by its name, the
+  field's and its view's ("Budget Sum"), a field's name alone taking the view the gallery suggests first (Sum for a
+  number). A field widget reads a custom field of the card types the board takes (after any `types` in the same call)
+  and is stored as `field:<view>:<fieldId>`; that key is read too, so a widget whose field is gone can still come off.
+  `remove` is read first, then each `add` goes at the end of the header (one the board has stays where it is); a
+  board that never arranged its widgets starts from the default set. Removing a widget the board does not show
+  changes nothing. An unknown name, a field no widget reads (Text, Link, ...), a view its field does not offer, or a
+  13th field widget is refused naming what the board offers. The answer names the board's widgets in order
+  (`widgets`), a gone field widget by its key. The CLI's `board set` takes `--add-widgets "Budget Sum, due"` and
+  `--remove-widgets people`, and prints the widgets on a second line. Who may: an Editor of the board's tab, as for
+  the rest of `change_board`; a Participant or Viewer is refused by the changeset route.
 - It is one changeset on the board element, based on the element as read, so a person's change since is kept
   except on the set-up; the board widens when its columns need it.
 

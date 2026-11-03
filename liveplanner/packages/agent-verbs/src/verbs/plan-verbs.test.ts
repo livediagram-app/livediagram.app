@@ -161,16 +161,20 @@ describe('board set', () => {
       }),
     );
     // Done counts as done by its name (docs/specs/026-plan/plan-board.md "Done columns").
-    expect(boardSet.text!(out)).toEqual(['~ board "Sprint": To Do · Done ✓ (takes Task)']);
+    expect(boardSet.text!(out)).toEqual([
+      '~ board "Sprint": To Do · Done ✓ (takes Task)',
+      '  widgets: Item Count · Completion · Not on Board · Filter · Only Mine',
+    ]);
     expect(boardSet.quiet!(out)).toEqual(['b1']);
     expect(sent[0]).toMatchObject({ operations: [{ op: 'set', target: 'id:"b1"' }] });
     const every = await boardSet.run!(
       ctx,
       boardSet.input.parse({ project: DOC_A, board: 'b1', types: 'all', title: 'S2' }),
     );
-    expect(boardSet.text!(every)).toEqual(['~ board "S2": To Do (takes every type)']);
-    expect(boardSet.text!({ ...every, takes: [] })).toEqual([
+    expect(boardSet.text!(every)[0]).toBe('~ board "S2": To Do (takes every type)');
+    expect(boardSet.text!({ ...every, takes: [], widgets: [] })).toEqual([
       '~ board "S2": To Do (takes no type)',
+      '  widgets: none',
     ]);
     // --done names the done columns, whole; none turns them all off.
     const done = await boardSet.run!(
@@ -183,6 +187,24 @@ describe('board set', () => {
       boardSet.input.parse({ project: DOC_A, board: 'b1', done: 'none' }),
     );
     expect(none.columns[0]).not.toHaveProperty('done');
+  });
+
+  // docs/specs/026-plan/plan-agents.md "Changing a board": --add-widgets and --remove-widgets, by id or name.
+  it('adds and removes header widgets, and prints them', async () => {
+    const { ctx, sent } = ctxWith();
+    const out = await boardSet.run!(
+      ctx,
+      boardSet.input.parse({
+        project: DOC_A,
+        board: 'b1',
+        addWidgets: 'due, Points',
+        removeWidgets: 'filter,mine,unplaced',
+      }),
+    );
+    expect(sent[0]).toMatchObject({
+      operations: [{ fields: { planBoard: { widgets: ['count', 'progress', 'due', 'points'] } } }],
+    });
+    expect(boardSet.text!(out)[1]).toBe('  widgets: Item Count · Completion · Due Soon · Points');
   });
 
   it('sorts the board from --sort, and prints the sort', async () => {
