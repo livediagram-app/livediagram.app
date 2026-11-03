@@ -104,8 +104,8 @@ A dialog headed **Edit Details**, "The name and description everyone sees on thi
   holds, never fetched for the Overview alone.
 
 - A tab whose content has not arrived yet (tabs load as they are opened) shows its picture as a soft pulse and its
-  line as **Loading…**. Opening the Overview asks for every tab not yet loaded, once, as Search does; a tab that
-  fails shows **Couldn’t Load** and opens as any tab does.
+  line as **Loading…**. Opening the Overview asks for every tab not yet loaded, once, as Search does; a tab whose
+  load fails keeps Loading… and opens as any tab does (a distinct failed state is a follow-up).
 - **Add Tab** (the section's button and a dashed last tile, "Board, Sheet, Dashboard or Form"): an Editor's, as the
   tab bar's +. It adds a tab and opens it on Start Planning, closing the Overview.
 - **One tab**: its tile and the Add Tab tile. There is always at least one tab.

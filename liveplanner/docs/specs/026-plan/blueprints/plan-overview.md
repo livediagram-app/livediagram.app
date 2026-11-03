@@ -6,13 +6,13 @@ Derived from [Plan Overview](../plan-overview.md).
 
 | Spec term          | Identifier                                                                                                 |
 | ------------------ | ---------------------------------------------------------------------------------------------------------- |
-| Overview           | `OverviewPage` (the page), `overviewOpen` / `openOverview` / `closeOverview` (editor UI state)             |
+| Overview           | `OverviewPage` (the page), `overviewOpen` / `openOverview` (editor UI state)                               |
 | Overview entry     | `OverviewTabPill` (in the tab bar), `OVERVIEW_TAB_KEY` (`'overview'`, its strip id)                        |
 | description        | `description` on `Project`, `plan.description` column, `PROJECT_DESCRIPTION_MAX`, `readProjectDescription` |
 | tab tile           | `TabTileSummary` (`overview-tabs.ts`), `TabTile`, `TabTilePicture`                                         |
 | card type tile     | `CardTypeTileSummary` (`overview-card-types.ts`), `CardTypeTile`                                           |
 | activity           | `ActivityEntry` (`overview-activity.ts`), `OverviewActivity`; `ACTIVITY_SHOWN`, `ACTIVITY_MAX`             |
-| people on the plan | `planPeopleOf` (`overview-people.ts`), `OverviewPeople`                                                    |
+| people on the plan | `planPeopleOf` (`overview-people.ts`), `OverviewHeader`                                                    |
 | Edit Details       | `EditDetailsDialog`                                                                                        |
 
 ## Files
@@ -27,23 +27,25 @@ Derived from [Plan Overview](../plan-overview.md).
 | `apps/api/src/room-client.ts`                                                | `relayProjectDetails`                                                                                            |
 | `apps/editor/lib/api/project-details.ts`                                     | `saveProjectDescription(scope, description)`: the api, or the offline record                                     |
 | `apps/editor/lib/offline/offline-store.ts`                                   | `description?` on the record, `offlineSaveDescription`, `recordToProject` carries it                             |
-| `apps/editor/app/project/[id]/editor-ui-state.ts`                            | `overviewOpen`, `openOverview`, `closeOverview`; `setActiveId` closes the Overview unless `{ keepOverview }`     |
-| `apps/editor/app/project/[id]/editor-persistence.ts`                         | `projectDescription`, `projectDates` (`createdAt`, `savedAt` from the load)                                      |
+| `apps/editor/app/project/[id]/editor-ui-state.ts`                            | `overviewOpen`, `openOverview`; `setActiveId` closes the Overview unless `{ keepOverview }`                      |
+| `apps/editor/app/project/[id]/editor-persistence.ts`                         | `ProjectDetails` (`description`, `createdAt`, `savedAt` from the load), `projectDetails` / `setProjectDetails`   |
 | `apps/editor/components/chrome/OverviewTabPill.tsx`                          | The tab bar's first entry and its divider (the shared `TabFrame`)                                                |
 | `packages/workbench/src/components/chrome/TabStrip.tsx`                      | `leading?: ReactNode`, drawn first inside the strip's toolbar                                                    |
-| `apps/editor/components/overview/OverviewPage.tsx`                           | The page: layout, sections, the tab sweep, telemetry                                                             |
-| `apps/editor/components/overview/OverviewHeader.tsx`                         | Eyebrow, name, description, dates, people, Edit Details, Share                                                   |
-| `apps/editor/components/overview/OverviewPeople.tsx`                         | The overlapping discs and count                                                                                  |
+| `apps/editor/components/overview/OverviewPage.tsx`                           | Reads the editor context, the tab sweep, abilities, saves, telemetry; portals into the canvas root               |
+| `apps/editor/components/overview/OverviewView.tsx`, `OverviewSection.tsx`    | The layout from plain data and actions (`OverviewAbilities`, `OverviewActions`); section frame and Add tiles     |
+| `apps/editor/components/overview/OverviewHeader.tsx`                         | Eyebrow, name, description or Add a Description, dates, people discs and count, Edit Details, Share              |
 | `apps/editor/components/overview/OverviewTabs.tsx`, `TabTilePicture.tsx`     | The tab tiles and their pictures                                                                                 |
 | `apps/editor/components/overview/OverviewCardTypes.tsx`                      | The card type tiles                                                                                              |
 | `apps/editor/components/overview/OverviewActivity.tsx`                       | The rail of entries, See All                                                                                     |
 | `apps/editor/components/overview/EditDetailsDialog.tsx`                      | Edit Details                                                                                                     |
-| `apps/editor/components/overview/overview-*.ts`                              | The pure derivations (tabs, card types, activity, people, dates), each with its tests                            |
+| `apps/editor/components/overview/overview-*.ts`                              | The pure derivations (boards, tabs, card types, activity, people, dates, `overviewModelOf`)                      |
 | `apps/editor/components/overview/useOverviewModel.ts`                        | One memoised derivation of everything the page shows from the editor context                                     |
 
 Wiring: `useEditorState` passes `canvasCovered || overviewOpen` to the keyboard shortcuts; `EditorView` draws
-`OverviewPage` (lazy, `next/dynamic`) in the canvas's place while `overviewOpen`, and `TabBar` takes `overviewOpen`,
-`onOpenOverview` and `showOverview` (false in an embed and a tab-scoped session). `EditorStartPanels` draws nothing
+`OverviewPage` (lazy, `next/dynamic`, inside `AreaErrorBoundary area="Canvas"`) while `overviewOpen`; it portals a
+`data-canvas-cover` layer at `z-[var(--z-chrome)]` into the canvas root (`CANVAS_ROOT_SELECTOR`), over the canvas and
+its chrome, under modals and the card sheet. `TabBar` takes `overview?: { open, onOpen }`, left out in an embed and a
+tab-scoped session. `EditorStartPanels` draws nothing
 while the Overview is open.
 
 ## Behaviour and state
@@ -60,9 +62,8 @@ while the Overview is open.
 - On first open, `OverviewPage` calls `loadAllTabs()` once (the Search sweep). A tab is loading while it has no kind
   and no elements and is not in `loadedTabIds`.
 - `EditDetailsDialog` Save: a changed name goes through `nameProject` (the header's rename path); a changed
-  description through `saveDescription`, which sets `projectDescription` at once (optimistic), calls
-  `saveProjectDescription`, keeps the stored answer, and on failure puts the previous value back and toasts.
-- Room op `project-details` from `system`: sets `projectDescription`.
+  description through `saveProjectDescription`; `projectDetails.description` is set at once (optimistic), keeps the stored answer, and on failure puts the previous value back and toasts.
+- Room op `project-details` from `system`: sets `projectDetails.description` (`receiveProjectDetails`).
 
 ## Interfaces and contracts
 
@@ -73,7 +74,7 @@ while the Overview is open.
   - 200 `{ description }`: the value as stored (`readProjectDescription`: trimmed, capped at
     `PROJECT_DESCRIPTION_MAX` code units, never cut inside a surrogate pair).
   - Relays `{ kind: 'project-details', description }` as an ordered system op (`relayProjectDetails`).
-- `GET /api/projects/:id` carries `description` (empty string when none).
+- `GET /api/projects/:id` carries `description` only when it is not empty; the editor reads a missing one as `''`.
 - Room scope: `project-details` is not tab-less, so a tab-scoped session never receives it (fail closed).
 
 ## Data and persistence
@@ -111,7 +112,7 @@ while the Overview is open.
 - Board counts: one pass per board over the status groups it names (`O(n × boards)`, at most 2,000 × tabs).
 - Activity: a bounded insertion into a list of at most `ACTIVITY_MAX` (30) entries, `O(n × 30)` worst case, no full
   sort.
-- Budget test: 2,000 cards, 12 board tabs, 20 types derive in under 16 ms (`overview-model.perf.test.ts`).
+- Budget test: 2,000 cards and 9 tabs derive in under 16 ms of CPU (measured 7 ms) (`overview-model.perf.test.ts`).
 
 ## Presentation and UX
 
@@ -122,7 +123,11 @@ while the Overview is open.
 dark:bg-slate-900`, picture 104 px.
 - Card type tiles: `grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5`.
 - Copy is final as in the spec. Title Case for headings, buttons and tile names; descriptive lines in sentence case.
-- Empty states use the shared `EmptyState`.
+- Empty states (no card types, no activity) are a glyph and a line inside the section (`LayoutGrid`, `History`).
+- No description: an Editor sees an **Add a Description** link that opens Edit Details; others see nothing.
+- Activity `where` is the card's board tab name (or its type when on no board); the dot is `data-dot="setup"` for the
+  plan's creation, `card` otherwise. Times read as `formatRelativeTime` ("8 mins ago"), the exact time in a Tooltip.
+- A tab still loading keeps Loading…; there is no separate failed state yet.
 
 ## Accessibility
 
@@ -148,13 +153,11 @@ dark:bg-slate-900`, picture 104 px.
 | Spec rule                                                                              | Test                                                  |
 | -------------------------------------------------------------------------------------- | ----------------------------------------------------- |
 | Tab tiles: kinds, counts, pictures, loading                                            | `overview-tabs.test.ts`                               |
-| Card type tiles: counts and where used                                                 | `overview-card-types.test.ts`                         |
-| Activity: kinds, moves, bound, order, where                                            | `overview-activity.test.ts`                           |
-| People: owner first, dedupe, newest                                                    | `overview-people.test.ts`                             |
-| Dates line                                                                             | `overview-dates.test.ts`                              |
+| Card types, activity (kinds, bound, order, where), people, dates line                  | `overview-sections.test.ts`                           |
+| One derive per input change; presence moves derive nothing                             | `useOverviewModel.test.tsx`                           |
 | Budget on 2,000 cards                                                                  | `overview-model.perf.test.ts`                         |
-| Roles: Editor sees Edit Details, Add Tab, Add Card Type; Participant and Viewer do not | `OverviewPage.roles.test.tsx`                         |
-| Empty states (one tab, no types, no activity)                                          | `OverviewPage.empty.test.tsx`                         |
+| Roles: Editor sees Edit Details, Add Tab, Add Card Type; Participant and Viewer do not | `OverviewView.roles.test.tsx`                         |
+| Empty states (one tab, no types, no activity)                                          | `OverviewView.roles.test.tsx`                         |
 | Edit Details saves name and description                                                | `EditDetailsDialog.test.tsx`                          |
 | Overview entry, open state, select closes                                              | `TabBar.overview.test.tsx`, `editor-ui-state.test.ts` |
 | Strip draws `leading` first                                                            | `TabStrip.test.tsx`                                   |
