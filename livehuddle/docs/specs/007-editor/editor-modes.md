@@ -38,7 +38,7 @@ with the elements only they offered ([Purpose](../001-project-vision/purpose.md#
 - A tab the editor writes carries `opensIn: 'workshop'`; nothing is migrated.
 - A per-browser mode key (`livehuddle:v2:editor-mode:<tab>`) is never read.
 - **A new tab** from the tab bar's **+** or the command palette's **Create New Tab** is a general Workshop tab, opening
-  empty on Start a Workshop ([Template starts](start-diagramming.md)). **Duplicate** keeps the original's content.
+  empty on Start a Space ([Template starts](start-diagramming.md)). **Duplicate** keeps the original's content.
 
 ## What a tab written elsewhere keeps
 

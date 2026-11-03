@@ -12,7 +12,7 @@ livehuddle's one editor mode, every tab is in it, and there is no switch.
 | Its mark               | `FlipchartIcon` in `../packages/ui/src/icons/drawing-kinds.tsx`, `EDITOR_MODE_ICONS.workshop` |
 | Its palette layout     | `WORKSHOP: PaletteLayout` in `apps/editor/components/palette/palette-layouts.ts`              |
 | The strip's tools      | `sessionStripTools(mode, esBoard)` in `apps/editor/components/canvas/SessionClusterStrip.tsx` |
-| Its blank              | template kind `'blank-session'`, label "Blank Workshop", document name "Untitled Workshop"    |
+| Its blank              | template kind `'blank-session'`, label "Blank Space", document name "Untitled Space"          |
 | Its default folder key | `'mode:workshop'`, words `{ label: 'Sessions', noun: 'sessions' }` (`MODE_WORDS`)             |
 
 Banned as names for the mode, in code and copy: "Session mode", "Collaborate mode", and its old
@@ -72,7 +72,7 @@ export function parseEditorMode(v: unknown): EditorMode | undefined; // 'worksho
 | Case                            | Handling                                                               |
 | ------------------------------- | ---------------------------------------------------------------------- |
 | A tab stored as Diagram or Draw | Reads as Workshop; content intact apart from elements livehuddle lacks |
-| `/new?mode=<anything>`          | The mode is ignored; the blank is Blank Workshop                       |
+| `/new?mode=<anything>`          | The mode is ignored; the blank is Blank Space                          |
 | Participant                     | `participantTiles`: sticky and text from Popular, plus image           |
 
 ## Security and trust

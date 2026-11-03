@@ -10,8 +10,11 @@ Narrating the canvas on a call today means waving a cursor around, or reaching f
 
 ## Where it lives
 
-- New `CanvasTool` id `'avatar'`. **It is reached only through a [Selection Mode button](../009-elements/mode-button.md) set to Avatar**, placed on the board: the author who put the button there chose to offer the walk on that board, so the board, not the editor's chrome, is the door. The canvas-tool picker (the Selection Mode menu at the start of the palette strip) does not offer Avatar, there is no keyboard shortcut for it, and the search panel has no `tool:avatar` command. A board that wants walking gets a button; the [Avatar Pad](../009-elements/avatar-pad.md) decides where people then start.
-- **The picker still shows where you are.** While you are in Avatar mode the picker's current value reads **Avatar** (the one time the entry appears in its list), so the mode you are in is never mislabelled as Select; picking any other mode there leaves it. The other ways out stay as they were: a view-tool key (`V`, `H`, `K`, `I`), reaching for the palette, or pressing an Avatar button again.
+- New `CanvasTool` id `'avatar'`. In livehuddle walking is the point, so the mode is **first-class** (D7 (a) in [Open decisions](../005-project-roadmap/open-decisions.md)), reached three ways:
+  - **The picker.** The canvas-tool picker (the Selection Mode menu at the start of the palette strip) lists **Avatar** in its first group, straight after Select and Hand, on every viewport and for every role. It is never disabled: an empty board is still a place to stand in. The search panel finds it as **Avatar Mode** (`tool:avatar`), as it finds every mode the picker lists. There is no keyboard shortcut for it (the arrow keys and Space belong to the walk once in it; a letter key would put a character in front of someone typing a shortcut).
+  - **A [Selection Mode button](../009-elements/mode-button.md) set to Avatar**, placed on the board, as in livediagram: every Spaces template's **Walk In** button is one, and pressing it again goes back.
+  - **Opening walking** ([below](#opening-walking)): a tab that offers the walk puts you in the mode when it is first shown.
+- **The picker names where you are.** While you are in Avatar mode the picker's current value reads **Avatar**, and picking any other mode there leaves it. The other ways out stay as they were: a view-tool key (`V`, `H`, `K`, `I`), reaching for the palette, or pressing an Avatar button again.
 - A button hands Avatar out in **every** editor mode, and leaving Workshop while walking does not end the walk.
 - Available on **every viewport** (unlike Spotlight): tap-to-walk works fine on touch, it just loses the arrow keys.
 - Available to **view-role** visitors: it is a pure view aid and mutates nothing.
@@ -28,7 +31,7 @@ Narrating the canvas on a call today means waving a cursor around, or reaching f
 - **The shirt is the participant's presence colour**: the same colour as your cursor, your name chip, and your tab-bar dot, so on a shared document you can tell at a glance which character is whose. Falls back to the brand cyan when there is no participant colour. **Colour is deliberately not customisable**: it is the one thing on the character that carries information.
 - **Walk animation**: a two-frame leg swing plus a one-pixel body bob, advanced by **distance travelled** rather than wall-clock, so the step cadence matches the speed at any zoom.
 - Renders **above the element layer** (it is standing in front of what's on the canvas, not behind it) and below the palette / chrome, which stay clickable so you can leave the mode.
-- **Where it appears on entry**: on the tab's [Avatar Pad](../009-elements/avatar-pad.md) when it has one (the nearest to the view's centre when it has several), arriving in a beam of light; otherwise just below the button that was pressed ([Entering from a button](#entering-from-a-button)); otherwise where it was left, while that is still on screen (a quick detour to another tool, the canvas staying mounted); otherwise the **centre of the current viewport**. It resets on the next entry after a tab change: it is transient view state that belongs to nobody.
+- **Where it appears on entry**: on the tab's [Avatar Pad](../009-elements/avatar-pad.md) when it has one (the nearest to the view's centre when it has several), arriving in a beam of light; otherwise just below the button that was pressed ([Entering from a button](#entering-from-a-button)), or, opening walking, below the tab's first Avatar button ([Opening walking](#opening-walking)); otherwise where it was left, while that is still on screen (a quick detour to another tool, the canvas staying mounted); otherwise the **centre of the current viewport**. It resets on the next entry after a tab change: it is transient view state that belongs to nobody.
 
 ## The Avatar Panel
 
@@ -185,6 +188,31 @@ The panel's **Send a Message** opens a popover over the Avatar button with a tex
 
 The pop on opening, the sway and the rise are decoration. Under **reduced motion** a bubble neither pops nor sways nor rises: it appears above where it was sent, holds for its flight time and fades.
 
+## Opening walking
+
+A tab **offers the walk** when, on its visible layers, it holds an [Avatar Pad](../009-elements/avatar-pad.md) or a
+Selection Mode button set to Avatar. Every Spaces template's tab does (its **Walk In** button), and nothing else in
+the catalogue does, so a space made from a Spaces template opens walking while every other template opens on the tool
+it always did ([v1 scope](../002-project-scope/v1-scope.md) feature 1). It is read from what the tab holds rather
+than stored, so a Space made by an agent from a Spaces template, a copy of one, or one made before this rule opens
+walking too, and a board somebody gives a pad or a Walk In button becomes one that does.
+
+- **When.** The first time a tab that offers the walk is shown with its elements in a visit (opening the space,
+  changing to that tab, or a Spaces template landing on an empty tab from the start screen), the editor enters Avatar
+  mode. Once per tab per visit: leaving the mode, then coming back to the tab, does not put you back in it; a reload
+  is a new visit.
+- **Where.** On the tab's pad when it has one ([Entering on a pad](#entering-on-a-pad)); otherwise just below its
+  first Avatar button in layer order, as a press of it would ([Entering from a button](#entering-from-a-button)),
+  the view centring on that spot when it is off screen.
+- **Who.** Every role: Editor, Participant and Viewer alike, because walking writes nothing
+  ([Share roles](../013-workspace/share-roles.md)). Speaking still follows [Who may speak](#who-may-speak).
+- **Not in an embed.** The read-only embed view ([Embeds](../013-workspace/embeds.md)) opens on Hand as before: it
+  has no palette to leave the mode by.
+- **Not counted as a use.** Opening walking fires no `Canvas·Used·AvatarMode`: the event counts people who chose the
+  walk, from the picker or a button.
+- **The tab is not the gate.** A tab with no elements yet (still loading, or the start screen showing) is not judged;
+  it is judged once, when its elements first arrive, so an edit later never re-checks it.
+
 ## Entering from a button
 
 A [Selection Mode button](../009-elements/mode-button.md) set to Avatar drops the character **just below that button** rather than at the viewport centre: you pressed a thing on the canvas, so the character should appear where you pressed it. A pad on the tab beats it ([Entering on a pad](#entering-on-a-pad)). The spawn point is one-shot: a quick detour to Select still returns you to where you left the character. Only a press that enters the mode sets it: pressing the button while already in Avatar mode leaves the mode and leaves no spawn point behind (`avatarSpawnFromButton`).
@@ -246,11 +274,11 @@ Per the no-god-files rule (`../packages/…` paths are the monorepo's shared pac
 - **`../packages/avatar/src/bindings.ts`** and **`apps/editor/lib/avatar-bindings.ts`**: the product's facts (telemetry, storage prefix, colour maths) and where this editor hands them over.
 - **`../packages/avatar/src/scene.ts`**: what the package reads of a board's elements (`AvatarSceneElement`, `isSceneShape`, `hasSceneBox`).
 - **Realtime**: `AvatarPresence` + the `avatar` `RoomOp` in `@liveworkspace/api-schema/avatar`, re-exported by `@livehuddle/api-schema`; `'avatar'` added to `PRESENCE_OP_KINDS` in `@livehuddle/api-schema`; `broadcastAvatar` in `useEditorBroadcast`; the inbound coalescing buffer in `useRoomConnection`; `remoteAvatars` in `usePresenceState`; `buildRemoteAvatarRows` in `lib/presence-rows.ts` (unit-tested).
-- Wiring, one small edit each: `canvas-tool-options.tsx` + `palette-icons.tsx` (the picker entry, shown only while in the mode), `useCanvasSurfaceGestures.ts` (the click-to-walk + right-click-gender capture intercept, next to the spotlight one), `canvas-chrome.ts` (cursor), `useEditorKeyboardShortcuts.ts` (the read-only gate, the arrow-key handover), `useCanvasTool.ts` (telemetry + the remembered pre-avatar tool), `palette-tile-actions.ts` (the leave-on-add wrapper, unit-tested), `useDockPopovers.ts` + `useCanvasChromePanels.tsx` + `CanvasChrome.tsx` (the `avatar` dock popover and its button).
+- Wiring, one small edit each: `canvas-tool-options.tsx` + `palette-icons.tsx` (the picker entry, listed after Hand), `useOpenWalking.ts` + `lib/walk-entrance.ts` (opening walking: which tab offers the walk and where, composed into `useCanvasAvatar`), `useCanvasTool.ts`'s `openWalking` (the untracked entry), `useCanvasSurfaceGestures.ts` (the click-to-walk + right-click-gender capture intercept, next to the spotlight one), `canvas-chrome.ts` (cursor), `useEditorKeyboardShortcuts.ts` (the read-only gate, the arrow-key handover), `useCanvasTool.ts` (telemetry + the remembered pre-avatar tool), `palette-tile-actions.ts` (the leave-on-add wrapper, unit-tested), `useDockPopovers.ts` + `useCanvasChromePanels.tsx` + `CanvasChrome.tsx` (the `avatar` dock popover and its button).
 
 ## Telemetry
 
-Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): `track('Canvas', 'Used', 'AvatarMode')` on entry, emitted from `selectCanvasTool` beside the Laser / Spotlight / Eraser lines. `AvatarMode` (not `Avatar`) keeps the mode distinct from the `Element·Added·Avatar` token the palette's photo tile already emits. Each customisation fires `track('UI', 'Changed', 'AvatarGender' | 'AvatarClothing' | 'AvatarHair' | 'AvatarSize')`, and the dice button fires `AvatarRandomised`: which KIND of choice was made, never the value, so the signal is "do people dress their character" without recording what they picked. Opening the panel from its button fires `track('UI', 'Opened', 'AvatarPanel')`. Sending a message fires `track('Canvas', 'Used', 'AvatarMessage')` from the composer and `track('Canvas', 'Used', 'AvatarMessagePanel')` from the panel's popover: that somebody spoke and by which door, **never the text** and never its length. The [Avatar tour](avatar-tour.md) has its own funnel. No per-step, per-click, or per-reaction events (chatty, no signal).
+Per [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md): `track('Canvas', 'Used', 'AvatarMode')` on a chosen entry (the picker or a button; [opening walking](#opening-walking) is not counted), emitted from `selectCanvasTool` beside the Laser / Spotlight / Eraser lines. `AvatarMode` (not `Avatar`) keeps the mode distinct from the `Element·Added·Avatar` token the palette's photo tile already emits. Each customisation fires `track('UI', 'Changed', 'AvatarGender' | 'AvatarClothing' | 'AvatarHair' | 'AvatarSize')`, and the dice button fires `AvatarRandomised`: which KIND of choice was made, never the value, so the signal is "do people dress their character" without recording what they picked. Opening the panel from its button fires `track('UI', 'Opened', 'AvatarPanel')`. Sending a message fires `track('Canvas', 'Used', 'AvatarMessage')` from the composer and `track('Canvas', 'Used', 'AvatarMessagePanel')` from the panel's popover: that somebody spoke and by which door, **never the text** and never its length. The [Avatar tour](avatar-tour.md) has its own funnel. No per-step, per-click, or per-reaction events (chatty, no signal).
 
 ## Out of scope (v1)
 

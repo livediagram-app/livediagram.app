@@ -107,7 +107,7 @@ Every template opens in Workshop ([Templates by mode](../007-editor/templates-by
 - the boards that ship a dot vote, `affinity-map`, `prioritization-matrix` and `risk-matrix`;
 - the boards a team fills in together: `incident-postmortem`, `user-persona`, `empathy-map`, `journey`,
   `objectives-planner`, `roadmap`, `raci-matrix`, `user-story-map`, `swot`, `business-model-canvas`,
-  `stakeholder-map` and `opportunity-solution-tree` (grouped in Start a Workshop under Retrospectives, Workshops,
+  `stakeholder-map` and `opportunity-solution-tree` (grouped in Start a Space under Retrospectives, Workshops,
   Planning and Strategy, [Templates by mode](../007-editor/templates-by-mode.md#workshop-templates));
 - the quizzes and games, `pub-quiz`, `icebreaker-questions`, `two-truths-and-a-lie`, `would-you-rather` and
   `people-bingo` ([Quiz and game templates](quiz-and-game-templates.md));
@@ -120,8 +120,8 @@ device frames, Technology icons) went with step 5.1, and step 5.4 of the
 [Build plan](../005-project-roadmap/build-plan.md) cut the rest of the forked catalogue (the drawn templates, the
 technical and planning diagrams, Blank Diagram and Blank Whiteboard) to Workshop's and the Spaces.
 
-**Blank Workshop** (kind `blank-session`) is the blank: a general tab with nothing on it, the document named
-"Untitled Workshop".
+**Blank Space** (kind `blank-session`) is the blank: a general tab with nothing on it, the document named
+"Untitled Space".
 
 ## Share roles
 

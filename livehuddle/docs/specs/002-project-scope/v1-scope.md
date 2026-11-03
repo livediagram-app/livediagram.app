@@ -18,8 +18,8 @@ of it ([What livediagram keeps](../005-project-roadmap/build-plan.md#what-livedi
 | **session**     | The activity a group runs on a board (a retro, a stand-up, a quiz); never a stored thing                     | a meeting call; a share session                        |
 | **facilitator** | Whoever holds the baton ([Facilitator](../../../../livediagram/docs/specs/012-collaboration/facilitator.md)) | anyone who opened the space first                      |
 
-"Space" is the recommended noun; [Open decisions](../005-project-roadmap/open-decisions.md) D6 leaves it to the
-owner. The API keeps the word `document` for a space (as livediagram and livedocuments do), so the platform's
+"Space" is the noun, settled as D6 (a) in [Open decisions](../005-project-roadmap/open-decisions.md)
+([Domain language](../003-system-architecture/domain-language.md#space)). The API keeps the word `document` for a space (as livediagram and livedocuments do), so the platform's
 `apiNoun` types need no change.
 
 ## v1 features
@@ -32,14 +32,18 @@ and five Reactions with their keys, Status (Available, Focusing, In a Meeting, A
 composer, pushing, sitting ([Chair](../../../../livediagram/docs/specs/009-elements/chair.md)), drinks, fences and
 room walls, the follow camera, and the realtime `avatar`, `avatar-push` and `avatar-say` presence ops.
 
-What changes in livehuddle (recommended, [Open decisions](../005-project-roadmap/open-decisions.md) D7):
+What changes in livehuddle (settled as D7 (a) in [Open decisions](../005-project-roadmap/open-decisions.md);
+the rules in [Avatar mode](../008-canvas/avatar-mode.md#where-it-lives)):
 
 - **The picker offers Avatar.** In livediagram the walk is reachable only through a
   [Selection Mode button](../../../../livediagram/docs/specs/009-elements/mode-button.md) on the board, because a
   diagram tool should not push a character at someone drawing. In a meeting app walking is the point, so the
   Selection Mode picker lists **Avatar** beside Select and Hand, and the Selection Mode button still works.
-- **A Spaces board opens walking.** A space made from a Spaces template enters Avatar mode on first open, on the
-  board's [Avatar Pad](../../../../livediagram/docs/specs/009-elements/avatar-pad.md), for every role.
+- **A Spaces board opens walking.** A tab that offers the walk (it holds an
+  [Avatar Pad](../../../../livediagram/docs/specs/009-elements/avatar-pad.md) or a Selection Mode button set to
+  Avatar, as every Spaces template's **Walk In** button is) puts you in Avatar mode the first time it is shown in a
+  visit, for every role: on its pad when it has one, otherwise just below its first such button. Leaving the mode
+  is yours to keep for the rest of the visit.
 - Everything else is livediagram's rule, read-only canvas while walking included.
 
 ### 2. The Navigate elements

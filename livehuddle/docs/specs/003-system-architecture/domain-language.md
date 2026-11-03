@@ -144,20 +144,27 @@ The words for the public gallery of published documents ([Community](../025-comm
   mode.
 - A **reveal** brings an element or its words in; a **loop** repeats around the rest frame.
 
-## Canvas
+## Space
 
-What people see a livehuddle item called is a **Canvas** (plural **canvases**), as the platform names it
-(liveworkspace's one-explorer spec: livehuddle makes Canvases, liveplanner Plans, livedocuments Documents and
-livedesign Designs). Copy follows the app's casing: **New Canvas**, **Share This Space**, "Untitled canvas", "your
-canvases". The shared Explorer takes the word from `KIND_WORDS` in `packages/explorer/src/words.ts`, never from copy
-of its own. Only what people see is renamed: code, types, API routes, URL paths (`/document/<id>`), MCP tool names
-(`create_document`), CLI commands (`document ls`), storage keys, telemetry events and database columns still say
-**document**, and specs that describe them do too. Search keywords keep "document" beside "canvas", so an old search
-still finds the command or article. Canvases stored as "Untitled document" still count as untitled. "Canvas" also
-stays the word for the drawing surface of a tab; a sentence that would say both reads as "your work" instead. The tab
-menu's item for putting a tab into another canvas is **Add to Another Canvas**, apart from the palette's **Add to
-canvas**, which puts an element on the drawing surface. The **Document** shape is a shape, not an item, and keeps its
-name.
+What people see a livehuddle item called is a **Space** (plural **Spaces**), as the platform names it
+(liveworkspace's one-explorer spec: livehuddle makes Spaces, livediagram Canvases, liveplanner Plans, livedocuments
+Documents and livedesign Designs; `APP_KINDS` in `@liveworkspace/index-client`). Settled as D6 (a) in
+[Open decisions](../005-project-roadmap/open-decisions.md): it is the word a team already uses for where it meets, and
+it matches the Spaces templates that make one. Copy follows the app's casing: **New Space**, **Open Space**,
+**Share This Space**, "Untitled Space", "your spaces". The shared Explorer takes the word from `KIND_WORDS` in
+`packages/explorer/src/words.ts`, never from copy of its own. Only what people see is renamed: code, types, API
+routes, URL paths (`/document/<id>`), MCP tool names (`create_document`), CLI commands (`document ls`), storage keys,
+telemetry events and database columns still say **document**, and specs that describe them do too. Search keywords
+keep "document" and "canvas" beside "space", so an old search still finds the command or article. Spaces stored as
+"Untitled canvas", "Untitled Workshop" or "Untitled document" still count as untitled.
+
+"Canvas" stays the word for the **drawing surface** of a tab (pan the canvas, an empty canvas, the canvas
+controls); a Space holds tabs, and each tab has a canvas. A sentence that would say both reads as "your work"
+instead. The tab menu's item for putting a tab into another space is **Add to Another Space**, apart from the
+palette's **Add to canvas**, which puts an element on the drawing surface. The **Document** shape is a shape, not an
+item, and keeps its name. The Spaces templates (Virtual Office, Coworking Space, Team Pod, All-Hands Hall) are
+templates a Space is made from; their category keeps its label, **Virtual Spaces**. "Space" the key (hold Space to
+pan) is a key, never the item.
 
 ## This Browser
 

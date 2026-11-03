@@ -68,7 +68,7 @@ in the `all` scope every liveworkspace app shares, so a switch flipped here is f
 
 | Key                    | Label                             | When it emails                                                   |
 | ---------------------- | --------------------------------- | ---------------------------------------------------------------- |
-| `notifyDocumentJoin`   | Someone Joins My Canvas           | A new person opens one of your shared canvases                   |
+| `notifyDocumentJoin`   | Someone Joins My Space            | A new person opens one of your shared canvases                   |
 | `notifyComments`       | Someone Comments on My Canvas     | Someone leaves a comment on a canvas you own                     |
 | `notifyMentions`       | Someone Mentions Me in a Comment  | A teammate @mentions you in a comment                            |
 | `notifyActionAssigned` | Someone Assigns Me an Action      | A teammate assigns you an action on an element                   |

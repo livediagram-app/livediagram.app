@@ -9,16 +9,16 @@ One row per default applied where a spec is silent or qualitative.
 | IB3 | idea-box-race | Where the refused-post notice shows                          | The editor's error toast, as the Q&A board's refused note                               |
 | IB4 | idea-box-race | How long an id may be                                        | 64 characters (`IDEA_CARD_ID_MAX`), the room's other id bound; a UUID is 36             |
 
-| #   | Blueprint     | Spec silence                                 | Default applied                                                                                                   |
-| --- | ------------- | -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| D1  | workshop-mode | Position in the mode order                   | The only mode; no switch and no Shift+D (Editor modes)                                                            |
-| D2  | workshop-mode | The catalogue's one-line description         | "Run a session with your team: timers, votes, polls and reveals"                                                  |
-| D3  | workshop-mode | Order of Workshop's categories within a band | The catalogue's order for the shared ones; the six Collaborate categories last, in their old group order          |
-| D4  | workshop-mode | Where the Comment panel and Action card go   | The end of Write, after its existing tiles, in that order                                                         |
-| D5  | workshop-mode | Popular for Workshop (POPULAR_BY_MODE)       | Blank Workshop, Sailboat, Retrospective, Town Hall Q&A, Lean Coffee, Crazy 8s, Pub Quiz (canvas-and-palette spec) |
-| D6  | workshop-mode | Blank Workshop's content                     | None: an empty canvas, Workshop's Popular landing; no Start screen of its own                                     |
-| D7  | workshop-mode | Mark's drawing                               | A 24-unit line glyph in the drawing-kinds style: an easel's three legs under a pad with two text lines            |
-| D8  | workshop-mode | Whether Workshop's Media has embeds          | No: Image and Avatar only, as livediagram's Diagram Media was                                                     |
+| #   | Blueprint     | Spec silence                                 | Default applied                                                                                                |
+| --- | ------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| D1  | workshop-mode | Position in the mode order                   | The only mode; no switch and no Shift+D (Editor modes)                                                         |
+| D2  | workshop-mode | The catalogue's one-line description         | "Run a session with your team: timers, votes, polls and reveals"                                               |
+| D3  | workshop-mode | Order of Workshop's categories within a band | The catalogue's order for the shared ones; the six Collaborate categories last, in their old group order       |
+| D4  | workshop-mode | Where the Comment panel and Action card go   | The end of Write, after its existing tiles, in that order                                                      |
+| D5  | workshop-mode | Popular for Workshop (POPULAR_BY_MODE)       | Blank Space, Sailboat, Retrospective, Town Hall Q&A, Lean Coffee, Crazy 8s, Pub Quiz (canvas-and-palette spec) |
+| D6  | workshop-mode | Blank Space's content                        | None: an empty canvas, Workshop's Popular landing; no Start screen of its own                                  |
+| D7  | workshop-mode | Mark's drawing                               | A 24-unit line glyph in the drawing-kinds style: an easel's three legs under a pad with two text lines         |
+| D8  | workshop-mode | Whether Workshop's Media has embeds          | No: Image and Avatar only, as livediagram's Diagram Media was                                                  |
 
 | #   | Blueprint         | Spec silence                                             | Default applied                                                                                    |
 | --- | ----------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |

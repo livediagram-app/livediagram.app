@@ -20,7 +20,7 @@ Workshops beside the retros is hard to find. They get a category of their own.
 - Primary home of the five templates below (Doodle Warm-Up, a drawn icebreaker game, left with step 5.4 of the
   [Build plan](../005-project-roadmap/build-plan.md)).
   **Pub Quiz** is cross-listed in **Teaching & Learning**: a class quiz is the same board.
-- In Start a Workshop ([Templates by mode](../007-editor/templates-by-mode.md#workshop-templates)) the five are its
+- In Start a Space ([Templates by mode](../007-editor/templates-by-mode.md#workshop-templates)) the five are its
   **Quizzes & Games** group, the catalogue category, as every start's groups are.
 - **Pub Quiz** joins Workshop's Popular, after Crazy 8s.
 
