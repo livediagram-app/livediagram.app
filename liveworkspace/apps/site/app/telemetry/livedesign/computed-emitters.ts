@@ -376,6 +376,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'Workspace',
     ],
   },
+  // Pages mode's Contents (the workbench's shared usePageContents hands its door the use to send).
+  'apps/live/hooks/ui/usePageContents.ts UI·Used': {
+    values: ['PageContentsJump', 'PageContentsReorder'],
+  },
   'apps/live/hooks/ui/useImageSearch.ts Error·Warning': {
     values: IMAGE_SEARCH_WARNINGS,
   },
