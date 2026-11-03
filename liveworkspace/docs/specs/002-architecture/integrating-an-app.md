@@ -203,6 +203,8 @@ person sees lists it.
   its sign-ups and its phone devices; the index takes its items; media takes its uploads and previews; telemetry takes
   its events and its Workers' key; the Drive mirror writes its items' files (its format in `APP_FILE_FORMATS`, its
   doors in the service's `DRIVE_KEY_<APP>` and `APP_ORIGIN_<APP>`); its browser settings keys are known.
+- **Its own address:** the Explorer its router serves at `<app>.app/explorer` is its page, read with its session
+  (`lib/explorer/page-app.ts` on the site), as a launched app's is; its own address is no list.
 - **Held out of every list:** the site switcher, the sign-in pages' "one account for ..." line and the sign-in
   email's list of apps, the Explorer's apps (its New menu, filters, search and welcome), the telemetry dashboard's
   app picker, the status page, the settings panel's apps, and liveworkspace.app's landing, legal and help pages.

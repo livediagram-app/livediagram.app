@@ -9,17 +9,19 @@ import { SIGNED_IN_HINT_COOKIE as DIAGRAM_HINT } from '@livediagram/api-schema';
 import { SIGNED_IN_HINT_COOKIE as PLANNER_HINT } from '@liveplanner/api-schema';
 import { SIGNED_IN_HINT_COOKIE as DOCUMENTS_HINT } from '@livedocuments/api-schema';
 import { SIGNED_IN_HINT_COOKIE as DESIGN_HINT } from '@livedesign/api-schema';
+import { SIGNED_IN_HINT_COOKIE as HUDDLE_HINT } from '@livehuddle/api-schema';
 import type { AppName } from '@liveworkspace/sites';
 import { fullNameOf } from '../accounts';
 import { pageApp } from './page-app';
 
 // Each app's readable "this browser has a session here" cookie (`1`), set beside its refresh cookie.
-// A held app (livehuddle) has none until its fork brings its api-schema; no Explorer lists it before then.
+// A held app's too: the Explorer on its own address is its page (page-app.ts).
 export const SIGNED_IN_HINTS: Partial<Record<AppName, string>> = {
   livediagram: DIAGRAM_HINT,
   liveplanner: PLANNER_HINT,
   livedocuments: DOCUMENTS_HINT,
   livedesign: DESIGN_HINT,
+  livehuddle: HUDDLE_HINT,
 };
 
 // ---------- The app's own session, on its address ----------------------------------------------------------------

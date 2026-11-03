@@ -48,6 +48,9 @@ describe('where the page is', () => {
     expect(appOfPageHost('localhost:3202')).toBe('liveplanner');
     expect(appOfPageHost('127.0.0.1:3302')).toBe('livedocuments');
     expect(appOfPageHost('localhost:3499')).toBe('livedesign');
+    // A held app's own address is its page too: no list reads it.
+    expect(appOfPageHost('localhost:3502')).toBe('livehuddle');
+    expect(appOfPageHost('www.livehuddle.app')).toBe('livehuddle');
     expect(appOfPageHost('livediagram.app')).toBe('livediagram');
     // liveworkspace's own block, and ports in no block, are liveworkspace.app's page.
     expect(appOfPageHost('localhost:3000')).toBeNull();
@@ -55,6 +58,25 @@ describe('where the page is', () => {
     expect(appOfPageHost('example.com:3102')).toBeNull();
     // Return addresses are vetted by appOfHost, which knows each router's port alone.
     expect(appOfHost('localhost:3102')).toBeNull();
+  });
+
+  it('takes the app an E2E stack names, on a local port in no block', () => {
+    const meta = document.createElement('meta');
+    meta.name = 'liveworkspace-app';
+    meta.content = 'livehuddle';
+    document.head.appendChild(meta);
+    try {
+      expect(appOfPageHost('localhost:3620')).toBe('livehuddle');
+      expect(appOfPageHost('127.0.0.1:3102')).toBe('livehuddle');
+      // A live host decides alone.
+      expect(appOfPageHost('livediagram.app')).toBe('livediagram');
+      expect(appOfPageHost('example.com')).toBeNull();
+      // A name that is no app's is passed over for the port's block.
+      meta.content = 'nothing';
+      expect(appOfPageHost('localhost:3102')).toBe('livediagram');
+    } finally {
+      meta.remove();
+    }
   });
 
   it('knows every switched-on app by its live, www, staging and local address', () => {
@@ -69,7 +91,7 @@ describe('where the page is', () => {
     expect(appOfHost('liveworkspace.app')).toBeNull();
     expect(appOfHost('localhost:3000')).toBeNull();
     expect(new Set(Object.values(appHosts()))).toEqual(
-      new Set(['livediagram', 'liveplanner', 'livedocuments', 'livedesign']),
+      new Set(['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle']),
     );
   });
 
@@ -145,6 +167,9 @@ describe('the silent sign-in script', () => {
     expect(script).toContain('lp_signed_in');
     expect(script).toContain('"localhost:3100":"livediagram"');
     expect(script).toContain('ld_signed_in');
+    // A held app signs in on its own address too.
+    expect(script).toContain('"localhost:3500":"livehuddle"');
+    expect(script).toContain('if(a==="livehuddle")');
     expect(script).toContain('/auth/silent?return=');
     expect(script).not.toContain('liveworkspace.app"');
     expect(script.startsWith('(function(){var h=location.host')).toBe(true);

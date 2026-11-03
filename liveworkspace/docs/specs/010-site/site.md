@@ -390,7 +390,8 @@ built once here. It is shown here and, through each switched-on app's router, at
 
 The same page, served by the app's router at `<app>.app/explorer/…` with the address unchanged
 (`@liveworkspace/sites/workspace-proxy`, [one-explorer.md](../004-index/one-explorer.md#the-explorer-on-each-apps-address)).
-`lib/explorer/page-app.ts` reads the app from the page's own host (a static page sees no request), and with it:
+`lib/explorer/page-app.ts` reads the app from the page's own host (a static page sees no request), or locally from
+the `liveworkspace-app` meta an app's E2E stack adds ([one-explorer.md](../004-index/one-explorer.md#the-explorer-on-each-apps-address)), and with it:
 
 - **Who it reads as** (`lib/explorer/app-session.ts`, `lib/explorer/token.ts`): the app's access token from the
   app's `POST /api/auth/token`, one request in flight at a time (it rotates the refresh cookie), else the app's

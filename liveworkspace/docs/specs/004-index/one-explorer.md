@@ -206,7 +206,11 @@ clears it. Staging and production never request it.
 
 The page reads where it is from its own address and there is that app's page: the app's live, `www.` and `staging.`
 hosts, and locally any `localhost` port in the app's block (livediagram 3100–3199, and so
-on, the root AGENTS.md), so the page an app's E2E stack serves on its own port (`:3102`) is that app's too.
+on, the root AGENTS.md), so the page an app's E2E stack serves on its own port (`:3102`) is that app's too. A local
+page can also be told outright: a `<meta name="liveworkspace-app" content="<app>">` in its HTML names the app whatever
+the port. An app's E2E stack adds it to every Explorer page it serves, as the router stands in for that app, so its
+suites run on any port (an agent's own block, a CI runner's) and never read as another app's. Only a `localhost` or
+`127.0.0.1` page reads it: on a live host the host alone decides.
 
 - **Who it reads as.** The app's own session: the app's access token (`POST /api/auth/token`, from the app's
   refresh cookie, asked only while the app's signed-in hint says there is one, and never twice at once), else the

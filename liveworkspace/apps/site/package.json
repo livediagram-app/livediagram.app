@@ -22,6 +22,7 @@
     "@livediagram/ui": "workspace:*",
     "@livedocuments/api-schema": "workspace:*",
     "@livedocuments/ui": "workspace:^",
+    "@livehuddle/api-schema": "workspace:*",
     "@liveplanner/api-schema": "workspace:*",
     "@liveplanner/forms": "workspace:*",
     "@liveplanner/items": "workspace:*",

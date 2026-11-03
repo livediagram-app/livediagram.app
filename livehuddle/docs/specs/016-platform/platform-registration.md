@@ -35,7 +35,8 @@ In the order the build makes them (code locations as on `main` today):
 
 1. **Sites and brand.** `packages/sites/src/index.ts`: `SiteId`, `LOCAL_PORTS` (`'livehuddle.app': 3500`), an
    `APP_SITES` row, `AppName` and its `AppItems` (noun **Space**, `apiNoun: 'document'`, This Browser at
-   `/explorer/offline` with its conversions, and the Community's `communityPath`). `packages/brand/src/apps.ts`: the `BrandApp` entry with its prism tint
+   `/explorer/offline` with its conversions, its shape libraries' `shapeLibrariesPath` (`/api/shape-libraries`, for the
+   Explorer's Shape Libraries), and the Community's `communityPath`). `packages/brand/src/apps.ts`: the `BrandApp` entry with its prism tint
    ([Open decisions](../005-project-roadmap/open-decisions.md) D5).
 2. **Accounts.** `liveworkspace/apps/accounts/src/resources.ts` (production and staging API resources),
    `clients.ts` (the accepted apps), `email.ts` (the sign-in email's list of apps), `telemetry.ts` (its key name).
