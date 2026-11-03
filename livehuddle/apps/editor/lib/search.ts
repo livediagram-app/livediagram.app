@@ -293,23 +293,23 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
   const groups: SearchGroup[] = [];
 
   const documentMatches = liveDocs
-    .filter((d) => matches(q, d.name || 'Untitled canvas'))
+    .filter((d) => matches(q, d.name || 'Untitled Space'))
     .slice(0, DOCUMENT_LIMIT);
   if (documentMatches.length > 0) {
     groups.push({
       key: 'documents',
-      label: 'Canvases',
+      label: 'Spaces',
       items: documentMatches.map((d) => ({
         kind: 'document',
         id: d.id,
-        name: d.name || 'Untitled canvas',
+        name: d.name || 'Untitled Space',
         ...(d.localOnly ? { localOnly: true } : {}),
       })),
     });
   }
 
   const sharedMatches = (shared ?? [])
-    .filter((s) => matches(q, s.name || 'Untitled canvas'))
+    .filter((s) => matches(q, s.name || 'Untitled Space'))
     .slice(0, SHARED_LIMIT);
   if (sharedMatches.length > 0) {
     groups.push({
@@ -318,7 +318,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
       items: sharedMatches.map((s) => ({
         kind: 'shared',
         id: s.id,
-        name: s.name || 'Untitled canvas',
+        name: s.name || 'Untitled Space',
         shareCode: s.shareCode,
       })),
     });
@@ -347,7 +347,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
     .filter((f) => matches(q, f.path) || matches(q, f.teamName))
     .slice(0, FOLDER_LIMIT);
   const teamDocumentMatches = (teamDocuments ?? [])
-    .filter((d) => matches(q, d.name || 'Untitled canvas') || matches(q, d.teamName))
+    .filter((d) => matches(q, d.name || 'Untitled Space') || matches(q, d.teamName))
     .slice(0, DOCUMENT_LIMIT);
   if (teamMatches.length + teamFolderMatches.length + teamDocumentMatches.length > 0) {
     groups.push({
@@ -364,7 +364,7 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
         ...teamDocumentMatches.map((d): DocumentItem => ({
           kind: 'document',
           id: d.id,
-          name: d.name || 'Untitled canvas',
+          name: d.name || 'Untitled Space',
           team: { id: d.teamId, name: d.teamName },
         })),
       ],

@@ -99,7 +99,7 @@ export function WorkshopTourHost() {
   }, [active]);
 
   const inWorkshop = ctx.editorMode.mode === 'workshop';
-  // Start a Workshop on screen holds the offer until a template is picked or the panel closed
+  // Start a Space on screen holds the offer until a template is picked or the panel closed
   // (docs/specs/007-editor/start-diagramming.md "The tours wait").
   const startPanelOpen = useStartPanelOpen();
   const canWork =

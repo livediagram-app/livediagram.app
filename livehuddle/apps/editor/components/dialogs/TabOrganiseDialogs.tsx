@@ -157,7 +157,7 @@ function DocumentPickCard({
         className="h-16 w-full rounded border border-slate-100 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40"
       />
       <span className="w-full truncate text-xs font-medium text-slate-700 dark:text-slate-200">
-        {liveDoc.name || 'Untitled canvas'}
+        {liveDoc.name || 'Untitled Space'}
       </span>
     </button>
   );
@@ -180,20 +180,20 @@ export function AddTabToDocumentDialog({
 }) {
   const [query, setQuery] = useState('');
   const visible = otherDocuments.filter(
-    (d) => !query.trim() || matches(query, d.name || 'Untitled canvas'),
+    (d) => !query.trim() || matches(query, d.name || 'Untitled Space'),
   );
   return (
     <OrganiseDialogFrame
-      title="Add to Another Canvas"
-      sub="Link this tab into another canvas. It stays one live tab: edits show in both places."
+      title="Add to Another Space"
+      sub="Link this tab into another space. It stays one live tab: edits show in both places."
       onClose={onClose}
     >
       <input
         autoFocus
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Filter canvases…"
-        aria-label="Filter canvases"
+        placeholder="Filter spaces…"
+        aria-label="Filter spaces"
         className="mb-3 w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
       />
       {visible.length === 0 ? (
@@ -201,7 +201,7 @@ export function AddTabToDocumentDialog({
           <NoMatches
             size="regular"
             className="py-8"
-            things="canvases"
+            things="spaces"
             query={query}
             onClear={() => setQuery('')}
           />
@@ -209,8 +209,8 @@ export function AddTabToDocumentDialog({
           <CompactEmptyState
             className="py-8"
             icon={<DocumentIcon />}
-            title="No other canvases yet"
-            description="Make another canvas to add this tab to it."
+            title="No other spaces yet"
+            description="Make another space to add this tab to it."
           />
         )
       ) : (

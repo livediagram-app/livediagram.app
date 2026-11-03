@@ -152,7 +152,7 @@ export async function untilHydrated(locator: Locator): Promise<void> {
 // own create, which keeps it in This Browser.
 export async function createInMode(page: Page, mode: string, url?: string): Promise<string> {
   await page.goto(url ?? (await serverNewUrl(page)));
-  await page.getByText('New Canvas', { exact: false }).waitFor();
+  await page.getByText('New Space', { exact: false }).waitFor();
   const card = page.locator(`[data-new-mode="${mode}"]`);
   await untilHydrated(card);
   await card.click();
@@ -160,7 +160,7 @@ export async function createInMode(page: Page, mode: string, url?: string): Prom
   return new URL(page.url()).pathname.split('/').pop()!;
 }
 
-// The start screen over a new tab, by its title (Start a Workshop).
+// The start screen over a new tab, by its title (Start a Space).
 const startScreen = (page: Page, title: RegExp = /^Start /) =>
   page.getByRole('region', { name: title });
 
@@ -189,7 +189,7 @@ export async function openBlankSession(page: Page): Promise<void> {
 // canvas, docs/specs/007-editor/start-diagramming.md "Bringing it back").
 export async function startBlankDocument(page: Page): Promise<void> {
   await createInMode(page, 'workshop');
-  const start = startScreen(page, /^Start a Workshop$/);
+  const start = startScreen(page, /^Start a Space$/);
   await start.getByRole('button', { name: 'Close' }).click();
   await start.waitFor({ state: 'detached' });
 }

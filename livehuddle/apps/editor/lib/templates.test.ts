@@ -516,9 +516,9 @@ describe('design + table templates (later batch)', () => {
 });
 
 describe('untitledNameForTemplate', () => {
-  it('keeps "Untitled canvas" for no template, and names the blank "Untitled Workshop"', () => {
-    expect(untitledNameForTemplate(null)).toBe('Untitled canvas');
-    expect(untitledNameForTemplate('blank-session')).toBe('Untitled Workshop');
+  it('names no template and the blank alike, "Untitled Space"', () => {
+    expect(untitledNameForTemplate(null)).toBe('Untitled Space');
+    expect(untitledNameForTemplate('blank-session')).toBe('Untitled Space');
   });
 });
 

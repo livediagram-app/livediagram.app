@@ -18,8 +18,8 @@ export const FOLDER_FAILURE = {
 } as const satisfies Record<string, FailureCopy>;
 
 export const DOCUMENT_FAILURE = {
-  rename: failure('rename', 'the canvas'),
-  move: failure('move', 'the canvas'),
-  delete: failure('delete', 'the canvas'),
-  duplicate: failure('duplicate', 'the canvas'),
+  rename: failure('rename', 'the space'),
+  move: failure('move', 'the space'),
+  delete: failure('delete', 'the space'),
+  duplicate: failure('duplicate', 'the space'),
 } as const satisfies Record<string, FailureCopy>;

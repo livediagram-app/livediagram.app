@@ -15,7 +15,7 @@ import {
 
 test('the new-document wizard renders', async ({ page, pageErrors }) => {
   await page.goto('/new');
-  await expect(page.getByText('New Canvas', { exact: false })).toBeVisible();
+  await expect(page.getByText('New Space', { exact: false })).toBeVisible();
   // Every board is Workshop (docs/specs/007-editor/editor-modes.md), so the wizard asks no question: its one
   // Create button proves the client-rendered wizard mounted, not just the shell.
   await expect(page.locator('[data-new-mode]')).toHaveCount(1);
@@ -102,7 +102,7 @@ test.describe('mobile', () => {
     page,
     pageErrors,
   }) => {
-    // The strip is Workshop's (docs/specs/012-collaboration/workshop-mode.md), so a Blank Workshop.
+    // The strip is Workshop's (docs/specs/012-collaboration/workshop-mode.md), so a Blank Space.
     await openBlankSession(page);
 
     // Every cluster button is inside the viewport: nothing pushed off the left edge.

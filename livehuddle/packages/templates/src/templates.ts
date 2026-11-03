@@ -80,8 +80,8 @@ export type TemplateDescriptor = {
 export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'blank-session',
-    title: 'Blank Workshop',
-    description: 'An empty tab to run a workshop on: timers, votes, polls and reveals to hand.',
+    title: 'Blank Space',
+    description: 'An empty space to meet in: timers, votes, polls and reveals to hand.',
     extra: true,
   },
   {
@@ -372,7 +372,7 @@ export function templateCreateHref(kind: TemplateKind): string {
 // Default name for a freshly-created document: "Untitled <Template Title>" in
 // title case so a templated document is recognisable in the Explorer (e.g.
 // "Untitled Tree Mind Map"), while a blank one (or no template) keeps the plain
-// "Untitled canvas" (UNTITLED_DOCUMENT_NAME, legacy-untitled.ts).
+// "Untitled Space" (UNTITLED_DOCUMENT_NAME, legacy-untitled.ts).
 
 export function untitledNameForTemplate(kind: TemplateKind | null): string {
   if (!kind) return UNTITLED_DOCUMENT_NAME;
@@ -381,7 +381,7 @@ export function untitledNameForTemplate(kind: TemplateKind | null): string {
   return title ? `Untitled ${titleCase(title)}` : UNTITLED_DOCUMENT_NAME;
 }
 
-// Every name a document is given before anyone names it: each template's untitled name, plus "Untitled canvas" and
+// Every name a document is given before anyone names it: each template's untitled name, plus "Untitled Space" and
 // its legacy spellings. Built once, at first use.
 let DEFAULT_NAMES: ReadonlySet<string> | null = null;
 

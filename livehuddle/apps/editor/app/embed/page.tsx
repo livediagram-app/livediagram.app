@@ -11,7 +11,7 @@ import { EDITOR_VIEWPORT } from '@liveworkspace/workbench/lib/page-viewport';
 // this page directly. The editor worker omits X-Frame-Options for
 // `/embed` so host pages can iframe it.
 export const metadata: Metadata = {
-  title: 'Embedded canvas | livehuddle',
+  title: 'Embedded Space | livehuddle',
   robots: { index: false },
 };
 

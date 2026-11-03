@@ -22,8 +22,8 @@ import { useOnline } from '@liveworkspace/workbench/hooks/ui/useOnline';
 type DocumentLoadingStage = 'creating' | 'opening';
 
 const COPY: Record<DocumentLoadingStage, { title: string; detail: string }> = {
-  creating: { title: 'Creating your canvas', detail: 'Setting up a fresh canvas' },
-  opening: { title: 'Opening your canvas', detail: 'Getting everything in place' },
+  creating: { title: 'Creating your space', detail: 'Setting up a fresh space' },
+  opening: { title: 'Opening your space', detail: 'Getting everything in place' },
 };
 
 const SLOW_AFTER_MS = 10_000;

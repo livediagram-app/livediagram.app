@@ -124,7 +124,7 @@ export function SignInPrompt({ fallback, bar = false }: SignInPromptProps) {
       body={
         bar
           ? 'A free account saves it across devices.'
-          : 'A free account keeps your canvases and content across sessions and devices.'
+          : 'A free account keeps your spaces and content across sessions and devices.'
       }
       onDismiss={dismiss}
       action={

@@ -21,7 +21,7 @@ export function DeleteAccountDialog(props: {
     <SharedDeleteAccountDialog
       {...props}
       appName="livehuddle"
-      localItems="Canvases"
+      localItems="Spaces"
       sendCode={apiSendDeletionCode}
       deleteAccount={apiDeleteAccount}
       onDataDeleted={trackDeleted}

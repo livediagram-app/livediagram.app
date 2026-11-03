@@ -18,6 +18,8 @@ export const UNTITLED_DOCUMENT_NAMES: ReadonlySet<string> = new Set([
   'Untitled Flashcards',
   // liveplanner.
   'Untitled Plan',
+  // livehuddle: its blank, Blank Space (it made "Untitled Workshop" and "Untitled canvas", listed above, before).
+  'Untitled Space',
 ]);
 
 /** Whether a document still carries a blank's default name, so the first thing written in it may name it. */

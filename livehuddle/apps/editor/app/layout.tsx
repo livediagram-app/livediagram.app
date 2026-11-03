@@ -41,7 +41,7 @@ import './globals.css';
 const TRUSTED_TYPES_BOOT = trustedTypesBootScript('/live');
 
 const TITLE = 'livehuddle';
-const DESCRIPTION = 'Diagrams, whiteboards and workshops. Multiplayer canvas.';
+const DESCRIPTION = 'Meet and run workshops together in shared spaces.';
 
 export const metadata: Metadata = {
   title: TITLE,

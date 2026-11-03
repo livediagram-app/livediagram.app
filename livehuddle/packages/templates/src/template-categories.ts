@@ -114,7 +114,7 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
   .sort((a, b) => a.label.localeCompare(b.label, 'en', { sensitivity: 'base' }))
   .map(({ id, label, description }) => ({ id, label, description }));
 
-// Every template but the blank's primary category: the job it is for. Blank Workshop is in none, reached from
+// Every template but the blank's primary category: the job it is for. Blank Space is in none, reached from
 // Popular or by search (docs/specs/007-editor/templates-by-mode.md "The blank"); isBlankTemplate names it.
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, 'blank-session'>, TemplateCategory> = {
   // Brainstorming: getting ideas out, then sorting them.

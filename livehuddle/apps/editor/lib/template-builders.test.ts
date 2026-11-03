@@ -99,7 +99,7 @@ describe('buildTemplate translation invariance', () => {
   const DX = 137;
   const DY = -421;
 
-  // The blank, Blank Workshop, is intentionally empty (no seeded element, docs/specs/007-editor/new-document-route.md),
+  // The blank, Blank Space, is intentionally empty (no seeded element, docs/specs/007-editor/new-document-route.md),
   // so it has no coordinates to shift: excluded from this invariance check (it stays in ALL_KINDS above for the
   // exhaustiveness assertion).
   it.each(ALL_KINDS.filter((k) => k !== 'blank-session'))(

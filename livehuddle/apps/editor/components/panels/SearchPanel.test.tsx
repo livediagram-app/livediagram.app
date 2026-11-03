@@ -54,7 +54,7 @@ describe('SearchPanel', () => {
       <SearchPanel documents={[]} folders={[]} onSelectDocument={vi.fn()} onClose={vi.fn()} />,
     );
     expect(screen.getByRole('dialog', { name: 'Search' }).getAttribute('aria-modal')).toBe('true');
-    expect(document.activeElement).toBe(screen.getByPlaceholderText(/Search canvases/));
+    expect(document.activeElement).toBe(screen.getByPlaceholderText(/Search spaces/));
     unmount();
     expect(document.activeElement).toBe(opener);
     opener.remove();

@@ -39,7 +39,7 @@ export function viewIsCentredOn(view: FocusView, at: { x: number; y: number }) {
 type FocusPressOutcome = 'alone' | 'already-there' | 'asked';
 
 export const FOCUS_PRESS_MESSAGE: Record<FocusPressOutcome, string> = {
-  alone: 'Nobody else is on this canvas right now',
+  alone: 'Nobody else is in this space right now',
   // Pressing twice is normal (to catch a latecomer, or because half the room
   // said no), and the people who came are deliberately not asked again. Saying
   // "nobody is here" to a presser looking at a row of avatars reads as the

@@ -146,7 +146,7 @@ export function PollComposerBody({
           reaches nobody else, and the facilitator should know that first. */}
       {!hasAudience ? (
         <StudioCallout>
-          This canvas isn&apos;t shared, so only you will get this poll. Share it to ask others.
+          This space isn&apos;t shared, so only you will get this poll. Share it to ask others.
         </StudioCallout>
       ) : null}
       <div className="flex flex-col gap-1.5">

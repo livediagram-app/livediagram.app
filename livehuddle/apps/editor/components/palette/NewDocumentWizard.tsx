@@ -14,9 +14,9 @@ import {
 } from '@liveworkspace/workbench/components/palette/template-picker-icons';
 
 // The New Document wizard (docs/specs/007-editor/new-document-route.md "One-step wizard"): no question, as there is
-// one mode; Create makes a Blank Workshop document at once. It asks nothing about where the document goes or what it
+// one mode; Create makes a Blank Space document at once. It asks nothing about where the document goes or what it
 // is called: /new stores and files it by default (Save Locations, Default folders), and it opens on its start, where
-// the templates are. Escape and the X back out, creating nothing; Skip makes a Blank Workshop with its start closed.
+// the templates are. Escape and the X back out, creating nothing; Skip makes a Blank Space with its start closed.
 export function NewDocumentWizard({
   busy = false,
   onCreate,
@@ -29,13 +29,13 @@ export function NewDocumentWizard({
   busy?: boolean;
   // Make the document from the blank.
   onCreate: (kind: TemplateKind) => void;
-  // Make a Blank Workshop with its start closed (the documented Skip defaults).
+  // Make a Blank Space with its start closed (the documented Skip defaults).
   onSkip: () => void;
   // Back to the page that opened /new, creating nothing.
   onBackOut: () => void;
   // To the Explorer, to open a document that exists.
   onOpenExisting?: () => void;
-  // Where the new canvas will be saved: the Sync Space to Server switch, under Create
+  // Where the new space will be saved: the Sync Space to Server switch, under Create
   // (docs/specs/006-document/save-locations.md "On the start screen"). Absent where /new names a server place.
   saveSwitch?: ReactNode;
 }) {
@@ -54,11 +54,11 @@ export function NewDocumentWizard({
     if (!busy) onBackOut();
   });
   return (
-    <CanvasModalCard label="Start a new canvas" width="sm:w-[44rem]">
+    <CanvasModalCard label="Start a new space" width="sm:w-[44rem]">
       <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pb-5 pt-6 dark:border-slate-800">
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
-            New Canvas
+            New Space
           </h2>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
             What are you making today?
@@ -95,7 +95,7 @@ export function NewDocumentWizard({
             className="mr-auto inline-flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           >
             <FolderOpenIcon />
-            Open Existing Canvas
+            Open Existing Space
           </button>
         ) : (
           <span className="mr-auto" />

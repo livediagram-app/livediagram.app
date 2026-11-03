@@ -55,8 +55,8 @@ export function ReadOnlyAccessToggle({
     >
       <span className="min-w-0 text-slate-600 dark:text-slate-300">
         <span className="font-medium text-slate-800 dark:text-slate-100">Read-only access</span>:
-        let it find and view your canvases, but not create, edit, delete, or share them. Leave off
-        for full read + write.
+        let it find and view your spaces, but not create, edit, delete, or share them. Leave off for
+        full read + write.
       </span>
       <span className="mt-0.5 shrink-0">
         <Switch presentational size="sm" checked={readOnly} />

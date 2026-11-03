@@ -358,7 +358,7 @@ export function TabBar({
           onOpenSearch={onOpenSearch}
           onOpenSettings={onOpenSettings}
           settingsLabel="Application settings"
-          settingsDescription="Your editor preferences. They follow your account, not this canvas."
+          settingsDescription="Your editor preferences. They follow your account, not this space."
           // Icons only under Minimal chrome or with Button Labels off; each keeps its hover card,
           // titled with its name.
           labelled={labelled}
