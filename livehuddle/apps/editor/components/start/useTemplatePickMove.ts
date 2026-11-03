@@ -26,7 +26,7 @@ const ENTRIES = defaultEntries(
   CANVAS_TEMPLATE_FAMILIES,
   DEFAULT_FOLDER_OPTIONS,
 );
-const nounOf = (key: string) => ENTRIES.find((e) => e.key === key)?.noun ?? 'canvases';
+const nounOf = (key: string) => ENTRIES.find((e) => e.key === key)?.noun ?? 'spaces';
 
 export function useTemplatePickMove(at: {
   documentId: string | null;

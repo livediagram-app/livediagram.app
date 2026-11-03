@@ -6,7 +6,11 @@ import {
   popularKindsFor,
   templateEditorMode,
 } from '@livehuddle/templates';
-import { TEMPLATE_STARTS, type TemplateStartMode } from './start-template-items';
+import {
+  LEADING_START_GROUP,
+  TEMPLATE_STARTS,
+  type TemplateStartMode,
+} from './start-template-items';
 
 // docs/specs/007-editor/start-diagramming.md
 const MODES: readonly TemplateStartMode[] = ['workshop'];
@@ -17,8 +21,14 @@ describe.each(MODES)('the %s template start', (mode) => {
     (t) => !t.hidden && !isBlankTemplate(t.kind) && templateEditorMode(t.kind) === mode,
   ).map((t) => t.kind);
 
-  it("leads with Recommended, the mode's Popular shelf, its blank first", () => {
-    const recommended = start.groups[0]!;
+  // docs/specs/007-editor/start-diagramming.md "The Spaces lead": the Spaces first, and the start opens on them.
+  it('leads with the Spaces, and opens on them', () => {
+    expect(start.groups[0]!.id).toBe(LEADING_START_GROUP);
+    expect(start.initial).toBe('spaces');
+  });
+
+  it("puts Recommended, the mode's Popular shelf, its blank first, straight after the Spaces", () => {
+    const recommended = start.groups[1]!;
     expect(recommended.id).toBe('recommended');
     expect(recommended.kinds).toEqual(popularKindsFor(mode));
     expect(recommended.kinds[0]).toBe(start.blank);
@@ -31,8 +41,10 @@ describe.each(MODES)('the %s template start', (mode) => {
     }
   });
 
-  it('lists every template of the mode in a group after Recommended', () => {
-    const grouped = new Set(start.groups.slice(1).flatMap((g) => g.kinds));
+  it('lists every template of the mode in a group other than Recommended', () => {
+    const grouped = new Set(
+      start.groups.filter((g) => g.id !== 'recommended').flatMap((g) => g.kinds),
+    );
     for (const k of listed) expect(grouped.has(k), k).toBe(true);
     expect(grouped.has(start.blank)).toBe(false);
   });
@@ -54,20 +66,22 @@ describe.each(MODES)('the %s template start', (mode) => {
 describe.each(MODES)('the %s start’s groups', (mode) => {
   const start = TEMPLATE_STARTS[mode];
 
-  it('are the catalogue’s categories, in order, each with its label and line', () => {
-    const ids = start.groups.slice(1).map((g) => g.id);
+  it('are the catalogue’s categories, the Spaces lifted first, the rest in order, each with its label and line', () => {
+    const others = start.groups.slice(2);
+    const ids = others.map((g) => g.id);
     const order = TEMPLATE_CATEGORIES.map((c) => c.id) as string[];
-    expect(ids).toEqual(order.filter((id) => ids.includes(id)));
-    for (const g of start.groups.slice(1)) {
+    expect(ids).toEqual(order.filter((id) => ids.includes(id) && id !== LEADING_START_GROUP));
+    for (const g of [start.groups[0]!, ...others]) {
       const c = TEMPLATE_CATEGORIES.find((x) => x.id === g.id)!;
       expect([g.name, g.line]).toEqual([c.label, c.description]);
     }
   });
 });
 
-describe('Start a Workshop', () => {
+describe('Start a Space', () => {
   it('reaches every session the room runs, by its category', () => {
     expect(TEMPLATE_STARTS.workshop.groups.map((g) => g.id)).toEqual([
+      'spaces',
       'recommended',
       'ideas',
       'decisions',
@@ -80,7 +94,6 @@ describe('Start a Workshop', () => {
       'retros',
       'strategy',
       'learning',
-      'spaces',
     ]);
     const group = (id: string) => TEMPLATE_STARTS.workshop.groups.find((g) => g.id === id)!.kinds;
     // A cross-listed template shows in each of its categories.
@@ -109,6 +122,11 @@ describe('Start a Workshop', () => {
     expect(TEMPLATE_STARTS.workshop.search('postmortem')).toEqual([
       { group: 'retros', kinds: ['incident-postmortem'] },
     ]);
+  });
+
+  it('lists the Spaces first among search matches, in rail order', () => {
+    const groups = TEMPLATE_STARTS.workshop.search('hall').map((g) => g.group);
+    expect(groups[0]).toBe('spaces');
   });
 });
 
