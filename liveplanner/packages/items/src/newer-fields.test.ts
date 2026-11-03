@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES } from './item-types';
+import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import { isNewerField, NEWER_FIELD_MAX_BYTES, readNewerField } from './newer-fields';
 import { readItemTypeCatalogue, validateItemTypeCatalogue } from './type-catalogue';
 import { missingRequiredFields, requiredCustomFieldsOf } from './required-fields';
@@ -33,7 +33,7 @@ const contract = {
 const stored = { version: 1, types: [...ITEM_TYPES, contract] };
 
 const contractOf = (catalogue: { types: readonly { id: string }[] }) =>
-  catalogue.types.find((t) => t.id === 'contract') as typeof contract;
+  catalogue.types.find((t) => t.id === 'contract') as ItemTypeDef;
 
 describe('isNewerField', () => {
   it('is every kind this build lacks, and a Calculated field of a calculation it lacks', () => {
@@ -89,7 +89,7 @@ describe('a catalogue holding newer fields', () => {
     };
     const again = validateItemTypeCatalogue(JSON.parse(JSON.stringify(changed)));
     if (!again.ok) throw new Error(again.reason);
-    const custom = contractOf(again.catalogue).custom;
+    const custom = contractOf(again.catalogue).custom ?? [];
     expect(custom[0]).toEqual(signature);
     expect(custom[2]).toEqual(forecast);
     expect(custom[1]).toEqual({ id: 'f-amount', label: 'Total', kind: 'number' });
