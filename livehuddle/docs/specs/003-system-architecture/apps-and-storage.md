@@ -42,10 +42,11 @@ D1").
   shared by every product). The All-Hands Hall seats 32, so v1 fits, but a company all-hands of more than 100 people
   does not. Raising the cap is a separate, measured change (below).
 - **Fan-out is the cost to watch.** Every relayed op is sent to every socket, and a walking character publishes about
-  30 packets a second. One walker in a full room costs about 3,000 sends a second; everyone walking at once in a full
-  room is about 300,000, which one Durable Object cannot sustain. livediagram meets this rarely because walking is a
-  side feature; livehuddle makes it the main one. Before v1 ships, the build measures it and bounds it
-  ([Build plan](../005-project-roadmap/build-plan.md#risks), R3).
+  30 packets a second, so 100 walkers owed one Durable Object about 300,000 sends a second: measured, the room
+  saturated its core and relayed under 5% of them. The room now bounds it (the send rate steps down with the room,
+  a character goes only to its tab, and a busy room coalesces each socket's samples per step), and the same 100 cost
+  40% of a core ([API](../015-api/api.md), "A busy room bounds its presence fan-out";
+  [Avatar mode](../008-canvas/avatar-mode.md#a-busy-room); [Build plan](../005-project-roadmap/build-plan.md#risks), R3).
 
 ## The apps
 
