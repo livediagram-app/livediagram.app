@@ -141,11 +141,13 @@ describe(`${N} Inbox rows`, () => {
 
   it('switches the filter within budget, every filter and back', async () => {
     const { view } = await mount();
-    const filters = [...view.container.querySelectorAll<HTMLElement>('[data-inbox-filter]')];
+    const select = screen.getByRole('combobox', { name: 'Inbox filter' });
+    const filters = [...select.querySelectorAll('option')].map((o) => o.value);
     const per =
       cpuMsOf(() => {
         for (let round = 0; round < 2; round++)
-          for (const f of [...filters.slice(1), filters[0]!]) act(() => fireEvent.click(f));
+          for (const f of [...filters.slice(1), filters[0]!])
+            act(() => fireEvent.change(select, { target: { value: f } }));
       }) /
       (2 * filters.length);
     console.info(`inbox: ${N} rows, a filter change ${per.toFixed(1)} ms`);

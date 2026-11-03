@@ -1,4 +1,4 @@
-// The Inbox as a list and a reading pane: every kind of row newest first under its date divider, the filter bar and
+// The Inbox as a list and a reading pane: every kind of row newest first under its date divider, the filter dropdown and
 // its counts (kept per viewer), choosing a row and reading it, the keys, the phone's list-to-pane-to-Back, the verbs
 // the host can carry out (and only those, with Open always there), the host's This Browser rows, the re-read on
 // returning to the tab, and the telemetry it reports.
@@ -145,7 +145,7 @@ function everyKind() {
   return index;
 }
 
-const options = () => screen.getAllByRole('option');
+const options = () => within(screen.getByRole('listbox')).getAllByRole('option');
 const listbox = () => screen.getByRole('listbox');
 const titles = () => options().map((o) => o.querySelector('[data-inbox-title]')!.textContent);
 const pane = () => screen.getByRole('region', { name: /./ });
@@ -172,7 +172,7 @@ afterEach(() => {
 describe('the Inbox list', () => {
   it('lists every kind newest first under Today, Earlier This Week and Older, three lines a row', async () => {
     renderInbox(everyKind());
-    await screen.findAllByRole('option');
+    await screen.findByRole('listbox');
     expect(titles()).toEqual([
       '#12Login fails',
       'Book the room',
@@ -245,55 +245,62 @@ describe('the Inbox list', () => {
   });
 });
 
-describe('the filter bar', () => {
+const filterSelect = () =>
+  screen.getByRole('combobox', { name: 'Inbox filter' }) as HTMLSelectElement;
+const choose = (value: string) => fireEvent.change(filterSelect(), { target: { value } });
+
+describe('the filter dropdown', () => {
   it('shows each filter with its count, narrows the list, reports it and keeps it per viewer', async () => {
     const onTelemetry = vi.fn();
     const index = everyKind();
     const view = renderInbox(index, { inbox: { onTelemetry } });
-    await screen.findAllByRole('option');
-    const bar = within(screen.getByRole('group', { name: 'Inbox filters' }));
-    expect(bar.getAllByRole('button').map((b) => b.textContent)).toEqual([
-      'All6',
-      'My Actions2',
-      'Assigned by Me1',
-      'Comments2',
-      'Form Responses1',
+    await screen.findByRole('listbox');
+    // One named select in the page header's row, not a bar of chips.
+    expect(screen.queryByRole('group', { name: 'Inbox filters' })).toBeNull();
+    expect(
+      within(filterSelect())
+        .getAllByRole('option')
+        .map((o) => o.textContent),
+    ).toEqual([
+      'All (6)',
+      'My Actions (2)',
+      'Assigned by Me (1)',
+      'Comments (2)',
+      'Form Responses (1)',
     ]);
-    expect(bar.getByRole('button', { name: /^All/ }).getAttribute('aria-pressed')).toBe('true');
+    expect(filterSelect().value).toBe('all');
 
-    fireEvent.click(bar.getByRole('button', { name: /^Comments/ }));
+    choose('comments');
     expect(titles()).toEqual(['Budget', '#12Login fails']);
     expect(onTelemetry).toHaveBeenCalledWith('Changed', 'Comments');
     expect(screen.getByText('Comments: 2 rows')).toBeTruthy();
     expect(localStorage.getItem(`${INBOX_FILTER_KEY}:user_me`)).toBe('comments');
 
-    fireEvent.click(bar.getByRole('button', { name: /^Assigned by Me/ }));
+    choose('waiting');
     expect(titles()).toEqual(['Chase Bo']);
-    fireEvent.click(bar.getByRole('button', { name: /^Form Responses/ }));
+    choose('forms');
     expect(titles()).toEqual(['Bug Report']);
-    fireEvent.click(bar.getByRole('button', { name: /^My Actions/ }));
+    choose('mine');
     expect(titles()).toEqual(['#12Login fails', 'Book the room']);
 
     // Back on the Inbox, the same viewer finds their choice; another viewer starts at All.
     view.unmount();
     renderInbox(index);
-    await screen.findAllByRole('option');
+    await screen.findByRole('listbox');
     expect(titles()).toEqual(['#12Login fails', 'Book the room']);
     cleanupRender();
     renderInbox(index, { viewerId: 'user_other' });
-    await screen.findAllByRole('option');
-    expect(document.querySelector('[data-inbox-filter="all"]')!.getAttribute('aria-pressed')).toBe(
-      'true',
-    );
+    await screen.findByRole('listbox');
+    expect(filterSelect().value).toBe('all');
   });
 
   it('works beside the header’s app filter, which still decides what is read', async () => {
     const index = everyKind();
     index.inbox.threads.push(thread({ app: 'livediagram', itemId: 'canvas-1', elementId: 'x' }));
     renderInbox(index, { filter: 'app' });
-    await screen.findAllByRole('option');
+    await screen.findByRole('listbox');
     expect(index.calls.find((c) => c.method === 'inbox')!.args[0]).toEqual({ app: 'liveplanner' });
-    fireEvent.click(screen.getByRole('button', { name: /^Comments/ }));
+    choose('comments');
     expect(titles()).toEqual(['Budget', '#12Login fails']);
   });
 
@@ -301,8 +308,8 @@ describe('the filter bar', () => {
     const index = createFakeIndex();
     index.inbox.threads.push(thread());
     renderInbox(index);
-    await screen.findAllByRole('option');
-    fireEvent.click(screen.getByRole('button', { name: /^Form Responses/ }));
+    await screen.findByRole('listbox');
+    choose('forms');
     expect(screen.getByText('Nothing in Form Responses')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Show all' }));
     expect(titles()).toEqual(['Budget']);
@@ -316,7 +323,7 @@ function cleanupRender() {
 describe('choosing a row', () => {
   it('reads the first row beside the list, and a row clicked; Open always goes to its place', async () => {
     renderInbox(everyKind());
-    await screen.findAllByRole('option');
+    await screen.findByRole('listbox');
     expect(options()[0]!.getAttribute('aria-selected')).toBe('true');
     expect(pane().getAttribute('data-inbox-reader')).toBe('Card');
     const open = () => screen.getByRole('link', { name: 'Open in liveplanner' });
@@ -349,7 +356,7 @@ describe('choosing a row', () => {
   it('reports the row a person opens in its app', async () => {
     const onTelemetry = vi.fn();
     renderInbox(everyKind(), { inbox: { onTelemetry } });
-    await screen.findAllByRole('option');
+    await screen.findByRole('listbox');
     fireEvent.click(screen.getByRole('link', { name: 'Open in liveplanner' }));
     fireEvent.click(options()[4]!);
     fireEvent.click(screen.getByRole('link', { name: 'Open in liveplanner' }));
@@ -364,7 +371,7 @@ describe('the keys', () => {
   it('moves with j/k and the arrows, keeping focus on the list, and opens with Enter', async () => {
     const onTelemetry = vi.fn();
     renderInbox(everyKind(), { inbox: { onTelemetry } });
-    await screen.findAllByRole('option');
+    await screen.findByRole('listbox');
     const list = listbox();
     list.focus();
     const active = () => document.getElementById(list.getAttribute('aria-activedescendant')!);
@@ -392,7 +399,7 @@ describe('the keys', () => {
     const index = createFakeIndex();
     index.inbox.threads.push(thread());
     renderInbox(index, { inbox: { actions } });
-    await screen.findAllByRole('option');
+    await screen.findByRole('listbox');
     const list = listbox();
     list.focus();
     fireEvent.keyDown(list, { key: 'r' });
@@ -409,7 +416,7 @@ describe('on a phone', () => {
     const push = vi.spyOn(window.history, 'pushState');
     const back = vi.spyOn(window.history, 'back').mockImplementation(() => {});
     renderInbox(everyKind());
-    await screen.findAllByRole('option');
+    await screen.findByRole('listbox');
     // Nothing chosen yet, and no pane.
     expect(document.querySelector('[data-inbox-reader]')).toBeNull();
     expect(options().every((o) => o.getAttribute('aria-selected') === 'false')).toBe(true);
@@ -453,7 +460,7 @@ describe('on a phone', () => {
     index.inbox.threads.push(thread());
     index.inbox.forms.push(form());
     renderInbox(index);
-    await screen.findAllByRole('option');
+    await screen.findByRole('listbox');
     fireEvent.click(screen.getByRole('option', { name: /Budget/ }));
     expect(push).toHaveBeenCalledTimes(1);
 
@@ -481,7 +488,7 @@ describe('on a phone', () => {
     asPhone();
     vi.spyOn(window.history, 'back').mockImplementation(() => {});
     renderInbox(everyKind());
-    await screen.findAllByRole('option');
+    await screen.findByRole('listbox');
     const list = listbox();
     fireEvent.keyDown(list, { key: 'j' });
     fireEvent.keyDown(list, { key: 'Enter' });
@@ -510,7 +517,7 @@ describe('the verbs', () => {
       ),
     });
     renderInbox(index, { inbox: { actions } });
-    await screen.findAllByRole('option');
+    await screen.findByRole('listbox');
     const verbs = () =>
       within(pane())
         .queryAllByRole('button')
@@ -531,7 +538,7 @@ describe('the verbs', () => {
     const doneOnly = host(['reply', 'done']);
     cleanupRender();
     renderInbox(index, { inbox: { actions: doneOnly } });
-    await screen.findAllByRole('option');
+    await screen.findByRole('listbox');
     fireEvent.click(options()[1]!);
     expect(verbs()).toEqual(['Mark DoneE']);
   });
@@ -540,7 +547,7 @@ describe('the verbs', () => {
     const onTelemetry = vi.fn();
     const actions = host(['reply', 'resolve']);
     renderInbox(everyKind(), { inbox: { actions, onTelemetry } });
-    await screen.findAllByRole('option');
+    await screen.findByRole('listbox');
     fireEvent.click(options()[2]!);
     fireEvent.click(within(pane()).getByRole('button', { name: /Resolve/ }));
     await waitFor(() => expect(titles()).not.toContain('Budget'));
@@ -555,7 +562,7 @@ describe('the verbs', () => {
     });
     expect(onTelemetry).toHaveBeenCalledWith('Resolved', 'Thread');
     expect(screen.getByText('Resolved Budget')).toBeTruthy();
-    expect(screen.getByRole('button', { name: /^Comments/ }).textContent).toBe('Comments1');
+    expect(screen.getByRole('option', { name: 'Comments (1)' })).toBeTruthy();
   });
 
   it('marks an action done where offered, and says so when it can’t', async () => {
@@ -564,7 +571,7 @@ describe('the verbs', () => {
       done: vi.fn().mockRejectedValueOnce(new Error('no')).mockResolvedValue(undefined),
     });
     renderInbox(everyKind(), { inbox: { actions, onTelemetry } });
-    await screen.findAllByRole('option');
+    await screen.findByRole('listbox');
     fireEvent.click(options()[1]!);
     fireEvent.click(within(pane()).getByRole('button', { name: /Mark Done/ }));
     expect(await screen.findByRole('alert')).toBeTruthy();
@@ -580,7 +587,7 @@ describe('the verbs', () => {
     const index = createFakeIndex();
     index.inbox.threads.push(thread());
     renderInbox(index, { inbox: { actions, onTelemetry } });
-    await screen.findAllByRole('option');
+    await screen.findByRole('listbox');
     const field = screen.getByRole('textbox', { name: 'Reply' });
     fireEvent.change(field, { target: { value: 'Halve it.' } });
     fireEvent.keyDown(field, { key: 'Enter', metaKey: true });
@@ -631,7 +638,7 @@ describe('the verbs', () => {
       thread({ elementId: 'e2', elementLabel: 'Venue', latestAt: NOW - 2 * MIN }),
     );
     renderInbox(index, { inbox: { actions: host(['reply'], { reply }) } });
-    await screen.findAllByRole('option');
+    await screen.findByRole('listbox');
     const field = () => screen.getByRole('textbox', { name: 'Reply' }) as HTMLTextAreaElement;
     fireEvent.change(field(), { target: { value: 'Halve it.' } });
     fireEvent.keyDown(field(), { key: 'Enter', metaKey: true });
@@ -651,7 +658,7 @@ describe('the verbs', () => {
     for (let i = 0; i < 8; i++)
       index.inbox.threads.push(thread({ elementId: `e${i}`, latestAt: NOW - i * MIN }));
     renderInbox(index, { inbox: { actions: host([], { loadThread }) } });
-    await screen.findAllByRole('option');
+    await screen.findByRole('listbox');
     const list = listbox();
     // Running down the list asks for nothing on the way.
     for (let i = 0; i < 7; i++) fireEvent.keyDown(list, { key: 'j' });
