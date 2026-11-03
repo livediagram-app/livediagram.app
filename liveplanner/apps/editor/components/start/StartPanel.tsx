@@ -413,8 +413,10 @@ export function StartPanel<C extends string>({
           </div>
         </div>
         {footer ? (
+          // Hidden while what it holds draws nothing (the switch not offered: signed out, or not ready yet), so no
+          // empty strip and hairline sit under the choices.
           <footer
-            className="shrink-0 border-t px-4 py-1.5 sm:px-6"
+            className="shrink-0 border-t px-4 py-1.5 empty:hidden sm:px-6"
             style={{ borderColor: palette.border }}
           >
             {footer(palette)}

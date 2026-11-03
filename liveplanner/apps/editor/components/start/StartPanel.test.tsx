@@ -83,3 +83,13 @@ describe('the chosen rail count', () => {
     expect(contrastRatio(palette.text, pill)).toBeGreaterThanOrEqual(4.5);
   });
 });
+
+// docs/specs/006-project/save-locations.md "On the start screen": the switch's strip shows only with the switch in it.
+describe('the footer strip', () => {
+  it('hides while the switch is not offered, leaving no empty strip', () => {
+    startPlanning();
+    const footer = document.querySelector('footer')!;
+    expect(footer.childElementCount).toBe(0);
+    expect(footer.className).toContain('empty:hidden');
+  });
+});
