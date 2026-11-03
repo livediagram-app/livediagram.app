@@ -89,6 +89,45 @@ describe('Markdown pasted into an article', () => {
   });
 });
 
+describe('hard line breaks', () => {
+  it('breaks a paragraph line ending in two or more spaces or a backslash', () => {
+    expect(shape('Jordan Blake  \nHarbour Coffee\\\nBristol   \nBS8 1AA')).toEqual([
+      { type: 'paragraph', runs: [{ text: 'Jordan Blake\nHarbour Coffee\nBristol\nBS8 1AA' }] },
+    ]);
+  });
+
+  it('joins a line with one trailing space, an escaped backslash or a backslash then a space', () => {
+    expect(shape('one \ntwo\\\\\nthree\\ \nfour')).toEqual([
+      { type: 'paragraph', runs: [{ text: 'one two\\ three\\ four' }] },
+    ]);
+  });
+
+  it('keeps the last line literal: its spaces go, its backslash stays', () => {
+    expect(shape('a  \n\nb\\')).toEqual([
+      { type: 'paragraph', runs: [{ text: 'a' }] },
+      { type: 'paragraph', runs: [{ text: 'b\\' }] },
+    ]);
+  });
+
+  it('keeps inline marks across a break', () => {
+    expect(shape('**bold\\\nstill bold** plain')).toEqual([
+      {
+        type: 'paragraph',
+        runs: [{ text: 'bold\nstill bold', b: true }, { text: ' plain' }],
+      },
+    ]);
+  });
+
+  it('reads a line of 50,000 spaces, and lines ending in them, in linear time', () => {
+    const spaces = ' '.repeat(50_000);
+    const ms = cpuMsOf(() => {
+      expect(shape(`a\n${spaces}\nb`)).toHaveLength(2);
+      expect(shape(`a${spaces}\nb${spaces}x\nc\\${spaces}`)).toHaveLength(1);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(50));
+  });
+});
+
 describe('pasted tables and contents', () => {
   it('recognises a pipe table or a [TOC] line as Markdown, and plain bars as not', () => {
     expect(looksLikeMarkdown('| a | b |\n|---|---|\n| 1 | 2 |')).toBe(true);

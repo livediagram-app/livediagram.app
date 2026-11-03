@@ -81,6 +81,39 @@ describe('Markdown into an article', () => {
   });
 });
 
+describe('a line break in a paragraph', () => {
+  const roundTrip = (block: ArticleBlock) =>
+    shape(blocksOf(articleToMarkdown({ blocks: [block] })));
+
+  it('is written as a backslash hard break and reads back as a break', () => {
+    const block: ArticleBlock = {
+      id: 'p',
+      type: 'paragraph',
+      runs: [
+        { text: 'Jordan Blake\n' },
+        { text: 'Harbour', b: true },
+        { text: ' Coffee\n# Bristol\n\n1. BS8' },
+      ],
+    };
+    expect(articleToMarkdown({ blocks: [block] })).toBe(
+      'Jordan Blake\\\n**Harbour** Coffee\\\n\\# Bristol\\\n\\\n1\\. BS8\n',
+    );
+    expect(roundTrip(block)).toEqual([{ type: 'paragraph', runs: block.runs }]);
+  });
+
+  it('drops a break at the paragraph end, and keeps a heading or list item on one line', () => {
+    expect(
+      articleToMarkdown({
+        blocks: [
+          { id: 'a', type: 'paragraph', runs: [{ text: 'end\n\n' }] },
+          { id: 'b', type: 'paragraph', style: 'h2', runs: [{ text: 'a\nb' }] },
+          { id: 'c', type: 'list', list: 'bullet', runs: [{ text: 'c\nd' }] },
+        ],
+      }),
+    ).toBe('end\n\n## a b\n\n- c d\n');
+  });
+});
+
 describe('a written article read back', () => {
   it('keeps text that is bold and italic at once', () => {
     const runs = [
@@ -339,11 +372,13 @@ describe('an article as Markdown', () => {
     expect(shape(back)).toEqual(shape(flow.blocks));
   });
 
-  it('prints an empty article as nothing, and a line break as a space', () => {
+  it("prints an empty article as nothing, and a quote's line break as a space", () => {
     expect(articleToMarkdown({ blocks: [] })).toBe('');
     expect(
-      articleToMarkdown({ blocks: [{ id: 'a', type: 'paragraph', runs: [{ text: 'a\nb' }] }] }),
-    ).toBe('a b\n');
+      articleToMarkdown({
+        blocks: [{ id: 'a', type: 'paragraph', style: 'quote', runs: [{ text: 'a\nb' }] }],
+      }),
+    ).toBe('> a b\n');
   });
 
   it('counts words and names the article by its title, else its first heading', () => {

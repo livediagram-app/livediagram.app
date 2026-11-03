@@ -599,13 +599,13 @@ Every template opens on pages of its own. `templateCanvasOverrides(kind)` ships 
 
 The written templates (`packages/templates/src/article-templates.ts`) are articles ([Article pages](../007-editor/article-pages.md)), each written as Markdown and read by the article's own Markdown reader, so the words stay easy to edit. Each shows off what an article can hold, as a real document of its kind would use it:
 
-| Template          | What it shows                                                                                                      |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Meeting Notes     | A header with the document's name and the date; attendees and decisions in tables; actions as a to-do list.        |
-| Lesson Plan       | The lesson's timings in a table, objectives as a numbered list, a footer with the page number.                     |
-| Business Proposal | A title page with no header or footer, a table of contents, a timeline and a pricing table, "Page n of m" footers. |
-| Design Doc        | A table of contents, a code block, a table of the options weighed, a header with the doc's status.                 |
-| Status Report     | A header and page numbers, the workstreams' status in a table, risks and next steps.                               |
+| Template          | What it shows                                                                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Meeting Notes     | A header with the document's name and the date; attendees and decisions in tables; actions as a to-do list.                                            |
+| Lesson Plan       | The lesson's timings in a table, objectives as a numbered list, a footer with the page number.                                                         |
+| Business Proposal | A title page with no header or footer, a table of contents, a timeline and a pricing table, "Page n of m" footers.                                     |
+| Design Doc        | A table of contents, a code block, a table of the options weighed, a header with the doc's status.                                                     |
+| Status Report     | A header and page numbers, the workstreams' status in a table, risks and next steps.                                                                   |
 | Cover Letter      | A one-page letter in the Classic look: the sender's details, the date, the recipient's address block (one line each), three paragraphs and a sign-off. |
 
 ### Template categories

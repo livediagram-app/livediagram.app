@@ -164,7 +164,8 @@ const escapeHref = (href: string) => href.replace(/[\\()]/g, '\\$&');
 
 function runMarkdown(run: ArticleRun): string {
   // Inline code keeps its other marks around it (a linked or bold `npm i`): they were dropped with the code's text
-  // alone written. A line break inside a block reads back as a space: Markdown paragraphs join their lines.
+  // alone written. A line break inside a heading, quote, list item or code reads back as a space (a body paragraph's
+  // is held as LINE_BREAK and written as a hard break, paragraphMarkdown).
   let out = run.code
     ? codeSpan(run.text.replace(/\n/g, ' '))
     : escapeText(run.text).replace(/\n/g, ' ');
@@ -218,6 +219,19 @@ const frontValue = (value: string) =>
 
 const PARAGRAPH_PREFIX: Record<string, string> = { h1: '# ', h2: '## ', h3: '### ', quote: '> ' };
 
+// A line break inside a body paragraph, held while its runs are written, then written as CommonMark's backslash hard
+// break. Each line it starts is escaped as a block's first line is, so it never reads back as a heading or a list.
+const LINE_BREAK = '\ue011';
+function paragraphMarkdown(runs: readonly ArticleRun[]): string {
+  const held = runsMarkdown(
+    runs.map((r) => (r.code ? r : { ...r, text: r.text.replace(/\n/g, LINE_BREAK) })),
+  );
+  const lines = held.split(LINE_BREAK);
+  // A break at the paragraph's end has no line after it to break to (it would read back as a literal backslash).
+  while (lines.length > 1 && !lines[lines.length - 1]!.trim()) lines.pop();
+  return lines.map(escapeLineStart).join('\\\n');
+}
+
 /** An article's writing as Markdown, in the form articleFromMarkdown reads. */
 export function articleToMarkdown(flow: ArticleFlow): string {
   const blocks = [...flow.blocks];
@@ -242,12 +256,16 @@ export function articleToMarkdown(flow: ArticleFlow): string {
     if (prevList && !isList) lines.push('');
     if (!isList) numbers = [];
     switch (b.type) {
-      case 'paragraph':
+      case 'paragraph': {
+        const prefix = PARAGRAPH_PREFIX[b.style ?? ''];
         lines.push(
-          (PARAGRAPH_PREFIX[b.style ?? ''] ?? '') + escapeLineStart(runsMarkdown(b.runs)),
+          prefix === undefined
+            ? paragraphMarkdown(b.runs)
+            : prefix + escapeLineStart(runsMarkdown(b.runs)),
           '',
         );
         break;
+      }
       case 'list': {
         const level = b.level ?? 0;
         numbers = numbers.slice(0, level + 1);
