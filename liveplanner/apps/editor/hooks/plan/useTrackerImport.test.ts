@@ -28,8 +28,16 @@ const offline = vi.hoisted(() => ({
   offlineCreateProject: vi.fn(async () => ({})),
   offlineWriteItem: vi.fn(async () => ({})),
 }));
+const removed = vi.hoisted(() => ({
+  offlineDeleteProject: vi.fn(async () => {}),
+  deleteItem: vi.fn(async () => {}),
+}));
 vi.mock('@/lib/offline/offline-store', () => ({
   offlineCreateProject: offline.offlineCreateProject,
+  offlineDeleteProject: removed.offlineDeleteProject,
+}));
+vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
+  indexClient: { deleteItem: removed.deleteItem },
 }));
 vi.mock('@/lib/offline/offline-items', () => ({ offlineWriteItem: offline.offlineWriteItem }));
 const telemetry = vi.hoisted(() => ({ track: vi.fn() }));
@@ -189,8 +197,11 @@ describe('useTrackerImport: into a new Board tab', () => {
     const write = vi.mocked(s.props.write).mock.calls[0]![0] as {
       kind: 'create';
       creates: { threads?: { title: string }[] }[];
+      whole?: true;
     };
     expect(write.kind).toBe('create');
+    // Every card lands whole or not at all.
+    expect(write.whole).toBe(true);
     expect(write.creates).toHaveLength(2);
     expect(write.creates[0]!.threads![0]!.title).toBe('Imported comments');
     expect(write.creates[1]).not.toHaveProperty('threads');
@@ -252,7 +263,7 @@ describe('useTrackerImport: into a new Board tab', () => {
 });
 
 describe('useTrackerImport: into a new plan', () => {
-  it('creates it signed in with the tab, the card type and its cards, then opens it', async () => {
+  it('creates it signed in with the tab and the card type, lands its cards whole, then opens it', async () => {
     const s = setup({ signedIn: true });
     const plan = await planned(s, 'plan');
     expect(await s.tracker().importPlan(plan, 'plan')).toEqual({ ok: true });
@@ -267,29 +278,71 @@ describe('useTrackerImport: into a new plan', () => {
       itemTypes: { types: [plan.type] },
       tabs: [expect.objectContaining({ kind: 'board', elements: [plan.board] })],
     });
-    expect(body['items']).toHaveLength(2);
-    expect(items.writeItem).not.toHaveBeenCalled();
+    expect(body).not.toHaveProperty('items');
+    const [scope, write] = items.writeItem.mock.calls[0] as unknown as [
+      { projectId: string },
+      { kind: string; creates: unknown[]; whole?: true },
+    ];
+    expect(scope.projectId).toBe(body['id']);
+    expect(write).toMatchObject({ kind: 'create', whole: true });
+    expect(write.creates).toHaveLength(2);
+    expect(removed.deleteItem).not.toHaveBeenCalled();
     expect(s.props.openProject).toHaveBeenCalledWith(body['id']);
     expect(telemetry.track).toHaveBeenCalledWith('Plan', 'Imported', 'Jira');
   });
 
-  it('sends the cards past the create’s room after it', async () => {
+  it('sends every card as one whole import, however many', async () => {
     const rows = Array.from({ length: 250 }, (_, i) => `Card ${i},AB-${i},To Do,,`);
     const big = ['Summary,Issue key,Status,Assignee,Comment', ...rows].join('\n');
     const s = setup({ signedIn: true, self: null });
     await s.tracker().importPlan(await planned(s, 'plan', big), 'plan');
-    const body = (
-      api.apiCreateProject.mock.calls[0] as unknown as [string, { items: unknown[] }]
-    )[1];
-    expect(body.items).toHaveLength(200);
-    const [scope, write, by] = items.writeItem.mock.calls[0] as unknown as [
-      { projectId: string },
+    expect(items.writeItem).toHaveBeenCalledTimes(1);
+    const [, write, by] = items.writeItem.mock.calls[0] as unknown as [
+      unknown,
       { creates: unknown[] },
       { name: string },
     ];
-    expect(scope.projectId).toBe((body as unknown as { id: string }).id);
-    expect(write.creates).toHaveLength(50);
+    expect(write.creates).toHaveLength(250);
     expect(by.name).toBe('Sam');
+  });
+
+  it('deletes the new plan for good when its cards fail, and opens nothing', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    items.writeItem.mockRejectedValueOnce(new Error('import_incomplete'));
+    const s = setup({ signedIn: true });
+    expect(await s.tracker().importPlan(await planned(s, 'plan'), 'plan')).toEqual({
+      ok: false,
+      error: TRACKER_IMPORT_FAILED,
+    });
+    const id = (api.apiCreateProject.mock.calls[0] as unknown as [string, { id: string }])[1].id;
+    expect(removed.deleteItem).toHaveBeenCalledWith(id, { permanent: true });
+    expect(s.props.openProject).not.toHaveBeenCalled();
+    expect(telemetry.track).not.toHaveBeenCalled();
+    // A delete that fails too is said, and the import still answers its own failure.
+    items.writeItem.mockRejectedValueOnce(new Error('down'));
+    removed.deleteItem.mockRejectedValueOnce(new Error('index down'));
+    expect(await s.tracker().importPlan(await planned(s, 'plan'), 'plan')).toMatchObject({
+      ok: false,
+    });
+    expect(warn).toHaveBeenCalledWith('[tracker-import] new plan not deleted', expect.anything());
+  });
+
+  it('deletes a guest’s new plan from This Browser when its cards fail', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    offline.offlineWriteItem.mockRejectedValueOnce(new Error('quota'));
+    const s = setup({ signedIn: false });
+    expect(await s.tracker().importPlan(await planned(s, 'plan'), 'plan')).toMatchObject({
+      ok: false,
+    });
+    const made = (offline.offlineCreateProject.mock.calls[0] as unknown as [{ id: string }])[0];
+    expect(removed.offlineDeleteProject).toHaveBeenCalledWith(made.id);
+    expect(s.props.openProject).not.toHaveBeenCalled();
+    // A delete that fails too still answers the import's failure.
+    offline.offlineWriteItem.mockRejectedValueOnce(new Error('quota'));
+    removed.offlineDeleteProject.mockRejectedValueOnce(new Error('gone'));
+    expect(await s.tracker().importPlan(await planned(s, 'plan'), 'plan')).toMatchObject({
+      ok: false,
+    });
   });
 
   it('keeps a guest’s new plan in This Browser', async () => {
@@ -302,7 +355,7 @@ describe('useTrackerImport: into a new plan', () => {
     );
     expect(offline.offlineWriteItem).toHaveBeenCalledWith(
       expect.any(String),
-      { kind: 'create', creates: expect.any(Array) },
+      { kind: 'create', creates: expect.any(Array), whole: true },
       me,
     );
     expect(s.props.openProject).toHaveBeenCalled();
