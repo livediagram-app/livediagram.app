@@ -100,8 +100,10 @@ export async function pushNewComments(
     threadsOf(input.previous),
     input.authorId,
   );
-  for (const { at, comment, threadAuthorIds } of fresh) {
-    await pusher.pushComment(env, {
+  // One send for the whole save: the item's team read once, the index asked once a person.
+  await pusher.pushComments(
+    env,
+    fresh.map(({ at, comment, threadAuthorIds }) => ({
       item: input.plan,
       authorId: input.authorId,
       authorName: input.authorName,
@@ -110,8 +112,8 @@ export async function pushNewComments(
       mentionsMax: MENTIONS_MAX,
       url: elementThreadUrl(env, input.plan.id, input.tabId, at),
       tag: pushTag(input.plan.id, at),
-    });
-  }
+    })),
+  );
 }
 
 /**
