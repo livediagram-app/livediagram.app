@@ -1201,7 +1201,9 @@ canvas's ink; the Slide Deck's pictures the same.
   person's per-device choice, kept in this browser alone (`livedocuments:contents-side:v1`), as the
   corner panels' places are ([Panel docking](panel-docking.md)). It stays open while the person
   works; the cluster has no Contents button while it shows, and the corner panels and the
-  bottom-right cluster on its side start past it.
+  bottom-right cluster on its side start past it. Docked left, the cluster stops 16px short of the
+  sidebar and, in a window too narrow for it in one row, wraps upward from the right rather than
+  run under Add Page (`contentsClusterBounds`).
 - **Joined to the menu box**: pinned left, the sidebar rises to the canvas's top and the menu box
   (the menu button and the tab's name, top left) becomes its top row, so the two read as one panel
   rather than a card floating over a sidebar. The box's own border, fill and shadow fade away

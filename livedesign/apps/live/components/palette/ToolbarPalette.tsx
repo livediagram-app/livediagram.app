@@ -59,6 +59,7 @@ import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { CATEGORY_BAR_MODES } from './category-flyout-groups';
 import { setPalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
+import { useBarFold } from '@liveworkspace/workbench/components/palette/useBarFold';
 import { useBarLabels } from '@liveworkspace/workbench/components/palette/useBarLabels';
 import { useStripCrowded } from '@liveworkspace/workbench/components/palette/useStripCrowded';
 import { barCategoriesFor } from './bar-categories';
@@ -224,6 +225,14 @@ export function ToolbarPalette(props: Props) {
     scale,
   });
   const leadingRef = useRef<HTMLDivElement>(null);
+  // Still too wide once the names are gone (a narrow window beside the docked Contents): the bar shows its first
+  // categories and folds the rest behind More (useBarFold, docs/specs/007-editor/toolbar-layout.md "The strip's
+  // room").
+  const barShown = useBarFold(cardRef, {
+    enabled: categoryBar && !isMobile && !barLabels,
+    categoriesKey: barCategories.map((c) => c.id).join('|'),
+    scale,
+  });
   // Too wide to centre between the menu card's sides (a tablet): the strip sits at the right instead.
   const crowded = useStripCrowded(cardRef, leading == null);
   const stripLimit = useStripTileLimit(cardRef, {
@@ -451,6 +460,7 @@ export function ToolbarPalette(props: Props) {
                           bar={bar}
                           categories={barCategories}
                           labels={barLabels}
+                          shown={barShown}
                           scrollable={swipe}
                         />
                       ) : (
