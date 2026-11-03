@@ -101,6 +101,11 @@ The canvas shows one card at a time, the **card in front**, centred where any pa
   The cards behind are a view: they take no presses and are never exported.
 - **Cards before** the one in front have been flipped away and are not drawn.
 - The canvas pans and zooms as ever, but only the card in front and its stack are drawn: there is no row to pan along.
+- **Long stacks stay quick**: only the writing of the card in front and the cards either side of it is open for
+  writing at a time (and the card being written, while it is). The other cards are read from their text where they
+  are shown away from the canvas: Contents' thumbnails and the Map draw their lines from it, an export sets their
+  words as an export of a document that is not open does, and Find reaches their text and turns to their card. A
+  stack of 100 cards opens, types and flips on a mid-range phone as one of a few cards does.
 - **The + to add a card** sits beside the card in front ("Add Another Card"), adding a card after the last as every
   kind does, and the view flips to it.
 

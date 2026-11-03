@@ -35,6 +35,7 @@ small modules beside it. Each rule below names its home.
 | `FLASHCARD_STACK_MAX`        | 6         | `flashcard-stack.ts` | Enough depth to read "many", little enough to stay a card                  |
 | `FLASHCARD_STACK_STEP_Y`     | 10        | `flashcard-stack.ts` | Canvas px each card behind sits lower                                      |
 | `FLASHCARD_STACK_INSET_X`    | 14        | `flashcard-stack.ts` | Canvas px each card behind is narrower each side                           |
+| `FLASHCARD_MOUNT_SPAN`       | 1         | `flashcard-stack.ts` | Cards each side of the card in front whose writing stays mounted; 1 to 3   |
 | `FLASHCARD_FLIP_MS`          | 420       | `flashcard-flip.ts`  | Long enough to read as a turn, inside the 500 ms motion budget             |
 
 ## Data and persistence
@@ -150,8 +151,18 @@ does (no zones, no page breaks are new to it); adding or splitting a card is a p
 - The footer's speaking time is computed once per writing object (a commit, at most every 600 ms while typing), cached
   in a `WeakMap`; only the card in front draws a footer, so a 100-card stack counts one card per commit.
 - Contents counts each card's words while its rows rebuild (on the tab resting), O(text).
-- Only the card in front and at most 6 stack sheets are drawn; the other cards' writing stays mounted (as articles'
-  does) but clipped.
+- Only the card in front and at most 6 stack sheets are drawn. Only the writing of the cards within
+  `FLASHCARD_MOUNT_SPAN` of the card in front is mounted (`cardFlowsToMount`, `flashcard-stack.ts`, read by
+  `ArticleFlows`), plus the active article and a pending focus request's, so a flip forward pictures the card
+  leaving and a flip back the card arriving, and an editor never unmounts under the caret (its unmount flushes it
+  anyway). An unmounted card has no `ArticleEditorHandle`: `pageWriting` (exports) and `pageWritingBars` (slide
+  thumbnails, Contents, the Map) fall back to `estimateArticle`'s ops for its page (`estimatedPageOps`,
+  `lib/article/article-estimate-cache.ts`, cached per writing object and flow), the bars drawn one per estimated line;
+  Find's block pages put an unmounted one-page card's blocks on its page.
+- Measured (#234, a 100-card stack with two lines a card, 390x844 touch, CPU 4x, the dev build): before, 100
+  editors mounted, 9,407 event listeners, opening ran 1,073 ms of long tasks (worst 340 ms) and typing's p95 frame
+  was 17.8 ms; after, 2 to 3 editors, 1,354 listeners, opening 521 to 528 ms of long tasks (worst 195 ms) and
+  typing's p95 7.6 to 8 ms. Flips and panning held a 16.7 ms frame median both ways.
 - The flip clones two nodes once per flip and animates `transform` and `opacity` only (compositor).
 
 ## Presentation and UX

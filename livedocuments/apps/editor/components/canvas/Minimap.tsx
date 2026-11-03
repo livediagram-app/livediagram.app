@@ -202,7 +202,11 @@ export function Minimap({
       parts.push(
         pageExportFrame(page, { paper, idPrefix: 'lvd-minimap-page' }).backgroundSvg +
           // An article page's writing, as soft lines of text.
-          (page.flow ? articleOpsToSvg(pageWritingBars(page, outline)) : '') +
+          (page.flow
+            ? articleOpsToSvg(
+                pageWritingBars(page, outline, writing ? { articles: writing } : undefined),
+              )
+            : '') +
           `<rect x="${x}" y="${y}" width="${width}" height="${height}" fill="none" stroke="${outline}" stroke-width="${Math.max(width, height) / 160}"/>`,
       );
       corners.push({ x, y }, { x: x + width, y: y + height });

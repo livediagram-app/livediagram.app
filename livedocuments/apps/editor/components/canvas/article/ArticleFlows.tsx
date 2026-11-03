@@ -27,6 +27,7 @@ import {
 } from '@livedocuments/document';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { pagesClipPath } from '@/components/canvas/PageClip';
+import { cardFlowsToMount } from '@/lib/flashcard-stack';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import type { ArticleInk } from '@/lib/article/article-style-vars';
 import {
@@ -164,6 +165,12 @@ export function ArticleFlows({
     () => (edit ? { state: edit.cardSplitState, run: edit.splitCard } : undefined),
     [edit],
   );
+  // A long stack mounts only the writing near the card in front (flashcards.md "Long stacks stay quick").
+  const focusFlow = articles?.focusRequest?.flow ?? null;
+  const mountable = useMemo(
+    () => cardFlowsToMount(row, view.cardStack, [zoneFlow, focusFlow]),
+    [row, view.cardStack, zoneFlow, focusFlow],
+  );
   if (!articles || byFlow.size === 0) return null;
   const writable = (flow: string) => articles.editable && !held.has(flow);
   return (
@@ -212,7 +219,7 @@ export function ArticleFlows({
         <Suspense fallback={null}>
           {[...byFlow].map(([flow, pages]) => {
             const doc = articles.flows[flow];
-            if (!doc) return null;
+            if (!doc || (mountable && !mountable.has(flow))) return null;
             const lead = pages[0]!;
             return (
               <ArticleEditor

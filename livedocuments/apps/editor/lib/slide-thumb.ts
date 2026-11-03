@@ -79,7 +79,7 @@ export function slideThumbFor(slide: Slide, tab: Tab, opts: SlideThumbOptions): 
     if (page.background?.fill) surface = frame.surface;
     parts.push(frame.backgroundSvg);
     // An article page's writing, as lines of text.
-    const bars = pageWritingBars(page);
+    const bars = pageWritingBars(page, undefined, tab);
     if (bars.length) parts.push(articleOpsToSvg(bars));
   }
   // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).

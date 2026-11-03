@@ -14,6 +14,7 @@ import {
   type Tab,
 } from '@livedocuments/document';
 import { articleHandleOf } from './article-editor-store';
+import { estimatedBars, estimatedPageOps } from './article-estimate-cache';
 import { bandDocumentName, pageBandLayout, type PageBandLayout } from './article-band-layout';
 import type { ArticleDrawOp } from './article-snapshot';
 
@@ -31,7 +32,9 @@ export function pageWritingFonts(tab: Tab, page: LaidOutPage): string[] {
 export function pageWriting(tab: Tab, page: LaidOutPage): PageWriting | null {
   if (!page.flow) return null;
   const doc = articlesOf(tab)[page.flow];
-  const snap = articleHandleOf(page.flow)?.snapshot();
+  // A card whose writing is not mounted (a long stack's, flashcards.md "Long stacks stay quick") is set as the
+  // headless estimate sets it.
+  const snap = articleHandleOf(page.flow)?.snapshot() ?? estimatedPageOps(tab, page);
   if (!doc || !snap) return null;
   const r = page.rect;
   const on = (x: number, y: number) =>
@@ -88,9 +91,13 @@ export function bandOps(layout: PageBandLayout | null, r: LaidOutPage['rect']): 
 export function pageWritingBars(
   page: LaidOutPage,
   ink = 'rgb(100 116 139 / 0.45)',
+  // The tab, or what holds its `articles`: an unmounted card's bars are drawn from its estimated lines.
+  source?: object,
 ): ArticleDrawOp[] {
   if (!page.flow) return [];
-  const bars = articleHandleOf(page.flow)?.bars(ink) ?? [];
+  const handle = articleHandleOf(page.flow);
+  const estimated = !handle && source ? estimatedPageOps(source, page) : undefined;
+  const bars = handle ? handle.bars(ink) : estimated ? estimatedBars(estimated, ink) : [];
   const r = page.rect;
   return bars.filter(
     (op) =>
