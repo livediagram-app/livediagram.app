@@ -11,5 +11,6 @@ Follow the references below only as needed; never upfront.
 - ./plan-agents.md - when implementing the agent Plan tools: the plan route, naming, card type changes, board placement, the MCP and CLI doors
 - ./linked-boards.md - when implementing linked boards: the Actions board, linked cards, the heal, Won't Do and the links between canvas and board
 - ./tracker-import.md - when implementing the import from another tool: the readers, the plan and preview, imported comments, the editor's Import dialog view and the agent doors
+- ./plan-overview.md - when implementing the Plan Overview: the page and its derivations, the tab bar entry, the description's column, route and room op
 - ./DEFAULTS.md - when a Plan blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a Plan blueprint covers

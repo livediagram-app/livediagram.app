@@ -6,6 +6,7 @@ Follow the references below only as needed; never upfront.
 - ./plan-templates.md - when working on the Plan templates: the catalogue, the tabs each makes, hand-offs between their boards
 - ./plan-board.md - when working on the Plan board or Plan card elements: board set-up, columns, swimlanes, WIP limits, card faces, dragging, the item panel, voting, hide writing, CSV import and download
 - ./board-widgets.md - when working on a Plan board's header: its widgets, the Widgets palette category, placing, reordering and removing widgets
+- ./plan-overview.md - when working on the Plan Overview: the built-in page every plan has (tab tiles, card type tiles, recent activity, people), its entry in the tab bar, Edit Details and the plan's description
 - ./plan-views.md - when working on plan views: metrics and visualisations (Gantt, calendar, workload, status, priority) that read every card
 - ./item-types.md - when working on item types: the type catalogue, custom types and custom fields, the Card Types panel and the type editor
 - ./plan-tour.md - when working on the Plan tour: the guided tour of Plan mode, on the footer's Start Tour button once a board or Sheet is open and run on it, its Boards and Sheets tracks, the Dashboards tour, its Settings row and telemetry
