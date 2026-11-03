@@ -20,8 +20,6 @@ type PaletteLayoutEntry = {
   // The tiles, in order, by tile id (or opener id, palette-openers). `DIVIDE` between two puts a fixed divider there
   // for this layout alone (a tile's own `dividerAfter` follows it everywhere). Absent = the category's own tiles.
   tiles?: readonly string[];
-  // Offered only on an event-storming board.
-  boardOnly?: true;
 };
 
 // A layout's own fixed divider, between the tiles either side of it (docs/specs/007-editor/toolbar-layout.md "Fixed
@@ -29,7 +27,7 @@ type PaletteLayoutEntry = {
 export const DIVIDE = '|';
 
 type PaletteLayout = {
-  // The category the palette opens on (an event-storming board opens on its notation instead).
+  // The category the palette opens on.
   landing: string;
   categories: readonly PaletteLayoutEntry[];
 };
@@ -102,8 +100,7 @@ export const SEARCH_ONLY_TILE_IDS: readonly string[] = [
 
 // Workshop (docs/specs/012-collaboration/workshop-mode.md "The palette"): running a session with a team. Popular, the
 // drawing basics a session uses (no Page or Annotation, no Shape Pen or Polygon), the Layout, the Collaborate
-// elements as six categories, one per group, ahead of the decorations a room reaches for and the charts; the
-// Event Storming notation on an event-storming board only.
+// elements as six categories, one per group, ahead of the decorations a room reaches for and the charts.
 const WORKSHOP: PaletteLayout = {
   landing: 'popular',
   categories: [
@@ -143,7 +140,6 @@ const WORKSHOP: PaletteLayout = {
     // The Layout (docs/specs/010-palette/build-category.md): a board is laid out in frames and lanes and its notes
     // labelled with badges and step numbers, with the Timeline.
     { id: 'layout', tiles: WORKSHOP_LAYOUT_TILES },
-    { id: 'event-storming', boardOnly: true },
     // The session kit next, before the decorations: running the room is what the mode is for, so Ask and Session
     // (the other five, gathered on the bar) come right after the board's structure.
     { id: 'collab-ask' },
@@ -207,53 +203,36 @@ function resolve(entry: PaletteLayoutEntry): ResolvedPaletteCategory {
   };
 }
 
-/** The categories a mode's palette offers, in order, with their tiles. A board-only category is
- *  left out unless the tab is an event-storming board. */
-export function paletteCategoriesFor(
-  mode: EditorMode,
-  { esBoard = false }: { esBoard?: boolean } = {},
-): ResolvedPaletteCategory[] {
-  return paletteLayoutFor(mode)
-    .categories.filter((e) => esBoard || !e.boardOnly)
-    .map(resolve);
+/** The categories a mode's palette offers, in order, with their tiles. */
+export function paletteCategoriesFor(mode: EditorMode): ResolvedPaletteCategory[] {
+  return paletteLayoutFor(mode).categories.map(resolve);
 }
 
-/** Whether a mode's palette offers category `id` (on an ordinary tab). */
+/** Whether a mode's palette offers category `id`. */
 export function paletteCategoryOffered(mode: EditorMode, id: string): boolean {
-  return paletteLayoutFor(mode).categories.some((e) => e.id === id && !e.boardOnly);
+  return paletteLayoutFor(mode).categories.some((e) => e.id === id);
 }
 
-/** The category the palette opens on: an event-storming board's notation, or the mode's own. */
-export function paletteLandingCategory(mode: EditorMode, esBoard: boolean): string {
-  if (esBoard) return 'event-storming';
+/** The category the palette opens on: the mode's own. */
+export function paletteLandingCategory(mode: EditorMode): string {
   return paletteLayoutFor(mode).landing;
 }
 
 // A Participant's palette (docs/specs/013-workspace/share-roles.md "What a Participant changes"): one category,
-// Participate, holding only what it may add, as the full palette's own tiles. On an Event Storming board that is the
-// notation's coloured notes; elsewhere the Sticky and Text tiles (whatever a mode's Popular holds); then the Image
-// tile. Mind-map branches grow from a node (Tab, Enter), not from a tile.
+// Participate, holding only what it may add, as the full palette's own tiles: the Sticky and Text tiles (whatever a
+// mode's Popular holds), then the Image tile. Mind-map branches grow from a node (Tab, Enter), not from a tile.
 const PARTICIPANT_TILES = ['tools:sticky', 'tools:text'] as const;
 const PARTICIPANT_IMAGE_TILE = 'tools:image';
 
-export function participantTiles(mode: EditorMode, esBoard: boolean): PaletteTileDef[] {
-  const landing = paletteLandingCategory(mode, esBoard);
-  const category = paletteCategoriesFor(mode, { esBoard }).find((c) => c.id === landing);
-  const notation = esBoard ? (category?.tiles ?? []).filter((t) => t.action.type === 'sticky') : [];
-  const base =
-    notation.length > 0
-      ? notation
-      : PARTICIPANT_TILES.map(tileById).filter((t): t is PaletteTileDef => t !== undefined);
+export function participantTiles(): PaletteTileDef[] {
+  const base = PARTICIPANT_TILES.map(tileById).filter((t): t is PaletteTileDef => t !== undefined);
   const image = tileById(PARTICIPANT_IMAGE_TILE);
   return image ? [...base, image] : base;
 }
 
-export function participantPaletteCategories(
-  mode: EditorMode,
-  esBoard: boolean,
-): ResolvedPaletteCategory[] {
+export function participantPaletteCategories(): ResolvedPaletteCategory[] {
   const identity = IDENTITY.get('participate')!;
-  return [{ ...identity, tiles: participantTiles(mode, esBoard) }];
+  return [{ ...identity, tiles: participantTiles() }];
 }
 
 // The selection modes a Participant has: look, point and walk around, never an Editor's tools (Eraser, Format

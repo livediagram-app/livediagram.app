@@ -9,7 +9,6 @@ import { lucideGlyph } from '@livehuddle/ui';
 import {
   lucideBuilding2,
   lucideCalendarRange,
-  lucideCode,
   lucideDices,
   lucideGoal,
   lucideGraduationCap,
@@ -50,7 +49,6 @@ const RAIL_ICONS: Readonly<
   product: glyph(lucidePenTool),
   games: glyph(lucideDices),
   retros: glyph(lucideRefreshCw),
-  software: glyph(lucideCode),
   strategy: glyph(lucideMap),
   learning: glyph(lucideGraduationCap),
   spaces: glyph(lucideBuilding2),

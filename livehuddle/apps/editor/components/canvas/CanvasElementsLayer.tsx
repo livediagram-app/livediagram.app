@@ -39,9 +39,7 @@ import { ChangesetRevealOverlay } from '@/components/canvas/ChangesetRevealOverl
 import { AgentFocusOverlay } from '@/components/canvas/AgentFocusOverlay';
 import { LayerSelectionChrome } from '@/components/canvas/LayerSelectionChrome';
 import type { CanvasSelectionInput } from '@/hooks/canvas/useCanvasSelectionView';
-import { usePhotoDraftView } from '@/lib/photo-draft-preview';
 import { ZoomedLaserOverlay } from '@/components/canvas/view-readers';
-import { useInsertShift } from '@/hooks/canvas/useInsertShift';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { type LaneGutterEdge, type LaneLike } from '@livehuddle/document';
 
@@ -329,12 +327,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     () => (hasArrows ? buildElementIndex(elements) : null),
     [hasArrows, elements],
   );
-  // Insert-between preview (docs/specs/021-event-storming/event-storming.md): while a palette drag hovers a gap on an
-  // event-storming board, the elements at and after the insertion point RENDER
-  // shifted right to show the slot opening — see useInsertShift.
-  const insertShift = useInsertShift();
-  // Session-local view state for an open photo draft (docs/specs/021-event-storming/event-storming.md Phase 8).
-  const draftView = usePhotoDraftView();
   // Paint order (docs/specs/006-document/layers.md + docs/specs/008-canvas/canvas-and-palette.md): layer bands bottom -> top, keeping
   // array order within each band with frames hoisted to the front of
   // THEIR band (a frame is a section backdrop that must sit behind its
@@ -532,9 +524,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           isPaintMode={isPaintMode}
           tabLocked={tabLocked}
           readOnly={readOnly}
-          insertShift={insertShift}
           shiftDupGhostIds={shiftDupGhostIds}
-          draftView={draftView}
           tabVote={tabVote}
           tabLayers={tabLayers}
           remoteSelectionsByElement={remoteSelectionsByElement}
@@ -594,16 +584,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             selectionInput={props.selectionInput}
             tabId={props.activeTabId ?? ''}
             elements={elements}
-            editingId={editingId}
-            nextNote={
-              props.esBoard && props.onAddNextNote
-                ? {
-                    blocked:
-                      readOnly || tabLocked || props.createBlocked === true || insertShift.animates,
-                    onAdd: props.onAddNextNote,
-                  }
-                : null
-            }
             pluses={{
               quickRingOpen,
               setQuickRingOpen,

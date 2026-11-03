@@ -84,7 +84,7 @@ Specs read: [MCP server](../../specs/015-api/mcp-server.md), [Public API and API
 
 - `DOCUMENT_FORMAT` exists precisely because an older editor cannot read what a newer server serves (2 = packed stroke points). An installed CLI is an older editor that cannot be force-reloaded.
 - `normaliseElement` encodes per-kind rules (entity height, lanes to front, packed points). Each new element kind adds a rule. If it runs in the CLI, every CLI older than the rule writes the kind wrongly, forever.
-- `landMcpArrivals` (event-storming lanes) and `applyLayout` heuristics are product behaviour that changes with the editor. Server placement ships a fix to every front-end at once.
+- `applyLayout` heuristics are product behaviour that changes with the editor. Server placement ships a fix to every front-end at once.
 - The **api already runs half of it**: `isValidTab`, size caps, ledger merge, comment author rewrite. Adding normalise and compile next to validate keeps one write pipeline.
 
 Bundle cost to the api worker: `graph-authoring`, auto-layout, Mermaid parse and `templates` are pure TS already depended on (document) or small (templates). The resvg wasm does **not** move into the api (§4.3).

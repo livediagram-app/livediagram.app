@@ -6,6 +6,6 @@ import { mcpListing } from '@liveworkspace/mcp-kit/listing';
 export const LISTING = mcpListing({
   product: 'livehuddle',
   description:
-    'Create, edit, share and render real-time collaborative boards and diagrams on livehuddle.app.',
+    'Create, edit, share and render livehuddle Spaces: live boards for meetings and workshops.',
   version: '0.2.0',
 });

@@ -6,7 +6,6 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
-import type { EsBoardControls } from './EventStormingBoardRows';
 import { COLLABORATE_CATEGORY_GROUPS } from './palette-tile-defs';
 import { type Element } from '@livehuddle/document';
 import { requestToolbarSearch } from '@liveworkspace/workbench/lib/toolbar-search-request';
@@ -46,9 +45,7 @@ function handlers(): PaletteAddHandlers {
 function show({
   ...props
 }: {
-  esBoard?: boolean;
   hidden?: boolean;
-  esBoardControls?: EsBoardControls;
   tabElements?: Element[];
 } = {}) {
   const h = handlers();
@@ -155,40 +152,6 @@ describe('ToolbarPalette', () => {
     expect(flyout()).toBeNull();
   });
 
-  it('shows only the notation on an event-storming board', () => {
-    show({ esBoard: true });
-    expect(screen.queryByRole('button', { name: 'Selection mode' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
-    expect(
-      within(strip()).getAllByRole('button', { name: /^Add .* Note$/ }).length,
-    ).toBeGreaterThan(0);
-  });
-
-  // docs/specs/021-event-storming/event-storming.md: the floating palette's board row, in the strip.
-  it('offers Add from Photo on an event-storming board, as its category does', () => {
-    const onImportPhoto = vi.fn();
-    show({ esBoard: true, esBoardControls: { onImportPhoto } });
-    fireEvent.click(within(strip()).getByRole('button', { name: 'Add from Photo' }));
-    expect(onImportPhoto).toHaveBeenCalledTimes(1);
-  });
-
-  it('keeps Add from Photo focusable but inert while it is unavailable', () => {
-    const onImportPhoto = vi.fn();
-    show({ esBoard: true, esBoardControls: { onImportPhoto, photoDisabled: true } });
-    const button = within(strip()).getByRole('button', { name: 'Add from Photo' });
-    expect(button.getAttribute('aria-disabled')).toBe('true');
-    fireEvent.click(button);
-    expect(onImportPhoto).not.toHaveBeenCalled();
-  });
-
-  it('offers no Add from Photo off a board, or where the deployment has no photo import', () => {
-    show({ esBoardControls: { onImportPhoto: vi.fn() } });
-    expect(screen.queryByRole('button', { name: 'Add from Photo' })).toBeNull();
-    cleanup();
-    show({ esBoard: true, esBoardControls: {} });
-    expect(screen.queryByRole('button', { name: 'Add from Photo' })).toBeNull();
-  });
-
   describe('Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type")', () => {
     // The icon catalogues load as a chunk of their own, as the editor loads them on its first paint: loaded
     // before the searches run, so what they find never depends on whether the chunk happened to land.
@@ -251,9 +214,6 @@ describe('ToolbarPalette', () => {
         expect(requestToolbarSearch()).toBe(true);
       });
       expect(document.querySelector('[data-toolbar-search]')).not.toBeNull();
-      cleanup();
-      show({ esBoard: true });
-      expect(requestToolbarSearch()).toBe(false);
       cleanup();
       show({ hidden: true });
       expect(requestToolbarSearch()).toBe(false);

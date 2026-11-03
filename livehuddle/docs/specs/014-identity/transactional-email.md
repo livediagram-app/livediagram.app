@@ -2,8 +2,7 @@
 
 **Status: in progress.** Optional, off without its binding. The api worker sends a small set of account
 emails through Cloudflare Email Service, the way every app on the platform does
-([Email](../../../../liveworkspace/docs/specs/003-accounts/email.md)). Like sign-in ([Auth + guest access](auth-and-guest-access.md)) and the photo reader
-([Note reader](../021-event-storming/note-reader.md)), it is **entirely gated on configuration**, here the
+([Email](../../../../liveworkspace/docs/specs/003-accounts/email.md)). Like sign-in ([Auth + guest access](auth-and-guest-access.md)), it is **entirely gated on configuration**, here the
 `send_email` binding `EMAIL`: when it is absent the whole feature is inert: no sends, no new request
 work, and everything else behaves exactly as before. Guests and the canvas stay
 account-free and never receive email.

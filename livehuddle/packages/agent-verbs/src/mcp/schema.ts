@@ -58,9 +58,7 @@ const CONTENT_KINDS =
   'Content-carrying kinds: ' +
   'type "sticky": a note whose "label" is its text; the theme never recolours it, so its own ' +
   `"fillColor" + "textColor" are kept (palette pairs, fill/text: ${stickyPairs}); unset it is ` +
-  'the classic amber note. A sticky with "esKind" (domain-event, command, actor, policy, read-model, ' +
-  'external-system, aggregate, hotspot) is an event-storming note of that kind (its paper, size and lane on a ' +
-  'storm board): add one to a board with the edit `add sticky label="Courier" esKind=actor`. ' +
+  'the classic amber note. ' +
   'type "image": a picture from the user\'s gallery: "imageId" is an id from list_images (one not in the ' +
   'gallery is refused); without it the element is a placeholder the user fills in the editor. "objectFit" ' +
   'contain (default, the whole picture) or cover (fills the box, cropping); "alt" describes it. A box in the ' +
@@ -84,7 +82,7 @@ const CONTENT_KINDS =
   'scale of its own, labelled on the right, so a series in the thousands and one in the tens both read. ' +
   'A chart draws no title (a caption is a ' +
   'separate "text" element) and draws sample data when its data is empty. ' +
-  // The diagram-building kinds (docs/specs/015-api/mcp-server.md §4.7a).
+  // The box-building kinds (docs/specs/015-api/mcp-server.md §4.7a).
   'shape "card": a node with a title, meta line and body; "pageTitle" is the title, "pageSubtitle" ' +
   'the meta (a product or runtime), "label" the body, "cardMedia" + "iconId" the glyph (a badge disc, a ' +
   `tile or an initial), "cardHeader" true for a coloured header band, "tags" up to ${CARD_TAGS_MAX} short ` +
@@ -106,8 +104,7 @@ const CONTENT_KINDS =
   'themselves, "keyMeanings" maps a row id ("line:dashed", "tag:<tag>") to what it means. ' +
   'shape "stack": a container that lines up the elements whose centre is inside it; "stackDirection", ' +
   '"stackColumns" (2 to 6, grid), "stackGap" and "stackPadding" (0 to 64), "stackAlign"; place children ' +
-  'anywhere inside and the editor lays them out. ' +
-  'An org chart is quickest as a graph with style "tree" and a "role" on each node (see the graph tool).';
+  'anywhere inside and the editor lays them out.';
 
 // The style fields a box or arrow takes beyond its geometry, as facts (docs/specs/015-api/mcp-server.md §4.7a "Style
 // fields"): the closed vocabularies from the one list edit operations and the value check read, so they cannot drift.
@@ -152,10 +149,9 @@ const ELEMENT_SCHEMA_HINT =
   'coordinates, [[x, y], ...] in drawing order (the box is taken from them), with "closed" true to ' +
   'close and fill the shape, and "penColour" (' +
   `${[INK_PEN_COLOUR, GREY_PEN_COLOUR, ...PEN_COLOUR_NAMES].join(', ')}` +
-  '). A hand-drawn board starts from the "whiteboard" template, a tab in Draw mode: underline a ' +
-  'heading, ring a word or draw a doodle with a few strokes, a point every 10 to 20 px along a ' +
-  'curve; an arrow between boxes stays a pinned "arrow", which a "sketch" finish draws by hand and ' +
-  'which stays attached. Any box may carry "rotation" in degrees, a small tilt (-4 to 4) reading as ' +
+  '). A few strokes underline a heading, ring a word or draw a doodle, a point every 10 to 20 px ' +
+  'along a curve; an arrow between boxes stays a pinned "arrow", which a "sketch" finish draws by hand ' +
+  'and which stays attached. Any box may carry "rotation" in degrees, a small tilt (-4 to 4) reading as ' +
   'placed by hand. type "arrow" needs "from" and "to" endpoints, each ' +
   'either { "kind": "pinned", "elementId", "anchor" } (anchors: ' +
   `${anchors}; preferred, so arrows track their shapes) or ` +
@@ -169,10 +165,12 @@ const ELEMENT_SCHEMA_HINT =
 export function elementSchemaDoc(): string {
   return `# livehuddle element schema
 
-A tab is { name, elements: Element[] }. Every element needs a unique string "id".
-A document has one or more tabs, each its own canvas. create_document makes a
-document with one or more tabs at once; add_tab appends another tab to an existing
-document (e.g. an overview tab, then a detail tab zooming into one subsystem).
+A livehuddle Space (a document, in the tools' names and arguments) is a shared
+board a team meets and runs workshops on. It has one or more tabs, each its own
+canvas. A tab is { name, elements: Element[] }. Every element needs a unique
+string "id". create_document makes a Space with one or more tabs at once; add_tab
+appends another tab to an existing Space (e.g. an agenda tab, then a tab per
+breakout).
 
 ## Element types
 ${types}
@@ -180,7 +178,7 @@ ${types}
 Boxed elements (shape, text, sticky, table, image, annotation) carry:
   id, type, x, y, width, height, and an optional "label" (string).
   - "shape" is the element for a NODE — a labelled box, the default building
-    block of almost every diagram. It also needs "shape": one of
+    block of a board. It also needs "shape": one of
     ${shapeKinds}. The default box / process step is "square" (a rounded
     rectangle that fills its width × height) — there is NO "rectangle" kind.
     Use "diamond" for a decision, "cylinder" for a datastore, "stadium" for a
@@ -188,9 +186,8 @@ Boxed elements (shape, text, sticky, table, image, annotation) carry:
     section container. An unknown kind is coerced to "square".
   - "text" is BARE text with no box, fill, or border. Use it ONLY for a
     free-standing title, caption, legend, or note — NEVER for a node. A node
-    that has a label is a "shape" with a "label" (use shape: "square"), not a
-    "text". Defaulting to "text" for nodes makes a diagram of floating words
-    with no boxes; reach for "shape" unless you specifically want loose text.
+    that has a label is a "shape" with a "label" (shape: "square"), not a
+    "text". Nodes made of "text" draw as floating words with no boxes.
 
 ## Content-carrying kinds
 ${CONTENT_KINDS}
@@ -219,7 +216,7 @@ YOU decide the layout; the server does not override a real arrangement.
 
 ## Themes (the look)
 Set "theme" on create_document / add_tab to one of these presets and the server
-paints the whole diagram + canvas with it (you still omit per-element colours):
+paints the whole tab + canvas with it (per-element colours are left out):
   ${themeIds}
 Defaults to "brand", the Default scheme: the plain, un-themed canvas, which
 follows each reader's own light / dark setting in the editor and paints no
@@ -231,20 +228,21 @@ different hue) = rainbow / pastel / tropical / autumn / jewel; uml = standard
 UML notation colours. Pick one that fits the subject; one scheme applies to all
 tabs in a create_document call.
 
-## Design rules (diagrams that read well)
+## Design rules (boards that read well)
 - Nodes are SHAPES, not text. Use type "shape" (shape: "square" by default,
   "diamond" for a decision, "cylinder" for a datastore) for every box in the
-  diagram. Reserve type "text" for stand-alone titles / captions.
+  board. Reserve type "text" for stand-alone titles / captions.
 - Do NOT set colours. The theme owns fill / stroke / text colour; omit them and
-  the diagram inherits a coherent palette. A sticky is the exception: it is not
+  the board inherits a coherent palette. A sticky is the exception: it is not
   themed, so its own fillColor / textColor are kept.
 - Size sibling nodes consistently (e.g. every box 160x64).
 - Prefer pinned arrows (node -> node) so they track their shapes when moved.
 - Give every node an id and a short, clear label.
-- A node/edge diagram given as "graph" is laid out in the template look (sizes,
-  elbows, side exits, loops round the outside, title, key). For an artefact that
-  is not a graph (SWOT, roadmap, blank-session, retrospective, ...) list_templates has
-  hand-tuned scaffolds to pass as "template", then personalise with update_document.
+- A session board starts from list_templates' hand-tuned scaffolds (kinds such
+  as retrospective, meeting-agenda, lean-coffee), passed as "template", then
+  personalised with update_document.
+- A boxes-and-arrows board given as "graph" is laid out in the template look
+  (sizes, elbows, side exits, loops round the outside, title, key).
 `;
 }
 
@@ -252,28 +250,26 @@ tabs in a create_document call.
 // resources (docs/specs/015-api/mcp-server.md §4.5). Phrased as facts about the server (what it does
 // with what you send, and where the format is written down), not as rules for
 // the calling model (docs/specs/015-api/mcp-server.md §4.15).
-export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, delete (to the Trash) and restore the user's livehuddle documents.
-The calling model produces the diagram elements AND decides their layout; this
-server validates, persists, and renders them, and only auto-arranges the graph
-when you ask it to (or leave nodes unplaced). The full element format is
-documented inline on each tool's element argument, so the tool definitions are
-the complete reference for it. The "graph" argument (nodes + edges by id, or the same as Mermaid text in
-"mermaid") builds any node/edge diagram (flowchart, process, architecture, org chart, state machine, swimlanes, a
-cycle) in the template look with no coordinates: template-sized boxes, elbow lines, a decision's side
-exit level beside it, loops and skipped ranks routed round the boxes, flowchart steps toned by their "shape" (a
-stadium starts or ends, a diamond decides; a node's "role" is a person's job title, for an org chart), node tones and
-icons, and a title, subtitle and shape key when given. Its styles: flow (layered), tree (hierarchy),
-lanes (each group a swimlane), cycle (a ring) and storm (an event-storming board). A node's label is its heading (up to 40 characters,
-longer ones shortened with the full text kept in the node's note). Raw "elements" are for content a graph cannot
-express (charts, tables, stickies, free placement). Either way:
-use a unique "id" per element, make nodes "shape" elements (a labelled box) NOT
-"text" (text is only for titles/captions), prefer pinned arrows (node -> node),
-and the theme owns colours (a sticky keeps its own). Stickies, tables, code blocks,
-entities, lanes and charts carry content fields, documented on each tool's
-element argument. For a standard artefact that is not a node/edge graph (swot, roadmap,
-blank-session, retrospective, ...) list_templates has hand-tuned scaffolds: pass its kind as
-"template" on create_document / add_tab, then fill in real labels with
-update_document. search_icons finds icon ids for "iconId" and a graph node's "icon".`;
+export const SERVER_INSTRUCTIONS = `Tools to find, read, create, add tabs to, edit, share, rename, delete (to the Trash) and restore the user's livehuddle Spaces.
+A Space is a shared board a team meets and runs workshops on (a retrospective, a stand-up, a planning session, a
+quiz), with one or more tabs, each its own canvas. The tools' names and arguments call a Space a document
+(create_document, documentId).
+The calling model produces the elements AND decides their layout; this server validates, persists and renders them,
+and only auto-arranges a graph when asked to (or when nodes are left unplaced). The full element format is
+documented inline on each tool's element argument, so the tool definitions are the complete reference for it.
+list_templates has hand-tuned session boards (retrospective, meeting-agenda, lean-coffee, icebreaker-questions,
+town-hall, ...): its kind passed as "template" on create_document / add_tab starts a tab from one, and
+update_document fills in real labels.
+The "graph" argument (nodes + edges by id, or the same as Mermaid text in "mermaid") builds a boxes-and-arrows board
+(a process, a flow, a hierarchy, swimlanes, a cycle) with no coordinates: template-sized boxes, elbow lines, a
+decision's side exit level beside it, loops routed round the boxes, flowchart steps toned by their "shape" (a stadium
+starts or ends, a diamond decides), node tones and icons, and a title, subtitle and shape key when given. Its styles: flow (layered), tree (hierarchy), lanes (each group a swimlane) and cycle (a ring).
+A node's label is its heading (up to 40 characters, longer ones shortened with the full text kept in the node's
+note). Raw "elements" carry what a graph cannot (stickies, the session elements, charts, tables, free placement).
+Either way: every element has a unique "id", a node is a "shape" element (a labelled box) and "text" is only for
+titles and captions, a pinned arrow (node -> node) follows its boxes, and the theme owns colours (a sticky keeps its
+own). Stickies, tables, code blocks, lanes, charts and the session elements carry content fields, documented on each
+tool's element argument. search_icons finds icon ids for "iconId" and a graph node's "icon".`;
 
 // --- Tool input shapes (ZodRawShape). Element arrays are permissive; isValidTab
 // is the real guard, so there's no second schema to drift. ---
@@ -296,7 +292,7 @@ const templateField = z
   .optional()
   .describe(
     'Start from a hand-tuned template scaffold instead of providing elements: a template ' +
-      'kind from list_templates (e.g. "swot", "retrospective", "roadmap"). The server ' +
+      'kind from list_templates (e.g. "swot", "retrospective", "gantt"). The server ' +
       'materialises its curated layout ("layout" is ignored for a template tab) and paints ' +
       'it with the chosen theme. Personalise the placeholder labels afterwards with ' +
       'update_document mode "ops". Provide template OR elements, not both.',
@@ -306,8 +302,8 @@ const themeField = z
   .string()
   .optional()
   .describe(
-    'Preset theme id that paints the whole diagram + canvas. One of: ' +
-      `${themeIds}. Omit per-element colours and let the theme own them. ` +
+    'Preset theme id that paints every tab + canvas. One of: ' +
+      `${themeIds}. The theme owns per-element colours. ` +
       'Defaults to "brand".',
   );
 
@@ -323,9 +319,8 @@ const finishField = z
 
 // Graph-first authoring (docs/specs/015-api/mcp-server.md §4.7): the LOW-BURDEN path. Give just the
 // connection graph — nodes and edges by id — and the server builds the
-// boxes + arrows and lays them out for you. Prefer this over hand-placing
-// elements whenever the diagram is a node/edge graph (flowcharts, org
-// charts, architecture, dependency graphs): no x/y/width/height, no
+// boxes + arrows and lays them out for you. It suits any boxes-and-arrows
+// board (a process, a flow, a hierarchy, swimlanes): no x/y/width/height, no
 // anchors, far fewer mistakes. Use `elements` only when you need precise
 // control (a deliberate ring/grid, mixed free-text, non-node content).
 const graphField = z
@@ -357,13 +352,6 @@ const graphField = z
               'Detail behind the heading: longer explanation, context or a description. ' +
                 "Stored as the element's note, which the editor shows on the element.",
             ),
-          role: z
-            .string()
-            .optional()
-            .describe(
-              "A person's role: the node draws as a person card, the label (their name) in bold over the " +
-                'role, with a person icon unless "icon" names another.',
-            ),
           group: z
             .string()
             .optional()
@@ -374,22 +362,6 @@ const graphField = z
             .string()
             .optional()
             .describe('An icon on the box: an id from search_icons ("database", "aws-lambda").'),
-          esKind: z
-            .enum([
-              'domain-event',
-              'command',
-              'actor',
-              'policy',
-              'read-model',
-              'external-system',
-              'aggregate',
-              'hotspot',
-            ])
-            .optional()
-            .describe(
-              'style "storm" only: the workshop note this node is (default domain-event). Its label is the ' +
-                'note\u2019s text, kept whole.',
-            ),
           tone: z
             .enum(['strong', 'soft', 'muted', 'plain'])
             .optional()
@@ -459,17 +431,14 @@ const graphField = z
           'auto (a tree runs down).',
       ),
     style: z
-      .enum(['flow', 'tree', 'lanes', 'cycle', 'storm'])
+      .enum(['flow', 'tree', 'lanes', 'cycle'])
       .optional()
       .describe(
-        'Layout: "flow" (layered, the default; the layout for processes and systems: a decision\u2019s ' +
-          'side exit sits level beside it and a loop back runs round the outside), "tree" (a tidy ' +
-          'hierarchy, the layout for org charts), "lanes" (a ' +
-          'swimlane diagram: each group a lane, the flow left to right across them) or "cycle" (a ring in ' +
-          'node order, clockwise from the top; a node with no edge sits at its centre) or "storm" (an ' +
-          'event-storming board: each node a workshop note of its esKind, one column per domain event in the ' +
-          'order the edges imply, each kind on its own lane, no arrows; a new tab becomes an event-storming ' +
-          'board). With groups the layout is flow unless it is lanes.',
+        'Layout: "flow" (layered, the default; the layout for processes: a decision\u2019s side exit ' +
+          'sits level beside it and a loop back runs round the outside), "tree" (a tidy hierarchy), ' +
+          '"lanes" (swimlanes: each group a lane, the flow left to right across them) or "cycle" (a ring ' +
+          'in node order, clockwise from the top; a node with no edge sits at its centre). With groups the ' +
+          'layout is flow unless it is lanes.',
       ),
     lines: z
       .enum(['straight', 'angled', 'curved'])
@@ -481,17 +450,17 @@ const graphField = z
       .string()
       .max(120)
       .optional()
-      .describe('A heading above the diagram, left aligned, as every template has.'),
+      .describe('A heading above the boxes, left aligned, as every template has.'),
     subtitle: z
       .string()
       .max(300)
       .optional()
-      .describe('A muted caption under the title: what the diagram shows and how to read it.'),
+      .describe('A muted caption under the title: what the boxes show and how to read them.'),
     key: z
       .union([z.boolean(), z.record(z.string(), z.string().max(40))])
       .optional()
       .describe(
-        'A key beside the diagram: one miniature per shape kind it uses with what that shape means. true ' +
+        'A key beside the boxes: one miniature per shape kind it uses with what that shape means. true ' +
           'names them by default (a flowchart\u2019s Start or end, Step, Decision...; else Component, Data ' +
           'store, Hub or bus, External system...); an object names them yourself by shape ' +
           '({"hexagon": "Event bus", "cylinder": "Database"}), the rest by default.',
@@ -509,7 +478,7 @@ const mermaidField = z
   .string()
   .optional()
   .describe(
-    'The diagram as Mermaid text: a flowchart (graph / flowchart, with subgraphs) or a state ' +
+    'The same graph as Mermaid text: a flowchart (graph / flowchart, with subgraphs) or a state ' +
       'diagram (stateDiagram). Parsed into the same graph as the "graph" input: subgraphs become ' +
       'groups, the direction is kept, and the same label limit applies. Front matter (---, title: Text, ---) ' +
       'titles either. Provide one of graph, mermaid, elements or template.',
@@ -526,7 +495,7 @@ export const searchIconsShape = {
 };
 
 export const findDocumentsShape = {
-  query: z.string().optional().describe('Only documents whose name contains this text.'),
+  query: z.string().optional().describe('Only Spaces whose name contains this text.'),
   limit: z.number().int().min(1).max(50).optional().describe('Max results (default 20).'),
 };
 
@@ -538,7 +507,7 @@ export const READ_DOCUMENT_DEFAULT_BUDGET = 8000;
 const EDITS_MAX_CHARS = 40_000;
 
 export const readDocumentShape = {
-  documentId: z.string().describe('The document id (from find_documents).'),
+  documentId: z.string().describe('The Space id (from find_documents).'),
   tabId: z.string().optional().describe('Which tab to read; defaults to the first.'),
   view: z
     .enum(TAB_VIEW_NAMES)
@@ -613,11 +582,11 @@ export const createDocumentTab = z.object({
   theme: z
     .string()
     .optional()
-    .describe('This tab’s theme, one of the theme ids above; the document’s theme when left out.'),
+    .describe('This tab’s theme, one of the theme ids above; the Space’s theme when left out.'),
 });
 
 export const createDocumentShape = {
-  name: nameField('Name for the new document.'),
+  name: nameField('Name for the new Space.'),
   // `tabs` is preferred; `tab` is accepted as an alias for a single tab so a
   // client with a stale cached schema (or one that just sends `tab`) still works
   // — provide one or the other.
@@ -627,8 +596,8 @@ export const createDocumentShape = {
     .max(20)
     .optional()
     .describe(
-      'One or more tabs, each its own canvas. Preferred — pass several to create a multi-tab ' +
-        'document in one call (e.g. an overview tab plus a detail tab per subsystem).',
+      'One or more tabs, each its own canvas. Preferred: several make a multi-tab Space in one ' +
+        'call (e.g. an agenda tab plus a tab per breakout).',
     ),
   // The alias is checked against the tab shape by the tool, not listed here a second time: the shape carries the
   // whole element format, and a definition twice its size is one a client's tool search ranks out of sight.
@@ -644,16 +613,16 @@ export const createDocumentShape = {
     .boolean()
     .optional()
     .describe(
-      "Whether this document joins the user's Jump back in (their most used and recent documents) " +
-        'at once. Default true. Pass false when making many documents in one go, so a batch ' +
-        "never pushes the user's own work out of reach.",
+      "Whether this Space joins the user's Jump back in (their most used and recent Spaces) at once. " +
+        "Default true. false keeps a batch of many new Spaces from pushing the user's own work out of " +
+        'reach.',
     ),
 };
 
 export const addTabShape = {
   documentId: z
     .string()
-    .describe('The document to add a tab to (from find_documents / read_document).'),
+    .describe('The Space to add a tab to (from find_documents / read_document).'),
   name: nameField('Name of the new tab.'),
   graph: graphField,
   mermaid: mermaidField,
@@ -665,7 +634,7 @@ export const addTabShape = {
 };
 
 export const updateDocumentShape = {
-  documentId: z.string().describe('The document to edit (from find_documents / read_document).'),
+  documentId: z.string().describe('The Space to edit (from find_documents / read_document).'),
   tabId: z.string().optional().describe('Which tab to edit; defaults to the first.'),
   mode: z
     .enum(['replace', 'ops', 'edits'])
@@ -735,7 +704,7 @@ export const updateDocumentShape = {
 };
 
 export const shareDocumentShape = {
-  documentId: z.string().describe('The document to share (from find_documents / read_document).'),
+  documentId: z.string().describe('The Space to share (from find_documents / read_document).'),
   role: z
     .enum(['view', 'participate', 'edit'])
     .optional()
@@ -751,30 +720,30 @@ export const shareDocumentShape = {
 };
 
 export const deleteDocumentShape = {
-  documentId: z.string().describe('The document to delete (from find_documents / read_document).'),
+  documentId: z.string().describe('The Space to delete (from find_documents / read_document).'),
   tabId: z
     .string()
     .optional()
     .describe(
-      'Delete only this ONE tab instead of the whole document. A document must keep at ' +
+      'Delete only this ONE tab instead of the whole Space. A Space must keep at ' +
         'least one tab, so deleting the last remaining tab is refused. A tab is deleted ' +
         'outright; it does not go to the Trash.',
     ),
 };
 
-// The Trash (docs/specs/013-workspace/trash.md): restore one document by id.
+// The Trash (docs/specs/013-workspace/trash.md): restore one Space by id.
 export const restoreDocumentShape = {
-  documentId: z.string().describe('The document to restore (from list_trash).'),
+  documentId: z.string().describe('The Space to restore (from list_trash).'),
 };
 
 // Listing the Trash takes no arguments: it is everything the user may restore.
 export const listTrashShape = {};
 
 export const renameDocumentShape = {
-  documentId: z.string().describe('The document to rename (from find_documents / read_document).'),
+  documentId: z.string().describe('The Space to rename (from find_documents / read_document).'),
   name: nameField('The new name.', z.string().min(1)),
   tabId: z
     .string()
     .optional()
-    .describe('Rename this tab within the document instead of the document itself.'),
+    .describe('Rename this tab within the Space instead of the Space itself.'),
 };

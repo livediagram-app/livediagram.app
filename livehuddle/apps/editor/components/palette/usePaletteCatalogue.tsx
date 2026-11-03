@@ -1,8 +1,4 @@
-import {
-  DEFAULT_EDITOR_MODE,
-  type EmbedProvider,
-  type EventStormingNoteKind,
-} from '@livehuddle/document';
+import { DEFAULT_EDITOR_MODE, type EmbedProvider } from '@livehuddle/document';
 import { useEffect, useState } from 'react';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
@@ -40,8 +36,6 @@ type Deps = Pick<
   | 'onToggleZen'
   | 'canvasEmpty'
   | 'pendingDraw'
-  | 'esBoard'
-  | 'esBoardControls'
   | 'onTileUsed'
 > &
   PaletteAddHandlers & {
@@ -83,8 +77,6 @@ export function usePaletteCatalogue({
   onBeginShapePen,
   onBeginPolygon,
   pendingDraw,
-  esBoard,
-  esBoardControls,
   onTileUsed,
   participant = false,
 }: Deps) {
@@ -123,8 +115,7 @@ export function usePaletteCatalogue({
   const addSticker = (stickerId: string) => armed(() => onAddSticker(stickerId))();
   const addTechIcon = (iconId: string) => armed(() => onAddTechIcon(iconId))();
   const addText = armed(onAddText);
-  const addSticky = (fill?: string, esKind?: EventStormingNoteKind) =>
-    armed(() => onAddSticky(fill, esKind))();
+  const addSticky = armed(onAddSticky);
   const addTable = armed(onAddTable);
   // The annotation is the ONE tile that still places instantly (docs/specs/009-elements/annotations.md): a
   // fixed 44x44 marker has no box to draw.
@@ -219,20 +210,15 @@ export function usePaletteCatalogue({
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.
   // The mode's palette layout (palette-layouts): its categories, in order, with their tiles. My
-  // shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md);
-  // Event Storming only on an ES board (docs/specs/021-event-storming/event-storming.md).
+  // shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md).
   const hasLibraryShapes = libraries.some((l) => l.items.length > 0);
   const categories = participant
-    ? participantPaletteCategories(editorMode, !!esBoard)
-    : paletteCategoriesFor(editorMode, { esBoard: !!esBoard }).filter(
-        (c) => hasLibraryShapes || c.id !== 'my-shapes',
-      );
+    ? participantPaletteCategories()
+    : paletteCategoriesFor(editorMode).filter((c) => hasLibraryShapes || c.id !== 'my-shapes');
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
     tileActions,
-    // Only on an ES board: a board switch anywhere else means nothing.
-    esBoardControls: esBoard ? esBoardControls : undefined,
     addIcon,
     iconQuery,
     setIconQuery,

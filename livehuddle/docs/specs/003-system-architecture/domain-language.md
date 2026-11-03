@@ -8,7 +8,7 @@ interchangeable. These are design decisions, taken before any feature that uses 
 | Term         | Answers                        | Values                                                      | Where it lives                             |
 | ------------ | ------------------------------ | ----------------------------------------------------------- | ------------------------------------------ |
 | **mode**     | How is a tab worked on?        | Workshop, the one mode (`EditorMode`)                       | Every tab; `Tab.opensIn` reads as Workshop |
-| **kind**     | What is a tab?                 | the general diagram tab, or Event Storming (`TabKind`)      | `Tab.kind`                                 |
+| **kind**     | What is a tab?                 | the general diagram tab (`TabKind`)                         | `Tab.kind`                                 |
 | **template** | What was a document made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation                 |
 
 ### Mode
@@ -27,8 +27,9 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 - A **tab kind** is what a tab is. It is reserved for boards that do not follow the homogeneous environment of the
   general diagram tab, with their own notation, rules and data.
-- The general diagram tab is the default kind. **Event Storming** is the only other kind. (Plan's Board, Sheet,
-  Dashboard and Form tabs went to liveplanner with Plan mode; a stored one reads as a general tab.)
+- The general diagram tab is the default kind, and livehuddle's only one. (Plan's Board, Sheet, Dashboard and Form
+  tabs went to liveplanner with Plan mode, and Event Storming boards stayed with livediagram; a stored one reads as
+  a general tab.)
 - A new kind is added only when the general tab cannot serve the use.
 - "Board type" means a kind. It never names a template or a mode.
 
@@ -109,23 +110,12 @@ The words for how elements are drawn, apart from their colours ([Finish](../008-
 | **finish**     | The drawing style of a tab and its elements: Flexible (default), Professional, Sketch or Marker | tone, look, style, render mode |
 | **Follow Tab** | An element with no finish of its own, drawn in its tab's                                        | inherit, default               |
 
-## Repositories and workbenches
+## Workbenches
 
-The words for diagrams living beside code ([Repositories](../027-repositories/README.md),
-[Workbench embeds](../013-workspace/workbench-embeds.md)).
+The words for a board open beside code ([Workbench embeds](../013-workspace/workbench-embeds.md)).
 
 | Term                    | Means                                                                                 | Never called                           |
 | ----------------------- | ------------------------------------------------------------------------------------- | -------------------------------------- |
-| **repository link**     | `livehuddle.toml`: binds a directory to the documents it **covers**                   | project, workspace, scope              |
-| **mirror level**        | How much of the covered documents a link writes: `none`, `index`, `files`             | sync mode                              |
-| **snapshot**            | A tab as a repository holds it, at a recorded revision                                | copy (that is Drive's), backup, cache  |
-| **sync**                | One pass of a link: read, merge, send, write                                          | refresh, update                        |
-| **base**                | The snapshot a local change was made from; the merge's common ancestor                | original, previous                     |
-| **lost local value**    | A field both sides changed, kept in the report and as a comment, never applied        | conflict (that is a changeset's 409)   |
-| **source**              | A diagram as text in a repository (a Mermaid file or fence), bound to a tab           | diagram file, code diagram             |
-| **bridge**              | One format's parser and serialiser, with the capabilities it expresses                | adapter, converter                     |
-| **compatibility**       | Whether a bound tab may hold residue: `relaxed` (default) or `strict`                 | mode (that is the editor's)            |
-| **residue**             | What a bound tab holds that its source's format cannot express                        | extras, unsupported                    |
 | **workbench**           | A developer tool that frames the editor beside an agent (an agent workbench, VS Code) | host (that is a profile's server), IDE |
 | **selection reference** | The text naming what was selected, attached to a person's message to their agent      | context, selection payload             |
 
@@ -158,7 +148,7 @@ The words for the public gallery of published documents ([Community](../025-comm
 
 What people see a livehuddle item called is a **Canvas** (plural **canvases**), as the platform names it
 (liveworkspace's one-explorer spec: livehuddle makes Canvases, liveplanner Plans, livedocuments Documents and
-livedesign Designs). Copy follows the app's casing: **New Canvas**, **Share This Canvas**, "Untitled canvas", "your
+livedesign Designs). Copy follows the app's casing: **New Canvas**, **Share This Space**, "Untitled canvas", "your
 canvases". The shared Explorer takes the word from `KIND_WORDS` in `packages/explorer/src/words.ts`, never from copy
 of its own. Only what people see is renamed: code, types, API routes, URL paths (`/document/<id>`), MCP tool names
 (`create_document`), CLI commands (`document ls`), storage keys, telemetry events and database columns still say

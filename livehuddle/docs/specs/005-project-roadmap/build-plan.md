@@ -74,9 +74,14 @@ One PR per cut, each removing code, tests, palette entries, templates, help arti
 1. Diagram and Draw modes: the mode switch goes, every board is Workshop, and the mode-only elements (flowcharts,
    mind maps, sequence diagrams, Sankey, org charts, entities, concept graphics, Technology, Devices) leave the
    element union. livehuddle has no stored spaces yet, so nothing needs migrating.
-2. Event Storming, repositories, Offline Mode. The Drive mirror stays: it is in v1 (owner, 2026-11-02).
-3. The `community` app; and the `mcp` and `cli` apps if the owner takes D3.
-4. Templates down to Workshop's and the Spaces (done: forty, with Blank Workshop and Event Storming).
+2. Event Storming and repositories: the Event Storming board, its notes, lanes, templates and wall-photo import, and
+   repository links with the CLI's `link`, `sync` and `snapshot`. Both are livediagram's own.
+3. Keep and adapt the platform-wide features (owner, 2026-11-02; D3 settled as (b)): Offline Mode, the Drive mirror,
+   the Community, the MCP server and the CLI stay. The MCP's tools and the CLI's commands lose what steps 5.1 and 5.2
+   cut and talk about Spaces; livehuddle registers with the platform's Community service, and its gallery publishes
+   Spaces in categories for meetings and workshops. Steps 5.2 and 5.3 land as one PR (Work Tracker #184).
+4. Templates down to Workshop's and the Spaces (done: thirty-nine, with Blank Workshop; Software & IT folded into
+   Retrospectives once Event Storming left it with one).
 
 ### 6. Make it livehuddle
 
@@ -152,5 +157,5 @@ behaviour-preserving moves), step 5 (cuts that keep every test meaningful) and R
 | R4  | **Room cap of 100** turns away the 101st attendee                                                                                                               | Company-wide meetings                                         | v1 says so plainly (the room-full message exists); raising the cap waits on R3's numbers                                                                                                                                                                                          |
 | R5  | **Cut-down breaks shared code paths** (a Workshop feature that quietly used a Diagram-only element)                                                             | Step 5                                                        | One cut per PR, the full suite and E2E each time                                                                                                                                                                                                                                  |
 | R6  | **Owner-only steps** (domain, DNS, secrets, billing) hold up staging                                                                                            | Step 8                                                        | Listed in D8 now, so they run in parallel with steps 1 to 7                                                                                                                                                                                                                       |
-| R7  | **Status assumes every app has an MCP**                                                                                                                         | Step 2, if D3 defers the MCP                                  | The status spec makes the MCP check optional per app first                                                                                                                                                                                                                        |
+| R7  | **Status assumes every app has an MCP**                                                                                                                         | Settled: livehuddle ships its MCP in v1 (D3 (b))              | No status-service change for an app without an MCP; livehuddle's group checks its MCP as every app's does                                                                                                                                                                         |
 | R8  | **Two Spaces products confuse people**: the same templates in livediagram and livehuddle                                                                        | After launch                                                  | livediagram keeps them (the card); livehuddle leads with them; a later cross-link can point meeting-shaped use to livehuddle                                                                                                                                                      |

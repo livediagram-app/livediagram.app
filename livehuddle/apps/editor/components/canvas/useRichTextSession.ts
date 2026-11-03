@@ -28,7 +28,6 @@ export function useRichTextSession({
   onLiveText,
   fitBox,
   multiline,
-  uppercase,
   fontFamily,
   cursorAtEnd,
   onCommit,
@@ -43,7 +42,6 @@ export function useRichTextSession({
   | 'onLiveText'
   | 'fitBox'
   | 'multiline'
-  | 'uppercase'
   | 'fontFamily'
   | 'cursorAtEnd'
   | 'onCommit'
@@ -92,7 +90,7 @@ export function useRichTextSession({
     applyTitleCaptionPreset,
   } = doc;
 
-  // Auto-fit (docs/specs/021-event-storming/event-storming.md): a multi-line label on 'scale' measures its LIVE
+  // Auto-fit: a multi-line label on 'scale' measures its LIVE
   // text against the box, so the size tracks what is being typed — and, on
   // mount, lands on exactly the number the display label was already using
   // (same pure helper, same inputs), which is what keeps double-click
@@ -107,11 +105,8 @@ export function useRichTextSession({
           padding: fitBox.padding,
           bold: !!element.textBold,
           italic: !!element.textItalic,
-          // Capitals are wider: measure what the CSS transform will paint
-          // (docs/specs/021-event-storming/event-storming.md), or the note overflows as you type.
-          uppercase: !!uppercase,
-          // Same reason for the face: the display label measured the marker,
-          // so the editor must too or the text resizes on double-click.
+          // The face: the display label measured it, so the editor must too or the text
+          // resizes on double-click.
           fontFamily,
         })
       : null;

@@ -246,8 +246,6 @@ export {
 
 // Response body for GET /api/capabilities.
 export type CapabilitiesResponse = {
-  // Whether the sticky-note photo reader has a model (docs/specs/021-event-storming/note-reader.md).
-  aiEnabled: boolean;
   // For the CLI (docs/specs/015-api/blueprints/cli.md "Capabilities"), each optional so an older worker parses:
   // where the api answers, whether sign-in exists, the OAuth server, the stored document format, and the
   // oldest CLI accepted for writes.
@@ -280,7 +278,6 @@ export * from './participant-colours';
 export * from '@liveworkspace/api-schema/image-limits';
 export * from './cta-sources';
 export * from './page-views';
-export * from './read-notes';
 export * from './poll';
 export * from './room-messages';
 export * from './changesets';

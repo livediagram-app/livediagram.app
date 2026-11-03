@@ -16,7 +16,7 @@ import { dismissLocalMove } from '@liveworkspace/workbench/lib/offline/local-mov
 import { offlineListDocuments } from '@/lib/offline/offline-store';
 
 // Offline Mode conversions (docs/specs/006-document/offline-mode.md) for the menus that offer them: the editor's
-// Explorer panel's item menu (Take Offline, useOfflineItemMenu) and This Browser's rows (Sync Canvas).
+// Explorer panel's item menu (Take Offline, useOfflineItemMenu) and This Browser's rows (Sync Space).
 // `syncToCloud` uploads an offline canvas to the account; `takeOffline` pulls a cloud canvas down and deletes
 // the server copy (gated by a confirm). Neither reloads the page: the one open in this editor moves in place (useSyncInPlace, useTakeOfflineInPlace), and
 // the Explorer loads its lists again once the returned promise settles. A second conversion

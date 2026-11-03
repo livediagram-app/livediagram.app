@@ -296,13 +296,9 @@ describe('tabForWire — tab kind', () => {
     expect(tabForWire(tab()).kind).toBe('diagram');
   });
 
-  it('keeps a specialised kind', () => {
-    expect(tabForWire(tab({ kind: 'event-storming' })).kind).toBe('event-storming');
-  });
-
-  it('resolves a legacy board by its layer instead of branding it a diagram', () => {
-    const legacy = tab({ layers: [{ id: 'layer:es:big-picture', name: 'Big picture' }] });
-    expect(tabForWire(legacy).kind).toBe('event-storming');
+  it('stamps the ordinary kind over one this product does not have', () => {
+    const foreign = { ...tab(), kind: 'event-storming' } as unknown as Tab;
+    expect(tabForWire(foreign).kind).toBe('diagram');
   });
 
   it('still strips the UI-only fields', () => {
@@ -310,9 +306,6 @@ describe('tabForWire — tab kind', () => {
     expect('templateChosen' in out).toBe(false);
     expect('folder' in out).toBe(false);
   });
-
-  // Timeline lanes (docs/specs/021-event-storming/event-storming.md Phase 6) are BOARD state, not UI state: the
-  // facilitator turns them on for the room, so the field has to reach the
 });
 
 // docs/specs/016-platform/new-version-prompt.md: every response's format header is noted, so an open

@@ -12,8 +12,7 @@ import {
 import { tileById, tilesForCategory } from './palette-tile-defs';
 
 // The palette per mode (docs/specs/007-editor/editor-modes.md "The palette per mode").
-const ids = (mode: 'workshop', esBoard = false) =>
-  paletteCategoriesFor(mode, { esBoard }).map((c) => c.id);
+const ids = (mode: 'workshop') => paletteCategoriesFor(mode).map((c) => c.id);
 const tileIds = (mode: 'workshop', category: string) =>
   paletteCategoriesFor(mode)
     .find((c) => c.id === category)!
@@ -60,7 +59,7 @@ describe('palette layouts', () => {
       'media',
       'data',
     ]);
-    expect(paletteLandingCategory('workshop', false)).toBe('popular');
+    expect(paletteLandingCategory('workshop')).toBe('popular');
   });
 
   it("puts the session kit on Workshop's Popular as four openers", () => {
@@ -122,7 +121,7 @@ describe('palette layouts', () => {
   });
 
   it('gives a Workshop Participant Sticky and Text, and an image', () => {
-    expect(participantTiles('workshop', false).map((t) => t.id)).toEqual([
+    expect(participantTiles().map((t) => t.id)).toEqual([
       'tools:sticky',
       'tools:text',
       'tools:image',

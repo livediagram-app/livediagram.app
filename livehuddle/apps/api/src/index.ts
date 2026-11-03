@@ -26,7 +26,6 @@ import {
 } from '@liveworkspace/api-kit/request-failure';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
-import { handleAiReadNotes } from './routes/ai-read-notes';
 import { handleCatalogues } from './routes/catalogues';
 import { handleCommunity } from './routes/community';
 import { handleCapabilities } from './routes/capabilities';
@@ -338,11 +337,6 @@ async function routeApiRequest(
       return handleOpenapi(ctx);
     case 'unfurl':
       return await handleUnfurl(ctx);
-    case 'ai':
-      // The one model route, the sticky-note crop reader (docs/specs/021-event-storming/note-reader.md).
-      if (segments[2] === 'read-notes' && segments.length === 3)
-        return await handleAiReadNotes(ctx);
-      return notFound();
     case 'events':
       return await handleEvents(ctx);
     case 'share':

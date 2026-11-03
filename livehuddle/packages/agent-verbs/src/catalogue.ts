@@ -45,7 +45,6 @@ import {
   tabRm,
 } from './verbs/lifecycle';
 import { tabLint, tabLs, tabView } from './verbs/tab';
-import { linkInit, linkLs, linkStatus, sync } from './verbs/link';
 import { workbenchOpen, workbenchPair } from './verbs/workbench';
 import { folderCreate, folderLs } from './verbs/folder';
 
@@ -98,10 +97,6 @@ export const VERBS: readonly Verb[] = [
   pull,
   push,
   exportAll,
-  linkInit,
-  linkStatus,
-  linkLs,
-  sync,
   workbenchOpen,
   workbenchPair,
   folderLs,
@@ -112,7 +107,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   {
     name: 'document',
     alias: 'doc',
-    summary: 'Documents: find, read, create, rename, share and remove them',
+    summary: 'Spaces: find, read, create, rename, share and remove them',
   },
   { name: 'folder', summary: 'Folders: their paths and ids, and a new one' },
   { name: 'tab', summary: 'Tabs: their views, their lint, and what changed' },
@@ -121,10 +116,9 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'comment', summary: 'Comment threads' },
   { name: 'presence', summary: 'What the agent is doing, shown on a tab' },
   { name: 'graph', summary: 'Graph files: lint or draw one before writing it' },
-  { name: 'link', summary: 'Repository links: livehuddle.toml and what it covers' },
   {
     name: 'workbench',
-    summary: 'Workbenches: open a document in a developer tool, pair one',
+    summary: 'Workbenches: open a Space in a developer tool, pair one',
   },
   { name: 'template', summary: 'Templates: the library, and one as an outline' },
   { name: 'icon', summary: 'Icons: find one for iconId=' },
@@ -135,16 +129,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
 ];
 
 // Top-level commands that are verbs without a resource word.
-export const TOP_LEVEL = [
-  'guide',
-  'api',
-  'wait',
-  'watch',
-  'pull',
-  'push',
-  'export',
-  'sync',
-] as const;
+export const TOP_LEVEL = ['guide', 'api', 'wait', 'watch', 'pull', 'push', 'export'] as const;
 
 export const RESOURCE_ALIASES: Readonly<Record<string, string>> = {
   doc: 'document',

@@ -613,7 +613,7 @@ and dark and snapping custom colours. Registered per
 
 ## References
 
-[Editor modes](../007-editor/editor-modes.md), [Event storming](../021-event-storming/event-storming.md) (a tab kind, for contrast), [Two pens instead of a pen and a mode](../008-canvas/two-pens.md)
+[Editor modes](../007-editor/editor-modes.md), [Two pens instead of a pen and a mode](../008-canvas/two-pens.md)
 (shape recogniser),
 [Eraser panel](../008-canvas/eraser-panel.md),
 [Appearance](../004-interface-design/appearance.md),

@@ -3884,9 +3884,6 @@ importers:
       '@liveworkspace/render-png':
         specifier: workspace:*
         version: link:../../../packages/render-png
-      smol-toml:
-        specifier: ^1.9.1
-        version: 1.9.1
       zod:
         specifier: ^4.6.7
         version: 4.6.7
@@ -4003,9 +4000,6 @@ importers:
 
   livehuddle/apps/editor:
     dependencies:
-      '@huggingface/transformers':
-        specifier: ^3.8.1
-        version: 3.8.1(@types/node@26.6.5)
       '@jsquash/webp':
         specifier: 1.5.0
         version: 1.5.0
@@ -4021,12 +4015,6 @@ importers:
       '@livehuddle/help-registry':
         specifier: workspace:*
         version: link:../../packages/help-registry
-      '@livehuddle/sticky-model':
-        specifier: workspace:*
-        version: link:../../packages/sticky-model
-      '@livehuddle/sticky-vision':
-        specifier: workspace:*
-        version: link:../../packages/sticky-vision
       '@livehuddle/telemetry-client':
         specifier: workspace:*
         version: link:../../packages/telemetry-client
@@ -4084,18 +4072,6 @@ importers:
       '@liveworkspace/workbench':
         specifier: workspace:*
         version: link:../../../packages/workbench
-      '@tensorflow/tfjs-backend-wasm':
-        specifier: 4.22.0
-        version: 4.22.0(@tensorflow/tfjs-core@4.22.0)
-      '@tensorflow/tfjs-backend-webgpu':
-        specifier: 4.22.0
-        version: 4.22.0(@tensorflow/tfjs-core@4.22.0)
-      '@tensorflow/tfjs-core':
-        specifier: 4.22.0
-        version: 4.22.0
-      '@tensorflow/tfjs-layers':
-        specifier: 4.22.0
-        version: 4.22.0(@tensorflow/tfjs-core@4.22.0)
       next:
         specifier: ^16.4.3
         version: 16.4.3(@playwright/test@1.64.1)(@types/node@26.6.5)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -4733,62 +4709,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^5.0.3
         version: 5.0.5(vitest@5.0.5)
-      oxlint:
-        specifier: ^1.90.0
-        version: 1.90.0(oxlint-tsgolint@7.0.2005)
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
-  livehuddle/packages/sticky-model:
-    dependencies:
-      '@livehuddle/sticky-vision':
-        specifier: workspace:*
-        version: link:../sticky-vision
-    devDependencies:
-      '@liveworkspace/oxlint-config':
-        specifier: workspace:*
-        version: link:../../../packages/oxlint-config
-      '@liveworkspace/vitest-config':
-        specifier: workspace:*
-        version: link:../../../packages/vitest-config
-      '@tensorflow/tfjs':
-        specifier: 4.22.0
-        version: 4.22.0(seedrandom@3.0.5)
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.5
-      oxlint:
-        specifier: ^1.90.0
-        version: 1.90.0(oxlint-tsgolint@7.0.2005)
-      typescript:
-        specifier: ^7.0.2
-        version: 7.0.2
-      vitest:
-        specifier: ^5.0.1
-        version: 5.0.5(@types/node@26.6.5)(@vitest/coverage-v8@5.0.5)(jsdom@30.1.3(@noble/hashes@2.4.0))(vite@8.3.5(@types/node@26.6.5)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.15))
-
-  livehuddle/packages/sticky-vision:
-    dependencies:
-      '@livehuddle/document':
-        specifier: workspace:*
-        version: link:../document
-    devDependencies:
-      '@liveworkspace/oxlint-config':
-        specifier: workspace:*
-        version: link:../../../packages/oxlint-config
-      '@liveworkspace/vitest-config':
-        specifier: workspace:*
-        version: link:../../../packages/vitest-config
-      '@playwright/test':
-        specifier: ^1.63.0
-        version: 1.64.1
-      '@types/node':
-        specifier: ^26.6.4
-        version: 26.6.5
       oxlint:
         specifier: ^1.90.0
         version: 1.90.0(oxlint-tsgolint@7.0.2005)

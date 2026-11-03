@@ -256,12 +256,22 @@ describe('rest positionals and short flags', () => {
 
 describe('repeated flags', () => {
   it('collect a list flag’s values in order, and read it as a list field', () => {
-    const init = verb('link.init');
-    expect(fieldsOf(init.input).find((f) => f.key === 'doc')).toMatchObject({ kind: 'list' });
-    expect(parseVerbArgs(init, ['--doc', '3f9c', '--doc', '7a1b', '--level', 'files'])).toEqual({
+    const listed = defineVerb({
+      id: 'probe.listed',
+      summary: 's',
+      description: 'd',
+      behaviour: 'read',
+      input: z.object({
+        doc: z.array(z.string()).optional(),
+        level: z.enum(['index', 'files']).optional(),
+      }),
+      output: z.object({}),
+    });
+    expect(fieldsOf(listed.input).find((f) => f.key === 'doc')).toMatchObject({ kind: 'list' });
+    expect(parseVerbArgs(listed, ['--doc', '3f9c', '--doc', '7a1b', '--level', 'files'])).toEqual({
       doc: ['3f9c', '7a1b'],
       level: 'files',
     });
-    expect(parseVerbArgs(init, [])).toEqual({});
+    expect(parseVerbArgs(listed, [])).toEqual({});
   });
 });

@@ -44,7 +44,6 @@ export function headerSegments(facts: HeaderFacts): string {
   const segments = [
     `${plural(facts.elements, 'element', 'elements')}${shown.length ? `: ${shown.join(', ')}` : ''}`,
   ];
-  if (facts.tab.kind !== 'diagram') segments.push(`kind=${facts.tab.kind}`);
   if (facts.finish) segments.push(`finish=${facts.finish}`);
   if (facts.hidden > 0) segments.push(`${facts.hidden} hidden`);
   if (facts.unknown > 0) segments.push(`${facts.unknown} unknown`);

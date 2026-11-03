@@ -98,7 +98,7 @@ differ, and the second copy is stored once more.
   unchanged. The owner is whoever is importing: a guest's own gallery, or a signed-in account's.
 - **Offline Mode documents** ([Offline Mode](../006-document/offline-mode.md)) never reach the
   server. The resized image is embedded in the element as a `data:` URL, the same shape a picked
-  image takes in an offline document and the shape Sync Canvas re-homes into the gallery later.
+  image takes in an offline document and the shape Sync Space re-homes into the gallery later.
   Embedding is bounded by an **offline import budget of 8 MB** of `data:` URL text per import:
   an image that would go past it stays a placeholder (`offline-budget`), so one import cannot
   bloat the document record beyond what autosave handles comfortably.

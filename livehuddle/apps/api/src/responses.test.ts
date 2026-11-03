@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DOCUMENT_CONVERSION_HEADER, DOCUMENT_OPEN_HEADER } from '@livehuddle/api-schema';
-import { aiError, CORS_HEADERS, imagesUnavailable, json } from './responses';
+import { CORS_HEADERS, imagesUnavailable, json } from './responses';
 
 // The shared envelope and status codes are @liveworkspace/api-kit's, tested there. What is this api's own is its
 // CORS allow-list, which every response carries, and the answers only it gives.
@@ -27,14 +27,6 @@ describe('imagesUnavailable', () => {
     const res = imagesUnavailable();
     expect(res.status).toBe(503);
     expect(await readJson(res)).toEqual({ error: 'images_unavailable' });
-  });
-});
-
-describe('aiError', () => {
-  it('returns a 502 with the canonical { error: "ai_error" } envelope', async () => {
-    const res = aiError();
-    expect(res.status).toBe(502);
-    expect(await readJson(res)).toEqual({ error: 'ai_error' });
   });
 });
 

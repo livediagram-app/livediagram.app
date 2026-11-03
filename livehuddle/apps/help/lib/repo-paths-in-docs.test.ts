@@ -45,8 +45,6 @@ const WORKSPACE_ROOTS = [
   'packages/templates/',
   'packages/help-registry/',
   'packages/telemetry-client/',
-  'packages/sticky-vision/',
-  'packages/sticky-model/',
   'packages/',
   // The liveworkspace monorepo this repo sits in: a shared package (`packages/index-app/...`) or a sibling app.
   '../',
@@ -241,7 +239,7 @@ describe('spec references', () => {
   // Specs are unnumbered and live in category folders under docs/specs/, so a
   // bare number no longer names one; references are paths to the spec file.
   // Category folders are zero-padded (`015-api`); the retired files were not
-  // (`25-ai-assistance.md`, `139-event-storming.md`), which tells them apart
+  // (`25-ai-assistance.md`), which tells them apart
   // even behind a `${ROOT}/` or `../` prefix.
   it('never use the retired spec numbers', () => {
     const legacy: string[] = [];

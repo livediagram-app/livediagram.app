@@ -15,7 +15,6 @@
 // is both invisible and costly, are pinned separately in
 // packages/api-schema's PALETTE_TELEMETRY_TYPES.
 export const EMITTED_EVENT_PAIRS: readonly string[] = [
-  'AI·Used',
   'Action·Changed',
   'Action·Created',
   'Action·Deleted',
@@ -92,8 +91,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Element·Voted',
   'Error·Api',
   'Error·Client',
-  // The hosted reader's budget was spent and the photo import failed over to
-  // the in-browser reader (docs/specs/021-event-storming/event-storming.md Phase 9).
+  // A recoverable problem: a slow document load, an api warning (docs/specs/017-telemetry/telemetry.md).
   'Error·Warning',
   // The Explorer's filter lens (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet that gained a value.
   'Explorer·Selected',

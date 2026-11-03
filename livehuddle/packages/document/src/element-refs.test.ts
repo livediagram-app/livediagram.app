@@ -197,7 +197,7 @@ describe('slugIdFor (R7)', () => {
 
   it('falls back to the kind word for an empty slug', () => {
     expect(slugIdFor('', 'arrow', new Set())).toBe('arrow');
-    expect(slugIdFor('—', 'es:actor', new Set())).toBe('es-actor');
+    expect(slugIdFor('—', 'web:page', new Set())).toBe('web-page');
     expect(slugIdFor('', '?', new Set())).toBe('element');
   });
 
@@ -247,11 +247,6 @@ describe('kindWordOf (R9)', () => {
   it('names an element by its type', () => {
     expect(kindWordOf(createText(0, 0))).toBe('text');
     expect(kindWordOf(createSticky(0, 0))).toBe('sticky');
-  });
-
-  it('names an event-storming note by its notation, es:actor apart (E28)', () => {
-    expect(kindWordOf({ ...createSticky(0, 0), esKind: 'domain-event' })).toBe('domain-event');
-    expect(kindWordOf({ ...createSticky(0, 0), esKind: 'actor' })).toBe('es:actor');
   });
 
   it('marks unknown types and shapes with ? (E12)', () => {

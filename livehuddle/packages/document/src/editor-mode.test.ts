@@ -45,6 +45,6 @@ describe('editor mode', () => {
     expect(opensInOf({})).toBe('workshop');
     expect(opensInOf(undefined)).toBe('workshop');
     expect(opensInOf({ opensIn: 'draw' })).toBe('workshop');
-    expect(opensInOf({ kind: 'event-storming', opensIn: 'diagram' })).toBe('workshop');
+    expect(opensInOf({ opensIn: 'diagram' })).toBe('workshop');
   });
 });

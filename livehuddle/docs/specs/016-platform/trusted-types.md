@@ -76,7 +76,7 @@ is not allowed here. When the editor signed in through Clerk, its script origin 
 bot protection) were.
 
 A worker's own scope is not the page's: its script is served from `/_next/` with no policy header, so the libraries
-it runs (transformers.js, TensorFlow.js, jsquash) are outside this boundary.
+it runs (jsquash) are outside this boundary.
 
 A third party that needs anything else is a bug to fix with it, never a wider `default`.
 

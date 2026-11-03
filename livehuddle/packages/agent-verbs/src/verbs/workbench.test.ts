@@ -111,7 +111,7 @@ describe('workbench open', () => {
     expect(err).toBeInstanceOf(TypeError);
   });
 
-  it('opens only your own documents: a share link is a usage error', async () => {
+  it('opens only your own Spaces: a share link is a usage error', async () => {
     const api = fakeApi({});
     const logs: string[] = [];
     const err = await workbenchOpen.run!(contextOf(api, [], logs), {
@@ -121,7 +121,7 @@ describe('workbench open', () => {
     expect(err).toBeInstanceOf(AddressError);
     expect((err as AddressError).failure).toMatchObject({
       kind: 'usage',
-      message: 'a workbench opens your own documents, not a share link',
+      message: 'a workbench opens your own Spaces, not a share link',
     });
     expect(api.calls).toEqual([]);
     expect(logs).toContain('workbench open refused share-link');

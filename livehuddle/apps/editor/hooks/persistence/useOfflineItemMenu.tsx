@@ -9,7 +9,7 @@ import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useOfflineConversions } from './useOfflineConversion';
 
 // The editor's Explorer panel's own verbs on a canvas's menu (the shared Explorer's `itemMenu`): Take Offline on a
-// canvas in the person's library or a team's, and Sync Canvas on one this browser holds
+// canvas in the person's library or a team's, and Sync Space on one this browser holds
 // (docs/specs/006-document/offline-mode.md). Only a page on this app's origin can reach the browser's store, so
 // these are the editor's, not the Explorer's. None for someone without an identity yet, another app's item, or one
 // reached through a link. The host is one function for the panel's life: it reads the newest conversions when
@@ -33,7 +33,7 @@ function offlineVerbs(item: Item, conversions: Conversions) {
     return [
       {
         id: 'sync-canvas',
-        label: 'Sync Canvas',
+        label: 'Sync Space',
         icon: <SyncIcon />,
         onSelect: () => conversions.current.syncToCloud(doc),
       },

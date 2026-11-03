@@ -50,7 +50,7 @@ afterEach(() => {
 const INPUT = {
   title: 'Cloud map',
   description: 'How our services talk to each other.',
-  category: 'architecture' as const,
+  category: 'meetings' as const,
   tags: ['aws'],
   anonymous: true,
 };
@@ -77,7 +77,7 @@ describe('community api client', () => {
     expect(err).toBeInstanceOf(ApiError);
     expect((err as ApiError).code).toBe('share_password_set');
     expect(communityErrorMessage(err, words)).toBe(
-      'This canvas has a share password. Remove the password to share it to the Community.',
+      'This space has a share password. Remove the password to share it to the Community.',
     );
   });
 

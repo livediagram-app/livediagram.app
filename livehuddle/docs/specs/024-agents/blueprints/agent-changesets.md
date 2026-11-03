@@ -429,7 +429,7 @@ layout, theme, name } }`, no base; then reads the tab to render the PNG (CS36). 
   element; `update` → `set` with the element's given fields; `remove` → `rm` (pinned arrows go too and are listed).
   `elementId` is an id or a ref as `read_document` prints it, resolved with `resolveRef` against the loaded tab; the
   target is that element's always-safe `id:"…"` ref, and a word naming nothing goes as given for the engine to
-  refuse (EO54). The engine lands event-storming notes on lanes and coerces shapes. Base:
+  refuse (EO54). The engine coerces shapes. Base:
   `{ rev: args.rev ?? loaded.rev, elements }` with the fingerprints of the elements the ops name, from the tab the
   tool loads at call time. Input gains optional `rev`, the revision `read_document`
   returned.

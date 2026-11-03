@@ -230,7 +230,6 @@ export function SelectionChromeLayer({
   elementId,
   box,
   rotation,
-  shiftX,
   showHandles,
   showAnchors,
   onBeginDrag,
@@ -239,20 +238,13 @@ export function SelectionChromeLayer({
   // The element's box in canvas coordinates.
   box: { x: number; y: number; width: number; height: number };
   rotation: number;
-  // The insert-between preview's shift (canvas px), when the element is standing aside.
-  shiftX?: number;
   showHandles: boolean;
   showAnchors: boolean;
   onBeginDrag: (id: string, mode: DragMode, e: ReactPointerEvent) => void;
 }) {
   const zoom = useCanvasZoom();
   if (!showHandles && !showAnchors) return null;
-  const transform = [
-    shiftX ? `translateX(${shiftX}px)` : '',
-    rotation % 360 !== 0 ? `rotate(${rotation}deg)` : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+  const transform = rotation % 360 !== 0 ? `rotate(${rotation}deg)` : '';
   return (
     <BoxGripsPortal>
       <div

@@ -22,7 +22,6 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
 import { SelectionPopover } from '@/components/canvas/SelectionPopover';
-import { useInsertionSlot } from '@/lib/insertion-preview';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The floating selection toolbars (docs/specs/008-canvas/canvas-and-palette.md): the single-selection popover
@@ -62,18 +61,12 @@ export function CanvasSelectionToolbars({
   const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(
     useCallback((v: View) => (showing ? v : RESTING_VIEW), [showing]),
   );
-  // Insert-between preview (docs/specs/021-event-storming/event-storming.md): the toolbars anchor to element BOUNDS,
-  // and the preview slides elements by a render-time transform their bounds
-  // know nothing about — so while a slot is open they would float over empty
-  // canvas. They fade out the same way they do for a quick-connect ring, and
-  // come back the moment the drag ends.
-  const insertionOpen = useInsertionSlot() !== null;
   const commentsShown = useCommentBadges();
   // While a selection is moved, resized or reshaped the toolbars stand down and stop measuring
   // (docs/specs/008-canvas/canvas-performance.md); they come back at the new place when it ends.
   const moving = selectionMoving(useCanvasGesture());
-  const toolbarsStale = quickRingOpen || insertionOpen || moving;
-  const multiStale = insertionOpen || moving;
+  const toolbarsStale = quickRingOpen || moving;
+  const multiStale = moving;
   const {
     elements,
     readOnly,
@@ -190,7 +183,7 @@ export function CanvasSelectionToolbars({
                   : undefined
             }
             // Close to the element whenever no "+" sits in the gap: read-only, and boxed kinds that show none (an
-            // annotation, an event-storming board). An arrow keeps the wide gap: its move
+            // annotation). An arrow keeps the wide gap: its move
             // frame sits there, and a toolbar over it would take the press that drags the arrow.
             compact={readOnly || (!showPlus && !!selected && isBoxed(selected))}
           />

@@ -32,7 +32,6 @@ Provisioned with `wrangler secret put` (production), `wrangler secret put --env 
 | ----------------------------------------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ACCOUNTS_URL` / `API_RESOURCE`                 | api             | No identities at all: no sign-in and no guest tokens, so nobody can own a document on the server ([04](../014-identity/auth-and-guest-access.md))                                                                           |
 | `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET` | api             | Nobody can complete sign-in (`/api/auth/*` cannot swap a code or refresh a token)                                                                                                                                           |
-| `GOOGLE_AI_STUDIO_API_KEY` / `AI_API_KEY`       | api             | The photo import reads handwriting in the browser instead ([Note reader](../021-event-storming/note-reader.md))                                                                                                             |
 | `TELEMETRY_KEY`                                 | api **and** mcp | No server-side telemetry reaches the liveworkspace service ([Telemetry](../017-telemetry/telemetry.md))                                                                                                                     |
 | `MEDIA_KEY`                                     | api             | Images are off: every `/api/images*` route answers 503 ([Images](../009-elements/images.md))                                                                                                                                |
 | `DRIVE_KEY`                                     | api             | liveworkspace's Drive mirror cannot export canvases as files or import them ([drive.md](../../../../liveworkspace/docs/specs/005-drive/drive.md#the-apps))                                                                  |
@@ -40,7 +39,7 @@ Provisioned with `wrangler secret put` (production), `wrangler secret put --env 
 
 `TELEMETRY_KEY` is the only one that must hold the **same value on two workers** (and on the liveworkspace telemetry service, as `TELEMETRY_KEY_LIVEHUDDLE`). A mismatch is silent: the service simply drops the batch, so verify with `wrangler secret list` on each rather than assuming. `MEDIA_KEY` likewise matches the media service's `MEDIA_KEY_LIVEHUDDLE`; a mismatch there is loud, as every image route answers 503. Generate it with `openssl rand -hex 32`.
 
-Non-secret configuration (`TELEMETRY_ENABLED`, `TELEMETRY_URL`, `AI_BASE_URL`, `AI_VISION_MODEL`, `AI_*`, `MEDIA_URL`, `EMAIL_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`. What only livehuddle.app runs with (`TELEMETRY_ENABLED`, its liveworkspace service URLs) is equally public but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every fork's default ([Deployment](../016-platform/deployment.md) "Hosted profile"). `COMMUNITY_ENABLED` is non-secret configuration too, but unset by default: it is only set to switch the Community off ([Community](../025-community/community.md#turning-the-community-off)), as a `[vars]` entry, a dashboard variable or a secret, and is documented in `apps/api/.env.example`.
+Non-secret configuration (`TELEMETRY_ENABLED`, `TELEMETRY_URL`, `MEDIA_URL`, `EMAIL_FROM`, `APP_BASE_URL`, `CONSENT_BASE_URL`) lives in `[vars]` in the relevant `wrangler.toml`, in the open, documented alongside each entry there and in the per-app `.env.example`. What only livehuddle.app runs with (`TELEMETRY_ENABLED`, its liveworkspace service URLs) is equally public but lives in the hosted profile, `apps/api/hosted-vars.json`, so it is not every fork's default ([Deployment](../016-platform/deployment.md) "Hosted profile"). `COMMUNITY_ENABLED` is non-secret configuration too, but unset by default: it is only set to switch the Community off ([Community](../025-community/community.md#turning-the-community-off)), as a `[vars]` entry, a dashboard variable or a secret, and is documented in `apps/api/.env.example`.
 
 `ACCOUNTS_CLIENT_SECRET` is the only real secret of the four: the api sends it to the accounts Worker when it swaps a sign-in code or a refresh token. `ACCOUNTS_URL`, `API_RESOURCE` and the client id are not sensitive, but are set the same way so each environment sets its own. Access tokens are verified locally against the accounts Worker's public JWKS; the api holds no admin credential for it.
 
@@ -86,18 +85,3 @@ NEXT_PUBLIC_API_BASE=
 
 - Pre-commit hook scanning for likely secrets (`gitleaks` or similar), to be added when there are enough secrets in dev that scanning earns its keep.
 - CI check that no `NEXT_PUBLIC_*`-bundled value matches a known secret-key prefix (e.g. `sk_`).
-
-## Photo bytes never leave the browser
-
-The event-storming photo import ([Event storming](../021-event-storming/event-storming.md#import-a-photo-of-the-wall) finds the stickies in a
-photograph of a physical wall **in the browser**, with classical computer
-vision. The photograph itself is never uploaded: only the CROPS (one sticky
-each) go to `POST /api/ai/read-notes` so the model can read the handwriting,
-and the route forwards them to the provider and discards them. Nothing is
-persisted anywhere: not R2, not a Durable Object, not IndexedDB, not a log
-line. The browser also re-encodes every crop, which drops EXIF (including the
-GPS tag) after honouring the orientation flag.
-
-A workshop wall is somebody's unreleased strategy, and the room around it is
-somebody's face. The safest place for a picture of either is the machine it was
-taken on.

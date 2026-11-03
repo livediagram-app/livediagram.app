@@ -132,26 +132,6 @@ export type Env = {
   // Public origin used to build links in emails (optional). Defaults to
   // "https://www.livehuddle.app".
   APP_BASE_URL?: string;
-  // WHOSE model reads sticky notes from a photo, and where
-  // (docs/specs/021-event-storming/note-reader.md). The PROVIDER is inferred
-  // from which of these keys is set, because a key is provider-specific and its
-  // name should say so — see ai-provider.ts. None = the photo reader is hidden
-  // (capabilities reports aiEnabled:false and /api/ai/read-notes answers 503),
-  // which is the default when unset.
-  //
-  // Set via `wrangler secret put <NAME>` in production; drop into
-  // `apps/api/.dev.vars` for local dev (gitignored, never commit).
-  GOOGLE_AI_STUDIO_API_KEY?: string;
-  // Any other OpenAI-compatible endpoint (Mistral, OpenRouter, a local
-  // llama.cpp or Ollama). Needs AI_BASE_URL and AI_VISION_MODEL with it.
-  AI_API_KEY?: string;
-  AI_BASE_URL?: string;
-  // The reader's model, beating the Google default.
-  AI_VISION_MODEL?: string;
-  // Per-IP rate limiter for POST /api/ai/read-notes. Caps AI requests at
-  // 20/60s per IP so a single client can't exhaust the operator's model budget.
-  // Optional: absent falls through to "allow".
-  AI_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-token read limiter for token-authed GETs (docs/specs/015-api/public-api-and-tokens.md §3.5), keyed on the
   // token id. Token writes ride the WRITE_RATE_LIMITER (also keyed on the
   // token id); this covers reads, which that one doesn't. Optional: absent
@@ -159,24 +139,6 @@ export type Env = {
   API_TOKEN_READ_RATE_LIMITER?: {
     limit: (input: { key: string }) => Promise<{ success: boolean }>;
   };
-  // Comma-separated Origin allow-list for POST /api/ai/read-notes
-  // (docs/specs/021-event-storming/note-reader.md).
-  // When set, the worker rejects 403 unless the request's Origin
-  // header exactly matches one of the entries (trimmed for
-  // whitespace). Unset = no check, matching the historical
-  // behaviour so upgrades don't break. Hosted
-  // livehuddle.app sets this in apps/api/wrangler.toml [vars] (NOT the
-  // dashboard, which a deploy wipes) to BOTH
-  // "https://www.livehuddle.app" and "https://livehuddle.app", `www`
-  // first because the apex 301s to it, so `www` is what a browser sends.
-  // This comment previously named the apex alone, which as an actual
-  // value would 403 every request the editor makes.
-  AI_ALLOWED_ORIGINS?: string;
-  // When the literal string "true", POST /api/ai/read-notes requires a verified
-  // access token and rejects a guest with 401
-  // (docs/specs/021-event-storming/note-reader.md). Anything else (unset, "false", any other value) keeps
-  // it open to guests. Hosted livehuddle.app leaves it unset.
-  AI_REQUIRE_SIGN_IN?: string;
 };
 
 // The env a document's own code runs with, inside its Durable Object (src/document-room/document-room.ts): the

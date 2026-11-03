@@ -90,10 +90,9 @@ function dockEntry(id: WhiteboardShapeId, label: string): WhiteboardShapeEntry {
   };
 }
 
-// The sticky note (docs/specs/023-draw-mode/draw-mode.md "Shape slots"): found by its names,
-// armed as the plain note (no Event Storming colour).
+// The sticky note (docs/specs/023-draw-mode/draw-mode.md "Shape slots"): found by its names.
 function stickyEntry(): WhiteboardShapeEntry {
-  const tile = PALETTE_TILES.find((t) => t.action.type === 'sticky' && !('fill' in t.action));
+  const tile = PALETTE_TILES.find((t) => t.action.type === 'sticky');
   return {
     key: 'sticky',
     label: 'Sticky Note',
@@ -138,8 +137,7 @@ export function isWhiteboardShapeKey(key: unknown): key is WhiteboardShapeKey {
 // Which catalogue shape an armed intent is, or null: only a board shape counts.
 export function armedWhiteboardShape(intent: PendingDraw | null): WhiteboardShapeKey | null {
   if (!intent) return null;
-  // The plain note only: an Event Storming note carries a colour or a kind.
-  if (intent.type === 'sticky') return intent.fill || intent.esKind ? null : 'sticky';
+  if (intent.type === 'sticky') return 'sticky';
   if (intent.type === 'arrow') {
     if (!intent.board) return null;
     return intent.ends === 'none' ? 'line' : 'arrow';

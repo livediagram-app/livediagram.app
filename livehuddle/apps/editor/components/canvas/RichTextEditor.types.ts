@@ -11,7 +11,7 @@ export type RichTextEditorProps = {
   placeholder: string;
   textSize: TextSize;
   // The box an auto-fitting ('scale') multi-line label measures against
-  // (docs/specs/021-event-storming/event-storming.md). Absent = no auto-fit; the static size bucket applies.
+  // (docs/specs/008-canvas/canvas-and-palette.md). Absent = no auto-fit; the static size bucket applies.
   fitBox?: { width: number; height: number; padding: number };
   alignX: TextAlignX;
   alignY: TextAlignY;
@@ -23,10 +23,6 @@ export type RichTextEditorProps = {
   onLiveText?: (editor: HTMLElement) => void;
   fontFamily?: string;
   multiline: boolean;
-  // Paint the live text in capitals (an event-storming note, docs/specs/021-event-storming/event-storming.md). A
-  // CSS transform only: the committed label keeps the author's casing, and
-  // the auto-fit measures the caps so the size can't jump on commit.
-  uppercase?: boolean;
   cursorAtEnd: boolean;
   textClassName?: string;
   // When true, the editor lays out as a flex CHILD (it fills the slot it's

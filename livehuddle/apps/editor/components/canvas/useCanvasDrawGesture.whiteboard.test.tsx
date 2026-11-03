@@ -19,8 +19,6 @@ function setup(pendingDraw: PendingDraw) {
       isPinchingRef,
       onCommitDraw: vi.fn(),
       onCommitFreehand,
-      stampAt: null,
-      showStamp: vi.fn(),
       whiteboard: true,
     }),
   );
@@ -92,8 +90,6 @@ describe('a whiteboard pen draws freely (docs/specs/023-draw-mode/draw-mode.md "
         isPinchingRef: { current: false },
         onCommitDraw: vi.fn(),
         onCommitFreehand: vi.fn(),
-        stampAt: null,
-        showStamp: vi.fn(),
         whiteboard,
       }),
     );
@@ -130,8 +126,6 @@ describe('a whiteboard pen draws through the live pipeline (docs/specs/023-draw-
         isPinchingRef: { current: false },
         onCommitDraw: vi.fn(),
         onCommitFreehand: vi.fn(),
-        stampAt: null,
-        showStamp: vi.fn(),
         whiteboard: true,
       }),
     );

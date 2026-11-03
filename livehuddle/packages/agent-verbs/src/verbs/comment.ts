@@ -58,9 +58,9 @@ const EMPTY: Record<CommentListStatus, string> = {
 
 export const commentLs = defineVerb({
   id: 'comment.ls',
-  summary: 'The comment threads of a document, open by default',
+  summary: 'The comment threads of a Space, open by default',
   description:
-    'Lists the comment threads of a document, or of one tab, in the outline\u2019s order: each element\u2019s ref, label, state and comments in full.',
+    'Lists the comment threads of a Space, or of one tab, in the outline\u2019s order: each element\u2019s ref, label, state and comments in full.',
   behaviour: 'read',
   input: z.object({
     doc: docArg,

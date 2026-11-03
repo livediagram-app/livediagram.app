@@ -37,7 +37,7 @@ hosts, named below.
   **Import from**, whose buttons open this site's `/import` page for the source, which imports where New was pressed
   and comes back (`apps/editor/lib/explorer-library-host.tsx`). Shape Libraries' tiles are drawn by
   `GET /api/shape-libraries/:id/previews` ([Shape libraries](shape-libraries.md)).
-- **The item menu.** In the editor's Explorer panel, **Take Offline** and **Sync Canvas** on a canvas's menu, as the
+- **The item menu.** In the editor's Explorer panel, **Take Offline** and **Sync Space** on a canvas's menu, as the
   person (`apps/editor/hooks/persistence/useOfflineItemMenu.tsx`, the package's `itemMenu`;
   [Offline Mode](../006-document/offline-mode.md)). The Explorer page, built by liveworkspace.app, hands both over to
   the editor at the canvas's own address, which runs them.
@@ -62,7 +62,7 @@ so the editor's per-frame churn never re-renders it.
 Canvases kept only in this browser ([Offline Mode](../006-document/offline-mode.md)) never reach the index, so none of
 the index's lists holds them. They are the Explorer's **This Browser** view, in the page (`/explorer/offline`) and the
 editor's panel alike: every one, newest first, read from this browser alone, each opening in the editor. For a
-signed-in person each row has **Sync Canvas**, which moves it to the account and so into the Explorer; in the panel
+signed-in person each row has **Sync Space**, which moves it to the account and so into the Explorer; in the panel
 each row has **Delete**, which removes it for good after a confirmation, since nothing else holds it. With none, the
 view says so.
 
@@ -71,12 +71,12 @@ view says so.
   (`apps/editor/lib/offline/this-browser.ts`, `@liveworkspace/explorer/this-browser`). Its sidebar has a **This
   Browser** row with their count, shown while there are some, opening the Explorer's own This Browser view
   (`/explorer/offline`), each canvas opening in the editor; Home's Jump Back In shows the ones opened, each a card
-  like the rest with the This Browser badge, its menu (Open, Sync Canvas) and its drag (the Trash or a folder,
+  like the rest with the This Browser badge, its menu (Open, Sync Space) and its drag (the Trash or a folder,
   [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "This Browser in Jump Back In"). On
   liveworkspace.app, which cannot read this browser's storage for livehuddle, the row links to `/explorer/offline` here.
 - **The editor's Explorer panel** has This Browser as a view of its own: a rail entry under More with the count,
   shown only while there are some, opening its pane in place (`apps/editor/hooks/persistence/useThisBrowserHost.ts`,
-  the panel's `thisBrowser`). Each canvas opens in the editor; signed in, each row has **Sync Canvas**; each row has
+  the panel's `thisBrowser`). Each canvas opens in the editor; signed in, each row has **Sync Space**; each row has
   **Delete**, which asks first.
 - **`/offline`**, the old This Browser page, only redirects to `/explorer/offline`, its query kept
   (`@liveworkspace/explorer/offline-redirect`). Take Offline, Sync and Delete asked by an address run in the editor at the

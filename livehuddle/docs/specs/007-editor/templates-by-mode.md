@@ -57,7 +57,7 @@ the Session strip there when the session starts:
 - Every template opens in Workshop (`templates.test.ts`).
 - Popular starts with Blank Workshop (`popular.test.ts`).
 - Every category holds a template (`template-categories.test.ts`).
-- The catalogue is the Workshop templates above, forty with the blank and Event Storming (`templates.test.ts`'s
+- The catalogue is the Workshop templates above, thirty-nine with the blank (`templates.test.ts`'s
   kind list, the `TemplateKind` union and `TEMPLATES` move together).
 
 ## The tab's name

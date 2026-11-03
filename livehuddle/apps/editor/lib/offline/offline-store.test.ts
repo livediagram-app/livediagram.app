@@ -161,7 +161,7 @@ describe('offline store ops (in-memory backend)', () => {
 });
 
 // Both stores must agree on what a tab IS. An offline board that lost its
-// kind would come back from a Sync Canvas as an ordinary diagram — the
+// kind would come back from a Sync Space as an ordinary diagram: the
 // cloud copy would then be wrong too, and nothing could tell.
 describe('upsertTab — tab kind', () => {
   const rec = (): OfflineDocumentRecord =>
@@ -179,16 +179,13 @@ describe('upsertTab — tab kind', () => {
     expect(upsertTab(rec(), tab(), 2).tabs[0]!.kind).toBe('diagram');
   });
 
-  it('keeps a workshop board a workshop board', () => {
-    expect(upsertTab(rec(), tab({ kind: 'event-storming' }), 2).tabs[0]!.kind).toBe(
-      'event-storming',
-    );
-    const legacy = tab({ layers: [{ id: 'layer:es:board', name: 'Event Storming' }] });
-    expect(upsertTab(rec(), legacy, 2).tabs[0]!.kind).toBe('event-storming');
+  it('stamps the ordinary kind over one this product does not have', () => {
+    const foreign = { ...tab(), kind: 'event-storming' } as unknown as Tab;
+    expect(upsertTab(rec(), foreign, 2).tabs[0]!.kind).toBe('diagram');
   });
 });
 
-describe('offlineDeleteIfUnchanged (Sync Canvas, docs/specs/006-document/offline-mode.md)', () => {
+describe('offlineDeleteIfUnchanged (Sync Space, docs/specs/006-document/offline-mode.md)', () => {
   it('removes the record and forgets the id when it still matches', async () => {
     __setOfflineBackend(memBackend());
     await offlinePutRecord(rec({ id: 'd1', savedAt: 5 }));

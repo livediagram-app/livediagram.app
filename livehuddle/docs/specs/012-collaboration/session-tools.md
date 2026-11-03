@@ -297,7 +297,7 @@ running, and their popovers read-only (the Timer's dial without its controls); w
 running they get no strip. While somebody else [facilitates](facilitator.md), an editor's set-up
 panes are disabled under a note naming them.
 
-**Which tools the strip offers** (`sessionStripTools`): all three, on every tab and on an event-storming board
+**Which tools the strip offers** (`sessionStripTools`): all three, on every tab
 ([Workshop mode](workshop-mode.md)). A popover whose button leaves closes.
 
 Order, left to right: Timer, Vote, Poll. **On a phone** the strip stays in the cluster's one row, between Undo and Redo and Layers: the cluster's buttons share the row's width, each from 36px up to the usual 44px (always 44px tall to tap), with 6px gaps, so Undo, Redo, the three tools, Layers, the theme brush and Fit fill the row on a 360px screen and up. On a narrower one the cluster wraps from the right, so Undo is never pushed off the screen. Each segment opens its

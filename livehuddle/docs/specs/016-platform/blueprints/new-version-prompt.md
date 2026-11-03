@@ -93,8 +93,7 @@ current when called.
 
 ## Presentation and UX
 
-- Fixed, bottom centre, 80 px above the viewport edge (clear of the bottom tab bar, as the photo
-  import bars sit), on the chrome layer (`z-[var(--z-chrome)]`, below dialogs); max width 28rem,
+- Fixed, bottom centre, 80 px above the viewport edge (clear of the bottom tab bar), on the chrome layer (`z-[var(--z-chrome)]`, below dialogs); max width 28rem,
   never wider than the viewport less 2rem; rounded panel, chrome surface colours (`bg-white` /
   `dark:bg-slate-900`, border `slate-200` / `slate-700`), shadow.
 - Text: "A new version of livehuddle is ready." In `saving`: "Saving your changes…" with the

@@ -78,7 +78,6 @@ describe('Start a Workshop', () => {
       'product',
       'games',
       'retros',
-      'software',
       'strategy',
       'learning',
       'spaces',
@@ -86,7 +85,7 @@ describe('Start a Workshop', () => {
     const group = (id: string) => TEMPLATE_STARTS.workshop.groups.find((g) => g.id === id)!.kinds;
     // A cross-listed template shows in each of its categories.
     expect(group('retros')).toContain('incident-postmortem');
-    expect(group('software')).toContain('incident-postmortem');
+    expect(group('planning')).toContain('raci-matrix');
     expect(group('games')).toEqual([
       'pub-quiz',
       'icebreaker-questions',
@@ -108,7 +107,7 @@ describe('Start a Workshop', () => {
 
   it('lists a search match once, under its primary category', () => {
     expect(TEMPLATE_STARTS.workshop.search('postmortem')).toEqual([
-      { group: 'software', kinds: ['incident-postmortem'] },
+      { group: 'retros', kinds: ['incident-postmortem'] },
     ]);
   });
 });

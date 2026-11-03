@@ -11,7 +11,7 @@ import { COMMUNITY_APP } from './community-service';
 import type { Env } from './types';
 
 const URL_BASE = 'https://community.test/api/community';
-const KEY = 'ld-key';
+const KEY = 'lh-key';
 const ctx = {
   waitUntil: () => {},
   passThroughOnException: () => {},
@@ -24,7 +24,7 @@ export type TestCommunityService = TestDb & {
 
 // Points `env` at a fresh service and routes its calls there. Undo with vi.unstubAllGlobals().
 export function communityServiceFor(env: Env): TestCommunityService {
-  const service = testDb({ COMMUNITY_KEY_LIVEDIAGRAM: KEY });
+  const service = testDb({ COMMUNITY_KEY_LIVEHUDDLE: KEY });
   env.COMMUNITY_URL = URL_BASE;
   env.COMMUNITY_KEY = KEY;
   vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {

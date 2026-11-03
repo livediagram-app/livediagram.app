@@ -122,7 +122,7 @@ exposes the custom type only to pages in the same browser engine, so:
   modal open, a text field focused, read-only, a label being edited) gates it
   too.
 - A recognised paste on a **whiteboard** tab lands with the whiteboard profile;
-  on a **diagram** or **event-storming** tab with the diagram profile.
+  on a **diagram** tab with the diagram profile.
 - It lands through the shared board-scene insert ([Board scene](board-scene.md)):
   the scene's bounds centred on the canvas pointer when the pointer is over the
   canvas, else on the viewport centre; **one undo step**; the landed elements
@@ -143,9 +143,7 @@ exposes the custom type only to pages in the same browser engine, so:
   other dropped file is refused with an info toast: _"Drop an Excalidraw file, or an Excalidraw image with the
   scene embedded."_ A file the Import dialog reads (a draw.io, Mermaid, Markdown or livehuddle JSON file, by
   its name) is told where it goes instead: _"To bring in a draw.io file, use Import in the tab menu."_ (Import
-  replaces the tab's content, so a drop never does it unasked; `lib/drop-import-hint.ts`.) A photo dropped on
-  an event-storming board still goes to the wall reader first
-  ([Event storming](../021-event-storming/event-storming.md)).
+  replaces the tab's content, so a drop never does it unasked; `lib/drop-import-hint.ts`.)
 
 ## Scene mapping (Excalidraw to board scene)
 

@@ -43,15 +43,13 @@ sticky 0c84 "Payment retries are not idempotent yet!" comments=2 open
 
 The example is abridged; a real outline prints every element.
 
-- **Header** names the tab, its counts (boxes, frames, lanes, arrows), the tab kind when it is not a diagram
-  (`kind=event-storming`), its finish when set (`finish=sketch`), elements on hidden layers and elements of unknown kinds, open threads and the revision.
-- **Kind** is the shape for shapes (`square`, `cylinder`, `frame`, `lane`), an event-storming note's
-  notation (`domain-event`, `command`; `es:actor` so it never reads as the actor shape), else the element type
+- **Header** names the tab, its counts (boxes, frames, lanes, arrows), its finish when set (`finish=sketch`), elements on hidden layers and elements of unknown kinds, open threads and the revision.
+- **Kind** is the shape for shapes (`square`, `cylinder`, `frame`, `lane`), else the element type
   (`text`, `sticky`, `table`, `arrow`, `image`, `freehand`).
 - **Labels and notes** are JSON strings. Labels are cut at 60 characters, notes at 48, both on a word boundary
   with `…`.
 - **Containment** is derived: an element nests under the smallest frame or lane holding its centre, as
-  `mermaidFromTab` decides it. A mind map's parent link wins over geometry. Edit operations report frame and lane
+  `mermaidFromTab` decides it. Edit operations report frame and lane
   membership by the same rule; the editor's frame drag keeps its own.
 - **Arrows** print on their source line as `→ target "label" ~style`; an arrow with a free end prints on its own
   line. The arrow's own id is in the `graph` view.

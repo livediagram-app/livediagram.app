@@ -1,11 +1,8 @@
 import { labelMeasure, wrapLabel } from '@livehuddle/document';
 
-// Auto-fit for MULTI-LINE labels (docs/specs/021-event-storming/event-storming.md): the font size at which the
-// wrapped text just fills its box. `scale` on a sticky used to mean a fixed
-// 14px — which read as a lie next to the Scale tile, and left an
-// unresizable event-storming note with no way out of overflow. Now it means
-// what it says: a two-word event fills the note, a long policy sentence
-// shrinks to fit, exactly like writing on real paper.
+// Auto-fit for MULTI-LINE labels (docs/specs/008-canvas/canvas-and-palette.md): the font size at which the
+// wrapped text just fills its box. `scale` on a sticky means what it says: a two-word note fills it, a long
+// sentence shrinks to fit, exactly like writing on real paper.
 //
 // PURE by design (a binary search over the shared wrap + measure helpers the
 // SVG export already uses): the display label, the inline editor and any
@@ -34,7 +31,6 @@ export function fitMultilineFontPx({
   padding,
   bold = false,
   italic = false,
-  uppercase = false,
   fontFamily,
 }: {
   text: string;
@@ -43,26 +39,20 @@ export function fitMultilineFontPx({
   padding: number;
   bold?: boolean;
   italic?: boolean;
-  // The label paints in capitals (an event-storming note, docs/specs/021-event-storming/event-storming.md). Caps
-  // are wider, so the fit must measure THEM — measuring the typed mixed
-  // case would hand back a size that overflows the moment it renders.
-  uppercase?: boolean;
-  // The CSS stack the label paints in (docs/specs/004-interface-design/fonts.md) — a workshop note wears the
-  // marker face, which is much wider than the UI sans at the same px. Same
-  // rule as the capitals: measure the text as it will look.
+  // The CSS stack the label paints in (docs/specs/004-interface-design/fonts.md): faces differ in width
+  // at the same px, so measure the text as it will look.
   fontFamily?: string;
 }): number {
   const availableW = Math.max(1, width - padding * 2);
   const availableH = Math.max(1, height - padding * 2);
   if (!text.trim()) return FIT_MAX_PX;
-  const measured = uppercase ? text.toUpperCase() : text;
 
   // How many words the label has. One word has no pair to make, so the
   // companionship rule below simply doesn't apply to it.
-  const wordCount = measured.trim().split(/\s+/).length;
+  const wordCount = text.trim().split(/\s+/).length;
 
   const linesAt = (px: number) =>
-    wrapLabel(measured, availableW, labelMeasure(px, bold, italic, fontFamily));
+    wrapLabel(text, availableW, labelMeasure(px, bold, italic, fontFamily));
 
   const fits = (px: number): boolean => {
     const lines = linesAt(px);

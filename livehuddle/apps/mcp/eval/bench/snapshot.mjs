@@ -2,7 +2,7 @@
 // what was made rather than what the agent said it made. Read-only: it never writes.
 import { resultJson, resultText } from './mcp-client.mjs';
 
-// The outline's first line: `tab 6cb1 "Name" · 0 elements · kind=event-storming · mode=diagram · rev 1`.
+// The outline's first line: `tab 6cb1 "Name" · 0 elements · kind=diagram · mode=workshop · rev 1`.
 export function parseTabHeader(line) {
   const kind = /kind=([\w-]+)/.exec(line)?.[1] ?? null;
   const mode = /mode=([\w-]+)/.exec(line)?.[1] ?? null;

@@ -27,7 +27,7 @@ The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`
 - **Node:** `>=22` (Wrangler 4 requires it). The root workflows pin Node 22.
 - **pnpm:** `9.15.0`, one workspace and lockfile at the monorepo root, through `pnpm/action-setup` in the workflows.
 - **Wrangler:** `^4.148.0` across the workspaces.
-- **Asset size:** Workers Static Assets refuses any file over 25 MiB, and only at deploy. The editor's `build` ends with `scripts/asset-size-gate.mjs`, which fails the build on any file in `out/` over the limit, so CI catches it first. `@huggingface/transformers` stays on 3.x for this reason: 4.3.0 ships a 25.6 MiB onnxruntime wasm, and Dependabot ignores its majors.
+- **Asset size:** Workers Static Assets refuses any file over 25 MiB, and only at deploy. The editor's `build` ends with `scripts/asset-size-gate.mjs`, which fails the build on any file in `out/` over the limit, so CI catches it first.
 
 ## CI
 
@@ -41,7 +41,7 @@ The root `ci.yml` runs on every pull request and every push to `main`, and runs 
 
 No job needs another's output: only the apps have a `build` script, and no workspace depends on an app, so checks and tests build nothing.
 
-The two test steps run two packages at a time (`--concurrency=2`). Each package's Vitest already fills the runner's cores, and turbo's default fan-out on the 4-vCPU runner slowed the CPU-heavy `sticky-vision` suite about 70x, into timeouts.
+The two test steps run two packages at a time (`--concurrency=2`). Each package's Vitest already fills the runner's cores, and turbo's default fan-out on the 4-vCPU runner slowed the CPU-heavy suites into timeouts.
 
 CI is the gate you check before deploying to production, but it does **not** trigger that deploy: production is run by hand (see below). It **does** trigger the staging deploy, which runs when CI passes for a push to `main` ([Staging environment](staging-environment.md)).
 
@@ -96,13 +96,11 @@ Some configuration is what **livehuddle.app** runs with, not what the software d
 - **How it is applied.** On every deploy, not once: a site's build exports the frontend mirrors (`node scripts/hosted-vars.mjs build-env`), and the api deploy passes each var as `wrangler deploy --var NAME:VALUE` (`node scripts/hosted-vars.mjs flags`). Every command takes the environment as `--env staging` (none is production), so a deploy only ever applies its own environment's entries.
 - **How it is checked.** After the api deploy, `node scripts/hosted-vars.mjs verify` reads the plain vars off every version serving traffic (`wrangler deployments status` + `wrangler versions view`) and fails the run on any hosted var that is missing or different, or that its environment leaves unset but the worker still holds. In CI, `apps/api/src/hosted-vars.test.ts` fails when the profile stops turning telemetry on, points an environment at another media service, names a var the worker does not read, or when `wrangler.toml` commits a hosted-only var as a default.
 
-`AI_ALLOWED_ORIGINS` is deliberately **not** in the profile. It names livehuddle.app's origins but fails closed, so a fork that forgets to change it gets an AI endpoint that refuses its own origin rather than one open to every page.
-
 ## Credentials and secrets
 
 The only credential the workflows hold is the repository secret **`CLOUDFLARE_API_TOKEN`**, a token for the liveworkspace account ([docs/ci.md](../../../../docs/ci.md) "Deploys"). Every `wrangler.toml` pins the account, so no account id is passed.
 
-A deploy writes code and plain vars only. Each Worker's secrets (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID` and `ACCOUNTS_CLIENT_SECRET` on the api; `TELEMETRY_KEY` on the api **and** mcp, the same value on both; `COMMUNITY_KEY`, `MEDIA_KEY`, `DRIVE_KEY` and the model key, `GOOGLE_AI_STUDIO_API_KEY` / `AI_API_KEY`, on the api) are set on it with `wrangler secret put` (with `--env staging` for staging) and survive every deploy. A value rotates by putting the new one on the worker. [Secrets policy](../002-project-scope/secrets-policy.md) holds the full table.
+A deploy writes code and plain vars only. Each Worker's secrets (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID` and `ACCOUNTS_CLIENT_SECRET` on the api; `TELEMETRY_KEY` on the api **and** mcp, the same value on both; `COMMUNITY_KEY`, `MEDIA_KEY` and `DRIVE_KEY` on the api) are set on it with `wrangler secret put` (with `--env staging` for staging) and survive every deploy. A value rotates by putting the new one on the worker. [Secrets policy](../002-project-scope/secrets-policy.md) holds the full table.
 
 ## Custom domain
 

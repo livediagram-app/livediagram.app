@@ -129,8 +129,20 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   'user-persona': ['persona', 'user', 'customer', 'profile', 'research', 'ux'],
   'empathy-map': ['empathy', 'says thinks does feels', 'user', 'research', 'ux'],
   'user-story-map': ['story map', 'user stories', 'backlog', 'mvp', 'releases', 'agile'],
-  'event-storming': ['ddd', 'domain driven design', 'events', 'workshop', 'bounded context'],
-  'incident-postmortem': ['postmortem', 'incident', 'outage', 'rca', 'blameless', 'review'],
+  // Software & IT's search words, kept when it folded into Retrospectives.
+  'incident-postmortem': [
+    'postmortem',
+    'incident',
+    'outage',
+    'rca',
+    'blameless',
+    'review',
+    'technical',
+    'engineering',
+    'developer',
+    'devops',
+    'infrastructure',
+  ],
   'pestle-analysis': [
     'pestle',
     'pestel',

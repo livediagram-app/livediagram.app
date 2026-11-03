@@ -14,7 +14,6 @@ import {
   buildRetrospective,
   buildSwot,
 } from './template-builders-boards';
-import { buildEventStorming } from './template-builders-eventstorming';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
 import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
 import { buildLeanCoffee, buildTownHall } from './template-builders-sessions';
@@ -128,8 +127,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildBusinessModelCanvas(cx, cy);
     case 'empathy-map':
       return buildEmpathyMap(cx, cy);
-    case 'event-storming':
-      return buildEventStorming(cx, cy);
     // Workshop's blank is truly blank: no seeded element. The user starts from an empty tab (with the empty-canvas
     // hint banner, docs/specs/007-editor/new-document-route.md) and adds their first element from the palette.
     case 'blank-session':

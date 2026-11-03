@@ -23,7 +23,7 @@ import {
 // (docs/specs/002-project-scope/open-source-and-business-model.md).
 const COMMUNITY_SITE_NAME = 'livehuddle Community';
 const COMMUNITY_DESCRIPTION =
-  'Canvases people are proud of. Browse diagrams, drawings and workshops made with livehuddle, then make your own copy.';
+  'Spaces people are proud of. Browse offices, meetings, retrospectives and workshops made with livehuddle, then make your own copy.';
 
 // Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
 // violation log, and this app's own scripts under its asset prefix.

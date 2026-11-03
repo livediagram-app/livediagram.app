@@ -4,16 +4,15 @@
 import { resolveDocument, tabPath, type VerbContext } from '@livehuddle/agent-verbs';
 import { DOCUMENT_ENVELOPE_KIND, DOCUMENT_SCHEMA_VERSION } from '@livehuddle/document';
 import type { CliIo } from '../io';
-import { isLocallyChanged } from '../link/sync-state';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import {
   fileSlug,
   idSlug,
+  isLocallyChanged,
   parsePullFile,
   PULL_FILE_SUFFIX,
   pullFileText,
-  tabHashes,
   type PullFile,
 } from '../sync/pull-file';
 import { readDocumentSnapshot } from './snapshot';
@@ -40,13 +39,11 @@ async function pullPath(io: CliIo, dir: string, document: { id: string; name: st
   return { path, slug: own, there: mine };
 }
 
-// A pull never drops edits not yet pushed (CLI27a): the file there, changed since its pull, is refused as `sync`
-// refuses an ahead document, unless `--force` says to drop them.
+// A pull never drops edits not yet pushed (CLI27a): the file there, changed since its pull, is refused,
+// unless `--force` says to drop them.
 async function refuseUnpushed(path: string, file: PullFile | null, input: PullInput) {
   if (!file || input.force) return;
-  const hashes: Record<string, { hash: string; settingsHash: string }> = {};
-  for (const tab of file.document.tabs) hashes[tab.id] = await tabHashes(tab);
-  if (!isLocallyChanged(file, hashes)) return;
+  if (!(await isLocallyChanged(file))) return;
   throw new CliError({
     exit: EXIT.rejected,
     code: 'unpushed_changes',

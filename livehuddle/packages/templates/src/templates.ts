@@ -43,9 +43,6 @@ export type TemplateKind =
   | 'stakeholder-map'
   | 'opportunity-solution-tree'
   | 'kwl-chart'
-  // Event storming (docs/specs/021-event-storming/event-storming.md): the sticky-note workshop grammar for
-  // exploring a business domain. Colours ARE the semantics, so its stickies pin their fills with `themeLockFill`.
-  | 'event-storming'
   // Quizzes & Games (docs/specs/012-collaboration/quiz-and-game-templates.md): a pub quiz on Quiz cards with a
   // scoreboard, icebreakers spun on Pickers, and three party games run on polls, timers and reaction pads.
   | 'pub-quiz'
@@ -238,13 +235,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Empathy Map',
     description:
       'A persona over Says / Thinks / Does / Feels quadrants, with a Pains and Gains strip.',
-    extra: true,
-  },
-  {
-    kind: 'event-storming',
-    title: 'Event Storming',
-    description:
-      'Explore a business domain with the sticky-note workshop notation: orange domain events on a left-to-right timeline.',
     extra: true,
   },
   {

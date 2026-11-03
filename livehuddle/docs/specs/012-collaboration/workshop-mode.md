@@ -86,7 +86,7 @@ Workshop's layout is livehuddle's one palette, in order:
   click in front of each, with a group browser one level down. Six categories put every group one
   pick away in the category picker and let the toolbar strip show each group's tiles directly.
 
-- Components and Event Storming are not categories (an event-storming board brings its own notation). The Toolbar
+- Components is not a category. The Toolbar
   strip's Search finds every element livehuddle has, those no category offers included (the Components, the Code
   block, the embeds), and places it ([Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)).
 - A **Participant** gets the participant palette Workshop's landing category gives
@@ -94,7 +94,7 @@ Workshop's layout is livehuddle's one palette, in order:
 
 ## The Session strip
 
-`sessionStripTools(mode, esBoard)` gives Timer, Vote and Poll on every tab, an event-storming board included.
+`sessionStripTools(mode)` gives Timer, Vote and Poll on every tab.
 
 - A popover whose button leaves (the tool ending) closes.
 
@@ -114,7 +114,7 @@ Every template opens in Workshop ([Templates by mode](../007-editor/templates-by
 - the spaces to walk round in Avatar mode, `virtual-office`, `coworking-space`, `team-pod` and `all-hands-hall`
   ([Virtual Office template](virtual-office-template.md)).
 
-That is the whole catalogue, with the blank and Event Storming. Templates that build with an element livehuddle no
+That is the whole catalogue, with the blank. Templates that build with an element livehuddle no
 longer has (mind maps, flowcharts, sequence diagrams, Sankey diagrams, org charts, entities, the concept graphics,
 device frames, Technology icons) went with step 5.1, and step 5.4 of the
 [Build plan](../005-project-roadmap/build-plan.md) cut the rest of the forked catalogue (the drawn templates, the

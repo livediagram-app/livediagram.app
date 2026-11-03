@@ -65,8 +65,8 @@ export const TELEMETRY_CATEGORIES = [
   // facilitator frees an element somebody was holding (docs/specs/007-editor/editor-app.md lock) — never a
   // name: the question is whether rooms use the role at all, not who held it.
   'Facilitator',
-  // The sticky-note photo reader (docs/specs/021-event-storming/note-reader.md): 'Used' with `type`
-  // 'PhotoNotes' per committed import, or the detector that found the notes.
+  // The retired sticky-note photo import's 'Used' events. Nothing sends it any more; kept so the
+  // dashboards still read the events already recorded.
   'AI',
   'Team',
   // Participant lifecycle (docs/specs/017-telemetry/telemetry.md): 'Participant'/'Created' fires

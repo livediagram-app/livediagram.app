@@ -43,7 +43,7 @@ Scope, by file:
 | `packages/edit-operations/src/invariants.test.ts`, `performance.test.ts`          | I1 to I7 over one changeset per operation; cost growth with the tab and the changeset                                                                                                                                                                   |
 | `packages/document/src/element-normalise.ts` (+ test)                             | moved from `apps/mcp/src/`: `normaliseElement(s)`, `lanesToFront`, `mergeElementUpdate`                                                                                                                                                                 |
 | `packages/document/src/graph-input.ts` (+ test)                                   | moved from `apps/mcp/src/`: `GRAPH_LABEL_MAX`, `capLabel`, `layoutGraph`, `resolveGraphInput`                                                                                                                                                           |
-| `packages/document/src/tab-builders.ts` (+ test)                                  | moved from `apps/mcp/src/`: `applyLayout`, `buildTab`, `buildGraphTab`, `landWorkshopArrivals` (EO2)                                                                                                                                                    |
+| `packages/document/src/tab-builders.ts` (+ test)                                  | moved from `apps/mcp/src/`: `applyLayout`, `buildTab`, `buildGraphTab`                                                                                                                                                                                  |
 | `packages/templates/src/template-tab.ts` (+ test)                                 | `buildTemplateTab`, `resolveTemplate`, `validTemplateKinds`: the template builders, in `templates` because it imports `document` (EO1)                                                                                                                  |
 | `packages/document/src/element-fields.ts` (+ test)                                | `ELEMENT_FIELD_NAMES`: every stored field per element type, compile-time exhaustive                                                                                                                                                                     |
 | `packages/document/src/validate.ts` (+ test)                                      | `elementValidationIssue(el)` names the field and rule; `isValidElement` delegates to it                                                                                                                                                                 |
@@ -141,7 +141,7 @@ Invariants:
 - **I3 Geometry moves only where the spec says.** Boxes change position or size only through: `add`, `insert`,
   `wrap` (the new element), `move` (its targets and what a moved container carries), named `x` / `y` / `width` /
   `height`, make room and container growth, fit to label, `layout` and `tidy` (the selection), `wrap make-room`
-  (bystanders), `inside:` growth (EO27), event-storming landing. Arrows change only through their own operations,
+  (bystanders), `inside:` growth (EO27). Arrows change only through their own operations,
   the ends of removed elements, a carry and `rebindArrowAnchorsAfterMove`. Every such change is a result line,
   anchors excepted (EO40).
 - **I4 Round trip.** `applyElementOps(tab.elements, elementOps)` equals `next.elements`, and
@@ -437,13 +437,11 @@ On the working state, in order:
 1. `normaliseElement` on every touched element (never on the rest: I2), noting `codeLanguage` / `codeTheme`
    coercions as `value_coerced`.
 2. Coerce every touched shape's `shape` with `coerceShapeKind`.
-3. `landWorkshopArrivals(tab, elements, 'ops')`: on an event-storming tab, workshop notes added or moved land on
-   lanes; a landed note joins `state.moved` with annotation `landed on a lane`.
-4. `rebindArrowAnchorsAfterMove(elements, geometryChanged)` for every boxed element whose box changed.
-5. `lanesToFront`, then each container moved to directly before its earliest member when it is after it (I6).
-6. `settleDiagramKeys(elements, tagColoursOf(tab))`: a diagram key's rows follow the lines and tags the edit leaves,
+3. `rebindArrowAnchorsAfterMove(elements, geometryChanged)` for every boxed element whose box changed.
+4. `lanesToFront`, then each container moved to directly before its earliest member when it is after it (I6).
+5. `settleDiagramKeys(elements, tagColoursOf(tab))`: a diagram key's rows follow the lines and tags the edit leaves,
    as the editor settles them on commit ([Diagram key](../../009-elements/diagram-key.md) "Stored rows").
-7. Membership before and after (`deriveContainers`) is read by the result lines' container lines.
+6. Membership before and after (`deriveContainers`) is read by the result lines' container lines.
 
 ### Replace
 
@@ -456,7 +454,7 @@ On the working state, in order:
   facing bends (`withFacingBends`, [Layout cleanup](../../008-canvas/layout-cleanup.md) "Angled lines bend twice")
   and diagram keys settled.
 - `template`: `buildTemplateTab(...).elements`; on a new tab the whole `buildTemplateTab` result.
-- Existing tab: every tab field kept, `elements` replaced, then `landWorkshopArrivals(tab, elements, 'replace')`.
+- Existing tab: every tab field kept, `elements` replaced.
   A locked tab is `element_locked`. New tab (`tab === null`): `buildTab` / `buildGraphTab` / `buildTemplateTab`
   with `options.tabId`, `options.name` and the theme, as `add_tab` does.
 - Validation, `elementOps` and `inverse` as for operations; the results are one line per added and removed element

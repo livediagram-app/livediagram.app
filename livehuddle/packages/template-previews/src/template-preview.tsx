@@ -3,7 +3,6 @@ import type { TemplateKind } from '@livehuddle/templates';
 import { templatePreviewGroup2 } from './template-preview-2';
 import { templatePreviewGroup3 } from './template-preview-3';
 import { templatePreviewGroup4 } from './template-preview-4';
-import { templatePreviewGroup5 } from './template-preview-5';
 import { templatePreviewGroup6 } from './template-preview-6';
 import { templatePreviewGroup7 } from './template-preview-7';
 import { templatePreviewGroup8 } from './template-preview-8';
@@ -31,7 +30,6 @@ export function TemplatePreview({ kind }: { kind: TemplateKind }): ReactElement 
     templatePreviewGroup2(kind) ??
     templatePreviewGroup3(kind) ??
     templatePreviewGroup4(kind) ??
-    templatePreviewGroup5(kind) ??
     templatePreviewGroup6(kind) ??
     templatePreviewGroup7(kind) ??
     templatePreviewGroup8(kind) ??

@@ -208,7 +208,7 @@ A null or `data:` id references nothing.
 - The editor withholds `onAddImage` when the deployment has no images, which hides every
   `needsImage` tile (`tools:image`, avatar, hero) and the `9` shortcut. It learns this from
   `GET /api/capabilities` through the proposed field `imagesEnabled` `[QB1]`; the endpoint
-  reports only `aiEnabled` and `emailEnabled`.
+  reports only `emailEnabled`.
 
 ## Interfaces and contracts
 
@@ -334,7 +334,7 @@ read a 503 as `null` and `{}`.
   ([Trash](../../013-workspace/trash.md)); its share link grants no image read meanwhile.
 - **Reference index**: `image_refs`, in each document's own SQLite, is derived from tab bodies and
   owned by the [Image reference index](image-reference-index.md) blueprint.
-- **Offline documents** hold `data:` URIs in `imageId`; Take Offline and Sync Canvas convert
+- **Offline documents** hold `data:` URIs in `imageId`; Take Offline and Sync Space convert
   ([Offline Mode](../../006-document/offline-mode.md)).
 - **Schema**: the document's tables are made on first use (`document-room/document-schema.ts`); the
   api has no D1 database and no migrations.

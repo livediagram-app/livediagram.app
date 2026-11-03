@@ -112,7 +112,7 @@ They are kept for the browser tab only and read once (`start-query.ts`).
 
 ## Where it is saved
 
-Under the choices, a quiet strip holds the **Sync Canvas to Server** switch: where this canvas is saved, with a line that
+Under the choices, a quiet strip holds the **Sync Space to Server** switch: where this canvas is saved, with a line that
 says what that means, and the switch to move it while it is still empty
 ([Save Locations → On the start screen](../006-document/save-locations.md#on-the-start-screen)).
 It shows only on a fresh canvas that is the reader's alone; anywhere else the strip is not drawn. The panel draws it

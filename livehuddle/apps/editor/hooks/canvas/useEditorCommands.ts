@@ -60,7 +60,6 @@ const INERT_HANDLERS: CommandHandlers = {
   openSettings: noop,
   openShortcuts: noop,
   setTool: noop,
-  openPhotoImport: noop,
 };
 
 // `open`: the search is showing. Only then does the catalogue follow the selection, so a closed search
@@ -109,9 +108,6 @@ export function useEditorCommands(open: boolean): {
     canRedo,
     zenMode,
     toggleZenMode,
-    esBoard,
-    photoImportAvailable,
-    openPhotoImport,
     fitToScreen,
     autoLayoutTab,
     autoAlignTab,
@@ -176,10 +172,8 @@ export function useEditorCommands(open: boolean): {
       // has greyed out.
       canvasEmpty,
       isMobile,
-      esBoard,
       whiteboard,
       tabLocked,
-      photoImportAvailable,
     }),
     [
       isReadOnly,
@@ -199,10 +193,8 @@ export function useEditorCommands(open: boolean): {
       canvasTool,
       canvasEmpty,
       isMobile,
-      esBoard,
       whiteboard,
       tabLocked,
-      photoImportAvailable,
     ],
   );
 
@@ -262,7 +254,6 @@ export function useEditorCommands(open: boolean): {
     undo,
     redo,
     toggleZen: toggleZenMode,
-    openPhotoImport,
     fitToScreen,
     autoLayout: autoLayoutTab,
     autoAlign: autoAlignTab,

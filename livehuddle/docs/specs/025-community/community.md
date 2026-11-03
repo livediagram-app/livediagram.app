@@ -1,6 +1,7 @@
 # Community
 
-**Community** is the public gallery of documents people are proud of. A signed-in owner **publishes** a document to
+**Community** is the public gallery of Spaces people are proud of: offices, meeting rooms, retrospectives,
+workshops and games other teams can start from. A signed-in owner **publishes** a document to
 Community with a title, a description, a category and a few tags; anyone can browse the gallery, filter it, open a
 post's document read-only, like it, and make their own copy of it. It lives in its own app, `apps/community`, served at
 `/community`.
@@ -23,7 +24,7 @@ link here within those ten minutes.
 things are missing today. A visitor who has never used livehuddle has no way to see what people actually make with it
 beyond our own templates, and a person who has made something good has nowhere to show it beyond sending a link. Community
 is both: inspiration for the first, recognition for the second, and a starting point for anyone (copying a post is a
-better start than a blank canvas).
+better start than a blank Space).
 
 ## Terms
 
@@ -56,7 +57,7 @@ A post shows every tab of the document. A document that is empty (its first tab 
   ([Team shared documents](../013-workspace/team-shared-documents.md)) cannot be published: they are not one person's to
   give away. A post its document's current owner did not make (it came with the document from a team library) is not
   theirs: their Share dialog shows none, and publishing replaces it with their own. Two first publishes of one
-  document at once give the second **This canvas is already in the Community.**
+  document at once give the second **This space is already in the Community.**
 - **In the editor**: while the post is public, the visibility badge in the editor header reads **Public** (it wins over
   Private, Shared and Team; only This Browser beats it), and the Share dialog's Community tab shows the listed post.
   A visitor who opens the document through the post's link sees **Public** too: that link only resolves while the post
@@ -106,19 +107,20 @@ A post shows every tab of the document. A document that is empty (its first tab 
 
 The closed set, in display order. The id is stored; the label is shown.
 
-| id             | Label               | For                                           |
-| -------------- | ------------------- | --------------------------------------------- |
-| `architecture` | Architecture        | Systems, cloud, infrastructure, software      |
-| `flows`        | Flows & Processes   | Flowcharts, processes, journeys, state        |
-| `planning`     | Planning            | Roadmaps, kanban, timelines, gantt            |
-| `workshops`    | Workshops           | Retrospectives, event storming, brainstorming |
-| `mindmaps`     | Mind Maps           | Mind maps, concept maps, notes                |
-| `design`       | Design & Wireframes | Wireframes, mockups, layouts                  |
-| `data`         | Data & Databases    | Entity diagrams, schemas, tables              |
-| `learning`     | Learning & Teaching | Explainers, lessons, study notes              |
-| `infographics` | Infographics        | Posters, charts and explainers                |
-| `art`          | Drawing & Art       | Sketches, illustrations                       |
-| `other`        | Something Else      | Anything that fits nowhere above              |
+| id               | Label               | For                                           |
+| ---------------- | ------------------- | --------------------------------------------- |
+| `offices`        | Offices & Spaces    | Virtual offices, team pods, coworking floors  |
+| `meetings`       | Meetings            | Stand-ups, agendas, town halls, all-hands     |
+| `retrospectives` | Retrospectives      | Retros, lessons learned, health checks        |
+| `workshops`      | Workshops           | Brainstorms, crazy eights, lean coffee, ideas |
+| `decisions`      | Votes & Decisions   | Dot votes, polls, estimates, priorities       |
+| `games`          | Quizzes & Games     | Quizzes, icebreakers, team games              |
+| `learning`       | Learning & Teaching | Classes, training, lessons                    |
+| `other`          | Something Else      | Anything that fits nowhere above              |
+
+They are livehuddle's own set on the shared service
+([liveworkspace's Community](../../../../liveworkspace/docs/specs/007-community/community.md#categories)), for
+meetings and workshops; livediagram's diagram categories (Architecture, Mind Maps and the rest) are not offered.
 
 ## Tags
 
@@ -171,7 +173,7 @@ Community pages (`@liveworkspace/community-site`). It talks to the api at
 - Title, author, publish date, category, tags (each opens the gallery with its `#tag` in the search), and the full
   description.
 - The actions, in one panel: **Make a Copy** (opens the document in the editor and copies it into the visitor's own
-  documents in one step) and **Open Canvas** (the read-only viewer, full screen) side by side at equal size, Make a
+  documents in one step) and **Open Space** (the read-only viewer, full screen) side by side at equal size, Make a
   Copy leading in colour; beneath them one strip of equal chips, the **Like** toggle with its count ("3 likes"), the
   copy count ("1 copy") and **Report** at the end.
 - **Layout**: from the `lg` breakpoint, the preview on the left and a sticky column on the right holding the title block
@@ -238,8 +240,8 @@ ordinary view link in exactly these ways:
   comment threads.
 - The viewer shows a slim **Community bar**: "Shared to the Community by <author>", **Back to Community** and **Make a
   Copy**.
-- It is read-only for **everyone, the author included**: the post page's preview and Open Canvas never open the document
-  for editing. The author's Community bar offers **Edit Your Canvas** (their own document) in place of Make a Copy.
+- It is read-only for **everyone, the author included**: the post page's preview and Open Space never open the document
+  for editing. The author's Community bar offers **Edit Your Space** (their own document) in place of Make a Copy.
 
 Making a copy works as for any view link ([Auth + guest access](../014-identity/auth-and-guest-access.md)), signed in or
 not, and the copy carries exactly what the viewer shows: no comments, no people on its actions, and items without
@@ -376,7 +378,7 @@ only `Liked`, `Unliked` and `Reported`. Types are preset values, never post cont
 - The [telemetry dashboard](../017-telemetry/telemetry.md) has a **Community** tab and a Community group of cards
   (publishing, engagement, discovery, reports).
 
-`<Category>` is the category id in PascalCase (`Architecture`, `Flows`, ...); `<Reason>` is `Spam`, `Offensive`,
+`<Category>` is the category's telemetry type (`Offices`, `Meetings`, `Retrospectives`, ...); `<Reason>` is `Spam`, `Offensive`,
 `PersonalInfo`, `Copyright` or `Other`.
 
 ## Turning the Community off

@@ -25,7 +25,6 @@ import {
   PaletteDrawTab,
   PaletteBuildTab,
   PaletteWriteTab,
-  PaletteEventStormingTab,
   PaletteShapesTab,
   PaletteComponentsTab,
 } from '@/components/palette/palette-create-tabs';
@@ -33,7 +32,6 @@ import type { ComponentProps } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import type { ResolvedPaletteCategory } from './palette-layouts';
-import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
 // Deps are named exactly as the tab bodies' own props, and typed off those
 // components, so the array below is verbatim from where it used to live and
@@ -55,9 +53,6 @@ export function paletteCategoryTabs(
     categories: ResolvedPaletteCategory[];
     pendingDraw: PendingDraw | null | undefined;
     tileActions: PaletteTileActions;
-    // Board-level switches for the Event Storming category (docs/specs/021-event-storming/event-storming.md),
-    // supplied only when the active tab IS one of those boards.
-    esBoardControls?: EsBoardControls;
     // Places a shape from My shapes (docs/specs/013-workspace/shape-libraries.md).
     insertLibraryShape: (item: ShapeLibraryItem) => void;
   } & IconDeps &
@@ -67,7 +62,6 @@ export function paletteCategoryTabs(
     categories,
     pendingDraw,
     tileActions,
-    esBoardControls,
     insertLibraryShape,
     addIcon,
     iconQuery,
@@ -119,8 +113,6 @@ export function paletteCategoryTabs(
         return <PaletteWriteTab {...tab} tiles={tiles} />;
       case 'draw':
         return <PaletteDrawTab {...tab} tiles={tiles} />;
-      case 'event-storming':
-        return <PaletteEventStormingTab {...tab} tiles={tiles} board={esBoardControls} />;
       case 'media':
         return <PaletteMediaTab {...tab} tiles={tiles} />;
       case 'components':

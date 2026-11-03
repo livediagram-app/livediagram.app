@@ -92,8 +92,8 @@ describe('diagram readers', () => {
 describe('parseTabHeader', () => {
   it('reads a kind and mode', () => {
     expect(
-      parseTabHeader('tab 6cb1 "Storm" · 0 elements · kind=event-storming · mode=diagram · rev 1'),
-    ).toEqual({ kind: 'event-storming', mode: 'diagram' });
+      parseTabHeader('tab 6cb1 "Retro" · 0 elements · kind=diagram · mode=workshop · rev 1'),
+    ).toEqual({ kind: 'diagram', mode: 'workshop' });
   });
 });
 

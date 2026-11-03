@@ -106,23 +106,36 @@ spotlight. All as livediagram has them.
   `.livehuddle` file in their Drive, kept in step (owner, 2026-11-02).
 - The [Timeline](../../../../livediagram/docs/specs/013-workspace/timeline.md), undo and redo.
 
+### 7. The platform-wide features
+
+livehuddle keeps every feature the platform gives all its apps, and cuts only what is livediagram's own (owner,
+2026-11-02; [Open decisions](../005-project-roadmap/open-decisions.md) D3 settled as (b)):
+
+- **Offline Mode** ([Offline Mode](../006-document/offline-mode.md)): a Space kept in This Browser, a guest's default,
+  with Take Offline and Sync Space to move it either way, and the prompt that offers to move This Browser's Spaces into
+  the account after signing in.
+- **Google Drive sync** (above), the platform service
+  ([Google Drive sync](../../../../liveworkspace/docs/specs/005-drive/drive.md)).
+- **The Community** ([Community](../025-community/community.md)): publishing a Space to the gallery at
+  `/community`, on the platform's Community service, with categories for meetings and workshops.
+- **The MCP server and the CLI** ([MCP server](../015-api/mcp-server.md), [CLI](../015-api/cli.md)): an AI tool or a
+  script finds, reads, creates and changes Spaces. Their tools and commands cover what livehuddle has; nothing for
+  Diagram or Draw mode, Event Storming or repositories.
+
 ## Non-goals for v1
 
 Each is cut at the fork. "Later" means it can come back by its own spec change; "Not here" means it belongs to
 another product.
 
-| Left out                                                        | Why                                                                                                                     | When            |
-| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | --------------- |
-| Diagram and Draw modes, Diagrams, Concepts, Technology, Devices | Building diagrams is livediagram's job. Workshop's Draw category (pencil, highlighter) stays                            | Not here        |
-| Event Storming boards                                           | A diagram kind with its own rules; livediagram's                                                                        | Not here        |
-| Pages, slides, presenting as a deck                             | livedocuments'                                                                                                          | Not here        |
-| Repositories                                                    | Doesn't serve a meeting; carries platform wiring livehuddle does not need yet                                           | Later           |
-| Offline Mode (This Browser)                                     | A space is for meeting in, which needs the room; a space kept in one browser has nobody else in it                      | Later, if asked |
-| The Community (publishing a space, the gallery)                 | A gallery of offices is worth having once there are spaces worth showing                                                | Later           |
-| The MCP server and the CLI                                      | Recommended after v1 ([Open decisions](../005-project-roadmap/open-decisions.md) D3)                                    | v1.1            |
-| Audio calls, video calls, screen sharing                        | Need media infrastructure (TURN, an SFU) the stack does not have ([Future work](../005-project-roadmap/future-work.md)) | Next            |
-| Calendar invites, recordings, transcripts                       | Each is a product of its own; none is asked for                                                                         | Not planned     |
-| A paid tier                                                     | No liveworkspace product has one                                                                                        | Never           |
+| Left out                                                        | Why                                                                                                                     | When        |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ----------- |
+| Diagram and Draw modes, Diagrams, Concepts, Technology, Devices | Building diagrams is livediagram's job. Workshop's Draw category (pencil, highlighter) stays                            | Not here    |
+| Event Storming boards, the wall-photo import                    | A diagram kind with its own rules; livediagram's                                                                        | Not here    |
+| Pages, slides, presenting as a deck                             | livedocuments'                                                                                                          | Not here    |
+| Repositories                                                    | Doesn't serve a meeting; carries platform wiring livehuddle does not need yet                                           | Later       |
+| Audio calls, video calls, screen sharing                        | Need media infrastructure (TURN, an SFU) the stack does not have ([Future work](../005-project-roadmap/future-work.md)) | Next        |
+| Calendar invites, recordings, transcripts                       | Each is a product of its own; none is asked for                                                                         | Not planned |
+| A paid tier                                                     | No liveworkspace product has one                                                                                        | Never       |
 
 ## The apps livehuddle ships
 
@@ -135,6 +148,6 @@ In the shape of every liveworkspace product, under `livehuddle/apps/` ([Apps and
 | `router`    | Yes | The Worker in front of every app on livehuddle.app, as every product's router             |
 | `marketing` | Yes | The landing page, built on `@liveworkspace/marketing-site`                                |
 | `help`      | Yes | The help centre, built on `@liveworkspace/help-site`, with the articles for what v1 holds |
-| `mcp`       | No  | Recommended for v1.1 (D3)                                                                 |
-| `cli`       | No  | Recommended for v1.1 (D3)                                                                 |
-| `community` | No  | Later, with the Community                                                                 |
+| `mcp`       | Yes | The MCP server for AI tools, on `mcp.livehuddle.app` (D3)                                 |
+| `cli`       | Yes | The `livehuddle` command line, `@livehuddle/cli` (D3)                                     |
+| `community` | Yes | The Community gallery at `/community`, on the platform's Community service (D3)           |

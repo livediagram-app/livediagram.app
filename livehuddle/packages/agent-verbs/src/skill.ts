@@ -11,7 +11,7 @@ export const SKILL_FRONTMATTER_MAX_TOKENS = 80;
 export const SKILL_BODY_MAX_TOKENS = 1500;
 
 export const SKILL_DESCRIPTION =
-  'Read, build, edit and comment on livehuddle documents with the livehuddle CLI. Use when asked to draw, change or check a diagram on livehuddle.app, or when a message carries a [livehuddle] line.';
+  'Read, build, edit and comment on livehuddle Spaces, boards for meetings, with the livehuddle CLI. Use when asked to set up or change a board on livehuddle.app, or when a message carries a [livehuddle] line.';
 
 export const SKILL_DIRECTORIES: readonly { path: string; agent: string }[] = [
   { path: '~/.claude/skills', agent: 'Claude Code, every project' },
@@ -32,7 +32,7 @@ export function renderSkill(): string {
     '',
     'Start:',
     '',
-    '- `livehuddle document ls <query>`: find a document',
+    '- `livehuddle document ls <query>`: find a Space',
     '- `livehuddle tab view <doc>`: its first tab, as an outline',
     '- `livehuddle edit <doc> -f -`: edit operations from stdin, as one changeset',
     '- `livehuddle tab lint <doc>`: what is wrong with how it is drawn',

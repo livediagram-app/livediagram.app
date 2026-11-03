@@ -24,7 +24,6 @@
     "@liveworkspace/cli-kit": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/render-png": "workspace:*",
-    "smol-toml": "^1.9.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {

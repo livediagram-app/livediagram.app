@@ -17,6 +17,7 @@ export interface Env {
   COMMUNITY_KEY_LIVEPLANNER?: string;
   COMMUNITY_KEY_LIVEDOCUMENTS?: string;
   COMMUNITY_KEY_LIVEDESIGN?: string;
+  COMMUNITY_KEY_LIVEHUDDLE?: string;
 }
 
 // Each app's key by name, exhaustive over the apps, so a new app can never fall through to another's key.
@@ -25,6 +26,7 @@ const APP_KEY = {
   'liveplanner.app': 'COMMUNITY_KEY_LIVEPLANNER',
   'livedocuments.app': 'COMMUNITY_KEY_LIVEDOCUMENTS',
   'livedesign.app': 'COMMUNITY_KEY_LIVEDESIGN',
+  'livehuddle.app': 'COMMUNITY_KEY_LIVEHUDDLE',
 } as const satisfies Record<CommunityApp, keyof Env>;
 
 export function appKey(env: Env, app: CommunityApp): string | undefined {

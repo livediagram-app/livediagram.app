@@ -134,8 +134,7 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 | Frame address       | `workspaceFramePath(place)`                                     | A place's path inside the frame, walked by the frame's own history                |
 
 Banned: "workspace" for a document-scope frame, and "scope" for anything but `WorkbenchScope` here (the end of
-access names its `target`, a share link its `tabScope`); "integration", "host app" or "client" for a workbench; "link" or "connect" for pairing (a repository link
-is another thing); "token" for a workbench session or a ticket (`lwt_` is the token); "share", "embed code" or
+access names its `target`, a share link its `tabScope`); "integration", "host app" or "client" for a workbench; "link" or "connect" for pairing; "token" for a workbench session or a ticket (`lwt_` is the token); "share", "embed code" or
 "share code" for a ticket; "iframe mode" for the surface; "authorise" for approve (the page's verbs are Allow and
 Don't allow).
 
@@ -304,7 +303,6 @@ The Surface table, every gate `workbenchMode` touches (`appChrome` is `surface =
 | TabBar, palette, toolbars, Quick style, panels, search                       | `EditorView.tsx`                      | Rendered as in the app                                    |
 | `EmbedChrome`                                                                | `EditorView.tsx`                      | Not rendered; `WorkbenchChrome` instead                   |
 | Explorer (popover)                                                           | `useCanvasChromePanels.tsx`           | Not rendered; status screens use `EmbedShell`             |
-| Photo-import note reading on the server                                      | `useCapabilities` consumer            | `aiEnabled` read as false                                 |
 | Sign-in banner, theme-mode banner, power-user offer                          | `EditorView.tsx`, `usePowerUserOffer` | Off                                                       |
 | Settings categories `documents`, `account`, `tokens`; the Appearance choice  | `settings-catalogue.ts`               | Hidden                                                    |
 | Share, delete, move, take offline, copy commands                             | `editor-commands.ts`                  | Absent                                                    |
@@ -530,9 +528,9 @@ before asking the index anything ("Opening your Explorer…").
 #### The CLI, workspace scope
 
 - `workbench open --workspace [--folder <f>] --origin <origin> [--json]`: `<doc>` and `--workspace` exclude each
-  other, one is required (exit 2 "name a document, or --workspace"); `--tab` with `--workspace` exits 2. `--folder`
-  without `--workspace` exits 2. `<f>` resolves as `link init --folder` does (`resolveFolder` over `folderChoices`,
-  moved to `@livehuddle/agent-verbs` so `link init`, `folder` and `workbench` share it): its full id, an id prefix
+  other, one is required (exit 2 "name a Space, or --workspace"); `--tab` with `--workspace` exits 2. `--folder`
+  without `--workspace` exits 2. `<f>` resolves through `resolveFolder` over `folderChoices`
+  (`@livehuddle/agent-verbs`, shared by `folder` and `workbench`): its full id, an id prefix
   or its name ignoring case; none 3, several 3 with the candidates. `POST /api/workbench/tickets { scope:
 'workspace', folderId?, origin }`. 201: text `url`; `--json` `{ url, scope, folderId, expiresAt }`. 428: exit 4,
   fix `livehuddle workbench pair --origin <origin> --workspace`. 404: exit 3.

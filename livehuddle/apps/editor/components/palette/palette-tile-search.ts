@@ -1,6 +1,6 @@
 // The Toolbar strip's Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type"):
 // which element tiles a query finds, split into the ones the current editor mode's palette offers
-// and the ones only another mode's (or the event-storming notation) does. Pure, so the split and
+// and the ones only another mode's does. Pure, so the split and
 // the ranking are tested without a strip.
 import { componentShapeKind, type EditorMode, type Element } from '@livehuddle/document';
 import { paletteRank } from '@liveworkspace/icons';
@@ -39,7 +39,7 @@ export function tileSignature(tile: PaletteTileDef): string | null {
       return kind ? shapeSig(kind) : null;
     }
     case 'sticky':
-      return `sticky:${a.esKind ?? ''}`;
+      return 'sticky';
     case 'freehand':
       return 'freehand:';
     case 'highlighter':
@@ -71,7 +71,7 @@ export function elementSignature(el: Element): string {
     case 'shape':
       return shapeSig(el.shape, el.session?.tool ?? el.reaction ?? el.mode ?? el.estimateScale);
     case 'sticky':
-      return `sticky:${el.esKind ?? ''}`;
+      return 'sticky';
     case 'freehand':
       return `freehand:${el.pen ?? ''}`;
     case 'arrow':
@@ -112,12 +112,12 @@ export function modeElementTiles(mode: EditorMode): PaletteTileDef[] {
   return unique(paletteCategoriesFor(mode).flatMap((c) => c.tiles ?? []));
 }
 
-// Every mode's tiles, the event-storming notation included: a fixed set, so built once.
+// Every mode's tiles: a fixed set, so built once.
 let everyModeTiles: PaletteTileDef[] | null = null;
 function allElementTiles(): PaletteTileDef[] {
   everyModeTiles ??= unique(
     (Object.keys(PALETTE_LAYOUTS) as EditorMode[]).flatMap((mode) =>
-      paletteCategoriesFor(mode, { esBoard: true }).flatMap((c) => c.tiles ?? []),
+      paletteCategoriesFor(mode).flatMap((c) => c.tiles ?? []),
     ),
   );
   return everyModeTiles;

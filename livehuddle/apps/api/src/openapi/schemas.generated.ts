@@ -526,9 +526,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   CapabilitiesResponse: {
     additionalProperties: false,
     properties: {
-      aiEnabled: {
-        type: 'boolean',
-      },
       apiBase: {
         type: 'string',
       },
@@ -558,7 +555,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'string',
       },
     },
-    required: ['aiEnabled'],
     type: 'object',
   },
   CardMedia: {
@@ -1015,18 +1011,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'budgets',
       'dashboards',
       'data',
+      'decisions',
       'decks',
       'design',
       'events',
       'flows',
       'forms',
+      'games',
       'guides',
       'illustrations',
       'infographics',
       'learning',
       'logos',
+      'meetings',
       'mindmaps',
       'newsletters',
+      'offices',
       'other',
       'personal',
       'photos',
@@ -1034,6 +1034,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'posters',
       'projects',
       'proposals',
+      'retrospectives',
       'roadmaps',
       'social',
       'trackers',
@@ -1276,7 +1277,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     type: 'object',
   },
   CreationTabKind: {
-    enum: ['diagram', 'event-storming'],
+    const: 'diagram',
     type: 'string',
   },
   CurrentTokenResponse: {
@@ -2018,19 +2019,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   EstimateScale: {
     enum: ['fibonacci', 'tshirt', 'powers'],
-    type: 'string',
-  },
-  EventStormingNoteKind: {
-    enum: [
-      'domain-event',
-      'command',
-      'actor',
-      'policy',
-      'read-model',
-      'external-system',
-      'aggregate',
-      'hotspot',
-    ],
     type: 'string',
   },
   FieldChange: {
@@ -3084,35 +3072,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     enum: ['kenburns', 'zoom', 'pan', 'tilt', 'develop', 'focus', 'wipe', 'iris', 'sheen'],
     type: 'string',
   },
-  NoteCrop: {
-    additionalProperties: false,
-    properties: {
-      id: {
-        type: 'number',
-      },
-      image: {
-        type: 'string',
-      },
-    },
-    required: ['id', 'image'],
-    type: 'object',
-  },
-  NoteText: {
-    additionalProperties: false,
-    properties: {
-      id: {
-        type: 'number',
-      },
-      legible: {
-        type: 'boolean',
-      },
-      text: {
-        type: 'string',
-      },
-    },
-    required: ['id', 'text', 'legible'],
-    type: 'object',
-  },
   OutlineNode: {
     additionalProperties: false,
     properties: {
@@ -3706,32 +3665,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['emoji', 'name', 'count', 'by'],
     type: 'object',
   },
-  ReadNotesRequest: {
-    additionalProperties: false,
-    properties: {
-      crops: {
-        items: {
-          $ref: '#/components/schemas/NoteCrop',
-        },
-        type: 'array',
-      },
-    },
-    required: ['crops'],
-    type: 'object',
-  },
-  ReadNotesResponse: {
-    additionalProperties: false,
-    properties: {
-      texts: {
-        items: {
-          $ref: '#/components/schemas/NoteText',
-        },
-        type: 'array',
-      },
-    },
-    required: ['texts'],
-    type: 'object',
-  },
   RefCandidate: {
     additionalProperties: false,
     properties: {
@@ -3897,7 +3830,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
                 type: 'string',
               },
               style: {
-                enum: ['flow', 'tree', 'mindmap'],
+                enum: ['flow', 'tree'],
                 type: 'string',
               },
             },
@@ -3909,7 +3842,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             type: 'string',
           },
           reason: {
-            enum: ['make room', 'carried', 'laid out', 'landed on a lane'],
+            enum: ['make room', 'carried', 'laid out'],
             type: 'string',
           },
           refs: {
@@ -5046,21 +4979,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       commentThread: {
         $ref: '#/components/schemas/CommentThread',
       },
-      esDraft: {
-        const: true,
-        type: 'boolean',
-      },
-      esKind: {
-        $ref: '#/components/schemas/EventStormingNoteKind',
-      },
       fillColor: {
         type: 'string',
       },
       finish: {
         $ref: '#/components/schemas/Finish',
-      },
-      fixedSize: {
-        type: 'boolean',
       },
       font: {
         type: 'string',
@@ -5202,9 +5125,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         type: 'array',
       },
-      esLanesSettled: {
-        type: 'boolean',
-      },
       finish: {
         $ref: '#/components/schemas/Finish',
       },
@@ -5264,7 +5184,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     type: 'string',
   },
   TabKind: {
-    enum: ['diagram', 'event-storming'],
+    const: 'diagram',
     type: 'string',
   },
   TabRecord: {
@@ -5302,9 +5222,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           $ref: '#/components/schemas/Element',
         },
         type: 'array',
-      },
-      esLanesSettled: {
-        type: 'boolean',
       },
       finish: {
         $ref: '#/components/schemas/Finish',

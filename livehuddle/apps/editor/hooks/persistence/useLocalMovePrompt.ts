@@ -14,7 +14,7 @@ import type { ImportChecklistRow } from '@liveworkspace/workbench/components/dia
 
 // The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents in This Browser
 // after signing in"): once auth settles signed in, offer to move its documents in This Browser
-// into the account. Move runs Sync Canvas on each ticked one in turn; a failure stays
+// into the account. Move runs Sync Space on each ticked one in turn; a failure stays
 // This Browser and is named; Not Now is remembered until the count grows.
 
 type LocalMovePhase =

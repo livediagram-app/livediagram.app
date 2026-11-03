@@ -144,7 +144,6 @@ Cloudflare Email Service it reports `emailEnabled: true` on staging as on produc
 | **Sign-in**: ON   | Staging is its **own OAuth client** of the liveworkspace accounts Worker (its own `ACCOUNTS_CLIENT_ID` / `ACCOUNTS_CLIENT_SECRET`) with its **own resource** (`API_RESOURCE`), so its access tokens carry an audience production's api refuses: a staging session cannot reach production data. The client's registered redirect URI is `https://staging.livehuddle.app/api/auth/callback`.                                                                              |
 | **Telemetry**: ON | Events land in liveworkspace's staging telemetry service, so the **public** `/telemetry` dashboard on production is unaffected; staging's dashboard shows staging's own traffic, which is how you verify a new event actually lands.                                                                                                                                                                                                                                     |
 | **Email**: ON     | Cloudflare Email Service, through the `[[env.staging.send_email]]` binding `EMAIL` ([Email](../../../../liveworkspace/docs/specs/003-accounts/email.md)), restated because bindings don't inherit. No key. `APP_BASE_URL` and `EMAIL_FROM` are set, so every link points back at staging. Staging sends the same notification emails as production, from the same sender, so it mails **real people** (see the warning below). To turn it off, drop the staging binding. |
-| **AI models**: ON | Keyed by hand, as production is: `wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging`, which turns on the server reader for the event-storming photo import ([Note reader](../021-event-storming/note-reader.md)). `AI_ALLOWED_ORIGINS` restricts the endpoint to the staging origin. It spends real money per request; `GET /api/capabilities` reports whether it is on.                                                                                        |
 
 > **Email warning.** Staging sends the same notification emails as production (comments,
 > mentions, assigned actions, first-share and milestone notes). With the `EMAIL` binding in
@@ -162,8 +161,7 @@ own resource, the access-token audience), `ACCOUNTS_CLIENT_ID` and
 **and** staging mcp, the same value on both and on the staging telemetry service, or
 server-side counts silently go missing,
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)), and
-`COMMUNITY_KEY`, `MEDIA_KEY`, `DRIVE_KEY` and the model key (`GOOGLE_AI_STUDIO_API_KEY`)
-for staging liveworkspace's services and the note reader.
+`COMMUNITY_KEY`, `MEDIA_KEY` and `DRIVE_KEY` for staging liveworkspace's services.
 
 A deploy writes no secret, so they survive every deploy
 ([Secrets policy](../002-project-scope/secrets-policy.md)). The one CI credential,
@@ -218,8 +216,7 @@ the api), then the router (bound to the five), exactly as production's first dep
 
 **Secrets** are set once per worker with `wrangler secret put <NAME> --env staging` (the
 list under [Secrets](#secrets)), for example
-`cd apps/api && wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging` for the note
-reader.
+`cd apps/api && wrangler secret put MEDIA_KEY --env staging` for the media service.
 
 **Hostnames**: only two workers get one:
 
@@ -256,12 +253,9 @@ the hosted profile, which the deploy sends with `--var` on every run and then re
 off the api worker ([Deployment](deployment.md) "Hosted profile"). Either way the
 environment is reproducible from the repo alone.
 
-So `AI_ALLOWED_ORIGINS` (which guards the note reader, `POST /api/ai/read-notes`) is declared in production's
-`[vars]` and staging's, and the deploy's verify step is the probe that fails when a hosted-profile value is not live.
+So the deploy's verify step is the probe that fails when a hosted-profile value is not live.
 The image caps are liveworkspace's media service's, which keeps them for every app; the hosted profile carries the
-media service's URL. `AI_REQUIRE_SIGN_IN` is deliberately unset in **both** environments (the note reader serves
-guests; see the comment above production's `AI_ALLOWED_ORIGINS`), since a difference there is exactly the drift this
-environment exists to catch.
+media service's URL.
 
 The rule: **an optional guard that fails open is
 untestable from the source tree.** Every file can read as though a protection is active while

@@ -177,19 +177,28 @@ describe('graph input caps', () => {
 });
 
 // The benchmark's F1: the instructions once gave "retro" as an example, and models passed it as a template kind.
-// A model read "flowchart roles toned (start, end, decision)" as the node's `role` field, which draws a person card:
-// the instructions name a flowchart step's kind by its shape, and say what `role` is for.
+// A model read "flowchart roles toned (start, end, decision)" as a node's `role` field: the instructions name a
+// flowchart step's kind by its shape, and the graph takes no `role` (livehuddle has no org-chart person card).
 describe('SERVER_INSTRUCTIONS on flowchart steps', () => {
-  it('names a step by its shape and keeps "role" for a person', () => {
+  it('names a step by its shape and never mentions a role', () => {
     expect(SERVER_INSTRUCTIONS).not.toMatch(/flowchart roles/);
     expect(SERVER_INSTRUCTIONS).toMatch(/flowchart steps toned by their "shape"/);
-    expect(SERVER_INSTRUCTIONS).toMatch(/"role" is a person's job title/);
+    expect(SERVER_INSTRUCTIONS).not.toMatch(/"role"/);
+  });
+});
+
+// livehuddle's thing is a Space; the tool names and arguments keep the api's word.
+describe('SERVER_INSTRUCTIONS on Spaces', () => {
+  it('talks about Spaces and maps them to the document tools', () => {
+    expect(SERVER_INSTRUCTIONS).toMatch(/livehuddle Spaces/);
+    expect(SERVER_INSTRUCTIONS).toMatch(/call a Space a document/);
+    expect(SERVER_INSTRUCTIONS).not.toMatch(/storm|esKind|Draw mode|whiteboard|org chart/i);
   });
 });
 
 describe('SERVER_INSTRUCTIONS template examples', () => {
   it('names only kinds create_document takes', () => {
-    const list = /not a node\/edge graph \(([^)]*)\)/.exec(SERVER_INSTRUCTIONS)?.[1] ?? '';
+    const list = /hand-tuned session boards \(([^)]*)\)/.exec(SERVER_INSTRUCTIONS)?.[1] ?? '';
     const examples = list
       .split(/,\s*/)
       .map((s) => s.trim())

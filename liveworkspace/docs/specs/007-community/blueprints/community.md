@@ -57,21 +57,21 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term           | Identifier                                                                                  | Meaning                                                                             |
-| -------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| App            | `CommunityApp`: `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app` | The four apps with a Community                                                      |
-| Post           | `posts` row; id `newPostId()` (10 characters)                                               | One published document, per app                                                     |
-| Document       | `posts.document`                                                                            | The app's document id; opaque, never in a public answer                             |
-| Share code     | `posts.share_code`                                                                          | The document's community link; the only document handle the public sees             |
-| Owner          | `posts.owner`                                                                               | The author's account id in the app; never in a public answer                        |
-| Document state | `CommunityDocumentState` `public` / `closed` / `away`                                       | Where the document stands in its app, as the app last said                          |
-| Post state     | `CommunityPostState` `listed` / `hidden`                                                    | `hidden` after reports, final                                                       |
-| Public post    | `PUBLIC_POST` = `app = ? AND state = 'listed' AND document_state = 'public'`                | What the public sees                                                                |
-| Own post       | `OWN_POST` = `app = ? AND owner = ? AND document_state <> 'away'`                           | My Shares (hidden and closed included)                                              |
-| Community key  | `X-Community-Key`, a v4 UUID (`isCommunityKey`)                                             | A per-browser random key for likes and reports; never an owner id                   |
-| Network        | `communityNetwork(ip)`                                                                      | `a.b.c.0/24` for IPv4, the /56 for IPv6, the raw string otherwise                   |
-| Network hash   | `networkHash(postId, ip)`                                                                   | First 16 bytes of SHA-256 of `<postId>:<network>`, hex; not comparable across posts |
-| Copier         | `copies.copier`                                                                             | The app's one-way hash of who copied                                                |
+| Term           | Identifier                                                                                                    | Meaning                                                                             |
+| -------------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| App            | `CommunityApp`: `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`, `livehuddle.app` | The five apps with a Community                                                      |
+| Post           | `posts` row; id `newPostId()` (10 characters)                                                                 | One published document, per app                                                     |
+| Document       | `posts.document`                                                                                              | The app's document id; opaque, never in a public answer                             |
+| Share code     | `posts.share_code`                                                                                            | The document's community link; the only document handle the public sees             |
+| Owner          | `posts.owner`                                                                                                 | The author's account id in the app; never in a public answer                        |
+| Document state | `CommunityDocumentState` `public` / `closed` / `away`                                                         | Where the document stands in its app, as the app last said                          |
+| Post state     | `CommunityPostState` `listed` / `hidden`                                                                      | `hidden` after reports, final                                                       |
+| Public post    | `PUBLIC_POST` = `app = ? AND state = 'listed' AND document_state = 'public'`                                  | What the public sees                                                                |
+| Own post       | `OWN_POST` = `app = ? AND owner = ? AND document_state <> 'away'`                                             | My Shares (hidden and closed included)                                              |
+| Community key  | `X-Community-Key`, a v4 UUID (`isCommunityKey`)                                                               | A per-browser random key for likes and reports; never an owner id                   |
+| Network        | `communityNetwork(ip)`                                                                                        | `a.b.c.0/24` for IPv4, the /56 for IPv6, the raw string otherwise                   |
+| Network hash   | `networkHash(postId, ip)`                                                                                     | First 16 bytes of SHA-256 of `<postId>:<network>`, hex; not comparable across posts |
+| Copier         | `copies.copier`                                                                                               | The app's one-way hash of who copied                                                |
 
 Categories: each app's own closed set (`COMMUNITY_APP_CATEGORIES[app]`, ids in the spec's "Categories"). An id
 two apps share has one label and one type; `CommunityCategory` is the union of every app's ids. Report reasons: `spam`, `offensive`, `personal-info`, `copyright`,

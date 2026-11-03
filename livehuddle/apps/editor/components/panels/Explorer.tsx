@@ -69,7 +69,7 @@ function ExplorerImpl({
   const sheet = isMobile;
   const router = useAppNavigation();
   const { isSignedIn, authLoaded, accountUserId, accountDisplayName } = useAccountBootstrap();
-  // Take Offline and Sync Canvas on a canvas's menu, as the person (an account, or this browser's guest).
+  // Take Offline and Sync Space on a canvas's menu, as the person (an account, or this browser's guest).
   const guestId = useGuestId(authLoaded, accountUserId);
   const itemMenu = useOfflineItemMenu(accountUserId ?? guestId);
   const thisBrowser = useThisBrowserHost(

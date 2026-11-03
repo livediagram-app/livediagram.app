@@ -145,19 +145,10 @@ const SITES = [
 ];
 const MARKETING_DIR = path.join(ROOT, 'apps', 'marketing', 'out');
 const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3113);
-// Two switches for trying the editor as a DIFFERENT deployment would run it,
-// beside a stack that is already up:
+// A switch for trying the editor beside a stack that is already up:
 //   E2E_EDITOR_ONLY=1  serve the static editor only, proxying to the api
 //                    already listening on E2E_API_PORT (no second worker).
-//   E2E_NO_AI=1      answer /api/capabilities with aiEnabled: false, as a
-//                    deployment with no AI key does — so the photo import
-//                    reads with the in-browser model.
-//   E2E_AI_BUDGET_SPENT=1  answer /api/ai/read-notes with 429 `ai_quota`, as a
-//                    hosted reader whose free budget is spent does — so the
-//                    photo import fails over to the in-browser model.
 const EDITOR_ONLY = process.env.E2E_EDITOR_ONLY === '1';
-const NO_AI = process.env.E2E_NO_AI === '1';
-const AI_BUDGET_SPENT = process.env.E2E_AI_BUDGET_SPENT === '1';
 //   The accounts stand-in: the stack acts as the liveworkspace accounts Worker, always, and the api and the
 //                    index both trust it: the api keeps no settings or profiles of its own, and the index
 //                    lets in only tokens an accounts it trusts signed. For the signed-in specs
@@ -806,38 +797,6 @@ function startLiveServer() {
   const server = http.createServer((req, res) => {
     const pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
     const liveOut = buildFor(req);
-    if (NO_AI && pathname === '/api/capabilities') {
-      // Everything else about the real answer stands; only the AI is off.
-      http
-        .get({ host: '127.0.0.1', port: API_PORT, path: '/api/capabilities' }, (up) => {
-          let body = '';
-          up.on('data', (c) => (body += c));
-          up.on('end', () => {
-            let caps = {};
-            try {
-              caps = JSON.parse(body);
-            } catch {
-              /* the api answered something else: report AI off regardless */
-            }
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ ...caps, aiEnabled: false }));
-          });
-        })
-        .on('error', () => {
-          res.writeHead(502, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: 'api_unreachable' }));
-        });
-      return;
-    }
-    if (AI_BUDGET_SPENT && pathname === '/api/ai/read-notes') {
-      // Drain the body first, as a real server would, then refuse for quota.
-      req.resume();
-      req.on('end', () => {
-        res.writeHead(429, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'ai_quota' }));
-      });
-      return;
-    }
     if (serveAccountsStandIn(req, pathname, new URL(req.url, 'http://localhost'), res)) return;
     if (pathname === '/__e2e/assets-out-of-cache' && req.method === 'POST') {
       res.writeHead(204, {
@@ -918,9 +877,7 @@ async function main() {
     process.exit(1);
   }
   if (EDITOR_ONLY) {
-    console.log(
-      `[e2e] static editor only, proxying to the api on :${API_PORT}${NO_AI ? ', AI reported off' : ''}${AI_BUDGET_SPENT ? ', AI budget spent' : ''}`,
-    );
+    console.log(`[e2e] static editor only, proxying to the api on :${API_PORT}`);
     startLiveServer();
     return;
   }
@@ -1001,11 +958,6 @@ async function main() {
       '--local',
       '--port',
       String(API_PORT),
-      // Production's origin allow-list lives in wrangler.toml [vars], which
-      // `wrangler dev` reads too; it would 403 every AI call from this
-      // localhost editor. Blank it, as `pnpm dev` does (docs/specs/021-event-storming/note-reader.md).
-      '--var',
-      'AI_ALLOWED_ORIGINS:',
       // Verify access and guest tokens against the stack's own key (the accounts stand-in above), never a
       // real accounts Worker a developer's .dev.vars may name. The client id and secret also turn the
       // guest handoff (/api/auth/guest) on, to the stand-in's.

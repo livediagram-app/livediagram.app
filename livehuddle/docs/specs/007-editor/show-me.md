@@ -17,11 +17,10 @@ the Workshop tour offered itself once, and element tours from a small toolbar be
 
 ## Where it lives
 
-| Surface                                                                | Where the button sits                                     | Who sees it                                 |
-| ---------------------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------- |
-| [Share dialog](editor-app.md#share-dialog)                             | The dialog's title row (not on the offline gate)          | The owner (only the owner can open it)      |
-| [Photo import review](../021-event-storming/event-storming.md#show-me) | The review's top-left corner, once the stickies are found | Whoever reaches the review (edit access)    |
-| [Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#show-me)    | The dialog's title row                                    | An Editor (only an Editor opens the dialog) |
+| Surface                                                             | Where the button sits                            | Who sees it                                 |
+| ------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------- |
+| [Share dialog](editor-app.md#share-dialog)                          | The dialog's title row (not on the offline gate) | The owner (only the owner can open it)      |
+| [Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#show-me) | The dialog's title row                           | An Editor (only an Editor opens the dialog) |
 
 A new Show Me surface is added to this table, and its own spec says its steps.
 
@@ -46,10 +45,9 @@ A new Show Me surface is added to this table, and its own spec says its steps.
   can type, pick or press as the tour goes, and what they do is kept. A step never changes anything on its own
   beyond opening the tab, section or selection it is about.
 - **Only what is there.** Steps whose control the surface cannot show right now (a second tab's picker on a
-  one-tab document, a box on a photo where nothing was found) are left out when the tour starts, so the count
+  one-tab document) are left out when the tour starts, so the count
   is right from the first step; a target that still never appears skips its step.
-- **Escape belongs to the tour** while it runs over a dialog or an overlay (the Share dialog, the photo review, the
-  and the Tab Style dialog): it never closes the surface under it. The surface stops closing on Escape for the duration;
+- **Escape belongs to the tour** while it runs over a dialog or an overlay (the Share dialog and the Tab Style dialog): it never closes the surface under it. The surface stops closing on Escape for the duration;
   the tour's own Skip ends it.
 - **Ending.** Done ends it as completed, Skip as skipped; closing the surface under it (Cancel, a finished save)
   ends the tour with it and sends no Ended event. Nothing is remembered: Show Me runs again every time it is pressed, and Settings' Show Tours does not list it.
@@ -65,7 +63,8 @@ points only at controls that person can use. Each surface's spec names who that 
 
 Each surface sends three literal events under its own token `<Surface>Tour`: `UI` · `Started` · `<Surface>Tour`
 when the button is pressed, and `UI` · `Ended` · `<Surface>TourCompleted` or `<Surface>TourSkipped`. The tokens:
-`ShareTour`, `PhotoReviewTour`, `TabStyleTour`. Each has its stack (Started,
+`ShareTour` and `TabStyleTour` (`PhotoReviewTour` stays in the vocabulary, unsent, so the dashboard
+reads older events). Each has its stack (Started,
 Completed, Skipped) on the telemetry dashboard, with its explanations.
 
 ## Code
@@ -73,7 +72,6 @@ Completed, Skipped) on the telemetry dashboard, with its explanations.
 `apps/editor/components/tour/ShowMe.tsx` holds the button (`ShowMeButton`) and the running tour (`ShowMeStage`);
 each surface keeps its steps in `<surface>-tour-steps.ts` and its literal telemetry in `<Surface>Tour.tsx`, so
 the dashboard's emitter scan reads every event. The engine scrolls each step's control into view in its scrolling
-panel (`revealInScrollers`, `tour-reveal.ts`, [Mechanics](editor-tour.md#mechanics)); a step never scrolls itself. A surface whose steps depend on what is there (a second tab, an empty slot, a box found) fixes
-them when the button is pressed, so they never change mid-tour. A surface in the editor's first load (the photo
-review) imports its steps at the press (`onStart` returns the promise the tour waits for), so
+panel (`revealInScrollers`, `tour-reveal.ts`, [Mechanics](editor-tour.md#mechanics)); a step never scrolls itself. A surface whose steps depend on what is there (a second tab, an empty slot) fixes
+them when the button is pressed, so they never change mid-tour. A surface in the editor's first load imports its steps at the press (`onStart` returns the promise the tour waits for), so
 their copy stays out of that load; `show-me-lazy-load.test.ts` keeps it so.

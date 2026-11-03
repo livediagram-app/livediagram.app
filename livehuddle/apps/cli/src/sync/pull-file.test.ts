@@ -3,6 +3,7 @@ import { canonicalJson, type ShapeElement, type Tab } from '@livehuddle/document
 import {
   fileSlug,
   idSlug,
+  isLocallyChanged,
   parsePullFile,
   pullFileText,
   tabHashes,
@@ -43,6 +44,23 @@ describe('canonicalJson', () => {
   it('sorts object keys at every depth, and keeps array order', () => {
     expect(canonicalJson({ b: 1, a: [{ d: 1, c: 2 }, 3] })).toBe('{"a":[{"c":2,"d":1},3],"b":1}');
     expect(canonicalJson({ a: undefined, b: null })).toBe('{"b":null}');
+  });
+});
+
+// CLI27a: what a pull refuses to overwrite.
+describe('isLocallyChanged', () => {
+  const pulled = async (tabs: Tab[]): Promise<PullFile> => {
+    const f = file(tabs);
+    f.livehuddleSync.tabs = { t1: { rev: 4, ...(await tabHashes(tab())) } };
+    return f;
+  };
+
+  it('is false for a file as pulled, true once a tab is edited, added or gone', async () => {
+    expect(await isLocallyChanged(await pulled([tab()]))).toBe(false);
+    expect(await isLocallyChanged(await pulled([tab({ elements: [] })]))).toBe(true);
+    expect(await isLocallyChanged(await pulled([tab({ name: 'Other' })]))).toBe(true);
+    expect(await isLocallyChanged(await pulled([tab(), tab({ id: 't2' })]))).toBe(true);
+    expect(await isLocallyChanged(await pulled([]))).toBe(true);
   });
 });
 
@@ -132,10 +150,13 @@ describe('pullFileText and parsePullFile', () => {
 });
 
 describe('a pull file without pulledAt', () => {
-  it('parses, its sync data kept without a time', () => {
+  it('is not a pull file', () => {
     const { pulledAt: _p, ...sync } = file().livehuddleSync;
     const text = JSON.stringify({ ...file(), livehuddleSync: sync });
-    expect(parsePullFile(text)).toEqual({ ok: true, file: { ...file(), livehuddleSync: sync } });
+    expect(parsePullFile(text)).toEqual({
+      ok: false,
+      message: 'not pulled by the CLI (no livehuddleSync)',
+    });
   });
 });
 

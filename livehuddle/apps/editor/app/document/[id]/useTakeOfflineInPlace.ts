@@ -10,7 +10,7 @@ import { SYNC_SAVE_WAIT_MS } from './useSyncInPlace';
 const SAVE_POLL_MS = 100;
 
 // Take Offline from inside the editor, with no reload (docs/specs/006-document/offline-mode.md "Taking offline in
-// place"), for the start screen's Sync Canvas to Server switch, which shows only on a fresh document nobody else
+// place"), for the start screen's Sync Space to Server switch, which shows only on a fresh document nobody else
 // has, so it asks nothing. Waits for the pending save, closes the room so the server delete never reaches this
 // editor as a deletion, then takes the document offline. The offline index announces the move, which the badge and
 // every later save follow on their own; a failure reopens the room and the document stays on the server.

@@ -59,7 +59,6 @@ const ATTRIBUTE_SOURCES = [
   'locked',
   'action',
   'actions',
-  'esDraft',
   'responses',
   'responsesRevealed',
   'ideaCards',
@@ -148,8 +147,7 @@ function changesOf(before: ViewModel, after: ViewModel, a: Element, b: Element):
   ) => changes.push({ text, field, before: was, after: now, covers });
 
   const [kindA, kindB] = [before.kindOf(a), after.kindOf(b)];
-  if (kindA !== kindB)
-    add('kind', `kind ${kindA} → ${kindB}`, kindA, kindB, ['type', 'shape', 'esKind']);
+  if (kindA !== kindB) add('kind', `kind ${kindA} → ${kindB}`, kindA, kindB, ['type', 'shape']);
   if (textField(a, 'label') !== textField(b, 'label')) {
     add(
       'label',

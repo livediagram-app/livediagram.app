@@ -7,7 +7,7 @@ import { LABEL_CUT_CHARS } from './vocabulary';
 
 export { endRef, labelOf, quoteCut } from '@liveworkspace/edit-operations/element-text';
 
-// The kind word views print: an event-storming note's notation, a shape's kind, else the type.
+// The kind word views print: a shape's kind, else the type.
 export function kindOf(el: Element): string {
   return kindWordOf(el);
 }

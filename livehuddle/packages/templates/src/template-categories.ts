@@ -15,7 +15,6 @@ export type TemplateCategory =
   | 'product'
   | 'games'
   | 'retros'
-  | 'software'
   | 'strategy'
   | 'learning'
   | 'spaces';
@@ -87,12 +86,6 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     description: 'Look back as a team and agree what to change.',
   },
   {
-    id: 'software',
-    label: 'Software & IT',
-    searchWords: 'technical engineering developer devops infrastructure',
-    description: 'Incidents, outages and the systems behind them.',
-  },
-  {
     id: 'strategy',
     label: 'Strategy',
     searchWords: 'business analysis frameworks',
@@ -160,9 +153,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, 'blank-session'>, Template
   'mad-sad-glad': 'retros',
   'four-ls': 'retros',
   sailboat: 'retros',
-  // Software and IT: an engineering team's sessions.
-  'event-storming': 'software',
-  'incident-postmortem': 'software',
+  'incident-postmortem': 'retros',
   // Strategy: where the business stands and where it goes.
   swot: 'strategy',
   'pestle-analysis': 'strategy',
@@ -188,12 +179,8 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'crazy-eights': ['meetings', 'product'],
   // Research synthesis is product work too.
   'affinity-map': ['product'],
-  // Event storming is a workshop.
-  'event-storming': ['meetings'],
   // An all-hands is a meeting.
   'all-hands-hall': ['meetings'],
-  // Looking back at an incident is a retro's job.
-  'incident-postmortem': ['retros'],
   // Planned work: who does what, and the release slices.
   'raci-matrix': ['planning'],
   'user-story-map': ['planning'],

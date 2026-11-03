@@ -27,7 +27,7 @@ Scope, by file:
 | `packages/api-schema` + `apps/api/src/openapi`                      | `TabKind` enum regenerated; `Whiteboard` telemetry category               |
 | `packages/templates/src/templates.ts`                               | `'whiteboard'` template, descriptor, category, pattern, `opensIn`         |
 | `packages/templates/src/build-template.ts`                          | Whiteboard builds no elements                                             |
-| `packages/template-previews/src/template-preview-5.tsx`             | Whiteboard preview tile                                                   |
+| `packages/template-previews/src/template-preview.tsx`               | Whiteboard preview tile (its group 5 went with the whiteboard template)   |
 | `apps/editor/lib/whiteboard-prefs.ts`                               | Pens, widths, colours, recognition, eraser mode; parse / load / save      |
 | `apps/editor/lib/whiteboard-tool.ts`                                | Active-tool derivation, pen intent, shapes, pointer routing               |
 | `apps/editor/lib/pen-seen.ts`                                       | Session-scoped "a pen has been used" flag                                 |

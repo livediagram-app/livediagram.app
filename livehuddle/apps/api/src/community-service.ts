@@ -12,7 +12,6 @@ export {
   communityServiceConfigured,
   copierHash,
 } from '@liveworkspace/community/app';
-// Borrowed from livediagram until the community app is cut (@livehuddle/api-schema COMMUNITY_APP).
 export { COMMUNITY_APP };
 
 const client = communityAppClient(COMMUNITY_APP);

@@ -19,7 +19,6 @@ import {
   ShapesTabIcon,
   StickersTabIcon,
   WriteTabIcon,
-  EventStormingTabIcon,
   ParticipateTabIcon,
 } from '@livehuddle/ui';
 import {
@@ -126,17 +125,6 @@ export const PALETTE_CATEGORIES: {
     description:
       'Ready-made blocks that follow the tab theme: the Card, Badge and Step number, the web components (Banner, Callout, Stat row, Process, Hero, Header) and the code block and checklist. Each is one element that re-flows as you resize it, with every line of text editable in place.',
     icon: <ComponentsTabIcon />,
-  },
-  {
-    // Event Storming (docs/specs/021-event-storming/event-storming.md): the workshop notation as a first-class
-    // kit. Structure band — like Build, it's a set you reach for when
-    // deciding how a board is arranged, not a decoration or a behaviour.
-    id: 'event-storming',
-    label: 'Event Storming',
-    group: 1,
-    description:
-      'The sticky-note workshop notation: events, commands, actors, policies, read models, and more.',
-    icon: <EventStormingTabIcon />,
   },
   {
     id: 'icons',

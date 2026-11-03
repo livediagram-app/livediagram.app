@@ -15,23 +15,32 @@ describe('the MCP check, optional per app', () => {
     }
   });
 
-  it('is left out for an app that ships no MCP server, in every environment', () => {
-    expect(hasMcp(huddle)).toBe(false);
-    for (const env of ['production', 'staging', 'development'] as const) {
-      expect(mcpOrigin(huddle, env)).toBeNull();
-      const group = appGroup(huddle, env);
-      expect(group.services.map((s) => s.id)).toEqual([
-        'livehuddle:api',
-        'livehuddle:realtime',
-        'livehuddle:editor',
-        'livehuddle:marketing',
-        'livehuddle:help',
-        'livehuddle:router',
-      ]);
-    }
+  it("checks the held app's MCP server too", () => {
+    expect(hasMcp(huddle)).toBe(true);
+    expect(mcpOrigin(huddle, 'production')).toBe('https://mcp.livehuddle.app');
+    expect(mcpOrigin(huddle, 'development')).toBe('http://localhost:9088');
+    expect(mcpOrigin(huddle, 'staging')).toBeNull();
+    expect(appGroup(huddle, 'production').services.map((s) => s.id)).toEqual([
+      'livehuddle:api',
+      'livehuddle:realtime',
+      'livehuddle:editor',
+      'livehuddle:marketing',
+      'livehuddle:help',
+      'livehuddle:mcp',
+      'livehuddle:router',
+    ]);
     expect(appGroup(huddle, 'development').services[0]!.check).toMatchObject({
       probe: { url: 'http://localhost:3500/api/capabilities' },
     });
+  });
+
+  it('is left out for an app that ships no MCP server, in every environment', () => {
+    // No registered app ships without one today, so a made-up site stands in for one.
+    const bare = { ...huddle, id: 'livenone.app' } as unknown as typeof huddle;
+    expect(hasMcp(bare)).toBe(false);
+    for (const env of ['production', 'staging', 'development'] as const) {
+      expect(mcpOrigin(bare, env)).toBeNull();
+    }
   });
 
   it('is never asked of the platform itself', () => {

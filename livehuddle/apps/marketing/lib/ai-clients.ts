@@ -19,28 +19,13 @@ export const AI_PRODUCT: AiProduct = {
 
 export const AI_CLIENTS = aiClients(AI_PRODUCT);
 
-// Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): create_document with a graph,
-// a template, find + read_document.
+// Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): create_document with a template or a graph,
+// share_document, find + read_document.
 export const STARTER_PROMPTS: readonly StarterPrompt[] = [
   {
-    title: 'Map a codebase',
+    title: 'Set up a stand-up',
     prompt:
-      'Read this repository and draw its architecture as a livehuddle diagram: the main services, what each one owns, and how requests flow between them.',
-  },
-  {
-    title: 'Turn steps into a flowchart',
-    prompt:
-      'Make a livehuddle flowchart of how a new customer signs up, from landing page to first invoice, with a decision for each place they can drop off.',
-  },
-  {
-    title: 'Plan a launch',
-    prompt:
-      'Create a livehuddle roadmap for launching our new website, with cards for design, copy, build, testing and go-live, and share a link I can send the team.',
-  },
-  {
-    title: 'Brainstorm an offsite',
-    prompt:
-      'Make a livehuddle mind map of ideas for our team offsite, with a branch each for the venue, the agenda, the budget and the activities.',
+      'Make a livehuddle Space for our daily stand-up: an agenda with yesterday, today and blockers, a timer, and a sticky for each person on the team.',
   },
   {
     title: 'Run a retro',
@@ -48,8 +33,23 @@ export const STARTER_PROMPTS: readonly StarterPrompt[] = [
       'Set up a livehuddle retrospective for our sprint, with what went well, what to improve and actions, and share a participant link so the team can add their notes.',
   },
   {
+    title: 'Plan a workshop',
+    prompt:
+      'Create a livehuddle Space for a two-hour planning workshop: an agenda with times, a brainstorm board, a dot vote on the ideas and a decision record.',
+  },
+  {
+    title: 'Brainstorm an offsite',
+    prompt:
+      'Make a livehuddle lean coffee board for ideas for our team offsite, with starter stickies for the venue, the agenda, the budget and the activities.',
+  },
+  {
+    title: 'Open a team office',
+    prompt:
+      'Make a livehuddle virtual office for a team of eight, with a desk each, a meeting room and a coffee corner, and share a link I can send the team.',
+  },
+  {
     title: 'Find and improve',
     prompt:
-      'Find my livehuddle canvas about onboarding, show it to me, and suggest three ways to make it clearer. Make the changes once I agree.',
+      'Find my livehuddle Space for our onboarding session, show it to me, and suggest three ways to make it clearer. Make the changes once I agree.',
   },
 ];

@@ -44,7 +44,9 @@ describe('filterGallery', () => {
 
   it('matches the description and the category name', () => {
     expect(filterGallery(all, 'parking lot').map((t) => t.kind)).toContain('meeting-agenda');
-    expect(filterGallery(all, 'software').map((t) => t.kind)).toContain('incident-postmortem');
+    expect(filterGallery(all, 'retrospectives').map((t) => t.kind)).toContain(
+      'incident-postmortem',
+    );
   });
 
   it('needs every word to hit somewhere', () => {

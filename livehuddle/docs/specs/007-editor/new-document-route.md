@@ -264,7 +264,7 @@ today?" over **Create**, and creates the document when it is pressed:
   - People change where documents go in **Settings > Documents > Default Folders**, and move a document between
     livehuddle and this browser afterwards ([Offline Mode](../006-document/offline-mode.md)).
   - Why: the step asked three questions (name, store, folder) most people answer with the default, before they
-    have anything on the canvas. Every answer has a later, better home (the title, Default Folders, Sync Canvas
+    have anything on the canvas. Every answer has a later, better home (the title, Default Folders, Sync Space
     or Take Offline), so asking up front only slowed the first document down.
 - **No step rail.** One step needs no progress indicator.
 - **There is no theme step.** A new document starts on the **Default** theme,
@@ -287,7 +287,7 @@ There is **no template picker over the editor**. An empty tab's templates are on
 ([Template starts](start-diagramming.md)); the visitor name prompt (`IdentityPrompt`) is the only card the editor
 shows over the canvas.
 
-**Where it will be saved.** Under Create, the wizard shows the **Sync Canvas to Server** switch, which chooses
+**Where it will be saved.** Under Create, the wizard shows the **Sync Space to Server** switch, which chooses
 where the create goes rather than asking: it starts at the default for who is creating and moves nothing, as nothing
 exists yet ([Save Locations → On the start screen](../006-document/save-locations.md#on-the-start-screen)). It is not
 drawn when a `/new?folder=` / `?team=` context names a server place.

@@ -44,7 +44,7 @@ editor, the Community app and the service cannot disagree: `../packages/communit
 (categories, reasons, limits, `normaliseCommunityTag`, `validateCommunityPostInput`, DTOs), `../packages/community/src/query.ts` the search
 grammar and list query (sorts, the `#tag` / `category:` / `sort:` / `is:mine` words, `parseCommunityListQuery`,
 `communityQueryParams`). Each category, report reason and sort carries `type`, its PascalCase telemetry value
-(`Architecture`, `Personal`, `Loved`, ...), so no caller derives one. This app's paths are
+(`Meetings`, `Spam`, `Loved`, ...), so no caller derives one. This app's paths are
 `packages/api-schema/src/community-paths.ts` (`COMMUNITY_HOME_PATH`, `communityPostPath`, `communityImagePath`,
 `COMMUNITY_KEY_STORAGE`).
 

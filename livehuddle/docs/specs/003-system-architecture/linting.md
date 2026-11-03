@@ -86,8 +86,7 @@ is the whole of what the repo enforces.
 - A file is typed through the nearest `tsconfig.json` that includes it. Every source file, script
   and test is in one, so what the lint reads is what `pnpm typecheck` checks: `apps/editor`'s `.mts`
   scripts and marketing's `.well-known` route are named in their app's tsconfig, and a folder of
-  Node scripts beside browser code has its own, which adds Node's types
-  (`packages/sticky-vision/scripts/tsconfig.json`). A file no tsconfig includes is typed on its own,
+  Node scripts beside browser code has its own, which adds Node's types. A file no tsconfig includes is typed on its own,
   as an inferred project, without the workspace's options and paths; only the tool configs
   (`oxlint.config.ts`, `vitest.config.ts`) are.
 - `oxlint-tsgolint` is a root dev dependency, so every workspace's `oxlint` resolves it as its peer,

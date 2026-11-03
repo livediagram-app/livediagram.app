@@ -10,22 +10,22 @@ import { CommunityPostPage } from '@liveworkspace/community-site/post';
 // The Open Graph block is restated without a url for the same reason: the
 // gallery's og:url would tell link previews every post IS the gallery.
 const POST_DESCRIPTION =
-  'A canvas shared to the livehuddle Community. Open it to explore every tab, then make your own copy to edit.';
+  'A Space shared to the livehuddle Community. Open it to explore every tab, then make your own copy to edit.';
 export const metadata: Metadata = {
-  title: 'Community Canvas',
+  title: 'Community Space',
   description: POST_DESCRIPTION,
   alternates: {},
   openGraph: {
     type: 'article',
     siteName: 'livehuddle Community',
-    title: 'Community Canvas | livehuddle',
+    title: 'Community Space | livehuddle',
     description: POST_DESCRIPTION,
     locale: 'en_GB',
     images: [BRAND_OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Community Canvas | livehuddle',
+    title: 'Community Space | livehuddle',
     description: POST_DESCRIPTION,
     images: [BRAND_TWITTER_IMAGE],
   },
