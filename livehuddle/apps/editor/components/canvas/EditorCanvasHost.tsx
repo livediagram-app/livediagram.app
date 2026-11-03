@@ -5,6 +5,7 @@ import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
 import { sessionToolsForSurface } from '@/components/canvas/SessionClusterStrip';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
 import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
+import { roleGates } from '@/lib/editor-capabilities';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { pastePointer } from '@liveworkspace/workbench/lib/canvas-pointer';
 import { dropThenDisarm } from '@liveworkspace/workbench/lib/palette-drop';
@@ -342,6 +343,8 @@ export function EditorCanvasHost() {
   // below fall away for everybody else, exactly as they do on a read-only
   // surface; the responses beside them stay, because answering is the point.
   const runBlocked = facilitator.sessionToolsBlocked;
+  // The canvas's role gates, read from `can` (docs/specs/013-workspace/share-roles.md "Tests").
+  const gates = roleGates(can, runBlocked);
   // Who may end the poll: its starter or the facilitator (pollHostFor).
   const pollHost = pollHostFor({
     started: livePoll.isHost,
@@ -456,17 +459,16 @@ export function EditorCanvasHost() {
     canArrange: !isReadOnly,
     // Taking part is a Participant's too (docs/specs/013-workspace/share-roles.md); running stays an Editor's.
     respond: can.takePart ? collabElements.respond : undefined,
-    setResponsesRevealed:
-      isReadOnly || runBlocked ? undefined : collabElements.setResponsesRevealed,
-    clearResponses: isReadOnly || runBlocked ? undefined : collabElements.clearResponses,
-    chooseEstimateScale: isReadOnly ? undefined : collabElements.chooseEstimateScale,
+    setResponsesRevealed: gates.run ? collabElements.setResponsesRevealed : undefined,
+    clearResponses: gates.run ? collabElements.clearResponses : undefined,
+    chooseEstimateScale: gates.shape ? collabElements.chooseEstimateScale : undefined,
     addIdea: can.takePart ? collabElements.addIdea : undefined,
-    revealIdeas: isReadOnly || runBlocked ? undefined : collabElements.revealIdeas,
-    clearIdeas: isReadOnly || runBlocked ? undefined : collabElements.clearIdeas,
-    scatterIdeas: isReadOnly || runBlocked ? undefined : collabElements.scatterIdeas,
-    pressAgendaItem: isReadOnly || runBlocked ? undefined : collabElements.pressAgendaItem,
-    resetAgenda: isReadOnly || runBlocked ? undefined : collabElements.resetAgenda,
-    takeRoll: isReadOnly || runBlocked ? undefined : collabElements.takeRoll,
+    revealIdeas: gates.run ? collabElements.revealIdeas : undefined,
+    clearIdeas: gates.run ? collabElements.clearIdeas : undefined,
+    scatterIdeas: gates.run ? collabElements.scatterIdeas : undefined,
+    pressAgendaItem: gates.run ? collabElements.pressAgendaItem : undefined,
+    resetAgenda: gates.run ? collabElements.resetAgenda : undefined,
+    takeRoll: gates.run ? collabElements.takeRoll : undefined,
     // The Q&A board (docs/specs/012-collaboration/qa-board.md). Adding and voting are a Participant's
     // (docs/specs/013-workspace/share-roles.md: a Viewer only looks); the server owns the board and
     // gates them. Running it is the facilitator's, else any editor's.
@@ -474,19 +476,19 @@ export function EditorCanvasHost() {
     selfName: selfParticipant.name,
     addQaNote: can.takePart ? qaBoard.addQaNote : undefined,
     voteQaNote: can.takePart ? qaBoard.voteQaNote : undefined,
-    discussQaNote: isReadOnly || runBlocked ? undefined : qaBoard.discussQaNote,
-    closeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.closeQaNote,
-    reopenQaNote: isReadOnly || runBlocked ? undefined : qaBoard.reopenQaNote,
-    removeQaNote: isReadOnly || runBlocked ? undefined : qaBoard.removeQaNote,
-    clearQaBoard: isReadOnly || runBlocked ? undefined : qaBoard.clearQaBoard,
+    discussQaNote: gates.run ? qaBoard.discussQaNote : undefined,
+    closeQaNote: gates.run ? qaBoard.closeQaNote : undefined,
+    reopenQaNote: gates.run ? qaBoard.reopenQaNote : undefined,
+    removeQaNote: gates.run ? qaBoard.removeQaNote : undefined,
+    clearQaBoard: gates.run ? qaBoard.clearQaBoard : undefined,
     // The Quiz (docs/specs/012-collaboration/quiz.md). Picking is everyone's with edit rights;
     // editing and running the round are the facilitator's, else any editor's.
     answerQuiz: can.takePart ? quiz.answerQuiz : undefined,
-    startQuiz: isReadOnly || runBlocked ? undefined : quiz.startQuiz,
-    lockQuiz: isReadOnly || runBlocked ? undefined : quiz.lockQuiz,
-    revealQuiz: isReadOnly || runBlocked ? undefined : quiz.revealQuiz,
-    resetQuiz: isReadOnly || runBlocked ? undefined : quiz.resetQuiz,
-    saveQuiz: isReadOnly || runBlocked ? undefined : quiz.saveQuiz,
+    startQuiz: gates.run ? quiz.startQuiz : undefined,
+    lockQuiz: gates.run ? quiz.lockQuiz : undefined,
+    revealQuiz: gates.run ? quiz.revealQuiz : undefined,
+    resetQuiz: gates.run ? quiz.resetQuiz : undefined,
+    saveQuiz: gates.run ? quiz.saveQuiz : undefined,
   });
   // Object props the canvas boundary compares by identity (docs/specs/008-canvas/canvas-performance.md
   // "The canvas re-renders only for what it shows"): new only when their data changes.
@@ -563,15 +565,12 @@ export function EditorCanvasHost() {
             avatarShove={avatarShove}
             walkIn={walkIn}
             onFireReaction={can.takePart ? fireReaction : undefined}
-            // Bring Focus (docs/specs/012-collaboration/bring-focus.md) is live for view-role visitors too: it mutates
-            // nothing, which makes it the same read-only act as following somebody,
-            // and the person who spots the thing worth looking at is often not the
-            // one with edit rights.
-            // Bring Focus (docs/specs/012-collaboration/bring-focus.md) is the facilitator's while somebody holds the
+            // Bring Focus (docs/specs/012-collaboration/bring-focus.md) moves everyone's view, so it is running the
+            // session: an Editor's (docs/specs/013-workspace/share-roles.md), and the facilitator's while somebody holds the
             // baton (docs/specs/012-collaboration/facilitator.md): "everybody look here" is the same act as "everybody
             // stop and listen". Undefined renders the face inert, which is what a
             // read-only surface already gets.
-            onPressFocusButton={isReadOnly || runBlocked ? undefined : pressFocusButton}
+            onPressFocusButton={gates.run ? pressFocusButton : undefined}
             reactionBursts={reactionBursts}
             onReactionBurstDone={clearReactionBurst}
             laserTrails={laserTrailRows}
@@ -606,7 +605,7 @@ export function EditorCanvasHost() {
             // see useBehaviourElements — the press resolves what to do from the
             // element and calls the tool that already exists.
             onPressSessionButton={pressSessionButton}
-            sessionStartBlocked={isReadOnly || runBlocked}
+            sessionStartBlocked={!gates.run}
             sessionRunBy={isReadOnly ? null : sessionTools.facilitatedBy}
             timerState={activeTab.timer ? (activeTab.timer.running ? 'running' : 'paused') : 'none'}
             revealedIds={revealedIds}
@@ -614,7 +613,7 @@ export function EditorCanvasHost() {
             // (docs/specs/012-collaboration/facilitator.md); with nobody facilitating it stays the private peek it has
             // always been (docs/specs/009-elements/reveal-zone.md).
             onToggleReveal={runBlocked ? undefined : toggleRevealForMe}
-            onSetSessionConfig={isReadOnly || runBlocked ? undefined : setSessionConfigFor}
+            onSetSessionConfig={gates.run ? setSessionConfigFor : undefined}
             // The `…` on a Behaviours element's face (docs/specs/008-canvas/canvas-and-palette.md). Anchored from the
             // ELEMENT's rect, not the trigger's, so it lands exactly where a
             // right-click on the same element would — one menu, one position,

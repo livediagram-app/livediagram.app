@@ -17,6 +17,7 @@ import {
 } from '@/lib/collaborator-roster';
 import type { Participant } from '@/lib/identity';
 import { useRelativeNow } from '@/lib/relative-time';
+import { mayHoldBaton } from '@/lib/editor-capabilities';
 import { legibleTabAccent } from '@/lib/tab-accent';
 import type { AccessLevel } from '@livehuddle/api-schema';
 
@@ -176,8 +177,8 @@ export function CollaboratorsDialog({
                         <FacilitatorButton
                           isSelf={isSelf}
                           name={p.name}
-                          canHold={(isSelf ? selfRole : (p.role ?? 'edit')) === 'edit'}
-                          iCanHold={selfRole === 'edit'}
+                          canHold={mayHoldBaton(isSelf ? selfRole : (p.role ?? 'edit'))}
+                          iCanHold={mayHoldBaton(selfRole)}
                           theyHoldIt={isSelf ? isFacilitator : p.id === facilitatorId}
                           batonFree={facilitatorId === null && !isFacilitator}
                           iHoldIt={isFacilitator}
