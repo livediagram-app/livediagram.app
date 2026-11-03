@@ -270,6 +270,20 @@ describe('response helpers (observed through api callers)', () => {
       ).resolves.toBeUndefined();
     });
 
+    it('sends the deck with the deck it was built on (speaker-note-cards.md "Two people writing at once")', async () => {
+      stubFetch(200);
+      await apiSaveDocumentMeta('owner', {
+        id: 'd-1',
+        presentation: '{"decks":[]}',
+        presentationBase: null,
+      });
+      const [, init] = vi.mocked(fetch).mock.calls[0]!;
+      expect(JSON.parse(init?.body as string)).toEqual({
+        presentation: '{"decks":[]}',
+        presentationBase: null,
+      });
+    });
+
     it('throws "save document meta failed: <status>" on 500', async () => {
       stubFetch(500);
       await expect(apiSaveDocumentMeta('owner', { id: 'd-1', name: 'New' })).rejects.toThrow(

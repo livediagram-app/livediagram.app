@@ -35,7 +35,10 @@ function Harness({
           setCards(next);
         }}
       />
-      <output data-testid="ids">{cards.map((c) => `${c.id}:${c.text}`).join('|')}</output>
+      {/* A new card's id ends in random characters (newNoteCardId): shown without them. */}
+      <output data-testid="ids">
+        {cards.map((c) => `${c.id.replace(/_[0-9a-z]+$/, '')}:${c.text}`).join('|')}
+      </output>
     </div>
   );
 }
