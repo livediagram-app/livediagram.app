@@ -124,7 +124,41 @@ type Pressed = {
   holdUntil: number | null;
   // The group the press carries, when it is on one of two or more selected cards.
   group?: readonly string[];
+  // Where the card is now: its cell and the card after it (null at the cell's end). A drop there changes nothing, so
+  // no gap opens there (homeSlot).
+  home?: PlanCardHome;
 };
+
+export type PlanCardHome = { status: string; laneKey: string; nextId: string | null };
+
+// The card's own place, read from the board's DOM as it is pressed: its cell and the card drawn after it.
+export function planCardHome(card: HTMLElement): PlanCardHome | undefined {
+  const cell = card.closest<HTMLElement>('[data-plan-status]');
+  const id = card.dataset.planCard;
+  if (!cell || !id || cell.dataset.planStatus === undefined) return undefined;
+  const ids = [...cell.querySelectorAll<HTMLElement>('[data-plan-card]')].map(
+    (c) => c.dataset.planCard,
+  );
+  const at = ids.indexOf(id);
+  if (at < 0) return undefined;
+  return {
+    status: cell.dataset.planStatus,
+    laneKey: cell.dataset.planLane ?? '',
+    nextId: ids[at + 1] ?? null,
+  };
+}
+
+// Whether a slot is the card's own place, where a drop changes nothing (docs/specs/026-plan/plan-board.md "No gap where
+// the card already is"): its own cell, just before the card after it (so alone in its cell, anywhere in it). On a
+// sorted board (`sorted`: the sort placed the slot) the sort puts it back where it is, so its whole cell is home.
+export function isHomeSlot(
+  slot: PlanDropSlot,
+  home: PlanCardHome | undefined,
+  sorted: boolean,
+): boolean {
+  if (!home || slot.status !== home.status || slot.laneKey !== home.laneKey) return false;
+  return sorted || slot.beforeId === home.nextId;
+}
 
 // When the held-to-drag press under the finger may be carried (performance.now()), or null: one finger carries one
 // card, so one for every board.
@@ -140,6 +174,23 @@ export function holdCardTouch(e: TouchEvent): void {
 // sideways swipe (usePhoneColumnSwipe) then stands down, so the pager never fights a card's drag.
 export function cardHeld(): boolean {
   return heldUntil !== null && performance.now() >= heldUntil;
+}
+
+// The slot to keep while no cell is under the pointer (a gutter between columns, a column's head, a lane's heading,
+// the board's header): the last one, when it was on the same board, with its refusal. Without it the gap would close
+// as the pointer crossed into the next column and open again there, the column it left shrinking and growing back
+// (docs/specs/026-plan/plan-board.md "A steady drag"). `otherId` is the accepting other board under the pointer.
+export function keptPlanDropSlot(
+  prev: PlanDragState | null,
+  outside: boolean,
+  otherId: string | null,
+): { slot: PlanDropSlot; refused?: string } | null {
+  if (!prev?.slot) return null;
+  const sameBoard = outside
+    ? !!otherId && prev.outside && prev.target?.boardId === otherId && prev.target.accepts
+    : !prev.outside;
+  if (!sameBoard) return null;
+  return { slot: prev.slot, ...(prev.refused ? { refused: prev.refused } : {}) };
 }
 
 // The slot under a screen point, inside the board `boardEl`.
@@ -258,13 +309,27 @@ export function usePlanCardDrag(opts: {
       // its status.
       const slotTarget = planBoardTarget(other ? other.id : optsRef.current.boardId);
       const underPointer = outside ? otherSlot : dropSlotAt(board, e.clientX, e.clientY, carried);
-      const rawSlot =
-        underPointer && slotTarget?.place ? slotTarget.place(p.itemId, underPointer) : underPointer;
+      // No cell under the pointer: the last slot stays (keptPlanDropSlot), already placed and checked.
+      const kept = underPointer
+        ? null
+        : keptPlanDropSlot(dragRef.current, outside, other && accepts ? other.id : null);
+      const rawSlot = kept
+        ? kept.slot
+        : underPointer && slotTarget?.place
+          ? slotTarget.place(p.itemId, underPointer)
+          : underPointer;
       const dragged = optsRef.current.item?.(p.itemId);
       // A group is checked card by card when it lands (some may stay); a single card shows its refusal here.
-      const refused =
-        !p.group && dragged && rawSlot && slotTarget ? slotTarget.refuseAt(dragged, rawSlot) : null;
-      const slot = rawSlot && refused ? { ...rawSlot, beforeId: null } : rawSlot;
+      const refused = kept
+        ? (kept.refused ?? null)
+        : !p.group && dragged && rawSlot && slotTarget
+          ? slotTarget.refuseAt(dragged, rawSlot)
+          : null;
+      const placed = rawSlot && refused ? { ...rawSlot, beforeId: null } : rawSlot;
+      // Its own place on its own board (one card, not a group): no slot, so no gap, and letting go does nothing.
+      const sorted = !kept && !!underPointer && rawSlot !== underPointer;
+      const slot =
+        placed && !outside && !p.group && isHomeSlot(placed, p.home, sorted) ? null : placed;
       if (other && slot) {
         planBoardTarget(other.id)?.hover({
           itemId: p.itemId,
@@ -380,6 +445,10 @@ export function usePlanCardDrag(opts: {
           holdToDrag && e.pointerType === 'touch' ? performance.now() + CARD_HOLD_TO_DRAG_MS : null,
         ...(group && group.length > 1 ? { group } : {}),
       };
+      if (!pressedRef.current.group) {
+        const home = planCardHome(e.currentTarget);
+        if (home) pressedRef.current.home = home;
+      }
       heldUntil = pressedRef.current.holdUntil;
     },
     [enabled],

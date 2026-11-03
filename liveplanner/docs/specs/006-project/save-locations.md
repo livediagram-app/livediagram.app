@@ -49,6 +49,9 @@ Nobody is asked, but the start screen offers one switch, **Sync Plan to Server**
 where the plan is **now**, so it starts as the default above: **off** for a guest (This Browser), **on** for a signed-in
 person (liveplanner).
 
+- **No switch, no strip**: where the switch is not offered (a new tab added to a plan that already has others, a
+  shared plan, someone else in it, a viewer, or before the account has loaded), the strip and its hairline are not
+  drawn at all, so no empty band sits under the choices.
 - **The whole row is the switch**, as a Settings row is: a press anywhere on it (its icon, label or line) flips
   it, and it tints on hover. Screen readers still hear one switch, named by the label and described by the line.
 - **Turned on** it syncs the plan in place ([Offline Mode → Syncing in place](offline-mode.md#syncing-in-place)), a

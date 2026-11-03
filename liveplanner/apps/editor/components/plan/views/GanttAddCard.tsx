@@ -14,7 +14,6 @@ import {
   type ItemTypeDef,
   type ViewDates,
 } from '@liveplanner/items';
-import { mayCreateCardType } from '../may-create-card-type';
 import { lucideGlyph } from '@liveplanner/ui';
 import { lucidePlus } from '@liveworkspace/icons/lucide';
 import { AddCardPopover } from '../AddCardPopover';
@@ -48,11 +47,8 @@ export function GanttAddCard({
   palette,
   top,
   height,
-  viewId,
 }: {
   plan: PlanContextValue;
-  // The chart, for Add New Card Type (a new type with Start and Due, added to the chart).
-  viewId: string;
   types: readonly ItemTypeDef[];
   // The card types the chart draws, comma-joined ids.
   shown: string;
@@ -66,9 +62,7 @@ export function GanttAddCard({
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const ids = shown.split(',');
   const types = all.filter((t) => ids.includes(t.id));
-  // Add New Card Type, as a board's Add a Card menu offers it (an Editor's, while the catalogue has room).
-  const createType = mayCreateCardType(plan) ? () => plan.createTypeForView(viewId) : undefined;
-  if (!plan.canEditCards || (types.length === 0 && !createType)) return null;
+  if (!plan.canEditCards || types.length === 0) return null;
   return (
     <>
       {/* Under the last row, or pinned to the column's foot once the rows run past it (the chart clips its rows, so
@@ -100,7 +94,7 @@ export function GanttAddCard({
         <AddCardPopover
           anchor={anchor}
           types={types}
-          {...(createType ? { onCreateType: createType } : {})}
+          palette={palette}
           onClose={() => setAnchor(null)}
           onAdd={({ type, fields }) => {
             const id = newItemId();

@@ -6,7 +6,7 @@
 // line, until focus leaves it or Escape. The host saves the plain text and its runs: a moment after typing stops,
 // when focus leaves, and when the panel closes. With a `maxLength`, the line beneath counts what is left from 90% of
 // it, and text past it says how far over in amber and is not saved until shortened.
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { PencilIcon } from '@liveplanner/ui';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { TextRun } from '@liveplanner/project';
@@ -67,8 +67,28 @@ export function RichTextField({
     save();
     setEditing(false);
   };
+  // The runs the editor opens on: the field's, or those plus the key typed on its prompt.
+  const [opening, setOpening] = useState<TextRun[] | null>(null);
   const edit = () => {
+    setOpening(null);
     setLength(runs.reduce((n, r) => n + r.text.length, 0));
+    setEditing(true);
+  };
+  // A key typed on the prompt or the Edit button opens the editor with that key already in it, the caret after it
+  // (plan-board.md "Look"), and queues it to save like any typing: nothing typed to open it is lost.
+  const typeToEdit = (e: KeyboardEvent) => {
+    if (e.key.length !== 1 || e.metaKey || e.ctrlKey || e.altKey || e.nativeEvent.isComposing)
+      return;
+    if (e.key === ' ' && !empty) return;
+    e.preventDefault();
+    const next: TextRun[] = empty ? [{ text: e.key }] : [...runs, { text: e.key }];
+    const plain = next.map((x) => x.text).join('');
+    setOpening(next);
+    setLength(plain.length);
+    pending.current = { plain, runs: next };
+    setStatus({ kind: 'saving' });
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = setTimeout(save, RICH_TEXT_SAVE_MS);
     setEditing(true);
   };
 
@@ -89,6 +109,7 @@ export function RichTextField({
       <button
         type="button"
         onClick={edit}
+        onKeyDown={typeToEdit}
         className="group -mx-3 flex w-[calc(100%+1.5rem)] cursor-text items-center gap-2 rounded-lg px-3 py-2 text-left text-[13px] text-slate-500 dark:text-slate-400 transition hover:bg-slate-50 hover:text-slate-600 dark:hover:bg-slate-800/50 dark:hover:text-slate-300"
       >
         <PencilIcon size={14} />
@@ -115,6 +136,7 @@ export function RichTextField({
         <button
           type="button"
           onClick={edit}
+          onKeyDown={typeToEdit}
           aria-label={`Edit the ${label.toLowerCase()}`}
           className="absolute right-2 top-2 flex items-center gap-1 rounded-md touch-target bg-white px-1.5 py-0.5 text-[11px] font-medium text-slate-500 opacity-0 shadow-sm transition focus-visible:opacity-100 group-hover:opacity-100 max-sm:opacity-100 [@media(hover:none)]:opacity-100 dark:bg-slate-900 dark:text-slate-400"
         >
@@ -129,11 +151,18 @@ export function RichTextField({
   const counting = maxLength !== undefined && length >= maxLength * COUNT_FROM && left! >= 0;
   return (
     <div
-      className="rounded-xl bg-slate-50 p-2 dark:bg-slate-800/40"
+      // Opening eases in (globals.css rich-text-open): the panel fades up and the writing area grows from the
+      // prompt's one line to its full height, so the switch from "Add a description" is not a jump.
+      className="rich-text-open rounded-xl bg-slate-50 p-2 dark:bg-slate-800/40"
       onBlur={(e) => {
         // Focus moving within (the toolbar, the link field) keeps the editor open.
         if (e.currentTarget.contains(e.relatedTarget)) return;
-        finish();
+        // Closed once focus has landed where it was going (Tab to the next field): taking the editor away during
+        // the blur itself cancels that move, and focus fell back to the panel.
+        const box = e.currentTarget;
+        setTimeout(() => {
+          if (!box.isConnected || !box.contains(document.activeElement)) finish();
+        }, 0);
       }}
       onKeyDown={(e) => {
         if (e.key === 'Escape') {
@@ -143,12 +172,12 @@ export function RichTextField({
       }}
     >
       <NoteRichTextEditor
-        initialRuns={runs}
+        initialRuns={opening ?? runs}
         note={false}
         autoFocus
         label={label}
         placeholder={placeholder}
-        surfaceClassName="min-h-40 max-h-[28rem] resize-y sm:min-h-[16rem] sm:max-h-[36rem]"
+        surfaceClassName="rich-text-grow min-h-40 max-h-[28rem] resize-y sm:min-h-[16rem] sm:max-h-[36rem]"
         onChange={(plain, next) => {
           if (timer.current) clearTimeout(timer.current);
           timer.current = null;

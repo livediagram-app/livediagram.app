@@ -6,6 +6,7 @@
 // double-click opens a card. Everything the board changes goes through PlanContext.
 import { planBoardBodyCursor } from './board-cursors';
 import { planBoardFontStyle } from '@/lib/plan-font';
+import { usePlanTextScale } from './PlanTextScaleContext';
 import { useSlotSettings } from '@/components/plan/dashboard/slot-menu';
 import { useInDashboard } from '@/components/plan/dashboard/dashboard-context';
 import { isCardVotableInVote } from '@liveplanner/project';
@@ -14,7 +15,6 @@ import { useViewportStoreIfAny } from '@liveworkspace/workbench/hooks/canvas/use
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { frameBoardColumn } from '@/hooks/plan/frame-board-column';
 import { markPanThrough } from '@liveworkspace/workbench/hooks/canvas/pan-through';
-import { mayCreateCardType } from './may-create-card-type';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cornerRadiusPx, type ShapeElement } from '@liveplanner/project';
@@ -34,7 +34,7 @@ import {
   boardSortFieldOf,
   isDoneColumn,
 } from '@liveplanner/items';
-import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { useCanvasBranchColours, useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { track } from '@/lib/telemetry';
 import { usePlanBoardDrop } from '@/hooks/plan/usePlanBoardDrop';
 import { useBoardCsv } from '@/hooks/plan/useBoardCsv';
@@ -60,9 +60,13 @@ import { useEdgeAutoScroll } from '@/hooks/plan/useEdgeAutoScroll';
 import { usePhoneColumnSwipe } from '@/hooks/plan/usePhoneColumnSwipe';
 import { PlanCardMenuHost } from './PlanCardMenu';
 import { BoardSettingsButton } from './BoardSettingsButton';
+import { useRegisterConfigurableBoard } from '@/hooks/plan/board-configure-store';
 import { SlotBoardCog } from './SlotBoardCog';
 import { usePlanCardFlip } from '@/hooks/plan/usePlanCardFlip';
 import { COLUMN_ATTR, useColumnMoveFlip } from './column-move-flip';
+import { columnBackgroundMenu } from './column-settings-request';
+import { CellAddRow } from './CellAddRow';
+import { useColumnHover } from './useColumnHover';
 import { usePlan } from './PlanContext';
 import { PlanBoardHeader } from './PlanBoardHeader';
 import { SLOT_BOARD_GROUP, SlotBoardHeader } from './SlotBoardHeader';
@@ -79,12 +83,18 @@ import { groupColumnMoves } from './board-selection';
 import { BoardSelectionBar } from './BoardSelectionBar';
 import { useBoardSelection } from '@/hooks/plan/useBoardSelection';
 import { planBandTint, planOwnColours, planPalette } from './plan-palette';
+import { columnPartStyle } from './column-part';
+import { columnTones } from './column-tones';
+import { useCardSpotlight } from './useCardSpotlight';
+import { useCardFanIn } from './useCardFanIn';
 import { useBoardMaximised } from '@/hooks/plan/useBoardMaximised';
 import { MaximisePlanButton, MaximisableSlot } from './MaximisedPlanLayer';
 import { FocusElementButton } from './FocusElementButton';
 
 // A board's corner radius when it has none of its own (Quick Style's Corners sets one).
 const PLAN_BOARD_RADIUS_PX = 12;
+// A board's surface, 80% solid so the tab's canvas shows faintly through it.
+const boardSurface = (surface: string) => `color-mix(in srgb, ${surface} 80%, transparent)`;
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
@@ -114,10 +124,27 @@ export function PlanBoardView({
   fontFamily?: string;
 }) {
   const plan = usePlan();
+  // The tab's Text Size (fonts.md "Text size on boards and cards").
+  const textScale = usePlanTextScale();
   const surface = useCanvasSurface();
+  const branchColours = useCanvasBranchColours();
   // The board's theme and style colours (docs/specs/026-plan/plan-board.md "Theme and style").
   const palette = planPalette(surface, planOwnColours(element));
-  const radius = `${cornerRadiusPx(element.borderRadius, element.width, element.height, PLAN_BOARD_RADIUS_PX)}px`;
+  const radiusPx = cornerRadiusPx(
+    element.borderRadius,
+    element.width,
+    element.height,
+    PLAN_BOARD_RADIUS_PX,
+  );
+  const radius = `${radiusPx}px`;
+  // Its columns and cards round with it (plan-board.md "Corners"): a column's parts take the board's corners up to
+  // 12 px, a card 4 px less, so a square board has square columns and cards. Professional squares them all
+  // (face-finish.css).
+  const colR = Math.min(radiusPx, 12);
+  const cornerVars = {
+    '--plan-col-r': `${colR}px`,
+    '--plan-card-r': `${Math.max(colR - 4, 0)}px`,
+  } as React.CSSProperties;
   const types = plan?.types ?? ITEM_TYPES;
   // The board's set-up as saved: what Setup Board, the CSV and every set-up change start from.
   const fullSetup = useMemo(() => normaliseBoardSetup(element.planBoard), [element.planBoard]);
@@ -179,6 +206,10 @@ export function PlanBoardView({
   const canEditCards = !!plan?.canEditCards;
   const setUpHere = canEdit && !simplified;
   const slot = useSlotSettings();
+  // A Board tab's board is configured from the cluster's Configure, beside Style, not a cog in its header
+  // (plan-board.md "Configure"). The cog stays on a board on an ordinary tab and in a Dashboard slot.
+  const configuredFromCluster = filled && interactive && !slot && !!plan?.canEdit;
+  useRegisterConfigurableBoard(element.id, configuredFromCluster);
   // The tab's session vote, when this board's cards take dots in it (its layer, under a layer-scoped vote).
   const tabCardVote = useCardVote();
   const cardVote =
@@ -331,6 +362,15 @@ export function PlanBoardView({
   // when its columns are narrow (slot-board.ts slotCardSize).
   const bodySize = useObservedSize(bodyRef, simplified && !phone);
 
+  // The column under the pointer shifts its colour slightly (plan-board.md "Column hover").
+  useColumnHover(gridRef, interactive && !simplified, setup?.columns.length ?? 0);
+  useCardSpotlight(gridRef, interactive);
+  // Cards fan in once the board first has them (plan-board.md "Cards fan in").
+  useCardFanIn(
+    gridRef,
+    !!setup && !!projection && plan?.status !== 'loading',
+    projection?.columns.reduce((n, c) => n + c.count, 0) ?? 0,
+  );
   if (!setup || !projection) {
     return (
       <div
@@ -347,22 +387,17 @@ export function PlanBoardView({
   }
 
   const lanes = projection.lanes;
+  // On a multi-colour theme each column takes the next of its colours (plan-board.md "Columns in the theme's colours").
+  const tones = columnTones(setup.columns, branchColours, palette);
+  const toneOf = (id: string) => tones.get(id) ?? { palette, bar: undefined };
+  // A collapsed column names itself once, in the first open swimlane's part of its strip.
+  const firstOpenLane = lanes.findIndex((l) => !collapsed.has(l.key));
   const withLanes = projection.swimlanes;
   const self = plan?.self ?? null;
   const loading = plan?.status === 'loading';
   const empty = !loading && projection.total === 0;
   // Every board shows, and Add card offers, every card type (docs/specs/026-plan/plan-board.md).
   const addTypes = boardAddTypes(setup, types);
-  // The Add a Card menu's Add New Card Type: a new type with only this board's statuses, added to it once saved
-  // (docs/specs/026-plan/plan-board.md "Add New Card Type"), for an Editor while the catalogue has room.
-  const createType =
-    plan && setUpHere && mayCreateCardType(plan)
-      ? () =>
-          plan.createTypeForBoard(
-            element.id,
-            setup.columns.map((c) => c.status),
-          )
-      : undefined;
 
   const columnName = (s: string) => setup.columns.find((c) => c.status === s)?.name ?? s;
 
@@ -445,8 +480,7 @@ export function PlanBoardView({
   // Cards board's rows by status being the one kind a slot board keeps).
   const addInHead = simplified && !withLanes;
   // Add card is offered: someone who may add, once loaded, on a board that takes new cards and some type to add.
-  const mayAdd =
-    canEditCards && !loading && !setup.archive && (addTypes.length > 0 || !!createType);
+  const mayAdd = canEditCards && !loading && !setup.archive && addTypes.length > 0;
   // A new card at the foot of a cell, opened at once to be named (plan-board.md "Open an item").
   const addInto =
     (status: string, lane: LaneHead | undefined, cell: readonly Item[]) =>
@@ -488,11 +522,14 @@ export function PlanBoardView({
       // `isolate`: the sticky column heads stack inside the board, never over another element.
       className={`absolute inset-0 isolate flex flex-col overflow-hidden border ${simplified ? SLOT_BOARD_GROUP : ''}`}
       style={{
-        backgroundColor: palette.surface,
+        // Its surface lets the tab's canvas show faintly through (plan-board.md "See-through surface"); its columns
+        // and cards stay solid, so every word reads as before. A slot board stays solid on its Dashboard.
+        backgroundColor: simplified ? palette.surface : boardSurface(palette.surface),
         borderColor: palette.border,
         color: palette.text,
         borderRadius: radius,
-        ...planBoardFontStyle(fontFamily),
+        ...cornerVars,
+        ...planBoardFontStyle(fontFamily, textScale),
       }}
     >
       {simplified ? (
@@ -562,7 +599,9 @@ export function PlanBoardView({
             else plan.moveItem(item.id, { status, before: null });
           }}
           end={
-            interactive ? (
+            // Nothing at the header's end on a Board tab an Editor configures from the cluster: no Focus or
+            // Maximise (it fills its tab) and no cog (Configure), so no hairline is left standing before it.
+            interactive && !(filled && configuredFromCluster) ? (
               <>
                 {/* Focus glides the view to fit the board; not while it fills the view. */}
                 {maximised || filled ? null : (
@@ -580,7 +619,7 @@ export function PlanBoardView({
                   ) : (
                     slot.cog
                   )
-                ) : canEdit ? (
+                ) : canEdit && !configuredFromCluster ? (
                   <BoardSettingsButton element={element} palette={palette} />
                 ) : null}
               </>
@@ -611,11 +650,21 @@ export function PlanBoardView({
         // picks it up. On a phone its columns snap
         // centred, one at a time (phone-board.ts), change only on a sideways swipe meant for it (phone-swipe.ts; the
         // body is pan-y there), and a tap on a column's empty space glides it to the centre.
-        className={`min-h-0 flex-1 overflow-auto px-3 ${look.endClearance || 'pb-3'} ${look.container ? '@container' : ''} ${look.touch} ${look.overscroll} ${
+        // pt-3: the column heads stand 12 px clear of the board's header (plan-board.md "Column heads stand clear").
+        // plan-scroll: a scrollbar in the theme's colours and finish (globals.css).
+        className={`plan-scroll min-h-0 flex-1 overflow-auto px-3 ${slotBoard ? '' : 'pt-3'} ${look.endClearance || 'pb-3'} ${look.container ? '@container' : ''} ${look.touch} ${look.overscroll} ${
           look.snap ? 'snap-x snap-mandatory' : ''
         } ${slotBoard ? 'scroll-edge-fade' : ''}`}
         // A press here never pans or moves the board, so no hand (board-cursors.ts).
-        style={{ cursor: planBoardBodyCursor(interactive) }}
+        style={
+          {
+            cursor: planBoardBodyCursor(interactive),
+            '--plan-scroll-ink': palette.text,
+            '--plan-scroll-line': palette.border,
+            '--plan-scroll-track': palette.column,
+            '--plan-scroll-focus': palette.focus,
+          } as React.CSSProperties
+        }
         onPointerDown={interactive ? keepBoardPress : undefined}
         onClick={
           interactive && look.columns === 'phone'
@@ -679,7 +728,8 @@ export function PlanBoardView({
                 <CollapsedColumnHead
                   key={`${col.column.id}-strip`}
                   column={col.column}
-                  palette={palette}
+                  palette={toneOf(col.column.id).palette}
+                  bar={toneOf(col.column.id).bar}
                   onExpand={() => toggleColumn(col.column.id)}
                 />
               ) : (
@@ -688,7 +738,8 @@ export function PlanBoardView({
                   onCollapse={canCollapse ? () => toggleColumn(col.column.id) : undefined}
                   col={col}
                   setup={setup}
-                  palette={palette}
+                  palette={toneOf(col.column.id).palette}
+                  bar={toneOf(col.column.id).bar}
                   canEdit={setUpHere}
                   onChange={(next, part) => {
                     if (part === 'ColumnReordered') columnMove.beforeMove(col.column.id);
@@ -767,7 +818,8 @@ export function PlanBoardView({
                               count={withLanes ? cell.length : col.count}
                               limit={withLanes ? undefined : col.column.wipLimit}
                               overLimit={!withLanes && col.overLimit}
-                              palette={palette}
+                              named={!withLanes || laneIndex === firstOpenLane}
+                              palette={toneOf(col.column.id).palette}
                               held={over ? (held.refused ? 'refused' : 'over') : null}
                               onExpand={() => toggleColumn(col.column.id)}
                             />
@@ -793,12 +845,17 @@ export function PlanBoardView({
                             {...{ [COLUMN_ATTR]: col.column.id }}
                             data-plan-status={col.column.status}
                             data-plan-lane={lane.key}
-                            className={`flex flex-col rounded-b-lg ${
+                            className={`plan-col flex flex-col rounded-[var(--plan-col-r,8px)] ${
                               simplified
                                 ? 'min-h-12 gap-1.5 px-1.5 pb-1.5'
                                 : 'min-h-16 gap-2 px-2 pb-2 pt-1'
                             }`}
-                            style={{ backgroundColor: palette.column }}
+                            style={columnPartStyle(toneOf(col.column.id).palette)}
+                            // An Editor's right-click on the column's background opens its settings (plan-board.md
+                            // "A column's own settings"); anyone else's does what it always did.
+                            onContextMenu={
+                              setUpHere ? columnBackgroundMenu(col.column.id) : undefined
+                            }
                           >
                             {/* The cards are the list; the column's Add card button follows it rather than sitting in it,
                                 since a list holds only its items. Empty, it takes no room, so the button sits where it
@@ -812,7 +869,7 @@ export function PlanBoardView({
                                 ? [0, 1].map((k) => (
                                     <div
                                       key={k}
-                                      className="h-16 animate-pulse rounded-lg motion-reduce:animate-none"
+                                      className="h-16 animate-pulse rounded-[var(--plan-card-r,12px)] motion-reduce:animate-none"
                                       style={{ backgroundColor: palette.card, opacity: 0.6 }}
                                     />
                                   ))
@@ -864,15 +921,17 @@ export function PlanBoardView({
                               ) : null}
                             </div>
                             {mayAdd && !addInHead ? (
-                              <AddCardButton
-                                palette={palette}
-                                types={cellTypes}
-                                label={firstEmpty ? 'Add your first card' : 'Add card'}
-                                open={isAdding}
-                                onClosed={closeAdding}
-                                onCreateType={createType}
-                                onAdd={addInto(col.column.status, lane, cell)}
-                              />
+                              // It folds away while a drop gap shows here (plan-board.md "Add card steps aside").
+                              <CellAddRow folded={!!slotHere} gap={simplified ? 6 : 8}>
+                                <AddCardButton
+                                  palette={palette}
+                                  types={cellTypes}
+                                  label={firstEmpty ? 'Add your first card' : 'Add card'}
+                                  open={isAdding}
+                                  onClosed={closeAdding}
+                                  onAdd={addInto(col.column.status, lane, cell)}
+                                />
+                              </CellAddRow>
                             ) : null}
                           </div>
                         );
@@ -919,7 +978,7 @@ export function PlanBoardView({
       blend={{ surface: palette.surface, line: palette.border }}
       fill={filled}
       placeholder={{
-        backgroundColor: palette.surface,
+        backgroundColor: boardSurface(palette.surface),
         borderColor: palette.border,
         borderRadius: radius,
         borderWidth: 1,

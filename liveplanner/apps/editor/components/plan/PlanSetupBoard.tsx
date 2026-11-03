@@ -51,7 +51,7 @@ export function PlanSetupBoard({
   onSetUp: (columns: SetupColumn[], typeIds: string[], layout: SetupLayout) => void;
   // The board's layout as it is (setupLayoutOf): what step 3 starts from, and what skipping it keeps.
   layout: SetupLayout;
-  // Add New Card Type, under the card types (absent while the catalogue is full).
+  // Add Card Type, under the card types (absent while the catalogue is full).
   onCreateType?: (() => void) | undefined;
   // Run again on a board that has columns: what it starts from (the board as it is), always at step 1 and never from
   // a draft. Its footer then reads Cancel and Save Board.
@@ -68,7 +68,7 @@ export function PlanSetupBoard({
     () => initial?.columns ?? draft?.columns ?? [],
   );
   const [layout, setLayout] = useState<SetupLayout>(draft?.layout ?? startLayout);
-  // A type made from here (Add New Card Type) joins the picks once it is saved: any type the catalogue gains while
+  // A type made from here (Add Card Type) joins the picks once it is saved: any type the catalogue gains while
   // the board is being set up starts ticked. Adjusted during render when the catalogue changes.
   const [known, setKnown] = useState<readonly ItemTypeDef[]>(types);
   if (known !== types) {

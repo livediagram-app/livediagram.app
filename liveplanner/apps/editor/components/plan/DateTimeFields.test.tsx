@@ -11,7 +11,7 @@ import {
 } from '@liveplanner/items';
 import type { PublicQuestion } from '@liveplanner/forms';
 import { CustomFieldEditor } from './CustomFieldEditor';
-import { CustomFieldForm, IncludeTimeSwitch } from './ItemTypeFieldForms';
+import { CustomFieldForm } from './ItemTypeFieldForms';
 import { CustomFieldPreview, CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
 import { addedField } from './AddFieldShape';
 import { PlanCardFace } from './PlanCardFace';
@@ -159,25 +159,13 @@ describe.each(ROLES)('for a $role', ({ disabled }) => {
 });
 
 describe('Add Field and the type editor', () => {
-  it('sets Include Time when a Date Range is made, and shows it fixed after', () => {
-    const onChange = vi.fn();
-    render(<IncludeTimeSwitch field={{ kind: 'daterange' }} onChange={onChange} />);
-    fireEvent.click(screen.getByRole('switch', { name: 'Include Time' }));
-    expect(onChange).toHaveBeenLastCalledWith({ withTime: true });
-    cleanup();
-    render(<IncludeTimeSwitch field={{ kind: 'daterange', withTime: true }} onChange={onChange} />);
-    fireEvent.click(screen.getByRole('switch', { name: 'Include Time' }));
-    expect(onChange).toHaveBeenLastCalledWith({ withTime: undefined });
-    cleanup();
+  // item-types.md "Fields and Tabs": Add Field, Variants: Date and Time Range is a field type of its own.
+  it('has no Include Time switch in a Date Range’s form', () => {
     render(<CustomFieldForm field={SLOT} onChange={vi.fn()} />);
-    const fixed = screen.getByRole('switch', { name: 'Include Time' }) as HTMLButtonElement;
-    expect(fixed.disabled).toBe(true);
-    expect(screen.getByText(/can’t change later/)).toBeTruthy();
+    expect(screen.queryByRole('switch', { name: 'Include Time' })).toBeNull();
   });
 
-  it('offers the switch on a Date Range only, and keeps it only there', () => {
-    render(<IncludeTimeSwitch field={{ kind: 'datetime' }} />);
-    expect(screen.queryByRole('switch')).toBeNull();
+  it('keeps Include Time only on a Date Range', () => {
     expect(addedField({ label: ' Slot ', kind: 'daterange', withTime: true })).toMatchObject({
       label: 'Slot',
       withTime: true,

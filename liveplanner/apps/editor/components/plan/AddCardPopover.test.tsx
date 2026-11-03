@@ -40,29 +40,41 @@ describe('closing Add a card', () => {
   });
 });
 
-// docs/specs/026-plan/plan-board.md "Create Card Type": a full-width row under the tiles.
-describe('Add New Card Type', () => {
-  it('closes the menu and asks for a new type', () => {
-    const onClose = vi.fn();
-    const onCreateType = vi.fn();
+// docs/specs/026-plan/plan-board.md "Working on a board": the menu wears the board's colours and makes no types.
+describe('Add a card', () => {
+  it('offers no Add Card Type', () => {
+    menu();
+    expect(screen.queryByRole('menuitem', { name: 'Add Card Type' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Add Card Type' })).toBeNull();
+  });
+
+  it('wears the board’s colours, and says where to turn a type on when it has none', () => {
     const anchor = document.createElement('button');
     document.body.appendChild(anchor);
+    const palette = {
+      surface: '#101010',
+      border: '#202020',
+      column: '#303030',
+      card: '#404040',
+      cardBorder: '#505050',
+      text: '#eeeeee',
+      muted: '#aaaaaa',
+      warning: '#ff0',
+      warningBg: '#ff0',
+      focus: '#f0f',
+    };
     render(
       <AddCardPopover
         anchor={anchor}
-        types={ITEM_TYPES}
+        types={[]}
+        palette={palette}
         onAdd={() => {}}
-        onCreateType={onCreateType}
-        onClose={onClose}
+        onClose={() => {}}
       />,
     );
-    fireEvent.click(screen.getByRole('menuitem', { name: 'Add New Card Type' }));
-    expect(onClose).toHaveBeenCalled();
-    expect(onCreateType).toHaveBeenCalled();
-  });
-
-  it('is not offered without a way to create one', () => {
-    menu();
-    expect(screen.queryByRole('menuitem', { name: 'Add New Card Type' })).toBeNull();
+    const surface = screen.getByText('Add a Card').closest('[role="menu"]') as HTMLElement;
+    expect(surface.style.backgroundColor).toBe('rgb(48, 48, 48)');
+    expect(surface.style.borderColor).toBe('rgb(32, 32, 32)');
+    expect(screen.getByText(/No card types on this board yet/)).toBeTruthy();
   });
 });

@@ -202,7 +202,7 @@ describe('SuggestedStatusList', () => {
   it('renders nothing with no suggestions', () => {
     const { container } = render(
       <SuggestedStatusList
-        heading="Suggested Statuses"
+        heading="Suggested States"
         suggestions={[]}
         onPick={vi.fn()}
         onPickAll={vi.fn()}

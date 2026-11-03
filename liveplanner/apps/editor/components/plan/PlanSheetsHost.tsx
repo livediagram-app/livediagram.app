@@ -11,6 +11,7 @@ import {
   linkedCardsOf,
   newItemId,
   requiredFieldEmptied,
+  retypedValuePatches,
   typeIn,
 } from '@liveplanner/items';
 import { duplicateItem } from './duplicate-item';
@@ -78,7 +79,7 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
       const from = plan.typeTemplateId
         ? ctx.types.find((t) => t.id === plan.typeTemplateId)
         : undefined;
-      // Add New Card Type from a board: only the board's statuses on (docs/specs/026-plan/plan-board.md).
+      // Add Card Type from a board: only the board's statuses on (docs/specs/026-plan/plan-board.md).
       const forBoard = !editing && !from ? plan.typeForBoard : null;
       const template =
         !editing && from
@@ -94,11 +95,22 @@ export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
           types={ctx.types}
           itemCount={ofType.length}
           onSave={(next) => {
-            ctx.itemTypes.saveType(next);
+            // A field whose type changed takes its cards' values with it, in the same undo step
+            // (docs/specs/026-plan/item-types.md "Edit Field").
+            const reshaped = editing
+              ? retypedValuePatches(editing, next, ctx.types, ctx.items.values(), {
+                  people: ctx.people,
+                  items: ctx.items,
+                })
+              : [];
+            ctx.itemTypes.saveType(
+              next,
+              reshaped.length && ctx.reshapeValues ? ctx.reshapeValues(reshaped) : undefined,
+            );
+            if (reshaped.length) track('Plan', 'Changed', 'FieldType');
             // Made from a board's Add a Card menu: that board takes it.
             if (forBoard?.boardId) plan.addTypeToBoard(forBoard.boardId, next.id);
             // Made from a Gantt chart's: the chart takes it, where it names its own types.
-            if (forBoard?.viewId) plan.addTypeToView(forBoard.viewId, next.id);
             track('Plan', editing ? 'Changed' : from ? 'Duplicated' : 'Added', 'CardType');
             plan.closeTypeEditor();
           }}

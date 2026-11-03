@@ -155,7 +155,7 @@ export function CardTypeOptions({
 }: {
   types: readonly ItemTypeDef[];
   selected: readonly string[];
-  // A board may turn its last type off (it then adds one with Add New Card Type); a view keeps one on.
+  // A board may turn its last type off (it then adds one with Add Card Type); a view keeps one on.
   allowNone?: boolean;
   onChange: (next: string[]) => void;
 }) {

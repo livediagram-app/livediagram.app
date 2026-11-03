@@ -122,7 +122,7 @@ describe('a column’s settings', () => {
   it('offers no settings, and so no suggestions, to someone who may not edit', () => {
     render(<Board initial={presetSetup('todo')} canEdit={false} />);
     expect(screen.queryByRole('button', { name: /column settings$/ })).toBeNull();
-    expect(screen.queryByText('Suggested Statuses')).toBeNull();
+    expect(screen.queryByText('Suggested States')).toBeNull();
   });
 
   it('opens the picker as its own popover pointing at the button, the settings open behind it', () => {

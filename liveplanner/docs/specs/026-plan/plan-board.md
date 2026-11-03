@@ -54,16 +54,51 @@ Stored on the element, shared by everyone, undone like any element edit:
     counted as and is flagged so. A board with neither reads its columns' names.
 - **The header's controls** run Focus, Maximise, then the cog. There is no ⋯: the cog is the board's menu.
   Maximised or filling its tab, the board has no Focus. A board has no Add to Slides button in its header.
-- **Board Settings cog**: a board's header ends with a cog (**Board Settings**, with a tooltip) at its far right, after
+- **Configure**: on a Board tab (the board filling its tab), an Editor sets the board up from the bottom-right
+  cluster, not the header: a **Board** button (a cog, with a tooltip) joined to the left of **Style** in one group. The header then has no cog, and no hairline is left before where it was. Board opens the **Configure Board** panel the way
+  Style opens Tab Style: on a screen wider than a phone it flies up from the button, its bottom-right corner just
+  above the cluster's right edge; on a phone it is a bottom sheet; without the cluster on screen it is a centred
+  dialog. Nothing dims, as each change applies live; a click outside, Escape or the close button closes it, and
+  pressing Board again does too. Its header holds **Create Form** (where the board can take one, as in its element
+  menu: a form whose responses come to this board) beside the close button, left out on a phone, where it does not
+  fit beside the title. Its home holds:
+  - **Suggested for This Board**: presets, each a small drawing of the layout, its name, a line on what it does and,
+    when the board's cards give one, why it suits them ("5 of 8 cards have someone on them"). A preset sets the
+    swimlanes, the sort and the card size at once and never the columns or the cards, so trying one is safe and one
+    undo puts it back. **Simple Columns** and **Compact Overview** come first, always offered; then the others the board's card
+    types can show, best fit first by how much of the
+    board's own cards they use; one with nothing to show (lanes by person where nobody is assigned) is left out once the board holds five cards or
+    more; with fewer there is too little to go on, so every preset its types can show is offered.
+    The one the board is laid out as now is marked. At most **nine** are offered; past that the least fitting are
+    left out. The presets: **By Person** (a row per person, soonest due first), **Most Urgent First** (highest
+    priority first, then soonest due), **Deadlines First** (soonest due first), **By Priority** (a row per
+    priority), **By Label** (a row per label), **Quick Wins First** and **Biggest First** (by estimate, smallest or
+    largest first), **Starting Soon** (soonest start first), **Newest First** and **Recently Changed** (by the card's
+    stamps), **By Card Type** (a row per card type, on a board showing more than one), **Compact Overview** (Minimal
+    cards, no rows) and **Simple Columns** (no rows, cards in the order they were put). Then the board's own card
+    types' fields: a Choice or Checkbox field gives a row per value ("By Stage", "A row for each Stage, from Lead to
+    Won."), a number, currency, percent, rating or duration field a largest-first sort ("Highest Seats First"), and a
+    date field a soonest-first one ("Earliest Renewal First"), each with how many cards hold it, or which type it
+    comes from on a board with too few cards to judge by. They rank a little above a general preset using as many
+    cards, being the board's own.
+  - **Fine-Tune**: a tile per part of the set-up (Columns, Swimlanes, Sort Cards, Supported Cards, Card Layout, as
+    the board shows them), each saying how it stands now ("5 columns", "Priority, then Due Date"). A tile opens that
+    part's controls (the same as its element menu row) in a popover coming out of the tile, a small arrow pointing
+    at it, above the tile or below as there is room (300 px wide, Columns 380 px for its rows of controls), the rest
+    of the screen dimmed behind it so it stands out; the tile shows itself pressed while it is open. Pressing the
+    tile again, a press outside it or Escape closes the popover alone, Configure Board staying open. The dimmed
+    layer closes it on its click, not on the press, so a tap on the open tile (under the layer) closes it rather
+    than closing and reopening it.
+- **Board Settings cog**: elsewhere (a board on an ordinary tab, maximised or not), a board's header ends with a cog (**Board Settings**, with a tooltip) at its far right, after
   Maximise, for someone who may edit. It selects the board and opens its **element menu** under itself (the menu a
   right-click on the board opens, with the same rules: maximised or filling its tab, no Layer, Size, Rotation or
-  Animation; under Style, set apart by a separator, its own rows Board Setup, Columns, Swimlanes, Sort Cards, Supported Cards and Card Layout; no Collaborate or
+  Animation; no Style (the tab's theme dresses a board), then its own rows Columns, Swimlanes, Sort Cards, Supported Cards and Card Layout; no Collaborate or
   Resources, [Nothing attached to Plan items](plan-mode.md#nothing-attached-to-plan-items)); pressed again it
   closes it. A board a collaborator holds opens nothing. In a Dashboard slot, where the board is simplified
   ([Dashboard tab](plan-tabs.md#dashboard-tab) "A board in a slot is simplified"), the header ends with the slot's own
   cog (**Slot Settings**: the slot toolbar, with **Open Tab**, and its **Slot** section) and no board sections, for
   everyone. Maximised from the slot, the board is whole again: for an Editor the cog opens **Board Settings** as a
-  popover (as a Sheet's and a chart's cogs do), Board Setup, Columns, Swimlanes, Sort Cards, Supported Cards and Card
+  popover (as a Sheet's and a chart's cogs do), Columns, Swimlanes, Sort Cards, Supported Cards and Card
   Layout, then the slot's **Slot** section, one open at a time; someone who may not edit the board sees the slot's own
   cog there. Telemetry: `Plan` · `Opened` ·
   `BoardSettings`.
@@ -133,7 +168,7 @@ Stored on the element, shared by everyone, undone like any element edit:
 
 Where each is set, so a setting lives with what it changes, never in one central panel:
 
-- **A column's own settings** sit on the column: a cog at the far right of its head (always shown, for an Editor) opens a small popover (a sheet on a phone). On top is a **toolbar**: **Move Left** and **Move Right** at its start, one
+- **A column's own settings** sit on the column: a cog at the far right of its head (always shown, for an Editor) opens a small popover (a sheet on a phone). A **right-click on the column's empty background** (anywhere in its cell that is not a card, its + Add card row included) opens the same settings, anchored to that column's cog as a press on the cog does, never the board's element menu, the tab's menu or the browser's; a right-click on a card keeps the card's menu. Only for someone who may change the board's set-up (where the cog shows); for anyone else a right-click there does what it did before (the board's element menu, or the tab's on a maximised or tab-filling board). On top is a **toolbar**: **Move Left** and **Move Right** at its start, one
   segmented control of two chevrons (each named by a tooltip; Move Left off on the first column, Move Right on the
   last), and **Remove** (a column glyph and the word; named Remove Column, rose on hover) at its end, apart from them
   as it takes the column away. A move glides: the column slides to its new place over 240 ms (a quick start, a soft
@@ -159,14 +194,17 @@ Where each is set, so a setting lives with what it changes, never in one central
   opens the **column picker** (below) in the popover; the column it adds goes after this one, and the popover
   moves to it, anchored to its cog.
 - **The board's own settings** sit in its element menu (right-click the board, or the selection's ⋯) as **five
-  flyout rows of the menu itself**, under Style and set apart from it by a separator, each opening its own panel to the
+  flyout rows of the menu itself** (a board has no Style row: its tab's theme dresses it, and the old board
+  presets are themes), each opening its own panel to the
   side, rather than one level down under a **Board** flyout, which would cost a click and hide them behind a name
-  the rows say better; the cog shows the same rows: **Board Setup** (its **Title** and **Setup
-  Board**; a board on the canvas is added to the slides from its element menu, above; the board itself has no ⋯),
+  the rows say better; the cog shows the same rows (there is no Board Setup row: a board is named by its tab, and
+  its columns and card types are set in Columns and Supported Cards; a board on the canvas is added to the slides
+  from its element menu, above; the board itself has no ⋯),
   **Columns** (below; left out on an All Cards or Archive board and on one not set up yet, which Setup Board sets up),
   **Swimlanes** (**Group Rows By**, one grid: None, Assignee,
   Type, Priority (Status only on an All Cards board), then a row per groupable field, in one [option list](#option-lists), named by the field and drawn with its kind's glyph),
-  **Supported Cards** (**Card Types**, below; left out on an Archive board) and **Card Layout** (**Card Size**:
+  **Supported Cards** (**Card Types**, below, then, for an Editor while the catalogue has room, a full-width **Add Card
+  Type** that makes a new type with this board's statuses and adds it to the board; left out on an Archive board) and **Card Layout** (**Card Size**:
   Minimal or Detailed; what a card shows at each size is its type's Display, [Card
   display](item-types.md#card-display)). There is no Compact size: it differed too little from Detailed to be worth
   a choice. A board stored with the retired `cardSize: 'compact'` reads as Detailed; nothing is rewritten in
@@ -185,7 +223,8 @@ Where each is set, so a setting lives with what it changes, never in one central
   picker's telemetry. Editor only: someone who may not edit sees no cog and no menu.
 - **Card types a board shows**: the Cards menu's **Card Types** row, a row per card type ticked on or off in an [option list](#option-lists) (none
   named is every type). The last one can be turned off too: the board then takes no type, shows no cards, and each
-  cell's Add card offers only **Add New Card Type** (stored as an empty `addTypes`). A board shows only cards of those types, and takes only those:
+  cell's Add card says so ("No card types on this board yet. Turn one on in Board, Supported Cards.", stored as an
+  empty `addTypes`). A board shows only cards of those types, and takes only those:
   Add Card offers only them, a palette card of another type gets the red refused zone, and a card of another type
   dragged from another board is refused, each saying so ("This board shows Note, Idea and Action cards"). A card it
   hides is never moved, changed or deleted: it keeps its status and shows again the moment its type is turned back
@@ -217,7 +256,7 @@ Where each is set, so a setting lives with what it changes, never in one central
     and not a button. Only the step scrolls; its **footer** stays put under it: **Back** at the left (from step 2),
     and at the right **Not now** (**Cancel** when run again) and the step's primary action.
   - **When it opens**: for the person who placed the board (Start Planning, a Dashboard slot's new board), at once;
-    from the placeholder's **Set up board**; and from Board Setup's **Setup Board** (below). Only for that person:
+    and from the placeholder's **Set up board**. Only for that person:
     nobody else's screen changes. A board someone else placed, or one brought back by undo or a template, shows the
     placeholder until someone presses Set up board.
   - **Closing without finishing** leaves the board as it was (the placeholder) and keeps what was picked: opening it
@@ -234,7 +273,7 @@ Where each is set, so a setting lives with what it changes, never in one central
   The steps:
 
   1. **Card Types**: an [option list](#option-lists), a row per card type of the project (its glyph on a tint of its colour, its name, a tick when
-     on), none on to start (run again on a set-up board, the types it shows); **Select All** and **Clear**; under the list **Add New Card Type** (a dashed full-width button, while the catalogue has room) opens the type editor, and a type made there joins the list already ticked; a count ("Every card type, 5 in all", "3 of 5 card types").
+     on), none on to start (run again on a set-up board, the types it shows); **Select All** and **Clear**; under the list **Add Card Type** (a dashed full-width button, while the catalogue has room) opens the type editor, and a type made there joins the list already ticked; a count ("Every card type, 5 in all", "3 of 5 card types").
      **Next: Columns** needs at least one.
   2. **Columns**: the columns chosen so far, top to bottom as the board will show them left to right, each a row
      with a grip, its name, "Existing state" or "New", and a remove cross; "No columns yet. Add one below." while
@@ -244,7 +283,7 @@ Where each is set, so a setting lives with what it changes, never in one central
      and **Add** (Enter adds too): a name matching an existing state uses it ("Uses the existing To Do state, so its
      cards show here."), one already chosen is refused ("That column is already on the board."). Then **Use an
      Existing State**, an [option list](#option-lists) with a row per status the project has that is not chosen, listed exactly as
-     the column picker's Existing Statuses (the same statuses, order, colour swatch, "On Sprint, Roadmap" or "Not on
+     the column picker's Available States (the same statuses, order, colour swatch, "On Sprint, Roadmap" or "Not on
      any board", and card count of the card types chosen in step 1; named "Add {State}"), one to a row, with
      **Add All**. When there is no existing state to use (a new plan, or every state the project has is already
      chosen), **Suggested States** shows in its place: the [suggested statuses](#suggested-statuses) left once the
@@ -266,92 +305,8 @@ Where each is set, so a setting lives with what it changes, never in one central
      one change, one undo step, and closes the dialog, focus going to the board. Telemetry: `Plan` · `Changed` ·
      `BoardSetUp`.
 
-- **Setup Board again**: on a board that has columns (not All Cards or Archive), the Board Setup section (the cog's,
-  and the element menu's Board) holds a full-width **Setup Board** under its title. It closes the menu and opens the same dialog over the
-  board, for this person only (the board stays as it is underneath, for everyone), filled in with the board as it is
-  (its card types ticked, its columns in order, its layout), starting at step 1 every time, with **Cancel** and, last,
-  **Save Board**. Closing it changes nothing. Saving writes both as one change: a column kept keeps
-  its id and settings (name, WIP limit, colour, width), a new one is made as in setup, and one left out leaves this
-  board only (its cards keep their state; the done column goes with its column).
-- **The column picker** is how a column is added to a board that has columns (a column's **+ Add Column After**, or
-  the board's **Columns** section;
-  a board with none uses Setup Board, above):
-  - **Existing statuses**: the statuses the project knows that this board has no column for. Known is: a
-    status any board in the project names as a column (on any tab; All Cards and Archive boards aside), a status
-    a card is in (out of the Trash) though no board names it, and a card type's Default State that neither names.
-    One per name (ignoring case, spacing and punctuation; a name this board already has as a column is left out
-    too). Ordered as the project's boards give them (the open tab's first, then tab, board and column order),
-    then the ones only cards are in, by name, then the card types' Default States, in catalogue order. A status no
-    board names reads as its id in Title Case.
-  - **The field**: one field, **Add Column** beside it. With existing statuses it is labelled **Add a Column**
-    ("Find or name a status") and works as a combobox over them: typing narrows the list to the names that hold
-    the text (as names compare), ArrowDown and ArrowUp move a highlight through the rows (Up past the first goes
-    back to the typed text), Enter adds the highlighted status, a press on a row adds it, and a row under the
-    pointer is highlighted. With nothing highlighted, Enter or **Add Column** adds the typed name: a name that
-    matches an existing status uses that status rather than making a near-duplicate, and says so under the field
-    as it is typed ("Uses the existing To Do status"); a name this board already has as a column says "This board
-    already has To Do" and adds nothing; any other name makes a column with a status of its own (its name and a
-    short suffix), so it starts empty. Without existing statuses it is the plain field, labelled **Name a New
-    Status** ("In Review"), with **Suggested Statuses** under it (below) when any are left.
-  - **Existing Statuses**: under the field and a hairline, a small uppercase heading with the count, then a row per
-    status: a colour swatch (the colour the first board using it gives its column; a hollow ring when none does),
-    its name, a quiet line saying where it is used ("On Sprint, Roadmap", or "Not on any board"), and a pill with
-    how many of its cards this board would show ("4 cards", "1 card", "No cards"): cards out of the Trash and the
-    Archive, of the card types this board shows. The list scrolls past about five rows. With two or more and the
-    field blank, **Add All** (by the heading) adds them all, in order, as one change (up to the 12-column limit).
-    When the typed text narrows the list to nothing: the shared empty state, "No states match “{text}”", with "Add
-    Column makes it a new state." ([Empty states](../004-interface-design/empty-states.md)).
-  - **Suggested Statuses**: only while there are no existing statuses to list, under the field and a hairline, a
-    small uppercase heading, then the [suggested statuses](#suggested-statuses) this board has no column for and
-    the project has no status of, one to a row; a press adds that one as a new status, and **Add All** (by the
-    heading, with two or more) adds them all, in order, as one change (up to the 12-column limit). None left, the
-    section does not show. Telemetry: `Plan` · `Changed` · `ColumnAddedSuggested`.
-  - A status picked from the list (or matched by name) keeps its status and its name, so the cards already in it
-    show in the new column. Each add is one board change, undone in one step. Telemetry: `Plan` · `Changed` ·
-    `ColumnAdded` for a new status, `ColumnAddedExisting` for an existing one (a row, a matched name, Add All).
-  - **Where it shows**: **+ Add Column After** opens it as its own small popover hung beside the button (to its
-    right, else left, below or above, whichever fits on screen) with an arrow pointing at it, over the settings
-    popover, which stays open behind it. The picker's field takes focus as it opens; focus goes back to the button
-    when it closes. It closes on an add, on a press outside it, or on Escape, which closes only the picker (a second
-    Escape closes the settings). An added status or new name then moves the settings to the new column, its name
-    selected; Add All closes them.
-  - **Light and dark**: it wears the editor's popover surface (white, slate-900 in dark), the highlight in the
-    brand tint; row colour changes are instant under reduced motion.
-- <a id="suggested-statuses"></a>**Suggested statuses**: where a board's columns are chosen and the project has no
-  state to offer, so the person need not invent the usual ones, up to five common statuses are suggested, in the
-  order a board runs: **Backlog** ("Ideas and work for later"), **To Do** ("Ready to start"), **In Progress**
-  ("Being worked on"), **In Review** ("Waiting for a check") and **Done** ("Finished"), Done last as a board's done
-  column usually ends it. A suggestion is left out once its name (as names compare) is a column the board has (or
-  Setup Board has chosen) or a status the project already has, so a suggestion never makes a near-duplicate. Each
-  is an [option list](#option-lists) row of actions: a plus glyph, its name, its quiet line, named "Add {Name}". Added,
-  a suggestion is a new status of its own (its name and a short suffix), as a typed name is; **Done** counts as done
-  by its name, as any [done-like name](#done-columns) does. Only someone who may edit the board sees them, as only they set up a board or add its columns: a
-  Participant and a Viewer never do (a Viewer reads the placeholder's "Someone who can edit it will set it up.").
-  Telemetry: `Plan` · `Changed` · `ColumnAddedSuggested`, once a press (Add All too), in Setup Board and the column
-  picker alike.
-- **Every board shows every card**: there is no per-board filter by type or label; a board shows every item whose
-  status is one of its columns, and counts the rest as not on it.
-- **One name, one status**: a project never has two statuses of the same name (compared as the column picker
-  compares them, ignoring case, spacing and punctuation). A board placed from the palette gives a column the status
-  the tab's boards already have of that name, so its cards show there too, and a status of its own (the column's
-  status and a short suffix, `todo~k3f9`) only to a name no status has yet. A board's first column, typed on an
-  empty board, does the same. Renaming a column to a name another status has switches the column to that status
-  when its own status holds no cards (out of the Trash), the cards of that status then showing in it; when its own
-  status holds cards, or the board already has a column for that status, the rename is refused and the name put
-  back, with a note under it: "A {Name} state already exists. Add it from Add Column, so its cards show here."
-  Boards from a template keep the template's statuses, and come with no cards.
-  Whatever brings two states of one name into a project (a template's tab added beside a board, a pasted or
-  agent-written board, a project from before this rule), they **merge** into the first, in tab, board and
-  column order, so every client keeps the same one: each board takes the kept state (a board holding both keeps
-  the earlier column and drops the later), and the cards in the other, and a trashed card's state to restore
-  to, move to it, as one write. It is done by someone who may edit, once every tab and the cards have loaded,
-  with no undo step (undoing it would only split the cards again), and again whenever a duplicate appears
-  (`useMergeDuplicateStatuses`). A card type's Default State or turned-off states naming a merged-away state
-  are left as they are. A board starts wide enough for every
-  column side by side at
-  its narrowest (220px a slot, with the gaps between), never narrower than its default, so no new board scrolls. Archive and All Cards boards show cards by what they are, not by
-  status, and keep their columns.
-- **Hide writing** comes with a board's template (the Retro's is on); it has no menu control.
+- **No Setup Board again**: once a board is set up, its columns change in Columns and its card types in Supported
+  Cards; the cog has no Setup Board to run the dialog again.
 
 ## What the board shows
 
@@ -369,13 +324,22 @@ Where each is set, so a setting lives with what it changes, never in one central
   the column header says so; it never refuses a card.
 - **Column width**: a column is one slot wide, or two or three (its cog's **Width**); the slots share the board's
   width, so a wide column suits a busy stage.
-- **Collapse Column**: a column's head offers **Collapse Column** (a chevron at its right, with that tooltip, always shown,
+- **Column heads stand clear of the board's header**: 12 px of the board's surface sits between the header and the
+  row of column heads (not on a slot board), so they read as separate things.
+- **Column heads**: a column's head reads count first: its count badge (the count, or "3 / 4" against a WIP limit,
+  amber when over), then its name, then Collapse Column and its cog at the right.
+- **Column hover**: the column under the pointer says so, barely: its head and cells (a collapsed column's strip
+  too) shift 1.5% toward the board's ink, easing in and out over 250 ms (at once with reduced motion). Nothing else
+  changes and nothing moves. Under the Sketch finish, whose drawing is a still copy, the same wash is laid over the
+  drawing. Not on a touch screen, nor on a slot board.
+- **Collapse Column**: a column's head offers **Collapse Column** (two arrows closing on a column's edge, at its right, with that tooltip, always shown,
   a little quieter at rest and full strength on hover and focus), and for someone who may edit, its cog's toolbar too. Collapsed, the
-  column is a thin strip (`COLLAPSED_COLUMN_PX`) in its place: its colour bar and an **Expand Column** chevron at the
-  top, then its count and its name written top to bottom, the whole strip pressable to expand it. On a board with
-  swimlanes, each open swimlane's part of the strip shows that row's count and the name.
-  - **The name only when it fits**: the name is shown whole or not at all, never cut short ("U..."). Under the count it
-    needs its full length; in a part too short for that (a short swimlane row), the part shows the count alone. The
+  column is a thin strip (`COLLAPSED_COLUMN_PX`) in its place: its colour bar and an **Expand Column** button (the arrows opening out from the edge) at the
+  top, then its name written top to bottom (no count badge; the count is in its accessible name), the whole strip
+  pressable to expand it. On a board with swimlanes, each open swimlane's part of the strip is shaped as that row's
+  open cells are, and the name shows once, in the first open swimlane's part; the others are plain.
+  - **The name only when it fits**: the name is shown whole or not at all, never cut short ("U..."). It needs its full
+    length; in a part too short for that (a short swimlane row), the part shows nothing. The
     column is still named by the part's accessible name and its tooltip ("Expand Column, {Name}"). The browser's own
     layout decides it (no measuring in script, no flash of a clipped name), on a plain board and in every swimlane row. The other columns take
     the room it leaves (maximised or filling its tab, the five slots across are measured from what the strips leave).
@@ -512,6 +476,26 @@ In Plan mode:
 - **Drag a card** to another column, swimlane or place in a column. A placeholder opens where it will land; the
   move is one item write when it is dropped. Dropping on a swimlane also sets that swimlane's field (moving a
   card into Sam's row assigns it to Sam).
+  - **A steady drag**: the placeholder is always the card's own height, and it stays where it is while the pointer
+    crosses ground that is no cell (the gutter between two columns, a column's head, a swimlane's heading, the
+    board's own header), moving only once the pointer is over another cell. So carrying a card into the next
+    column never closes the gap and opens it again on the way, and the column it leaves does not shrink and grow
+    back. Letting go there drops the card where the placeholder shows. Within a cell, the gap closing in one place
+    and the gap opening in the next run together (the same length and easing), so the cards beyond both stay still
+    and the cell keeps its height.
+  - **No gap where the card already is**: dropping a card where it already is changes nothing, so no placeholder
+    opens there. Over its own cell, at its own place (just before the card after it, or at the cell's end when it
+    is the last), no gap shows; so a card alone in its column shows no drop zone anywhere in that cell, and the
+    cell's + Add card row stays as it is. On a sorted board, where the sort decides a card's place, its own cell shows
+    no drop zone at all. Letting go there does nothing: no write, no undo step, no announcement. A group carried
+    together is not held to this (its cards may come from several places).
+  - **Add card steps aside**: while a placeholder shows in a cell (a card dragged there, a card from another board,
+    a new card dragged from the Cards panel), the cell's **+ Add card** row fades and folds away, giving
+    its room to the placeholder, and comes back the same way once the placeholder leaves: one smooth motion of its
+    room opening as it fades up, on the placeholder's own 180 ms and easing, so the placeholder closing and the row
+    returning move together, and the row is clipped to its opening room (never drawn whole before its room is there). It folds by its row
+    closing (not by being removed), so nothing above it moves, and it cannot be pressed while folded. With reduced
+    motion it just goes and comes back.
 - **Drag a card onto another board** to move its item into that board's column (and row, setting the row's
   field) where it lands, with the same placeholder. The item now has that column's status, so a board without
   that column lists it under "Not on this board".
@@ -519,9 +503,11 @@ In Plan mode:
   **Drag a Plan card onto a board** to move its item to the end of the column it lands on; the Plan card goes
   away.
 - **Add a card**: each cell ends in a quiet **+ Add card** ("Add your first card" on an empty board). It opens
-  the **Add a Card** menu (the shared anchored menu with an option list and no header, since it opens under its
-  own button; a bottom sheet titled "Add a Card" on a phone): a row per card type the board shows, each its glyph on a tint of its
-  colour and its name; choosing one adds a card of it ("New task"...) at the end of the cell, in the cell's row
+  the **Add a Card** menu (the shared anchored menu with an option list under a small "Add a Card" heading; a bottom
+  sheet titled "Add a Card" on a phone), in the board's own colours (the tab's theme: its column colour, border and
+  text, as the cells it opens from): a row per card type the board shows, each drawn as the header's chips draw
+  it (a small card in its colour with its glyph, [Card type chips](#card-type-chips)), its name, and under it "N
+  fields" (and "N custom"), spoken by its name alone; choosing one adds a card of it ("New task"...) at the end of the cell, in the cell's row
   (taking the row's field). Arrow keys move between the rows as in every menu; Escape, a press anywhere
   else (the canvas included, mouse, pen or touch) or a wheel or trackpad pan outside it closes it. There is no typed title: the new card opens at once in its panel with its title selected, so
   typing names it (see **Open an item**).
@@ -550,11 +536,9 @@ In Plan mode:
   - The chips are buttons inside the header: a press on one never picks the board up, and a double-click on one
     never renames it. Their cursor is the pointer.
   - Telemetry: `Plan` · `Added` · the type, as any new card.
-- **Add New Card Type**: under the rows, the menu ends in **Add New Card Type**, for someone who may edit while the catalogue has room for another type. It closes the menu and opens the type editor
-  on a new type whose statuses are only this board's columns' (every other status of the project turned off), so
-  its cards fit the board. Saving it adds it to this board's card types when the board takes a chosen few (a board
-  that takes every type already shows it); closing the editor makes nothing. Telemetry: `Plan` · `Added` ·
-  `CardType`, as any new type.
+- **No Add Card Type in Add a Card**: the menu only adds cards. A new type is made from the Card Types panel, or from
+  Supported Cards (above) for one with this board's statuses, added to the board once saved. (The menu used to end in
+  Add New Card Type; it was taken out to keep the menu to its one job.)
 - **Right-click a card** for its menu (icon-left rows in sentence case, **Trash** last and styled as the rest, as the item panel's ⋯ menu): **Open**, **Duplicate** (a copy right after it, without its votes),
   **Archive** (or **Restore**; [Items](items.md#archive)),
   **Edit Card Type** (the card's type in the type editor),
@@ -578,13 +562,17 @@ In Plan mode:
     line, so no room is kept for lines it does not need. It stays one line of text: Enter saves it (and closes the card),
     and a line break pasted in becomes a space. The main column's sections (Description, Checklist, Linked as Parent, Comments...)
     sit under 13 px semibold headings with generous space between them. An empty description is one quiet
-    line, "Add a description…" with a pencil, not a dashed box. **Details** is a soft rounded panel inset in the
+    line, "Add a description…" with a pencil, not a dashed box; pressed, the editor eases in (it fades up and its writing
+    area grows from that one line to its full height over about 200 ms; at once with reduced motion). A key typed
+    while the prompt (or a description's Edit) has focus opens it the same way with that key already in, the caret
+    after it, saved like any typing: nothing typed to open it is lost. **Details** is a soft rounded panel inset in the
     modal (a light tint and a hairline ring), headed in small capitals; each row is a muted 12 px label beside
     its control, at least 36 px tall, with no hover highlight (the control shows its own). **Status** reads as a pill: a dot in its stage's colour (Not Started, In Progress, Done) before its name, in medium weight. **Linked as …** sections are headed like the other sections (13 px semibold, a count beside), and an empty one is a quiet line, not a box. Who made the card and who last edited it close it as a quiet **footer** pinned to the
     bottom of the Details panel (however few its rows), under a hairline: two tidy rows, each the person's disc (20 px),
-    "Created by **Sam**" or "Edited by **Alex**", and, at the row's end, when ("3 Oct", "2h ago"; the exact date and time
+    "Edited by **Alex**" or "Created by **Sam**", and, at the row's end, when ("2h ago", "3 Oct"; the exact date and time
     in a tooltip) ([Created and Last Edited](items.md#created-and-last-edited)); a form's response reads "Form
-    response **#12**" with its date. Each row is left out when the card holds no one for it. They are never fields
+    response **#12**" with its date. Edited by comes first and Created by last, at the very bottom (a form's response
+    just above it). Each row is left out when the card holds no one for it. They are never fields
     in the middle of the panel: a card type does not place them in its tabs or Details (they are card-face fields
     only), so the footer is the panel's one place for them. On a phone the layout is one column, the footer ending
     the Details tab.
@@ -806,7 +794,7 @@ own keys move between them. In the Setup Board and Setup Sheet dialogs it wears 
   Size), a Gantt chart's Card Types and Swimlanes;
 - **Setup Board**: Card Types, Use an Existing State, Suggested States, and the Layout step's Swimlanes and Card Display;
 - **Add a Card**'s card types; a card type's **States**; the **Card Types** panel's rows (each with its own Edit and
-  Duplicate, so the same box and rows without a marker); the column picker's Existing Statuses and Suggested
+  Duplicate, so the same box and rows without a marker); the column picker's Available States and Suggested
   Statuses;
 - a column's settings: **+ Add Column After** and **Delete Status** are rows, icon left (Move Left, Move Right and
   Remove Column sit on its toolbar); the board's **Columns** section lists its columns one to a row.
@@ -832,7 +820,9 @@ canvas, part of the palette's catalogue, not a setting).
 ## Maximised board
 
 A right-click on a maximised board's empty space, or a board filling its tab (a Sheet's likewise), opens the tab's
-menu, the one the canvas opens, never the browser's; a card's own right-click keeps its card menu.
+menu, the one the canvas opens, never the browser's; a card's own right-click keeps its card menu, and for an Editor a
+right-click on a column's background opens that column's settings
+([The board set-up](#the-board-set-up), "A column's own settings").
 
 A board can be maximised to work on it without the rest of the canvas around it.
 
@@ -883,11 +873,19 @@ A board can be maximised to work on it without the rest of the canvas around it.
   preset's (Style presets "Boards and sheets"), else its own border colour; an element in the theme's neutral colours
   leaves the chrome as it is.
 - **The name rides in the menu box**: while the header holds the top row, the element's name (a board's or view's
-  title, a Sheet's title) moves out of its header into the menu box at the top left, after the mode menu and a hairline,
+  title, a Sheet's title) moves out of its header into the menu box at the top left, straight after the mode menu (no hairline between them),
   in the chrome's own text colour, truncating past 16 rem. It is the same title: a double-click on it renames it in
   place, as in the header. A board's [card type chips](#card-type-chips) stay in the header, leading it just after
   the menu box. The room the band needs is measured from the menu box without the name, so the name
   coming or going never takes the band away. Without a band (a phone, a narrow window) the name stays in the header.
+- **The header arrives laid out, then fans in**: a board filling its tab (a tab switch, a reload) is measured before
+  it is first drawn, so its header shows in the band at once, never first as a canvas header that then jumps (the
+  name, chips and widgets moving between frames). Its card type chips, left to right, and its widgets then the
+  widget zone's + and Edit Widgets, left to right, fan in as the header mounts: each fades up from 6 px low at 97%
+  scale over the `micro` motion token, 25 ms after the one before (the delay stopping at 100 ms, so the row lands
+  within the 250 ms ceiling). It plays only as the header mounts (its tab shown, the board placed or loaded), never on
+  a re-render, a filter or a count changing, or a widget or chip added or reordered later (those simply appear in
+  place); under reduced motion everything is simply there.
 - **It is not placed on the canvas while it fills it**: maximised or filling its tab, a board, view or Sheet's
   element menu leaves out **Layer**, **Size**, **Rotation** and its **Animation** categories (they would change
   where and how it sits on the canvas it hides), and its animation does not play; restored, it animates in its
@@ -964,7 +962,7 @@ A board can be maximised to work on it without the rest of the canvas around it.
 
 A board **fills its tab** when the tab is a **Board tab** ([Plan tabs](plan-tabs.md#board-tab-and-sheet-tab)): the
 tab is the board, for everyone, every time it is shown, and a Sheet tab's Sheet the same way. There is **no Fill Tab
-switch** anywhere (not in Board Setup, the board's cog, the Setup Board wizard or Sheet Settings), and so no
+switch** anywhere (not in the board's cog, the Setup Board wizard or Sheet Settings), and so no
 deletion of the rest of a tab to make room: a board on an ordinary tab stays on its canvas, maximised by one person
 for a moment at most ([Maximised board](#maximised-board)).
 
@@ -1163,7 +1161,63 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
   would not read on the fill is swapped for a readable one, and muted text leans toward the ink until it reads at
   4.5:1 on the column, a card and the board alike (`readableMuted`). With no colours of their own (the Default theme)
   they take the canvas surface's neutral set, light or dark, whose muted text meets the same bar.
+- Every theme reads on a board, light and dark, because the palette guards its own contrast rather than trusting
+  each theme's colours:
+  - **Cards stand off their list.** On a light board a card is near white on the tinted list. On a dark board a card
+    sits a step deeper than the board (18% toward black), as the Default dark set does, so a card reads as a card on a
+    brown, green or violet list too (it was 4% lighter than the board, 1.1:1 on its list, and the cards vanished).
+    A card's edge reaches 1.3:1 on the card (`cardBorder`), leaning toward the ink until it does.
+  - **The accent reads as text.** The focus colour (the board's stroke) labels buttons and notices on the column, so
+    it leans toward the ink until it reads at 4.5:1 on the column, a card and the board. A pale accent (Pastel's grey)
+    turns deeper; a bright one stays as chosen.
+  - **Colours on a card read on that card.** A type's accent (`accentOn`: its dot, number tag and chip, and every
+    widget's and view's tone) reaches 3:1 on the board's own card, leaning toward white on a dark card and toward
+    black on a light one. Coloured words on a card (the type chip's name, label chips, the priority's name, a due or
+    finished pill, the blocked mark) reach 4.5:1 on their chip (`chipInkOn`). A colour that already reads is kept as
+    chosen.
 - Corners follow Quick Style's Corners (12 px by default), and a shadow sits under the board like any shape's.
+  - <a id="column-colours"></a>**Columns in the theme's colours**: on a multi-colour theme each column takes the next of
+    the theme's colours, in order and cycling: its top bar in the colour, its head and cells a light tint of it (10%,
+    or 5% where 10% would take the board's text below 4.5:1, or none). A colour set on the column itself wins, and its
+    face tints from that. A single-colour theme keeps every column alike.
+  - **Card hover**: the card under the pointer stays exactly where it is (no rise: a moving transform re-rasterised
+    its words and shifted them by a pixel as it eased) and gains a soft shadow lightly tinted with its type's colour, its
+    edge leans 25% toward that colour, and a faint light in the colour (8%, fading out over 220 px) follows the pointer
+    across its face. It eases in over about 250 ms. Under Professional and Marker, which draw no shadows, only its
+    edge and light change. With reduced motion nothing moves or eases. Under Sketch, whose
+    drawing is a still copy, a 4% wash of the ink is laid over the card as well. The pointer's spot is written
+    straight to the card at most once a frame, from one listener on the board, with no render; a touch has no hover.
+  - <a id="cards-fan-in"></a>**Cards fan in**: when a board first shows its cards (its tab opened or loaded), the cards
+    in view drop into place: each from a little above (12 px, 4 px more per card down its column), turned 2.5 degrees
+    (one way in odd columns, the other in even) and at 96%, fading up over about half a second, column by column
+    (70 ms apart) and down each column (45 ms apart), every card started within 650 ms. At most 80 cards animate;
+    cards out of view, cards added later and everyone with reduced motion simply show. It runs once per board as it
+    mounts, with no render of its own.
+  - **Drop gaps open and close**: the dashed gap a held card would land in is tinted in the focus colour and breathes
+    softly (8% to 16% and back, with an inner glow, every 1.4 s) while it waits. It opens wherever it appears
+    (from nothing to the card's height, from 92% wide, over 180 ms, with no overshoot), so the cards below give
+    way, and where it leaves its room closes over the same 180 ms on the same easing, with nothing drawn in it, so
+    only one gap ever shows and, as one closes while the next opens in a cell, the two together keep the cell's
+    height and the cards beyond them still (["A steady drag"](#working-on-a-board)). With reduced
+    motion it just shows and goes, and does not breathe.
+  - **Open a card from where it is**: the card panel grows out of the card pressed (from its box to the panel's, 360
+    ms, its contents fading up as it lands) and, closed while that card is on screen, shrinks back into it (260 ms,
+    the dim fading with it). A card off screen, a phone's sheet and reduced motion keep the panel's own fade.
+  - **Scrollbars**: a board's scrollbars are dressed in its theme, not the system's grey: a rounded thumb in the theme's
+    line colour on a faint track of its column colour, drawn 6 px thick inside a 14 px bar so it is easy to grab,
+    growing to 10 px and leaning to the text colour under the pointer, and the theme's focus colour while dragged.
+    Square under the Professional finish. Where the browser has no such styling (Firefox), a thin bar in the same
+    colours.
+  - **See-through surface**: the board's own surface (the room round its columns and under its header) is 80% solid
+    and its columns' heads and cells 85%, so the tab's canvas, its colour or pattern, shows faintly through both. The
+    cards stay solid, so their text reads exactly as on a solid board. A board in a Dashboard slot keeps a solid
+    surface. What shows through is the tab's canvas alone: a board filling its Board tab hides the canvas's
+    elements behind it (its own copy there), and a maximised one hides the selection box drawn behind it.
+  - <a id="corners"></a>**Its columns and cards round with it**: a column's head and its cells take the board's corners up
+    to 12 px, and a card, a card's drop gap and its focus ring 4 px less (8 px by default), so the parts nest. A column's
+    head and its cells (one, or one per swimlane) stand apart with a gap between them, so each is rounded on all four
+    corners, a collapsed column's strip too. A square board (Corners at 0) has square columns and cards, and under the Professional finish every one
+    of them is square, as the board is; Sketch and Marker draw them with the same corners.
 - Its headings (the board's title, column and swimlane names, card titles) follow the tab's font (or the element's
   own); its small text (chips, pills, fields, numbers, counts, buttons) is always the editor's own face, so every
   font reads on a card ([Fonts](../004-interface-design/fonts.md) "On boards and cards"). A face liveplanner does

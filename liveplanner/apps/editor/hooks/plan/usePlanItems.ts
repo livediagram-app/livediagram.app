@@ -47,7 +47,7 @@ export type PlanItems = {
   // This person as items name them: the hashed id, their name and colour (null until hashed).
   self: ItemPerson | null;
   // Applies a write now, sends it, and settles on the answer; every write but a vote is undoable.
-  write: (write: ItemWrite) => Promise<boolean>;
+  write: (write: ItemWrite, opts?: WriteOptions) => Promise<boolean>;
   // The same, with no undo step: for content the editor makes and takes away itself (the Plan tour's
   // example cards, docs/specs/026-plan/plan-tour.md "Tour content"), which Undo must never bring back.
   // `silent`: a refusal tells nobody (the Actions board's heal, docs/specs/026-plan/linked-boards.md "Keeping them
@@ -118,6 +118,9 @@ function withThreads(
     return changed ? { ...back, creates } : back;
   });
 }
+
+// A write's options: `onUndo` takes its undo step instead of the timeline (to make it one with another's).
+export type WriteOptions = { onUndo?: (step: ItemUndoStep) => void };
 
 export function usePlanItems(opts: {
   projectId: string | null;
@@ -349,7 +352,7 @@ export function usePlanItems(opts: {
   );
 
   const write = useCallback(
-    async (input: ItemWrite): Promise<boolean> => {
+    async (input: ItemWrite, opts?: WriteOptions): Promise<boolean> => {
       const w = withCreateIds(input);
       const before = storeRef.current;
       const inverse = inverseItemWrites(before, w);
@@ -377,12 +380,14 @@ export function usePlanItems(opts: {
             }
           : done;
       // Both sides are marked as an undo, so a card type's left-out statuses never refuse putting a change back.
-      callbacks.current.pushUndo({
+      const step: ItemUndoStep = {
         undo: () => {
           for (const back of undoes) void send(asUndoWrite(back));
         },
         redo: () => void send(asUndoWrite(redo)),
-      });
+      };
+      if (opts?.onUndo) opts.onUndo(step);
+      else callbacks.current.pushUndo(step);
       return result.ok;
     },
     [send, callbacks],

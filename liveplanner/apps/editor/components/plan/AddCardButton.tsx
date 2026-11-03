@@ -17,7 +17,6 @@ export function AddCardButton({
   open: openNow = false,
   onClosed,
   onAdd,
-  onCreateType,
   compact = false,
 }: {
   palette: PlanPalette;
@@ -27,8 +26,6 @@ export function AddCardButton({
   open?: boolean;
   onClosed?: () => void;
   onAdd: (card: NewCard) => void;
-  // The menu's Add New Card Type row (AddCardPopover).
-  onCreateType?: (() => void) | undefined;
   // A slot board's column head (SlotColumnHeader): a 24 px + named by `label` and its tooltip, with no words.
   compact?: boolean;
 }) {
@@ -75,7 +72,7 @@ export function AddCardButton({
           aria-haspopup="menu"
           aria-expanded={shown}
           // A 44px-tall row to tap on a touch screen (touch-targets.md).
-          className="flex items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[12px] font-medium transition pointer-coarse:min-h-11 enabled:cursor-pointer hover:bg-black/5 focus-visible:outline-2"
+          className="flex items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-[length:calc(12px*var(--plan-text-scale,1))] font-medium transition pointer-coarse:min-h-11 enabled:cursor-pointer hover:bg-black/5 focus-visible:outline-2"
           style={{ color: palette.muted, outlineColor: palette.focus }}
           onPointerDown={stop}
           onClick={toggle}
@@ -89,7 +86,7 @@ export function AddCardButton({
           anchor={button}
           types={types}
           onAdd={onAdd}
-          {...(onCreateType ? { onCreateType } : {})}
+          palette={palette}
           onClose={() => {
             setOpen(false);
             onClosed?.();

@@ -124,7 +124,7 @@ export function addColumnAfter(
 }
 
 // New columns named `names`, in order, after `afterId` (at the end when null), as one set-up, stopping at the limit
-// (Suggested Statuses' Add All); null when none fits. `column` is the last one made.
+// (Suggested States' Add All); null when none fits. `column` is the last one made.
 export function addColumnsAfter(
   setup: PlanBoardSetup,
   afterId: string | null,

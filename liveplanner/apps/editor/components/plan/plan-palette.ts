@@ -8,7 +8,13 @@ import {
   type ShapeElement,
 } from '@liveplanner/project';
 
-export { PRIORITY_COLOURS, accentOn, planPalette, type PlanPalette } from '@liveplanner/project';
+export {
+  PRIORITY_COLOURS,
+  accentOn,
+  chipInkOn,
+  planPalette,
+  type PlanPalette,
+} from '@liveplanner/project';
 
 // A board's or card's own colours, as planPalette reads them (its preset included).
 export const planOwnColours = (el: ShapeElement) => planOwnColoursOf(el);

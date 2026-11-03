@@ -197,12 +197,12 @@ describe('BoardColumnsSection suggested statuses', () => {
 
   it('suggests nothing while the project has a status the board lacks', () => {
     show(kanban);
-    expect(screen.queryByText('Suggested Statuses')).toBeNull();
+    expect(screen.queryByText('Suggested States')).toBeNull();
   });
 
   it('shows no suggestion to someone who may not edit (a Participant or a Viewer)', () => {
     show(lone, { ...only, canEdit: false });
-    expect(screen.queryByText('Suggested Statuses')).toBeNull();
+    expect(screen.queryByText('Suggested States')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Add Backlog' })).toBeNull();
   });
 });

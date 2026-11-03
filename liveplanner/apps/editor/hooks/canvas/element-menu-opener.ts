@@ -33,7 +33,14 @@ export function useElementMenuOpener(
       setContextMenu((cur) =>
         cur && cur.mode === 'element' && cur.elementId === elementId
           ? null
-          : { mode: 'element', elementId, x: anchor.left, y: anchor.bottom + 4 },
+          : {
+              mode: 'element',
+              elementId,
+              x: anchor.left,
+              // Under its button, or above one low on the screen (the cluster's Configure): the menu grows up from
+              // a point in the bottom fifth (EditorContextMenu anchorBottom), so it never covers its own button.
+              y: anchor.top > window.innerHeight * 0.8 ? anchor.top - 4 : anchor.bottom + 4,
+            },
       );
     };
     opener = open;

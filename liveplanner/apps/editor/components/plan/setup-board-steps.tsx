@@ -48,7 +48,7 @@ export function SetupTypesStep({
   chosen: readonly string[];
   palette: PlanPalette;
   onChange: (ids: string[]) => void;
-  // Add New Card Type: opens the type editor (absent while the catalogue is full); a type made there joins the picks.
+  // Add Card Type: opens the type editor (absent while the catalogue is full); a type made there joins the picks.
   onCreateType?: (() => void) | undefined;
 }) {
   const all = types.every((t) => chosen.includes(t.id));
@@ -280,7 +280,7 @@ export function SetupColumnsStep({
               cards. */}
           <OptionRows
             kind="action"
-            label="Existing States"
+            label="Available States"
             palette={palette}
             rows={existing.map((c) => ({
               id: c.status,

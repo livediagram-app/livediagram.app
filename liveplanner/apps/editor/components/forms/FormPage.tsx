@@ -233,7 +233,7 @@ export function FormPage({
       />
       {canvas
         ? createPortal(
-            <CanvasCover layout={layout} marker={{ 'data-form-page': '' }}>
+            <CanvasCover layout={layout} marker={{ 'data-form-page': '' }} enter>
               <FormBuilderContext.Provider value={value}>
                 <div
                   role="region"

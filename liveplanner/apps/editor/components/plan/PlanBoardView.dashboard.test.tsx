@@ -12,10 +12,11 @@ import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-sto
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { maximisePlanElement, releasePlanElement } from '@/hooks/plan/maximised-plan';
 import { FormBoardContext, type FormBoardValue } from '@/components/forms/form-board-context';
+import { planTextPx } from '@/lib/plan-font';
 
 // docs/specs/026-plan/plan-tabs.md "A board in a slot is simplified": in a Dashboard slot the board is a compact one for
 // working its cards (moving, opening and adding them, each column's count against its WIP limit), with nothing that sets
-// it up: no column cogs, no widgets, no example cards' notice, no Add New Card Type, no renaming, no swimlanes, and the
+// it up: no column cogs, no widgets, no example cards' notice, no Add Card Type, no renaming, no swimlanes, and the
 // cog is the slot's own. The share roles are a Board tab's.
 afterEach(() => {
   releasePlanElement('b1');
@@ -255,7 +256,8 @@ describe('a board in a Dashboard slot', () => {
     draw({ dashboard: true, value: plan({ items: twoCards() }) });
     // jsdom measures the body 0 wide: the columns are at their floor, so the cards are Minimal and stacked.
     const title = screen.getByText('Fix the login');
-    expect(title.style.fontSize).toBe('12.5px');
+    // At the stacked size, scaled by the tab's Text Size (1 here, none set).
+    expect(title.style.fontSize).toBe(planTextPx(12.5));
   });
 
   it('is the whole board while maximised from the slot, and simplified again once restored', () => {

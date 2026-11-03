@@ -2,7 +2,7 @@
 
 // The Card Types panel (docs/specs/026-plan/item-types.md "The Card Types panel"): the project's item
 // types, each with its glyph and colour, its name and how many items have it. A popover hanging above
-// its button in Plan mode's bottom-right cluster. Edit and Add New Card Type open the type editor, Duplicate opens it on a
+// its button in Plan mode's bottom-right cluster. Edit and Add Card Type open the type editor, Duplicate opens it on a
 // new type filled from that one; Add Default Types adds any of the five default types the project lacks. One list:
 // no type is set apart from another. Someone who may only view sees the list.
 import { AddCardTypeButton } from './AddCardTypeButton';
@@ -20,8 +20,9 @@ import {
   PlanCardsIcon,
   Tooltip,
 } from '@liveplanner/ui';
-import { PlanTypeGlyph } from './plan-type-glyph';
-import { ACCENT_BG, ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
+import { CardTypeTile } from './CardTypeTile';
+import { typeSummary } from './card-type-summary';
+import { ACCENT_BG, accentVars } from './plan-palette';
 
 export function CardTypesPanel({
   popoverOpen,
@@ -48,7 +49,6 @@ export function CardTypesPanel({
   // One type's row: its edit (stretched over the row), Duplicate, and the pencil.
   const row = (t: (typeof types)[number]) => {
     const count = counts.get(t.id) ?? 0;
-    const fields = t.fields.length;
     const label = `${count} ${count === 1 ? 'item' : 'items'}`;
     // The type's glyph, name, field count and item count: the row's face, in its edit button.
     // A type no card has yet is shown a little grey (its count is in its name for a screen reader, not on show).
@@ -56,20 +56,13 @@ export function CardTypesPanel({
       <span
         className={`flex min-w-0 flex-1 items-center gap-2.5 ${count === 0 ? 'opacity-55' : ''}`}
       >
-        <span
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${ACCENT_TINT} ${ACCENT_TEXT}`}
-          style={accentVars(t.color)}
-          aria-hidden
-        >
-          <PlanTypeGlyph glyph={t.glyph} size={16} />
-        </span>
+        <CardTypeTile color={t.color} glyph={t.glyph} size={30} />
         <span className="flex min-w-0 flex-1 flex-col" aria-hidden>
           <span className="truncate text-[13px] font-semibold text-slate-800 dark:text-slate-100">
             {t.label}
           </span>
           <span className="truncate text-[11px] text-slate-500 dark:text-slate-400">
-            {fields} {fields === 1 ? 'field' : 'fields'}
-            {t.custom?.length ? `, ${t.custom.length} custom` : ''}
+            {typeSummary(t)}
             {/* An inherited type names its base (docs/specs/026-plan/item-types.md "Inherited types"). */}
             {t.inherits
               ? ` · Inherits ${types.find((b) => b.id === t.inherits)?.label ?? t.inherits}`

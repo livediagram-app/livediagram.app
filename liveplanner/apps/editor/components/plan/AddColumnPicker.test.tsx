@@ -46,7 +46,7 @@ const field = () => screen.getByLabelText('New column name');
 describe('AddColumnPicker', () => {
   it('lists the existing statuses with their boards, swatch and card counts', () => {
     show([TODO, DONE, BLOCKED]);
-    expect(screen.getByText('Existing Statuses')).toBeTruthy();
+    expect(screen.getByText('Available States')).toBeTruthy();
     const options = screen.getAllByRole('option');
     expect(options.map((o) => o.getAttribute('data-status'))).toEqual([
       'todo',
@@ -129,7 +129,7 @@ describe('AddColumnPicker', () => {
 
   it('is the plain field without existing statuses: refuses a name on the board, makes a new one', () => {
     const h = show([]);
-    expect(screen.queryByText('Existing Statuses')).toBeNull();
+    expect(screen.queryByText('Available States')).toBeNull();
     expect(screen.getByText('Name a New Status')).toBeTruthy();
     expect(field().getAttribute('role')).toBeNull();
     fireEvent.keyDown(field(), { key: 'ArrowDown' });
@@ -148,7 +148,7 @@ describe('AddColumnPicker', () => {
 // docs/specs/026-plan/plan-board.md "Suggested statuses".
 describe('the picker’s suggested statuses', () => {
   const suggested = () =>
-    within(screen.getByRole('group', { name: 'Suggested Statuses' }))
+    within(screen.getByRole('group', { name: 'Suggested States' }))
       .getAllByRole('button')
       .map((b) => b.getAttribute('aria-label'));
 
@@ -198,7 +198,7 @@ describe('the picker’s suggested statuses', () => {
 
   it('shows none while there are existing statuses to pick', () => {
     show([TODO]);
-    expect(screen.queryByText('Suggested Statuses')).toBeNull();
+    expect(screen.queryByText('Suggested States')).toBeNull();
   });
 
   it('shows no section once every suggestion is taken', () => {
@@ -210,7 +210,7 @@ describe('the picker’s suggested statuses', () => {
       })),
     } as unknown as PlanBoardSetup;
     show([], board);
-    expect(screen.queryByText('Suggested Statuses')).toBeNull();
+    expect(screen.queryByText('Suggested States')).toBeNull();
     expect(document.querySelector('[data-suggested-statuses]')).toBeNull();
   });
 });

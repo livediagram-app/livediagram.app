@@ -3,7 +3,7 @@
 // Suggested statuses (docs/specs/026-plan/plan-board.md "Suggested statuses"): the common statuses offered where a
 // board's columns are chosen and the project has none to offer, one to a row, each added with one press, with Add
 // All for two or more. Shared by Setup Board's Columns step (Suggested States, in the board's colours) and the
-// column picker (Suggested Statuses, in the menu's).
+// column picker (Suggested States, in the menu's).
 import { useId } from 'react';
 import { PlusIcon } from '@liveplanner/ui';
 import type { SuggestedStatus } from '@liveplanner/items';
@@ -23,7 +23,7 @@ export function SuggestedStatusList({
   onPick,
   onPickAll,
 }: {
-  // "Suggested States" (Setup Board) or "Suggested Statuses" (the picker): the heading and the list's name.
+  // "Suggested States" (Setup Board and the picker): the heading and the list's name.
   heading: string;
   suggestions: readonly SuggestedStatus[];
   // The board's colours (Setup Board); the menu's without.

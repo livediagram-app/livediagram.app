@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import type { CustomFieldDef, Item, ItemTypeDef } from '@liveplanner/items';
 import { FormulaEditor, type FormulaDraft } from './FormulaEditor';
@@ -175,7 +175,7 @@ describe('FormulaEditor', () => {
 });
 
 describe('the field form and Add Field', () => {
-  it('opens the formula editor on picking Formula, and drops it on picking another', () => {
+  it('shows the formula editor on a Formula field, with no Calculation menu to turn it into a count', () => {
     const onChange = vi.fn();
     const field: CustomFieldDef = {
       id: 'f-x',
@@ -187,9 +187,11 @@ describe('the field form and Add Field', () => {
       <CustomFieldForm field={field} onChange={onChange} formulaDraft={draft} />,
     );
     expect(screen.queryByLabelText('Formula')).toBeNull();
-    fireEvent.change(screen.getByLabelText('Calculation'), { target: { value: 'formula' } });
-    expect(onChange).toHaveBeenLastCalledWith({ calculation: 'formula' });
-    expect(track).toHaveBeenCalledWith('Plan', 'Changed', 'FieldFormula');
+    // The menu holds only the counts: a Formula is a field type of its own (Add Field's variants).
+    const options = [...screen.getByLabelText<HTMLSelectElement>('Calculation').options].map(
+      (o) => o.value,
+    );
+    expect(options).toEqual(['childCount', 'childrenDone']);
     rerender(
       <CustomFieldForm
         field={{ ...field, calculation: 'formula' }}
@@ -198,11 +200,7 @@ describe('the field form and Add Field', () => {
       />,
     );
     expect(screen.getByLabelText('Formula')).toBeTruthy();
-    expect(screen.getByText(/own fields by a formula/)).toBeTruthy();
-    act(() => {
-      fireEvent.change(screen.getByLabelText('Calculation'), { target: { value: 'childCount' } });
-    });
-    expect(onChange).toHaveBeenLastCalledWith(calculationPatch('childCount'));
+    expect(screen.queryByLabelText('Calculation')).toBeNull();
     expect(calculationPatch('childCount')).toEqual({
       calculation: 'childCount',
       formula: undefined,

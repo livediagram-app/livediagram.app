@@ -35,6 +35,11 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
   Tab switch anywhere (not on Setup Board, Board Setup or Sheet Settings; a flag stored on an old board or Sheet still
   reads), no Maximise or Restore, no Focus and no Add to Slides, and Escape restores nothing. Its header holds the
   top row where there is room ([The header holds the top row](plan-board.md#maximised-board)).
+- **Switching to a tab fades its content in**: a Board, Sheet, Dashboard or Form tab's page fades in from the canvas's
+  own background over the `short` motion token (200 ms, opacity only, so nothing on it moves or is measured off its
+  place), laid out where it will stay from its first frame. It plays once as the tab's page mounts, never on a
+  re-render; under reduced motion the tab is simply there. A board's header then fans in
+  ([The header arrives laid out](plan-board.md#maximised-board)).
 - A Board tab's board fills the screen, so it starts with its cards **Detailed**, whatever its preset uses on a canvas:
   from Start Planning and from a template alike. Card Layout changes it as ever.
 - A Board, Sheet or Dashboard tab shows no palette, as nothing in Plan does ([No palette](plan-mode.md#no-palette)); a
@@ -188,7 +193,7 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   - **What it shows**: a slim header (the board's title and how many cards it shows), then the columns, then the
     cards. Each column's head is its colour dot, its name, its count (against its WIP limit, in the warning colour
     when over it) and, for someone who may add cards, a **+** (**Add a card to <column>**, opening the Add a Card
-    menu, without **Add New Card Type**). There is no Add card row under the cards (but an All Cards board's
+    menu, without **Add Card Type**). There is no Add card row under the cards (but an All Cards board's
     rows by status, below, keep theirs).
   - **Working the cards**: drag a card between columns and within one, click (or Enter) to open it, right-click or
     hold for its menu, add one from a column's **+** (or the N key). The share roles are a Board tab's: an Editor and
@@ -205,7 +210,7 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
     every status and those rows are where a card's status is shown and changed.
   - **Left on its tab**: the widgets (and the filter they set), the Items Not on This Board tray, the example cards'
     **Clear Example Cards** and **Keep Them**, **Focus**, the column cogs (and adding a column), the form strip (a
-    form sending its responses to the board), renaming the board from its title, **Reveal**, **Add New Card Type**
+    form sending its responses to the board), renaming the board from its title, **Reveal**, **Add Card Type**
     and the board-setup sections of its cog. Changes to the board are made on its own tab, through **Open Tab**.
   - **The header's controls**: **Maximise Board**, then the slot's own cog (**Slot Settings**, with the slot
     toolbar's **Open Tab**; none for someone with no slot settings). They show while the pointer is over the slot or
@@ -214,7 +219,7 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
     Board**, so a new board can be started from its slot.
   - **Maximised** from its slot the board is the whole board again, as on its tab: its own card size, swimlanes, the
     widgets and their **+**, reordering and ×, the example cards' notice, column cogs and adding a column, Add card
-    under each cell, the form strip, renaming, Reveal, Add New Card Type and, for an Editor, the **Board Settings**
+    under each cell, the form strip, renaming, Reveal, Add Card Type and, for an Editor, the **Board Settings**
     cog (its board sections, then the slot's **Slot** section). **Restore** returns it to the simplified slot board.
     Focus stays off (a slot has no place on the canvas to glide to).
 - **A slot's name**: a filled slot whose heading is made for it takes a name of its own, so a reader sees what it is
@@ -343,7 +348,7 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   already too small (an older layout) does not block other changes. Below the condensed width nothing is checked
   (each slot takes half or all of the line).
 - An **empty slot** shows the site's empty state at slot size: a gradient badge and **Empty Slot**, with no
-  description, over an **Add to Slot** button (the dashed add row Add New Card Type wears, kept to 224 px in a wide
+  description, over an **Add to Slot** button (the dashed add row Add Card Type wears, kept to 224 px in a wide
   slot) for an Editor; anyone else sees the badge and title alone. **Add to Slot** opens a picker of what a slot
   takes, by category: **This Plan’s Tabs** (every tab but a Dashboard, see Showing a tab), **New Board** (each preset), **New
   Sheet**, **Card Metrics**, **Form Metrics** (only while the project has a Form tab), **Visualisations**, **From a Sheet** (Sheet Figure, Column Summary, Trend, Sheet Chart) and **Utilities** (Note, Title, Status, Checklist, Key Date, Links); picking

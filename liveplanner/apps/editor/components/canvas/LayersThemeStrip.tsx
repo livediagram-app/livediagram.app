@@ -1,6 +1,7 @@
 'use client';
 
-import { HoverCard, TidyUpIcon } from '@liveplanner/ui';
+import { HoverCard, TidyUpIcon, lucideGlyph } from '@liveplanner/ui';
+import { lucideSettings } from '@liveworkspace/icons/lucide';
 import { LayersStackIcon } from '@/components/panels/layers-panel-icons';
 import { CLUSTER_CONTROL_REST } from '@liveworkspace/workbench/components/canvas/cluster-strip';
 import {
@@ -9,6 +10,8 @@ import {
 } from '@liveworkspace/workbench/components/canvas/ClusterPopoverButton';
 import { ThemeLookIcon } from '@/components/palette/palette-icons';
 import { useDockNames } from '@liveworkspace/workbench/hooks/ui/useDockNames';
+
+const ConfigureIcon = lucideGlyph(lucideSettings, 16);
 
 // Layers and the Theme & canvas button, one strip in the bottom-right cluster
 // (docs/specs/007-editor/editor-app.md): both shape how the tab looks rather than what is on it, so
@@ -24,6 +27,7 @@ export function LayersThemeStrip({
   tidyUp,
   layers,
   onOpenTheme,
+  onConfigure,
 }: {
   // The Tidy Up button: its popover's state and toggle. Absent, the strip has none.
   tidyUp?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
@@ -31,9 +35,11 @@ export function LayersThemeStrip({
   layers?: { open: boolean; onToggle: (button: HTMLElement) => void } | undefined;
   // The Theme & canvas button. Absent, the strip has none.
   onOpenTheme?: (() => void) | undefined;
+  // Configure, joined to Style's left: a Board tab's board settings (plan-board.md "Configure"). Absent, none.
+  onConfigure?: ((button: HTMLElement) => void) | undefined;
 }) {
   const named = useDockNames();
-  if (!tidyUp && !layers && !onOpenTheme) return null;
+  if (!tidyUp && !layers && !onOpenTheme && !onConfigure) return null;
   return (
     <ClusterStrip>
       {tidyUp ? (
@@ -60,6 +66,27 @@ export function LayersThemeStrip({
           onTogglePopover={layers.onToggle}
         />
       ) : null}
+      {onConfigure ? (
+        <HoverCard
+          title="Board"
+          description="Set up this board: its columns, swimlanes, sorting and cards."
+        >
+          <button
+            type="button"
+            data-tour-id="configure-board"
+            aria-haspopup="dialog"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={(e) => onConfigure(e.currentTarget)}
+            aria-label="Board"
+            className={`flex h-11 items-center justify-center transition ${
+              named ? 'gap-2 px-3.5 text-sm font-medium' : 'w-11'
+            } ${layers || tidyUp ? 'border-l border-slate-100 dark:border-slate-800' : ''} ${CLUSTER_CONTROL_REST}`}
+          >
+            <ConfigureIcon />
+            {named ? <span aria-hidden>Board</span> : null}
+          </button>
+        </HoverCard>
+      ) : null}
       {onOpenTheme ? (
         <HoverCard
           title="Theme & canvas"
@@ -73,7 +100,7 @@ export function LayersThemeStrip({
             aria-label="Theme and canvas"
             className={`flex h-11 items-center justify-center transition ${
               named ? 'gap-2 px-3.5 text-sm font-medium' : 'w-11'
-            } ${layers || tidyUp ? 'border-l border-slate-100 dark:border-slate-800' : ''} ${CLUSTER_CONTROL_REST}`}
+            } ${layers || tidyUp || onConfigure ? 'border-l border-slate-100 dark:border-slate-800' : ''} ${CLUSTER_CONTROL_REST}`}
           >
             <ThemeLookIcon />
             {/* Named on a wide desktop, as the cluster's other buttons are (useDockNames). */}

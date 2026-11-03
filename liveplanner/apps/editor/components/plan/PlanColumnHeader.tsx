@@ -11,9 +11,10 @@ import { CountBadge, SettingsIcon } from '@liveplanner/ui';
 import { PlanColumnPopover } from './PlanColumnPopover';
 import {
   subscribeColumnSettingsRequest,
-  takeColumnSettingsRequest,
+  takeColumnSettingsRequestOf,
 } from './column-settings-request';
 import type { PlanPalette } from './plan-palette';
+import { columnPartStyle } from './column-part';
 import { COLUMN_ATTR } from './column-move-flip';
 import { plural } from '@liveplanner/project';
 import { CollapseColumnButton } from './CollapsedColumn';
@@ -30,6 +31,7 @@ export function PlanColumnHeader({
   onDeleteStatus,
   onFrame,
   onCollapse,
+  bar,
 }: {
   col: ProjectedColumn & { count: number; overLimit: boolean };
   setup: PlanBoardSetup;
@@ -43,6 +45,8 @@ export function PlanColumnHeader({
   onFrame?: ((header: HTMLElement) => void) | undefined;
   // Collapse Column, for this person alone; absent where the board offers none (a phone).
   onCollapse?: (() => void) | undefined;
+  // Its top bar's colour when the column has none of its own (a multi-colour theme's, column-tones.ts).
+  bar?: string | undefined;
 }) {
   const [open, setOpen] = useState(false);
   // Opened for a column just added: its name is selected, ready to type over.
@@ -53,8 +57,10 @@ export function PlanColumnHeader({
   useEffect(() => {
     if (!canEdit) return;
     const take = () => {
-      if (!takeColumnSettingsRequest(column.id)) return;
-      setFresh(true);
+      // A column just added opens named fresh; a right-click on its background opens it as the cog does.
+      const request = takeColumnSettingsRequestOf(column.id);
+      if (!request) return;
+      setFresh(request.fresh);
       setOpen(true);
     };
     take();
@@ -63,8 +69,8 @@ export function PlanColumnHeader({
   return (
     <div
       {...{ [COLUMN_ATTR]: column.id }}
-      className="group sticky top-0 z-[1] rounded-t-lg px-3 pb-1.5 pt-2"
-      style={{ backgroundColor: palette.column }}
+      className="plan-col group sticky top-0 z-[1] rounded-[var(--plan-col-r,8px)] px-3 pb-1.5 pt-2"
+      style={columnPartStyle(palette)}
       onClick={
         onFrame
           ? (e) => {
@@ -77,14 +83,12 @@ export function PlanColumnHeader({
     >
       <div
         className="mb-1.5 h-1 rounded-full"
-        style={{ backgroundColor: column.color ?? palette.border }}
+        style={{ backgroundColor: column.color ?? bar ?? palette.border }}
         aria-hidden
       />
       <div className="flex items-center gap-2">
-        <span className="truncate text-[13px] font-semibold" style={PLAN_HEADING_STYLE}>
-          {column.name}
-        </span>
-        <span className="ml-auto flex">
+        {/* The count first, then the name (plan-board.md "Column heads"). */}
+        <span className="flex shrink-0">
           <CountBadge
             size="md"
             background={col.overLimit ? palette.warningBg : palette.surface}
@@ -97,6 +101,12 @@ export function PlanColumnHeader({
           >
             {column.wipLimit ? `${col.count} / ${column.wipLimit}` : col.count}
           </CountBadge>
+        </span>
+        <span
+          className="mr-auto truncate text-[length:calc(13px*var(--plan-text-scale,1))] font-semibold"
+          style={PLAN_HEADING_STYLE}
+        >
+          {column.name}
         </span>
         {onCollapse ? (
           <CollapseColumnButton column={column} palette={palette} onCollapse={onCollapse} />
@@ -126,7 +136,10 @@ export function PlanColumnHeader({
         ) : null}
       </div>
       {col.overLimit ? (
-        <div className="text-[10px] font-medium" style={{ color: palette.warning }}>
+        <div
+          className="text-[length:calc(10px*var(--plan-text-scale,1))] font-medium"
+          style={{ color: palette.warning }}
+        >
           Over WIP limit
         </div>
       ) : null}

@@ -2,7 +2,7 @@
 
 // The column picker (docs/specs/026-plan/plan-board.md "The column picker"), hung from a column's + Add Column
 // After. One field names the column: when the project has statuses this board lacks, it is a combobox over them
-// (Existing Statuses, ExistingStatusList), narrowing them as it is typed, the arrows moving through them and Enter
+// (Available States, ExistingStatusList), narrowing them as it is typed, the arrows moving through them and Enter
 // adding the highlighted one; with none highlighted, Enter (or Add Column) adds the typed name, which uses the
 // existing status of that name rather than a near-duplicate, and says so. Without any, it is the plain field, with
 // the suggested statuses the board and the project lack under it (SuggestedStatusList).
@@ -171,7 +171,7 @@ export function AddColumnPicker({
         <>
           <div aria-hidden className="h-px bg-slate-100 dark:bg-slate-800" />
           <SuggestedStatusList
-            heading="Suggested Statuses"
+            heading="Suggested States"
             suggestions={suggestions}
             onPick={(n) => onSuggest([n])}
             onPickAll={onSuggest}

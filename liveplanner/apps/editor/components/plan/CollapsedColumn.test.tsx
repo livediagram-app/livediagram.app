@@ -52,20 +52,33 @@ describe('CollapsedColumnCell', () => {
     expect(cell('refused').box.style.outline).toContain('#dc2626');
   });
 
-  it('shows its count in the warning colour over its WIP limit', () => {
-    cell(null, true);
-    const badge = screen.getByText('4').parentElement!;
-    expect(badge.style.backgroundColor).not.toBe('');
-    cleanup();
-    cell(null, false);
-    expect(screen.getByText('4').parentElement!.style.color).not.toBe(badge.style.color);
+  it('shows no count badge, its count said only in its name', () => {
+    cell(null);
+    expect(screen.queryByText('4')).toBeNull();
+  });
+
+  it('leaves its name out when told (a later swimlane row)', () => {
+    render(
+      <CollapsedColumnCell
+        column={{ id: 'done', name: 'Done' }}
+        status="done"
+        laneKey="b"
+        count={1}
+        overLimit={false}
+        palette={palette}
+        held={null}
+        onExpand={vi.fn()}
+        named={false}
+      />,
+    );
+    expect(screen.getByRole('button').textContent).toBe('');
   });
 });
 
 // The fit decision is the browser's layout (jsdom has none), so this holds the rules that make it: a wrapping column
 // of full-width lines, the name its own unclipped line, hidden overflow, and the name still said by the button.
 describe('CollapsedColumnCell name fit', () => {
-  it('lays the count and name out as wrapping full-width lines, clipping a name that does not fit whole', () => {
+  it('lays the name out as a wrapping full-width line, clipping a name that does not fit whole', () => {
     cell(null);
     const button = screen.getByRole('button', { name: 'Expand Column, Done, 4 items' });
     expect(button.className).toBe(STRIP_BUTTON_CLASS);
@@ -75,8 +88,8 @@ describe('CollapsedColumnCell name fit', () => {
     expect(STRIP_LINE_CLASS).toContain('shrink-0');
     expect(STRIP_NAME_CLASS).not.toContain('ellipsis');
     expect(STRIP_NAME_CLASS).not.toContain('overflow');
-    expect(button.children).toHaveLength(2);
-    expect(button.children[1]!.textContent).toBe('Done');
+    expect(button.children).toHaveLength(1);
+    expect(button.children[0]!.textContent).toBe('Done');
   });
 });
 

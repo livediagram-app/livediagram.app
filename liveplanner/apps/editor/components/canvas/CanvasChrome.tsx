@@ -34,7 +34,8 @@ const NO_CLUSTER_INSET = { x: 0, y: 0 };
 import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { Fragment, type Dispatch, type RefObject, type SetStateAction } from 'react';
+import { Fragment, useState, type Dispatch, type RefObject, type SetStateAction } from 'react';
+import type { ShapeElement } from '@liveplanner/project';
 import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { PanelSnapSlot } from '@liveworkspace/workbench/components/canvas/PanelSnapSlot';
@@ -50,6 +51,9 @@ import { panelEnabled } from '@/lib/user-preferences';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
+import { useConfigurableBoard } from '@/hooks/plan/board-configure-store';
+import { BoardConfigureDialog } from '@/components/plan/configure/BoardConfigureDialog';
+import { track } from '@/lib/telemetry';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
 // state) and threads into the chrome alongside its own props.
@@ -171,6 +175,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // cluster moves inside its frame.
   const canvasCovered = useCanvasCovered();
   const tabPlanKind = usePlanTabKind();
+  // A Board tab's board, for the cluster's Configure (plan-board.md "Configure").
+  const configurableBoard = useConfigurableBoard();
+  // Configure's screen (docs/specs/026-plan/plan-board.md "Configure"), over the board it sets up.
+  const [configuring, setConfiguring] = useState(false);
+  const configuredElement =
+    configuring && configurableBoard
+      ? elements.find((e): e is ShapeElement => e.id === configurableBoard && e.type === 'shape')
+      : undefined;
   // A Dashboard's or a Form tab's page covers the canvas as a page, not an element.
   const elementCovers = canvasCovered && tabPlanKind !== 'dashboard' && tabPlanKind !== 'form';
   const clusterInset = elementCovers ? COVERED_CLUSTER_INSET : NO_CLUSTER_INSET;
@@ -423,7 +435,19 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* Layers (docs/specs/006-project/layers.md) and the Theme & Canvas brush
               (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point; read-only sessions
               pass no handler), one strip in every mode: see LayersThemeStrip. */}
-            {!zenMode ? <LayersThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}
+            {!zenMode ? (
+              <LayersThemeStrip
+                onOpenTheme={onOpenCanvasTheme}
+                onConfigure={
+                  configurableBoard
+                    ? () => {
+                        setConfiguring((on) => !on);
+                        track('Plan', 'Opened', 'BoardSettings');
+                      }
+                    : undefined
+                }
+              />
+            ) : null}
             <ViewZoomControls
               onZoomIn={handleZoomIn}
               onZoomOut={handleZoomOut}
@@ -439,6 +463,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
           </>
         )}
       </div>
+      {configuredElement ? (
+        <BoardConfigureDialog element={configuredElement} onClose={() => setConfiguring(false)} />
+      ) : null}
     </>
   );
 }

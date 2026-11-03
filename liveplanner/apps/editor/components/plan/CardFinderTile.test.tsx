@@ -65,14 +65,14 @@ describe('the Card Finder’s tiles', () => {
     const li = tile('Write copy');
     const more = within(li).getByRole('button', { name: /^More for #/ });
     // Inside the card's own frame (the face's rounded border), not a sibling of it.
-    expect(more.closest('.rounded-xl.border')).not.toBeNull();
+    expect(more.closest('.plan-card')).not.toBeNull();
     expect(more.parentElement!.className).toContain('z-[2]');
     const openButton = within(li).getByRole('button', { name: /^Open / });
     expect(
       openButton.compareDocumentPosition(more) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     // The face drawn with an action does not lift itself (its host draws the hover).
-    expect(more.closest('.rounded-xl.border')!.className).not.toContain('hover:-translate-y-px');
+    expect(more.closest('.plan-card')!.className).not.toContain('plan-card-hover');
   });
 
   it('opens the card from the tile, closing the popover', () => {

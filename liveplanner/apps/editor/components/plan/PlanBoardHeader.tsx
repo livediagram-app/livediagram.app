@@ -31,6 +31,7 @@ import { createPortal } from 'react-dom';
 import { typeStatusRefusal } from '@/hooks/plan/status-refusal';
 import type { PlanPalette } from './plan-palette';
 import { BAND_CONTROLS_CLASS, BAND_HEADER_END, bandControlsProps } from './band-controls';
+import { useHeaderArrival } from './header-arrival';
 
 // The shared six-dot grip (the article zone bar's), a board's move handle.
 const GripIcon = lucideGlyph(lucideGripVertical, 16);
@@ -187,6 +188,8 @@ export function PlanBoardHeader({
   const headerRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
   useKeepOnScreen(endRef, headerRef);
+  // Its chips and widgets fan in as it mounts, never on a re-render (header-arrival.ts).
+  useHeaderArrival(headerRef);
   const button =
     'h-7 shrink-0 rounded-md border px-2 text-[12px] font-medium transition enabled:cursor-pointer disabled:opacity-50';
   return (
@@ -275,14 +278,25 @@ export function PlanBoardHeader({
         {inBox && showWidgets && (widgets.length > 0 || canEdit) ? (
           // In a header band the widgets ride here, before the cog, behind a hairline: the top row's right is one card.
           // Someone who may not edit a board with none sees no zone, so no hairline stands alone before the cog.
-          <span
-            data-widget-zone=""
-            className="flex min-w-0 max-w-[min(56vw,46rem)] items-center border-r pr-2"
-            style={{ borderColor: palette.border }}
-            onPointerDown={stop}
-          >
-            {widgetZone}
-          </span>
+          <>
+            <span
+              data-widget-zone=""
+              className="flex min-w-0 max-w-[min(56vw,46rem)] items-center"
+              onPointerDown={stop}
+            >
+              {widgetZone}
+            </span>
+            {/* The hairline before the cog: 20 px tall in the element's line, as the one after the menu is. Only
+                with something after it to set apart (a Board tab's board has no cog: Configure is in the cluster). */}
+            {end ? (
+              <span
+                aria-hidden
+                data-widget-zone-rule=""
+                className="h-5 w-px shrink-0"
+                style={{ backgroundColor: palette.border }}
+              />
+            ) : null}
+          </>
         ) : null}
         {loadFailed || (setup.hideWriting && canEdit) ? (
           <div className="flex shrink-0 items-center gap-2" onPointerDown={stop}>

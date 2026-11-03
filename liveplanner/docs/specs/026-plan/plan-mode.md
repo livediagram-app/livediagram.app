@@ -34,8 +34,10 @@ general tab is marked with it where tabs are listed with an icon; a Board, Sheet
   Types** button stands in the bottom-right cluster ([Item types](item-types.md)).
 - **Everything else is the canvas's**: selection, arrows, text, stickies, frames, snapping, history and shortcuts, so
   notes and arrows around a board work as they always do.
-- **The canvas colours are the tab's**, on a blank canvas while the tab keeps its theme's pattern
-  ([Editor mode](../007-editor/editor-modes.md#one-look)).
+- **The canvas is the tab's**: its colour and its pattern, the theme's own included, on every tab kind
+  ([Editor mode](../007-editor/editor-modes.md#one-look)). A board is see-through, so its canvas shows through it;
+  a look or a pattern picked in Tab Style always shows. (It used to paint blank while the tab kept its theme's
+  pattern, which hid every look whose pattern was its theme's.)
 
 ## Cost
 

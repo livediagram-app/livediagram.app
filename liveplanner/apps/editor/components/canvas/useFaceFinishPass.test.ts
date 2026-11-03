@@ -115,4 +115,33 @@ describe('drawMarkerFace', () => {
     const root = face(card());
     expect(drawMarkerFace(root, 'el', 'pencil')).toBe(0);
   });
+
+  it('keeps a card’s strokes when a part appears in another column, and seeds by the card', () => {
+    const cardIn = (id: string) =>
+      `<div data-plan-card="${id}" data-w="200" data-h="100" style="position:relative;border:1px solid rgb(200, 200, 200);border-radius:12px">${id}</div>`;
+    const board = (extra: string) =>
+      face(
+        `<div data-plan-column="todo" data-plan-lane="">${extra}${cardIn('a')}</div>` +
+          `<div data-plan-column="done" data-plan-lane="">${cardIn('b')}</div>`,
+      );
+    const inkOf = (root: HTMLElement, id: string) =>
+      root.querySelector(`[data-plan-card="${id}"] svg[data-marker-ink]`)!.innerHTML;
+    const before = board('');
+    drawMarkerFace(before, 'el');
+    const b = inkOf(before, 'b');
+    const a = inkOf(before, 'a');
+    // A hover control (an outlined box) appears at the top of the first column.
+    const after = board(
+      '<div data-w="200" data-h="60" style="position:relative;border:1px solid rgb(200, 200, 200)">Add</div>',
+    );
+    drawMarkerFace(after, 'el');
+    expect(inkOf(after, 'b')).toBe(b);
+    expect(inkOf(after, 'a')).toBe(a);
+    // The same card dragged into the other column draws the same ink there.
+    const moved = face(
+      `<div data-plan-column="todo" data-plan-lane=""></div><div data-plan-column="done" data-plan-lane="">${cardIn('b')}${cardIn('a')}</div>`,
+    );
+    drawMarkerFace(moved, 'el');
+    expect(inkOf(moved, 'a')).toBe(a);
+  });
 });

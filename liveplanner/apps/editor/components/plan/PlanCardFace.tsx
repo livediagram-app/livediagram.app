@@ -45,7 +45,7 @@ import {
   pastDue,
 } from '@liveplanner/items';
 import { RunningTimerPill } from './time/TimerReadouts';
-import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
+import { PLAN_HEADING_STYLE, planTextPx } from '@/lib/plan-font';
 import { finishFaceShadows } from '@liveplanner/project';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { usePlan, type PlanCardPresence } from './PlanContext';
@@ -118,13 +118,15 @@ const cardHeading = (title: ReactNode) => (
   </span>
 );
 
-// The card's frame: rounded, a hairline border and a soft shadow that deepens under the pointer.
+// The card's frame: rounded, a hairline border and a soft shadow (globals.css .plan-card, from the --card-* the frame
+// sets).
 const FRAME =
-  'group/card relative flex h-full overflow-hidden rounded-xl border transition-[box-shadow,transform] duration-150';
+  'plan-card group/card relative flex h-full overflow-hidden rounded-[var(--plan-card-r,12px)] border';
 // The lift under the pointer. Left off a face that carries a headAction: its host draws the hover, since a transform
 // would make the face a stacking context and sink the action under the host's own press target.
-const LIFT =
-  'hover:-translate-y-px hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0';
+// Under the pointer (docs/specs/026-plan/plan-board.md "Card hover"): it rises onto a shadow in its type's colour, its edge
+// leans to that colour and a soft light follows the pointer (globals.css .plan-card-hover, useCardSpotlight).
+const LIFT = 'plan-card-hover';
 const REST_SHADOW = '0 1px 2px rgba(15,23,42,0.06), 0 1px 3px rgba(15,23,42,0.04)';
 
 export function PlanCardFace({
@@ -163,7 +165,7 @@ export function PlanCardFace({
   if (faceDown) {
     return (
       <div
-        className="relative flex h-full min-h-14 items-center gap-2 overflow-hidden rounded-xl border px-3 py-2"
+        className="relative flex h-full min-h-14 items-center gap-2 overflow-hidden rounded-[var(--plan-card-r,12px)] border px-3 py-2"
         style={{
           backgroundColor: palette.card,
           borderColor: palette.cardBorder,
@@ -176,7 +178,10 @@ export function PlanCardFace({
           style={{ backgroundColor: item.createdBy.color }}
           aria-hidden
         />
-        <span className="text-[12px] italic" style={{ color: palette.muted }}>
+        <span
+          className="text-[length:calc(12px*var(--plan-text-scale,1))] italic"
+          style={{ color: palette.muted }}
+        >
           Hidden until reveal
         </span>
       </div>
@@ -205,13 +210,21 @@ export function PlanCardFace({
       {hasRepeat(item) ? <RepeatMark color={palette.muted} /> : null}
     </>
   );
+  // Flat under Professional and Marker (docs/specs/008-canvas/finish.md "Faces"); a presence ring still shows.
+  const shadows = finishFaceShadows(faceFinish);
   const frame = {
-    backgroundColor: palette.card,
-    borderColor: palette.cardBorder,
-    // Flat under Professional and Marker (docs/specs/008-canvas/finish.md "Faces"); a presence ring still shows.
-    boxShadow: ring ?? (finishFaceShadows(faceFinish) ? REST_SHADOW : undefined),
+    '--card-bg': palette.card,
+    '--card-line': palette.cardBorder,
+    '--card-ink': palette.text,
+    '--card-ring': ring ?? '0 0 #0000',
+    '--card-shadow': shadows ? REST_SHADOW : '0 0 #0000',
+    '--card-accent': accent,
+    // Under the pointer: a shadow tinted with the type's colour, the card staying put (globals.css plan-card-hover).
+    '--card-hover-shadow': shadows
+      ? `0 1px 2px rgba(15,23,42,0.06), 0 4px 10px -6px rgba(15,23,42,0.2), 0 10px 20px -12px color-mix(in srgb, ${accent} 25%, transparent)`
+      : '0 0 #0000',
     opacity: muted ? 0.7 : 1,
-  };
+  } as React.CSSProperties;
   const presenceTag = presence ? <PresenceTag name={presence.name} color={presence.color} /> : null;
   // One field's bit, as it draws in a row (a pill, a chip, a disc); null when the card has nothing for it. `big`
   // is a Detailed header's larger chips.
@@ -297,7 +310,7 @@ export function PlanCardFace({
         return typeof description === 'string' && description.trim() ? (
           <p
             key={f}
-            className="line-clamp-2 w-full text-[12px] leading-snug"
+            className="line-clamp-2 w-full text-[length:calc(12px*var(--plan-text-scale,1))] leading-snug"
             style={{ color: palette.muted }}
           >
             {description}
@@ -430,7 +443,7 @@ export function PlanCardFace({
   const titleText = (lines: 2 | 3, px: number) => (
     <span
       className={`${lines === 2 ? 'line-clamp-2' : 'line-clamp-3'} min-w-0 flex-1 font-semibold leading-snug [overflow-wrap:anywhere]`}
-      style={{ color: palette.text, fontSize: px }}
+      style={{ color: palette.text, fontSize: planTextPx(px) }}
     >
       {title}
     </span>
@@ -452,7 +465,7 @@ export function PlanCardFace({
         {bits.length ? (
           <div
             data-card-bits
-            className="flex min-w-0 flex-wrap items-center gap-1.5 pl-3 text-[11px] font-medium"
+            className="flex min-w-0 flex-wrap items-center gap-1.5 pl-3 text-[length:calc(11px*var(--plan-text-scale,1))] font-medium"
             style={{ color: palette.muted }}
           >
             {bits}
@@ -470,7 +483,7 @@ export function PlanCardFace({
         {cardHeading(titleText(2, 13))}
         {flag}
         <span
-          className="flex shrink-0 items-center gap-1.5 text-[11px] font-medium"
+          className="flex shrink-0 items-center gap-1.5 text-[length:calc(11px*var(--plan-text-scale,1))] font-medium"
           style={{ color: palette.muted }}
         >
           {zone('trail', slotBits('trail'))}
@@ -499,7 +512,7 @@ export function PlanCardFace({
       ) : null}
       {head.length || headEnd.length || ownColour || edit || headAction ? (
         <div
-          className="flex items-center gap-1.5 text-[11px] font-medium"
+          className="flex items-center gap-1.5 text-[length:calc(11px*var(--plan-text-scale,1))] font-medium"
           style={{ color: palette.muted }}
         >
           {zone('head', head)}
@@ -518,14 +531,14 @@ export function PlanCardFace({
       </div>
       {body.length || edit ? (
         <div
-          className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11px] font-medium"
+          className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[length:calc(11px*var(--plan-text-scale,1))] font-medium"
           style={{ color: palette.muted }}
         >
           {zone('body', body)}
         </div>
       ) : null}
       {foot.length || footEnd.length || edit || running ? (
-        <div className="mt-auto flex flex-wrap items-center gap-1 pt-0.5 text-[11px] font-medium">
+        <div className="mt-auto flex flex-wrap items-center gap-1 pt-0.5 text-[length:calc(11px*var(--plan-text-scale,1))] font-medium">
           {zone('foot', foot)}
           {footEnd.length || edit || running ? (
             <span className="ml-auto flex items-center gap-1">

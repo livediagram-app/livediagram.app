@@ -45,7 +45,10 @@ export function SlotColumnHeader({
         className="h-2 w-2 shrink-0 rounded-full"
         style={{ backgroundColor: column.color ?? palette.muted }}
       />
-      <span className="min-w-0 truncate text-[12px] font-semibold" style={PLAN_HEADING_STYLE}>
+      <span
+        className="min-w-0 truncate text-[length:calc(12px*var(--plan-text-scale,1))] font-semibold"
+        style={PLAN_HEADING_STYLE}
+      >
         {column.name}
       </span>
       <CountBadge

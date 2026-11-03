@@ -123,13 +123,13 @@ AddColumnPicker.tsx      the column picker, used by the popover's + Add Column A
                          aria-autocomplete=list); `narrowStatuses` filters rows by statusKey substring; ArrowDown
                          clamps at the last row, ArrowUp past the first returns to -1 (no highlight); Enter adds the
                          highlighted row, else the typed name (matchStatus). Typing resets the highlight
-ExistingStatusList.tsx   the picker's Existing Statuses: heading + count, Add All (two or more, field blank), a
+ExistingStatusList.tsx   the picker's Available States: heading + count, Add All (two or more, field blank), a
                          role=listbox `ul` (max-h-56, scrolls, the highlighted row kept in view) of role=option rows
                          (`data-status`; swatch, name, `usedOn`, `cardCount` pill); a row's mousedown is prevented so
                          the field keeps focus, mousemove highlights, click adds; colour transitions off under
                          motion-reduce. Without rows: `NoMatches`, "No states match “{text}”".
 SuggestedStatusList.tsx  Suggested statuses (spec "Suggested statuses"), in Setup Board's Columns step ("Suggested
-                         States", the board's `palette`) and the picker ("Suggested Statuses", the menu's colours): a
+                         States", the board's `palette`) and the picker ("Suggested States", the menu's colours): a
                          heading, Add All (two or more, `disabled` at the limit), then `OptionRows` kind=action
                          labelled by the heading, a row per `SuggestedStatus` (PlusIcon, name, `hint` as its detail,
                          ariaLabel "Add {Name}"). Nothing renders for an empty list. The picker shows it only while
@@ -195,6 +195,14 @@ BoardTitle.tsx           the title, or while renaming an input (`BOARD_TITLE_MAX
                          Enter or blur saves the trimmed non-empty name through onSetup(..., 'Title'),
                          Escape cancels, a `closed` ref keeps the trailing blur from saving a cancel
 AddCardButton.tsx        a cell's + Add card; opens AddCardPopover (or when the N key asks)
+header-arrival.ts        the header's fan-in (spec "The header arrives laid out, then fans in"): a chip, widget or
+                         zone button takes `HEADER_ARRIVAL_CLASS` (`[[data-header-arriving]_&]:animate-header-in
+                         stagger-enter`) and `headerArrivalIndex(i)` (`--stagger-i`); `headerArrivalRow` sets
+                         `HEADER_ARRIVAL_STEP` (25 ms) as `--motion-cascade-step` on the chips row and the widget zone,
+                         the shared 100 ms cap kept. `useHeaderArrival(headerRef)` (PlanBoardHeader) sets
+                         `data-header-arriving` on the header's DOM in a layout effect and takes it off after
+                         `HEADER_ARRIVAL_MS` (600), never through state: a reordered item (React reinserts it, which
+                         restarts a CSS animation) then has no animation to replay.
 BoardCardTypeChips.tsx   the header's card type chips (spec "Card type chips"): one `button` per `boardAddTypes`
                          type, `PlanCardTileArt` (22 px: card outline, a stripe in the type's colour, its glyph) then
                          its label (labels drop above `CHIP_NAMES_MAX` types), each in a `HoverCard` "Add a {Type}"
@@ -225,7 +233,7 @@ phone-swipe.ts           pure: a phone board's sideways swipe (plan-board.md "A 
                          In a Dashboard slot and not maximised (`simplified = useInDashboard() && !maximised`,
                          dashboard-context.ts: DashboardContext present) PlanBoardView draws the compact slot board
                          (plan-tabs.md "A board in a slot is simplified"): `setUpHere = canEdit && !simplified`
-                         keeps Add New Card Type off; the projection and usePlanBoardDrop run over
+                         keeps Add Card Type off; the projection and usePlanBoardDrop run over
                          `slotSetup(setup)` (slot-board.ts: one row, so a lane-free move) with no quick filter (`applied`
                          is NO_QUICK); SlotBoardHeader replaces PlanBoardHeader and SlotColumnHeader replaces
                          PlanColumnHeader; ExampleCardsNotice and each cell's Add card row are not drawn. Maximised
@@ -346,7 +354,12 @@ pointerup over an open slot calls `addCard(type, slot)`, over a refused one anno
 nothing; Escape, pointercancel or unmount end it and clear the hover; a press that never travels is the chip's
 click), `usePlanCardDrag` (pointer drag
 within, between and out of boards; the drop slot is read from `data-plan-status` / `data-plan-lane` / `data-plan-card`
-under the pointer), `usePlanPresence` (the `plan-presence` op), `useItemUndo` (the undo journal), and
+under the pointer; where no cell is under it, on the same board as the last slot (a gutter, a column head, a lane
+heading), `keptPlanDropSlot` keeps the last slot and its refusal, so the placeholder never closes and reopens on the
+way to the next column, plan-board.md "A steady drag"; a single card's own place, `planCardHome` read from the DOM
+as it is pressed (its cell and the card after it), is no slot at all, `isHomeSlot` (its whole cell on a sorted board,
+where `place` hands back a new slot), so no gap opens there and letting go writes nothing, plan-board.md "No gap where
+the card already is"), `usePlanPresence` (the `plan-presence` op), `useItemUndo` (the undo journal), and
 `maximised-plan.ts` is the maximised board or view, a module store
 (`{ id, kind: 'Board' | 'View' } | null`, `maximisePlanElement` / `restorePlanElement` / `releasePlanElement` /
 `useMaximisedPlanId`; `kind` names the telemetry), drawn in the canvas area (no zen chrome; the editor's chrome stays). `PlanProvider` wraps the editor view, so the export dialog reads
@@ -505,7 +518,9 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   `useCanvasLayerInsets(canvas)` (hooks/ui): `apps/editor/lib/canvas-layer-insets.ts` reads `[data-toolbar-menu]` (top row),
   `topStripInset` (the Toolbar strip), `[data-layout-chrome]` (MovablePanel `layoutChrome`: the Explorer only, so a passing panel such as the Trash never moves the board; a side by its nearer edge, a sheet
   wider than `WIDE_PANEL_SHARE` of the canvas as top or bottom by its middle); the bottom-right controls are not measured (they float over the board at their own z),
-  capped at `MAX_INSET_SHARE` per axis. Measured in one `requestAnimationFrame` after mount and after a
+  capped at `MAX_INSET_SHARE` per axis. Measured at once in a layout effect as the layer mounts (before its first
+  paint, so a tab switch never draws a frame of `NO_LAYOUT` with the header out of its band; `FilledTabLayer` moves its
+  host into the box first, so the controls card is there to measure), and in one `requestAnimationFrame` after a
   `ResizeObserver` change (the canvas and each piece of chrome), a chrome element's `style`/`class` change, a
   `transitionend` on chrome, a window `resize`, or a child-list change under the canvas that adds or removes chrome
   (`touchesChrome`; the set is re-observed only when it differs; the strip's children are observed too, as its card
@@ -555,7 +570,9 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   cover, so no context reaches it), and while in a band with a slot portals `render(true)` into the slot, else renders
   `render(false)` in place. `PlanBoardHeader` (its `data-board-title` span with `BoardTitle inBox`), `SheetHeader`
   (`data-sheet-title`) and `ViewFrame` wrap their titles in it; in the box they take `IN_BOX_TITLE_CLASS` and the
-  chrome's ink (a rename field `color: inherit`). `CanvasCover` marks its inner box `data-header-band` and sets `--plan-band-h`, `--plan-band-left`
+  chrome's ink (a rename field `color: inherit`). `CanvasCover`'s `enter` (FilledTabLayer, DashboardPage, FormPage; never
+  MaximisedPlanLayer, which grows) gives its inner box `animate-tab-in` (globals.css: `fade-in` over `short`, opacity
+  only), so a tab's page fades in as it mounts (plan-tabs.md "Switching to a tab fades its content in"). `CanvasCover` marks its inner box `data-header-band` and sets `--plan-band-h`, `--plan-band-left`
   and `--plan-band-mid` (`bandVars`). `PlanBoardHeader`, `SheetHeader` and the views' `ViewFrame` read them with their
   own sizes as fallbacks: `h-[var(--plan-band-h,52px)]` (40 px a Sheet's, 2.5rem a view's),
   `pl-[var(--plan-band-left,…)]`, and `max-w-[var(--plan-band-mid,none)]` on the title (and widgets, count) group, the
@@ -678,7 +695,7 @@ statusTypes, item)` from `type-choices.ts`, the catalogue types the boards namin
   its cells emptied, unless Shift is held, so Shift+Arrows still move a card into it).
 - Column picker: the field is a `combobox` (`aria-controls` the listbox, `aria-activedescendant` the highlighted
   `option`, `aria-expanded` while rows show); rows are `option`s with `aria-selected`; the list is labelled by its
-  Existing Statuses heading; the match note is a `status` the field is described by. ArrowUp/ArrowDown, Enter,
+  Available States heading; the match note is a `status` the field is described by. ArrowUp/ArrowDown, Enter,
   Escape (closes only the picker), Tab reaches Add Column then Add All.
 - Suggested statuses: a `group` of buttons named by its heading (`OptionRows` kind=action, roving tabindex,
   ArrowUp/ArrowDown/Home/End); each button is named "Add {Name}" and its hint is visible text in it.

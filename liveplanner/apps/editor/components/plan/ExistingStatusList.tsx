@@ -1,6 +1,6 @@
 'use client';
 
-// The column picker's Existing Statuses (docs/specs/026-plan/plan-board.md "The column picker"): a listbox of the
+// The column picker's Available States (docs/specs/026-plan/plan-board.md "The column picker"): a listbox of the
 // statuses the project has that this board lacks, each a row with its colour swatch, its name, the boards that use
 // it and how many of its cards this board would show. Driven from the picker's field (a combobox): the field keeps
 // focus and the highlighted row is its active descendant, so arrows move through the rows, Enter adds the
@@ -26,7 +26,7 @@ export function usedOn(s: Pick<MissingStatus, 'boards'>): string {
 }
 
 // A status's swatch: the colour its first board gives its column, or a hollow ring when none does. Shared with Setup
-// Board's Existing States.
+// Board's Available States.
 export function StatusSwatch({ colour }: { colour?: string | undefined }) {
   return (
     <span
@@ -71,7 +71,7 @@ export function ExistingStatusList({
     <div className="flex flex-col gap-1">
       <div className="flex min-h-6 items-center justify-between gap-2">
         <p id={`${listId}-label`} className={`${HEADING} flex items-center gap-1.5`}>
-          Existing Statuses
+          Available States
           <span className="rounded-full bg-slate-100 px-1.5 text-[10px] tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-400">
             {total}
           </span>

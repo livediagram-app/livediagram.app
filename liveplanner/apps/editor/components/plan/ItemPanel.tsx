@@ -36,6 +36,7 @@ import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobi
 import { DebouncedText } from './item-field-editors';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ItemPanelMenu } from './ItemPanelMenu';
+import { useCardMorph } from './useCardMorph';
 import { useItemRepeat } from './ItemRepeatLine';
 import { LinkedCardGroup } from './LinkedCards';
 import { BlockedBySections } from './BlockedBy';
@@ -147,10 +148,12 @@ export function ItemPanel(props: ItemPanelProps) {
   // The size eases between the two (plan-board.md "Maximised"): a View Transition of the Dialog's panel.
   const [shownMaximised, onMaximise] = useAnimatedMaximise(!!props.maximised, props.onMaximise);
   const maximised = shownMaximised && !mobile;
+  // It grows out of the card clicked and shrinks back into it (useCardMorph).
+  const morph = useCardMorph(item.id, onClose);
   return (
     <Dialog
       open
-      onClose={onClose}
+      onClose={morph.close}
       ariaLabel={`Item #${item.key}`}
       size="3xl"
       phoneSheet
@@ -161,7 +164,14 @@ export function ItemPanel(props: ItemPanelProps) {
       className={panelSizeClass(maximised)}
       resizeTransition={PANEL_RESIZE_TRANSITION}
     >
-      <ItemPanelContent key={item.id} {...props} maximised={maximised} onMaximise={onMaximise} />
+      <span ref={morph.probe} hidden />
+      <ItemPanelContent
+        key={item.id}
+        {...props}
+        onClose={morph.close}
+        maximised={maximised}
+        onMaximise={onMaximise}
+      />
     </Dialog>
   );
 }

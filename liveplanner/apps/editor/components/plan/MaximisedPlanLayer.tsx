@@ -66,10 +66,14 @@ export function CanvasCover({
   marker,
   tint,
   blend,
+  enter = false,
   children,
 }: {
   layout: CanvasLayout;
   marker: Record<string, string>;
+  // A tab's own page (a Board, Sheet, Dashboard or Form tab): it fades in as it mounts, on a tab switch
+  // (docs/specs/026-plan/plan-tabs.md "Switching to a tab fades its content in"). Not a maximised element, which grows.
+  enter?: boolean;
   // The element's hue (planBandTint), worn by the menu box and palette while its header holds the top row.
   tint?: string | undefined;
   // The element's own surface and border (planBandBlend): with it, the chrome in the band takes them instead, flat
@@ -143,7 +147,8 @@ export function CanvasCover({
       <div
         {...marker}
         {...(band ? { 'data-header-band': '' } : {})}
-        className="absolute p-2 sm:p-3"
+        // Opacity only: nothing in it is measured off its place while it fades. CSS on mount, so never on a re-render.
+        className={`absolute p-2 sm:p-3 ${enter ? 'animate-tab-in' : ''}`}
         // The header band (docs/specs/026-plan/plan-board.md "The header holds the top row"): the element's header
         // reads these, each with its own size as the fallback, so on the canvas nothing changes.
         // On a phone, the row it shares with the menu (canvas-layer-insets phoneRow): the same height and start, no more.
@@ -611,9 +616,9 @@ function FilledTabLayer({
   onSize?: ((size: { width: number; height: number } | null) => void) | undefined;
 }) {
   const [mark, canvas] = useCanvasRoot();
-  // Clear of the chrome over the canvas: the top row (or holding it in the header band), side panels.
-  const layout = useCanvasLayerInsets(canvas);
   const boxRef = useRef<HTMLDivElement>(null);
+  // The host goes into the box first (this effect runs before the measure below), so the first measure, made before
+  // the first paint, finds the header's controls card there.
   useLayoutEffect(() => {
     const box = boxRef.current;
     if (box && host.parentElement !== box) {
@@ -621,6 +626,8 @@ function FilledTabLayer({
       announceHeaderBand();
     }
   }, [canvas, host]);
+  // Clear of the chrome over the canvas: the top row (or holding it in the header band), side panels.
+  const layout = useCanvasLayerInsets(canvas);
   useReportedBoxSize(boxRef, onSize, canvas);
   return (
     <>
@@ -632,6 +639,7 @@ function FilledTabLayer({
               marker={{ 'data-fill-tab-board': '' }}
               tint={tint}
               blend={blend}
+              enter
             >
               <div ref={boxRef} className="relative h-full w-full" />
             </CanvasCover>,

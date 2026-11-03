@@ -81,7 +81,7 @@ export function SetupDialog({
   children: ReactNode;
 }) {
   const bodyRef = useRef<HTMLDivElement>(null);
-  // A dialog opened over this one (Add New Card Type's type editor) takes Escape alone: this one, counted too, stays.
+  // A dialog opened over this one (Add Card Type's type editor) takes Escape alone: this one, counted too, stays.
   const coveredByAnother = useOpenModalCount() > 1;
   const returnRef = useRef(returnFocus);
   useLayoutEffect(() => {

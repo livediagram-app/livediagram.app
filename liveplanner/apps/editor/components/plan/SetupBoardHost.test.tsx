@@ -109,7 +109,7 @@ describe('Setup Board as a dialog', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('stays open when Escape closes a dialog opened over it (Add New Card Type)', async () => {
+  it('stays open when Escape closes a dialog opened over it (Add Card Type)', async () => {
     markPlacedHere('board1');
     const Over = ({ open, onClose }: { open: boolean; onClose: () => void }) => (
       <Dialog open={open} onClose={onClose} ariaLabel="Over">

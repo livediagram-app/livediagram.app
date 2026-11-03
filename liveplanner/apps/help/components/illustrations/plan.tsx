@@ -744,7 +744,7 @@ export function PlanCardMenuScene() {
 }
 
 /** The Card Types panel above its button: a row per type (its stripe, glyph tile, name and how many
- *  fields, then Duplicate and the pencil), then Add New Card Type. */
+ *  fields, then Duplicate and the pencil), then Add Card Type. */
 export function PlanCardTypesScene() {
   const rows: { type: CardType; name: string; fields: string }[] = [
     { type: 'project', name: 'Project', fields: '8 fields' },
@@ -798,7 +798,7 @@ export function PlanCardTypesScene() {
           strokeDasharray="4 3"
         />
         <Label x={220} y={201} size={11} weight={600} anchor="middle" tone="accent">
-          + Add New Card Type
+          + Add Card Type
         </Label>
       </Panel>
       {/* Its button, in the bottom-right cluster. */}

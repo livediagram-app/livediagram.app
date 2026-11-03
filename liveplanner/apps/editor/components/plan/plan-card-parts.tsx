@@ -59,7 +59,7 @@ export function MetaPill({
 }) {
   return (
     <span
-      className="inline-flex h-5 shrink-0 items-center gap-1 rounded-md px-1.5 tabular-nums"
+      className="inline-flex h-[calc(1.25rem*var(--plan-text-scale,1))] shrink-0 items-center gap-1 rounded-md px-1.5 tabular-nums"
       style={
         tone
           ? { backgroundColor: tint(chipInkOn(tone, palette)), color: chipInkOn(tone, palette) }
@@ -244,7 +244,7 @@ export function keyTextOn(fill: string): string {
 export function KeyTag({ itemKey, accent }: { itemKey: number; accent: string }) {
   return (
     <span
-      className="inline-flex h-5 shrink-0 items-center rounded-md px-1.5 text-[11px] font-semibold tabular-nums"
+      className="inline-flex h-[calc(1.25rem*var(--plan-text-scale,1))] shrink-0 items-center rounded-md px-1.5 text-[length:calc(11px*var(--plan-text-scale,1))] font-semibold tabular-nums"
       style={{ backgroundColor: accent, color: keyTextOn(accent) }}
     >
       #{itemKey}
@@ -277,7 +277,7 @@ export function TypeChip({
 }) {
   return (
     <span
-      className="inline-flex h-5 shrink-0 items-center gap-1 rounded-md px-1.5 text-[11px] font-semibold"
+      className="inline-flex h-[calc(1.25rem*var(--plan-text-scale,1))] shrink-0 items-center gap-1 rounded-md px-1.5 text-[length:calc(11px*var(--plan-text-scale,1))] font-semibold"
       style={{ backgroundColor: tint(accent), color: accent }}
     >
       <PlanTypeGlyph glyph={glyph} size={12} color={accent} />
@@ -297,7 +297,7 @@ export function LabelChips({
   palette?: PlanPalette;
 }) {
   return (
-    <div className="flex flex-wrap gap-1 text-[11px] font-medium">
+    <div className="flex flex-wrap gap-1 text-[length:calc(11px*var(--plan-text-scale,1))] font-medium">
       {labels.slice(0, max).map((l) => {
         const c = palette ? chipInkOn(labelColour(l), palette) : labelColour(l);
         return (
@@ -361,7 +361,7 @@ export function BlockedMark({ count, card }: { count: number; card: string }) {
     <Tooltip label={blockedLabel(count)}>
       <span
         data-blocked-mark=""
-        className="mt-0.5 inline-flex shrink-0 items-center gap-0.5 text-[11px] font-semibold leading-none"
+        className="mt-0.5 inline-flex shrink-0 items-center gap-0.5 text-[length:calc(11px*var(--plan-text-scale,1))] font-semibold leading-none"
         style={{ color: blockedColourOn(card) }}
         role="img"
         aria-label={blockedLabel(count)}
