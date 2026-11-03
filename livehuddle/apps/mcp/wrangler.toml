@@ -53,8 +53,7 @@ service = "livehuddle-api"
 # codes — all short TTLs. Namespace `livehuddle-mcp-oauth` (the api worker needs no KV, and API tokens are liveworkspace accounts').
 [[kv_namespaces]]
 binding = "OAUTH_KV"
-# Placeholder until card livehuddle 8 creates the namespace on the liveworkspace account (nothing deploys before then).
-id = "00000000000000000000000000000001"
+id = "513f6594b4cf40828df1cd763de71e7a"
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livehuddle-mcp-staging` on its own host,
@@ -88,5 +87,4 @@ service = "livehuddle-api-staging"
 # migrate across.
 [[env.staging.kv_namespaces]]
 binding = "OAUTH_KV"
-# Placeholder until card livehuddle 8 creates the staging namespace.
-id = "00000000000000000000000000000002"
+id = "0c41e114cbfd4243a551bcffd426b02c"

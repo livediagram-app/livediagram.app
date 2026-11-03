@@ -16,7 +16,7 @@ workers_dev = false
 
 # Secrets (wrangler secret put):
 #   INDEX_KEY_LIVEDIAGRAM, INDEX_KEY_LIVEPLANNER, INDEX_KEY_LIVEDOCUMENTS, INDEX_KEY_LIVEDESIGN,
-#   INDEX_KEY_LIVEHUDDLE (livehuddle, held until launch: unset, it can't push)
+#   INDEX_KEY_LIVEHUDDLE (livehuddle)
 #     each shared with that app as INDEX_KEY: the app's server pushes summaries and comments with it,
 #     and the index calls the app's internal routes (copy, purge, revoke) with it.
 #   GRANT_SIGNING_KEY   the private ES256 JWK (with its kid) grants are signed with; its public half

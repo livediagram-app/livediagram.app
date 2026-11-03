@@ -25,7 +25,7 @@ globs = ["**/*.ttf", "**/*.otf"]
 
 # Secrets (wrangler secret put): each app's Worker key, sent as a bearer token.
 #   MEDIA_KEY_LIVEDIAGRAM, MEDIA_KEY_LIVEPLANNER, MEDIA_KEY_LIVEDOCUMENTS, MEDIA_KEY_LIVEDESIGN,
-#   MEDIA_KEY_LIVEHUDDLE (livehuddle, held until launch)
+#   MEDIA_KEY_LIVEHUDDLE (livehuddle)
 #   shared with that app's api Worker as MEDIA_KEY. An app without one can't use the service, and the
 #   unused-image sweep doesn't wait for it. Previews call that app's export door with the same key.
 [vars]
