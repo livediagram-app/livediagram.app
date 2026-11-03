@@ -382,7 +382,7 @@ export async function handlePlanRequest(ctx: PlanRouteContext): Promise<Response
       // "Storage and sync"), validated as the item-types route does; a bad one refuses the create.
       let itemTypes: ItemTypeCatalogue | null = null;
       if (body.itemTypes !== undefined && body.itemTypes !== null) {
-        const checked = validateItemTypeCatalogue(body.itemTypes);
+        const checked = validateItemTypeCatalogue(body.itemTypes, { newerFields: 'refuse' });
         if (!checked.ok)
           return json({ error: 'item_types_invalid', reason: checked.reason }, { status: 400 });
         itemTypes = checked.catalogue;

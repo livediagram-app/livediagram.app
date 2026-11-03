@@ -114,7 +114,8 @@ describe('the type catalogue', () => {
     expect(bad(choiceOf('x'.repeat(CUSTOM_CHOICE_OPTION_MAX + 1)))).toMatchObject({
       reason: 'types[0].custom[0].options',
     });
-    expect(bad({ custom: [{ id: 'f-a', label: 'A', kind: 'signature' }] })).toMatchObject({
+    // A kind this build does not know is a newer field, kept (newer-fields.test.ts); one that is no kind at all is not.
+    expect(bad({ custom: [{ id: 'f-a', label: 'A', kind: 5 }] })).toMatchObject({
       reason: 'types[0].custom[0].kind',
     });
     expect(

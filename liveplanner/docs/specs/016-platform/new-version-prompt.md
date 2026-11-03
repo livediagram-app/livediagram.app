@@ -10,10 +10,21 @@ the open editor asks, calmly, to be reloaded.
   project shapes. The editor is built with it and the api worker serves it, from the same
   definition, so a deploy that changes it changes both.
 - It is bumped only when an older editor can no longer read what the server now serves: a new
-  stored shape that replaces an old one. A new optional field that old editors ignore does not
-  bump it, so an ordinary deploy never prompts anybody.
-- `2` is the first value: packed stroke points. (`1`, every shape before them, is implied: those
-  editors predate the check.)
+  stored shape that replaces an old one, or a new card field kind or Calculated field calculation
+  (an older editor keeps such a field read-only, [Fields from a newer
+  version](../026-plan/item-types.md#fields-from-a-newer-version), and only a reload lets it be
+  edited; editors built before `3` refuse the whole card-type catalogue instead). A new optional
+  setting that old editors ignore does not bump it, so an ordinary deploy never prompts anybody.
+- A guard test (`packages/api-schema/src/project-format.test.ts`) pairs the number with the list of
+  field kinds and calculations it reads: adding one to `CUSTOM_FIELD_KINDS` or `CALCULATIONS` fails
+  it until the number is bumped and the list moved on.
+- The values, each with what it brought:
+  - `1`: every shape before the check (implied: those editors predate it).
+  - `2`: packed stroke points.
+  - `3`: the card field kinds and calculations added after it, which editors built before refuse:
+    Image, Person, Labels, Colour, Checklist, Comments, Votes, Percent and Duration fields and the
+    Rollup, Lookup and Formula calculations (31 October 2026), and Date and Time, Date Range and
+    Phone fields (1 November 2026).
 
 ## How a running editor learns the server's number
 

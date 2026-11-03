@@ -8,6 +8,7 @@ import {
   currencyText,
   ratingText,
   canShowAsPercent,
+  isNewerField,
   type CustomFieldDef,
   type Calculation,
   type CustomFieldKind,
@@ -26,6 +27,7 @@ import {
   lucideMessageSquare,
   lucidePalette,
   lucidePhone,
+  lucideSquareDashed,
   lucideTag,
   lucideType,
   lucideVote,
@@ -87,6 +89,15 @@ export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
   votes: <VotesIcon />,
 };
 
+// A field a newer liveplanner made (docs/specs/026-plan/item-types.md "Fields from a newer version"): a dashed box, a
+// field this build cannot draw, named for what it is.
+const NewerIcon = lucideGlyph(lucideSquareDashed, 16);
+export const NEWER_FIELD_ICON = { node: <NewerIcon />, name: 'Newer Field' };
+
+// A custom field's icon: its kind's, or the newer field's.
+export const customFieldIcon = (field: Pick<CustomFieldDef, 'kind' | 'calculation'>) =>
+  isNewerField(field) ? NEWER_FIELD_ICON.node : CUSTOM_KIND_ICONS[field.kind];
+
 // Add Field's kinds: every custom kind's icon, and the one-to-a-type built-in fields' (Comments, Votes).
 export const PICK_KIND_ICONS: Record<PickKind, React.ReactNode> = {
   ...CUSTOM_KIND_ICONS,
@@ -116,8 +127,9 @@ const BUILT_IN_KINDS: Partial<Record<string, PickKind>> = {
 // A field's icon and the name of what it holds ("Link to Card", "Date", "Person"), for the type editor's rows.
 export function fieldIconOf(
   id: string,
-  custom: Pick<CustomFieldDef, 'kind'> | undefined,
+  custom: Pick<CustomFieldDef, 'kind' | 'calculation'> | undefined,
 ): { node: React.ReactNode; name: string } {
+  if (custom && isNewerField(custom)) return NEWER_FIELD_ICON;
   const kind = custom?.kind ?? BUILT_IN_KINDS[id] ?? 'text';
   return { node: PICK_KIND_ICONS[kind], name: PICK_KIND_LABELS[kind] };
 }

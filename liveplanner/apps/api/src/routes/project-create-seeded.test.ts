@@ -131,6 +131,30 @@ describe('seeded tabs compiled on create', () => {
     expect((await getProject(db.env, 'd2'))?.itemTypes ?? null).toBeNull();
   });
 
+  // docs/specs/026-plan/item-types.md "Fields from a newer version": a create's catalogue is a write, held to the kinds
+  // this api knows.
+  it('refuses a catalogue holding a field kind it does not know', async () => {
+    const itemTypes = {
+      version: 1,
+      types: [
+        {
+          id: 'task',
+          label: 'Task',
+          glyph: 'task',
+          color: '#71717a',
+          fields: ['title', 'status', 'f-x'],
+          custom: [{ id: 'f-x', label: 'X', kind: 'signature' }],
+        },
+      ],
+    };
+    const res = await create([{ id: 't1', name: 'Board', template: 'kanban' }], { itemTypes });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toEqual({
+      error: 'item_types_invalid',
+      reason: 'types[0].custom[0].kind',
+    });
+  });
+
   it('keeps an intent the create gives', async () => {
     await create([{ id: 't1', name: 'Budget', template: 'blank-spreadsheet' }], {
       intent: { mode: 'plan' },

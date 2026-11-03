@@ -33,6 +33,7 @@ import {
   typeCardLayout,
   type CardSlot,
   isCustomCardField,
+  isNewerField,
   calculatedText,
   FORMULA_ERROR_TEXT,
   percentShown,
@@ -299,6 +300,8 @@ export function PlanCardFace({
       default: {
         // A custom field the type's Display places: its kind's glyph (a linked card's own, in its colour) and value.
         const def = isCustomCardField(f) ? (type.custom ?? []).find((c) => c.id === f) : undefined;
+        // A field a newer liveplanner made is never drawn here (item-types.md "Fields from a newer version").
+        if (def && isNewerField(def)) return null;
         // A Comments field counts its own open threads, as the built-in's chip (item-types.md "Comments and Votes fields").
         if (def?.kind === 'comments')
           return (

@@ -32,7 +32,9 @@ async function put(ctx: PlanRouteContext, projectId: string): Promise<Response> 
   const raw = body.itemTypes;
   let itemTypes: ItemTypeCatalogue | null = null;
   if (raw !== null) {
-    const result = validateItemTypeCatalogue(raw);
+    // The newest build: a field kind it does not know is a mistake, never a newer field (item-types.md "Fields from a
+    // newer version").
+    const result = validateItemTypeCatalogue(raw, { newerFields: 'refuse' });
     if (!result.ok) {
       console.info('[item-types] item-types.rejected', { reason: result.reason });
       return json({ error: 'item_types_invalid', reason: result.reason }, { status: 400 });

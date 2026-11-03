@@ -35,7 +35,7 @@ describe('the CLI fields (docs/specs/015-api/blueprints/cli.md "Capabilities")',
     expect(caps).toMatchObject({
       apiBase: expect.stringMatching(/\/api$/),
       authEnabled: false,
-      projectFormat: 2,
+      projectFormat: 3,
     });
     expect(caps).not.toHaveProperty('oauthIssuer');
     expect(caps).not.toHaveProperty('cli');

@@ -4,6 +4,7 @@
 import type { ItemFields, ItemFieldValue } from './item';
 import type { CustomFieldDef, CustomFieldKind, ItemTypeDef } from './item-types';
 import { isTimeSpent } from './duration-fields';
+import { isNewerField } from './newer-fields';
 
 // Every kind but a Checkbox, which reads unticked as empty, so a required one could never be left unticked, a
 // Calculated field, which nobody fills in (item-types.md "Calculated fields"), and an Image, which is added once the
@@ -16,13 +17,18 @@ export const canBeRequired = (kind: CustomFieldKind): boolean =>
   kind !== 'comments' &&
   kind !== 'votes';
 
-// The required custom fields `type` still offers, in its order: one taken off the type is not enforced.
+// The required custom fields `type` still offers, in its order: one taken off the type is not enforced, nor is a
+// newer field (newer-fields.ts), which nothing here can fill in.
 export function requiredCustomFieldsOf(
   type: Pick<ItemTypeDef, 'fields' | 'custom'>,
 ): CustomFieldDef[] {
   return (type.custom ?? []).filter(
     (f) =>
-      f.required === true && canBeRequired(f.kind) && !isTimeSpent(f) && type.fields.includes(f.id),
+      f.required === true &&
+      canBeRequired(f.kind) &&
+      !isTimeSpent(f) &&
+      !isNewerField(f) &&
+      type.fields.includes(f.id),
   );
 }
 

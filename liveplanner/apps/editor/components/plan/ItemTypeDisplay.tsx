@@ -58,7 +58,7 @@ import { PlanTypeGlyph } from './plan-type-glyph';
 import { dayKey } from './day-label';
 import { planPalette } from './plan-palette';
 import { useCardFieldDrag } from './useCardFieldDrag';
-import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
+import { customFieldIcon } from './CustomFieldKindParts';
 import { fieldCountKey } from '@liveplanner/project';
 import { createThreadStore, type ThreadStore } from '@/hooks/plan/thread-store';
 import { ThreadCountsProvider } from './threads/CardThreadsContext';
@@ -238,7 +238,7 @@ const fieldIcon = (type: ItemTypeDef, f: CardField, size = 14) => {
   if (custom)
     return (
       <span className="flex" style={{ width: size, height: size }}>
-        <span className="flex [&_svg]:h-full [&_svg]:w-full">{CUSTOM_KIND_ICONS[custom.kind]}</span>
+        <span className="flex [&_svg]:h-full [&_svg]:w-full">{customFieldIcon(custom)}</span>
       </span>
     );
   // Attachments draws its picture glyph, as on the card.
