@@ -71,6 +71,10 @@ board of the template shows some, and every plan view on its Dashboard has somet
   Goals' **Habits** are Sheet tabs among the boards, each filled from its sheet template and filling its tab, made on
   every path exactly as a [spreadsheet template's](#spreadsheet-templates) Sheet is; the template's Dashboard shows
   them beside its boards.
+- **A template may hold a Form tab** whose responses go to one of its own tabs: Help Desk's **Contact Form** feeds
+  its Tickets board, Event Planner's **RSVP** its RSVP Responses sheet. The catalogue names the form's starter and
+  the tab it feeds, and the form is made with its tab on every path below, unpublished
+  ([Forms](../030-forms/forms.md#starting-a-form), "In a plan template").
 - **Where a person makes one**:
   - **The New Project wizard** makes the project with all the template's tabs, named as the template names
     them; the first is the one that opens.
@@ -302,17 +306,21 @@ Requests from users, voted on and reviewed, and the ones planned followed to shi
 
 ### Event Planner
 
-An event's workstreams on a timeline, the tasks under each, and the guest list, with what is due on a calendar.
+An event's workstreams on a timeline, the tasks under each, the guest list, and an RSVP form whose replies land as rows,
+with what is due on a calendar.
 
-| Tab        | Holds                                                                                                                                                                             |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Timeline   | Board **Workstreams**: Planned, In Progress, At Risk (red), Confirmed (green, done); Projects (one per workstream: Venue, Catering...); start and due dates. Gantt Chart under it |
-| Tasks      | Board **Tasks**: To Do, Doing, Waiting On (amber), Done (done); a row per workstream (Parent); Tasks; due dates. Due Soon, Completion, Unassigned; Due Calendar. How this works   |
-| Guest List | Sheet **Guest List**, filling the tab: the Guest List sheet template (invitations, RSVPs, plus-ones and dietary needs, the headcount and a pie chart)                             |
-| Overview   | Dashboard: the views and note above, beside each tab                                                                                                                              |
+| Tab            | Holds                                                                                                                                                                             |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Timeline       | Board **Workstreams**: Planned, In Progress, At Risk (red), Confirmed (green, done); Projects (one per workstream: Venue, Catering...); start and due dates. Gantt Chart under it |
+| Tasks          | Board **Tasks**: To Do, Doing, Waiting On (amber), Done (done); a row per workstream (Parent); Tasks; due dates. Due Soon, Completion, Unassigned; Due Calendar. How this works   |
+| Guest List     | Sheet **Guest List**, filling the tab: the Guest List sheet template (invitations, RSVPs, plus-ones and dietary needs, the headcount and a pie chart)                             |
+| RSVP           | Form **RSVP**: the Event RSVP starter (Name, Email, Attending?, Dietary needs), each reply a row on RSVP Responses; unpublished                                                   |
+| RSVP Responses | Sheet **RSVP Responses**, filling the tab: a blank sheet, its headers written by the form                                                                                         |
+| Overview       | Dashboard: the views and note above, beside each tab                                                                                                                              |
 
 - How this works: add a Workstream for each part of the event (venue, catering, speakers), with its dates; break each
-  into Tasks on Tasks, under its workstream; keep the Guest List as replies come in; watch what is due on Overview.
+  into Tasks on Tasks, under its workstream; publish RSVP and share its link, each reply landing on RSVP Responses;
+  keep the Guest List as replies come in; watch what is due on Overview.
 
 ### Sales CRM
 
@@ -330,15 +338,18 @@ pipeline on a dashboard.
 
 ### Help Desk
 
-A support queue: tickets by priority from new to closed, and the help articles they lead to.
+A support queue: tickets by priority from new to closed, a contact form whose messages land as tickets, and the help
+articles they lead to.
 
-| Tab            | Holds                                                                                                                                                    |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tickets        | Board **Tickets**: New, Open, Waiting on Customer (amber), Resolved (green, done), Closed; a row per priority; Tickets; due dates. How we work the queue |
-| Knowledge Base | Board **Knowledge Base**: To Write, Drafting, In Review, Published (done); Notes (one per article); labels                                               |
-| Overview       | Dashboard: Item Count, Priorities, Stale Cards, Unassigned; Priority by Status and Cards by Field, beside each tab                                       |
+| Tab            | Holds                                                                                                                                                              |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tickets        | Board **Tickets**: New, Open, Waiting on Customer (amber), Resolved (green, done), Closed; a row per priority; Tickets; due dates. How we work the queue           |
+| Contact Form   | Form **Contact Form**: the Contact starter (Name to Customer, Email, Subject to Title, Message to Description), each message a Ticket in Tickets' New; unpublished |
+| Knowledge Base | Board **Knowledge Base**: To Write, Drafting, In Review, Published (done); Notes (one per article); labels                                                         |
+| Overview       | Dashboard: Item Count, Priorities, Stale Cards, Unassigned; Priority by Status and Cards by Field, beside each tab                                                 |
 
-- How we work the queue: every new ticket gets an owner and a priority; urgent first, then the oldest; Waiting on
+- How we work the queue: publish the Contact Form and share its link, so messages arrive as tickets in New; every new
+  ticket gets an owner and a priority; urgent first, then the oldest; Waiting on
   Customer while you need their reply; Resolved once they confirm, Closed a week later; a question asked twice
   becomes an article on Knowledge Base.
 

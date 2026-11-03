@@ -106,6 +106,22 @@ names one (`create_project`, `add_tab`, a changeset's `replace`, the CLI's `--te
 instead: "`contact-form` starts a form, which only the editor makes from a template: make it with add_form (starter
 `contact`)". Built there, it was an empty Plan tab and no form.
 
+**In a plan template**: a [Plan template](../026-plan/plan-templates.md#how-a-template-with-tabs-is-made) may hold
+a Form tab. Its catalogue entry names a **starter** and the template tab its responses go **to**, by that tab's name:
+a Board tab, whose board's first card type the responses are made as, in its first column; or a Sheet tab, a row each
+on its sheet. Help Desk's **Contact Form** sends Contact to its **Tickets** board as Tickets, in New; Event Planner's
+**RSVP** sends Event RSVP to its **RSVP Responses** sheet.
+
+- The form is the starter's, built as Start Planning builds it (`buildStarter`), its heading the tab's name. Every
+  question maps to a field the target's card type already has, so the template brings no card type or field of its
+  own beyond its boards' ready-made ones: a starter field whose name the type lacks is named, in the entry, after the
+  type's field that takes it instead (Contact's Requested By is a Ticket's **Customer**).
+- It is made on every path that makes the template's tabs (the New Project wizard, a start screen, the MCP's
+  `create_project` and the api's seeded create), as a pure part of the tab, so it exists the moment its project does,
+  with nothing for the editor to finish. A replace (`add_tab`) makes only a template's first tab, never a Form tab.
+- It starts **unpublished**, as every new form does: no form link until an Editor publishes it from Share Form.
+- Once made it is an ordinary Form tab: renamed, rebuilt, pointed elsewhere or deleted like any other.
+
 **From a board**: a Board tab's board (not an All Cards or Archive one) offers **New Form** as its own row at the end of
 its cog's menu, for an Editor. It makes a Blank form named "<Board> Form" on a new Form tab right after the board's
 tab (in the board tab's theme), its responses going to that board's first column as the board's first card type, and
