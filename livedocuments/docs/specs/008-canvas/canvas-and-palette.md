@@ -606,7 +606,7 @@ The written templates (`packages/templates/src/article-templates.ts`) are articl
 | Business Proposal | A title page with no header or footer, a table of contents, a timeline and a pricing table, "Page n of m" footers. |
 | Design Doc        | A table of contents, a code block, a table of the options weighed, a header with the doc's status.                 |
 | Status Report     | A header and page numbers, the workstreams' status in a table, risks and next steps.                               |
-| Cover Letter      | A one-page letter in the Classic look: the sender's details, the date, three paragraphs and a sign-off.            |
+| Cover Letter      | A one-page letter in the Classic look: the sender's details, the date, the recipient's address block (one line each), three paragraphs and a sign-off. |
 
 ### Template categories
 
