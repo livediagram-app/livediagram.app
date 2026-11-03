@@ -308,7 +308,7 @@ describe('Add Card Type under Card Types', () => {
 
   it('is not offered while the catalogue is full', () => {
     for (const key of Object.keys(plan)) delete plan[key];
-    const full = Array.from({ length: 200 }, (_, i) => ({ ...ITEM_TYPES[0]!, id: `t${i}` }));
+    const full = Array.from({ length: 200 }, (_, i) => ({ ...ITEM_TYPES[0], id: `t${i}` }));
     Object.assign(plan, {
       canEdit: true,
       updateBoard: vi.fn(),

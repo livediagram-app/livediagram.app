@@ -54,6 +54,7 @@ function foldList(list: HTMLElement, from: number, to: number, keep: boolean): A
 }
 
 export function useGapMotion(ref: RefObject<HTMLElement | null>, height: number): void {
+  // Opens once as it mounts; a height change while held (a group picked up) needs no animation.
   useLayoutEffect(() => {
     const gap = ref.current;
     if (!gap || still() || typeof gap.animate !== 'function') return;
@@ -131,7 +132,6 @@ export function useGapMotion(ref: RefObject<HTMLElement | null>, height: number)
       };
       shut.finished.then(drop, drop);
     }
-    // Opens once as it mounts; a height change while held (a group picked up) needs no animation.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, []);
 }

@@ -46,7 +46,7 @@ function plan() {
   return { value, writes: Object.values(writes) };
 }
 
-// As Shape holds it: inside its form, in a modal whose Escape steps back (AddFieldDialog's, on the document).
+// As Shape holds it: inside its form, in a modal whose Escape steps back (AddFieldDialog's, a page-wide listener).
 function Harness({ field, onCancel }: { field: NewField; onCancel: () => void }) {
   useEscape(onCancel, { preventDefault: true });
   return (

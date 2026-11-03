@@ -694,7 +694,7 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
     (`isPhoneNumber` + `PHONE_HINT`, `isEmailAddress`, `isLinkText` exported from `CustomFieldEditor`) before the
     box's own blur puts it back, and shows `role="alert"` "{Name}: {hint}." until a later blur passes. Escape needs
     nothing of its own: the real lists (`AnchoredPopover` through the popover stack, `PersonPicker`) take it on
-    `window` in the capture phase and stop it, so AddFieldDialog's document listener never steps back.
+    `window` in the capture phase and stop it, so AddFieldDialog's page-wide listener never steps back.
   - `CustomFieldKindTiles` is removed (nothing else used it).
   - Touch: every button and field in it carries `pointer-coarse:min-h-11`. Steps enter with `motion-safe:animate-card-rise`.
   - `AnchoredPopover` (`@liveworkspace/workbench`) gains `initialFocus?: 'first' | 'panel'` (default `'first'`, as

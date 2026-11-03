@@ -132,8 +132,10 @@ describe('RichTextField', () => {
     vi.useFakeTimers();
     const onSave = field([]);
     fireEvent.keyDown(screen.getByRole('button', { name: /Add steps/ }), { key: 'H' });
-    expect((screen.getByLabelText('Steps') as HTMLTextAreaElement).value).toBe('H');
-    act(() => vi.advanceTimersByTime(RICH_TEXT_SAVE_MS));
+    expect(screen.getByLabelText<HTMLTextAreaElement>('Steps').value).toBe('H');
+    act(() => {
+      vi.advanceTimersByTime(RICH_TEXT_SAVE_MS);
+    });
     expect(onSave).toHaveBeenCalledWith('H', [{ text: 'H' }]);
   });
 
@@ -143,7 +145,7 @@ describe('RichTextField', () => {
     fireEvent.keyDown(editButton, { key: 'k', metaKey: true });
     expect(screen.queryByLabelText('Steps')).toBeNull();
     fireEvent.keyDown(editButton, { key: '!' });
-    expect((screen.getByLabelText('Steps') as HTMLTextAreaElement).value).toBe('Hi!');
+    expect(screen.getByLabelText<HTMLTextAreaElement>('Steps').value).toBe('Hi!');
     fireEvent.blur(screen.getByLabelText('Steps'));
     expect(onSave).toHaveBeenCalledWith('Hi!', [{ text: 'Hi' }, { text: '!' }]);
   });
@@ -158,7 +160,9 @@ describe('RichTextField', () => {
     next.focus();
     fireEvent.blur(editor, { relatedTarget: next });
     expect(screen.getByLabelText('Steps')).toBeTruthy();
-    act(() => vi.advanceTimersByTime(0));
+    act(() => {
+      vi.advanceTimersByTime(0);
+    });
     expect(screen.queryByLabelText('Steps')).toBeNull();
     expect(document.activeElement).toBe(next);
   });

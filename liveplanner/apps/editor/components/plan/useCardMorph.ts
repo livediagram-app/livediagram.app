@@ -46,6 +46,7 @@ export function useCardMorph(itemId: string, onClose: () => void) {
   const panelOf = () => probe.current?.closest<HTMLElement>('[data-dialog-panel]') ?? null;
   // The panel opens once (it then moves from card to card in place): the first card's box only.
   const opened = useRef(false);
+  // Opens once per mount; the card id at that moment is the one it grew from.
   useLayoutEffect(() => {
     if (opened.current) return;
     const box = cardBox(itemId);
@@ -81,8 +82,7 @@ export function useCardMorph(itemId: string, onClose: () => void) {
       cancelAnimationFrame(frame);
       if (first) first.style.opacity = '';
     };
-    // Opens once per mount; the card id at that moment is the one it grew from.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, []);
 
   const close = useCallback(() => {

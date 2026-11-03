@@ -21,7 +21,11 @@ globalThis.ResizeObserver ??= class {
 const plan: Record<string, unknown> = {};
 vi.mock('@/components/plan/PlanContext', () => ({ usePlan: () => plan }));
 const track = vi.fn();
-vi.mock('@/components/plan/track-board-setup', () => ({ trackSetup: (p: string) => track(p) }));
+vi.mock('@/components/plan/track-board-setup', () => ({
+  trackSetup: (p: string) => {
+    track(p);
+  },
+}));
 let tabKind = 'board';
 vi.mock('@/hooks/plan/plan-cover-store', () => ({ usePlanTabKind: () => tabKind }));
 afterEach(() => {

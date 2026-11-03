@@ -149,11 +149,11 @@ export function ItemPanel(props: ItemPanelProps) {
   const [shownMaximised, onMaximise] = useAnimatedMaximise(!!props.maximised, props.onMaximise);
   const maximised = shownMaximised && !mobile;
   // It grows out of the card clicked and shrinks back into it (useCardMorph).
-  const morph = useCardMorph(item.id, onClose);
+  const { probe: morphProbe, close: morphClose } = useCardMorph(item.id, onClose);
   return (
     <Dialog
       open
-      onClose={morph.close}
+      onClose={morphClose}
       ariaLabel={`Item #${item.key}`}
       size="3xl"
       phoneSheet
@@ -164,11 +164,11 @@ export function ItemPanel(props: ItemPanelProps) {
       className={panelSizeClass(maximised)}
       resizeTransition={PANEL_RESIZE_TRANSITION}
     >
-      <span ref={morph.probe} hidden />
+      <span ref={morphProbe} hidden />
       <ItemPanelContent
         key={item.id}
         {...props}
-        onClose={morph.close}
+        onClose={morphClose}
         maximised={maximised}
         onMaximise={onMaximise}
       />

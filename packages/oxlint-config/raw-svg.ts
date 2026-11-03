@@ -34,6 +34,8 @@ export const ICON_ART_ALLOWLIST = [
   '**/components/canvas/layout-thumb.tsx',
   // A photo tool's choices drawn as what they do (a selection mode's two shapes, a crop ratio's box).
   '**/components/photo/option-pictures.tsx',
+  // A plan's Add Field tiles: each field kind drawn as the idea it holds (a card and its child cards, a sum).
+  '**/components/plan/AddFieldTileArt.tsx',
   // Canvas content: a checklist tick and a collaborator's cursor.
   '**/components/canvas/ChecklistView.tsx',
   '**/components/canvas/RemoteCursor.tsx',

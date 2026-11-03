@@ -40,7 +40,7 @@ beforeEach(() => {
   vi.stubGlobal('cancelAnimationFrame', () => {});
   board = document.createElement('div');
   board.dataset.planBoard = 'home-board';
-  board.getBoundingClientRect = () => ({ ...rect(0, 500), right: 500, width: 500 }) as DOMRect;
+  board.getBoundingClientRect = () => ({ ...rect(0, 500), right: 500, width: 500 });
   makeCell('todo', ['alone']);
   makeCell('doing', ['a', 'b', 'c']);
   document.body.append(board);

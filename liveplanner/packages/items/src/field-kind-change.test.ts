@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   changedValue,
   changesValues,
@@ -181,13 +182,17 @@ describe('fieldKindChange', () => {
     const items = Array.from({ length: 2000 }, (_, i) =>
       item({ 'f-x': i % 3 ? String(i) : 'none' }),
     );
-    const t0 = performance.now();
     const out = fieldKindChange(text, { kind: 'number' }, items, ON);
-    const ms = performance.now() - t0;
     expect(out.held).toBe(2000);
     expect(out.cleared).toBe(667);
-    // CPU budget, generous for a loaded CI machine.
-    expect(ms).toBeLessThan(100);
+    // CPU time, the best of three (docs/ci.md "Speed budgets").
+    let best = Infinity;
+    for (let pass = 0; pass < 3; pass++)
+      best = Math.min(
+        best,
+        cpuMsOf(() => fieldKindChange(text, { kind: 'number' }, items, ON)),
+      );
+    expect(best).toBeLessThan(cpuBudgetMs(100));
   });
 });
 

@@ -15,8 +15,14 @@ const setup: PlanBoardSetup = {
   swimlaneBy: 'none',
   columns: [statusColumn('todo', 'To Do'), statusColumn('done', 'Done')],
 };
-const type = (id: string, fields: string[]): ItemTypeDef =>
-  ({ id, label: id, newTitle: id, glyph: 'item', color: '#000', fields }) as ItemTypeDef;
+const type = (id: string, fields: string[]): ItemTypeDef => ({
+  id,
+  label: id,
+  newTitle: id,
+  glyph: 'item',
+  color: '#000',
+  fields,
+});
 const task = type('task', ['title', 'status', 'assignee', 'priority', 'due']);
 const note = type('note', ['title', 'status']);
 const person = { id: 'p', name: 'Ana', color: '#f00' };
