@@ -197,13 +197,16 @@ export function switchThemeElements(
   );
 }
 
-// Graph-aware counterpart to `resetThemeElement`: the "Reset elements to
-// theme" button. Force-repaints every branch from the palette.
+// Graph-aware counterpart to `resetThemeElement`: the hard reset a theme pick takes when the tab's old theme no
+// longer resolves (tab-theme-apply.ts). Force-repaints every branch from the palette, and clears a board's or sheet's
+// style preset as a switch does, so the board follows the new tab style on this path too.
 export function resetThemeElementsToTheme(elements: Element[], theme: ThemeDefinition): Element[] {
   const branches = theme.palette ? branchMapFor('reset', theme, elements) : null;
-  return elements.map((el) =>
-    rederiveQuickSwatches(resetThemeElement(el, elementThemeView(theme, el, branches)), theme),
-  );
+  return elements
+    .map(withoutPlanPreset)
+    .map((el) =>
+      rederiveQuickSwatches(resetThemeElement(el, elementThemeView(theme, el, branches)), theme),
+    );
 }
 
 // Force every ARROW back to the theme's stroke, overwriting any

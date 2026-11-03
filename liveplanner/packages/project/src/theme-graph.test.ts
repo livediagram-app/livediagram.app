@@ -153,4 +153,11 @@ describe('a theme switch and a board or sheet style preset', () => {
     const [out] = recolourElementsForTheme([preset()], to) as Styled[];
     expect(out!.colorPreset).toBe('plan-sky');
   });
+
+  it('clears it on the hard reset too, the board taking the tab style', () => {
+    const [out] = resetThemeElementsToTheme([preset()], to) as Styled[];
+    expect(out!.colorPreset).toBeUndefined();
+    expect(fillOf([out!], 'board')).not.toBe('#f2f8fc');
+    expect(out!.textColor).not.toBe('#3a566b');
+  });
 });

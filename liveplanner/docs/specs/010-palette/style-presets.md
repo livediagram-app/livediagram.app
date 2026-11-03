@@ -222,7 +222,13 @@ drawn for the canvas surface they will be seen on. Hand-setting a colour clears
 the binding, as for a shape. **Picking a tab style (a theme) overrides the
 preset**: the board or sheet drops its `colorPreset` and the fill, border and
 text colours the preset wrote, so it follows the new tab style at once; a preset
-chosen afterwards wins again, over the style. (Only a preset-bound board or sheet:
+chosen afterwards wins again, over the style. Every path that applies a tab
+style to the elements clears it the same way: a theme picked in the Colours
+panel or the palette (the tab's own theme picked again included), a look, Apply to
+All Tabs, and a pick on a tab whose old theme no longer resolves (the hard reset).
+A **canvas-only change** (the Canvas panel's canvas or pattern colour, opacity,
+size or speed, or a pattern) leaves the board on its preset: the preset sits on
+the board, not the canvas. (Only a preset-bound board or sheet:
 a colour set by hand survives a theme pick, as it does for a shape. A template
 painted with a theme keeps its boards' presets.) A multi-selection of only boards and sheets shows
 this grid; one mixing them with shapes shows the shape looks. Maximised, the
