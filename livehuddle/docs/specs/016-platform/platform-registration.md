@@ -124,9 +124,10 @@ Wrangler's own ports sit outside the 35xx block, one range per product (the api 
 Through CI only, never by hand (docs/ci.md "Deploys"), to the liveworkspace Cloudflare account every `wrangler.toml`
 pins (`851be7d244b76a6557bcbe6c4ded80f5`):
 
-- Tier 1: `livehuddle-api` (Durable Objects and their migrations; no D1), `livehuddle-mcp`.
-- Tier 2: `livehuddle-editor`, `livehuddle-marketing`, `livehuddle-help`, `livehuddle-community`.
-- Tier 3: `livehuddle-router`.
+- First tier (the services and apis): `livehuddle-api` (Durable Objects and their migrations; no D1).
+- Second tier (the sites): `livehuddle-mcp`, `livehuddle-editor`, `livehuddle-marketing`, `livehuddle-help`,
+  `livehuddle-community`.
+- Third tier (the routers): `livehuddle-router`.
 
 Staging is `staging.livehuddle.app`; production is `www.livehuddle.app`, with the bare domain redirecting to `www.`
 as every product's does.
