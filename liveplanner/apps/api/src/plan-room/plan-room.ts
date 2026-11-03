@@ -73,6 +73,7 @@ import {
 import { CHANGESET_RETENTION_MS } from '@liveplanner/api-schema';
 import { deleteOldChangesets } from '../db/changesets';
 import { deleteOldItemHistory } from '../db/item-history';
+import { ITEM_IMPORT_HOLD_MS, sweepHeldImports } from '../db/item-imports';
 import { getTab, planHasTab } from '../db/tabs';
 import { ITEM_HISTORY_MAX_AGE_MS, tabShowsEveryCard } from '@liveplanner/items';
 import { readItem } from '../db/items';
@@ -539,6 +540,9 @@ export class PlanRoom extends DurableObject<Env> {
       if (gone > 0) console.info('[changeset] retention', { planId, deleted: gone });
       const aged = await deleteOldItemHistory(env, now - ITEM_HISTORY_MAX_AGE_MS);
       if (aged > 0) console.info('[items] history.retention', { planId, deleted: aged });
+      // An import's parts left waiting for its last (db/item-imports.ts).
+      const held = await sweepHeldImports(env, planId, now - ITEM_IMPORT_HOLD_MS);
+      if (held > 0) console.info('[items] import.swept', { planId, cards: held });
     } catch (error) {
       console.warn('[plan-room] upkeep failed', { planId, error: String(error) });
     }

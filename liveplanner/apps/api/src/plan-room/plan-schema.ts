@@ -15,6 +15,7 @@ import { CARD_REPEATS_SCHEMA } from './card-repeats-schema';
 import { CARD_THREADS_SCHEMA } from './card-thread-schema';
 import { IMAGE_REFS_SCHEMA } from './image-refs';
 import { ITEM_HISTORY_SCHEMA } from './item-history-schema';
+import { ITEM_IMPORTS_SCHEMA } from './item-imports-schema';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -392,6 +393,10 @@ const V11 = IMAGE_REFS_SCHEMA;
 // appended.
 const V12 = CARD_REPEATS_SCHEMA;
 
+// A whole import's held parts (db/item-imports.ts; docs/specs/026-plan/blueprints/tracker-import.md "A whole
+// import"). Its own step, appended.
+const V13 = ITEM_IMPORTS_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -405,6 +410,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V10,
   V11,
   V12,
+  V13,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

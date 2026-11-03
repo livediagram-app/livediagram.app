@@ -79,11 +79,12 @@ import { historyTagOf, itemHistory } from './item-history-route';
 import { appendItemHistory } from '../db/item-history';
 import { planTabs } from './plan-route';
 import { tally } from './item-tally-route';
+import { importItems } from './item-import-route';
 import { trackTime } from './item-time-route';
 import { readBody, type PlanRouteContext } from './context';
 
 // A create as read, with the threads it puts the card back on (a restore), each checked as one.
-type ReadCreate = ItemCreate & { restoredThreads?: CardThread[] };
+export type ReadCreate = ItemCreate & { restoredThreads?: CardThread[] };
 
 // `owner` is the caller: a restored comment thread keeps author ids on their own comments only. A card's old single
 // thread (`comments`, from a client from before threads) is read as its first thread (docs/specs/026-plan/items.md
@@ -184,6 +185,49 @@ async function calculatedFor(
   return out;
 }
 
+// The cards `creates` makes against the store as it is now, nothing written: refused past the plan's room or for an
+// id already taken. createMany's, and a whole import's (item-import-route.ts), read again on each attempt.
+export async function buildCreates(
+  ctx: PlanRouteContext,
+  projectId: string,
+  creates: readonly ItemCreate[],
+  by: ItemPerson,
+): Promise<Item[] | Response> {
+  const head = await getItemStoreHead(ctx.env, projectId);
+  if (head.count + creates.length > ITEMS_MAX) return itemsFull();
+  const existing = await listItems(ctx.env, projectId);
+  const ids = new Set(existing.map((i) => i.id));
+  const placer = itemPlacer(existing);
+  const keys = new Set(existing.map((i) => i.key));
+  const made: Item[] = [];
+  let nextKey = head.nextKey;
+  const now = Date.now();
+  for (const create of creates) {
+    if (create.id && ids.has(create.id)) return conflict('item_exists');
+    const id =
+      create.id ?? newItemId(() => crypto.getRandomValues(new Uint32Array(1))[0]! / 2 ** 32);
+    ids.add(id);
+    let key: number;
+    if (create.key !== undefined && create.key <= ITEM_KEY_MAX && !keys.has(create.key)) {
+      key = create.key;
+    } else {
+      // A key named earlier in this batch may sit at or above the next key.
+      while (keys.has(nextKey)) nextKey += 1;
+      key = nextKey;
+      nextKey += 1;
+    }
+    keys.add(key);
+    const item = makeItem(create, { id, key, now, by, items: placer });
+    placer.add(item);
+    made.push(item);
+  }
+  return made;
+}
+
+// A plan already holding as many cards as it may.
+export const itemsFull = () =>
+  json({ error: 'items_full', message: `a plan holds ${ITEMS_MAX} items` }, { status: 413 });
+
 // Creates `creates` in one batch. A named key (a restore, an offline sync, a copy) is kept while it is free, below
 // the store's next key or above it; every other create takes the next key not already in use. The store is read
 // once per attempt: its keys answer whether a named key is free (a key taken by a racing write fails the insert,
@@ -198,39 +242,8 @@ export async function createMany(
 ): Promise<{ items: Item[]; rev: number } | Response> {
   const by = opts?.by ?? (await writer(ctx, caller.owner));
   for (let attempt = 1; attempt <= ITEM_WRITE_RETRIES; attempt += 1) {
-    const head = await getItemStoreHead(ctx.env, caller.projectId);
-    if (head.count + creates.length > ITEMS_MAX) {
-      return json(
-        { error: 'items_full', message: `a plan holds ${ITEMS_MAX} items` },
-        { status: 413 },
-      );
-    }
-    const existing = await listItems(ctx.env, caller.projectId);
-    const ids = new Set(existing.map((i) => i.id));
-    const placer = itemPlacer(existing);
-    const keys = new Set(existing.map((i) => i.key));
-    const made: Item[] = [];
-    let nextKey = head.nextKey;
-    const now = Date.now();
-    for (const create of creates) {
-      if (create.id && ids.has(create.id)) return conflict('item_exists');
-      const id =
-        create.id ?? newItemId(() => crypto.getRandomValues(new Uint32Array(1))[0]! / 2 ** 32);
-      ids.add(id);
-      let key: number;
-      if (create.key !== undefined && create.key <= ITEM_KEY_MAX && !keys.has(create.key)) {
-        key = create.key;
-      } else {
-        // A key named earlier in this batch may sit at or above the next key.
-        while (keys.has(nextKey)) nextKey += 1;
-        key = nextKey;
-        nextKey += 1;
-      }
-      keys.add(key);
-      const item = makeItem(create, { id, key, now, by, items: placer });
-      placer.add(item);
-      made.push(item);
-    }
+    const made = await buildCreates(ctx, caller.projectId, creates, by);
+    if (made instanceof Response) return made;
     try {
       const rev = await insertItems(ctx.env, caller.projectId, made);
       return { items: made, rev };
@@ -290,22 +303,20 @@ async function create(ctx: PlanRouteContext, projectId: string): Promise<Respons
   return json(answer, { status: 201 });
 }
 
-async function bulk(ctx: PlanRouteContext, projectId: string): Promise<Response> {
-  const caller = await itemCaller(ctx, projectId, 'edit');
-  if (caller instanceof Response) return caller;
-  // Bulk writes (an offline project's items, on sync) are whole-project writes.
-  if (caller.scope) return forbidden();
-  const body = await readBody(ctx);
-  if (body instanceof Response) return body;
-  if (!Array.isArray(body.items) || body.items.length === 0 || body.items.length > ITEM_BULK_MAX)
+// A many-card write's creates (`/items/bulk`, a part of `/items/import`), each read and checked as one, or the first
+// refusal. `putBack`: its history says Put back only for a card that comes back with its number or votes; an
+// import's cards carry a new thread (docs/specs/026-plan/tracker-import.md "Comments") and are new cards.
+export function readBulkCreates(
+  caller: ItemCaller,
+  items: unknown,
+): { creates: ItemCreate[]; reads: ReadCreate[]; putBack: boolean } | Response {
+  if (!Array.isArray(items) || items.length === 0 || items.length > ITEM_BULK_MAX)
     return badRequest(`items must be 1 to ${ITEM_BULK_MAX} items`);
   const creates: ItemCreate[] = [];
   const reads: ReadCreate[] = [];
-  // Its history says Put back only for a card that comes back with its number or votes: an import's cards carry a
-  // new thread (docs/specs/026-plan/tracker-import.md "Comments") and are new cards.
   let putBack = false;
   const types = typesOf(caller.doc?.itemTypes);
-  for (const raw of body.items) {
+  for (const raw of items) {
     const read = readCreate(raw, caller.owner);
     if (typeof read === 'string') return rejected(read);
     const { restoredThreads: _threads, ...input } = read;
@@ -322,6 +333,19 @@ async function bulk(ctx: PlanRouteContext, projectId: string): Promise<Response>
     if (missing) return rejected(missing.error, missing.field);
     creates.push(input);
   }
+  return { creates, reads, putBack };
+}
+
+async function bulk(ctx: PlanRouteContext, projectId: string): Promise<Response> {
+  const caller = await itemCaller(ctx, projectId, 'edit');
+  if (caller instanceof Response) return caller;
+  // Bulk writes (an offline project's items, on sync) are whole-project writes.
+  if (caller.scope) return forbidden();
+  const body = await readBody(ctx);
+  if (body instanceof Response) return body;
+  const read = readBulkCreates(caller, body.items);
+  if (read instanceof Response) return read;
+  const { creates, reads, putBack } = read;
   // A synced card's blockers never close a loop (docs/specs/026-plan/item-types.md "Blocked By").
   const blocked = await blockersRefused(
     ctx,
@@ -449,6 +473,9 @@ export async function handleItemRoutes(ctx: PlanRouteContext): Promise<Response 
   }
   if (segments.length === 5 && segments[4] === 'bulk')
     return method === 'POST' ? bulk(ctx, projectId) : methodNotAllowed();
+  // A whole import, in parts (docs/specs/026-plan/blueprints/tracker-import.md "A whole import").
+  if (segments.length === 5 && segments[4] === 'import')
+    return method === 'POST' ? importItems(ctx, projectId) : methodNotAllowed();
   if (segments.length === 5 && segments[4] === 'patches')
     return method === 'POST' ? patches(ctx, projectId) : methodNotAllowed();
   // Many moves as one write (docs/specs/026-plan/items.md "Move many").

@@ -143,7 +143,28 @@ function insertStatement(env: PlanEnv, projectId: string, item: Item): D1Prepare
   );
 }
 
-function revOf(result: D1Result | undefined): number {
+// A made item as the row a chunked insert reads (plan-room/plan-content.ts insertItemRowsStatements): a whole
+// import's cards, written as a copy's items are.
+export function itemRowOf(item: Item): ItemRow {
+  return {
+    id: item.id,
+    type: item.type,
+    item_key: item.key,
+    rank: item.rank,
+    fields: JSON.stringify(item.fields),
+    rev: item.rev,
+    created_at: item.createdAt,
+    updated_at: item.updatedAt,
+    created_by: JSON.stringify(item.createdBy),
+    updated_by: JSON.stringify(item.updatedBy),
+  };
+}
+
+// The store's rev raised (and its next key past `nextKey`), answering the new rev: for a write that inserts its own
+// rows (a whole import, one per relayed part).
+export const bumpRevStatement = bumpRev;
+
+export function revOf(result: D1Result | undefined): number {
   const row = (result?.results as { items_rev?: number }[] | undefined)?.[0];
   return row?.items_rev ?? 0;
 }
