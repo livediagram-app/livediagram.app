@@ -83,10 +83,15 @@ export async function open(page: Page, s: Setup) {
     localStorage.setItem('livehuddle:v2:name-confirmed', '1');
     localStorage.setItem('livehuddle:user-preferences:v1', JSON.stringify({ tourSeen: true }));
   });
-  const socket = page.waitForEvent('websocket', (ws) => ws.url().includes(`/documents/${s.id}/ws`));
+  // The greeting is waited for from the moment the socket opens: a fast room greets before `goto` returns, and a
+  // wait started after it would miss the frame.
+  const greeted = page
+    .waitForEvent('websocket', (ws) => ws.url().includes(`/documents/${s.id}/ws`))
+    .then((ws) =>
+      ws.waitForEvent('framereceived', (f) => String(f.payload).includes('"kind":"presence"')),
+    );
   await page.goto(`/document/${s.id}`);
-  const ws = await socket;
-  await ws.waitForEvent('framereceived', (f) => String(f.payload).includes('"kind":"presence"'));
+  await greeted;
   await page.locator(CANVAS).waitFor();
   await expect(page.getByText('API', { exact: true })).toBeVisible();
 }

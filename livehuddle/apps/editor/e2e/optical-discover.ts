@@ -107,7 +107,10 @@ export function discover(args: { attr: string; shape: typeof SHAPE; tol: number 
     const out: Text[] = [];
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     for (let n = walker.nextNode() as Text | null; n; n = walker.nextNode() as Text | null)
-      if (n.data.trim() && !n.parentElement?.closest('svg')) out.push(n);
+      // Text that lays out nowhere (inside a `display: none` label a wider container shows) has no box: its
+      // range reads (0, 0) and would drag the shape's text edge to the page's corner.
+      if (n.data.trim() && !n.parentElement?.closest('svg') && n.parentElement?.checkVisibility())
+        out.push(n);
     return out;
   };
   // Text a shape owns: not inside a painted shape nested within it (an avatar disc in a card

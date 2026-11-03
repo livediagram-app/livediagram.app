@@ -31,10 +31,10 @@ async function serveNewerFormat(page: Page, { failSaves = false } = {}) {
   });
 }
 
-async function openWhiteboard(page: Page) {
+async function openBoard(page: Page) {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.goto(await serverNewUrl(page, '/new?template=whiteboard'));
+  await page.goto(await serverNewUrl(page, '/new?template=blank-session'));
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
   // The Pencil (docs/specs/023-draw-mode/draw-mode.md "Pens"), in hand from its key for every stroke.
@@ -59,7 +59,7 @@ test.describe('new version prompt', () => {
     page,
     pageErrors,
   }) => {
-    await openWhiteboard(page);
+    await openBoard(page);
     await drawStroke(page);
     await page.waitForTimeout(1_500);
     await expect(prompt(page)).toHaveCount(0);
@@ -70,7 +70,7 @@ test.describe('new version prompt', () => {
     page,
     pageErrors,
   }) => {
-    await openWhiteboard(page);
+    await openBoard(page);
     await serveNewerFormat(page);
     await drawStroke(page);
     await expect(prompt(page)).toContainText('A new version of livehuddle is ready.');
@@ -93,7 +93,7 @@ test.describe('new version prompt', () => {
 
   test('never reloads over unsaved changes, and says why', async ({ page }) => {
     test.setTimeout(45_000);
-    await openWhiteboard(page);
+    await openBoard(page);
     await serveNewerFormat(page, { failSaves: true });
     await drawStroke(page);
     await expect(prompt(page)).toBeVisible();
@@ -111,7 +111,7 @@ test.describe('new version prompt', () => {
   });
 
   test('steps aside on Not now', async ({ page, pageErrors }) => {
-    await openWhiteboard(page);
+    await openBoard(page);
     await serveNewerFormat(page);
     await drawStroke(page);
     await expect(prompt(page)).toBeVisible();

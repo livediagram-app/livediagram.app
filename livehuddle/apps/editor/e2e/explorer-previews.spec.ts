@@ -27,6 +27,9 @@ test('an Explorer preview is drawn in the viewer’s appearance, before the canv
   test.setTimeout(90_000);
   const owner = await mintGuest(page.request);
   await darkVisitor(page, owner);
+  // The Explorer is liveworkspace's page and keeps its own appearance setting, not livehuddle's editor's: a dark
+  // device makes it dark (its System default) whichever app's address it is on.
+  await page.emulateMedia({ colorScheme: 'dark' });
   const id = await seedDocument(page, owner, new URL(baseURL!).origin);
   const asked: string[] = [];
   page.on('request', (r) => {

@@ -57,7 +57,7 @@ const transitions = (all: MotionRecord[]) =>
   all.filter((m) => Number.isFinite(m.active) && m.iterations < 2);
 
 // Straight to a blank canvas (the /new?blank=1 bypass), made on livehuddle: a guest's own /new keeps it in This
-// Browser, which the index never holds, so the Explorer panel would show no Current canvas card and no Canvas menu
+// Browser, which the index never holds, so the Explorer panel would show no Current space card and no Space menu
 // (docs/specs/013-workspace/explorer-structure.md "The editor's Explorer panel").
 const startBlank = openStartBlank;
 
@@ -100,11 +100,11 @@ async function tourTheChrome(page: Page): Promise<void> {
     page.locator('[data-category-bar-button][aria-label="Layout"]').click(),
   );
   await toggle(page, 'Fit to screen');
-  // The Explorer popover, and the Canvas menu on its Current canvas card.
+  // The Explorer popover, and the Space menu on its Current space card.
   const explorer = page.getByRole('button', { name: 'Explorer', exact: true });
   await explorer.click();
   await page.waitForTimeout(400);
-  await openAndClose(page, () => page.getByRole('button', { name: 'Canvas menu' }).click());
+  await openAndClose(page, () => page.getByRole('button', { name: 'Space menu' }).click());
   // The scrim sits over the Explorer button while the panel is open; Escape closes it.
   await page.keyboard.press('Escape');
   await page.waitForTimeout(300);

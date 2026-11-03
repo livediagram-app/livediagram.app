@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { penColourHex, WHITEBOARD_INK } from '@livehuddle/document';
+import { penColourHex } from '@livehuddle/document';
 import {
   dismissQuickTour,
   expect,
@@ -9,13 +9,9 @@ import {
   serverNewUrl,
 } from './fixtures';
 
-// The quick style panel on a mixed whiteboard selection (docs/specs/008-canvas/quick-style-panel.md
-// "Multi-selection"), as a pasted or imported board selects: every row styles what it fits,
-// stickies and images are passed over, named stock colours draw in the board's version
-// (docs/specs/023-draw-mode/draw-mode.md "Imported and pasted content"). Dark mode throughout.
-
-const SHOTS = process.env.E2E_SHOTS_DIR;
-const panel = (page: Page) => page.getByRole('region', { name: 'Quick style' });
+// A pasted or imported board's named stock colours draw in the board's version (docs/specs/023-draw-mode/draw-mode.md
+// "Imported and pasted content"). The quick style panel's rows on such a selection (Marker colour and width, "6
+// elements") were a whiteboard's, and no board is a whiteboard since Draw mode went; the colours stay. Dark mode.
 
 const points = (n: number, y: number) =>
   Array.from({ length: n }, (_, i) => ({ nx: i / (n - 1), ny: (Math.sin(i / 2) + 1) / 2 + y * 0 }));
@@ -111,71 +107,19 @@ const BOARD = [
 
 async function openBoard(page: Page) {
   await page.emulateMedia({ colorScheme: 'dark' });
-  await page.goto(await serverNewUrl(page, '/new?template=whiteboard'));
+  await page.goto(await serverNewUrl(page, '/new?template=blank-session'));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);
   await seedTab(page, BOARD);
 }
 
-test.describe('the quick style panel on a mixed whiteboard selection', () => {
+test.describe('a pasted board’s named colours', () => {
   test('draws named colours in the dark board’s versions', async ({ page, pageErrors }) => {
     await openBoard(page);
     await expect(page.locator('[data-element-id="text"]')).toBeVisible();
     expect(await coloursIn(page, 'text')).toContain(hexToRgb(penColourHex('violet', 'dark')));
     expect(await coloursIn(page, 'rect')).toContain(hexToRgb(penColourHex('blue', 'dark')));
     expect(await coloursIn(page, 'rect')).toContain(hexToRgb(penColourHex('green', 'dark')));
-    expectNoPageErrors(pageErrors);
-  });
-
-  test('styles what each row fits, and says how many', async ({ page, pageErrors }) => {
-    await openBoard(page);
-    await page.keyboard.press('v');
-    await page.mouse.click(1100, 600);
-    await page.keyboard.press('ControlOrMeta+a');
-    const p = panel(page);
-    await expect(p).toBeVisible();
-    // Two strokes, rectangle, arrow, text, path: the sticky and the image are passed over.
-    await expect(p.getByText('6 elements', { exact: true })).toBeVisible();
-    // Colour rows are groups of toggle buttons (docs/specs/004-interface-design/colour-picker.md);
-    // the rest are radio groups.
-    for (const row of ['Marker colour', 'Stroke', 'Text colour']) {
-      await expect(p.getByRole('group', { name: row, exact: true })).toBeVisible();
-    }
-    for (const row of ['Marker width', 'Stroke width']) {
-      await expect(p.getByRole('radiogroup', { name: row, exact: true })).toBeVisible();
-    }
-    // The shapes' named colours mark no theme swatch.
-    const stroke = p.getByRole('group', { name: 'Stroke', exact: true });
-    await expect(stroke.getByRole('button', { pressed: true })).toHaveCount(0);
-    if (SHOTS) await page.screenshot({ path: `${SHOTS}/mixed-before.png` });
-
-    // Keyboard: a colour row is one Tab stop; the arrows move, Enter picks.
-    await stroke.getByRole('button').first().focus();
-    await page.keyboard.press('Enter');
-    await expect(stroke.getByRole('button').first()).toHaveAttribute('aria-pressed', 'true');
-
-    const width = p.getByRole('radiogroup', { name: 'Stroke width', exact: true });
-    await width.getByRole('radio', { name: 'Thick' }).click();
-    await expect(width.getByRole('radio', { name: 'Thick' })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    );
-    const marker = p.getByRole('group', { name: 'Marker colour', exact: true });
-    await marker.getByRole('button', { name: 'Green' }).click();
-    await expect(marker.getByRole('button', { name: 'Green' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-    if (SHOTS) {
-      // Past the swatch ring's transition.
-      await page.waitForTimeout(400);
-      await page.screenshot({ path: `${SHOTS}/mixed-after.png` });
-    }
-
-    // The rectangle took the ink (its named blue gone), the sticky kept its paper.
-    const rect = await coloursIn(page, 'rect');
-    expect(rect).toContain(hexToRgb(WHITEBOARD_INK.dark));
-    expect(rect).not.toContain(hexToRgb(penColourHex('blue', 'dark')));
     expectNoPageErrors(pageErrors);
   });
 });
