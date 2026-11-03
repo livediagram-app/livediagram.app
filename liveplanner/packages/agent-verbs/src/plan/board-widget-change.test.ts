@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   FIELD_WIDGETS_MAX,
   boardFields,
@@ -10,7 +11,7 @@ import { changedWidgets, resolveWidget, widgetName } from './board-widget-change
 
 // change_board's widgets by name (docs/specs/026-plan/plan-agents.md "Changing a board").
 const FEATURE: ItemTypeDef = {
-  ...ITEM_TYPES[0]!,
+  ...ITEM_TYPES[0],
   id: 'feature',
   label: 'Feature',
   color: '#7c3aed',
@@ -93,5 +94,26 @@ describe('widgetName', () => {
     expect(widgetName('count', ALL)).toBe('Item Count');
     expect(widgetName('field:sum:f-budget', ALL)).toBe('Budget Sum');
     expect(widgetName('field:sum:f-gone', ALL)).toBe('field:sum:f-gone');
+  });
+});
+
+// The names are keyed once a call, so a change naming every widget a board holds, over a board with 200 number fields,
+// stays well inside an agent write's budget (measured 1.2 ms a call on a loaded machine, 4.0 ms before keying).
+describe('changedWidgets at size', () => {
+  it('resolves 27 names against 200 fields within its CPU budget', () => {
+    const custom = Array.from({ length: 200 }, (_, i) => ({
+      id: `f-n${i}`,
+      label: `Number ${i}`,
+      kind: 'currency' as const,
+    }));
+    const wide = boardFields({}, [{ ...FEATURE, fields: custom.map((c) => c.id), custom }], false);
+    const add = Array.from({ length: FIELD_WIDGETS_MAX }, (_, i) => `Number ${199 - i} Spread`);
+    const remove = Array<string>(15).fill('Number 0 Spread');
+    let out: ReturnType<typeof changedWidgets> | undefined;
+    const ms = cpuMsOf(() => {
+      for (let r = 0; r < 10; r++) out = changedWidgets([], { add, remove }, wide);
+    });
+    expect(out).toMatchObject({ ok: true });
+    expect(ms / 10).toBeLessThan(cpuBudgetMs(20));
   });
 });

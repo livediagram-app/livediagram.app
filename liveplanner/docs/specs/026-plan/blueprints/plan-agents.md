@@ -75,7 +75,7 @@ trashedFrom }` on each live card of a deleted type, as the editor's `trashItems`
   once), else `<slug>~<4 chars>`; a preset's done flags go with its columns and the new ones are settled by name (`settleDoneColumns`); placed right of the tab's
   elements' bounding box by `PLACED_BOARD_GAP`, tops aligned, origin on an empty tab.
 - `changeBoard` `widgets` (`packages/agent-verbs/src/plan/board-widget-change.ts`): `changedWidgets(widgetsOf(setup),
-change, boardFields(setup, types, false))` on the reshaped set-up; each name through `resolveWidget`: a
+change, boardFields(setup, types, false))` on the reshaped set-up; each name through `widgetResolver(fields)`, which keys every name once a call (a map read a name): a
   `BOARD_WIDGET_KINDS` id, a well-formed `field:<view>:<fieldId>` key, then by `statusKey` a kind's id or
   `BOARD_WIDGET_INFO` label, a readable field's `fieldWidgetLabel` in each of its `viewsOfField`, then a field's label
   or id alone (its first view). `remove` first (`removeWidget`), then `add` (`placeWidget` at the end, skipped when

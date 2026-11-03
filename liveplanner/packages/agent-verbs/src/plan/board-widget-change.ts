@@ -51,36 +51,45 @@ function offered(readable: readonly BoardField[]): string {
   return `${kinds}; field widgets: ${byField.join('; ')}.`;
 }
 
-// One name as a widget. `all` holds every field of the board's types, readable or not (boardFields(…, false)), so a
-// field no widget reads is refused by name rather than as unknown.
-export function resolveWidget(
-  name: string,
-  all: readonly BoardField[],
-): { ok: true; id: BoardWidgetId } | Refusal {
-  const trimmed = name.trim();
-  if (isBoardWidgetKind(trimmed)) return { ok: true, id: trimmed };
-  if (isFieldWidgetKey(trimmed)) return { ok: true, id: trimmed };
-  const key = statusKey(trimmed);
-  const kind = BOARD_WIDGET_KINDS.find(
-    (k) => statusKey(k) === key || statusKey(BOARD_WIDGET_INFO[k].label) === key,
-  );
-  if (kind) return { ok: true, id: kind };
+type Resolved = { ok: true; id: BoardWidgetId } | Refusal;
+
+// A resolver for names against one board's fields. `all` holds every field of the board's types, readable or not
+// (boardFields(…, false)), so a field no widget reads is refused by name rather than as unknown. The names are keyed
+// once, so each lookup is a map read: a kind's id or label first, then a field widget's name, then a field's label
+// or id alone (its first view), the first to claim a key keeping it.
+export function widgetResolver(all: readonly BoardField[]): (name: string) => Resolved {
   const readable = all.filter((f) => viewsOfField(f.def).length > 0);
+  const named = new Map<string, BoardWidgetId | BoardField>();
+  const claim = (key: string, to: BoardWidgetId | BoardField) => {
+    if (!named.has(key)) named.set(key, to);
+  };
+  for (const k of BOARD_WIDGET_KINDS) {
+    claim(statusKey(k), k);
+    claim(statusKey(BOARD_WIDGET_INFO[k].label), k);
+  }
   for (const f of readable)
     for (const view of viewsOfField(f.def))
-      if (statusKey(fieldWidgetLabel(f, view)) === key)
-        return { ok: true, id: fieldWidgetKey(f.def.id, view) };
-  const field = all.find((f) => statusKey(f.def.label) === key || f.def.id === trimmed);
-  if (field) {
-    const first = viewsOfField(field.def)[0];
-    if (first) return { ok: true, id: fieldWidgetKey(field.def.id, first) };
+      claim(statusKey(fieldWidgetLabel(f, view)), fieldWidgetKey(f.def.id, view));
+  const byId = new Map(all.map((f) => [f.def.id, f] as const));
+  for (const f of all) claim(statusKey(f.def.label), f);
+  return (name) => {
+    const trimmed = name.trim();
+    if (isBoardWidgetKind(trimmed) || isFieldWidgetKey(trimmed)) return { ok: true, id: trimmed };
+    const hit = named.get(statusKey(trimmed)) ?? byId.get(trimmed);
+    if (typeof hit === 'string') return { ok: true, id: hit };
+    if (!hit) return refuse(`No widget "${trimmed}". ${offered(readable)}`);
+    const first = viewsOfField(hit.def)[0];
+    if (first) return { ok: true, id: fieldWidgetKey(hit.def.id, first) };
     return refuse(
-      `"${field.def.label}" is a field no widget reads (text, links, pictures and cards have nothing to add up). ` +
+      `"${hit.def.label}" is a field no widget reads (text, links, pictures and cards have nothing to add up). ` +
         offered(readable),
     );
-  }
-  return refuse(`No widget "${trimmed}". ${offered(readable)}`);
+  };
 }
+
+// One name as a widget (widgetResolver, for a single name).
+export const resolveWidget = (name: string, all: readonly BoardField[]): Resolved =>
+  widgetResolver(all)(name);
 
 // The board's widgets after a change: each `remove` taken off, then each `add` placed at the end (one the board has
 // stays where it is). A field widget added must read a field of the board's types in a view it offers, and the board
@@ -90,14 +99,15 @@ export function changedWidgets(
   change: WidgetsChange,
   all: readonly BoardField[],
 ): { ok: true; widgets: BoardWidgetId[] } | Refusal {
+  const resolve = widgetResolver(all);
   let widgets = [...current];
   for (const name of change.remove ?? []) {
-    const r = resolveWidget(name, all);
+    const r = resolve(name);
     if (!r.ok) return r;
     widgets = removeWidget(widgets, r.id);
   }
   for (const name of change.add ?? []) {
-    const r = resolveWidget(name, all);
+    const r = resolve(name);
     if (!r.ok) return r;
     if (widgets.includes(r.id)) continue;
     if (isFieldWidgetKey(r.id)) {
