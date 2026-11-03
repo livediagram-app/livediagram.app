@@ -8205,6 +8205,9 @@ importers:
       '@liveworkspace/model-core':
         specifier: workspace:*
         version: link:../model-core
+      '@liveworkspace/trusted-types':
+        specifier: workspace:*
+        version: link:../trusted-types
       '@liveworkspace/ui':
         specifier: workspace:*
         version: link:../ui
