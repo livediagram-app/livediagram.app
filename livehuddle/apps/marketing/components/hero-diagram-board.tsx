@@ -191,7 +191,7 @@ export function DiagramBoard({ portrait = false }: { portrait?: boolean }) {
   return (
     // A phone's portrait layout sits a little lower, so the flow centres in its tall canvas.
     <g transform={portrait ? 'translate(0 24)' : undefined}>
-      {/* The canvas title and its caption, as the flowchart templates open. */}
+      {/* The space title and its caption, as the flowchart templates open. */}
       <g className="hm-fade" style={at(0.1)}>
         <text
           x={L.title.x}

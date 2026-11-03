@@ -41,7 +41,7 @@ export function StartDrawingCta({ surface }: { surface: 'Home' | 'Feature' }) {
           Your next idea is one click away
         </h2>
         <p className="mx-auto mt-5 max-w-lg text-pretty text-lg leading-relaxed text-slate-300">
-          No sign-up, no paywall, nothing to install. Open a canvas, and share the link when you are
+          No sign-up, no paywall, nothing to install. Open a space, and share the link when you are
           ready for company.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">

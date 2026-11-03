@@ -401,7 +401,7 @@ export function TimelineStack() {
         x={x}
         y={y}
         w={w}
-        subject="Canvases Updated"
+        subject="Spaces Updated"
         reason="5 events · click to expand"
         tone="create"
         preview={{ glyph: <BigGlyph kind="pencil" tone="create" /> }}

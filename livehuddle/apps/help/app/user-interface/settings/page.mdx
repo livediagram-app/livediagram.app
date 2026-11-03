@@ -5,7 +5,7 @@ import { SettingsDialogScene } from '@liveworkspace/help-site/art/illustrations/
 export const metadata = helpMetadata({
   title: 'Settings',
   description:
-    'Every livehuddle setting explained: editor behaviour, appearance, shortcuts, panels, accessibility, canvases, account, API tokens, privacy and what syncs.',
+    'Every livehuddle setting explained: editor behaviour, appearance, shortcuts, panels, accessibility, spaces, account, API tokens, privacy and what syncs.',
   path: '/help/user-interface/settings/',
 });
 
@@ -16,14 +16,14 @@ export const metadata = helpMetadata({
   categorySlug="user-interface"
 >
 
-**Settings** opens from the **Settings** button (the sliders icon) in the [quick controls](/help/user-interface/quick-controls/) at the end of the bottom bar, in the editor and in the Explorer. It holds the preferences that are about _you_ rather than about any particular canvas, which is why there is one set of them and not one per canvas.
+**Settings** opens from the **Settings** button (the sliders icon) in the [quick controls](/help/user-interface/quick-controls/) at the end of the bottom bar, in the editor and in the Explorer. It holds the preferences that are about _you_ rather than about any particular space, which is why there is one set of them and not one per space.
 
 Signed in, the dialog's header has a **livehuddle** / **All** switch. **livehuddle** shows this app's settings; **All** adds the settings your liveworkspace account keeps for every app, including an **Account** section with **Name and Colour**, **Sign-in Methods**, **Where You’re Signed In**, **Sign Out** and **Cloud Sync**. A guest sees this app's settings only.
 
 The dialog lists its categories down the left, with a **Search settings** field above them, and shows one category at a time on the right. Type into the search to find a setting by name or by a word it is about ("transparency" finds **Panel Opacity**). On a phone, the list and the category take turns: tap a category to open it, and go back for the list.
 
 <Figure caption="Settings lists its categories on the left and shows the open one on the right, here Editor.">
-  <SettingsDialogScene noun="canvas" />
+  <SettingsDialogScene noun="space" />
 </Figure>
 
 Some categories hold **sub-categories** (Editor holds Presenting; Panels holds one per panel; Account holds Notifications and API Tokens). On a computer, click the parent (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap the parent and its sub-categories are listed at the bottom of its page.
@@ -88,19 +88,19 @@ One switch per guided tour: **Workshop Tour** and **Avatar Tour**. Tours never s
 
 Below them, **Show Me** is closed until you open it, and says how many are on. Some elements, such as the [Timeline](/help/palette/timeline-rail/), have a tour of their own, on the same **Start Tour** button while one is selected (Start Timeline Tour). **Show Me on Every Element** switches them all; beneath it, one switch per element that has a tour (**Timeline**, **Chart**, **Stack**, **Lane**, **Boundary**, **Diagram Key** and **Portal**) shows whether you have taken that one. Once you've taken one, it leaves the button until you switch it back on here.
 
-## Canvases
+## Spaces
 
 - **Show Home Banner**, under **Explorer**: the greeting, status pills and large search at the top of Explorer Home. On by default; with it off, Home's search sits in the header, as on every other Explorer page.
-- **Default Folders**: the folder each kind of new canvas goes to (sessions, retrospectives and so on) when you create one without choosing a place, with **Change** and **Clear**. See [Default Folders](/help/explorer/folders/default-folders/).
+- **Default Folders**: the folder each kind of new space goes to (sessions, retrospectives and so on) when you create one without choosing a place, with **Change** and **Clear**. See [Default Folders](/help/explorer/folders/default-folders/).
 
 ## Account
 
-**Account** shows who you are (a guest, or your name and email when signed in), your [Trash](/help/account-and-data/trash/) (deleted canvases wait there for 30 days), **Cloud Sync** to [Google Drive](/help/account-and-data/google-drive/) where the deployment offers it, and **Delete Account**. When this browser still holds pages, boards or designs that belong in livedocuments, liveplanner or livedesign, **Pages and Boards in This Browser** lists them until you move them there. It holds two sub-categories:
+**Account** shows who you are (a guest, or your name and email when signed in), your [Trash](/help/account-and-data/trash/) (deleted spaces wait there for 30 days), **Cloud Sync** to [Google Drive](/help/account-and-data/google-drive/) where the deployment offers it, and **Delete Account**. When this browser still holds pages, boards or designs that belong in livedocuments, liveplanner or livedesign, **Pages and Boards in This Browser** lists them until you move them there. It holds two sub-categories:
 
 ### Notifications
 
-- **In-Editor Notifications**: the brief confirmation shown when you do something whose result isn't on screen, like moving a canvas to a folder or linking a tab. **Errors and warnings are always shown**, whatever this is set to, so a failure is never silently swallowed. A notification stays put while you point at it or tab into it, and Escape closes the one you are on.
-- **Email**: once signed in, one switch per email (someone joins, comments on or mentions you in your canvas, assigns you an action or responds to a team invite, plus tips and milestones). A guest sees a sign-in prompt instead. See [Email Notifications](/help/account-and-data/email-notifications/).
+- **In-Editor Notifications**: the brief confirmation shown when you do something whose result isn't on screen, like moving a space to a folder or linking a tab. **Errors and warnings are always shown**, whatever this is set to, so a failure is never silently swallowed. A notification stays put while you point at it or tab into it, and Escape closes the one you are on.
+- **Email**: once signed in, one switch per email (someone joins, comments on or mentions you in your space, assigns you an action or responds to a team invite, plus tips and milestones). A guest sees a sign-in prompt instead. See [Email Notifications](/help/account-and-data/email-notifications/).
 
 ### API Tokens
 
@@ -114,7 +114,7 @@ Anywhere Settings says something needs an account, it ends with a **Sign In** li
 
 ## Settings follow you, most of them
 
-Settings are **stored against your identity, not your browser**, and apply to every canvas you open on every device you sign in from. For a guest, "your identity" is the per-browser id, so the preferences last as long as that browser does and [migrate with your canvases](/help/getting-started/guest-vs-account/) if you later sign up.
+Settings are **stored against your identity, not your browser**, and apply to every space you open on every device you sign in from. For a guest, "your identity" is the per-browser id, so the preferences last as long as that browser does and [migrate with your spaces](/help/getting-started/guest-vs-account/) if you later sign up.
 
 A few things deliberately stay on the device you are using:
 

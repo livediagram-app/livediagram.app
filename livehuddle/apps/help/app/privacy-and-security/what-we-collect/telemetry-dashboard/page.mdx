@@ -16,11 +16,11 @@ The [telemetry dashboard](/telemetry) is a public page, headed **Telemetry, in t
 
 ## What the numbers are made of
 
-Every number on the dashboard is a count of small events, each made of just three fields: a category, an action and an optional preset type, such as `Element`, `Added`, `Square`, labelled with the app that sent it. No event carries a user id, an IP address, a canvas or anything you typed, so the dashboard can only ever show totals, never a person or a path through the product.
+Every number on the dashboard is a count of small events, each made of just three fields: a category, an action and an optional preset type, such as `Element`, `Added`, `Square`, labelled with the app that sent it. No event carries a user id, an IP address, a space or anything you typed, so the dashboard can only ever show totals, never a person or a path through the product.
 
 Events are deleted automatically after **60 days**. The dashboard's longest window is 30 days, so what you see is recent trend data rather than a permanent archive.
 
-Most events come from browsers that have telemetry switched on. A few are counted by the server itself, because only the server can see them once: a sign-up or sign-in, a share-link visitor's first visit to a canvas, a canvas used by several people at once, an email sent, and a server error. They are the same three anonymous fields, and they appear in the same charts.
+Most events come from browsers that have telemetry switched on. A few are counted by the server itself, because only the server can see them once: a sign-up or sign-in, a share-link visitor's first visit to a space, a space used by several people at once, an email sent, and a server error. They are the same three anonymous fields, and they appear in the same charts.
 
 The counts are refreshed a few minutes at a time, so a brand-new event can take a short while to show.
 
@@ -39,9 +39,9 @@ The windows are whole calendar days in UTC: **Today** is since midnight UTC, **L
 Below the window cards, a row of tabs picks the view: **Dashboard**, **Features**, **Pages & Help**, **Community**, **Health** and **Search**. The middle four are the detail views, each a closer look at one area in sections.
 
 - **Dashboard**: the overview, and where the page opens. Every event the product sends lands in one of its charts, grouped by the question they answer: Visitors, Content, Features, Collaboration, Teams and facilitation, Community, Connections, Health and support, and Email. Each card shows the window's count with a line for the last 30 days, and a stack opens into the cards it combines.
-- **Features**: what people build with. Its sections cover the palette (what people add, most to least used), the canvas modes and the options set inside them, the look and feel (templates, themes and canvas styles), editing (notes, assigned actions, folders, formatting controls, export formats and dialogs), facilitation, connections, and Settings (how often each setting is changed, and which Settings categories people open).
-- **Pages & Help**: which pages get viewed, by the app that serves them (every canvas counts as one page, `/document`, because ids never leave the browser), help centre reads and article feedback, the articles opened from inside the editor, and how far people get through the tours.
-- **Community**: canvases shared to the Community, what people do with them, and why posts get reported.
+- **Features**: what people build with. Its sections cover the palette (what people add, most to least used), the space modes and the options set inside them, the look and feel (templates, themes and canvas styles), editing (notes, assigned actions, folders, formatting controls, export formats and dialogs), facilitation, connections, and Settings (how often each setting is changed, and which Settings categories people open).
+- **Pages & Help**: which pages get viewed, by the app that serves them (every space counts as one page, `/document`, because ids never leave the browser), help centre reads and article feedback, the articles opened from inside the editor, and how far people get through the tours.
+- **Community**: spaces shared to the Community, what people do with them, and why posts get reported.
 - **Health**: its **Exceptions** section shows what failed and where, counted only as a short code such as a status and the request or area, never an error message or stack (an empty section is the goal); its **Timings** section shows how fast things feel (see below).
 - **Search**: find any one metric, by typing (for example "element added") or by clicking through a word cloud of categories, actions and types, and see just that metric charted over 30 days.
 

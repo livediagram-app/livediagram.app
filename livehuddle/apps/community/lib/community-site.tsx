@@ -39,7 +39,7 @@ const SITE: CommunitySite = {
     editDocument: documentPath,
     // The editor's sign-in page, returning here afterwards (it reads `redirect_url`).
     signIn: (returnTo) => `/sign-in/?redirect_url=${encodeURIComponent(returnTo)}`,
-    // Sharing starts from a canvas the person already has, so every invitation opens Explorer Home.
+    // Sharing starts from a space the person already has, so every invitation opens Explorer Home.
     shareYourOwn: '/explorer/home',
   },
   telemetry: communityTelemetry,

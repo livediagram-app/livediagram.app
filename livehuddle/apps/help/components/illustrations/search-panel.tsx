@@ -301,7 +301,7 @@ export function SearchOverview() {
       query="check"
       groups={[
         {
-          title: 'Canvases',
+          title: 'Spaces',
           rows: [{ icon: <DocumentIcon />, label: 'Checkout flow', active: true }],
         },
         {
@@ -331,7 +331,7 @@ export function SearchDocuments() {
       query="onboarding"
       groups={[
         {
-          title: 'Canvases',
+          title: 'Spaces',
           rows: [{ icon: <DocumentIcon />, label: 'Onboarding flow', active: true }],
         },
         {
@@ -395,7 +395,7 @@ export function SearchAddToCanvas() {
       query="cylinder"
       groups={[
         {
-          title: 'Canvases',
+          title: 'Spaces',
           rows: [{ icon: <DocumentIcon />, label: 'Storage cylinder demo', active: true }],
         },
         {

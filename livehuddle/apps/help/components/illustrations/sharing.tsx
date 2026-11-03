@@ -628,10 +628,10 @@ export function SharePasswordGate() {
       <circle cx={210} cy={42} r={18} className="fill-brand-100" />
       <Lock x={203} y={33} className="stroke-brand-600" />
       <Label x={210} y={78} anchor="middle" size={13} weight={700} tone="strong">
-        This canvas is password-protected
+        This space is password-protected
       </Label>
       <Label x={210} y={98} anchor="middle" size={10} tone="body">
-        Enter the password Aria set to open this canvas.
+        Enter the password Aria set to open this space.
       </Label>
       <rect
         x={94}
@@ -648,7 +648,7 @@ export function SharePasswordGate() {
       <Label x={210} y={158} anchor="middle" size={10} weight={500} className="fill-rose-500">
         That password didn&apos;t match. Try again.
       </Label>
-      <Button x={94} y={174} w={232} h={30} label="Open canvas" variant="primary" />
+      <Button x={94} y={174} w={232} h={30} label="Open Space" variant="primary" />
     </Scene>
   );
 }
