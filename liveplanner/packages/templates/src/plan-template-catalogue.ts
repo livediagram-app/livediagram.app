@@ -12,6 +12,7 @@ import {
   type PlanColumn,
   type PlanVisualisation,
 } from '@liveplanner/items';
+import type { StarterId } from '@liveplanner/forms';
 import type { TemplateStartId } from '@liveplanner/sheets';
 
 export const PLAN_TEMPLATE_KINDS = [
@@ -71,10 +72,21 @@ type RailItem =
 // filling its tab.
 export type SheetSpec = { start: TemplateStartId; width: number; height: number; fillTab?: true };
 
-type PlanTabSpec = {
+// A Form tab (docs/specs/030-forms/forms.md "In a plan template"): a starter's form, its responses going to the
+// template's tab named `to` (cards on its board, as its first card type, in its first column; or rows in its Sheet).
+// `fields` names a starter field after the field of the target's card type that takes it instead, so the template
+// brings no field of its own (Contact's Requested By is a Ticket's Customer).
+export type FormSpec = {
+  starter: StarterId;
+  to: string;
+  fields?: Readonly<Record<string, string>>;
+};
+
+export type PlanTabSpec = {
   name: string;
   board?: BoardSpec;
   sheet?: SheetSpec;
+  form?: FormSpec;
   metrics?: readonly MetricKind[];
   charts?: readonly PlanVisualisation[];
   // The Gantt chart's card types: the dated cards of the board above it (absent: Projects, the chart's own default).
@@ -825,6 +837,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           text: steps('How this works', [
             'Add a Workstream for each part of the event (venue, catering, speakers), with its dates',
             'Break each into Tasks, under its workstream',
+            'Publish RSVP and share its link: each reply is a row on RSVP Responses',
             'Keep the Guest List as replies come in',
             'Watch what is due on Overview',
           ]),
@@ -834,6 +847,12 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
     {
       name: 'Guest List',
       sheet: { start: 'guest-list', width: 1000, height: 520, fillTab: true },
+    },
+    // The Event RSVP form, its replies rows on the blank sheet after it (forms.md "In a plan template").
+    { name: 'RSVP', form: { starter: 'rsvp', to: 'RSVP Responses' } },
+    {
+      name: 'RSVP Responses',
+      sheet: { start: 'blank-spreadsheet', width: 1000, height: 520, fillTab: true },
     },
   ],
 
@@ -913,6 +932,7 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
         {
           kind: 'sticky',
           text: steps('How we work the queue', [
+            'Publish the Contact Form and share its link: messages arrive as tickets in New',
             'Every new ticket gets an owner and a priority',
             'Urgent first, then the oldest',
             'Waiting on Customer while you need their reply',
@@ -921,6 +941,11 @@ export const PLAN_TEMPLATE_TABS: Readonly<Record<PlanTemplateKind, readonly Plan
           ]),
         },
       ],
+    },
+    // Messages from anyone with the link, each a Ticket in New (forms.md "In a plan template").
+    {
+      name: 'Contact Form',
+      form: { starter: 'contact', to: 'Tickets', fields: { 'Requested By': 'Customer' } },
     },
     {
       name: 'Knowledge Base',

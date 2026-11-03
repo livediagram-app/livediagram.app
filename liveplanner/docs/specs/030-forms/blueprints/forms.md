@@ -236,6 +236,29 @@ the starter's colour; "Response" for Blank). `buildStarter(starter, type, newId)
 at the type's fields; a field of the same name and kind reused (options it lacks added), else added. Returns the
 same type object when nothing changed.
 
+## 7a. Forms in plan templates (`packages/templates/src/template-forms.ts`)
+
+- The catalogue (`plan-template-catalogue.ts`) gives a tab spec `form: FormSpec`: `{ starter: StarterId; to: string;
+fields?: Record<string, string> }`. `to` is a tab spec's `name` in the same template, holding a board or a Sheet;
+  `fields` renames a starter field (its label) to the label of the target type's field that takes it
+  (`{ 'Requested By': 'Customer' }`).
+- `planTemplateTabs` gives a form spec a def whose `build` makes no elements and whose `tab(ids)` returns
+  `{ kind: 'form', form }`, the form from `templateForm(spec, name, target, random)`; `target` is the `to` tab's id
+  (`ids[index]`) with its board spec or its sheet id. A template's Sheet ids are made once per `planTemplateTabs` call
+  (not per `build`), so the Sheet a form names is the one its tab holds.
+- `templateForm`: `starterWithFields(formStarter(spec.starter), spec.fields)` (labels swapped, nothing else), then
+  `buildStarter` with, for a board, the ready-made type of the board's first `addTypes` id (`READY_MADE_CARD_TYPES`)
+  and `destination: { tabId, typeId, status: columns[0].status }`; for a Sheet, `starterBaseType(starter, [], ...)`
+  and `sheet: { tabId, sheetId }` (no `columns`: the builder and the first response find them). `heading` is the tab
+  name. No `closesAt`, `limit` or link: unpublished.
+- `materialiseTemplateSheets` (`template-sheets.ts`) titles a made sheet after its tab when a tab in the same batch
+  has `form.sheet.sheetId` naming it (`formSheetTitles`); the tabs it takes may carry `name` and `form`.
+- Invariant (tested for every template): a board form's `buildStarter` returns the ready-made type unchanged, every
+  question's mapping resolves on it and `publishProblems` and `destinationProblem` find nothing, so the template
+  brings no field of its own and the form can be published as made.
+- A `to` naming no tab of the template, a tab with neither a board nor a Sheet, or a board taking no ready-made type
+  is a catalogue error: the test fails; at run time the form is made with no destination (the connect box asks).
+
 ## 8. Destination and the public form (`destination.ts`, `public.ts`)
 
 `destinationProblem(destination, boards, types)`: `no_destination | board_missing | status_missing | type_missing |
@@ -417,6 +440,7 @@ editor modules: `forms-public.ts`, the shared controls and `@liveplanner/ui`.
 | The index's code and seen counts                                                                                                 | `apps/api/src/forms/form-inbox.test.ts`                                                                                                                                                                 |
 | Builder edits                                                                                                                    | `packages/forms/src/edits.test.ts`                                                                                                                                                                      |
 | Starting a form                                                                                                                  | `packages/templates/src/form-start.test.ts`                                                                                                                                                             |
+| Forms in plan templates: the target found, fields renamed, type untouched, ready to publish, unpublished, every path             | `packages/templates/src/template-forms.test.ts`, `template-builders-plan.test.ts`                                                                                                                       |
 | Builder by role, selection, options, sections, rename                                                                            | `apps/editor/components/forms/builder/FormBuilderColumn.test.tsx`                                                                                                                                       |
 | The form page flow                                                                                                               | `components/forms/respond/FormFill.test.tsx`, `FormRespondPage.test.tsx`                                                                                                                                |
 | New on a response's card                                                                                                         | `components/forms/fresh-responses.test.ts`                                                                                                                                                              |

@@ -152,7 +152,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'event-planner',
     title: 'Event Planner',
     description:
-      'Four tabs: workstreams on a Timeline, the Tasks under each, the Guest List as a sheet and an Overview dashboard.',
+      'Six tabs: workstreams on a Timeline, the Tasks under each, the Guest List as a sheet, an RSVP form whose replies land as rows on RSVP Responses and an Overview dashboard.',
     extra: true,
   },
   {
@@ -166,7 +166,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'help-desk',
     title: 'Help Desk',
     description:
-      'Three tabs: support Tickets by priority from new to closed, a Knowledge Base of articles to write and an Overview dashboard.',
+      'Four tabs: support Tickets by priority from new to closed, a Contact Form whose messages land as Tickets, a Knowledge Base of articles to write and an Overview dashboard.',
     extra: true,
   },
   {

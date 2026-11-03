@@ -71,9 +71,9 @@ describe('plan templates', () => {
       'guest-list': ['Guest List'],
       'grade-book': ['Grade Book'],
       'habit-tracker': ['Habit Tracker'],
-      'event-planner': ['Timeline', 'Tasks', 'Guest List'],
+      'event-planner': ['Timeline', 'Tasks', 'Guest List', 'RSVP', 'RSVP Responses'],
       'sales-crm': ['Deals', 'Contacts'],
-      'help-desk': ['Tickets', 'Knowledge Base'],
+      'help-desk': ['Tickets', 'Contact Form', 'Knowledge Base'],
       'meeting-agenda': ['Agenda', 'Actions', 'Archive'],
       'personal-goals': ['Goals', 'Key Results', 'Habits'],
       'study-planner': ['Assignments', 'Revision', 'Calendar'],
@@ -90,6 +90,14 @@ describe('plan templates', () => {
       ['Timeline', 'board'],
       ['Tasks', 'board'],
       ['Guest List', 'sheet'],
+      ['RSVP', 'form'],
+      ['RSVP Responses', 'sheet'],
+      ['Overview', 'dashboard'],
+    ]);
+    expect(kinds('help-desk')).toEqual([
+      ['Tickets', 'board'],
+      ['Contact Form', 'form'],
+      ['Knowledge Base', 'board'],
       ['Overview', 'dashboard'],
     ]);
     expect(kinds('sales-crm')).toEqual([

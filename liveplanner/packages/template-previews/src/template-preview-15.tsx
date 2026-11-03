@@ -417,7 +417,7 @@ export function templatePreviewGroup15(kind: TemplateKind): ReactElement | null 
     case 'event-planner':
       // Workstreams over their Gantt, At Risk in red; the story confirms the one at risk.
       return board({
-        tabs: 4,
+        tabs: 6,
         columns: [
           { cards: [{ stripe: EPIC }] },
           { cards: [{ stripe: EPIC }] },
@@ -446,7 +446,7 @@ export function templatePreviewGroup15(kind: TemplateKind): ReactElement | null 
     case 'help-desk':
       // Tickets, a row per priority, Waiting on Customer in amber; the story resolves an urgent ticket.
       return board({
-        tabs: 3,
+        tabs: 4,
         rows: 2,
         columns: [
           { cards: [{ stripe: TASK }, { stripe: TASK }] },

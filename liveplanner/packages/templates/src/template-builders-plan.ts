@@ -19,6 +19,7 @@ import {
   type PlanBoardSetup,
 } from '@liveplanner/items';
 import { dashboardLayoutOf, dashboardViewElements } from './dashboard-builder';
+import { templateForm, templateFormTarget } from './template-forms';
 import {
   PLAN_TEMPLATE_KINDS,
   PLAN_TEMPLATE_TABS,
@@ -65,13 +66,13 @@ function board(spec: BoardSpec, x: number, y: number): Box {
 }
 
 // A Sheet not yet made: it names its start, and whatever makes the tabs makes its sheet (template-sheets.ts).
-function sheet(spec: SheetSpec, x: number, y: number): Box {
+function sheet(spec: SheetSpec, x: number, y: number, sheetId: string): Box {
   return {
     ...createShape('plan-sheet', x, y),
     width: spec.width,
     height: spec.height,
     planSheet: {
-      sheetId: newPlanSheetId(),
+      sheetId,
       start: spec.start,
       ...(spec.fillTab ? { fillTab: true as const } : {}),
     },
@@ -135,7 +136,9 @@ export function planTemplateTabs(kind: PlanTemplateKind): PlanTemplateTabDef[] {
     );
     return { kind: 'dashboard', ...(dashboard ? { dashboard } : {}) };
   };
-  const out: PlanTemplateTabDef[] = specs.map((spec) => {
+  // Each Sheet's id, made once, so a Form tab can name the Sheet its responses go to (template-forms.ts).
+  const sheetIds = specs.map((s) => (s.sheet ? newPlanSheetId() : null));
+  const out: PlanTemplateTabDef[] = specs.map((spec, index) => {
     const name = named ? spec.name : null;
     if (spec.board)
       return {
@@ -143,7 +146,18 @@ export function planTemplateTabs(kind: PlanTemplateKind): PlanTemplateTabDef[] {
         build: (cx, cy) => [centred(board(spec.board!, 0, 0), cx, cy)],
         tab: () => ({ kind: 'board' }),
       };
-    if (spec.sheet) return sheetTabDef(name, spec.sheet);
+    if (spec.sheet) return sheetTabDef(name, spec.sheet, sheetIds[index]!);
+    if (spec.form) {
+      const form = spec.form;
+      return {
+        name,
+        build: () => [],
+        tab: (ids) => ({
+          kind: 'form',
+          form: templateForm(form, spec.name, templateFormTarget(specs, sheetIds, form.to, ids)),
+        }),
+      };
+    }
     if (spec === dashSpec)
       return { name, build: () => [...metricEls, ...chartEls], tab: dashboardTab };
     return { name, build: () => [] };
@@ -155,10 +169,15 @@ export function planTemplateTabs(kind: PlanTemplateKind): PlanTemplateTabDef[] {
 
 // A Sheet tab of one Sheet (docs/specs/026-plan/plan-tabs.md "Board tab and Sheet tab"): a Plan template's, or the
 // companion Sheet a Diagram template makes after its drawing (template-companions.ts).
-export function sheetTabDef(name: string | null, spec: SheetSpec): PlanTemplateTabDef {
+// `sheetId` names its sheet, made once with the template's tabs so a Form tab can name it.
+export function sheetTabDef(
+  name: string | null,
+  spec: SheetSpec,
+  sheetId: string,
+): PlanTemplateTabDef {
   return {
     name,
-    build: (cx, cy) => [centred(sheet(spec, 0, 0), cx, cy)],
+    build: (cx, cy) => [centred(sheet(spec, 0, 0, sheetId), cx, cy)],
     tab: () => ({ kind: 'sheet' }),
   };
 }
