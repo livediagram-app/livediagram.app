@@ -33,6 +33,8 @@ function projectOf(
     itemTypesRev: outline.itemTypesRev,
     savedAt: outline.savedAt,
     createdAt: meta.createdAt,
+    // Only when it has one, so a plan without keeps the read it always had.
+    ...(meta.description ? { description: meta.description } : {}),
     ownerName: owner?.name ?? null,
     ownerColor: owner?.color ?? null,
     ...readRecordedIntent({

@@ -29,6 +29,8 @@ export type PlanMeta = {
   tabKind: string | null;
   templateFamily: string | null;
   createdAt: number;
+  // Its description (docs/specs/026-plan/plan-overview.md "The description"); empty for none.
+  description: string;
 };
 
 // What a project read takes from the plan: its tabs in order (no body), its type catalogue, and what it knows
@@ -54,10 +56,11 @@ type PlanHeadRow = {
   opens_in: string | null;
   tab_kind: string | null;
   template_family: string | null;
+  description: string | null;
 };
 
 const PLAN_HEAD_COLS =
-  'item_types, item_types_rev, saved_at, created_at, name, owner_id, team_id, source, opens_in, tab_kind, template_family';
+  'item_types, item_types_rev, saved_at, created_at, name, owner_id, team_id, source, opens_in, tab_kind, template_family, description';
 
 function metaOf(head: PlanHeadRow | null): PlanMeta | null {
   if (!head || !head.created_at) return null;
@@ -70,6 +73,7 @@ function metaOf(head: PlanHeadRow | null): PlanMeta | null {
     tabKind: head.tab_kind,
     templateFamily: head.template_family,
     createdAt: head.created_at,
+    description: head.description ?? '',
   };
 }
 
@@ -150,6 +154,8 @@ export type PlanStart = {
   savedAt: number;
   createdAt: number;
   itemTypes?: ItemTypeCatalogue | null;
+  // A synced offline plan's description (docs/specs/026-plan/plan-overview.md "The description"), normalised.
+  description?: string;
 };
 
 // Start the plan (docs/specs/015-api/api.md "Storage"), or on a plan already started rename it and move its
@@ -158,8 +164,8 @@ export type PlanStart = {
 export async function initPlan(env: PlanEnv, planId: string, d: PlanStart): Promise<void> {
   await env.PLAN_DB.prepare(
     `INSERT INTO plan (id, item_types, saved_at, created_at, name, owner_id, team_id, source, opens_in, tab_kind,
-                       template_family)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)
+                       template_family, description)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)
      ON CONFLICT (id) DO UPDATE SET
        item_types = CASE WHEN plan.created_at = 0 THEN COALESCE(plan.item_types, excluded.item_types)
                          ELSE plan.item_types END,
@@ -172,7 +178,9 @@ export async function initPlan(env: PlanEnv, planId: string, d: PlanStart): Prom
        opens_in = CASE WHEN plan.created_at = 0 THEN excluded.opens_in ELSE plan.opens_in END,
        tab_kind = CASE WHEN plan.created_at = 0 THEN excluded.tab_kind ELSE plan.tab_kind END,
        template_family = CASE WHEN plan.created_at = 0 THEN excluded.template_family
-                              ELSE plan.template_family END`,
+                              ELSE plan.template_family END,
+       description = CASE WHEN plan.created_at = 0 AND excluded.description <> '' THEN excluded.description
+                          ELSE plan.description END`,
   )
     .bind(
       planId,
@@ -186,6 +194,7 @@ export async function initPlan(env: PlanEnv, planId: string, d: PlanStart): Prom
       d.opensIn,
       d.tabKind,
       d.templateFamily,
+      d.description ?? '',
     )
     .run();
 }
@@ -257,6 +266,22 @@ export async function setPlanItemTypes(
   return row?.item_types_rev ?? null;
 }
 
+// The plan's description (docs/specs/026-plan/plan-overview.md "The description"), already normalised by the caller
+// (readProjectDescription). A write moves the plan's last save. Answers false when the plan is not started.
+export async function setPlanDescription(
+  env: PlanEnv,
+  planId: string,
+  description: string,
+  now = Date.now(),
+): Promise<boolean> {
+  const row = await env.PLAN_DB.prepare(
+    `UPDATE plan SET description = ?, saved_at = ? WHERE id = ? AND created_at > 0 RETURNING id`,
+  )
+    .bind(description, now, planId)
+    .first<{ id: string }>();
+  return row !== null;
+}
+
 // ---------- Copies --------------------------------------------------------------------------------------------
 
 // A plan's content as one Durable Object hands it to another for a copy (docs/specs/015-api/api.md "Copies"):
@@ -265,6 +290,9 @@ export async function setPlanItemTypes(
 // stream it in pages).
 export type PlanCopy = {
   itemTypes: string | null;
+  // The plan's description (docs/specs/026-plan/plan-overview.md "The description"): a whole-plan copy's alone, never
+  // a tab-scoped one's. Absent from a copy made before descriptions.
+  description?: string;
   itemsRev: number;
   itemsNextKey: number;
   tabs: {
@@ -369,10 +397,15 @@ export async function exportPlanCopy(
   redactAuthorsFor: string | null,
 ): Promise<PlanCopy | null> {
   const plan = await env.PLAN_DB.prepare(
-    'SELECT item_types, items_rev, items_next_key FROM plan WHERE id = ?',
+    'SELECT item_types, items_rev, items_next_key, description FROM plan WHERE id = ?',
   )
     .bind(planId)
-    .first<{ item_types: string | null; items_rev: number; items_next_key: number }>();
+    .first<{
+      item_types: string | null;
+      items_rev: number;
+      items_next_key: number;
+      description: string | null;
+    }>();
   const rows = await readContentTabRows(env, planId, onlyTabId);
   // Every fresh tab id minted up front, so a tab or element link on one tab can be re-pointed at its sibling's copy.
   const tabIdMap = new Map(rows.map((row) => [row.id, crypto.randomUUID()]));
@@ -418,6 +451,7 @@ export async function exportPlanCopy(
   );
   return {
     itemTypes: plan?.item_types ?? null,
+    ...(onlyTabId === null && plan?.description ? { description: plan.description } : {}),
     itemsRev: plan?.items_rev ?? 0,
     itemsNextKey: plan?.items_next_key ?? 1,
     tabs,
@@ -527,12 +561,13 @@ export async function importPlanCopy(
     db
       .prepare(
         // created_at stays 0: the copy's first open with a grant starts it, as its new owner (initPlan).
-        `INSERT INTO plan (id, item_types, items_rev, items_next_key, saved_at, created_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, 0)
+        `INSERT INTO plan (id, item_types, items_rev, items_next_key, saved_at, created_at, description)
+         VALUES (?1, ?2, ?3, ?4, ?5, 0, ?6)
          ON CONFLICT (id) DO UPDATE SET item_types = excluded.item_types, items_rev = excluded.items_rev,
-           items_next_key = excluded.items_next_key, saved_at = excluded.saved_at`,
+           items_next_key = excluded.items_next_key, saved_at = excluded.saved_at,
+           description = excluded.description`,
       )
-      .bind(planId, copy.itemTypes, copy.itemsRev, copy.itemsNextKey, now),
+      .bind(planId, copy.itemTypes, copy.itemsRev, copy.itemsNextKey, now, copy.description ?? ''),
   ];
   for (const tab of copy.tabs) {
     stmts.push(

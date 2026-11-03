@@ -22,6 +22,7 @@ import {
   type ItemCreateRequest,
 } from '@liveworkspace/index-app';
 import { capStoredName } from '../names';
+import { readProjectDescription } from '@liveplanner/api-schema';
 import { MAX_TAB_BYTES, TabTooLargeError, logTabRefused, tabDataBytes } from '../limits';
 import {
   INDEX_GRANT_HEADER,
@@ -425,6 +426,8 @@ export async function handlePlanRequest(ctx: PlanRouteContext): Promise<Response
         savedAt,
         createdAt: dates.createdAt,
         itemTypes: clash ? null : itemTypes,
+        // A synced offline plan's description (docs/specs/026-plan/plan-overview.md "The description").
+        description: readProjectDescription(body.description),
       });
       // Seed tabs if the caller provided them. The editor app's
       // welcome flow uses this when it commits a fresh project

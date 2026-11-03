@@ -19,6 +19,7 @@ import { handleItemRoutes } from './item-routes';
 import { handleThreadRoutes } from './card-thread-routes';
 import { handleSheetRoutes } from './sheet-routes';
 import { handleItemTypeRoutes } from './item-type-routes';
+import { handleProjectDetailsRoutes } from './project-details-route';
 import { handlePlanRoute } from './plan-route';
 import {
   deniedOnTab,
@@ -177,6 +178,9 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
   // The project's type catalogue (docs/specs/026-plan/item-types.md).
   const itemTypes = await handleItemTypeRoutes(ctx);
   if (itemTypes) return itemTypes;
+  // The plan's description (docs/specs/026-plan/plan-overview.md "The description").
+  const details = await handleProjectDetailsRoutes(ctx);
+  if (details) return details;
   // The project's plan for agents (docs/specs/026-plan/plan-agents.md).
   const plan = await handlePlanRoute(ctx);
   if (plan) return plan;

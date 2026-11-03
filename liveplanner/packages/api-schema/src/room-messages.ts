@@ -7,6 +7,7 @@ import type { ChangesetRoomOp } from './changesets';
 import type { ItemsRoomOp, ItemTypesRoomOp } from './items';
 import type { CardThreadsRoomOp } from './card-threads';
 import type { SheetsRoomOp } from './sheets';
+import type { ProjectDetailsRoomOp } from './project-details';
 
 // ---------------------------------------------------------------------
 // Realtime room messages
@@ -94,6 +95,9 @@ export const SYSTEM_OP_KINDS = [
   // `threads` (docs/specs/026-plan/items.md "Comments"): card thread writes the api made, from any plan the thread
   // is on. Threads change only through the api.
   'threads',
+  // `project-details` (docs/specs/026-plan/plan-overview.md "The description"): a description the api stored. It
+  // changes only through the api.
+  'project-details',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -374,6 +378,8 @@ export type RoomOp =
   | ItemsRoomOp
   // A project's type catalogue the api stored (docs/specs/026-plan/item-types.md "Storage and sync").
   | ItemTypesRoomOp
+  // A plan's description the api stored (docs/specs/026-plan/plan-overview.md "The description").
+  | ProjectDetailsRoomOp
   // Sheet writes the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"). Worker-originated
   // through an ordered /broadcast; a session scoped to one tab hears only its tab's.
   | SheetsRoomOp

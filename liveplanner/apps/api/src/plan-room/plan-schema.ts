@@ -397,6 +397,14 @@ const V12 = CARD_REPEATS_SCHEMA;
 // import"). Its own step, appended.
 const V13 = ITEM_IMPORTS_SCHEMA;
 
+// The plan's description (docs/specs/026-plan/plan-overview.md "The description"): plain text, empty for none, so
+// every plan started before it reads as having none. Asks first, as V10 does, so it runs again harmlessly.
+const V14 = (exec: Exec) => {
+  const columns = exec('PRAGMA table_info(plan)').toArray();
+  if (!columns.some((c) => c.name === 'description'))
+    exec(`ALTER TABLE plan ADD COLUMN description TEXT NOT NULL DEFAULT ''`);
+};
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -411,6 +419,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V11,
   V12,
   V13,
+  V14,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

@@ -55,6 +55,9 @@ export type Project = {
   itemTypes?: ItemTypeCatalogue | null;
   // The catalogue's revision (ItemTypesRequest `expectedRev`): 0 until its first write.
   itemTypesRev?: number;
+  // The plan's description (docs/specs/026-plan/plan-overview.md "The description"), read through
+  // readProjectDescription; absent from an older api or record, which reads as none.
+  description?: string;
   savedAt: number;
   createdAt: number;
   // Owner's display name + avatar colour, joined server-side from the
@@ -311,6 +314,7 @@ export * from './page-views';
 export * from './room-messages';
 export * from './changesets';
 export * from './items';
+export * from './project-details';
 export * from './sheets';
 export * from './telemetry-schema';
 export * from './timing-telemetry';

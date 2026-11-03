@@ -17,6 +17,7 @@ import type {
   CardThreadsRoomOp,
   ItemsRoomOp,
   ItemTypesRoomOp,
+  ProjectDetailsRoomOp,
   SheetsRoomOp,
 } from '@liveplanner/api-schema';
 import type { Env } from './types';
@@ -472,6 +473,16 @@ export async function relayItemTypes(
   op: ItemTypesRoomOp,
 ): Promise<void> {
   await broadcastOp(env, projectId, op, 'item types', true);
+}
+
+// A plan's description the api stored (docs/specs/026-plan/plan-overview.md "The description"): an ordered system op,
+// best-effort like the other broadcasts (the stored value is the change; the next load reads it).
+export async function relayProjectDetails(
+  env: Env,
+  projectId: string,
+  op: ProjectDetailsRoomOp,
+): Promise<void> {
+  await broadcastOp(env, projectId, op, 'project details', true);
 }
 
 // Tell a project's room about item writes (docs/specs/026-plan/items.md "Live for everyone"): an

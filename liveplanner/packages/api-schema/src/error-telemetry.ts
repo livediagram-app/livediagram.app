@@ -79,6 +79,7 @@ const API_ROUTE_WORDS: ReadonlySet<string> = new Set([
   'restore',
   'items',
   'item-types',
+  'details',
   'sheets',
   'writes',
 ]);
