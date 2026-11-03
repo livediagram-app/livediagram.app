@@ -16,7 +16,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return installManifest({
     name: 'livehuddle',
     description: SITE_DESCRIPTION,
-    themeColor: '#0EA5E9',
+    themeColor: '#10b981',
     icons: appIcons('livehuddle'),
   });
 }

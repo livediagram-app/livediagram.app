@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import '@liveworkspace/tailwind-config';
+@import '@livehuddle/tailwind-config';
 @import '@livehuddle/template-previews/preview-art-tile.css';
 @import '@livehuddle/template-previews/preview-motion.css';
 @import '@livehuddle/ui/hero-band.css';

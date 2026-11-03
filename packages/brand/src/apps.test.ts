@@ -3,14 +3,13 @@ import { describe, expect, it } from 'vitest';
 import { BRAND_APPS, type BrandApp } from './apps';
 
 // Where each app's light brand ramp is declared: livediagram's sky is the shared theme's own, every other product's
-// palette re-declares it over that theme (each product's docs/specs/004-interface-design/color-scheme.md). livehuddle,
-// registered before its fork, has no theme yet: its ramp is Tailwind's emerald, checked below, until the fork's
-// tailwind-config joins this list.
+// palette re-declares it over that theme (each product's docs/specs/004-interface-design/color-scheme.md).
 const THEME_CSS: Partial<Record<BrandApp, string>> = {
   livediagram: '../../tailwind-config/theme.css',
   liveplanner: '../../../liveplanner/packages/tailwind-config/theme.css',
   livedocuments: '../../../livedocuments/packages/tailwind-config/theme.css',
   livedesign: '../../../livedesign/packages/tailwind-config/theme.css',
+  livehuddle: '../../../livehuddle/packages/tailwind-config/theme.css',
 };
 
 /** The `--color-brand-*` declarations of the stylesheet's `@theme` block, keyed by step. */

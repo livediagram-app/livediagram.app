@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import '@liveworkspace/tailwind-config';
+@import '@livehuddle/tailwind-config';
 
 /* Scan the shared UI package so utility classes used only inside its
  * components (e.g. `text-brand-700` in <Brand>'s wordmark) are generated
@@ -18,6 +18,6 @@
 /* Print colours for the shared help styles: the default theme's brand, fixed so paper does not follow the reader's
  * chosen theme. */
 :root {
-  --help-print-link: #0369a1;
-  --help-print-section: #0ea5e9;
+  --help-print-link: #047857;
+  --help-print-section: #10b981;
 }
