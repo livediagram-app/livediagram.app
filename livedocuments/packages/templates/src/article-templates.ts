@@ -335,7 +335,10 @@ The server merges changes by operation, not by whole note, so two people typing 
 
 2 May 2027
 
-Jordan Blake, Head of Customer Experience, Harbour Coffee, Bristol BS8 1AA
+Jordan Blake\\
+Head of Customer Experience\\
+Harbour Coffee\\
+Bristol BS8 1AA
 
 **Dear Jordan,**
 

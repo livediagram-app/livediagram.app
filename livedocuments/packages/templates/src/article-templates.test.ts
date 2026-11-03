@@ -104,6 +104,15 @@ describe('the written templates', () => {
     ).toBe(4);
   });
 
+  it("set the Cover Letter's recipient address one line each, in one block", () => {
+    const address = flowOf('cover-letter').blocks.find(
+      (b) => b.type === 'paragraph' && b.runs[0]?.text.startsWith('Jordan Blake'),
+    );
+    expect(address?.type === 'paragraph' && address.runs).toEqual([
+      { text: 'Jordan Blake\nHead of Customer Experience\nHarbour Coffee\nBristol BS8 1AA' },
+    ]);
+  });
+
   it('names only the written templates', () => {
     for (const kind of KINDS) expect(isArticleTemplate(kind)).toBe(true);
     expect(isArticleTemplate('article')).toBe(false);

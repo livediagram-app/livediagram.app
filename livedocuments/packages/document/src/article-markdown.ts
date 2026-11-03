@@ -145,6 +145,33 @@ export function closesFence(line: string, fence: number): boolean {
   return bare.length >= fence && /^`+$/.test(bare);
 }
 
+// CommonMark's hard line break: a paragraph line ending in two or more spaces, or in an odd number of backslashes
+// (an even run is escaped backslashes). Found by a scan back from the line's end, never a regex such as ` {2,}$`,
+// which retries from every offset and is quadratic on a long run of spaces.
+type HardBreak = 'spaces' | 'slash' | undefined;
+function hardBreakOf(line: string): { text: string; brk: HardBreak } {
+  let end = line.length;
+  while (end > 0 && line[end - 1] === ' ') end--;
+  if (line.length - end >= 2) return { text: line.slice(0, end).trim(), brk: 'spaces' };
+  // A backslash breaks only as the line's last character (a backslash and a space is a backslash).
+  let slashes = 0;
+  if (end === line.length) while (slashes < end && line[end - 1 - slashes] === '\\') slashes++;
+  if (slashes % 2 === 1) return { text: line.slice(0, end - 1).trim(), brk: 'slash' };
+  return { text: line.trim(), brk: undefined };
+}
+
+/** A paragraph's lines as one text: a hard break is a line break ('\n'), any other line end a space. The last line's
+ *  break is no break: its spaces go, its backslash stays a backslash. */
+function joinParagraph(lines: readonly { text: string; brk: HardBreak }[]): string {
+  let out = '';
+  lines.forEach((line, i) => {
+    if (i > 0) out += lines[i - 1]!.brk ? '\n' : ' ';
+    out += line.text;
+  });
+  if (lines[lines.length - 1]!.brk === 'slash') out += '\\';
+  return out;
+}
+
 const levelOf = (indent: string) => Math.min(4, Math.floor(indent.replace(/\t/g, '  ').length / 2));
 
 /** Markdown as blocks. */
@@ -157,10 +184,10 @@ export function parseMarkdownBlocks(text: string): ArticleBlock[] {
   };
   const blocks: ArticleBlock[] = [];
   const lines = text.replace(/\r\n?/g, '\n').split('\n');
-  let para: string[] = [];
+  let para: { text: string; brk: HardBreak }[] = [];
   const flush = () => {
     if (para.length === 0) return;
-    blocks.push({ id: id(), type: 'paragraph', runs: parseInline(para.join(' ')) });
+    blocks.push({ id: id(), type: 'paragraph', runs: parseInline(joinParagraph(para)) });
     para = [];
   };
   for (let i = 0; i < lines.length; i++) {
@@ -234,7 +261,7 @@ export function parseMarkdownBlocks(text: string): ArticleBlock[] {
       blocks.push({ id: id(), type: 'paragraph', style: 'quote', runs: parseInline(quote[1]!) });
       continue;
     }
-    para.push(line.trim());
+    para.push(hardBreakOf(line));
   }
   flush();
   return blocks;
