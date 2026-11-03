@@ -251,6 +251,8 @@ fields?: Record<string, string> }`. `to` is a tab spec's `name` in the same temp
   and `destination: { tabId, typeId, status: columns[0].status }`; for a Sheet, `starterBaseType(starter, [], ...)`
   and `sheet: { tabId, sheetId }` (no `columns`: the builder and the first response find them). `heading` is the tab
   name. No `closesAt`, `limit` or link: unpublished.
+- `materialiseTemplateSheets` (`template-sheets.ts`) titles a made sheet after its tab when a tab in the same batch
+  has `form.sheet.sheetId` naming it (`formSheetTitles`); the tabs it takes may carry `name` and `form`.
 - Invariant (tested for every template): a board form's `buildStarter` returns the ready-made type unchanged, every
   question's mapping resolves on it and `publishProblems` and `destinationProblem` find nothing, so the template
   brings no field of its own and the form can be published as made.

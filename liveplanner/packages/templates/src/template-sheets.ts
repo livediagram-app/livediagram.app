@@ -63,14 +63,29 @@ export function templateChartElements(
 // added beside them (anchored in the Sheet, carrying their first read), and the tabs with the mark dropped from every
 // Sheet whose sheet was made. A Sheet whose start would not build keeps its mark, so the editor
 // tries it when it is drawn.
+// A sheet a template's Form tab sends its responses to is titled after its tab ("RSVP Responses"), as a responses
+// sheet Start Planning makes is (docs/specs/030-forms/forms.md "In a plan template"); every other keeps its own.
+function formSheetTitles(tabs: readonly Partial<Pick<Tab, 'id' | 'name' | 'form'>>[]) {
+  const names = new Map(tabs.map((t) => [t.id, t.name]));
+  const out = new Map<string, string>();
+  for (const t of tabs) {
+    const to = t.form?.sheet;
+    const name = to && names.get(to.tabId);
+    if (to && name) out.set(to.sheetId, name);
+  }
+  return out;
+}
+
 export function materialiseTemplateSheets<
-  T extends Pick<Tab, 'id' | 'elements'> & { backgroundColor?: string },
+  T extends Pick<Tab, 'id' | 'elements'> &
+    Partial<Pick<Tab, 'name' | 'form'>> & { backgroundColor?: string },
 >(
   tabs: readonly T[],
   now: number,
   rand: Rand = Math.random,
 ): { tabs: T[]; sheets: SheetCreateRequest[] } {
   const sheets: SheetCreateRequest[] = [];
+  const titles = formSheetTitles(tabs);
   const out = tabs.map((tab) => {
     if (!tab.elements.some((el) => startOf(el) !== null)) return tab;
     const dark = !!tab.backgroundColor && !isLightColor(tab.backgroundColor);
@@ -81,7 +96,8 @@ export function materialiseTemplateSheets<
       const sheetId = el.planSheet.sheetId;
       const made = templateSheetWithCharts({ id: sheetId, tabId: tab.id, start, now, dark, rand });
       if (!made) return el;
-      sheets.push(made.sheet);
+      const title = titles.get(sheetId);
+      sheets.push(title ? { ...made.sheet, title } : made.sheet);
       charts.push(...templateChartElements(el, sheetId, made.charts));
       const { start: _made, ...ref } = el.planSheet;
       return { ...el, planSheet: ref };

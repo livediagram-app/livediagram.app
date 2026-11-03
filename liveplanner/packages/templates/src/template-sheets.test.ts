@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, type Element, type ShapeElement } from '@liveplanner/project';
 import { hasTemplateSheets, materialiseTemplateSheets } from './template-sheets';
-import { buildPlanTemplate } from './template-builders-plan';
+import { buildPlanTemplate, planTemplateTabs } from './template-builders-plan';
 
 const NOW = Date.UTC(2026, 9, 8);
 const tab = (id: string, elements: Element[], backgroundColor = '#ffffff') => ({
@@ -65,5 +65,25 @@ describe('materialiseTemplateSheets', () => {
     const { tabs: out, sheets } = materialiseTemplateSheets(tabs, NOW);
     expect(sheets).toEqual([]);
     expect(out[0]).toBe(tabs[0]);
+  });
+
+  // docs/specs/030-forms/forms.md "In a plan template": the sheet a template's form feeds takes its tab's name.
+  it('titles a template form’s responses sheet after its tab, and no other', () => {
+    const defs = planTemplateTabs('event-planner');
+    const ids = defs.map((_, i) => `t${i}`);
+    const tabs = defs.map((d, i) => ({
+      ...tab(ids[i]!, d.build(0, 0)),
+      name: d.name ?? '',
+      ...d.tab?.(ids),
+    }));
+    const { sheets } = materialiseTemplateSheets(tabs, NOW);
+    const at = defs.findIndex((d) => d.name === 'RSVP Responses');
+    expect(sheets.find((x) => x.tabId === ids[at])?.title).toBe('RSVP Responses');
+    // Without a form feeding it, a blank sheet keeps its own title.
+    const plain = materialiseTemplateSheets(
+      tabs.map((t) => ({ ...t, form: undefined })),
+      NOW,
+    ).sheets;
+    expect(plain.find((x) => x.tabId === ids[at])?.title).toBe('Sheet 1');
   });
 });

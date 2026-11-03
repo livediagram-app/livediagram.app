@@ -119,6 +119,8 @@ on its sheet. Help Desk's **Contact Form** sends Contact to its **Tickets** boar
 - It is made on every path that makes the template's tabs (the New Project wizard, a start screen, the MCP's
   `create_project` and the api's seeded create), as a pure part of the tab, so it exists the moment its project does,
   with nothing for the editor to finish. A replace (`add_tab`) makes only a template's first tab, never a Form tab.
+- A Sheet a template's form feeds is titled after its tab ("RSVP Responses"), as a Responses sheet Start Planning
+  makes is; every other template sheet keeps its own title.
 - It starts **unpublished**, as every new form does: no form link until an Editor publishes it from Share Form.
 - Once made it is an ordinary Form tab: renamed, rebuilt, pointed elsewhere or deleted like any other.
 
