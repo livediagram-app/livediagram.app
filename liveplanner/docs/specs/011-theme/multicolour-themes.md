@@ -65,4 +65,4 @@ Applying any theme already emits `track('Theme', 'Changed', <label>)` ([Telemetr
 
 ## Counts
 
-The catalogue ships **24 themes** (12 default + 12 extra), the extras including the dark schemes (Pine, Plum, Abyss, Espresso) and three multicolour themes (Rainbow, Pastel, Tropical), plus six seasonal themes (`seasonal: true`) worn only by the seasonal looks and kept out of every picker. An id outside the catalogue draws as Default ([Retired colour schemes](retired-schemes.md)).
+The catalogue ships **25 themes** (12 default + 13 extra), the extras including the dark schemes (Pine, Plum, Abyss, Espresso), Teal (a calm teal brought over from liveplanner's board style presets, the light counterpart to Abyss) and three multicolour themes (Rainbow, Pastel, Tropical), plus six seasonal themes (`seasonal: true`) worn only by the seasonal looks and kept out of every picker. An id outside the catalogue draws as Default ([Retired colour schemes](retired-schemes.md)).

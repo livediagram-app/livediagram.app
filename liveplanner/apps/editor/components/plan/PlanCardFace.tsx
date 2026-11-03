@@ -56,7 +56,7 @@ import { CUSTOM_KIND_ICONS } from './CustomFieldKindParts';
 import { customKindPill, isBuiltInKindPill } from './CustomKindPill';
 import { PercentChip } from './PercentBar';
 import { LinkedNumbersPill } from './SeveralValuesPills';
-import { accentOn, type PlanPalette } from './plan-palette';
+import { accentOn, chipInkOn, type PlanPalette } from './plan-palette';
 import { PersonDisc, PresenceTag } from './PersonDisc';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ColourDot } from './ColourSwatches';
@@ -143,7 +143,7 @@ export function PlanCardFace({
   const plan = usePlan();
   const faceFinish = useFaceFinish();
   const type = typeOverride ?? typeIn(plan?.types ?? ITEM_TYPES, item.type);
-  // Lifted on a dark card, so Project's black still shows.
+  // Leaned until it reads on the card: Project's black on a dark card, Idea's yellow on a light one.
   const accent = accentOn(type.color, palette);
   // What the board shows at this size, and what the card's type shows (docs/specs/026-plan/item-types.md "Card
   // display"): both must allow a field.
@@ -221,11 +221,17 @@ export function PlanCardFace({
         return <KeyTag key={f} itemKey={item.key} accent={accent} />;
       case 'type':
         return (
-          <TypeChip key={f} glyph={type.glyph} label={type.label} accent={accent} compact={!big} />
+          <TypeChip
+            key={f}
+            glyph={type.glyph}
+            label={type.label}
+            accent={chipInkOn(type.color, palette)}
+            compact={!big}
+          />
         );
       case 'priority':
         return isPriority(priority) ? (
-          <PrioritySignal key={f} priority={priority} label={big} />
+          <PrioritySignal key={f} priority={priority} label={big} palette={palette} />
         ) : null;
       case 'start':
         return typeof start === 'string' ? (
@@ -274,7 +280,7 @@ export function PlanCardFace({
           <PersonDisc key={f} person={assignee} label={`Assigned to ${assignee.name}`} />
         ) : null;
       case 'labels':
-        return labels.length > 0 ? <LabelChips key={f} labels={labels} /> : null;
+        return labels.length > 0 ? <LabelChips key={f} labels={labels} palette={palette} /> : null;
       case 'attachments': {
         const count = itemAttachments(item).length;
         return count > 0 ? <AttachmentsPill key={f} count={count} palette={palette} /> : null;

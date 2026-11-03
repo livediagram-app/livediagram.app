@@ -280,8 +280,8 @@ export function CanvasThemeDialog({
                     onOpenPanel={go}
                   />
                   {allTabs ? (
-                    <div className="mt-5">
-                      <ApplyToAllTabsRow {...allTabs} noun="design" />
+                    <div className="mt-5 empty:hidden">
+                      <ApplyToAllTabsRow {...allTabs} />
                     </div>
                   ) : null}
                 </>

@@ -15,7 +15,7 @@ describe('the comparisons', () => {
   });
 });
 
-// The comparisons write the catalogue's sizes out ("23 templates", "twenty-four themes"); every
+// The comparisons write the catalogue's sizes out ("23 templates", "twenty-five themes"); every
 // mention must match it, so a template added fails here until the comparisons follow.
 describe('counts on the comparisons', () => {
   const copy = JSON.stringify(COMPARISONS.alternatives);
@@ -33,7 +33,7 @@ describe('counts on the comparisons', () => {
   it('match the themes a picker offers (the seasonal ones are their looks’ own)', () => {
     const offered = THEMES.filter((t) => !('seasonal' in t && t.seasonal)).length;
     const counts = counted(/\b(\d+|twenty-[a-z]+) (?:one-click )?(?:whole-canvas )?themes\b/gi, {
-      'twenty-four': 24,
+      'twenty-five': 25,
     });
     for (const n of counts) expect(n).toBe(offered);
   });

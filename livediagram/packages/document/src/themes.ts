@@ -48,6 +48,8 @@ export type ThemeId =
   | 'plum'
   | 'abyss'
   | 'espresso'
+  // Calm single-hue themes brought over from liveplanner's board style presets.
+  | 'teal'
   // Multi-colour ("rainbow") themes — see docs/specs/011-theme/multicolour-themes.md. Each carries a
   // `palette` so branches of the hierarchy get distinct hues.
   | 'rainbow'

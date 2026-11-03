@@ -54,7 +54,7 @@ export function customKindPill(
         <span key={def.id} className="contents">
           <span className="sr-only">{`${def.label}: ${labels.join(', ')}`}</span>
           <span aria-hidden className="contents">
-            <LabelChips labels={labels} />
+            <LabelChips labels={labels} palette={palette} />
           </span>
         </span>
       ) : null;

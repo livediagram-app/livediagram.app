@@ -252,6 +252,20 @@ export const THEMES: ThemeDefinition[] = [
     elementText: '#f5e9da',
     extra: true,
   },
+  {
+    id: 'teal',
+    label: 'Teal',
+    // Calm teal, brought over from liveplanner's board style presets: a whisper of the hue in the fill (6% into
+    // white), the hue itself on the outline and an ink leaning a fifth toward it (12.98:1 on the fill). The
+    // light counterpart to Abyss, and the one preset hue the catalogue had no light theme for.
+    backgroundColor: '#f0fdfa',
+    backgroundPattern: 'grid',
+    patternColor: '#99f6e4',
+    elementFill: '#f0f9f8',
+    elementStroke: '#0d9488',
+    elementText: '#0f303d',
+    extra: true,
+  },
   // --- Multi-colour themes (docs/specs/011-theme/multicolour-themes.md) ---------------------------------
   // Each tints a different branch of the hierarchy with its own hue.
   // `elementFill / -Stroke / -Text` mirror the `rootColor` so any code

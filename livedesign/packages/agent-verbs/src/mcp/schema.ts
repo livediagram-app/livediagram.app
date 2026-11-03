@@ -234,7 +234,7 @@ paints the pages and their elements with it (you still omit per-element colours)
   ${themeIds}
 Defaults to "brand", the Default scheme: the plain, un-themed canvas, which
 follows each reader's own light / dark setting in the editor and paints no
-element colours at all. Rough guide: cool blues = ocean / sky; greens = forest /
+element colours at all. Rough guide: cool blues = ocean / sky / teal; greens = forest /
 pine / olive; warm = sunset / sand / rose / mocha; neutral = mono / steel /
 cream; dark backdrops = midnight / plum / abyss / espresso (or leave it on
 "brand", which is dark for a reader in dark mode); multi-colour (each branch a

@@ -3,7 +3,7 @@ import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ITEM_TYPES, type Item, type ItemTypeDef } from '@liveplanner/items';
 import { PlanCardFace } from './PlanCardFace';
-import { planPalette } from './plan-palette';
+import { chipInkOn, planPalette } from './plan-palette';
 import { LATE_COLOUR, SOON_COLOUR } from './plan-card-parts';
 
 // A card's Age on the board (docs/specs/026-plan/item-types.md "Card display"): days in its column, quiet under a
@@ -58,7 +58,9 @@ describe('the Age pill', () => {
     face(card(daysAgo(4)));
     expect(screen.getByText('4d')).toBeTruthy();
     expect(screen.getByText('In doing for 4 days')).toBeTruthy();
-    expect(pillOf('4d').style.color).not.toBe('rgb(217, 119, 6)');
+    expect(pillOf('4d').style.color).not.toBe(
+      rgbOf(chipInkOn(SOON_COLOUR, planPalette('light', {}))),
+    );
   });
 
   it.each([
@@ -74,12 +76,13 @@ describe('the Age pill', () => {
     const text = screen.getByText(`${days}d`);
     const pill = pillOf(`${days}d`);
     if (colour) {
-      const hex = colour.replace('#', '');
+      // The tone as the pill draws it: leaned until it reads at 4.5:1 on its chip (plan-board.md "Theme and style").
+      const hex = chipInkOn(colour, planPalette('light', {})).replace('#', '');
       const rgb = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(', ');
       expect(pill.style.color).toBe(`rgb(${rgb})`);
       expect(text.className).toContain(weight);
     } else {
-      expect(pill.style.color).not.toBe('rgb(217, 119, 6)');
+      expect(pill.style.color).not.toBe(rgbOf(chipInkOn(SOON_COLOUR, planPalette('light', {}))));
       expect(text.className).not.toContain('font-');
     }
   });
@@ -108,6 +111,11 @@ describe('the Age pill', () => {
       vi.advanceTimersByTime(2 * 60_000);
     });
     expect(screen.getByText('7d')).toBeTruthy();
-    expect(pillOf('7d').style.color).toBe('rgb(217, 119, 6)');
+    expect(pillOf('7d').style.color).toBe(rgbOf(chipInkOn(SOON_COLOUR, planPalette('light', {}))));
   });
 });
+
+function rgbOf(colour: string): string {
+  const hex = colour.replace('#', '');
+  return `rgb(${[0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16)).join(', ')})`;
+}

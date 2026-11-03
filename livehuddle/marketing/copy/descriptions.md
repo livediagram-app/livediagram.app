@@ -56,7 +56,7 @@ For Product Hunt, app store short descriptions, README intros.
 >
 > Build with ten core shapes, sticky notes, images, freehand sketching with
 > shape recognition, and arrows you can curve, bend, and label. Start from 82
-> templates, recolor everything with 30 themes, and step back any slip with
+> templates, recolor everything with 31 themes, and step back any slip with
 > undo. Share links as an editor, participant or viewer any time.
 >
 > It is MIT-licensed and free for everyone, with no paid tier. [106 words]
@@ -83,7 +83,7 @@ For longer listing bodies and "about this project" sections.
 > Freehand pen sketches, and a Shape Pen snaps your scribbles into clean
 > rectangles, circles, and diamonds. Multi-select, groups, and a format painter
 > keep large diagrams manageable. Start from 82 templates, recolor the whole
-> canvas with 30 themes, and organize work into tabs, nested folders and team
+> canvas with 31 themes, and organize work into tabs, nested folders and team
 > spaces.
 >
 > Nothing is lost: every change saves on its own, and undo and redo step back
@@ -132,7 +132,7 @@ detailed GitHub / Product Hunt write-up.
 >
 > Open one of 82 templates (mind map, flowchart, Gantt, SWOT, retrospective,
 > org chart, timeline, fishbone, user journey, and more) or start
-> blank. Recolor an entire diagram, every shape and arrow, with one of 30 themes
+> blank. Recolor an entire diagram, every shape and arrow, with one of 31 themes
 > in a single click. Group related work into tabs within a document, link across
 > them, copy a tab into another document, and file everything into nested
 > folders, personal or in a team space.

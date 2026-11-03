@@ -125,24 +125,44 @@ export function planPalette(surface: CanvasSurface, own: PlanOwnColours = {}): P
       ? mixHex(text, paper, 0.16)
       : base.border;
   const column = mixHex(text, paper, light ? 0.05 : 0.08);
-  const card = light ? mixHex('#ffffff', paper, 0.75) : mixHex(text, paper, 0.04);
+  // A light board's card is near white on its tinted list; a dark board's sits a step deeper than the board, as the
+  // neutral dark set's does, so it stands off its list (4% toward the ink, as it was, left it 1.1:1 on a brown list).
+  const card = light ? mixHex('#ffffff', paper, 0.75) : mixHex('#000000', paper, DARK_CARD_DEPTH);
   return {
     surface: paper,
     border,
     column,
     card,
-    cardBorder: mixHex(border, paper, 0.55),
+    cardBorder: leanUntil(mixHex(border, paper, 0.55), text, [card], CARD_EDGE_CONTRAST),
     text,
     muted: readableMuted(text, paper, [column, card, paper]),
     warning: light ? LIGHT.warning : DARK.warning,
     warningBg: light ? LIGHT.warningBg : DARK.warningBg,
-    focus: stroke ?? base.focus,
+    // The accent labels buttons and notices on the column, so it reads there as text does.
+    focus: leanUntil(stroke ?? base.focus, text, [column, card, paper], INK_CONTRAST),
   };
 }
 
-// A type accent on a dark surface (docs/specs/026-plan/item-types.md "An item type"): one too dark to
-// see (Project's black) is lifted toward white until it reaches 3:1 against the dark card; a
-// light surface keeps the accent as chosen.
+// How far a dark board's card sits toward black, and the least contrast a card's edge keeps on the card.
+const DARK_CARD_DEPTH = 0.18;
+const CARD_EDGE_CONTRAST = 1.3;
+
+// `colour` as it is where it reaches `target` on every fill, else leaned toward `toward` a step at a time until it does.
+function leanUntil(
+  colour: string,
+  toward: string,
+  fills: readonly string[],
+  target: number,
+): string {
+  for (let share = 0; share < 1; share += MUTED_STEP) {
+    const leaned = share === 0 ? colour : mixHex(toward, colour, share);
+    if (fills.every((f) => contrastRatio(leaned, f) >= target)) return leaned;
+  }
+  return toward;
+}
+
+// A type accent in the app's own dark chrome (docs/specs/026-plan/item-types.md "An item type"): one too dark to see
+// (Project's black) is lifted toward white until it reaches 3:1 against the neutral dark card.
 const DARK_CARD = DARK.card;
 const ACCENT_CONTRAST = 3;
 const LIFT_STEP = 0.1;
@@ -156,9 +176,27 @@ export function liftAccent(color: string): string {
   return '#ffffff';
 }
 
-// The accent a card face draws on its palette: lifted on a dark card.
+// The accent a board draws on its own card (docs/specs/026-plan/plan-board.md "Theme and style"): as chosen where it
+// reaches 3:1 on that card, else leaned toward white on a dark card and black on a light one until it does. Measured on
+// the board's card, not the neutral one, so a type's colour still reads on a coloured theme's card.
 export function accentOn(color: string, palette: Pick<PlanPalette, 'card'>): string {
-  return isLightColor(palette.card) ? color : liftAccent(color);
+  if (!hex(color) || !hex(palette.card)) return color;
+  const away = isLightColor(palette.card) ? '#000000' : '#ffffff';
+  return leanUntil(color, away, [palette.card], ACCENT_CONTRAST);
+}
+
+// How much of its colour a chip's fill takes over the card (plan-card-parts.tsx `tint`).
+export const PLAN_CHIP_TINT = 0.14;
+
+// Coloured words on a card (a type chip's name, a label, the priority's name, a due pill): as chosen where they reach
+// 4.5:1 on their chip (the colour's tint over the card), else leaned toward the card's ink until they do.
+export function chipInkOn(color: string, palette: Pick<PlanPalette, 'card' | 'text'>): string {
+  if (!hex(color) || !hex(palette.card) || !hex(palette.text)) return color;
+  for (let share = 0; share < 1; share += MUTED_STEP) {
+    const ink = share === 0 ? color : mixHex(palette.text, color, share);
+    if (contrastRatio(ink, mixHex(ink, palette.card, PLAN_CHIP_TINT)) >= INK_CONTRAST) return ink;
+  }
+  return palette.text;
 }
 
 // A Percent field's bar on a card face (docs/specs/026-plan/item-types.md "Percent"): its size, its fill (the board's
