@@ -38,9 +38,9 @@ export type PlanRoomClient = {
   // One card, by id (a mention email reads the comment from the card itself).
   item(itemId: string): Promise<Item | null>;
   // Image fields (plan-room/image-grants.ts): a picture uploaded for this plan recorded as one it may serve, and
-  // whether it serves one now.
+  // whether it serves one now (to a tab-scoped reader, `tabScope`, only through a card its tab shows).
   grantImage(imageId: string): Promise<void>;
-  servesImage(imageId: string): Promise<boolean>;
+  servesImage(imageId: string, tabScope: string | null): Promise<boolean>;
   // A copy's two halves (plan-content.ts).
   exportCopy(onlyTabId: string | null, redactAuthorsFor: string | null): Promise<PlanCopy | null>;
   importCopy(copy: PlanCopy): Promise<void>;
@@ -82,7 +82,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     hasTab: (tabId) => room.hasTab(planId, tabId),
     item: (itemId) => room.item(planId, itemId),
     grantImage: (imageId) => room.grantImage(planId, imageId),
-    servesImage: (imageId) => room.servesImage(planId, imageId),
+    servesImage: (imageId, tabScope) => room.servesImage(planId, imageId, tabScope),
     exportCopy: (onlyTabId, redact) => room.exportCopy(planId, onlyTabId, redact),
     importCopy: (copy) => room.importCopy(planId, copy),
     importMigrated: (payload) => room.importMigrated(planId, payload),
@@ -109,7 +109,7 @@ export type PlanRoomRpc = {
   hasTab(planId: string, tabId: string): Promise<boolean>;
   item(planId: string, itemId: string): Promise<Item | null>;
   grantImage(planId: string, imageId: string): Promise<void>;
-  servesImage(planId: string, imageId: string): Promise<boolean>;
+  servesImage(planId: string, imageId: string, tabScope: string | null): Promise<boolean>;
   exportCopy(
     planId: string,
     onlyTabId: string | null,

@@ -134,7 +134,8 @@ async function refusedUpload(ctx: RouteContext, planId: string): Promise<Respons
 
 // GET /api/images/{id}?p={planId}: the picture's bytes, to its uploader (as the service names them), or to anyone
 // who may read plan `p` (its owner, its team, and every share role) when that plan serves it: it holds a grant for
-// it and one of its cards holds the id. Anything else answers 404, so an id reveals nothing.
+// it and one of its cards holds the id, for a tab-scoped grant a card its tab shows (docs/specs/026-plan/items.md
+// "Who sees the bytes"). Anything else answers 404, so an id reveals nothing.
 async function read(ctx: RouteContext, media: MediaClient, imageId: string): Promise<Response> {
   if (imageId.length > IMAGE_ID_MAX) return notFound();
   const session = projectSession(ctx);
@@ -149,8 +150,10 @@ async function read(ctx: RouteContext, media: MediaClient, imageId: string): Pro
   if (!allowed && planId && planId.length <= PLAN_ID_MAX) {
     if (!session || planId === session.projectId) {
       const grant = await resolvePlanGrant(ctx, planId);
-      if (grant && !(grant instanceof Response) && grantOn({ ...ctx, grant }, planId)) {
-        allowed = await planRoom(ctx.env, planId).servesImage(imageId);
+      const held =
+        grant && !(grant instanceof Response) ? grantOn({ ...ctx, grant }, planId) : null;
+      if (held) {
+        allowed = await planRoom(ctx.env, planId).servesImage(imageId, held.tabScope);
         if (!allowed) console.warn('[images] not served by plan', { planId, imageId });
       }
     }
