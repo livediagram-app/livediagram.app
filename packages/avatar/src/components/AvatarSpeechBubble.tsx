@@ -24,6 +24,7 @@ export const SpeechCard = forwardRef(function SpeechCard(
     colour,
     name,
     tailRef,
+    tailShift,
     children,
     floating,
   }: {
@@ -31,6 +32,9 @@ export const SpeechCard = forwardRef(function SpeechCard(
     name?: string;
     // The tail's node, so a floating bubble can fade it as it lets go of the head.
     tailRef?: Ref<HTMLSpanElement>;
+    // Screen px the tail sits off the card's centre, when the card was shifted to stay inside the view and the tail
+    // still points at the head.
+    tailShift?: number;
     children: ReactNode;
     // A floating bubble is read-only and inert to the pointer; the composer takes presses.
     floating?: boolean;
@@ -62,7 +66,7 @@ export const SpeechCard = forwardRef(function SpeechCard(
         className={`absolute -bottom-[6px] left-1/2 h-[10px] w-[10px] -translate-x-1/2 rotate-45 border-b-[1.5px] border-r-[1.5px] bg-white dark:bg-slate-900 ${
           colour ? '' : 'border-brand-500'
         }`}
-        style={tint}
+        style={tailShift ? { ...tint, marginLeft: tailShift } : tint}
       />
     </div>
   );

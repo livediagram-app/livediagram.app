@@ -1,7 +1,7 @@
 import { defineProject } from '@liveworkspace/vitest-config';
 
 // Every pure module of Avatar mode (the geometry, the collision, the pads, the costume, the reactions, the speech
-// limits, the bindings) is held at 100%, as the other shared packages are. The hooks, the views and the bubble store
+// limits, the bindings, the bubble store) is held at 100%, as the other shared packages are. The hooks and the views
 // are exercised here and through each product's own tests, as they were in the editor, with no threshold.
 const FULL = { statements: 100, branches: 100, functions: 100, lines: 100 };
 const PURE = [
@@ -21,6 +21,7 @@ const PURE = [
   'scene',
   'seats',
   'speech',
+  'speech-store',
   'status',
   'walk',
 ];

@@ -29,11 +29,14 @@ const layer = (
       bubbles={bubbles}
       activeTabId="t1"
       zoom={0.5}
+      view={VIEW}
       peers={peers}
       composer={composer}
       self={{ name: 'Tom', colour: '#14b8a6' }}
     />,
   );
+// Canvas x 0 is at screen x 0: 0.5 * (0 - 400) + 400 * (1 - 0.5).
+const VIEW = { offsetX: -400, width: 800 };
 const PEERS = [{ id: 'peer', name: 'Sam', color: '#8b5cf6' }];
 
 describe('AvatarSpeechLayer (docs/specs/008-canvas/avatar-mode.md "Speech bubbles")', () => {
@@ -69,6 +72,7 @@ describe('AvatarSpeechLayer (docs/specs/008-canvas/avatar-mode.md "Speech bubble
       bubbles: [bubble()],
       activeTabId: 't1',
       zoom: 0.5,
+      view: VIEW,
       composer: null,
       self: { name: 'Tom', colour: '#14b8a6' },
     };
@@ -85,6 +89,7 @@ describe('AvatarSpeechLayer (docs/specs/008-canvas/avatar-mode.md "Speech bubble
       bubbles: [bubble()],
       activeTabId: 't1',
       zoom: 0.5,
+      view: VIEW,
       composer: null,
       self: { name: 'Tom', colour: '#14b8a6' },
     };
@@ -109,6 +114,34 @@ describe('AvatarSpeechLayer (docs/specs/008-canvas/avatar-mode.md "Speech bubble
     expect(onSend).toHaveBeenCalledWith('hi there');
     fireEvent.keyDown(box, { key: 'Escape' });
     expect(onCancel).toHaveBeenCalled();
+  });
+
+  it('keeps the composer inside the view, its tail still on the head', () => {
+    const composer = {
+      head: { x: 0, y: 0 },
+      coolingDown: false,
+      onSend: () => true,
+      onCancel: () => {},
+    };
+    const { container, rerender } = layer([], composer);
+    // Head at screen x 0, a 240px card: shifted 128px to sit 8px in from the edge.
+    const panel = container.querySelector<HTMLElement>('[data-floating-panel]')!;
+    expect(panel.style.marginLeft).toBe('128px');
+    expect(container.querySelector<HTMLElement>('span[aria-hidden]')!.style.marginLeft).toBe(
+      '-106px',
+    );
+    rerender(
+      <AvatarSpeechLayer
+        bubbles={[]}
+        activeTabId="t1"
+        zoom={0.5}
+        view={{ offsetX: 400, width: 800 }}
+        peers={PEERS}
+        composer={composer}
+        self={{ name: 'Tom', colour: '#14b8a6' }}
+      />,
+    );
+    expect(panel.style.marginLeft).toBe('');
   });
 
   it('refuses a key typed past the limit, but trims text dropped in at once', () => {

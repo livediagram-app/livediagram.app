@@ -142,21 +142,22 @@ the one new stored value, a synced user preference.
 
 ## Errors and edge cases
 
-| #   | Case                                    | Handling                                                  |
-| --- | --------------------------------------- | --------------------------------------------------------- |
-| E1  | Enter while typing in a field elsewhere | Ignored (`isTypingTarget`)                                |
-| E1a | Enter on a focused button, row or tour  | Left to it (`isEnterActivatedTarget`)                     |
-| E2  | Enter with a dialog open                | Ignored (`anyModalOpen`)                                  |
-| E3  | Paste of 2,000 characters               | Clamped to the limits                                     |
-| E4  | Send during the cooldown                | Held, "One moment…"                                       |
-| E5  | Composer open, mode left / tab switched | Closed, draft dropped                                     |
-| E6  | Peer op for another tab                 | Not drawn until its speaker is found on the open tab      |
-| E7  | Same id twice                           | Second dropped (`SeenIds`, capped at 200)                 |
-| E8  | Peer floods ops                         | Room op-rate cap, then three bubbles per person on screen |
-| E9  | Viewer sends by a modified client       | Room drops it                                             |
-| E10 | Markup in the text                      | Rendered as text                                          |
-| E11 | Not in a shared room (no share link)    | Own bubble only; nothing sent                             |
-| E12 | Hide-cursors vote                       | Nothing sent, nothing drawn                               |
+| #   | Case                                       | Handling                                                      |
+| --- | ------------------------------------------ | ------------------------------------------------------------- |
+| E1  | Enter while typing in a field elsewhere    | Ignored (`isTypingTarget`)                                    |
+| E1a | Enter on a focused button, row or tour     | Left to it (`isEnterActivatedTarget`)                         |
+| E2  | Enter with a dialog open                   | Ignored (`anyModalOpen`)                                      |
+| E3  | Paste of 2,000 characters                  | Clamped to the limits                                         |
+| E4  | Send during the cooldown                   | Held, "One moment…"                                           |
+| E5  | Composer open, mode left / tab switched    | Closed, draft dropped                                         |
+| E6  | Peer op for another tab                    | Not drawn until its speaker is found on the open tab          |
+| E7  | Same id twice                              | Second dropped (`SeenIds`, capped at 200)                     |
+| E8  | Peer floods ops                            | Room op-rate cap, then three bubbles per person on screen     |
+| E9  | Viewer sends by a modified client          | Room drops it                                                 |
+| E10 | Markup in the text                         | Rendered as text                                              |
+| E11 | Not in a shared room (no share link)       | Own bubble only; nothing sent                                 |
+| E12 | Hide-cursors vote                          | Nothing sent, nothing drawn                                   |
+| E13 | Speaker near the view's left or right edge | The card is shifted inside the view (`edgeShift`), 8px margin |
 
 ## Security and trust
 
@@ -178,6 +179,10 @@ Abuse: the room's per-socket frame cap, the client cooldown, and the per-person 
   speaker's name, yours included, sits under the text: 10px semibold in the same colour.
 - Send button: the speaker's colour through `IDENTITY_FILL` + `identityVars` (never an inline background, so dark
   mode deepens it under the white glyph), slate while it cannot send.
+- Edge clamp: the layer takes the view's screen width and x offset (`viewWidth`, `offsetX`). A bubble's screen x is
+  `zoom * (x + offsetX) + width / 2 * (1 - zoom)` (the layer scales about its centre); its card width is measured once when it mounts (a composer is a fixed 240px), so each frame is
+  arithmetic only: `edgeShift(centre, width, viewWidth)` (pure, in `speech.ts`) answers the sideways shift in reading px,
+  added to the card's translate. No layout reads per frame.
 - Composer: the same card with an auto-growing textarea (one line to start, up to 5), placeholder "Say
   something…", a 28px round send button with the paper-plane glyph, in your colour while it can send; a single line is padded to the
   button's height so the text sits level with it, and the counter `43 / 50` (amber at 50) under
