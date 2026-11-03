@@ -105,6 +105,8 @@
     "./components/palette/palette-tools-nav": "./src/components/palette/palette-tools-nav.tsx",
     "./components/palette/template-picker-icons": "./src/components/palette/template-picker-icons.tsx",
     "./components/palette/useBarLabels": "./src/components/palette/useBarLabels.ts",
+    "./components/palette/useBarFold": "./src/components/palette/useBarFold.ts",
+    "./components/palette/CategoryBarMore": "./src/components/palette/CategoryBarMore.tsx",
     "./components/palette/useEdgeDividers": "./src/components/palette/useEdgeDividers.ts",
     "./components/palette/useFrozenAnimations": "./src/components/palette/useFrozenAnimations.ts",
     "./components/palette/useStripCrowded": "./src/components/palette/useStripCrowded.ts",

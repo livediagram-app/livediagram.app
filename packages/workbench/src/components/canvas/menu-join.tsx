@@ -36,8 +36,10 @@ export function stripRoomBesideMenu(
 ): number {
   if (!menu) return viewWidth;
   const clear = menu.getBoundingClientRect().right - viewLeft + STRIP_MENU_GAP_PX;
+  // Joined, `clear` reaches the sidebar's inner edge (the box stops a gap short of it), and the strip, centred beside
+  // the sidebar, keeps the gap from it and from the editor's right edge.
   return menu.hasAttribute('data-menu-joined')
-    ? viewWidth - clear - STRIP_MENU_GAP_PX
+    ? viewWidth - clear - 2 * STRIP_MENU_GAP_PX
     : viewWidth - 2 * clear;
 }
 

@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import {
+  CONTENTS_SIDEBAR_WIDTH,
+  contentsClusterBounds,
   contentsSidebarClearancePx,
   readContentsSide,
   restingRect,
@@ -73,5 +75,26 @@ describe('readContentsSide', () => {
     expect(readContentsSide(null)).toBe('left');
     expect(readContentsSide('right')).toBe('right');
     expect(readContentsSide('top')).toBe('left');
+  });
+});
+
+describe('contentsClusterBounds: the bottom-right cluster beside a docked sidebar', () => {
+  it('is unbounded with no sidebar docked', () => {
+    expect(contentsClusterBounds(false, 'left', 1)).toEqual({ right: 0, left: null });
+    expect(contentsClusterBounds(false, 'right', 1)).toEqual({ right: 0, left: null });
+  });
+
+  it('moves past a sidebar pinned right', () => {
+    expect(contentsClusterBounds(true, 'right', 1.25)).toEqual({
+      right: CONTENTS_SIDEBAR_WIDTH * 1.25,
+      left: null,
+    });
+  });
+
+  it('stops short of a sidebar pinned left, so it never covers Add Page', () => {
+    expect(contentsClusterBounds(true, 'left', 1)).toEqual({
+      right: 0,
+      left: contentsSidebarClearancePx(1),
+    });
   });
 });

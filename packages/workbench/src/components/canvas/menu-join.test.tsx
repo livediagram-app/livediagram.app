@@ -44,9 +44,22 @@ describe('stripRoomBesideMenu', () => {
     expect(stripRoomBesideMenu(1000, 0, menu(172, false))).toBe(1000 - 2 * 180);
   });
 
-  it('joined, gives way on the left alone: the strip centres beside the sidebar', () => {
-    expect(stripRoomBesideMenu(1000, 0, menu(228, true))).toBe(1000 - 236 - STRIP_MENU_GAP_PX);
+  it('joined, gives way on the left alone: the strip centres beside the sidebar, a gap from it and the edge', () => {
+    expect(stripRoomBesideMenu(1000, 0, menu(228, true))).toBe(1000 - 236 - 2 * STRIP_MENU_GAP_PX);
   });
+
+  // Work Tracker #289: at 640 to 760px with Contents docked left, a strip that fits this room clears the sidebar
+  // (whose inner edge is the box's right plus the gap) and the window's right edge by the gap on each side.
+  it.each([640, 700, 760])(
+    'a strip that fits the joined room at %ipx clears the sidebar and the edge',
+    (w) => {
+      const room = stripRoomBesideMenu(w, 0, menu(228, true));
+      const sidebarEdge = 228 + STRIP_MENU_GAP_PX;
+      const left = sidebarEdge + (w - sidebarEdge - room) / 2;
+      expect(left - sidebarEdge).toBeGreaterThanOrEqual(STRIP_MENU_GAP_PX);
+      expect(w - (left + room)).toBeGreaterThanOrEqual(STRIP_MENU_GAP_PX);
+    },
+  );
 
   it('measures from the editor’s own left edge (a split view’s pane)', () => {
     expect(stripRoomBesideMenu(600, 400, menu(572, false))).toBe(600 - 2 * 180);

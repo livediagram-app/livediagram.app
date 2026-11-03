@@ -30,6 +30,21 @@ export function contentsSidebarClearancePx(panelScale: number): number {
   return CONTENTS_SIDEBAR_WIDTH * panelScale + CONTENTS_SIDEBAR_GAP;
 }
 
+/** The bottom-right cluster's bounds beside a docked sidebar (docs/specs/007-editor/pages-mode.md "Docked"), in screen
+ *  px from the canvas's sides, its 16px margin added by the caller: pinned right, the cluster moves past the sidebar
+ *  (`right`); pinned left, it stops short of it (`left`) and wraps upward from the right rather than run under Add
+ *  Page. Null `left` leaves the cluster unbounded on that side. */
+export function contentsClusterBounds(
+  docked: boolean,
+  side: ContentsSide,
+  panelScale: number,
+): { right: number; left: number | null } {
+  if (!docked) return { right: 0, left: null };
+  return side === 'right'
+    ? { right: CONTENTS_SIDEBAR_WIDTH * panelScale, left: null }
+    : { right: 0, left: contentsSidebarClearancePx(panelScale) };
+}
+
 export type SideInsets = { left: number; right: number };
 
 export const NO_SIDE_INSETS: SideInsets = { left: 0, right: 0 };
