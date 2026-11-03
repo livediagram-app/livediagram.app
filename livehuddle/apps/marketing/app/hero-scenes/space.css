@@ -199,35 +199,59 @@
   }
 }
 
-/* Sam's wave on the loop: Avatar mode's raised hand crossing back and forth for 1.6s (13.3% of the loop). */
+/* Sam's wave on the loop: Avatar mode's raised hand crossing back and forth, four swings of 0.4s (each 3.33% of
+   the loop) inside the wave's 1.6s, so nothing ticks between waves. */
 .hs-rest-wave {
   animation: hs-rest-wave 12s step-end var(--r) infinite;
 }
-.hs-react-wave {
-  opacity: 0;
-  animation: hs-react-wave 12s step-end var(--r) infinite;
-}
+.hs-react-wave .hs-stride-a,
 .hs-react-wave .hs-stride-b {
   opacity: 0;
-  animation: hs-stride-b 0.34s step-end infinite;
 }
 .hs-react-wave .hs-stride-a {
-  animation: hs-stride-a 0.34s step-end infinite;
+  animation: hs-wave-a 12s step-end var(--r) infinite;
+}
+.hs-react-wave .hs-stride-b {
+  animation: hs-wave-b 12s step-end var(--r) infinite;
 }
 @keyframes hs-rest-wave {
   0% {
     opacity: 0;
   }
-  13.3%,
+  13.33%,
   100% {
     opacity: 1;
   }
 }
-@keyframes hs-react-wave {
+@keyframes hs-wave-a {
   0% {
     opacity: 1;
   }
-  13.3%,
+  3.33% {
+    opacity: 0;
+  }
+  6.67% {
+    opacity: 1;
+  }
+  10%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hs-wave-b {
+  0% {
+    opacity: 0;
+  }
+  3.33% {
+    opacity: 1;
+  }
+  6.67% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  13.33%,
   100% {
     opacity: 0;
   }
