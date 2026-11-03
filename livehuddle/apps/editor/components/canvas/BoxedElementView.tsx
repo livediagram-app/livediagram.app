@@ -421,6 +421,8 @@ function BoxedElementViewImpl({
     <div
       ref={wrapperRef}
       data-element-id={element.id}
+      // Where a move's offset rides (docs/specs/008-canvas/drag-preview.md "Moves ride an offset").
+      data-ride-id={element.id}
       data-stack-glide={stackGlide ? '' : undefined}
       // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): same naming the change log uses,
       // so 'Square "Login"' reads consistently across both surfaces. A face with controls of its own is a named group,

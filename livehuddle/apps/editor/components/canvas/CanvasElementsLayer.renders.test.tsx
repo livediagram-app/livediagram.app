@@ -26,7 +26,7 @@ vi.mock('./BoxedElementView', () => ({
     bump(renders.boxed, element.id);
     drawnAs.set(element.id, element);
     // A mark where the view mounts, so a test can see where each boxed element is drawn.
-    return <span data-boxed-stub={element.id} />;
+    return <span data-boxed-stub={element.id} data-ride-id={element.id} />;
   }),
 }));
 vi.mock('./ArrowView', async (importOriginal) => {
@@ -75,7 +75,8 @@ vi.mock('@/components/canvas/SelectionGripsLayer', async (importOriginal) => {
     },
   };
 });
-import { resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
+import { clearLocalPreview, resetDragPreviewForTests, setLocalPreview } from '@/lib/drag-preview';
+import { buildLargeSelectionBoard } from '@/e2e/perf/large-selection-board';
 
 const { CanvasElementsLayer } = await import('./CanvasElementsLayer');
 const { createSelectionStore } = await import('@liveworkspace/workbench/lib/selection-store');
@@ -263,9 +264,9 @@ describe('arrow views render only for their own changes', () => {
 describe('drawing a drag preview', () => {
   afterEach(() => resetDragPreviewForTests());
 
-  it('draws the moved element where the preview has it, and redraws it and its arrow only', () => {
+  it('draws a reshaped element where the preview has it, and redraws it and its arrow only', () => {
     mount();
-    const movedA = { ...a, y: 40 };
+    const movedA = { ...a, y: 40, width: 160 };
     act(() =>
       setLocalPreview(
         't',
@@ -286,7 +287,7 @@ describe('drawing a drag preview', () => {
       act(() =>
         setLocalPreview(
           't',
-          BOARD.map((el) => (el.id === a.id ? { ...a, y } : el)),
+          BOARD.map((el) => (el.id === a.id ? { ...a, y, width: 120 + y } : el)),
           BOARD,
         ),
       );
@@ -340,6 +341,78 @@ describe('drawing a drag preview', () => {
     );
     act(() => resetDragPreviewForTests());
     expect(drawnAs.get(a.id)).toBe(a);
+  });
+});
+
+// docs/specs/008-canvas/drag-preview.md "Moves ride an offset": a move renders no element view; each moved node
+// carries the offset, and only the arrows between the moved and the unmoved redraw.
+describe('a move riding an offset', () => {
+  afterEach(() => resetDragPreviewForTests());
+
+  const shifted = (els: readonly Element[], ids: ReadonlySet<string>, dx: number, dy: number) =>
+    els.map((el) =>
+      ids.has(el.id) && 'x' in el && 'y' in el ? { ...el, x: el.x + dx, y: el.y + dy } : el,
+    );
+  const translateOf = (root: ParentNode, id: string) =>
+    [...root.querySelectorAll<HTMLElement | SVGElement>(`[data-ride-id="${id}"]`)].map(
+      (n) => n.style.translate,
+    );
+
+  it('renders no moved element, shifts its nodes, and redraws only the arrow leaving the selection', () => {
+    const { container } = mount();
+    for (const k of [1, 2, 3])
+      act(() => setLocalPreview('t', shifted(BOARD, new Set([a.id, c.id]), 10 * k, 5 * k), BOARD));
+    expect(counts().boxed).toBe(0);
+    expect(layerRenders.count).toBe(0);
+    expect(translateOf(container, a.id)).toEqual(['30px 15px']);
+    expect(translateOf(container, c.id)).toEqual(['30px 15px']);
+    expect(translateOf(container, b.id)).toEqual(['']);
+    // ab joins a (moved) to b (not): it re-routes, frame by frame, and does not ride.
+    expect([...renders.arrow.keys()]).toEqual([ab.id]);
+    expect(translateOf(container, ab.id)).toEqual(['']);
+  });
+
+  it('carries an arrow whose ends both move, without redrawing it', () => {
+    const { container } = mount();
+    act(() => setLocalPreview('t', shifted(BOARD, new Set([a.id, b.id]), 7, 0), BOARD));
+    expect(counts()).toEqual({ boxed: 0, arrows: 0 });
+    expect(translateOf(container, ab.id)).toEqual(['7px 0px']);
+  });
+
+  it('drops the offsets in the paint the released board is drawn in', () => {
+    const { container, rerender } = mount();
+    const next = shifted(BOARD, new Set([a.id]), 12, 0);
+    act(() => setLocalPreview('t', next, BOARD));
+    expect(translateOf(container, a.id)).toEqual(['12px 0px']);
+    act(() => {
+      clearLocalPreview('landed');
+      rerender(<CanvasElementsLayer {...layerProps({ elements: next })} />);
+    });
+    expect(translateOf(container, a.id)).toEqual(['']);
+    expect(drawnAs.get(a.id)).toBe(next[0]);
+  });
+
+  it('drops the offsets by the next frame when a cancel writes nothing', async () => {
+    const { container } = mount();
+    act(() => setLocalPreview('t', shifted(BOARD, new Set([a.id]), 12, 0), BOARD));
+    act(() => clearLocalPreview('cancelled'));
+    // Held until the next frame, so a release's write lands in the same paint.
+    expect(translateOf(container, a.id)).toEqual(['12px 0px']);
+    await act(() => new Promise((r) => requestAnimationFrame(() => r(undefined))));
+    expect(translateOf(container, a.id)).toEqual(['']);
+  });
+
+  it('renders no element view for a whole 1,770-element selection moving', () => {
+    const large = buildLargeSelectionBoard();
+    const all = new Set(large.map((el) => el.id));
+    const { container } = mount(layerProps({ elements: large }));
+    for (const k of [1, 2, 3, 4, 5])
+      act(() => setLocalPreview('t', shifted(large, all, 4 * k, 2 * k), large));
+    expect(counts()).toEqual({ boxed: 0, arrows: 0 });
+    expect(slotRenders.count).toBe(0);
+    expect(layerRenders.count).toBe(0);
+    expect(translateOf(container, large[0]!.id)).toEqual(['20px 10px']);
+    expect(translateOf(container, large.at(-1)!.id)).toEqual(['20px 10px']);
   });
 });
 

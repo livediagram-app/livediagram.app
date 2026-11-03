@@ -146,7 +146,7 @@ describe('SelectionGripsLayer', () => {
     const { container, getByTestId } = render(
       <Harness>
         <svg>
-          <ArrowGripsPortal>
+          <ArrowGripsPortal arrowId="ar">
             <SelectedArrowHandles
               arrow={arrow}
               from={{ x: 0, y: 0 }}
@@ -166,6 +166,8 @@ describe('SelectionGripsLayer', () => {
     const circles = layerOf(container).querySelectorAll('svg circle');
     expect(circles).toHaveLength(2);
     expect(circles[0]!.namespaceURI).toBe('http://www.w3.org/2000/svg');
+    // Tagged so the grips ride a move's offset with their arrow (drag-preview.md "Moves ride an offset").
+    expect(circles[0]!.closest('[data-ride-id]')?.getAttribute('data-ride-id')).toBe('ar');
   });
 
   it('renders no grips outside a grips layer', () => {

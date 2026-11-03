@@ -67,8 +67,9 @@ export function BoxGripsPortal({ children }: { children: ReactNode }) {
   return hosts ? createPortal(children, hosts.box) : null;
 }
 
-// SVG grips, in canvas coordinates, moved into the layer's <svg>.
-export function ArrowGripsPortal({ children }: { children: ReactNode }) {
+// SVG grips, in canvas coordinates, moved into the layer's <svg>, tagged so the arrow's grips ride a move's
+// offset with it (docs/specs/008-canvas/drag-preview.md "Moves ride an offset").
+export function ArrowGripsPortal({ arrowId, children }: { arrowId: string; children: ReactNode }) {
   const hosts = useContext(SelectionGripsContext);
-  return hosts ? createPortal(children, hosts.arrows) : null;
+  return hosts ? createPortal(<g data-ride-id={arrowId}>{children}</g>, hosts.arrows) : null;
 }

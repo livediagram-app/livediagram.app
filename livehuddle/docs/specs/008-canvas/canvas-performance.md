@@ -37,6 +37,21 @@ throttle it ran at.
 
 A gesture's cost scales with what it changes and what is on screen, never with the whole board.
 
+### Dragging a very large selection
+
+A selection of any size drags as smoothly as a few elements. Measured on the large-selection board
+(1,770 elements: 900 labelled shapes in a 30 × 30 grid and 870 arrows, each joining a shape to its
+right-hand neighbour), with every element selected:
+
+| Moment                        | Budget                                                                        |
+| ----------------------------- | ----------------------------------------------------------------------------- |
+| One pointer move of the drag  | At most 16 ms of script (the move's handler and the render it causes), median |
+| A drag frame's arrow work     | At most 16 ms of CPU, held by a CPU-time test at that size                    |
+| A typical (five-element) drag | No slower than before this budget                                             |
+
+The script budget is read unthrottled on a developer's laptop, the "mid-range laptop" it stands for;
+the bench also reports it at the reference speed (4× slower), where it is not a budget.
+
 ## The rules
 
 - **A still canvas does nothing.** Chrome that positions itself re-measures on a real change (a
@@ -85,6 +100,16 @@ A gesture's cost scales with what it changes and what is on screen, never with t
 - **Whole-board passes stay linear and run once.** What deliberately looks across the whole board
   (alignment and distribution snapping, the endpoint spread, the arrow label pass) makes one
   linear pass per frame at most, shared by everything that reads it.
+- **A move that only translates renders nothing.** When a gesture shifts elements without
+  reshaping them (a move, of any number of elements), each of them is drawn where the document has
+  it, shifted by one offset written to the page outside React, so a move frame renders no element
+  view at all, however large the selection. Arrows with both ends on moved elements ride along the
+  same way; only an arrow with one end in the selection and the other outside it re-routes, frame by
+  frame ([Drag preview](drag-preview.md) "Moves ride an offset").
+- **Per-frame arrow work is linear in what moved.** Which arrows a moved box crosses, and which
+  moved boxes cut an arrow, are asked of spatial grids (the arrows' bounds, bucketed once per
+  document change; the moved boxes, once per frame), never by scanning every moved element for
+  every arrow.
 - **A move re-renders what moved.** A move, resize or reshape draws from a preview and writes the
   document once, on release ([Drag preview](drag-preview.md)): the moved elements and the arrows
   that depend on them re-render each frame, and nothing derived from the rest of the board is
@@ -146,6 +171,12 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
   parts, a one-element move renders only it and the arrows whose geometry it changed, and the Map
   holds its drawing through a gesture. In a real browser, in the end-to-end suite: a still board
   with a selection showing asks for no animation frames.
+- **A large-selection bench** (`e2e/perf/large-selection-drag.perf.ts`) opens the large-selection
+  board, drags its whole selection and a five-element one, and times each pointer move in the page:
+  script (from the frame callback before the move's to the one after it, React's update included)
+  and frame (to the first task after the frame's style, layout and paint), medians over three drags
+  of 40 moves, unthrottled and at 4×. It reports and never fails on a number; a CPU-time unit test
+  holds the arrow work, and render counts hold "renders nothing".
 - **A performance probe** (`pnpm perf:canvas`) builds the reference board, runs each gesture at the
   reference speed and prints the budget table with pass or fail per row. It also runs by hand,
   against any build.
