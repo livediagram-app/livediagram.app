@@ -14,7 +14,8 @@ a drag's cost to what it moves, whatever the size of the board
   else from the document. Nothing in the document changes until the gesture ends.
 - **It covers what the gesture changes:** the dragged elements, and every arrow whose drawing
   depends on them (pinned to them, or routed behind them). Nothing else is redrawn while it lasts:
-  not the canvas, and not the layer that holds the elements, only each previewed element itself.
+  not the canvas, and not the layer that holds the elements, only each previewed element itself,
+  and not even that for what only moves ("Moves ride an offset").
 - **Everything derived from the board stays as it was** while the preview lasts: the element index,
   the element grid, the arrow labels of arrows the drag does not touch, the Map (which already holds
   its drawing through a gesture, [Minimap](minimap.md)), the selection chrome (already hidden while
@@ -29,6 +30,33 @@ a drag's cost to what it moves, whatever the size of the board
   start.
 - **A cancelled gesture leaves the document untouched**: Escape, the browser cancelling the
   pointer, or the canvas going away drops the preview, and nothing is written.
+
+## Moves ride an offset
+
+A move only shifts elements, so drawing it needs no element drawn again: a moved element looks as
+the document has it, somewhere else.
+
+- **An element the preview only translates rides an offset.** A box whose only change is its
+  position, by any amount, keeps the drawing the document gave it, and the page shifts it by that
+  amount (a CSS `translate`, written straight to its nodes, outside React). So does an arrow whose
+  ends both move by the same amount: pinned to elements riding the same offset, or free ends the
+  gesture shifted. The element's grips, which sit in the grips layer above every element, ride the
+  same offset. A frame of a move then renders no element view at all, however many it moves.
+- **Each element rides its own offset**, so a collaborator's drag and ours, moving different
+  elements by different amounts at once, both ride.
+- **Only the arrows between the moved and the unmoved re-route**: an arrow with one end on a moved
+  element and the other not, an arrow that stays put but that a moved box crosses where it was or
+  where it went, and an arrow riding on one of those, are drawn from the preview frame by frame, as before. Nothing else is
+  redrawn.
+- **What rides is drawn as it was**, so its gaps where an unmoved box crosses it, and an arrow
+  label's place, catch up on release, not frame by frame. The gaps between moved elements move with
+  them, as they should.
+- **A stack's children do not ride**: they glide when their stack reflows, and a glide would replay
+  as the offset is dropped; they are drawn from the preview, as before.
+- **The offset is dropped as the document changes**: on release, in the same paint as the elements
+  drawn at their new place, so nothing jumps back; on a cancel, before the next paint. An element
+  that stops only translating mid-gesture (a resize, a rebind turning an arrow end) leaves the offset
+  and is drawn from the preview.
 
 ## Live movement for collaborators
 
@@ -63,6 +91,7 @@ a drag's cost to what it moves, whatever the size of the board
 ## Observability
 
 - `[drag-preview] begin` / `commit` / `cancel` (debug) with the gesture and element count.
+- `[drag-preview] ride` (debug) with how many elements ride an offset, when that number changes.
 - `[drag-preview] peer ignored` (debug) for a preview dropped because its sender may only view.
 - `[drag-preview] peer expired` (debug) for a peer preview that went silent.
 
