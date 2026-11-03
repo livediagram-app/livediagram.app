@@ -4,9 +4,9 @@
 // the one that shows its feature (FeatureScene.tsx), so a scene is declared once, here.
 
 import type { ComponentType } from 'react';
-import { DiagramBoard } from './hero-diagram-board';
 import { DrawBoard } from './hero-draw-board';
 import { HERO_SCENE_DATA, type HeroSceneData, type HeroSceneKey } from './hero-scene-data';
+import { SpaceScene } from './hero-space-scene';
 import { TownHallBoard } from './hero-townhall-board';
 
 export type { HeroSceneKey } from './hero-scene-data';
@@ -15,7 +15,7 @@ export type { HeroSceneKey } from './hero-scene-data';
 type HeroScene = HeroSceneData & { Board: ComponentType<{ portrait?: boolean }> };
 
 const BOARDS: Record<HeroSceneKey, ComponentType<{ portrait?: boolean }>> = {
-  diagram: DiagramBoard,
+  space: SpaceScene,
   draw: DrawBoard,
   townhall: TownHallBoard,
 };

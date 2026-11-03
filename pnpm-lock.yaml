@@ -4242,6 +4242,9 @@ importers:
       '@livehuddle/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@liveworkspace/avatar':
+        specifier: workspace:*
+        version: link:../../../packages/avatar
       '@liveworkspace/community-ui':
         specifier: workspace:*
         version: link:../../../packages/community-ui

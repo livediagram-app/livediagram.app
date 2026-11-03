@@ -482,13 +482,13 @@ export function AvatarModeArt() {
       <Flow
         y={14}
         steps={[
-          [26, 56, 'Plan'],
-          [122, 56, 'Build'],
-          [218, 56, 'Launch'],
+          [26, 56, 'Agenda'],
+          [122, 56, 'Ideas'],
+          [218, 56, 'Actions'],
         ]}
       />
       <rect
-        className="fa-a-late fill-none stroke-sky-500"
+        className="fa-a-late fill-none stroke-emerald-500"
         style={at(0)}
         x="213"
         y="9"

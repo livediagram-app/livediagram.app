@@ -26,19 +26,19 @@ export const CATEGORY_ICONS: Record<string, Icon> = {
       <path d="M10.5 3.5a2.25 2.25 0 0 1 0 4.25M11.75 9.9c1.2.5 2 1.7 2.25 3.6" />
     </>,
   ),
-  // Diagrams: two boxes joined by a connector.
-  diagrams: glyph(
+  // Spaces: a little character standing in a doorway.
+  spaces: glyph(
     <>
-      <rect x="1.5" y="2.5" width="5.5" height="4" rx="1" />
-      <rect x="9" y="9.5" width="5.5" height="4" rx="1" />
-      <path d="M4.25 6.5v4.75H9" />
+      <path d="M2.5 14.5v-11a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v11" />
+      <circle cx="8" cy="6.25" r="1.75" />
+      <path d="M5.5 14.5c.3-2.3 1.2-3.75 2.5-3.75s2.2 1.45 2.5 3.75" />
     </>,
   ),
-  // Whiteboard: a freehand stroke under a pen nib.
-  whiteboard: glyph(
+  // Workshops: a timer, the session's own clock.
+  workshops: glyph(
     <>
-      <path d="M10.5 2.5l3 3-6 6-3.5.5.5-3.5z" />
-      <path d="M2 14c1.5-1 3-1 4.5 0s3 1 4.5 0" />
+      <circle cx="8" cy="9" r="5.25" />
+      <path d="M8 9V6.25M6.5 1.75h3M12.25 4.25l1-1" />
     </>,
   ),
 };

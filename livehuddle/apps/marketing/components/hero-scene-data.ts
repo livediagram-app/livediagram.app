@@ -8,8 +8,9 @@
 
 import type { TabDef } from './hero-editor-window';
 import type { HeroMode } from './hero-mode-palette';
+import { SPACE_VIEWBOX } from './hero-space-cast';
 
-export type HeroSceneKey = 'diagram' | 'draw' | 'townhall';
+export type HeroSceneKey = 'space' | 'draw' | 'townhall';
 
 export type HeroSceneData = {
   key: HeroSceneKey;
@@ -39,19 +40,20 @@ const PORTRAIT = '0 -40 360 520';
 // In the order the hero's stage plays them.
 export const HERO_SCENE_DATA: HeroSceneData[] = [
   {
-    key: 'diagram',
-    word: 'Diagram',
-    build: '/new?q=journey',
-    short: 'Diagram',
-    title: 'Onboarding',
-    label: 'Diagram: map a flow together, with arrows that connect and shapes that snap',
+    key: 'space',
+    word: 'Space',
+    build: '/new?q=team%20pod',
+    short: 'Space',
+    title: 'Team Pod',
+    label: 'Space: walk in as yourself and gather round the table with your team',
     mode: 'workshop',
     tabs: [
-      { name: 'Sign-up', color: '#0ea5e9', active: true },
-      { name: 'Checkout', color: '#ec4899' },
-      { name: 'Billing', color: '#8b5cf6' },
+      { name: 'Stand-up', color: '#10b981', active: true },
+      { name: 'Retro', color: '#f59e0b' },
+      { name: 'Planning', color: '#8b5cf6' },
     ],
     shared: true,
+    landscapeViewBox: SPACE_VIEWBOX,
     portraitViewBox: PORTRAIT,
   },
   {

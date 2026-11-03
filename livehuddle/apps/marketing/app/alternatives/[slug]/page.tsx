@@ -77,7 +77,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
           tryIt={
             <TryItCard
               title="See how it feels"
-              body="No sign-up, nothing to install, free forever. Open a space and judge for yourself."
+              body="No sign-up, nothing to install, free forever. Open a Space and judge for yourself."
               source="Compare.Card"
             />
           }

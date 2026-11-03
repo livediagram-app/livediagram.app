@@ -34,38 +34,37 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is livehuddle?',
-        a: 'A free, real-time canvas for diagrams, whiteboards and workshops. Every space is a stack of tabs, and each tab can be worked on in three modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, and Workshop for running a session with your team. Your team can join any of them live.',
+        a: 'A free, real-time Space for meetings and workshops. Open a Space and you walk in as your own little character, gather the team round the table, and run the session on the board with a timer, dot votes, polls and quizzes built in. Share a link and everyone is in the same Space, live, with no account needed.',
       },
       {
         q: 'Do I need an account to use livehuddle?',
         a: (
           <>
-            No. Open the editor and start drawing straight away, with no sign-up. Your work saves in
-            your browser as you go, and pressing Share puts it online for others to join. Signing in
-            (also free) keeps your spaces with you across devices and unlocks teams, API tokens and
-            the AI connection. See{' '}
-            <a href="/help/getting-started/guest-vs-account/">guest vs account</a>.
+            No. Open a Space straight away, with no sign-up. Your work saves in your browser as you
+            go, and pressing Share puts it online for others to join. Signing in (also free) keeps
+            your spaces with you across devices and unlocks teams, API tokens and the AI connection.
+            See <a href="/help/getting-started/guest-vs-account/">guest vs account</a>.
           </>
         ),
         aText:
-          'No. Open the editor and start drawing straight away, with no sign-up. Your work saves in your browser as you go, and pressing Share puts it online for others to join. Signing in (also free) keeps your spaces with you across devices and unlocks teams, API tokens and the AI connection. See guest vs account.',
+          'No. Open a Space straight away, with no sign-up. Your work saves in your browser as you go, and pressing Share puts it online for others to join. Signing in (also free) keeps your spaces with you across devices and unlocks teams, API tokens and the AI connection. See guest vs account.',
       },
       {
-        q: 'How do I start my first space?',
-        a: `Press Start drawing and choose what you are making: Diagram, Draw or Workshop. Your space opens straight away on that mode's start, where you begin from a blank canvas or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
+        q: 'How do I open my first Space?',
+        a: `Press Open a Space and pick a Space to walk into (a Team Pod, a Virtual Office, a Coworking Space or an All-Hands Hall) or a session to run, from a retro to a town hall. ${TEMPLATE_COUNT} templates are ready, or start blank. The Space opens with you on your feet, and a short tour offers to show you round.`,
       },
       {
         q: 'Does it work on my phone or tablet?',
         a: (
           <>
             It runs in any modern browser, with nothing to install. A laptop, desktop or tablet
-            gives you the full editor, and a tablet with a pen is lovely in Draw mode. Small phone
+            gives you the full editor, and a tap is all it takes to walk your character. Small phone
             screens are best for viewing and light edits. See{' '}
             <a href="/help/supported-devices/">supported devices</a>.
           </>
         ),
         aText:
-          'It runs in any modern browser, with nothing to install. A laptop, desktop or tablet gives you the full editor, and a tablet with a pen is lovely in Draw mode. Small phone screens are best for viewing and light edits. See supported devices.',
+          'It runs in any modern browser, with nothing to install. A laptop, desktop or tablet gives you the full editor, and a tap is all it takes to walk your character. Small phone screens are best for viewing and light edits. See supported devices.',
       },
       {
         q: 'Are there keyboard shortcuts?',
@@ -138,35 +137,20 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: 'creating',
     title: 'Creating',
-    blurb: 'Shapes, templates, themes and modes.',
+    blurb: 'Templates, stickies, themes and the palette.',
     icon: lucideGlyph(lucideShapes, ICON),
     items: [
       {
-        q: 'What can I make with it?',
-        a: 'Retrospectives in five formats, Lean Coffee and town hall Q&A boards, brainstorms, affinity maps, roadmaps, story maps, SWOT grids, Business Model and Value Proposition Canvases, incident postmortems, risk matrices, stakeholder maps, user personas, meeting agendas, quizzes and icebreaker games, and virtual offices to walk round.',
+        q: 'What can I run with it?',
+        a: 'Stand-ups and team check-ins in a Team Pod, retrospectives in five formats, Lean Coffee and town hall Q&A, brainstorms and affinity maps, Crazy Eights, planning poker, meeting agendas, quizzes, icebreakers and party games, and a whole virtual office to walk round between them.',
       },
       {
         q: 'How many templates and themes are there?',
-        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, and twenty-four themes that recolour every shape and arrow in one click, including dark and multi-colour schemes. You can also build and save a colour scheme of your own.`,
+        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, and twenty-four themes that recolour the whole board in one click, including dark and multi-colour schemes. You can also build and save a colour scheme of your own.`,
       },
       {
-        q: 'Can I make a diagram look hand-drawn?',
-        a: (
-          <>
-            Yes. Every tab has a finish: Flexible (the everyday look), Professional (crisp and
-            print-ready), Sketch (wobbly pencil lines and handwriting) or Marker (bold felt-tip,
-            like a flip chart). Switch it from the tab's style, or set it on one element, and
-            nothing about the diagram changes underneath. Ready-made looks set the theme, finish,
-            font and canvas pattern in one click. See{' '}
-            <a href="/help/canvas/finish/">choosing a finish</a>.
-          </>
-        ),
-        aText:
-          "Yes. Every tab has a finish: Flexible (the everyday look), Professional (crisp and print-ready), Sketch (wobbly pencil lines and handwriting) or Marker (bold felt-tip, like a flip chart). Switch it from the tab's style, or set it on one element, and nothing about the diagram changes underneath. Ready-made looks set the theme, finish, font and canvas pattern in one click. See choosing a finish.",
-      },
-      {
-        q: 'What are the three modes?',
-        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Workshop runs a session with your team, with timers, dot votes, polls and reveals to hand. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a space can have its own.',
+        q: 'Do I need to switch modes?',
+        a: 'No. Every board in livehuddle is a workshop board: stickies, writing, pens, shapes, icons, media, charts and every session tool sit on one palette, and the Session strip at the foot holds the timer, votes and polls. Pick Avatar on the toolbar to walk, and any other tool to work on the board.',
       },
       {
         q: 'Can I organise a big space?',
@@ -197,18 +181,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or line chart, a progress bar, a rating or a timeline. See data elements.',
       },
       {
-        q: 'Can I animate things?',
-        a: (
-          <>
-            Yes. Right-click an element and pick an animation that suits it: a shape can pulse, a
-            label can type itself in, and a drawing can draw itself. Hover a choice to preview it on
-            your selection first. See <a href="/help/canvas/animations/">animations</a>.
-          </>
-        ),
-        aText:
-          'Yes. Right-click an element and pick an animation that suits it: a shape can pulse, a label can type itself in, and a drawing can draw itself. Hover a choice to preview it on your selection first. See animations.',
-      },
-      {
         q: 'Can I use the same tab in two spaces?',
         a: (
           <>
@@ -219,18 +191,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Yes. Add to Another Space puts the tab you are on into another of your spaces. It is the same tab in both places, not a copy, so an edit in one shows up in the other. See Add to Another Space.',
-      },
-      {
-        q: 'Is there a 3D view?',
-        a: (
-          <>
-            Yes. Isometric mode tilts the whole tab and raises each box into a solid block, for an
-            architecture walkthrough or a screenshot. It is a way to look at a diagram rather than
-            edit it. See <a href="/help/selection-modes/isometric-mode/">Isometric mode</a>.
-          </>
-        ),
-        aText:
-          'Yes. Isometric mode tilts the whole tab and raises each box into a solid block, for an architecture walkthrough or a screenshot. It is a way to look at a diagram rather than edit it. See Isometric mode.',
       },
       {
         q: 'Can I use it as a whiteboard?',
@@ -246,8 +206,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Every board is a whiteboard: the palette\u2019s Draw category holds a pencil, a highlighter and arrows, and stickies, text and shapes are a key away, on a plain, dotted or grid backdrop in light or dark. See Drawing.',
       },
       {
-        q: 'Can I present from it?',
-        a: 'Yes. Presentation mode builds a slide deck from elements across your tabs and runs it full screen. Slides point at the real elements, so editing a shape updates every slide it appears on. Each slide can carry presenter notes and a time budget, transitions slide or fade between them, and a laser pointer and spotlight help you guide the room.',
+        q: 'Can I walk the room through something?',
+        a: 'Yes. Switch on Spotlight to dim the board around your cursor, or the laser to leave a glowing trail on everyone\u2019s screen. A Bring Focus element offers everyone a jump to the thing you mean, and anyone can press Follow beside you to see what you see.',
       },
       {
         q: 'Can I undo a mistake?',
@@ -267,7 +227,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I work with my team in real time?',
-        a: 'Yes, that is the point. Share a link and teammates join the same space in real time, whatever mode a tab is in, with live cursors, selection rings, presence on each tab, comments and a laser pointer. If you have not signed in, a new space starts in your browser, and the first Share syncs it in one step.',
+        a: 'Yes, that is the point. Share a link and teammates join the same Space in real time, with live cursors, walking characters, selection rings, presence on each tab, comments and a laser pointer. If you have not signed in, a new space starts in your browser, and the first Share syncs it in one step.',
       },
       {
         q: 'What happens if two people edit the same thing at once?',
@@ -294,18 +254,18 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Open Collaborators from the avatars on the tab bar and press Follow beside a teammate: your view goes wherever theirs goes, until you move away yourself. See following along.',
       },
       {
-        q: 'Can we walk around a board together?',
+        q: 'Can we walk around a Space together?',
         a: (
           <>
-            Yes. Put an Avatar button on a board and everyone who presses it walks a little pixel
-            character around the canvas, with speech bubbles, a status and reactions. The Virtual
-            Office, Coworking Space and All-Hands Hall templates turn a tab into rooms, desks and a
-            coffee machine to meet at. See{' '}
+            Yes. A Space opens with you standing on it as a little pixel character in your own
+            colour: click or tap to walk, and share a status, speech bubbles and reactions with
+            everyone there. The Virtual Office, Coworking Space, Team Pod and All-Hands Hall
+            templates give you rooms, desks and a coffee machine to meet at. See{' '}
             <a href="/help/selection-modes/avatar-mode/">Avatar mode</a>.
           </>
         ),
         aText:
-          'Yes. Put an Avatar button on a board and everyone who presses it walks a little pixel character around the canvas, with speech bubbles, a status and reactions. The Virtual Office, Coworking Space and All-Hands Hall templates turn a tab into rooms, desks and a coffee machine to meet at. See Avatar mode.',
+          'Yes. A Space opens with you standing on it as a little pixel character in your own colour: click or tap to walk, and share a status, speech bubbles and reactions with everyone there. The Virtual Office, Coworking Space, Team Pod and All-Hands Hall templates give you rooms, desks and a coffee machine to meet at. See Avatar mode.',
       },
       {
         q: 'Can I stop a finished tab being changed?',
@@ -336,16 +296,16 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Is it good for running workshops and retros?',
         a: (
           <>
-            Very. Switch a tab to Workshop, the mode for running a session, or start from a
-            retrospective, Lean Coffee or town hall Q&amp;A template, which opens there. Whoever
-            holds the facilitator role runs the room’s timer, votes, polls and reveals. Estimate
+            It is what livehuddle is for. Every board carries a timer, dot votes and polls, and
+            templates start a retrospective, Lean Coffee or town hall Q&amp;A in one click. Whoever
+            holds the facilitator baton runs the room’s timer, votes, polls and reveals. Estimate
             cards run planning poker, a temperature check shows how the room feels, a quiz asks what
             it knows, and an idea box collects anonymous ideas. See{' '}
-            <a href="/help/canvas/workshop-mode/">Workshop mode</a>.
+            <a href="/help/collaboration/session-tools/">session tools</a>.
           </>
         ),
         aText:
-          'Very. Switch a tab to Workshop, the mode for running a session, or start from a retrospective, Lean Coffee or town hall Q&A template, which opens there. Whoever holds the facilitator role runs the room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See Workshop mode.',
+          'It is what livehuddle is for. Every board carries a timer, dot votes and polls, and templates start a retrospective, Lean Coffee or town hall Q&A in one click. Whoever holds the facilitator baton runs the room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See session tools.',
       },
     ],
   },
@@ -376,11 +336,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. When a space has more than one tab, the Share dialog lets a link open a single tab, as an editor, participant or view-only link, and the rest of the space stays private. See sharing one tab.',
       },
       {
-        q: 'Can I embed a diagram in my docs or wiki?',
-        a: 'Yes. Any share link can be embedded as a live-updating iframe: an editor link embeds an editable space, and a participant or view-only link a read-only one. Copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes; it always shows the current state of the diagram.',
+        q: 'Can I embed a Space in my docs or wiki?',
+        a: 'Yes. Any share link can be embedded as a live-updating iframe: an editor link embeds an editable space, and a participant or view-only link a read-only one. Copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes; it always shows the Space as it is now.',
       },
       {
-        q: 'Can I show a diagram where iframes are blocked, like a README?',
+        q: 'Can I show a board where iframes are blocked, like a README?',
         a: (
           <>
             Yes. A live image is a plain image URL that follows your space, redrawn after each save,
@@ -451,15 +411,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export a diagram or whiteboard tab as PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file. Hidden layers stay out of image exports unless you switch them on.',
-      },
-      {
-        q: 'Does it work with Mermaid?',
-        a: 'Yes, both ways. Paste or open a Mermaid flowchart, state diagram or ER diagram and livehuddle lays it out on the canvas with every connection intact. Export a diagram tab back to Mermaid text for your READMEs, issues and AI tools. Other Mermaid types, such as sequence, class, Gantt, pie and mind map, are not supported.',
+        a: 'Yes. Export a tab as PNG, SVG, PDF or a portable JSON file you can import back. Hidden layers stay out of image exports unless you switch them on.',
       },
       {
         q: 'Can I move my boards over from another tool?',
-        a: 'Yes. Import draw.io diagrams (a tab per page, a whole folder at a time if you like), Excalidraw scenes (a .excalidraw file, or a PNG or SVG exported with the scene embedded) and Microsoft Whiteboard boards, and they land as editable content. Markdown and JSON import too.',
+        a: 'Not directly yet: there is no importer for other whiteboards. Export a board from the old tool as a PNG and add it to a tab as an image, or start the next session from one of the templates. A livehuddle JSON export imports back in full.',
       },
       {
         q: 'Can I keep a copy in my own Google Drive?',

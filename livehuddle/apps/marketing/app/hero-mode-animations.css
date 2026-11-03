@@ -1,6 +1,5 @@
-/* The hero's mode windows (components/hero-diagram-board.tsx, hero-draw-board.tsx,
-   hero-mindmap-board.tsx;
-   docs/specs/019-marketing/marketing-site.md "Hero"). Every mark plays once at its own delay (--d): the
+/* The scenes' builds (components/hero-draw-board.tsx, hero-townhall-board.tsx;
+   docs/specs/019-marketing/marketing-site.md "Feature scenes"). Every mark plays once at its own delay (--d): the
    window's group is remounted each time it reaches centre, and its veil (hero-fade) covers the
    last second, so nothing has to clear on a loop. Off-centre (.hero-static) and under reduced
    motion every mark shows settled. */
@@ -98,7 +97,7 @@
   }
 }
 
-/* --- The Diagram window (components/hero-diagram-board.tsx) --- */
+/* --- Fading and typing, for the Town Hall window's pieces and labels --- */
 
 /* A piece fades in. */
 .hm-fade {
@@ -126,174 +125,20 @@
   }
 }
 
-/* The Yes step lands 8px low and is dragged onto the guide. */
-.hm-snap {
-  animation: hm-snap 0.4s cubic-bezier(0.3, 0, 0.2, 1) 6s both;
-}
-@keyframes hm-snap {
-  from {
-    transform: translateY(8px);
-  }
-  to {
-    transform: none;
-  }
-}
-/* The pink alignment guide shows while it snaps. */
-.hm-guide {
-  opacity: 0;
-  animation: hm-guide 0.9s linear 5.95s both;
-}
-@keyframes hm-guide {
-  0% {
-    opacity: 0;
-  }
-  12%,
-  78% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-/* The selection and its colour row, gone once the colour is picked. */
-.hm-select {
-  opacity: 0;
-  animation: hm-select 2.2s linear var(--d, 0s) both;
-}
-@keyframes hm-select {
-  0% {
-    opacity: 0;
-  }
-  5%,
-  85% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-/* Picked green: the step takes the green the theme picker would give it. */
-.hm-recolour {
-  animation: hm-recolour 0.3s ease-out 7.8s both;
-}
-@keyframes hm-recolour {
-  from {
-    fill: var(--art-ink-fill);
-    stroke: var(--art-ink-stroke);
-  }
-  to {
-    fill: var(--art-pick-fill);
-    stroke: var(--art-pick-stroke);
-  }
-}
-
-/* The two cursors ride their paths, timed to the drops. The path and how far along it each stop
-   lies (--p1 ...) come from the layout (lib/hero-motion.ts cursorRide), so the phone's portrait
-   layout rides its own; the keyframes fix only when each stop is reached. */
-.hm-you,
-.hm-teammate {
-  transform-box: view-box;
-  transform-origin: 0 0;
-  offset-rotate: 0deg;
-  opacity: 0;
-}
-.hm-you {
-  animation: hm-you 7.4s linear 0.4s both;
-}
-@keyframes hm-you {
-  0% {
-    offset-distance: 0%;
-    opacity: 1;
-  }
-  8.11%,
-  12.16% {
-    offset-distance: var(--p1);
-  }
-  18.92%,
-  22.97% {
-    offset-distance: var(--p2);
-  }
-  29.73%,
-  54.05% {
-    offset-distance: var(--p3);
-  }
-  62.16%,
-  75.68% {
-    offset-distance: var(--p4);
-  }
-  81.08%,
-  91.89% {
-    offset-distance: var(--p5);
-  }
-  100% {
-    offset-distance: 100%;
-    opacity: 1;
-  }
-}
-.hm-teammate {
-  animation: hm-teammate 5.7s linear 3.8s both;
-}
-@keyframes hm-teammate {
-  0% {
-    offset-distance: 0%;
-    opacity: 1;
-  }
-  10.53%,
-  21.05% {
-    offset-distance: var(--p1);
-  }
-  28.07%,
-  71.93% {
-    offset-distance: var(--p2);
-  }
-  80.7%,
-  91.23% {
-    offset-distance: var(--p3);
-  }
-  100% {
-    offset-distance: 100%;
-    opacity: 1;
-  }
-}
-
 .hero-static .hm-fade,
-.hero-static .hm-type,
-.hero-static .hm-snap {
+.hero-static .hm-type {
   animation: none;
   opacity: 1;
   clip-path: none;
   transform: none;
 }
-.hero-static .hm-recolour {
-  animation: none;
-  fill: var(--art-pick-fill);
-  stroke: var(--art-pick-stroke);
-}
-.hero-static .hm-guide,
-.hero-static .hm-select,
-.hero-static .hm-you,
-.hero-static .hm-teammate {
-  display: none;
-}
 @media (prefers-reduced-motion: reduce) {
   .hm-fade,
-  .hm-type,
-  .hm-snap {
+  .hm-type {
     animation: none;
     opacity: 1;
     clip-path: none;
     transform: none;
-  }
-  .hm-recolour {
-    animation: none;
-    fill: var(--art-pick-fill);
-    stroke: var(--art-pick-stroke);
-  }
-  .hm-guide,
-  .hm-select,
-  .hm-you,
-  .hm-teammate {
-    display: none;
   }
 }
 

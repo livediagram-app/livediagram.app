@@ -24,13 +24,13 @@ const PROMISES: PrivacyPromise[] = [
   {
     title: 'Your data is yours',
     description:
-      "Every space lives in your own row, scoped to your owner id. Export any tab to PNG, SVG, PDF, Mermaid, Markdown, or portable JSON whenever you like, and delete your account from settings to remove it all in one go. We don't make money by holding it hostage.",
-    art: <DataIsYoursArt noun="diagram" />,
+      "Every space lives in your own row, scoped to your owner id. Export any tab to PNG, SVG, PDF or portable JSON whenever you like, and delete your account from settings to remove it all in one go. We don't make money by holding it hostage.",
+    art: <DataIsYoursArt noun="space" />,
   },
   {
     title: 'Never sold, never traded',
     description:
-      "We don't sell your data. We don't trade it. We don't share it with advertisers or model trainers or anyone else. There is no paid tier and no plan to add one, so we have no commercial pressure to monetise what you draw.",
+      "We don't sell your data. We don't trade it. We don't share it with advertisers or model trainers or anyone else. There is no paid tier and no plan to add one, so we have no commercial pressure to monetise what you make.",
     art: <NoSaleArt />,
   },
   {
@@ -54,5 +54,5 @@ const PROMISES: PrivacyPromise[] = [
 ];
 
 export function PrivacySection() {
-  return <Section promises={PROMISES} maker="a diagram editor" />;
+  return <Section promises={PROMISES} maker="a meeting and workshop app" />;
 }

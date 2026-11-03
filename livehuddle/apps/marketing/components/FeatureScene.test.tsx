@@ -7,14 +7,14 @@ import { FeatureScene } from './FeatureScene';
 // its finished frame before the build; the veil rests clear.
 describe('FeatureScene', () => {
   it('renders the window and its aspect-ratio canvas without the scene', () => {
-    const markup = renderToStaticMarkup(<FeatureScene scene="diagram" />);
-    expect(markup).toContain('Onboarding');
+    const markup = renderToStaticMarkup(<FeatureScene scene="space" />);
+    expect(markup).toContain('Team Pod');
     expect(markup).toContain('aspect-[16/10]');
-    expect(markup).not.toContain('Retry');
+    expect(markup).not.toContain('team-pod-light.svg');
   });
 
   it('rests with a clear veil, never the stage veil that flashes grey', () => {
-    const markup = renderToStaticMarkup(<FeatureScene scene="diagram" />);
+    const markup = renderToStaticMarkup(<FeatureScene scene="space" />);
     expect(markup).toContain('opacity-0');
     expect(markup).not.toMatch(/hero-fade(-out)?\b/);
   });

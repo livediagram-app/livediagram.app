@@ -11,38 +11,28 @@ import { toGallery, type GalleryTemplate } from '@/lib/template-gallery';
 export const SECTION_TEMPLATES_MAX = 9;
 
 export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKind[]>> = {
-  collaboration: [
+  spaces: ['virtual-office', 'team-pod', 'coworking-space', 'all-hands-hall', 'town-hall'],
+  workshops: [
     'retrospective',
-    'brainstorm',
-    'workshop-board',
-    'meeting-agenda',
-    'town-hall',
     'lean-coffee',
-    'affinity-map',
+    'town-hall',
+    'meeting-agenda',
+    'workshop-board',
+    'brainstorm',
     'crazy-eights',
-    'virtual-office',
+    'pub-quiz',
+    'icebreaker-questions',
   ],
-  diagrams: [
-    'journey',
-    'user-story-map',
-    'opportunity-solution-tree',
-    'roadmap',
-    'stakeholder-map',
-    'risk-matrix',
-    'raci-matrix',
-    'business-model-canvas',
-    'swot',
-  ],
-  whiteboard: [
-    'sailboat',
-    'crazy-eights',
+  collaboration: [
+    'team-pod',
+    'workshop-board',
     'brainstorm',
     'affinity-map',
-    'empathy-map',
-    'value-proposition-canvas',
-    'kwl-chart',
-    'mad-sad-glad',
     'start-stop-continue',
+    'mad-sad-glad',
+    'sailboat',
+    'empathy-map',
+    'user-story-map',
   ],
 };
 

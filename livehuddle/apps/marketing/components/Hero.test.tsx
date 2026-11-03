@@ -1,292 +1,100 @@
-// @vitest-environment jsdom
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { seededRandom } from '@livehuddle/document';
-import {
-  HERO_FAN_FULL_MIN_PX,
-  HERO_FAN_OPENING,
-  HERO_FAN_SLOTS,
-  heroTemplate,
-  shuffleFan,
-} from '@/lib/hero-starts';
+import { describe, expect, it } from 'vitest';
 import { Hero } from './Hero';
-import { HERO_FAN_SWAP_MS } from './HeroFan';
-import { WHITEBOARD_COPY } from './hero-draw-copy';
+import {
+  CAST,
+  DOOR,
+  LOOP_S,
+  SAY_S,
+  SPACE_STAGE,
+  SPEECH,
+  arrivalOf,
+  legsOf,
+  restOf,
+  type CastMember,
+} from './hero-space-cast';
 
-// docs/specs/019-marketing/marketing-site.md "Hero": the badge and the question, the template search
-// with Start Blank in its bar, and the dealing fan of templates.
+// docs/specs/019-marketing/marketing-site.md "Hero": the pitch and its two calls to action over the Team Pod
+// filling up, drawn on the server and moved by CSS alone.
 
-let reduceMotion = false;
-// Whether the window is wide enough for the whole fan (HERO_FAN_FULL_MIN_PX).
-let fullWidth = true;
-let observed: ((entries: { isIntersecting: boolean }[]) => void) | null = null;
-
-beforeEach(() => {
-  reduceMotion = false;
-  fullWidth = true;
-  vi.stubGlobal(
-    'matchMedia',
-    (query: string) =>
-      ({
-        matches: query.includes('reduce')
-          ? reduceMotion
-          : query.includes(`${HERO_FAN_FULL_MIN_PX}px`)
-            ? fullWidth
-            : true,
-        media: query,
-        addEventListener() {},
-        removeEventListener() {},
-        addListener() {},
-        removeListener() {},
-      }) as unknown as MediaQueryList,
-  );
-  vi.stubGlobal(
-    'IntersectionObserver',
-    class {
-      constructor(cb: (entries: { isIntersecting: boolean }[]) => void) {
-        observed = cb;
-      }
-      observe() {}
-      disconnect() {}
-    },
-  );
-  localStorage.clear();
-});
-
-afterEach(() => {
-  vi.useRealTimers();
-  vi.restoreAllMocks();
-  vi.unstubAllGlobals();
-});
-
-const fanTitles = () =>
-  screen
-    .getAllByRole('link')
-    .filter((a) => a.getAttribute('href')?.includes('via=Home.HeroFan'))
-    .map((a) => a.textContent?.replace(/^Create an? /, ''));
+const html = renderToStaticMarkup(<Hero />);
 
 describe('the hero', () => {
-  it('asks the question under its two promise badges', () => {
-    render(<Hero />);
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
-      'What are you diagramming today?',
+  it('pitches meetings and workshops under its two promise badges', () => {
+    expect(html).toContain('>Meet and run workshops together</h1>');
+    expect(html).toMatch(/aria-label="Our promises"/);
+    expect(html).toContain('Free and open source');
+    expect(html).toContain('No sign-up to start');
+  });
+
+  it('opens a Space from its own funnel slot, and browses the templates under it', () => {
+    expect(html).toMatch(/href="\/new\?via=Home\.Hero"[^>]*>Open a Space/);
+    expect(html).toMatch(/href="\/#templates"[^>]*>Browse Templates/);
+  });
+
+  it('draws the stage as decoration: the real Team Pod in both appearances, and no script', () => {
+    const stage = html.slice(
+      html.indexOf('aria-hidden="true" class="pointer-events-none select-none"'),
     );
-    const promises = within(screen.getByRole('list', { name: 'Our promises' })).getAllByRole(
-      'listitem',
-    );
-    expect(promises.map((p) => p.textContent)).toEqual([
-      'Free and open source',
-      'No sign-up to start',
-    ]);
-  });
-
-  // Pages mode is retired (livedocuments carries it), so the subhead promises nothing about publishing.
-  it('says what you can do here, and no longer offers to publish', () => {
-    render(<Hero />);
-    const lead = document.querySelector('[data-hero-anchor="lead"]')!;
-    expect(lead.textContent).toBe(
-      'Pick a starting point and release what’s inside your mind. Diagram, sketch or run a session, then share one link and build it together.',
-    );
-    expect(lead.textContent).not.toMatch(/publish/i);
-  });
-
-  it('draws the band as a whiteboard wall, its sticky notes decoration hung only from xl', () => {
-    const { container } = render(<Hero />);
-    const band = container.querySelector('section')!;
-    expect(band.className).toContain('hero-whiteboard');
-    expect(container.querySelector('.hero-band-dots')).toBeNull();
-    const board = container.querySelector('.hero-wb-board')!;
-    expect(board.getAttribute('aria-hidden')).toBe('true');
-    const notes = [...board.querySelectorAll('.hero-wb-sticky')];
-    expect(notes.map((n) => n.textContent)).toEqual([...WHITEBOARD_COPY.stickies]);
-    for (const n of notes)
-      expect(n.className.split(' ')).toEqual(expect.arrayContaining(['hidden', 'xl:flex']));
-  });
-
-  it('tapes each fan card up, the tape hidden from assistive tech', () => {
-    render(<Hero />);
-    const cards = screen
-      .getAllByRole('link')
-      .filter((a) => a.getAttribute('href')?.includes('via=Home.HeroFan'));
-    expect(cards.length).toBe(HERO_FAN_SLOTS);
-    for (const card of cards) {
-      const tape = card.querySelector('.hero-wb-tape');
-      expect(tape?.getAttribute('aria-hidden')).toBe('true');
-    }
-  });
-
-  it('lists the best matches as links that create them, once something is typed', () => {
-    render(<Hero />);
-    const box = screen.getByLabelText('Search templates');
-    fireEvent.focus(box);
-    expect(screen.queryByRole('list', { name: 'Matching templates' })).toBeNull();
-    fireEvent.change(box, { target: { value: 'retro' } });
-    const list = screen.getByRole('list', { name: 'Matching templates' });
-    const links = within(list).getAllByRole('link');
-    expect(links.length).toBeGreaterThan(0);
-    expect(links[0]!.getAttribute('href')).toBe('/new?template=retrospective&via=Home.HeroSearch');
-    expect(screen.getByRole('link', { name: /Browse every template/ }).getAttribute('href')).toBe(
-      '#templates',
-    );
-  });
-
-  it('opens the top match on Enter, walks the list with the arrows, and clears on Escape', () => {
-    const assign = vi.fn();
-    vi.stubGlobal('location', { ...window.location, assign });
-    render(<Hero />);
-    const box = screen.getByLabelText('Search templates') as HTMLInputElement;
-    box.focus();
-    fireEvent.change(box, { target: { value: 'sailboat' } });
-    fireEvent.keyDown(box, { key: 'ArrowDown' });
-    const first = within(screen.getByRole('list', { name: 'Matching templates' })).getAllByRole(
-      'link',
-    )[0]!;
-    expect(document.activeElement).toBe(first);
-    fireEvent.keyDown(first, { key: 'ArrowUp' });
-    expect(document.activeElement).toBe(box);
-    fireEvent.submit(box.form!);
-    expect(assign).toHaveBeenCalledWith('/new?template=sailboat&via=Home.HeroSearch');
-    fireEvent.keyDown(box, { key: 'Escape' });
-    expect(box.value).toBe('');
-  });
-
-  it('closes the matches when focus moves to Start Blank in the bar', () => {
-    render(<Hero />);
-    const box = screen.getByLabelText('Search templates');
-    fireEvent.focus(box);
-    fireEvent.change(box, { target: { value: 'retro' } });
-    expect(screen.getByRole('list', { name: 'Matching templates' })).toBeTruthy();
-    const blank = within(screen.getByRole('search')).getByRole('link', { name: 'Start Blank' });
-    fireEvent.focus(blank);
-    expect(screen.queryByRole('list', { name: 'Matching templates' })).toBeNull();
-    fireEvent.focus(box);
-    expect(screen.getByRole('list', { name: 'Matching templates' })).toBeTruthy();
-  });
-
-  it('scrolls the search up when its matches would open below what a phone shows', () => {
-    const scrollIntoView = vi.fn();
-    Element.prototype.scrollIntoView = scrollIntoView;
-    const rect = vi
-      .spyOn(Element.prototype, 'getBoundingClientRect')
-      .mockReturnValue({ bottom: window.innerHeight + 100 } as DOMRect);
-    render(<Hero />);
-    const box = screen.getByLabelText('Search templates');
-    fireEvent.focus(box);
-    fireEvent.change(box, { target: { value: 'retro' } });
-    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'start' });
-    rect.mockReturnValue({ bottom: 10 } as DOMRect);
-    scrollIntoView.mockClear();
-    fireEvent.change(box, { target: { value: '' } });
-    fireEvent.change(box, { target: { value: 'sailboat' } });
-    expect(scrollIntoView).not.toHaveBeenCalled();
-    rect.mockRestore();
-  });
-
-  it('says so when nothing matches', () => {
-    render(<Hero />);
-    const box = screen.getByLabelText('Search templates');
-    fireEvent.focus(box);
-    fireEvent.change(box, { target: { value: 'zzqqxx' } });
-    expect(screen.getByText(/Nothing matches/)).toBeTruthy();
-  });
-
-  it('sends Start Blank to the wizard with no start screen after it, as the hero’s own funnel slot', () => {
-    render(<Hero />);
-    const link = within(screen.getByRole('search')).getByRole('link', { name: 'Start Blank' });
-    expect(link.getAttribute('href')).toBe('/new?start=blank&via=Home.HeroBlank');
-    expect(within(screen.getByRole('search')).queryAllByRole('menuitem', { hidden: true })).toEqual(
-      [],
-    );
-  });
-
-  it('deals the template fan for everyone, never a card to Explorer Home', () => {
-    render(<Hero />);
-    expect(fanTitles()).toHaveLength(HERO_FAN_SLOTS);
-    expect(screen.queryByRole('link', { name: /Explorer Home/ })).toBeNull();
+    expect(stage.length).toBeLessThan(html.length);
+    expect(stage).toContain('href="/hero/team-pod-light.svg"');
+    expect(stage).toContain('href="/hero/team-pod-dark.svg"');
+    expect(stage).toContain('preserveAspectRatio="xMidYMid slice"');
+    expect(html).not.toContain('<script');
+    // Every teammate's name chip, and every line said.
+    for (const { name } of CAST) expect(stage).toContain(`>${name}</text>`);
+    for (const { text } of SPEECH) expect(stage).toContain(text);
   });
 });
 
-describe('the fan', () => {
-  // A fixed random source, so this visit's shuffle is known.
-  const deck = () => shuffleFan(seededRandom(7));
-  const titles = (kinds: readonly string[]) => kinds.map((k) => heroTemplate(k as never).title);
-  beforeEach(() => {
-    const random = seededRandom(7);
-    vi.spyOn(Math, 'random').mockImplementation(random);
+describe('the cast', () => {
+  const inRoom = (p: { x: number; y: number }) =>
+    p.x > -550 && p.x < 210 && p.y > -252 && p.y < 228;
+
+  it.each(CAST.map((m) => [m.name, m] as const))('%s ends inside the pod, on the floor', (_, m) => {
+    expect(inRoom(restOf(m))).toBe(true);
   });
 
-  it("serves a fixed opening hand, then deals this visit's shuffled one over it", () => {
-    const html = renderToStaticMarkup(<Hero />);
-    for (const t of titles(HERO_FAN_OPENING)) expect(html).toContain(t);
-    render(<Hero />);
-    expect(fanTitles()).toEqual(titles(deck().slice(0, HERO_FAN_SLOTS)));
+  it.each(CAST.map((m) => [m.name, m] as const))(
+    '%s walks in straight legs that add up to the path',
+    (_, m: CastMember) => {
+      const legs = legsOf(m);
+      expect(legs).toHaveLength(m.path.length);
+      const end = legs.reduce((p, l) => ({ x: p.x + l.dx, y: p.y + l.dy }), m.from);
+      expect(end).toEqual(restOf(m));
+      for (const leg of legs) expect(leg.dx === 0 || leg.dy === 0).toBe(true);
+    },
+  );
+
+  it('comes in through the door, one at a time, and is in before anyone speaks', () => {
+    const walkers = CAST.filter((m) => m.from === DOOR);
+    expect(walkers.length).toBe(4);
+    const starts = walkers.map((m) => m.start);
+    expect([...starts].sort((a, b) => a - b)).toEqual(starts);
+    const firstWord = Math.min(...SPEECH.map((s) => s.at));
+    for (const m of CAST) expect(arrivalOf(m)).toBeLessThan(firstWord);
   });
 
-  it('deals the next of the shuffled pool into one slot every few seconds', () => {
-    vi.useFakeTimers();
-    render(<Hero />);
-    const first = fanTitles();
-    act(() => {
-      vi.advanceTimersByTime(HERO_FAN_SWAP_MS + 500);
-    });
-    const after = fanTitles();
-    expect(after.filter((t, i) => t !== first[i])).toEqual(titles([deck()[HERO_FAN_SLOTS]!]));
+  it('speaks one bubble at a time, round the whole loop', () => {
+    const starts = SPEECH.map((line) => line.at % LOOP_S).sort((a, b) => a - b);
+    const gaps = starts.map(
+      (at, i) => (starts[(i + 1) % starts.length]! - at + LOOP_S) % LOOP_S || LOOP_S,
+    );
+    for (const gap of gaps) expect(gap).toBeGreaterThanOrEqual(SAY_S);
   });
 
-  it('holds while the pointer is on it, and off screen', () => {
-    vi.useFakeTimers();
-    const { unmount } = render(<Hero />);
-    const first = fanTitles();
-    const card = screen.getAllByRole('link').find((a) => a.textContent?.includes(first[2]!))!;
-    fireEvent.pointerEnter(card.closest('div')!.parentElement!);
-    act(() => {
-      vi.advanceTimersByTime(HERO_FAN_SWAP_MS * 3);
-    });
-    expect(fanTitles()).toEqual(first);
-    unmount();
-
-    render(<Hero />);
-    const again = fanTitles();
-    act(() => observed?.([{ isIntersecting: false }]));
-    act(() => {
-      vi.advanceTimersByTime(HERO_FAN_SWAP_MS * 3);
-    });
-    expect(fanTitles()).toEqual(again);
+  it('faces the way each leg goes', () => {
+    const leo = CAST.find((m) => m.name === 'Leo')!;
+    expect(legsOf(leo).map((l) => l.facing)).toEqual(['up', 'right', 'up']);
   });
 
-  it('shows all seven only on a very wide screen, and never swaps a card out of sight', () => {
-    fullWidth = false;
-    vi.useFakeTimers();
-    render(<Hero />);
-    const cards = () =>
-      screen
-        .getAllByRole('link')
-        .filter((a) => a.getAttribute('href')?.includes('via=Home.HeroFan'));
-    // The outer pair hides below the full width, the next pair on a phone.
-    const full = `max-[${HERO_FAN_FULL_MIN_PX}px]:hidden`;
-    const hides = cards().map((a) => {
-      const words = a.parentElement!.className.split(' ');
-      return words.includes(full) ? 'full' : words.includes('max-sm:hidden') ? 'phone' : 'always';
-    });
-    expect(hides).toEqual(['full', 'phone', 'always', 'always', 'always', 'phone', 'full']);
-    const first = fanTitles();
-    act(() => {
-      vi.advanceTimersByTime(HERO_FAN_SWAP_MS * 12);
-    });
-    const after = fanTitles();
-    expect([after[0], after[6]]).toEqual([first[0], first[6]]);
-    expect(after.slice(1, 6)).not.toEqual(first.slice(1, 6));
-  });
-
-  it('never swaps under reduced motion', () => {
-    reduceMotion = true;
-    vi.useFakeTimers();
-    render(<Hero />);
-    const first = fanTitles();
-    act(() => {
-      vi.advanceTimersByTime(HERO_FAN_SWAP_MS * 3);
-    });
-    expect(fanTitles()).toEqual(first);
+  it('walks only on the stage, coming up from just under its foot', () => {
+    for (const m of CAST) {
+      expect(m.from === DOOR || inRoom(m.from)).toBe(true);
+      for (const p of m.path) {
+        expect(p.x).toBeGreaterThan(SPACE_STAGE.x);
+        expect(p.y).toBeLessThanOrEqual(SPACE_STAGE.y + SPACE_STAGE.height);
+      }
+    }
   });
 });

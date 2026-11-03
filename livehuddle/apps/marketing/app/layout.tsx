@@ -19,7 +19,6 @@ import {
 } from '@livehuddle/ui';
 import { NON_MARKETING_SEGMENTS, SIGNED_IN_HINT_COOKIE } from '@livehuddle/api-schema';
 import { viewTransitionGuardScript } from '@liveworkspace/marketing-site/lib/view-transition-guard';
-import { HERO_FAN_BOOT_SCRIPT } from '@liveworkspace/marketing-site/lib/hero-fan-boot';
 import { marketingSilentSignInScript } from '@liveworkspace/marketing-site/lib/silent-sign-in';
 
 // Skips a view transition into this product's other apps (viewTransitionGuardScript).
@@ -80,7 +79,7 @@ export const viewport: Viewport = PUBLIC_VIEWPORT;
 
 // JSON-LD structured data, see docs/specs/019-marketing/marketing-site.md "SEO and
 // metadata". Two schemas under one @graph: WebSite for brand-name
-// search results, SoftwareApplication for "diagramming tool"
+// search results, SoftwareApplication for "meeting and workshop app"
 // category browse. Both restate facts already on the page; the
 // free-tier offer is truthful (the hosted product is currently
 // free to use).
@@ -164,8 +163,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(SILENT_SIGN_IN_SCRIPT) }} />
         <style>{VIEW_TRANSITION_OPT_IN}</style>
         <script dangerouslySetInnerHTML={{ __html: trustedHtml(VIEW_TRANSITION_GUARD_SCRIPT) }} />
-        {/* The hero fan deals a shuffled hand once script runs (components/HeroFan.tsx). */}
-        <script dangerouslySetInnerHTML={{ __html: trustedHtml(HERO_FAN_BOOT_SCRIPT) }} />
       </head>
       <body className="bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-200">
         {/* Appearance before first paint (docs/specs/004-interface-design/appearance.md). */}

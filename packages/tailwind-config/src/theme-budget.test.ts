@@ -109,6 +109,7 @@ it('finds the products’ palettes', () => {
   expect(bindings.map((b) => b.product).sort()).toEqual([
     'livedesign',
     'livedocuments',
+    'livehuddle',
     'liveplanner',
   ]);
 });
