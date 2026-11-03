@@ -31,6 +31,10 @@ So the themed bar is the **default**, and a surface does nothing to get it.
 - **Hidden** stays a per-surface choice (a swipe carousel, a scrolling tab strip), made with
   `scrollbar-width: none`; the default never overrides it.
 - No other scrollbar styling exists. A surface that wants a different bar changes this spec first.
+- **One themed exception: a Plan board's own bars** (`plan-scroll`, [Plan board](../026-plan/plan-board.md)
+  "Scrollbars"). A board is canvas content in its tab's theme, not chrome, so its bars take the theme's line,
+  column, ink and focus colours instead of slate: a 6 px thumb inside a 14 px bar, 10 px under the pointer.
+  Every other surface keeps the default.
 
 ## Accessibility
 

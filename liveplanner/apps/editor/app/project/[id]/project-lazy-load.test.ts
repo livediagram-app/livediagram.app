@@ -22,6 +22,7 @@ describe('the project page’s first load', () => {
     ['components/canvas/Canvas.tsx', '@/components/canvas/CanvasPages'],
     ['components/canvas/Canvas.tsx', '@/components/canvas/article/ArticleFlows'],
     ['components/canvas/CanvasChrome.tsx', '@/components/canvas/whiteboard/WhiteboardDock'],
+    ['components/canvas/CanvasChrome.tsx', '@/components/plan/configure/BoardConfigureDialog'],
     ['components/canvas/ElementFaceRouter.tsx', '@/components/canvas/TableView'],
     ['components/canvas/ElementFaceRouter.tsx', '@/components/canvas/collab/CollabFaceRouter'],
     ['components/canvas/SessionTimerFace.tsx', '@/components/canvas/SessionElementSettings'],

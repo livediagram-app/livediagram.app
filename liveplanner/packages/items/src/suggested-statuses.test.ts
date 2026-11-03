@@ -1,5 +1,6 @@
 // docs/specs/026-plan/plan-board.md "Suggested statuses".
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import {
   SUGGESTED_STATUSES,
   SUGGESTED_STATUSES_MAX,
@@ -44,9 +45,12 @@ describe('suggestedStatuses', () => {
 
   it('stays linear in the names taken', () => {
     const taken = Array.from({ length: 10_000 }, (_, i) => `Status ${i}`);
-    const t0 = performance.now();
-    for (let i = 0; i < 10; i++) expect(suggestedStatuses(taken)).toHaveLength(5);
-    expect(performance.now() - t0).toBeLessThan(250);
+    expect(suggestedStatuses(taken)).toHaveLength(5);
+    // CPU time (docs/ci.md "Speed budgets"): a wall-clock budget failed here on a loaded machine.
+    const ms = cpuMsOf(() => {
+      for (let i = 0; i < 10; i++) suggestedStatuses(taken);
+    });
+    expect(ms).toBeLessThan(cpuBudgetMs(250));
   });
 
   it('reads any iterable of names, a Map’s values among them', () => {

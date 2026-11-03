@@ -63,6 +63,10 @@ outranks it:
 - `scrollbar-color` has no hover state; the hover colour exists only in the webkit fallback (D34).
 - `.scrollbar-slim`: same colours; `::-webkit-scrollbar` 6 px (the standard `thin` already is the
   narrowest the standard properties allow).
+- `plan-scroll` (`apps/editor/app/globals.css`, a Tailwind `@utility`): a Plan board's themed bars, the one
+  exception `scrollbars.test.ts` allows: its `@utility plan-scroll` block and the `.plan-scroll::-webkit-scrollbar*`
+  rules beside it, reading `--plan-scroll-line`, `--plan-scroll-track`, `--plan-scroll-ink` and `--plan-scroll-focus`
+  from the board.
 
 ## Testing
 

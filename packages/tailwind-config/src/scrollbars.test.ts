@@ -55,6 +55,27 @@ const contrast = (a: string, b: string) => {
   return (x! + 0.05) / (y! + 0.05);
 };
 
+const PLAN_SCROLL_FILE = 'liveplanner/apps/editor/app/globals.css';
+
+// The CSS with the plan-scroll utility's block, every `.plan-scroll::-webkit-scrollbar*` rule and its Firefox
+// fallback's feature query taken out.
+function withoutPlanScroll(css: string): string {
+  let out = css;
+  const at = out.indexOf('@utility plan-scroll');
+  if (at >= 0) {
+    let depth = 0;
+    let i = out.indexOf('{', at);
+    for (; i < out.length; i++) {
+      if (out[i] === '{') depth++;
+      else if (out[i] === '}' && --depth === 0) break;
+    }
+    out = out.slice(0, at) + out.slice(i + 1);
+  }
+  return out
+    .replace(/\.plan-scroll::-webkit-scrollbar[\w-]*/g, '.plan-scroll')
+    .replace('@supports not selector(::-webkit-scrollbar)', '@supports');
+}
+
 describe('the themed scrollbar', () => {
   const base = baseLayers(theme).find((b) => b.includes('scrollbar-color')) ?? '';
 
@@ -88,9 +109,12 @@ describe('the themed scrollbar', () => {
           const text = readFileSync(path, 'utf8');
           const rel = relative(repo, path);
           if (rel === 'packages/tailwind-config/theme.css') continue;
+          // The one themed exception (liveplanner scrollbars.md): a Plan board's own bars, its
+          // `@utility plan-scroll` block and the `.plan-scroll::-webkit-scrollbar*` rules beside it.
+          const scanned = rel === PLAN_SCROLL_FILE ? withoutPlanScroll(text) : text;
           // A per-surface hide is allowed; any other webkit scrollbar styling
           // or a private scrollbar class is a second dialect.
-          for (const m of text.matchAll(
+          for (const m of scanned.matchAll(
             /::-webkit-scrollbar[\w-]*\]?:?(\w*)|\bscrollbar-thin\b/g,
           )) {
             if (m[0].startsWith('::-webkit-scrollbar]:hidden')) continue;

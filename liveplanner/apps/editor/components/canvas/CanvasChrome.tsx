@@ -12,6 +12,12 @@ const IdentityPrompt = dynamic(
   () => import('@/components/palette/IdentityPrompt').then((m) => m.IdentityPrompt),
   { ssr: false },
 );
+// Board configure opens on demand (a board's Configure), so its panels, presets and preset art stay off first load.
+const BoardConfigureDialog = dynamic(
+  () =>
+    import('@/components/plan/configure/BoardConfigureDialog').then((m) => m.BoardConfigureDialog),
+  { ssr: false },
+);
 
 import { OffscreenContentHint } from '@liveworkspace/workbench/components/canvas/OffscreenContentHint';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
@@ -52,7 +58,6 @@ import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-sca
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
 import { useConfigurableBoard } from '@/hooks/plan/board-configure-store';
-import { BoardConfigureDialog } from '@/components/plan/configure/BoardConfigureDialog';
 import { track } from '@/lib/telemetry';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
