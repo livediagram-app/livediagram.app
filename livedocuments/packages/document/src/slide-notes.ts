@@ -88,14 +88,22 @@ export function withNoteCards(slide: Slide, cards: readonly NoteCard[]): Slide {
   return next;
 }
 
-/** An id no card in the list has: `c` and a base-36 number past the highest such id there. */
+// Random characters on a new card's id, so two editors adding a card at once never make one id for two cards (spec
+// "Two people writing at once"): 36^4, about 1.7 million, against the few cards two people add in the same moment.
+const NOTE_CARD_ID_RANDOM = 4;
+
+/** An id no card in the list has, and no other editor's new card: `c`, a base-36 number past the highest such id
+ *  there, `_` and a few random base-36 characters. */
 export function newNoteCardId(cards: readonly NoteCard[]): string {
   let high = 0;
   for (const c of cards) {
-    const m = /^c([0-9a-z]+)$/.exec(c.id);
+    const m = /^c([0-9a-z]+)(?:_[0-9a-z]+)?$/.exec(c.id);
     if (m) high = Math.max(high, parseInt(m[1]!, 36));
   }
-  return `c${(high + 1).toString(36)}`;
+  const random = Array.from(crypto.getRandomValues(new Uint8Array(NOTE_CARD_ID_RANDOM)), (b) =>
+    (b % 36).toString(36),
+  ).join('');
+  return `c${(high + 1).toString(36)}_${random}`;
 }
 
 /** How long a card's words take to say aloud, in seconds (0 for none), at a flashcard's pace. */

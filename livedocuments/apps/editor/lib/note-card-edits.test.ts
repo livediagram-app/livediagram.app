@@ -15,14 +15,16 @@ const cards: NoteCard[] = [
   { id: 'c2', text: 'Two' },
   { id: 'c3', text: 'Three' },
 ];
-const ids = (list: readonly NoteCard[]) => list.map((c) => c.id);
+// A new card's id ends in random characters (newNoteCardId): compared without them.
+const counted = (id: string) => id.replace(/_[0-9a-z]+$/, '');
+const ids = (list: readonly NoteCard[]) => list.map((c) => counted(c.id));
 const full = Array.from({ length: NOTE_CARDS_MAX }, (_, i) => ({ id: `c${i + 1}`, text: 'x' }));
 
 describe('addNoteCard', () => {
   it('adds a blank card at the end, or straight after one', () => {
     const end = addNoteCard(cards, null)!;
-    expect(end.id).toBe('c4');
-    expect(end.cards.at(-1)).toEqual({ id: 'c4', text: '' });
+    expect(end.id).toMatch(/^c4_[0-9a-z]{4}$/);
+    expect(end.cards.at(-1)).toEqual({ id: end.id, text: '' });
     const after = addNoteCard(cards, 0)!;
     expect(ids(after.cards)).toEqual(['c1', 'c4', 'c2', 'c3']);
     expect(ids(addNoteCard(cards, 99)!.cards).at(-1)).toBe('c4');

@@ -380,6 +380,15 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       properties: {
         name: nameField,
         tabIds: { type: 'array', items: { type: 'string' } },
+        presentation: {
+          type: ['string', 'null'],
+          description: 'The slide deck, serialised; null clears it. Absent leaves it alone.',
+        },
+        presentationBase: {
+          type: ['string', 'null'],
+          description:
+            'The deck `presentation` was built on: sent with it, note cards are merged by card id with the stored deck.',
+        },
       },
     },
     responseSchema: wrap('document', 'Document'),

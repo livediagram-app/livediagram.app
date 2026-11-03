@@ -1109,6 +1109,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // frames each slide through it.
   // Set by the pages' hook (below): a page slide's row frames its page once its tab is open.
   const framePageRef = useRef<((pageId: string) => void) | null>(null);
+  // The deck as this editor last saved or loaded it: what its next deck save was built on.
+  const deckBaseRef = useRef<string | null>(documentPresentation);
+  useEffect(() => {
+    deckBaseRef.current = documentPresentation;
+  }, [documentPresentation]);
   const slideDeck = useSlideDeck({
     prefs: userPreferences,
     // Built on this render's preferences: moved onto the freshest before the whole blob is written.
@@ -1126,10 +1131,14 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     isReadOnly,
     saveDeck: (serialised) => {
       if (!hydrated || !documentId) return;
+      // The deck this one was built on goes with it, so the server keeps another person's note cards
+      // (speaker-note-cards.md "Two people writing at once"); then this save is the next one's base.
+      const presentationBase = deckBaseRef.current;
+      deckBaseRef.current = serialised;
       setDocumentPresentation(serialised);
       void apiSaveDocumentMeta(
         selfParticipant.id,
-        { id: documentId, presentation: serialised },
+        { id: documentId, presentation: serialised, presentationBase },
         sessionShareCode,
       ).catch(() => {
         // Best-effort, like every other metadata write: the deck is in

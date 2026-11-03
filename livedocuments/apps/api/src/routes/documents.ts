@@ -53,6 +53,7 @@ import {
   readDocumentMeta,
   readDocumentTabs,
   renameDocument,
+  mergeDocumentPresentation,
   setDocumentPresentation,
 } from '../document-room/document-content';
 import { identityOf } from '../document-room/document-route';
@@ -428,6 +429,9 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
         // Slide deck (docs/specs/012-collaboration/presentation-mode.md): serialised StoredPresentation, or null to
         // clear. Absent leaves the stored deck alone, so an ordinary rename can never wipe it.
         presentation?: string | null;
+        // The deck the editor built `presentation` on (docs/specs/012-collaboration/speaker-note-cards.md "Two people
+        // writing at once"): sent with it, the note cards are merged by card id with the stored deck.
+        presentationBase?: string | null;
       };
       const owner = requireOwner(ctx);
       if (owner instanceof Response) return owner;
@@ -454,10 +458,20 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
       ) {
         return badRequest('presentation too large');
       }
+      const base = body.presentationBase;
+      if (
+        base !== undefined &&
+        base !== null &&
+        (typeof base !== 'string' || base.length > MAX_DECK_LEN)
+      ) {
+        return badRequest('presentation too large');
+      }
       await renameDocument(env, id, name, Date.now());
       // Only when the caller actually sent the field: `undefined` means "not my business", which is what every
-      // existing client sends.
-      if (body.presentation !== undefined)
+      // existing client sends. A deck sent with what it was built on is merged card by card; without, as sent.
+      if (typeof body.presentation === 'string' && base !== undefined)
+        await mergeDocumentPresentation(env, id, body.presentation, base);
+      else if (body.presentation !== undefined)
         await setDocumentPresentation(env, id, body.presentation);
       if (order) await reorderTabs(env, id, order);
       const liveDoc = await getDocument(env, id);

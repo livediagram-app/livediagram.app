@@ -39,7 +39,10 @@ describe('PageNotesButton', () => {
     fireEvent.click(button);
     expect(screen.getByText('No Notes Yet')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Add First Card' }));
-    expect(deck.setNoteCards).toHaveBeenCalledWith('s1', [{ id: 'c1', text: '' }]);
+    // A new card's id ends in random characters (newNoteCardId), so only its stem is fixed.
+    expect(deck.setNoteCards).toHaveBeenCalledWith('s1', [
+      { id: expect.stringMatching(/^c1_[0-9a-z]+$/), text: '' },
+    ]);
   });
 
   it('reads Notes, pressed, once the slide has a card with words, and lists its cards', () => {

@@ -125,6 +125,9 @@ export async function apiSaveDocumentMeta(
     // it. JSON.stringify drops an undefined field, so "absent" travels as
     // absent rather than as null.
     presentation?: string | null;
+    // The deck `presentation` was built on (docs/specs/012-collaboration/speaker-note-cards.md "Two people writing at
+    // once"): the server merges note cards by card id against it. Not kept offline: a local copy has one writer.
+    presentationBase?: string | null;
   },
   shareCode: string | null = null,
 ): Promise<void> {
@@ -141,6 +144,7 @@ export async function apiSaveDocumentMeta(
     tabs: d.tabs,
     tabIds: d.tabIds,
     presentation: d.presentation,
+    presentationBase: d.presentationBase,
   });
   const res = await apiFetch(`${API_BASE}/documents/${d.id}`, {
     method: 'PUT',
