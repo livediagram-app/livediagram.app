@@ -182,7 +182,7 @@ describe('who may call', () => {
     expect(objectWakes).toBe(0);
   });
 
-  // livehuddle, held until launch, is mirrored like any app: its signed-in people connect from its own address, and
+  // livehuddle is mirrored like any app: its signed-in people connect from its own address, and
   // its guests (whatever a share link let them do in a Space) are refused before the object wakes.
   it("lets in a livehuddle account and keeps its return page, and refuses livehuddle's guests", async () => {
     const huddle = 'https://livehuddle.app/api';

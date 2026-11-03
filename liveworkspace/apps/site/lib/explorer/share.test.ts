@@ -154,8 +154,19 @@ describe('the Community tab on liveworkspace.app', () => {
   });
 
   it('lists the apps with a Community tab, and on an app’s own address only that app', () => {
-    expect(COMMUNITY_SHARE_APPS).toEqual(['livediagram', 'livedocuments', 'livedesign']);
-    expect(communityShareAppsHere(null)).toEqual(['livediagram', 'livedocuments', 'livedesign']);
+    expect(COMMUNITY_SHARE_APPS).toEqual([
+      'livediagram',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+    ]);
+    expect(communityShareAppsHere(null)).toEqual([
+      'livediagram',
+      'livedocuments',
+      'livedesign',
+      'livehuddle',
+    ]);
+    expect(communityShareAppsHere('livehuddle')).toEqual(['livehuddle']);
     expect(communityShareAppsHere('livedocuments')).toEqual(['livedocuments']);
     expect(communityShareAppsHere('livedesign')).toEqual(['livedesign']);
     expect(communityShareAppsHere('liveplanner')).toEqual([]);

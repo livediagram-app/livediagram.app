@@ -22,6 +22,7 @@ const STEPS: Partial<Record<SiteId, string>> = {
   'liveplanner.app': 'plan the work',
   'livedocuments.app': 'write it up',
   'livedesign.app': 'make it look right',
+  'livehuddle.app': 'talk it through',
 };
 
 const PROMISES = ['Completely free', 'No sign-up needed', 'No trackers or ads'];

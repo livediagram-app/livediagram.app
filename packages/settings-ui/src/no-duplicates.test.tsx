@@ -167,6 +167,7 @@ describe('the Settings panel lists the account once', () => {
       'liveplanner',
       'livedocuments',
       'livedesign',
+      'livehuddle',
     ]);
     // No app has a group of its own: every other category is All's merged one.
     expect(new Set(categories.map((c) => c.group))).toEqual(new Set([ACCOUNT_GROUP, 'apps']));

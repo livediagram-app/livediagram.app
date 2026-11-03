@@ -6,8 +6,8 @@ import { AppLogo } from './AppLogo';
 import { Cursor } from './Cursor';
 
 // The hero's picture of how liveworkspace fits together (liveworkspace/docs/specs/010-site/site.md "The front
-// door"): the platform's prism at the centre and each app at a corner, joined to it by a line in the
-// app's accent with a current running along it, read clockwise in the order work moves through them.
+// door"): the platform's prism at the centre and the apps round it at the points of a pentagon, each joined to it by
+// a line in the app's accent with a current running along it, read clockwise in the order work moves through them.
 // Laid out on a 600 × 500 grid that the lines and the cards share, so it scales as one. Each app is a
 // link to its site; the lines, the glow and the cursors are decoration.
 
@@ -23,28 +23,34 @@ const PLACES: Partial<
   >
 > = {
   'livediagram.app': {
-    at: { x: 140, y: 108 },
+    at: { x: 300, y: 62 },
     makes: 'Diagrams · whiteboards · mind maps',
-    glow: 'top-[2%] left-[0%] bg-sky-400/25 dark:bg-sky-500/20',
-    cursor: { name: 'Ada', colour: '#0369a1', at: 'top-[32%] left-[18%]' },
+    glow: 'top-[-6%] left-[29%] bg-sky-400/25 dark:bg-sky-500/20',
+    cursor: { name: 'Ada', colour: '#0369a1', at: 'top-[20%] left-[56%]' },
   },
   'liveplanner.app': {
-    at: { x: 460, y: 108 },
+    at: { x: 506, y: 200 },
     makes: 'Boards · sheets · forms',
-    glow: 'top-[2%] right-[0%] bg-violet-400/25 dark:bg-violet-500/20',
-    cursor: { name: 'Sam', colour: '#7c3aed', at: 'top-[30%] left-[70%]' },
+    glow: 'top-[18%] right-[-4%] bg-violet-400/25 dark:bg-violet-500/20',
+    cursor: { name: 'Sam', colour: '#7c3aed', at: 'top-[47%] left-[78%]' },
   },
   'livedocuments.app': {
-    at: { x: 460, y: 392 },
+    at: { x: 430, y: 420 },
     makes: 'Articles · slides · infographics',
-    glow: 'right-[0%] bottom-[2%] bg-amber-400/25 dark:bg-amber-500/15',
-    cursor: { name: 'Lena', colour: '#b45309', at: 'top-[63%] left-[62%]' },
+    glow: 'right-[4%] bottom-[-4%] bg-amber-400/25 dark:bg-amber-500/15',
+    cursor: { name: 'Lena', colour: '#b45309', at: 'top-[66%] left-[60%]' },
   },
   'livedesign.app': {
-    at: { x: 140, y: 392 },
+    at: { x: 170, y: 420 },
     makes: 'Logos · wireframes · photos',
-    glow: 'bottom-[2%] left-[0%] bg-rose-400/25 dark:bg-rose-500/15',
-    cursor: { name: 'Kai', colour: '#be123c', at: 'top-[64%] left-[22%]' },
+    glow: 'bottom-[-4%] left-[4%] bg-rose-400/25 dark:bg-rose-500/15',
+    cursor: { name: 'Kai', colour: '#be123c', at: 'top-[66%] left-[22%]' },
+  },
+  'livehuddle.app': {
+    at: { x: 94, y: 200 },
+    makes: 'Meetings · workshops · retros',
+    glow: 'top-[18%] left-[-4%] bg-emerald-400/25 dark:bg-emerald-500/20',
+    cursor: { name: 'Ana', colour: '#047857', at: 'top-[47%] left-[10%]' },
   },
 };
 

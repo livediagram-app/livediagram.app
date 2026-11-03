@@ -600,10 +600,13 @@ describe("liveworkspace's Explorer under this address (@liveworkspace/sites/work
   });
 });
 
-// The bare domain's pages live on www. (docs/specs/016-platform/router-app.md "The bare domain").
-// livehuddle is held until launch (liveworkspace/docs/specs/002-architecture/integrating-an-app.md "Registered before
-// launch"): its bare domain joins the platform's APP_BARE_HOSTS then, and these checks run from that change on.
-describe.skipIf(!APP_BARE_HOSTS.has('livehuddle.app'))('the bare domain', () => {
+// The bare domain's pages live on www. (docs/specs/016-platform/router-app.md "The bare domain"), as the platform's
+// APP_BARE_HOSTS says since livehuddle's launch.
+describe('the bare domain', () => {
+  it('is among the platform’s bare app domains', () => {
+    expect(APP_BARE_HOSTS.has('livehuddle.app')).toBe(true);
+  });
+
   const REDIRECTS = new Set([301, 302, 303, 307, 308]);
   const on = (host: string, path: string, env: Env, init?: RequestInit) =>
     router.fetch(new Request(`https://${host}${path}`, init), env);

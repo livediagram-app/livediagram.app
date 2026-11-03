@@ -48,7 +48,7 @@ function codePanel(code: string, brand: EmailBrand): string {
 }
 
 const ONE_ACCOUNT =
-  'One free liveworkspace account signs you in to livediagram, liveplanner, livedocuments and livedesign.';
+  'One free liveworkspace account signs you in to livediagram, liveplanner, livedocuments, livedesign and livehuddle.';
 
 // The sign-in code, in the frame of the app it was asked for through (null: liveworkspace's own sign-in page), so
 // someone signing in to livediagram gets a livediagram email.

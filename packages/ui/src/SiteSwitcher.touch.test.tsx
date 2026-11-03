@@ -71,6 +71,7 @@ describe('a tap on the logo', () => {
       'https://www.liveplanner.app',
       'https://www.livedocuments.app',
       'https://www.livedesign.app',
+      'https://www.livehuddle.app',
     ]);
   });
 

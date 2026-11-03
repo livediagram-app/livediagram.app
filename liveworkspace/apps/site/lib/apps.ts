@@ -5,7 +5,7 @@
 import { APP_SITES, type Site, type SiteId } from '@liveworkspace/sites';
 
 // The drawing of each app's work on the home page (components/landing/AppWindow.tsx).
-export type AppArt = 'diagram' | 'board' | 'document' | 'design';
+export type AppArt = 'diagram' | 'board' | 'document' | 'design' | 'huddle';
 
 export type AppCopy = {
   // One sentence for the card, longer than the pitch.
@@ -59,6 +59,15 @@ export const APP_COPY: Partial<Record<SiteId, AppCopy>> = {
     deep: '#be123c',
     tagline: 'Make it look right.',
     action: 'Start Designing',
+  },
+  'livehuddle.app': {
+    summary:
+      'A shared space for meetings and workshops: walk in together, run the timer and the votes, and keep what the room made.',
+    highlights: ['Rooms you walk into', 'Timers, votes and idea boxes', 'Stand-ups and retros'],
+    art: 'huddle',
+    deep: '#047857',
+    tagline: 'Get everyone in the room.',
+    action: 'Start Huddling',
   },
 };
 

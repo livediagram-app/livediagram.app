@@ -121,10 +121,22 @@ describe('livehuddle in accounts', () => {
     expect(allAppOrigins('development')).toContain('http://localhost:3500');
   });
 
-  it('gets the plain liveworkspace sign-in email until its launch names it', () => {
+  it('gets its own sign-in email, and every sign-in email names it, since its launch', () => {
     const env = { ENVIRONMENT: 'production', BASE_URL: 'https://liveworkspace.test' } as Env;
-    expect(emailBrand(env, 'livehuddle.app')).toEqual(emailBrand(env, null));
-    expect(codeEmail('123456', emailBrand(env, 'livehuddle.app')).text).not.toContain('livehuddle');
+    const brand = emailBrand(env, 'livehuddle.app');
+    expect(brand).not.toEqual(emailBrand(env, null));
+    expect(brand).toMatchObject({
+      word: 'huddle',
+      home: 'https://www.livehuddle.app',
+      logo: 'https://www.livehuddle.app/email/livehuddle-mark-64.png',
+    });
+    const email = codeEmail('123456', brand);
+    expect(email.subject).toBe('123456 is your livehuddle sign-in code');
+    // The "one account" line, in every app's email and liveworkspace's own.
+    const line =
+      'One free liveworkspace account signs you in to livediagram, liveplanner, livedocuments, livedesign and livehuddle.';
+    expect(email.text).toContain(line);
+    expect(codeEmail('123456', emailBrand(env, null)).html).toContain(line);
   });
 
   it('has its API among the token resources in production and staging', () => {

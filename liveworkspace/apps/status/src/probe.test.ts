@@ -127,7 +127,7 @@ describe('probeTargets', () => {
       testEnv(),
       async (r) => (viaFetch.push(r.url), new Response('{}')),
     );
-    expect(targets).toHaveLength(27);
+    expect(targets).toHaveLength(32);
     await probeAll(targets);
     expect(viaFetch).toContain('https://lw.example/robots.txt');
     expect(viaFetch).toContain('https://www.liveplanner.app/api/capabilities');
@@ -140,8 +140,8 @@ describe('probeTargets', () => {
   it('checks staging’s addresses on staging, and this machine’s in development', async () => {
     const staging = probeTargets(testEnv({ ENVIRONMENT: 'staging' }), fetch);
     expect(staging.map((t) => t.url)).toContain('https://staging.liveplanner.app/api/capabilities');
-    // Staging has no public MCP host, so 4 fewer checks.
-    expect(staging).toHaveLength(23);
+    // Staging has no public MCP host, so 5 fewer checks.
+    expect(staging).toHaveLength(27);
     const seen: string[] = [];
     const dev = probeTargets(
       testEnv({

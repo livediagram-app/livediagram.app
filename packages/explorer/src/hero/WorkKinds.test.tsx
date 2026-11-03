@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react';
 import { BRAND_APPS } from '@liveworkspace/brand';
 import { type App } from '@liveworkspace/index-client';
-import { APP_NAMES as APPS } from '@liveworkspace/sites';
+import { APP_NAMES } from '@liveworkspace/sites';
 import { describe, expect, it } from 'vitest';
 import { WorkKinds, defaultTemplateHref } from './WorkKinds';
 import { WORK_KINDS, WORK_KINDS_PER_APP, workTiles } from './work-kinds';
@@ -10,7 +10,9 @@ import { WORK_KINDS, WORK_KINDS_PER_APP, workTiles } from './work-kinds';
 // kinds, one per app under All, every set built the same way, each tile in its own app's colours and starting its
 // template.
 
-// livehuddle is registered but held until launch (no Explorer shows it), so it has no set yet.
+// The apps with a drawn set: every listed app but livehuddle, whose Spaces pictures are still to come.
+const APPS = APP_NAMES.filter((app) => app !== 'livehuddle');
+
 const EXPECTED: Partial<Record<App, { labels: string[]; templates: string[] }>> = {
   livediagram: {
     labels: ['Flowchart', 'Mind Map', 'Whiteboard', 'Workshop'],
@@ -154,9 +156,11 @@ describe('WorkKinds', () => {
   });
 });
 
-describe('a held app', () => {
-  it('has no tile under All until it launches: one per listed app only', () => {
-    expect(workTiles('livediagram', true).map((t) => t.app)).not.toContain('livehuddle');
+describe('an app with no pictures yet (livehuddle)', () => {
+  it('has no tile under All and an empty set of its own, until its kinds are drawn', () => {
+    expect(APP_NAMES).toContain('livehuddle');
+    expect(workTiles('livediagram', true).map((t) => t.app)).toEqual(APPS);
     expect(WORK_KINDS.livehuddle).toEqual([]);
+    expect(workTiles('livehuddle', false)).toEqual([]);
   });
 });

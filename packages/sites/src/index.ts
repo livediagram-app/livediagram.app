@@ -106,12 +106,6 @@ export const APP_SITES: readonly Site[] = [
     deep: '#be123c',
     light: '#fb7185',
   },
-];
-
-// Apps registered with every platform service but not launched (liveworkspace/docs/specs/002-architecture/
-// integrating-an-app.md "Registered before launch"): accounts, the index, media and telemetry accept them, and no list a
-// person sees reads this, so they show nowhere yet. Launch moves the row into APP_SITES.
-export const HELD_APP_SITES: readonly Site[] = [
   {
     id: 'livehuddle.app',
     name: 'livehuddle',
@@ -122,6 +116,12 @@ export const HELD_APP_SITES: readonly Site[] = [
     light: '#34d399',
   },
 ];
+
+// Apps registered with every platform service but not launched (liveworkspace/docs/specs/002-architecture/
+// integrating-an-app.md "Registered before launch"): accounts, the index, media and telemetry accept them, and no list a
+// person sees reads this, so they show nowhere yet. Launch moves the row into APP_SITES. None today: livehuddle's
+// launched (livehuddle/docs/specs/005-project-roadmap/build-plan.md step 8).
+export const HELD_APP_SITES: readonly Site[] = [];
 
 /** Every app the platform's services accept: the listed ones and the held ones. Never for a list people see. */
 export const REGISTERED_APP_SITES: readonly Site[] = [...APP_SITES, ...HELD_APP_SITES];
@@ -288,8 +288,7 @@ export const APP_ITEMS: Record<AppName, AppItems> = {
     importPath: null,
     share: shareOf(itemTabsPath('designs'), 'livedesign tab', itemCommunityPath('designs')),
   },
-  // Registered before its launch (HELD_APP_SITES): the index and the services know its items, and no Explorer lists
-  // it until launch. Forked from livediagram, so its addresses are livediagram's; a person reads "Space"
+  // Forked from livediagram, so its addresses are livediagram's; a person reads "Space"
   // (livehuddle/docs/specs/005-project-roadmap/open-decisions.md D6). No imports in the Explorer's Import from in v1;
   // its shape libraries (livehuddle/docs/specs/013-workspace/shape-libraries.md) are managed in the Explorer, as
   // livediagram's are.

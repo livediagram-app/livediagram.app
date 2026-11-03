@@ -127,7 +127,8 @@ export const WORK_KINDS: Record<App, readonly WorkKind[]> = {
     },
     { id: 'photo', label: 'Photo', template: 'photo-edit', draw: (b) => <MiniPhoto {...b} /> },
   ],
-  // Registered before its launch, so no Explorer shows it yet: its kinds (the Spaces) come with its fork.
+  // Launched without pictures of its own yet: its hero shows none, and All leaves it out until its kinds (the Spaces
+  // templates) are drawn (a follow-up to Work Tracker #189).
   livehuddle: [],
 };
 
@@ -138,5 +139,8 @@ export type WorkTile = { app: App; kind: WorkKind; label: string };
  *  Canvas, Plan, Document, Design), so either way the set holds the same number of tiles. */
 export function workTiles(app: App, all: boolean): WorkTile[] {
   if (!all) return WORK_KINDS[app].map((kind) => ({ app, kind, label: kind.label }));
-  return APP_NAMES.map((a) => ({ app: a, kind: WORK_KINDS[a][0]!, label: kindWords(a).one }));
+  return APP_NAMES.flatMap((a) => {
+    const kind = WORK_KINDS[a][0];
+    return kind ? [{ app: a, kind, label: kindWords(a).one }] : [];
+  });
 }
