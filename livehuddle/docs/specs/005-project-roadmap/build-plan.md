@@ -85,6 +85,9 @@ One PR per cut, each removing code, tests, palette entries, templates, help arti
 
 ### 6. Make it livehuddle
 
+Done in two PRs: 6a, Avatar first-class and the Space noun (Work Tracker #186), and 6b, branding, the marketing site
+and help (Work Tracker #187).
+
 - Avatar first-class: the picker offers Avatar, a Spaces board opens walking ([v1 scope](../002-project-scope/v1-scope.md) feature 1).
 - The start screen and template picker lead with the Spaces; the blank is "Untitled Space".
 - The noun **Space** everywhere a person reads one (D6).

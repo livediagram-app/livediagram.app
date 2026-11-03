@@ -2,8 +2,8 @@
 
 The livehuddle logo is the **Living Prism**: an isometric glass cube whose translucent faces fold over one another,
 with a faint diagram (two nodes joined through a centre node) inside and a live signal pulse running along its front
-edge. It reads as "a workspace with a diagram living in it". The **wordmark** beside it reads `livehuddle`, with
-`live` in the accent and `diagram` in ink.
+edge. It reads as "a workspace with something living in it", the mark every liveworkspace product shares in its own
+colours. The **wordmark** beside it reads `livehuddle`, with `live` in the accent and `huddle` in ink.
 
 ## The mark
 
@@ -12,7 +12,9 @@ edge. It reads as "a workspace with a diagram living in it". The **wordmark** be
   The blend is isolated to the mark: it never mixes with the page behind.
 - Each face is a gradient over one **prism palette**, six stops from light to dark: `light`, `vivid`, `primary`,
   `deep`, `dark` and `highlight`.
-- The brand palette is the one from the Living Prism source artwork: sky into blue into deep indigo.
+- livehuddle's palette is emerald into teal (`BRAND_APPS.livehuddle.palettes` in `packages/brand/src/apps.ts`): light
+  `#34d399`, vivid `#059669` (`#10b981` in dark), primary `#0d9488` (`#14b8a6`), deep `#0f766e`, dark `#042f2e`
+  (`#0f172a`) and highlight `#d1fae5` (`#a7f3d0`). Every icon and logo file is written from it by `pnpm icons:brand`.
 
 ## Two drawings
 
@@ -36,7 +38,7 @@ transparent light-palette PNG so it sits cleanly on the tinted page behind each 
 In the editor the mark and the wordmark's `live` take the active tab's theme accent (its element stroke). One accent
 becomes a whole prism palette: the brand palette's shape (how much lighter, darker, more or less vivid and how far round
 the hue wheel each stop sits from `vivid`) is carried onto the accent. So a pink theme gives a pink glass cube with the
-same depth as the blue one.
+same depth as the emerald one.
 
 - Lightness stays near the brand's, moving at most a little toward the accent, so a near-black or pale theme accent
   still gives a cube that reads on both light and dark headers.
@@ -51,10 +53,10 @@ tile's text colour, with each face at its own opacity so the fold still shows.
 
 ## Wordmark
 
-`live` is the accent: `brand-600` in light mode, `sky-400` in dark, or the theme accent in the editor. `diagram` is the
+`live` is the accent: `brand-700` in light mode, `emerald-400` in dark, or the theme accent in the editor. `huddle` is the
 surrounding ink (`slate-900`, `slate-100` in dark). The name never carries `.app`. The wordmark is a logotype, which WCAG
 1.4.3 exempts from contrast minimums, and the contrast audits skip it by its `data-logotype` mark. The plain-text
-wordmark in email follows the same split: `live` in brand blue, `diagram` in ink.
+wordmark in email follows the same split: `live` in `brand-700` emerald, `huddle` in ink.
 
 ## Size and motion
 
@@ -78,7 +80,7 @@ Pointing at the logo, or reaching it by keyboard, opens and turns the prism in 3
 - On leaving, it closes and settles on the nearest quarter turn (the box looks the same every
   quarter) over 450ms, carrying its spin into a small follow-through.
 - The wordmark's letters gleam once, left to right, over 900ms each time the pointer arrives
-  (white over light-mode ink, sky-300 over dark mode's near-white). Leaving early lets it finish.
+  (white over light-mode ink, emerald-300 over dark mode's near-white). Leaving early lets it finish.
 - Touch has no hover, so a tap never starts it. Reduced motion holds the mark and the wordmark
   still.
 
