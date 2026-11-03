@@ -3,11 +3,13 @@ import {
   admitBubble,
   bubbleEndsAt,
   bubbleMotion,
+  edgeShift,
   flightMs,
   headPoint,
   nextDraft,
   liveBubbles,
   SeenIds,
+  tailOffset,
   SPEECH_FADE_FRACTION,
   SPEECH_MAX_MS,
   SPEECH_OVERFLOW_FADE_MS,
@@ -133,5 +135,35 @@ describe('nextDraft (typing past the limit is refused, a paste is clamped)', () 
   });
   it('clamps a paste past the limits', () => {
     expect(nextDraft('', words(80), true)).toBe(fifty);
+  });
+});
+
+describe('edgeShift (a bubble stays whole inside the view)', () => {
+  it('leaves a bubble that fits where it is', () => {
+    expect(edgeShift(200, 100, 390)).toBe(0);
+    expect(edgeShift(58, 100, 390)).toBe(0);
+  });
+  it('pulls a bubble over the left edge back in, to the margin', () => {
+    expect(edgeShift(20, 100, 390)).toBe(38);
+    expect(edgeShift(-50, 100, 390)).toBe(108);
+  });
+  it('pulls a bubble over the right edge back in, to the margin', () => {
+    expect(edgeShift(380, 100, 390)).toBe(-48);
+  });
+  it('keeps the left edge of a card wider than the view in view', () => {
+    expect(edgeShift(100, 500, 390)).toBe(158);
+  });
+});
+
+describe('tailOffset (the tail stays on the head the card was shifted off)', () => {
+  it('points back the way the card was shifted', () => {
+    expect(tailOffset(38, 100)).toBe(-36);
+    expect(tailOffset(-48, 100)).toBe(36);
+    expect(tailOffset(0, 100)).toBeCloseTo(0);
+  });
+  it('never rides onto a corner, nor leaves a narrow card', () => {
+    expect(tailOffset(500, 100)).toBe(-36);
+    expect(tailOffset(-500, 100)).toBe(36);
+    expect(tailOffset(20, 20)).toBe(0);
   });
 });

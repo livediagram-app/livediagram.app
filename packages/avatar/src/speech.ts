@@ -139,6 +139,35 @@ export function admitBubble(
   return next;
 }
 
+/** Screen px kept clear between a bubble and the view's left or right edge. */
+export const SPEECH_EDGE_MARGIN = 8;
+
+/**
+ * The sideways shift, in screen px, that keeps a card `width` wide and centred at `centre` inside a view `viewWidth`
+ * wide, with SPEECH_EDGE_MARGIN to spare. Zero while it already fits. A card wider than the view keeps its left
+ * edge in view.
+ */
+export function edgeShift(centre: number, width: number, viewWidth: number): number {
+  const left = centre - width / 2;
+  const right = left + width;
+  let shift = Math.min(0, viewWidth - SPEECH_EDGE_MARGIN - right);
+  if (left + shift < SPEECH_EDGE_MARGIN) shift = SPEECH_EDGE_MARGIN - left;
+  return shift;
+}
+
+/** How far from a card's corners its tail keeps, so it never rides onto the rounded corner. */
+const SPEECH_TAIL_INSET = 14;
+
+/**
+ * Where a card's tail sits, in screen px off the card's centre, once the card is shifted by `shift` to stay inside
+ * the view: back toward the head it points at, never nearer a corner than SPEECH_TAIL_INSET.
+ */
+export function tailOffset(shift: number, width: number): number {
+  const reach = Math.max(0, width / 2 - SPEECH_TAIL_INSET);
+  // `+ 0` turns a negative zero into a plain one.
+  return Math.min(reach, Math.max(-reach, -shift)) + 0;
+}
+
 /** The bubbles still flying at `now`. */
 export function liveBubbles(list: readonly SpeechBubble[], now: number): SpeechBubble[] {
   return list.filter((b) => bubbleEndsAt(b) > now);
