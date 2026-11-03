@@ -21,7 +21,7 @@ import {
 } from '../offline/offline-store';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { markReported, reportApiError } from './error-report';
-import { seedDocumentGrant } from './document-grants';
+import { documentGrant, seedDocumentGrant } from './document-grants';
 import {
   API_BASE,
   ApiError,
@@ -198,10 +198,15 @@ export async function apiCreateDocument(
 ): Promise<LiveDoc> {
   // The index makes the canvas first (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Items"): its place, its title
   // and the grant on it come back together. The content is then started in the canvas's room with that grant.
-  let created: Awaited<ReturnType<typeof indexClient.createItem>>;
+  let grant: Awaited<ReturnType<typeof indexClient.createItem>>['grant'];
+  // The title the index filed it under; a resumed create keeps the one it asked for.
+  let title = d.name;
   const intent = indexIntentOf(d.intent ?? null);
   try {
-    created = await indexClient.createItem({
+    ({
+      grant,
+      item: { title },
+    } = await indexClient.createItem({
       id: d.id,
       // Synced to the cloud from this browser (Offline Mode): the Timeline says so, not "Created".
       ...(opts.conversion === 'sync' ? { synced: true } : {}),
@@ -212,18 +217,28 @@ export async function apiCreateDocument(
       // may answer (docs/specs/013-workspace/folders.md "Placement on create").
       ...(d.folderId !== undefined ? { folderId: d.folderId } : {}),
       ...(intent ? { intent } : {}),
-    });
+    }));
   } catch (err) {
-    if (err instanceof IndexError) {
+    // A Retry re-runs a create under the ids it first tried (docs/specs/007-editor/new-document-route.md "Retry"):
+    // when the index made the item but the content's create failed, the item is already there, and it is the caller's
+    // own. Its edit grant carries the create on, so the Retry finishes the Space rather than failing again.
+    const resumed =
+      err instanceof IndexError && err.status === 409 && err.code === 'item_exists'
+        ? await documentGrant(d.id)
+        : null;
+    if (resumed?.level === 'edit') {
+      grant = resumed;
+    } else if (err instanceof IndexError) {
       reportApiError(err.status, 'create document in index', err.code);
       const apiErr = new ApiError('create document', err.status, err.code);
       markReported(apiErr);
       throw apiErr;
+    } else {
+      throw err;
     }
-    throw err;
   }
-  seedDocumentGrant(d.id, created.grant);
-  indexTitles.set(d.id, created.item.title);
+  seedDocumentGrant(d.id, grant);
+  indexTitles.set(d.id, title);
   const res = await apiFetch(`${API_BASE}/documents`, {
     method: 'POST',
     headers: {
@@ -231,7 +246,7 @@ export async function apiCreateDocument(
         body: true,
         ...(opts.conversion ? { extra: { [DOCUMENT_CONVERSION_HEADER]: opts.conversion } } : {}),
       })),
-      [ITEM_GRANT_HEADER]: created.grant.grant,
+      [ITEM_GRANT_HEADER]: grant.grant,
     },
     body: JSON.stringify({
       id: d.id,

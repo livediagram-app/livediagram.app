@@ -1,6 +1,7 @@
 import type { Tab } from '@livehuddle/document';
 import { DOCUMENT_OPEN_HEADER } from '@livehuddle/api-schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { IndexError } from '@liveworkspace/index-client';
 import {
   apiCreateDocument,
   apiDeleteImage,
@@ -23,11 +24,14 @@ import { resetDisplayCacheForTests } from '@liveworkspace/workbench/lib/image-di
 
 // A canvas's grant and the index are their own modules (document-grants.test.ts, the index client's tests): here
 // every request goes straight to the stubbed fetch.
+const grants = vi.hoisted(() => ({
+  documentGrant: vi.fn(async (_id: string): Promise<unknown> => null),
+}));
 vi.mock('./api/document-grants', () => ({
   withDocumentGrant: async (_base: string, _input: string, init?: RequestInit) => init,
   heldDocumentGrant: () => null,
   seedDocumentGrant: () => {},
-  documentGrant: async () => null,
+  documentGrant: (id: string) => grants.documentGrant(id),
   documentGrantRefusal: () => null,
 }));
 const index = vi.hoisted(() => ({
@@ -517,6 +521,63 @@ describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Plac
     await expect(
       apiCreateDocument('owner', { id: 'd1', name: 'N', teamId: 't1' }),
     ).rejects.toMatchObject({ status: 403, code: 'team_forbidden' });
+  });
+});
+
+// docs/specs/007-editor/new-document-route.md "Retry": a create the index made but the content did not is resumed, not
+// failed again, when the item is the caller's own (issue #330).
+describe('apiCreateDocument resumes a create the index already made', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    grants.documentGrant.mockReset();
+    grants.documentGrant.mockResolvedValue(null);
+  });
+  const editGrant = {
+    grant: 'resumed',
+    level: 'edit',
+    tabId: null,
+    expiresAt: Date.now() + 600_000,
+  };
+  const exists = () => index.createItem.mockRejectedValueOnce(new IndexError(409, 'item_exists'));
+
+  it('carries on with its edit grant', async () => {
+    exists();
+    grants.documentGrant.mockResolvedValueOnce(editGrant);
+    const fetchSpy = vi.fn().mockResolvedValue(Response.json({ document: { id: 'd9' } }));
+    vi.stubGlobal('fetch', fetchSpy);
+    await expect(apiCreateDocument('owner', { id: 'd9', name: 'N' })).resolves.toEqual({
+      id: 'd9',
+    });
+    expect(grants.documentGrant).toHaveBeenCalledWith('d9');
+    const [, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
+    expect(new Headers(init.headers).get('X-Index-Grant')).toBe('resumed');
+  });
+
+  it('fails as before when the item is not the caller’s to edit', async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+    exists();
+    await expect(apiCreateDocument('owner', { id: 'd9', name: 'N' })).rejects.toMatchObject({
+      status: 409,
+      code: 'item_exists',
+    });
+    exists();
+    grants.documentGrant.mockResolvedValueOnce({ ...editGrant, level: 'view' });
+    await expect(apiCreateDocument('owner', { id: 'd9', name: 'N' })).rejects.toMatchObject({
+      status: 409,
+    });
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('asks for no grant on any other refusal, and passes a non-index error through', async () => {
+    index.createItem.mockRejectedValueOnce(new IndexError(403, 'team_forbidden'));
+    await expect(apiCreateDocument('owner', { id: 'd9', name: 'N' })).rejects.toMatchObject({
+      status: 403,
+    });
+    const boom = new Error('offline');
+    index.createItem.mockRejectedValueOnce(boom);
+    await expect(apiCreateDocument('owner', { id: 'd9', name: 'N' })).rejects.toBe(boom);
+    expect(grants.documentGrant).not.toHaveBeenCalled();
   });
 });
 
