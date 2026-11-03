@@ -174,6 +174,8 @@ export async function apiCreateProject(
     sheets?: SheetCreateRequest[];
     // The type catalogue (docs/specs/026-plan/item-types.md): a copy's, a sync's or a Drive file's.
     itemTypes?: ItemTypeCatalogue | null;
+    // The description (docs/specs/026-plan/plan-overview.md "The description"): an offline plan's, on sync.
+    description?: string;
   },
   // Set by the Offline Mode sync path (docs/specs/006-project/offline-mode.md). A sync is a plain POST, so
   // without this the worker records it as a brand-new project being created.
@@ -226,6 +228,7 @@ export async function apiCreateProject(
       ...(d.sheets && d.sheets.length ? { sheets: d.sheets } : {}),
       // The type catalogue rides the create (a copy's, a Plan template's card types); absent is the default types.
       ...(d.itemTypes ? { itemTypes: d.itemTypes } : {}),
+      ...(d.description ? { description: d.description } : {}),
     }),
   });
   const { project: liveDoc } = await expectOk<ProjectResponse>(res, 'create project');

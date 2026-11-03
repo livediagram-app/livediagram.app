@@ -1,3 +1,4 @@
+import type { ProjectDetails } from './editor-persistence';
 import type { SavedItemTypes } from '@/lib/api/item-types';
 import {
   useLayoutEffect,
@@ -92,6 +93,7 @@ export function useIdentityBootstrap(opts: {
     setProjectId: SetState<string | null>;
     setProjectName: SetState<string>;
     setProjectItemTypes: SetState<SavedItemTypes>;
+    setProjectDetails?: SetState<ProjectDetails>;
     setProjectNotFound: SetState<boolean>;
     setLoadError: SetState<boolean>;
     // The project is in the Trash (docs/specs/013-workspace/trash.md).
@@ -163,6 +165,7 @@ export function useIdentityBootstrap(opts: {
       setProjectId,
       setProjectName,
       setProjectItemTypes,
+      setProjectDetails,
       setProjectNotFound,
       setLoadError,
       setProjectTrashed,
@@ -201,6 +204,7 @@ export function useIdentityBootstrap(opts: {
       setActiveId,
       setProjectName,
       setProjectItemTypes,
+      setProjectDetails,
       setProjectOwnerColor,
       setProjectOwnerId,
       setProjectOwnerName,

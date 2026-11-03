@@ -1,3 +1,5 @@
+import { readProjectDescription } from '@liveplanner/api-schema';
+import type { ProjectDetails } from './editor-persistence';
 import { readItemTypeCatalogue } from '@liveplanner/items';
 import type { SavedItemTypes } from '@/lib/api/item-types';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
@@ -32,6 +34,8 @@ export function makeSeedFetchedProject(deps: {
   setProjectName: SetState<string>;
   // The type catalogue (docs/specs/026-plan/item-types.md), null for the default types, and its revision.
   setProjectItemTypes: SetState<SavedItemTypes>;
+  // The description and dates the Overview shows (docs/specs/026-plan/plan-overview.md).
+  setProjectDetails?: SetState<ProjectDetails>;
   setProjectOwnerColor: SetState<string | null>;
   setProjectOwnerId: SetState<string | null>;
   setProjectOwnerName: SetState<string | null>;
@@ -52,6 +56,7 @@ export function makeSeedFetchedProject(deps: {
     setActiveId,
     setProjectName,
     setProjectItemTypes,
+    setProjectDetails,
     setProjectOwnerColor,
     setProjectOwnerId,
     setProjectOwnerName,
@@ -113,6 +118,11 @@ export function makeSeedFetchedProject(deps: {
     lastSavedTabsRef.current = placeholderTabs;
     lastSavedNameRef.current = fetched.name;
     setProjectName(fetched.name);
+    setProjectDetails?.({
+      description: readProjectDescription(fetched.description),
+      createdAt: fetched.createdAt,
+      savedAt: fetched.savedAt,
+    });
     setProjectItemTypes({
       itemTypes: readItemTypeCatalogue(fetched.itemTypes ?? null),
       itemTypesRev: fetched.itemTypesRev ?? 0,

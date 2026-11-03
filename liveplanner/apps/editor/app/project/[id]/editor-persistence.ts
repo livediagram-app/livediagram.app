@@ -6,6 +6,11 @@ import { UNTITLED_PROJECT_NAME } from '@liveplanner/templates';
 import type { SaveStatus } from '@/components/chrome/EditorHeader';
 import type { useToast } from '@/hooks/ui/useToast';
 
+// What the Overview shows of the plan beyond its name (docs/specs/026-plan/plan-overview.md): its description, and
+// its created date and last save as the load read them (0: not known).
+export type ProjectDetails = { description: string; createdAt: number; savedAt: number };
+export const NO_PROJECT_DETAILS: ProjectDetails = { description: '', createdAt: 0, savedAt: 0 };
+
 // Persistence-facing state for the editor: the autosave status pill, the
 // project name (mirrored into the browser tab title) and the transient import-error toast. The Explorer's lists
 // are the index's, read by the shared Explorer itself. A cohesive slice lifted out of
@@ -29,6 +34,8 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     itemTypes: null,
     itemTypesRev: 0,
   });
+  // Seeded on load, then set by Edit Details here or the room's `project-details` op.
+  const [projectDetails, setProjectDetails] = useState<ProjectDetails>(NO_PROJECT_DETAILS);
   // Reflect the project name in the browser tab so users with many
   // tabs open can spot the right one. Falls back to the bare brand
   // until hydration lands the real name.
@@ -91,6 +98,8 @@ export function useEditorPersistence({ toast }: { toast: ReturnType<typeof useTo
     setProjectName,
     projectItemTypes,
     setProjectItemTypes,
+    projectDetails,
+    setProjectDetails,
     importError,
     setImportError,
   };

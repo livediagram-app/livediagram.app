@@ -19,6 +19,7 @@ import {
   type ChangesetRoomOp,
   type ItemsRoomOp,
   type ItemTypesRoomOp,
+  readProjectDescription,
   type SheetPresenceOp,
   type SheetsRoomOp,
 } from '@liveplanner/api-schema';
@@ -133,6 +134,8 @@ export function useRoomConnection(opts: {
   receiveThreads: (op: CardThreadsRoomOp) => void;
   // A stored type catalogue (docs/specs/026-plan/item-types.md "Storage and sync"). System-only.
   receiveItemTypes: (op: ItemTypesRoomOp) => void;
+  // The plan's description the api stored (docs/specs/026-plan/plan-overview.md); absent, the op is ignored.
+  receiveProjectDetails?: (description: string) => void;
   // A peer's hands on a Plan card (docs/specs/026-plan/plan-board.md). Presence.
   receivePlanPresence: (
     from: string,
@@ -183,6 +186,7 @@ export function useRoomConnection(opts: {
     receiveItems,
     receiveThreads,
     receiveItemTypes,
+    receiveProjectDetails,
     receivePlanPresence,
     receiveSheets,
     receiveSheetPresence,
@@ -453,6 +457,9 @@ export function useRoomConnection(opts: {
         // The type catalogue (docs/specs/026-plan/item-types.md). System-only: it changes only through
         // the api.
         if (from === 'system') receiveItemTypes(op);
+      } else if (op.kind === 'project-details') {
+        // The plan's description (docs/specs/026-plan/plan-overview.md). System-only: it changes only through the api.
+        if (from === 'system') receiveProjectDetails?.(readProjectDescription(op.description));
       } else if (op.kind === 'project-trashed') {
         // The project went to the Trash. System-only, like the share ops:
         // the room refuses it from a client socket.

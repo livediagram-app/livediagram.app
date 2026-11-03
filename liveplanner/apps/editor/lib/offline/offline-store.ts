@@ -69,6 +69,8 @@ export type OfflineProjectRecord = {
   itemsNextKey?: number;
   // The type catalogue (docs/specs/026-plan/item-types.md), absent or null for the default types.
   itemTypes?: ItemTypeCatalogue | null;
+  // The plan's description (docs/specs/026-plan/plan-overview.md "The description"), absent for none.
+  description?: string;
   // The project's sheet store (docs/specs/029-sheets/sheet-store.md "Offline projects"): every sheet, cells
   // included. Optional: a record without it has none.
   sheets?: SheetJson[];
@@ -133,6 +135,7 @@ export function recordToProject(rec: OfflineProjectRecord): Project {
     source: null,
     savedAt: rec.savedAt,
     createdAt: rec.createdAt,
+    ...(rec.description ? { description: rec.description } : {}),
     ownerName: null,
     ownerColor: null,
     ...UNKNOWN_INTENT,
@@ -370,6 +373,18 @@ export async function offlineSaveItemTypes(
   now: number,
 ): Promise<void> {
   await writeLive(id, (rec) => ({ ...rec, itemTypes, savedAt: now }));
+}
+
+// The plan's description (docs/specs/026-plan/plan-overview.md "The description"), already normalised; empty clears it.
+export async function offlineSaveDescription(
+  id: string,
+  description: string,
+  now: number,
+): Promise<void> {
+  await writeLive(id, (rec) => {
+    const { description: _old, ...rest } = rec;
+    return description ? { ...rest, description, savedAt: now } : { ...rest, savedAt: now };
+  });
 }
 
 export async function offlineSaveTab(id: string, tab: Tab, now: number): Promise<void> {

@@ -130,6 +130,7 @@ async function downloadAndRemoveCloudCopy(
     tabs,
     ...(starred ? { favourite: true } : {}),
     ...(liveDoc.itemTypes ? { itemTypes: liveDoc.itemTypes } : {}),
+    ...(liveDoc.description ? { description: liveDoc.description } : {}),
     ...(itemStore.items.length
       ? { items: itemStore.items, itemsRev: itemStore.rev, itemsNextKey: itemStore.nextKey }
       : {}),

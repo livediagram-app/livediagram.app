@@ -87,6 +87,8 @@ async function upload(rec: OfflineProjectRecord, ownerId: string): Promise<void>
         items: withThreads(storeAsCreates((rec.items ?? []).map(withoutLegacyThread)), rec),
         // And its type catalogue (docs/specs/026-plan/item-types.md "Storage and sync").
         itemTypes: rec.itemTypes ?? null,
+        // And its description (docs/specs/026-plan/plan-overview.md "The description").
+        ...(rec.description ? { description: rec.description } : {}),
         // The sheet store, whole (docs/specs/029-sheets/sheet-store.md "Offline projects").
         ...(rec.sheets?.length ? { sheets: rec.sheets.map(sheetAsCreate) } : {}),
       },
