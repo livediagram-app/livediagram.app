@@ -238,7 +238,6 @@ export function usePaletteCatalogue({
     canvasEmpty,
     isMobile,
     includeZen: !!onToggleZen,
-    currentTool: canvasTool,
   });
   const canvasToolOptions = participant
     ? allCanvasToolOptions.filter((o) => PARTICIPANT_CANVAS_TOOLS.includes(o.id))

@@ -75,6 +75,10 @@ and usage billing; v1 is built to leave room for them ([Future work](future-work
 
 ## D6. What a person calls the thing they make
 
+**Settled: (a)** (built as recommended; Work Tracker #186). People read **Space** everywhere
+([Domain language](../003-system-architecture/domain-language.md#space)); code, routes, the API and storage keep
+`document`.
+
 - (a) **Space** ("New Space", "Open Space", "Untitled Space"), with the API keeping `document`.
 - (b) **Huddle**.
 - (c) **Document**, as livediagram says.
@@ -83,6 +87,10 @@ and usage billing; v1 is built to leave room for them ([Future work](future-work
 make one, and keeping `document` underneath needs no change to the platform's `apiNoun` type.
 
 ## D7. Avatar mode first-class
+
+**Settled: (a)** (built as recommended; Work Tracker #186). The picker lists Avatar beside Select and Hand, a space
+whose tab offers the walk opens walking, and the Selection Mode button keeps working
+([Avatar mode](../008-canvas/avatar-mode.md#where-it-lives)).
 
 - (a) The Selection Mode picker offers Avatar, and a board made from a Spaces template opens walking; the Selection
   Mode button keeps working.

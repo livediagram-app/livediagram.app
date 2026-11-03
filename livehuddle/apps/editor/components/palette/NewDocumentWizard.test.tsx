@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NewDocumentWizard } from './NewDocumentWizard';
 
 // docs/specs/007-editor/new-document-route.md "One-step wizard": with one mode there is no question, so Create makes a
-// Blank Workshop at once; it never asks where the document goes or what it is called.
+// Blank Space at once; it never asks where the document goes or what it is called.
 afterEach(cleanup);
 
 function wizard(over: { busy?: boolean } = {}) {
@@ -23,7 +23,7 @@ describe('NewDocumentWizard', () => {
     expect(screen.queryByRole('radiogroup', { name: 'Save location' })).toBeNull();
   });
 
-  it('creates a Blank Workshop from Create', () => {
+  it('creates a Blank Space from Create', () => {
     const p = wizard();
     fireEvent.click(screen.getByRole('button', { name: 'Create' }));
     expect(p.onCreate).toHaveBeenCalledWith('blank-session');
@@ -45,9 +45,9 @@ describe('NewDocumentWizard', () => {
     expect(p.onSkip).not.toHaveBeenCalled();
   });
 
-  it('opens the Explorer from Open Existing Canvas', () => {
+  it('opens the Explorer from Open Existing Space', () => {
     const p = wizard();
-    fireEvent.click(screen.getByRole('button', { name: 'Open Existing Canvas' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open Existing Space' }));
     expect(p.onOpenExisting).toHaveBeenCalledTimes(1);
   });
 

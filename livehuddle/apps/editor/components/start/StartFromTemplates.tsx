@@ -1,7 +1,7 @@
 'use client';
 
-// An empty tab's template start (docs/specs/007-editor/start-diagramming.md): Start Diagramming on a Diagram tab, Start
-// a Workshop on a Workshop tab, each a start panel (StartPanel). Recommended (the mode's blank first) and its groups beside a grid of the mode's templates, each its
+// An empty tab's template start (docs/specs/007-editor/start-diagramming.md): Start a Space, a start panel
+// (StartPanel). The Spaces, Recommended (the blank first) and the other groups beside a grid of the templates, each its
 // preview over its name and line; a search across them and every other mode's templates (otherModeMatches); the × starts
 // from nothing. Choosing a template lands it on the tab at once, another mode's switching the tab to that mode.
 import { useEffect, useMemo } from 'react';
@@ -59,9 +59,9 @@ const COPY: Record<
   { title: string; line: string; noMatch: string; help: HelpArticleKey }
 > = {
   workshop: {
-    title: 'Start a Workshop',
-    line: 'Pick a session format to run, or close this to start from a blank workshop.',
-    noMatch: 'session templates',
+    title: 'Start a Space',
+    line: 'Walk into an office or a hall, or pick a session to run. Close this to start from a blank space.',
+    noMatch: 'templates',
     help: 'templates',
   },
 };
@@ -113,7 +113,8 @@ export function StartFromTemplates({
       helpArticle={copy.help}
       palette={palette}
       categories={categories}
-      initialCategory="recommended"
+      // The Spaces lead (start-diagramming.md "The Spaces lead"): the first thing a new person sees is a place to walk.
+      initialCategory={start.initial}
       cardsIn={(id) => (start.groups.find((g) => g.id === id)?.kinds ?? []).map(templateCard)}
       search={(query) =>
         start.search(query).map((g) => ({ category: g.group, cards: g.kinds.map(templateCard) }))

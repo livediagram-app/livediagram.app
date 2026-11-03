@@ -39,7 +39,7 @@ export default function BuildWithAiPage() {
         controlLead={
           <>
             Connecting needs a free livehuddle account, so your AI&apos;s work is saved to you. The
-            canvas itself never needs one.
+            space itself never needs one.
           </>
         }
       />

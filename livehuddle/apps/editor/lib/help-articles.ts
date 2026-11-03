@@ -146,7 +146,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   community: {
     title: 'Learn about the Community',
-    description: 'Sharing a canvas publicly, and how people find and copy it.',
+    description: 'Sharing a space publicly, and how people find and copy it.',
   },
   autoAttachArrows: {
     title: 'Learn about auto-attach arrows',
@@ -198,7 +198,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',
-    description: 'Drive your canvases from Claude, Cursor, and other AI tools over MCP.',
+    description: 'Drive your spaces from Claude, Cursor, and other AI tools over MCP.',
   },
   exportingDiagrams: {
     title: 'Learn about exporting',
@@ -210,7 +210,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   trash: {
     title: 'Learn about the Trash',
-    description: 'How long deleted canvases wait, and how to restore one.',
+    description: 'How long deleted spaces wait, and how to restore one.',
   },
   importTabs: {
     title: 'Learn about importing tabs',
@@ -218,7 +218,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   microsoftWhiteboardImport: {
     title: 'Learn about Microsoft Whiteboard import',
-    description: 'What a board export is and how each board becomes a canvas.',
+    description: 'What a board export is and how each board becomes a space.',
   },
   shapeLibraries: {
     title: 'Learn about shape libraries',
@@ -226,7 +226,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   drawioImport: {
     title: 'Learn about draw.io import',
-    description: 'Which files it reads and how each diagram becomes a canvas.',
+    description: 'Which files it reads and how each diagram becomes a space.',
   },
   markdownImport: {
     title: 'Learn about Markdown import',
@@ -254,7 +254,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   links: {
     title: 'Learn about links',
-    description: 'Linking elements to tabs, canvases, and web addresses.',
+    description: 'Linking elements to tabs, spaces, and web addresses.',
   },
   comments: {
     title: 'Learn about comments',
@@ -295,7 +295,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   imageGallery: {
     title: 'Learn about the Image Gallery',
-    description: 'How uploaded images are stored and reused across canvases.',
+    description: 'How uploaded images are stored and reused across spaces.',
   },
   timeline: {
     title: 'Learn about Home and the Timeline',
@@ -307,11 +307,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   sharedWithYou: {
     title: 'Learn about Shared With Me',
-    description: 'Canvases other people have shared with you, collected here.',
+    description: 'Spaces other people have shared with you, collected here.',
   },
   folders: {
     title: 'Learn about folders',
-    description: 'Tips for organising canvases into a nestable tree of folders.',
+    description: 'Tips for organising spaces into a nestable tree of folders.',
   },
   defaultFolders: {
     title: 'Learn about default folders',
@@ -327,15 +327,15 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   myWork: {
     title: 'Learn about My Work',
-    description: 'Your own canvases and folders, in one place.',
+    description: 'Your own spaces and folders, in one place.',
   },
   recent: {
     title: 'Learn about Recent',
-    description: 'Your most recently opened canvases, personal and team, in one list.',
+    description: 'Your most recently opened spaces, personal and team, in one list.',
   },
   teamSpaces: {
     title: 'Learn about team spaces',
-    description: 'A team’s shared library of canvases and folders.',
+    description: 'A team’s shared library of spaces and folders.',
   },
   explorerPage: {
     title: 'Learn about the Explorer',
@@ -407,7 +407,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   documentNotLoading: {
     title: 'Learn about loading problems',
-    description: 'Steps to try when a canvas will not open.',
+    description: 'Steps to try when a space will not open.',
   },
 };
 

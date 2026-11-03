@@ -49,7 +49,7 @@ export function ChromeControls({
           goes without moving the controls beside it. */}
       <TourOfferButton labelled={labelled} />
       {onOpenSearch ? (
-        <HoverCard title="Search" description="Find canvases, folders, tabs and elements.">
+        <HoverCard title="Search" description="Find spaces, folders, tabs and elements.">
           <button type="button" onClick={onOpenSearch} aria-label="Search" className={BTN}>
             <SearchGlyph />
             <ChromeLabel show={labelled}>Search</ChromeLabel>

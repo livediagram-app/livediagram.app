@@ -775,7 +775,7 @@ export const CATALOGUE: AppCatalogue = {
     },
     {
       id: 'documents',
-      label: 'Canvases',
+      label: 'Spaces',
       tile: 'folder',
       rows: [
         {
@@ -806,8 +806,8 @@ export const CATALOGUE: AppCatalogue = {
         {
           kind: 'toggle',
           id: 'notifyDocumentJoin',
-          label: 'Someone Joins My Canvas',
-          description: 'A new person opens one of your shared canvases.',
+          label: 'Someone Joins My Space',
+          description: 'A new person opens one of your shared spaces.',
           keywords: 'email join collaborator opened document',
           section: 'Email',
           key: 'notifyDocumentJoin',

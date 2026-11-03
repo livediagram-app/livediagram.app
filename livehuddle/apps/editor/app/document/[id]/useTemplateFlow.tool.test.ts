@@ -8,7 +8,10 @@ import { useTemplateFlow } from './useTemplateFlow';
 // docs/specs/023-draw-mode/draw-mode.md "Opening tool": a tab with content opens on Select. A template that lands
 // content makes the tab one, so the pen picked up for the empty tab is put down; Blank lands nothing and leaves it.
 
-async function pick(kind: TemplateKind): Promise<ReturnType<typeof vi.fn>> {
+async function pick(
+  kind: TemplateKind,
+  onLanded?: (tabId: string) => void,
+): Promise<ReturnType<typeof vi.fn>> {
   let tabs: Tab[] = [{ id: 't1', name: '', elements: [] }];
   const putToolDown = vi.fn();
   const { result } = renderHook(() =>
@@ -29,6 +32,7 @@ async function pick(kind: TemplateKind): Promise<ReturnType<typeof vi.fn>> {
       setIdentityPromptOpen: vi.fn(),
       requestFit: vi.fn(),
       putToolDown,
+      onLanded,
     }),
   );
   await act(async () => {
@@ -44,5 +48,21 @@ describe('chooseTemplate and the tool in hand', () => {
 
   it('leaves the tool in hand on the blank, which lands nothing', async () => {
     expect(await pick('blank-session')).not.toHaveBeenCalled();
+  });
+});
+
+// docs/specs/008-canvas/avatar-mode.md "Opening walking": a template landing is the tab's first content, so the tab is
+// judged afresh for the walk; the blank lands nothing and leaves it be.
+describe('chooseTemplate and opening walking', () => {
+  it('asks for the tab to be judged afresh when a template lands its board', async () => {
+    const onLanded = vi.fn();
+    await pick('virtual-office', onLanded);
+    expect(onLanded).toHaveBeenCalledExactlyOnceWith('t1');
+  });
+
+  it('asks nothing for the blank', async () => {
+    const onLanded = vi.fn();
+    await pick('blank-session', onLanded);
+    expect(onLanded).not.toHaveBeenCalled();
   });
 });

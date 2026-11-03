@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
   title: 'Sign in | livehuddle',
-  description: 'Sign in to your livehuddle account to keep your canvases across devices.',
+  description: 'Sign in to your livehuddle account to keep your spaces across devices.',
 };
 
 export default function SignInLayout({ children }: { children: ReactNode }) {

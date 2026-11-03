@@ -51,7 +51,7 @@ const LIST: Alternative[] = [
       'Pen inking inside Teams meetings, which Whiteboard is built around.',
     ],
     usBest: [
-      'Your boards outlive the retirement: import a board export and each board becomes a canvas of its own, named and dated as the board, with pen strokes, colours, sticky notes, text, shapes and images all editable.',
+      'Your boards outlive the retirement: import a board export and each board becomes a space of its own, named and dated as the board, with pen strokes, colours, sticky notes, text, shapes and images all editable.',
       'No Microsoft account, no sign-up, no install: open a link and start drawing.',
       'Draw mode is a plain whiteboard: three pressure-sensitive markers, text, an eraser and shapes on a plain, dotted or grid board, light or dark.',
       'Real-time multiplayer with live cursors, comments and a laser pointer, for anyone with the link.',
@@ -74,22 +74,22 @@ const LIST: Alternative[] = [
       {
         heading: 'Bring your boards across, ink and all',
         paragraphs: [
-          'Whiteboard’s own exports are a flat picture: nothing in them stays editable. livehuddle imports a board export instead, the folder of the board’s own edit history, and replays it, so every stroke comes back as data. Each board becomes its own canvas with one whiteboard tab, named after the board and dated as the board, so your library keeps its history.',
+          'Whiteboard’s own exports are a flat picture: nothing in them stays editable. livehuddle imports a board export instead, the folder of the board’s own edit history, and replays it, so every stroke comes back as data. Each board becomes its own space with one whiteboard tab, named after the board and dated as the board, so your library keeps its history.',
           'Pen strokes keep their pressure, so thick and thin stay as you drew them. Black ink on a light board, or white ink on a dark one, becomes the whiteboard’s own ink, so it reads in light and dark. Highlighter stays highlighter, and sticky notes, text, shapes and images keep their place. The board is read in your browser, and the import needs no Microsoft account. When it finishes, it says what changed on the way, such as rainbow ink drawn in pink.',
         ],
       },
       {
         heading: 'A whiteboard that grows into more',
         paragraphs: [
-          'Draw mode is a plain whiteboard, close to what Whiteboard users are used to: pick a marker, draw, erase, add text and shapes. But the same tab can switch to Diagram mode when a sketch needs structure, with shapes and arrows that stay attached as you move things, and the Marker or Sketch finish keeps that structure looking hand-drawn. A canvas holds as many tabs as you need, grouped into folders, and Presentation mode turns elements from any tab into a slide deck.',
+          'Draw mode is a plain whiteboard, close to what Whiteboard users are used to: pick a marker, draw, erase, add text and shapes. But the same tab can switch to Diagram mode when a sketch needs structure, with shapes and arrows that stay attached as you move things, and the Marker or Sketch finish keeps that structure looking hand-drawn. A space holds as many tabs as you need, grouped into folders, and Presentation mode turns elements from any tab into a slide deck.',
           'For sessions, switch a tab to Workshop, the mode for running a room: there are templates for retrospectives, Lean Coffee and town hall Q&A, and a facilitator can run a shared timer, votes, polls and quizzes for the room, with the right answer revealed when the time is up.',
         ],
       },
       {
         heading: 'Free, open, and yours to keep',
         paragraphs: [
-          'A retirement like this is a reminder of what it means to rely on someone else’s product. livehuddle is MIT-licensed and its whole codebase is public. It is free with no paid tier, and your canvases export to portable formats, so you are never locked in.',
-          'You can also keep a canvas entirely in your browser with Offline Mode, or, once signed in, mirror your canvases to your own Google Drive.',
+          'A retirement like this is a reminder of what it means to rely on someone else’s product. livehuddle is MIT-licensed and its whole codebase is public. It is free with no paid tier, and your spaces export to portable formats, so you are never locked in.',
+          'You can also keep a space entirely in your browser with Offline Mode, or, once signed in, mirror your spaces to your own Google Drive.',
         ],
       },
     ],
@@ -100,11 +100,11 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Can I import my Microsoft Whiteboard boards?',
-        a: 'Yes, from a board export: the folder of a board’s edit history, as the Whiteboard web app syncs it. Import one board, a folder of many boards, or a .zip of either from the Explorer, and each board becomes its own canvas with editable ink, sticky notes, text, shapes and images. For a personal account, that means a board export saved before the 16 October 2026 deletion. Whiteboard’s own picture exports are not editable; you can still add one to a tab as an image.',
+        a: 'Yes, from a board export: the folder of a board’s edit history, as the Whiteboard web app syncs it. Import one board, a folder of many boards, or a .zip of either from the Explorer, and each board becomes its own space with editable ink, sticky notes, text, shapes and images. For a personal account, that means a board export saved before the 16 October 2026 deletion. Whiteboard’s own picture exports are not editable; you can still add one to a tab as an image.',
       },
       {
         q: 'Do I need a Microsoft account to use livehuddle?',
-        a: 'No. livehuddle needs no account at all: open the editor and start drawing. Signing in, with email or Google, is optional and keeps your canvases with you across devices.',
+        a: 'No. livehuddle needs no account at all: open the editor and start drawing. Signing in, with email or Google, is optional and keeps your spaces with you across devices.',
       },
       {
         q: 'Does livehuddle work with a pen or stylus?',
@@ -146,7 +146,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Focus',
-        us: 'One canvas, three modes: diagrams, whiteboards and Workshop sessions',
+        us: 'One space, three modes: diagrams, whiteboards and Workshop sessions',
         them: 'All-in-one visual workspace',
       },
     ],
@@ -158,7 +158,7 @@ const LIST: Alternative[] = [
     ],
     usBest: [
       "It's free for everyone and MIT-licensed, with no per-seat pricing.",
-      'Open a link and draw, with no sign-up wall in front of the canvas, even to create a canvas.',
+      'Open a link and draw, with no sign-up wall in front of your work, even to create a space.',
       'Real-time multiplayer, live cursors and comments come standard, not gated behind a plan.',
       'Three ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, and Workshop for running a session with your team.',
       'Participant links let a workshop add stickies, write and vote without being able to reshape the board.',
@@ -167,14 +167,14 @@ const LIST: Alternative[] = [
       'Run the meeting itself on the board: an agenda that starts the timer for each segment, a roll call, a random picker, reveal zones that cover work until the room is ready, and decision records that keep what was agreed.',
       '39 templates, 24 one-click whole-canvas themes and ready-made looks turn a blank canvas into a polished diagram fast, drawn clean, crisp and Professional, or by hand in Sketch or Marker.',
       'Meet on the board: everyone walks an avatar round a virtual office or team space, with speech bubbles and a status.',
-      'Present a canvas as a slide deck built from its own elements, with a laser pointer and spotlight, no export needed.',
+      'Present a space as a slide deck built from its own elements, with a laser pointer and spotlight, no export needed.',
       'Bring boards across from Excalidraw, draw.io and Microsoft Whiteboard; export PNG, SVG, PDF, Mermaid or Excalidraw.',
     ],
     sections: [
       {
         heading: 'One workspace, three ways to work',
         paragraphs: [
-          'Miro grew into a broad workspace: boards, workshops, docs, tables, video walkthroughs and a marketplace of apps. livehuddle covers the same ground in one canvas with tabs, and each tab works in one of three modes. Diagram for structure, with arrows that stay attached and re-route as you move things. Draw for freehand whiteboarding with pressure-sensitive markers. Workshop for running the session itself: timers, dot votes, polls and reveals.',
+          'Miro grew into a broad workspace: boards, workshops, docs, tables, video walkthroughs and a marketplace of apps. livehuddle covers the same ground in one space with tabs, and each tab works in one of three modes. Diagram for structure, with arrows that stay attached and re-route as you move things. Draw for freehand whiteboarding with pressure-sensitive markers. Workshop for running the session itself: timers, dot votes, polls and reveals.',
           'Every tab also has a finish, the way it is drawn: Flexible by default, Professional for crisp, print-ready work, Sketch for pencil on paper and Marker for felt-tip on a whiteboard. A look sets the theme, finish, font and canvas pattern in one click, and switching it never changes the content underneath.',
           'Workshops are built in rather than bolted on. A facilitator can run the room with a shared timer, dot-voting, live polls, planning-poker estimate cards, quizzes, a Q&A board and responses kept hidden until the reveal, and templates cover retrospectives, Lean Coffee and town hall Q&A. When the session ends, the actions it produced are assigned on the board and the plan picks up on the next tab.',
         ],
@@ -189,15 +189,15 @@ const LIST: Alternative[] = [
       {
         heading: 'Collaboration without the onboarding',
         paragraphs: [
-          'In Miro, creating a board starts with an account, and anonymous guest editing depends on the plan you are on. In livehuddle, collaborating is a URL. Anyone can create a canvas without signing up; a guest’s new canvas is kept in their browser until they press Share, which syncs it in one step. Whoever opens the link is on the canvas with you, live cursors and all. A link is an Editor, Participant or view-only link (a Participant adds stickies, writes and votes but cannot reshape the board), and it can carry a password or an expiry date when you need it locked down.',
+          'In Miro, creating a board starts with an account, and anonymous guest editing depends on the plan you are on. In livehuddle, collaborating is a URL. Anyone can create a space without signing up; a guest’s new space is kept in their browser until they press Share, which syncs it in one step. Whoever opens the link is in the space with you, live cursors and all. A link is an Editor, Participant or view-only link (a Participant adds stickies, writes and votes but cannot reshape the board), and it can carry a password or an expiry date when you need it locked down.',
           'The collaboration tools go beyond cursors: leave comments on elements and assign action items to teammates directly on the canvas, tracked together in the Collaborate panel, with optional email notifications. A selection lock shows when someone is editing an element, so two people rarely end up changing the same thing at once.',
         ],
       },
       {
         heading: 'Connected to the rest of your workflow',
         paragraphs: [
-          'Diagrams rarely live alone. livehuddle imports Mermaid (flowcharts, state and ER diagrams, the diagram-as-code format that lives in READMEs and AI output), Markdown outlines, Excalidraw scenes, draw.io files and Microsoft Whiteboard boards, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file. Any share link embeds as a live-updating iframe in a wiki or doc: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
-          'For programmatic use there is a free REST API with personal tokens and an MCP server at mcp.livehuddle.app that lets AI assistants read and edit your canvases directly; their edits arrive live, outlined, and undoable as one unit. None of it sits behind a plan.',
+          'Diagrams rarely live alone. livehuddle imports Mermaid (flowcharts, state and ER diagrams, the diagram-as-code format that lives in READMEs and AI output), Markdown outlines, Excalidraw scenes, draw.io files and Microsoft Whiteboard boards, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or a portable JSON file. Any share link embeds as a live-updating iframe in a wiki or doc: an editor link embeds an editable space, and a participant or view-only link a read-only one.',
+          'For programmatic use there is a free REST API with personal tokens and an MCP server at mcp.livehuddle.app that lets AI assistants read and edit your spaces directly; their edits arrive live, outlined, and undoable as one unit. None of it sits behind a plan.',
         ],
       },
     ],
@@ -208,7 +208,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Do my teammates need an account to edit with me?',
-        a: 'No. Share a link and anyone who opens it can edit in real time, with live cursors and comments, without signing up. You do not need an account to create a canvas either: a guest’s canvas is kept in their browser until they press Share, which syncs it in one step. Accounts are optional and mainly useful for syncing your canvases across devices and using teams.',
+        a: 'No. Share a link and anyone who opens it can edit in real time, with live cursors and comments, without signing up. You do not need an account to create a space either: a guest’s space is kept in their browser until they press Share, which syncs it in one step. Accounts are optional and mainly useful for syncing your spaces across devices and using teams.',
       },
       {
         q: 'Can I import my existing Miro boards?',
@@ -216,7 +216,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Can livehuddle run workshops the way Miro does?',
-        a: 'Sessions like retros, brainstorms, estimation and planning work well: switch a tab to Workshop and a facilitator can run a shared timer, dot-voting, live polls, a Q&A board and hidden responses that are revealed together, estimate cards run planning poker on the board, everyone can follow the facilitator’s view, and the canvas keeps the comments and assigned actions that came out of it. What livehuddle does not have is Miro’s large-scale facilitation ecosystem (breakout-style sessions, a meeting-app marketplace), so for big multi-team workshops Miro is still the deeper toolkit.',
+        a: 'Sessions like retros, brainstorms, estimation and planning work well: switch a tab to Workshop and a facilitator can run a shared timer, dot-voting, live polls, a Q&A board and hidden responses that are revealed together, estimate cards run planning poker on the board, everyone can follow the facilitator’s view, and the space keeps the comments and assigned actions that came out of it. What livehuddle does not have is Miro’s large-scale facilitation ecosystem (breakout-style sessions, a meeting-app marketplace), so for big multi-team workshops Miro is still the deeper toolkit.',
       },
     ],
   },
@@ -228,7 +228,7 @@ const LIST: Alternative[] = [
     description:
       'A free, open-source, browser-based XMind alternative for mind maps, plus flowcharts, whiteboards, timelines and more, with no account needed.',
     h1: 'The open-source, browser-based XMind alternative',
-    lede: 'XMind is a polished tool built around mind maps, across desktop, mobile and the web. livehuddle is free and open source, needs no install and no account, and handles mind maps alongside flowcharts, whiteboards and timelines in the same canvas.',
+    lede: 'XMind is a polished tool built around mind maps, across desktop, mobile and the web. livehuddle is free and open source, needs no install and no account, and handles mind maps alongside flowcharts, whiteboards and timelines in the same space.',
     rows: [
       {
         label: 'Runs in',
@@ -276,7 +276,7 @@ const LIST: Alternative[] = [
       'Brainstorm together in real time, with live cursors and comments, by sharing one link: nobody needs an account.',
       'Map from the keyboard: Tab adds a child and Enter a sibling, six layouts (Tree, Leftward, Balanced, Downward, Upward and Bubble) and Tidy Map keep it neat.',
       'Edit Outline opens the whole map as an indented list: rename, nest and reorder there, then save it back to the map in one step.',
-      'More than mind maps: flowcharts, freehand whiteboards, timelines and charts in the same canvas.',
+      'More than mind maps: flowcharts, freehand whiteboards, timelines and charts in the same space.',
       'Nothing to install: open a link in any browser and start.',
       'Bring existing maps across: export Markdown from XMind and import it as a themed diagram.',
       'Sketch with the Freehand pen, or the Shape Pen to have a rough shape tidied into a clean one.',
@@ -299,9 +299,9 @@ const LIST: Alternative[] = [
         ],
       },
       {
-        heading: 'One canvas for everything after the brainstorm',
+        heading: 'One space for everything after the brainstorm',
         paragraphs: [
-          'A mind map is usually the start of something: the ideas become a plan, the plan becomes a flowchart or a board of tasks. In XMind that next step usually happens in a different tool. In livehuddle it happens on the next tab: one canvas holds the mind map, the flowchart and the timeline side by side, with tabs grouped into folders and per-tab layers when things get big. When the follow-up becomes a list of tasks, liveplanner, livehuddle’s sister app for planning work, keeps them as cards on a board.',
+          'A mind map is usually the start of something: the ideas become a plan, the plan becomes a flowchart or a board of tasks. In XMind that next step usually happens in a different tool. In livehuddle it happens on the next tab: one space holds the mind map, the flowchart and the timeline side by side, with tabs grouped into folders and per-tab layers when things get big. When the follow-up becomes a list of tasks, liveplanner, livehuddle’s sister app for planning work, keeps them as cards on a board.',
           'Templates cover the common shapes of that follow-up work (flowcharts, retros, roadmaps, org charts, timelines and more), and one-click themes restyle the whole canvas so everything stays visually consistent as the project grows. When it is time to walk people through it, Presentation mode turns elements from any tab into a slide deck.',
         ],
       },
@@ -319,7 +319,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Does livehuddle work offline like the XMind desktop app?',
-        a: "livehuddle is a browser app, and its Offline Mode keeps a canvas stored only in your browser, never sent to a server. A guest’s new canvases start that way, and anyone can choose it when creating a canvas. But if fully offline desktop work is your main requirement, XMind's native apps are the stronger fit.",
+        a: "livehuddle is a browser app, and its Offline Mode keeps a space stored only in your browser, never sent to a server. A guest’s new spaces start that way, and anyone can choose it when creating a space. But if fully offline desktop work is your main requirement, XMind's native apps are the stronger fit.",
       },
       {
         q: 'Is there a desktop or mobile app?',
@@ -339,7 +339,7 @@ const LIST: Alternative[] = [
     description:
       'A more structured Excalidraw alternative: the same free, open-source, no-sign-up spirit, a hand-drawn Sketch finish, templates, tabs and free presentations.',
     h1: 'A more structured Excalidraw alternative',
-    lede: 'Excalidraw is a much-loved open-source whiteboard with a hand-drawn feel. livehuddle shares the open-source, free, no-sign-up spirit, and can be drawn by hand too, in its Sketch and Marker finishes, but leans structured: start from a template, theme the whole canvas, split work across tabs, keep canvases in folders and present them as slides, with a freehand Draw mode when you just want to sketch.',
+    lede: 'Excalidraw is a much-loved open-source whiteboard with a hand-drawn feel. livehuddle shares the open-source, free, no-sign-up spirit, and can be drawn by hand too, in its Sketch and Marker finishes, but leans structured: start from a template, theme the whole canvas, split work across tabs, keep spaces in folders and present them as slides, with a freehand Draw mode when you just want to sketch.',
     rows: [
       { label: 'Open source', us: 'Yes, MIT-licensed', them: 'Yes, MIT-licensed' },
       {
@@ -361,7 +361,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Presentations',
-        us: 'Free: slides from your canvas, presenter notes, transitions',
+        us: 'Free: slides from your space, presenter notes, transitions',
         them: 'On the Excalidraw+ hosted plan, with a presenter view',
       },
       {
@@ -379,11 +379,11 @@ const LIST: Alternative[] = [
     usBest: [
       'The hand-drawn look on any tab: the Sketch finish draws wobbly double strokes, pencil-shaded fills and handwriting, Marker draws one bold felt-tip stroke, and switching back to clean changes nothing about the diagram.',
       'Start from a real template (flowchart, retro, roadmap, org chart…) instead of a blank page: seventy-two of them.',
-      'Keep a whole project together: several tabs in one canvas, organised in folders, with per-tab layers.',
+      'Keep a whole project together: several tabs in one space, organised in folders, with per-tab layers.',
       '24 themes recolour the whole canvas, shapes and arrows, in one click, and ready-made looks such as Doodle, Notebook and Flipchart set the theme, finish, font and canvas pattern together.',
       'Draw mode is a plain whiteboard: pressure-sensitive markers, an eraser and shapes on a plain, dotted or grid board, light or dark.',
       'Sketching tools beyond the marker: a Path tool for clean curves, optional shape recognition, an eraser that takes a whole stroke or just part of one, and Draw templates such as Sketchnote, Rich Picture and Comic Strip.',
-      'Paste an Excalidraw copy straight onto a tab, or import .excalidraw files as canvases of their own.',
+      'Paste an Excalidraw copy straight onto a tab, or import .excalidraw files as spaces of their own.',
       'Presentations free for everyone: build a deck from elements on any tab, then present with notes, time budgets, transitions, a laser pointer and a spotlight.',
       'Animate a drawing so it draws itself on, or a title so it types itself in.',
       'Built-in charts, an icon library, comments and assigned actions, without add-ons.',
@@ -394,7 +394,7 @@ const LIST: Alternative[] = [
       {
         heading: 'The same spirit, more structure',
         paragraphs: [
-          'livehuddle and Excalidraw agree on the important things: MIT-licensed, free, and no sign-up wall in front of the canvas. Where they diverge is what happens after the first sketch. Excalidraw keeps to a freeform board, and that simplicity is a feature. livehuddle assumes the sketch is going to grow: you start from a real template instead of a blank page, split the work across tabs inside one canvas, group tabs into folders, and separate annotation from content with per-tab layers.',
+          'livehuddle and Excalidraw agree on the important things: MIT-licensed, free, and no sign-up wall in front of your work. Where they diverge is what happens after the first sketch. Excalidraw keeps to a freeform board, and that simplicity is a feature. livehuddle assumes the sketch is going to grow: you start from a real template instead of a blank page, split the work across tabs inside one space, group tabs into folders, and separate annotation from content with per-tab layers.',
           'Themes carry that structure visually. Instead of styling shapes one by one, a single click restyles the entire canvas (shapes, arrows, text), and style presets plus a format painter keep new elements consistent with the rest.',
         ],
       },
@@ -408,7 +408,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Bring your Excalidraw boards along',
         paragraphs: [
-          'An Excalidraw copy pasted onto a tab, or a file dropped on it, lands as whiteboard-native content in Draw mode. A .excalidraw file (or a PNG or SVG exported with the scene embedded) imports with shapes, arrows, text and connections intact, and the Explorer can import Excalidraw files as canvases of their own. Each import ends with a report of anything that changed on the way in.',
+          'An Excalidraw copy pasted onto a tab, or a file dropped on it, lands as whiteboard-native content in Draw mode. A .excalidraw file (or a PNG or SVG exported with the scene embedded) imports with shapes, arrows, text and connections intact, and the Explorer can import Excalidraw files as spaces of their own. Each import ends with a report of anything that changed on the way in.',
           'Excalidraw’s wobble and hatched fills are a matter of look, so an import draws its shapes in the tab’s own finish: switch the tab to Sketch to keep the hand-drawn feel. Export goes the other way too: any diagram or whiteboard tab saves back out as a .excalidraw file. Excalidraw has fewer element types, so richer livehuddle elements simplify on the way out.',
         ],
       },
@@ -423,13 +423,13 @@ const LIST: Alternative[] = [
         heading: 'A workspace, not just a canvas',
         paragraphs: [
           'The free Excalidraw editor deliberately stays a single board, and its paid Excalidraw+ plan adds the workspace around it. livehuddle ships that workspace to everyone for free: an explorer with folders, thumbnail previews and a details list, teams with shared libraries any member can manage, a 30-day Trash, and share links that can carry a password or an expiry date.',
-          'Collaboration is more than co-drawing, too: comments attach to elements, action items can be assigned to teammates and tracked in the Collaborate panel, and the Timeline gathers what happened across your canvases into one day-by-day feed.',
+          'Collaboration is more than co-drawing, too: comments attach to elements, action items can be assigned to teammates and tracked in the Collaborate panel, and the Timeline gathers what happened across your spaces into one day-by-day feed.',
         ],
       },
       {
         heading: 'Diagrams as code, and AI',
         paragraphs: [
-          'livehuddle treats diagram text formats as first-class: Mermaid flowcharts import as real, editable diagrams and export back out, state and ER diagrams import too, and Markdown outlines import as laid-out node-and-link maps. There is also a free REST API with personal tokens and an MCP server that lets AI assistants read and edit canvases directly, with their changes shown live and undoable as one unit.',
+          'livehuddle treats diagram text formats as first-class: Mermaid flowcharts import as real, editable diagrams and export back out, state and ER diagrams import too, and Markdown outlines import as laid-out node-and-link maps. There is also a free REST API with personal tokens and an MCP server that lets AI assistants read and edit spaces directly, with their changes shown live and undoable as one unit.',
         ],
       },
     ],
@@ -469,7 +469,7 @@ const LIST: Alternative[] = [
       { label: 'Price', us: 'Free', them: 'Free' },
       {
         label: 'Real-time multiplayer',
-        us: 'Yes, on every canvas, live cursors + presence',
+        us: 'Yes, on every space, live cursors + presence',
         them: 'Yes, when the file lives in Google Drive, OneDrive, Confluence or Nextcloud',
       },
       { label: 'Start without an account', us: 'Yes', them: 'Yes' },
@@ -501,7 +501,7 @@ const LIST: Alternative[] = [
       'Files you keep in your own storage, with desktop apps for working entirely offline.',
     ],
     usBest: [
-      'Real-time co-editing with live cursors and presence on every canvas, wherever it is stored.',
+      'Real-time co-editing with live cursors and presence on every space, wherever it is stored.',
       'A modern, fast canvas with nothing to set up: open a link and go.',
       '39 templates and 24 themes for good-looking diagrams in minutes, not blank-canvas fiddling.',
       'Diagrams stay tidy on their own: arrows re-route as shapes move, with collision avoidance, alignment guides and snapping.',
@@ -509,7 +509,7 @@ const LIST: Alternative[] = [
       'Tidy Up lays out a tangle of shapes and arrows as a flowchart, tree or mind map, and the UML theme colours each shape by its meaning.',
       'Four finishes per tab: Professional for crisp, print-ready diagrams with square corners and thin lines, Sketch or Marker for a hand-drawn review, switched without touching the diagram.',
       'Database schemas with keys and field-to-field relationships, sequence diagrams, Sankey flows, and an Isometric view that tilts an architecture diagram into 3D blocks for a deck.',
-      'Bring your diagrams with you: .drawio files import page by page, whole folders import as canvases, and draw.io libraries become shape libraries.',
+      'Bring your diagrams with you: .drawio files import page by page, whole folders import as spaces, and draw.io libraries become shape libraries.',
       'Charts, icons, freehand sketching, comments and a slide-deck Presentation mode, all built in.',
       'Free and MIT-licensed, with no paid tier.',
     ],
@@ -517,7 +517,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Real-time by default',
         paragraphs: [
-          'draw.io is built around a diagram file. It does support real-time co-editing, with shared cursors, when that file lives in Google Drive, OneDrive, Confluence Cloud or Nextcloud; otherwise working together means passing the file around. livehuddle is multiplayer on every canvas from the ground up: share a link and everyone is on the same canvas at once, with live cursors, presence, and a selection lock that shows when someone is already editing an element.',
+          'draw.io is built around a diagram file. It does support real-time co-editing, with shared cursors, when that file lives in Google Drive, OneDrive, Confluence Cloud or Nextcloud; otherwise working together means passing the file around. livehuddle is multiplayer on every space from the ground up: share a link and everyone is on the same space at once, with live cursors, presence, and a selection lock that shows when someone is already editing an element.',
           'The collaboration layer goes further than co-editing: comments attach to elements, action items can be assigned to a teammate (tracked in the Collaborate panel, with optional email notification), and a facilitator can run a shared timer, dot-voting and live polls when a diagram review turns into a workshop.',
         ],
       },
@@ -531,8 +531,8 @@ const LIST: Alternative[] = [
       {
         heading: 'Sharing that fits the web',
         paragraphs: [
-          'A livehuddle canvas is a URL, not a file. Share links open instantly for anyone, need no account, and can be protected with a password or an expiry date. Any share link also embeds as an iframe that live-updates in your wiki or docs as the diagram changes, so embedded copies never go stale: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
-          'When you do need a file, any tab exports as PNG, SVG, PDF or a portable JSON file, the explorer shows thumbnail previews so you can find the right canvas at a glance, and signed-in users can mirror their canvases to their own Google Drive.',
+          'A livehuddle space is a URL, not a file. Share links open instantly for anyone, need no account, and can be protected with a password or an expiry date. Any share link also embeds as an iframe that live-updates in your wiki or docs as the diagram changes, so embedded copies never go stale: an editor link embeds an editable space, and a participant or view-only link a read-only one.',
+          'When you do need a file, any tab exports as PNG, SVG, PDF or a portable JSON file, the explorer shows thumbnail previews so you can find the right space at a glance, and signed-in users can mirror their spaces to their own Google Drive.',
         ],
       },
       {
@@ -549,7 +549,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Can I import my .drawio files?',
-        a: 'Yes. Import a .drawio or .xml file, a Google Drive save without an extension, or a PNG or SVG exported from draw.io with the diagram included, and each page becomes a tab: shapes, text, colours, connections, swimlanes, class boxes, tables and layers come across. From the Explorer you can import many files or a whole folder as new canvases, and draw.io libraries become shape libraries you place from the palette. Vendor stencils map to matching technology icons where there is a clear match; anything without a match comes in as a labelled box, and the import tells you exactly what changed on the way in.',
+        a: 'Yes. Import a .drawio or .xml file, a Google Drive save without an extension, or a PNG or SVG exported from draw.io with the diagram included, and each page becomes a tab: shapes, text, colours, connections, swimlanes, class boxes, tables and layers come across. From the Explorer you can import many files or a whole folder as new spaces, and draw.io libraries become shape libraries you place from the palette. Vendor stencils map to matching technology icons where there is a clear match; anything without a match comes in as a labelled box, and the import tells you exactly what changed on the way in.',
       },
       {
         q: 'Does livehuddle have AWS, UML, or network shape libraries?',
@@ -603,7 +603,7 @@ const LIST: Alternative[] = [
     ],
     usBest: [
       'Free with no file limits and no seats: every feature, for everyone.',
-      'Open a link and start, no account needed, even to create a canvas.',
+      'Open a link and start, no account needed, even to create a space.',
       'Structured diagrams that stay tidy: shapes and arrows that stay attached, alignment guides, 24 one-click themes and 39 templates.',
       'Three ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, and Workshop for running a session with your team.',
       'Diagrams with a whiteboard feel: the Sketch and Marker finishes draw any tab by hand, and ready-made looks set theme, finish, font and pattern in one click.',
@@ -612,14 +612,14 @@ const LIST: Alternative[] = [
       'Participant links: the room adds stickies, writes and votes, and nobody can reshape the board by accident.',
       'Run the meeting on the board: an agenda that starts the timer for each segment, a roll call, a random picker and decision records, plus around 190 emoji stickers and 32 word badges.',
       'Diagrams as code: Mermaid flowcharts import as editable diagrams and export back out.',
-      'A free REST API and an MCP server, so scripts and AI assistants can read and edit your canvases.',
+      'A free REST API and an MCP server, so scripts and AI assistants can read and edit your spaces.',
       'MIT-licensed, with portable exports, so your boards never depend on one vendor.',
     ],
     sections: [
       {
         heading: 'A whiteboard without the seat',
         paragraphs: [
-          'FigJam is part of Figma, and that is its great strength for design teams: boards and design files share one home. For everyone else, it means accounts, a free plan with limits on shared files, and paid seats as the team grows. livehuddle has none of that. Anyone can open the editor and create a canvas without signing up, share a link, and work together in real time; a guest’s canvas stays in their browser until they press Share, which syncs it in one step. There is no paid tier and no plan to introduce one.',
+          'FigJam is part of Figma, and that is its great strength for design teams: boards and design files share one home. For everyone else, it means accounts, a free plan with limits on shared files, and paid seats as the team grows. livehuddle has none of that. Anyone can open the editor and create a space without signing up, share a link, and work together in real time; a guest’s space stays in their browser until they press Share, which syncs it in one step. There is no paid tier and no plan to introduce one.',
         ],
       },
       {
@@ -638,8 +638,8 @@ const LIST: Alternative[] = [
       {
         heading: 'Open at the edges',
         paragraphs: [
-          'livehuddle imports Mermaid, Markdown, Excalidraw, draw.io and Microsoft Whiteboard boards, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or portable JSON. Any share link embeds as a live-updating iframe in a wiki or doc: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
-          'For automation there is a free REST API with personal tokens and an MCP server that lets AI assistants read and edit your canvases directly, with their changes shown live and undoable as one unit.',
+          'livehuddle imports Mermaid, Markdown, Excalidraw, draw.io and Microsoft Whiteboard boards, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or portable JSON. Any share link embeds as a live-updating iframe in a wiki or doc: an editor link embeds an editable space, and a participant or view-only link a read-only one.',
+          'For automation there is a free REST API with personal tokens and an MCP server that lets AI assistants read and edit your spaces directly, with their changes shown live and undoable as one unit.',
         ],
       },
     ],
@@ -658,7 +658,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Can my team join without accounts?',
-        a: 'Yes. Share an editor link and anyone who opens it is on the canvas with you, live cursors and all, without signing up. A Participant link lets people add stickies, write and vote without reshaping the board, and a view-only link just watches. You can add a password or an expiry date to a link, and revoke it at any time.',
+        a: 'Yes. Share an editor link and anyone who opens it is in the space with you, live cursors and all, without signing up. A Participant link lets people add stickies, write and vote without reshaping the board, and a view-only link just watches. You can add a password or an expiry date to a link, and revoke it at any time.',
       },
     ],
   },
@@ -708,14 +708,14 @@ const LIST: Alternative[] = [
     ],
     usBest: [
       'Free with no plan limits on documents or shapes, and no paid tier.',
-      'Open a link and start, no account needed, even to create a canvas.',
+      'Open a link and start, no account needed, even to create a space.',
       '39 templates, from retrospectives, story maps and roadmaps to RACI and risk matrices and offices to walk round.',
       'Real-time multiplayer with live cursors, comments, assigned actions and a laser pointer for presenting.',
       '24 one-click themes restyle the whole canvas, shapes and arrows, and the Professional finish draws it crisp and print-ready: square corners, thin lines, Inter lettering, no default shadows.',
       'Mermaid in and out: flowcharts import as editable diagrams and export back to text.',
       'Diagrams that tidy themselves: a new arrow curves around shapes in its way, Tidy Up lays a graph out as a flowchart or tree, and the UML theme colours each shape by its meaning.',
       'Database schemas with keys and field-to-field relationships, Sankey flows, and an Isometric view that tilts an architecture diagram into 3D blocks.',
-      'A free REST API and an MCP server, so scripts and AI assistants can read and edit your canvases.',
+      'A free REST API and an MCP server, so scripts and AI assistants can read and edit your spaces.',
       'MIT-licensed, with portable exports, so your diagrams never depend on one vendor.',
     ],
     sections: [
@@ -729,7 +729,7 @@ const LIST: Alternative[] = [
         heading: 'The diagrams you need, ready to go',
         paragraphs: [
           'livehuddle ships 39 templates, including retrospectives, story maps, roadmaps, RACI and risk matrices, a business model canvas and offices to walk round. Shapes and arrows stay attached and re-route as you move things, alignment guides and snapping keep layouts tidy, and themes restyle the whole canvas in one click. A finish sets how it is drawn: Professional for crisp, print-ready work, or Sketch and Marker when a review should feel like a whiteboard.',
-          'Bigger work splits across tabs inside one canvas, grouped into folders, with Photoshop-style layers on each tab. Presentation mode turns elements from any tab into a slide deck, so you can walk a room through a diagram without exporting it.',
+          'Bigger work splits across tabs inside one space, grouped into folders, with Photoshop-style layers on each tab. Presentation mode turns elements from any tab into a slide deck, so you can walk a room through a diagram without exporting it.',
         ],
       },
       {
@@ -741,8 +741,8 @@ const LIST: Alternative[] = [
       {
         heading: 'Open at the edges',
         paragraphs: [
-          'livehuddle imports draw.io, Excalidraw, Microsoft Whiteboard, Mermaid and Markdown, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or portable JSON. Any share link embeds as a live-updating iframe in Confluence, Notion or any page that allows iframes: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
-          'For automation there is a free REST API with personal tokens and an MCP server that lets AI assistants read and edit your canvases directly, with their changes shown live and undoable as one unit.',
+          'livehuddle imports draw.io, Excalidraw, Microsoft Whiteboard, Mermaid and Markdown, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or portable JSON. Any share link embeds as a live-updating iframe in Confluence, Notion or any page that allows iframes: an editor link embeds an editable space, and a participant or view-only link a read-only one.',
+          'For automation there is a free REST API with personal tokens and an MCP server that lets AI assistants read and edit your spaces directly, with their changes shown live and undoable as one unit.',
         ],
       },
     ],
@@ -761,7 +761,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Can my team collaborate without accounts?',
-        a: 'Yes. Share an editor link and anyone who opens it is on the canvas with you, live cursors and all, without signing up. Signing in is optional and adds teams with shared canvas libraries.',
+        a: 'Yes. Share an editor link and anyone who opens it is in the space with you, live cursors and all, without signing up. Signing in is optional and adds teams with shared space libraries.',
       },
     ],
   },

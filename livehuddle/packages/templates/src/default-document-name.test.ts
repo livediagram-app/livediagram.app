@@ -6,14 +6,17 @@ import { isDefaultDocumentName, untitledNameForTemplate } from './templates';
 describe('untitledNameForTemplate', () => {
   it('names a document after its template', () => {
     expect(untitledNameForTemplate('sailboat')).toBe('Untitled Sailboat Retrospective');
-    expect(untitledNameForTemplate('blank-session')).toBe('Untitled Workshop');
-    expect(untitledNameForTemplate(null)).toBe('Untitled canvas');
+    // The blank makes a Space (domain-language.md "Space"), as no template does.
+    expect(untitledNameForTemplate('blank-session')).toBe('Untitled Space');
+    expect(untitledNameForTemplate(null)).toBe('Untitled Space');
+    expect(untitledNameForTemplate('virtual-office')).toBe('Untitled Virtual Office');
   });
 });
 
 describe('isDefaultDocumentName', () => {
   it("counts every template's untitled name, and the plain and legacy untitled", () => {
     for (const name of [
+      'Untitled Space',
       'Untitled canvas',
       'Untitled document',
       'Untitled diagram',

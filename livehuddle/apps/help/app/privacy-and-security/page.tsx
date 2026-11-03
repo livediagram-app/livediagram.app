@@ -8,7 +8,7 @@ const COPY = {
   title: 'Privacy and Security',
   description:
     'How your data is handled, what livehuddle collects, and how share links are protected.',
-  lede: 'How your data is handled and how to keep your canvases safe.',
+  lede: 'How your data is handled and how to keep your spaces safe.',
 };
 
 export const metadata = supportCategoryMetadata(site, 'privacy-and-security', COPY);

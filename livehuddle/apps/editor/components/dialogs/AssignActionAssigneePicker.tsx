@@ -141,7 +141,7 @@ export function AssigneePicker({
         <div className="flex flex-col gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-2.5 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
           {teams.length > 0 && onMoveToTeam ? (
             <>
-              <p>Move this canvas into a team library to assign teammates:</p>
+              <p>Move this space into a team library to assign teammates:</p>
               <div className="flex flex-wrap gap-1.5">
                 {teams.map((t) => (
                   <button
@@ -178,7 +178,7 @@ export function AssigneePicker({
         // Share-link editor on someone else's team document: they can
         // edit, but only the team's members are assignable.
         <p className="px-1 text-xs text-slate-500 dark:text-slate-400">
-          Only members of this canvas&apos;s team can be assigned actions.
+          Only members of this space&apos;s team can be assigned actions.
         </p>
       ) : members !== null && members.length === 0 ? (
         <p className="px-1 text-xs text-slate-500 dark:text-slate-400">

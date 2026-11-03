@@ -80,7 +80,7 @@ One PR per cut, each removing code, tests, palette entries, templates, help arti
    the Community, the MCP server and the CLI stay. The MCP's tools and the CLI's commands lose what steps 5.1 and 5.2
    cut and talk about Spaces; livehuddle registers with the platform's Community service, and its gallery publishes
    Spaces in categories for meetings and workshops. Steps 5.2 and 5.3 land as one PR (Work Tracker #184).
-4. Templates down to Workshop's and the Spaces (done: thirty-nine, with Blank Workshop; Software & IT folded into
+4. Templates down to Workshop's and the Spaces (done: thirty-nine, with Blank Space; Software & IT folded into
    Retrospectives once Event Storming left it with one).
 
 ### 6. Make it livehuddle

@@ -59,7 +59,7 @@ export const ACCOUNT_PITCH_ROWS: readonly PitchRow[] = [
   {
     tone: 'emerald',
     icon: DEVICES,
-    title: 'Your canvases sync on every device',
+    title: 'Your spaces sync on every device',
     line: 'Start on a laptop, pick up on a phone.',
   },
   {
@@ -72,7 +72,7 @@ export const ACCOUNT_PITCH_ROWS: readonly PitchRow[] = [
     tone: 'sky',
     icon: SPARKLE,
     title: 'Connect your AI assistant',
-    line: 'Let it find, read and draw on your canvases.',
+    line: 'Let it find, read and build your spaces.',
   },
   {
     tone: 'amber',
@@ -87,7 +87,7 @@ export const CONNECT_PITCH_ROWS: readonly PitchRow[] = [
     tone: 'emerald',
     icon: PULSE,
     title: 'Changes show live',
-    line: 'Edits land on your canvases like a teammate’s.',
+    line: 'Edits land in your spaces like a teammate’s.',
   },
   {
     tone: 'sky',
@@ -117,7 +117,7 @@ export function ConnectPitch() {
   return (
     <AuthPitch
       eyebrow="Connect"
-      heading="Your canvases, wherever you work."
+      heading="Your spaces, wherever you work."
       rows={CONNECT_PITCH_ROWS}
     />
   );

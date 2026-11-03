@@ -75,9 +75,7 @@ export function RecentDocumentsCard({ ownerId }: { ownerId: string | null }) {
           <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-700 dark:text-brand-300">
             Jump Back In
           </span>
-          <span className="text-[10px] text-slate-500 dark:text-slate-400">
-            Your recent canvases
-          </span>
+          <span className="text-[10px] text-slate-500 dark:text-slate-400">Your recent spaces</span>
         </div>
       </div>
       <ul className="flex flex-col p-1.5">
@@ -95,7 +93,7 @@ export function RecentDocumentsCard({ ownerId }: { ownerId: string | null }) {
                       <span className="sr-only">{`${d.teamName} team: `}</span>
                     </span>
                   ) : null}
-                  <span className="truncate">{d.name || 'Untitled canvas'}</span>
+                  <span className="truncate">{d.name || 'Untitled Space'}</span>
                 </span>
                 {d.savedAt != null ? (
                   <span className="text-[10px] text-slate-500 dark:text-slate-400">

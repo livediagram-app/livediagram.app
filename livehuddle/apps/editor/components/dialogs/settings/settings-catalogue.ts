@@ -1047,10 +1047,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   },
   {
     id: 'documents',
-    label: 'Canvases',
+    label: 'Spaces',
     sectionNotes: {
       'Default Folders': {
-        note: 'Where each kind of new canvas is saved when you create it without choosing a place.',
+        note: 'Where each kind of new space is saved when you create it without choosing a place.',
         helpArticle: 'defaultFolders',
       },
     },
@@ -1073,11 +1073,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'defaultFolders',
         key: 'defaultFolders',
         section: 'Default Folders',
-        label: 'Where New Canvases Go',
+        label: 'Where New Spaces Go',
         keywords:
-          'default folder where new canvases documents go save location place file automatically always save placement template retrospective kanban',
+          'default folder where new spaces canvases documents go save location place file automatically always save placement template retrospective kanban',
         description:
-          'New canvases you make without choosing a place are saved in these folders: one for every canvas, and one for each template family.',
+          'New spaces you make without choosing a place are saved in these folders: one for every space, and one for each template family.',
       },
     ],
   },
@@ -1092,7 +1092,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Guest',
         keywords: 'account profile identity name email signed in sign in avatar joined',
         description:
-          'Your name and email come from your account. Signed out, your canvases belong to this browser.',
+          'Your name and email come from your account. Signed out, your spaces belong to this browser.',
         helpArticle: 'guestVsAccount',
       },
       {
@@ -1101,8 +1101,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Your Data',
         label: 'Trash',
         keywords:
-          'trash bin recycle deleted undo undelete restore recover get back canvas document diagram permanently empty',
-        description: 'Deleted canvases wait here for 30 days, ready to restore.',
+          'trash bin recycle deleted undo undelete restore recover get back space canvas document diagram permanently empty',
+        description: 'Deleted spaces wait here for 30 days, ready to restore.',
         helpArticle: 'trash',
       },
       {
@@ -1123,7 +1123,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Delete Account',
         keywords: 'delete account remove wipe erase close cancel data gdpr',
         description:
-          'Removes your livehuddle canvases, folders and settings, then signs you out. There is no undo.',
+          'Removes your livehuddle spaces, folders and settings, then signs you out. There is no undo.',
       },
     ],
   },
@@ -1139,7 +1139,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'In the Editor',
         label: 'In-Editor Notifications',
         description:
-          'A brief note when something happens off screen, like moving a canvas to a folder. Errors and warnings always show.',
+          'A brief note when something happens off screen, like moving a space to a folder. Errors and warnings always show.',
         read: (p) => p.notificationsEnabled !== false,
         write: (p, v) => ({ ...p, notificationsEnabled: v }),
         event: { category: 'UI', on: 'NotificationsOn', off: 'NotificationsOff' },
@@ -1156,20 +1156,20 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         note: 'Sign in to choose which emails you get.',
         signIn: true,
         description:
-          'We can email you when someone joins one of your canvases, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
+          'We can email you when someone joins one of your spaces, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
         available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
       },
       emailSwitch('notifyDocumentJoin', {
         event: { category: 'UI', on: 'NotifyDocumentJoinOn', off: 'NotifyDocumentJoinOff' },
         keywords: 'email join collaborator opened document',
-        label: 'Someone Joins My Canvas',
-        description: 'A new person opens one of your shared canvases.',
+        label: 'Someone Joins My Space',
+        description: 'A new person opens one of your shared spaces.',
       }),
       emailSwitch('notifyComments', {
         event: { category: 'UI', on: 'NotifyCommentsOn', off: 'NotifyCommentsOff' },
         keywords: 'email comment reply feedback',
-        label: 'Someone Comments on My Canvas',
-        description: 'Someone leaves a comment on a canvas you own.',
+        label: 'Someone Comments on My Space',
+        description: 'Someone leaves a comment on a space you own.',
       }),
       emailSwitch('notifyMentions', {
         event: { category: 'UI', on: 'NotifyMentionsOn', off: 'NotifyMentionsOff' },
@@ -1199,7 +1199,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'NotifyMilestonesOn', off: 'NotifyMilestonesOff' },
         keywords: 'email milestone achievement celebrate',
         label: 'Milestones',
-        description: 'A note when you hit one, like sharing your first canvas.',
+        description: 'A note when you hit one, like sharing your first space.',
       }),
     ],
   },

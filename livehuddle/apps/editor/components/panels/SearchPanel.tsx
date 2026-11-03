@@ -328,8 +328,8 @@ export function SearchPanel({
             aria-activedescendant={flatItems.length > 0 ? optionId(activeIndex) : undefined}
             placeholder={
               tabs
-                ? 'Search canvases, folders, teams, tabs, elements, help...'
-                : 'Search canvases, folders, teams, help...'
+                ? 'Search spaces, folders, teams, tabs, elements, help...'
+                : 'Search spaces, folders, teams, help...'
             }
             className="flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400"
           />
@@ -364,8 +364,8 @@ export function SearchPanel({
                 className="py-6"
                 things={
                   tabs
-                    ? 'canvases, tabs, elements or help articles'
-                    : 'canvases, folders or help articles'
+                    ? 'spaces, tabs, elements or help articles'
+                    : 'spaces, folders or help articles'
                 }
                 query={query}
                 onClear={() => setQuery('')}

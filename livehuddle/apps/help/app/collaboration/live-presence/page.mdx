@@ -10,19 +10,19 @@ import { ReleaseHold } from '@liveworkspace/help-site/art/illustrations/release-
 export const metadata = helpMetadata({
   title: 'Live Presence',
   description:
-    "See who is in a canvas with you in real time: live cursors with names, each person's selection, who is on which tab, agents at work and laser pointers.",
+    "See who is in a space with you in real time: live cursors with names, each person's selection, who is on which tab, agents at work and laser pointers.",
   path: '/help/collaboration/live-presence/',
 });
 
 <ArticleLayout
   title="Live Presence"
-  description="When more than one person opens the same canvas, you see each other live: cursors, names, selections, and who is where."
+  description="When more than one person opens the same space, you see each other live: cursors, names, selections, and who is where."
   categoryTitle="Collaboration"
   categorySlug="collaboration"
   subArticles={getSubArticles("live-presence")}
 >
 
-Open a canvas with other people and it comes alive. Everyone sees each other move, select, and edit in real time, so it feels like working at the same whiteboard. Nothing needs setting up: as soon as two or more people are in a shared canvas, presence just appears.
+Open a space with other people and it comes alive. Everyone sees each other move, select, and edit in real time, so it feels like working at the same whiteboard. Nothing needs setting up: as soon as two or more people are in a shared space, presence just appears.
 
 ## Live cursors
 
@@ -47,7 +47,7 @@ Each person is given a colour and a name. Signed-in people show their account na
 
 ## Collaborators
 
-Click any avatar on a tab, or the **+N** badge when a tab is busy, to open **Collaborators**. It lists everyone in the canvas grouped by the tab they are on, so you can see where the whole room is at once rather than hovering tab by tab. The person you clicked is highlighted.
+Click any avatar on a tab, or the **+N** badge when a tab is busy, to open **Collaborators**. It lists everyone in the space grouped by the tab they are on, so you can see where the whole room is at once rather than hovering tab by tab. The person you clicked is highlighted.
 
 - Your own tab is marked **You're Here**. Every other tab has a **Go to Tab** button that takes you straight there.
 - Each person shows their name, their role when it is known, whether they are online, away or offline, and how long ago they were last active.
@@ -83,11 +83,11 @@ The lock clears by itself when the person clicks away, switches tab or leaves. W
 
 ## Agents at work
 
-An AI agent or a script working on a canvas with an [API token](/help/account-and-data/api-tokens/) can show itself while it works. It appears as an avatar of its own, named after its owner ("Webber's Agent") in their colour and marked with a small star, on the tab it last read or changed:
+An AI agent or a script working on a space with an [API token](/help/account-and-data/api-tokens/) can show itself while it works. It appears as an avatar of its own, named after its owner ("Webber's Agent") in their colour and marked with a small star, on the tab it last read or changed:
 
 - **What it is doing** shows in its hover card, on its row in Collaborators, and in what a screen reader announces. Everyone sees it, its owner included.
 - **What it is looking at** is outlined with a thin ring in its owner's colour. The ring never locks anything: you can keep working on those elements.
-- **It leaves on its own** a few minutes after it last read or changed the canvas, so a finished or stopped agent never lingers.
+- **It leaves on its own** a few minutes after it last read or changed the space, so a finished or stopped agent never lingers.
 
 Agents are listed in Collaborators, but they are not counted as people, can't be followed, and never hold the facilitator role.
 
@@ -97,7 +97,7 @@ The [Laser Pointer](/help/selection-modes/laser/) is built for presenting togeth
 
 ## Who can see presence
 
-Live presence works for everyone in a shared canvas, including guests and people opening a [share link](/help/collaboration/sharing/) to view, not just signed-in editors. A private canvas you have not shared has no presence, since it is just you, except for your own agent while it works on it.
+Live presence works for everyone in a shared space, including guests and people opening a [share link](/help/collaboration/sharing/) to view, not just signed-in editors. A private space you have not shared has no presence, since it is just you, except for your own agent while it works on it.
 
 <Tip>
   Names and colours are chosen automatically, and a colour is nudged if two people happen to get the

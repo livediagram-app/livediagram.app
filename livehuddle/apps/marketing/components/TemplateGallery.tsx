@@ -54,7 +54,7 @@ export function TemplateGallery() {
     <section id="templates" className={`${BAND_SECTION} scroll-mt-[72px]`}>
       <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
-          <p className={EYEBROW}>One canvas, many jobs</p>
+          <p className={EYEBROW}>One space, many jobs</p>
           <h2 className={BAND_TITLE}>Browse every template</h2>
           <p className={BAND_LEAD}>
             Pick a starting point and you are on the canvas with it already drawn. Every template

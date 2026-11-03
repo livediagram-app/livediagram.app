@@ -32,9 +32,9 @@ Prose follows the context:
 
 - **Document** when the text is about the container: naming, filing, sharing,
   trashing, opening, or a mix of tab kinds.
-- **Space** is the word a person reads for the thing they make (D6 in
-  [Open decisions](../005-project-roadmap/open-decisions.md)), once the product's copy moves to it (build plan
-  step 6).
+- **Space** is the word a person reads for the thing they make (D6 (a) in
+  [Open decisions](../005-project-roadmap/open-decisions.md), [Domain language](../003-system-architecture/domain-language.md#space)):
+  every label, title, toast and help article says space where code says document.
 - livehuddle is not a diagramming tool ([Purpose](../001-project-vision/purpose.md)); "diagram" in prose names
   livediagram's work.
 - A new tab kind joins the table above; the container keeps its name.

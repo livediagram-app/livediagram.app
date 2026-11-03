@@ -28,6 +28,7 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { loadAvatarSpeechLayer } from '@/lib/editor-deferred-code';
 import { bindAvatar } from '@/lib/avatar-bindings';
+import { useWalkIn } from './useWalkIn';
 
 // This editor's facts for Avatar mode (lib/avatar-bindings.ts), before any of it renders: every avatar view and
 // hook is reached through the canvas, which loads this module first.
@@ -72,6 +73,16 @@ export function useCanvasAvatar({
   // was entered by pressing a button on the canvas. Cleared once used, so a
   // later entry from the palette spawns at the viewport centre as before.
   const avatarSpawnRef = useRef<AvatarPoint | null>(null);
+  // Opening walking from a Walk In button sets the same one-shot spot (docs/specs/008-canvas/avatar-mode.md
+  // "Opening walking"); declared before the walk, whose entry reads it.
+  useWalkIn({
+    walkIn: props.walkIn,
+    spawnAtRef: avatarSpawnRef,
+    mainRef,
+    wrapperRef,
+    viewportZoom,
+    setViewportOffset,
+  });
   const pressModeButton = (element: ShapeElement) => {
     // Feet just below the button, centred on it, and only for a press that enters the mode.
     const spawn = avatarSpawnFromButton(element, element.mode ?? DEFAULT_BUTTON_MODE, canvasTool);

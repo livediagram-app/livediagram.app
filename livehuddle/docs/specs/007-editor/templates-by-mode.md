@@ -12,15 +12,18 @@ templates below and nothing else ([Templates](../012-collaboration/workshop-mode
 
 ## The blank
 
-**Blank Workshop** (`blank-session`) is the one blank: an empty tab named "Untitled Workshop". It leads Popular and
-Start a Workshop's Recommended, is on no category shelf or tile, and is what a new document starts from.
+**Blank Space** (`blank-session`) is the one blank: an empty tab, and a space named "Untitled Space"
+([Domain language](../003-system-architecture/domain-language.md#space)). It leads Popular and Start a Space's
+Recommended, is on no category shelf or tile, and is what a new space starts from. It was **Blank Workshop**, making
+"Untitled Workshop", before the noun settled; a space still carrying that name, or "Untitled canvas", counts as
+untitled.
 
 - livediagram's other blanks, Blank Diagram (`blank`) and Blank Whiteboard (`whiteboard`), left with step 5.4. A link,
-  an agent or a seed naming either is answered as any unknown kind is, with Blank Workshop.
+  an agent or a seed naming either is answered as any unknown kind is, with Blank Space.
 - Boards, Sheets and form templates (Blank Plan, Blank Spreadsheet, Kanban Board and the rest) are liveplanner's
   ([Editor modes](editor-modes.md) "Stored tabs from other products' modes"). A link, an agent or a seed naming one
   is answered as any unknown kind is (`retired-templates.test.ts`).
-- Popular, in order: Blank Workshop, Sailboat retrospective, Retrospective, Town Hall Q&A, Lean Coffee, Crazy 8s, Pub
+- Popular, in order: Blank Space, Sailboat retrospective, Retrospective, Town Hall Q&A, Lean Coffee, Crazy 8s, Pub
   Quiz ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
 
 ## Workshop templates
@@ -49,13 +52,13 @@ the Session strip there when the session starts:
 - The games: **Pub Quiz** (`pub-quiz`), **Icebreaker Questions** (`icebreaker-questions`), **Two Truths and a Lie**
   (`two-truths-and-a-lie`), **Would You Rather** (`would-you-rather`) and **Find Someone Who Bingo**
   (`people-bingo`), in **Quizzes & Games** ([Quiz and game templates](../012-collaboration/quiz-and-game-templates.md)).
-- Start a Workshop groups them by the catalogue's categories, as every start does ([Start
+- Start a Space groups them by the catalogue's categories, as every start does ([Start
   diagramming](start-diagramming.md) "Recommended and groups").
 
 ## Testing
 
 - Every template opens in Workshop (`templates.test.ts`).
-- Popular starts with Blank Workshop (`popular.test.ts`).
+- Popular starts with Blank Space (`popular.test.ts`).
 - Every category holds a template (`template-categories.test.ts`).
 - The catalogue is the Workshop templates above, thirty-nine with the blank (`templates.test.ts`'s
   kind list, the `TemplateKind` union and `TEMPLATES` move together).
@@ -69,7 +72,7 @@ the Session strip there when the session starts:
 ## The document's name
 
 - A template picked on a start names the **document** after itself too, as /new names a document after the template
-  it is made from: "Untitled Retrospective", the blank "Untitled Workshop" (`untitledNameForTemplate`).
+  it is made from: "Untitled Retrospective", the blank "Untitled Space" (`untitledNameForTemplate`).
 - Only while the document still has a default name: one of those untitled names (`isDefaultDocumentName`, any
   template's, or the legacy "Untitled diagram"; a blank's names are the shared `isUntitledName` list, which the first label's naming uses too). A name someone gave it, or the first element's label the editor
   named it after ([Name length](../006-document/name-length.md)), is kept.

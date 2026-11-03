@@ -56,7 +56,7 @@ describe('createDocumentInPlace', () => {
 
     const [owner, made] = api.apiCreateDocument.mock.calls[0]!;
     expect(owner).toBe('user_1');
-    expect(made).toMatchObject({ id, name: 'Untitled canvas', folderId: 'f1', teamId: null });
+    expect(made).toMatchObject({ id, name: 'Untitled Space', folderId: 'f1', teamId: null });
     expect(made.tabs).toHaveLength(1);
     expect(made.tabs?.[0]?.templateChosen).toBeUndefined();
     expect(made.tabs?.[0]?.elements).toEqual([]);

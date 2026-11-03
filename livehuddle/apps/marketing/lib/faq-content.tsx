@@ -34,7 +34,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What is livehuddle?',
-        a: 'A free, real-time canvas for diagrams, whiteboards and workshops. Every canvas is a stack of tabs, and each tab can be worked on in three modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, and Workshop for running a session with your team. Your team can join any of them live.',
+        a: 'A free, real-time canvas for diagrams, whiteboards and workshops. Every space is a stack of tabs, and each tab can be worked on in three modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, and Workshop for running a session with your team. Your team can join any of them live.',
       },
       {
         q: 'Do I need an account to use livehuddle?',
@@ -42,17 +42,17 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             No. Open the editor and start drawing straight away, with no sign-up. Your work saves in
             your browser as you go, and pressing Share puts it online for others to join. Signing in
-            (also free) keeps your canvases with you across devices and unlocks teams, API tokens
-            and the AI connection. See{' '}
+            (also free) keeps your spaces with you across devices and unlocks teams, API tokens and
+            the AI connection. See{' '}
             <a href="/help/getting-started/guest-vs-account/">guest vs account</a>.
           </>
         ),
         aText:
-          'No. Open the editor and start drawing straight away, with no sign-up. Your work saves in your browser as you go, and pressing Share puts it online for others to join. Signing in (also free) keeps your canvases with you across devices and unlocks teams, API tokens and the AI connection. See guest vs account.',
+          'No. Open the editor and start drawing straight away, with no sign-up. Your work saves in your browser as you go, and pressing Share puts it online for others to join. Signing in (also free) keeps your spaces with you across devices and unlocks teams, API tokens and the AI connection. See guest vs account.',
       },
       {
-        q: 'How do I start my first canvas?',
-        a: `Press Start drawing and choose what you are making: Diagram, Draw or Workshop. Your canvas opens straight away on that mode's start, where you begin from a blank canvas or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
+        q: 'How do I start my first space?',
+        a: `Press Start drawing and choose what you are making: Diagram, Draw or Workshop. Your space opens straight away on that mode's start, where you begin from a blank canvas or one of ${TEMPLATE_COUNT} templates, and a short tour offers to show you round.`,
       },
       {
         q: 'Does it work on my phone or tablet?',
@@ -166,11 +166,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What are the three modes?',
-        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Workshop runs a session with your team, with timers, dot votes, polls and reveals to hand. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a canvas can have its own.',
+        a: 'Diagram is for structured shapes, connectors and layouts. Draw is a freehand whiteboard with pressure-sensitive markers. Workshop runs a session with your team, with timers, dot votes, polls and reveals to hand. A mode belongs to the tab, so everyone on it works in the same one, and each tab of a space can have its own.',
       },
       {
-        q: 'Can I organise a big canvas?',
-        a: 'Yes. A canvas holds as many tabs as you need, which you can group into folders, link between and open two at a time side by side. Each tab has Photoshop-style layers you can hide, lock and restack, and your canvases live in nested folders in the Explorer, shown as a list, as cards or as a sortable Details table. Drag a canvas onto a folder to file it.',
+        q: 'Can I organise a big space?',
+        a: 'Yes. A space holds as many tabs as you need, which you can group into folders, link between and open two at a time side by side. Each tab has Photoshop-style layers you can hide, lock and restack, and your spaces live in nested folders in the Explorer, shown as a list, as cards or as a sortable Details table. Drag a space onto a folder to file it.',
       },
       {
         q: 'Can I add pictures?',
@@ -209,16 +209,16 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Right-click an element and pick an animation that suits it: a shape can pulse, a label can type itself in, and a drawing can draw itself. Hover a choice to preview it on your selection first. See animations.',
       },
       {
-        q: 'Can I use the same tab in two canvases?',
+        q: 'Can I use the same tab in two spaces?',
         a: (
           <>
-            Yes. Add to Another Canvas puts the tab you are on into another of your canvases. It is
-            the same tab in both places, not a copy, so an edit in one shows up in the other. See{' '}
-            <a href="/help/tabs/add-to-document/">Add to Another Canvas</a>.
+            Yes. Add to Another Space puts the tab you are on into another of your spaces. It is the
+            same tab in both places, not a copy, so an edit in one shows up in the other. See{' '}
+            <a href="/help/tabs/add-to-document/">Add to Another Space</a>.
           </>
         ),
         aText:
-          'Yes. Add to Another Canvas puts the tab you are on into another of your canvases. It is the same tab in both places, not a copy, so an edit in one shows up in the other. See Add to Another Canvas.',
+          'Yes. Add to Another Space puts the tab you are on into another of your spaces. It is the same tab in both places, not a copy, so an edit in one shows up in the other. See Add to Another Space.',
       },
       {
         q: 'Is there a 3D view?',
@@ -255,7 +255,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'What if I delete something by accident?',
-        a: 'Deleted canvases wait in the Trash for 30 days before they are removed for good, so you can restore them from the Trash in the Explorer or in Settings › Account. Team canvases go to their team’s Trash.',
+        a: 'Deleted spaces wait in the Trash for 30 days before they are removed for good, so you can restore them from the Trash in the Explorer or in Settings › Account. Team spaces go to their team’s Trash.',
       },
     ],
   },
@@ -267,7 +267,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I work with my team in real time?',
-        a: 'Yes, that is the point. Share a link and teammates join the same canvas in real time, whatever mode a tab is in, with live cursors, selection rings, presence on each tab, comments and a laser pointer. If you have not signed in, a new canvas starts in your browser, and the first Share syncs it in one step.',
+        a: 'Yes, that is the point. Share a link and teammates join the same space in real time, whatever mode a tab is in, with live cursors, selection rings, presence on each tab, comments and a laser pointer. If you have not signed in, a new space starts in your browser, and the first Share syncs it in one step.',
       },
       {
         q: 'What happens if two people edit the same thing at once?',
@@ -275,11 +275,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I leave comments and assign follow-ups?',
-        a: 'Yes. Comment on any element and reply in threads, then resolve them when they are done. You can also attach an action to an element and assign it to a teammate, so the follow-ups a meeting produces stay with the canvas instead of getting lost.',
+        a: 'Yes. Comment on any element and reply in threads, then resolve them when they are done. You can also attach an action to an element and assign it to a teammate, so the follow-ups a meeting produces stay with the space instead of getting lost.',
       },
       {
-        q: 'Can I set up a team with shared canvases?',
-        a: 'Yes, once you sign in. Create a team from the Explorer, invite people by email, and everyone gets a shared library of canvases. Teams have Admin and Member roles: admins manage membership, everyone else just gets to work.',
+        q: 'Can I set up a team with shared spaces?',
+        a: 'Yes, once you sign in. Create a team from the Explorer, invite people by email, and everyone gets a shared library of spaces. Teams have Admin and Member roles: admins manage membership, everyone else just gets to work.',
       },
       {
         q: 'Can I follow what someone else is looking at?',
@@ -323,14 +323,14 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'How do I keep up with what changed?',
         a: (
           <>
-            Your Inbox gathers the actions and comment threads waiting on you across every canvas,
+            Your Inbox gathers the actions and comment threads waiting on you across every space,
             and Home shows what other people did while you were away. Once you sign in, emails can
             tell you too, and you choose which in Settings. See{' '}
             <a href="/help/explorer/activity/">the Inbox</a>.
           </>
         ),
         aText:
-          'Your Inbox gathers the actions and comment threads waiting on you across every canvas, and Home shows what other people did while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See the Inbox.',
+          'Your Inbox gathers the actions and comment threads waiting on you across every space, and Home shows what other people did while you were away. Once you sign in, emails can tell you too, and you choose which in Settings. See the Inbox.',
       },
       {
         q: 'Is it good for running workshops and retros?',
@@ -357,51 +357,51 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'How do share links work?',
-        a: 'From a canvas you own, create an editor link (full edit access), a participant link (add stickies, write and vote, without reshaping the board) or a view-only link. Anyone with the link can join. Give a link an expiry of a week, a month or six months so it stops working on its own, or revoke it at any time and it stops working immediately.',
+        a: 'From a space you own, create an editor link (full edit access), a participant link (add stickies, write and vote, without reshaping the board) or a view-only link. Anyone with the link can join. Give a link an expiry of a week, a month or six months so it stops working on its own, or revoke it at any time and it stops working immediately.',
       },
       {
-        q: 'Can I password-protect a canvas?',
-        a: 'Yes. Add a password in the Share dialog and every link to that canvas asks for it before opening.',
+        q: 'Can I password-protect a space?',
+        a: 'Yes. Add a password in the Share dialog and every link to that space asks for it before opening.',
       },
       {
         q: 'Can I share just one tab?',
         a: (
           <>
-            Yes. When a canvas has more than one tab, the Share dialog lets a link open a single
-            tab, as an editor, participant or view-only link, and the rest of the canvas stays
-            private. See <a href="/help/collaboration/sharing/one-tab/">sharing one tab</a>.
+            Yes. When a space has more than one tab, the Share dialog lets a link open a single tab,
+            as an editor, participant or view-only link, and the rest of the space stays private.
+            See <a href="/help/collaboration/sharing/one-tab/">sharing one tab</a>.
           </>
         ),
         aText:
-          'Yes. When a canvas has more than one tab, the Share dialog lets a link open a single tab, as an editor, participant or view-only link, and the rest of the canvas stays private. See sharing one tab.',
+          'Yes. When a space has more than one tab, the Share dialog lets a link open a single tab, as an editor, participant or view-only link, and the rest of the space stays private. See sharing one tab.',
       },
       {
         q: 'Can I embed a diagram in my docs or wiki?',
-        a: 'Yes. Any share link can be embedded as a live-updating iframe: an editor link embeds an editable canvas, and a participant or view-only link a read-only one. Copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes; it always shows the current state of the diagram.',
+        a: 'Yes. Any share link can be embedded as a live-updating iframe: an editor link embeds an editable space, and a participant or view-only link a read-only one. Copy the snippet from the Share dialog and paste it into Notion, Confluence, a wiki or any page that allows iframes; it always shows the current state of the diagram.',
       },
       {
         q: 'Can I show a diagram where iframes are blocked, like a README?',
         a: (
           <>
-            Yes. A live image is a plain image URL that follows your canvas, redrawn after each
-            save, so a GitHub README or a doc always shows the current version. See{' '}
+            Yes. A live image is a plain image URL that follows your space, redrawn after each save,
+            so a GitHub README or a doc always shows the current version. See{' '}
             <a href="/help/collaboration/sharing/live-image/">live images</a>.
           </>
         ),
         aText:
-          'Yes. A live image is a plain image URL that follows your canvas, redrawn after each save, so a GitHub README or a doc always shows the current version. See live images.',
+          'Yes. A live image is a plain image URL that follows your space, redrawn after each save, so a GitHub README or a doc always shows the current version. See live images.',
       },
       {
         q: 'What is the Community?',
         a: (
           <>
-            A public gallery of canvases people are proud of. Signed-in owners can publish a canvas
+            A public gallery of spaces people are proud of. Signed-in owners can publish a space
             with a title, description and tags; anyone can browse it, open it read-only, like it and
             make their own copy in one click. <a href="/community/">Take a look</a>.
           </>
         ),
         aText:
-          'A public gallery of canvases people are proud of. Signed-in owners can publish a canvas with a title, description and tags; anyone can browse it, open it read-only, like it and make their own copy in one click. Take a look.',
+          'A public gallery of spaces people are proud of. Signed-in owners can publish a space with a title, description and tags; anyone can browse it, open it read-only, like it and make their own copy in one click. Take a look.',
       },
     ],
   },
@@ -416,30 +416,30 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             Yes. livehuddle runs an MCP server at mcp.livehuddle.app. Connect a compatible AI tool
-            and, after a one-time authorisation, it can find, read, create and edit the canvases in
+            and, after a one-time authorisation, it can find, read, create and edit the spaces in
             your account. Its changes appear live for anyone on the tab, outlined so you can see
             them and undo them. <a href="/ai">Build with AI</a> walks you through connecting Claude,
             ChatGPT, Cursor and more.
           </>
         ),
         aText:
-          'Yes. livehuddle runs an MCP server at mcp.livehuddle.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the canvases in your account. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
+          'Yes. livehuddle runs an MCP server at mcp.livehuddle.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the spaces in your account. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
       },
       {
         q: 'Is there an API?',
         a: (
           <>
             Yes. Once you sign in, create an API token and call the REST API to read and manage your
-            canvases from scripts, CI or anything that can send a header. See the{' '}
+            spaces from scripts, CI or anything that can send a header. See the{' '}
             <a href="/help/developers/api-overview/">API overview</a>.
           </>
         ),
         aText:
-          'Yes. Once you sign in, create an API token and call the REST API to read and manage your canvases from scripts, CI or anything that can send a header. See the API overview.',
+          'Yes. Once you sign in, create an API token and call the REST API to read and manage your spaces from scripts, CI or anything that can send a header. See the API overview.',
       },
       {
         q: 'Is there a command-line tool?',
-        a: 'Yes. Install it from npm as @livehuddle/cli (or run it with npx). It signs in through your browser and can read, edit, create, share and export canvases from your terminal, which makes it handy for scripts and coding agents.',
+        a: 'Yes. Install it from npm as @livehuddle/cli (or run it with npx). It signs in through your browser and can read, edit, create, share and export spaces from your terminal, which makes it handy for scripts and coding agents.',
       },
     ],
   },
@@ -463,7 +463,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I keep a copy in my own Google Drive?',
-        a: 'Yes, once you sign in. Connect Google Drive in Settings and your canvases, with your work from every other liveworkspace app, are kept in step with matching files and folders in your own Drive, so you always hold a copy.',
+        a: 'Yes, once you sign in. Connect Google Drive in Settings and your spaces, with your work from every other liveworkspace app, are kept in step with matching files and folders in your own Drive, so you always hold a copy.',
       },
     ],
   },
@@ -477,7 +477,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Where is my data stored, and do you track me?',
         a: (
           <>
-            Canvases saved to your account are stored in our database on Cloudflare, and canvases in
+            Spaces saved to your account are stored in our database on Cloudflare, and spaces in
             This Browser stay in your browser. There are no tracking pixels, no advertising and no
             third-party analytics. We do record anonymous, first-party usage (which features get
             used, never your content or name) and show it openly on our{' '}
@@ -486,49 +486,49 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           </>
         ),
         aText:
-          'Canvases saved to your account are stored in our database on Cloudflare, and canvases in This Browser stay in your browser. There are no tracking pixels, no advertising and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name) and show it openly on our telemetry page. See the privacy policy for the details.',
+          'Spaces saved to your account are stored in our database on Cloudflare, and spaces in This Browser stay in your browser. There are no tracking pixels, no advertising and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name) and show it openly on our telemetry page. See the privacy policy for the details.',
       },
       {
-        q: 'Can I keep a canvas off your servers entirely?',
+        q: 'Can I keep a space off your servers entirely?',
         a: (
           <>
-            Yes. Offline Mode saves a canvas only in your browser, never on our servers. Until you
-            sign in, new canvases start that way; after, you can choose it when you create one.
-            Either way you can switch later. See{' '}
+            Yes. Offline Mode saves a space only in your browser, never on our servers. Until you
+            sign in, new spaces start that way; after, you can choose it when you create one. Either
+            way you can switch later. See{' '}
             <a href="/help/privacy-and-security/offline-mode/">Offline Mode</a>.
           </>
         ),
         aText:
-          'Yes. Offline Mode saves a canvas only in your browser, never on our servers. Until you sign in, new canvases start that way; after, you can choose it when you create one. Either way you can switch later. See Offline Mode.',
+          'Yes. Offline Mode saves a space only in your browser, never on our servers. Until you sign in, new spaces start that way; after, you can choose it when you create one. Either way you can switch later. See Offline Mode.',
       },
       {
-        q: 'What happens to my canvases if I clear my browser data?',
+        q: 'What happens to my spaces if I clear my browser data?',
         a: (
           <>
-            A canvas kept only in your browser goes with it, so share it or sign in first. Share
-            syncs a canvas online in one step, and after you sign in livehuddle offers to move every
-            browser-only canvas into your account. Canvases saved to your account are never touched.
+            A space kept only in your browser goes with it, so share it or sign in first. Share
+            syncs a space online in one step, and after you sign in livehuddle offers to move every
+            browser-only space into your account. Spaces saved to your account are never touched.
             See <a href="/help/privacy-and-security/offline-mode/">Offline Mode</a>.
           </>
         ),
         aText:
-          'A canvas kept only in your browser goes with it, so share it or sign in first. Share syncs a canvas online in one step, and after you sign in livehuddle offers to move every browser-only canvas into your account. Canvases saved to your account are never touched. See Offline Mode.',
+          'A space kept only in your browser goes with it, so share it or sign in first. Share syncs a space online in one step, and after you sign in livehuddle offers to move every browser-only space into your account. Spaces saved to your account are never touched. See Offline Mode.',
       },
       {
         q: 'Is my work saved automatically?',
-        a: 'Yes. Every change saves on its own, with a status that shows saving, saved or a problem. Close the tab and reload, and your canvas comes back exactly as you left it.',
+        a: 'Yes. Every change saves on its own, with a status that shows saving, saved or a problem. Close the tab and reload, and your space comes back exactly as you left it.',
       },
       {
         q: 'How do I delete my data or account?',
         a: (
           <>
-            Delete any canvas you own at any time, and delete your account and everything in it
+            Delete any space you own at any time, and delete your account and everything in it
             yourself from your account settings. See{' '}
             <a href="/help/account-and-data/deleting-your-data/">deleting your data</a>.
           </>
         ),
         aText:
-          'Delete any canvas you own at any time, and delete your account and everything in it yourself from your account settings. See deleting your data.',
+          'Delete any space you own at any time, and delete your account and everything in it yourself from your account settings. See deleting your data.',
       },
     ],
   },
@@ -539,17 +539,17 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     icon: lucideGlyph(lucideMessagesSquare, ICON),
     items: [
       {
-        q: 'A canvas will not load. What can I do?',
+        q: 'A space will not load. What can I do?',
         a: (
           <>
             Try reloading first. If it still will not open, the editor offers to repair this
-            browser’s saved state without touching your canvases. The{' '}
+            browser’s saved state without touching your spaces. The{' '}
             <a href="/help/troubleshooting/document-not-loading/">troubleshooting guide</a> walks
             through every step.
           </>
         ),
         aText:
-          'Try reloading first. If it still will not open, the editor offers to repair this browser’s saved state without touching your canvases. The troubleshooting guide walks through every step.',
+          'Try reloading first. If it still will not open, the editor offers to repair this browser’s saved state without touching your spaces. The troubleshooting guide walks through every step.',
       },
       {
         q: 'Is livehuddle up right now?',

@@ -40,6 +40,9 @@ export function useTemplateFlow(opts: {
   // Puts down whatever tool is in hand, for Select (docs/specs/023-draw-mode/draw-mode.md "Opening tool"): a
   // template's content makes the tab one with content, and such a tab opens on Select.
   putToolDown: () => void;
+  // The template landed on this tab: its first content, judged afresh for opening walking (useOpenWalking), so a
+  // Spaces template opens walking as it lands. Optional for hosts with no walk.
+  onLanded?: (tabId: string) => void;
   // A tab a template adds has no server row to fetch yet (useEditorState's markTabLoaded).
 }) {
   const {
@@ -57,6 +60,7 @@ export function useTemplateFlow(opts: {
     setIdentityPromptOpen,
     requestFit,
     putToolDown,
+    onLanded,
   } = opts;
 
   // The visitor name prompt: Join keeps the name typed (or the one they had), Cancel the one they had.
@@ -126,6 +130,7 @@ export function useTemplateFlow(opts: {
     if (elements.length > 0) {
       requestFit();
       putToolDown();
+      onLanded?.(activeId);
     }
     // Auto-select when a template produces a single element so the user can
     // immediately rename or edit it. Multi-element templates — and the now

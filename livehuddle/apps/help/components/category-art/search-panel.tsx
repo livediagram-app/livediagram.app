@@ -3,7 +3,7 @@ import {
   SearchPanelArt as Scene,
 } from '@liveworkspace/help-site/art/scenes/search-panel';
 
-// Search Panel: the shared scene (docs/specs/018-help/help-pages.md "Category art"). "roadmap" finds a canvas, a
+// Search Panel: the shared scene (docs/specs/018-help/help-pages.md "Category art"). "roadmap" finds a space, a
 // tab, a sticky note on a canvas and a help guide.
 export function SearchPanelArt() {
   return (
@@ -11,7 +11,7 @@ export function SearchPanelArt() {
       query="roadmap"
       groups={[
         {
-          heading: 'CANVASES',
+          heading: 'SPACES',
           rows: [{ glyph: SEARCH_GLYPHS.document, title: 'Product Roadmap', where: 'Team Space' }],
         },
         {

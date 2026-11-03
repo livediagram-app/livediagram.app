@@ -25,7 +25,7 @@ export type RetiredPartsPhase =
   | { kind: 'result'; moved: MovedDocument[]; failed: string[] };
 
 // What a document is called in the list when it never had a name.
-const UNNAMED = 'Untitled canvas';
+const UNNAMED = 'Untitled Space';
 
 export async function loadRetiredPartsRows(): Promise<RetiredPartsRow[]> {
   const records = await listRetiredParts();

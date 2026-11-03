@@ -14,7 +14,7 @@ export function BrowserRepairPanel(props: BrowserRepairPanelProps) {
   return (
     <SharedPanel
       product="livehuddle"
-      noun="canvases"
+      noun="spaces"
       repair={() => repairBrowserStorage()}
       {...props}
     />

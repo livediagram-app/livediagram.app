@@ -114,7 +114,7 @@ export function RetiredPartsDialog({
         <DialogCloseButton onClick={onNotNow} />
       </DialogHeader>
       <div className="px-6 py-5 text-sm text-slate-700 dark:text-slate-200">
-        <ul className="list-disc pl-5" aria-label="Canvases in This Browser">
+        <ul className="list-disc pl-5" aria-label="Spaces in This Browser">
           {phase.rows.map((row) => (
             <li key={row.id}>{row.name}</li>
           ))}

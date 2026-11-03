@@ -13,7 +13,7 @@ export const BLANK_TEMPLATE_FOR_MODE: Readonly<Record<EditorMode, TemplateKind>>
   workshop: 'blank-session',
 };
 
-/** True for the blank, Blank Workshop: in no category, never on a category shelf or tile. */
+/** True for the blank, Blank Space: in no category, never on a category shelf or tile. */
 export function isBlankTemplate(kind: TemplateKind): boolean {
   return kind === BLANK_TEMPLATE_FOR_MODE.workshop;
 }

@@ -464,7 +464,7 @@ export function TabMenu() {
   const mw = 200;
   const rows = [
     'Organise in Tab Folder',
-    'Add to Another Canvas',
+    'Add to Another Space',
     null,
     'Import',
     'Export',
@@ -743,7 +743,7 @@ export function AddToDocumentMenu() {
   const docs = ['Roadmap 2026', 'Onboarding', 'Architecture'];
   return (
     <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={360} h={182} title="Add to Another Canvas" sceneW={W} sceneH={H}>
+      <Dialog x={dx} y={dy} w={360} h={182} title="Add to Another Space" sceneW={W} sceneH={H}>
         <rect
           x={dx + 16}
           y={dy + 48}
@@ -754,7 +754,7 @@ export function AddToDocumentMenu() {
           strokeWidth={1.5}
         />
         <Label x={dx + 26} y={dy + 61} size={11} tone="muted">
-          Filter canvases…
+          Filter spaces…
         </Label>
         {docs.map((d, i) => {
           const tx = dx + 16 + i * 112;
@@ -841,14 +841,7 @@ export function ImportMenu() {
         x={mx}
         y={my + 6}
         w={192}
-        rows={[
-          'Organise in Tab Folder',
-          'Add to Another Canvas',
-          null,
-          'Import',
-          'Export',
-          'Clear',
-        ]}
+        rows={['Organise in Tab Folder', 'Add to Another Space', null, 'Import', 'Export', 'Clear']}
         highlight="Import"
       />
     </Scene>

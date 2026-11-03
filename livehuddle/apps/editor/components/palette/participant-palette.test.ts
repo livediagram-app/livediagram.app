@@ -16,10 +16,10 @@ describe('PARTICIPANT_CANVAS_TOOLS', () => {
     const ids = buildCanvasToolOptions({
       isMobile: false,
       includeZen: true,
-      // Avatar is listed while in force (docs/specs/008-canvas/avatar-mode.md "Where it lives").
-      currentTool: 'avatar',
     }).map((o) => o.id);
     for (const tool of PARTICIPANT_CANVAS_TOOLS) expect(ids).toContain(tool);
+    // Avatar is every role's (docs/specs/008-canvas/avatar-mode.md "Where it lives", share-roles.md).
+    expect(PARTICIPANT_CANVAS_TOOLS).toContain('avatar');
     for (const tool of ['eraser', 'format', 'slide-deck']) {
       expect(PARTICIPANT_CANVAS_TOOLS).not.toContain(tool);
     }

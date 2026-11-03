@@ -9,7 +9,7 @@ document, a mint racing the identity round trip).
 
 - `/new` owns the welcome and create flow end-to-end.
 - The editor route only hydrates a document id or a share code and never has to consider minting an id.
-- "New Canvas" buttons (the Explorer, the not-found card) navigate to `/new`. Share and open flows stay on the editor
+- "New Space" buttons (the Explorer, the not-found card) navigate to `/new`. Share and open flows stay on the editor
   route.
 
 ## Non-goals
@@ -17,7 +17,7 @@ document, a mint racing the identity round trip).
 - The visitor `?s=<code>` flow: visitors land on `/document/shared?s=<code>` and confirm their name there; the
   identity confirmation (`identityOnlyScreenOpen`) stays on the editor route because it is about the visitor's
   session, not about creating a document.
-- An empty tab on an existing document: its templates are on Start a Workshop, on the editor route, because the
+- An empty tab on an existing document: its templates are on Start a Space, on the editor route, because the
   document is already loaded ([Template starts](start-diagramming.md)).
 - What is persisted on create: `/new` POSTs `/api/documents` with the chosen tab seeded.
 
@@ -83,11 +83,11 @@ document (`documentIdFromPath` reads no id off anything but
 `/document/<id>`) and carries no share link, so the editor shows the in-app
 `<NotFound>` card at once, titled **Page not found**
 ("There is no page at this address. Open a document from the Explorer or
-start fresh.") with its **Open Explorer** and **New Canvas** buttons, and asks
+start fresh.") with its **Open Explorer** and **New Space** buttons, and asks
 the API for nothing. A document that is missing or not yours gets the same card
-titled **Canvas not found**. The card stands alone under the app header, with
+titled **Space not found**. The card stands alone under the app header, with
 no Explorer panel beside it: its buttons are the way on (Open Explorer goes to
-`/explorer`, New Canvas to `/new`). An embed shows the card with New Canvas
+`/explorer`, New Space to `/new`). An embed shows the card with New Space
 only, opening the app in a new tab. Only the editor's own empty route (`/document`,
 `/document/placeholder`) hands off to `/new`. Before, every address without a
 document id went to `/new`, so a mistyped or retired page opened the New
@@ -122,7 +122,7 @@ knowing about when adding another.
 
 ### Owner creates a new document
 
-1. User clicks **New Canvas** in the Explorer.
+1. User clicks **New Space** in the Explorer.
 2. Browser navigates to `/new`.
 3. `/new` renders the welcome card immediately, no spinner.
 4. User presses **Create**, which creates the document at once, where new documents go by default
@@ -133,7 +133,7 @@ knowing about when adding another.
    the editor with the new document already on the server.
 6. On the editor route, hydration extracts the id from the pathname
    and fetches the document + tab content. No mint, no welcome gate. The empty tab
-   opens on Start a Workshop, where its templates are
+   opens on Start a Space, where its templates are
    ([Template starts](start-diagramming.md)).
 
 ### Owner opens an existing document
@@ -152,10 +152,10 @@ knowing about when adding another.
 
 1. User clears the active tab's content (or opens a tab that was
    created empty).
-2. An Editor sees Start a Workshop in the middle of the canvas ([Template starts](start-diagramming.md));
+2. An Editor sees Start a Space in the middle of the canvas ([Template starts](start-diagramming.md));
    a Participant or Viewer the empty-canvas card ([The empty-canvas hint](#the-empty-canvas-hint)).
 
-### Canvas not found
+### Space not found
 
 1. URL is `/document/<id>` but the API returns 404.
 2. The not-found surface renders; its "Create new document" CTA navigates to `/new`.
@@ -188,7 +188,7 @@ creates anything:
 - **On `/new`:** back to the screen that opened it, at once (the step has
   no search; a `?q=` preset waits for the new document's start). When the
   browser came from another page of this site (the home page,
-  the header's Choose Template, the Explorer's New Canvas), it goes back there,
+  the header's Choose Template, the Explorer's New Space), it goes back there,
   as the browser's Back would (`history.back()`), so that page returns as it was.
   With nothing of ours to go back to (the URL typed, or opened from another site),
   it goes to the home page (`/`). Nothing is created: Escape is not Skip, which
@@ -224,7 +224,7 @@ reports `UI` · `Closed` · `NewDocument` ([Telemetry](../017-telemetry/telemetr
 
 ## Responsive layout
 
-The New Canvas wizard (`apps/editor/components/palette/NewDocumentWizard.tsx`) on `/new` and the visitor name prompt (`apps/editor/components/palette/IdentityPrompt.tsx`) over the editor are two cards of one build. On `sm:` and up each renders as a centred floating card (max 44rem for the wizard, 26rem for the name prompt), with rounded corners + shadow over the canvas. On mobile (below `sm`) it fills the viewport edge-to-edge: full width, full dynamic-viewport height, no border / radius / shadow, so the user can read every row and click through without zoom. The footer's Create button (the name prompt's Join and Cancel) stays reachable because the body scrolls inside the card while the header + footer remain pinned (mobile and desktop alike).
+The New Space wizard (`apps/editor/components/palette/NewDocumentWizard.tsx`) on `/new` and the visitor name prompt (`apps/editor/components/palette/IdentityPrompt.tsx`) over the editor are two cards of one build. On `sm:` and up each renders as a centred floating card (max 44rem for the wizard, 26rem for the name prompt), with rounded corners + shadow over the canvas. On mobile (below `sm`) it fills the viewport edge-to-edge: full width, full dynamic-viewport height, no border / radius / shadow, so the user can read every row and click through without zoom. The footer's Create button (the name prompt's Join and Cancel) stays reachable because the body scrolls inside the card while the header + footer remain pinned (mobile and desktop alike).
 
 The card has no backdrop, so the editor header stays live beside it. It stacks on the `canvas-modal` rung: above every canvas surface, beneath the header, so the header's menus (the logo's site switcher, the account menu) open in front of the card rather than behind it.
 
@@ -250,8 +250,8 @@ The welcome screen asks **no question**: livehuddle has one editor mode ([Editor
 is no mode to choose, and the templates wait on the new document's start. It shows the heading "What are you making
 today?" over **Create**, and creates the document when it is pressed:
 
-- **Create** makes a Blank Workshop document (`blank-session`) that opens on Start a Workshop
-  ([Template starts](start-diagramming.md)). Footer: **Open Existing Canvas** on the left, then **Skip**.
+- **Create** makes a Blank Space document (`blank-session`) that opens on Start a Space
+  ([Template starts](start-diagramming.md)). Footer: **Open Existing Space** on the left, then **Skip**.
 - **No Location step.** The document goes where new documents go by default, so the person is never asked:
   - **Stored** where [Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating)
     says: This Browser for a guest (with sign-in enabled), livehuddle for everyone else. Decided at commit by
@@ -260,7 +260,7 @@ today?" over **Create**, and creates the document when it is pressed:
   - **Filed** (livehuddle) in the `/new?folder=` / `?team=` context when there is one, an explicit placement;
     otherwise the create carries no placement and the server files it in the person's
     [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Work.
-  - **Named** after its template ("Untitled Workshop", `untitledNameForTemplate`); it is renamed in the editor.
+  - **Named** after its template ("Untitled Space", `untitledNameForTemplate`); it is renamed in the editor.
   - People change where documents go in **Settings > Documents > Default Folders**, and move a document between
     livehuddle and this browser afterwards ([Offline Mode](../006-document/offline-mode.md)).
   - Why: the step asked three questions (name, store, folder) most people answer with the default, before they
@@ -270,9 +270,9 @@ today?" over **Create**, and creates the document when it is pressed:
 - **There is no theme step.** A new document starts on the **Default** theme,
   and the Theme and canvas controls change it later; asking for a theme before
   anything is on the canvas was a decision most people could not yet make.
-- **Skip** commits the documented defaults straight away: Blank Workshop and the **Default** theme, with its start
+- **Skip** commits the documented defaults straight away: Blank Space and the **Default** theme, with its start
   closed. The header **X** backs out without creating anything ([Escape backs out](#escape-backs-out)).
-- A bottom-left **Open Existing Canvas** button navigates to `/explorer`. The
+- A bottom-left **Open Existing Space** button navigates to `/explorer`. The
   `/new` route therefore does **not** render an Explorer panel of its own; the
   button is the single, unambiguous way out.
 - The **Create** button shows an inline spinner and disables while the
@@ -409,7 +409,7 @@ default document name) without walking the wizard:
 
 **`/new?start=blank`** is the public sites' **Start Blank** ([Marketing site](../019-marketing/marketing-site.md#start-blank)),
 and the Start Blank in Explorer Home's first-run field ([Explorer Home](../013-workspace/explorer-home.md)).
-It is **not a bypass**: the wizard shows as usual. **Create** (pressed, or before hydration) makes the Blank Workshop
+It is **not a bypass**: the wizard shows as usual. **Create** (pressed, or before hydration) makes the Blank Space
 exactly as without the flag, but opens it **with its start closed** (`closeStartForBlank`), as Skip does, so whoever
 asked for a blank is not shown templates again.
 
@@ -535,13 +535,13 @@ caller's: `brand` on `/new`, the source tab's theme for a new tab.
 
 - `/document/placeholder` with no `?s=` → redirects to `/new`, no flash.
 - `/new` → welcome card on first paint.
-- Create → editor loads on `/document/<id>`, on Start a Workshop.
+- Create → editor loads on `/document/<id>`, on Start a Space.
 - Close the welcome via the header X → back to the page that opened `/new`
   (or home), no document created.
 - `/document/<id>` (existing) → editor hydrates as before.
 - `/document/shared?s=<code>` (visitor) → editor + identity-confirm modal.
 - NotFound CTA → goes to `/new`.
-- "New Canvas" from Explorer → goes to `/new`.
+- "New Space" from Explorer → goes to `/new`.
 - `/new` from the home page, Escape → back on the home page, no document created.
 - `/new` typed in, Escape → the home page.
 - `/new`, Create → the document is created at once, This Browser for a guest, filed in the
@@ -553,7 +553,7 @@ caller's: `brand` on `/new`, the source tab's theme for a new tab.
   editor loads on `/document/<id>`.
 - `/new?template=not-a-kind` (a retired one, such as `kanban`, too) → the plain wizard.
 - `/new?template=whiteboard` (or `blank`) → no wizard; an empty Workshop tab created.
-- `/new?q=retro` → the wizard; on the new document Start a Workshop opens with its search reading "retro".
+- `/new?q=retro` → the wizard; on the new document Start a Space opens with its search reading "retro".
 - `/new?mode=draw` → the plain wizard: the mode is ignored.
 - `/new?browse=brainstorm` → the plain wizard: the Brainstorm collection (and `?browse=`) was
   removed with the landing hero's Brainstorm button, its only link; the Brainstorm category remains.

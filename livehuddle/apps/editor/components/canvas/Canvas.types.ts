@@ -261,6 +261,9 @@ export type CanvasProps = {
   // A shove somebody sent US, as a direction plus a sequence number so the same
   // push isn't replayed on every render. Null until someone pushes.
   avatarShove?: { dx: number; dy: number; seq: number } | null;
+  // Opening walking (docs/specs/008-canvas/avatar-mode.md "Opening walking"): where the character starts on a tab
+  // whose way in is a Walk In button, sequenced so each opening is a fresh request. Null until a tab opens walking.
+  walkIn?: import('@/app/document/[id]/useOpenWalking').WalkIn | null;
   // Laser-pointer trails for the LaserOverlay — local user first
   // followed by any peers laser-pointing on the active tab. The
   // overlay handles fading and cleanup; Canvas just renders.

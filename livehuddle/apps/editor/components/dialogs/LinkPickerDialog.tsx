@@ -67,7 +67,7 @@ type Mode = 'tab' | 'document' | 'url';
 const MODES: { id: Mode; label: string }[] = [
   { id: 'url', label: 'External URL' },
   { id: 'tab', label: 'Tab' },
-  { id: 'document', label: 'Canvas' },
+  { id: 'document', label: 'Space' },
 ];
 
 export function LinkPickerDialog({
@@ -121,7 +121,7 @@ export function LinkPickerDialog({
       <DialogHeader
         title={title}
         subtitle={
-          urlOnly ? urlOnly.subtitle : 'Jump to a tab, open another canvas, or go to a web address.'
+          urlOnly ? urlOnly.subtitle : 'Jump to a tab, open another space, or go to a web address.'
         }
       >
         {/* A URL-restricted picker is an embed's link dialog (docs/specs/009-elements/embed-providers.md), so
@@ -183,8 +183,8 @@ export function LinkPickerDialog({
             <CompactEmptyState
               className="py-10"
               icon={<DocumentGlyph />}
-              title="No other canvases yet"
-              description="Make another canvas to link to it."
+              title="No other spaces yet"
+              description="Make another space to link to it."
             />
           ) : (
             <ul className="flex flex-col gap-1">

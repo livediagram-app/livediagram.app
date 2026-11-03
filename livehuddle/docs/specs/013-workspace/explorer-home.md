@@ -13,7 +13,7 @@ open, from the [Timeline](timeline.md)). The view, its states and its telemetry 
 
 - **Its words.** On livehuddle's address the hero greets by the reader's local hour, then asks "what are you
   drawing today?" (`heroWords` for the Canvas kind), its status pill counts canvases in every space the person is in (My Work and each team, each canvas once), and its search field's button
-  is **New Canvas**, the `/new` flow ([Explorer structure](explorer-structure.md#what-livehuddle-lends-it)).
+  is **New Space**, the `/new` flow ([Explorer structure](explorer-structure.md#what-livehuddle-lends-it)).
 - **What it makes.** The hero shows livehuddle's four kinds of work, a **Flowchart**, a **Mind Map**, a
   **Whiteboard** and a **Workshop**, each a small picture in livehuddle's blue that starts one (`/new?template=`
   `flowchart`, `mindmap`, `whiteboard`, `blank-session`), laid out as every app's are ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "What you can make, on Home's hero").

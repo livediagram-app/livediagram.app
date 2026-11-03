@@ -57,7 +57,7 @@ export function ExplorerHeaderMenu({
             key="new"
             plain
             icon={<PlusIcon />}
-            label="New Canvas"
+            label="New Space"
             onClick={run(onNewDocument)}
           />
         ) : null,

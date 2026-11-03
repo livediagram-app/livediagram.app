@@ -10,7 +10,7 @@ import {
 } from './new-document-params';
 
 describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () => {
-  it('reads ?blank as the Blank Workshop template, whatever its value', () => {
+  it('reads ?blank as the Blank Space template, whatever its value', () => {
     expect(wizardBypassKind('?blank=1')).toBe('blank-session');
     expect(wizardBypassKind('?blank')).toBe('blank-session');
     expect(wizardBypassKind('?folder=f1&blank=true')).toBe('blank-session');

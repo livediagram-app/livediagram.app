@@ -20,7 +20,7 @@ Offline Mode is **on by default for a guest and off by default for a signed-in p
 ([Save Locations → The default depends on who is creating](save-locations.md#the-default-depends-on-who-is-creating)).
 Nobody is asked when creating a document; the default decides:
 
-- The **New Canvas** wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
+- The **New Space** wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
   asks only for a mode and creates the document in the default location for who is creating
   ([Save Locations](save-locations.md)): **This Browser** for a guest, **livehuddle** for a signed-in person.
   Either moves later: **Take Offline** moves a cloud document into This Browser, **Sync Space** puts one in This Browser on
@@ -344,7 +344,7 @@ dialog's gate and in the move prompt after signing in.
   document is created under a fresh id, and the document's tab / element links and
   deck slides follow it. So a tab that forked on Take Offline returns as a new
   tab beside the original rather than overwriting it; joining them again is an
-  explicit "Add to Another Canvas". A retried create (the tab already in this document)
+  explicit "Add to Another Space". A retried create (the tab already in this document)
   keeps its ids.
 - **What went up is what is removed.** The upload takes seconds and the document
   stays editable meanwhile (here or in another tab). The local copy is removed only if
@@ -493,7 +493,7 @@ target:
   sets at once, so it MERGES the api list with the local one, and still returns
   the offline rows when the cloud fetch fails.
 - **Create is the one caller-decided branch**, because there is no registered id
-  to dispatch on yet: the New Canvas wizard calls `offlineCreateDocument`
+  to dispatch on yet: the New Space wizard calls `offlineCreateDocument`
   directly when the location is This Browser (picked, or a guest's default), and
   that call is what registers the id every later operation routes on.
 - Only the document/tab CRUD path needs the local store; server-only endpoints
@@ -525,7 +525,7 @@ category), and, per the help-registry rule, **register it in
 category, `categorySlug`, and bump the category `articleCount`). The article
 covers:
 
-- What Offline Mode is and how to create one (the New Canvas wizard's Save
+- What Offline Mode is and how to create one (the New Space wizard's Save
   location chooser, [Save Locations](save-locations.md)).
 - That it's **this-browser-only**: not synced, not backed up, and can be lost if
   you clear site data: the durability warning, stated plainly.
@@ -533,7 +533,7 @@ covers:
   (Cloud → Offline, which deletes the server copy).
 - What's unavailable offline: sharing, live collaboration and teams.
 
-Also add the standard contextual help link ([Contextual help links](../018-help/contextual-help-links.md)) from the New Canvas
+Also add the standard contextual help link ([Contextual help links](../018-help/contextual-help-links.md)) from the New Space
 wizard's data-loss warning to this article.
 
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
@@ -571,7 +571,7 @@ Track adoption without content, reusing the closed vocabulary:
 - `apps/editor/lib/api-client.ts` + `lib/api/*`: the persistence-backend seam;
   `lib/offline/offline-store.ts` (IndexedDB, `OfflineBackend` in `offline-backend.ts`) beside the API calls;
   per-document dispatch via a local index.
-- New Canvas wizard (`TemplatePicker` / `template-picker-settings.tsx`,
+- New Space wizard (`TemplatePicker` / `template-picker-settings.tsx`,
   [Dedicated route for new-document creation](../007-editor/new-document-route.md)): the **Settings** step's Save location chooser ([Save Locations](save-locations.md), the
   This Browser tile) + data-loss warning + contextual help link.
 - `EditorHeader` (`SharedBadge`): the **This Browser** badge state.
@@ -601,7 +601,7 @@ See [Open source + distribution](../002-project-scope/open-source-and-business-m
 [Document structure](document-structure.md) (document model),
 [API app](../015-api/api.md) (api + persistence),
 [Per-tab storage](per-tab-storage.md) (per-tab storage + autosave),
-[Dedicated route for new-document creation](../007-editor/new-document-route.md) (New Canvas),
+[Dedicated route for new-document creation](../007-editor/new-document-route.md) (New Space),
 [Marketing site](../019-marketing/marketing-site.md) + [Marketing assets](../019-marketing/marketing-assets.md) (landing),
 [Image element + per-owner gallery](../009-elements/images.md) (images),
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),

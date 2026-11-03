@@ -5,7 +5,7 @@ only (This Browser, [Offline Mode](offline-mode.md)). More stores may come (GitH
 one of them: it is a mirror of cloud documents, not a place a document is stored
 ([Google Drive is a mirror, not a location](#google-drive-is-a-mirror-not-a-location)).
 
-**Nobody is asked.** The New Canvas wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
+**Nobody is asked.** The New Space wizard ([Dedicated route for new-document creation](../007-editor/new-document-route.md#one-step-wizard))
 has no Location step: every new document is stored in the default location for who is creating it, below. A document
 moves between the two afterwards with [Offline Mode](offline-mode.md)'s **Sync Space** and **Take Offline**.
 (A Location step would be answered with the default by most people before they had anything on the canvas.) A

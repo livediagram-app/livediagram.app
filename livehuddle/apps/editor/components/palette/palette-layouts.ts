@@ -242,7 +242,7 @@ export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [
   'pan',
   'laser',
   'spotlight',
-  // Avatar is listed by the picker only while in force (canvas-tool-options), for every role alike.
+  // Avatar is every role's (docs/specs/013-workspace/share-roles.md): walking writes nothing.
   'avatar',
   'isometric',
   'zen',

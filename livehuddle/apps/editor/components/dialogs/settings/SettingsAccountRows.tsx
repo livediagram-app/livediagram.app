@@ -38,7 +38,7 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
           }}
         />
       ) : (
-        <ProfileHeaderCard guest={{ signInHref, signUpHref, things: 'canvases' }} />
+        <ProfileHeaderCard guest={{ signInHref, signUpHref, things: 'spaces' }} />
       )}
     </div>
   );

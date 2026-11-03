@@ -9,6 +9,7 @@ describe('isUntitledName', () => {
       'Untitled Session',
       'Untitled Illustration',
       'Untitled Plan',
+      'Untitled Space',
     ]) {
       expect(isUntitledName(n)).toBe(true);
     }

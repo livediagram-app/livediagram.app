@@ -15,29 +15,39 @@ const mount = (mode: 'workshop', onTemplate = vi.fn()) =>
 describe('StartFromTemplates', () => {
   it('names each mode its own start', () => {
     mount('workshop');
-    expect(screen.getByRole('heading', { name: 'Start a Workshop' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Start a Space' })).toBeTruthy();
     cleanup();
     mount('workshop');
-    expect(screen.getByRole('heading', { name: 'Start a Workshop' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Start a Space' })).toBeTruthy();
+  });
+
+  // "The Spaces lead": the first thing a new person sees is a place to walk into.
+  it('opens on the Spaces', () => {
+    const onTemplate = vi.fn();
+    mount('workshop', onTemplate);
+    expect(document.querySelector('[data-start-card="sailboat"]')).toBeNull();
+    fireEvent.click(document.querySelector('[data-start-card="virtual-office"]')!);
+    expect(onTemplate).toHaveBeenCalledWith('virtual-office');
   });
 
   it('lands a chosen template, and a blank closes the panel', () => {
     const onTemplate = vi.fn();
     mount('workshop', onTemplate);
+    fireEvent.click(screen.getByRole('button', { name: /^Recommended/ }));
     fireEvent.click(document.querySelector('[data-start-card="sailboat"]')!);
     expect(onTemplate).toHaveBeenCalledWith('sailboat');
     fireEvent.click(document.querySelector('[data-start-card="blank-session"]')!);
     expect(onTemplate).toHaveBeenCalledWith('blank-session');
-    expect(screen.queryByRole('heading', { name: 'Start a Workshop' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Start a Space' })).toBeNull();
   });
 
   it('remembers a close on its tab', () => {
     mount('workshop');
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
-    expect(screen.queryByRole('heading', { name: 'Start a Workshop' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Start a Space' })).toBeNull();
     cleanup();
     mount('workshop');
-    expect(screen.queryByRole('heading', { name: 'Start a Workshop' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Start a Space' })).toBeNull();
   });
 
   it('closes on Escape once its search has nothing to clear', () => {
@@ -46,9 +56,9 @@ describe('StartFromTemplates', () => {
     fireEvent.change(search, { target: { value: 'mind' } });
     fireEvent.keyDown(search, { key: 'Escape' });
     expect((search as HTMLInputElement).value).toBe('');
-    expect(screen.getByRole('heading', { name: 'Start a Workshop' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Start a Space' })).toBeTruthy();
     fireEvent.keyDown(search, { key: 'Escape' });
-    expect(screen.queryByRole('heading', { name: 'Start a Workshop' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Start a Space' })).toBeNull();
   });
 });
 
@@ -56,7 +66,7 @@ describe('StartFromTemplates', () => {
 // stay in reach; with the bars folded away (a sideways phone) there is nothing to stand on.
 describe('StartFromTemplates on a phone', () => {
   const frameOf = () =>
-    screen.getByRole('heading', { name: 'Start a Workshop' }).closest('section')!.parentElement!;
+    screen.getByRole('heading', { name: 'Start a Space' }).closest('section')!.parentElement!;
 
   it('stands on the edge with no tab bar showing', () => {
     mount('workshop');
