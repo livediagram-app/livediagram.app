@@ -108,7 +108,7 @@ drags for collaborators.
   map built once per document change), plus arrows whose bounds meet a changed box's old or new box
   (each changed box asks `links.rects`, a `RectGrid` of the arrows' route-behind rects built once
   per document change, `eachRectMeeting`: linear in what moved, never arrows × moved).
-- `previewArrowGeometry(arrow, index, grid, overlay, moved, tabFinish)`: `moved` is
+- `previewArrowGeometry(arrow, index, grid, overlay, moved)`: `moved` is
   `movedBoxesGrid(overlay)`, an element grid of the changed and added boxes built once per derive;
   an arrow's holes take the document grid's candidates minus the changed and removed ids, plus
   `queryElementGrid(moved, queryRect)`, instead of every moved box.
@@ -233,9 +233,9 @@ type DragPreviewOp =
   `translate` write per node whose offset changed. No index, grid, label pass, Map or
   selection derivation over the whole board, except the selection's `applyOverlay` (linear).
 - The large-selection board (1,770 elements), all of it moved: 0 element renders a frame (all
-  ride), the arrow work at most 16 ms of CPU (`drag-affected-arrows.perf.test.ts`, 6.5 ms measured
-  with every arrow re-routed; 94 ms before the grids), and at most 16 ms of script per pointer move
-  in the bench (9.4 ms measured; 104 ms before).
+  ride), the arrow work at most 16 ms of CPU (`drag-affected-arrows.perf.test.ts`, 5.0 ms measured
+  with every arrow re-routed; 92 ms before the grids), and at most 16 ms of script per pointer move
+  in the bench (9.2 ms measured; 99 ms before).
 - Wire: at most 30 messages a second per dragger, each at most `DRAG_PREVIEW_MAX_ELEMENTS` patches.
 
 ## Presentation and UX
