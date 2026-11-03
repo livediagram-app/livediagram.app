@@ -106,6 +106,31 @@ not blank; `N` toggles it. It opens the **card viewer** under the HUD:
 - Auto-advance pauses while it is open, as it does for any popover. Screen readers hear the card's position and text
   in a polite live region as it changes.
 
+## Two people writing at once
+
+Two Editors can write cards on the same slide at the same time, each in their own editor, and both keep their work.
+The deck is saved whole, so the server merges the slide's cards **card by card** (by card id) on every deck write:
+
+- Each deck save carries the deck it was **built on**: the deck the editor last saved, or loaded when nothing has been
+  saved yet. Against it the server tells what this editor changed from what someone else changed in the meantime.
+- **A card this editor changed** (its text, or a card it added) is written as this editor has it.
+- **A card this editor did not change** keeps the stored card, so another person's edit to it is not overwritten by an
+  older copy.
+- **A card another person added** since that deck stays, after the card it followed in the stored list (or first when
+  none of those is left).
+- **A card removed** by either person goes, unless the other person changed it since (then their edit keeps it).
+- **The order** is this editor's, with the cards only the other person has placed as above. The slides themselves,
+  their names, budgets and everything else in the deck are written as this editor has them, as before.
+- **The same card** written by both at once is last-write-wins: the later save's text stands.
+- A slide still holds at most 20 cards after a merge: past that, the stored list's extras are read off by the usual
+  parse.
+- A save that carries no base (an older editor, a script) is written as sent, as before.
+- New card ids are unique to the editor that made them (a counter and a few random characters), so two people adding a
+  card at once never make one id for two cards.
+
+The merge is the server's: the other person's cards reach an open editor on its next load, not live (the deck has no
+room op, [Presentation mode](presentation-mode.md)). A presenter who reloads sees everyone's cards.
+
 ## PowerPoint
 
 - **Export** ([Office export](../020-import-export/office-export.md)): a slide's cards (not blank) become its notes
@@ -129,7 +154,8 @@ they are what the presenter means to say, not what the document shows.
 | **Participant** | Reads and flips through the cards in the presenter view. Never sees the title-bar Notes or the Slide Deck. |
 | **Viewer**      | The same as a Participant: presenting is every role's, changing the deck is an Editor's.                   |
 
-The deck is document metadata saved through the document's PUT, which is `gateEdit`; nothing new reaches the server.
+The deck is document metadata saved through the document's PUT, which is `gateEdit`; the deck it was built on
+("Two people writing at once") travels in the same PUT, under the same gate.
 
 ## Telemetry
 
@@ -144,4 +170,4 @@ The deck is document metadata saved through the document's PUT, which is `gateEd
 - Rich text, titles or pictures on a note card (a flashcard has them; a note card is a line or two to glance at).
 - A card per page of a flashcard stack, or turning a slide's cards into a flashcard tab.
 - A second-window presenter console (still out of scope, [Presentation mode](presentation-mode.md)).
-- Live merging of two people writing cards on the same slide at once: the deck stays last-write-wins.
+- Showing another person's cards live while both write: they arrive with the next load ("Two people writing at once").

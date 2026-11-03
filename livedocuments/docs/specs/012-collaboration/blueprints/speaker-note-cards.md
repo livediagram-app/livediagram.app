@@ -6,23 +6,25 @@ Derived from [Speaker note cards](../speaker-note-cards.md). The model is pure a
 
 ## Domain and naming
 
-| Term            | Identifier                                                                                               |
-| --------------- | -------------------------------------------------------------------------------------------------------- |
-| note card       | `NoteCard` `{ id, text }`, `packages/document/src/slide-notes.ts`                                        |
-| a slide's cards | `Slide.noteCards`; read with `slideNoteCards(slide)` (old `notes` as one card, id `notes`)               |
-| blank           | `isBlankNoteCard(card)` (text has no non-space character)                                                |
-| cards to show   | `spokenNoteCards(slide)` (not blank, in order)                                                           |
-| has notes       | `slideHasNotes(slide)` (a card not blank)                                                                |
-| mirror          | `noteCardsText(cards)` (not blank, trimmed, joined by `\n\n`)                                            |
-| write           | `withNoteCards(slide, cards)` (sets `noteCards` and `notes`, or removes both when empty)                 |
-| speaking time   | `noteCardSpeakingSeconds(text)`; labelled with `speakingTimeLabel` (`flashcards.ts`)                     |
-| new id          | `newNoteCardId(cards)` (`c` + base-36 counter past the highest, never reused in the list)                |
-| list edits      | `apps/editor/lib/note-card-edits.ts`: `addNoteCard`, `setNoteCardText`, `moveNoteCard`, `removeNoteCard` |
-| note card list  | `NoteCardList` (`components/slide-notes/NoteCardList.tsx`), its card `NoteCardItem`                      |
-| card viewer     | `PresenterNoteCards` (`components/slide-notes/PresenterNoteCards.tsx`)                                   |
-| card glyph      | `NoteCardsIcon` (`components/slide-notes/NoteCardsIcon.tsx`)                                             |
-| deck verb       | `useSlideDeck().setSlideNoteCards(slideId, cards)` (replaces `setSlideNotes`)                            |
-| page controls   | `PageDeckControls.slideOf(pageId).noteCards`, `PageDeckControls.setNoteCards`                            |
+| Term            | Identifier                                                                                                     |
+| --------------- | -------------------------------------------------------------------------------------------------------------- |
+| note card       | `NoteCard` `{ id, text }`, `packages/document/src/slide-notes.ts`                                              |
+| a slide's cards | `Slide.noteCards`; read with `slideNoteCards(slide)` (old `notes` as one card, id `notes`)                     |
+| blank           | `isBlankNoteCard(card)` (text has no non-space character)                                                      |
+| cards to show   | `spokenNoteCards(slide)` (not blank, in order)                                                                 |
+| has notes       | `slideHasNotes(slide)` (a card not blank)                                                                      |
+| mirror          | `noteCardsText(cards)` (not blank, trimmed, joined by `\n\n`)                                                  |
+| write           | `withNoteCards(slide, cards)` (sets `noteCards` and `notes`, or removes both when empty)                       |
+| speaking time   | `noteCardSpeakingSeconds(text)`; labelled with `speakingTimeLabel` (`flashcards.ts`)                           |
+| new id          | `newNoteCardId(cards)` (`c` + base-36 counter past the highest, `_` + 4 random base-36 characters)             |
+| merge           | `mergeNoteCards(base, mine, theirs)`, `mergePresentationNoteCards(mine, base, theirs)`, `slide-notes-merge.ts` |
+| deck base       | the PUT body's `presentationBase`; the editor's `deckBaseRef` (`useEditorState`)                               |
+| list edits      | `apps/editor/lib/note-card-edits.ts`: `addNoteCard`, `setNoteCardText`, `moveNoteCard`, `removeNoteCard`       |
+| note card list  | `NoteCardList` (`components/slide-notes/NoteCardList.tsx`), its card `NoteCardItem`                            |
+| card viewer     | `PresenterNoteCards` (`components/slide-notes/PresenterNoteCards.tsx`)                                         |
+| card glyph      | `NoteCardsIcon` (`components/slide-notes/NoteCardsIcon.tsx`)                                                   |
+| deck verb       | `useSlideDeck().setSlideNoteCards(slideId, cards)` (replaces `setSlideNotes`)                                  |
+| page controls   | `PageDeckControls.slideOf(pageId).noteCards`, `PageDeckControls.setNoteCards`                                  |
 
 ## Constants and configuration
 
@@ -55,6 +57,21 @@ Derived from [Speaker note cards](../speaker-note-cards.md). The model is pure a
   card.
 - **Community** (`redactDocumentForCommunity` in `apps/api/src/redact-document.ts`): drops `notes` and `noteCards`.
 - No migration; an older editor reads the mirror.
+
+### Concurrent writes (spec "Two people writing at once")
+
+- The editor keeps `deckBaseRef`: the serialised deck it last saved (or the stored deck it loaded). Each deck save sends
+  `{ presentation, presentationBase }` and then moves the ref on to what it sent. The Offline Mode store keeps no base.
+- `PUT /api/documents/:id` with both strings: `mergeDocumentPresentation` (`document-room/document-content.ts`) reads the
+  stored deck, merges and writes it in the document's Durable Object with no other I/O in between, so two saves never
+  interleave their read and write. A base that does not parse, or no stored deck, writes `presentation` as sent.
+- `mergePresentationNoteCards(mine, base, theirs)`: for each slide of `mine` (deck by index, slide by id), when the
+  merged cards differ from `mine`'s, the slide is `withNoteCards(slide, merged)` (so the `notes` mirror follows); every
+  other field of the deck is `mine`'s. Cards read through `slideNoteCards`, so an old `notes` slide is its one card.
+- `mergeNoteCards(base, mine, theirs)` (by id): a card in `mine` whose text differs from `base` (or is not in `base`)
+  keeps `mine`'s text; a card in `mine` the same as in `base` takes `theirs`' text, and goes when `theirs` removed it; a
+  card in `base` and `theirs` but not `mine` (removed here) goes unless `theirs` changed it; a card only in `theirs`
+  is placed after its nearest earlier neighbour in `theirs` that the result holds, else first. Cut to `NOTE_CARDS_MAX`.
 
 ## Interfaces and contracts
 
@@ -188,6 +205,9 @@ cards, one point each. You flip through them while you present.", "Add First Car
 | Rule                                                                                                 | Test                                                                                            |
 | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | Parse, read old notes, mirror, limits                                                                | `packages/document/src/slide-notes.test.ts`                                                     |
+| Merge by card id (each rule), deck merge, unique ids                                                 | `packages/document/src/slide-notes-merge.test.ts`, `slide-notes.test.ts`                        |
+| Two clients writing different cards on one slide both survive; no base is as sent                    | `apps/api/src/routes/deck-note-card-merge.test.ts`                                              |
+| The editor sends the deck it built on, then moves it on                                              | `apps/editor/lib/api/documents.test.ts`                                                         |
 | List edits                                                                                           | `apps/editor/lib/note-card-edits.test.ts`                                                       |
 | The list: empty state, add, open one at a time, blank removed, keys, reorder, remove and undo, limit | `components/slide-notes/NoteCardList.test.tsx`                                                  |
 | Title-bar button names, popover, phone sheet, Esc to the open card first                             | `components/canvas/PageNotesButton.test.tsx`                                                    |
