@@ -11,7 +11,7 @@ import { BOUNDARY_STYLES } from './boundary';
 import { CARD_MEDIA } from './card';
 import { CHIP_LOOKS } from './chip';
 import { PYRAMID_VARIANTS } from './concept';
-import { FONTS } from '@liveworkspace/model-core/fonts';
+import { PLANNER_EXCLUDED_FONT_IDS, PLANNER_FONTS } from './planner-fonts';
 import { ICON_WEIGHTS } from '@liveworkspace/model-core/icon-weight';
 import { STACK_ALIGNS, STACK_DIRECTIONS } from './stack';
 
@@ -40,15 +40,37 @@ export const ELEMENT_FIELD_VALUES: Readonly<Record<string, readonly string[]>> =
   sequenceAnim: ['play'],
   // A line-art icon's stroke (icon-weight.ts): an icon's strokeWidth is not its weight.
   iconWeight: ICON_WEIGHTS,
-  // The editor's faces (fonts.ts): a family name ("serif", "Georgia") drew in the tab's font in silence.
-  font: FONTS.map((f) => f.id),
+  // The faces liveplanner offers (planner-fonts.ts): a family name ("serif", "Georgia") drew in the tab's font in
+  // silence, and a face the pickers leave out is not offered to agents either.
+  font: PLANNER_FONTS.map((f) => f.id),
 };
 
+// Values a field is no longer offered but keeps as stored (docs/specs/004-interface-design/fonts.md "Not offered in
+// liveplanner"): a whole element read back and written again round-trips with them, while a set of a new value
+// refuses them, as the pickers do.
+export const ELEMENT_FIELD_KEPT_VALUES: Readonly<Record<string, readonly string[]>> = {
+  font: PLANNER_EXCLUDED_FONT_IDS,
+};
+
+// How a value is written: `stored` is a whole element (create_project, add_tab, update_project's replace and ops
+// `add`), which may carry a kept value; `new` is a set of a fresh value (an edit operation's `set`), which may not.
+export type FieldValueWrite = 'stored' | 'new';
+
 // Why a field's value is off its list, as a sentence ending in the values it takes; null when it fits or the field
-// has no closed list.
-export function fieldValueIssue(key: string, value: unknown): string | null {
+// has no closed list. A kept value fits a `stored` write only.
+export function fieldValueIssue(
+  key: string,
+  value: unknown,
+  write: FieldValueWrite = 'stored',
+): string | null {
   const values = Object.hasOwn(ELEMENT_FIELD_VALUES, key) ? ELEMENT_FIELD_VALUES[key]! : null;
   if (!values || value === undefined || value === null || values.includes(value as string))
+    return null;
+  if (
+    write === 'stored' &&
+    Object.hasOwn(ELEMENT_FIELD_KEPT_VALUES, key) &&
+    ELEMENT_FIELD_KEPT_VALUES[key]!.includes(value as string)
+  )
     return null;
   // A text size may also be a pixel number (a custom size, or the one a Step number derives from its disc); the
   // renderer clamps it, so any finite number fits.

@@ -497,7 +497,12 @@ export {
   SEQUENCE_MAX_PARTICIPANTS,
   type SequenceDiagram,
 } from './mermaid-sequence';
-export { ELEMENT_FIELD_VALUES, fieldValueIssue } from './element-field-values';
+export {
+  ELEMENT_FIELD_KEPT_VALUES,
+  ELEMENT_FIELD_VALUES,
+  fieldValueIssue,
+  type FieldValueWrite,
+} from './element-field-values';
 export { inlineIconGap, inlineIconMetrics } from './svg-render-inline-icon';
 export { SKETCH_ART_FILTER_ID, SKETCH_FACE_FILTER, svgSketchArtFilter } from './svg-render-sketch';
 export * from './svg-render-plan-sheet';

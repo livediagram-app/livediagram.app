@@ -304,7 +304,9 @@ must be one a liveplanner tab holds (§4.7a); any other is refused naming it (`e
 element a liveplanner tab holds; read liveplanner://schema/elements.`). On a Plan element it is checked as an edit
 operation's `set` checks a field: a field its type does not have is refused with the fields like it, and a value off
 a closed vocabulary is refused naming the values ([Edit operations](../024-agents/edit-operations.md)). The check
-passes every element of every template, so a tab read back as JSON writes again unchanged.
+passes every element of every template, so a tab read back as JSON writes again unchanged, and accepts a value
+kept as stored but no longer offered (a font the pickers leave out, [Fonts](../004-interface-design/fonts.md) "Not
+offered in liveplanner"), which an ops `update` (a `set`) refuses; the values a refusal names are the offered ones.
 
 ### 4.5 `list_templates`
 

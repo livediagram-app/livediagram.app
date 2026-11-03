@@ -54,8 +54,9 @@ export function writeFieldsOnto<T extends Element>(
         LIVE_HINT,
       );
     if (!takes.includes(key)) return unknownField(operation, kindOf(el), key, takes);
-    // A closed vocabulary's value off its list is refused with the list (element-field-values.ts).
-    if (fieldValueIssue(key, value))
+    // A closed vocabulary's value off its list is refused with the list (element-field-values.ts), and so is a value
+    // no longer offered (a font the pickers leave out): a `set` writes a new value.
+    if (fieldValueIssue(key, value, 'new'))
       return invalidValue(
         operation,
         key,

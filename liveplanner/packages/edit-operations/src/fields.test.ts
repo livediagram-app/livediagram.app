@@ -60,6 +60,12 @@ describe('writeFieldsOnto', () => {
     ]);
   });
 
+  // docs/specs/004-interface-design/fonts.md "Not offered in liveplanner": a set never writes a face the pickers
+  // leave out (no Plan element takes a font by `set`; the vocabulary refuses it as a new value besides).
+  it('refuses a set of Permanent Marker', () => {
+    expect(refusal(byId('w1'), { font: 'permanent-marker' }).code).toBe('unknown_field');
+  });
+
   it('reads a field as stored', () => {
     expect(fieldValue(byId('w1'), 'planView')).toEqual({ view: 'workload' });
   });
