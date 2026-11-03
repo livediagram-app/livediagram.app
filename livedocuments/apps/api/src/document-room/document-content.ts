@@ -2,7 +2,12 @@
 // outline a document read carries, the slide deck, the document row a create makes, and a copy's export and
 // import. Runs inside the document's Durable Object, on `env.DOCUMENT_DB`.
 
-import { remapTabLinks, type Element } from '@livedocuments/document';
+import {
+  mergePresentationNoteCards,
+  parseStoredPresentation,
+  remapTabLinks,
+  type Element,
+} from '@livedocuments/document';
 import { redactTabDataForCommunity } from '@liveworkspace/community/app';
 import { redactTabDataAuthors } from '../comments';
 import { tabStatsOfData, tabStatsStatement } from '../db/tab-stats';
@@ -212,6 +217,29 @@ export async function setDocumentPresentation(
   await env.DOCUMENT_DB.prepare('UPDATE document SET presentation = ?, saved_at = ? WHERE id = ?')
     .bind(presentation, Date.now(), documentId)
     .run();
+}
+
+// A deck save that says what it was built on (docs/specs/012-collaboration/speaker-note-cards.md "Two people writing at
+// once"): each slide's note cards merged by card id with the stored deck, then written. The read and the write are
+// this object's own storage with no other I/O between them, so a second save cannot slip in between and be lost. A
+// base that does not parse, or no stored deck, writes the deck as sent.
+export async function mergeDocumentPresentation(
+  env: DocumentEnv,
+  documentId: string,
+  presentation: string,
+  base: string | null,
+): Promise<void> {
+  const row = await env.DOCUMENT_DB.prepare('SELECT presentation FROM document WHERE id = ?')
+    .bind(documentId)
+    .first<{ presentation: string | null }>();
+  const mine = parseStoredPresentation(presentation);
+  const theirs = parseStoredPresentation(row?.presentation ?? null);
+  const before = base === null ? null : parseStoredPresentation(base);
+  const merged =
+    mine && theirs && (base === null || before)
+      ? JSON.stringify(mergePresentationNoteCards(mine, before, theirs))
+      : presentation;
+  await setDocumentPresentation(env, documentId, merged);
 }
 
 // ---------- Copies --------------------------------------------------------------------------------------------
