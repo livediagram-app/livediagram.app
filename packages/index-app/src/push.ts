@@ -64,6 +64,8 @@ export type ActionPush = {
 
 export type Pusher<E> = {
   pushComment(env: E, input: CommentPush): Promise<void>;
+  /** A save's comments on one item: one team read, one index ask a person, and one send for them all. */
+  pushComments(env: E, inputs: readonly CommentPush[]): Promise<void>;
   pushActionAssigned(env: E, input: ActionPush): Promise<void>;
 };
 
@@ -130,10 +132,35 @@ export function freshCommentsInThreads<C extends ThreadComment>(
 }
 
 export function createPusher<E>(deps: PusherDeps<E>): Pusher<E> {
+  // What one call reads, read once however many comments it covers: each team's people and each index ask.
+  type Reads = {
+    team(teamId: string | null): Promise<readonly TeamPerson[] | null>;
+    grants(itemId: string, personId: string): Promise<boolean>;
+  };
+  function readsFor(env: E): Reads {
+    const teams = new Map<string, Promise<readonly TeamPerson[] | null>>();
+    const grants = new Map<string, Promise<boolean>>();
+    return {
+      team(teamId) {
+        if (!teamId) return Promise.resolve(null);
+        let read = teams.get(teamId);
+        if (!read) teams.set(teamId, (read = deps.teamPeople(env, teamId)));
+        return read;
+      },
+      grants(itemId, personId) {
+        const key = `${itemId}\n${personId}`;
+        let ask = grants.get(key);
+        if (!ask)
+          grants.set(key, (ask = deps.indexGrants(env, itemId, personId).catch(() => false)));
+        return ask;
+      },
+    };
+  }
+
   // Who of these may read the item: the owner, its team's joined people, and anyone the index grants it. One team read
   // and one index ask a person outside the team, whatever the count.
   async function readers(
-    env: E,
+    reads: Reads,
     item: PushItem,
     ids: readonly string[],
     team: readonly TeamPerson[] | null,
@@ -143,9 +170,7 @@ export function createPusher<E>(deps: PusherDeps<E>): Pusher<E> {
     );
     const checks = await Promise.all(
       ids.map(async (id) =>
-        id === item.ownerId || joined.has(id)
-          ? true
-          : deps.indexGrants(env, item.id, id).catch(() => false),
+        id === item.ownerId || joined.has(id) ? true : reads.grants(item.id, id),
       ),
     );
     return ids.filter((_, i) => checks[i]);
@@ -159,63 +184,79 @@ export function createPusher<E>(deps: PusherDeps<E>): Pusher<E> {
     return ids.filter((_, i) => !present.has(tags[i]!));
   }
 
-  async function deliver(
+  // The notifications one event makes: the picked people who can read the item and aren't looking at it.
+  async function notificationsFor(
     env: E,
+    reads: Reads,
     item: PushItem,
     picked: Map<string, PushKind>,
     team: readonly TeamPerson[] | null,
     who: string | null,
     url: string,
     tag: string,
-  ): Promise<void> {
-    if (picked.size === 0) return;
+  ): Promise<PushNotification[]> {
+    if (picked.size === 0) return [];
     const allowed = await readers(
-      env,
+      reads,
       item,
       [...picked.keys()].slice(0, PUSH_RECIPIENTS_MAX),
       team,
     );
     const reach = await away(env, item.id, allowed);
-    if (reach.length === 0) return;
-    await deps.send(
-      env,
-      reach.map((userId) => {
-        const kind = picked.get(userId)!;
-        return { userId, kind, title: pushTitle(kind, who, item.name), url, tag };
-      }),
-    );
+    return reach.map((userId) => {
+      const kind = picked.get(userId)!;
+      return { userId, kind, title: pushTitle(kind, who, item.name), url, tag };
+    });
+  }
+
+  // A person posted a comment (a new thread or a reply): who they mentioned on a team item (when they are one of its
+  // joined people, as for the mention email), who wrote earlier in the thread, and the item's owner.
+  async function commentNotifications(
+    env: E,
+    reads: Reads,
+    input: CommentPush,
+  ): Promise<PushNotification[]> {
+    const { item, authorId } = input;
+    if (!deps.isAccount(authorId)) return [];
+    const picked = new Map<string, PushKind>();
+    const pick = (id: string | null | undefined, kind: PushKind) => {
+      if (id && id !== authorId && deps.isAccount(id) && !picked.has(id)) picked.set(id, kind);
+    };
+    const team = await reads.team(item.teamId);
+    if (
+      team &&
+      input.mentions?.length &&
+      team.some((p) => p.userId === authorId && p.status === 'joined')
+    )
+      for (const person of teamTargets(team, input.mentions.slice(0, input.mentionsMax), authorId))
+        pick(person.userId, 'mention');
+    for (const id of input.threadAuthorIds) pick(id, 'threadReply');
+    pick(item.ownerId, 'comment');
+    return notificationsFor(env, reads, item, picked, team, input.authorName, input.url, input.tag);
+  }
+
+  async function pushComments(env: E, inputs: readonly CommentPush[]): Promise<void> {
+    try {
+      const reads = readsFor(env);
+      // Each comment on its own: one whose checks fail is logged and left out, and the rest still go.
+      const each = await Promise.all(
+        inputs.map((input) =>
+          commentNotifications(env, reads, input).catch((error: unknown) => {
+            console.warn('[push] comment_failed', { error: String(error) });
+            return [];
+          }),
+        ),
+      );
+      const notifications = each.flat();
+      if (notifications.length > 0) await deps.send(env, notifications);
+    } catch (error) {
+      console.warn('[push] comment_failed', { error: String(error) });
+    }
   }
 
   return {
-    // A person posted a comment (a new thread or a reply): who they mentioned on a team item (when they are one of its
-    // joined people, as for the mention email), who wrote earlier in the thread, and the item's owner.
-    async pushComment(env, input) {
-      try {
-        const { item, authorId } = input;
-        if (!deps.isAccount(authorId)) return;
-        const picked = new Map<string, PushKind>();
-        const pick = (id: string | null | undefined, kind: PushKind) => {
-          if (id && id !== authorId && deps.isAccount(id) && !picked.has(id)) picked.set(id, kind);
-        };
-        const team = item.teamId ? await deps.teamPeople(env, item.teamId) : null;
-        if (
-          team &&
-          input.mentions?.length &&
-          team.some((p) => p.userId === authorId && p.status === 'joined')
-        )
-          for (const person of teamTargets(
-            team,
-            input.mentions.slice(0, input.mentionsMax),
-            authorId,
-          ))
-            pick(person.userId, 'mention');
-        for (const id of input.threadAuthorIds) pick(id, 'threadReply');
-        pick(item.ownerId, 'comment');
-        await deliver(env, item, picked, team, input.authorName, input.url, input.tag);
-      } catch (error) {
-        console.warn('[push] comment_failed', { error: String(error) });
-      }
-    },
+    pushComment: (env, input) => pushComments(env, [input]),
+    pushComments,
 
     // A teammate assigned someone an action (after the app checked both people and the item).
     async pushActionAssigned(env, input) {
@@ -226,8 +267,19 @@ export function createPusher<E>(deps: PusherDeps<E>): Pusher<E> {
         const id = input.assigneeUserId;
         if (id && id !== input.assignerId && deps.isAccount(id)) picked.set(id, 'action');
         if (picked.size === 0) return;
-        const team = item.teamId ? await deps.teamPeople(env, item.teamId) : null;
-        await deliver(env, item, picked, team, input.assignerName, input.url, input.tag);
+        const reads = readsFor(env);
+        const team = await reads.team(item.teamId);
+        const notifications = await notificationsFor(
+          env,
+          reads,
+          item,
+          picked,
+          team,
+          input.assignerName,
+          input.url,
+          input.tag,
+        );
+        if (notifications.length > 0) await deps.send(env, notifications);
       } catch (error) {
         console.warn('[push] action_failed', { error: String(error) });
       }
