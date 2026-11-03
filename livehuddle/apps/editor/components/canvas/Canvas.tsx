@@ -671,6 +671,7 @@ function CanvasView(props: CanvasProps) {
                 shirt={peer.color}
                 name={peer.name}
                 standingOn={null}
+                glideMs={peer.glideMs}
               />
             ))}
             {/* A Reaction Pad burst (docs/specs/009-elements/reaction-pad.md) thrown around the CHARACTER rather

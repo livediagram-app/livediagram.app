@@ -221,7 +221,16 @@ describe('buildRemoteAvatarRows', () => {
   it('joins each peer character with their live name + colour', () => {
     const peer = p('peer', { name: 'Ada', color: '#ff0000' });
     const rows = buildRemoteAvatarRows(new Map([['peer', entry('t1')]]), byId(peer), 'me', 't1');
-    expect(rows).toEqual([{ id: 'peer', name: 'Ada', color: '#ff0000', avatar: walker }]);
+    expect(rows).toEqual([
+      { id: 'peer', name: 'Ada', color: '#ff0000', avatar: walker, glideMs: 0 },
+    ]);
+  });
+
+  // docs/specs/008-canvas/avatar-mode.md "A busy room"
+  it('glides a busy room’s characters over one step, and nobody else’s', () => {
+    const crowd = Array.from({ length: 11 }, (_, i) => p(`p${i}`));
+    const rows = buildRemoteAvatarRows(new Map([['p1', entry('t1')]]), byId(...crowd), 'me', 't1');
+    expect(rows[0]?.glideMs).toBe(50);
   });
 
   it('drops self, other tabs, and participants who have left the room', () => {

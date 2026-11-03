@@ -35,6 +35,7 @@
     "./palette": "./src/palette.ts",
     "./reaction-bursts": "./src/reaction-bursts.ts",
     "./reactions": "./src/reactions.ts",
+    "./relay": "./src/relay.ts",
     "./scene": "./src/scene.ts",
     "./seats": "./src/seats.ts",
     "./speech": "./src/speech.ts",

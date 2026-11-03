@@ -17,6 +17,7 @@ const PURE = [
   'palette',
   'reaction-bursts',
   'reactions',
+  'relay',
   'scene',
   'seats',
   'speech',

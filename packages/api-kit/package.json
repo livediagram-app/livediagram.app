@@ -25,6 +25,7 @@
     "./room-element-ops": "./src/room-element-ops.ts",
     "./room-follows": "./src/room-follows.ts",
     "./room-multiplayer": "./src/room-multiplayer.ts",
+    "./room-presence-relay": "./src/room-presence-relay.ts",
     "./sealed": "./src/sealed.ts",
     "./testing/unavailable-d1": "./src/testing/unavailable-d1.ts",
     "./typed-text": "./src/typed-text.ts",

@@ -7,7 +7,9 @@
 // same component draws PEERS' characters (from their presence snapshot), which
 // is why every animation input is a prop rather than read from the walk hook.
 
+import { useLayoutEffect, useRef } from 'react';
 import type { DrinkKind } from '../office-geometry';
+import { avatarGlides } from '../relay';
 import { avatarStatusColour, avatarStatusLabel, type AvatarStatus } from '../status';
 import { IDENTITY_FILL } from '@liveworkspace/ui/identity-fill';
 import { avatarBindings } from '../bindings';
@@ -46,6 +48,7 @@ export function AvatarWalker({
   name,
   onStand,
   status = null,
+  glideMs = 0,
 }: {
   // Feet position in canvas coords.
   pos: { x: number; y: number };
@@ -79,9 +82,23 @@ export function AvatarWalker({
   onStand?: () => void;
   // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none.
   status?: AvatarStatus | null;
+  // A peer's character in a busy room (docs/specs/008-canvas/avatar-mode.md "A busy room"): how long it slides to
+  // each new position while it walks (avatarGlideMs), or 0 to draw each packet where it lands.
+  glideMs?: number;
 }) {
   const scale = avatarScale(config.size);
   const box = avatarBox(scale);
+  // The glide is a CSS transition on the box, set (or cleared) before the browser styles the new position, so a
+  // walking step slides and a jump (a portal, a pad, a seat) lands at once. Written to the element rather than the
+  // style prop: whether a move glides depends on where the character stood before it.
+  const placed = useRef<HTMLDivElement>(null);
+  const from = useRef(pos);
+  useLayoutEffect(() => {
+    const el = placed.current;
+    const glides = avatarGlides(from.current, pos, glideMs, walking);
+    from.current = pos;
+    if (el) el.style.transition = glides ? `left ${glideMs}ms linear, top ${glideMs}ms linear` : '';
+  }, [pos, glideMs, walking]);
   return (
     <>
       {/* The status for a screen reader (docs/specs/008-canvas/avatar-mode.md "Status"): the character itself is
@@ -110,6 +127,7 @@ export function AvatarWalker({
         />
       ) : null}
       <div
+        ref={placed}
         aria-hidden
         data-avatar={onStand ? 'self' : 'peer'}
         // Your own character is the Avatar tour's push step's anchor (docs/specs/008-canvas/avatar-tour.md).

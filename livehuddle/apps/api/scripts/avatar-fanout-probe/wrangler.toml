@@ -1,0 +1,13 @@
+# The avatar fan-out probe (README.md beside this file). Local only: `wrangler dev` runs it on workerd. It names no
+# account and is never deployed.
+name = "avatar-fanout-probe"
+main = "worker.mjs"
+compatibility_date = "2026-05-29"
+
+[[durable_objects.bindings]]
+name = "DOCUMENT_ROOM"
+class_name = "DocumentRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["DocumentRoom"]

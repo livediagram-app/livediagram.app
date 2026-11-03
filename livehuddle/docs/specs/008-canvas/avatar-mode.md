@@ -112,13 +112,44 @@ Parsing is **field by field with per-field fallbacks**: a value this build doesn
 
 **Everyone sees everyone.** The character rides the presence channel as an `avatar` `RoomOp` (alongside `cursor` / `select` / `laser` / `tab-focus` in `@livehuddle/api-schema`), so a whole room can walk around one canvas at once.
 
-- The packet is deliberately tiny: feet position, facing, the four costume tokens, walking flag, step frame, hop height, wave frame, and goes out at the **same ~30 Hz throttle as the cursor** (a packet a window holds back is sent as the window ends, so the last one said, a status picked or the step a walk ends on, is never the one dropped), from the same gates (hydrated, a document id, and either a share link or a team document). The costume is **optional on the wire**, so a packet from an older client still parses; the receiver runs it through the same field-by-field parser as storage and falls back to the default character.
+- The packet is deliberately tiny: feet position, facing, the four costume tokens, walking flag, step frame, hop height, wave frame, and goes out at the **same ~30 Hz throttle as the cursor**, stepped down in a room of more than 10 ([A busy room](#a-busy-room)) (a packet a window holds back is sent as the window ends, so the last one said, a status picked or the step a walk ends on, is never the one dropped), from the same gates (hydrated, a document id, and either a share link or a team document). The costume is **optional on the wire**, so a packet from an older client still parses; the receiver runs it through the same field-by-field parser as storage and falls back to the default character.
 - It is **ephemeral presence, not a mutation**: `avatar` is in the room's `PRESENCE_OP_KINDS`, so it relays unordered, from any role (**including view-role**: an audience member walking around a canvas someone linked them to is as harmless as their cursor), is never persisted, and is never replayed to a reconnecting client.
 - **Leaving the mode publishes `avatar: null`**, which deletes the entry on every peer, and a peer who disconnects is pruned with the rest of their presence, so nobody is left standing on a canvas after they've gone.
 - Peers' characters are **scoped to the tab** they were published on and are drawn with **their own presence colour on the shirt plus a small name chip** above the head, so a room of walkers stays legible. Your own character has no chip (you know who you are).
 - Peer characters render **whether or not you are in Avatar mode yourself**: someone else walking you through their canvas is worth seeing from the Select tool.
 - **You can push each other.** Clicking a peer's character (in Avatar mode) walks yours over to them and, on arrival, sends an `avatar-push` op naming them plus a unit direction. Only that participant acts on it, by sliding their own character a short way (70 canvas px) along the direction, so a push is a **request to the owner**, never a remote write, and someone who has already left the mode simply ignores it. Same presence trust level as `avatar`: unordered, any role, never logged, never replayed. It is not throttled, because it is an event rather than a sample.
 - A **hide-cursors vote ([Session tools (timer + voting)](../012-collaboration/session-tools.md)) hides avatars too**, on both the outbound and render halves. A walking character is a position on the canvas, so showing it while cursors are hidden would leak exactly what the vote exists to hide.
+
+### A busy room
+
+Every walker's packets go to every other socket, so a room's relayed sends grow with the square of its walkers.
+Measured on one local workerd with the real room (`apps/api/scripts/avatar-fanout-probe` in livehuddle), everyone
+walking on one tab:
+
+| Walkers | Before: frames a second (all of them ops) | Before: room CPU | After: frames a second | After: ops in them | After: room CPU |
+| ------- | ----------------------------------------- | ---------------- | ---------------------- | ------------------ | --------------- |
+| 10      | 2,608                                     | 20%              | 2,608                  | 2,608              | 14%             |
+| 32      | 29,056                                    | 57%              | 536                    | 16,462             | 17%             |
+| 100     | 14,210 of the 300,000 owed                | 99%, saturated   | 1,199                  | 118,711            | 40%             |
+
+CPU is the room's workerd process as a share of one core (2026-11-03, an M-series Mac). Before the bound, 100 walkers
+saturated the room: it relayed under 5% of what it owed and everyone's characters froze. Stepping the rate down alone
+still saturates it (99% at 100); the coalescing is what brings it back. Spread over four tabs, 100 walkers cost 29%.
+
+The room keeps a crowd affordable with three rules ([API](../015-api/api.md), "A busy room bounds its presence
+fan-out"), shared by every product with Avatar mode:
+
+- **The send rate steps down with the room**: every 33 ms in a room of up to 10, 50 ms up to 32, 66 ms above that
+  (`presenceStepMs` in `@liveworkspace/api-schema/presence-fanout`, read through `avatarSendIntervalMs` in
+  `@liveworkspace/avatar/relay`). A room of up to 10, every room most people are in, walks exactly as before.
+- **A peer's slower steps still glide**: above 10, a peer's character slides to each new position over one step
+  (`avatarGlideMs`) while it walks, instead of hopping 13 to 17 canvas px at a time; standing, sitting and a portal's
+  jump still land at once.
+- **The room relays a character only to the sockets on its tab, and coalesces each socket's samples per step** into
+  one frame.
+
+A test in each product's api (`document-room-fanout.test.ts`) walks 10, 32 and 100 characters through the room and
+holds the bound: the frames each socket is sent per second, and the room's CPU time.
 
 ## Status
 

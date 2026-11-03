@@ -4,6 +4,7 @@ import type { ElementDelta, QaNote, RoomElementOp, Tab } from '@livediagram/docu
 import type { ParticipantPresence } from './index';
 import type { AvatarOp, AvatarPushOp } from '@liveworkspace/api-schema/avatar';
 import type { AvatarSayOp } from '@liveworkspace/api-schema/avatar-say';
+import type { PresenceBatchMessage } from '@liveworkspace/api-schema/presence-fanout';
 import type { LivePoll } from './poll';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
@@ -316,7 +317,14 @@ export type ClientMessage =
   // `facilitatorToken` (docs/specs/012-collaboration/facilitator.md) is the baton coming home after a refresh:
   // the room checks it against the one it issued and, if it still matches,
   // hands the baton to this new socket. Absent on every ordinary hello.
-  | { kind: 'hello'; participant: ParticipantPresence; facilitatorToken?: string }
+  // `batches`: this editor takes a busy room's coalesced `batch` frames (docs/specs/015-api/api.md "A busy room
+  // bounds its presence fan-out"); a room never sends one to a session that did not say so.
+  | {
+      kind: 'hello';
+      participant: ParticipantPresence;
+      facilitatorToken?: string;
+      batches?: boolean;
+    }
   // `ref`: asks the room to echo it on this op's `cursor` frame (CursorMessage).
   | { kind: 'op'; op: unknown; ref?: number }
   // Ask the room to move the baton (docs/specs/012-collaboration/facilitator.md). The room decides; the client
@@ -589,7 +597,12 @@ export type RoomOp =
 // The room itself still operates on `op: unknown` — the agnosticism
 // stays at the worker boundary.
 export type RoomOutgoing =
-  | { kind: 'hello'; participant: ParticipantPresence; facilitatorToken?: string }
+  | {
+      kind: 'hello';
+      participant: ParticipantPresence;
+      facilitatorToken?: string;
+      batches?: boolean;
+    }
   | { kind: 'op'; op: RoomOp; ref?: number }
   | { kind: 'sync'; epoch: string | null; lastSeq: number }
   | ({ kind: 'facilitator' } & FacilitatorAction)
@@ -619,7 +632,10 @@ export type RoomIncoming =
   | FormatMessage
   | GrantRenewMessage
   // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
-  | OpRefusedMessage;
+  | OpRefusedMessage
+  // A busy room's samples, coalesced for one step (docs/specs/015-api/api.md "A busy room bounds its presence
+  // fan-out"): each the op frame it would have sent alone, in order.
+  | PresenceBatchMessage<{ kind: 'op'; from: string; op: RoomOp }>;
 
 // The WebSocket close code the realtime room ends a session with when an access
 // change narrows who may be in it without revoking a link (docs/specs/015-api/api.md
@@ -649,6 +665,14 @@ export {
   ROOM_MAX_CONNECTIONS,
   roomIsFull,
 } from '@liveworkspace/api-schema/room-capacity';
+
+// How a busy room paces its sample streams (docs/specs/015-api/api.md "A busy room bounds its presence fan-out"),
+// one table for every product's room.
+export {
+  PRESENCE_QUIET_ROOM,
+  presenceBatches,
+  presenceStepMs,
+} from '@liveworkspace/api-schema/presence-fanout';
 
 export const ROOM_PING = 'ping';
 export const ROOM_PONG = 'pong';
