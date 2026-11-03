@@ -166,7 +166,7 @@ livehuddle graph lint flow.mmd                    # check a graph or Mermaid fil
 livehuddle graph render flow.mmd --png flow.png
 ```
 
-To draw beside your agent inside a developer tool, see [Diagrams in Your Developer Tools](/help/developers/workbenches/).
+To draw beside your agent inside a developer tool, see [Spaces in Your Developer Tools](/help/developers/workbenches/).
 
 `pull` writes the space in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on livehuddle since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the space lacks is created. Changes to a tab's name, theme or background are not sent (a tab a push creates goes up with its name), and no tab or space is ever deleted by a push. `export --all` writes every space you can read, for backups and docs. `graph lint` and `graph render` work on the file alone and send nothing.
 

@@ -60,7 +60,7 @@ export function KeyboardShortcuts() {
   );
 }
 
-/** The palette strip across the top of the canvas, Diagram's category bar, with the menu button and
+/** The palette strip across the top of the canvas, Workshop's category bar, with the menu button and
  *  the tab's name in their card to its left. */
 export function CommandPalette() {
   return (

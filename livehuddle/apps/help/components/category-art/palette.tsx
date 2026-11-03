@@ -2,9 +2,10 @@ import type { ReactNode } from 'react';
 import { Arrow, Cursor, Label, SelectionBox, Shape } from '@liveworkspace/help-site/art/primitives';
 import { Card, Stage } from '@liveworkspace/help-site/art/parts';
 
-const TABS = ['Shapes', 'Draw', 'Build', 'Concepts', 'Icons', 'Tech'];
+// Workshop's palette categories, the first of them as the bar names them.
+const TABS = ['Shapes', 'Write', 'Draw', 'Layout', 'Ask', 'Icons'];
 // Each tab's centre, spaced by its label's width.
-const TAB_X = [117, 158, 195, 241, 288, 325];
+const TAB_X = [117, 160, 199, 240, 279, 317];
 
 const S = 'fill-none stroke-slate-500';
 

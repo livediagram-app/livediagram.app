@@ -78,11 +78,11 @@ const ROWS: { label: string; glyph: ReactNode }[] = [
 
 const DOCS: { title: string; kind: 'flow' | 'board' | 'slide' | 'sticky' | 'tree' | 'sheet' }[] = [
   { title: 'Roadmap', kind: 'board' },
-  { title: 'System map', kind: 'flow' },
+  { title: 'Team Pod', kind: 'flow' },
   { title: 'Team retro', kind: 'sticky' },
-  { title: 'Kickoff deck', kind: 'slide' },
-  { title: 'Org chart', kind: 'tree' },
-  { title: 'Budget', kind: 'sheet' },
+  { title: 'All-Hands', kind: 'slide' },
+  { title: 'Brainstorm', kind: 'tree' },
+  { title: 'Agenda', kind: 'sheet' },
 ];
 
 // A tiny drawing of a document's content inside its card's thumbnail, in the box (x, y, 64 by 34).

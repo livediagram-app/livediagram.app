@@ -21,7 +21,7 @@ function Step({ cx, cy, n }: { cx: number; cy: number; n: number }) {
 }
 
 // Getting Started: the first three things a new person does, as three cards on a path. Pick a starting point,
-// add shapes, share the link.
+// add to the board, share the link.
 export function GettingStartedArt() {
   return (
     <Stage>
@@ -100,7 +100,7 @@ export function GettingStartedArt() {
         <Arrow from={[180, 100]} to={[180, 115]} width={2} />
         <Cursor x={226} y={128} colour="violet" />
         <Label x={200} y={170} anchor="middle" size={10.5} weight={700} tone="strong">
-          Add shapes
+          Add to the board
         </Label>
       </Card>
       <Step cx={200} cy={52} n={2} />

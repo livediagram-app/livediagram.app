@@ -211,7 +211,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M10 16l4-4-4-4M14 12H3" />
     </Glyph>
   ),
-  'exporting-diagrams': (
+  'exporting-spaces': (
     <Glyph>
       <path d="M12 15V3M8 7l4-4 4 4" />
       <path d="M4 13v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6" />

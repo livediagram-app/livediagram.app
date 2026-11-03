@@ -52,11 +52,11 @@ const stillStuck = { category: 'troubleshooting', contact: 'contact' } as const;
 
 /** The chips under the hero's search: the articles most readers come for, by `categorySlug/slug`. */
 const popular: HelpHomeLayout['popular'] = [
-  { label: 'Your first diagram', path: 'getting-started/your-first-diagram' },
+  { label: 'Your first Space', path: 'getting-started/your-first-space' },
   { label: 'Sharing', path: 'getting-started/sharing-your-document' },
   { label: 'Keyboard shortcuts', path: 'tips-and-tricks/keyboard-shortcuts' },
   { label: 'Templates', path: 'canvas/templates' },
-  { label: 'Exporting', path: 'account-and-data/exporting-diagrams' },
+  { label: 'Exporting', path: 'account-and-data/exporting-spaces' },
   { label: 'Workshop mode', path: 'canvas/workshop-mode' },
 ];
 

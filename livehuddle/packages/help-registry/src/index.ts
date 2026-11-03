@@ -35,7 +35,7 @@ export const categories: Category[] = [
     slug: 'getting-started',
     title: 'Getting Started',
     description:
-      'Go from a blank canvas to a shared diagram in minutes, with the basics every new user needs.',
+      'Go from a new Space to a team meeting in it in minutes, with the basics every new user needs.',
     articleCount: 7,
   },
   {
@@ -129,7 +129,7 @@ export const categories: Category[] = [
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
     articleCount: 28,
     kind: 'feature',
-    groups: ['Everyday Elements', 'Diagram Kits', 'Workshop Kits', 'Palette Settings'],
+    groups: ['Everyday Elements', 'Layout Kits', 'Workshop Kits', 'Palette Settings'],
   },
   {
     slug: 'canvas',
@@ -276,7 +276,8 @@ export const articles: Article[] = [
   {
     slug: 'what-is-livehuddle',
     title: 'What is livehuddle?',
-    description: 'An overview of the real-time, multiplayer diagram editor and what it does.',
+    description:
+      'An overview of livehuddle, the shared Spaces where teams meet and run workshops together.',
     keywords: 'overview intro introduction about product whiteboard drawing tool app',
     category: 'About livehuddle',
     categorySlug: 'about',
@@ -312,9 +313,9 @@ export const articles: Article[] = [
 
   // ---- Getting Started ----
   {
-    slug: 'your-first-diagram',
-    title: 'Your First Diagram',
-    description: 'Create a diagram and add your first shapes in under a minute.',
+    slug: 'your-first-space',
+    title: 'Your First Space',
+    description: 'Open a Space, walk in as your character and put your first notes on the board.',
     keywords:
       'start begin new create tutorial beginner basics quickstart onboarding wizard document template location canvas space spaces',
     category: 'Getting Started',
@@ -331,7 +332,7 @@ export const articles: Article[] = [
   {
     slug: 'adding-shapes-and-arrows',
     title: 'Adding Shapes and Arrows',
-    description: 'Use the palette and quick-connect to build out a diagram.',
+    description: 'Use the palette and quick-connect to build out a board.',
     keywords: 'add box connector line draw create insert place flowchart',
     category: 'Getting Started',
     categorySlug: 'getting-started',
@@ -418,8 +419,8 @@ export const articles: Article[] = [
   },
   {
     slug: 'fast-theming',
-    title: 'Restyle a Diagram Fast',
-    description: 'Restyle an entire diagram in seconds with themes and presets.',
+    title: 'Restyle a Board Fast',
+    description: 'Restyle an entire board in seconds with themes and presets.',
     keywords: 'restyle recolour recolor colors colours presets quick style scheme',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
@@ -452,8 +453,8 @@ export const articles: Article[] = [
     categorySlug: 'account-and-data',
   },
   {
-    slug: 'exporting-diagrams',
-    title: 'Exporting Diagrams',
+    slug: 'exporting-spaces',
+    title: 'Exporting Spaces',
     description: 'Get a tab out as an image, a PDF or a portable file, or embed a live view.',
     keywords:
       'export download png svg pdf image save picture screenshot json mermaid markdown excalidraw embed backup',
@@ -588,7 +589,7 @@ export const articles: Article[] = [
   },
   {
     slug: 'workbenches',
-    title: 'Diagrams in Your Developer Tools',
+    title: 'Spaces in Your Developer Tools',
     description:
       'Draw in a space inside a developer tool beside your agent, and talk about what you select.',
     keywords:
@@ -966,7 +967,7 @@ export const articles: Article[] = [
       'build structure layout container holds frame lane boundary timeline table arrange scaffold group section band track grid organise card badge step number diagram key legend stack row column grid auto layout even gaps',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Diagram Kits',
+    group: 'Layout Kits',
   },
   {
     slug: 'frames',
@@ -1068,7 +1069,7 @@ export const articles: Article[] = [
       'boundary boundaries container zone region vpc subnet network cluster trust zone group c4 system cloud aws azure gcp architecture nested nest tab tint cidr dashed',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Diagram Kits',
+    group: 'Layout Kits',
   },
   {
     slug: 'pointer-notes',
@@ -1088,7 +1089,7 @@ export const articles: Article[] = [
       'stack stacks row column grid auto layout autolayout flex flexbox align distribute even gaps spacing padding container list reflow arrange',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Diagram Kits',
+    group: 'Layout Kits',
   },
   {
     slug: 'diagram-keys',
@@ -1098,7 +1099,7 @@ export const articles: Article[] = [
       'diagram key keys legend line styles dashed dotted solid meaning explain tag tags colour color colours colors colour code coding by team status layer card edge',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Diagram Kits',
+    group: 'Layout Kits',
   },
   {
     slug: 'lanes',
@@ -1108,7 +1109,7 @@ export const articles: Article[] = [
       'lane swimlane swim band row role team process cross-functional container pool track column vertical heading gutter upright title draw.io',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Diagram Kits',
+    group: 'Layout Kits',
   },
   {
     slug: 'embed-elements',
@@ -1648,7 +1649,7 @@ export const articles: Article[] = [
   {
     slug: 'layout-cleanup',
     title: 'Layout Cleanup',
-    description: 'Auto-align to a grid or auto-layout the whole diagram.',
+    description: 'Auto-align to a grid or auto-layout the whole board.',
     keywords: 'tidy align arrange auto grid organise organize straighten',
     category: 'Tools',
     categorySlug: 'tools',
@@ -2495,7 +2496,7 @@ export const articles: Article[] = [
       'timeline rail roadmap milestones dates when quarter sprint plan project phases schedule history journey concept',
     category: 'Palette',
     categorySlug: 'palette',
-    group: 'Diagram Kits',
+    group: 'Layout Kits',
   },
 
   // ---- Sub-articles: Layout Cleanup ----
