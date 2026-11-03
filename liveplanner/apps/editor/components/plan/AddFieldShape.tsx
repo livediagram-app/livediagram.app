@@ -3,8 +3,8 @@
 // Add Field's second step, Shape (docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field): All kinds back to
 // Pick, the kind as a pill, the built-in fields of the kind the type lacks as Ready to use (one press adds one), then
 // "Or make your own": the field's Name, only the settings its kind needs, Required (and Notifies, a Person's), a
-// live preview of a card holding it, and one button, "Add {Name}", off until the field is ready (and saying what is missing).
-import { useId } from 'react';
+// card holding it to try (AddFieldTryIt), and one button, "Add {Name}", off until the field is ready (and saying what is missing).
+import { useId, useState } from 'react';
 import {
   CUSTOM_FIELD_LABEL_MAX,
   canBeRequired,
@@ -17,28 +17,29 @@ import {
   linkTypesOf,
   withLinkTypes,
   type CustomFieldDef,
-  type CustomFieldKind,
   type ItemFieldId,
   type ItemTypeDef,
 } from '@liveplanner/items';
-import { BackBar, Button, PlusIcon, TextInput } from '@liveplanner/ui';
-import { BUILT_IN_ROLES, hasOptions, kindReadiness, READINESS_HINT } from './add-field-kinds';
+import { BackBar, Button, CheckIcon, PlusIcon, TextInput } from '@liveplanner/ui';
+import type { ValueLoss } from './edit-field-values';
+import {
+  BUILT_IN_ROLES,
+  hasOptions,
+  kindReadiness,
+  pickOf,
+  READINESS_HINT,
+} from './add-field-kinds';
 import { ChoiceOptionsEditor } from './ChoiceOptionsEditor';
-import { CustomFieldPreview, fieldIconOf } from './CustomFieldKindParts';
+import { fieldIconOf } from './CustomFieldKindParts';
+import { AddFieldTryIt } from './AddFieldTryIt';
 import {
   BUILT_IN_FIELD_LABELS,
-  CUSTOM_KIND_LABELS,
+  PICK_KIND_LABELS,
   CalculationSelect,
   calculationPatch,
-  ShowAsPercentSwitch,
-  TrackTimeSwitch,
-  IncludeTimeSwitch,
   CurrencySelect,
-  HoldsSeveralSwitch,
-  BlocksSwitch,
-  NotifiesSwitch,
   RatingScaleSelect,
-  RequiredSwitch,
+  FieldSwitches,
 } from './ItemTypeFieldForms';
 import { LinksToPicker, linkTypeNames } from './LinksToPicker';
 import { FormulaEditor, type FormulaDraft } from './FormulaEditor';
@@ -84,6 +85,7 @@ export function AddFieldShape({
   onBack,
   onAdd,
   onAddBuiltIn,
+  edit,
 }: {
   field: NewField;
   onChange: (next: NewField) => void;
@@ -97,21 +99,31 @@ export function AddFieldShape({
   onBack: () => void;
   onAdd: (field: NewField) => void;
   onAddBuiltIn: (id: ItemFieldId) => void;
+  // Edit Field (item-types.md "Edit Field"): an existing field, saved by Save (`onAdd`), saying first what its new
+  // type does to the values cards hold (`loss`), and asking before any is cut down or cleared.
+  edit?: { loss: ValueLoss | null } | undefined;
 }) {
   const ids = useId();
-  const kind: CustomFieldKind = field.kind;
-  const kindLabel = CUSTOM_KIND_LABELS[kind];
+  // Asking to confirm a Save that cuts down or clears values; asked again whenever what it would lose changes.
+  const [confirming, setConfirming] = useState<string | null>(null);
+  const loss = edit?.loss ?? null;
+  const losing = loss !== null && loss.cleared + loss.trimmed > 0;
+  const asking = losing && confirming === loss.message;
+  // The tile it answers to by name: a variant's while its option is on (Several People), else its kind's.
+  const kindLabel = PICK_KIND_LABELS[pickOf(field)];
   const missing = kindReadiness(field);
   const name = field.label.trim();
   const set = (patch: Partial<NewField>) => onChange({ ...field, ...patch });
 
   return (
     <form
-      aria-label={`New ${kindLabel} field`}
+      aria-label={edit ? `Edit ${kindLabel} field` : `New ${kindLabel} field`}
       className="flex flex-col motion-safe:animate-card-rise"
       onSubmit={(e) => {
         e.preventDefault();
-        if (canAddCustom && !missing) onAdd(addedField(field));
+        if (!canAddCustom || missing) return;
+        if (losing && !asking) setConfirming(loss.message);
+        else onAdd(addedField(field));
       }}
     >
       <div className="px-2 pt-2">
@@ -137,21 +149,57 @@ export function AddFieldShape({
       ) : null}
       {canAddCustom ? (
         <div className="sticky bottom-0 flex flex-col gap-1.5 border-t border-slate-100 bg-white px-3.5 py-2.5 dark:border-slate-800 dark:bg-slate-900">
-          <Button
-            type="submit"
-            disabled={missing !== null}
-            aria-describedby={missing ? `${ids}-hint` : undefined}
-            className="w-full justify-center pointer-coarse:min-h-11"
-          >
-            <PlusIcon size={13} />
-            <span className="truncate">{name ? `Add ${name}` : `Add ${kindLabel} Field`}</span>
-          </Button>
+          {loss ? (
+            <p
+              id={`${ids}-loss`}
+              role="status"
+              className={`rounded-lg px-2.5 py-1.5 text-[12px] leading-snug ${
+                losing
+                  ? 'bg-amber-50 text-amber-900 ring-1 ring-inset ring-amber-200 dark:bg-amber-500/10 dark:text-amber-100 dark:ring-amber-500/30'
+                  : 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
+              }`}
+            >
+              {loss.message} {asking ? 'Change them? Undo puts them back.' : null}
+            </p>
+          ) : null}
+          {edit ? (
+            <div className="flex gap-2">
+              {asking ? (
+                <Button
+                  variant="secondary"
+                  className="flex-1 justify-center pointer-coarse:min-h-11"
+                  onClick={() => setConfirming(null)}
+                >
+                  Keep Editing
+                </Button>
+              ) : null}
+              <Button
+                type="submit"
+                disabled={missing !== null}
+                aria-describedby={missing ? `${ids}-hint` : loss ? `${ids}-loss` : undefined}
+                className="flex-1 justify-center pointer-coarse:min-h-11"
+              >
+                <CheckIcon size={13} />
+                {asking ? 'Change Values' : 'Save'}
+              </Button>
+            </div>
+          ) : (
+            <Button
+              type="submit"
+              disabled={missing !== null}
+              aria-describedby={missing ? `${ids}-hint` : undefined}
+              className="w-full justify-center pointer-coarse:min-h-11"
+            >
+              <PlusIcon size={13} />
+              <span className="truncate">{name ? `Add ${name}` : `Add ${kindLabel} Field`}</span>
+            </Button>
+          )}
           {missing ? (
             <p
               id={`${ids}-hint`}
               className="text-center text-[11px] text-slate-500 dark:text-slate-400"
             >
-              {READINESS_HINT[missing]}
+              {edit && missing === 'name' ? 'Name the field to save it.' : READINESS_HINT[missing]}
             </p>
           ) : null}
         </div>
@@ -291,7 +339,7 @@ function ShapeOwn({
           />
         </div>
       ) : null}
-      {kind === 'calculated' ? (
+      {pickOf(field) === 'calculated' ? (
         <div className="flex flex-col gap-1">
           <span className={LABEL}>Calculation</span>
           <CalculationSelect
@@ -318,31 +366,17 @@ function ShapeOwn({
           onChange={set}
         />
       ) : null}
-      <ShowAsPercentSwitch field={field} onChange={(showAs) => set({ showAs })} />
-      <TrackTimeSwitch field={field} onChange={set} />
-      <IncludeTimeSwitch field={field} onChange={set} />
-      <HoldsSeveralSwitch field={field} onChange={(multiple) => set({ multiple })} />
-      <BlocksSwitch field={field} onChange={set} />
-      <RequiredSwitch field={field} onChange={(required) => set({ required })} />
-      <NotifiesSwitch field={field} onChange={(notifies) => set({ notifies })} />
+      <FieldSwitches field={field} onChange={set} />
       {/* A Formula, Rollup or Lookup previews on a real card, in its editor. */}
       {hasResult(field) ? null : (
-        <CustomFieldPreview
-          label={field.label}
-          kind={kind}
-          options={field.options ?? []}
+        <AddFieldTryIt
+          field={field}
           linkLabel={
             linkTypeNames(
               linkTypesOf(field).map((id) => types.find((t) => t.id === id)?.label ?? id),
             ) || undefined
           }
-          currency={field.currency}
-          scale={field.scale}
-          calculation={field.calculation}
-          showAs={field.showAs}
-          timeSpent={field.timeSpent}
-          withTime={field.withTime}
-          required={field.required === true && canBeRequired(kind)}
+          required={field.required === true && canBeRequired(field.kind)}
         />
       )}
     </div>

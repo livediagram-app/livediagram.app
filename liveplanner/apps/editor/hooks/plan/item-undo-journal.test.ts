@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
   EMPTY_JOURNAL,
+  combinedStep,
   ITEM_UNDO_LIMIT,
   journalAfterRedo,
   journalAfterUndo,
@@ -76,5 +77,19 @@ describe('the item undo journal', () => {
       j = journalPush(j, step(`s${i}`), { depth: 0, branch: 0, futureLength: 0 });
     expect(j.undo).toHaveLength(ITEM_UNDO_LIMIT);
     expect(journalUndoTarget(EMPTY_JOURNAL, { depth: 0, branch: 0, futureLength: 0 })).toBeNull();
+  });
+});
+
+describe('combinedStep', () => {
+  it('undoes its steps last first and redoes them in order', () => {
+    const order: string[] = [];
+    const s = (name: string) => ({
+      undo: () => order.push(`undo ${name}`),
+      redo: () => order.push(`redo ${name}`),
+    });
+    const both = combinedStep([s('type'), s('cards')]);
+    both.undo();
+    both.redo();
+    expect(order).toEqual(['undo cards', 'undo type', 'redo type', 'redo cards']);
   });
 });

@@ -114,3 +114,4 @@ export * from './time-tracking';
 export * from './view-fields';
 export * from './attachments';
 export * from './label-usage';
+export * from './field-kind-change';

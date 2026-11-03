@@ -10,6 +10,19 @@ export type ItemUndoStep = {
   redo: () => void;
 };
 
+// Several steps made as one (a field's type changed with its cards' values, docs/specs/026-plan/item-types.md "Edit
+// Field"): undo takes them back last first, redo makes them again in order.
+export function combinedStep(steps: readonly ItemUndoStep[]): ItemUndoStep {
+  return {
+    undo: () => {
+      for (let i = steps.length - 1; i >= 0; i -= 1) steps[i]!.undo();
+    },
+    redo: () => {
+      for (const s of steps) s.redo();
+    },
+  };
+}
+
 export type HistoryPosition = { depth: number; branch: number; futureLength: number };
 
 export type ItemUndoJournal = {

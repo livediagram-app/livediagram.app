@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { OVERVIEW_TAB_ID } from '@liveplanner/items';
 import type { ComponentProps } from 'react';
+import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { ItemTypeLayoutEditor } from './ItemTypeLayoutEditor';
 import { detailFields, type LayoutDraft } from './item-type-layout';
 
@@ -101,7 +102,7 @@ describe('a field row', () => {
 describe('Add Field', () => {
   const addFrom = (i: number) =>
     fireEvent.click(screen.getAllByRole('button', { name: 'Add Field' })[i]!);
-  const popover = () => within(screen.getByRole('dialog', { name: 'Add Field' }));
+  const popover = () => within(screen.getByRole('dialog', { name: 'Add a Field' }));
 
   it('adds a built-in field from its kind’s Ready to use into the group it opened from, Details or a tab', () => {
     const onChange = editor();
@@ -109,7 +110,7 @@ describe('Add Field', () => {
     fireEvent.click(popover().getByRole('button', { name: 'Date' }));
     fireEvent.click(popover().getByRole('button', { name: /^Due Date/ }));
     expect(detailFields(onChange.mock.lastCall![0])).toContain('due');
-    expect(screen.queryByRole('dialog', { name: 'Add Field' })).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'Add a Field' })).toBeNull();
     addFrom(1);
     fireEvent.click(popover().getByRole('button', { name: 'Labels' }));
     fireEvent.click(popover().getByRole('button', { name: /^Labels/ }));
@@ -138,19 +139,91 @@ describe('Add Field', () => {
     fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
     expect(popover().getByRole('searchbox', { name: 'Search fields' })).toBeTruthy();
     fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
-    expect(screen.queryByRole('dialog', { name: 'Add Field' })).toBeNull();
+    expect(screen.queryByRole('dialog', { name: 'Add a Field' })).toBeNull();
     expect(document.activeElement).toBe(screen.getAllByRole('button', { name: 'Add Field' })[0]);
   });
 
   it('opens on a touch screen without focusing the search', () => {
     const was = window.matchMedia;
-    window.matchMedia = ((q: string) => ({ matches: q === '(pointer: coarse)' })) as never;
+    window.matchMedia = ((q: string) => ({
+      matches: q === '(pointer: coarse)',
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    })) as never;
     try {
       editor();
       addFrom(0);
-      expect(document.activeElement).toBe(screen.getByRole('dialog', { name: 'Add Field' }));
+      expect(document.activeElement).toBe(screen.getByRole('dialog', { name: 'Add a Field' }));
     } finally {
       window.matchMedia = was;
     }
+  });
+});
+
+// docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field is a modal over the type editor, closing alone.
+describe('Add Field over the type editor', () => {
+  // As the type editor holds it: the layout inside its own Dialog.
+  function inEditor() {
+    const onEditorClose = vi.fn();
+    render(
+      <Dialog open onClose={onEditorClose} ariaLabel="Edit Task Card Type" size="3xl">
+        <ItemTypeLayoutEditor
+          typeId="task"
+          draft={draft}
+          onChange={() => {}}
+          detailsLabel="Details"
+          onDetailsLabel={() => {}}
+          removedSome={false}
+        />
+      </Dialog>,
+    );
+    const opener = screen.getAllByRole('button', { name: 'Add Field' })[0]!;
+    fireEvent.click(opener);
+    return { onEditorClose, opener };
+  }
+  const addDialog = () => screen.queryByRole('dialog', { name: 'Add a Field' });
+  // The modal's dim layer: its panel's parent.
+  const dimLayer = () => addDialog()!.parentElement!;
+
+  it('opens a second modal on top, with its own dim layer over the editor', () => {
+    inEditor();
+    const panels = document.querySelectorAll('[data-dialog-panel]');
+    expect(panels).toHaveLength(2);
+    expect(panels[1]).toBe(addDialog());
+    expect(addDialog()!.getAttribute('aria-modal')).toBe('true');
+    expect(dimLayer().className).toContain('bg-slate-900/40');
+    expect(within(addDialog()!).getByRole('heading', { name: 'Add a Field' })).toBeTruthy();
+  });
+
+  it('closes alone on Escape, focus back on its Add Field', () => {
+    const { onEditorClose, opener } = inEditor();
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+    expect(addDialog()).toBeNull();
+    expect(onEditorClose).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(opener);
+  });
+
+  it('closes alone on a press on its dim layer, and on its close cross', () => {
+    const { onEditorClose, opener } = inEditor();
+    fireEvent.pointerDown(dimLayer());
+    fireEvent.click(dimLayer());
+    expect(addDialog()).toBeNull();
+    expect(document.activeElement).toBe(opener);
+    fireEvent.click(opener);
+    fireEvent.click(within(addDialog()!).getByRole('button', { name: 'Close' }));
+    expect(addDialog()).toBeNull();
+    expect(onEditorClose).not.toHaveBeenCalled();
+    // With Add Field gone, Escape is the editor's again.
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+    expect(onEditorClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps Tab inside it', () => {
+    inEditor();
+    const inside = addDialog()!;
+    const search = within(inside).getByRole('searchbox', { name: 'Search fields' });
+    expect(document.activeElement).toBe(search);
+    fireEvent.keyDown(search, { key: 'Tab', shiftKey: true });
+    expect(inside.contains(document.activeElement)).toBe(true);
   });
 });

@@ -47,8 +47,9 @@ export function FieldRow({
   lockLabel?: string | undefined;
   // A required custom field (docs/specs/026-plan/item-types.md "Required fields"): marked after its name.
   required?: boolean;
+  // Edit Field open on this field (item-types.md "Edit Field"); `onEdit` opens it, handed the pencil to focus again.
   editing: boolean;
-  onEdit?: () => void;
+  onEdit?: (opener: HTMLElement) => void;
   moveTargets: readonly { id: GroupId; label: string }[];
   onMoveTo: (to: GroupId) => void;
   // The handle's pointer handlers, for a field that can be dragged within its group.
@@ -115,15 +116,18 @@ export function FieldRow({
           ) : null}
         </span>
         {onEdit ? (
-          <button
-            type="button"
-            className={`${ICON_BUTTON} ${editing ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300' : ''}`}
-            aria-label={editing ? `Done editing ${label}` : `Edit ${label}`}
-            aria-expanded={editing}
-            onClick={onEdit}
-          >
-            <PencilIcon size={13} />
-          </button>
+          <Tooltip label="Edit Field">
+            <button
+              type="button"
+              className={`${ICON_BUTTON} cursor-pointer ${editing ? 'bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300' : ''}`}
+              aria-label={`Edit ${label}`}
+              aria-haspopup="dialog"
+              aria-expanded={editing}
+              onClick={(e) => onEdit(e.currentTarget)}
+            >
+              <PencilIcon size={13} />
+            </button>
+          </Tooltip>
         ) : null}
         {hasMenu ? (
           <FieldMenu

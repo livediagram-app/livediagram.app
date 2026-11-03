@@ -6,7 +6,11 @@ import {
   KIND_ALIASES,
   KIND_DESCRIPTIONS,
   KIND_CATEGORIES,
+  KIND_VARIANTS,
   categoryOfKind,
+  pickOf,
+  presetOf,
+  storedKindOf,
   kindMatches,
   kindReadiness,
   readyBuiltIns,
@@ -17,7 +21,10 @@ import {
 import { BUILT_IN_FIELD_LABELS, PICK_KIND_LABELS } from './ItemTypeFieldForms';
 
 // docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field's categories, lines, words and readiness.
-const PICK_KINDS: readonly PickKind[] = CUSTOM_FIELD_KINDS;
+const PICK_KINDS: readonly PickKind[] = [
+  ...CUSTOM_FIELD_KINDS,
+  ...(Object.keys(KIND_VARIANTS) as PickKind[]),
+];
 const found = (query: string): PickKind[] =>
   PICK_KINDS.filter((k) =>
     kindMatches(
@@ -33,23 +40,35 @@ const builtInNamesOf = (k: PickKind) =>
   (BUILT_INS_OF_KIND[k] ?? []).map((id) => BUILT_IN_FIELD_LABELS[id]);
 
 describe('the kinds’ categories', () => {
-  it('holds every kind once, built-in and custom alike, in seven categories, each with a line', () => {
+  it('holds every kind once, built-in and custom alike, in nine plainly named categories, each with a line', () => {
     expect(KIND_CATEGORIES.map((c) => c.label)).toEqual([
       'Text',
-      'Numbers and Money',
-      'Dates and Time',
-      'Choices and Tags',
-      'People and Teamwork',
-      'Links and Media',
-      'Cards and Formulas',
+      'Numbers',
+      'Dates',
+      'Time',
+      'Choices',
+      'People',
+      'Links and Images',
+      'Cards',
+      'Calculated',
     ]);
     const placed = KIND_CATEGORIES.flatMap((c) => c.kinds);
     expect([...placed].sort()).toEqual([...PICK_KINDS].sort());
     expect(new Set(placed).size).toBe(placed.length);
     for (const c of KIND_CATEGORIES) expect(c.line).toMatch(/^[A-Z].+\.$/);
-    expect(KIND_CATEGORIES.find((c) => c.id === 'cards')!.kinds).toEqual(['card', 'calculated']);
+    expect(KIND_CATEGORIES.find((c) => c.id === 'cards')!.kinds).toEqual([
+      'card',
+      'cards',
+      'blocked-by',
+    ]);
+    expect(KIND_CATEGORIES.find((c) => c.id === 'calculated')!.kinds).toEqual([
+      'calculated',
+      'formula',
+      'rollup',
+      'lookup',
+    ]);
     expect(categoryOfKind('rating').id).toBe('numbers');
-    expect(categoryOfKind('duration').id).toBe('dates');
+    expect(categoryOfKind('duration').id).toBe('time');
     expect(categoryOfKind('colour').id).toBe('choices');
     expect(categoryOfKind('image').id).toBe('links');
   });
@@ -59,7 +78,12 @@ describe('the kinds’ categories', () => {
       KIND_CATEGORIES.map((c) => c.kinds),
     );
     const dates = shownCategories('date', labelOf, builtInNamesOf);
-    expect(dates.find((c) => c.id === 'dates')!.shown).toEqual(['date', 'datetime', 'daterange']);
+    expect(dates.find((c) => c.id === 'dates')!.shown).toEqual([
+      'date',
+      'datetime',
+      'daterange',
+      'datetime-range',
+    ]);
     expect(dates.find((c) => c.id === 'text')!.shown).toEqual([]);
     // A category's own name is not searched: money finds Currency alone.
     const money = shownCategories('money', labelOf, builtInNamesOf).flatMap((c) => c.shown);
@@ -86,6 +110,37 @@ describe('the kinds’ categories', () => {
   });
 });
 
+describe('variants', () => {
+  it('makes each variant its stored kind with its option preset, and knows a field back by it', () => {
+    expect(Object.keys(KIND_VARIANTS)).toEqual([
+      'people',
+      'time-tracking',
+      'datetime-range',
+      'cards',
+      'blocked-by',
+      'formula',
+      'rollup',
+      'lookup',
+    ]);
+    for (const v of Object.keys(KIND_VARIANTS) as PickKind[]) {
+      const field = { kind: storedKindOf(v), ...presetOf(v) };
+      expect(pickOf(field)).toBe(v);
+      // A variant sits in its kind's category, right after it or another variant of it.
+      expect(categoryOfKind(v).id).toBe(categoryOfKind(storedKindOf(v)).id);
+      expect(PICK_KIND_LABELS[v]).toMatch(/^[A-Z]/);
+    }
+    expect(presetOf('people')).toEqual({ multiple: true });
+    expect(presetOf('blocked-by')).toEqual({ blocks: true, multiple: true });
+    expect(presetOf('person')).toEqual({});
+    expect(storedKindOf('person')).toBe('person');
+    // The plain kind once the option is off.
+    expect(pickOf({ kind: 'person' })).toBe('person');
+    expect(pickOf({ kind: 'card', multiple: true })).toBe('cards');
+    expect(pickOf({ kind: 'calculated', calculation: 'childCount' })).toBe('calculated');
+    expect(PICK_KIND_LABELS.people).toBe('Several People');
+  });
+});
+
 describe('searching', () => {
   it('finds a kind by its name, its line or an everyday word', () => {
     // "rat" is in duRATion too.
@@ -97,7 +152,10 @@ describe('searching', () => {
     expect(found('parent')).toContain('card');
     expect(found('percent')).toEqual(['percent']);
     expect(found('progress')).toEqual(['percent']);
-    expect(found('formula')).toEqual(['calculated']);
+    expect(found('formula')).toEqual(['formula']);
+    expect(found('timer')).toEqual(['time-tracking']);
+    expect(found('reviewers')).toEqual(['people']);
+    expect(found('blocker')).toEqual(['blocked-by']);
     expect(found('url')).toEqual(['link']);
     expect(found('dropdown')).toEqual(['choice']);
     expect(found('select')).toContain('choice');

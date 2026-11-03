@@ -180,3 +180,27 @@ describe('useItemTypes.quietChange', () => {
     expect(onError).not.toHaveBeenCalled();
   });
 });
+
+describe('a type saved with its cards’ values (Edit Field)', () => {
+  it('pushes one undo step that takes back the values and the type together', async () => {
+    answering();
+    const { hook, steps } = render({ itemTypes: cat('task'), itemTypesRev: 1 });
+    const values = { undo: vi.fn(), redo: vi.fn() };
+    const renamed = { ...def('task'), label: 'Job' };
+    act(() => hook.result.current.slice.saveType(renamed, Promise.resolve(values)));
+    await waitFor(() => expect(steps).toHaveLength(1));
+    act(() => steps[0]!.undo());
+    expect(values.undo).toHaveBeenCalledTimes(1);
+    expect(hook.result.current.slice.types[0]!.label).toBe('task');
+    act(() => steps[0]!.redo());
+    expect(values.redo).toHaveBeenCalledTimes(1);
+    expect(hook.result.current.slice.types[0]!.label).toBe('Job');
+  });
+
+  it('pushes the type’s step alone when the values made none', async () => {
+    answering();
+    const { hook, steps } = render({ itemTypes: cat('task'), itemTypesRev: 1 });
+    act(() => hook.result.current.slice.saveType(def('task'), Promise.resolve(null)));
+    await waitFor(() => expect(steps).toHaveLength(1));
+  });
+});

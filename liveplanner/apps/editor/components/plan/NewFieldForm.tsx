@@ -1,18 +1,13 @@
 'use client';
 
 // Add Field (docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field), a gallery on the frame Add a Widget uses
-// (gallery/GalleryFrame), in two steps: Pick (AddFieldPicker: the rail of categories and the kinds as tiles) then
+// (gallery/GalleryFrame), in two steps: Pick (AddFieldPicker: the rail of categories and every kind as a tile under its
+// category, the rail scrolling to a category as Add a Widget's does, gallery/use-gallery-spy) then
 // Shape (AddFieldShape: the kind's built-in fields the type lacks as Ready to use, then the field's name, settings,
-// preview and "Add {Name}"), beside the same rail. It keeps the step, the search (across the steps) and the category
-// shown, and answers Escape for the popover: Shape goes back to Pick, Pick clears a typed search, and then the popover
-// closes. The categories a search leaves are worked out once per search, never per render.
+// preview and "Add {Name}"), beside the same rail. It keeps the step and the search (across the steps), and answers Escape for the modal it sits in (AddFieldDialog): Shape goes back to Pick, Pick clears a typed
+// search, and then the modal closes. The categories a search leaves are worked out once per search, never per render.
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
-import {
-  CALCULATIONS,
-  ITEM_TYPES,
-  type CustomFieldKind,
-  type ItemFieldId,
-} from '@liveplanner/items';
+import { CALCULATIONS, ITEM_TYPES, type ItemFieldId } from '@liveplanner/items';
 import {
   AddFieldPicker,
   AddFieldRail,
@@ -24,26 +19,33 @@ import { AddFieldShape, type NewField } from './AddFieldShape';
 import {
   BUILT_INS_OF_KIND,
   categoryOfKind,
+  pickOf,
+  presetOf,
   readyBuiltIns,
   searchKey,
   shownCategories,
-  type CategoryChoice,
+  storedKindOf,
+  type KindCategoryId,
   type PickKind,
 } from './add-field-kinds';
 import { BUILT_IN_FIELD_LABELS, PICK_KIND_LABELS } from './ItemTypeFieldForms';
 import { GalleryFrame, GalleryList } from './gallery/GalleryFrame';
+import { useGallerySpy } from './gallery/use-gallery-spy';
 import { usePlan } from './PlanContext';
 import type { FormulaDraft } from './FormulaEditor';
+import type { EditFieldPlan } from './edit-field-values';
 
-// A kind's field as it starts: the one left by going back when it is the same kind; else the name typed so far and
-// Required kept, every other setting fresh.
-function freshField(kind: CustomFieldKind, from: NewField | null): NewField {
-  if (from?.kind === kind) return from;
+// A tile's field as it starts: the one left by going back when it is the same tile; else the name typed so far and
+// Required kept, the tile's preset settings on (a variant's option), every other setting fresh.
+function freshField(pick: PickKind, from: NewField | null): NewField {
+  if (from && pickOf(from) === pick) return from;
+  const kind = storedKindOf(pick);
   return {
     label: from?.label ?? '',
     kind,
     ...(from?.required ? { required: true } : {}),
     ...(kind === 'calculated' ? { calculation: CALCULATIONS[0] } : {}),
+    ...presetOf(pick),
   };
 }
 
@@ -59,41 +61,54 @@ export function NewFieldForm({
   onCancel,
   escapeRef,
   formulaDraft,
+  dialogTitleId,
+  autoFocusSearch = false,
+  edit,
 }: {
   missing: readonly ItemFieldId[];
   canAddCustom: boolean;
   onAddBuiltIn: (id: ItemFieldId) => void;
   onAddCustom: (field: NewField) => void;
   onCancel: () => void;
-  // Set to this form's Escape: true when it took it (a step back, a search cleared), false to let the popover close.
+  // Set to this form's Escape: true when it took it (a step back, a search cleared), false to let the modal close.
   escapeRef?: MutableRefObject<(() => boolean) | null>;
   // The type as drafted, for a Formula's names and preview.
   formulaDraft?: FormulaDraft;
+  // In a modal: the id its heading takes (GalleryFrame's dialog look).
+  dialogTitleId?: string | undefined;
+  // The search takes focus on opening (under a mouse or a pen; never on a touch screen, so no keyboard flies up).
+  autoFocusSearch?: boolean;
+  // Edit Field (item-types.md "Edit Field"): an existing field, opened on Shape with its name and settings, saved by
+  // Save; All Kinds offers the other types it may become (`plan` says which, and what each does to its values).
+  edit?: { field: NewField; plan: EditFieldPlan; onSave: (field: NewField) => void } | undefined;
 }) {
   const types = usePlan()?.types ?? ITEM_TYPES;
   const [query, setQuery] = useState('');
-  const [choice, setChoice] = useState<CategoryChoice>('all');
   // The field being shaped (Shape), or null (Pick); the one left by going back (its name kept for the next kind),
-  // and the kind to focus back on Pick (going back by All Kinds or Escape, not by typing a search).
-  const [field, setField] = useState<NewField | null>(null);
+  // the tile to focus back on Pick (going back by All Kinds or Escape, not by typing a search), and the category to
+  // scroll to on arriving back (a rail entry pressed while shaping).
+  const [field, setField] = useState<NewField | null>(edit?.field ?? null);
   const [left, setLeft] = useState<NewField | null>(null);
-  const [focusKind, setFocusKind] = useState<CustomFieldKind | undefined>(undefined);
+  const [focusKind, setFocusKind] = useState<PickKind | undefined>(undefined);
+  const [arriveAt, setArriveAt] = useState<KindCategoryId | null>(null);
   const list = useRef<HTMLDivElement>(null);
   const search = useRef<HTMLInputElement>(null);
 
   const key = searchKey(query);
   const categories = useMemo(() => shownCategories(key, labelOf, builtInNamesOf), [key]);
   const count = shownCount(categories);
+  // The rail and the list in step, as Add a Widget's: a rail entry scrolls to its category, the one in view marked.
+  const firstShown = categories.find((c) => c.shown.length > 0)?.id ?? null;
+  const rail = useGallerySpy(list, firstShown, key);
 
-  const back = (focus: boolean) => {
+  const back = (focus: boolean, at: KindCategoryId | null = null) => {
     if (!field) return;
     setLeft(field);
-    setFocusKind(focus ? field.kind : undefined);
+    setFocusKind(focus ? pickOf(field) : undefined);
+    setArriveAt(at);
     setField(null);
   };
   const onQuery = (next: string) => {
-    // Starting a search looks in every category.
-    if (!key && searchKey(next)) setChoice('all');
     setQuery(next);
     back(false);
   };
@@ -116,15 +131,31 @@ export function NewFieldForm({
     };
   });
 
+  // A tile picked: Add Field's fresh field; editing, its own tile gives the field back as it was (renamed as typed),
+  // and a Choice made from it starts with the values its cards hold as options.
+  const picked = (kind: PickKind): NewField => {
+    if (!edit) return freshField(kind, left);
+    const label = left?.label ?? edit.field.label;
+    if (kind === pickOf(edit.field) && (!left || pickOf(left) !== kind))
+      return { ...edit.field, label };
+    const next = freshField(kind, left);
+    const options = next.options?.length ? undefined : edit.plan.optionsFor(kind);
+    return options ? { ...next, options } : next;
+  };
+
   return (
     <GalleryFrame
-      title="Add Field"
-      line="Pick what the new field holds."
+      title={edit ? 'Edit Field' : 'Add a Field'}
+      line={
+        edit ? 'Rename it, reshape it, or pick another type.' : 'Pick what the new field holds.'
+      }
+      dialogTitleId={dialogTitleId}
       search={{
         label: 'Search fields',
         placeholder: 'Search fields, like money or date',
         value: query,
         onChange: onQuery,
+        autoFocus: autoFocusSearch,
         onKeyDown: (e) => {
           if (field) return;
           if (e.key === 'ArrowDown') focusFirstKind(list.current, e);
@@ -141,10 +172,10 @@ export function NewFieldForm({
           <AddFieldRail
             categories={categories}
             // Shaping, the kind's own category is marked.
-            choice={field ? categoryOfKind(field.kind).id : choice}
+            current={field ? categoryOfKind(pickOf(field)).id : rail.current}
             onChoose={(next) => {
-              setChoice(next);
-              back(false);
+              if (field) back(false, next);
+              else rail.goTo(next);
             }}
             // Shaping on a phone, the form has the room; All Kinds goes back.
             className={field ? '@max-[600px]:hidden' : ''}
@@ -160,24 +191,33 @@ export function NewFieldForm({
             onChange={setField}
             types={types}
             formulaDraft={formulaDraft}
-            ready={readyBuiltIns(field.kind, missing)}
-            canAddCustom={canAddCustom}
+            ready={edit ? [] : readyBuiltIns(field.kind, missing)}
+            canAddCustom={edit ? true : canAddCustom}
             onBack={() => back(true)}
-            onAdd={onAddCustom}
+            onAdd={edit ? edit.onSave : onAddCustom}
             onAddBuiltIn={onAddBuiltIn}
+            edit={
+              edit ? { loss: edit.plan.lossOf(field, PICK_KIND_LABELS[pickOf(field)]) } : undefined
+            }
           />
         </GalleryList>
       ) : (
         <AddFieldPicker
           categories={categories}
-          choice={choice}
           query={query}
-          missing={missing}
-          canAddCustom={canAddCustom}
-          onPick={(kind) => setField(freshField(kind, left))}
+          missing={edit ? [] : missing}
+          canAddCustom={edit ? true : canAddCustom}
+          onPick={(kind) => setField(picked(kind))}
+          refusalOf={edit?.plan.refusalOf}
+          current={edit ? pickOf(edit.field) : undefined}
           focusKind={focusKind}
           listRef={list}
           searchRef={search}
+          onScroll={rail.spy}
+          onArrive={() => {
+            if (arriveAt) rail.goTo(arriveAt, true);
+            else rail.spy();
+          }}
         />
       )}
     </GalleryFrame>

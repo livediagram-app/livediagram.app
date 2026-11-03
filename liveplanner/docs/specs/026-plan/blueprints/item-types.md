@@ -107,10 +107,9 @@ item.type), ...)`; `projectBoard` passes its catalogue), the Inbox push (below) 
   `boardCsvRows` (joined by ", ") and `boardCsvImport` (a Person field holding several splits at commas). Agents:
   `CustomFieldInput.multiple` / `CustomFieldEdit.multiple` (a field of another kind refused: "only a person or card
   field holds several"), `listedType` lists `custom[].multiple`, `namedFields` reads a list as a comma list
-  (`listedValue`), and a set line names stored people and cards (`storedText`). The editor: `HoldsSeveralSwitch`
-  (`ItemTypeFieldForms.tsx`, a `SwitchRow` "Holds Several" described by `HOLDS_SEVERAL_LINES[kind]`) in a Person or
-  Card field's `CustomFieldForm` and Add Field's `ShapeOwn` (`addedField` keeps `multiple` only there), tracking
-  `Plan` · `Changed` · `FieldHoldsSeveral`; `FieldChips.tsx` (the chip field, its Add button and remove buttons) used
+  (`listedValue`), and a set line names stored people and cards (`storedText`). The editor: no switch; Add
+  Field's Several People and Several Cards tiles preset `multiple` (`KIND_VARIANTS`; `addedField` keeps it only on a
+  Person or Card field); `FieldChips.tsx` (the chip field, its Add button and remove buttons) used
   by `PersonPicker` and `LinkedCardField` with `multiple` (their lists toggle, `aria-multiselectable`, no No one /
   None row, staying open); `SeveralValuesPills.tsx` (`PeopleStack`, `LinkedNumbersPill`, `SEVERAL_ON_CARD = 3`,
   `severalNames`) drawn by `customKindPill` and `PlanCardFace`; `usePlanCardDrag` carries the press's
@@ -145,8 +144,8 @@ item.type), ...)`; `projectBoard` passes its catalogue), the Inbox push (below) 
   clears `blocks` alone), `listedType` lists `custom[].blocks`, `planListing` adds `blocked` (open count, when > 0)
   and `blocks` (refs, when any) to each item from one `blockingIndexOf`, and `applyItemChanges` stops an add or set
   whose next state `blockingCycleOf` refuses (`blocks_cycle`, its message) before the write. The editor:
-  `BlocksSwitch` (`ItemTypeFieldForms.tsx`, `BLOCKS_LINE`, telemetry `FieldBlocks`, on sets `multiple`) under
-  `HoldsSeveralSwitch` in `CustomFieldForm` and `AddFieldShape` (`addedField` keeps `blocks` only on a card field);
+  no switch; Add Field's Blocked By tile presets `{ blocks, multiple }` (`KIND_VARIANTS`; `addedField` keeps `blocks`
+  only on a card field);
   `planBlocking(plan)` (`components/plan/blocking.ts`) memoises `blockingIndexOf` in a `WeakMap` by the items map,
   reused while the catalogue and status phases keep their identity; `BlockedMark` (`plan-card-parts.tsx`, the Lucide
   link glyph at 12 px in `BLOCKED_COLOUR` `#dc2626` with its count, `role="img"` and a Tooltip, "Blocked by N open
@@ -321,8 +320,8 @@ selfId)` names to ids by token spans, `shownFormula` ids to names (`nameAsWritte
     widened `calculated`; the SVG export draws a Formula with or without the cards.
   - Editor: `FormulaEditor.tsx` (Result and Currency, the Formula box, the check line `role="status"`, Fields and
     Functions chips inserting at the caret, `FormulaPreview` on the type's first live card through
-    `calculatedFieldOutcome`), wired by `CalculationSelect` (`calculationPatch`, track `Plan` · `Changed` ·
-    `FieldFormula` on picking Formula), `CustomFieldForm` (keeps the last working formula) and `AddFieldShape`
+    `calculatedFieldOutcome`), made from Add Field's Formula tile (`KIND_VARIANTS.formula`; `CalculationSelect` offers only
+    `COUNT_CALCULATIONS` and shows only while `pickOf(field)` is `calculated`), `CustomFieldForm` (keeps the last working formula) and `AddFieldShape`
     (`kindReadiness` 'formula', "Write a formula that works."). `PlanCardFace` draws a problem as a red "Error"
     pill with the problem in its spoken label; `CalculatedFieldValue` shows the problem in red,
     "No value" for none, and a Percent result shown as a Percent (`showAs`) through `percentShown`, as Children Done.
@@ -392,8 +391,8 @@ index, through?)` filters without a second pass. A Lookup reads the first live l
     blur, Escape restoring; a Viewer gets `PercentReading`, or "None"). `CustomFieldEditor` routes `percent` to it; `PlanCardFace` and
     `svg-render-plan-card.ts` draw every field `showsAsPercent` allows through the chip (a `percent` bit: the field's
     name, a `PLAN_PERCENT_BAR` track and its fill in `planPercentInks`, then "40%"; a narrow pill shortens the name
-    and keeps the bar and the share). `ItemTypeFieldForms` shows the `ShowAsPercentSwitch` (a `SwitchRow` with its
-    line, tracking `Plan` · `Changed` · `FieldShowAsPercent`) on a Calculated field `canShowAsPercent` allows, in Add
+    and keeps the bar and the share). `ItemTypeFieldForms` shows the `ShowAsPercentSwitch` (a `FieldSettingRow`,
+    below, tracking `Plan` · `Changed` · `FieldShowAsPercent`) on a Calculated field `canShowAsPercent` allows, in Add
     Field's Shape and in the field's form; `calculationPatch(calculation)` drops `showAs` with a Child Count, and
     `addedField` keeps it only where allowed.
   - Agents: `plan-schema.ts` adds `percent` to the kind enum and `showAs` to `add`/`editCustom`; `plan-listing.ts`
@@ -450,8 +449,8 @@ withTime, { local? })` (a list of two, or text split at `/` or " to ", each end 
   - Editor: `DateTimeInput` (`components/plan/DateTimeInput.tsx`, a `datetime-local` box with `DateInput`'s whole-
     value rules), `DateRangeField` (`components/plan/DateRangeField.tsx`, From and To), `PhoneField`
     (`components/plan/PhoneField.tsx`, a `tel` box and its `tel:` link), each from `CustomFieldEditor`; samples in
-    `CustomFieldKindParts` and `ItemTypeDisplay`; `IncludeTimeSwitch` in `ItemTypeFieldForms` (Add Field only);
-    `add-field-kinds.ts` places Phone in Links and Media and Date and Time and Date Range in Dates and Time, with the
+    `CustomFieldKindParts` and `ItemTypeDisplay`; Add Field's Date and Time Range tile presets `withTime` (no switch);
+    `add-field-kinds.ts` places Phone in Links and Images and Date and Time and Date Range in Dates, with the
     spec's words; the card face draws a past Date and Time or Date Range in red (`pastDue(field, value, now?, tz?)`
     in `date-range-fields.ts`), never on a done card; `CustomFieldEditor`'s `ZoneLine` (`dateTimeZones`) sits under
     a moment's box and a timed range's boxes. `formula-fields.ts` reads a Date and Time as `instantIso` text and a
@@ -489,7 +488,7 @@ withTime, { local? })` (a list of two, or text split at `/` or " to ", each end 
     `RunningTimerPill` on `PlanCardFace` at every size), `components/plan/time/DurationInput.tsx` (the panel's box),
     `components/plan/time/TimeSpentField.tsx` (total, Start Timer, Stop, Discard, others' timers, entries newest first, Show All,
     Add Time), routed from `ItemFieldEditor`; `usePlanSlice.trackTime` posts the write and sends the telemetry.
-    Add Field's Shape step has the Track Time switch (`TrackTimeSwitch`, fixed in an existing field's form).
+    Add Field's Time Tracking tile presets `timeSpent` (no switch in any form).
   - Exports: `svg-render-plan-card.ts` draws the total and a green running pill (`TIMER_RUNNING_GREEN`).
   - Agents: `plan-schema.ts` adds `duration` and `timeSpent`; `plan-listing.ts` lists a card's `time` (total,
     running people) and a Time Spent field as read-only; agents never start, stop or add time.
@@ -567,21 +566,37 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   then **Fields** (`data-tour-id="card-type-fields"`, set off by a top border: the lead line, then
   `ItemTypeLayoutEditor`). The tab's one panel scrolls (`overflow-y-auto`). Red-dot flags: a clashing name, a tab
   problem or a custom field problem flag `configuration`; a status list problem flags `statuses`.
-- **Add Field** (spec "Fields and Tabs": Add Field). `ItemTypeLayoutEditor` opens it in an `AnchoredPopover`
-  (`GALLERY_WIDTH` 720 from `apps/editor/components/plan/gallery/GalleryFrame.tsx`, `name="Add Field"`, `initialFocus` `'panel'` under
-  `(pointer: coarse)` else `'first'`, `onEscape` handed to the form), holding `NewFieldForm` (`NewFieldForm.tsx`),
-  which keeps the step (`field: NewField | null`), the search text (kept across the steps), the category shown
-  (`choice: CategoryChoice`, `'all'` to start), the field left by going back (`left`) and the kind to focus on
-  return (`focusKind`, set only by All Kinds or Escape, never by typing), and answers Escape (`escape()`: shape →
-  pick, then a typed search cleared, then false so the popover closes). It renders the galleries' shared frame
+- **Add Field** (spec "Fields and Tabs": Add Field). `ItemTypeLayoutEditor` keeps `adding: { group, opener }` (the
+  Add Field button pressed) and opens `AddFieldDialog` (`apps/editor/components/plan/AddFieldDialog.tsx`): the
+  workbench `Dialog` (`size="3xl"`, `sm:w-[min(60rem,calc(100vw-2rem))]` so the gallery's illustrations keep their room on a desktop, `h-[min(40rem,calc(100dvh-2rem))]`, `phoneSheet` at
+  `max-sm:h-[80dvh]`, `titleId` the gallery's `h2`, `closeOnEscape={false}`), a second panel portalled after the type
+  editor's, so its dim layer covers the editor and the Dialog's top-panel rule keeps the editor from hearing Escape or
+  a press on the dim layer. Its own `useEscape` asks the form's `escapeRef` first and closes only while its panel is
+  the page's last `[data-dialog-panel]`. The focus trap is the Dialog's (the search first under a fine pointer, the
+  panel under a coarse one); every close (`closeAdding`: an add, the cross, the dim layer, the sheet dragged down,
+  Escape) focuses `opener` before unmounting. It holds `NewFieldForm` (`NewFieldForm.tsx`, with `dialogTitleId`),
+  which keeps the step (`field: NewField | null`), the search text (kept across the steps), the field left by going
+  back (`left`), the tile to focus on return (`focusKind: PickKind`, `pickOf(field)`, set only by All Kinds or
+  Escape, never by typing) and the category to scroll to on return (`arriveAt`, a rail entry pressed while shaping),
+  and answers Escape (`escape()`: shape →
+  pick, then a typed search cleared, then false so the modal closes). It renders the galleries' shared frame
   (below) with the rail (`AddFieldRail`) and, beside it, either `AddFieldPicker` or `AddFieldShape` in a bare
   `GalleryList`.
   - The galleries' shared pieces, in `components/plan/gallery/`, used by Add Field and Add a Widget alike
-    (board-widgets blueprint): `GalleryFrame` (an `@container` box, `max-h-[min(76vh,40rem)]`; header `h3` title,
+    (board-widgets blueprint): `GalleryFrame` (an `@container` box, `max-h-[min(76vh,40rem)]`; with `dialogTitleId`
+    the modal's look instead: no box of its own, `flex-1` in the panel, an `h2` at `text-lg` with that id, the
+    header `px-5 pt-5`, the dialogs' `DialogCloseButton compact` after the search, and under 600 px the search
+    `order-last` below the title and close; otherwise header `h3` title,
     its line, the search `input type="search"` with `aria-label` the search's label and a `Tooltip`-wrapped close
     `button` "Close" when `onClose` is given; the rail slot and the list slot in a row, a column under 600 px; a
     visually hidden `aria-live="polite"` line `said`), `GalleryList` (the scrolling list, `data-gallery-list`, padded
     unless `bare`), `GallerySectionHeading` (`h4` with an optional brand icon, then its line, `data-group-line`),
+    `use-gallery-spy.ts` (`useGallerySpy(list, first, resetOn)` → `{ current, spy, goTo }`: `goTo(key, instant?)`
+    scrolls the list to `[data-gallery-section=key]` by `sectionTop` (smooth unless reduced motion or `instant`) and
+    marks it; `spy`, the list's `onScroll`, sets `current` to `sectionInView(list)`, the last section whose top has
+    reached the list's top (+8 px), or at the list's end the last whose top shows; an equal value re-renders nothing,
+    and the browser sends scroll events at most once a frame; a change of `resetOn` (the search key) marks `first`
+    and scrolls to the top; Add a Widget's `BoardWidgetPicker` and Add Field's `NewFieldForm` both use it),
     `GalleryRail` (`nav` with `aria-label`; groups of entries `{ key, title, icon, count }`, a later group under a
     small heading; an entry is a `button` with `data-rail-entry`, `aria-current="true"` when current, `CountBadge`
     when its count is above 0, `opacity-55` at 0; `@min-[601px]:w-56`, chips under 600 px; at least 44 px under a
@@ -591,12 +606,19 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
     (`stepFrom(cards, at, key)`: ←/→ one, ↑/↓ the nearest tile in the next row by layout, two in reading order
     with no layout, -1 for ↑ from the top row; `moveAmongTiles(e, tiles, search)`: arrows, Home and End, ↑ off the
     top row to `search`).
-  - Pure data and matching in `add-field-kinds.ts`. A **pick kind** (`PickKind`) is a `CustomFieldKind`, Comments
-    and Votes among them: each opens Shape, Ready to use offering its built-in while the type lacks it.
+  - Pure data and matching in `add-field-kinds.ts`. A **pick kind** (`PickKind`) is a `CustomFieldKind` (Comments
+    and Votes among them) or a `KindVariant`: each opens Shape, Ready to use offering its built-in while the type
+    lacks it. `KIND_VARIANTS` (`{ [variant]: { kind, preset } }`: `people` person `{ multiple }`; `time-tracking`
+    duration `{ timeSpent }`; `datetime-range` daterange `{ withTime }`; `cards` card `{ multiple }`; `blocked-by`
+    card `{ blocks, multiple }`; `formula`, `rollup`, `lookup` calculated `{ calculation }`), `storedKindOf(pick)`,
+    `presetOf(pick)` and `pickOf(field)` (the variant while its option is on, `blocked-by` before `cards`, else the
+    kind; round-trips every variant, test-locked). `PICK_KIND_LABELS` (`ItemTypeFieldForms`) and `PICK_KIND_ICONS`
+    (`CustomFieldKindParts`: Users, Timer, CalendarCheck, Layers, Lock, Braces, Merge, ScanEye) name and draw every
+    pick; `fieldIconOf` goes through `pickOf`, so a type editor row wears its variant's icon and name.
     `KIND_CATEGORIES` (`{ id: KindCategoryId, label, line, kinds: PickKind[] }[]`, the spec's table in its order:
-    `text` Text; `numbers` Numbers and Money; `dates` Dates and Time; `choices` Choices and Tags; `people` People and
-    Teamwork; `links` Links and Media; `cards` Cards and Formulas; every `CUSTOM_FIELD_KINDS` member once,
-    test-locked), `CategoryChoice` (`KindCategoryId | 'all'`), `ALL_FIELDS_LABEL` "All Fields", `categoryOfKind`,
+    `text` Text; `numbers` Numbers; `dates` Dates; `time` Time; `choices` Choices; `people` People; `links` Links and
+    Images; `cards` Cards; `calculated` Calculated; every `CUSTOM_FIELD_KINDS` member and variant once,
+    a variant after its kind, test-locked), `categoryOfKind`,
     `shownCategories(key, labelOf, builtInNamesOf)` (each category with `shown`, its kinds that `kindMatches`; all of
     them for an empty key), `KIND_DESCRIPTIONS` and `KIND_ALIASES` (`Record<PickKind, …>`, the spec's words),
     `BUILT_INS_OF_KIND` (`Record<PickKind, ItemFieldId[]>`: longtext description; choice priority; number estimate;
@@ -609,25 +631,28 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
     else `'name' | 'options' | 'links'`, in that order) with `READINESS_HINT`.
   - `NewFieldForm` works out `shownCategories(searchKey(query), …)` in a `useMemo` keyed on the search key only, so a
     re-render (the type editor's draft changing under it) never re-matches; the rail's counts and the said line ("N
-    fields match", "1 field matches") come from it. Typing a first character sets `choice` to `'all'`; typing while
-    shaping goes back to Pick (`back(false)`). The search's ↓ calls `focusFirstKind`; its Enter, with a key, presses
+    fields match", "1 field matches") come from it, and `useGallerySpy(list, first category with a match, key)` keeps
+    the rail in step. Typing while shaping goes back to Pick (`back(false)`). A tile picked starts its field with
+    `freshField(pick, left)`: `left` again when `pickOf(left)` is the same pick, else the name and Required kept,
+    `storedKindOf(pick)`, `CALCULATIONS[0]` for a Calculated, then `presetOf(pick)`. The search's ↓ calls `focusFirstKind`; its Enter, with a key, presses
     the first `[data-pick]` (`pickFirstKind`); both do nothing while shaping. The rail is not rendered when a search
-    matches nothing; while shaping its `choice` is `categoryOfKind(field.kind).id` and it is `@max-[600px]:hidden`.
-    Pressing an entry sets `choice` and goes back to Pick.
-  - Step 1 is `AddFieldPicker.tsx`: `AddFieldRail` (`GalleryRail` "Field categories": `all` "All Fields" with a
-    LayoutGrid glyph and the total shown, then each category with its first everyday kind's icon, `CATEGORY_ICONS`,
-    and its `shown` count) and `AddFieldPicker`, a `GalleryList` (`onKeyDown` `moveAmongTiles` over
+    matches nothing; while shaping its current entry is `categoryOfKind(pickOf(field)).id` and it is
+    `@max-[600px]:hidden`. Pressing an entry on Pick calls `goTo`; while shaping it goes back to Pick
+    (`back(false, category)`) and, once the list is back, `goTo(category, true)`.
+  - Step 1 is `AddFieldPicker.tsx`: `AddFieldRail` (`GalleryRail` "Field categories": each category with its first
+    everyday kind's icon, `CATEGORY_ICONS`, and its `shown` count; `current` from the spy) and `AddFieldPicker`, a
+    `GalleryList` (`onScroll` the spy's; `onKeyDown` `moveAmongTiles` over
     `button[data-kind]`, ↑ off the top row to the search) holding `CUSTOM_MAX_NOTE` first (`role="note"`) when
-    `canAddCustom` is false, then a `section` (`aria-labelledby` its `GallerySectionHeading`) per category that is
-    chosen (or every one for `'all'`) and has a kind shown, its kinds in a two-column grid
-    (`@max-[460px]:grid-cols-1`); none: `NoMatches` (`things` "fields", or "{Category} fields" for one category,
+    `canAddCustom` is false, then a `section` (`data-gallery-section` its id, `aria-labelledby` its
+    `GallerySectionHeading`) per category that has a kind shown, its kinds in a two-column grid
+    (`@max-[460px]:grid-cols-1`); none: `NoMatches` (`things` "fields",
     hint "Try a word like money, date or parent."). A kind is a `GalleryTile`: the strip `KindSample` (the Preview's
     `SampleValue` at its defaults, `CustomFieldKindParts.tsx`) in `FitWidth` at 13 px; root `data-kind-tile`; button
     `data-kind`, `aria-label` the kind's name, `aria-describedby` its line's id and, when `readyBuiltIns` is not empty,
     the **Ready to use** badge's id; `data-pick` unless dimmed. With `canAddCustom` false a kind with nothing ready is
     `aria-disabled`, dimmed, its label "{Kind}: Remove a custom field to add another" and its tooltip
-    `AT_CAP_HINT`. On mount the `focusKind` tile takes focus; a change of `choice` or the search scrolls the list to
-    the top.
+    `AT_CAP_HINT`. On mount the `focusKind` tile takes focus (scrolling it into view), then `onArrive` (the form's
+    `goTo(arriveAt)` or `spy`) brings the rail in step.
   - Step 2 is `AddFieldShape.tsx`, a `<form>` (`aria-label` "New {Kind} field"; `onSubmit` adds when ready, so Enter
     in Name submits; option rows and selects take their own Enter): a header with the back button (`ChevronLeft`,
     "All kinds") and the pill (`<span><span class="sr-only">Kind: </span>{label}</span>` with its icon); when
@@ -637,7 +662,7 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
     false; `TextInput`
     labelled "Name" (`autoFocus`, `maxLength={CUSTOM_FIELD_LABEL_MAX}`); the kind's controls (`ChoiceOptionsEditor`,
     `RatingScaleSelect`, `CurrencySelect`, `LinksToPicker`, `CalculationSelect`, each with a visible label);
-    `RequiredSwitch`; `CustomFieldPreview`; then a `sticky bottom-0` footer: the submit `Button` (full width,
+    `FieldSwitches` (below); `AddFieldTryIt` (none for a Formula, Rollup or Lookup); then a `sticky bottom-0` footer: the submit `Button` (full width,
     `PlusIcon`, "Add {name}" truncated, else "Add {Kind} Field", `disabled` until `kindReadiness` is null,
     `aria-describedby` the hint line under it). What it hands `onAddCustom` is today's: the trimmed label, and the
     kind's own settings only (options, scale, link types, currency, calculation, required where `canBeRequired`).
@@ -650,9 +675,26 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
     is taken (`preventDefault`) and split into lines (blank ones dropped): an empty row takes the first, the rest
     are inserted after, capped at `CUSTOM_CHOICE_OPTIONS_MAX` rows. **Add an option** is disabled at the cap.
     `CustomFieldForm` (editing an existing field) keeps its textarea.
-  - `CustomFieldPreview` (`CustomFieldKindParts.tsx`) draws a card: `figure` "Preview" (caption), over a white
-    rounded bordered card ("Example card", `text-[13px] font-medium`) holding the `ItemDetailsRow` (its `required`
-    mark when Required).
+  - `CustomFieldPreview` (`CustomFieldKindParts.tsx`) draws a still card: `figure` "Preview" (caption, and its
+    optional `note` beside it), over a white rounded bordered card ("Example card", `text-[13px] font-medium`)
+    holding the `ItemDetailsRow` (its `required` mark when Required) with `SampleValue` (`multiple`, `blocks` passed
+    through).
+  - `AddFieldTryIt.tsx` (props `field: NewField`, `linkLabel?`, `required`): for `card`, `calculated`, `image`,
+    `comments`, `votes` and an `isTimeSpent` Duration it renders `CustomFieldPreview` with `note={STILL_NOTE}`
+    ("Shows on a real card"). Every other kind renders `figure` `aria-label="Try It"` (caption "Try It", and
+    "Nothing here is saved") holding `Sandbox`, keyed on `shapeKey(field)` (the field as JSON less `label`,
+    `required`, `notifies`) so a change of kind or shaping setting remounts it empty. `Sandbox` builds a pretend
+    `ItemTypeDef` (`id` 'try-it', one custom field: the field with id 'try-it-field' and its trimmed label or
+    "Field name") and `Item` (fields from `useState`), and renders the panel's own `ItemFieldEditor` in an
+    `ItemDetailsRow` (`htmlFor` per `labelsItsControl`). Its `ItemFieldContext`: `people` and, for Labels only,
+    `labelUsage(plan.items)` (memoised on the items) read from `usePlan()`; `canEdit` true; `onSave` / `onPatch`
+    write the local fields only (resolving true); `onOpenItem` does nothing. No plan write, store or fetch is
+    reached. Its wrapper `onKeyDown` calls `preventDefault` on Enter from an `<input>` (no implicit submit of the
+    Shape form); `onBlurCapture` on the field's own input, for `phone` / `email` / `link`, checks the trimmed text
+    (`isPhoneNumber` + `PHONE_HINT`, `isEmailAddress`, `isLinkText` exported from `CustomFieldEditor`) before the
+    box's own blur puts it back, and shows `role="alert"` "{Name}: {hint}." until a later blur passes. Escape needs
+    nothing of its own: the real lists (`AnchoredPopover` through the popover stack, `PersonPicker`) take it on
+    `window` in the capture phase and stop it, so AddFieldDialog's document listener never steps back.
   - `CustomFieldKindTiles` is removed (nothing else used it).
   - Touch: every button and field in it carries `pointer-coarse:min-h-11`. Steps enter with `motion-safe:animate-card-rise`.
   - `AnchoredPopover` (`@liveworkspace/workbench`) gains `initialFocus?: 'first' | 'panel'` (default `'first'`, as
@@ -663,6 +705,39 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   (`revealAt: 'start'`: the tour engine's `revealInScrollers` from `tour-reveal.ts` scrolls it there, instant under
   reduced motion); `states` and `display` show their tabs. The button and the running tour are the shared `ShowMeButton` /
   `ShowMeStage` (`ShowMe.tsx`, [Show Me](../../007-editor/show-me.md)); `CardTypeTour.tsx` keeps the literal telemetry.
+
+- **Edit Field** (spec "Fields and Tabs": Edit Field). `ItemTypeFieldRow`'s pencil (`Tooltip` "Edit Field",
+  `aria-label` "Edit {Name}", `aria-haspopup="dialog"`) calls `onEdit(opener)`; `ItemTypeLayoutEditor` keeps
+  `editing: { id, opener }` (only a custom field neither inherited nor newer has a pencil; the inline
+  `CustomFieldForm` is no longer rendered in a row, the component stays for its own tests and settings) and renders
+  `EditFieldDialog` (`EditFieldDialog.tsx`), which is `AddFieldDialog` with `edit: { field, plan, onSave }` passed
+  down to `NewFieldForm`: the form starts on Shape with the draft's field (`useState(edit.field)`), titles itself
+  "Edit Field", passes `missing=[]` and `canAddCustom` true, and gives `AddFieldPicker` `refusalOf` (dimmed tile,
+  `GalleryTile` tooltip and name) and `current` (the field's own tile, tagged Current). `picked(kind)` gives the
+  field back as drafted for its own tile, else `freshField` with `plan.optionsFor(kind)` for a Choice or Multiple
+  Choice. `AddFieldShape` takes `edit: { loss }`: the `role="status"` line over the footer, Save (`CheckIcon`), and
+  a first Save on a loss that cuts down or clears values sets `confirming` to its message (Keep Editing, Change
+  Values); a changed message asks again. Save calls `onSave(addedField(field))` with the field's id put back, which
+  replaces the def in `draft.custom`; focus returns to the pencil.
+  - `edit-field-values.ts` `useEditFieldPlan({ typeId, stored, types, items, people })`, memoised on those: `stored`
+    is the field as the catalogue holds it (undefined for a field new in the draft: no refusals, no loss);
+    `refusalOf` is `kindChangeRefusal(stored, shapeOf(pick))`; `optionsFor` is `optionsFromValues` over
+    `fieldValues` (once per plan); `lossOf(field)` is `fieldKindChange` counted once per `shapeKey` (kind and the
+    shaping settings) in a Map, `lossMessage` wording it.
+  - `packages/items/src/field-kind-change.ts`, pure: `kindChangeRefusal`, `changedValue(from, to, value, ctx)` →
+    `kept | rewritten { value, trimmed } | cleared` (same kind: several to one keeps the first; Date Range with or
+    without times; the date kinds among themselves by `dateChange`; else by target: text written by `textOf`, Choice
+    and Multiple Choice by option name, Labels and Person by name, the rest by `customValueOfText`, the CSV
+    import's own reading, exported from `board-csv.ts`), `optionsFromValues`, `fieldCardsOf(typeId, field, types)`
+    (the type and its heirs holding the field), `fieldKindChange(from, to, items, on, ctx)` (one pass: `held`,
+    `trimmed`, `cleared`, `patches`, a value rewritten to itself kept, a string value worked out once a pass, a
+    Long Text's `<id>Rich` cleared) and `retypedValuePatches(before, after, types, items, ctx)` (every changed field,
+    one patch per card).
+  - Saving: `PlanSheetsHost`'s `onSave` works out `retypedValuePatches(editing, next, …)`; with any, it calls
+    `ctx.reshapeValues(patches)` (`usePlanSlice`: one `patches` write marked `undo: true`, past the Required rule,
+    `usePlanItems.write(input, { onUndo })` handing its undo step back instead of pushing it) and passes that promise
+    to `itemTypes.saveType(next, along)`, whose `change` pushes `combinedStep([typeStep, itemsStep])`
+    (`item-undo-journal.ts`) once the write settles (the type's step alone when it made none).
 
 ## Tabs
 
@@ -760,8 +835,12 @@ planStatuses)` when `planStatuses` is given, then each type's joins appended whe
   `CustomFieldInput.notifies` / `CustomFieldEdit.notifies` (a field that is no Person field refused: "only a person
   field notifies") and `assigneeNotifies` on `add` and `set` (`true` drops the stored false) in
   `applyCardTypeChanges`; `listedType` lists `custom[].notifies` and `assigneeNotifies: false`. The editor:
-  `NotifiesSwitch` (`ItemTypeFieldForms.tsx`, a `SwitchRow` "Notifies" described by `NOTIFIES_LINE`) in a Person
-  field's `CustomFieldForm` and Add Field's `ShapeOwn` (`addedField` keeps `notifies` only on a Person field); the
+  `NotifiesSwitch` (`ItemTypeFieldForms.tsx`, a `FieldSettingRow` "Notifies" described by `NOTIFIES_LINE`) in a
+  Person field's `CustomFieldForm` and Add Field's `ShapeOwn` (both through `FieldSwitches`: `ShowAsPercentSwitch`,
+  `RequiredSwitch` with `REQUIRED_LINE`, `NotifiesSwitch` in a `flex-col gap-2` stack, `data-field-switches`, nothing
+  when none applies; each a `FieldSettingRow`, the `@liveworkspace/settings-ui` `SettingsToggleRowView` keyed
+  `field-setting-{useId}`, its `Switch` `coversRow` so the whole bordered cell is the press target; tested in
+  `FieldSwitches.test.tsx`) (`addedField` keeps `notifies` only on a Person field); the
   Assignee's `FieldMenu` (`ItemTypeFieldMenu.tsx`) opens with `MenuNotifiesRow`, a `menuitemcheckbox` drawing the
   house `Switch`, that sets `LayoutDraft.assigneeNotifies` (kept only as `false`; `ItemTypeEditor` reads and saves
   it). Each flip tracks `Plan` · `Changed` · `FieldNotifies`.
@@ -868,10 +947,17 @@ cards, children)` adds "{names} will keep a copy of its settings."
   when a Blocks field's value changed; the picker's `waitingOn` is one inversion and one walk per open list. Measured
   in `blocked-by.perf.test.ts`.
 
-- Add Field's gallery: 25 tiles, each a static sample (no data read), drawn on opening; the search's matching is
-  memoised on the search key (`shownCategories`, 25 kinds × a few dozen short strings, well under a millisecond);
+- Edit Field's count: one pass over the plan's cards per type picked, memoised per shape until the cards change,
+  each string value worked out once a pass. Measured on 2,000 cards (`ITEMS_MAX`): Text to Number 0.5 ms, Several
+  People to Person 1.1 ms, to Text 1.5 ms, Date to Date and Time 1.4 ms over 100 distinct days and 24 ms when every
+  card holds a different day (time-zone math per day). The options a Choice starts with: one pass, under 0.1 ms.
+  The save's writes go in `ITEM_BULK_MAX` chunks (`postInChunks`), so a 2,000-card change is ten requests.
+- Add Field's gallery: 33 tiles (25 kinds and 8 variants), each a static sample (no data read), drawn on opening; the search's matching is
+  memoised on the search key (`shownCategories`, 33 tiles × a few dozen short strings, well under a millisecond);
   measured in the browser at about 22 ms from the press to the second frame with every tile drawn. Each tile's
-  `FitWidth` holds one `ResizeObserver` (25 while open, disconnected on close).
+  `FitWidth` holds one `ResizeObserver` (33 while open, disconnected on close). The rail's scroll spy measures the
+  seven section headings on each scroll event (the browser sends one a frame at most) and re-renders only when the
+  category in view changes.
 
 ## Accessibility and UX
 
@@ -879,12 +965,14 @@ cards, children)` adds "{names} will keep a copy of its settings."
   glyphs are radio groups with names ("Cyan", "Chat glyph"). The editor's problems are named in text beside
   Save. Copy: "Card Types", "+ Add Type", "Add Default Types", its confirm "Add {list} to this project’s card types? They go after the ones you have, and nothing you have changes." with "Add Types", "New Card Type", "Edit Card Type",
   "+ Add Field", "Search fields", "Search fields, like money or date", "Ready to use", "Or make your own", "Add Field",
-  "Pick what the new field holds.", "Close", "All Fields", the seven category names and lines, the twenty-five
-  descriptions, the Ready to use lines, "No fields match “…”", "No {Category} fields match “…”", "Try a word like
+  "Pick what the new field holds.", "Close", the nine category names and lines, the thirty-three tile names
+  (the variants: "Several People", "Time Tracking", "Date and Time Range", "Several Cards", "Blocked By",
+  "Formula", "Rollup", "Lookup") and descriptions, the Ready to use lines, "No fields match “…”", "No {Category} fields match “…”", "Try a word like
   money, date or parent.", "N fields match", "Remove a custom field to add another",
   "This type holds the most custom fields it can (12). Remove one to add another.", "All kinds", "Kind: {Kind}",
   "Name", "Field name", "Options", "Add an option", "or paste a list", "Option {n}", "Remove option {n}", "Scale",
-  "Currency", "Calculation", "Required", "Preview", "Example card", "Add {Name}", "Add {Kind} Field", "Name the
+  "Currency", "Calculation", "Required", "Try It", "Nothing here is saved", "Preview", "Shows on a real card",
+  "Example card", "Write an email address like sam@example.com", "Write a link that starts https://", "Add {Name}", "Add {Kind} Field", "Name the
   field to add it.", "Add at least one option.", "Pick a card type it links to.", "Show on card", "Delete",
   "Keep as Item".
 
@@ -944,6 +1032,7 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Card Type picker: the boards' types, one type a label, live                                                      | `apps/editor/components/plan/ItemTypePill.test.tsx`                                                                                                                                                                                                                                                              |
 | Add Field: categories, descriptions, aliases, readiness                                                          | `apps/editor/components/plan/add-field-kinds.test.ts`                                                                                                                                                                                                                                                            |
 | Add Field: gallery, rail, search, Ready to use, keys, shape                                                      | `apps/editor/components/plan/NewFieldForm.test.tsx`                                                                                                                                                                                                                                                              |
+| Add Field: Try It (live editor, no writes, Escape, Enter, refusals, reset)                                       | `apps/editor/components/plan/AddFieldTryIt.test.tsx`                                                                                                                                                                                                                                                             |
 | Built-in kinds: store, text, CSV, agents                                                                         | `packages/items/src/built-in-field-kinds.test.ts`                                                                                                                                                                                                                                                                |
 | Built-in kinds and Image: panel, card face, required                                                             | `apps/editor/components/plan/ItemFieldEditor.kinds.test.tsx`                                                                                                                                                                                                                                                     |
 | Image fields: upload, read, roles, grants                                                                        | `apps/api/src/routes/images.test.ts`, `apps/api/src/plan-room/image-grants.test.ts`, `apps/editor/lib/api/images.test.ts`                                                                                                                                                                                        |
@@ -951,6 +1040,9 @@ cards, children)` adds "{names} will keep a copy of its settings."
 | Attachments: panel, roles, drop, paste, cover on the card                                                        | `apps/editor/components/plan/AttachmentsField.test.tsx`                                                                                                                                                                                                                                                          |
 | Images in use: triggers, report, purge, serving                                                                  | `apps/api/src/plan-room/image-refs.test.ts`                                                                                                                                                                                                                                                                      |
 | Add Field: option rows, Enter, Backspace, paste                                                                  | `apps/editor/components/plan/ChoiceOptionsEditor.test.tsx`                                                                                                                                                                                                                                                       |
+| Edit Field: value conversions, refusals, counts, options, 2,000-card budget                                      | `packages/items/src/field-kind-change.test.ts`                                                                                                                                                                                                                                                                   |
+| Edit Field: pencil, rename, reshape, type change, loss count and confirm, disabled tiles, Editor only            | `apps/editor/components/plan/EditFieldDialog.test.tsx`                                                                                                                                                                                                                                                           |
+| Edit Field: the type and its values as one undo step                                                             | `apps/editor/hooks/plan/item-undo-journal.test.ts`, `apps/editor/hooks/plan/useItemTypes.test.ts`                                                                                                                                                                                                                |
 | Add Field: opened from a group, lands there                                                                      | `apps/editor/components/plan/ItemTypeLayoutEditor.rows.test.tsx`                                                                                                                                                                                                                                                 |
 | Statuses chips, panel Status options                                                                             | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`                                                                                                                                                                                                                                                          |
 | Editor tabs, Configuration sections, flags, arrow keys                                                           | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`                                                                                                                                                                                                                                                       |

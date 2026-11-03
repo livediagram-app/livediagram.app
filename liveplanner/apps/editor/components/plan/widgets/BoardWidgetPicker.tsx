@@ -3,11 +3,12 @@
 // The widget zone's + (docs/specs/026-plan/board-widgets.md "The widget gallery"): Add a Widget, a gallery of every
 // widget the board can hold, on the galleries' shared frame (GalleryFrame, shared with Add Field). A rail down its left
 // names the sections (For You, Focus, Progress, People, Dates, Health, then each card type's fields) and scrolls to
-// one; the list beside it draws each widget live from this board's own cards as a tile, two to a row. A tile adds its
-// widget at the end of the header, or takes it off when the board has it, and the gallery stays open for the next. A
-// search narrows every section as it is typed. The arrow keys move between tiles (gallery-keys.ts); previews are drawn
-// only as their tiles come into view.
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+// one, the section in view marked as the list scrolls (gallery/use-gallery-spy, shared with Add Field); the list beside
+// it draws each widget live from this board's own cards as a tile, two to a row. A tile adds its widget at the end of
+// the header, or takes it off when the board has it, and the gallery stays open for the next. A search narrows every
+// section as it is typed. The arrow keys move between tiles (gallery-keys.ts); previews are drawn only as their tiles
+// come into view.
+import { useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   FIELD_WIDGETS_MAX,
   fieldWidgetCount,
@@ -23,9 +24,11 @@ import {
   GALLERY_WIDTH,
   GalleryFrame,
   GalleryList,
+  GALLERY_SECTION_CLASS,
   GallerySectionHeading,
 } from '../gallery/GalleryFrame';
 import { moveAmongTiles } from '../gallery/gallery-keys';
+import { useGallerySpy } from '../gallery/use-gallery-spy';
 import { gallerySections, sectionSize, type GallerySection } from './widget-gallery-model';
 import { WidgetGalleryTile } from './WidgetGalleryTile';
 import { WidgetGalleryRail } from './WidgetGalleryRail';
@@ -66,44 +69,12 @@ export function BoardWidgetPicker({
   const list = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const watch = useSeenRoot(list);
-  const [current, setCurrent] = useState<string | null>(sections[0]?.key ?? null);
   const full = fieldWidgetCount(widgets) >= FIELD_WIDGETS_MAX;
   // Said to a screen reader after each press: what was added or taken off.
   const [said, setSaid] = useState('');
 
-  // The section in view: the last whose top has reached the list's top; scrolled to the end, the last whose top shows
-  // (a short last section never reaches the top, yet it is the one in view).
-  const spy = () => {
-    const box = list.current;
-    if (!box) return;
-    let at: string | null = sections[0]?.key ?? null;
-    const atEnd = box.scrollHeight - box.clientHeight - box.scrollTop <= 1 && box.scrollTop > 0;
-    for (const el of box.querySelectorAll<HTMLElement>('[data-gallery-section]')) {
-      const top = sectionTop(box, el);
-      if (top <= box.scrollTop + 8 || (atEnd && top < box.scrollTop + box.clientHeight))
-        at = el.dataset.gallerySection ?? at;
-    }
-    setCurrent(at);
-  };
-  // A search may drop the current section: back to the first, at the top.
-  const first = sections[0]?.key ?? null;
-  useEffect(() => {
-    setCurrent(first);
-    list.current?.scrollTo?.({ top: 0 });
-    // On a new search only, never as the board's widgets change under it.
-    // oxlint-disable-next-line react/exhaustive-deps
-  }, [query]);
-
-  const goTo = (key: string) => {
-    const box = list.current;
-    const el = box?.querySelector<HTMLElement>(`[data-gallery-section="${key}"]`);
-    if (!box || !el) return;
-    const top = sectionTop(box, el);
-    const smooth = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    if (box.scrollTo) box.scrollTo({ top, behavior: smooth ? 'smooth' : 'auto' });
-    else box.scrollTop = top;
-    setCurrent(key);
-  };
+  // The rail and the list in step: a rail entry scrolls to its section; the section in view is marked.
+  const { current, spy, goTo } = useGallerySpy(list, sections[0]?.key ?? null, query);
 
   const toggle = (id: BoardWidgetId, fullName: string) => {
     setSaid(widgets.includes(id) ? `${fullName} taken off the board` : `${fullName} added`);
@@ -170,13 +141,6 @@ export function BoardWidgetPicker({
   );
 }
 
-// Where a section starts in the list's scrolled content. Measured on screen: the list is `relative`, so a section's
-// offsetTop is already from the list, and taking the list's own offsetTop off as well left each section the gallery's
-// header height (about 50 px) short of the top, the end of the section before it showing above.
-export function sectionTop(box: HTMLElement, el: HTMLElement): number {
-  return el.getBoundingClientRect().top - box.getBoundingClientRect().top + box.scrollTop;
-}
-
 function Section({
   section,
   widgets,
@@ -212,7 +176,11 @@ function Section({
   );
   const headingId = `gallery-${section.key}`;
   return (
-    <section data-gallery-section={section.key} aria-labelledby={headingId} className="pt-4">
+    <section
+      data-gallery-section={section.key}
+      aria-labelledby={headingId}
+      className={GALLERY_SECTION_CLASS}
+    >
       <GallerySectionHeading
         id={headingId}
         icon={section.key === 'for-you' ? <SparkArt size={13} /> : undefined}
