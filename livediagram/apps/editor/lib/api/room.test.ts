@@ -274,6 +274,35 @@ describe('connectRoom outbox (docs/specs/012-collaboration/collab-race-hardening
     expect(socket.sent).toContainEqual({ kind: 'grant', grant: 'fresh-grant' });
   });
 
+  // docs/specs/015-api/api.md "A busy room bounds its presence fan-out": the hello says we take batches, and a
+  // batch frame is each of its frames handled in turn.
+  it('says it takes batches, and applies every op a batch frame holds', () => {
+    const ops: [string, unknown][] = [];
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp: (from, op) => void ops.push([from, op]) },
+      { ticket: 'first' },
+    );
+    const socket = FakeSocket.all[0]!;
+    socket.fire('open');
+    expect(socket.sent[0]).toMatchObject({ kind: 'hello', batches: true });
+    const avatar = (tabId: string) => ({ kind: 'avatar', tabId, avatar: null });
+    socket.receive(
+      JSON.stringify({
+        kind: 'batch',
+        frames: [
+          { kind: 'op', from: 'a', op: avatar('t1') },
+          { kind: 'op', from: 'b', op: avatar('t2') },
+        ],
+      }),
+    );
+    expect(ops).toEqual([
+      ['a', avatar('t1')],
+      ['b', avatar('t2')],
+    ]);
+  });
+
   it('sends nothing for a grant-renew when no fresh grant can be had', async () => {
     const renewGrant = vi.fn(async () => null);
     connectRoom(

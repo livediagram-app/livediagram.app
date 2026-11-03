@@ -1199,6 +1199,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     canvasTool,
     // A vote hides them.
     cursorsHidden: voteCursorsHidden,
+    // The roster holds our peers; the room holds us too.
+    roomSize: livePresence.length + 1,
   });
   // Our drags, live for collaborators (docs/specs/008-canvas/drag-preview.md), whenever the room is open.
   useDragPreviewBroadcast({

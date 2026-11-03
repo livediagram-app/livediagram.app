@@ -281,6 +281,9 @@ export function connectRoom(
         JSON.stringify({
           kind: 'hello',
           participant,
+          // A busy room may coalesce our samples into one `batch` frame a step (docs/specs/015-api/api.md "A busy
+          // room bounds its presence fan-out"); saying so is what lets it.
+          batches: true,
           ...(facilitatorToken ? { facilitatorToken } : {}),
         } satisfies RoomOutgoing),
       );
@@ -321,8 +324,8 @@ export function connectRoom(
         debugLog('[room] non-text frame ignored');
         return;
       }
-      try {
-        const msg = JSON.parse(data) as RoomIncoming;
+      // One message from the room. A busy room's `batch` frame holds several, each handled as if sent alone.
+      const handle = (msg: RoomIncoming): void => {
         if (msg.kind === 'presence') {
           roomFull = false;
           settleTimings(true);
@@ -370,6 +373,11 @@ export function connectRoom(
             if (msg.seq > lastSeq) lastSeq = msg.seq;
           }
         }
+      };
+      try {
+        const msg = JSON.parse(data) as RoomIncoming;
+        if (msg.kind === 'batch') for (const frame of msg.frames) handle(frame);
+        else handle(msg);
       } catch {
         debugLog('[room] malformed frame ignored');
       }

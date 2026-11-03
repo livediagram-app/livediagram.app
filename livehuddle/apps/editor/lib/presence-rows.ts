@@ -6,6 +6,7 @@
 // to the active tab and filtered to live participants) is unit-testable
 // without standing up the room. `now` and the last-seen map are passed in
 // rather than read from Date.now() / a ref, keeping the functions pure.
+import { avatarGlideMs } from '@liveworkspace/avatar/relay';
 import type { AvatarPresence } from '@livehuddle/api-schema';
 import { participantKey, statusFromIdleMs, type Participant } from './identity';
 import type { LaserPoint } from './laser-buffer';
@@ -180,14 +181,23 @@ export function buildRemoteAvatarRows(
   livePresenceById: Map<string, Participant>,
   selfId: string,
   activeId: string,
-): { id: string; name: string; color: string; avatar: AvatarPresence }[] {
-  const rows: { id: string; name: string; color: string; avatar: AvatarPresence }[] = [];
+): { id: string; name: string; color: string; avatar: AvatarPresence; glideMs: number }[] {
+  const rows: {
+    id: string;
+    name: string;
+    color: string;
+    avatar: AvatarPresence;
+    glideMs: number;
+  }[] = [];
+  // A busy room sends fewer steps, so a peer glides between them (docs/specs/008-canvas/avatar-mode.md
+  // "A busy room"). The roster holds the peers; the room holds us too.
+  const glideMs = avatarGlideMs(livePresenceById.size + 1);
   for (const [id, entry] of remoteAvatars) {
     if (id === selfId) continue;
     if (entry.tabId !== activeId) continue;
     const p = livePresenceById.get(id);
     if (!p) continue;
-    rows.push({ id, name: p.name, color: p.color, avatar: entry.avatar });
+    rows.push({ id, name: p.name, color: p.color, avatar: entry.avatar, glideMs });
   }
   return rows;
 }

@@ -19,6 +19,7 @@ function setup(overrides: Partial<Deps> = {}) {
     activeId: 'tab1',
     canvasTool: 'laser',
     cursorsHidden: false,
+    roomSize: 2,
     ...overrides,
   };
   const hook = renderHook((d: Deps) => useEditorBroadcast(d), { initialProps: deps });
@@ -89,6 +90,28 @@ describe('useEditorBroadcast avatar packets', () => {
         .map((m) => (m.kind === 'op' && m.op.kind === 'avatar' ? m.op.avatar?.status : null));
       // The last word reaches the room, however the window fell.
       expect(statuses.at(-1)).toBe('meeting');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  // docs/specs/008-canvas/avatar-mode.md "A busy room"
+  it('paces the character by the room: 33 ms up to 10 people, 66 ms above 32', () => {
+    vi.useFakeTimers();
+    let now = 1000;
+    vi.spyOn(performance, 'now').mockImplementation(() => now);
+    try {
+      const walkFor = (roomSize: number) => {
+        const { hook, sent } = setup({ canvasTool: 'avatar', roomSize });
+        const avatars = () => sent.filter((m) => m.kind === 'op' && m.op.kind === 'avatar');
+        act(() => hook.result.current.broadcastAvatar(packet('focus')));
+        now += 40;
+        act(() => hook.result.current.broadcastAvatar(packet('meeting')));
+        return avatars().length;
+      };
+      // 40 ms on, a small room has sent the second packet; a full one is still holding it.
+      expect(walkFor(2)).toBe(2);
+      expect(walkFor(100)).toBe(1);
     } finally {
       vi.useRealTimers();
     }

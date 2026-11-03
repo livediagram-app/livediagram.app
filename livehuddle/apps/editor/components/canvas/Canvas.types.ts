@@ -248,6 +248,8 @@ export type CanvasProps = {
     name: string;
     color: string;
     avatar: import('@livehuddle/api-schema').AvatarPresence;
+    // How long the character slides to each new position (docs/specs/008-canvas/avatar-mode.md "A busy room").
+    glideMs: number;
   }[];
   // Publishes the local character to the room (null when leaving the mode).
   // Optional: a private, un-shared document has no room to publish to.

@@ -12,6 +12,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { AvatarPresence, RoomOutgoing } from '@livediagram/api-schema';
+import { avatarSendIntervalMs } from '@liveworkspace/avatar/relay';
 import type { CanvasTool } from '@/components/palette/palette.types';
 import { trimLaserBuffer, type LaserPoint } from '@/lib/laser-buffer';
 import type { LaserConfig } from '@/lib/laser-config';
@@ -56,6 +57,9 @@ type EditorBroadcastDeps = {
   // render-only gate would leave the coordinates on the wire. The
   // matching render gate lives in usePresenceRows.
   cursorsHidden: boolean;
+  // How many people are in the room, us included. A busy room paces the character more slowly
+  // (docs/specs/008-canvas/avatar-mode.md "A busy room").
+  roomSize: number;
 };
 
 type EditorBroadcastApi = {
@@ -229,7 +233,8 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
         op: { kind: 'avatar', tabId: deps.activeId, avatar: packet },
       });
     };
-    const wait = BROADCAST_THROTTLE_MS - (now - lastAvatarSentRef.current);
+    // Stepped down in a busy room: every 33 ms up to 10 people, 50 up to 32, 66 above.
+    const wait = avatarSendIntervalMs(deps.roomSize) - (now - lastAvatarSentRef.current);
     if (avatar && wait > 0) {
       pendingAvatarRef.current = avatar;
       avatarTimerRef.current ??= setTimeout(() => {
