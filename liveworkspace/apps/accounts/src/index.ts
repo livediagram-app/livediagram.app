@@ -17,6 +17,7 @@ import {
   type DeletionCodeConfig,
 } from './deletion-code.ts';
 import { disconnectDrive, driveDisconnectConfig } from './drive-disconnect.ts';
+import { removePersonalExport } from './data-export/routes.ts';
 import {
   END_SESSION_PATH,
   endSessionFromApp,
@@ -112,6 +113,9 @@ const routeLabel = createApiRouteLabel(
     'index',
     'legacy-guests',
     'claim',
+    'data-export',
+    'download',
+    'ready',
   ]),
 );
 
@@ -203,6 +207,8 @@ async function serve(incoming: Request, env: Env, ctx: ExecutionContext): Promis
       // After the answer: Google's revoke never holds the close up.
       disconnectDrive: (userId) =>
         ctx.waitUntil(disconnectDrive(driveDisconnectConfig(env), userId)),
+      // Their Download Your Data zip goes too (data-export/routes.ts), after the answer.
+      removeExport: (userId) => ctx.waitUntil(removePersonalExport(env, userId)),
     });
   }
 

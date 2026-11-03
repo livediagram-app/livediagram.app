@@ -1,0 +1,17 @@
+# Download Your Data's service, locally (liveworkspace/docs/specs/003-accounts/data-export.md). Copy to .dev.vars.
+ENVIRONMENT=development
+# The same value as accounts' EXPORT_KEY_ACCOUNTS.
+EXPORT_KEY_ACCOUNTS=dev-export-accounts-key
+# The same values as the index's INDEX_KEY_EXPORT and the media service's MEDIA_KEY_EXPORT.
+INDEX_KEY_EXPORT=dev-index-export-key
+MEDIA_KEY_EXPORT=dev-media-export-key
+# Each the same as that app's api DATA_EXPORT_KEY.
+DATA_EXPORT_KEY_LIVEDIAGRAM=dev-livediagram-export-key
+DATA_EXPORT_KEY_LIVEPLANNER=dev-liveplanner-export-key
+DATA_EXPORT_KEY_LIVEDOCUMENTS=dev-livedocuments-export-key
+DATA_EXPORT_KEY_LIVEDESIGN=dev-livedesign-export-key
+# Each app, locally: its router, which forwards /api/internal to its api.
+APP_ORIGIN_LIVEDIAGRAM=http://localhost:3100
+APP_ORIGIN_LIVEPLANNER=http://localhost:3200
+APP_ORIGIN_LIVEDOCUMENTS=http://localhost:3300
+APP_ORIGIN_LIVEDESIGN=http://localhost:3400

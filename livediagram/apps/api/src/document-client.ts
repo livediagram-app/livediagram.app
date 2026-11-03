@@ -6,7 +6,12 @@
 // hop there.
 
 import type { CommunityAuthor } from '@livediagram/api-schema';
-import type { Copier, ExportQuery, ExportResult } from '@liveworkspace/index-app';
+import type {
+  Copier,
+  ExportCommentsResult,
+  ExportQuery,
+  ExportResult,
+} from '@liveworkspace/index-app';
 import type { notifyActionAssigned, notifyMentioned } from './email/notifications';
 import type { DocumentCopy, DocumentOutline } from './document-room/document-content';
 import type { DocumentFileImport } from './document-room/document-file';
@@ -40,6 +45,9 @@ export type DocumentRoomClient = {
   // made from one (the import door).
   exportFile(query: ExportQuery): Promise<ExportResult>;
   importFile(file: DocumentFileImport): Promise<void>;
+  // Every comment thread in the canvas, its authors unredacted (the export door's `comments` format, for the data
+  // export: liveworkspace/docs/specs/003-accounts/data-export.md).
+  exportComments(): Promise<ExportCommentsResult>;
   // Whether the document holds this tab (a workbench ticket's check).
   hasTab(tabId: string): Promise<boolean>;
   // Whether the document places an image (on one tab, for a tab-scoped visitor) and may serve it: the byte
@@ -92,6 +100,7 @@ export function documentRoom(
     exportImage: (query) => room.exportImage(documentId, query),
     exportFile: (query) => room.exportFile(documentId, query),
     importFile: (file) => room.importFile(documentId, file),
+    exportComments: () => room.exportComments(documentId),
     hasTab: (tabId) => room.hasTab(documentId, tabId),
     servesImage: (imageId, onlyTabId) => room.servesImage(documentId, imageId, onlyTabId),
     exportCopy: (onlyTabId, copier) => room.exportCopy(documentId, onlyTabId, copier),
@@ -119,6 +128,7 @@ export type DocumentRoomRpc = {
   exportImage(documentId: string, query: ExportQuery): Promise<ExportResult>;
   exportFile(documentId: string, query: ExportQuery): Promise<ExportResult>;
   importFile(documentId: string, file: DocumentFileImport): Promise<void>;
+  exportComments(documentId: string): Promise<ExportCommentsResult>;
   hasTab(documentId: string, tabId: string): Promise<boolean>;
   servesImage(documentId: string, imageId: string, onlyTabId: string | null): Promise<boolean>;
   exportCopy(

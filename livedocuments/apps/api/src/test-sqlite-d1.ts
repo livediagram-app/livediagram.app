@@ -287,6 +287,9 @@ function testDocumentRooms(
           documentId,
           query.ifVersion,
         ),
+      // The data export's comment threads (document-room.ts exportComments).
+      exportComments: async (documentId: string) =>
+        (await import('./document-room/document-comments')).exportDocumentComments(env, documentId),
       importFile: async (documentId: string, file: unknown) =>
         (await import('./document-room/document-file')).importDocumentFile(
           env,

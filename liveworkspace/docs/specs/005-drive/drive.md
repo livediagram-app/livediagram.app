@@ -459,7 +459,9 @@ drawn; `handlers.import` makes a new Space from a `.livehuddle` file. A Space ha
 envelope, and no app folder: it sits in the person's one folder tree beside their other apps' items.
 
 `@liveworkspace/drive` holds the five kinds, MIME types and extensions (`APP_FILE_FORMATS`), so the service and every
-app name them from one place.
+app name them from one place. The service makes these calls, and where an item opens, through
+`@liveworkspace/app-doors` (`createAppDoors`), the one client of the apps' internal doors, which the data export
+([data-export.md](../003-accounts/data-export.md#the-apps)) uses too: each caller hands it its own origins and keys.
 
 ## Limits and cost
 

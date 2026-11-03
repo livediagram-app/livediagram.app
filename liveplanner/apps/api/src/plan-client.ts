@@ -12,8 +12,10 @@ import type { PlanCopy, PlanOutline } from './plan-room/plan-content';
 import type { RouteIdentity } from './plan-room/plan-route';
 import type { ProjectFileImport } from './plan-room/project-file';
 import type {
+  ExportCommentsResult,
   ExportQuery,
   ExportResult,
+  ExportTablesResult,
   ShareAnswer,
   ShareMessage,
   SharedTabCopy,
@@ -33,6 +35,10 @@ export type PlanRoomClient = {
   // from one (the import door).
   exportFile(query: ExportQuery): Promise<ExportResult>;
   importFile(file: ProjectFileImport): Promise<void>;
+  // The plan for liveworkspace's data export (the export door's `csv` and `comments` formats, plan-room/plan-export.ts):
+  // its boards and Sheets as CSV, and every comment thread with its real authors.
+  exportTables(): Promise<ExportTablesResult>;
+  exportComments(): Promise<ExportCommentsResult>;
   // Whether the plan holds this tab (a workbench ticket's check).
   hasTab(tabId: string): Promise<boolean>;
   // One card, by id (a mention email reads the comment from the card itself).
@@ -79,6 +85,8 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     exportImage: (query) => room.exportImage(planId, query),
     exportFile: (query) => room.exportFile(planId, query),
     importFile: (file) => room.importFile(planId, file),
+    exportTables: () => room.exportTables(planId),
+    exportComments: () => room.exportComments(planId),
     hasTab: (tabId) => room.hasTab(planId, tabId),
     item: (itemId) => room.item(planId, itemId),
     grantImage: (imageId) => room.grantImage(planId, imageId),
@@ -106,6 +114,8 @@ export type PlanRoomRpc = {
   exportImage(planId: string, query: ExportQuery): Promise<ExportResult>;
   exportFile(planId: string, query: ExportQuery): Promise<ExportResult>;
   importFile(planId: string, file: ProjectFileImport): Promise<void>;
+  exportTables(planId: string): Promise<ExportTablesResult>;
+  exportComments(planId: string): Promise<ExportCommentsResult>;
   hasTab(planId: string, tabId: string): Promise<boolean>;
   item(planId: string, itemId: string): Promise<Item | null>;
   grantImage(planId: string, imageId: string): Promise<void>;

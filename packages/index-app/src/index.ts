@@ -6,6 +6,7 @@ export * from './lists';
 export * from './timing-safe';
 export * from './purge';
 export * from './internal';
+export * from './data-export-door';
 export * from './import-item';
 export * from './migration-door';
 export * from './migration-room';

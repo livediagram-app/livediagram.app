@@ -9,7 +9,9 @@
 // `purgePlanPreviews`). The export door draws a plan for those previews (liveworkspace/docs/specs/006-media/previews.md), on the
 // index's key or the media service's (MEDIA_KEY), and answers a plan's whole file for liveworkspace's Drive mirror, which
 // calls it and the import door with DRIVE_KEY (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps",
-// routes/internal-file.ts). A notice is worked out off the index's path: a share link made (the first-share milestone),
+// routes/internal-file.ts). liveworkspace's data export (liveworkspace/docs/specs/003-accounts/data-export.md) calls the
+// export door alone with DATA_EXPORT_KEY, in every format, and reads a plan's boards and Sheets as CSV and its
+// comment threads through the `csv` and `comments` formats. A notice is worked out off the index's path: a share link made (the first-share milestone),
 // or someone's first time in through a link (the owner's "someone joined" email, and Project·Joined).
 import {
   JOINED_TELEMETRY_TYPE,
@@ -36,6 +38,7 @@ export function handleInternalItems(
     key: env.INDEX_KEY,
     exportKey: env.MEDIA_KEY,
     driveKey: env.DRIVE_KEY,
+    dataExportKey: env.DATA_EXPORT_KEY,
     app: 'liveplanner',
     migrationKey: env.MIGRATION_KEY,
     waitUntil,
@@ -52,6 +55,10 @@ export function handleInternalItems(
         query.format === 'file'
           ? planRoom(env, id).exportFile(query)
           : planRoom(env, id).exportImage(query),
+      // The plan for liveworkspace's data export (liveworkspace/docs/specs/003-accounts/data-export.md), by its Durable
+      // Object: its boards and Sheets as CSV, and every comment thread with its real authors (plan-room/plan-export.ts).
+      exportTables: (id) => planRoom(env, id).exportTables(),
+      exportComments: (id) => planRoom(env, id).exportComments(),
       // A new plan from a Drive file, as its owner's (routes/internal-file.ts).
       import: (input) => importProjectFileFor(env, input),
       revoke: (id, codes, reason) => planRoom(env, id).revokeCodes(codes, reason),

@@ -23,6 +23,9 @@
 //                                                            app's MEDIA_KEY (`exportKey`) and DRIVE_KEY (`driveKey`).
 //   GET    /api/internal/items/:id/export?format=file       the item's whole-item envelope, the Drive mirror's file
 //                                                            (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps")
+//   GET    /api/internal/items/:id/export?format=csv|comments  the item's boards and sheets as CSV, or its comment
+//                                                            threads, for the data export (data-export-door.ts,
+//                                                            liveworkspace/docs/specs/003-accounts/data-export.md)
 //   POST   /api/internal/items/import     {owner, folderId, name, file}  a new item for `owner` from a file: the
 //                                                            Drive mirror's Import as a copy. Takes DRIVE_KEY too.
 //   PUT    /api/internal/items/:id/migration  MigrationRoomPayload  an old livediagram.app document's part written
@@ -33,7 +36,9 @@
 //                                                            (docs/migration.md "The person migration door").
 //                                                            MIGRATION_KEY alone.
 //
-// The Drive key opens those two doors and nothing else; the migration key the two migration doors alone.
+// The Drive key opens those two doors and nothing else; the migration key the two migration doors alone; the data
+// export's key (DATA_EXPORT_KEY) the export door alone, in all four formats. The csv and comments formats take the
+// index's key and the data export's, never the media or the Drive key.
 // The app supplies what each does to its own content (`InternalItemHandlers`); a door with no handler is a 404.
 
 import { parseItemNotice, type ItemNotice, type Level } from '@liveworkspace/index-client';
@@ -49,6 +54,7 @@ import {
   parseMigrationPayload,
   parseMigrationPersonPayload,
 } from './migration-door';
+import { answerDataExport, isDataExportFormat, type DataExportHandlers } from './data-export-door';
 import { BULK_PURGE_MAX, purgeEach } from './purge';
 import { bearerMatches } from './timing-safe';
 
@@ -162,7 +168,7 @@ export type InternalItemHandlers = {
   // docs/migration.md): their shape libraries into their store, added once, never updated. Checked for shape,
   // version, app and person before it is called. An app with nothing to take leaves it out and the door is a 404.
   migratePerson?: (payload: MigrationPersonPayload) => Promise<MigrationPersonAnswer>;
-};
+} & DataExportHandlers;
 
 // The import door's body (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"): whose item it is (an account id,
 // never a guest), the folder of theirs it goes in (null: the top), its name, and the file's text.
@@ -188,6 +194,8 @@ export type InternalItemsOptions = {
   exportKey?: string | undefined;
   // The app's DRIVE_KEY, which liveworkspace's Drive mirror calls with: the export door and the import door alone.
   driveKey?: string | undefined;
+  // The app's DATA_EXPORT_KEY, which liveworkspace's data export calls with: the export door alone, every format.
+  dataExportKey?: string | undefined;
   handlers: InternalItemHandlers;
   waitUntil?: (promise: Promise<unknown>) => void;
 };
@@ -439,6 +447,7 @@ export async function handleInternalItems(
     app,
     exportKey,
     driveKey,
+    dataExportKey,
     migrationKey,
     handlers,
     waitUntil = (p) => void p,
@@ -454,8 +463,11 @@ export async function handleInternalItems(
   const importing = pathname === IMPORT_PATH && request.method === 'POST';
   const migrating = MIGRATION_PATH.test(pathname) && request.method === 'PUT';
   const migratingPerson = PERSON_MIGRATION_PATH.test(pathname) && request.method === 'PUT';
+  const dataFormat = exporting ? url.searchParams.get('format') : null;
   const keys = exporting
-    ? [key, exportKey, driveKey]
+    ? isDataExportFormat(dataFormat)
+      ? [key, dataExportKey]
+      : [key, exportKey, driveKey, dataExportKey]
     : importing
       ? [key, driveKey]
       : migrating
@@ -485,6 +497,8 @@ export async function handleInternalItems(
   const id = rest[0];
   if (!validId(id)) return notFound();
 
+  if (exporting && isDataExportFormat(dataFormat))
+    return answerDataExport(id, dataFormat, handlers);
   if (exporting)
     return handlers.export ? exportItem(url, request, id, handlers.export) : notFound();
   if (importing) return handlers.import ? importItem(request, handlers.import) : notFound();
