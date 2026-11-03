@@ -6,7 +6,8 @@ import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
 import { requestPagePanel } from '@/lib/page-panel-request';
-import { CONTENTS_FOLLOW_SETTLE_MS, PageContentsSidebar } from './PageContentsSidebar';
+import { CONTENTS_FOLLOW_SETTLE_MS } from '@liveworkspace/workbench/components/canvas/PageContentsSidebar';
+import { PageContentsSidebar } from './PageContentsSidebar';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('@/lib/page-panel-request', () => ({ requestPagePanel: vi.fn() }));

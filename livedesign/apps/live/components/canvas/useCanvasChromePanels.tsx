@@ -72,7 +72,7 @@ export function useCanvasChromePanels({
   contentsPopoverEl: ReactNode;
   contentsSidebarEl: ReactNode;
   contentsDocked: boolean;
-  contentsSide: import('@/lib/contents-placement').ContentsSide;
+  contentsSide: import('@liveworkspace/workbench/lib/contents-sidebar').ContentsSide;
   menuJoined: boolean;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
 } {

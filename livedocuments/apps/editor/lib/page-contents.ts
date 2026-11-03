@@ -1,6 +1,7 @@
-// The Contents popover's list (docs/specs/007-editor/pages-mode.md "Contents"): a row per
-// page in row order, what each says about itself, which page is in view, and the Find a Page
-// narrowing. Pure: pages and the view in, rows out.
+// Contents' rows (docs/specs/007-editor/pages-mode.md "Contents"): a row per page in row order, what
+// each says about itself, and where a dropped page lands. Pure: pages in, rows out. Which page is in
+// view and the Find a Page narrowing read the same in every editor with pages, so they are shared
+// (@liveworkspace/workbench/lib/page-contents) and re-exported here for the editor's own callers.
 import {
   articleTitleOf,
   flashcardSpeakingSeconds,
@@ -15,18 +16,12 @@ import {
   type PageKind,
 } from '@livedocuments/document';
 import { rowDropIndex, type RowDrop } from '@liveworkspace/workbench/hooks/ui/useRowReorderDrag';
+import type { ContentsRowBase } from '@liveworkspace/workbench/lib/page-contents';
 
-export type ContentsRow = {
-  id: string;
-  // Its place in the row, from 1.
-  number: number;
-  // Its own name, else "Page n".
-  name: string;
-  // What it is: "Infographic · A4 Portrait", "Slide · In the deck", "Article · Its Title".
-  line: string;
-  locked: boolean;
-  // Its shape on the sheet, for the thumbnail's frame.
-  aspect: number;
+export { filterContents, pageInView } from '@liveworkspace/workbench/lib/page-contents';
+
+// The shared row (its number, name, kind line, lock and shape), with what this editor adds.
+export type ContentsRow = ContentsRowBase & {
   kind: PageKind;
   // A slide page with a slide in the deck; absent where there is no deck to ask.
   inDeck?: boolean;
@@ -35,9 +30,6 @@ export type ContentsRow = {
   // A card's speaking time ("45 sec"), shown beside its name; absent off a card or on an empty one.
   speakingTime?: string;
 };
-
-// More pages than this show the Find a Page box.
-export const CONTENTS_FIND_AFTER = 6;
 
 const KIND_NAME = {
   infographic: 'Infographic',
@@ -89,52 +81,6 @@ export function contentsRows(
       ...(speakingTime ? { speakingTime } : {}),
     };
   });
-}
-
-/** The rows a Find a Page query keeps: every word found in the name, the line or the number. */
-export function filterContents(
-  rows: readonly ContentsRow[],
-  query: string,
-  // The words on each page (lib/page-texts.ts), searched as its name is.
-  texts?: ReadonlyMap<string, string>,
-): ContentsRow[] {
-  const words = normalise(query).split(/\s+/).filter(Boolean);
-  if (words.length === 0) return [...rows];
-  return rows.filter((r) => {
-    const hay = normalise(`${r.number} ${r.name} ${r.line} ${texts?.get(r.id) ?? ''}`);
-    return words.every((w) => hay.includes(w));
-  });
-}
-
-// Case and width folded, as the editor's find folds them (normaliseFind in document-views).
-const normalise = (text: string) => text.normalize('NFKC').toLowerCase();
-
-/** The page in view: the one whose rectangle holds the middle of the screen, else the nearest to
- *  it. `view` is the canvas's (the centred transform: a canvas x lands at screen
- *  `w/2 + zoom(x + offset.x - w/2)`, @liveworkspace/workbench/lib/viewport.ts) and `screen` the canvas area's size in screen
- *  px. `insets` are the screen px the Contents panel covers at the canvas's sides: the middle is the
- *  middle of what shows beside it. */
-export function pageInView(
-  pages: readonly LaidOutPage[],
-  view: { zoom: number; offset: { x: number; y: number } },
-  screen: { width: number; height: number },
-  insets: { left: number; right: number } = { left: 0, right: 0 },
-): string | undefined {
-  if (pages.length === 0) return undefined;
-  const cx = screen.width / 2 - view.offset.x + (insets.left - insets.right) / (2 * view.zoom);
-  const cy = screen.height / 2 - view.offset.y;
-  let best: LaidOutPage | undefined;
-  let bestD = Infinity;
-  for (const p of pages) {
-    const dx = Math.max(p.rect.x - cx, 0, cx - (p.rect.x + p.rect.width));
-    const dy = Math.max(p.rect.y - cy, 0, cy - (p.rect.y + p.rect.height));
-    const d = dx * dx + dy * dy;
-    if (d < bestD) {
-      bestD = d;
-      best = p;
-    }
-  }
-  return best?.id;
 }
 
 /** The place (among the row's units, 0 first) a page dropped beside the row at `drop.index` moves

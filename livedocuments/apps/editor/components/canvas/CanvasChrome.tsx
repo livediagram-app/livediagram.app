@@ -20,7 +20,10 @@ import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton
 import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
 import { showsSlidesButton, SlidesClusterSegment } from '@/components/canvas/SlidesClusterSegment';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
-import { CONTENTS_SIDEBAR_WIDTH, contentsSidebarClearancePx } from '@/lib/contents-placement';
+import {
+  CONTENTS_SIDEBAR_WIDTH,
+  contentsSidebarClearancePx,
+} from '@liveworkspace/workbench/lib/contents-sidebar';
 import { ContentsClusterSegment } from '@liveworkspace/workbench/components/canvas/ContentsClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
 import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';

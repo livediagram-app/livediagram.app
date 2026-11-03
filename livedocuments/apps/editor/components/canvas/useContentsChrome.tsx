@@ -14,13 +14,15 @@ import {
 } from '@liveworkspace/workbench/hooks/ui/useLocalStorageValue';
 import {
   CONTENTS_SIDE_STORAGE_KEY,
-  CONTENTS_SIDEBAR_MIN_PAGES,
-  readContentsSide,
-  type ContentsSide,
   readContentsPlacement,
   withContentsPlacement,
   type ContentsPlacement,
 } from '@/lib/contents-placement';
+import {
+  CONTENTS_SIDEBAR_MIN_PAGES,
+  readContentsSide,
+  type ContentsSide,
+} from '@liveworkspace/workbench/lib/contents-sidebar';
 import { track } from '@/lib/telemetry';
 import { readUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
 import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
