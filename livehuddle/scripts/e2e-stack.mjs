@@ -144,7 +144,7 @@ const SITES = [
   { prefix: '/community', dir: path.join(ROOT, 'apps', 'community', 'out') },
 ];
 const MARKETING_DIR = path.join(ROOT, 'apps', 'marketing', 'out');
-const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3113);
+const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3513);
 // A switch for trying the editor beside a stack that is already up:
 //   E2E_EDITOR_ONLY=1  serve the static editor only, proxying to the api
 //                    already listening on E2E_API_PORT (no second worker).
@@ -764,8 +764,32 @@ function serveWorkspace(req, res, pathname) {
   // The export's own layout: each Explorer view a page of its own, its assets under out/_liveworkspace.
   const p = pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
   const file = resolveIn(WORKSPACE_SITE_DIR, p);
+  if (file && path.extname(file) === '.html') return serveWorkspacePage(req, res, file, pathname);
   if (file) return serveFile(req, res, file, pathname);
   serveNotFound(req, res, pathname, path.join(WORKSPACE_SITE_DIR, '404.html'));
+}
+
+// An Explorer page names the app it is shown for (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on
+// each app's address"): locally the page otherwise reads the app from the port's block, and this stack runs on
+// whatever ports it is given (an agent's block, a CI runner's), so it says livehuddle outright.
+const APP_META = '<meta name="liveworkspace-app" content="livehuddle">';
+function serveWorkspacePage(req, res, filePath, pathname) {
+  const html = readFileSync(filePath, 'utf8').replace(/<head>/i, `<head>${APP_META}`);
+  const { size, mtimeMs } = statSync(filePath);
+  const etag = `W/"${size}-${Math.floor(mtimeMs)}-app"`;
+  const headers = {
+    'Content-Type': 'text/html; charset=utf-8',
+    ETag: etag,
+    'Cache-Control': cacheControlFor(req, pathname, 200, 'text/html; charset=utf-8').cacheControl,
+    'Content-Security-Policy': TRUSTED_TYPES_CSP,
+  };
+  if (req.headers['if-none-match'] === etag) {
+    res.writeHead(304, headers);
+    res.end();
+    return;
+  }
+  res.writeHead(200, headers);
+  res.end(html);
 }
 
 // The realtime room is a WebSocket on /api/documents/<id>/ws. Production routes

@@ -22,8 +22,8 @@ change reaches the workspaces whose dependencies moved. It then groups them by p
 
 A group the change never reached runs no jobs. livehuddle is **held** until its launch
 (livehuddle/docs/specs/005-project-roadmap/build-plan.md step 8, `held: true` in `ci-plan.mjs`): its group runs only
-when a change touches `livehuddle/` itself or everything runs, never because a shared package it uses changed; it has
-no E2E yet, and none of its Workers deploy. The base is the pull request's base, or for a push to
+when a change touches `livehuddle/` itself or everything runs, never because a shared package it uses changed (its
+E2E the same way), and none of its Workers deploy. Its nightly canvas probe runs with the others'. The base is the pull request's base, or for a push to
 `main` the commit before it. Everything runs when there is no base to compare with, or when the
 change touches something every workspace leans on without turbo seeing it as theirs: `.github/`, the
 root `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, `.npmrc` or the

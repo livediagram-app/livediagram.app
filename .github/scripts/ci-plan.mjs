@@ -58,8 +58,8 @@ const GROUPS = [
     cli: 'livedocuments/apps/cli',
   },
   // Held until its launch (livehuddle/docs/specs/005-project-roadmap/build-plan.md step 8): its suites run only when
-  // a change touches livehuddle/ itself (or everything runs), never because a shared package it uses changed; it has
-  // no E2E yet, and none of its Workers deploy.
+  // a change touches livehuddle/ itself (or everything runs), never because a shared package it uses changed, its E2E
+  // included; none of its Workers deploy.
   {
     group: 'livehuddle',
     dirs: ['livehuddle/'],
@@ -202,7 +202,7 @@ for (const spec of GROUPS) {
         total: EDITOR_SHARDS,
       });
     }
-    if (!spec.held) e2e.push(spec.group);
+    e2e.push(spec.group);
   }
 }
 

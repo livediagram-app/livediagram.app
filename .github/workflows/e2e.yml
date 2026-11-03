@@ -119,10 +119,30 @@ jobs:
         apps/help/.next/cache
         apps/marketing/.next/cache
 
+  # Held until launch (ci-plan.mjs): planned only when a change reaches livehuddle/ itself.
+  livehuddle:
+    name: livehuddle
+    needs: plan
+    if: contains(fromJSON(needs.plan.outputs.e2e), 'livehuddle')
+    uses: ./.github/workflows/e2e-product.yml
+    with:
+      product: livehuddle
+      editor: '@livehuddle/editor'
+      editor-dir: apps/editor
+      sites: --filter @livehuddle/help --filter @livehuddle/community
+      sites-cache: |
+        apps/editor/.next/cache
+        apps/help/.next/cache
+        apps/community/.next/cache
+        apps/marketing/.next/cache
+      smoke-explorer: true
+      signed-in-explorer: true
+      signed-in-cache: editor-signed-in
+
   # One check to require, whatever ran.
   e2e:
     name: E2E
-    needs: [plan, livediagram, liveplanner, livedesign, livedocuments]
+    needs: [plan, livediagram, liveplanner, livedesign, livedocuments, livehuddle]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 2
