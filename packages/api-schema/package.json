@@ -29,6 +29,7 @@
     "./participants": "./src/participants.ts",
     "./placement": "./src/placement.ts",
     "./ref-errors": "./src/ref-errors.ts",
+    "./presence-fanout": "./src/presence-fanout.ts",
     "./room-capacity": "./src/room-capacity.ts",
     "./room-refusal": "./src/room-refusal.ts",
     "./sha256": "./src/sha256.ts",

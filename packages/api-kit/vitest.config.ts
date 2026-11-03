@@ -21,6 +21,12 @@ export default defineProject({
         'src/d1-compound-guard.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/request-failure.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/room-element-ops.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
+        'src/room-presence-relay.ts': {
+          statements: 100,
+          branches: 100,
+          functions: 100,
+          lines: 100,
+        },
         'src/sealed.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/typed-text.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
       },
