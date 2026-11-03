@@ -134,6 +134,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Comment|Linked|Thread': 'Someone added a comment thread to another card in the same plan.',
   'Comment|Linked|ThreadOtherPlan':
     'Someone added a comment thread to a card in another plan, sharing it there.',
+  'Project|Changed|Description':
+    "Someone saved a plan's description from Edit Details on its Overview.",
   'Project|Created|Cloud': 'A brand-new project was created.',
   'Project|Created|Offline': 'A brand-new project was created.',
   'Project|Deleted|': 'A project was deleted.',
@@ -2302,6 +2304,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Comment|Changed': 'Someone edited one of their own comments.',
   'Comment|Renamed': 'Someone renamed a comment thread.',
   'Comment|Linked': 'Someone added a comment thread to another card.',
+  'Project|Changed': "Someone changed a plan's details, such as its description.",
   'Project|Created': 'A brand-new project was created.',
   'Project|Deleted': 'A project was deleted.',
   'Project|Exported': 'Someone exported a tab, a selection or a page to a file or the clipboard.',

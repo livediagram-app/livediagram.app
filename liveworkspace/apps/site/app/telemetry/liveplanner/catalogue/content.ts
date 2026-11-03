@@ -126,6 +126,14 @@ export const PROJECTS_RENAMED: Metric = {
   title: 'Projects Renamed',
 };
 
+export const DESCRIPTIONS_CHANGED: Metric = {
+  category: 'Project',
+  action: 'Changed',
+  type: 'Description',
+  title: 'Descriptions Changed',
+  blurb: "A plan's description saved from Edit Details on its Overview.",
+};
+
 export const PROJECTS_DELETED: Metric = {
   rising: 'neutral',
   category: 'Project',
@@ -263,11 +271,12 @@ export const PROJECT_ACTIONS: MetricStack = {
   stack: true,
   title: 'Project Actions',
   blurb:
-    'Projects opened, made, renamed, deleted and duplicated, and how new ones were started: a template link, or in This Browser (both part of Projects Created).',
+    'Projects opened, made, renamed, described, deleted and duplicated, and how new ones were started: a template link, or in This Browser (both part of Projects Created).',
   members: [
     PROJECTS_LOADED,
     PROJECTS_CREATED,
     PROJECTS_RENAMED,
+    DESCRIPTIONS_CHANGED,
     PROJECTS_DELETED,
     PROJECTS_DUPLICATED,
     TEMPLATE_LINKS,
