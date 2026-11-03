@@ -125,3 +125,37 @@ describe('withStyleOfTab', () => {
     expect(next.theme).toBe('brand');
   });
 });
+
+// docs/specs/010-palette/style-presets.md "Boards and sheets": a board on a style preset follows every tab style path.
+describe('a board on a style preset', () => {
+  const board = (): Element =>
+    shape({
+      id: 'b',
+      shape: 'plan-board',
+      colorPreset: 'plan-sky',
+      fillColor: '#f2f8fc',
+      strokeColor: '#5aa3c9',
+      textColor: '#3a566b',
+    });
+  const tab = (theme?: string): Tab => ({ id: 't', name: 'T', theme, elements: [board()] });
+  const presetOf = (t: Tab) =>
+    (t.elements[0] as ShapeElement & { colorPreset?: string }).colorPreset;
+
+  it('drops it when the Colours panel picks the theme the tab already has', () => {
+    const out = withThemeApplied(tab('forest'), 'forest');
+    expect(presetOf(out)).toBeUndefined();
+    expect((out.elements[0] as ShapeElement).fillColor).not.toBe('#f2f8fc');
+  });
+
+  it('drops it on the hard reset, when the tab’s old theme no longer resolves', () => {
+    const out = withThemeApplied(tab('gone'), 'forest');
+    expect(out.theme).toBe('forest');
+    expect(presetOf(out)).toBeUndefined();
+    expect((out.elements[0] as ShapeElement).strokeColor).not.toBe('#5aa3c9');
+  });
+
+  it('drops it on Apply to All Tabs', () => {
+    const source: Tab = { id: 'src', name: 'Source', elements: [], theme: 'ocean' };
+    expect(presetOf(withStyleOfTab(tab('brand'), source))).toBeUndefined();
+  });
+});

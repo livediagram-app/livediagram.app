@@ -275,7 +275,11 @@ on a calm-hue preset ([Style presets](../010-palette/style-presets.md) "Boards a
 preset, which is drawn over the tab's own colours, so a theme pick used to change nothing on it. Picking a theme
 now clears the binding and the colours the preset wrote (`switchThemeElements`), so the board takes the new tab
 style at once; picking a preset afterwards wins again. Decision: only preset-bound boards and sheets are cleared,
-a hand-set colour stays the user's, as for any element.
+a hand-set colour stays the user's, as for any element. Every path that recolours the elements clears it: the
+Colours panel (the current theme picked again included), a look, Apply to All Tabs, and the hard reset a tab whose
+old theme no longer resolves takes (`resetThemeElementsToTheme`). A canvas-only change (the Canvas panel's colours,
+opacity, size, speed or pattern) recolours no element and leaves the board on its preset, since the preset sits on
+the board, not the canvas.
 
 ### Formal themes / per-shape colours
 

@@ -183,3 +183,57 @@ describe('useTabCanvas tidiers', () => {
     expect(notify).not.toHaveBeenCalled();
   });
 });
+
+// docs/specs/010-palette/style-presets.md "Boards and sheets": a look and a theme pick clear a board's style preset; a
+// canvas-only change leaves it, since the preset sits on the board, not the canvas.
+describe('useTabCanvas and a board on a style preset', () => {
+  const presetBoard = () =>
+    box('b', {
+      shape: 'plan-board',
+      colorPreset: 'plan-sky',
+      fillColor: '#f2f8fc',
+      strokeColor: '#5aa3c9',
+      textColor: '#3a566b',
+    });
+  const presetOf = (t: Tab) => (t.elements[0] as { colorPreset?: string }).colorPreset;
+
+  function live() {
+    let tabs: Tab[] = [{ id: 't1', name: 'One', theme: 'forest', elements: [presetBoard()] }];
+    const apply = (map: (ts: Tab[]) => Tab[]) => {
+      tabs = map(tabs);
+    };
+    const { result } = renderHook(() =>
+      useTabCanvas({
+        editsBlocked: false,
+        activeId: 't1',
+        activeTab: tabs[0]!,
+        commit: vi.fn(),
+        commitTabs: apply,
+        tickTabs: apply,
+        checkpointBurst: vi.fn(),
+      }),
+    );
+    return { api: result.current, tab: () => tabs[0]! };
+  }
+
+  it('keeps it through every canvas-only change', () => {
+    const h = live();
+    h.api.setBackgroundColor('#101010');
+    h.api.setPatternColor('#202020');
+    h.api.setBackgroundOpacity(0.5);
+    h.api.setBackgroundPatternScale(1.5);
+    h.api.setBackgroundAnimationSpeed(2);
+    h.api.setBackgroundPattern('grid');
+    expect(h.tab().backgroundColor).toBe('#101010');
+    expect(presetOf(h.tab())).toBe('plan-sky');
+  });
+
+  it('drops it when a theme is picked (the same one included) or a look applied', () => {
+    const same = live();
+    same.api.setTheme('forest');
+    expect(presetOf(same.tab())).toBeUndefined();
+    const look = live();
+    look.api.applyTabLook('boardroom');
+    expect(presetOf(look.tab())).toBeUndefined();
+  });
+});
