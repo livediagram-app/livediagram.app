@@ -143,6 +143,7 @@ Editor state:
 | `canEdit`       | `sessionRole === 'edit' && !viewPreview` (unchanged)                         |
 | `isReadOnly`    | `!canEdit` (unchanged): every structural gate stays shut for a Participant   |
 | `can`           | `resolveEditorCapabilities({ level, adderKey })`, in `useParticipantSession` |
+| Session gates   | `roleGates(can, runBlocked)`: `run`, `shape`, `takePart` (below)             |
 | Pill level      | `viewPreview ? 'view' : sessionRole`                                         |
 | `canToggleRole` | `sessionRole === 'edit'` (unchanged)                                         |
 
@@ -157,6 +158,12 @@ Editor state:
 | `resize(el)`    | a sticky, image or own; not locked              | false |
 | `recolour(el)`  | `el.type === 'sticky'` or own                   | false |
 | `remove(el)`    | own (`el.addedBy === selfAdderKey`); not locked | false |
+
+`roleGates(can, runBlocked)` answers the canvas's role gates from `can`, never from `isReadOnly`: `run` is
+`level === 'edit' && !runBlocked` (start, end, reveal or configure a session tool; Bring Focus), `shape` is
+`level === 'edit'` (the template start; an estimate's scale), `takePart` is `can.takePart` (answers, reactions,
+speech, comments). `isReadOnly` is `!canEdit`, which equals `can.level !== 'edit'` in every session, preview and
+ended workbench included, so the switch changes no behaviour.
 
 A Participant's commit: `editsBlocked` is false for a Participant (its gestures open through `can`), so every commit
 passes `guardCommit`, which runs `participantTabChange(before, after, adderKey)`: the change lands, with `addedBy`
@@ -399,6 +406,8 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | Write: applied, unchanged, refused, CAS retry, 404, 409, 413    | `apps/api/src/participant-write.test.ts`                             |
 | Room: op gate per level; participant path; adder header         | `apps/api/src/document-room.test.ts`, `document-room-routes.test.ts` |
 | Capabilities per level                                          | `apps/editor/lib/editor-capabilities.test.ts`                        |
+| Every gate of the spec's table, per level, in the room          | `apps/api/src/share-roles.test.ts`                                   |
+| Every gate of the spec's table, per level, in the editor        | `apps/editor/lib/share-roles.test.ts`                                |
 | Participant save branch                                         | `apps/editor/app/document/[id]/tab-save-flow.test.ts`                |
 | Three cards and keys                                            | `../packages/explorer/src/dialogs/ShareDialog.test.tsx`              |
 | Pill per level                                                  | `apps/editor/components/chrome/RoleIndicator.test.tsx`               |

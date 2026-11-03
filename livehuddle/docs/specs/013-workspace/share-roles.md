@@ -52,4 +52,14 @@ someone else.
 ## Tests
 
 Each feature ships role tests, as every product's do: one per level for each gate in the table, including the
-room's refusal of a Viewer's speech, reaction and answer.
+room's refusal of a Viewer's speech, reaction and answer. The table is held whole by two matrices, one row per gate
+and one case per level: the room's (`apps/api/src/share-roles.test.ts`: the op gate, the participant content rule and
+the baton) and the editor's (`apps/editor/lib/share-roles.test.ts`: `can`, the session gates read from it, the
+palettes and the selection modes). A row added here gets its cases in both.
+
+- **The editor's Editor-only gates read `can`.** Running a session tool, Bring Focus and the template start ask
+  `roleGates(can, runBlocked)` (`apps/editor/lib/editor-capabilities.ts`): `run` (an Editor, and the facilitator's
+  while someone holds the baton), `shape` (an Editor) and `takePart` (an Editor or a Participant).
+- **Navigate elements are Behaviours**, so a Participant neither writes on one nor adds, moves or removes it. A link
+  card, which Navigate also offers, is not a Behaviour, but its words are its link's, which stay an Editor's with its
+  place.
