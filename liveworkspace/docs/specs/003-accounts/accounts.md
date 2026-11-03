@@ -683,7 +683,7 @@ Each setting is stored in one scope:
   colours, and every editor setting two or more apps have (`COMMON_SETTING_KEYS`, below). Its
   `splitSettings` and `joinSettings` turn an editor's flat preferences into the two scopes and back.
 - **an app's site id** (`livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`, and
-  `livehuddle.app`, registered before its launch, as `REGISTERED_APP_SITES` in `@liveworkspace/sites` spells them):
+  `livehuddle.app`, as `REGISTERED_APP_SITES` in `@liveworkspace/sites` spells them):
   shown by that app only.
 
 An app reads its own scope and `all`, and shows only the settings that mean something to it. It

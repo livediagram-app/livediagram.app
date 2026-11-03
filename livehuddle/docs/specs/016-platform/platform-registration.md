@@ -86,7 +86,7 @@ Wrangler's own ports sit outside the 35xx block, one range per product (the api 
 
 ## CI
 
-**In place since the code fork (build plan step 3), held:**
+**In place since the code fork (build plan step 3), held until launch:**
 
 - **A fifth group** in `.github/scripts/ci-plan.mjs`: `livehuddle`, folder `livehuddle/`, editor
   `@livehuddle/editor` (sharded), and its CLI (`livehuddle/apps/cli`). The
@@ -101,11 +101,20 @@ Wrangler's own ports sit outside the 35xx block, one range per product (the api 
   `009-elements/images.md`). Each cut removes the specs of
   what it removes in the same PR, so these stay green.
 
-**At launch (step 8):**
+**At launch (step 8, Work Tracker #189), done:**
 
 - **The hold lifts**: `held: true` comes off, so shared-package changes reach livehuddle's suites and its Workers
   deploy.
-- **E2E:** `e2e.yml` calls `e2e-product.yml` for livehuddle when its editor is reached.
+- **Real KV namespaces** for the MCP Worker's OAuth state: `livehuddle-mcp-oauth` (production) and
+  `livehuddle-mcp-oauth-staging` replace the placeholder ids in `apps/mcp/wrangler.toml`. The api has no D1 (its
+  Durable Objects keep everything), so there is no database to create.
+- **The bare domain** `livehuddle.app` joins the platform's `APP_BARE_HOSTS`, so the router sends its pages to
+  `www.`.
+- **The platform's lists**: the site switcher row (its row moves from `HELD_APP_SITES` into `APP_SITES`), which also
+  lists it in the Explorer, the Settings panel, the status page and liveworkspace.app's front door, and the sign-in
+  email's "one account" line.
+- **E2E:** `e2e.yml` calls `e2e-product.yml` for livehuddle when its editor is reached (in place since the fork,
+  now planned like any product's).
 - **Canvas performance:** livehuddle's probe joins the nightly `canvas-perf.yml`, with an avatar fan-out probe of its
   own ([Build plan](../005-project-roadmap/build-plan.md#risks), R3).
 - **Suites that read other workspaces** declare their `$TURBO_ROOT$` inputs in `turbo.json`, as docs/ci.md requires.

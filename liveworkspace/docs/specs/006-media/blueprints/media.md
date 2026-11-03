@@ -32,7 +32,7 @@ Scope, by file:
 
 | Term        | Identifier                                                                                                       | Meaning                                                                                                         |
 | ----------- | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| App         | `MediaApp`: `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`, `livehuddle.app` (held) | Every registered app; the index's `App` is the name without `.app` (`indexAppOf`)                               |
+| App         | `MediaApp`: `livediagram.app`, `liveplanner.app`, `livedocuments.app`, `livedesign.app`, `livehuddle.app`        | Every registered app; the index's `App` is the name without `.app` (`indexAppOf`)                               |
 | Image       | `images` row; id `crypto.randomUUID()`; R2 key = id                                                              | One stored picture                                                                                              |
 | Owner       | account id, or `guest:<sha256(app + "\n" + guestId)>` (`mediaGuestOwner`)                                        | Who uploaded it                                                                                                 |
 | Reference   | `refs (app, document, image_id)`                                                                                 | A document that places an image, as its app last said                                                           |

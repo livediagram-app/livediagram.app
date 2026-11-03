@@ -20,10 +20,11 @@ change reaches the workspaces whose dependencies moved. It then groups them by p
 | livehuddle    | `livehuddle/`                 | `@livehuddle/editor`    |
 | platform      | `packages/`, `liveworkspace/` |                         |
 
-A group the change never reached runs no jobs. livehuddle is **held** until its launch
-(livehuddle/docs/specs/005-project-roadmap/build-plan.md step 8, `held: true` in `ci-plan.mjs`): its group runs only
-when a change touches `livehuddle/` itself or everything runs, never because a shared package it uses changed (its
-E2E the same way), and none of its Workers deploy. Its nightly canvas probe runs with the others'. The base is the pull request's base, or for a push to
+A group the change never reached runs no jobs. A product forked in-tree before its launch can be **held**
+(`held: true` on its group in `ci-plan.mjs`): its group then runs only when a change touches its folder itself or
+everything runs, never because a shared package it uses changed (its E2E the same way), and none of its Workers
+deploy. None is held today: livehuddle was until its launch (Work Tracker #189), and now runs, tests, runs its E2E
+and deploys like any product. Every product's nightly canvas probe runs, livehuddle's included. The base is the pull request's base, or for a push to
 `main` the commit before it. Everything runs when there is no base to compare with, or when the
 change touches something every workspace leans on without turbo seeing it as theirs: `.github/`, the
 root `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, `.npmrc` or the
@@ -176,8 +177,8 @@ each product's api, sites, MCP and router, and the platform's services and site.
 **Only what changed.** Each environment remembers the commit it last deployed in full, as the tag
 `deployed/staging` or `deployed/production`. A deploy asks Turborepo which workspaces changed since
 then, with everything depending on them, using the plan CI uses (`ci-plan.mjs`, `PLAN_MODE=deploy`).
-The Workers among them build and deploy, and the rest are left as they are; a held product's Workers (livehuddle's,
-until its launch) are never among them, even with **all**. A Worker none of whose
+The Workers among them build and deploy, and the rest are left as they are; a held product's Workers (none today)
+are never among them, even with **all**. A Worker none of whose
 files or dependencies changed is never rebuilt or redeployed. A change to `.github/` or the Prettier
 config alone deploys nothing. The tag moves only when every Worker in the deploy succeeded, so a
 failed one is retried by the next deploy. With no tag yet, everything deploys.

@@ -103,9 +103,14 @@ and help (Work Tracker #187).
 
 ### 8. CI, deploys and launch
 
+**Built** (Work Tracker #189): the hold lifted and everything below is in the code; it deploys once the owner's
+remaining D8 steps (Work Tracker #395) are done and the PR merges.
+
 - The CI group, E2E and canvas-perf entries, deploy tiers ([Platform registration](../016-platform/platform-registration.md#ci)).
 - Staging on `staging.livehuddle.app` once the owner's DNS and secrets are in (D8).
 - At launch: the site switcher row and the sign-in email line.
+- Left for later: livehuddle's telemetry dashboard (its events are stored, held out of the picker until then) and
+  the Explorer hero's pictures of its kinds.
 
 ### 9. Fold back
 

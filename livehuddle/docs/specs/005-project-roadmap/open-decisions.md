@@ -108,7 +108,11 @@ livediagram keeps (b).
 ## D8. Things only the owner can do
 
 These are not choices so much as actions, listed so they can run while steps 1 to 7 of the
-[Build plan](build-plan.md) are built.
+[Build plan](build-plan.md) are built. Done as of 2026-11-03: the domain and zone, the accounts client (staging and
+production, with `ACCOUNTS_CLIENT_ID` and `ACCOUNTS_CLIENT_SECRET` on the api), the platform keys
+(`INDEX`, `MEDIA`, `TELEMETRY`, `DRIVE` and `COMMUNITY_KEY_LIVEHUDDLE` and their twins on livehuddle's Workers),
+Turnstile and Google sign-in, and the MCP KV namespaces. Left (Work Tracker #395): the Drive UI MIME type
+(`application/vnd.livehuddle+json`) in Google Cloud, and accepting the Durable Object usage.
 
 1. **Domain and DNS:** register `livehuddle.app` (if not already held) and add the zone to the liveworkspace
    Cloudflare account, so the router's custom domains can attach.

@@ -112,7 +112,7 @@ What a deploy never writes, set once per environment and kept across deploys:
 
 1. Add the app's API to `RESOURCES` in `apps/accounts/src/resources.ts`; CI's deploy ships it. An app can be
    registered before its launch, when nothing a person sees lists it yet
-   ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)); livehuddle's
+   ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)), as livehuddle's
    API is in `RESOURCES` that way.
 2. Register it once per environment. The secret is printed once, so store it straight away as
    the app's Worker secret:
