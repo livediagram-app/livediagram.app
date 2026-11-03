@@ -36,6 +36,9 @@ export type TabStripProps<T extends { id: string }> = {
   renderRenameField: TabFolderGroupProps<T>['renderRenameField'];
   // Presence on a collapsed folder's tucked-away members.
   folderPresence?: (tabIds: string[]) => ReactNode;
+  // Pinned before the first tab, inside the toolbar so the arrow keys reach it (liveplanner's Overview, with its
+  // divider). A TabFrame here takes the sliding card like any tab when it is the open one.
+  leading?: ReactNode;
 };
 
 const still = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
@@ -50,6 +53,7 @@ export function TabStrip<T extends { id: string }>({
   onRenameFolder,
   renderRenameField,
   folderPresence,
+  leading,
 }: TabStripProps<T>) {
   const stripRef = useRef<HTMLElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -184,6 +188,7 @@ export function TabStrip<T extends { id: string }>({
       >
         {/* First, so every tab and chip paints over it. */}
         <div ref={sliderRef} aria-hidden data-tab-slider="" className={TAB_SLIDER_CLASS} />
+        {leading}
         {runs.map((run) =>
           run.kind === 'loose' ? (
             renderTab(run.tab)

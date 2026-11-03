@@ -101,6 +101,18 @@ describe('TabStrip', () => {
     expect(list.hasAttribute('data-tab-slide')).toBe(true);
   });
 
+  it('pins what leads it before the first tab, inside the toolbar, after the sliding card', () => {
+    strip({
+      leading: (
+        <TabFrame key="home" id="home" name="Home" active={false} readOnly onSelect={() => {}} />
+      ),
+    });
+    const list = screen.getByRole('toolbar', { name: 'Tabs' });
+    expect(list.contains(tabNamed('Home'))).toBe(true);
+    expect(visibleTabs()).toEqual(['Home', 'Overview', 'Planning, 2 tabs', 'Backlog']);
+    expect((list.firstElementChild as HTMLElement).hasAttribute('data-tab-slider')).toBe(true);
+  });
+
   it('has no Add tab for a Viewer', () => {
     strip({ readOnly: true });
     expect(screen.queryByRole('button', { name: 'Add tab' })).toBeNull();

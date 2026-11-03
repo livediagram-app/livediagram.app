@@ -322,6 +322,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setMultiSelectedIds,
     identityPromptOpen,
     setIdentityPromptOpen,
+    overviewOpen,
   } = uiState;
   // Drag state lives inside the useEditorDrag hook, lifted out of
   // this component to keep the page focused on orchestration. The
@@ -490,6 +491,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setProjectName,
     projectItemTypes,
     setProjectItemTypes,
+    setProjectDetails,
     setImportError,
   } = persistence;
   // Realtime presence state (who's connected + their cursors / selections
@@ -747,6 +749,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setProjectId,
       setProjectName,
       setProjectItemTypes,
+      setProjectDetails,
       setProjectNotFound,
       setLoadError,
       setProjectTrashed: projectTrashed.setProjectTrashed,
@@ -970,6 +973,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     receiveItems: planItems.receive,
     receiveThreads: cardThreads.receive,
     receiveItemTypes: itemTypes.receive,
+    // The plan's description (docs/specs/026-plan/plan-overview.md "The description").
+    receiveProjectDetails: (description: string) =>
+      setProjectDetails((d) => (d.description === description ? d : { ...d, description })),
     receivePlanPresence: planPresence.receive,
     receiveSheets: sheets.receiveSheets,
     receiveSheetPresence: sheets.receiveSheetPresence,
@@ -1099,7 +1105,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // clicked a tab. Snap to the surviving fallback instead.
   useEffect(() => {
     if (tabs.length > 0 && tabs.every((t) => t.id !== activeId)) {
-      setActiveId(tabs[0]!.id);
+      // Only keeps the active tab a real one: an open Overview stays open.
+      setActiveId(tabs[0]!.id, { keepOverview: true });
     }
   }, [tabs, activeId, setActiveId]);
 
@@ -2516,7 +2523,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Z zen, z-order + fit-to-screen). The full keymap + rationale lives in
   // useEditorKeyboardShortcuts and is catalogued in docs/specs/008-canvas/canvas-and-palette.md.
   useEditorKeyboardShortcuts({
-    canvasCovered: planCover.canvasCovered,
+    // The Overview stands in the canvas's place: nothing on the canvas changes from the keyboard under it.
+    canvasCovered: planCover.canvasCovered || overviewOpen,
     readSelection,
     editingId,
     isReadOnly,

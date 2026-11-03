@@ -21,6 +21,8 @@ export function tabBarProps(over: Partial<TabBarProps>): TabBarProps {
     participantsByTab: new Map(),
     selfId: 'me',
     selfRole: 'edit' as const,
+    // No Overview unless a test gives one (the proxy would otherwise hand it a mock).
+    overview: undefined,
     ...over,
   };
   return new Proxy(base, {

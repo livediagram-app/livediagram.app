@@ -1,5 +1,6 @@
 import { useCallback, useState, type MutableRefObject, type SetStateAction } from 'react';
 import { useToast } from '@/hooks/ui/useToast';
+import { track } from '@/lib/telemetry';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
 import { OUT_OF_SCOPE_MESSAGE, isTabOutOfScope } from '@liveworkspace/workbench/lib/tab-scope';
 
@@ -24,13 +25,18 @@ export function useEditorUiState(
   tabScopeRef: MutableRefObject<string | null>,
 ) {
   const [activeId, setActiveIdRaw] = useState<string>(() => initialActiveId);
+  // The Plan Overview (docs/specs/026-plan/plan-overview.md "A built-in page, not a tab"): open in the canvas's place
+  // or not. Never stored and never in the address. Any tab switch closes it, except the fallbacks that only keep the
+  // active tab a real one (`keepOverview`).
+  const [overviewOpen, setOverviewOpen] = useState(false);
   const toast = useToast();
   const setActiveId = useCallback(
-    (next: SetStateAction<string>) => {
+    (next: SetStateAction<string>, opts?: { keepOverview?: boolean }) => {
       if (typeof next === 'string' && isTabOutOfScope(next, tabScopeRef.current)) {
         toast.info(OUT_OF_SCOPE_MESSAGE);
         return;
       }
+      if (!opts?.keepOverview) setOverviewOpen(false);
       setActiveIdRaw(next);
     },
     [tabScopeRef, toast],
@@ -42,6 +48,14 @@ export function useEditorUiState(
   const readSelection = selectionStore.get;
   const { setSelectedId, setMultiSelectedIds } = selectionStore;
   const [editingId, setEditingId] = useState<string | null>(null);
+  // Opens the Overview: nothing on the canvas stays selected or in a text edit under it.
+  const openOverview = useCallback(() => {
+    if (!overviewOpen) track('UI', 'Opened', 'Overview');
+    setOverviewOpen(true);
+    setSelectedId(null);
+    setMultiSelectedIds(new Set());
+    setEditingId(null);
+  }, [overviewOpen, setSelectedId, setMultiSelectedIds]);
   // True when the active label edit began via type-to-edit (docs/specs/008-canvas/canvas-and-palette.md): the
   // editor places the caret at the END instead of select-all, so the
   // seeded first character isn't replaced by the next keystroke.
@@ -88,5 +102,7 @@ export function useEditorUiState(
     setSankeyFlowsOpenForId,
     sequenceOpenForId,
     setSequenceOpenForId,
+    overviewOpen,
+    openOverview,
   };
 }

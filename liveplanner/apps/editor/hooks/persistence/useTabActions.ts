@@ -64,7 +64,8 @@ type TabActionsDeps = {
   // placeholder and marking the copy loaded persists a permanently
   // empty tab.
   isTabLoaded: (id: string) => boolean;
-  setActiveId: (id: string) => void;
+  // `keepOverview`: only keeps the active tab a real one, so an open Overview stays open (plan-overview.md).
+  setActiveId: (id: string, opts?: { keepOverview?: boolean }) => void;
   setSelectedId: (id: string | null) => void;
   setEditingId: (id: string | null) => void;
   // Surfaces an import parse error in the header (null clears it).
@@ -285,7 +286,7 @@ export function useTabActions(deps: TabActionsDeps) {
     );
     if (activeId === id) {
       const fallback = tabs[idx + 1] ?? tabs[idx - 1];
-      if (fallback) setActiveId(fallback.id);
+      if (fallback) setActiveId(fallback.id, { keepOverview: true });
     }
     setSelectedId(null);
     setEditingId(null);

@@ -30,6 +30,7 @@ const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalM
   ssr: false,
 });
 import { TabPill, type TabPillCtx } from './TabPill';
+import { OVERVIEW_TAB_KEY, OverviewTabPill } from './OverviewTabPill';
 import type { AccessLevel } from '@liveplanner/api-schema';
 import { deleteTabWarning } from '@/hooks/forms/forms-feeding';
 
@@ -148,6 +149,9 @@ type TabBarProps = {
   // Optional: a surface with no room behind it leaves the avatars as plain
   // presence indicators.
   onOpenCollaborators?: (participantId: string | null) => void;
+  // The Plan Overview's entry, first in the strip (docs/specs/026-plan/plan-overview.md "The tab bar"); absent where
+  // there is no Overview (an embed, a tab-scoped session). While it is open no tab is the open one.
+  overview?: { open: boolean; onOpen: () => void };
 };
 
 export function TabBar({
@@ -186,7 +190,11 @@ export function TabBar({
   powerUser = false,
   workbenchLink,
   workbenchBack,
+  overview,
 }: TabBarProps) {
+  const overviewOpen = overview?.open === true;
+  // The strip's open entry: the Overview's while it is open, so the sliding card sits on it and no tab is current.
+  const stripActiveId = overviewOpen ? OVERVIEW_TAB_KEY : activeId;
   const minimalChrome = useMinimalChrome();
   // Settings > Appearance > Button Labels: the footer's names beside its icons (a phone never shows them).
   const buttonLabels = useButtonLabelsSetting();
@@ -283,7 +291,7 @@ export function TabBar({
   // members alike) a one-liner.
   const pillCtx: TabPillCtx = {
     isOutOfScope,
-    activeId,
+    activeId: stripActiveId,
     editingId,
     setEditingId,
     menuFor,
@@ -291,8 +299,9 @@ export function TabBar({
     readOnly,
     isDark,
     // A tap on the tab already open selects nothing again; the strip brings all of it into view instead.
+    // Over the Overview, the tab that was open opens again (and closes the Overview).
     onSelect: (id: string) => {
-      if (id !== activeId) onSelect(id);
+      if (id !== activeId || overviewOpen) onSelect(id);
     },
     onRename,
     reorderDrag,
@@ -347,7 +356,10 @@ export function TabBar({
         {/* The tabs and folders (the shared strip, docs/specs/007-editor/editor-app.md "How a tab looks"). */}
         <TabStrip
           runs={groupTabsIntoRuns(tabs)}
-          activeId={activeId}
+          activeId={stripActiveId}
+          leading={
+            overview ? <OverviewTabPill open={overview.open} onOpen={overview.onOpen} /> : undefined
+          }
           readOnly={readOnly}
           renderTab={renderTabPill}
           onAdd={onAdd}

@@ -38,6 +38,7 @@ export function EditorStartPanels() {
     loadAllTabs,
     deleteTab,
     renameTab,
+    overviewOpen,
   } = ctx;
   const selectTab = useSelectTab();
   const isOffline = useIsOfflineProject(ctx.projectId);
@@ -51,7 +52,9 @@ export function EditorStartPanels() {
   // An empty tab: Start Planning, in the middle of the canvas, for someone who can edit. Anything already drawn (a
   // board, a shape, a view) hides it.
   const dashboardHasRows = (readDashboard(activeTab.dashboard)?.rows.length ?? 0) > 0;
+  // The Overview stands in the canvas's place: no tab's page is drawn under it.
   const showPlanBoardPicker =
+    !overviewOpen &&
     hydrated &&
     !zenMode &&
     !embedMode &&
@@ -63,9 +66,10 @@ export function EditorStartPanels() {
         : activeTab.elements.length === 0);
   // A Dashboard tab's page (docs/specs/026-plan/plan-tabs.md), for everyone who opens it; one with no rows left shows
   // Start Planning again, a new choice replacing it.
-  const showDashboard = hydrated && activeTab.kind === 'dashboard' && dashboardHasRows;
+  const showDashboard =
+    !overviewOpen && hydrated && activeTab.kind === 'dashboard' && dashboardHasRows;
   // A Form tab's page (docs/specs/030-forms/forms.md), for everyone who opens it.
-  const showForm = hydrated && activeTab.kind === 'form' && !!activeTab.form;
+  const showForm = !overviewOpen && hydrated && activeTab.kind === 'form' && !!activeTab.form;
   return (
     <>
       {showDashboard ? (

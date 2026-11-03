@@ -85,6 +85,11 @@ import { EditorStartPanels } from '@/components/start/EditorStartPanels';
 // Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open. Its code is
 // fetched once the editor is idle (EDITOR_SURFACE_CODE), so opening it does not wait.
 const EditorSearchPanel = dynamic(loadEditorSearchPanel, { ssr: false });
+// The Plan Overview (docs/specs/026-plan/plan-overview.md "Performance"): its code loads when it is first opened.
+const OverviewPage = dynamic(
+  () => import('@/components/overview/OverviewPage').then((m) => m.OverviewPage),
+  { ssr: false },
+);
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a project without
 // Plan pays nothing for it.
 const PlanSheetsHost = dynamic(
@@ -346,6 +351,12 @@ export function EditorView() {
             }
             tabs={tabs}
             activeId={activeId}
+            // The Overview's entry: none for a session confined to one tab (docs/specs/026-plan/plan-overview.md).
+            overview={
+              ctx.sessionTabScope === null
+                ? { open: ctx.overviewOpen, onOpen: ctx.openOverview }
+                : undefined
+            }
             // Clicking an avatar in a presence stack opens the Collaborators
             // modal (docs/specs/012-collaboration/collaborator-enhancements.md).
             onOpenCollaborators={openCollaborators}
@@ -560,6 +571,14 @@ export function EditorView() {
                                           />
                                         ) : null}
                                         <EditorStartPanels />
+                                        {ctx.overviewOpen &&
+                                        hydrated &&
+                                        !embedMode &&
+                                        ctx.sessionTabScope === null ? (
+                                          <AreaErrorBoundary area="Canvas" fallback="panel">
+                                            <OverviewPage />
+                                          </AreaErrorBoundary>
+                                        ) : null}
 
                                         {/* Modifier hint (docs/specs/008-canvas/canvas-and-palette.md): names what holding Shift does
           right now. Suppressed while a mode banner owns the top slot. */}
