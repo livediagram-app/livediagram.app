@@ -69,6 +69,11 @@ action's `tabId` and `elementId`, for the link.
 The app runs all of this after it has answered: in the item room's `waitUntil` for a comment or a save, and in the
 room's RPC for an assignment. A failure is logged and never reaches the request.
 
+**One request to accounts a save.** A save, a changeset or a comment route that adds several comments works them out
+together (`pushComments`): the item's team is read once, the index is asked once a person, and every notification
+the save makes goes to accounts in one `sendPush` call. A comment whose checks fail is logged and left out; the rest
+still go.
+
 ## Devices
 
 A device is one browser's push subscription, kept per account in `push_device`
@@ -99,8 +104,11 @@ createdAt, lastSentAt }] }`, newest first. `publicKey` is the deployment's VAPID
 ## Sending
 
 `POST /api/account/internal/push` `{ notifications: [{ userId, kind, title, url, tag? }] }`, from an app's server by
-its client credentials (`sendPush` in `@liveworkspace/auth-client`, beside `notificationRecipients`), up to 50 a
-request (`MAX_PUSH_NOTIFICATIONS`; `sendPush` splits more). The body is checked whole, one bad entry refusing it
+its client credentials (`sendPush` in `@liveworkspace/auth-client`, beside `notificationRecipients`), up to 250 a
+request (`MAX_PUSH_NOTIFICATIONS`: 5 comments a save, each reaching at most 50 people; `sendPush` splits more). An
+accounts Worker from before this limit took 50 and refuses more with `too_many_notifications`; `sendPush` then sends
+the same notifications again 50 a request (`LEGACY_MAX_PUSH_NOTIFICATIONS`), so an app and accounts can deploy in
+either order. The body is checked whole, one bad entry refusing it
 (`400` with the reason), and a client that is no app is refused (`403`). It answers `202 { accepted }` at once and
 sends after the answer (`waitUntil`, `src/push/deliver.ts`), so neither the app's write nor its call waits on a push
 service:
@@ -113,7 +121,8 @@ service:
   (`aes128gcm`, a fresh key pair and salt every message, one 4096-byte record), signed with VAPID (RFC 8292, an ES256
   token for the push service's origin, good for 12 hours, subject the Worker's `BASE_URL`), `TTL` 4 hours and
   `Urgency: normal`. Written on Web Crypto alone (`src/push/web-push.ts`), with no library.
-- **Bounds.** At most 200 posts a request (`MAX_PUSH_SENDS_PER_CALL`, the rest dropped and logged), 8 at a time,
+- **Bounds.** At most 200 posts a request (`MAX_PUSH_SENDS_PER_CALL`, the rest dropped and logged), so a save's
+  notifications together, 8 at a time,
   each given 10 seconds. One VAPID token per push service a request reaches.
 - **After.** One batch removes the gone devices and stamps `last_sent_at` on the rest.
 
