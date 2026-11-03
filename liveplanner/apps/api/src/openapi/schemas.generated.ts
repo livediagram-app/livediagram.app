@@ -8114,6 +8114,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "createdAt": {
         "type": "number"
       },
+      "description": {
+        "type": "string"
+      },
       "folderId": {
         "type": [
           "string",

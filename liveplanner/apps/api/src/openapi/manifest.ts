@@ -407,6 +407,26 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401, 403, 404, 410],
   },
   {
+    method: 'PUT',
+    path: '/projects/{id}/details',
+    segment: 'projects',
+    tag: 'Plans',
+    summary:
+      "Set a plan's description (plain text, trimmed, up to 500 characters). Needs edit access to the whole plan; answers it as stored.",
+    auth: 'guest-or-clerk',
+    requestSchema: {
+      type: 'object',
+      properties: { description: { type: 'string' } },
+      required: ['description'],
+    },
+    responseSchema: {
+      type: 'object',
+      properties: { description: { type: 'string' } },
+      required: ['description'],
+    },
+    statuses: [200, 400, 401, 403, 404, 410],
+  },
+  {
     method: 'GET',
     path: '/projects/{id}/shared-tabs',
     segment: 'projects',
