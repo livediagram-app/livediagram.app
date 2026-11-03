@@ -12,7 +12,7 @@ import {
   participantWritesOn,
   type Element,
 } from '@livehuddle/document';
-import type { AccessLevel } from '@livehuddle/api-schema';
+import { levelAtLeast, parseStoredLevel, type AccessLevel } from '@livehuddle/api-schema';
 
 export type EditorCapabilities = {
   level: AccessLevel;
@@ -91,4 +91,35 @@ export function contentAddBlocked(input: {
   structureBlocked: boolean;
 }): boolean {
   return input.participating ? input.blocked || !input.canAddContent : input.structureBlocked;
+}
+
+/** The canvas's role gates (docs/specs/013-workspace/share-roles.md "Tests"), read from `can`. */
+export type RoleGates = {
+  // Start, end, reveal or configure a session tool; press Bring Focus. An Editor's, and only the facilitator's
+  // while someone holds the baton (`runBlocked`).
+  run: boolean;
+  // Reshape the board: the template start, an estimate's scale. An Editor's.
+  shape: boolean;
+  // Answer, react, speak, comment. An Editor's or a Participant's.
+  takePart: boolean;
+};
+
+/**
+ * The canvas's role gates from the session's `can`, never from `isReadOnly` alone: avatar mode makes the canvas
+ * read-only for everyone in it, so only the level tells a walking Editor from a Viewer.
+ */
+export function roleGates(
+  can: Pick<EditorCapabilities, 'level' | 'takePart'>,
+  runBlocked: boolean,
+): RoleGates {
+  const shape = can.level === 'edit';
+  return { run: shape && !runBlocked, shape, takePart: can.takePart };
+}
+
+/**
+ * Whether a session at `level` may hold the facilitator baton: an Editor's alone, as the room's `canHold` decides
+ * (apps/api/src/facilitator.ts). Compared through the ladder, an unknown level reading as a Viewer's.
+ */
+export function mayHoldBaton(level: unknown): boolean {
+  return levelAtLeast(parseStoredLevel(level), 'edit');
 }

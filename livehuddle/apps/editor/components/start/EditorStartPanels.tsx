@@ -5,6 +5,7 @@ import type { TemplateStartMode } from '@/components/start/start-template-items'
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
 import { showsEmptyCanvasCard } from '@/components/canvas/empty-canvas-card';
+import { roleGates } from '@/lib/editor-capabilities';
 import { StartAgainTray } from '@/components/start/StartAgainTray';
 import { StartViewTransition } from '@/components/start/StartViewTransition';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
@@ -40,12 +41,13 @@ export function EditorStartPanels() {
     tabHasContent: activeTab.elements.length > 0,
   });
   // Its template start (docs/specs/007-editor/start-diagramming.md "When it shows"): to someone who can edit, while
-  // the tab is empty, outside zen and embed, with no draw tool armed.
+  // the tab is empty, outside zen and embed, with no draw tool armed. Making a board from a template is an Editor's
+  // (docs/specs/013-workspace/share-roles.md), read from `can`.
   const templateStart: TemplateStartMode | null =
     hydrated &&
     !zenMode &&
     !embedMode &&
-    !isReadOnly &&
+    roleGates(ctx.can, false).shape &&
     !pendingDraw &&
     activeTab.elements.length === 0
       ? 'workshop'
