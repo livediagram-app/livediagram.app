@@ -35,7 +35,7 @@ Derived from [New version prompt](../new-version-prompt.md).
 
 ```ts
 // packages/api-schema/src/project-format.ts
-export const PROJECT_FORMAT = 2;
+export const PROJECT_FORMAT = 3;
 export const PROJECT_FORMAT_HEADER = 'X-Liveplanner-Format';
 export function parseProjectFormat(value: unknown): number | null; // a positive integer or null
 
@@ -137,7 +137,7 @@ The number is not a secret and grants nothing; a forged value can only show a re
 
 | Rule                                                     | Test                                                                   |
 | -------------------------------------------------------- | ---------------------------------------------------------------------- |
-| Format parsing                                           | `packages/api-schema/src/project-format.test.ts`                       |
+| Format parsing; a new field kind or calculation bumps it | `packages/api-schema/src/project-format.test.ts`                       |
 | Header on responses, not on a 101; CORS exposes it       | `apps/api/src/server-release-header.test.ts`                           |
 | Room sends its format on hello                           | `apps/api/src/project-room.test.ts`                                    |
 | Store keeps the maximum, notifies on rise, ignores junk  | `apps/editor/lib/server-release.test.ts`                               |

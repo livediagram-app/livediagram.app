@@ -23,6 +23,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | **ready-made type** | A card type liveplanner defines in code that a board can bring: the default types and the twelve more a template uses               | preset type, built-in type  |
 | **base type**       | A card type another type inherits from: an ordinary type that holds cards of its own                                                | parent type, super type     |
 | **inherited type**  | A card type that takes its fields, tabs, statuses, Default State and display from a base type, adding fields of its own             | subtype, child type         |
+| **newer field**     | A custom field whose kind (or calculation) this editor does not know: a newer liveplanner made it. Kept, read-only                  | unknown field, broken field |
 
 ## The type catalogue
 
@@ -882,6 +883,29 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
   placed custom fields starts Under the Title on Detailed cards, until the type's Detailed layout is changed; the
   tick is gone from the field's settings.
 
+## Fields from a newer version
+
+A plan can hold a field kind this editor does not know yet: a tab left open across a deploy, an offline plan or a Drive
+file opened by an older build. Such a field (a **newer field**: its `kind` is not one this editor knows, or it is a
+Calculated field whose `calculation` is not) never stops the plan opening.
+
+- **Kept, never refused.** Reading a catalogue keeps a newer field exactly as stored, every setting it has, so a type
+  holding one reads, and saving the catalogue from this editor (any change to any type) writes it back untouched.
+  Only its id and name are checked, as any field's are; one without them is refused as before.
+- **Read-only everywhere.** In the card panel it shows its name, the value as plain text when the value is one word,
+  number or line of text, and the line "Made in a newer version of liveplanner. Reload to edit it." Nothing in it is
+  editable. In the type editor its row wears a generic field icon named "Newer Field" and a lock whose tooltip says
+  "Made in a newer version of liveplanner. Reload to change it."; it has no Edit and no Remove, and it moves among
+  the type's fields as any field does. It is never required here (a required newer field never refuses a card this
+  editor makes; the server, which knows it, still checks it), never drawn on the card face, and never offered to
+  Sort, Group, widgets or forms.
+- **Reload brings it to life.** The [project format number](../016-platform/new-version-prompt.md) is bumped with
+  every new field kind and calculation, so an editor holding a newer field has already been offered "Reload".
+- **The api refuses one on a write.** The api is always the newest build: a catalogue sent to it (the item-types
+  route, a project create or copy) with a kind it does not know is refused (`item_types_invalid`, the field's
+  `kind`), so a mistyped kind never lands as a newer field. Reading a stored catalogue (a Drive file, the room)
+  keeps it.
+
 ## Inherited types
 
 A card type can **inherit** from another, its **base type**, so several types share one set of fields kept in one
@@ -1333,7 +1357,9 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 ## Limits and validation
 
 - The api validates a stored catalogue whole (shape, ids, counts, lengths, kinds) and refuses one that fails,
-  by name (`item_types_invalid`), keeping the last good one. Its stored size is at most 32 KB.
+  by name (`item_types_invalid`), keeping the last good one. Its stored size is at most 32 KB. A kind it does not
+  know is refused on a write; a reader (the editor, a Drive file) keeps it read-only ([Fields from a newer
+  version](#fields-from-a-newer-version)).
 - Validating a catalogue works out every [inherited type](#inherited-types) again from its base type, so what is
   stored is always resolved: a chain or a type inheriting from itself is refused, a type whose base is gone is
   detached, and the caps are checked on the resolved types.
