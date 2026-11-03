@@ -70,9 +70,26 @@ export function PaneList({ label, children }: { label?: string; children: ReactN
 export const PANE_GRID =
   'lvd-cascade grid grid-cols-2 gap-2 @sm:grid-cols-3 @2xl:grid-cols-4 @2xl:gap-x-3 @2xl:gap-y-3.5';
 
-export function PaneGrid({ label, children }: { label?: string; children: ReactNode }) {
+// `fullRowsBelowFour`: from the seventh card on, shown only where the grid runs four across, so two and three across
+// end on a full row (six cards: three rows of two, two rows of three). Hidden with CSS, so a card that is not drawn
+// never asks for its preview (the host's thumbnails load once they scroll into view, which display: none never does).
+const FULL_ROWS_BELOW_FOUR = '@max-2xl:[&>li:nth-child(n+7)]:hidden';
+
+export function PaneGrid({
+  label,
+  children,
+  fullRowsBelowFour = false,
+}: {
+  label?: string;
+  children: ReactNode;
+  fullRowsBelowFour?: boolean;
+}) {
   return (
-    <ul aria-label={label} className={PANE_GRID} onKeyDown={paneListKeys}>
+    <ul
+      aria-label={label}
+      className={fullRowsBelowFour ? `${PANE_GRID} ${FULL_ROWS_BELOW_FOUR}` : PANE_GRID}
+      onKeyDown={paneListKeys}
+    >
       {children}
     </ul>
   );

@@ -311,7 +311,9 @@ canvas's bottom edge; the rail and pane fill what the card and footer leave, nev
 **13rem** (208 px) wide, so its names sit with room either side, and the pane keeps a 1rem margin. The pane's preview
 cards (Jump Back In, folders) are compact, so more fit in a row: two across in a narrow pane, three once it is 24rem
 wide (a tablet, a wide phone's sheet), four once it is 42rem (every desktop popover, 1280 px and up), each card's
-picture 16:9 over a 13 px name and a quiet line; Home's Jump Back In holds up to **eight**, two full rows of four.
+picture 16:9 over a 13 px name and a quiet line; Home's Jump Back In holds up to **eight**, two full rows of four, and
+below four across shows only its first **six** (three rows of two, two rows of three: never a short last row), the
+seventh and eighth hidden with CSS so a card that is not drawn never asks for its preview.
 The Library's pictures stay five across and its shapes six. On a phone it stays the sheet it was: two cards across
 on a 390 px phone. The canvas stays in sight beside the popover at 1280 px (a quarter of the width), and the size
 lives once in the package (`EXPLORER_POPOVER_WIDTH`, `EXPLORER_POPOVER_HEIGHT`) for every editor. On every screen size a **scrim** sits behind it: translucent
