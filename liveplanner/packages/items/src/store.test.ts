@@ -201,6 +201,16 @@ describe('inverseItemWrites', () => {
       () => 'madeid1',
     );
     expect(w.kind === 'create' && w.creates.map((c) => c.id)).toEqual(['madeid1', 'keepme1']);
+    // A whole create (an import's) stays whole.
+    const whole = withCreateIds(
+      { kind: 'create', creates: [{ type: 'task', fields: { title: 'x' } }], whole: true },
+      () => 'madeid2',
+    );
+    expect(whole).toEqual({
+      kind: 'create',
+      creates: [{ id: 'madeid2', type: 'task', fields: { title: 'x' } }],
+      whole: true,
+    });
     const d = { kind: 'delete' as const, id: 'x' };
     expect(withCreateIds(d)).toBe(d);
   });

@@ -28,7 +28,8 @@ export const EMPTY_ITEM_STORE: ItemStoreState = { items: [], rev: 0, nextKey: 1 
 // `undo`: the write is an undo or redo, putting back a change already made, so a card type's left-out statuses do
 // not refuse it (docs/specs/026-plan/item-types.md "An item type"). Sent to the api as `undo: true` in the body.
 export type ItemWrite =
-  | { kind: 'create'; creates: ItemCreate[] }
+  // `whole`: the cards land together or not at all (an import's, docs/specs/026-plan/tracker-import.md "The import").
+  | { kind: 'create'; creates: ItemCreate[]; whole?: true }
   | { kind: 'patch'; id: string; patch: ItemPatch; undo?: true }
   // Many items changed as one write (a card type's or a removed column's cards to the Trash).
   | { kind: 'patches'; patches: ItemPatchOf[]; undo?: true }
@@ -321,7 +322,7 @@ export function asUndoWrite(write: ItemWrite): ItemWrite {
 // A create made replayable: every create carries the id it was given, so redo makes the same item.
 export function withCreateIds(write: ItemWrite, newId: () => string = newItemId): ItemWrite {
   if (write.kind !== 'create') return write;
-  return { kind: 'create', creates: write.creates.map((c) => (c.id ? c : { ...c, id: newId() })) };
+  return { ...write, creates: write.creates.map((c) => (c.id ? c : { ...c, id: newId() })) };
 }
 
 // An item as the create that makes it again: id, type, key, fields, votes and comments (an undo of a delete).

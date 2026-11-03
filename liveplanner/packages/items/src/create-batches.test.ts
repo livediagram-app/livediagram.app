@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_WRITE_BYTES, createBatches } from './create-batches';
+import { ITEM_IMPORT_ID, ITEM_WRITE_BYTES, createBatches, importParts } from './create-batches';
 
 describe('createBatches', () => {
   it('splits at the bulk cap and at the write size, never leaving a write empty', () => {
@@ -13,5 +13,25 @@ describe('createBatches', () => {
     expect(createBatches(big, ITEM_WRITE_BYTES - 3 * 1024 * 1024).map((b) => b.length)).toEqual([
       1, 2, 2,
     ]);
+  });
+});
+
+describe('importParts', () => {
+  it('numbers each write as a part of one import', () => {
+    const cards = Array.from({ length: 450 }, (_, i) => ({ i }));
+    expect(
+      importParts('import-1', cards).map((p) => [p.importId, p.part, p.parts, p.items.length]),
+    ).toEqual([
+      ['import-1', 0, 3, 200],
+      ['import-1', 1, 3, 200],
+      ['import-1', 2, 3, 50],
+    ]);
+    expect(importParts('import-1', [])).toEqual([]);
+  });
+
+  it('takes the ids a client mints, and no others', () => {
+    expect(ITEM_IMPORT_ID.test(crypto.randomUUID())).toBe(true);
+    expect(ITEM_IMPORT_ID.test('short')).toBe(false);
+    expect(ITEM_IMPORT_ID.test('has spaces in it')).toBe(false);
   });
 });

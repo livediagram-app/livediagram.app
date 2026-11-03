@@ -268,6 +268,7 @@ const WORKBENCH_ROUTES: readonly RouteShape[] = [
   shape('POST', 'projects/:doc/room-ticket'),
   shape('GET,POST', 'projects/:doc/items'),
   shape('POST', 'projects/:doc/items/bulk'),
+  shape('POST', 'projects/:doc/items/import'),
   shape('POST,DELETE', 'projects/:doc/items/:p'),
   shape('POST', 'projects/:doc/items/:p/move'),
   shape('POST', 'projects/:doc/items/:p/vote'),

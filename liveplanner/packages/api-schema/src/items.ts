@@ -74,6 +74,23 @@ export type ItemMoveRequest = ItemMove & ItemUndoFlag;
 // POST /api/projects/:id/items/bulk: template seeds and an offline project's items.
 export type ItemsBulkRequest = { items: ItemCreate[] };
 
+// POST /api/projects/:id/items/import: one part of a whole import (an import from another tool, docs/specs/026-plan/
+// tracker-import.md "The import"), as `importParts` (@liveplanner/items) cuts it. Every part but the last is held aside
+// (202 ItemsImportStaged); the last lands every card in one transaction (201 ItemsResponse), or none.
+export type ItemsImportRequest = {
+  /** Names the import's held parts: 8 to 64 letters, digits, `-` or `_` (a UUID). */
+  importId: string;
+  /** This part's place, from 0. */
+  part: number;
+  /** How many parts the import has; the part numbered `parts - 1` lands it. */
+  parts: number;
+  /** Up to 200 cards. */
+  items: ItemCreate[];
+};
+
+// A part held aside: how many of the import's cards the plan holds so far.
+export type ItemsImportStaged = { staged: number };
+
 // POST /api/projects/:id/items/patches: up to 200 items changed in one write (a card type's or a removed column's
 // cards to the Trash), optionally marked as an undo or redo.
 export type ItemsPatchRequest = { items: (ItemPatch & { id: string })[] } & ItemUndoFlag;
