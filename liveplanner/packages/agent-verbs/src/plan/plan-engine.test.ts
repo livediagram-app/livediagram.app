@@ -1057,6 +1057,32 @@ describe('changeBoard', () => {
     ).toMatchObject({ ok: false, code: 'board_invalid' });
   });
 
+  it('adds and removes header widgets by name, a field widget stored by its key', async () => {
+    const { api: a, seen } = api();
+    const r = await changeBoard(
+      a,
+      D,
+      { board: 'Sprint', widgets: { add: ['Severity Donut', 'due'], remove: ['filter', 'mine'] } },
+      'mcp',
+    );
+    if (!r.ok) throw new Error(r.message);
+    // A board that never arranged its widgets starts from the default set.
+    expect(r.widgets).toEqual([
+      'Item Count',
+      'Completion',
+      'Not on Board',
+      'Severity Donut',
+      'Due Soon',
+    ]);
+    const setup = (
+      seen[0]!.body as { operations: { fields: { planBoard: Record<string, unknown> } }[] }
+    ).operations[0]!.fields.planBoard;
+    expect(setup['widgets']).toEqual(['count', 'progress', 'unplaced', 'field:donut:f-sev', 'due']);
+    expect(
+      await changeBoard(a, D, { board: 'Sprint', widgets: { add: ['Budget Sum'] } }, 'mcp'),
+    ).toMatchObject({ ok: false, code: 'board_invalid' });
+  });
+
   it('refuses an unknown or ambiguous board, type or column list', async () => {
     const { api: a } = api();
     expect(await changeBoard(a, D, { board: 'Roadmap' }, 'mcp')).toMatchObject({

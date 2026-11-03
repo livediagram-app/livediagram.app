@@ -134,8 +134,10 @@ label    := a quoted value
 - **Identity** (`id`, `type`, `shape`, `addedBy`) is `invalid_value` ("cannot be changed"). `__proto__`,
   `constructor` and `prototype` are always `unknown_field`.
 - **Live fields.** A key in `LIVE_ELEMENT_FIELDS` is `invalid_value`, hinting at the comment commands.
-- **Closed vocabularies.** `fieldValueIssue(key, value)` refuses a value off `ELEMENT_FIELD_VALUES[key]` as
-  `invalid_value`, naming the values. A `label` must be a string.
+- **Closed vocabularies.** `fieldValueIssue(key, value, 'new')` refuses a value off `ELEMENT_FIELD_VALUES[key]` as
+  `invalid_value`, naming the values. `ELEMENT_FIELD_VALUES.font` is `PLANNER_FONTS`' ids; the faces it leaves out
+  are `ELEMENT_FIELD_KEPT_VALUES.font`, which `fieldValueIssue`'s default `'stored'` write (the MCP's whole-element
+  check) accepts and `'new'` (a `set`) refuses. A `label` must be a string.
 - **Value parsing.** JSON form values are JSON. Line form values: a quoted value is a string; an unquoted value is
   read as JSON when the whole value is a JSON number, `true` or `false`, or it starts with `[` or `{`, else it is a
   string (EO19). `key=` is `null`: the field is removed.

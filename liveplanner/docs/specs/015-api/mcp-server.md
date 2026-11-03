@@ -304,7 +304,9 @@ must be one a liveplanner tab holds (§4.7a); any other is refused naming it (`e
 element a liveplanner tab holds; read liveplanner://schema/elements.`). On a Plan element it is checked as an edit
 operation's `set` checks a field: a field its type does not have is refused with the fields like it, and a value off
 a closed vocabulary is refused naming the values ([Edit operations](../024-agents/edit-operations.md)). The check
-passes every element of every template, so a tab read back as JSON writes again unchanged.
+passes every element of every template, so a tab read back as JSON writes again unchanged, and accepts a value
+kept as stored but no longer offered (a font the pickers leave out, [Fonts](../004-interface-design/fonts.md) "Not
+offered in liveplanner"), which an ops `update` (a `set`) refuses; the values a refusal names are the offered ones.
 
 ### 4.5 `list_templates`
 
@@ -443,7 +445,8 @@ status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status
   `{ item }`. A refusal answers what was applied before it. Each change reaches open boards at once.
 - **`add_board`** (write): a Plan board on a tab, from a preset or columns by name, as one changeset
   ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)).
-- **`change_board`** (write): a board's title, columns (by name) or the card types it takes, as one changeset.
+- **`change_board`** (write): a board's title, columns (by name), the card types it takes or its header widgets
+  (`widgets` `{ add, remove }`, by kind id or field widget name), as one changeset.
 - **`import_board`** (write): a board from a Trello, Asana, Jira or Linear export (`content`, the file's text), in a
   new Board tab of `projectId` or a new plan, with its card type, cards and imported comments; `preview` writes
   nothing ([Importing from another tool](../026-plan/tracker-import.md#agents)).
@@ -737,7 +740,7 @@ says why by its status (no such tab, view only, the last tab).
 | `list_threads`      | `threads[]` of `{ id, title, state, resolvedBy?, cards[], field?, comments[] { id, author, at, text, ai?, edited?, reactions?[] { emoji, name, count, by[] } } }`, `count`, `url`                                       |
 | `change_threads`    | `applied[]` (one line per change), `url`                                                                                                                                                                                |
 | `add_board`         | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `changesetId`, `rev`, `url`                                                                                                                           |
-| `change_board`      | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `takes`, `changesetId`, `rev`, `url`                                                                                                                  |
+| `change_board`      | `tabId`, `elementId`, `title`, `columns[]` of `{ name, status }`, `takes`, `widgets[]`, `changesetId`, `rev`, `url`                                                                                                     |
 | `import_board`      | `projectId`, `tabId`, `title`, `source`, `columns[]` of `{ name, cards }`, `cards`, `leftOut[]` of `{ reason, count }`, `preview?`, `url`                                                                               |
 | `change_card_types` | `applied[]` (with the ids made), `trashed[]`, `types[]`, `url`                                                                                                                                                          |
 | `list_sheets`       | `sheets[]` of `{ id, title, tabId, tabName, rows, cols, filled, elementId }`, `url`                                                                                                                                     |

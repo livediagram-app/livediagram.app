@@ -74,6 +74,15 @@ trashedFrom }` on each live card of a deleted type, as the editor's `trashItems`
 - `placeBoard`: preset through `freshBoardSetup`; columns by name reuse a status `statusNamed` finds (each status
   once), else `<slug>~<4 chars>`; a preset's done flags go with its columns and the new ones are settled by name (`settleDoneColumns`); placed right of the tab's
   elements' bounding box by `PLACED_BOARD_GAP`, tops aligned, origin on an empty tab.
+- `changeBoard` `widgets` (`packages/agent-verbs/src/plan/board-widget-change.ts`): `changedWidgets(widgetsOf(setup),
+change, boardFields(setup, types, false))` on the reshaped set-up; each name through `widgetResolver(fields)`, which keys every name once a call (a map read a name): a
+  `BOARD_WIDGET_KINDS` id, a well-formed `field:<view>:<fieldId>` key, then by `statusKey` a kind's id or
+  `BOARD_WIDGET_INFO` label, a readable field's `fieldWidgetLabel` in each of its `viewsOfField`, then a field's label
+  or id alone (its first view). `remove` first (`removeWidget`), then `add` (`placeWidget` at the end, skipped when
+  present); an added field widget must be `fieldWidgetState` `ok` and keep `fieldWidgetCount` under
+  `FIELD_WIDGETS_MAX`. The answer's `widgets` is `widgetName` of each: the `BOARD_WIDGET_INFO` label, the
+  `fieldWidgetLabel`, else the key. The widget names live in `@liveplanner/items` `board-widget-names.ts`
+  (`BOARD_WIDGET_INFO`, `FIELD_WIDGET_VIEW_INFO`, `fieldWidgetLabel`), which `@liveplanner/plan-art` re-exports.
 - `addBoard`: tab = given, else first tab with a board, else lowest `orderIndex`; one changeset
   `{ operations: [{ op: 'add', element }], base: { rev, elements: {} } }` with the client header (`mcp` or `cli`).
 
@@ -84,34 +93,38 @@ trashedFrom }` on each live card of a deleted type, as the editor's `trashItems`
   methods. In the OpenAPI manifest (tag Items) and `gen-openapi-schemas.mjs` roots.
 - MCP (`packages/agent-verbs/src/mcp/plan-schema.ts`): `list_items { projectId, type?, status? }`,
   `change_items { projectId, changes[1..50] }`, `add_board { projectId, tabId?, preset?, title?, columns?[1..12],
-types? }`, `change_card_types { projectId, changes[1..32] }`; outputs `listItemsOutput`, `changeItemsOutput`,
+types? }`, `change_card_types { projectId, changes[1..32] }`, `change_board`'s `widgets { add?[..27], remove?[..27] }` (every
+  widget a board can hold, `WIDGETS_CHANGE_MAX`); outputs `listItemsOutput`, `changeItemsOutput`,
   `addBoardOutput`, `changeCardTypesOutput`, every field described.
 - CLI: `item ls|add|set|move|rm` (unchanged arguments; `ls` prints a line per board), `board add <project> [--tab]
-[--preset] [--title] [--columns a,b] [--types a,b]`, `type ls <project>`, `type apply <project> -f <file|->` (a JSON array
+[--preset] [--title] [--columns a,b] [--types a,b]`, `board set <project> <board> [--title] [--columns] [--types]
+[--sort] [--done] [--add-widgets a,b] [--remove-widgets a,b]`, `type ls <project>`, `type apply <project> -f <file|->` (a JSON array
   of `cardTypeChangeSchema`).
 
 ## Errors and edge cases
 
-| Case                                                                       | Handling                                                                                                                                |
-| -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| column name no board has                                                   | `status_unknown`, lists the columns                                                                                                     |
-| custom field named as a built-in's other name ("Owner")                    | `fieldKeyOf`: built-in id, then the type's custom field by name, then `BUILT_IN_ALIASES`                                                |
-| no board at all                                                            | `status_unknown`, says to use `add_board` or leave status out                                                                           |
-| card type `defaultStatus` naming no column                                 | not refused: Default State left unset, the `applied` line says so (`DEFAULT_STATUS_PENDING`)                                            |
-| card type unknown                                                          | `type_unknown`, lists `Name (id)` for each type                                                                                         |
-| field the type lacks                                                       | `field_unknown`, lists the type's fields                                                                                                |
-| Choice option not offered                                                  | `choice_unknown`, lists the options                                                                                                     |
-| item ref none or several                                                   | `item_unknown`, names the candidates when several                                                                                       |
-| card type change breaks a rule                                             | `type_change_invalid`, names the rule; nothing saved                                                                                    |
-| board preset unknown, columns 0 or > 12, two columns one name, title empty | `board_invalid`                                                                                                                         |
-| tab unknown / no tabs                                                      | `tab_unknown`, lists the tabs                                                                                                           |
-| api 4xx                                                                    | `apiRefusalOf`: by code (`status_excluded`...) or status (403, 404, 410)                                                                |
-| api 5xx or network                                                         | thrown (the MCP's error path and `Error·Api` telemetry)                                                                                 |
-| a change after an earlier one applied fails                                | the answer lists what applied before it                                                                                                 |
-| board `addTypes: []` (last type turned off)                                | outline `types: []`; `takes: []`; no card shows on it; a card placed in its columns is reported "no board with that column takes"       |
-| `change_board` / `add_board` `types: []`                                   | `addTypes: []` (takes none); `change_board` `types: "every type"` clears `addTypes`                                                     |
-| `change_board` new column whose id a kept column has                       | `uniqueColumnIds` in `reshapeBoard`: the kept column keeps its id, the new one takes `<id>-<n>`, the first free                         |
-| `list_items` / `item ls` filter naming no column or card type              | `resolveListingFilter` (by `resolveStatus`, `resolveType`): `status_unknown` / `type_unknown` with the names; `Trash` is `TRASH_STATUS` |
+| Case                                                                                                 | Handling                                                                                                                                |
+| ---------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| column name no board has                                                                             | `status_unknown`, lists the columns                                                                                                     |
+| custom field named as a built-in's other name ("Owner")                                              | `fieldKeyOf`: built-in id, then the type's custom field by name, then `BUILT_IN_ALIASES`                                                |
+| no board at all                                                                                      | `status_unknown`, says to use `add_board` or leave status out                                                                           |
+| card type `defaultStatus` naming no column                                                           | not refused: Default State left unset, the `applied` line says so (`DEFAULT_STATUS_PENDING`)                                            |
+| card type unknown                                                                                    | `type_unknown`, lists `Name (id)` for each type                                                                                         |
+| field the type lacks                                                                                 | `field_unknown`, lists the type's fields                                                                                                |
+| Choice option not offered                                                                            | `choice_unknown`, lists the options                                                                                                     |
+| item ref none or several                                                                             | `item_unknown`, names the candidates when several                                                                                       |
+| card type change breaks a rule                                                                       | `type_change_invalid`, names the rule; nothing saved                                                                                    |
+| board preset unknown, columns 0 or > 12, two columns one name, title empty                           | `board_invalid`                                                                                                                         |
+| tab unknown / no tabs                                                                                | `tab_unknown`, lists the tabs                                                                                                           |
+| api 4xx                                                                                              | `apiRefusalOf`: by code (`status_excluded`...) or status (403, 404, 410)                                                                |
+| api 5xx or network                                                                                   | thrown (the MCP's error path and `Error·Api` telemetry)                                                                                 |
+| a change after an earlier one applied fails                                                          | the answer lists what applied before it                                                                                                 |
+| board `addTypes: []` (last type turned off)                                                          | outline `types: []`; `takes: []`; no card shows on it; a card placed in its columns is reported "no board with that column takes"       |
+| `change_board` / `add_board` `types: []`                                                             | `addTypes: []` (takes none); `change_board` `types: "every type"` clears `addTypes`                                                     |
+| `change_board` new column whose id a kept column has                                                 | `uniqueColumnIds` in `reshapeBoard`: the kept column keeps its id, the new one takes `<id>-<n>`, the first free                         |
+| `change_board` widget name unknown, a field no widget reads, a view not offered, a 13th field widget | `board_invalid`, naming the kinds and each readable field with its views                                                                |
+| `change_board` removes a widget the board does not show, or adds one it has                          | no change to the list                                                                                                                   |
+| `list_items` / `item ls` filter naming no column or card type                                        | `resolveListingFilter` (by `resolveStatus`, `resolveType`): `status_unknown` / `type_unknown` with the names; `Trash` is `TRASH_STATUS` |
 
 ## Security and trust
 
@@ -149,6 +162,7 @@ types? }`, `change_card_types { projectId, changes[1..32] }`; outputs `listItems
 | card type changes                                     | `packages/items/src/type-changes.test.ts`                                                      |
 | Blocked By: listing, set by number, loop stop, switch | `packages/agent-verbs/src/plan/plan-engine.test.ts`, `packages/items/src/type-changes.test.ts` |
 | board placement                                       | `packages/items/src/board-place.test.ts`                                                       |
+| change_board widgets: names, add, remove, refusals    | `packages/agent-verbs/src/plan/board-widget-change.test.ts`, `plan-engine.test.ts`             |
 | plan route gate, scope, batching                      | `apps/api/src/routes/plan-route.test.ts`                                                       |
 | engine: listing, changes, types, board                | `packages/agent-verbs/src/plan/plan-engine.test.ts`                                            |
 | CLI verbs                                             | `packages/agent-verbs/src/verbs/item.test.ts`, `plan-verbs.test.ts`                            |

@@ -50,7 +50,9 @@ or selector, compiled by the api into element ops. A full rebuild uses `replace`
   operations; comments have their own endpoints. `set` replaces a field's value whole.
 - **Closed vocabularies.** A stored field with a closed list of values (`textSize`, `chartVariant`, …;
   `ELEMENT_FIELD_VALUES` in `@liveplanner/project`) refuses a value off it as `invalid_value`, naming the values it
-  takes, as the MCP's whole-element check does.
+  takes, as the MCP's whole-element check does. A value no longer offered but kept as stored (a font liveplanner's
+  pickers leave out, [Fonts](../004-interface-design/fonts.md) "Not offered in liveplanner") is refused by `set`,
+  while a whole element that carries it is accepted, so a plan read back writes again.
 - **Locks.** A changeset on a locked tab is refused, and so is an operation that changes a locked element or an
   element on a locked layer (`element_locked`).
 

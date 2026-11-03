@@ -149,6 +149,12 @@ A plan that already letters a board in an excluded face (its tab font, an elemen
 whose face it is) keeps the setting as stored, but its boards and cards draw their headings in the UI face instead.
 Other text on the canvas (a shape's label, a sticky) keeps the face: it is drawn large enough to read.
 
+**Agents follow the pickers' rule.** An excluded face is not offered to agents either: the font vocabulary agents
+write against (`ELEMENT_FIELD_VALUES.font`, `@liveplanner/project` `element-field-values.ts`) is the offered faces
+only, so a refusal names only those. A **whole element** (on `create_project`, `add_tab`, `update_project`'s
+`replace` and an ops `add`) may still carry an excluded face, so a plan read back writes again unchanged
+(`ELEMENT_FIELD_KEPT_VALUES`); an edit operation's **`set`** writes a new value and refuses it.
+
 ## Storage & behaviour
 
 - The model stores the stable **id** (`Element.font` / `Tab.font` in

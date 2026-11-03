@@ -289,8 +289,9 @@ export const mcpChangeBoard = mcpTool('change_board', {
   description:
     'Change a board’s title, its columns (every column by name, left to right: names it has keep their ' +
     'cards, new names are new columns), which columns count as done (doneColumns), the card types it ' +
-    'shows and takes, or how it sorts its cards (sortBy). A card shows on a board only when the board takes ' +
-    'its card type.',
+    'shows and takes, how it sorts its cards (sortBy), or its header widgets (widgets: add and remove, a ' +
+    'built-in by id or a field widget by its field and view, "Budget Sum"). A card shows on a board only when ' +
+    'the board takes its card type.',
   inputSchema: changeBoardShape,
   outputSchema: changeBoardOutput,
 });

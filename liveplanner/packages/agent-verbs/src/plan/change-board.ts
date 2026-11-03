@@ -1,5 +1,5 @@
-// Changing a Plan board (docs/specs/026-plan/plan-agents.md "Changing a board"): its title, its columns by name and
-// the card types it takes, as one changeset on the board element (reshapeBoard), revertible like any agent edit.
+// Changing a Plan board (docs/specs/026-plan/plan-agents.md "Changing a board"): its title, its columns by name,
+// the card types it takes and its header widgets, as one changeset on the board element (reshapeBoard), revertible like any agent edit.
 // A board is named by its title, or its element id when two share a title.
 import type { ApiClient } from '@liveworkspace/api-client';
 import {
@@ -13,6 +13,7 @@ import {
   CARD_FIELD_LABELS,
   SWIMLANE_BY,
   boardAddTypes,
+  boardFields,
   boardSortNamed,
   boardSortText,
   laneFieldsOf,
@@ -26,8 +27,10 @@ import {
   type BoardChange,
   type CardSize,
   type PlanBoardOutline,
+  widgetsOf,
 } from '@liveplanner/items';
 import { apiRefusalOf } from './api-refusal';
+import { changedWidgets, widgetName, type WidgetsChange } from './board-widget-change';
 import { joinBoardStatuses } from './brought-types';
 import { readPlanState } from './plan-state';
 import { tabPath } from '../verbs/shared';
@@ -43,6 +46,8 @@ interface ChangeBoardInput extends Omit<BoardChange, 'types' | 'swimlanes' | 'so
   // Card types by id or name; an empty list takes none (as the editor's last type turned off does), and
   // EVERY_TYPE shows every type again.
   types?: readonly string[] | typeof EVERY_TYPE;
+  // Header widgets to add and remove, by kind id or name (board-widget-change.ts).
+  widgets?: WidgetsChange;
 }
 
 // What a board that names no card types takes, in answers, and what change_board takes to show every type again.
@@ -59,6 +64,7 @@ type ChangeBoardResult =
       cardSize: CardSize;
       cardFields: string[];
       sortBy: string[];
+      widgets: string[];
       changesetId: string | null;
       rev: number | null;
     }
@@ -174,6 +180,14 @@ export async function changeBoard(
       state.plan.statuses,
     );
     if (!reshaped.ok) return reshaped;
+    // Field widgets read the fields of the types the board takes after this change; every field, readable or not,
+    // so one no widget reads is refused by name.
+    const fields = boardFields(reshaped.setup, state.plan.types, false);
+    if (input.widgets) {
+      const next = changedWidgets(widgetsOf(reshaped.setup), input.widgets, fields);
+      if (!next.ok) return next;
+      reshaped.setup = { ...reshaped.setup, widgets: next.widgets };
+    }
     const width = Math.max(element.width, planBoardWidthFor(reshaped.setup));
     const body: ChangesetRequest = {
       operations: [
@@ -217,6 +231,7 @@ export async function changeBoard(
         (f) => CARD_FIELD_LABELS[f as keyof typeof CARD_FIELD_LABELS],
       ),
       sortBy: boardSortText(reshaped.setup.sortBy, state.plan.types),
+      widgets: widgetsOf(reshaped.setup).map((w) => widgetName(w, fields)),
       changesetId: answer.changeset?.id ?? null,
       rev: answer.changeset?.rev ?? null,
     };
