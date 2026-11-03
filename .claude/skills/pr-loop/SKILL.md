@@ -1,6 +1,6 @@
 ---
 name: pr-loop
-description: One pass over your open PRs on the liveworkspace monorepo (every product) - fix red CI, act on comments, resolve conflicts, merge what is ready. Run on a timer with `/loop 30m /pr-loop`.
+description: One pass over your open PRs on the liveworkspace monorepo (every product) - fix red CI, act on comments, resolve conflicts, merge what is ready. Run with `/loop /pr-loop`: it paces itself by the size of the PR backlog.
 ---
 
 # PR loop: one pass
@@ -135,3 +135,31 @@ Say the order you used, and why, in the report.
 
 Short summary per PR touched: what was wrong, what you did, the pushed commit, and anything left for a person
 (decisions, PRs blocked on a label, CI not running).
+
+## 5. Pace the next pass
+
+Run without an interval (`/loop /pr-loop`), the loop picks its own wait at the end of every pass with
+ScheduleWakeup (1 to 60 minutes), so it runs often when the backlog is big and rarely when it is empty. Work it out
+afresh each pass from the open PR count in section 1 (step 2), re-listed just before scheduling:
+
+| Open PRs  | Next pass in |
+| --------- | ------------ |
+| 6 or more | 10 min       |
+| 3 to 5    | 15 min       |
+| 1 or 2    | 30 min       |
+| none      | 60 min       |
+
+Then adjust:
+
+- **CI isn't running** (spent minutes or a billing hold, section 1): 60 min whatever the count. More passes only
+  burn tokens.
+- **Nothing to do this pass** with PRs open (all mid-run, or all waiting on a person or a label): one row slower
+  for each such pass in a row, up to 60 min. The first pass that does something (a fix, a merge, a new PR) goes
+  straight back to the table.
+- **A Monitor from step 6 is still armed**: its events wake the loop first, so the wait is only a fallback; keep
+  the table's value.
+- Never go faster than 10 min. CI is the bottleneck (see "Velocity first"), so extra passes don't merge anything
+  sooner.
+
+Pass the same prompt (`/pr-loop`) back to ScheduleWakeup, with a `reason` naming the count, e.g. "7 open PRs, 2 mid-run".
+Started with a fixed interval (`/loop 30m /pr-loop`), keep that interval and skip this section.
