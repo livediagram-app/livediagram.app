@@ -14,7 +14,7 @@
 // holder, whatever presence id it happens to be wearing today. A refresh keeps
 // the baton; nobody else can take it, because nobody else was ever sent it.
 
-import type { AccessLevel } from '@livehuddle/api-schema';
+import { levelAtLeast, parseStoredLevel, type AccessLevel } from '@livehuddle/api-schema';
 
 /** How long a holder may be gone before the baton is released. */
 export const FACILITATOR_GRACE_MS = 90_000;
@@ -47,7 +47,8 @@ export type BatonMove = {
 
 // A view-role visitor cannot hold it: everything it governs writes to the
 // document, so a baton they could not use would be a trap rather than a role.
-const canHold = (asker: Pick<Asker, 'role'>) => asker.role === 'edit';
+// Compared through the ladder (share-roles.md I1), an unknown level reading as a Viewer's (I2).
+const canHold = (asker: Pick<Asker, 'role'>) => levelAtLeast(parseStoredLevel(asker.role), 'edit');
 
 /**
  * Take a free baton — or, as the owner, take one somebody else is holding.

@@ -94,6 +94,6 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   }
   // A drag preview (docs/specs/008-canvas/drag-preview.md) is presence, but shows elements moving: only
   // an editor's may reach anyone, so a viewer can never make others' elements appear to move.
-  if (opKind === 'drag-preview' && sender.role !== 'edit') return DROP;
+  if (opKind === 'drag-preview' && level !== 'edit') return DROP;
   return { kind: 'relay', presence, participantAnswers };
 }
