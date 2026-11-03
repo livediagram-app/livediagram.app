@@ -2,7 +2,7 @@
 
 // The Inbox (one-explorer-contracts.md "Inbox"): what is outstanding for the person, across every app or this one
 // (the header's filter), as a list and a reading pane. The list holds every row newest first under Today, Earlier
-// This Week and Older, with a filter bar over it (All, My Actions, Assigned by Me, Comments, Form Responses, each
+// This Week and Older, with a filter dropdown over it (All, My Actions, Assigned by Me, Comments, Form Responses, each
 // with its count, the choice kept per viewer on this device). Choosing a row shows it in the pane beside the list;
 // on a phone, and in the editor's narrow panel, the pane takes the list's place with Back (the browser's Back and
 // Escape too).
@@ -55,9 +55,10 @@ const PANE_STATE = 'liveworkspaceInboxPane';
 const isPaneState = (state: unknown) =>
   Boolean(state && typeof state === 'object' && (state as Record<string, unknown>)[PANE_STATE]);
 
-// `compact`: inside the editor's Explorer panel, under the pane's own header, with the small empty state. There the
-// filter is a dropdown (not the chip bar), drawn into `filterSlot`, a node in the panel's header row (null while it
-// mounts: nothing yet); without a slot it sits in a row of its own above the list.
+// `compact`: inside the editor's Explorer panel, under the pane's own header, with the small empty state. The filter
+// is a dropdown everywhere: in the panel drawn into `filterSlot`, a node in the panel's header row (null while it
+// mounts: nothing yet; without a slot it sits in a row of its own above the list); on the page, in the pane header's
+// row beside the app filter.
 export function InboxPane({
   onOpenNav,
   compact = false,
@@ -77,6 +78,8 @@ export function InboxPane({
     telemetry.current?.('Opened');
   }, []);
 
+  // On the page the filter dropdown is drawn into the header's row, as the panel's is (null while it mounts).
+  const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
   const narrow = useMediaQuery(INBOX_STACKED_QUERY);
   const stacked = compact || narrow;
   const density: InboxDensity = compact ? 'compact' : 'comfortable';
@@ -289,11 +292,12 @@ export function InboxPane({
   } else {
     const list = (
       <div className="flex min-h-0 min-w-0 flex-col" data-inbox-list="">
-        {compact ? (
-          <FilterDropdown filter={filter} counts={counts} onChange={setFilter} slot={filterSlot} />
-        ) : (
-          <FilterBar filter={filter} counts={counts} onChange={setFilter} />
-        )}
+        <FilterDropdown
+          filter={filter}
+          counts={counts}
+          onChange={setFilter}
+          slot={compact ? filterSlot : headerSlot}
+        />
         {visible.length === 0 ? (
           <div className="px-4 py-10 text-center">
             <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
@@ -376,7 +380,13 @@ export function InboxPane({
 
   return (
     <div data-explorer-view="inbox" ref={rootRef} onKeyDown={onRootKey} className="min-w-0">
-      {compact || paneStands ? null : <PaneHeader title="Inbox" onOpenNav={onOpenNav} />}
+      {compact || paneStands ? null : (
+        <PaneHeader
+          title="Inbox"
+          onOpenNav={onOpenNav}
+          actions={<span ref={setHeaderSlot} className="flex min-w-0 shrink-0" />}
+        />
+      )}
       {body}
       <p className="sr-only" aria-live="polite" data-inbox-live="">
         {message}
@@ -438,54 +448,9 @@ function Rows({
   return <>{out}</>;
 }
 
-/** All, My Actions, Assigned by Me, Comments, Form Responses, each with its count. On a phone a chip row that
- *  scrolls sideways inside its own strip, so the page never does. */
-function FilterBar({
-  filter,
-  counts,
-  onChange,
-}: {
-  filter: InboxFilter;
-  counts: Record<InboxFilter, number>;
-  onChange: (f: InboxFilter) => void;
-}) {
-  return (
-    <div
-      role="group"
-      aria-label="Inbox filters"
-      data-inbox-filters=""
-      className="flex min-w-0 shrink-0 gap-1.5 border-b border-slate-200 px-3 py-2 dark:border-slate-700 max-md:overflow-x-auto max-md:px-4 max-md:[scrollbar-width:none] md:flex-wrap"
-    >
-      {INBOX_FILTERS.map((f) => {
-        const on = f === filter;
-        return (
-          <button
-            key={f}
-            type="button"
-            aria-pressed={on}
-            data-inbox-filter={f}
-            onClick={() => onChange(f)}
-            className={`inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[13px] font-medium transition-colors duration-micro focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600 max-md:min-h-11 motion-reduce:transition-none min-h-8 ${
-              on
-                ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900'
-                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-slate-50'
-            }`}
-          >
-            {INBOX_FILTER_LABEL[f]}
-            <span
-              className={`tabular-nums ${on ? 'opacity-80' : 'text-slate-500 dark:text-slate-400'}`}
-            >
-              {counts[f]}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-/** The panel's filter: the same five choices, each with its count, as one quiet native select (keyboard, the phone's
- *  picker and a screen reader's name for free), drawn into the header row's slot, or above the list without one. */
+/** The filter: five choices (All, My Actions, Assigned by Me, Comments, Form Responses), each with its count, as one
+ *  quiet native select (keyboard, the phone's picker and a screen reader's name for free), drawn into the header row's
+ *  slot (the panel's and the page's), or above the list without one. */
 function FilterDropdown({
   filter,
   counts,

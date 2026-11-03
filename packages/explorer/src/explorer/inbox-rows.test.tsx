@@ -200,13 +200,13 @@ describe('an Inbox row', () => {
       const view = renderPane(createFakeIndex(), { compact });
       await settle();
       expect(screen.getByText('You’re all caught up')).toBeTruthy();
-      expect(screen.queryByRole('option')).toBeNull();
+      expect(screen.queryByRole('listbox')).toBeNull();
       view.unmount();
     }
   });
 });
 
-describe('the panel’s Inbox filter dropdown', () => {
+describe('the Inbox filter dropdown', () => {
   const seeded = () => {
     const index = createFakeIndex();
     index.inbox.actions.push(action);
@@ -254,10 +254,13 @@ describe('the panel’s Inbox filter dropdown', () => {
     slot.remove();
   });
 
-  it('leaves the page’s chip bar alone', async () => {
+  it('is the page’s filter too, in the pane header’s row, with no chip bar', async () => {
     renderPane(seeded());
     await settle();
-    expect(screen.getByRole('group', { name: 'Inbox filters' })).toBeTruthy();
-    expect(screen.queryByRole('combobox')).toBeNull();
+    expect(screen.queryByRole('group', { name: 'Inbox filters' })).toBeNull();
+    const select = screen.getByRole('combobox', { name: 'Inbox filter' });
+    // In the pane header's row beside the title, not above the list.
+    expect(select.closest('[data-inbox-list]')).toBeNull();
+    expect(select.closest('[data-explorer-view="inbox"]')).toBeTruthy();
   });
 });
