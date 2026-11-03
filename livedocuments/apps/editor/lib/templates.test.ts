@@ -159,7 +159,15 @@ describe('templateCanvasOverrides', () => {
       flow.blocks.filter((b) => b.type === 'paragraph' && b.style === style).map(text);
     expect(flow.blocks[0]).toMatchObject({ type: 'paragraph', style: 'title' });
     expect(flow.blocks[1]).toMatchObject({ type: 'paragraph', style: 'subtitle' });
-    expect(styled('h1')).toEqual(['Customer FAQ', 'Internal FAQ', 'Before the review']);
+    expect(styled('h1')).toEqual([
+      'The problem',
+      'The solution',
+      'How it works',
+      'Getting started',
+      'Customer FAQ',
+      'Internal FAQ',
+      'Before the review',
+    ]);
     expect(flow.blocks.filter((b) => b.type === 'pageBreak')).toHaveLength(1);
     expect(styled('quote')).toHaveLength(2);
     // Every block has its own id, the same on every build.

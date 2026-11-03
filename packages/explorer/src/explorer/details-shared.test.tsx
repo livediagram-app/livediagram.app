@@ -83,6 +83,15 @@ describe('Shared With Me', () => {
     await waitFor(() => expect(index.count('removeShared')).toBe(1));
   });
 
+  it('keeps aria-rowcount off its list, where the role does not allow it', async () => {
+    const index = createFakeIndex({
+      items: [makeItem(1, { sharedVia: 'c1', ownerId: 'user_ann' })],
+    });
+    page(index, { kind: 'shared' });
+    const row = await screen.findByText('Item 1');
+    expect(row.closest('ul')!.hasAttribute('aria-rowcount')).toBe(false);
+  });
+
   it('counts what is shared on its sidebar row', async () => {
     const index = createFakeIndex({
       items: [makeItem(1, { sharedVia: 'c1', ownerId: 'user_ann' })],
@@ -118,6 +127,20 @@ describe('the Details table', () => {
     page(index, { kind: 'all' });
     await screen.findByText('Zebra');
     expect(names()).toEqual(['f1', 'item-2', 'item-1']);
+  });
+
+  it('keeps aria-rowcount off the Details and List lists', async () => {
+    const index = createFakeIndex({ items: [makeItem(1, { title: 'Zebra' })] });
+    const view = page(index, { kind: 'all' });
+    expect((await screen.findByText('Zebra')).closest('ul')!.hasAttribute('aria-rowcount')).toBe(
+      false,
+    );
+    view.unmount();
+    localStorage.setItem('liveworkspace:explorer-view-mode', 'list');
+    page(index, { kind: 'all' });
+    expect((await screen.findByText('Zebra')).closest('ul')!.hasAttribute('aria-rowcount')).toBe(
+      false,
+    );
   });
 
   it('carries a sort chosen in the app’s own Explorer', async () => {

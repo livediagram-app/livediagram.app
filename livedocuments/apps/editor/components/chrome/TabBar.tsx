@@ -324,6 +324,10 @@ export function TabBar({
       <div
         data-editor-tabbar
         data-region="tabs"
+        // A region of its own: the cluster beside the tab strip (Search, Settings, the appearance) sits outside the
+        // strip's "Tab bar" navigation, and every control belongs to a landmark (axe "region").
+        role="region"
+        aria-label="Bottom bar"
         // The app's own colours, whatever the tab's style (docs/specs/011-theme/canvas-and-theme-dialog.md).
         data-app-chrome
         // Clear of the home indicator and a landscape notch (lib/safe-area): the 48px row sits

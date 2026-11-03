@@ -94,6 +94,15 @@ them, so an emoji is never cut in half.
 The one small
 known gap is the Callout body's indent, a few pixels off the canvas's.
 
+## File names
+
+A downloaded export is named `<document> - <tab>` (and `- selection`, or the page's label for a page
+export), run through `sanitizeFilename` (`apps/editor/lib/export-pages.ts`) so it is safe on Windows,
+macOS and Linux: brackets `() [] {}` are dropped, any other character that is not a letter, digit, dot,
+dash, underscore or space (a colon, slash, question mark) becomes a dash, repeated dashes collapse to
+one, and dashes left at either end are trimmed. A page labelled "Poster (9:16)" downloads as
+`Poster 9-16.png`, never `Poster -9-16-.png`.
+
 ## Checking it
 
 `packages/document/src/export-consistency.test.ts` holds the wiring rather than

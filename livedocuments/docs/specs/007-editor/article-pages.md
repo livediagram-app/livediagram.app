@@ -102,6 +102,12 @@ livedocuments file that holds tabs ([Document](../006-document/document.md)). Th
 - **Empty blocks** show a faint placeholder to someone writing: the title "Title", a heading
   "Heading 1", a list "List", an empty article's first paragraph after the title "Start
   writing, or press / for blocks".
+- **Empty headings and header cells are named for a screen reader.** The title is drawn as the page's
+  h1 and Heading 1, 2 and 3 as h2, h3 and h4. An empty one carries its placeholder as its accessible
+  name ("Title", "Heading 1") to someone writing, and is hidden from a screen reader for anyone who
+  only reads, so a blank title never leaves an empty heading. An empty table header cell is named
+  "Column header" the same way. The names come from a decoration, so they go as soon as the block holds text. A
+  template's headings step down one level at a time, never from the title straight to Heading 2.
 
 ### Text formatting (runs)
 
