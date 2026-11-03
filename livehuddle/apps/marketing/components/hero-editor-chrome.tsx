@@ -122,10 +122,12 @@ export function ToolbarMenuButton({ tab }: { tab: string }) {
       <span className="flex h-6 w-6 items-center justify-center">
         <MenuIcon size={11} />
       </span>
-      {/* The tab's name, where the canvas is wide enough that it clears the strip. */}
+      {/* The tab's name, where the canvas is wide enough that it clears the strip. Its trailing 8px balances the menu
+          glyph's 24px box on the other side, so the chip's ink sits centred (docs/specs/004-interface-design/
+          optical-alignment.md). */}
       <span className="hidden items-center @[720px]:flex">
         <span aria-hidden className="mx-0.5 h-4 w-px bg-slate-200 dark:bg-slate-700" />
-        <span className="text-optical-line px-1.5 text-[10px] font-medium text-slate-700 dark:text-slate-200">
+        <span className="text-optical-line pl-1.5 pr-2 text-[10px] font-medium text-slate-700 dark:text-slate-200">
           {tab}
         </span>
       </span>

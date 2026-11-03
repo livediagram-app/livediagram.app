@@ -10,7 +10,6 @@
 
 import {
   APP_ITEMS,
-  APP_NAMES,
   LOCAL_PORTS,
   workspaceOriginFor,
   siteOfApp,
@@ -21,10 +20,15 @@ import {
 
 const bareHost = (host: string) => host.toLowerCase().replace(/^(?:www|staging)\./, '');
 
+// Every app the platform registered, a held one too (liveworkspace/docs/specs/002-architecture/integrating-an-app.md
+// "Registered before launch"): its own address is no list, and the Explorer its router serves there is its page, read
+// with its session, before launch as after.
+const PAGE_APPS = Object.keys(APP_ITEMS) as AppName[];
+
 /** Every address an app serves the Explorer on: its live host and its local router's port. */
 export function appHosts(): Record<string, AppName> {
   const hosts: Record<string, AppName> = {};
-  for (const app of APP_NAMES) {
+  for (const app of PAGE_APPS) {
     const site = APP_ITEMS[app].site;
     hosts[site] = app;
     hosts[`localhost:${LOCAL_PORTS[site]}`] = app;
@@ -41,8 +45,21 @@ const PORT_BLOCK = 100;
 function appOfLocalPort(host: string): AppName | null {
   const match = /^(?:localhost|127\.0\.0\.1):(\d+)$/.exec(host);
   if (!match) return null;
+  const named = namedLocalApp();
+  if (named) return named;
   const block = Math.floor(Number(match[1]) / PORT_BLOCK) * PORT_BLOCK;
-  return APP_NAMES.find((app) => LOCAL_PORTS[APP_ITEMS[app].site] === block) ?? null;
+  return PAGE_APPS.find((app) => LOCAL_PORTS[APP_ITEMS[app].site] === block) ?? null;
+}
+
+// An app's E2E stack names the app it stands in for (`<meta name="liveworkspace-app" content="livehuddle">`), so its
+// suites run on any port, outside the app's block too. Read for local hosts only (appOfLocalPort): a live host
+// decides alone.
+const LOCAL_APP_META = 'meta[name="liveworkspace-app"]';
+
+function namedLocalApp(): AppName | null {
+  if (typeof document === 'undefined') return null;
+  const named = document.querySelector(LOCAL_APP_META)?.getAttribute('content') ?? '';
+  return PAGE_APPS.find((app) => app === named) ?? null;
 }
 
 /** The app whose address `host` is (with or without `www.` or `staging.`), or null for liveworkspace's own. */

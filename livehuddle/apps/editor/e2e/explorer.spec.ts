@@ -49,7 +49,7 @@ const indexWrite = (page: Page, method: string, path: string) =>
 
 async function openExplorerPanel(page: Page) {
   await page.getByRole('button', { name: 'Explorer', exact: true }).click();
-  const current = page.getByRole('region', { name: 'Current canvas' });
+  const current = page.getByRole('region', { name: 'Current space' });
   await expect(current).toBeVisible();
   return current;
 }
@@ -153,10 +153,10 @@ test('This Browser lists the canvases kept here, opens one, and deletes one afte
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });
 
   // Nothing else holds it, so Delete asks first, then removes it for good, and the section goes with it. The index
-  // never holds a canvas kept here, but the panel still shows its Current canvas card, read from This Browser.
+  // never holds a canvas kept here, but the panel still shows its Current space card, read from This Browser.
   await page.getByRole('button', { name: 'Explorer', exact: true }).click();
   await rail.getByRole('button', { name: 'This Browser (1)' }).click();
-  await expect(page.getByRole('region', { name: 'Current canvas' })).toHaveCount(1);
+  await expect(page.getByRole('region', { name: 'Current space' })).toHaveCount(1);
   await page.getByRole('button', { name: 'Delete Kept on this laptop' }).click();
   const confirm = page.getByRole('dialog', { name: 'Delete this space from this browser?' });
   await expect(confirm).toBeVisible();

@@ -6,16 +6,17 @@
 // inline string.
 
 import { silentCookiesForHint, silentSignInBootScript } from '@liveworkspace/auth-client/silent';
-import { APP_NAMES } from '@liveworkspace/sites';
+import type { AppName } from '@liveworkspace/sites';
 import { appHosts } from './page-app';
 import { SIGNED_IN_HINTS } from './app-session';
 
 /** The inline script: `{host: app}` read from the address, then that app's own bounce, with the API on its origin. */
 export function explorerSilentSignInScript(): string {
   const hosts = appHosts();
-  const apps = APP_NAMES.flatMap((app) => {
+  // Every app whose address the page can be on (appHosts), a held app's too.
+  const apps = [...new Set(Object.values(hosts))].flatMap((app: AppName) => {
     const hint = SIGNED_IN_HINTS[app];
-    return hint && Object.values(hosts).includes(app) ? [{ app, hint }] : [];
+    return hint ? [{ app, hint }] : [];
   });
   if (apps.length === 0) return '';
   const branches = apps

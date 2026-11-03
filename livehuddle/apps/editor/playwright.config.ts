@@ -12,12 +12,14 @@ const CI_WORKERS = 4;
 // (`pnpm test:e2e:signed-in`) on their own ports, so a guest stack already up on :3502 is never
 // mistaken for it.
 const signedIn = process.env.E2E_SIGNED_IN === '1';
+// Every port in livehuddle's own block (3500 onward, the root AGENTS.md), its Workers' on 9xxx beside the dev api's
+// 9087, so a livediagram suite running on the same machine never collides with these.
 const SIGNED_IN_PORTS = {
-  live: '3115',
-  api: '8115',
-  marketing: '3116',
-  index: '8117',
-  media: '8116',
+  live: '3515',
+  api: '9115',
+  marketing: '3516',
+  index: '9117',
+  media: '9116',
 };
 // The workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md "Testing") needs the
 // NEXT_PUBLIC_E2E_AUTH export and the stack acting as the accounts Worker, so it runs as its own invocation
@@ -26,11 +28,11 @@ const SIGNED_IN_PORTS = {
 // stack does not start yet: until it does, the suite stops at its first mint.
 const workbench = process.env.E2E_WORKBENCH === '1';
 const WORKBENCH_PORTS = {
-  live: '3121',
-  api: '8121',
-  marketing: '3122',
-  index: '8118',
-  media: '8122',
+  live: '3521',
+  api: '9121',
+  marketing: '3522',
+  index: '9118',
+  media: '9122',
 };
 const BASE_URL =
   process.env.E2E_BASE_URL ??

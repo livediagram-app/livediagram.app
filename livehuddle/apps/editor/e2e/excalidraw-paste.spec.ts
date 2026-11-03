@@ -96,14 +96,14 @@ async function pasteSample(page: Page, path: string) {
 test.use({ permissions: ['clipboard-read', 'clipboard-write'] });
 
 for (const colorScheme of ['dark', 'light'] as const) {
-  test.describe(`on a ${colorScheme} whiteboard`, () => {
+  test.describe(`on a ${colorScheme} Workshop board`, () => {
     test.use({ colorScheme, viewport: { width: 1400, height: 900 } });
 
     test('an Excalidraw copy lands selected, says what changed, and undoes in one step', async ({
       page,
       pageErrors,
     }, testInfo) => {
-      const sample = await pasteSample(page, '/new?template=whiteboard');
+      const sample = await pasteSample(page, '/new?template=blank-session');
       // Selected: the quick style panel restyles the whole paste at once.
       await expect(page.getByRole('region', { name: 'Quick style' })).toBeVisible();
       // The group is the one change this copy carries.
@@ -124,14 +124,14 @@ for (const colorScheme of ['dark', 'light'] as const) {
   });
 }
 
-test.describe('on a diagram tab', () => {
+test.describe('on a Start Blank board', () => {
   test.use({ colorScheme: 'dark', viewport: { width: 1400, height: 900 } });
 
-  test('an Excalidraw copy lands as diagram elements', async ({ page, pageErrors }, testInfo) => {
+  test('an Excalidraw copy lands as native elements', async ({ page, pageErrors }, testInfo) => {
     await pasteSample(page, '/new?blank=1');
     await page.keyboard.press('Escape');
     await page.keyboard.press('Shift+!');
-    await page.screenshot({ path: testInfo.outputPath('diagram-dark.png') });
+    await page.screenshot({ path: testInfo.outputPath('blank-dark.png') });
     expectNoPageErrors(pageErrors);
   });
 });
@@ -140,7 +140,7 @@ test.describe('ordinary text', () => {
   test.use({ colorScheme: 'dark' });
 
   test('is not mistaken for an Excalidraw copy', async ({ page, pageErrors }) => {
-    await page.goto('/new?template=whiteboard');
+    await page.goto('/new?template=blank-session');
     await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
     await dismissQuickTour(page);
     await page.evaluate(() => navigator.clipboard.writeText('{"type":"excalidrawish"}'));
@@ -156,7 +156,7 @@ test.describe('dropping an Excalidraw file', () => {
   test.use({ colorScheme: 'dark', viewport: { width: 1400, height: 900 } });
 
   test('lands its scene where it is released', async ({ page, pageErrors }) => {
-    await page.goto('/new?template=whiteboard');
+    await page.goto('/new?template=blank-session');
     await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
     await dismissQuickTour(page);
     const sample = sampleCopy();
@@ -173,7 +173,7 @@ test.describe('dropping an Excalidraw file', () => {
   });
 
   test('refuses another file and says so', async ({ page, pageErrors }) => {
-    await page.goto('/new?template=whiteboard');
+    await page.goto('/new?template=blank-session');
     await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
     await dismissQuickTour(page);
     const drop = await page.evaluateHandle(() => {

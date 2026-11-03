@@ -7,7 +7,7 @@ on:
   workflow_call:
     inputs:
       product:
-        description: The product's folder (livediagram, liveplanner, livedesign, livedocuments).
+        description: The product's folder (livediagram, liveplanner, livedesign, livedocuments, livehuddle).
         type: string
         required: true
       editor:

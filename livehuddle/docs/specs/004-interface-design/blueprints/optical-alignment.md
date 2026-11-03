@@ -244,7 +244,7 @@ center`, or shrink-wrapped content (its in-flow children, text and gaps fill the
 **Screens** (each `expect.soft(failures).toEqual([])` and `measured > 0`): wizard steps 1 and 2; the
 editor with a seeded diagram and its default panels, a shape selected, Settings, Share; the Join dialog;
 the Explorer; help home, a category and an article; the Community gallery; marketing home and a feature page. Help
-and the Community are same-origin under the e2e stack; marketing is on `E2E_MARKETING_PORT` (default `3113`). Against
+and the Community are same-origin under the e2e stack; marketing is on `E2E_MARKETING_PORT` (default `3513`). Against
 dev servers: `E2E_HELP_URL`, `E2E_COMMUNITY_URL`, `E2E_MARKETING_URL`. The telemetry dashboard is liveworkspace's,
 audited there. A site that is not built fails with the build command to run.
 
