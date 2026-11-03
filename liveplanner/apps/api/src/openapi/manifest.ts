@@ -829,6 +829,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
+    path: '/projects/{id}/items/import',
+    segment: 'projects',
+    tag: 'Items',
+    summary:
+      'One part of a whole import: up to 200 items. Every part before the last is held aside (202, nothing written); the last writes every held item and its own in one transaction, so the import lands whole or not at all. Parts left waiting go after an hour. Needs edit access to the whole plan.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    requestSchema: 'ItemsImportRequest',
+    responseSchema: 'ItemsResponse',
+    statuses: [201, 202, 400, 401, 403, 404, 409, 410, 413],
+  },
+  {
+    method: 'POST',
     path: '/projects/{id}/items/patches',
     segment: 'projects',
     tag: 'Items',

@@ -7,7 +7,6 @@ import {
   ITEM_TYPE_CATALOGUE_VERSION,
   ITEMS_MAX,
   assignedPeople,
-  createBatches,
   planOutline,
   trackerDoneMessage,
   type Item,
@@ -25,7 +24,8 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { apiCreateProject, apiTeamMembers } from '@/lib/api-client';
 import { writeItem } from '@/lib/api/items';
-import { offlineCreateProject } from '@/lib/offline/offline-store';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { offlineCreateProject, offlineDeleteProject } from '@/lib/offline/offline-store';
 import { offlineWriteItem } from '@/lib/offline/offline-items';
 import { seedAuthor } from '@/lib/seed-author';
 import { newTabSeed } from '@/lib/new-tab-seed';
@@ -53,8 +53,6 @@ export const TRACKER_IMPORT_FAILED = 'Couldn’t import those cards. Try again.'
 
 // How long an import waits for the item store, as a JSON import does (usePlanTabImport).
 const TRACKER_READY_WAIT_MS = 10_000;
-
-const bytesOf = (value: unknown) => new TextEncoder().encode(JSON.stringify(value)).length;
 
 // The joined members of the plan's team with an email, by that email (lower-cased); none on a failure.
 async function teamMembersOf(ownerId: string, teamId: string): Promise<TrackerMember[]> {
@@ -154,13 +152,13 @@ export function useTrackerImport(opts: {
     o.commitTabs((ts) => insertTabsAfter(ts, o.activeId, [tab]));
     o.markTabLoaded(tab.id);
     o.openTab(tab.id);
-    // Every card in one write, each with its Imported comments thread: one undo step.
+    // Every card in one write, each with its Imported comments thread, landing whole or not at all: one undo step.
     const creates = withImportedThreads(plan.creates, {
       projectId: o.projectId,
       sourceName: plan.sourceName,
       now: Date.now(),
     });
-    const ok = await o.write({ kind: 'create', creates });
+    const ok = await o.write({ kind: 'create', creates, whole: true });
     if (!ok) return { ok: false, error: TRACKER_IMPORT_FAILED };
     track('Plan', 'Imported', plan.sourceName);
     o.notify(trackerDoneMessage(plan.preview, plan.creates.length));
@@ -181,24 +179,32 @@ export function useTrackerImport(opts: {
       now: Date.now(),
     });
     const head = { id, name: plan.title, tabs: [tab], itemTypes };
+    const by = o.self ?? (await seedAuthor(o.selfParticipant));
+    const write = { kind: 'create', creates, whole: true } as const;
     if (o.signedIn) {
-      // One create carries the tab, the card type and the cards its request has room for; the rest follow it.
-      const [first = [], ...rest] = createBatches(creates, bytesOf(head));
-      await apiCreateProject(o.ownerId, { ...head, intent: creationIntentOf(tab), items: first });
-      if (rest.length)
+      // The plan with its tab and card type, then every card landing whole; a failure deletes the plan for good.
+      await apiCreateProject(o.ownerId, { ...head, intent: creationIntentOf(tab) });
+      try {
         await writeItem(
           { ownerId: o.ownerId, projectId: id, shareCode: null, tabId: null },
-          { kind: 'create', creates: rest.flat() },
-          o.self ?? (await seedAuthor(o.selfParticipant)),
+          write,
+          by,
         );
+      } catch (err) {
+        await indexClient.deleteItem(id, { permanent: true }).catch((gone: unknown) => {
+          console.warn('[tracker-import] new plan not deleted', { error: String(gone) });
+        });
+        throw err;
+      }
     } else {
-      // A guest's new plan is in This Browser, as New makes it (save-locations.md).
+      // A guest's new plan is in This Browser, as New makes it (save-locations.md); a failure deletes it.
       await offlineCreateProject(head, Date.now());
-      await offlineWriteItem(
-        id,
-        { kind: 'create', creates },
-        o.self ?? (await seedAuthor(o.selfParticipant)),
-      );
+      try {
+        await offlineWriteItem(id, write, by);
+      } catch (err) {
+        await offlineDeleteProject(id).catch(() => {});
+        throw err;
+      }
     }
     track('Plan', 'Imported', plan.sourceName);
     o.openProject(id);

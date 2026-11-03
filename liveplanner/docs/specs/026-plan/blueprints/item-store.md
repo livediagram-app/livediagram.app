@@ -278,6 +278,7 @@ All under `/projects/:id/items`, auth `guest-or-clerk`, token-usable, registered
 | GET    | `/items[?tabId=]`     | read |                                                              | `ItemsResponse`     |
 | POST   | `/items`              | edit | `ItemCreate`                                                 | 201 `ItemResponse`  |
 | POST   | `/items/bulk`         | edit | `{ items: ItemCreate[] }` ≤ `ITEM_BULK_MAX`                  | 201 `ItemsResponse` |
+| POST   | `/items/import`       | edit | `{ importId, part, parts, items }` ≤ `ITEM_BULK_MAX` a part  | 202 / 201           |
 | POST   | `/items/patches`      | edit | `{ items: ({ id } & ItemPatch)[], undo? }` ≤ `ITEM_BULK_MAX` | `ItemsResponse`     |
 | POST   | `/items/moves`        | edit | `{ items: ({ id } & ItemMove)[], undo? }` ≤ `ITEM_BULK_MAX`  | `ItemsResponse`     |
 | POST   | `/items/:itemId`      | edit | `ItemPatch`                                                  | `ItemResponse`      |
@@ -286,6 +287,11 @@ All under `/projects/:id/items`, auth `guest-or-clerk`, token-usable, registered
 | DELETE | `/items/:itemId`      | edit |                                                              | 204                 |
 
 Comment writes (below, "Comments") add four more under `/items/:itemId/comments`.
+
+`/items/import` is a whole import: its parts are held in the plan's SQLite (`item_import_parts`, 202
+`{ staged }`) and the last one lands every card, with its threads, in one transaction (201 `ItemsResponse`), or
+none (blueprint [tracker-import.md](tracker-import.md) "A whole import"). Its other answers: `409 import_incomplete`
+(a part missing at the last), `413 items_full` (past the plan's room, held parts counted), and those of `/items/bulk`.
 
 - Tab-scoped grants: GET requires `tabId` matching the grant and filters to `itemIdsShownOnTab` of that tab's
   stored elements; writes require `tabId` (query) and the target id in that set (create: always allowed into the
@@ -680,7 +686,8 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
 
 - `apps/editor/lib/api/items.ts`: `fetchItems(scope)` and `writeItem(scope, write, by)` (one `ItemWrite`: create,
   patch, patches, move, moves (to `/items/moves`, in batches of `ITEM_BULK_MAX` like patches), vote, delete; a create of many goes to `/items/bulk` and a patch of many to
-  `/items/patches`, each in batches of `ITEM_BULK_MAX`); each dispatches
+  `/items/patches`, each in batches of `ITEM_BULK_MAX`; a `whole` create, an import's, goes to `/items/import` in
+  parts and lands all at once or not at all); each dispatches
   `isOfflineId(docId)` to `lib/offline/offline-items.ts`, which applies `applyItemWrite` to the record's store
   inside `serializeOfflineWrite`.
 - `apps/editor/hooks/plan/usePlanItems.ts`: `{ store, items, status, self, write, receive, refetch }`. `self` is the

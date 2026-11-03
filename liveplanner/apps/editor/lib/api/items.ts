@@ -2,11 +2,13 @@
 // Each call dispatches an offline project to its local store (../offline/offline-items) and a
 // cloud project to the api. A session on a tab-scoped link names its tab on every call.
 
-import type { ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
+import type { ItemResponse, ItemsImportStaged, ItemsResponse } from '@liveplanner/api-schema';
 import {
   ITEM_BULK_MAX,
   createBatches,
+  importParts,
   type Item,
+  type ItemCreate,
   type ItemPerson,
   type ItemStoreState,
   type ItemWrite,
@@ -147,6 +149,24 @@ async function postInChunks(
 
 const one = (r: ItemResponse): ItemWriteAnswer => ({ upserts: [r.item], removed: [], rev: r.rev });
 
+// An import's cards, landed whole (docs/specs/026-plan/tracker-import.md "The import"): sent as the parts of one
+// import, which the plan holds aside until the last lands them all in one transaction. A failure at any part
+// throws with nothing landed, so the store's reload shows none of them.
+async function importWhole(
+  scope: ItemsScope,
+  creates: readonly ItemCreate[],
+): Promise<ItemWriteAnswer> {
+  const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };
+  for (const part of importParts(crypto.randomUUID(), creates)) {
+    const r = await post<ItemsResponse | ItemsImportStaged>(scope, '/import', part, 'items import');
+    if ('items' in r) {
+      answer.upserts = r.items;
+      answer.rev = r.rev;
+    }
+  }
+  return answer;
+}
+
 // Sends one write. `by` signs an offline write; the api signs a cloud one itself.
 // A patch or move body, flagged `undo: true` when it is an undo or redo (the api then lets it into a status the
 // card's type leaves out, docs/specs/026-plan/item-types.md "An item type").
@@ -163,6 +183,7 @@ export async function writeItem(
   const id = 'id' in write ? `/${encodeURIComponent(write.id)}` : '';
   switch (write.kind) {
     case 'create': {
+      if (write.whole) return importWhole(scope, write.creates);
       if (write.creates.length === 1)
         return one(await post(scope, '', write.creates[0], 'item create'));
       const answer: ItemWriteAnswer = { upserts: [], removed: [], rev: -1 };

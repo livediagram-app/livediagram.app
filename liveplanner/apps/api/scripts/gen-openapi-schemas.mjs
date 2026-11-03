@@ -57,6 +57,8 @@ export const ROOT_TYPES = [
   'CardThreadRenameRequest',
   'CardThreadAddCardRequest',
   'ItemsBulkRequest',
+  'ItemsImportRequest',
+  'ItemsImportStaged',
   'ItemsPatchRequest',
   'ItemsMoveRequest',
   'ItemsTallyRequest',

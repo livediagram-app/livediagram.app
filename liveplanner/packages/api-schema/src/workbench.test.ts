@@ -121,6 +121,7 @@ describe('workbenchRouteVerdict', () => {
     ['GET', 'projects/doc1/items'],
     ['POST', 'projects/doc1/items'],
     ['POST', 'projects/doc1/items/bulk'],
+    ['POST', 'projects/doc1/items/import'],
     ['POST', 'projects/doc1/items/i1'],
     ['POST', 'projects/doc1/items/i1/move'],
     ['POST', 'projects/doc1/items/i1/vote'],

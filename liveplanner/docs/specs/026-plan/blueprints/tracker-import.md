@@ -17,6 +17,7 @@ Asana, Jira or Linear export, planning what it makes, and writing it from the ed
 | what it makes     | `TrackerImportPlan { preview, type, columns, creates, room }` from `planTrackerImport(board, ctx)` (`tracker-plan.ts`)                                    |
 | imported comments | `importedCommentsThread(input)` (`packages/project/src/imported-thread.ts`)                                                                               |
 | the writes        | editor `useTrackerImport` (`apps/editor/hooks/plan/useTrackerImport.ts`); agents `importTrackerBoard` (`packages/agent-verbs/src/plan/tracker-import.ts`) |
+| a whole import    | `POST /items/import` parts (`importParts`, `packages/items/src/create-batches.ts`), landed by `apps/api/src/routes/item-import-route.ts`                  |
 | the tool rows     | `TOOL_ROWS` (`apps/editor/components/dialogs/import/import-options.tsx`) in the one Import dialog, `ImportTabDialog`                                      |
 
 ## Package `@liveplanner/items`: `src/tracker-import/` (pure)
@@ -138,6 +139,36 @@ false`, `updatedAt` the last comment's; comments past `THREAD_BYTES` are dropped
   `POST /projects` `items[].threads`, inserted by `cardBackOnThreads` (a thread `home` = this plan, not held → inserted
   on the card) with no `afterCommentPosted`: no mention, Inbox participant or email.
 
+### A whole import (`POST /items/import`, `apps/api/src/routes/item-import-route.ts`)
+
+The import's cards land in one transaction of the plan's Durable Object, however many requests carry them
+(docs/specs/026-plan/tracker-import.md "The import"). Gate `edit` on the whole plan (a tab-scoped grant is refused,
+as `/items/bulk`).
+
+- Body `ItemsImportRequest { importId, part, parts, items }` (`packages/api-schema/src/items.ts`; the parts made by
+  `importParts(importId, creates, firstBytes?)` over `createBatches`): `importId` `/^[A-Za-z0-9_-]{8,64}$/`, `part`
+  `0 ≤ part < parts`, `parts ≤ ITEMS_MAX`, `items` 1 to `ITEM_BULK_MAX` creates. Each create is read as `/items/bulk`
+  reads it (`readCreate`, Calculated and Time Spent refusals, required fields); its threads must be new threads homed
+  in this plan (an import's are, `withImportedThreads`; `field_value_invalid` otherwise).
+- **A part before the last** is held aside, nothing written to the cards: its reads go into `item_import_parts`
+  (`plan_id, import_id, part, seq, body, created_at`; plan schema step 13, `ITEM_IMPORTS_SCHEMA` in
+  `apps/api/src/plan-room/item-imports-schema.ts`; statements in `apps/api/src/db/item-imports.ts`) as one chunked
+  insert, replacing a part sent again. 202 `ItemsImportStaged { staged }` (cards held for this import). A part past
+  the plan's room (held + this + stored `> ITEMS_MAX`) is refused `413 items_full` and the import's parts cleared.
+- **The last part** lands the import: every part must be held (`409 import_incomplete` otherwise), the held reads and
+  its own are checked for room (`413 items_full`) and Blocked By loops (`blockersRefused`, once over all of them),
+  then made as `createMany` makes cards (`buildCreates`: free keys, one placer) and written in **one
+  `PLAN_DB.batch`**: the import's held parts deleted, then for each `ITEM_BULK_MAX` of the cards a store rev raise
+  and their rows through the copy's chunked insert (`insertItemRowsStatements`, `plan-room/plan-content.ts`,
+  1 MB JSON chunks), then every thread with its link (`insertThreadStatement`, `insertLinkStatement`). A throw rolls
+  all of it back; a lost key race retries up to `ITEM_WRITE_RETRIES`, then `409 item_busy` (the parts kept, so a
+  resend of the last part can land it). Any other refusal of the last part clears the import's parts.
+- Once landed: the room hears an `items` op per `ITEM_BULK_MAX` cards (its own rev, in order) and a `threads` op per
+  the same cards; history is appended once (`appendItemHistory`, untagged, or `ai` from a token: never `undo`, best
+  effort as for every write). 201 `ItemsResponse` with every card.
+- Abandoned parts: every import request first deletes held parts older than `ITEM_IMPORT_HOLD_MS` (one hour), and
+  the plan's daily upkeep (`PlanRoom.maintain`) does the same.
+
 ## Agents (`packages/agent-verbs`)
 
 - `packages/agent-verbs/src/plan/tracker-import.ts` `importTrackerBoard(api, input, client)`, `input: { content,
@@ -147,11 +178,12 @@ fileName?, source?, projectId?, name?, preview? }`: `readTrackerInput` refuses a
   - With `projectId`: `readPlanState`, then `planTrackerImport` with `members: []`: an API token never reads a team's
     people, so an agent matches people by name only. Preview answers here. Not `fits`: `items_full` with the reason.
     Else: `PUT item-types` with the merged type (`expectedRev`, retried on `item_types_stale` up to
-    `CARD_TYPES_SAVE_ATTEMPTS`), then a new tab's changeset (`CLIENT_HEADER`), then `POST /items/bulk` in
-    `createBatches` writes with `withImportedThreads`.
+    `CARD_TYPES_SAVE_ATTEMPTS`), then a new tab's changeset (`CLIENT_HEADER`), then the cards with
+    `withImportedThreads` as one whole import (`postImport`: `importParts` to `POST /items/import`). A failure there
+    removes the tab it made (`DELETE /tabs/:tabId`, best effort) and answers the failure.
   - Without: a new plan id, `planTrackerImport` against no types and no items, then one `POST /projects` carrying the
-    tab, the card type and the first `createBatches` write (sized with the create's own bytes), and the rest through
-    `POST /items/bulk`.
+    tab and the card type, then the cards as one whole import. A failure there deletes the new plan
+    (`DELETE /projects/:id?permanent=1`, best effort) and answers the failure.
   - Answers `{ ok, written, projectId, newPlan, tabId, preview, summary }`; refusals through `apiRefusalOf`.
 - Verb `board.import` (`packages/agent-verbs/src/verbs/board-import.ts`): `file` positional (`ctx.readInput`),
   `--project`, `--from`, `--name`, `--preview`; prints the summary with the plan's link, a preview as its lines.
@@ -194,10 +226,14 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
   item store (`waitUntil`), reads members (`apiTeamMembers` when signed in and the plan has a team; a failure reads
   none), people and statuses; `contextFor('plan')` is an empty plan. `importPlan(…, 'tab')`: `saveType` for the
   merged type when it changed, commits a new Board tab (`trackerBoardTab`: the board Detailed) after the active one,
-  marks it loaded and opens it, then `write({ kind: 'create', creates: withImportedThreads(…) })`, each a step of
-  Undo. `importPlan(…, 'plan')`: signed in, `apiCreateProject` with the tab, the catalogue and the first
-  `createBatches` write, then `writeItem` for the rest; a guest, the plan is made in This Browser
-  (`offlineCreateProject`, `offlineWriteItem`); then it opens. Telemetry `Plan` · `Imported` · the source's name.
+  marks it loaded and opens it, then `write({ kind: 'create', creates: withImportedThreads(…), whole: true })`, each
+  a step of Undo. A `whole` create (`ItemWrite`, `packages/items/src/store.ts`) goes to the api as one whole import
+  (`lib/api/items.ts` `writeItem`: `importParts` to `POST /items/import`), never in `/items/bulk` writes; on a
+  failure nothing landed, so the store reloads without the cards. `importPlan(…, 'plan')`: signed in,
+  `apiCreateProject` with the tab and the catalogue, then `writeItem` with the cards as one whole import; a failure
+  deletes the plan for good (`indexClient.deleteItem(id, { permanent: true })`). A guest, the plan is made in
+  This Browser (`offlineCreateProject`, `offlineWriteItem`, one local write); a failure deletes it
+  (`offlineDeleteProject`). Then it opens. Telemetry `Plan` · `Imported` · the source's name.
   Any failure: "Couldn’t import those cards. Try again."
 - Entry points: none of its own. The tab menu's `Import…` (`TabPortalMenu`, lit by `canImport`: TabBar's
   `canImportFromTool || !intoTabOf(tab).blocked`) and the palette's `import` command open the one dialog; the tool
@@ -215,7 +251,8 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
 | More than 12 statuses                      | folded into `Other`, counted                                                                 |
 | A card's fields over 16 KB                 | `fitFields`, counted `shortened`                                                             |
 | Item store never loads                     | nothing written; "Couldn’t import those cards. Try again."                                   |
-| A write fails after the type or tab landed | they stay (undo takes them), the dialog shows the failure                                    |
+| A card write fails part way                | no card lands (one transaction); held parts cleared, or swept within the hour                |
+| A write fails after the type or tab landed | editor: they stay (undo takes them); agents: the tab is removed; a new plan is deleted       |
 | Comments past caps                         | newest kept, rest counted                                                                    |
 | Attachment with no http(s) link            | left out, counted `attachmentsNoLink`                                                        |
 | A source given that is not the file's      | agents: `source_mismatch`                                                                    |
@@ -236,10 +273,12 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
 - Reading and planning are linear in the file: lists, members, checklists and comments are indexed by id once (maps),
   never searched per card. Worst case (2,000 cards, 20,000 comments, 50 checklist items each) is held under a
   budget by `tracker-import.perf.test.ts` (well under a second on CI).
-- Writes are batched: one type save, one tab, then bulk writes of up to `ITEM_BULK_MAX` cards and
+- Writes are batched: one type save, one tab, then import parts of up to `ITEM_BULK_MAX` cards and
   `ITEM_WRITE_BYTES` (6 MB, `packages/items/src/create-batches.ts` `createBatches`) each, under the api's 8 MB body
-  cap, threads inside them; the editor's create write is cut the same way.
-  The api inserts each card's thread one statement at a time inside its request (`cardBackOnThreads`).
+  cap, threads inside them. The parts are held in the plan's SQLite (one chunked insert each) and landed by one
+  transaction: rows through 1 MB JSON chunks (a statement per chunk, three parameters, no compound select), a
+  thread and a link statement per card with comments. At the caps (2,000 cards, 20,000 comments) that is under
+  4,100 statements in one batch, held under a CPU budget by `item-import-route.test.ts`.
 - The preview is computed once per file (state), not per render.
 
 ## Observability
@@ -254,12 +293,17 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
   text cleaning, dates, priorities, column folding, type building and merging, people, comment caps, fitting, the
   preview's counts; a perf guard at the caps.
 - project: `importedCommentsThread` shape passes `isCardThread`; no author id or mentions; `withImportedThreads`.
-- api: a bulk create with threads and no key is not tagged `undo`.
-- agent-verbs (100% coverage): into a plan (type save, changeset, bulk chunks, stale retry), into a new plan, preview,
+- api: a bulk create with threads and no key is not tagged `undo`. `/items/import`: parts held then landed whole,
+  a failure in the landing batch (and a refused or missing part) leaves no card and no held part, room and gates
+  (Editor only; Participant, Viewer and a tab-scoped grant refused), a resend replacing its part, the hour's sweep,
+  and an import at the caps under a CPU budget.
+- agent-verbs (100% coverage): into a plan (type save, changeset, import parts, stale retry, a failed part removing
+  the tab and writing no card), into a new plan (a failed part deleting it), preview,
   refusals (`items_full`, `source_mismatch`, `forbidden` from the api), the verb's lines, the MCP tool's parity.
 - editor: the dialog's list (sections, rows, keys, the tool section only for an Editor), a dropped file's route
   (`import-drop.test.ts`), the preview's sections and dimmed target, the menu row's single `Import…` and its dimming,
-  and `useTrackerImport`'s writes in order.
+  and `useTrackerImport`'s writes in order: a whole create, and a failed part leaving no card (the plan deleted for
+  the New Plan target). `lib/api/items.ts`: a whole create's parts, and a failure answering nothing landed.
 
 ## Constants and configuration
 
@@ -272,3 +316,4 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
 | `TRACKER_COMMENT_TEXT_MAX`  | 2,000   | `THREAD_COMMENT_TEXT_MAX`                            |
 | `TRACKER_THREAD_BUDGET`     | 120,000 | under `THREAD_BYTES` with room for the comment shape |
 | `TRACKER_CHOICE_MAX`        | 20      | `CUSTOM_CHOICE_OPTIONS_MAX`                          |
+| `ITEM_IMPORT_HOLD_MS`       | 1 hour  | how long an import's parts wait for its last part    |

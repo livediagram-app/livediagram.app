@@ -168,15 +168,20 @@ Choosing a file shows what the import will make, before anything is written:
 - **Into a new Board tab**: the card type is saved (one undo step), the tab is added and opened (one undo step), then
   every card is made in **one write** with its comments (one undo step); undo takes them back newest first, as a
   JSON import's. The import waits for the plan's cards to load first, as a JSON import does.
-- **Into a new plan**: one create carries the tab, the card type and as many cards with their comments as one
-  request holds (the rest follow in further writes before the plan opens), so the plan opens whole. It is named after
-  the board, filed where a new plan from New would be, and opens in this window once made. A guest's plan is made in
-  This Browser, as a guest's New makes one.
-- **Large imports** are written in several requests of at most 200 cards and 6 MB each, under the api's request cap;
-  into a tab they are still one undo step. A failure part way leaves the cards already written, for undo.
+- **Into a new plan**: one create makes the plan with the tab and the card type, then every card lands with its
+  comments in **one write**, so the plan opens whole. It is named after the board, filed where a new plan from New
+  would be, and opens in this window once made. A guest's plan is made in This Browser, as a guest's New makes one.
+  **A failed import deletes the new plan** (for good: it held nothing but the import), so no half-made plan is left
+  behind.
+- **The cards land whole or not at all.** A large import is sent in several requests of at most 200 cards and 6 MB
+  each, under the api's request cap, but none of them writes a card: the plan holds each part aside and, once the
+  last arrives, writes every card with its comments in one transaction. A failure part way (a request that never
+  answers, a refusal, the plan filling up) leaves **no imported card**; the parts held aside are cleared with it, or
+  within the hour when the import simply stops. Into a tab the cards are one undo step, as before.
 - **Done**: the dialog closes and the plan says "Imported 120 cards from Trello" (and ", 3 left out" when some were).
-- **Failed**: nothing the import had not yet written is written, and the dialog stays open with the reason ("Couldn't
-  import those cards. Try again."). A failure after the card type or the tab was made leaves them, empty, for undo.
+- **Failed**: no card is written, and the dialog stays open with the reason ("Couldn't import those cards. Try
+  again."). Into a tab, a failure after the card type or the tab was made leaves them, empty, for undo; an agent's
+  import, which has no undo, removes the empty tab it made.
 
 ## Agents
 
@@ -186,6 +191,8 @@ Choosing a file shows what the import will make, before anything is written:
   columns, the cards made and what was left out, with the link.
 - **`liveplanner board import <file>`** (`-` for stdin) does the same, with `--project`, `--from`, `--name` and
   `--preview`, printing `+ board "<title>" from <Source>: <n> cards, <n> columns` and the link.
+- An agent's import **lands whole** as the editor's does: its cards in one write, and on a failure no card, the empty
+  tab it made removed, or the new plan it made deleted. The tool answers the failure's code as for any refusal.
 - An agent's import matches people **by name only**: an API token cannot read a team's members, so emails are not
   matched. It is refused as the editor's is: a file past the caps (`file_too_large`, `too_many_cards`), a plan without
   room (`items_full`, naming the room left), a `source` that is not the file's (`source_mismatch`), or a Participant's

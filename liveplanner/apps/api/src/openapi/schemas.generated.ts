@@ -6095,6 +6095,49 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "ItemsImportRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "importId": {
+        "description": "Names the import's held parts: 8 to 64 letters, digits, `-` or `_` (a UUID).",
+        "type": "string"
+      },
+      "items": {
+        "description": "Up to 200 cards.",
+        "items": {
+          "$ref": "#/components/schemas/ItemCreate"
+        },
+        "type": "array"
+      },
+      "part": {
+        "description": "This part's place, from 0.",
+        "type": "number"
+      },
+      "parts": {
+        "description": "How many parts the import has; the part numbered `parts - 1` lands it.",
+        "type": "number"
+      }
+    },
+    "required": [
+      "importId",
+      "part",
+      "parts",
+      "items"
+    ],
+    "type": "object"
+  },
+  "ItemsImportStaged": {
+    "additionalProperties": false,
+    "properties": {
+      "staged": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "staged"
+    ],
+    "type": "object"
+  },
   "ItemsMoveRequest": {
     "additionalProperties": false,
     "properties": {

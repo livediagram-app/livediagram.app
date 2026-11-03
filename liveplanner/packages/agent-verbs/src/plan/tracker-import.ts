@@ -7,7 +7,7 @@ import {
   CLIENT_HEADER,
   type ChangesetRequest,
   type ItemTypesRequest,
-  type ItemsBulkRequest,
+  type ItemsImportRequest,
 } from '@liveplanner/api-schema';
 import {
   ITEM_TYPE_CATALOGUE_VERSION,
@@ -16,7 +16,7 @@ import {
   TRACKER_FILE_MAX_BYTES,
   TRACKER_SOURCE_NAMES,
   assignedPeople,
-  createBatches,
+  importParts,
   cleanText,
   isTrackerRefusal,
   planTrackerImport,
@@ -94,14 +94,30 @@ export function readTrackerInput(
   return name ? { ...board, title: name } : board;
 }
 
-async function postBatches(
+// Every card as one whole import (docs/specs/026-plan/tracker-import.md "The import"): the plan holds each part
+// aside and the last lands them all in one transaction, so a failure part way writes no card.
+async function postImport(
   api: ApiClient,
   projectId: string,
-  batches: readonly ImportedCreate[][],
+  creates: readonly ImportedCreate[],
 ): Promise<void> {
-  for (const items of batches) {
-    const body: ItemsBulkRequest = { items };
-    await api.json(`${itemsPath(projectId)}/bulk`, { method: 'POST', body: JSON.stringify(body) });
+  for (const part of importParts(crypto.randomUUID(), creates)) {
+    const body: ItemsImportRequest = part;
+    await api.json(`${itemsPath(projectId)}/import`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  }
+}
+
+// What a failed import made before its cards, taken back so nothing is left in part: the tab it added, or the new
+// plan (for good: it held nothing else). Best effort; the import's own failure is what it answers.
+async function takeBack(api: ApiClient, path: string, what: string): Promise<void> {
+  try {
+    const res = await api.fetch(path, { method: 'DELETE' });
+    console.info(`[tracker-import] failed; ${what} removed`, { status: res.status });
+  } catch {
+    console.warn(`[tracker-import] failed; ${what} not removed`);
   }
 }
 
@@ -138,13 +154,14 @@ async function importAsPlan(
     sourceName: plan.sourceName,
     now: Date.now(),
   });
-  const batches = createBatches(creates, new TextEncoder().encode(JSON.stringify(head)).length);
-  // The create carries the first write's cards (none, when its own room was spent); the rest follow it.
-  await api.json('/projects', {
-    method: 'POST',
-    body: JSON.stringify({ ...head, items: batches.slice(0, 1).flat() }),
-  });
-  await postBatches(api, projectId, batches.slice(1));
+  // The plan with its tab and card type, then every card landing whole; a failure deletes the plan.
+  await api.json('/projects', { method: 'POST', body: JSON.stringify(head) });
+  try {
+    await postImport(api, projectId, creates);
+  } catch (err) {
+    await takeBack(api, `/projects/${encodeURIComponent(projectId)}?permanent=1`, 'new plan');
+    throw err;
+  }
   return done(plan, projectId, tabId, true);
 }
 
@@ -258,7 +275,13 @@ async function importIntoPlan(
       sourceName: plan.sourceName,
       now: Date.now(),
     });
-    await postBatches(api, projectId, createBatches(creates));
+    // The cards land whole or not at all; a failure takes back the empty tab (an agent has no undo).
+    try {
+      await postImport(api, projectId, creates);
+    } catch (err) {
+      await takeBack(api, tabPath(projectId, tabId), 'tab');
+      throw err;
+    }
     return done(plan, projectId, tabId, false);
   }
 }

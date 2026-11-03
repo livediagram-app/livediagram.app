@@ -29,3 +29,16 @@ export function createBatches<T>(creates: readonly T[], firstBytes = 0): T[][] {
   if (batch.length) out.push(batch);
   return out;
 }
+
+/** One request of a whole import (`POST /items/import`, docs/specs/026-plan/blueprints/tracker-import.md "A whole
+ *  import"): the plan holds every part but the last aside, and the last lands them all in one transaction. */
+export type ItemImportPart<T> = { importId: string; part: number; parts: number; items: T[] };
+
+// An import id: what names its held parts until the last lands them.
+export const ITEM_IMPORT_ID = /^[A-Za-z0-9_-]{8,64}$/;
+
+/** `creates` as the parts of one whole import, cut as createBatches cuts a create of many. None for no cards. */
+export function importParts<T>(importId: string, creates: readonly T[]): ItemImportPart<T>[] {
+  const batches = createBatches(creates);
+  return batches.map((items, part) => ({ importId, part, parts: batches.length, items }));
+}

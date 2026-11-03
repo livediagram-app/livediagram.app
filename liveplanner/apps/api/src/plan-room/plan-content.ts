@@ -465,7 +465,9 @@ export function remapTabDataLinks(data: string, tabIdMap: Map<string, string>): 
 // may hold.
 const CHUNK_BYTES = 1_000_000;
 
-function chunksOf(rows: readonly Record<string, unknown>[]): string[] {
+// `rows` as JSON arrays of at most CHUNK_BYTES each, a bulk insert's parameter apiece: the copy's, and a whole
+// import's (routes/item-import-route.ts).
+export function chunksOf(rows: readonly unknown[]): string[] {
   const out: string[] = [];
   let current: string[] = [];
   let size = 2;
@@ -481,6 +483,25 @@ function chunksOf(rows: readonly Record<string, unknown>[]): string[] {
   }
   if (current.length > 0) out.push(`[${current.join(',')}]`);
   return out;
+}
+
+// Item rows (the items table's columns by name, `fields` and the people as JSON text) in as few statements as their
+// JSON allows: one per CHUNK_BYTES, each reading its rows from one parameter, so no statement nears SQLite's
+// parameter cap and none chains compound selects. A copy's items, and a whole import's cards.
+export function insertItemRowsStatements(
+  env: PlanEnv,
+  planId: string,
+  rows: readonly unknown[],
+): D1PreparedStatement[] {
+  return chunksOf(rows).map((chunk) =>
+    env.PLAN_DB.prepare(
+      `INSERT INTO items (plan_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
+       SELECT ?1, value ->> '$.id', value ->> '$.type', value ->> '$.item_key', value ->> '$.rank',
+              value ->> '$.fields', value ->> '$.rev', value ->> '$.created_at', value ->> '$.updated_at',
+              value ->> '$.created_by', value ->> '$.updated_by'
+         FROM json_each(?2)`,
+    ).bind(planId, chunk),
+  );
 }
 
 // The target side of a copy: the plan's row and everything the export carried, in one transaction, so a copy
@@ -529,19 +550,7 @@ export async function importPlanCopy(
       tabStatsStatement(env, tab.id, tabStatsOfData(tab.data).stats, now),
     );
   }
-  for (const chunk of chunksOf(copy.items)) {
-    stmts.push(
-      db
-        .prepare(
-          `INSERT INTO items (plan_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
-           SELECT ?1, value ->> '$.id', value ->> '$.type', value ->> '$.item_key', value ->> '$.rank',
-                  value ->> '$.fields', value ->> '$.rev', value ->> '$.created_at', value ->> '$.updated_at',
-                  value ->> '$.created_by', value ->> '$.updated_by'
-             FROM json_each(?2)`,
-        )
-        .bind(planId, chunk),
-    );
-  }
+  stmts.push(...insertItemRowsStatements(env, planId, copy.items));
   for (const chunk of chunksOf(copy.sheets)) {
     stmts.push(
       db
