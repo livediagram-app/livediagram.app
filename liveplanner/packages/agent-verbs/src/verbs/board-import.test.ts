@@ -37,7 +37,8 @@ function ctxWith(files: Record<string, string>) {
     },
     [`/projects/${DOC_A}/item-types`]: keep({ itemTypes: null }),
     [`/projects/${DOC_A}/tabs/${TAB}/changesets`]: keep({ changeset: { id: 'cs', rev: 1 } }),
-    [`/projects/${DOC_A}/items/bulk`]: keep({ items: [], rev: 2 }),
+    [`/projects/${DOC_A}/items/import`]: keep({ items: [], rev: 2 }),
+    '/projects/new-1/items/import': keep({ items: [], rev: 2 }),
     // The library lists on a GET; a new plan is a POST.
     '/projects': (r: Request) =>
       r.method === 'GET'
@@ -68,7 +69,7 @@ describe('board import', () => {
     expect(sent).toEqual([
       `PUT /projects/${DOC_A}/item-types`,
       `POST /projects/${DOC_A}/tabs/${TAB}/changesets`,
-      `POST /projects/${DOC_A}/items/bulk`,
+      `POST /projects/${DOC_A}/items/import`,
     ]);
     expect(boardImport.text!(out)).toEqual([
       '+ board "Q4" from Linear: 3 cards, 2 columns',
@@ -96,7 +97,7 @@ describe('board import', () => {
       ctx,
       boardImport.input.parse({ file: 'C:\\Downloads\\Roadmap.csv' }),
     );
-    expect(sent).toEqual(['POST /projects']);
+    expect(sent).toEqual(['POST /projects', 'POST /projects/new-1/items/import']);
     expect(out).toMatchObject({
       written: true,
       newPlan: true,

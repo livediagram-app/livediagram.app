@@ -52,6 +52,8 @@ const item = (id: string, fields: Item['fields']): Item => ({
 });
 
 type Sent = { path: string; method: string; body: Record<string, unknown> };
+// Records a request as sent and answers it.
+type RecordSent = (answer: unknown, status?: number) => (r: Request) => Promise<Response>;
 
 function planApi(
   over: {
@@ -60,17 +62,34 @@ function planApi(
     statuses?: { status: string; name: string }[];
     staleTimes?: number;
     rev?: number;
+    // How the import's parts are answered (each recorded as sent).
+    importAnswer?: (record: RecordSent) => (r: Request) => Promise<Response>;
+    // A take-back that never answers.
+    dropFails?: boolean;
   } = {},
 ) {
   const sent: Sent[] = [];
   let stale = over.staleTimes ?? 0;
-  const keep = (answer: unknown) => async (r: Request) => {
+  const keep =
+    (answer: unknown, status = 200) =>
+    async (r: Request) => {
+      sent.push({
+        path: new URL(r.url).pathname.replace(/^\/api/, ''),
+        method: r.method,
+        body: JSON.parse(await r.text()) as Record<string, unknown>,
+      });
+      return Response.json(answer, { status });
+    };
+  // A take-back (DELETE, no body), with its query.
+  const drop = async (r: Request) => {
+    const url = new URL(r.url);
     sent.push({
-      path: new URL(r.url).pathname.replace(/^\/api/, ''),
+      path: `${url.pathname.replace(/^\/api/, '')}${url.search}`,
       method: r.method,
-      body: JSON.parse(await r.text()) as Record<string, unknown>,
+      body: {},
     });
-    return Response.json(answer, { status: 200 });
+    if (over.dropFails) throw new Error('offline');
+    return new Response(null, { status: 204 });
   };
   const api = fakeApi({
     [`/projects/${D}/items`]: { items: over.items ?? [], rev: 0 },
@@ -88,11 +107,37 @@ function planApi(
       return keep({ itemTypes: null })(r);
     },
     [`/projects/${D}/tabs/${TAB}/changesets`]: keep({ changeset: { id: 'cs', rev: 1 } }),
-    [`/projects/${D}/items/bulk`]: keep({ items: [], rev: 2 }),
+    [`/projects/${D}/items/import`]: over.importAnswer
+      ? over.importAnswer(keep)
+      : keep({ items: [], rev: 2 }),
+    [`/projects/${D}/tabs/${TAB}`]: drop,
     '/projects': keep({ project: { id: 'new-plan' } }),
-    '/projects/new-plan/items/bulk': keep({ items: [], rev: 2 }),
+    '/projects/new-plan/items/import': over.importAnswer
+      ? over.importAnswer(keep)
+      : keep({ items: [], rev: 2 }),
+    [`/projects/${TAB}/items/import`]: keep({ items: [], rev: 2 }),
+    '/projects/new-plan?permanent=1': drop,
   });
   return { api, sent };
+}
+
+// A board of `n` cards in one list.
+const bigBoard = (n: number) =>
+  JSON.stringify({
+    name: 'Big',
+    lists: [{ id: 'l', name: 'To Do' }],
+    cards: Array.from({ length: n }, (_, i) => ({ id: `c${i}`, name: `Card ${i}`, idList: 'l' })),
+  });
+
+// The import's parts answered as the plan does when the second fails (the plan filling up): held, then refused.
+function failingSecondPart() {
+  let parts = 0;
+  return (record: RecordSent) => async (r: Request) => {
+    parts += 1;
+    return parts === 1
+      ? record({ staged: 200 }, 202)(r)
+      : record({ error: 'items_full', message: 'a plan holds 2000 items' }, 413)(r);
+  };
 }
 
 beforeEach(() => {
@@ -153,8 +198,10 @@ describe('importTrackerBoard into a plan', () => {
     expect(sent.map((s) => `${s.method} ${s.path}`)).toEqual([
       `PUT /projects/${D}/item-types`,
       `POST /projects/${D}/tabs/${TAB}/changesets`,
-      `POST /projects/${D}/items/bulk`,
+      `POST /projects/${D}/items/import`,
     ]);
+    // Its cards as one whole import, in one part.
+    expect(sent[2]!.body).toMatchObject({ importId: TAB, part: 0, parts: 1 });
     const types = (sent[0]!.body['itemTypes'] as { types: { id: string }[] }).types;
     expect(types.map((t) => t.id)).toEqual([ITEM_TYPES[0].id, 'trello-card']);
     expect(sent[0]!.body['expectedRev']).toBe(4);
@@ -186,6 +233,30 @@ describe('importTrackerBoard into a plan', () => {
       tabId: TAB,
       summary: 'Imported 2 cards from Trello, 1 left out',
     });
+  });
+
+  it('writes no card when a part fails mid-way, and takes back the empty tab', async () => {
+    const { api, sent } = planApi({ importAnswer: failingSecondPart() });
+    const r = await importTrackerBoard(api, { content: bigBoard(450), projectId: D }, 'mcp');
+    expect(r).toMatchObject({ ok: false, code: 'items_full' });
+    expect(sent.map((s) => `${s.method} ${s.path}`)).toEqual([
+      `PUT /projects/${D}/item-types`,
+      `POST /projects/${D}/tabs/${TAB}/changesets`,
+      `POST /projects/${D}/items/import`,
+      `POST /projects/${D}/items/import`,
+      `DELETE /projects/${D}/tabs/${TAB}`,
+    ]);
+    // The plan held the first part and landed nothing: the import is refused whole.
+    expect(sent.slice(2, 4).map((s) => [s.body['part'], s.body['parts']])).toEqual([
+      [0, 3],
+      [1, 3],
+    ]);
+    // A take-back that never answers still answers the import's own failure.
+    const offline = planApi({ importAnswer: failingSecondPart(), dropFails: true });
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(
+      await importTrackerBoard(offline.api, { content: bigBoard(450), projectId: D }, 'mcp'),
+    ).toMatchObject({ ok: false, code: 'items_full' });
   });
 
   it('saves no card type when the plan already has it as the import leaves it', async () => {
@@ -298,62 +369,60 @@ describe('importTrackerBoard as a new plan', () => {
     expect(r.summary).toBe('Makes a new plan with a Board tab of 2 columns and 2 cards.');
   });
 
-  it('makes the plan in one create carrying the tab, the card type and the cards', async () => {
+  it('makes the plan with the tab and the card type, then lands its cards whole', async () => {
     const { api, sent } = planApi();
     const r = await importTrackerBoard(api, { content: TRELLO }, 'mcp', () => 'new-plan');
-    expect(sent.map((s) => `${s.method} ${s.path}`)).toEqual(['POST /projects']);
+    expect(sent.map((s) => `${s.method} ${s.path}`)).toEqual([
+      'POST /projects',
+      'POST /projects/new-plan/items/import',
+    ]);
     const body = sent[0]!.body as {
       id: string;
       name: string;
       source: string;
       tabs: { kind: string; name: string }[];
       itemTypes: { types: { id: string }[] };
-      items: { threads?: { home: string }[] }[];
     };
     expect(body).toMatchObject({ id: 'new-plan', name: 'Website Relaunch', source: 'mcp' });
+    expect(body).not.toHaveProperty('items');
     expect(body.tabs[0]).toMatchObject({ kind: 'board', name: 'Website Relaunch' });
     expect(body.itemTypes.types.map((t) => t.id)).toEqual(['trello-card']);
-    expect(body.items).toHaveLength(2);
-    expect(body.items[0]!.threads![0]!.home).toBe('new-plan');
+    const items = sent[1]!.body['items'] as { threads?: { home: string }[] }[];
+    expect(items).toHaveLength(2);
+    expect(items[0]!.threads![0]!.home).toBe('new-plan');
     expect(r).toMatchObject({ written: true, projectId: 'new-plan', newPlan: true, tabId: TAB });
   });
 
-  it('sends the cards past the create’s room after it', async () => {
-    const big = JSON.stringify({
-      name: 'Big',
-      lists: [{ id: 'l', name: 'To Do' }],
-      cards: Array.from({ length: 450 }, (_, i) => ({
-        id: `c${i}`,
-        name: `Card ${i}`,
-        idList: 'l',
-      })),
-    });
+  it('sends a large import in parts of one import', async () => {
     const { api, sent } = planApi();
-    await importTrackerBoard(api, { content: big }, 'cli', () => 'new-plan');
+    await importTrackerBoard(api, { content: bigBoard(450) }, 'cli', () => 'new-plan');
     expect(sent.map((s) => `${s.method} ${s.path}`)).toEqual([
       'POST /projects',
-      'POST /projects/new-plan/items/bulk',
-      'POST /projects/new-plan/items/bulk',
+      'POST /projects/new-plan/items/import',
+      'POST /projects/new-plan/items/import',
+      'POST /projects/new-plan/items/import',
     ]);
-    expect((sent[0]!.body['items'] as unknown[]).length).toBe(200);
+    expect(sent.slice(1).map((s) => (s.body['items'] as unknown[]).length)).toEqual([200, 200, 50]);
   });
 
-  it('makes a create with no cards when its own room is spent, and mints its own id', async () => {
-    const title = 'T'.repeat(80);
-    const huge = JSON.stringify({
-      name: title,
-      lists: [{ id: 'l', name: 'To Do' }],
-      cards: Array.from({ length: 1 }, () => ({
-        id: 'c',
-        name: 'One',
-        idList: 'l',
-        desc: 'd'.repeat(9000),
-      })),
-    });
+  it('deletes the new plan for good when a part fails mid-way', async () => {
+    const { api, sent } = planApi({ importAnswer: failingSecondPart() });
+    const r = await importTrackerBoard(api, { content: bigBoard(450) }, 'mcp', () => 'new-plan');
+    expect(r).toMatchObject({ ok: false, code: 'items_full' });
+    expect(sent.map((s) => `${s.method} ${s.path}`)).toEqual([
+      'POST /projects',
+      'POST /projects/new-plan/items/import',
+      'POST /projects/new-plan/items/import',
+      'DELETE /projects/new-plan?permanent=1',
+    ]);
+  });
+
+  it('mints its own id for the new plan', async () => {
     const { api, sent } = planApi();
-    const r = await importTrackerBoard(api, { content: huge }, 'cli');
+    const r = await importTrackerBoard(api, { content: TRELLO }, 'cli');
     expect(r).toMatchObject({ ok: true, projectId: TAB });
     expect(sent[0]!.path).toBe('/projects');
+    expect(sent[1]!.path).toBe(`/projects/${TAB}/items/import`);
   });
 });
 
