@@ -113,6 +113,17 @@ describe('<ExplorerPanel>', () => {
     expect(index.count('listItems')).toBe(1);
   });
 
+  it('hides Jump Back In\u2019s seventh and eighth cards below four across, so two and three across end on a full row', async () => {
+    const items = Array.from({ length: 10 }, (_, i) =>
+      makeItem(i + 1, { lastOpenedAt: 5_000_000 - i }),
+    );
+    renderPanel(createFakeIndex({ items }));
+    const grid = await screen.findByRole('list', { name: 'Jump Back In' });
+    expect(grid.className.split(' ')).toContain('@max-2xl:[&>li:nth-child(n+7)]:hidden');
+    // Eight are asked for and drawn: four across shows all of them.
+    expect(within(grid).getAllByRole('listitem')).toHaveLength(8);
+  });
+
   it('runs its preview cards compact: two across, three from 24rem, four from 42rem', async () => {
     const items = [1, 2].map((i) => makeItem(i, { lastOpenedAt: 5_000_000 - i }));
     renderPanel(createFakeIndex({ items }));

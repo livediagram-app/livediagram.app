@@ -1138,8 +1138,9 @@ function FilterToggle() {
 
 // ---- Home -----------------------------------------------------------------------------------------------
 
-// How many items Home's Jump Back In lists in the pane (two full rows of four in a desktop popover), from this many of
-// each group (fewer than Home's page).
+// How many items Home's Jump Back In lists in the pane (two full rows of four in a desktop popover; the pane's grid
+// hides all but the first six below four across, so two and three across end on a full row), from this many of each
+// group (fewer than Home's page).
 const JUMP_BACK_IN_ROWS = 8;
 const PANEL_PER_GROUP = 4;
 // The recent ones asked past PANEL_PER_GROUP: JUMP_BACK_IN_ROWS of them and one for the open item.
@@ -1218,7 +1219,7 @@ function HomeSection({
         }
       >
         {recent.length ? (
-          <PaneGrid label="Jump Back In">
+          <PaneGrid label="Jump Back In" fullRowsBelowFour>
             {recent.map((item) =>
               isIndexed(item) ? (
                 <JumpBackInCard key={item.id} item={item} />
