@@ -865,7 +865,8 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
     anyone who may read plan `{planId}` (its owner, its team, and every share role: Editor, Participant and Viewer)
     when that plan **serves** it: one of its cards holds the id and the plan holds a **grant** for it. A grant is
     recorded when the picture is uploaded for that plan (`POST /api/images?p={planId}`, by someone who may edit its
-    cards), so an id pasted into another plan serves nothing there. Anything else answers 404.
+    cards), so an id pasted into another plan serves nothing there. A tab-scoped link reads it only when a card its
+    tab shows holds it (items.md "Who sees the bytes"). Anything else answers 404.
   - **This Browser plans** upload too (as the person, their guest or account), and show their pictures to them.
     **Copies** carry the id; a copy shows the picture to its uploader, and to the copy's share visitors once
     someone who may edit it uploads it there again.

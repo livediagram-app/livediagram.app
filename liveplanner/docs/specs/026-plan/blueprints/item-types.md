@@ -532,7 +532,10 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
 - Image fields: `ImageField.tsx` (`ImageFieldControl` in the card panel, `ImageThumb` on the card face, lazy through
   an `IntersectionObserver`), reading through `apps/editor/lib/api/images.ts` (`apiUploadImage`, `apiImageUrl`,
   `releaseImageUrl`, `ImageUploadError`) with the plan's `itemsScope` (`PlanContext`, from `usePlanItems`). The api's
-  `routes/images.ts` and the room's `plan-room/image-grants.ts` (api.md "Images"). An upload tracks
+  `routes/images.ts` and the room's `plan-room/image-grants.ts` (api.md "Images"). A read passes the grant's
+  `tabScope` to the room's `servesImage(planId, imageId, tabScope)`, which reads that tab with `getTab` and, unless
+  `tabShowsEveryCard`, confines `planServesImage`'s match to `itemIdsShownOnTab`'s Plan card ids (`onlyCards`, one
+  JSON parameter) (items.md "Who sees the bytes"). An upload tracks
   `Plan · Added · CardImage`.
 - Attachments (items.md "Attachments"): the pure value and edits in `packages/items/src/attachments.ts`
   (`normaliseAttachments`, `itemAttachments`, `attachmentCover`, `withAttachmentsAdded`, `withCover`,

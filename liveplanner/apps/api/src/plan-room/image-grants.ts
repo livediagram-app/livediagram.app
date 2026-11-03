@@ -46,9 +46,17 @@ const likeEscaped = (text: string) => text.replace(/[\\%_]/g, (c) => `\\${c}`);
 // (LIKE on the id as its JSON string, quoted and escaped as a card's fields store it) skips every card whose fields
 // never mention it before the exact check (a field whose value is the id itself, or an Attachments entry's id, read
 // from the JSON), and the first
-// match ends the scan.
-export function planServesImage(sql: Sql, planId: string, imageId: string): boolean {
+// match ends the scan. `onlyCards` confines the match to those cards (a tab-scoped reader's: the cards its tab
+// shows, docs/specs/026-plan/items.md "Who sees the bytes"); null leaves every card of the plan in. The ids go in as
+// one JSON parameter, so a tab of many Plan cards never meets a bound-parameter cap.
+export function planServesImage(
+  sql: Sql,
+  planId: string,
+  imageId: string,
+  onlyCards: readonly string[] | null = null,
+): boolean {
   if (!imageId || imageId.length > IMAGE_ID_MAX) return false;
+  if (onlyCards !== null && onlyCards.length === 0) return false;
   const granted = sql
     .exec(
       'SELECT 1 FROM card_image_grants WHERE plan_id = ? AND image_id = ? LIMIT 1',
@@ -57,17 +65,21 @@ export function planServesImage(sql: Sql, planId: string, imageId: string): bool
     )
     .toArray();
   if (granted.length === 0) return false;
+  const like = `%${likeEscaped(JSON.stringify(imageId))}%`;
+  const scoped = onlyCards === null ? '' : 'AND items.id IN (SELECT value FROM json_each(?))';
+  const bindings = onlyCards === null ? [] : [JSON.stringify(onlyCards)];
   return (
     sql
       .exec(
         `SELECT 1 FROM items, json_each(items.fields) AS f
-          WHERE items.plan_id = ? AND items.fields LIKE ? ESCAPE '\\'
+          WHERE items.plan_id = ? ${scoped} AND items.fields LIKE ? ESCAPE '\\'
             AND ((f.type = 'text' AND f.value = ?)
               OR (f.key = 'attachments' AND f.type = 'array' AND EXISTS (
                     SELECT 1 FROM json_each(f.value) AS a WHERE json_extract(a.value, '$.id') = ?)))
           LIMIT 1`,
         planId,
-        `%${likeEscaped(JSON.stringify(imageId))}%`,
+        ...bindings,
+        like,
         imageId,
         imageId,
       )

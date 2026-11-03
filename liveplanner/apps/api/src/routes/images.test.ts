@@ -419,7 +419,18 @@ describe('GET /api/images/{id}', () => {
       const res = await read(id, { person: 'bob', grant: grantOf('bob', level) });
       expect(res.status, level).toBe(200);
     }
-    expect(room.servesImage).toHaveBeenCalledWith(PLAN, id);
+    expect(room.servesImage).toHaveBeenCalledWith(PLAN, id, null);
+  });
+
+  // docs/specs/026-plan/items.md "Who sees the bytes": the plan decides by the tab the grant is confined to.
+  it("asks the plan with a tab-scoped grant's tab, and 404s when no card on that tab holds it", async () => {
+    const id = await uploaded();
+    const scoped = { person: 'link:code', grant: grantOf('link:code', 'view', PLAN, 't1') };
+    expect((await read(id, scoped)).status).toBe(200);
+    expect(room.servesImage).toHaveBeenLastCalledWith(PLAN, id, 't1');
+    serves = false;
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    expect((await read(id, scoped)).status).toBe(404);
   });
 
   it('answers a link visitor with no identity, by the plan alone', async () => {

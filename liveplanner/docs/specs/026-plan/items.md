@@ -149,7 +149,10 @@ liveworkspace's media service, as [Image fields](item-types.md#image-fields) are
   fetched once and shared by every card and panel showing it.
 - **Who sees the bytes**: `GET /api/images/{id}?p=` serves an attachment as it serves an Image field's picture: to
   its uploader, and to anyone who may read the plan while the plan holds a grant for it and one of its cards holds it
-  ([api.md](../015-api/api.md) "Images").
+  ([api.md](../015-api/api.md) "Images"). A visitor on a **tab-scoped** link reads it only through a card its tab
+  shows ([Who may do what](#who-may-do-what)): a picture held only by cards outside the tab answers `404`, as an id
+  the plan never held does, so it shows nothing about cards the link can't reach. The same picture on a card the tab
+  shows and on one it doesn't is served, since the visitor already sees it.
 - **The Trash and deleting for good**: a trashed card keeps its pictures (Restore brings them back as they were). A
   card deleted for good, or a plan purged, no longer places them: the plan reports the pictures its cards hold to
   the media service ("Images in use", below), and the service's daily sweep deletes a picture nothing in any

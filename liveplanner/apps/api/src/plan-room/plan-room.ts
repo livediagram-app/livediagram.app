@@ -74,7 +74,7 @@ import { CHANGESET_RETENTION_MS } from '@liveplanner/api-schema';
 import { deleteOldChangesets } from '../db/changesets';
 import { deleteOldItemHistory } from '../db/item-history';
 import { getTab, planHasTab } from '../db/tabs';
-import { ITEM_HISTORY_MAX_AGE_MS, tabShowsEveryCard } from '@liveplanner/items';
+import { ITEM_HISTORY_MAX_AGE_MS, itemIdsShownOnTab, tabShowsEveryCard } from '@liveplanner/items';
 import { readItem } from '../db/items';
 import type { Item } from '@liveplanner/items';
 import { runSheetExpiry } from '../sheet-sweep';
@@ -669,13 +669,26 @@ export class PlanRoom extends DurableObject<Env> {
     }
   }
 
-  // A plan never started serves nothing, and asking does not start it.
-  async servesImage(planId: string, imageId: string): Promise<boolean> {
+  // A plan never started serves nothing, and asking does not start it. A tab-scoped reader (`tabScope`) reads a
+  // picture only through a card its tab shows (docs/specs/026-plan/items.md "Who sees the bytes"): a tab with a board
+  // or plan view shows every card, any other only the cards its Plan cards point at, and a tab the plan doesn't hold
+  // serves nothing.
+  async servesImage(
+    planId: string,
+    imageId: string,
+    tabScope: string | null = null,
+  ): Promise<boolean> {
     const sql = this.state.storage.sql;
     if (this.planId === null && !hasPlanSchema((q) => sql.exec(q))) return false;
     this.bindPlan(planId);
     this.ensureSchema();
-    return planServesImage(sql, planId, imageId);
+    let onlyCards: string[] | null = null;
+    if (tabScope !== null) {
+      const tab = await getTab(this.requireEnv(), planId, tabScope);
+      if (!tab) return false;
+      if (!tabShowsEveryCard(tab.elements)) onlyCards = [...itemIdsShownOnTab(tab.elements, [])];
+    }
+    return planServesImage(sql, planId, imageId, onlyCards);
   }
 
   async exportCopy(
