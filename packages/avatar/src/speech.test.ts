@@ -4,6 +4,7 @@ import {
   bubbleEndsAt,
   bubbleMotion,
   edgeShift,
+  screenX,
   flightMs,
   headPoint,
   nextDraft,
@@ -165,5 +166,18 @@ describe('tailOffset (the tail stays on the head the card was shifted off)', () 
     expect(tailOffset(500, 100)).toBe(-36);
     expect(tailOffset(-500, 100)).toBe(36);
     expect(tailOffset(20, 20)).toBe(0);
+  });
+});
+
+describe('screenX (the canvas layer scales about its centre)', () => {
+  it('is the offset point at zoom 1', () => {
+    expect(screenX(100, 1, 20, 390)).toBe(120);
+  });
+  it('keeps the centre still while zooming', () => {
+    expect(screenX(195, 0.6, 0, 390)).toBeCloseTo(195);
+  });
+  it('scales the pan and the distance from the centre', () => {
+    expect(screenX(0, 0.5, -400, 800)).toBe(0);
+    expect(screenX(100, 2, 7.5, 390)).toBe(20);
   });
 });

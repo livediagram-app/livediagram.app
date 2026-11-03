@@ -74,8 +74,8 @@ describe('the speech bubbles flight', () => {
     });
 
     it('reads the pan and the zoom: the same canvas point is elsewhere on screen', () => {
-      // Canvas x 100 is at 2 * (100 - 90) = 20 on screen.
-      const { card } = placed(100, { offsetX: -90, width: 390 }, 2);
+      // Canvas x 100 is at 2 * (100 + 7.5) + 195 * (1 - 2) = 20 on screen.
+      const { card } = placed(100, { offsetX: 7.5, width: 390 }, 2);
       expect(card.style.transform).toContain('calc(-50% + 38px)');
     });
 

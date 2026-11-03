@@ -35,7 +35,8 @@ const layer = (
       self={{ name: 'Tom', colour: '#14b8a6' }}
     />,
   );
-const VIEW = { offsetX: 0, width: 800 };
+// Canvas x 0 is at screen x 0: 0.5 * (0 - 400) + 400 * (1 - 0.5).
+const VIEW = { offsetX: -400, width: 800 };
 const PEERS = [{ id: 'peer', name: 'Sam', color: '#8b5cf6' }];
 
 describe('AvatarSpeechLayer (docs/specs/008-canvas/avatar-mode.md "Speech bubbles")', () => {

@@ -12,7 +12,7 @@ import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } fro
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { IDENTITY_FILL } from '@liveworkspace/ui/identity-fill';
 import { avatarBindings } from '../bindings';
-import { bubbleMotion, edgeShift, tailOffset, type SpeechBubble } from '../speech';
+import { bubbleMotion, edgeShift, screenX, tailOffset, type SpeechBubble } from '../speech';
 import type { AvatarPoint } from '../walk';
 import { AVATAR_FALLBACK_COLOUR } from '../config';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
@@ -21,7 +21,7 @@ import { SendIcon, SpeechCard, SpeechCounter, SpeechDraftField } from './AvatarS
 // The brand cyan a character falls back to with no presence colour (AvatarWalker's).
 
 // The composer's width, and the view's: the visible canvas in screen px, which a bubble is kept inside (spec
-// "Kept inside the view"). `offsetX` is the canvas's pan, so a canvas x is at `zoom * (x + offsetX)` on screen.
+// "Kept inside the view"). `offsetX` is the canvas's pan, so a canvas x is at `screenX(x, zoom, offsetX, width)` on screen.
 const COMPOSER_WIDTH = 240;
 export type SpeechView = { offsetX: number; width: number };
 
@@ -147,7 +147,9 @@ function Composer({
   };
   // Kept inside the view, its tail still on the head: plain arithmetic on the head's screen x.
   const shift =
-    view.width > 0 ? edgeShift(zoom * (head.x + view.offsetX), COMPOSER_WIDTH, view.width) : 0;
+    view.width > 0
+      ? edgeShift(screenX(head.x, zoom, view.offsetX, view.width), COMPOSER_WIDTH, view.width)
+      : 0;
   return (
     <AtPoint at={head} zoom={zoom}>
       <div
@@ -278,7 +280,7 @@ export function AvatarSpeechLayer({
         if (!n?.card) continue;
         const v = viewRef.current;
         const m = motionOf(b, now, reduced, {
-          x: v.zoom * (b.x + v.offsetX),
+          x: screenX(b.x, v.zoom, v.offsetX, v.width),
           width: n.width,
           viewWidth: v.width,
         });

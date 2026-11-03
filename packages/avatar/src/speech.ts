@@ -139,6 +139,14 @@ export function admitBubble(
   return next;
 }
 
+/**
+ * Where a canvas x is on screen. The canvas layer is `scale(zoom) translate(offsetX)` about its centre, so a point
+ * lands at `zoom * (x + offsetX) + (viewWidth / 2) * (1 - zoom)` (lib/canvas-backgrounds.ts worldPatternOrigin).
+ */
+export function screenX(x: number, zoom: number, offsetX: number, viewWidth: number): number {
+  return zoom * (x + offsetX) + (viewWidth / 2) * (1 - zoom);
+}
+
 /** Screen px kept clear between a bubble and the view's left or right edge. */
 export const SPEECH_EDGE_MARGIN = 8;
 
