@@ -15,7 +15,7 @@ A new Next.js app, `apps/help`, deployed as the `livehuddle-help` Worker and sti
 - Content is **MDX** (`@next/mdx`) plus a TypeScript article index (`lib/articles.ts`). Navigation/index pages are TSX.
 - **The code is shared.** The pages, components, MDX styles, SEO helpers (metadata, social cards, JSON-LD, sitemap), styles and catalogue checks are `@liveworkspace/help-site` ([README](../../../../packages/help-site/README.md)), one copy for every product's help centre. This app binds it to its own catalogue, art and facts (`lib/help-site.tsx` on the server, `lib/help-client.tsx` in the browser). It keeps its articles, illustrations, catalogue, card art, header, footer, home layout (`lib/home-sections.ts`) and page copy. A help-centre change that is not about this product's content is made there, once, for every product.
 
-It started as a copy of the Manager Toolkit help centre and has since been redesigned in the marketing site's language; what each page looks like (the home page's sections, category art, grouped category pages, article navigation, search keys) is [Help pages](help-pages.md). The building blocks below stay: hero + client-side search, category cards, article pages with an auto-generated table of contents, breadcrumbs, "Was this helpful?" feedback, reading time, related-guide sidebar, and a back-to-top button. An article's sections (the tinted bands between its `##` headings) are grouped while it renders, so the static HTML already has them, and the reading-time row holds its height before the time is counted: nothing moves after the page appears. The difference is the categories/content (livehuddle's) and the **brand**: livehuddle is sky-blue (`brand-500`, see [Theme](../004-interface-design/color-scheme.md)) on light or dark chrome ([Appearance](../004-interface-design/appearance.md)), not MT's dark purple, so every surface uses the shared `@liveworkspace/tailwind-config` brand ramp and slate neutrals to match `apps/marketing` and `apps/community`.
+It started as a copy of the Manager Toolkit help centre and has since been redesigned in the marketing site's language; what each page looks like (the home page's sections, category art, grouped category pages, article navigation, search keys) is [Help pages](help-pages.md). The building blocks below stay: hero + client-side search, category cards, article pages with an auto-generated table of contents, breadcrumbs, "Was this helpful?" feedback, reading time, related-guide sidebar, and a back-to-top button. An article's sections (the tinted bands between its `##` headings) are grouped while it renders, so the static HTML already has them, and the reading-time row holds its height before the time is counted: nothing moves after the page appears. The difference is the categories/content (livehuddle's) and the **brand**: livehuddle is emerald (`brand-500`, see [Theme](../004-interface-design/color-scheme.md)) on light or dark chrome ([Appearance](../004-interface-design/appearance.md)), not MT's dark purple, so every surface uses the shared `@liveworkspace/tailwind-config` brand ramp and slate neutrals to match `apps/marketing` and `apps/community`.
 
 ### No paid tier
 
@@ -213,7 +213,7 @@ once in `../packages/help-site/src/art/`; the rest are under `apps/help`:
 - **`../packages/help-site/src/art/primitives.tsx`**: the shared SVG kit (`Scene`,
   `Shape`, `Arrow`, `SelectionBox`, `Cursor`, `Avatar`, `Panel`, `Dialog`,
   `Button`, `Tabs`, `Menu`, `Tile`, `Label`, `TextBar`). Every figure composes
-  from these so the house style (white panels, slate borders, sky-blue `brand`
+  from these so the house style (white panels, slate borders, emerald `brand`
   accents) lands in one place. This is the no-duplication rule applied to art.
 - **`../packages/help-site/src/art/illustrations/<area>.tsx`**: a figure that is the
   same in every product that shows it (the colour and border controls, the layers
@@ -252,6 +252,28 @@ purely conceptual sections stay text. Scenes are reused across articles wherever
 the same surface recurs rather than redrawn.
 
 <!-- legacy-names -->
+
+## What the help centre holds
+
+livehuddle's help centre holds the articles for what [v1](../002-project-scope/v1-scope.md) holds, cut from
+livediagram's at the fork, and it is written about livehuddle: **Spaces** people meet in, the **boards** (tabs) a
+Space holds, **Avatar mode** and the Spaces templates, Workshop's palette and session tools, and working together
+live. The pitch it opens with is the product's, "Meet and run workshops together" ([Open decisions](../005-project-roadmap/open-decisions.md) D5).
+
+- **What was cut, and when.** Each cut in the [Build plan](../005-project-roadmap/build-plan.md) removed its feature's
+  articles with its code: Diagram and Draw modes and their mode-only elements (step 5.1), Event Storming and
+  repositories (step 5.2). Step 6b swept what stayed so the product-level articles (About, Getting Started, the home
+  page) describe livehuddle, renamed **Your First Diagram** to **Your First Space** and **Exporting Diagrams** to
+  **Exporting Spaces**, and put the figures that still drew the cut modes (a Diagram, Draw and Workshop switch, a
+  Diagram window, Diagram's category bar) right.
+- **The rule for an article.** An article stays while livehuddle's editor offers what it documents, reachable from the
+  palette, the search panel's Add to Canvas, a menu, a dialog or the Explorer, because help never leaves a visible
+  control undocumented. So a few articles stay for features v1's scope lists as non-goals but the editor still shows
+  (the Slide Deck and its sub-articles, the Page element, which only the search panel still adds); they leave with the
+  code that cuts them. Diagram vocabulary stays where it names a real canvas thing (a diagram key, a Mermaid diagram,
+  a swimlane, a draw.io import), never as the name of what a person makes.
+- **The palette's groups** follow Workshop's palette: Everyday Elements, **Layout Kits** (lanes, frames, stacks,
+  boundaries, keys, cards and callouts, pointer notes, the timeline), Workshop Kits and Palette Settings.
 
 ## Renamed articles
 
@@ -295,7 +317,7 @@ Three features left livehuddle on purpose, and their articles with them; each ol
 
 The **Self-Hosting** category (its landing and its four articles) was retired; every `/help/self-hosting/…` address lands on the help centre home, `/help/`, and so does a bare `/self-hosting/…` that lost its `/help` prefix.
 
-"Your First Diagram" and "Exporting Diagrams" keep their addresses: they are about drawing a diagram and getting the drawing out, not about the container.
+"Your First Diagram" became **Your First Space** (`/help/getting-started/your-first-space/`) and "Exporting Diagrams" became **Exporting Spaces** (`/help/account-and-data/exporting-spaces/`) in step 6b. livehuddle had not launched, so no link to the old addresses was ever shared and they answer no redirect.
 <!-- /legacy-names -->
 
 ## Header

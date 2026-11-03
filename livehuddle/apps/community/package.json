@@ -28,7 +28,7 @@
     "@liveworkspace/next-config": "workspace:*",
     "@liveworkspace/oxlint-config": "workspace:*",
     "@liveworkspace/style-guards": "workspace:*",
-    "@liveworkspace/tailwind-config": "workspace:*",
+    "@livehuddle/tailwind-config": "workspace:*",
     "@liveworkspace/vitest-config": "workspace:*",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/react": "^16.3.3",

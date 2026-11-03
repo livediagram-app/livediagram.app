@@ -1,14 +1,28 @@
-import { Arrow, Label, Shape } from '@liveworkspace/help-site/art/primitives';
+import { Label } from '@liveworkspace/help-site/art/primitives';
 import { Chip, Stage, Window } from '@liveworkspace/help-site/art/parts';
 
-// About livehuddle: what it is in one picture. Three windows fanned out, one per way of working (a workshop's
-// sticky notes, a diagram, a sketch), under the two promises: free, and open source.
+// About livehuddle: what it is in one picture. Three windows fanned out, one per way a team meets (a retro's
+// sticky notes, a Space with the team round its table, a dot vote), under the two promises: free, and open source.
+
+// A character as Avatar mode draws one, seen from above at this size: a head over a shirt in its own colour.
+function Character({ x, y, shirt }: { x: number; y: number; shirt: string }) {
+  return (
+    <g>
+      <rect x={x - 5} y={y + 2} width={10} height={9} rx={3} className={shirt} />
+      <circle cx={x} cy={y} r={4} className="fill-amber-200 stroke-amber-700" strokeWidth={0.8} />
+    </g>
+  );
+}
+
+// How many dots each of the Vote window's three options holds.
+const DOTS = [3, 1, 2];
+
 export function AboutArt() {
   return (
     <Stage>
-      {/* Workshop: sticky notes gathered for a session, tilted back on the left. */}
+      {/* Workshop: a retro's sticky notes, tilted back on the left. */}
       <g transform="rotate(-7 92 120)">
-        <Window x={18} y={52} w={150} h={118} title="Workshop">
+        <Window x={18} y={52} w={150} h={118} title="Retro">
           {[0, 1, 2, 3, 4, 5].map((n) => (
             <rect
               key={n}
@@ -22,53 +36,63 @@ export function AboutArt() {
           ))}
         </Window>
       </g>
-      {/* Draw: a freehand sketch, tilted forward on the right. */}
+      {/* Vote: three options and the room's dots, tilted forward on the right. */}
       <g transform="rotate(7 308 120)">
-        <Window x={232} y={52} w={150} h={118} title="Draw">
-          <path
-            d="M248 136 C262 100 284 96 296 118 S326 150 340 112 S360 92 366 104"
-            fill="none"
-            className="stroke-brand-500"
-            strokeWidth={3}
-            strokeLinecap="round"
-          />
-          <circle
-            cx={346}
-            cy={142}
-            r={12}
-            fill="none"
-            className="stroke-amber-400"
-            strokeWidth={2.5}
-          />
-          <path
-            d="M252 152 l22 0"
-            className="stroke-slate-400"
-            strokeWidth={2}
-            strokeLinecap="round"
-          />
+        <Window x={232} y={52} w={150} h={118} title="Vote">
+          {DOTS.map((count, row) => (
+            <g key={row}>
+              <rect
+                x={246}
+                y={84 + row * 26}
+                width={70}
+                height={18}
+                rx={3}
+                className="fill-slate-100"
+              />
+              {Array.from({ length: count }, (_, i) => (
+                <circle
+                  key={i}
+                  cx={330 + i * 12}
+                  cy={93 + row * 26}
+                  r={4.5}
+                  className="fill-brand-500"
+                />
+              ))}
+            </g>
+          ))}
         </Window>
       </g>
-      {/* Diagram: in front, in the middle. */}
-      <Window x={110} y={40} w={180} h={140} title="Diagram">
-        <Shape x={124} y={86} w={60} h={32} label="Idea" />
-        <Shape
-          x={214}
-          y={78}
-          w={62}
-          h={48}
-          kind="diamond"
-          fill="fill-violet-100"
-          stroke="stroke-violet-400"
+      {/* The Space: in front, in the middle, the team gathered round the meeting table. */}
+      <Window x={110} y={40} w={180} h={140} title="Team Pod">
+        <rect
+          x={120}
+          y={70}
+          width={160}
+          height={100}
+          rx={3}
+          className="fill-amber-50 stroke-slate-300"
+          strokeWidth={2}
         />
-        <Shape x={170} y={140} w={64} h={30} accent label="Build" />
-        <Arrow from={[184, 102]} to={[211, 102]} width={2} />
-        <Arrow from={[245, 126]} to={[226, 138]} width={2} />
+        <rect
+          x={170}
+          y={100}
+          width={60}
+          height={36}
+          rx={4}
+          className="fill-slate-200 stroke-slate-400"
+          strokeWidth={1.2}
+        />
+        <Character x={160} y={110} shirt="fill-brand-500" />
+        <Character x={240} y={110} shirt="fill-violet-400" />
+        <Character x={186} y={146} shirt="fill-rose-400" />
+        <Character x={214} y={146} shirt="fill-amber-400" />
+        <Character x={200} y={86} shirt="fill-sky-400" />
       </Window>
 
       <Chip x={118} y={12} label="Free for everyone" tone="emerald" h={20} size={10} />
       <Chip x={236} y={12} label="Open source" tone="violet" h={20} size={10} />
       <Label x={200} y={204} anchor="middle" size={9} weight={600} tone="muted">
-        Diagram · Draw · Workshop
+        Meet · Workshop · Decide
       </Label>
     </Stage>
   );

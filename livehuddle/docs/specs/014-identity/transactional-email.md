@@ -108,12 +108,14 @@ every address in one call. Guests have no address and never receive email.
   it reaches `sendEmail` through the spread every caller already writes,
   instead of being re-stated (and forgotten) at each call site.
   **Branding.** Every builder renders through one shell, so every email looks
-  the same: a brand-gradient band across the top of the card (sky-400 to
-  blue-700, flat `#0ea5e9` where a client drops gradients), the logo mark beside
-  the "live"/"diagram" wordmark in the header, a brand-50 page behind the card,
-  and a footer under the card with the lockup again, the tagline ("Diagram,
-  draw and make pages together, live. Free and open source.") and a link to the
-  site. Both lockups link to `APP_BASE_URL`. The mark is a transparent 64px PNG
+  the same: a brand-gradient band across the top of the card (the prism's
+  emerald run, emerald-400 `#34d399` through emerald-500 `#10b981` to teal-700
+  `#0f766e`, flat `#047857` where a client drops gradients), the logo mark beside
+  the "live"/"huddle" wordmark in the header (`live` in brand-700 `#047857`), a
+  brand-50 `#ecfdf5` page behind the card, buttons and links in brand-700 (white
+  on it is 5.5:1), and a footer under the card with the lockup again, the
+  tagline ("Meet and run workshops together, live. Free and open source.") and a
+  link to the site. Both lockups link to `APP_BASE_URL`. The mark is a transparent 64px PNG
   (`/email/livehuddle-mark-64.png`, shown at 28px in the header and 22px in
   the footer) served by the marketing app and written by `pnpm icons:brand`,
   because Gmail and Outlook drop SVG and most clients block `data:` images.

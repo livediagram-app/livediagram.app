@@ -20,7 +20,7 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('tools').filter((a) => a.slug !== 'tables')}
 >
 
-A table is an editable grid for the parts of a diagram that are easier to read as rows and columns: a comparison, a schedule, a small data set, a legend. It lives on the canvas like any other element, so you can place, resize, recolour, lock and move it freely.
+A table is an editable grid for the parts of a board that are easier to read as rows and columns: a comparison, a schedule, a small data set, a legend. It lives on the canvas like any other element, so you can place, resize, recolour, lock and move it freely.
 
 <Figure caption="A table element with a header row and body cells, with one cell selected for editing.">
   <TableElement />
@@ -57,7 +57,7 @@ A table paints four surfaces (the cells, the grid lines, the header band and the
 
 Zebra striping comes with the look, since it's part of the look. Which cells are **headers** doesn't: that's about your data, so a preset never re-reads your first row as a heading.
 
-Pick a look and it stays your table's look: change the diagram's [theme](/help/canvas/themes/) and a Banded table becomes the new theme's Banded, the same way a shape's preset moves with the theme. Set any of those colours by hand, or toggle the striping yourself, and the table keeps what you chose from then on.
+Pick a look and it stays your table's look: change the board's [theme](/help/canvas/themes/) and a Banded table becomes the new theme's Banded, the same way a shape's preset moves with the theme. Set any of those colours by hand, or toggle the striping yourself, and the table keeps what you chose from then on.
 
 The table is a real canvas element underneath, so its grid lines and text follow the active [theme](/help/canvas/themes/), and you can restyle, align and multi-select it alongside everything else. The **Table** section of its context menu toggles **Header Row**, **Header Column** and **Zebra Striping**; with both headers on, the corner cell is both.
 

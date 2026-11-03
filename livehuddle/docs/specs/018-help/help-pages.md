@@ -55,13 +55,13 @@ livehuddle's scenes:
 
 | Scene                | Where                | What it shows                                                                        |
 | -------------------- | -------------------- | ------------------------------------------------------------------------------------ |
-| Getting Started      | own                  | a first diagram: pick a starting point, add shapes and arrows, share the link        |
-| About                | own                  | three windows: a workshop's stickies, a diagram and a sketch                         |
+| Getting Started      | own                  | a first Space: pick a starting point, add to the board, share the link               |
+| About                | own                  | three windows: a retro's stickies, a Team Pod with the team round its table, a vote  |
 | Canvas               | own                  | a flowchart mid-build, a sticky note, the palette strip, undo and zoom               |
 | Palette              | own                  | the Shapes category open and a diamond dragged onto the canvas                       |
 | Selection Modes      | own                  | the mode picker, a marquee and the laser's trail                                     |
 | Collaboration        | own                  | three people on one canvas: cursors, a live selection, a comment thread, Share       |
-| Explorer             | own                  | My Work and a grid of diagrams                                                       |
+| Explorer             | own                  | My Work and a grid of Spaces                                                         |
 | Tabs                 | own                  | one document's canvases stacked behind the tab bar                                   |
 | User Interface       | own                  | the editor with numbered callouts on its parts                                       |
 | Tools                | shared, with its own | Auto Layout tidying a sign-up flow, beside the shared appearance switch and Zen mode |
@@ -83,7 +83,7 @@ Top to bottom:
    link straight to the articles most readers come for (Your first diagram, Sharing, Keyboard shortcuts, Templates,
    Exporting, Editor modes). The list is `HOME.popular` in `apps/help/lib/home-sections.ts`, and the shared suite
    (`help-site.test.ts`) checks every entry names a real article.
-2. **Start here.** A full-width card: livehuddle's own Getting Started scene (drawing a first diagram: pick a starting point, add shapes and arrows, share the link) beside
+2. **Start here.** A full-width card: livehuddle's own Getting Started scene (opening a first Space: pick a starting point, add to the board, share the link) beside
    the first four Getting Started guides as numbered steps and a link to the rest, then About livehuddle and
    Tips and Tricks as two wide cards.
 3. **Editor guides.** The feature categories as art cards, three across on a computer.
@@ -111,7 +111,7 @@ up, a page with groups shows a sticky **jump list** of its groups beside the gri
 | Category | Groups, in order                                                               |
 | -------- | ------------------------------------------------------------------------------ |
 | Canvas   | Basics, Modes and Boards, Text and Notes, Styling Elements, Layers and Locking |
-| Palette  | Everyday Elements, Diagram Kits, Workshop Kits, Palette Settings               |
+| Palette  | Everyday Elements, Layout Kits, Workshop Kits, Palette Settings                |
 | Explorer | Your Library, Activity, Assets and Imports                                     |
 
 The remaining categories have twelve or fewer cards and stay one grid.

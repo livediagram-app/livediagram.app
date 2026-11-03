@@ -1,0 +1,20 @@
+{
+  "name": "@livehuddle/tailwind-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./theme.css",
+  "exports": {
+    ".": "./theme.css",
+    "./theme.css": "./theme.css"
+  },
+  "files": [
+    "theme.css"
+  ],
+  "scripts": {
+    "clean": "rm -rf node_modules .turbo"
+  },
+  "dependencies": {
+    "@liveworkspace/tailwind-config": "workspace:*"
+  }
+}

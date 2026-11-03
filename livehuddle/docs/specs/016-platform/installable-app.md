@@ -9,7 +9,7 @@ notifications ([Phone notifications](../014-identity/phone-notifications.md)). T
 `/manifest.webmanifest`, served by the marketing app (`app/manifest.ts`, built by `installManifest` in
 `@liveworkspace/marketing-site/lib/install`):
 
-- `name` and `short_name` `livehuddle`, `display: standalone`, `id` and `scope` `/`, theme colour `#0EA5E9`, a white
+- `name` and `short_name` `livehuddle`, `display: standalone`, `id` and `scope` `/`, theme colour `#10b981` (brand-500), a white
   background.
 - `start_url` `/explorer`: an installed livehuddle opens on the person's work, never the marketing page. `id` stays `/`,
   so an install made before keeps being the same app.

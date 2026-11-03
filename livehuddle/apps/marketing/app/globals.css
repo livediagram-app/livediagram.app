@@ -1,15 +1,12 @@
 @import 'tailwindcss';
-@import '@liveworkspace/tailwind-config';
+@import '@livehuddle/tailwind-config';
 @import '@livehuddle/template-previews/preview-art-tile.css';
 @import '@livehuddle/template-previews/preview-motion.css';
 @import '@livehuddle/ui/hero-band.css';
-@import '@liveworkspace/marketing-site/css/hero-fan.css';
 @import './hero-animations.css';
-@import './hero-whiteboard.css';
 @import './hero-mode-animations.css';
-@import './hero-scenes/diagram.css';
 @import './hero-scenes/draw.css';
-@import './hero-scenes/mindmap.css';
+@import './hero-scenes/space.css';
 @import './hero-scenes/townhall.css';
 @import '@liveworkspace/marketing-site/css/promises.css';
 @import './feature-art/core.css';

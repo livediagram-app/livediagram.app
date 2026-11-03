@@ -1,41 +1,47 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { CanvasOverview } from '@/components/illustrations/canvas';
+import { AvatarMode } from '@/components/illustrations/palette-modes';
 import { LiveCursors } from '@liveworkspace/help-site/art/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'What is livehuddle?',
   description:
-    'livehuddle is a free, open-source, real-time multiplayer diagram editor that runs in your browser, with no sign-in needed to start.',
+    'livehuddle is a free, open-source place to meet and run workshops together: shared Spaces your team walks round as characters, with no sign-in needed.',
   path: '/help/about/what-is-livehuddle/',
 });
 
-<ArticleLayout title="What is livehuddle?" description="A free, open-source canvas where teams run workshops and build whiteboards and diagrams together, in real time, right in the browser." categoryTitle="About livehuddle" categorySlug="about">
+<ArticleLayout title="What is livehuddle?" description="Meet and run workshops together: a free, open-source Space your team walks into, talks in and works on, live, right in the browser." categoryTitle="About livehuddle" categorySlug="about">
 
-livehuddle is a web app where people run **workshops and build whiteboards and diagrams together in real time**. It is a multiplayer canvas in the browser: anyone with access to a space can join, see other collaborators' cursors and edits live, and contribute at the same time. The result is a shared visual artifact, a retro board, a process map, an architecture diagram, or a brainstorm board, that a team builds together rather than one person authoring and the rest reviewing.
+livehuddle is a web app where teams **meet and run workshops together**. You open a **Space**, a shared place in the browser, and everyone who joins walks in as a little character: they can gather round a table, say hello in a speech bubble, and put their ideas on the board in front of them. Everyone sees everyone else's moves and edits as they happen.
 
-## A multiplayer canvas
+## A Space to meet in
 
-The heart of livehuddle is the [canvas](/help/canvas/the-canvas/). You drop down shapes, connect them with arrows, drag things around, and the diagram takes shape as you work. When more than one person is in the same space, everyone sees live cursors, who has what selected, and every change as it happens.
+A Space holds one or more **boards** (its tabs), and a board can be a room to meet in, a wall of sticky notes, or both. Start from one of the Spaces (a Virtual Office, a Coworking Space, a Team Pod or an All-Hands Hall) and it opens with you walking, in [Avatar mode](/help/selection-modes/avatar-mode/).
 
-<Figure caption="The editor at a glance: a canvas with shapes and arrows, the shape palette, and your live cursor.">
-  <CanvasOverview />
+<Figure caption="Avatar mode: your character walks to the part of the board you are talking about, and everyone can see where you are.">
+  <AvatarMode />
 </Figure>
 
-- **Shapes and arrows** for flowcharts, system diagrams, and process maps. See [Shapes](/help/palette/shapes/) and [Arrows](/help/palette/arrows/).
-- **Brainstorms** on sticky notes, grouped, voted on and laid out together. See [Write](/help/palette/write/).
-- **Real-time presence** so collaborators rarely overwrite each other: an element someone else has selected is locked for everyone else.
-- **Tabs** to keep related views of one space in a single place. See [Tabs](/help/tabs/using-tabs/).
-- **Session tools** for running a retro or workshop, with timers, votes and polls to hand. See [Workshop Mode](/help/canvas/workshop-mode/).
-- **Templates** for retrospectives, meetings, quizzes and more, so you rarely start from a blank page. See [Templates](/help/canvas/templates/).
+- **Characters** you walk with a click or the arrow keys, dress how you like, and sit at a desk or round a table. See [Avatar Mode](/help/selection-modes/avatar-mode/).
+- **Speech bubbles, waves and reactions** so a quick hello or a round of applause needs no call.
+- **Portals** between boards, so a Space can have a lobby, a meeting room and a breakout corner. See [Portals](/help/palette/tools/portals/).
+- **Real-time presence**: live cursors, who has what selected, and an element someone else is editing locked for everyone else.
 
-## Built for teams who think visually
+## Workshops on the board
 
-livehuddle is aimed at people who need to think together, visually: engineering teams sketching architecture and system flows, product and design teams mapping journeys and information architecture, and cross-functional groups in workshops, planning sessions, and retrospectives. The unit of value is the team, not the single author.
+The same board is where a session happens. Drop sticky notes, group them, then decide together:
 
-To make that frictionless, the space **always works without signing in**. You can land on a blank diagram, build something real, and hand the link to a colleague who edits it straight away, no account required. See [Sharing your space](/help/getting-started/sharing-your-document/).
+- **Session tools** to run a retro or a workshop, with timers, dot votes and polls for the whole room. See [Workshop Mode](/help/canvas/workshop-mode/).
+- **Templates** for retrospectives, stand-ups, brainstorms, quizzes and icebreakers, so you rarely start from an empty board. See [Templates](/help/canvas/templates/).
+- **Shapes, arrows, frames and lanes** when a session needs a little structure. See [Shapes](/help/palette/shapes/) and [Arrows](/help/palette/arrows/).
 
-<Figure caption="Everyone in a space sees each other's live cursors and presence at once.">
+## Built for teams
+
+livehuddle is for teams who would rather be in the room together: remote and hybrid teams keeping a place to bump into each other, facilitators running retros and workshops, and anyone hosting a stand-up, an all-hands or a quiz. The unit of value is the team, not the single author.
+
+To make that frictionless, the Space **always works without signing in**. You can open a Space, set up the board, and hand the link to a colleague who walks straight in, no account required. See [Sharing Your Space](/help/getting-started/sharing-your-document/).
+
+<Figure caption="Everyone in a Space sees each other's live cursors and presence at once.">
   <LiveCursors />
 </Figure>
 
@@ -44,8 +50,8 @@ To make that frictionless, the space **always works without signing in**. You ca
 livehuddle is **MIT-licensed** and **free for everyone**. There is no paid tier and no plan to introduce one. It runs at livehuddle.app, and the whole codebase is open for anyone to read. Every feature is available to every user. See [Why use livehuddle?](/help/about/why-livehuddle/).
 
 <Tip>
-  The fastest way to understand livehuddle is to use it. Open a [new diagram](/new) and drop in a
-  couple of shapes, no sign-up needed.
+  The fastest way to understand livehuddle is to use it. Open [a new Space](/new), pick Team Pod,
+  and walk round it, no sign-up needed.
 </Tip>
 
 </ArticleLayout>

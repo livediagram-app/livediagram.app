@@ -12,23 +12,30 @@ import { parseSourceFiles } from '@liveworkspace/source-ast';
 import { describe, expect, it } from 'vitest';
 
 // White text on a solid brand fill, in light mode (docs/specs/004-interface-design/color-scheme.md, Usage
-// rules): the fill is brand-700, hovering to brand-800. On the sky ramp white reads 2.8:1 on brand-500 and
-// 4.1:1 on brand-600, both under WCAG 2.2 AA's 4.5:1, and nothing fails a build when a new button is painted
+// rules): the fill is brand-700, hovering to brand-800. On the emerald ramp white reads 2.5:1 on brand-500 and
+// 3.8:1 on brand-600, both under WCAG 2.2 AA's 4.5:1, and nothing fails a build when a new button is painted
 // `bg-brand-500 text-white`. So this reads the source of every app and package, the way dark-palette.test.ts
 // does for the dark half.
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const REPO = resolve(ROOT, '../..') + '/';
-// The shared theme (the monorepo's packages/tailwind-config), which this product paints with as it is.
-const THEME_CSS = readFileSync(`${REPO}../packages/tailwind-config/theme.css`, 'utf8');
+// The shared theme (the monorepo's packages/tailwind-config), then this product's palette over it
+// (packages/tailwind-config/theme.css): a later block's declarations win, as they do in the cascade.
+const THEME_CSS = [
+  `${REPO}../packages/tailwind-config/theme.css`,
+  `${REPO}packages/tailwind-config/theme.css`,
+]
+  .map((path) => readFileSync(path, 'utf8'))
+  .join('\n');
 
-/** The `--color-brand-*` declarations of the light `@theme` block. */
+/** The `--color-brand-*` declarations of the light `@theme` blocks, a later block's winning. */
 function lightBrand(): Record<string, string> {
-  const at = THEME_CSS.search(/(^|\n)@theme\s*\{/);
-  const body = THEME_CSS.slice(THEME_CSS.indexOf('{', at) + 1, THEME_CSS.indexOf('}', at));
-  return Object.fromEntries(
-    [...body.matchAll(/--color-brand-(\d+)\s*:\s*([^;]+);/g)].map((m) => [m[1]!, m[2]!.trim()]),
-  );
+  const out: Record<string, string> = {};
+  for (const { index } of THEME_CSS.matchAll(/(^|\n)@theme\s*\{/g)) {
+    const body = THEME_CSS.slice(THEME_CSS.indexOf('{', index) + 1, THEME_CSS.indexOf('}', index));
+    for (const m of body.matchAll(/--color-brand-(\d+)\s*:\s*([^;]+);/g)) out[m[1]!] = m[2]!.trim();
+  }
+  return out;
 }
 
 /** WCAG 2.2 relative luminance of a `#rrggbb` colour. */

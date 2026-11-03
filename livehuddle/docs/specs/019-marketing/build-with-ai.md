@@ -2,7 +2,7 @@
 
 Status: shipped
 
-`/ai` is the marketing page that gets a visitor from "I use an AI tool" to "my AI just made a diagram in livehuddle" in the fewest possible steps. It is the front door to the [MCP server](../015-api/mcp-server.md): one address, one approval, then a prompt. The [help article](../../../apps/help/app/account-and-data/connect-ai-mcp/ai-clients/page.mdx) stays the reference; this page is the guided path, and links to it for everything past the first connection.
+`/ai` is the marketing page that gets a visitor from "I use an AI tool" to "my AI just set up a Space in livehuddle" in the fewest possible steps. It is the front door to the [MCP server](../015-api/mcp-server.md): one address, one approval, then a prompt. The [help article](../../../apps/help/app/account-and-data/connect-ai-mcp/ai-clients/page.mdx) stays the reference; this page is the guided path, and links to it for everything past the first connection.
 
 ## Entry points
 
@@ -12,11 +12,11 @@ Status: shipped
 
 ## The page, top to bottom
 
-1. **Hero.** Eyebrow "Build with AI", headline "Your AI, building in livehuddle", a lede saying it works with the AI tool you already use, then the **address card**: `https://mcp.livehuddle.app/mcp` in a monospace field with a Copy button (the one thing every tool needs). Beside it on wide screens, a chat illustration (`AiChatArt`): a request bubble, a tool-call chip naming the livehuddle tool, and the shared `DiagramBuildAnimation` drawing the result with its cursor labelled "AI". Reduced motion shows the finished picture.
-2. **Three steps** (`#how-it-works`), one row: **Add livehuddle** (paste the address into your tool), **Approve** (a livehuddle page opens: sign in or create a free account, check where access goes, Connect), **Ask** (request a diagram, a whiteboard or a workshop; it lands in your account).
+1. **Hero.** Eyebrow "Build with AI", headline "Your AI, building in livehuddle", a lede saying it works with the AI tool you already use, then the **address card**: `https://mcp.livehuddle.app/mcp` in a monospace field with a Copy button (the one thing every tool needs). Beside it on wide screens, a chat illustration (`AiChatArt`): a request bubble, a tool-call chip naming the livehuddle tool, and the board it set up: a sprint retro's three columns of stickies (Went well, To improve, Actions). Static, so there is no motion to reduce.
+2. **Three steps** (`#how-it-works`), one row: **Add livehuddle** (paste the address into your tool), **Approve** (a livehuddle page opens: sign in or create a free account, check where access goes, Connect), **Ask** (ask for a stand-up, a retro or a workshop; it lands in your account).
 3. **Pick your tool** (`#connect`): a tab list of clients, grouped Chat apps, Coding agents, Editors, Anything else. Selecting one shows its steps. The choice is mirrored into the URL hash (`/ai#cursor`) with `history.replaceState`, and a hash on arrival selects that client, so a link can open straight onto one tool. Every panel is in the HTML (inactive ones `hidden`), so the instructions are indexable and work before hydration (the first client shows until then).
 4. **Try it** (`#prompts`): starter prompts, each a card with a Copy button, each mapped to a shipped MCP tool.
-5. **What it can do**: a grid of the MCP's capabilities in plain words (diagrams from a description or Mermaid, boards and templates from the template library, tidying up, find and read with a picture, share links, live changes on an open canvas with Undo, the agent showing as its own avatar on the tab it is working on).
+5. **What it can do**: a grid of the MCP's capabilities in plain words (sessions from a sentence, boards and templates from the template library, tidying up, find and read with a picture, share links, live changes on an open canvas with Undo, the agent showing as its own avatar on the tab it is working on).
 6. **In your control**: account needed (free), the approval page shows where access goes, Read-only access, revoke from Settings › Account › API Tokens, six-month tokens, livehuddle runs no AI model of its own.
 7. **If it doesn't connect**: the three failure lines from the help article (expired request, token limit, keeps asking to sign in), and a link to the full help article.
 
@@ -58,4 +58,4 @@ The page is public marketing, outside any document, so Editor, Participant and V
 
 ## Performance
 
-The page's script is its client components: the picker, and each copy button outside it (the address and the prompts); the rest is static. No new dependency. The chat art reuses `DiagramBuildAnimation` (CSS keyframes, no JS tick).
+The page's script is its client components: the picker, and each copy button outside it (the address and the prompts); the rest is static. No new dependency. The chat art is static markup, no animation.

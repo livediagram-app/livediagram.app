@@ -20,12 +20,12 @@ import { heroSceneData, type HeroSceneKey } from './hero-scene-data';
 // whole set put all four boards in its JavaScript. The board is drawn only once the window plays
 // (below), and its code is fetched as the window mounts, well before that.
 const BOARD_LOADERS: Record<HeroSceneKey, () => Promise<ComponentType>> = {
-  diagram: () => import('./hero-diagram-board').then((m) => m.DiagramBoard),
+  space: () => import('./hero-space-scene').then((m) => m.SpaceScene),
   draw: () => import('./hero-draw-board').then((m) => m.DrawBoard),
   townhall: () => import('./hero-townhall-board').then((m) => m.TownHallBoard),
 };
 const BOARDS: Record<HeroSceneKey, ComponentType> = {
-  diagram: dynamic(BOARD_LOADERS.diagram, { ssr: false }),
+  space: dynamic(BOARD_LOADERS.space, { ssr: false }),
   draw: dynamic(BOARD_LOADERS.draw, { ssr: false }),
   townhall: dynamic(BOARD_LOADERS.townhall, { ssr: false }),
 };

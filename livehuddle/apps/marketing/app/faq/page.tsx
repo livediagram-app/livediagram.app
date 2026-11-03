@@ -46,7 +46,7 @@ export default function FaqPage() {
         <FaqBrowser
           eyebrow="FAQ"
           title="Questions, answered"
-          lede="Everything you might want to know about livehuddle, from your first diagram to getting help."
+          lede="Everything you might want to know about livehuddle, from your first Space to getting help."
         />
 
         <section aria-labelledby="faq-more-title" className="mx-auto mt-20 max-w-6xl px-6">

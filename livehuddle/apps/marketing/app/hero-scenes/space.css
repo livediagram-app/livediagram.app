@@ -1,0 +1,369 @@
+/* The landing hero's Space (components/hero-space-scene.tsx, docs/specs/019-marketing/marketing-site.md "Hero"):
+   every move the scene makes, so it runs with no script. The timings ride on custom properties the scene sets from
+   components/hero-space-cast.ts: --d (when), --t (how long), --dx / --dy (a leg of a walk), --n (strides in a leg),
+   --r (a reaction's first turn). The walk-in plays once; the bubbles and reactions then take turns on a 12s loop. */
+
+.hs-scene {
+  --hs-card: #ffffff;
+  --hs-card-text: #1e293b;
+  --hs-chip: #ffffff;
+  --hs-chip-edge: #e2e8f0;
+  --hs-chip-text: #334155;
+}
+:where(.dark, .dark *):not(:where(.light, .light *)) .hs-scene {
+  --hs-card: #0f172a;
+  --hs-card-text: #f1f5f9;
+  --hs-chip: #1e293b;
+  --hs-chip-edge: #334155;
+  --hs-chip-text: #e2e8f0;
+}
+
+.hs-card {
+  fill: var(--hs-card);
+  stroke-width: 1.5;
+  filter: drop-shadow(0 3px 6px rgb(15 23 42 / 0.12));
+}
+.hs-card-text {
+  fill: var(--hs-card-text);
+}
+.hs-chip-card {
+  fill: var(--hs-chip);
+  stroke: var(--hs-chip-edge);
+}
+.hs-chip-text {
+  fill: var(--hs-chip-text);
+}
+
+/* A leg of a walk: one straight move, nested inside the leg before it, so the legs add up to the path. */
+.hs-leg {
+  animation: hs-leg var(--t) linear var(--d) both;
+}
+@keyframes hs-leg {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(var(--dx), var(--dy));
+  }
+}
+
+/* The walking stills of a leg show only while it is walked (a hair longer, so legs meet without a gap), striding
+   between the walk cycle's two frames. */
+.hs-walk {
+  opacity: 0;
+  animation: hs-shown calc(var(--t) + 0.05s) step-end var(--d);
+}
+.hs-walk .hs-stride-a {
+  animation: hs-stride-a 0.6s step-end var(--d) var(--n);
+}
+.hs-walk .hs-stride-b {
+  opacity: 0;
+  animation: hs-stride-b 0.6s step-end var(--d) var(--n);
+}
+@keyframes hs-shown {
+  0%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes hs-stride-a {
+  0% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hs-stride-b {
+  0% {
+    opacity: 0;
+  }
+  50%,
+  100% {
+    opacity: 1;
+  }
+}
+
+/* At rest from arrival; the name chip from setting off; the waiting still (Ana at the machine) until she leaves. */
+.hs-stand,
+.hs-arrive {
+  opacity: 0;
+  animation: hs-appear 0.01s step-end var(--d) forwards;
+}
+.hs-idle {
+  animation: hs-vanish 0.01s step-end var(--d) forwards;
+}
+@keyframes hs-appear {
+  0%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes hs-vanish {
+  0%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Leo's cheer on the loop: Avatar mode's two hops, arms up, as three stills by height (0, 12 and 20 px), each
+   bounce 420ms: 0, 12, 20, 12. The 0.84s is 7% of the 12s loop. */
+.hs-rest-cheer {
+  animation: hs-rest-cheer 12s step-end var(--r) infinite;
+}
+.hs-cheer-0,
+.hs-cheer-1,
+.hs-cheer-2 {
+  opacity: 0;
+}
+.hs-cheer-0 {
+  animation: hs-cheer-0 12s step-end var(--r) infinite;
+}
+.hs-cheer-1 {
+  animation: hs-cheer-1 12s step-end var(--r) infinite;
+}
+.hs-cheer-2 {
+  animation: hs-cheer-2 12s step-end var(--r) infinite;
+}
+@keyframes hs-rest-cheer {
+  0% {
+    opacity: 0;
+  }
+  7%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes hs-cheer-0 {
+  0% {
+    opacity: 1;
+  }
+  0.875% {
+    opacity: 0;
+  }
+  3.5% {
+    opacity: 1;
+  }
+  4.375%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hs-cheer-1 {
+  0% {
+    opacity: 0;
+  }
+  0.875% {
+    opacity: 1;
+  }
+  1.75% {
+    opacity: 0;
+  }
+  2.625% {
+    opacity: 1;
+  }
+  3.5% {
+    opacity: 0;
+  }
+  4.375% {
+    opacity: 1;
+  }
+  5.25% {
+    opacity: 0;
+  }
+  6.125% {
+    opacity: 1;
+  }
+  7%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hs-cheer-2 {
+  0% {
+    opacity: 0;
+  }
+  1.75% {
+    opacity: 1;
+  }
+  2.625% {
+    opacity: 0;
+  }
+  5.25% {
+    opacity: 1;
+  }
+  6.125%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Sam's wave on the loop: Avatar mode's raised hand crossing back and forth, four swings of 0.4s (each 3.33% of
+   the loop) inside the wave's 1.6s, so nothing ticks between waves. */
+.hs-rest-wave {
+  animation: hs-rest-wave 12s step-end var(--r) infinite;
+}
+.hs-react-wave .hs-stride-a,
+.hs-react-wave .hs-stride-b {
+  opacity: 0;
+}
+.hs-react-wave .hs-stride-a {
+  animation: hs-wave-a 12s step-end var(--r) infinite;
+}
+.hs-react-wave .hs-stride-b {
+  animation: hs-wave-b 12s step-end var(--r) infinite;
+}
+@keyframes hs-rest-wave {
+  0% {
+    opacity: 0;
+  }
+  13.33%,
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes hs-wave-a {
+  0% {
+    opacity: 1;
+  }
+  3.33% {
+    opacity: 0;
+  }
+  6.67% {
+    opacity: 1;
+  }
+  10%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes hs-wave-b {
+  0% {
+    opacity: 0;
+  }
+  3.33% {
+    opacity: 1;
+  }
+  6.67% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  13.33%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Speech bubbles take turns on the loop: each rises in over its speaker's head, holds, and drifts off. */
+.hs-say {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: hs-say 12s ease-out var(--d) infinite;
+}
+@keyframes hs-say {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+  3%,
+  20% {
+    opacity: 1;
+    transform: none;
+  }
+  23%,
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+/* The board: Kit's cursor glides in, writes the note into Wins and moves aside; then the dot votes land. */
+.hs-cursor {
+  opacity: 0;
+  animation: hs-cursor 6s ease-in-out var(--d) both;
+}
+@keyframes hs-cursor {
+  0% {
+    opacity: 0;
+    transform: translate(var(--x0), var(--y0));
+  }
+  5% {
+    opacity: 1;
+  }
+  25%,
+  27% {
+    transform: translate(var(--x1), var(--y1));
+  }
+  45% {
+    transform: translate(var(--x2), var(--y2));
+  }
+  60%,
+  100% {
+    opacity: 1;
+    transform: translate(var(--x3), var(--y3));
+  }
+}
+.hs-note {
+  animation: hs-write 1.1s steps(12) var(--d) both;
+}
+@keyframes hs-write {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+.hs-vote {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hs-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) var(--d) both;
+}
+@keyframes hs-pop {
+  from {
+    opacity: 0;
+    transform: scale(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Reduced motion: the settled frame. Everyone at the table, Maya's bubble up, the note and the votes on the board. */
+@media (prefers-reduced-motion: reduce) {
+  .hs-leg {
+    animation: none;
+    transform: translate(var(--dx), var(--dy));
+  }
+  .hs-walk,
+  .hs-idle,
+  .hs-cursor,
+  .hs-react-wave,
+  .hs-cheer-0,
+  .hs-cheer-1,
+  .hs-cheer-2 {
+    display: none;
+  }
+  .hs-stand,
+  .hs-arrive,
+  .hs-rest-cheer,
+  .hs-rest-wave,
+  .hs-vote,
+  .hs-note {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+  }
+  .hs-say {
+    animation: none;
+  }
+  .hs-say-first {
+    opacity: 1;
+  }
+}

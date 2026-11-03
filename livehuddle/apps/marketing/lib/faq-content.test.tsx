@@ -73,26 +73,24 @@ describe('filterFaq', () => {
   });
 
   it('needs every word, in any case, across question, answer and category', () => {
-    const hits = filterFaq(FAQ_CATEGORIES, 'MERMAID export').flatMap((c) =>
-      c.items.map((i) => i.q),
-    );
-    expect(hits).toContain('Does it work with Mermaid?');
+    const hits = filterFaq(FAQ_CATEGORIES, 'PNG export').flatMap((c) => c.items.map((i) => i.q));
+    expect(hits).toContain('Can I export my work?');
     expect(hits.every((q) => q !== 'Is it really free?')).toBe(true);
   });
 
   it('drops categories left empty, and everything for a query nothing matches', () => {
-    expect(filterFaq(FAQ_CATEGORIES, 'mermaid').map((c) => c.id)).toContain('import-export');
+    expect(filterFaq(FAQ_CATEGORIES, 'png').map((c) => c.id)).toContain('import-export');
     expect(filterFaq(FAQ_CATEGORIES, 'zzzqqq')).toEqual([]);
   });
 });
 
 describe('domain language', () => {
-  // A mode is the tab's, shared by everyone on it (docs/specs/003-system-architecture/domain-language.md).
+  // livehuddle has one mode, so the FAQ never sells a choice of them, and never calls one personal
+  // (docs/specs/003-system-architecture/domain-language.md).
   it('never calls a mode personal', () => {
     const copy = FAQ_CATEGORIES.flatMap((c) =>
       c.items.map((i) => (typeof i.a === 'string' ? i.a : (i.aText ?? ''))),
     ).join(' ');
     expect(copy).not.toMatch(/modes? (?:are|is) personal/i);
-    expect(copy).toMatch(/mode belongs to the tab/);
   });
 });

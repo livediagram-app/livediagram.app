@@ -18,7 +18,7 @@ import { getTheme } from './themes';
 // #rrggbb on purpose: that is the only notation `legibleColor` parses, and
 // while this was `rgb(2 132 199)` the most common accent in the app was the
 // one accent the legibility rule silently skipped.
-const DEFAULT_TAB_ACCENT = '#0284c7'; // brand-600
+const DEFAULT_TAB_ACCENT = '#059669'; // brand-600, emerald
 
 // The theme's element stroke, or the palette default when the theme sets none.
 function tabAccent(tab: Tab): string {

@@ -10,7 +10,7 @@ export default function Home() {
     <HelpHome
       site={site}
       home={HOME}
-      lede="Guides and answers for every part of livehuddle, from your first diagram onwards."
+      lede="Guides and answers for every part of livehuddle, from your first Space onwards."
       issuesUrl={`${REPO_URL}/issues`}
     />
   );

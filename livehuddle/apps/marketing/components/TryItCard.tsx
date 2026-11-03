@@ -2,8 +2,8 @@ import { ctaHref } from '@livehuddle/api-schema';
 
 import { StartDrawingArt } from '@liveworkspace/marketing-site/components/StartDrawingArt';
 
-// The brand-blue "just try it" card that closes the FAQ and the comparison pages: a line of copy and the
-// Start drawing CTA (docs/specs/019-marketing/marketing-site.md: the primary CTA reads "Start drawing"), measured
+// The brand "just try it" card that closes the FAQ and the comparison pages: a line of copy and the
+// Open a Space CTA (docs/specs/019-marketing/marketing-site.md: the primary CTA reads "Open a Space"), measured
 // as `<surface>.Card` by the landing funnel. `art` is for a card that sits in a grid of taller cards: the landing
 // page's drawing illustration fills the space above the copy, so the card never shows an empty middle.
 export function TryItCard({
@@ -42,7 +42,7 @@ export function TryItCard({
         href={ctaHref('/new', source)}
         className="relative mt-5 inline-flex items-center justify-center rounded-md bg-white px-5 py-2.5 text-sm font-medium text-brand-700 shadow-sm transition hover:bg-brand-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white dark:bg-slate-900 dark:text-brand-300 dark:hover:bg-slate-800"
       >
-        Start drawing
+        Open a Space
       </a>
     </div>
   );

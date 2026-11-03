@@ -21,12 +21,13 @@ export const SITE_NAME = 'livehuddle';
 // What livehuddle is, in the words every public surface uses (docs/specs/019-marketing/marketing-site.md
 // "SEO and metadata"), kept here so they can't drift: the landing page's title, its description
 // (also the web app manifest's), and the one-line pitch the share card, the share images' alt text
-// and the share rail build on. It names every kind of thing the canvas makes, not just diagrams.
-export const SITE_TITLE = 'livehuddle: Diagram, draw and run workshops together, live';
+// and the share rail build on. The pitch is open decision D5's (docs/specs/005-project-roadmap/open-decisions.md):
+// a place to meet and run workshops, never a diagramming tool, which is livediagram's.
+export const SITE_TITLE = 'livehuddle: Meet and run workshops together, live';
 export const SITE_DESCRIPTION =
-  'A free, real-time canvas for diagrams, whiteboards, mind maps and workshops. Built for teams who think visually.';
+  'A free, real-time Space for meetings and workshops: walk in, gather round the table and run the session with timers, votes and polls.';
 // Lower case: it follows "livehuddle: " or starts a sentence through sentencePitch.
-export const SITE_PITCH = 'a real-time canvas for diagrams, whiteboards and workshops';
+export const SITE_PITCH = 'a real-time space to meet and run workshops together';
 export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.slice(1)}.`;
 
 // The open-source repository (docs/specs/002-project-scope/open-source-and-business-model.md: the codebase is public + MIT), linked
@@ -59,14 +60,14 @@ export const BRAND_ICONS: NonNullable<Metadata['icons']> = {
   apple: '/apple-icon',
 };
 
-// Mobile chrome + colour-scheme signal for the public sites: brand-500 tints
+// Mobile chrome + colour-scheme signal for the public sites: brand-500 (emerald) tints
 // Android Chrome's URL bar, the iOS PWA status bar and the Windows tile, and
 // 'light dark' says the pages paint both appearances. The painted one is the
 // CSS `color-scheme` the shared theme sets from the `dark` class, which outranks
 // this hint (docs/specs/004-interface-design/appearance.md). The editor has its own
 // viewport (pinned zoom, docs/specs/007-editor/editor-app.md) and doesn't use this.
 export const PUBLIC_VIEWPORT: Viewport = {
-  themeColor: '#0EA5E9',
+  themeColor: '#10b981',
   colorScheme: 'light dark',
 };
 

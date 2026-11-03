@@ -201,7 +201,7 @@ Each step is its own PR, and both products build and pass their tests after ever
      product's `@<product>/help-registry` keeps only its catalogue (categories and articles) and its
      telemetry-id overrides, bound with `createHelpRegistry` and `createHelpTelemetryIds`.
    - `tailwind-config` is one theme, sky by default, which livediagram and liveworkspace.app import
-     as it is. liveplanner, livedocuments and livedesign keep `@<product>/tailwind-config` as their
+     as it is. liveplanner, livedocuments, livedesign and livehuddle keep `@<product>/tailwind-config` as their
      palette only: the shared theme, then their brand ramps; a test in the shared package keeps those
      palettes to brand tokens. Motion only one app drew moved into that app's stylesheet.
    - `licences` is one engine, one contract for the /licences page and one pool of committed texts.

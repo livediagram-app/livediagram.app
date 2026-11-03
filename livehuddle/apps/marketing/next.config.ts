@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
     '@liveworkspace/comparisons',
     '@liveworkspace/marketing-site',
     '@liveworkspace/account-menu',
+    '@liveworkspace/avatar',
   ],
 };
 

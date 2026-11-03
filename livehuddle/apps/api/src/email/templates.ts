@@ -8,17 +8,19 @@ import { xmlEscape } from '@liveworkspace/icons';
 import type { Env } from '../types';
 import { appBaseUrl } from './client';
 
-const BRAND = '#0ea5e9';
-// The wordmark's "live" accent: brand-600, as in the site header's light mode.
-const WORDMARK_ACCENT = '#0284c7';
+// brand-700: it carries the button's white text and the links' text, and white on
+// emerald-500 is 2.5:1 where brand-700 clears AA at 5.5:1.
+const BRAND = '#047857';
+// The wordmark's "live" accent: brand-700, as in the site header's light mode.
+const WORDMARK_ACCENT = '#047857';
 const INK = '#0f172a';
 const MUTED = '#475569';
-// The brand prism's light-to-deep sky run, for the band across the top of the
+// The brand prism's light-to-deep emerald run, for the band across the top of the
 // card. Outlook ignores the gradient and paints BRAND underneath instead.
-const BAND_GRADIENT = 'linear-gradient(90deg,#38bdf8 0%,#0ea5e9 45%,#1d4ed8 100%)';
+const BAND_GRADIENT = 'linear-gradient(90deg,#34d399 0%,#10b981 45%,#0f766e 100%)';
 // The page behind the card: brand-50, so the frame reads livehuddle before a
 // word is read.
-const CANVAS = '#f0f9ff';
+const CANVAS = '#ecfdf5';
 
 // The logo mark beside the wordmark. A transparent PNG on the public site, not
 // inline SVG: Gmail and Outlook drop SVG, and most clients block data: images.
@@ -87,7 +89,7 @@ type Section = {
   footer?: string;
 };
 
-// The mark + "live"/"diagram" wordmark, linked home. A table rather than flex so
+// The mark + "live"/"huddle" wordmark, linked home. A table rather than flex so
 // the two sit on one baseline in Outlook too. The image's alt is empty because
 // the wordmark beside it already says the name when images are blocked.
 function lockup(base: string, fontSize: number, centred = false): string {
@@ -95,7 +97,7 @@ function lockup(base: string, fontSize: number, centred = false): string {
   const margin = centred ? 'margin:0 auto' : 'margin:0';
   return `<a href="${base}" style="text-decoration:none"><table role="presentation" cellpadding="0" cellspacing="0" style="${margin}"><tr>
           <td style="padding-right:10px;vertical-align:middle"><img src="${base}${LOGO_PATH}" width="${mark}" height="${mark}" alt="" style="display:block;border:0;outline:none;width:${mark}px;height:${mark}px"></td>
-          <td style="vertical-align:middle;font-size:${fontSize}px;font-weight:600;letter-spacing:-0.3px;color:${INK}"><span style="color:${WORDMARK_ACCENT}">live</span>diagram</td>
+          <td style="vertical-align:middle;font-size:${fontSize}px;font-weight:600;letter-spacing:-0.3px;color:${INK}"><span style="color:${WORDMARK_ACCENT}">live</span>huddle</td>
         </tr></table></a>`;
 }
 
@@ -144,7 +146,7 @@ function shell(env: Env, section: Section): string {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px">
       <tr><td align="center" style="padding:20px 32px 0">
         ${lockup(base, 14, true)}
-        <p style="margin:8px 0 0;color:#94a3b8;font-size:12px;line-height:1.6">Diagram, draw and run workshops together, live. Free and open source. <a href="${base}" style="color:${WORDMARK_ACCENT};text-decoration:none">${base.replace(/^https?:\/\//, '')}</a></p>
+        <p style="margin:8px 0 0;color:#94a3b8;font-size:12px;line-height:1.6">Meet and run workshops together, live. Free and open source. <a href="${base}" style="color:${WORDMARK_ACCENT};text-decoration:none">${base.replace(/^https?:\/\//, '')}</a></p>
       </td></tr>
     </table>
   </td></tr></table>

@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import '@liveworkspace/tailwind-config';
+@import '@livehuddle/tailwind-config';
 /* The Community pages' own styles: the hero's wash and the heart's pop (@liveworkspace/community-site). */
 @import '@liveworkspace/community-site/community.css';
 

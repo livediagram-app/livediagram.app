@@ -92,23 +92,25 @@ The slots:
   Whiteboard (`/new?template=whiteboard`), Blank Illustration
   (`/new?template=blank-illustration`), Blank Plan (`/new?template=blank-plan`) and Blank Space
   (`/new?template=blank-session`). The help centre's header has one
-  Start drawing button, its `Header`.
+  Open a Space button, its `Header`.
 - `Ai` ([Build with AI](build-with-ai.md)) has the header slots only: its own buttons open an AI tool, sign-up or the help centre, never `/new`.
 - `Community` ([Community](../025-community/community.md)) has the header slots only: its Share Your Own buttons open
   Explorer Home rather than `/new`, so they are not funnel sources.
-- `Hero` / `HeroDraw` / `HeroBrainstorm` (**retired**: the landing hero has no buttons; the slots stay in the table so their stored history still reads on the dashboard, and no link carries them): the landing hero's three, Diagram
-  (`/new`), Drawing (`/new?template=whiteboard`) and Brainstorm
-  (`/new?browse=brainstorm`). On a feature page, `Hero` is the category hero's
-  Start drawing.
+- `Hero`: the landing hero's **Open a Space** (`/new`); on a feature page, the category hero's Open a Space. Its
+  Browse Templates is an anchor to the gallery on the same page, not a funnel source.
+- `HeroDraw` / `HeroBrainstorm` (**retired**; the slots stay in the table so their stored history still reads on the
+  dashboard, and no link carries them): an earlier hero's Drawing (`/new?template=whiteboard`) and Brainstorm
+  (`/new?browse=brainstorm`).
 - `HeroBuild` (**retired** with the hero's stage; the slot stays so its history still
   reads): the **Build yours** button on each of the hero's mode windows, opening the template
   step narrowed to that window's kind (`/new?mode=…` and, for the Mind map and Article, `&q=…`).
-- `HeroSearch`: a template picked from the hero's search (`/new?template=<kind>`).
-- `HeroBlank`: **Start Blank** inside the hero's search bar (`/new?start=blank`).
+- `HeroSearch` and `HeroBlank` (**retired** with the hero's search, when the hero became a Space filling up; the slots
+  stay so their history still reads): a template picked from the hero's search, and Start Blank in its bar.
 - `HeroBlank<Blank>` (**retired** with the Start Blank menu; the slots stay so their history
   still reads): a row of the menu the hero's search bar held before its Start Blank link, one slot per blank as the
   header's `Header<Blank>` (`HeroBlankDraw` is Blank Diagram, `/new?blank=1`).
-- `HeroFan`: one of the template cards fanned along the hero's foot (`/new?template=<kind>`).
+- `HeroFan` (**retired** with the hero's card fan; the slot stays so its history still reads): one of the template
+  cards fanned along the hero's foot.
 - `HeroCanvas` (**retired**: the launch window left the hero; the slot stays so its history still reads): the hero stage's launch window, the mini canvas that grew
   into the editor.
 - `Gallery`: any card in the landing template gallery
@@ -119,7 +121,7 @@ The slots:
 - `Templates`: a card in a category page's **Start from a template** band (`/new?template=<kind>`),
   the category's own pick of up to nine templates.
 - `Closing`: the shared "Time to start" band (`StartDrawingCta`).
-- `Card`: the Start drawing card at the foot of the comparison and FAQ pages.
+- `Card`: the Open a Space card at the foot of the comparison and FAQ pages.
 
 A link into `/new` from a public page with no source (the Explorer
 footer's Editor link, a link inside a help article) is deliberately not a CTA and is not

@@ -106,8 +106,7 @@ export function groupGallery(items: GalleryTemplate[]): GalleryShelf[] {
   })).filter((g) => g.templates.length > 0);
 }
 
-// Blank Slate, then every category. Searching lives in the hero (lib/hero-starts.ts), so the gallery
-// only browses.
+// Blank Slate, then every category. The gallery only browses.
 export function galleryShelves(): GalleryShelf[] {
   return [
     { id: 'popular' as const, label: POPULAR_LABEL, templates: popularTemplates() },

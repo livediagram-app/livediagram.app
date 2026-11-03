@@ -12,7 +12,7 @@ export function SiteFooter() {
   return (
     <SharedFooter
       app={BRAND_APP}
-      tagline="Free diagrams, whiteboards and workshops for teams who think together."
+      tagline="Free Spaces to meet and run workshops, for teams who think together."
       newLabel="New Space"
       newIcon={NewIcon}
       community={<CommunityFooterLink className={SITE_FOOTER_LINK} />}

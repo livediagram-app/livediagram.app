@@ -64,6 +64,12 @@ and usage billing; v1 is built to leave room for them ([Future work](future-work
 
 ## D5. Domain and branding
 
+**Settled: (a), (a) and (a)** (built as recommended; Work Tracker #187). The editor, the marketing site, the help centre,
+the Community and the emails wear emerald through `@livehuddle/tailwind-config` and `@liveworkspace/brand`
+([Theme](../004-interface-design/color-scheme.md), [Brand mark](../004-interface-design/brand-mark.md)), and the
+landing page says "Meet and run workshops together" ([Marketing site](../019-marketing/marketing-site.md)). The domain
+waits on the owner (D8).
+
 - **Domain:** (a) `livehuddle.app`, canonical on `www.livehuddle.app`, as every product; (b) another name.
   **Recommendation: (a)**, the name the card uses. Registering it and adding the zone to the liveworkspace Cloudflare
   account is the owner's (D8).

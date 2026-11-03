@@ -47,7 +47,7 @@ export const HELP_ARTICLES = {
   // AI
   connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
-  exportingDiagrams: 'account-and-data/exporting-diagrams',
+  exportingSpaces: 'account-and-data/exporting-spaces',
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
@@ -107,7 +107,7 @@ export const HELP_ARTICLES = {
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
-  yourFirstDiagram: 'getting-started/your-first-diagram',
+  yourFirstDiagram: 'getting-started/your-first-space',
   templates: 'canvas/templates',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
@@ -200,7 +200,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about connecting AI tools',
     description: 'Drive your spaces from Claude, Cursor, and other AI tools over MCP.',
   },
-  exportingDiagrams: {
+  exportingSpaces: {
     title: 'Learn about exporting',
     description: 'What each export format is for and how to use it.',
   },
@@ -386,8 +386,8 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'Spaces saved only in this browser, and how to sync them.',
   },
   yourFirstDiagram: {
-    title: 'Learn about your first diagram',
-    description: 'A short walkthrough of building your first diagram.',
+    title: 'Learn about your first Space',
+    description: 'A short walkthrough of opening your first Space and meeting in it.',
   },
   templates: {
     title: 'Learn about templates',

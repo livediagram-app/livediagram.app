@@ -22,7 +22,7 @@ describe('email templates', () => {
     const { html } = build();
     expect(html).toContain('<img src="https://app.test/email/livehuddle-mark-64.png"');
     const logo = html.indexOf('email/livehuddle-mark-64.png');
-    const wordmark = html.indexOf('>live</span>diagram');
+    const wordmark = html.indexOf('>live</span>huddle');
     expect(logo).toBeGreaterThan(-1);
     expect(wordmark).toBeGreaterThan(logo);
     // Header and footer both carry the lockup, each linked home.

@@ -193,8 +193,8 @@ export const BRAND_APPS: Record<BrandApp, BrandIdentity> = {
       950: '#4c0519',
     },
   },
-  // Registered before its launch (liveworkspace/docs/specs/002-architecture/integrating-an-app.md): no page draws it
-  // until livehuddle's own editor and sites do (livehuddle/docs/specs/005-project-roadmap/open-decisions.md D5).
+  // Emerald, open decision D5 (livehuddle/docs/specs/005-project-roadmap/open-decisions.md): its editor and sites paint
+  // with it through @livehuddle/tailwind-config.
   livehuddle: {
     word: 'huddle',
     // Emerald into teal.

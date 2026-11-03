@@ -215,6 +215,7 @@ packages/
   diagram-lint/   # checks how a tab is drawn (overlaps, crossings, arrows behind boxes), with a fix each
   telemetry-client/ # this product's telemetry facts (app, preferences key, tokens) bound to @liveworkspace/telemetry-client
   licences/     # this product's licence tables (apps, overrides, embedded works) for @liveworkspace/licences' generator
+  tailwind-config/ # this product's emerald brand ramp over @liveworkspace/tailwind-config's theme (every Next app's globals.css)
   # Shared with every product, in the monorepo's packages/ as @liveworkspace/*: api-client, api-kit, mcp-kit, cli-kit,
   # telemetry-client, render-png, source-ast, style-guards, ui (the design system), model-core, api-schema (the wire shapes and validators every product shares), help-registry, help-site (the help centre's pages and components), tailwind-config, icons, licences, template-previews (the previews' motion kit, story parts, fan and checks), marketing-site (the marketing pages every product shares), and the oxlint, prettier, vitest, next configs
 docs/           # developer docs, indexed in docs/README.md

@@ -25,47 +25,56 @@ import { contrastRatio } from '@livehuddle/document';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const REPO = resolve(ROOT, '../..') + '/';
-// The shared theme (the monorepo's packages/tailwind-config), which this product paints with as it is.
-const THEME_CSS = readFileSync(`${REPO}../packages/tailwind-config/theme.css`, 'utf8');
+// The shared theme (the monorepo's packages/tailwind-config), then this product's palette over it
+// (packages/tailwind-config/theme.css): a later block's declarations win, as they do in the cascade.
+const THEME_CSS = [
+  `${REPO}../packages/tailwind-config/theme.css`,
+  `${REPO}packages/tailwind-config/theme.css`,
+]
+  .map((path) => readFileSync(path, 'utf8'))
+  .join('\n');
 
-/** The declarations of the first top-level rule whose selector is exactly `selector`. */
+/** The declarations of every top-level rule whose selector is exactly `selector`, a later rule's winning. */
 function block(css: string, selector: string): Record<string, string> {
-  const at = css.search(
-    new RegExp(`(^|\\n)${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{`),
+  const opener = new RegExp(
+    `(^|\\n)${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{`,
+    'g',
   );
-  if (at < 0) return {};
-  const body = css.slice(css.indexOf('{', at) + 1, css.indexOf('}', at));
-  return Object.fromEntries(
-    [...body.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)].map((m) => [m[1]!, m[2]!.trim()]),
-  );
+  const out: Record<string, string> = {};
+  for (const { index } of css.matchAll(opener)) {
+    const body = css.slice(css.indexOf('{', index) + 1, css.indexOf('}', index));
+    for (const m of body.matchAll(/(--[\w-]+)\s*:\s*([^;]+);/g)) out[m[1]!] = m[2]!.trim();
+  }
+  return out;
 }
 
+// Steel in emerald: Steel's saturation and luminance at emerald's hue (color-scheme.md "Accent: the Steel ramp").
 const STEEL: Record<string, string> = {
-  '50': '#eef3fa',
-  '100': '#dbe6f4',
-  '200': '#bcd0ea',
-  '300': '#9bb9de',
-  '400': '#8fb3e0',
-  '500': '#5b86bf',
-  '600': '#3a6599',
-  '700': '#2f5484',
-  '800': '#26446b',
-  '900': '#1d3553',
-  '950': '#142538',
+  '50': '#e3f7f0',
+  '100': '#c6eee0',
+  '200': '#91ddc4',
+  '300': '#5dcaa6',
+  '400': '#37c697',
+  '500': '#399376',
+  '600': '#2a6e58',
+  '700': '#215d49',
+  '800': '#1b4b3b',
+  '900': '#143b2e',
+  '950': '#0e2920',
 };
 // Light mode's ramp, which the dark palette must not touch (light-palette.test.ts guards its fills).
-const SKY: Record<string, string> = {
-  '50': '#f0f9ff',
-  '100': '#e0f2fe',
-  '200': '#bae6fd',
-  '300': '#7dd3fc',
-  '400': '#38bdf8',
-  '500': '#0ea5e9',
-  '600': '#0284c7',
-  '700': '#0369a1',
-  '800': '#075985',
-  '900': '#0c4a6e',
-  '950': '#082f49',
+const EMERALD: Record<string, string> = {
+  '50': '#ecfdf5',
+  '100': '#d1fae5',
+  '200': '#a7f3d0',
+  '300': '#6ee7b7',
+  '400': '#34d399',
+  '500': '#10b981',
+  '600': '#059669',
+  '700': '#047857',
+  '800': '#065f46',
+  '900': '#064e3b',
+  '950': '#022c22',
 };
 
 describe('the dark palette tokens', () => {
@@ -85,7 +94,7 @@ describe('the dark palette tokens', () => {
 
   it('leaves the light ramp exactly as it was', () => {
     const light = block(THEME_CSS, '@theme');
-    for (const [stop, hex] of Object.entries(SKY)) {
+    for (const [stop, hex] of Object.entries(EMERALD)) {
       expect(light[`--color-brand-${stop}`], `brand-${stop}`).toBe(hex);
     }
   });

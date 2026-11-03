@@ -53,6 +53,7 @@ export function EditorWindow({
   mode,
   overlay,
   canvasClassName = 'h-[460px] sm:h-[360px]',
+  fit = 'meet',
 }: {
   title: string;
   tabs: TabDef[];
@@ -73,6 +74,9 @@ export function EditorWindow({
   // The canvas's size: the hero's fixed heights, or an aspect ratio where the window's width
   // varies with its column (a landing beat), so the scene keeps its proportions.
   canvasClassName?: string;
+  // How the document meets a canvas of another shape: shown whole (meet), or filling the canvas and cropped about
+  // its centre (slice), for a scene that would rather crop on a phone than shrink.
+  fit?: 'meet' | 'slice';
 }) {
   return (
     <div className="@container/window rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10 dark:border-slate-800 dark:bg-slate-900">
@@ -154,7 +158,11 @@ export function EditorWindow({
           {/* The diagram centres in the canvas below the strip, with clear space under it (more on a
               phone, whose portrait layouts run nearer the top), so nothing crowds the toolbar. */}
           <div className="absolute inset-x-0 bottom-2 top-16 sm:bottom-0 sm:top-10">
-            <svg className="h-full w-full" viewBox={viewBox} preserveAspectRatio="xMidYMid meet">
+            <svg
+              className="h-full w-full"
+              viewBox={viewBox}
+              preserveAspectRatio={`xMidYMid ${fit}`}
+            >
               <g key={playing ? 'play' : 'idle'} className={playing ? undefined : 'hero-static'}>
                 {liveDoc}
               </g>
