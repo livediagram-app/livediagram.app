@@ -2,20 +2,19 @@
 
 // The pieces of Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents"), laid
 // out by its two homes: the popover (PageContentsPanel) and the docked sidebar
-// (PageContentsSidebar). The state behind them is usePageContents.
-import { Fragment, type CSSProperties } from 'react';
+// (PageContentsSidebar). The state behind them is hooks/ui/usePageContents.
+import { Fragment, type CSSProperties, type ReactNode } from 'react';
 import { lucideGripVertical, lucideLock, lucideSearch } from '@liveworkspace/icons/lucide';
-import { lucideGlyph, trustedHtml } from '@livedesign/ui';
-import { DropCaret } from '@liveworkspace/workbench/components/primitives/DropCaret';
+import { lucideGlyph } from '@liveworkspace/ui';
+import { trustedHtml } from '@liveworkspace/trusted-types';
+import { DropCaret } from '../primitives/DropCaret';
+import { PageRowMenu, PageRowMenuButton, PageRowStack, usePageRowMenu } from './PageRowMenu';
 import {
-  PageRowMenu,
-  PageRowMenuButton,
-  PageRowStack,
-  usePageRowMenu,
-} from '@liveworkspace/workbench/components/canvas/PageRowMenu';
-import { CONTENTS_FIND_AFTER, type ContentsRow } from '@/lib/page-contents';
-import type { PageThumb } from '@/lib/page-thumb';
-import type { PageContents } from '@/hooks/ui/usePageContents';
+  CONTENTS_FIND_AFTER,
+  type ContentsRowBase,
+  type ContentsThumb,
+} from '../../lib/page-contents';
+import type { PageContents } from '../../hooks/ui/usePageContents';
 
 const LockIcon = lucideGlyph(lucideLock, 12);
 const GripIcon = lucideGlyph(lucideGripVertical, 14);
@@ -28,8 +27,35 @@ const LIST_MAX_W = 92;
 const FILM_MAX_W = 172;
 const FILM_MAX_H = 124;
 
+/** Contents' state as the list reads it: none of it depends on the editor's page or Add Page types. */
+export type ContentsListState<R extends ContentsRowBase> = Pick<
+  PageContents<R, { id: string }, never>,
+  | 'pages'
+  | 'shown'
+  | 'query'
+  | 'setQuery'
+  | 'focusFirst'
+  | 'current'
+  | 'list'
+  | 'registerRow'
+  | 'reorder'
+  | 'reorderable'
+  | 'go'
+  | 'onListKey'
+  | 'thumbs'
+  | 'actionsFor'
+>;
+
+/** A row's marks of the editor's own, after its name and before the padlock (livedocuments' speaking
+ *  time and crossed eye). */
+export type ContentsBadges<R extends ContentsRowBase> = (row: R) => ReactNode;
+
 // Find a Page, once the tab has more pages than fit at a glance.
-export function ContentsFind({ contents }: { contents: PageContents }) {
+export function ContentsFind<R extends ContentsRowBase>({
+  contents,
+}: {
+  contents: ContentsListState<R>;
+}) {
   const { pages, query, setQuery, focusFirst } = contents;
   if (pages.length <= CONTENTS_FIND_AFTER) return null;
   return (
@@ -61,17 +87,19 @@ export function ContentsFind({ contents }: { contents: PageContents }) {
 // the column, the name under it). An Editor's page actions sit down the row's left: in the
 // filmstrip the grip, Delete and ⋯ stacked under the number, in the popover's compact rows the ⋯
 // under the number (the grip at the row's end). One ⋯ menu serves the whole list.
-export function ContentsList({
+export function ContentsList<R extends ContentsRowBase>({
   contents,
   variant,
   touch,
+  badges,
   className = '',
   style,
 }: {
-  contents: PageContents;
+  contents: ContentsListState<R>;
   variant: 'list' | 'film';
   // A finger drags a row by its grip, always shown (a phone); else the grip shows on hover.
   touch: boolean;
+  badges?: ContentsBadges<R> | undefined;
   className?: string;
   style?: CSSProperties;
 }) {
@@ -166,6 +194,7 @@ export function ContentsList({
                   row={row}
                   here={row.id === current}
                   thumb={thumbs.get(row.id)}
+                  badges={badges?.(row)}
                   tools={
                     variant === 'film' ? (
                       actions ? (
@@ -216,13 +245,15 @@ const FILM_ROW_CLASS = (here: boolean) =>
   }`;
 
 type RowProps = {
-  row: ContentsRow;
+  row: ContentsRowBase;
   here: boolean;
-  thumb: PageThumb | undefined;
+  thumb: ContentsThumb | undefined;
+  // The editor's own marks after the name.
+  badges: ReactNode;
   // The page's tools down the row's left (an Editor's), under its number.
-  tools: React.ReactNode;
+  tools: ReactNode;
   // The popover's grip, at the row's end.
-  grip: React.ReactNode;
+  grip: ReactNode;
 };
 
 function Picture({
@@ -232,7 +263,7 @@ function Picture({
   here,
   large,
 }: {
-  thumb: PageThumb | undefined;
+  thumb: ContentsThumb | undefined;
   w: number;
   h: number;
   here: boolean;
@@ -256,7 +287,7 @@ function Picture({
           height={h}
           viewBox={thumb.viewBox}
           preserveAspectRatio="xMidYMid slice"
-          // Our own renderer's output (every label is xmlEscaped inside it).
+          // The editor's own renderer's output (every label is xmlEscaped inside it).
           dangerouslySetInnerHTML={{ __html: trustedHtml(thumb.markup) }}
         />
       ) : null}
@@ -264,8 +295,16 @@ function Picture({
   );
 }
 
-// The name, then the padlock on a locked page.
-function NameLine({ row, small }: { row: ContentsRow; small?: boolean }) {
+// The name, the editor's own marks, then the padlock on a locked page.
+function NameLine({
+  row,
+  badges,
+  small,
+}: {
+  row: ContentsRowBase;
+  badges: ReactNode;
+  small?: boolean;
+}) {
   return (
     <span className="flex h-6 min-w-0 items-center gap-1.5">
       <span
@@ -273,6 +312,7 @@ function NameLine({ row, small }: { row: ContentsRow; small?: boolean }) {
       >
         {row.name}
       </span>
+      {badges}
       {row.locked ? (
         <span role="img" className="shrink-0 text-slate-400" aria-label="Locked">
           <LockIcon />
@@ -282,7 +322,7 @@ function NameLine({ row, small }: { row: ContentsRow; small?: boolean }) {
   );
 }
 
-function ListRow({ row, here, thumb, tools, grip }: RowProps) {
+function ListRow({ row, here, thumb, badges, tools, grip }: RowProps) {
   const w = Math.min(LIST_MAX_W, Math.round(LIST_THUMB_H * row.aspect));
   const h = Math.round(w / row.aspect);
   return (
@@ -305,14 +345,14 @@ function ListRow({ row, here, thumb, tools, grip }: RowProps) {
         <Picture thumb={thumb} w={w} h={h} here={here} />
       </span>
       <span className="flex min-w-0 flex-1 flex-col">
-        <NameLine row={row} />
+        <NameLine row={row} badges={badges} />
       </span>
       {grip}
     </>
   );
 }
 
-function FilmRow({ row, here, thumb, tools }: RowProps) {
+function FilmRow({ row, here, thumb, badges, tools }: RowProps) {
   const w = Math.min(FILM_MAX_W, Math.round(FILM_MAX_H * row.aspect));
   const h = Math.round(w / row.aspect);
   return (
@@ -330,7 +370,7 @@ function FilmRow({ row, here, thumb, tools }: RowProps) {
           <Picture thumb={thumb} w={w} h={h} here={here} large />
         </span>
         <span className="flex min-w-0 flex-col pl-0.5" style={{ width: FILM_MAX_W }}>
-          <NameLine row={row} small />
+          <NameLine row={row} badges={badges} small />
         </span>
       </span>
     </>

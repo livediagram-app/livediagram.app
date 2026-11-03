@@ -59,6 +59,14 @@ under the pointer as a category is switched.
   fades the edge with more beyond it over 20px (`scroll-edge-fade`, a scroll-driven
   mask where the browser has them), so a glyph cut by the edge reads as more to swipe to, not a stray sliver of an
   icon; an edge with nothing beyond it stays sharp.
+- **The strip's room.** Still too wide with the glyphs alone for the room beside the menu box (a 640 to 760px window
+  with Pages mode's Contents docked left, whose joined menu box takes the strip's left), the bar shows its first
+  categories and folds the rest behind **More Categories** (a ⋯ button at the bar's end, drawn as a category's),
+  rather than running under the menu box (`useBarFold`). Measured as the names are: the whole bar is drawn bare
+  once and where each button ends is kept, so how many show follows from the room alone. More lists the folded
+  categories by name (Down Arrow opens it, as a category's flyout); choosing one opens that category's flyout under
+  More, which carries the open marker while it is open. The arrow keys walk the shown categories, then More. Every
+  category comes back once there is room. A phone never folds: its bar swipes.
 - **The open category** is pressed (the brand tint) with a short brand bar under it.
 
 ### Opening a flyout

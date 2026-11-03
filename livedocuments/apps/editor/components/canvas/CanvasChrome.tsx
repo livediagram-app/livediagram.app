@@ -20,7 +20,11 @@ import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton
 import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
 import { showsSlidesButton, SlidesClusterSegment } from '@/components/canvas/SlidesClusterSegment';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
-import { CONTENTS_SIDEBAR_WIDTH, contentsSidebarClearancePx } from '@/lib/contents-placement';
+import {
+  CONTENTS_SIDEBAR_WIDTH,
+  contentsClusterBounds,
+  contentsSidebarClearancePx,
+} from '@liveworkspace/workbench/lib/contents-sidebar';
 import { ContentsClusterSegment } from '@liveworkspace/workbench/components/canvas/ContentsClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
 import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';
@@ -284,9 +288,11 @@ export function CanvasChrome(props: CanvasChromeProps) {
   );
 
   const cornerScale = useUiScale('cornerButtons');
-  // Beside Pages mode's Contents sidebar when it is pinned right (useContentsChrome), never under it.
-  const clusterX =
-    contentsDocked && contentsSide === 'right' ? CONTENTS_SIDEBAR_WIDTH * panelScale : 0;
+  // Beside Pages mode's Contents sidebar, never under it (useContentsChrome): past it when pinned right, short of it
+  // when pinned left, where the cluster wraps upward instead (contentsClusterBounds).
+  const cluster = contentsClusterBounds(!isMobile && contentsDocked, contentsSide, panelScale);
+  const clusterX = cluster.right;
+  const clusterLeft = cluster.left;
   // The bar across the top that the top corners give way to: the strip.
   const topBar = isMobile ? null : stripShown ? STRIP_SELECTOR : null;
   const topBarCrowds = useStripCrowdsCorners(
@@ -452,10 +458,14 @@ export function CanvasChrome(props: CanvasChromeProps) {
         // Drawn at the UI scale, still 16px from the corner, or clear of a landscape notch.
         style={
           cornerScale === 1
-            ? { right: atLeastInset(`${16 + clusterX}px`, 'right') }
+            ? {
+                right: atLeastInset(`${16 + clusterX}px`, 'right'),
+                ...(clusterLeft === null ? {} : { left: clusterLeft }),
+              }
             : {
                 ...uiScaleStyle(cornerScale),
                 right: atLeastInset(`${toSurfacePx(16 + clusterX, cornerScale)}px`, 'right'),
+                ...(clusterLeft === null ? {} : { left: toSurfacePx(clusterLeft, cornerScale) }),
                 bottom: toSurfacePx(16, cornerScale),
               }
         }
@@ -463,7 +473,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
         // from 36px up to their usual 44px (always 44px tall to tap), so Undo, Layers and Theme and Fit fill the
         // row on a 360px screen and up. It may still wrap, from the right, on a narrower one, so Undo is never
         // pushed off the screen.
-        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 phone:left-4 phone:flex-wrap phone:justify-end phone:gap-1.5 ${PHONE_CLUSTER_BUTTON_WIDTH} ${PHONE_TOOLBAR_ITEMS}`}
+        className={`pointer-events-none absolute bottom-4 right-4 z-[var(--z-panel)] flex items-center gap-2 phone:left-4 phone:flex-wrap phone:justify-end phone:gap-1.5 ${clusterLeft === null ? '' : 'flex-wrap-reverse justify-end'} ${PHONE_CLUSTER_BUTTON_WIDTH} ${PHONE_TOOLBAR_ITEMS}`}
       >
         {welcomeOpen ? null : (
           <>
