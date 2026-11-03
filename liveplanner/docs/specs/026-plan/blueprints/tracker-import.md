@@ -152,9 +152,9 @@ as `/items/bulk`).
   in this plan (an import's are, `withImportedThreads`; `field_value_invalid` otherwise).
 - **A part before the last** is held aside, nothing written to the cards: its reads go into `item_import_parts`
   (`plan_id, import_id, part, seq, body, created_at`; plan schema step 13, `ITEM_IMPORTS_SCHEMA` in
-  `apps/api/src/db/item-imports.ts`) as one chunked insert, replacing a part sent again. 202
-  `ItemsImportStaged { staged }` (cards held for this import). A part past the plan's room (held + this + stored
-  `> ITEMS_MAX`) is refused `413 items_full` and the import's parts cleared.
+  `apps/api/src/plan-room/item-imports-schema.ts`; statements in `apps/api/src/db/item-imports.ts`) as one chunked
+  insert, replacing a part sent again. 202 `ItemsImportStaged { staged }` (cards held for this import). A part past
+  the plan's room (held + this + stored `> ITEMS_MAX`) is refused `413 items_full` and the import's parts cleared.
 - **The last part** lands the import: every part must be held (`409 import_incomplete` otherwise), the held reads and
   its own are checked for room (`413 items_full`) and Blocked By loops (`blockersRefused`, once over all of them),
   then made as `createMany` makes cards (`buildCreates`: free keys, one placer) and written in **one
@@ -231,7 +231,7 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
   (`lib/api/items.ts` `writeItem`: `importParts` to `POST /items/import`), never in `/items/bulk` writes; on a
   failure nothing landed, so the store reloads without the cards. `importPlan(…, 'plan')`: signed in,
   `apiCreateProject` with the tab and the catalogue, then `writeItem` with the cards as one whole import; a failure
-  deletes the plan (`apiDeleteProjectForGood`, `DELETE /projects/:id?permanent=1`). A guest, the plan is made in
+  deletes the plan for good (`indexClient.deleteItem(id, { permanent: true })`). A guest, the plan is made in
   This Browser (`offlineCreateProject`, `offlineWriteItem`, one local write); a failure deletes it
   (`offlineDeleteProject`). Then it opens. Telemetry `Plan` · `Imported` · the source's name.
   Any failure: "Couldn’t import those cards. Try again."

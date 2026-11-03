@@ -312,25 +312,25 @@ Resolved where `lwt_` is, only when no account access token verified:
 
 `WORKBENCH_ROUTES` (`:doc` is the session's project; a project route naming any other id is `other-project`):
 
-| Method           | Path under `/api`                                                                                                                                                             |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GET              | `capabilities`, `openapi.json`, `templates`, `templates/:kind`, `icons`, `schema`, `schema/:kind`                                                                             |
-| GET              | `participants/:owner` (the session's owner only; another id is `confined`), `preferences`                                                                                     |
-| POST, GET        | `images` (a card's Image field upload), `images/:imageId` (the route keeps a project session to its own plan)                                                                 |
-| GET, PUT         | `projects/:doc`                                                                                                                                                               |
-| GET, PUT, DELETE | `projects/:doc/tabs/:tabId`                                                                                                                                                   |
-| PUT              | `projects/:doc/tabs/:tabId/name`                                                                                                                                              |
-| POST             | `projects/:doc/tabs/:tabId/changesets`, `projects/:doc/changesets/:changesetId/revert`                                                                                        |
-| GET              | `projects/:doc/changesets`, `projects/:doc/changesets/:changesetId`, `projects/:doc/comments`                                                                                 |
-| GET              | `projects/:doc/tabs/:tabId/render.svg`                                                                                                                                        |
-| POST             | `projects/:doc/tabs/:tabId/comments`, `.../comments/:commentId/reply`, `.../resolve`, `.../reopen`                                                                            |
-| DELETE           | `projects/:doc/tabs/:tabId/comments/:commentId`                                                                                                                               |
-| POST             | `projects/:doc/tabs/:tabId/qa`, `projects/:doc/room-ticket`                                                                                                                   |
-| GET, POST        | `projects/:doc/items`                                                                                                                                                         |
-| POST             | `projects/:doc/items/bulk`, `items/:itemId`, `items/:itemId/move`, `items/tally`, `items/:itemId/comments`, `items/:itemId/comments/resolve`, `items/:itemId/comments/reopen` |
-| DELETE           | `projects/:doc/items/:itemId`, `projects/:doc/items/:itemId/comments/:commentId`                                                                                              |
-| PUT              | `projects/:doc/item-types`                                                                                                                                                    |
-| DELETE           | `workbench/sessions/current`                                                                                                                                                  |
+| Method           | Path under `/api`                                                                                                                                                                             |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET              | `capabilities`, `openapi.json`, `templates`, `templates/:kind`, `icons`, `schema`, `schema/:kind`                                                                                             |
+| GET              | `participants/:owner` (the session's owner only; another id is `confined`), `preferences`                                                                                                     |
+| POST, GET        | `images` (a card's Image field upload), `images/:imageId` (the route keeps a project session to its own plan)                                                                                 |
+| GET, PUT         | `projects/:doc`                                                                                                                                                                               |
+| GET, PUT, DELETE | `projects/:doc/tabs/:tabId`                                                                                                                                                                   |
+| PUT              | `projects/:doc/tabs/:tabId/name`                                                                                                                                                              |
+| POST             | `projects/:doc/tabs/:tabId/changesets`, `projects/:doc/changesets/:changesetId/revert`                                                                                                        |
+| GET              | `projects/:doc/changesets`, `projects/:doc/changesets/:changesetId`, `projects/:doc/comments`                                                                                                 |
+| GET              | `projects/:doc/tabs/:tabId/render.svg`                                                                                                                                                        |
+| POST             | `projects/:doc/tabs/:tabId/comments`, `.../comments/:commentId/reply`, `.../resolve`, `.../reopen`                                                                                            |
+| DELETE           | `projects/:doc/tabs/:tabId/comments/:commentId`                                                                                                                                               |
+| POST             | `projects/:doc/tabs/:tabId/qa`, `projects/:doc/room-ticket`                                                                                                                                   |
+| GET, POST        | `projects/:doc/items`                                                                                                                                                                         |
+| POST             | `projects/:doc/items/bulk`, `items/import`, `items/:itemId`, `items/:itemId/move`, `items/tally`, `items/:itemId/comments`, `items/:itemId/comments/resolve`, `items/:itemId/comments/reopen` |
+| DELETE           | `projects/:doc/items/:itemId`, `projects/:doc/items/:itemId/comments/:commentId`                                                                                                              |
+| PUT              | `projects/:doc/item-types`                                                                                                                                                                    |
+| DELETE           | `workbench/sessions/current`                                                                                                                                                                  |
 
 Everything else is `confined`, among it: `projects/:doc` `DELETE`, `copy`, `folder`, `shared-tabs`, `share*`,
 `thumbnail`, `tabs/:tabId/link`, `tabs/:tabId/presence` (an agent's door), `projects` (the library),
