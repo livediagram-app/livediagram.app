@@ -85,6 +85,12 @@ export function BuildCursor({
   );
 }
 
+// When this page first painted (a prerendered loader starts looping then), or null before any paint.
+export function firstPaintAt(): number | null {
+  const paint = globalThis.performance?.getEntriesByType?.('paint')?.[0];
+  return paint ? paint.startTime : null;
+}
+
 // Each loader's start in this page, by name.
 const epochs = new Map<string, number>();
 
@@ -104,10 +110,15 @@ export function useLoopPhase(
     if (epoch === undefined) {
       const running = el?.getAnimations?.({ subtree: true })[0]?.currentTime;
       const elapsed = typeof running === 'number' ? running : 0;
-      epoch = now - elapsed;
+      // This copy IS the running loop (hydrated prerender): its own delay already matches the phase.
+      if (elapsed > 0) {
+        epochs.set(name, now - elapsed);
+        return;
+      }
+      // A fresh copy replacing a prerendered one that never ran a script: that copy started looping at the page's
+      // first paint, so the loop runs from there.
+      epoch = firstPaintAt() ?? now;
       epochs.set(name, epoch);
-      // This copy IS the running loop: its own delay already matches the phase.
-      if (elapsed > 0) return;
     }
     el?.style.setProperty(delayVar, `${-((now - epoch) % durationMs)}ms`);
   }, [ref, name, durationMs, delayVar]);
