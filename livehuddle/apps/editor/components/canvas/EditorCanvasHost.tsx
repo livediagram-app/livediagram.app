@@ -148,6 +148,7 @@ export function EditorCanvasHost() {
     broadcastAvatarPush,
     broadcastAvatarSay,
     avatarShove,
+    walkIn,
     fireReaction,
     pressFocusButton,
     reactionBursts,
@@ -560,6 +561,7 @@ export function EditorCanvasHost() {
             onAvatarPush={broadcastAvatarPush}
             onAvatarSay={broadcastAvatarSay}
             avatarShove={avatarShove}
+            walkIn={walkIn}
             onFireReaction={can.takePart ? fireReaction : undefined}
             // Bring Focus (docs/specs/012-collaboration/bring-focus.md) is live for view-role visitors too: it mutates
             // nothing, which makes it the same read-only act as following somebody,

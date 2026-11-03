@@ -157,6 +157,7 @@ import { useRoomResync } from './useRoomResync';
 import { useIdentityBootstrap } from './useIdentityBootstrap';
 import { useEditorHistory } from './useEditorHistory';
 import { useTemplateFlow } from './useTemplateFlow';
+import { useOpenWalking } from './useOpenWalking';
 import { createOwnElementWrites, type OwnElementWrites } from './own-element-writes';
 import { usePanelLayout } from './usePanelLayout';
 import { usePresenceRows } from './usePresenceRows';
@@ -345,11 +346,17 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // The format painter's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
   // travel, read by the paint and edited from the Format Panel.
   const formatSettings = useFormatConfig();
-  const { canvasTool, setCanvasTool, selectCanvasTool, exitAvatarTool, toolBeforeCurrent } =
-    useCanvasTool({
-      defaultPan: embedMode,
-      tabId: activeId,
-    });
+  const {
+    canvasTool,
+    setCanvasTool,
+    selectCanvasTool,
+    openWalking: enterWalking,
+    exitAvatarTool,
+    toolBeforeCurrent,
+  } = useCanvasTool({
+    defaultPan: embedMode,
+    tabId: activeId,
+  });
   useDesktopOnlyToolExit(canvasTool, setCanvasTool);
   // Persistent Format painter tool (docs/specs/008-canvas/canvas-and-palette.md): the mode-boundary reset +
   // the exit that restores the pre-Format tool. See useFormatTool.
@@ -394,8 +401,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const pickCanvasTool = (tool: CanvasTool) => {
     // Eraser / Format / Laser / Spotlight / Isometric all act on existing
     // content, so they're unavailable on an empty canvas — the palette greys
-    // them out, and this guards the keyboard-shortcut path to match. Select +
-    // Hand stay available.
+    // them out, and this guards the keyboard-shortcut path to match. Select,
+    // Hand and Avatar stay available (an empty board is still a place to stand in).
     const tabForTool = tabs.find((t) => t.id === activeId) ?? tabs[0];
     if (
       tabForTool &&
@@ -404,7 +411,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
         tool === 'format' ||
         tool === 'laser' ||
         tool === 'spotlight' ||
-        tool === 'avatar' ||
         tool === 'isometric')
     ) {
       return;
@@ -1147,6 +1153,21 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const drawMode = false;
   // The tool a mode starts with: Select, or Hand on a phone (docs/specs/007-editor/editor-modes.md).
   useModeDefaultTool(editorMode.mode, canvasTool, setCanvasTool, embedMode);
+  // A tab that offers the walk opens walking (docs/specs/008-canvas/avatar-mode.md "Opening walking"). After the
+  // mode's default tool, so the walk is what a Spaces board settles on.
+  const openWalking = useOpenWalking({
+    enabled: !embedMode,
+    tabId: activeTab.id,
+    elements: activeTab.elements,
+    layers: activeTab.layers,
+    loaded: loadedTabIds.has(activeTab.id),
+    walking: canvasTool === 'avatar',
+    openWalking: () => {
+      setSelectedId(null);
+      setMultiSelectedIds(new Set());
+      enterWalking();
+    },
+  });
 
   // Vote privacy (docs/specs/012-collaboration/session-tools.md): while a hide-cursors vote is open on this tab,
   // peer cursors + laser trails are neither sent nor drawn. Derived here so
@@ -2010,6 +2031,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setIdentityPromptOpen,
     requestFit,
     putToolDown: () => putToolDownRef.current(),
+    onLanded: openWalking.rejudge,
   });
 
   // One undo step per burst of a continuous control: the background
@@ -3170,6 +3192,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     broadcastAvatarPush,
     broadcastAvatarSay,
     avatarShove,
+    walkIn: openWalking.walkIn,
     fireReaction,
     pressFocusButton,
     focusInvite,

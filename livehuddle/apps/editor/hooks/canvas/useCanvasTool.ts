@@ -61,6 +61,15 @@ export function useCanvasTool({
     if (tool === 'slide-deck' && canvasTool !== 'slide-deck') track('UI', 'Opened', 'SlideDeck');
     setCanvasTool(tool);
   };
+  // Opening walking (docs/specs/008-canvas/avatar-mode.md "Opening walking"): a tab that offers the walk puts you in
+  // Avatar mode when it is first shown. The same entry as a pick, remembering where you were so every way out leads
+  // back there, but untracked: it counts people who chose the walk, and nobody chose this one.
+  const openWalking = () => {
+    if (canvasTool === 'avatar') return;
+    priorToolRef.current = canvasTool;
+    setPreAvatarTool(canvasTool);
+    setCanvasTool('avatar');
+  };
   // Leave Avatar mode for the tool that preceded it. Called when the user
   // reaches for the palette mid-walk (docs/specs/008-canvas/avatar-mode.md): a tile is an edit, and the
   // mode is read-only, so the character steps aside instead of swallowing the
@@ -88,5 +97,12 @@ export function useCanvasTool({
   // one itself (a stale ref must not trap the user in the mode they're leaving).
   const toolBeforeCurrent = (): CanvasTool =>
     priorToolRef.current === canvasTool ? 'select' : priorToolRef.current;
-  return { canvasTool, setCanvasTool, selectCanvasTool, exitAvatarTool, toolBeforeCurrent };
+  return {
+    canvasTool,
+    setCanvasTool,
+    selectCanvasTool,
+    openWalking,
+    exitAvatarTool,
+    toolBeforeCurrent,
+  };
 }

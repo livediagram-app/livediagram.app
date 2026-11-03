@@ -1,0 +1,61 @@
+import { describe, expect, it } from 'vitest';
+import { createShape, type Element, type Layer } from '@livehuddle/document';
+import { buildTemplate, TEMPLATES, templateCategory } from '@livehuddle/templates';
+import { avatarSpawnFromButton } from '@liveworkspace/avatar/walk';
+import { walkEntrance } from './walk-entrance';
+
+// docs/specs/008-canvas/avatar-mode.md "Opening walking": which tab offers the walk, and where it starts you.
+const button = (id: string, x: number, y: number, mode?: 'avatar' | 'laser'): Element => ({
+  ...createShape('mode-button', x, y),
+  id,
+  ...(mode ? { mode } : {}),
+});
+const pad = (id: string): Element => ({ ...createShape('avatar-pad', 0, 0), id });
+const square = (id: string): Element => ({ ...createShape('square', 0, 0), id });
+
+describe('walkEntrance', () => {
+  it('offers no walk on an empty tab or one with neither a pad nor an Avatar button', () => {
+    expect(walkEntrance([], undefined)).toBeNull();
+    expect(walkEntrance([square('a'), button('b', 0, 0, 'laser')], undefined)).toBeNull();
+  });
+
+  it('starts you just below the first Avatar button, as a press of it would', () => {
+    const first = button('b1', 100, 200, 'avatar');
+    const entrance = walkEntrance([square('a'), first, button('b2', 900, 900)], undefined);
+    expect(entrance).toEqual({
+      kind: 'button',
+      feet: avatarSpawnFromButton(first as never, 'avatar', 'select'),
+    });
+  });
+
+  it('reads a button with no mode as Avatar, the default a new button hands out', () => {
+    expect(walkEntrance([button('b', 0, 0)], undefined)?.kind).toBe('button');
+  });
+
+  it('lets a pad win over a button wherever it sits in the layer order', () => {
+    expect(walkEntrance([button('b', 0, 0, 'avatar'), pad('p')], undefined)).toEqual({
+      kind: 'pad',
+    });
+  });
+
+  it('ignores what sits on a hidden layer', () => {
+    const layers: Layer[] = [
+      { id: 'shown', name: 'Shown' },
+      { id: 'gone', name: 'Gone', visible: false },
+    ];
+    const hiddenButton = { ...button('b', 0, 0, 'avatar'), layerId: 'gone' } as Element;
+    expect(walkEntrance([square('a'), hiddenButton], layers)).toBeNull();
+  });
+
+  // Every Spaces template offers the walk, and no other template does: a Space made from one opens walking.
+  it('opens every Spaces template walking, and no other', () => {
+    const offering = TEMPLATES.map((t) => t.kind).filter(
+      (kind) => walkEntrance(buildTemplate(kind, 0, 0), undefined) !== null,
+    );
+    const spaces = TEMPLATES.map((t) => t.kind).filter(
+      (kind) => kind !== 'blank-session' && templateCategory(kind) === 'spaces',
+    );
+    expect(spaces.length).toBe(4);
+    expect(offering.sort()).toEqual(spaces.sort());
+  });
+});
