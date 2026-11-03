@@ -106,8 +106,15 @@ function laidOutBlockPages(tab: Tab, pages: readonly LaidOutPage[]): Map<string,
   const out = new Map<string, string>();
   for (const flow of Object.keys(articlesOf(tab))) {
     const handle = articleHandleOf(flow);
-    if (!handle) continue;
     const own = pages.filter((p) => p.flow === flow);
+    // A card whose writing is not mounted (a long stack, flashcards.md "Long stacks stay quick") is one page: all its
+    // blocks are on it.
+    if (!handle) {
+      const [page] = own;
+      if (own.length === 1 && page)
+        for (const b of articlesOf(tab)[flow]!.blocks) out.set(b.id, page.id);
+      continue;
+    }
     handle.blocksByPage().forEach((ids, i) => {
       const page = own[i];
       if (page) for (const id of ids) out.set(id, page.id);

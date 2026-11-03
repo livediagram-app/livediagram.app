@@ -3,8 +3,10 @@ import { layOutPages, newFlashcardPage } from '@livedocuments/document';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import {
   cardInFrontOf,
+  cardFlowsToMount,
   cardStageOf,
   flashcardStage,
+  FLASHCARD_MOUNT_SPAN,
   FLASHCARD_STACK_INSET_X,
   FLASHCARD_STACK_MAX,
   FLASHCARD_STACK_STEP_Y,
@@ -92,5 +94,35 @@ describe('the sheets behind', () => {
     expect(stackSheets(rect, 40)).toHaveLength(FLASHCARD_STACK_MAX);
     expect(stackSheets(rect, 0)).toEqual([]);
     expect(stackSheets(rect, -1)).toEqual([]);
+  });
+});
+
+// flashcards.md "Long stacks stay quick".
+describe('the writing a stack mounts', () => {
+  const stack = (index: number) => ({
+    index,
+    count: cards.length,
+    behind: cards.length - index - 1,
+  });
+
+  it('is the card in front and one each side', () => {
+    expect(FLASHCARD_MOUNT_SPAN).toBe(1);
+    expect([...cardFlowsToMount(cards, stack(1), [])!]).toEqual(['f0', 'f1', 'f2']);
+    expect([...cardFlowsToMount(cards, stack(0), [])!]).toEqual(['f0', 'f1']);
+    expect([...cardFlowsToMount(cards, stack(3), [])!]).toEqual(['f2', 'f3']);
+  });
+
+  it('keeps the card being written and one asked to take focus', () => {
+    expect([...cardFlowsToMount(cards, stack(0), ['f3', null, undefined])!]).toEqual([
+      'f0',
+      'f1',
+      'f3',
+    ]);
+  });
+
+  it('skips a page with no writing, and mounts every article off a stack', () => {
+    const row = [{ ...cards[0]!, flow: undefined }, cards[1]!];
+    expect([...cardFlowsToMount(row, stack(0), [])!]).toEqual(['f1']);
+    expect(cardFlowsToMount(cards, undefined, ['f0'])).toBeNull();
   });
 });

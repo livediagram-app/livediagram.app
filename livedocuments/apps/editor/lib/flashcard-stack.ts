@@ -47,6 +47,29 @@ export function flashcardStage(view: PagesModeView): PagesModeView {
   };
 }
 
+// Cards each side of the card in front whose writing stays mounted (flashcards.md "Long stacks stay quick"): the
+// card a flip leaves (forward) or arrives at (back) is pictured from its writing, so one each side is enough.
+export const FLASHCARD_MOUNT_SPAN = 1;
+
+/** The writing to mount on a stack: the cards within FLASHCARD_MOUNT_SPAN of the card in front, and `keep` (the
+ *  article being written, a card asked to take focus). Null off a stack: every article's writing mounts. */
+export function cardFlowsToMount(
+  row: readonly LaidOutPage[],
+  stack: CardStack | undefined,
+  keep: readonly (string | null | undefined)[],
+): ReadonlySet<string> | null {
+  if (!stack) return null;
+  const out = new Set<string>();
+  const from = Math.max(0, stack.index - FLASHCARD_MOUNT_SPAN);
+  const to = Math.min(row.length - 1, stack.index + FLASHCARD_MOUNT_SPAN);
+  for (let i = from; i <= to; i++) {
+    const flow = row[i]?.flow;
+    if (flow) out.add(flow);
+  }
+  for (const flow of keep) if (flow) out.add(flow);
+  return out;
+}
+
 export type StackSheet = { rect: PageRect; dim: number };
 
 /** The sheets drawn behind the card in front, nearest first: each lower and narrower than the one
