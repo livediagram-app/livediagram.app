@@ -14,19 +14,20 @@ import { CollaboratorsDialog } from './CollaboratorsDialog';
 
 afterEach(() => window.localStorage.clear());
 
-const person = (id: string, name: string): Participant => ({
+const person = (id: string, name: string, role?: AccessLevel): Participant => ({
   id,
   name,
   color: '#0ea5e9',
   status: 'online',
+  ...(role ? { role } : {}),
 });
 const tabs = [{ id: 't1', name: 'Overview' }] as unknown as Tab[];
 
-function open(selfRole: AccessLevel, cursorsDrawn = true) {
+function open(selfRole: AccessLevel, cursorsDrawn = true, sam: Participant = person('sam', 'Sam')) {
   bindWorkbench();
   return render(
     <CollaboratorsDialog
-      participantsByTab={new Map([['t1', [person('me', 'Me'), person('sam', 'Sam')]]])}
+      participantsByTab={new Map([['t1', [person('me', 'Me'), sam]]])}
       tabs={tabs}
       activeId="t1"
       selfId="me"
@@ -70,5 +71,21 @@ describe('CollaboratorsDialog: Hide Participant Cursors', () => {
     open('edit', false);
     expect(screen.queryByRole('switch', { name: /Hide Participant Cursors/ })).toBeNull();
     expect(window.localStorage.getItem(HIDE_CURSORS_KEY)).toBe('true');
+  });
+});
+
+// Share roles (docs/specs/012-collaboration/facilitator.md): an Editor may hand the free baton to another Editor
+// only. A peer whose presence carries no role reads as a Viewer, as the room's own check does (Work Tracker #362).
+describe('CollaboratorsDialog: Make Facilitator by the peer\'s role', () => {
+  const makeSam = () => screen.getByRole('button', { name: 'Make Sam the facilitator' }) as HTMLButtonElement;
+
+  it.each([
+    ['an Editor', 'edit', false],
+    ['a Participant', 'participate', true],
+    ['a Viewer', 'view', true],
+    ['a peer with no role', undefined, true],
+  ] as const)('for %s, Make Facilitator disabled is %s', (_who, role, disabled) => {
+    open('edit', true, person('sam', 'Sam', role));
+    expect(makeSam().disabled).toBe(disabled);
   });
 });
