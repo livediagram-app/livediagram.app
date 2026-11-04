@@ -7,7 +7,9 @@ import {
   DRIVE_ITEM_MIN_WRITE_INTERVAL_MS,
   DRIVE_PASS_MAX_WRITES,
 } from '@liveworkspace/drive';
+import { ROOM_ALARM_FLOOR_MS } from '@liveworkspace/api-kit/room-alarm';
 import { GOOGLE_USER, harness, ORIGIN, PERSON, type Harness } from '../test-support';
+import { nextPassAt } from './pass';
 
 let h: Harness;
 
@@ -325,6 +327,18 @@ describe('inbound', () => {
 });
 
 describe('cadence', () => {
+  // liveworkspace/docs/specs/002-architecture/architecture.md "A Durable Object's alarm".
+  it('sets a pass already due a second from now, never at once', async () => {
+    await connected();
+    const connection = h.store.connection()!;
+    const now = h.clock.now();
+    const done = { kind: 'done', more: false, nextDueAt: now - 60_000 } as const;
+    expect(nextPassAt(connection, done, now)).toBe(now + ROOM_ALARM_FLOOR_MS);
+    expect(nextPassAt(connection, { kind: 'failed', retryAt: now }, now)).toBe(
+      now + ROOM_ALARM_FLOOR_MS,
+    );
+  });
+
   it('debounces signals into one pass, and keeps the fallback check while the channel is up', async () => {
     h.index.addItem({ name: 'Flow' });
     await connected();

@@ -18,6 +18,7 @@ import {
   planOutbound,
   writeIntervalMs,
 } from '@liveworkspace/drive';
+import { roomAlarmAt } from '@liveworkspace/api-kit/room-alarm';
 import { DriveApiError } from '@liveworkspace/drive/server';
 import { driveLog, driveWarn, errorKind } from '../log';
 import { channelLive, maintainChannel, pageTokenOf } from './channel';
@@ -256,5 +257,6 @@ export function nextPassAt(
   // A renewal already due was tried this pass (and is retried with the fallback check), never in a loop.
   const renewAt = (connection.channelExpiresAt ?? 0) - DRIVE_CHANNEL_RENEW_BEFORE_MS;
   if (connection.channelExpiresAt !== null && renewAt > now) candidates.push(renewAt);
-  return Math.max(now, Math.min(...candidates));
+  // Never sooner than a second from now, so a pass due at once can't fire the alarm back to back.
+  return roomAlarmAt(Math.min(...candidates), now);
 }

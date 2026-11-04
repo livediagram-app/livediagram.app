@@ -8,7 +8,8 @@ import {
   WEBHOOK_TIMESTAMP_HEADER,
 } from '@liveworkspace/index-client';
 import { createHmac } from 'node:crypto';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ROOM_ALARM_FLOOR_MS } from '@liveworkspace/api-kit/room-alarm';
 import { call, h, makeItem, person, useHarness } from '../test-support';
 import { DISPATCH_MIN_GAP_MS, RETRY_DELAYS_MS } from './config';
 import { dispatch, type DispatchDeps } from './dispatch';
@@ -408,6 +409,29 @@ describe('the dispatcher', () => {
     expect(
       new WebhookDispatcher(state as unknown as DurableObjectState, h.db.env).deps.now(),
     ).toBeTypeOf('number');
+  });
+
+  // liveworkspace/docs/specs/002-architecture/architecture.md "A Durable Object's alarm": a retry time already past
+  // (here the dispatcher's clock behind the runtime's) sets the alarm a second from now, never at once.
+  it('never sets its next alarm in the past', async () => {
+    const state = fakeState();
+    const dispatcher = new WebhookDispatcher(state as unknown as DurableObjectState, h.db.env);
+    dispatcher.deps = deps();
+    const { ada } = await personWithHook('user_wb3');
+    await makeItem(ada.auth);
+    answer = () => new Response(null, { status: 500 });
+    sync();
+    await dispatcher.alarm();
+    const retryAt = clock + RETRY_DELAYS_MS[0]!;
+    expect(state.alarm).toBe(retryAt);
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(retryAt + 5_000);
+      await dispatcher.alarm();
+      expect(state.alarm).toBe(retryAt + 5_000 + ROOM_ALARM_FLOOR_MS);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
