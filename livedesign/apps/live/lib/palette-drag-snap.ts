@@ -7,6 +7,8 @@ import {
   type Element,
 } from '@livedesign/design';
 import { ALIGN_SNAP_THRESHOLD } from '@/lib/canvas';
+import { snapScope } from '@/lib/page-snap-scope';
+import type { LaidOutPage } from '@livedesign/design';
 
 // Alignment help BEFORE the drop (docs/specs/010-palette/palette-drag-ghost.md): a palette tile dragged over the
 // canvas snaps to its neighbours like a moved element does, and shows the
@@ -25,6 +27,7 @@ export function paletteDragSnapAt({
   width,
   height,
   elements,
+  pages,
 }: {
   // The cursor in canvas coords. The footprint is CENTRED on it, matching
   // where the drop actually places the element.
@@ -33,6 +36,8 @@ export function paletteDragSnapAt({
   width: number;
   height: number;
   elements: Element[];
+  // Pages mode's laid-out pages: the drop lines up with what is on the page under it alone.
+  pages?: readonly LaidOutPage[] | undefined;
 }): {
   dx: number;
   dy: number;
@@ -45,7 +50,8 @@ export function paletteDragSnapAt({
     width,
     height,
   };
-  const snap = snapToAlignment(candidate, elements, NO_EXCLUDE, ALIGN_SNAP_THRESHOLD);
+  const { spaced } = snapScope(elements, undefined, pages, candidate);
+  const snap = snapToAlignment(candidate, spaced, NO_EXCLUDE, ALIGN_SNAP_THRESHOLD);
   let dx = snap.dx;
   let dy = snap.dy;
   // Equal-spacing (distribution) helpers fill the axes alignment didn't
@@ -57,14 +63,14 @@ export function paletteDragSnapAt({
   const dist =
     snap.snappedX && snap.snappedY
       ? { dx: 0, dy: 0, guides: [] }
-      : distributionSnap(candidate, elements, NO_EXCLUDE, ALIGN_SNAP_THRESHOLD);
+      : distributionSnap(candidate, spaced, NO_EXCLUDE, ALIGN_SNAP_THRESHOLD);
   if (!snap.snappedX) dx = dist.dx;
   if (!snap.snappedY) dy = dist.dy;
   // Guides describe the box that will LAND (post-snap), so a line appears
   // exactly when a snap is in effect — the same derivation the move /
   // resize path uses.
   const snapped = { ...candidate, x: candidate.x + dx, y: candidate.y + dy };
-  const guides = alignmentGuides(snapped, elements, NO_EXCLUDE);
+  const guides = alignmentGuides(snapped, spaced, NO_EXCLUDE);
   // Only for the axis distribution actually drove.
   // A guide comes back only for an axis distribution snapped, an exact one (zero delta) included.
   const distGuides = dist.guides.filter((g) => (g.axis === 'x' ? !snap.snappedX : !snap.snappedY));

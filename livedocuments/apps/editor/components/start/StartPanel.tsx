@@ -16,12 +16,9 @@ import {
   CompactEmptyState,
   CountBadge,
   SearchIcon,
-  Tooltip,
   lucideGlyph,
   noMatchTitle,
   safeInset,
-  SheetHandle,
-  useSheetDrag,
 } from '@livedocuments/ui';
 import { lucideSearch, lucideX } from '@liveworkspace/icons/lucide';
 import { useChromeFloor } from '@liveworkspace/workbench/components/toast/useToastFloor';
@@ -45,7 +42,6 @@ const TAB_BAR_SELECTOR = '[data-editor-tabbar]';
 
 const SearchGlyph = lucideGlyph(lucideSearch, 15);
 const ClearGlyph = lucideGlyph(lucideX, 13);
-const CloseGlyph = lucideGlyph(lucideX, 16);
 
 type Glyph = ReturnType<typeof lucideGlyph>;
 
@@ -73,7 +69,6 @@ export function StartPanel<C extends string>({
   cardsIn,
   search,
   onChoose,
-  onClose,
   footer,
 }: {
   titleId: string;
@@ -95,7 +90,6 @@ export function StartPanel<C extends string>({
   // A quiet strip under the choices, in the panel's colours: the Sync to Server switch
   // (save-locations.md "On the start screen").
   footer?: ((palette: StartPalette) => ReactNode) | undefined;
-  onClose: () => void;
 }) {
   // A category's flyout, More or Search hangs from the palette: the start steps aside for it (palette-popover-open).
   const paletteOpen = usePalettePopoverOpen();
@@ -116,9 +110,6 @@ export function StartPanel<C extends string>({
     if (window.matchMedia?.('(pointer: fine)').matches)
       searchInput.current?.focus({ preventScroll: true });
   }, []);
-  // On a phone the panel is a sheet risen from the bottom edge, dragged down to close (Dialog's phoneSheet,
-  // BottomSheet).
-  const sheet = useSheetDrag(onClose);
   // Where the tab bar stands, for the phone and short-window sheet to stand on (useChromeFloor, as toasts do).
   const tabBarFloor = useChromeFloor(true, 0, TAB_BAR_SELECTOR);
   const searching = query.trim().length > 0;
@@ -248,21 +239,14 @@ export function StartPanel<C extends string>({
     >
       <section
         aria-labelledby={titleId}
-        // Escape closes the start, as its × does, once the search has nothing to clear (the search box takes the first
-        // Escape) and outside an open menu (a menu's Escape closes only the menu).
-        onKeyDown={(e) => {
-          if (e.key !== 'Escape' || e.defaultPrevented) return;
-          if ((e.target as HTMLElement).closest?.('[role="menu"]')) return;
-          e.stopPropagation();
-          onClose();
-        }}
+        // No close: an empty tab holds no page until something is chosen (start-diagramming.md "A choice first"), so
+        // Escape only clears a search (the search box's own) and there is no × or grab handle to drag down.
         // One height whatever the category shows, so the panel never jumps as it changes.
         className={`pointer-events-auto flex h-full max-h-[46rem] w-full max-w-5xl flex-col overflow-hidden rounded-3xl border shadow-2xl max-sm:max-h-none max-sm:rounded-b-none max-sm:rounded-t-2xl max-sm:border-b-0 short-window:pb-[var(--start-inset)] ${
           swapped ? '' : 'animate-dialog-in max-sm:animate-sheet-up'
         }`}
         style={
           {
-            ...sheet.style,
             '--start-inset': safeInset('bottom'),
             backgroundColor: palette.card,
             borderColor: palette.border,
@@ -271,19 +255,13 @@ export function StartPanel<C extends string>({
           } as CSSProperties
         }
       >
-        {/* The grab handle, phone only, as every phone sheet has (BottomSheet's). Dragged down it closes the panel. */}
-        <SheetHandle
-          handleProps={sheet.handleProps}
-          className="sm:hidden"
-          pillColor={palette.border}
-        />
         <header
-          // Room on the right for the help and × pinned in the corner. On a phone only the title's row needs it: the
+          // Room on the right for the help link pinned in the corner. On a phone only the title's row needs it: the
           // search below runs the full width, so a long placeholder fits.
-          className="relative flex flex-wrap items-center gap-x-4 gap-y-3 border-b py-4 pl-5 pr-24 sm:pl-6 max-sm:pr-5 max-sm:pt-1"
+          className="relative flex flex-wrap items-center gap-x-4 gap-y-3 border-b py-4 pl-5 pr-14 sm:pl-6 max-sm:pr-5"
           style={{ borderColor: palette.border }}
         >
-          <div className="min-w-0 flex-1 max-sm:pr-20">
+          <div className="min-w-0 flex-1 max-sm:pr-10">
             <h2
               id={titleId}
               className="text-[20px] font-semibold tracking-tight max-sm:text-[18px]"
@@ -296,7 +274,7 @@ export function StartPanel<C extends string>({
             </p>
           </div>
           <label
-            // On a phone the search takes its own row under the title, the help and × staying beside the title.
+            // On a phone the search takes its own row under the title, the help link staying beside the title.
             className="flex h-9 w-full items-center gap-2 rounded-xl border px-3 transition focus-within:ring-2 focus-within:ring-[var(--start-accent)] max-sm:order-last sm:w-68"
             style={{
               borderColor: palette.border,
@@ -344,25 +322,9 @@ export function StartPanel<C extends string>({
               </button>
             ) : null}
           </label>
-          {/* Help and ×, pinned to the panel's top right corner. */}
-          <div className="absolute right-3 top-3 flex items-center gap-1 max-sm:top-0">
+          {/* Help, pinned to the panel's top right corner. */}
+          <div className="absolute right-3 top-3 flex items-center">
             <HelpArticleLink article={helpArticle} variant="icon" />
-            <Tooltip label="Close">
-              <button
-                type="button"
-                aria-label="Close"
-                onClick={onClose}
-                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg transition hover:bg-[var(--start-hover)]"
-                style={
-                  {
-                    color: palette.muted,
-                    '--start-hover': startTint(palette, 7),
-                  } as CSSProperties
-                }
-              >
-                <CloseGlyph />
-              </button>
-            </Tooltip>
           </div>
         </header>
         <div className="flex min-h-0 flex-1 max-sm:flex-col">

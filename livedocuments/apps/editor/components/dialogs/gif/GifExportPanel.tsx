@@ -145,7 +145,7 @@ export default function GifExportPanel({
             <p className="text-xs text-slate-600 dark:text-slate-300">
               Between pages:{' '}
               {gif.transition === 'none' ? transitionLabel : `${transitionLabel}, ${speedLabel}`},
-              from the Slide Deck settings.
+              from the Presenting settings.
             </p>
           ) : null}
         </div>

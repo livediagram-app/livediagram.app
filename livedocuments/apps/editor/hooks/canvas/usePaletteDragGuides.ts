@@ -2,7 +2,12 @@
 
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import type { AlignmentGuide, DistributionGuide, Element } from '@livedocuments/document';
+import type {
+  AlignmentGuide,
+  DistributionGuide,
+  Element,
+  LaidOutPage,
+} from '@livedocuments/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { paletteDragSnapAt } from '@/lib/palette-drag-snap';
 import { setPaletteDragSnap, usePaletteDragPreview } from '@/lib/palette-drag-preview';
@@ -26,10 +31,13 @@ const emptied = <T>(current: T[]): T[] => current;
 
 export function usePaletteDragGuides({
   elements,
+  pages,
   readZoom,
   wrapperRef,
 }: {
   elements: Element[];
+  // Pages mode's laid-out pages: the drop lines up with what is on the page under it alone.
+  pages?: readonly LaidOutPage[] | undefined;
   // The zoom now, read on each dragover (docs/specs/008-canvas/blueprints/viewport-store.md).
   readZoom: () => number;
   wrapperRef: RefObject<HTMLElement | null>;
@@ -43,11 +51,11 @@ export function usePaletteDragGuides({
   // per render would otherwise resubscribe on every state change, wiping the
   // in-flight snap with it) — and a peer's mid-drag edit is still
   // seen, because the handler reads the ref.
-  const board = useRef({ elements });
+  const board = useRef({ elements, pages });
   // The zoom reader, through the latest-value ref: the drag's listeners never re-attach for it.
   const zoomOf = useLatest(readZoom);
   useEffect(() => {
-    board.current = { elements };
+    board.current = { elements, pages };
   });
 
   useEffect(() => {
@@ -83,6 +91,7 @@ export function usePaletteDragGuides({
         width: preview.width,
         height: preview.height,
         elements: live,
+        pages: board.current.pages,
       });
       setPaletteDragSnap({ dx: snap.dx, dy: snap.dy });
       setGuides(snap.guides);

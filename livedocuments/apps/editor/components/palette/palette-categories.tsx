@@ -52,7 +52,8 @@ export const PALETTE_CATEGORIES: {
     id: 'write',
     label: 'Write',
     group: 0,
-    description: 'The wordy elements: text, sticky notes and pointer notes.',
+    description:
+      'The wordy elements: text styles (Title to Quote), sticky notes and pointer notes.',
     icon: <WriteTabIcon />,
   },
   {
@@ -122,7 +123,7 @@ export const PALETTE_CATEGORIES: {
     label: 'Media',
     group: 2,
     description:
-      'Pictures and figures: an uploaded image or a circular avatar, embeds, a Tab Window onto another tab and a Link Card.',
+      'Pictures and figures: an uploaded image or a circular avatar, embeds and a Link Card.',
     icon: <MediaTabIcon />,
   },
   {

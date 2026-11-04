@@ -39,15 +39,12 @@ const laid = layOutPages(
 
 function show({
   canEdit = true,
-  side = 'left',
   hidden = false,
   joined = false,
-}: { canEdit?: boolean; side?: 'left' | 'right'; hidden?: boolean; joined?: boolean } = {}) {
+}: { canEdit?: boolean; hidden?: boolean; joined?: boolean } = {}) {
   const focusPage = vi.fn();
   const addPage = vi.fn();
   const onMinimise = vi.fn();
-  const onMoveToSide = vi.fn();
-  const onDraggingChange = vi.fn();
   const edit = {
     addPage,
     movePageTo: vi.fn(),
@@ -64,9 +61,12 @@ function show({
     toggleHidden: vi.fn(),
   };
   const store = createViewportStore(1);
+  const toggleArrangement = vi.fn();
   const view = {
     pages: laid,
     focusPage,
+    // Slides stand in a row by default; an Editor may stack them (pages-mode.md "Stacked or side by side").
+    arrangement: { stacked: false, ...(canEdit ? { toggle: toggleArrangement } : {}) },
     ...(canEdit ? { edit, deck } : {}),
   } as unknown as PagesModeView;
   render(
@@ -75,15 +75,12 @@ function show({
         view={view}
         tab={{ id: 't', name: 'T', elements: [], pages: laid, layers: [] }}
         top={68}
-        side={side}
-        onMoveToSide={onMoveToSide}
         onMinimise={onMinimise}
         joined={joined}
-        onDraggingChange={onDraggingChange}
       />
     </ViewportStoreProvider>,
   );
-  return { focusPage, addPage, onMinimise, onMoveToSide, onDraggingChange, edit, deck, store };
+  return { focusPage, addPage, onMinimise, edit, deck, store, toggleArrangement };
 }
 
 // The view centred on a page (the centred transform, @liveworkspace/workbench/lib/viewport.ts), in jsdom's 0 x 0 canvas.
@@ -107,66 +104,55 @@ describe('PageContentsSidebar', () => {
     expect(screen.queryByText('3 pages')).toBeNull();
   });
 
-  it('pins flush to its side, and drags by its title to the other', () => {
-    const h = show();
+  it('sits flush to the left with no header and no drag; its foot is Add Page with Minimise to its right', () => {
+    show();
     const aside = screen.getByRole('complementary', { name: 'Contents' });
     expect(aside.style.left).toBe('0px');
-    // jsdom's canvas is 0 wide at the origin, so any x past it is its right half.
-    const handle = aside.querySelector<HTMLElement>('[data-contents-handle]')!;
-    handle.setPointerCapture = () => {};
-    fireEvent.pointerDown(handle, { button: 0, clientX: -10, pointerId: 1 });
-    fireEvent.pointerMove(handle, { clientX: 500, pointerId: 1 });
-    expect(document.querySelector('[data-contents-drop]')).not.toBeNull();
-    fireEvent.pointerUp(handle, { clientX: 500, pointerId: 1 });
-    expect(h.onMoveToSide).toHaveBeenCalledWith('right');
+    expect(aside.querySelector('h2')).toBeNull();
+    expect(aside.querySelector('[data-contents-handle]')).toBeNull();
+    expect(screen.queryByRole('searchbox')).toBeNull();
+    const minimise = screen.getByRole('button', { name: 'Contents Options' });
+    const foot = minimise.closest('div.border-t')!;
+    const buttons = [...foot.querySelectorAll('button')];
+    expect(buttons.at(-1)).toBe(minimise);
+    expect(buttons[0]!.textContent).toMatch(/^Add (Page|Slide)/);
+  });
+
+  it('keeps Contents Options at a Viewer’s foot, with no Add Page', () => {
+    show({ canEdit: false });
+    expect(screen.queryByRole('button', { name: /^Add Page/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Contents Options' })).toBeTruthy();
+  });
+
+  // pages-mode.md "Stacked or side by side": an Editor's switch in Contents Options; a Viewer has Collapse alone.
+  it('offers an Editor Stack Pages in Contents Options, and a Viewer only Collapse Contents', () => {
+    const h = show();
+    fireEvent.click(screen.getByRole('button', { name: 'Contents Options' }));
+    const row = screen.getByRole('menuitemcheckbox', { name: /Stack Pages/ });
+    expect(row.getAttribute('aria-checked')).toBe('false');
+    fireEvent.click(row);
+    expect(h.toggleArrangement).toHaveBeenCalledOnce();
     cleanup();
-    show({ side: 'right' });
-    expect(screen.getByRole('complementary', { name: 'Contents' }).style.right).toBe('0px');
+    show({ canEdit: false });
+    fireEvent.click(screen.getByRole('button', { name: 'Contents Options' }));
+    expect(screen.queryByRole('menuitemcheckbox')).toBeNull();
+    expect(screen.getByRole('menuitem', { name: 'Collapse Contents' })).toBeTruthy();
   });
 
   // docs/specs/007-editor/pages-mode.md "Joined to the menu box".
-  it('joined, rises to the top and keeps the menu box’s row, its header where it was', () => {
+  it('joined, rises to the top and keeps the menu box’s row, the list where it was', () => {
     show({ joined: true });
     const aside = screen.getByRole('complementary', { name: 'Contents' });
     expect(aside.style.top).toBe('0px');
     const band = aside.firstElementChild as HTMLElement;
     expect(band.hasAttribute('data-menu-join-band')).toBe(true);
     expect(band.style.height).toBe('68px');
-    expect(band.nextElementSibling?.hasAttribute('data-contents-handle')).toBe(true);
+    expect(band.nextElementSibling?.getAttribute('role')).toBe('list');
   });
 
   it('has no menu row unjoined', () => {
     show();
     expect(document.querySelector('[data-menu-join-band]')).toBeNull();
-  });
-
-  it('tells the chrome a drag across starts and ends, a cancelled one too', () => {
-    const h = show({ joined: true });
-    const handle = document.querySelector<HTMLElement>('[data-contents-handle]')!;
-    handle.setPointerCapture = () => {};
-    fireEvent.pointerDown(handle, { button: 0, clientX: -10, pointerId: 1 });
-    expect(h.onDraggingChange).toHaveBeenLastCalledWith(true);
-    fireEvent.pointerUp(handle, { clientX: -10, pointerId: 1 });
-    expect(h.onDraggingChange).toHaveBeenLastCalledWith(false);
-    fireEvent.pointerDown(handle, { button: 0, clientX: -10, pointerId: 1 });
-    fireEvent.pointerCancel(handle, { pointerId: 1 });
-    expect(h.onDraggingChange).toHaveBeenLastCalledWith(false);
-    // A press on its buttons is no drag.
-    h.onDraggingChange.mockClear();
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Minimise Contents' }), {
-      button: 0,
-      pointerId: 1,
-    });
-    expect(h.onDraggingChange).not.toHaveBeenCalled();
-  });
-
-  it('lets go of the menu box if it goes mid-drag', () => {
-    const h = show({ joined: true });
-    const handle = document.querySelector<HTMLElement>('[data-contents-handle]')!;
-    handle.setPointerCapture = () => {};
-    fireEvent.pointerDown(handle, { button: 0, clientX: -10, pointerId: 1 });
-    cleanup();
-    expect(h.onDraggingChange).toHaveBeenLastCalledWith(false);
   });
 
   it("stacks each page's Delete and ⋯ down its left, an Editor's alone, whose presses never glide", () => {
@@ -209,10 +195,17 @@ describe('PageContentsSidebar', () => {
     fireEvent.click(screen.getByRole('button', { name: 'More Actions for Page 1' }));
     fireEvent.click(screen.getByRole('menuitem', { name: 'Hide in Slides' }));
     expect(h.deck.toggleHidden).toHaveBeenCalledWith('s1');
-    expect(screen.queryByRole('img', { name: 'Hidden in Slides' })).toBeNull();
+    expect(document.querySelector('[data-contents-veil]')).toBeNull();
     cleanup();
     const hid = show({ hidden: true });
-    expect(screen.getAllByRole('img', { name: 'Hidden in Slides' })).toHaveLength(1);
+    // Its picture is set aside under the Hidden veil, and its row is described as hidden.
+    const veils = document.querySelectorAll('[data-contents-veil]');
+    expect(veils).toHaveLength(1);
+    expect(veils[0]!.textContent).toBe('Hidden');
+    const row = screen.getByRole('button', { name: 'Page 1' });
+    expect(document.getElementById(row.getAttribute('aria-describedby')!)?.textContent).toBe(
+      'Hidden in Slides',
+    );
     fireEvent.click(screen.getByRole('button', { name: 'More Actions for Page 1' }));
     fireEvent.click(screen.getByRole('menuitem', { name: 'Show in Slides' }));
     expect(hid.deck.toggleHidden).toHaveBeenCalledWith('s1');
@@ -228,10 +221,11 @@ describe('PageContentsSidebar', () => {
     await waitFor(() => expect(requestPagePanel).toHaveBeenCalledWith('p3'));
   });
 
-  it('minimises to its button, framing the page in view again', async () => {
+  it('collapses to its button from Contents Options, framing the page in view again', async () => {
     const h = show();
     h.focusPage.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: 'Minimise Contents' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Contents Options' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Collapse Contents' }));
     expect(h.onMinimise).toHaveBeenCalledOnce();
     // The page in view is framed again across the whole canvas once the sidebar has gone.
     await waitFor(() => expect(h.focusPage).toHaveBeenCalledWith('p1'));
@@ -266,11 +260,11 @@ describe('PageContentsSidebar', () => {
     const h = show();
     // One kind a tab: no chooser of another kind.
     expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Add Page' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Add (Page|Slide)/ }));
     expect(h.addPage).toHaveBeenCalledWith('infographic');
     cleanup();
     show({ canEdit: false });
-    expect(screen.queryByRole('button', { name: 'Add Page' })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Add (Page|Slide)/ })).toBeNull();
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
   });
 });

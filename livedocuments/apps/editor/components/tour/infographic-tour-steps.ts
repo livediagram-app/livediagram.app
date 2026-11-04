@@ -1,20 +1,20 @@
 // The Infographic track of the Pages tour (docs/specs/007-editor/pages-tour.md "Infographic track"): on the
 // person's own page, its name, the Layout and Background popovers opened to choose from, its size in the panel, the +
-// and the Slide Deck. Each control stays live, so a pick made while its step is up is kept.
-import type { PageTourStep } from './page-tour-api';
+// and its menu in Contents, where it joins the show. Each control stays live, so a pick made while its step is up is
+// kept.
+import type { PageTourApi, PageTourStep } from './page-tour-api';
 import {
   addPageAnchor,
-  closeSlideDeck,
   closeTitlePopover,
-  openSlideDeck,
+  contentsRow,
+  contentsRowMenu,
   openTitlePopover,
   pageButton,
   pageCog,
   pageOrPopover,
   pageSheet,
-  SLIDE_DECK,
-  SLIDES_BUTTON,
 } from './page-tour-dom';
+import { opensFrom } from '@liveworkspace/workbench/components/tour/tour-open';
 
 export function infographicTourSteps(): PageTourStep[] {
   return [
@@ -57,15 +57,15 @@ export function infographicTourSteps(): PageTourStep[] {
       body: '+ adds another page like this one. Every page of a tab is one kind.',
       selector: addPageAnchor,
     },
-    {
-      id: 'present',
-      title: 'Present It',
-      body: 'Add any page as a slide, then Present shows them full screen.',
-      selector: () => SLIDE_DECK,
-      requires: () => SLIDES_BUTTON,
-      prepare: openSlideDeck,
-      cleanup: closeSlideDeck,
-    },
+    opensFrom(
+      {
+        id: 'present',
+        title: 'Present It',
+        body: 'Add to Slides puts any page in the show, and Present shows it full screen.',
+        selector: (api) => contentsRow(api.pageId),
+      },
+      (api: PageTourApi) => contentsRowMenu(api.pageId),
+    ),
     {
       id: 'outro',
       card: 'outro',

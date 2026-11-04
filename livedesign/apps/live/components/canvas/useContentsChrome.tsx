@@ -5,24 +5,15 @@
 // over its cluster button (a bottom sheet on a phone, which never has the sidebar). Where it sits is
 // the person's own choice, in their synced preferences (lib/contents-placement.ts).
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, type ReactNode } from 'react';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import {
-  useLocalStorageValue,
-  writeLocalStorageValue,
-} from '@liveworkspace/workbench/hooks/ui/useLocalStorageValue';
-import {
-  CONTENTS_SIDE_STORAGE_KEY,
   readContentsPlacement,
   withContentsPlacement,
   type ContentsPlacement,
 } from '@/lib/contents-placement';
-import {
-  CONTENTS_SIDEBAR_MIN_PAGES,
-  readContentsSide,
-  type ContentsSide,
-} from '@liveworkspace/workbench/lib/contents-sidebar';
+import { CONTENTS_SIDEBAR_MIN_PAGES } from '@liveworkspace/workbench/lib/contents-sidebar';
 import { track } from '@/lib/telemetry';
 import { readUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
 import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
@@ -43,10 +34,6 @@ const PLACEMENT_EVENT: Record<ContentsPlacement, string> = {
   sidebar: 'ContentsPlacementSidebar',
   button: 'ContentsPlacementButton',
 };
-const SIDE_EVENT: Record<ContentsSide, string> = {
-  left: 'ContentsSideLeft',
-  right: 'ContentsSideRight',
-};
 
 export function useContentsChrome({
   props,
@@ -59,13 +46,11 @@ export function useContentsChrome({
   isMobile: boolean;
   closeDockPanel: () => void;
 }): {
-  // The sidebar is on screen, so the cluster has no Contents button and the corners on its side
-  // make room.
+  // The sidebar is on screen, down the left, so the cluster has no Contents button and the left
+  // corners make room.
   contentsDocked: boolean;
-  // The side it is pinned to.
-  contentsSide: ContentsSide;
   // The menu box heads the sidebar as its top row (docs/specs/007-editor/pages-mode.md "Joined to the menu box"):
-  // docked on the left, the menu box's side, and not mid-drag.
+  // whenever it is docked.
   menuJoined: boolean;
   contentsSidebarEl: ReactNode;
   contentsPopoverEl: ReactNode;
@@ -80,10 +65,7 @@ export function useContentsChrome({
     !isMobile &&
     placement === 'sidebar' &&
     (pagesMode?.pages.length ?? 0) >= CONTENTS_SIDEBAR_MIN_PAGES;
-  const contentsSide = readContentsSide(useLocalStorageValue(CONTENTS_SIDE_STORAGE_KEY));
-  // Set at a drag's start and end only, never per pointer move.
-  const [dragging, setDragging] = useState(false);
-  const menuJoined = contentsDocked && contentsSide === 'left' && !dragging;
+  const menuJoined = contentsDocked;
   // The popover belongs to Pages mode's button: leaving the mode (Shift+D, a tab switch) or
   // docking the sidebar closes it rather than leaving it floating with no button under it.
   const popoverOpen = activeDockPanel === 'contents' && shown && !contentsDocked;
@@ -102,10 +84,6 @@ export function useContentsChrome({
     [ownerId],
   );
   const onMinimise = useCallback(() => place('button'), [place]);
-  const onMoveToSide = useCallback((side: ContentsSide) => {
-    track('UI', 'Changed', SIDE_EVENT[side]);
-    writeLocalStorageValue(CONTENTS_SIDE_STORAGE_KEY, side);
-  }, []);
   const onDock = useCallback(() => {
     closeDockPanel();
     place('sidebar');
@@ -114,7 +92,6 @@ export function useContentsChrome({
   if (!pagesMode) {
     return {
       contentsDocked: false,
-      contentsSide,
       menuJoined: false,
       contentsSidebarEl: null,
       contentsPopoverEl: null,
@@ -131,7 +108,6 @@ export function useContentsChrome({
   };
   return {
     contentsDocked,
-    contentsSide,
     menuJoined,
     contentsSidebarEl: contentsDocked ? (
       <PageContentsSidebar
@@ -140,11 +116,8 @@ export function useContentsChrome({
         view={pagesMode}
         tab={tab}
         top={toolbarTopClearancePx(toolbarScale)}
-        side={contentsSide}
-        onMoveToSide={onMoveToSide}
         onMinimise={onMinimise}
         joined={menuJoined}
-        onDraggingChange={setDragging}
       />
     ) : null,
     contentsPopoverEl: popoverOpen ? (

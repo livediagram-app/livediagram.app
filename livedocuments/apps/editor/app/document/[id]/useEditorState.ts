@@ -4,7 +4,7 @@ import { useFindReplace } from '@/hooks/editor/useFindReplace';
 import { onProfileSaved, participantWithProfile } from '@liveworkspace/settings-ui/profile-events';
 import { setOwnPictureShown } from '@/lib/own-picture';
 import { pageStep } from '@liveworkspace/workbench/lib/page-step';
-import { tabsWithPageMoved, useDeckFollowsPages } from './useDeckFollowsPages';
+import { useDeckFollowsPages } from './useDeckFollowsPages';
 import { useWorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
 import { useTabRevisions } from './useTabRevisions';
@@ -42,8 +42,6 @@ import {
 
 import { useCanvasTool } from '@/hooks/canvas/useCanvasTool';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
-import { useDesktopOnlyToolExit } from '@/hooks/canvas/useDesktopOnlyToolExit';
-import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { useLaserConfig } from '@/hooks/canvas/useLaserConfig';
 import { useFormatConfig } from '@/hooks/canvas/useFormatConfig';
 import { useStyleMemory } from '@/hooks/canvas/useStyleMemory';
@@ -337,7 +335,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const { canvasTool, setCanvasTool, selectCanvasTool } = useCanvasTool({
     defaultPan: embedMode,
   });
-  useDesktopOnlyToolExit(canvasTool, setCanvasTool);
   // Persistent Format painter tool (docs/specs/008-canvas/canvas-and-palette.md): the mode-boundary reset +
   // the exit that restores the pre-Format tool. See useFormatTool.
   const { formatToolActive, exitFormatTool } = useFormatTool({
@@ -389,18 +386,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       tabForTool.elements.length === 0 &&
       (tool === 'format' || tool === 'laser' || tool === 'spotlight')
     ) {
-      return;
-    }
-    // A slide deck spans tabs, so a tab-scoped session has none
-    // (docs/specs/013-workspace/tab-scoped-share-links.md): the server withholds it and refuses writes.
-    if (tool === 'slide-deck' && tabScopeRef.current !== null) {
-      toast.info("The slide deck isn't shared with you");
-      return;
-    }
-    // Desktop-only (docs/specs/012-collaboration/presentation-mode.md): the pickers
-    // already hide it on a phone, so this catches any path that still asks.
-    if (tool === 'slide-deck' && isMobileViewportSync()) {
-      toast.info('Slide Deck is only available on a larger screen');
       return;
     }
     // Spotlight is a non-editing presenter mode, so it clears the selection on entry.
@@ -1107,8 +1092,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md). Owns the deck, the panel's editing verbs, and the
   // presentation Start runs. Placed after the viewport because presenting
   // frames each slide through it.
-  // Set by the pages' hook (below): a page slide's row frames its page once its tab is open.
-  const framePageRef = useRef<((pageId: string) => void) | null>(null);
   // The deck as this editor last saved or loaded it: what its next deck save was built on.
   const deckBaseRef = useRef<string | null>(documentPresentation);
   useEffect(() => {
@@ -1120,12 +1103,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitPrefs: (next) =>
       setUserPreferences(commitUserPreferences(userPreferences, next, selfParticipant.id)),
     tabs,
-    framePage: (_tabId, pageId) => framePageRef.current?.(pageId),
-    movePage: (tabId, pageId, unitIndex) =>
-      commitTabs((ts) => tabsWithPageMoved(ts, tabId, pageId, unitIndex)),
     activeTabId: activeId,
-    setActiveId,
-    readSelection,
     setSelectedId,
     setMultiSelectedIds,
     isReadOnly,
@@ -1145,7 +1123,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
         // state either way and the next edit retries.
       });
     },
-    loadAllTabs,
   });
   // Seed the deck once the document's stored blob arrives. Triggered only when a stored deck appears or
   // the document changes: hydrating on every deck edit would fight the editing verbs, so the blob itself
@@ -1329,9 +1306,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const { emailEnabled } = useCapabilities(sharePasswordGate === null);
 
   // Pinch-to-zoom on touch screens + trackpad pinch (Ctrl+wheel).
+  // Whether the tab's pages stand as a stack (set once pagesMode is known, below): a wheel then pans no sideways.
+  const stackedRef = useRef(false);
   const { isPinchingRef } = useCanvasPinchZoom({
     canvasMainRef,
     viewport,
+    stacked: () => stackedRef.current,
   });
 
   // Capture an Inbox element deep link BEFORE the tab-entry
@@ -1510,12 +1490,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
     toastInfo: toast.info,
     onArticleCreated: (flow) => articleFocusRef.current?.(flow),
-    framePageRef,
     frameFirstPageRef,
     documentId: documentId ?? undefined,
     viewport,
     snapSuspended: () => presenting || followingRef.current !== null,
   });
+  useAssignRef(stackedRef, !!pagesMode.cardStage);
   // What a locked page holds is inert, as on a locked layer.
   const pageLockedIds = usePageLockedIds(activeTab.elements, pagesMode.pages);
   const canvasInertIds = pageLockedIds;
@@ -1773,17 +1753,32 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   const placeIntentAtRef = useRef<
     ((intent: Parameters<typeof placeIntentAt>[0], x: number, y: number) => void) | null
   >(null);
-  // A page's Add to Slides / Hide in Slides (its Contents menu) and Add Notes reach the deck (pageDeckControls).
-  // Memoised so the pages' view keeps its identity across renders where nothing changed.
-  const { deck: currentDeck, newPageSlide, toggleSlideHidden, setSlideNoteCards } = slideDeck;
+  // A page's Add to Slides / Present From Here / Hide in Slides (its Contents menu) and Notes reach the deck
+  // (pageDeckControls). Memoised so the pages' view keeps its identity across renders where nothing changed.
+  const {
+    deck: currentDeck,
+    newPageSlide,
+    toggleSlideHidden,
+    setSlideNoteCards,
+    start: startDeck,
+  } = slideDeck;
   const pageDeck = useMemo(
     () =>
       pageDeckControls(currentDeck, activeId, !isReadOnly, {
         newPageSlide,
         toggleSlideHidden,
         setSlideNoteCards,
+        start: startDeck,
       }),
-    [currentDeck, activeId, isReadOnly, newPageSlide, toggleSlideHidden, setSlideNoteCards],
+    [
+      currentDeck,
+      activeId,
+      isReadOnly,
+      newPageSlide,
+      toggleSlideHidden,
+      setSlideNoteCards,
+      startDeck,
+    ],
   );
   const pagesModeView = useMemo(
     () => ({ ...pagesMode, ...(articles ? { articles } : {}), deck: pageDeck }),
@@ -2479,6 +2474,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     alignmentGuidesRef,
     pageSnapBoxes: pageSnapBoxList,
     pagesMode: pagesMode.pages,
+    stackFront: pagesMode.cardStage?.pages[0]?.rect ?? null,
     isPinchingRef,
   });
 
@@ -3059,7 +3055,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     nameDocument,
     shiftDupGhostIds,
     snapGuideStore,
-    tabLoadErrors,
     tabs,
     tabSummaries,
     documentTeamId,

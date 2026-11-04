@@ -1,5 +1,5 @@
-// A slide's headline (docs/specs/012-collaboration/presentation-mode.md "The Slide Deck panel"):
-// what the deck's row calls a slide nobody has named, read off the slide itself. The text with the
+// A slide's headline (docs/specs/012-collaboration/presentation-mode.md "The HUD"):
+// what the show calls a slide nobody has named, read off the slide itself. The text with the
 // most weight on it: its type size (textSize by textScale) times its length (up to
 // HEADLINE_LENGTH_CAP characters), so a heading outweighs a huge short figure ("86k") and a large
 // statement outweighs a small eyebrow; the topmost on a tie. On one line, cut to
@@ -8,7 +8,6 @@ import {
   pagesOf,
   LABEL_FONT_PX,
   resolveSlide,
-  type Deck,
   type Slide,
   type Tab,
   type TextSize,
@@ -45,17 +44,6 @@ export function slideHeadline(slide: Slide, tab: Tab | undefined): string | null
   return best.label.length > SLIDE_HEADLINE_MAX
     ? `${best.label.slice(0, SLIDE_HEADLINE_MAX - 1)}…`
     : best.label;
-}
-
-/** Every slide's headline, by slide id (absent where a slide has no text). */
-export function slideHeadlines(deck: Deck, tabs: readonly Tab[]): Map<string, string> {
-  const byId = new Map(tabs.map((t) => [t.id, t]));
-  const out = new Map<string, string>();
-  for (const s of deck.slides) {
-    const h = slideHeadline(s, byId.get(s.tabId));
-    if (h) out.set(s.id, h);
-  }
-  return out;
 }
 
 /** What a presented slide is called (presentation-mode.md "Jump to a slide"): its own name, the headline on it, the name of the page it shows, the name of the tab it comes from, and only then

@@ -94,7 +94,7 @@ export function LogoTitleBar({
     <div
       // Show Me on this page points at its Mirror and Guides (logo-pages.md "Show Me").
       data-logo-title-bar={pageId}
-      className="pointer-events-auto flex items-center gap-1"
+      className="pointer-events-auto flex items-center gap-0.5"
       // A press here is the controls', never the canvas's (no marquee, no deselect, no draw).
       onPointerDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
@@ -117,8 +117,9 @@ export function LogoTitleBar({
       >
         <GuidesIcon />
       </LogoGuidesButton>
-      {/* Tidy last, its icon alone, left of the lock and cog, as on every page. */}
-      {editor && selection ? (
+      {/* Tidy last, its icon alone, left of the lock and cog, as on every page; never on a phone (pages-mode.md
+          "Beside the cog"). */}
+      {editor && selection && desktop ? (
         <TidyUpButton canTidyUp={editor.canTidyUp} tidyUp={editor.tidyUpSelected} />
       ) : null}
     </div>

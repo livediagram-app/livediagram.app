@@ -12,7 +12,8 @@
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { haptic } from '@liveworkspace/workbench/lib/haptics';
 import {
-  createText,
+  createPresetText,
+  DEFAULT_TEXT_PRESET,
   bringManyToFront,
   duplicateElements,
   sendManyToBack,
@@ -256,7 +257,8 @@ export function useElementSelectionActions(deps: EditorSelectionActionsDeps) {
     // do NOT connect it with an arrow (a caption / label next to a node
     // isn't a flow edge, so a connector would be noise).
     if (kind === 'text') {
-      const text = createText(baseBounds.x + dx, baseBounds.y + dy);
+      // A Paragraph, left aligned (canvas-and-palette.md "Text element").
+      const text = createPresetText(baseBounds.x + dx, baseBounds.y + dy, DEFAULT_TEXT_PRESET);
       commit((els) => [...els, text]);
       setSelectedId(text.id);
       setEditingId(text.id);

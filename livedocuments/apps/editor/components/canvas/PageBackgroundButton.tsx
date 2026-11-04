@@ -19,7 +19,7 @@ const BackgroundIcon = lucideGlyph(lucidePaintRoller, 14);
 // The title-bar room it takes (24 px and the gap, or named beside its icon), so the page's label
 // truncates first.
 const BACKGROUND_ROOM = 28;
-const BACKGROUND_LABELLED_ROOM = 104;
+const BACKGROUND_LABELLED_ROOM = 107;
 // The page panel's own width, so the swatches sit seven across as they do there.
 const POPOVER_WIDTH = 304;
 
@@ -80,8 +80,14 @@ export function PageBackgroundButton({
   onBackground,
   onPreview,
   applyToAll,
+  openRequest = 0,
+  headless = false,
 }: {
   page: Page;
+  // Opens the popover from elsewhere each time it changes (a phone's Appearance sheet); 0 never does.
+  openRequest?: number;
+  // No button of its own: a phone's Appearance sheet opens it (TitlePopoverButton's headless).
+  headless?: boolean;
   // Apply to All at its foot (docs/specs/007-editor/pages-mode.md "Copying a background"): how
   // many other pages of its kind it reaches, and the edit.
   applyToAll?: { reach: number; onApply: () => void };
@@ -92,6 +98,28 @@ export function PageBackgroundButton({
   onBackground: (patch: Partial<PageBackground>) => void;
   onPreview: (patch: Partial<PageBackground> | null) => void;
 }) {
+  const popover = (
+    <TitlePopoverButton
+      name="Background"
+      labelled={labelled}
+      className={titleButtonClass}
+      icon={<BackgroundIcon />}
+      width={POPOVER_WIDTH}
+      padded={false}
+      openRequest={openRequest}
+      headless={headless}
+      onOpen={() => track('UI', 'Opened', 'PageBackgroundButton')}
+    >
+      <Body
+        page={page}
+        themePresets={themePresets}
+        onBackground={onBackground}
+        onPreview={onPreview}
+        {...(applyToAll ? { applyToAll } : {})}
+      />
+    </TitlePopoverButton>
+  );
+  if (headless) return popover;
   return (
     <div
       // The title bar takes no pointer events: the button opts back in, and a press on it is its
@@ -100,23 +128,7 @@ export function PageBackgroundButton({
       onPointerDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
     >
-      <TitlePopoverButton
-        name="Background"
-        labelled={labelled}
-        className={titleButtonClass}
-        icon={<BackgroundIcon />}
-        width={POPOVER_WIDTH}
-        padded={false}
-        onOpen={() => track('UI', 'Opened', 'PageBackgroundButton')}
-      >
-        <Body
-          page={page}
-          themePresets={themePresets}
-          onBackground={onBackground}
-          onPreview={onPreview}
-          {...(applyToAll ? { applyToAll } : {})}
-        />
-      </TitlePopoverButton>
+      {popover}
     </div>
   );
 }

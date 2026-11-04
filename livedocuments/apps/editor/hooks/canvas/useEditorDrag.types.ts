@@ -96,6 +96,8 @@ export type EditorDragDeps = {
   // Pages mode's laid-out pages: an arrow's end joins nothing on another page than its other
   // end's (docs/specs/007-editor/pages-mode.md "Arrows stay on one page"). Null outside it.
   pagesMode?: readonly LaidOutPage[] | null;
+  // On a stack, the page in front's rect: a moved box's centre stays on it (keepCentreOn). Null off a stack.
+  stackFront?: { x: number; y: number; width: number; height: number } | null;
   // Set to true while a 2-finger pinch is active. The move handler
   // checks this and cancels any in-flight drag so a pinch-to-zoom
   // gesture that starts on an element doesn't also move it.

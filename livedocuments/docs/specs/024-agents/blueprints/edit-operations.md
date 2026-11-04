@@ -194,18 +194,18 @@ word     := ref | label          (one element)
 A field key is an alias or a stored field name of the element's type. The aliases include every style key the views
 print (`STYLE_KEYS`; `font` is a stored name already), so a printed `key=value` writes back unchanged.
 
-| Alias        | Element types                                                     | Writes                                             | Values                                                                                              |
-| ------------ | ----------------------------------------------------------------- | -------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `label`      | every type with a `label` field                                   | `label`                                            | text; on a shape over `GRAPH_LABEL_MAX`, capped into the note; on an arrow, cut (EO18)              |
-| `icon`       | every type with an `iconId` field and no `icon` of its own        | `iconId`                                           | graph input's name for the icon, read as `iconId` and checked as it is                              |
-| `note`       | every type with a `note` field                                    | `note`                                             | text                                                                                                |
-| `shape`      | `shape`                                                           | `shape`                                            | a shape kind; off-vocabulary coerced by `coerceShapeKind`, warning `shape_coerced`                  |
-| `fill`       | types whose `themeColourFields` include `fillColor`, and `sticky` | `fillColor` + `fillSwatch` (sticky: + `textColor`) | a theme slot, or `#rgb` / `#rrggbb`, or on a sticky a sticky preset name                            |
-| `stroke`     | every type with a `strokeColor` field                             | `strokeColor`; clears `strokeSwatch`               | a colour: hex (warning `colour_overrides_theme` where the theme colours it) or a marker colour name |
-| `text-color` | every type with a `textColor` field                               | `textColor`                                        | a colour, as `stroke`                                                                               |
-| `border`     | every type with a `strokeStyle` field                             | `strokeStyle`                                      | `solid dashed dotted long-dash dash-dot dash-dot-dot`                                               |
-| `text`       | every type with a `textSize` field                                | `textSize`, clearing a `textScale`                 | `sm md lg scale`                                                                                    |
-| `line`       | `arrow`                                                           | `arrowStyle`                                       | `straight angled curved`                                                                            |
+| Alias        | Element types                                                     | Writes                                                                                                    | Values                                                                                               |
+| ------------ | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `label`      | every type with a `label` field                                   | `label`                                                                                                   | text; on a shape over `GRAPH_LABEL_MAX`, capped into the note; on an arrow, cut (EO18)               |
+| `icon`       | every type with an `iconId` field and no `icon` of its own        | `iconId`                                                                                                  | graph input's name for the icon, read as `iconId` and checked as it is                               |
+| `note`       | every type with a `note` field                                    | `note`                                                                                                    | text                                                                                                 |
+| `shape`      | `shape`                                                           | `shape`                                                                                                   | a shape kind; off-vocabulary coerced by `coerceShapeKind`, warning `shape_coerced`                   |
+| `fill`       | types whose `themeColourFields` include `fillColor`, and `sticky` | `fillColor` + `fillSwatch` (sticky: + `textColor`)                                                        | a theme slot, or `#rgb` / `#rrggbb`, or on a sticky a sticky preset name                             |
+| `stroke`     | every type with a `strokeColor` field                             | `strokeColor`; clears `strokeSwatch`                                                                      | a colour: hex (warning `colour_overrides_theme` where the theme colours it) or a marker colour name  |
+| `text-color` | every type with a `textColor` field                               | `textColor`                                                                                               | a colour, as `stroke`                                                                                |
+| `border`     | every type with a `strokeStyle` field                             | `strokeStyle`                                                                                             | `solid dashed dotted long-dash dash-dot dash-dot-dot`                                                |
+| `text`       | every type with a `textSize` field                                | `textSize`, clearing a `textScale`; a text's or shape's px past 48 as 48 + `textScale` (`textSizeFields`) | `sm md lg scale`, or a whole px in `textPxRangeFor(type)`: 24 to 72 on a text or shape, 6 to 48 else |
+| `line`       | `arrow`                                                           | `arrowStyle`                                                                                              | `straight angled curved`                                                                             |
 
 - **Stored field names** are `ELEMENT_FIELD_NAMES[el.type]`. `id` and `type` are refused (`invalid_value`,
   "cannot be changed"). `__proto__`, `constructor` and `prototype` are always `unknown_field`.
@@ -294,7 +294,10 @@ means `newElementId` ([Ids](#ids)).
   square). An unknown kind is coerced as a shape kind with `shape_coerced` (EO17). `arrow` is `invalid_value`
   ("use connect"); `image`, `video`, `freehand` and `path` are `invalid_value` (EO15). The element is the
   factory's (`createShape`, `createText`, `createSticky`, `createTable`, `createLinkCard`) with
-  a new id; shapes and text take `textSize: 'sm'` and `labelBoxSize(label, kind)` (EO28), a shape measured at
+  a new id; shapes take `textSize: 'sm'` and `labelBoxSize(label, kind)` (EO28); text is
+  `createPresetText(0, 0, 'paragraph')` (24 px, `textAlignX: 'left'`, `textAlignY: 'top'`, `sizing: 'wrap'`) boxed
+  for its label by `textBoxFor(label, px, 600)` at the px it draws at, unless a width or height is named (a `set`
+  field overrides any of it), a shape measured at
   `labelFontPx` of its text size (`GraphLook.fontPx`); fields apply as `set`
   does; it is painted, placed, given the layer of the placement reference when that layer is not locked, else
   `resolveActiveLayerId(layers, null)` (EO29, EO47), and appended to the element order. The JSON form may carry

@@ -1,6 +1,6 @@
 # Quick style panel
 
-While one or more shapes, arrows and / or text elements are selected, a small panel on the left
+While one or more shapes, arrows and / or text elements are selected, a small panel on the right
 edge of the canvas offers the handful of style choices people reach for most: stroke colour,
 background, text colour (for text elements), stroke width, stroke style, text alignment and icon
 alignment, plus a Clear Styles action. What you choose there
@@ -39,8 +39,11 @@ only reason it can be always-there rather than on-demand.
 
 ## Where it sits
 
-The panel sits **on the left edge of the canvas, vertically centred**: one gap
-(12 px) in from the canvas's left, out of the way of the strip across the top.
+The panel sits **on the right edge of the canvas, vertically centred**, always: one gap (12 px) in
+from the canvas's right, out of the way of the strip across the top. The left holds the Contents
+sidebar, and the right is where the eye goes for what a selection can change, so it never moves
+across. (livediagram and livedesign keep it on the left: the shared placement takes the side,
+`placeQuickStylePanel` `side`, `../packages/workbench/src/lib/quick-style-placement.ts`.)
 
 It is **compact** (no header, 258 px wide), not draggable and with no collapse button of its own;
 it leaves when the selection does. The colour swatches are the colour picker's one swatch
@@ -58,11 +61,12 @@ Never over the other chrome (panels, the Contents panel, popovers, the Toolbar s
 the popovers hanging from it, the bottom-right cluster). The placement tries fixed candidate spots in order and
 takes the first that overlaps none of them:
 
-1. the left edge, centred;
-2. the left edge, just below an obstacle on that edge (the Explorer), the highest spot first;
-3. the left edge, just above an obstacle on that edge, the lowest spot first;
-4. directly right of the obstacles on the left edge, centred;
-5. the right edge, centred.
+1. the right edge, centred;
+2. the right edge, just below an obstacle on that edge (the Explorer, a panel), the highest spot first;
+3. the right edge, just above an obstacle on that edge (the bottom-right cluster), the lowest spot first;
+4. directly left of the obstacles on the right edge, centred.
+
+It never crosses to the left edge.
 
 If none is clear, the first is used. The order is fixed so the panel always lands in the same place
 for the same chrome. Placement is recomputed when the chrome moves or resizes, and when a panel appears or goes

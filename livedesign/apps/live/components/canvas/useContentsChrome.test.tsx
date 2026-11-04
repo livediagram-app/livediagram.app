@@ -1,12 +1,10 @@
 // @vitest-environment jsdom
-import { act, renderHook } from '@testing-library/react';
+import { renderHook } from '@testing-library/react';
 import type { ReactElement } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { layOutPages } from '@livedesign/design';
 import { track } from '@/lib/telemetry';
 import { readUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
-import { CONTENTS_SIDE_STORAGE_KEY } from '@/lib/contents-placement';
-import { writeLocalStorageValue } from '@liveworkspace/workbench/hooks/ui/useLocalStorageValue';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { useContentsChrome } from './useContentsChrome';
 
@@ -62,24 +60,11 @@ describe('useContentsChrome', () => {
     expect(c.closeDockPanel).toHaveBeenCalled();
   });
 
-  it('keeps the button with a single page: nothing to find your way round', () => {
+  it('docks from the first page: a single page has its sidebar too', () => {
     const one = { ...pagesMode, pages: layOutPages([slide('p1')]) };
     const c = chrome({ pagesMode: one } as never);
-    expect(c.contentsDocked).toBe(false);
-    expect(c.contentsSidebarEl).toBeNull();
-  });
-
-  it('pins to the left until moved, the side kept in this browser alone', () => {
-    expect(chrome().contentsSide).toBe('left');
-    const docked = chrome();
-    (
-      docked.contentsSidebarEl as ReactElement<{ onMoveToSide: (side: 'right') => void }>
-    ).props.onMoveToSide('right');
-    expect(track).toHaveBeenCalledWith('UI', 'Changed', 'ContentsSideRight');
-    expect(localStorage.getItem('livedesign:contents-side:v1')).toBe('right');
-    expect(chrome().contentsSide).toBe('right');
-    // Never in the synced preferences.
-    expect(readUserPreferences()).not.toHaveProperty('contentsSide');
+    expect(c.contentsDocked).toBe(true);
+    expect(c.contentsSidebarEl).not.toBeNull();
   });
 
   it('never docks on a phone, whatever the choice', () => {
@@ -132,23 +117,15 @@ describe('useContentsChrome', () => {
   });
 });
 
-// docs/specs/007-editor/pages-mode.md "Joined to the menu box": pinned left, the sidebar heads up to the menu box.
+// docs/specs/007-editor/pages-mode.md "Joined to the menu box": docked, the sidebar heads up to the menu box.
 describe('the menu box joined to the sidebar', () => {
-  // The side is read through a shared store, which a bare localStorage.clear() leaves behind.
-  beforeEach(() => writeLocalStorageValue(CONTENTS_SIDE_STORAGE_KEY, 'left'));
-
-  it('joins while docked on the left, the menu box’s side', () => {
+  it('joins whenever docked', () => {
     const c = chrome();
     expect(c.menuJoined).toBe(true);
     expect((c.contentsSidebarEl as ReactElement<{ joined: boolean }>).props.joined).toBe(true);
   });
 
-  it('keeps the menu box its own card pinned right, minimised, on a phone and outside Pages', () => {
-    writeLocalStorageValue(CONTENTS_SIDE_STORAGE_KEY, 'right');
-    const right = chrome();
-    expect(right.menuJoined).toBe(false);
-    expect((right.contentsSidebarEl as ReactElement<{ joined: boolean }>).props.joined).toBe(false);
-    writeLocalStorageValue(CONTENTS_SIDE_STORAGE_KEY, 'left');
+  it('keeps the menu box its own card minimised, on a phone and outside Pages', () => {
     expect(chrome({ userPreferences: { contentsPlacement: 'button' } }).menuJoined).toBe(false);
     expect(chrome({}, { isMobile: true }).menuJoined).toBe(false);
     expect(chrome({ pagesMode: null }).menuJoined).toBe(false);
@@ -156,37 +133,5 @@ describe('the menu box joined to the sidebar', () => {
 
   it('joins for every role: a Viewer’s menu box as an Editor’s', () => {
     expect(chrome({ readOnly: true }).menuJoined).toBe(true);
-  });
-
-  it('lets go while the sidebar is dragged across, and joins again once it lands', () => {
-    const { result } = renderHook(() =>
-      useContentsChrome({
-        props: {
-          pagesMode,
-          userPreferences: {},
-          elements: [],
-          layers: [],
-          activeTabId: 't',
-          activeDockPanel: null,
-          activeDockAnchor: null,
-          selfParticipant: { id: 'owner-1' },
-        } as unknown as CanvasChromeProps,
-        chromeHidden: false,
-        isMobile: false,
-        closeDockPanel: vi.fn(),
-      }),
-    );
-    const dragging = (on: boolean) =>
-      act(() =>
-        (
-          result.current.contentsSidebarEl as ReactElement<{
-            onDraggingChange: (dragging: boolean) => void;
-          }>
-        ).props.onDraggingChange(on),
-      );
-    dragging(true);
-    expect(result.current.menuJoined).toBe(false);
-    dragging(false);
-    expect(result.current.menuJoined).toBe(true);
   });
 });

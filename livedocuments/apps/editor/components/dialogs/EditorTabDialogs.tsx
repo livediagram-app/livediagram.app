@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { tabAsSeen } from '@/lib/export-as-seen';
+import { importFormatsFor } from '@/lib/import-formats';
 import { panelEnabled } from '@/lib/user-preferences';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { shareUrl } from '@/lib/explorer-host';
@@ -50,7 +51,6 @@ export function EditorTabDialogs() {
     pagesMode,
     activeTab,
     tabs,
-    loadAllTabs,
     documentName,
     imageContext,
     setExportOpen,
@@ -115,7 +115,6 @@ export function EditorTabDialogs() {
           documentName={documentName}
           // A tab window draws the tab it shows (docs/specs/009-elements/tab-window.md "Exports").
           documentTabs={tabs}
-          loadTabs={loadAllTabs}
           onClearSelection={() => {
             setSelectedId(null);
             setMultiSelectedIds(new Set());
@@ -131,6 +130,9 @@ export function EditorTabDialogs() {
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
           onImportFileFormat={importFileIntoActiveTab}
+          // Each format only on a tab of its kind, or an empty one (docs/specs/020-import-export/markdown-import.md
+          // "Where it is offered").
+          formats={importFormatsFor(activeTab)}
           onClose={() => setImportOpen(false)}
         />
       ) : null}

@@ -167,7 +167,7 @@ export const PAGE_SETUP = chart(
   'Tab',
   'Changed',
   'Pages Set Up',
-  "A page's size, name, background or pattern changed from its panel (or a background given to every page of its kind, or painted from another page), or a page locked or unlocked.",
+  "A page's size, name, background or pattern changed from its panel (or a background given to every page of its kind, or painted from another page), a page locked or unlocked, or a tab's pages stacked or set side by side.",
   {
     types: [
       'PageSize',
@@ -181,6 +181,8 @@ export const PAGE_SETUP = chart(
       'PagePattern',
       'PageLocked',
       'PageUnlocked',
+      'PagesStacked',
+      'PagesSideBySide',
     ],
   },
 );
@@ -214,13 +216,14 @@ export const FLASHCARD_FLIPS = chart(
   { types: ['FlashcardFlip'], rising: 'neutral' },
 );
 
-// Tab windows (docs/specs/009-elements/tab-window.md): a window's tab chosen, and the tab opened from it.
-export const TAB_WINDOW_USE = chart(
+// A stack's Previous or Next pressed under its page in front (docs/specs/007-editor/flashcards.md "Getting around a
+// stack").
+export const STACK_NAV = chart(
   'UI',
   'Used',
-  'Tab Windows Opened',
-  'A tab opened from a Tab Window showing it, on a slide or page.',
-  { types: ['TabWindowOpen'], rising: 'neutral' },
+  'Stack Turns',
+  "A stack of flashcards or infographic pages turned to the previous or next page from the page in front's own Previous and Next.",
+  { types: ['StackNav'], rising: 'neutral' },
 );
 
 // Building pages: a layout placed, a page duplicated or moved.
@@ -330,7 +333,7 @@ export const PAGE_WORK: MetricStack = {
     PAGE_CONTENTS_JUMPS,
     PAGE_SWIPES,
     FLASHCARD_FLIPS,
-    TAB_WINDOW_USE,
+    STACK_NAV,
     EMPTY_PAGE_LAYOUTS_HIDDEN,
     ARTICLE_INSERTS,
     ARTICLE_FORMATTING,
@@ -814,10 +817,10 @@ export const NEW_VERSION_OFFERED = opened(
   (t) => t === 'NewVersionPrompt',
 );
 
-export const SLIDE_DECK_OPENED = opened(
-  'Slide Deck Opened',
-  'The Slide Deck panel or presentation settings opened.',
-  (t) => t === 'SlideDeck' || t === 'PresentationSettings',
+export const PRESENTATION_SETTINGS_OPENED = opened(
+  'Presentation Settings Opened',
+  "The settings on a presentation's on-screen controls opened, while presenting.",
+  (t) => t === 'PresentationSettings',
 );
 
 export const EXPLORER_REASONS_OPENED = opened(

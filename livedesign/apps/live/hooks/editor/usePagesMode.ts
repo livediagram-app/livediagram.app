@@ -43,7 +43,7 @@ import type { PageLayoutId } from '@livedesign/templates';
 import { glideViewport, type ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 import { lastPageKey } from '@/lib/last-page';
-import { setCurrentPageKind } from '@/lib/current-page-kind';
+import { currentPageIdNow, setCurrentPageKind } from '@/lib/current-page-kind';
 import { useLastPage } from './useLastPage';
 import { textHasCaretIn, usePageSnap } from './usePageSnap';
 
@@ -333,6 +333,8 @@ export function usePagesMode(deps: {
       onLayoutPlaced: deps.clearSelection,
       mayEdit,
       toastInfo: deps.toastInfo,
+      // A new page goes right after the page someone is on (pages-mode.md "Adding a page").
+      currentPage: currentPageIdNow,
     }),
   };
 }

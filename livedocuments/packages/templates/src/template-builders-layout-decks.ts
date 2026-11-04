@@ -8,14 +8,16 @@
 import {
   layOutPages,
   pageInkFor,
-  PAGE_GRADIENT_ANGLE,
   type Element,
   type Page,
   type PageBackground,
   type PageMotion,
+  type PageMotionColouringId,
+  type ThemeGradientName,
 } from '@livedocuments/document';
 import { buildPageLayout } from './page-layout-build';
 import type { PageLayoutId } from './page-layouts';
+import { themeGradientBackground, themeMotionBackground } from './template-backgrounds';
 import { templateSlidePage } from './template-page-kit';
 
 export type LayoutDeckKind =
@@ -29,28 +31,25 @@ type DeckSlide = {
 };
 
 type LayoutDeck = {
-  // The opening and closing slides' animated background, in the deck's own colours.
+  // The opening and closing slides' animated background, in one of the theme's colourings (a
+  // template's backgrounds are the theme's own: template-backgrounds).
   motion: PageMotion;
-  dark: { from: string; to: string };
-  // The slides between: a soft still gradient.
-  light: { from: string; to: string };
+  dark: PageMotionColouringId;
+  // The slides between: one of the theme's soft gradients.
+  light: ThemeGradientName;
   slides: readonly DeckSlide[];
 };
 
-const animated = (d: LayoutDeck): PageBackground => ({
-  fill: { kind: 'gradient', ...d.dark, angle: PAGE_GRADIENT_ANGLE, motion: d.motion },
-});
-const still = (d: LayoutDeck): PageBackground => ({
-  fill: { kind: 'gradient', ...d.light, angle: PAGE_GRADIENT_ANGLE },
-});
+const animated = (d: LayoutDeck): PageBackground => themeMotionBackground(d.motion, d.dark);
+const still = (d: LayoutDeck): PageBackground => themeGradientBackground(d.light);
 
 export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
   // A product launch keynote for a made-up note-taking app, Lumen: the hook, why it matters, what
   // it does, the numbers from the beta, the plan to launch, and the ask.
   'launch-keynote': {
     motion: 'aurora',
-    dark: { from: '#0b1020', to: '#312e81' },
-    light: { from: '#f8fafc', to: '#eef2ff' },
+    dark: 'night',
+    light: 'dawn',
     slides: [
       {
         name: 'Launch',
@@ -133,8 +132,8 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
   // what is next, who does what, and questions.
   'quarterly-review': {
     motion: 'mesh',
-    dark: { from: '#082f49', to: '#1e3a8a' },
-    light: { from: '#f8fafc', to: '#e0f2fe' },
+    dark: 'deep',
+    light: 'dawn',
     slides: [
       {
         name: 'Q3 Review',
@@ -223,8 +222,8 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
   // how the team works, the company's story, and who to ask.
   'team-welcome': {
     motion: 'bokeh',
-    dark: { from: '#4a044e', to: '#be185d' },
-    light: { from: '#fff7ed', to: '#fdf2f8' },
+    dark: 'night',
+    light: 'glow',
     slides: [
       {
         name: 'Welcome',
@@ -315,8 +314,8 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
   // session runs, the ground rules, and a close.
   'workshop-kickoff': {
     motion: 'waves',
-    dark: { from: '#042f2e', to: '#0f766e' },
-    light: { from: '#f0fdfa', to: '#ecfeff' },
+    dark: 'deep',
+    light: 'haze',
     slides: [
       {
         name: 'Welcome',
@@ -408,8 +407,8 @@ export const LAYOUT_DECKS: Record<LayoutDeckKind, LayoutDeck> = {
   // start them thinking, the four stages, a check, and the homework.
   'class-lesson': {
     motion: 'drift',
-    dark: { from: '#0c4a6e', to: '#0369a1' },
-    light: { from: '#f0f9ff', to: '#ecfeff' },
+    dark: 'deep',
+    light: 'mist',
     slides: [
       {
         name: 'Today',

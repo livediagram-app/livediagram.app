@@ -147,7 +147,7 @@ function ExplorerImpl({
       // Only ever the menu button's popover: never placed in a corner or dragged.
       position={null}
       defaultCorner="top-left"
-      // Roomy on a desktop or tablet: up to 64rem wide (kept 1rem inside the window) and 56rem tall (kept on the
+      // Roomy on a desktop or tablet: up to 54rem wide (kept 1rem inside the window) and 45rem tall (kept on the
       // canvas below its button, 24px short of its edge), over a dimmed scrim on every screen size. Every editor's
       // panel takes the one size from the package.
       popoverWidth={EXPLORER_POPOVER_WIDTH}

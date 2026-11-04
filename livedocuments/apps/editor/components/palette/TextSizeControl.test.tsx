@@ -10,9 +10,12 @@ import {
   CELL_FONT_PX,
   LABEL_FONT_PX,
   NOTE_FONT_PX,
+  textPxRangeFor,
   type TextSize,
 } from '@livedocuments/document';
 import {
+  clampToRange,
+  DOCUMENT_TEXT_SIZE_TICKS,
   presetPxFor,
   TEXT_SIZE_TICKS,
   TextSizeControl,
@@ -123,5 +126,36 @@ describe('TextSizeControl', () => {
   it('reads Mixed for a selection whose sizes differ', () => {
     renderControl(null);
     expect(screen.getByText('Mixed')).toBeTruthy();
+  });
+});
+
+// docs/specs/004-interface-design/fonts.md "In livedocuments".
+describe("a document's text and shape slider", () => {
+  const doc = textPxRangeFor('text');
+
+  it('runs 24 to 72 with its own breakpoints', () => {
+    render(<TextSizeControl current={30} onSet={vi.fn()} range={doc} />);
+    const slider = screen.getByRole('slider', { name: 'Text Size' });
+    expect(slider.getAttribute('min')).toBe('24');
+    expect(slider.getAttribute('max')).toBe('72');
+    for (const t of DOCUMENT_TEXT_SIZE_TICKS) expect(screen.getByText(String(t))).toBeTruthy();
+  });
+
+  it('clamps only the thumb: a smaller stored size still reads its own px', () => {
+    expect(textSizeThumbPx(14, labelPx, doc)).toBe(24);
+    expect(textSizeThumbPx('sm', labelPx, doc)).toBe(24);
+    expect(textSizeThumbPx(90, labelPx, doc)).toBe(72);
+    expect(textSizeReadout(14, labelPx)).toBe('14px');
+  });
+
+  it('commits a whole px in its range', () => {
+    const onSet = vi.fn();
+    render(<TextSizeControl current={30} onSet={onSet} range={doc} />);
+    const slider = screen.getByRole('slider', { name: 'Text Size' });
+    fireEvent.change(slider, { target: { value: '64' } });
+    fireEvent.pointerUp(slider);
+    expect(onSet).toHaveBeenCalledWith(64);
+    expect(clampToRange(80, doc)).toBe(72);
+    expect(clampToRange(Number.NaN, doc)).toBe(24);
   });
 });

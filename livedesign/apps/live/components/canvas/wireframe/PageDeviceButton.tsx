@@ -21,15 +21,35 @@ export function pageDeviceRoom(labelled: boolean): number {
 export function PageDeviceButton({
   page,
   labelled,
+  openRequest = 0,
+  headless = false,
   onDevice,
   frameTheme,
 }: {
   page: LaidOutPage;
   frameTheme?: WireframeFrameTheme | undefined;
   labelled: boolean;
+  // Opens it from elsewhere each time it rises (a phone's Appearance sheet); 0 never does.
+  openRequest?: number;
+  // No button of its own: a phone's Appearance sheet opens it (TitlePopoverButton's headless).
+  headless?: boolean;
   onDevice: (patch: WireframeDevicePatch) => void;
 }) {
   const device = page.device ?? 'iphone';
+  const popover = (
+    <TitlePopoverButton
+      name={labelled ? WIREFRAME_DEVICES[device].label : 'Device'}
+      labelled={labelled}
+      openRequest={openRequest}
+      headless={headless}
+      className={titleButtonClass}
+      icon={<DeviceGlyph device={device} />}
+      width={POPOVER_WIDTH}
+    >
+      <WireframeDeviceSettings page={page} onDevice={onDevice} frameTheme={frameTheme} />
+    </TitlePopoverButton>
+  );
+  if (headless) return popover;
   return (
     <div
       className="pointer-events-auto"
@@ -38,15 +58,7 @@ export function PageDeviceButton({
       onPointerDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
     >
-      <TitlePopoverButton
-        name={labelled ? WIREFRAME_DEVICES[device].label : 'Device'}
-        labelled={labelled}
-        className={titleButtonClass}
-        icon={<DeviceGlyph device={device} />}
-        width={POPOVER_WIDTH}
-      >
-        <WireframeDeviceSettings page={page} onDevice={onDevice} frameTheme={frameTheme} />
-      </TitlePopoverButton>
+      {popover}
     </div>
   );
 }

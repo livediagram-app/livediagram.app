@@ -1,8 +1,7 @@
 'use client';
 
 // Every page's picture for the Contents popover (docs/specs/007-editor/pages-mode.md
-// "Contents"): each page drawn as a page slide is drawn in the Slide Deck, so a page looks the same
-// in both. Only while the list is on screen (the caller mounts this then); redrawn when the tab's
+// "Contents"): each page drawn as its page slide is framed (slide-thumb), on its background. Only while the list is on screen (the caller mounts this then); redrawn when the tab's
 // elements or pages change, with the tab's arrow labels laid out once rather than once a page.
 // The docked sidebar stays on screen while the person works, so it passes `settleMs`: the pictures
 // redraw once the tab has rested that long, never on every frame of a drag or every key typed.

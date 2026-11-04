@@ -5,15 +5,17 @@
 // The page's elements are tidied as **blocks**: an element with others wholly inside it carries
 // them, and what is inside a block is tidied inside it the same way (a level per depth). Each
 // level runs, until nothing moves (at most PAGE_TIDY_PASSES):
-//   1. sizes of shapes and stickies rounded to the grid;
-//   2. back inside the frame (the page's content box, or the block it sits in), nudged, never
+//   1. back inside the frame (the page's content box, or the block it sits in), nudged, never
 //      scaled; a block bigger than the frame on a side is left on that side;
-//   3. shared lines: near-equal starts, centres and ends clustered (within the tolerance) onto one
+//   2. shared lines: near-equal starts, centres and ends clustered (within the tolerance) onto one
 //      line, a margin or the centre line when one is in the cluster; what lines up with nothing
-//      sits on the grid;
-//   4. even gaps: three or more similar blocks on one line whose gaps are already close get one;
-//   5. the guard: a block that now overlaps one it did not, goes back where it was and stays.
-// Locked (and rotated) blocks never move; they are anchors and obstacles like a margin.
+//      stays where it is (no grid: snapping it moved things by a pixel or two and nothing showed);
+//   3. even gaps: three or more similar blocks on one line whose gaps are already close get one;
+//   4. the guard: a block that now overlaps one it did not, goes back where it was and stays.
+// Sizes are never changed. Locked (and rotated) blocks never move; they are anchors and obstacles
+// like a margin. A page counts as tidy (the same array back, and no Tidy button) unless something
+// would move at least pageTidyMinMove (1% of the page's short side, at least 8 px): a smaller nudge is not one
+// anyone would see.
 
 import { isBoxed, type BoxedElement, type Element, type ElementId } from '@livedocuments/document';
 import {
@@ -39,10 +41,18 @@ import { guard, overlapsAt, rectsIn } from './page-tidy-guard';
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
-/** The grid what lines up with nothing sits on, and sizes round to: canvas px. */
-export const PAGE_TIDY_GRID = 4;
-/** "Nearly lined up": a share of the page's short side (about 10 px on A4). */
-const PAGE_TIDY_ALIGN_FRACTION = 0.012;
+/** The least move that makes a page untidy, as a share of the page's short side (about 8 px on A4, 11 on a slide):
+ *  below it a press would look like it did nothing, and a designed layout's own small offsets read as tidy. */
+export const PAGE_TIDY_MIN_MOVE_FRACTION = 0.01;
+/** Its floor in canvas px, so a small page still asks for a move someone would see. */
+export const PAGE_TIDY_MIN_MOVE = 8;
+
+/** The least move, in canvas px, that makes this page untidy. */
+export function pageTidyMinMove(rect: { width: number; height: number }): number {
+  return Math.max(PAGE_TIDY_MIN_MOVE, Math.min(rect.width, rect.height) * PAGE_TIDY_MIN_MOVE_FRACTION);
+}
+/** "Nearly lined up": a share of the page's short side (about 16 px on A4), comfortably above the least move. */
+const PAGE_TIDY_ALIGN_FRACTION = 0.02;
 /** The tolerance's floor, so a tiny page still tidies 4 px of drift. */
 const PAGE_TIDY_ALIGN_MIN = 4;
 /** Gaps are evened when their spread is within this share of their mean (or the tolerance). */
@@ -70,10 +80,7 @@ export type PageTidyInput = {
   lockedIds: ReadonlySet<ElementId>;
 };
 
-type LevelCtx = { tol: number; origin: { x: number; y: number } };
-
-const snapTo = (v: number, origin: number) =>
-  origin + Math.round((v - origin) / PAGE_TIDY_GRID) * PAGE_TIDY_GRID;
+type LevelCtx = { tol: number };
 
 // Groups of three or more movable blocks along an axis that share a cross line, are of a similar
 // size (each run broken where a block is not) and do not overlap along it, sorted along it.
@@ -127,7 +134,7 @@ const evenlySpaced = (line: Block[], a: Axis) => {
   return Math.max(...gaps) - Math.min(...gaps) < SAME;
 };
 
-// Step 3 along one axis.
+// Step 2 along one axis.
 function alignAxis(blocks: Block[], frame: Frame, a: Axis, ctx: LevelCtx) {
   // A block between the ends of an evenly spaced line along this axis keeps its place on it: the
   // spacing is the line's, and the grid or a near line must not undo it. The ends still align (the
@@ -183,9 +190,8 @@ function alignAxis(blocks: Block[], frame: Frame, a: Axis, ctx: LevelCtx) {
       }
     }
   }
-  const origin = a === 'x' ? ctx.origin.x : ctx.origin.y;
   for (const b of movers) {
-    const delta = best.get(b)?.delta ?? snapTo(lo(b.rect, a), origin) - lo(b.rect, a);
+    const delta = best.get(b)?.delta ?? 0;
     if (Math.abs(delta) >= SAME) shiftAlong(b, a, delta);
   }
 }
@@ -233,7 +239,7 @@ function clusterTarget(
   return median;
 }
 
-// Step 4 along one axis: the first and last of each line stay, the ones between take the mean gap.
+// Step 3 along one axis: the first and last of each line stay, the ones between take the mean gap.
 function evenGaps(blocks: Block[], a: Axis, ctx: LevelCtx) {
   for (const line of linesOf(blocks, a)) {
     const gaps = gapsOf(line, a);
@@ -250,7 +256,7 @@ function evenGaps(blocks: Block[], a: Axis, ctx: LevelCtx) {
   }
 }
 
-// Step 2: back inside the frame where it fits on that side.
+// Step 1: back inside the frame where it fits on that side.
 function clamp(blocks: Block[], frame: Frame) {
   for (const b of blocks) {
     if (!b.movable) continue;
@@ -266,17 +272,7 @@ function clamp(blocks: Block[], frame: Frame) {
   }
 }
 
-// Step 1.
-function roundSizes(blocks: Block[]) {
-  for (const b of blocks) {
-    if (!b.movable || !b.resizable) continue;
-    const w = Math.max(PAGE_TIDY_GRID, Math.round(b.rect.width / PAGE_TIDY_GRID) * PAGE_TIDY_GRID);
-    const h = Math.max(PAGE_TIDY_GRID, Math.round(b.rect.height / PAGE_TIDY_GRID) * PAGE_TIDY_GRID);
-    b.rect = { ...b.rect, width: w, height: h };
-  }
-}
-
-// Steps 1 to 5 over one level's blocks, until a pass moves nothing.
+// Steps 1 to 4 over one level's blocks, until a pass moves nothing.
 function settleLevel(blocks: Block[], frame: Frame, ctx: LevelCtx, obstacles: readonly Rect[]) {
   if (!blocks.some((b) => b.movable)) return;
   const before = overlapsAt(blocks, obstacles);
@@ -286,7 +282,6 @@ function settleLevel(blocks: Block[], frame: Frame, ctx: LevelCtx, obstacles: re
   for (const b of blocks) b.start = b.rect;
   for (let pass = 0; pass < PAGE_TIDY_PASSES; pass++) {
     const was = blocks.map((b) => b.rect);
-    roundSizes(blocks);
     for (const a of ['x', 'y'] as const) alignAxis(blocks, frame, a, ctx);
     for (const a of ['x', 'y'] as const) evenGaps(blocks, a, ctx);
     clamp(blocks, frame);
@@ -308,7 +303,7 @@ function tidyLevel(
   if (!settled) settleLevel(blocks, frame, ctx, obstacles);
   // Then inside each block, framed by it: a block covering the whole frame (a background) frames
   // its content with the frame itself, lines and all; any other block frames it with its own box,
-  // its grid from its own corner. What reaches into the block from outside it (a sibling
+  // What reaches into the block from outside it (a sibling
   // overlapping it and all it holds, the level's own obstacles) is kept clear of.
   const holders = blocks.filter((b) => b.children.length > 0);
   const covers = (b: Block) => contains(b.rect, frame.box);
@@ -350,25 +345,13 @@ function tidyLevel(
       held.push(...innerOf(b).map((o) => moveRect(o, -x, -y)));
     }
     const { width, height } = group[0]!.rect;
-    settleLevel(
-      all,
-      { box: { x: 0, y: 0, width, height }, lines: false },
-      { ...ctx, origin: { x: 0, y: 0 } },
-      held,
-    );
+    settleLevel(all, { box: { x: 0, y: 0, width, height }, lines: false }, ctx, held);
     for (const b of group) for (const c of b.children) shift(c, b.rect.x, b.rect.y);
   }
   for (const b of holders) {
     for (const c of b.children) c.start = c.rect;
     if (covers(b)) tidyLevel(b.children, frame, ctx, innerOf(b));
-    else
-      tidyLevel(
-        b.children,
-        { box: b.rect, lines: false },
-        { ...ctx, origin: { x: b.rect.x, y: b.rect.y } },
-        innerOf(b),
-        twinned.has(b),
-      );
+    else tidyLevel(b.children, { box: b.rect, lines: false }, ctx, innerOf(b), twinned.has(b));
   }
 }
 
@@ -383,7 +366,18 @@ export function tidyPageElements(elements: Element[], input: PageTidyInput): Ele
     if (next === out) break;
     out = next;
   }
-  return out;
+  return out === elements || movesVisibly(elements, out, pageTidyMinMove(input.rect)) ? out : elements;
+}
+
+/** Whether anything moved at least `least` canvas px along either axis. */
+function movesVisibly(before: Element[], after: Element[], least: number): boolean {
+  return after.some((el, i) => {
+    const was = before[i]!;
+    if (el === was || !isBoxed(el) || !isBoxed(was)) return false;
+    return (
+      Math.abs(el.x - was.x) >= least || Math.abs(el.y - was.y) >= least
+    );
+  });
 }
 
 function tidyOnce(elements: Element[], input: PageTidyInput): Element[] {
@@ -401,7 +395,7 @@ function tidyOnce(elements: Element[], input: PageTidyInput): Element[] {
     PAGE_TIDY_ALIGN_FRACTION * Math.min(rect.width, rect.height),
   );
   const roots = blocksOf(els, lockedIds);
-  tidyLevel(roots, { box, lines: true }, { tol, origin: { x: box.x, y: box.y } }, []);
+  tidyLevel(roots, { box, lines: true }, { tol }, []);
   const final = new Map<ElementId, Rect>();
   const collect = (b: Block) => {
     final.set(b.id, b.rect);

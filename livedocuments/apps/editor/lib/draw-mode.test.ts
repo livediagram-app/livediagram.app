@@ -52,6 +52,9 @@ describe('drawBannerMessage', () => {
 
   it('renders the combined tap/drag copy per box intent', () => {
     expect(drawBannerMessage({ type: 'text' }, false)).toBe('Click to drop or drag to place text');
+    expect(drawBannerMessage({ type: 'text', preset: 'heading' }, false)).toBe(
+      'Click to drop or drag to place a Heading',
+    );
     expect(drawBannerMessage({ type: 'sticky' }, false)).toBe(
       'Click to drop or drag to draw a sticky note',
     );

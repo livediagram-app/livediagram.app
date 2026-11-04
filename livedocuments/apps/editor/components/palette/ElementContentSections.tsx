@@ -1,4 +1,4 @@
-import type { Element } from '@livedocuments/document';
+import { drawnTextSize, textPxRangeFor, type Element } from '@livedocuments/document';
 import { ContextMenuDivider } from '@liveworkspace/workbench/components/palette/ContextMenu';
 import {
   BoldIcon,
@@ -103,8 +103,9 @@ export function ElementContentSections({
             </TextToggle>
           </div>
           <TextSizeControl
-            current={target.textSize ?? 'sm'}
+            current={drawnTextSize(target, 'sm')}
             presetPx={presetPxFor(target.type)}
+            range={textPxRangeFor(target.type)}
             onSet={props.onSetTextSize}
             onPreview={props.onPreviewTextSize}
             onPreviewEnd={props.onPreviewStyleEnd}

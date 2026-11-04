@@ -20,7 +20,8 @@ import {
   type ShapeElement,
   type TextAlignX,
   type TextAlignY,
-  type TextSize,
+  drawnTextSize,
+  textPxRangeFor,
 } from '@livedocuments/document';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
 import { AlignIcon as AlignLinesIcon } from '@liveworkspace/workbench/components/canvas/table-icons';
@@ -278,8 +279,9 @@ export function MultiSelectionContextMenu({
                 {alignSrc ? (
                   <TypographySections
                     currentFont={(alignSrc as { font?: string }).font ?? null}
-                    currentSize={(alignSrc as { textSize?: TextSize }).textSize ?? 'sm'}
+                    currentSize={drawnTextSize(alignSrc, 'sm')}
                     presetPx={presetPxFor(alignSrc.type)}
+                    sizeRange={textPxRangeFor(alignSrc.type)}
                     padding={
                       (alignSrc as { padding?: Padding }).padding ?? defaultPadding(alignSrc)
                     }
@@ -420,8 +422,9 @@ export function MultiSelectionContextMenu({
                   </TextToggle>
                 </div>
                 <TextSizeControl
-                  current={contentTextSrc.textSize ?? 'sm'}
+                  current={drawnTextSize(contentTextSrc, 'sm')}
                   presetPx={presetPxFor(contentTextSrc.type)}
+                  range={textPxRangeFor(contentTextSrc.type)}
                   onSet={props.onSetTextSize}
                   onPreview={props.onPreviewTextSize}
                   onPreviewEnd={props.onPreviewStyleEnd}

@@ -353,7 +353,8 @@ Every other kind has no state attribute; `show` has its content.
 | style attributes | only with `style` (`VW50`)                           | see below                                                                                   |
 
 **Style attributes** (`styleAttributesOf`): `fill=` (`fillColor`), `stroke=` (`strokeColor`), `text-color=`
-(`textColor`), `border=` (`strokeStyle` on a box), `line=` (`arrowStyle` on an arrow), `text=` (`textSize`),
+(`textColor`), `border=` (`strokeStyle` on a box), `line=` (`arrowStyle` on an arrow), `text=` (`textSize`; on a
+text or shape with a `textScale`, the px it draws at, `drawnTextSize`, so `text=72` for 48 × 1.5),
 `font=` (`font`), each printed only when present and different from what the kind's factory writes
 (`createShape(kind, 0, 0)`, `createText`, `createSticky`, `createTable`, `createPinnedArrow` built once per render
 with a fixed id). The keys are the edit-operations field keys, so a printed style attribute can be written back with

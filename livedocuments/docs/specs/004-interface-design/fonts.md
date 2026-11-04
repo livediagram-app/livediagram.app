@@ -93,6 +93,18 @@ The slider shows a preset at the px it draws at on that surface (a label's Large
 with the thumb at 32). Touching the slider
 replaces the preset with a px; nothing converts presets on load.
 
+**In livedocuments.** A page's words run bigger than a diagram's, so a **text's or a shape's** slider runs
+**24 to 72 px** (`DOCUMENT_TEXT_PX_MIN` / `DOCUMENT_TEXT_PX_MAX`, `textPxRangeFor`), breakpoints at **24, 36, 48, 60
+and 72**, in its Text flyout (single and multi selection, Typography → Size) and on the Tab Style dialog's **Size of
+New Text**. The rest keep the model's 6 to 48: a sticky note, an arrow's caption, a table's cells, a chart's key, a
+Legend and a Sankey's labels, whose words are small print by nature. The model's range itself is shared by every
+product and is unchanged, so a text or a shape picked past its 48 is stored as **48 with the rest as `textScale`**
+(`withPickedTextSize`, `textSizeFields`), as a layout's headline and an imported slide's are; every renderer already
+draws that, and the slider reads the size the words draw at (`drawnTextSize`: size × scale), so it shows 60 px where
+60 was picked. The same holds for a tab's Size of New Text past 48, on the text or shape it seeds. **Nothing stored
+is rewritten**: a text at 14 px (or Small) keeps drawing at 14 px, its readout says `14px`, and only its thumb sits at
+the slider's 24 until the slider is moved.
+
 Agents write the same values through the `text` alias: `sm`, `md`, `lg`, `scale`, or a whole px
 from 6 to 48 (`text=18`). Anything else is refused with that list.
 

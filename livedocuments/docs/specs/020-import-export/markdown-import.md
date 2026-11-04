@@ -17,8 +17,36 @@ The import reads Markdown the way pasting it into an article page does, so a fil
 - **Inline marks**: bold, italic, strikethrough, inline code and links.
 - **Pipe tables** (a header line, a `|---|` line, then rows): a table block, the header line its header row.
 - **`[TOC]`** alone on a line: a table of contents.
+- **Images** (`![alt](address)`): a link named by its alt text (the address when there is none), so nothing is
+  lost and no stray `!` is left. An article holds no picture from an address; add the picture from Media. Only
+  the import reads it so: an agent's Markdown and an article's paste read as before.
 
 Every other line is a paragraph. The article flows onto as many pages as the writing needs, in the tab's theme.
+
+## Where it is offered
+
+Markdown always becomes an article, so the dialog offers it only where an article is what the tab already is
+or may still become: an **article tab**, and an **empty tab** (its only page still offering the choice of kind,
+the Start screen). On a slide deck, an infographic or a flashcard tab it would throw the tab's pages and their
+kind away for a different kind, so the card is not shown there (hidden, not disabled, as the Export dialog hides a
+format a tab cannot take). Checked in the editor on 2026-11-04: on a slide deck and an infographic tab the import
+left one A4 article, the deck's slides and the infographic's theme gone.
+
+Every format card the dialog shows, by the tab's kind (its first page's, [Pages](../007-editor/pages-mode.md) "One
+kind a tab"):
+
+| Tab         | JSON | Markdown | Word | PowerPoint |
+| ----------- | ---- | -------- | ---- | ---------- |
+| Empty       | yes  | yes      | yes  | yes        |
+| Article     | yes  | yes      | yes  | no         |
+| Slide deck  | yes  | no       | no   | yes        |
+| Infographic | yes  | no       | no   | no         |
+| Flashcards  | yes  | no       | no   | no         |
+
+On an empty tab, Markdown and Word make it an article and PowerPoint makes it a slide deck
+([Word and PowerPoint import](office-import.md)). A tab offered JSON alone opens straight at the JSON panel, as
+any single format does. A Markdown, Word or PowerPoint file dropped on the canvas of a tab that does not take it is
+told which tabs do ("A Markdown file imports into an article or an empty tab."), not pointed at Import.
 
 ## How it's triggered: the Import dialog
 

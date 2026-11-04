@@ -78,11 +78,12 @@ export type PageEdits = BackgroundCopyEdits & {
   // A page's unit (the page, or its whole document) to a place among the units (0 first), its
   // content with it: a page's label dragged.
   movePageTo: (pageId: string, unitIndex: number) => void;
-  // Absent at the page limit.
+  // Absent at the page limit. Right after the page someone is on (pages-mode.md "Adding a page"), else last.
   addPage?: (kind: PageKind) => void;
-  // Another page like this one after the last (the + beside the last page): its kind and shape.
+  // Another page like this one, right after it (the + beside a page): its kind and shape.
   // Absent at the page limit.
-  addPageLike?: (pageId: string) => void;
+  // Right after `after` (Contents' page here) when given, else right after `pageId`.
+  addPageLike?: (pageId: string, after?: string) => void;
   // The first page's kind chosen while it is the only page and empty (its own choice cards).
   choosePageKind: (pageId: string, kind: PageKind) => void;
   duplicatePage?: (pageId: string) => void;
@@ -166,6 +167,7 @@ export function pageEdits({
   mayEdit = () => true,
   toastInfo = () => {},
   theme,
+  currentPage = () => null,
 }: {
   tabId: string;
   // The tab as it is now: what an edit will do (a duplicate's id, how many pages a split makes, whether Tidy Up moves
@@ -194,6 +196,9 @@ export function pageEdits({
   // slide on Steel (defaultPageBackground).
   // Absent, a new page starts on the plain paper.
   theme?: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>;
+  // The page someone is on (the card in front on a stack, else the page in view), read when a page is added: a new
+  // page goes right after it (pages-mode.md "Adding a page"). Null: after the last.
+  currentPage?: () => string | null;
 }): PageEdits {
   // A new infographic page, or a new slide document's slide (by id), on its default background,
   // unless it carried one over.
@@ -354,8 +359,9 @@ export function pageEdits({
     track('Tab', 'Changed', KIND_ADDED_EVENT[kind]);
     const id = nextPageId(current);
     const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
+    const after = currentPage() ?? undefined;
     commitTab((t) => {
-      const added = edited(t, pageAdded(t, kind, id, flow));
+      const added = edited(t, pageAdded(t, kind, id, flow, after));
       return kind === 'infographic' || kind === 'slide' ? themed(added, id) : added;
     });
     if (kind === 'article' || kind === 'flashcard') {
@@ -367,7 +373,7 @@ export function pageEdits({
     onGoTo(id);
     debugLog('[page] page added', { tabId, count: current.length + 1 });
   };
-  const addPageLike = (pageId: string) => {
+  const addPageLike = (pageId: string, after = pageId) => {
     if (!takesEdits()) return;
     const source = page(pageId);
     if (!source) return;
@@ -376,7 +382,8 @@ export function pageEdits({
     const id = nextPageId(current);
     const flow = nextArticleFlowId(new Set(current.flatMap((p) => (p.flow ? [p.flow] : []))));
     commitTab((t) => {
-      const added = edited(t, pageAddedLike(t, pageId, id, flow));
+      // Right after the page whose + was pressed, or Contents' page here.
+      const added = edited(t, pageAddedLike(t, pageId, id, flow, after));
       return kind === 'infographic' || kind === 'slide' ? themed(added, id) : added;
     });
     if (kind === 'article' || kind === 'flashcard') {

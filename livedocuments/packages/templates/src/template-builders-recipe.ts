@@ -18,13 +18,13 @@ import type { Element, Page } from '@livedocuments/document';
 import type { Kit } from './page-layout-kit';
 import { CARD_SHADOW, iconDisc, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';
+import { themeGradientBackground } from './template-backgrounds';
 
 const TERRACOTTA = '#c2410c';
 const TOMATO = '#ea580c';
 const INK = '#292524';
 const MUTED = '#57534e';
 const PAPER = '#ffffff';
-const CREAM = '#fff7ed';
 
 const FACTS = [
   { iconId: 'users', label: 'SERVES', value: '4 people' },
@@ -62,10 +62,10 @@ const TIP = 'Make it a day ahead. It is even better warmed through, with crusty 
 /** The card's pages: the dish on a Square page, the method on a Portrait post (4:5) page. */
 export function recipeCardPages(): Page[] {
   return [
-    templatePage(1, 'square', 'portrait', 'The Dish', {
-      fill: { kind: 'gradient', from: '#fff7ed', to: '#ffe4e6', angle: 160 },
-    }),
-    templatePage(2, 'social', 'portrait', 'The Method', { fill: { kind: 'solid', color: CREAM } }),
+    // The theme's own backgrounds (template-backgrounds): the dish on its Glow, the method the
+    // plain paper.
+    templatePage(1, 'square', 'portrait', 'The Dish', themeGradientBackground('glow')),
+    templatePage(2, 'social', 'portrait', 'The Method'),
   ];
 }
 

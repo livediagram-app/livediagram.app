@@ -48,7 +48,7 @@ describe('buildPaletteSearchItems', () => {
       .filter((id) => !ids.has(id));
     expect(missing).toEqual([]);
     for (const id of [
-      'tile:tools:text',
+      'tile:tools:text-paragraph',
       'tile:tools:arrow',
       'tile:tools:table',
       'tile:tools:sticky',
@@ -68,9 +68,17 @@ describe('buildPaletteSearchItems', () => {
     // regression that dropped these from the PALETTE_TILES filter still fails
     // rather than agreeing with itself.
     const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
-    for (const kind of ['phone', 'bar-chart', 'tab-window']) {
+    for (const kind of ['phone', 'bar-chart']) {
       expect(ids.has(`shape:${kind}`)).toBe(true);
     }
+  });
+
+  it('offers no tab window: it is retired (docs/specs/009-elements/tab-window.md)', () => {
+    const items = buildPaletteSearchItems();
+    expect(items.some((i) => i.id.includes('tab-window'))).toBe(false);
+    expect(
+      PALETTE_TILES.some((t) => t.action.type === 'shape' && t.action.kind === 'tab-window'),
+    ).toBe(false);
   });
 
   it('names each entry from the tile, not from its id', () => {

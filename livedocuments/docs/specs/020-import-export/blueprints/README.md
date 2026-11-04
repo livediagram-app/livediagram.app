@@ -6,5 +6,6 @@ Follow the references below only as needed; never upfront.
 - ./office-export.md - when implementing or changing PowerPoint and Word export: the slide and document writers, native shapes vs pictures, the page drawer, the panel
 - ./import-image-pipeline.md - when implementing or changing how outside images (image search, an import) are resized, encoded, stored, embedded offline, or reported
 - ./animated-gif-export.md - when implementing or changing the animated GIF export: the timeline, the page snapshot, frame composition, the encoder worker, the panel
+- ./print.md - when implementing or changing Print: the sheets for a scope, the print document's named @page rules, the print frame, the panel
 - ./DEFAULTS.md - when an import/export blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories an import/export blueprint covers

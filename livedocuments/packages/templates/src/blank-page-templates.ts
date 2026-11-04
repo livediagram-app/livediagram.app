@@ -1,4 +1,4 @@
-// The blanks of a page kind (docs/specs/007-editor/start-diagramming.md "Recommended and groups"): Blank Slide Deck,
+// The blanks of a page kind (docs/specs/007-editor/start-diagramming.md "Groups"): Blank Slide Deck,
 // Blank Article and Blank Infographic, each a tab that opens in Pages on exactly one empty page whose
 // kind is already chosen. The page is made the way the first page's What Is This Page For? makes it
 // (withPageKindChosen on an unchosen page), so a blank of a kind and a chosen Blank Illustration are the same page.
@@ -6,11 +6,13 @@
 import {
   pagesOf,
   withDefaultPageBackgrounds,
+  withPageBackgroundsFollowingTheme,
   withPageKindChosen,
   type PageKind,
   type Tab,
   type ThemeDefinition,
 } from '@livedocuments/document';
+import { TEMPLATE_THEME } from './template-backgrounds';
 import type { TemplateKind } from './templates';
 
 // Each blank of a page kind and the kind its one page is.
@@ -47,15 +49,17 @@ export function blankPageTemplateOverrides(kind: TemplateKind): Partial<Tab> | u
   return { pages: chosen.pages, ...(articles ? { articles } : {}) };
 }
 
-/** A blank infographic's or blank slide deck's page on the tab theme's default background
- *  (docs/specs/007-editor/pages-mode.md "A new page's background"), as a page added in the editor
- *  starts; any other template's tab as it is (one with content keeps the paper it was designed on). */
-export function withBlankPageThemed<T extends Partial<Pick<Tab, 'pages'>>>(
+/** A template's pages on the theme it lands in: a blank infographic's or blank slide deck's page on
+ *  the tab theme's default background (docs/specs/007-editor/pages-mode.md "A new page's
+ *  background"), as a page added in the editor starts; any other template's pages carried from the
+ *  theme its backgrounds were written in (TEMPLATE_THEME) to this one, as a theme change carries them
+ *  (docs/specs/008-canvas/canvas-and-palette.md "Templates on pages"), its content re-inked. */
+export function withBlankPageThemed<T extends Partial<Pick<Tab, 'pages'>> & Pick<Tab, 'elements'>>(
   tab: T,
   kind: TemplateKind,
-  theme: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>,
+  theme: ThemeDefinition,
 ): T {
   return kind === 'blank-infographic' || kind === 'blank-slide-deck'
     ? withDefaultPageBackgrounds(tab, theme)
-    : tab;
+    : withPageBackgroundsFollowingTheme(tab, TEMPLATE_THEME, theme);
 }

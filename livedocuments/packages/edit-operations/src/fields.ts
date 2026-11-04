@@ -7,8 +7,8 @@ import type { EditRejection, EditWarning } from '@livedocuments/api-schema';
 import {
   BORDER_DASH_ARRAY,
   isTextSize,
-  TEXT_PX_MAX,
-  TEXT_PX_MIN,
+  textPxRangeFor,
+  textSizeFields,
   ELEMENT_FIELD_NAMES,
   ELEMENT_FIELD_VALUES,
   LIVE_ELEMENT_FIELDS,
@@ -18,6 +18,7 @@ import {
   mergeElementUpdate,
   themeColourFields,
   type Element,
+  type TextSize,
   type ThemeDefinition,
   rederiveColorPresetForTheme,
   shapeColorPresets,
@@ -46,8 +47,19 @@ const FIELD_ALIASES = [
 type Alias = (typeof FIELD_ALIASES)[number];
 
 export const TEXT_SIZES = ['sm', 'md', 'lg', 'scale'] as const;
-/** What the `text` alias takes, as the format line and a rejection spell it. */
-const TEXT_SIZE_VALUES = `${TEXT_SIZES.join(' ')} or a px from ${TEXT_PX_MIN} to ${TEXT_PX_MAX}`;
+/** What the `text` alias takes on an element of this type, as a rejection spells it: a text's or a shape's px runs a
+ *  document's Size slider, 24 to 72 (docs/specs/004-interface-design/fonts.md "In livedocuments"). */
+const textSizeValues = (type: string): string => {
+  const { min, max } = textPxRangeFor(type);
+  return `${TEXT_SIZES.join(' ')} or a px from ${min} to ${max}`;
+};
+
+/** Whether a `text` value fits an element of this type: a preset, or a whole px in its slider's range. */
+function fitsTextSize(type: string, size: unknown): size is TextSize {
+  if (typeof size !== 'number') return isTextSize(size);
+  const { min, max } = textPxRangeFor(type);
+  return Number.isInteger(size) && size >= min && size <= max;
+}
 export const ARROW_STYLES = ['straight', 'angled', 'curved'] as const;
 export const BORDER_STYLES = Object.keys(BORDER_DASH_ARRAY);
 const LIVE_FIELDS: ReadonlySet<string> = new Set(LIVE_ELEMENT_FIELDS);
@@ -308,11 +320,15 @@ function writeAlias(
       // A preset, or an exact whole px from the Size slider's range (docs/specs/004-interface-design/fonts.md
       // "Text size"), written as a number or a numeric string ("18").
       const size = typeof value === 'string' && /^\d+$/.test(value) ? Number(value) : value;
-      if (size !== null && !isTextSize(size)) return { ...text(`one of ${TEXT_SIZE_VALUES}`) };
-      patch.textSize = size;
+      if (size !== null && !fitsTextSize(el.type, size))
+        return { ...text(`one of ${textSizeValues(el.type)}`) };
       // A size set is the size the words draw at, so a re-fit or Shift-resize scale goes with it
-      // (docs/specs/004-interface-design/fonts.md "Text size").
-      if (Reflect.get(el, 'textScale') !== undefined) patch.textScale = null;
+      // (docs/specs/004-interface-design/fonts.md "Text size"); a text's or shape's px past 48 keeps the rest as one.
+      const fields: { textSize: TextSize | null; textScale?: number } =
+        size === null ? { textSize: null } : textSizeFields(el.type, size);
+      patch.textSize = fields.textSize;
+      if (fields.textScale !== undefined) patch.textScale = fields.textScale;
+      else if (Reflect.get(el, 'textScale') !== undefined) patch.textScale = null;
       return null;
     }
     case 'line':

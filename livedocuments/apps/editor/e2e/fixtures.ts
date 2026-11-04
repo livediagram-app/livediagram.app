@@ -83,7 +83,6 @@ export async function markModeToursSeen(context: BrowserContext): Promise<void> 
               'chevrons',
               'chart',
               'stack',
-              'tab-window',
             ],
           }),
         );

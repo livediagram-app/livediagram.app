@@ -48,10 +48,7 @@ describe('a page held by its article lock', () => {
         count={2}
         heldByLock
         getAnchor={() => undefined}
-        initialTab="page"
-        themeBackgrounds={[]}
         edit={edits()}
-        onPreview={vi.fn()}
         onClose={vi.fn()}
       />,
     );

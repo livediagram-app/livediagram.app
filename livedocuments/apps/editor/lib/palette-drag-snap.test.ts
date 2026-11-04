@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livedocuments/document';
+import { layOutPages, type Element } from '@livedocuments/document';
 import { paletteDragSnapAt } from './palette-drag-snap';
 
 // Alignment help BEFORE the drop (docs/specs/010-palette/palette-drag-ghost.md): while a palette tile is dragged
@@ -100,5 +100,22 @@ describe('paletteDragSnapAt', () => {
       elements: [neighbour],
     });
     expect(guides.some((g) => g.axis === 'x')).toBe(true);
+  });
+
+  it('in Pages mode, lines up with nothing on another page (docs/specs/007-editor/pages-mode.md "Snapping on a page")', () => {
+    const pages = layOutPages([
+      { id: 'p1', orientation: 'portrait' },
+      { id: 'p2', orientation: 'portrait' },
+    ]);
+    const [one, two] = pages;
+    // Pages sit side by side: a neighbour on the first, and the drop over the second, its top edge 4 px
+    // below the neighbour's.
+    const top = one!.rect.y + 100;
+    const other = { ...neighbour, x: one!.rect.x + 100, y: top } as Element;
+    const at = { canvasX: two!.rect.x + 400, canvasY: top + 104, ...dragged };
+    expect(paletteDragSnapAt({ ...at, elements: [other] }).dy).toBe(-4);
+    const scoped = paletteDragSnapAt({ ...at, elements: [other], pages });
+    expect(scoped.dy).toBe(0);
+    expect(scoped.guides).toEqual([]);
   });
 });

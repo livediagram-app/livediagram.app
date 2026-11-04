@@ -186,8 +186,8 @@ function BottomBar({ y, w, labelled = false }: { y: number; w: number; labelled?
   );
 }
 
-/** The bottom-right corner cluster: Undo / Redo, Layers, the Theme & canvas
- *  paintbrush, then the zoom controls (minus, the level, plus). */
+/** The bottom-right corner cluster: Undo / Redo, Layers, then the zoom controls (minus, the
+ *  level, plus). Tab Style is on each page's title bar. */
 function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; level?: string }) {
   return (
     <g>
@@ -203,23 +203,14 @@ function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; level?:
           {...GLYPH}
         />
       </Panel>
-      <Panel x={x + 88} y={y} w={28} h={28}>
-        <path
-          d={`M${x + 96} ${y + 21} q1 -5 5 -5 l6 -7 l2 2 l-7 6 q0 4 -6 4 Z`}
-          className="stroke-brand-500"
-          strokeWidth={1.5}
-          fill="none"
-          strokeLinejoin="round"
-        />
-      </Panel>
-      <Panel x={x + 120} y={y} w={94} h={28}>
-        <Label x={x + 134} y={y + 15} size={13} weight={700} tone="muted" anchor="middle">
+      <Panel x={x + 88} y={y} w={94} h={28}>
+        <Label x={x + 102} y={y + 15} size={13} weight={700} tone="muted" anchor="middle">
           −
         </Label>
-        <Label x={x + 167} y={y + 15} size={10} weight={600} tone="body" anchor="middle">
+        <Label x={x + 135} y={y + 15} size={10} weight={600} tone="body" anchor="middle">
           {level}
         </Label>
-        <Label x={x + 200} y={y + 15} size={13} weight={700} tone="muted" anchor="middle">
+        <Label x={x + 168} y={y + 15} size={13} weight={700} tone="muted" anchor="middle">
           +
         </Label>
       </Panel>

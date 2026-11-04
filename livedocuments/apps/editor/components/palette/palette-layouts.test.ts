@@ -53,7 +53,16 @@ describe('palette layouts', () => {
 
   it('files the Sankey last in Concepts, and keeps Write to its notes', () => {
     expect(tileIds('concepts').at(-1)).toBe('tools:sankey');
-    expect(tileIds('write')).toEqual(['tools:text', 'tools:sticky', 'tools:pointer-note']);
+    expect(tileIds('write')).toEqual([
+      'tools:text-title',
+      'tools:text-subtitle',
+      'tools:text-heading',
+      'tools:text-subheading',
+      'tools:text-paragraph',
+      'tools:text-quote',
+      'tools:sticky',
+      'tools:pointer-note',
+    ]);
   });
 
   it('leaves mind nodes, lanes, frames and entities out of Pages', () => {

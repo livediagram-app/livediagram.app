@@ -17,6 +17,10 @@ import { variantFitsKind } from './chart-types';
 import { settleChips } from './attachment';
 import { createShape } from './shape-factory';
 import { createSticky, createTable, createText } from './factories';
+import { isChipShape } from './chip';
+import { DOCUMENT_TEXT_PX_MAX, splitTextPx } from './label-text-scale';
+import { DEFAULT_TEXT_PRESET, NEW_TEXT_ALIGN, TEXT_PRESETS } from './text-presets';
+import { TEXT_PX_MAX } from '@liveworkspace/model-core/label-font';
 import { migrateStoredElementsUnsettled } from './stored-elements';
 import { normalizeTable } from './table';
 import { coerceShapeKind } from './validate';
@@ -160,7 +164,7 @@ export function normaliseElement(el: unknown): unknown {
   const [current] = migrateStoredElementsUnsettled([
     el,
   ] as unknown as DocElement[]) as unknown as Raw[];
-  return normaliseContent(withFactoryDefaults(withTextLabel(current!)));
+  return normaliseContent(withFactoryDefaults(withSplitTextSize(withTextLabel(current!))));
 }
 
 // A label is text. An agent's number or yes/no (a step labelled 5) is written as its text; anything else is left for
@@ -170,6 +174,17 @@ function withTextLabel(el: Raw): Raw {
   return typeof label === 'number' || typeof label === 'boolean'
     ? { ...el, label: String(label) }
     : el;
+}
+
+// A text's or a box's px past the model's 48 (docs/specs/004-interface-design/fonts.md "In livedocuments"), stored as
+// the Size slider stores it: 48 with the rest as `textScale`, held to the slider's 72, so it draws at the size given
+// rather than clamped to 48. A chip derives its own size from its disc, and one already scaled is left as it is.
+function withSplitTextSize(el: Raw): Raw {
+  const size = el.textSize;
+  if (typeof size !== 'number' || !Number.isFinite(size) || size <= TEXT_PX_MAX) return el;
+  if (el.textScale !== undefined) return el;
+  const scales = el.type === 'text' || (el.type === 'shape' && !isChipShape(str(el.shape)));
+  return scales ? { ...el, ...splitTextPx(Math.min(size, DOCUMENT_TEXT_PX_MAX)) } : el;
 }
 
 // A new element of this kind, as the editor's own factory makes it, one per
@@ -315,12 +330,24 @@ function withRawElbows(elements: DocElement[], kept: ReadonlySet<string>): DocEl
 // `kept` names elements that already exist (a replace that sends a tab's own elements back): the look defaults a new
 // raw element takes (`sm` text past 12 boxes, angled lines) are for content arriving fresh, never a restyle of what
 // the person made.
+// A new raw text (docs/specs/015-api/mcp-server.md): the Write palette's Paragraph size, left and top aligned, for
+// what it leaves out, before the diagram factory's 14 px centred label could fill in. Only content arriving fresh.
+// Read at call time: the presets module sits in an import cycle with this one through the package index.
+function withParagraphText(elements: unknown[], kept: ReadonlySet<string>): unknown[] {
+  const px = TEXT_PRESETS[DEFAULT_TEXT_PRESET].px;
+  return elements.map((el) =>
+    isRecord(el) && el.type === 'text' && !kept.has(String(el.id))
+      ? { textSize: px, ...NEW_TEXT_ALIGN, ...el }
+      : el,
+  );
+}
+
 export function normaliseElements<T>(
   elements: T,
   { kept = new Set<string>() }: { kept?: ReadonlySet<string> } = {},
 ): T {
   if (!Array.isArray(elements)) return elements;
-  const sized = withLookTextSize(elements, kept);
+  const sized = withParagraphText(withLookTextSize(elements, kept), kept);
   // An agent's badges and step numbers land fitted, numbered and on their hosts' points, as the editor's commits
   // keep them (docs/specs/009-elements/badge.md "Agents").
   const normalised = sized.map(normaliseElement);

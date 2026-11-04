@@ -320,7 +320,7 @@ Missing key === undefined === default behaviour. Concretely:
   the button. Which edge (left or right) is per device, kept in the browser
   alone, never here
   ([Pages](pages-mode.md#contents)). Written by the sidebar's
-  Minimise, the popover's Dock as Sidebar and Settings › Editor › Pages ›
+  Collapse Contents (in its Contents Options), the popover's Dock as Sidebar and Settings › Editor › Pages ›
   Contents; emits `UI`/`Changed`/`ContentsPlacementSidebar` or
   `ContentsPlacementButton`.
 - `elementIndicatorStyle` undefined → Top: an element's link, note, action

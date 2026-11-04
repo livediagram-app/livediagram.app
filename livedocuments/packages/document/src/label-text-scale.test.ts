@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { labelTextScale, withPickedTextSize } from './label-text-scale';
+import {
+  drawnTextSize,
+  labelTextScale,
+  splitTextPx,
+  textPxRangeFor,
+  textSizeFields,
+  withPickedTextSize,
+} from './label-text-scale';
 import { dropMalformedStyles } from './malformed-styles';
 import { layOutPages, type Page } from './page';
 import { pageTurned } from './pages-edits';
@@ -65,6 +72,15 @@ describe('a picked text size', () => {
 
   it('sets the size on an element without a scale', () => {
     expect(withPickedTextSize(sticky, 'lg')).toEqual({ ...sticky, textSize: 'lg' });
+  });
+
+  it('takes a text\'s or a shape\'s size past 48 px as 48 and a scale (fonts.md "In livedocuments")', () => {
+    expect(withPickedTextSize(text(), 72)).toMatchObject({ textSize: 48, textScale: 1.5 });
+    expect(withPickedTextSize(shape({ textScale: 0.5 }), 60)).toMatchObject({
+      textSize: 48,
+      textScale: 1.25,
+    });
+    expect(withPickedTextSize(text({ textScale: 2 }), 48)).not.toHaveProperty('textScale');
   });
 });
 
@@ -153,5 +169,34 @@ describe('turning a page', () => {
     // However often it is turned, the scale stays one a stored element takes.
     expect(floor.textScale).toBe(TEXT_SCALE_MIN);
     expect(isValidElement(floor)).toBe(true);
+  });
+});
+
+describe("a document's Size slider", () => {
+  it('runs 24 to 72 px for a text or a shape, the model range for the rest', () => {
+    expect(textPxRangeFor('text')).toEqual({ min: 24, max: 72 });
+    expect(textPxRangeFor('shape')).toEqual({ min: 24, max: 72 });
+    expect(textPxRangeFor('arrow')).toEqual({ min: 6, max: 48 });
+    expect(textPxRangeFor('table')).toEqual({ min: 6, max: 48 });
+  });
+
+  it("seeds the tab's size for new text the same way", () => {
+    expect(textSizeFields('text', 60)).toEqual({ textSize: 48, textScale: 1.25 });
+    expect(textSizeFields('sticky', 60)).toEqual({ textSize: 60 });
+    expect(textSizeFields('shape', 'sm')).toEqual({ textSize: 'sm' });
+  });
+
+  it('splits a px into whole px and a scale only past 48', () => {
+    expect(splitTextPx(30.4)).toEqual({ textSize: 30 });
+    expect(splitTextPx(0.2)).toEqual({ textSize: 1 });
+    expect(splitTextPx(96)).toEqual({ textSize: 48, textScale: 2 });
+  });
+
+  it('reads the size the words draw at, never rewriting a stored size', () => {
+    expect(drawnTextSize(text({ textSize: 48, textScale: 1.5 }), 'sm')).toBe(72);
+    expect(drawnTextSize(text({ textSize: 12 }), 'sm')).toBe(12);
+    expect(drawnTextSize({ type: 'text' }, 'sm')).toBe('sm');
+    expect(drawnTextSize(text({ textSize: 'scale', textScale: 2 }), 'sm')).toBe('scale');
+    expect(drawnTextSize({ ...sticky, textSize: 30 }, 'sm')).toBe(30);
   });
 });

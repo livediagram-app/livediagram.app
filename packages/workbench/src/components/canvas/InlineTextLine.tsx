@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useCommitOnLeave } from '../../hooks/ui/useCommitOnLeave';
+import { isDragTravel } from '../../lib/press-gestures';
 
 // One line of plain text, edited in place on the canvas: a page's masthead
 // (docs/specs/009-elements/page-element.md), and every secondary line of the web components (docs/specs/009-elements/web-components-and-no-groups.md) — a
@@ -16,7 +17,34 @@ import { useCommitOnLeave } from '../../hooks/ui/useCommitOnLeave';
 // `editable` false renders the same text inert, so a press on it falls
 // through to the element (select / drag). The web components pass
 // "selected and not read-only", which gives the rule the timeline rail uses:
-// the first click selects, the next one edits.
+// the first click selects, the next one edits. Even then a press that moves is
+// the element's (it drags it, as a press anywhere on it would): only a press
+// that lets go where it started puts the caret here (web-components-and-no-groups.md).
+// Pressing, holding and editing never recolour the face: the line being edited
+// shows a thin outline, nothing else.
+
+/** Where a click put the caret in a line: the text position under the point, where the browser can say. */
+function caretAt(node: HTMLElement, x: number, y: number): void {
+  const doc = node.ownerDocument;
+  const sel = doc.getSelection();
+  if (!sel) return;
+  const pos = (
+    doc as Document & {
+      caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null;
+    }
+  ).caretPositionFromPoint?.(x, y);
+  const range = pos
+    ? (() => {
+        const r = doc.createRange();
+        r.setStart(pos.offsetNode, pos.offset);
+        return r;
+      })()
+    : (doc.caretRangeFromPoint?.(x, y) ?? null);
+  if (!range || !node.contains(range.startContainer)) return;
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
 
 export function InlineTextLine({
   value,
@@ -83,10 +111,39 @@ export function InlineTextLine({
         tabIndex={editable ? 0 : undefined}
         onFocus={() => setEditing(true)}
         onBlur={commit}
-        // The canvas would otherwise read a press here as the start of a drag
-        // and never give the caret to this field.
+        // While editing, a press is the field's (the caret, a selection of its words). Before that, a press is
+        // the element's: it reaches the element (which drags it if it moves), and the browser neither focuses
+        // the line nor starts a text selection, so nothing changes colour under the pointer. Only a release where
+        // it started (a click) then edits, with the caret where it was pressed.
         onPointerDown={(e) => {
-          if (editable) e.stopPropagation();
+          if (!editable) return;
+          if (editing) {
+            e.stopPropagation();
+            return;
+          }
+          if (e.button !== 0) return;
+          e.preventDefault();
+          const node = ref.current;
+          const start = { x: e.clientX, y: e.clientY, id: e.pointerId };
+          const win = node?.ownerDocument.defaultView;
+          if (!node || !win) return;
+          const done = () => {
+            win.removeEventListener('pointerup', onUp, true);
+            win.removeEventListener('pointercancel', done, true);
+          };
+          const onUp = (up: PointerEvent) => {
+            if (up.pointerId !== start.id) return;
+            done();
+            if (isDragTravel(up.clientX - start.x, up.clientY - start.y)) return;
+            node.focus();
+            caretAt(node, up.clientX, up.clientY);
+          };
+          win.addEventListener('pointerup', onUp, true);
+          win.addEventListener('pointercancel', done, true);
+        }}
+        // The mouse's own default (focus, a text selection) waits for the click too.
+        onMouseDown={(e) => {
+          if (editable && !editing) e.preventDefault();
         }}
         // A double-click here means "edit this line", not the element's label.
         onDoubleClick={(e) => {
@@ -104,7 +161,7 @@ export function InlineTextLine({
             ref.current?.blur();
           }
         }}
-        className={`${editable ? 'pointer-events-auto cursor-text' : 'pointer-events-none'} w-full truncate rounded-sm outline-none focus:bg-brand-50/60 focus:text-slate-900 ${className} ${showAnimated ? 'opacity-0' : ''}`}
+        className={`${editable ? 'pointer-events-auto cursor-text' : 'pointer-events-none'} w-full truncate rounded-sm outline-none focus:outline-solid focus:outline-brand-500/70 ${className} ${showAnimated ? 'opacity-0' : ''}`}
         style={{
           ...style,
           // Selection chrome scales with the canvas everywhere else; a focus

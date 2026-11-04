@@ -234,7 +234,7 @@ describe('writeFieldsOnto', () => {
         'fill=chartreuse: a theme colour or a hex',
         'allowed: theme red orange yellow green blue violet',
       ],
-      ['text="huge": one of sm md lg scale or a px from 6 to 48'],
+      ['text="huge": one of sm md lg scale or a px from 24 to 72'],
       ['line="wavy": one of straight angled curved'],
     ]);
     expect(nextOf(write(arrow, { line: 'angled' })).arrowStyle).toBe('angled');
@@ -242,19 +242,30 @@ describe('writeFieldsOnto', () => {
   });
 
   it('writes an exact text px from the Text Size slider range, as a number or a numeric string', () => {
-    expect(nextOf(write(square, { text: 18 })).textSize).toBe(18);
-    expect(nextOf(write(square, { text: '6' })).textSize).toBe(6);
-    expect(nextOf(write(square, { text: 48 })).textSize).toBe(48);
-    expect(refusal(square, { text: 5 }).details).toEqual([
-      'text=5: one of sm md lg scale or a px from 6 to 48',
+    // A text's or a shape's runs a document's 24 to 72 (fonts.md "In livedocuments"), the rest the model's 6 to 48.
+    expect(nextOf(write(square, { text: 30 })).textSize).toBe(30);
+    expect(nextOf(write(square, { text: '24' })).textSize).toBe(24);
+    expect(nextOf(write(text, { text: 48 })).textSize).toBe(48);
+    expect(refusal(square, { text: 18 }).details).toEqual([
+      'text=18: one of sm md lg scale or a px from 24 to 72',
     ]);
-    expect(refusal(square, { text: 49 }).details).toHaveLength(1);
-    expect(refusal(square, { text: 12.5 }).details).toHaveLength(1);
+    expect(refusal(text, { text: 73 }).details).toHaveLength(1);
+    expect(refusal(square, { text: 30.5 }).details).toHaveLength(1);
+    expect(nextOf(write(arrow, { text: '6' })).textSize).toBe(6);
+    expect(refusal(arrow, { text: 49 }).details).toEqual([
+      'text=49: one of sm md lg scale or a px from 6 to 48',
+    ]);
+  });
+
+  it("stores a text's px past 48 as 48 and a scale, as the slider does", () => {
+    expect(nextOf(write(text, { text: 72 }))).toMatchObject({ textSize: 48, textScale: 1.5 });
+    const rescaled = nextOf(write({ ...square, textScale: 0.46 } as Element, { text: 60 }));
+    expect(rescaled).toMatchObject({ textSize: 48, textScale: 1.25 });
   });
 
   it('clears a re-fit or Shift scale with the size it writes (fonts.md "Text size")', () => {
-    const scaled = nextOf(write({ ...square, textScale: 0.46 } as Element, { text: 18 }));
-    expect(scaled.textSize).toBe(18);
+    const scaled = nextOf(write({ ...square, textScale: 0.46 } as Element, { text: 30 }));
+    expect(scaled.textSize).toBe(30);
     expect(scaled).not.toHaveProperty('textScale');
     expect(nextOf(write({ ...text, textScale: 2 } as Element, { text: 'md' }))).not.toHaveProperty(
       'textScale',

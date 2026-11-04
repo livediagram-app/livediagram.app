@@ -13,6 +13,7 @@ import {
   type Tab,
   tabToJsonText,
   tabToMarkdownText,
+  tabWindowNames,
 } from '@livedocuments/document';
 import {
   downloadBlob,
@@ -30,6 +31,10 @@ import {
   type PageScope,
 } from '@/lib/export-pages';
 import { ExportPagePicker } from './ExportPagePicker';
+import { PrintPanel } from './PrintPanel';
+import { printDocumentHtml, printSheets, printTabCount, type PrintScope } from '@/lib/print-pages';
+import { printInFrame } from '@/lib/print-frame';
+import { currentPageIdNow } from '@/lib/current-page-kind';
 import {
   OFFICE_CARDS,
   OFFICE_SUBTITLE,
@@ -39,7 +44,6 @@ import {
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { useTabWindowExport } from './useTabWindowExport';
 
 // The animated GIF's panel and its capture, loaded only when the GIF card opens
 // (docs/specs/020-import-export/blueprints/animated-gif-export.md "Performance and limits").
@@ -50,7 +54,7 @@ const OfficeExportPanel = lazy(() => import('./office/OfficeExportPanel'));
 
 // Telemetry (docs/specs/017-telemetry/telemetry.md): map the internal format key to the public label
 // the dashboard shows. 'file' is the portable .json export.
-const EXPORT_LABEL: Record<Format, string> = {
+const EXPORT_LABEL: Record<Exclude<Format, 'print'>, string> = {
   file: 'JSON',
   markdown: 'Markdown',
   png: 'PNG',
@@ -81,7 +85,17 @@ const PAGES_EXPORT_LABEL: Record<ImageFormat, string> = {
 
 // The formats Pages mode exports to (docs/specs/007-editor/pages-mode.md "Export"):
 // its pages, and the tab itself as JSON. Diagram-tool formats are not offered.
-const PAGES_FORMATS: readonly Format[] = ['pdf', 'png', 'svg', 'gif', 'pptx', 'docx', 'file'];
+// Print sits after PDF on every kind (docs/specs/020-import-export/print.md "Where it is offered").
+const PAGES_FORMATS: readonly Format[] = [
+  'pdf',
+  'print',
+  'png',
+  'svg',
+  'gif',
+  'pptx',
+  'docx',
+  'file',
+];
 // The page formats' card copy in Pages mode, which speaks of pages rather than the tab.
 const PAGES_CARD_COPY: Partial<Record<Format, string>> = {
   pdf: 'Every page in one PDF, or a single page, ready to print or share.',
@@ -111,10 +125,8 @@ type ExportTabDialogProps = {
   // Pages mode's pages (docs/specs/007-editor/pages-mode.md "Export"): PDF, PNG and
   // SVG export all pages or one chosen page, each exactly its sheet. Absent elsewhere.
   pages?: LaidOutPage[];
-  // The document's tabs, for the tabs a tab window shows (docs/specs/009-elements/tab-window.md "Exports").
+  // The document's tabs, for the name a stored tab window's frame shows (docs/specs/009-elements/tab-window.md).
   documentTabs?: readonly Tab[];
-  // Fetch tabs' content (a tab window's tab, which arrives only when opened or fetched); resolves to the failures.
-  loadTabs?: (only: readonly string[]) => Promise<string[]>;
   // Empty the canvas selection: the GIF draws the canvas as it stands, rings and all.
   onClearSelection?: () => void;
   // The Slide Deck, for the PowerPoint export's speaker notes and hidden slides
@@ -125,7 +137,7 @@ type ExportTabDialogProps = {
 const NO_DOCUMENT_TABS: readonly Tab[] = [];
 
 // The format keys ('file' is the livedocuments .json).
-export type Format = 'markdown' | 'pdf' | 'png' | 'svg' | 'gif' | OfficeFormat | 'file';
+export type Format = 'markdown' | 'pdf' | 'print' | 'png' | 'svg' | 'gif' | OfficeFormat | 'file';
 
 // The two text formats each open a view/edit/copy panel; the three image
 // formats each open an options-and-download panel (docs/specs/010-palette/style-presets.md / 73).
@@ -160,6 +172,13 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     kind: 'pdf',
     title: 'PDF',
     description: 'A single-page PDF of this tab, ready to print or share.',
+  },
+  {
+    // Pages only (docs/specs/020-import-export/print.md "Where it is offered").
+    kind: 'print',
+    title: 'Print',
+    description:
+      'Send the current page or the whole document to your printer, each page its own sheet.',
   },
   {
     // Pages mode only (docs/specs/020-import-export/animated-gif-export.md "Where it is offered").
@@ -216,7 +235,6 @@ export function ExportTabDialog({
   offerHiddenLayers = true,
   pages,
   documentTabs,
-  loadTabs,
   onClearSelection,
   deck,
 }: ExportTabDialogProps) {
@@ -239,6 +257,8 @@ export function ExportTabDialog({
   const [scopes, setScopes] = useState<Partial<Record<ImageFormat, PageScope>>>({});
   const scopeOf = (format: ImageFormat) => scopes[format] ?? DEFAULT_PAGE_SCOPE[format];
   const officeFormat = officeFormatFor(pages);
+  // Print's Current Page or Whole Document (docs/specs/020-import-export/print.md "The panel").
+  const [printScope, setPrintScope] = useState<PrintScope>('page');
   const cards = pages
     ? // A GIF animates the pages, so a Pages tab with none yet (First Page Choice) offers no GIF.
       // PowerPoint for a deck and Word for an article, neither for any other kind.
@@ -249,8 +269,8 @@ export function ExportTabDialog({
         const card = CARDS.find((c) => c.kind === kind)!;
         return { ...card, description: PAGES_CARD_COPY[kind] ?? card.description };
       })
-    : // A selection has no pages, so no GIF, PowerPoint or Word.
-      CARDS.filter((c) => c.kind !== 'gif' && !isOfficeFormat(c.kind));
+    : // A selection has no pages, so no Print, GIF, PowerPoint or Word.
+      CARDS.filter((c) => c.kind !== 'gif' && c.kind !== 'print' && !isOfficeFormat(c.kind));
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
@@ -297,24 +317,10 @@ export function ExportTabDialog({
   // Build the preview SVG for the current options — the same SVG the .svg
   // export produces, which PNG / PDF rasterise, so it faithfully previews all
   // three. Stable across renders so the panel can memoise on the toggles.
-  // Each tab window's tab, fetched and drawn once an image format is picked (docs/specs/009-elements/tab-window.md
-  // "Exports").
-  const windows = useTabWindowExport({
-    tab,
-    tabs: documentTabs ?? NO_DOCUMENT_TABS,
-    loadTabs,
-    imageContext,
-    active: !!active && !isTextFormat(active),
-  });
-  const windowOpts = useMemo(
-    () =>
-      windows.resolveTabWindow
-        ? {
-            resolveTabWindow: windows.resolveTabWindow,
-            tabWindowFontIds: windows.tabWindowFontIds ?? [],
-          }
-        : {},
-    [windows],
+  // A stored tab window draws as its frame named for its tab, as on the canvas (docs/specs/009-elements/tab-window.md).
+  const resolveTabWindow = useMemo(
+    () => tabWindowNames(documentTabs ?? NO_DOCUMENT_TABS),
+    [documentTabs],
   );
   const renderPreview = useCallback(
     (opts: { pattern: boolean; hiddenLayers: boolean }) =>
@@ -322,29 +328,37 @@ export function ExportTabDialog({
         ...opts,
         images: previewImages,
         page,
-        ...windowOpts,
+        resolveTabWindow,
       }),
-    [tab, previewImages, page, windowOpts],
+    [tab, previewImages, page, resolveTabWindow],
+  );
+  // The sheets Print would send, worked out only while its panel is open.
+  const sheets = useMemo(
+    () =>
+      active === 'print' && pages && page
+        ? printSheets(printScope, { tab, pages, page }, documentTabs ?? NO_DOCUMENT_TABS)
+        : [],
+    [active, printScope, tab, pages, page, documentTabs],
   );
 
   // The PowerPoint and Word preview: the first page, as the image formats draw it.
   const firstPage = pages?.[0];
   const officePreview = useMemo(
     () =>
-      isOfficeFormat(active) && firstPage && previewReady && windows.ready
+      isOfficeFormat(active) && firstPage && previewReady
         ? renderTabToSvg(tab, {
             pattern: true,
             hiddenLayers: false,
             images: previewImages,
             page: firstPage,
-            ...windowOpts,
+            resolveTabWindow,
           })
         : '',
-    [active, firstPage, previewReady, windows.ready, tab, previewImages, windowOpts],
+    [active, firstPage, previewReady, tab, previewImages, resolveTabWindow],
   );
   const officeRender = useMemo(
-    () => ({ ...(previewImages ? { images: previewImages } : {}), ...windowOpts }),
-    [previewImages, windowOpts],
+    () => ({ ...(previewImages ? { images: previewImages } : {}), resolveTabWindow }),
+    [previewImages, resolveTabWindow],
   );
 
   // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
@@ -364,7 +378,7 @@ export function ExportTabDialog({
         : imageContext
           ? await loadTabImages(tab, imageContext)
           : undefined;
-      const renderOpts = { ...opts, images, page, ...windowOpts };
+      const renderOpts = { ...opts, images, page, resolveTabWindow };
       if (pages && page) {
         const pageScope = scopeOf(format);
         const { blob, ext } = await exportPages({
@@ -403,15 +417,53 @@ export function ExportTabDialog({
     }
   };
 
+  // Print the scope's sheets (docs/specs/020-import-export/print.md): each drawn as the PDF export draws it, its
+  // tab's images loaded once (this tab's reused from the preview), into the print frame.
+  const runPrint = async () => {
+    if (busy || sheets.length === 0) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await ensureIconCatalogs();
+      const imagesByTab = new Map<string, Awaited<ReturnType<typeof loadTabImages>> | undefined>();
+      for (const { tab: t } of sheets) {
+        if (imagesByTab.has(t.id)) continue;
+        imagesByTab.set(
+          t.id,
+          t === tab && previewReady
+            ? previewImages
+            : imageContext
+              ? await loadTabImages(t, imageContext)
+              : undefined,
+        );
+      }
+      const html = printDocumentHtml(sheets, (sheet) =>
+        renderTabToSvg(sheet.tab, {
+          images: imagesByTab.get(sheet.tab.id),
+          page: sheet.page,
+          resolveTabWindow,
+        }),
+      );
+      await printInFrame(html);
+      track('UI', 'Used', printScope === 'document' ? 'PrintDocument' : 'PrintPage');
+      onClose();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Printing failed.');
+      setBusy(false);
+    }
+  };
+
   const activeCard = active ? CARDS.find((c) => c.kind === active) : null;
   const subtitle = activeCard
     ? active === 'gif'
       ? 'Set how the pages play, then download the GIF.'
-      : isOfficeFormat(active)
-        ? OFFICE_SUBTITLE[active]
-        : isTextFormat(active!)
-          ? `Copy this tab as ${activeCard.title}, or download a file.`
-          : `Set the image options for ${activeCard.title}, then download.`
+      : active === 'print'
+        ? 'Print the current page or the whole document.'
+        : isOfficeFormat(active)
+          ? OFFICE_SUBTITLE[active]
+          : isTextFormat(active!)
+            ? `Copy this tab as ${activeCard.title}, or download a file.`
+            : `Set the image options for ${activeCard.title}, then download.`
     : isSelection
       ? 'Pick a format to export the selected elements.'
       : pages
@@ -481,11 +533,27 @@ export function ExportTabDialog({
               baseName={baseName}
               render={officeRender}
               previewSvg={officePreview}
-              ready={previewReady && windows.ready}
+              ready={previewReady}
               onDone={onClose}
               onBack={() => setActive(null)}
             />
           </Suspense>
+        ) : active === 'print' && pages && page ? (
+          <PrintPanel
+            pages={pages}
+            page={page}
+            scope={printScope}
+            counts={{ pages: sheets.length, tabs: printTabCount(sheets) }}
+            busy={busy}
+            error={error}
+            onScope={setPrintScope}
+            onPick={setPageIndex}
+            onPrint={() => void runPrint()}
+            onBack={() => {
+              setError(null);
+              setActive(null);
+            }}
+          />
         ) : active ? (
           <ImageExportPanel
             pagePicker={
@@ -503,8 +571,7 @@ export function ExportTabDialog({
             label={activeCard!.title}
             // A page: no canvas to tilt or pattern.
             pageExport={!!pages}
-            // Held until each tab window's tab is drawn, so a download never misses one.
-            busy={busy || !windows.ready}
+            busy={busy}
             error={error}
             // Pages mode has no Layers, so no "Hidden layers" option: hidden layers stay
             // out, as they stay off its canvas.
@@ -512,7 +579,7 @@ export function ExportTabDialog({
               !pages && offerHiddenLayers && tabLayers(tab.layers).some((l) => !isLayerVisible(l))
             }
             renderPreview={renderPreview}
-            previewReady={previewReady && windows.ready}
+            previewReady={previewReady}
             onExport={(opts) => void runImageExport(active as ImageFormat, opts)}
             onBack={() => {
               setError(null);
@@ -531,6 +598,11 @@ export function ExportTabDialog({
                 description={c.description}
                 onClick={() => {
                   setError(null);
+                  // Print starts on the page in view (docs/specs/020-import-export/print.md "The panel").
+                  if (c.kind === 'print' && pages) {
+                    const inView = pages.findIndex((p) => p.id === currentPageIdNow());
+                    if (inView >= 0) setPageIndex(inView);
+                  }
                   setActive(c.kind);
                 }}
               >

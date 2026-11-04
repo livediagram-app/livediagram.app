@@ -108,10 +108,66 @@ describe('buildDrawnComponent', () => {
 describe('buildDrawnBoxed', () => {
   const shapeIntent = { type: 'shape', kind: 'square' } as const;
 
-  it('keeps a text box at its default size, whatever the tab opens in', () => {
+  // docs/specs/008-canvas/canvas-and-palette.md "Text styles".
+  it('taps a text down as a left-aligned Paragraph centred on the tap, whatever the tab opens in', () => {
     const out = buildDrawnBoxed({ type: 'text' }, 500, 300, 502, 301, null, tab({}));
-    expect(out).toMatchObject({ label: 'Text', width: 220, height: 64 });
-    expect(out).not.toHaveProperty('sizing');
+    expect(out).toMatchObject({
+      label: 'Paragraph',
+      width: 600,
+      textSize: 24,
+      sizing: 'wrap',
+      textAlignX: 'left',
+      textAlignY: 'top',
+    });
+    expect(out.x).toBe(500 - 300);
+  });
+
+  it("taps a style down at its own size: never the selection's, never the tab's", () => {
+    const sized = {
+      id: 's',
+      type: 'shape',
+      shape: 'square',
+      x: 0,
+      y: 0,
+      width: 50,
+      height: 20,
+    } as Element;
+    const out = buildDrawnBoxed(
+      { type: 'text', preset: 'heading' },
+      0,
+      0,
+      1,
+      1,
+      sized,
+      tab({ defaultTextSize: 'sm' }),
+    );
+    expect(out).toMatchObject({ label: 'Heading', textSize: 48, textBold: true, sizing: 'fit' });
+    expect(out.width).not.toBe(50);
+  });
+
+  it('wraps a dragged style at the dragged width', () => {
+    const out = buildDrawnBoxed({ type: 'text', preset: 'title' }, 10, 20, 410, 200, null, tab());
+    expect(out).toMatchObject({
+      x: 10,
+      y: 20,
+      width: 400,
+      sizing: 'wrap',
+      textSize: 48,
+      textAlignX: 'left',
+    });
+  });
+
+  it('splits a tab\'s size for new text past 48 px into a scale on a shape (fonts.md "In livedocuments")', () => {
+    const out = buildDrawnBoxed(
+      { type: 'shape', kind: 'square' },
+      0,
+      0,
+      3,
+      3,
+      null,
+      tab({ defaultTextSize: 60 }),
+    );
+    expect(out).toMatchObject({ textSize: 48, textScale: 1.25 });
   });
 
   it('centres the factory-default size on a tap', () => {

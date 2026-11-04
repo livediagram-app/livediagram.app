@@ -37,17 +37,11 @@ const laid = layOutPages(
   })),
 );
 
-function show({
-  canEdit = true,
-  side = 'left',
-  joined = false,
-}: { canEdit?: boolean; side?: 'left' | 'right'; joined?: boolean } = {}) {
+function show({ canEdit = true, joined = false }: { canEdit?: boolean; joined?: boolean } = {}) {
   const focusPage = vi.fn();
   const addPage = vi.fn();
   const addPageLike = vi.fn();
   const onMinimise = vi.fn();
-  const onMoveToSide = vi.fn();
-  const onDraggingChange = vi.fn();
   const edit = {
     addPage,
     addPageLike,
@@ -71,11 +65,8 @@ function show({
         view={view}
         tab={{ id: 't', name: 'T', elements: [], pages: laid, layers: [] }}
         top={68}
-        side={side}
-        onMoveToSide={onMoveToSide}
         onMinimise={onMinimise}
         joined={joined}
-        onDraggingChange={onDraggingChange}
       />
     </ViewportStoreProvider>,
   );
@@ -84,8 +75,6 @@ function show({
     addPage,
     addPageLike,
     onMinimise,
-    onMoveToSide,
-    onDraggingChange,
     edit,
     store,
   };
@@ -112,66 +101,41 @@ describe('PageContentsSidebar', () => {
     expect(screen.queryByText('3 pages')).toBeNull();
   });
 
-  it('pins flush to its side, and drags by its title to the other', () => {
-    const h = show();
+  it('sits flush to the left with no header and no drag; its foot is Add Page with Minimise to its right', () => {
+    show();
     const aside = screen.getByRole('complementary', { name: 'Contents' });
     expect(aside.style.left).toBe('0px');
-    // jsdom's canvas is 0 wide at the origin, so any x past it is its right half.
-    const handle = aside.querySelector<HTMLElement>('[data-contents-handle]')!;
-    handle.setPointerCapture = () => {};
-    fireEvent.pointerDown(handle, { button: 0, clientX: -10, pointerId: 1 });
-    fireEvent.pointerMove(handle, { clientX: 500, pointerId: 1 });
-    expect(document.querySelector('[data-contents-drop]')).not.toBeNull();
-    fireEvent.pointerUp(handle, { clientX: 500, pointerId: 1 });
-    expect(h.onMoveToSide).toHaveBeenCalledWith('right');
-    cleanup();
-    show({ side: 'right' });
-    expect(screen.getByRole('complementary', { name: 'Contents' }).style.right).toBe('0px');
+    expect(aside.querySelector('h2')).toBeNull();
+    expect(aside.querySelector('[data-contents-handle]')).toBeNull();
+    expect(screen.queryByRole('searchbox')).toBeNull();
+    const minimise = screen.getByRole('button', { name: 'Contents Options' });
+    const foot = minimise.closest('div.border-t')!;
+    const buttons = [...foot.querySelectorAll('button')];
+    expect(buttons.at(-1)).toBe(minimise);
+    // Named for the tab's kind ("Add Logo Page").
+    expect(buttons[0]!.textContent).toMatch(/Add (\w+ )?Page/);
+  });
+
+  it('keeps Contents Options at a Viewer’s foot, with no Add Page', () => {
+    show({ canEdit: false });
+    expect(screen.queryByRole('button', { name: /^Add (\w+ )?Page/ })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Contents Options' })).toBeTruthy();
   });
 
   // docs/specs/007-editor/pages-mode.md "Joined to the menu box".
-  it('joined, rises to the top and keeps the menu box’s row, its header where it was', () => {
+  it('joined, rises to the top and keeps the menu box’s row, the list where it was', () => {
     show({ joined: true });
     const aside = screen.getByRole('complementary', { name: 'Contents' });
     expect(aside.style.top).toBe('0px');
     const band = aside.firstElementChild as HTMLElement;
     expect(band.hasAttribute('data-menu-join-band')).toBe(true);
     expect(band.style.height).toBe('68px');
-    expect(band.nextElementSibling?.hasAttribute('data-contents-handle')).toBe(true);
+    expect(band.nextElementSibling?.getAttribute('role')).toBe('list');
   });
 
   it('has no menu row unjoined', () => {
     show();
     expect(document.querySelector('[data-menu-join-band]')).toBeNull();
-  });
-
-  it('tells the chrome a drag across starts and ends, a cancelled one too', () => {
-    const h = show({ joined: true });
-    const handle = document.querySelector<HTMLElement>('[data-contents-handle]')!;
-    handle.setPointerCapture = () => {};
-    fireEvent.pointerDown(handle, { button: 0, clientX: -10, pointerId: 1 });
-    expect(h.onDraggingChange).toHaveBeenLastCalledWith(true);
-    fireEvent.pointerUp(handle, { clientX: -10, pointerId: 1 });
-    expect(h.onDraggingChange).toHaveBeenLastCalledWith(false);
-    fireEvent.pointerDown(handle, { button: 0, clientX: -10, pointerId: 1 });
-    fireEvent.pointerCancel(handle, { pointerId: 1 });
-    expect(h.onDraggingChange).toHaveBeenLastCalledWith(false);
-    // A press on its buttons is no drag.
-    h.onDraggingChange.mockClear();
-    fireEvent.pointerDown(screen.getByRole('button', { name: 'Minimise Contents' }), {
-      button: 0,
-      pointerId: 1,
-    });
-    expect(h.onDraggingChange).not.toHaveBeenCalled();
-  });
-
-  it('lets go of the menu box if it goes mid-drag', () => {
-    const h = show({ joined: true });
-    const handle = document.querySelector<HTMLElement>('[data-contents-handle]')!;
-    handle.setPointerCapture = () => {};
-    fireEvent.pointerDown(handle, { button: 0, clientX: -10, pointerId: 1 });
-    cleanup();
-    expect(h.onDraggingChange).toHaveBeenLastCalledWith(false);
   });
 
   it("stacks each page's Delete and ⋯ down its left, an Editor's alone, whose presses never glide", () => {
@@ -215,10 +179,11 @@ describe('PageContentsSidebar', () => {
     await waitFor(() => expect(requestPagePanel).toHaveBeenCalledWith('p3'));
   });
 
-  it('minimises to its button, framing the page in view again', async () => {
+  it('collapses to its button from Contents Options, framing the page in view again', async () => {
     const h = show();
     h.focusPage.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: 'Minimise Contents' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Contents Options' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Collapse Contents' }));
     expect(h.onMinimise).toHaveBeenCalledOnce();
     // The page in view is framed again across the whole canvas once the sidebar has gone.
     await waitFor(() => expect(h.focusPage).toHaveBeenCalledWith('p1'));
@@ -254,12 +219,13 @@ describe('PageContentsSidebar', () => {
     // One kind a tab: no chooser of another kind, and a logo tab has no device chooser either.
     expect(screen.queryByRole('button', { name: 'Add a Page of Any Kind' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Add a Screen of Another Device' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /^Add Page/ }));
-    expect(h.addPageLike).toHaveBeenCalledWith('p3');
+    fireEvent.click(screen.getByRole('button', { name: /^Add (\w+ )?Page/ }));
+    // Like the last page, added after the page here (p1).
+    expect(h.addPageLike).toHaveBeenCalledWith('p3', 'p1');
     expect(h.addPage).not.toHaveBeenCalled();
     cleanup();
     show({ canEdit: false });
-    expect(screen.queryByRole('button', { name: /^Add Page/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Add (\w+ )?Page/ })).toBeNull();
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
   });
 });

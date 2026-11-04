@@ -33,6 +33,9 @@ type Deps = {
   canvasMainRef: React.RefObject<HTMLElement | null>;
   // The view, read when a gesture fires and written back (docs/specs/008-canvas/blueprints/viewport-store.md).
   viewport: ViewportStore;
+  // Whether the pages stand as a stack (docs/specs/007-editor/flashcards.md "Getting around a stack"): a wheel's
+  // sideways part then pans nothing, as there is no row to pan along. Read per event.
+  stacked?: () => boolean;
 };
 
 type Api = {
@@ -239,8 +242,10 @@ export function useCanvasPinchZoom(deps: Deps): Api {
       noteWheel('pan');
       const { zoom: viewportZoom, offset: current } = depsRef.current.viewport.get();
       const base = pendingPan ?? current;
+      // A stack has no row: its sideways part (Shift's too) is left out, so only the page in front pans up and down.
+      const sideways = depsRef.current.stacked?.() === true ? 0 : e.deltaX;
       pendingPan = {
-        x: base.x - e.deltaX / viewportZoom,
+        x: base.x - sideways / viewportZoom,
         y: base.y - e.deltaY / viewportZoom,
       };
       if (panRaf === null) panRaf = requestAnimationFrame(flushPan);

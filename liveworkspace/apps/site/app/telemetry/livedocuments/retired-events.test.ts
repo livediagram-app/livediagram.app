@@ -32,6 +32,34 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Canvas', 'Changed', 'Crosshatch')).toBe(false);
   });
 
+  it('retires the Tab Window, its tour and its help article, not the other tours', () => {
+    expect(isRetiredEvent('Element', 'Added', 'TabWindow')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'TabWindowTab')).toBe(true);
+    expect(isRetiredEvent('UI', 'Used', 'TabWindowOpen')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'TabWindowTourOffer')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'TabWindowTourStepOpen')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'TabWindowTourSeenOff')).toBe(true);
+    expect(isRetiredEvent('Help', 'View', 'tab-windows')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'tab-windows')).toBe(true);
+    expect(isRetiredEvent('Element', 'Added', 'Stack')).toBe(false);
+    expect(isRetiredEvent('UI', 'Opened', 'StackTourOffer')).toBe(false);
+  });
+
+  it('retires the Slide Deck panel and its tour steps, not hiding, page slides or presenting', () => {
+    expect(isRetiredEvent('UI', 'Opened', 'SlideDeck')).toBe(true);
+    expect(isRetiredEvent('UI', 'Added', 'Slide')).toBe(true);
+    expect(isRetiredEvent('UI', 'Removed', 'Slide')).toBe(true);
+    expect(isRetiredEvent('UI', 'Moved', 'Slide')).toBe(true);
+    expect(isRetiredEvent('UI', 'Added', 'AllPageSlides')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'PagesTourStepSlideDeck')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'PagesTourStepSlideShowSettings')).toBe(true);
+    expect(isRetiredEvent('UI', 'Added', 'PageSlide')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'SlideHidden')).toBe(false);
+    expect(isRetiredEvent('UI', 'Used', 'PresentFromHere')).toBe(false);
+    expect(isRetiredEvent('UI', 'Opened', 'PresentationSettings')).toBe(false);
+    expect(isRetiredEvent('UI', 'View', 'PagesTourStepSlideContents')).toBe(false);
+  });
+
   it('retires the palette Favourites events', () => {
     expect(isRetiredEvent('UI', 'Added', 'PaletteFavourite')).toBe(true);
     expect(isRetiredEvent('UI', 'Removed', 'PaletteFavourite')).toBe(true);

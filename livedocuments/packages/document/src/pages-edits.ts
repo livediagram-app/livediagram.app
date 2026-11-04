@@ -210,23 +210,37 @@ export function pageBackgroundStored<T extends PagesTab>(
 const room = (pages: readonly Page[], more = 1) => pages.length + more <= MAX_PAGES;
 
 /**
- * A new page of a kind after the last: an infographic page takes the last infographic page's size
- * and orientation (else A4 portrait; A4 after a Fit to Content page); an article the last page's
- * paper size and orientation when it is a paper size, else A4 portrait, its writing a new Title and
- * paragraph (`flow` its id); a slide the last slide's size (else 16:9), landscape. All on the
- * plain paper. Only ever of the tab's kind ("One kind a tab"): any other is refused.
+ * A new page of a kind, right after the page `after` names (its whole article, when that page is an article's; the
+ * person's current page, docs/specs/007-editor/pages-mode.md "Adding a page"), else after the last: an infographic
+ * page takes the last infographic page's size and orientation (else A4 portrait; A4 after a Fit to Content page); an
+ * article the last page's paper size and orientation when it is a paper size, else A4 portrait, its writing a new
+ * Title and paragraph (`flow` its id); a slide the last slide's size (else 16:9), landscape. It wears the background
+ * of the page before it. Only ever of the tab's kind ("One kind a tab"): any other is refused.
  */
 export function pageAdded<T extends PagesTab>(
   tab: T,
   kind: PageKind,
   id: string,
   flow: string,
+  after?: string,
+): PageEdit<T> {
+  const appended = pageAppended(tab, kind, id, flow, after);
+  return 'tab' in appended ? { tab: placedAfter(appended.tab, id, after) } : appended;
+}
+
+/** pageAdded's page, at the end; `after` only picks the page whose background it wears. */
+function pageAppended<T extends PagesTab>(
+  tab: T,
+  kind: PageKind,
+  id: string,
+  flow: string,
+  after: string | undefined,
 ): PageEdit<T> {
   const pages = pagesOf(tab);
   if (pages.length > 0 && kind !== tabPageKind(pages)) return refused('kind_not_offered');
   if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
-  // The new page wears the background of the page before it (the last), whatever either kind.
-  const carried = pages[pages.length - 1]?.background;
+  // The new page wears the background of the page before it (the last page of `after`'s unit, else the last).
+  const carried = pageBefore(pages, after)?.background;
   if (kind === 'flashcard') {
     const out = withFlashcardAdded(tab, { id, ...(carried ? { background: carried } : {}) }, flow);
     return out ? { tab: out } : refused('page_limit');
@@ -259,8 +273,25 @@ export function pageAdded<T extends PagesTab>(
   return { tab: withPages(tab, [...pages, page]) };
 }
 
+/** The page a page added after `after` follows: the last page of `after`'s unit (its article's last page), else the
+ *  last page. */
+function pageBefore(pages: readonly Page[], after: string | undefined): Page | undefined {
+  const unit = after ? pageUnits(pages).find((u) => u.pageIds.includes(after)) : undefined;
+  const id = unit?.pageIds[unit.pageIds.length - 1];
+  return (id ? pages.find((p) => p.id === id) : undefined) ?? pages[pages.length - 1];
+}
+
+/** The new page's unit (`id`'s) moved to just after `after`'s unit; as it was where `after` is unknown or last. */
+function placedAfter<T extends PagesTab>(tab: T, id: string, after: string | undefined): T {
+  if (!after) return tab;
+  const units = pageUnits(pagesOf(tab));
+  const anchor = units.findIndex((u) => u.pageIds.includes(after));
+  if (anchor < 0) return tab;
+  return (withUnitMoved(tab, id, anchor + 1) as T | null) ?? tab;
+}
+
 /**
- * A new page like `sourceId` after the last (docs/specs/007-editor/pages-mode.md "Adding a page"):
+ * A new page like `sourceId` after `after` (else the last) (docs/specs/007-editor/pages-mode.md "Adding a page"):
  * its kind and shape, carrying the last page's background as any new page does; never its content. An article page
  * starts a new article on the same paper.
  */
@@ -269,14 +300,15 @@ export function pageAddedLike<T extends PagesTab>(
   sourceId: string,
   id: string,
   flow: string,
+  after?: string,
 ): PageEdit<T> {
   const pages = pagesOf(tab);
   const source = pages.find((p) => p.id === sourceId);
   if (!source) return refused('unknown_page');
   const kind = pageKindOf(source);
-  if (kind !== 'infographic' || source.size === 'fit') return pageAdded(tab, kind, id, flow);
+  if (kind !== 'infographic' || source.size === 'fit') return pageAdded(tab, kind, id, flow, after);
   // An infographic page in the source's own size and turn (pageAdded takes the last infographic's).
-  const out = pageAdded(tab, kind, id, flow);
+  const out = pageAdded(tab, kind, id, flow, after);
   if (!('tab' in out)) return out;
   const next = pagesOf(out.tab).map((p) => {
     if (p.id !== id) return p;

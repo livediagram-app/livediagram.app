@@ -5,7 +5,8 @@ import {
   articlesOf,
   pagesOf,
 } from '@livedocuments/document';
-import { buildTabFromMarkdown } from './markdown-import';
+import { buildTabFromMarkdown, imagesAsLinks } from './markdown-import';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { mergeImportedTab } from './import-merge';
 
 // docs/specs/020-import-export/markdown-import.md: a Markdown file imports as an article.
@@ -65,5 +66,42 @@ describe('buildTabFromMarkdown', () => {
     expect(merged.name).toBe('Mine');
     expect(pagesOf(merged)[0]!.kind).toBe('article');
     expect(Object.keys(articlesOf(merged))).toHaveLength(1);
+  });
+});
+
+// docs/specs/020-import-export/markdown-import.md "What it reads": an image as a link named by its alt text.
+describe('imagesAsLinks', () => {
+  it('reads an image as a link named by its alt text, or its address', () => {
+    expect(imagesAsLinks('See ![Team photo](https://e.com/t.png) here')).toBe(
+      'See [Team photo](https://e.com/t.png) here',
+    );
+    expect(imagesAsLinks('![](https://e.com/t.png)')).toBe(
+      '[https://e.com/t.png](https://e.com/t.png)',
+    );
+    expect(imagesAsLinks('No images, [a link](https://e.com).')).toBe(
+      'No images, [a link](https://e.com).',
+    );
+  });
+
+  it('leaves code as written: an inline span and a fence', () => {
+    expect(imagesAsLinks('Write `![x](y)` for ![a](b)')).toBe('Write `![x](y)` for [a](b)');
+    const fenced = '```md\n![x](y)\n```\n![a](b)';
+    expect(imagesAsLinks(fenced)).toBe('```md\n![x](y)\n```\n[a](b)');
+    expect(imagesAsLinks('````\n```\n![x](y)\n````\n![a](b)')).toBe(
+      '````\n```\n![x](y)\n````\n[a](b)',
+    );
+  });
+
+  it('imports the image as a linked run with no stray "!"', () => {
+    const { tab } = built('![Team photo](https://e.com/t.png)');
+    const article = Object.values(articlesOf(tab))[0]!;
+    const runs = 'runs' in article.blocks[0]! ? article.blocks[0].runs : [];
+    expect(runs).toEqual([{ text: 'Team photo', href: 'https://e.com/t.png' }]);
+  });
+
+  it('reads a worst-case line in a few ms of CPU', () => {
+    const line = '!['.repeat(20_000) + '](' + '('.repeat(20_000) + '`'.repeat(5_000) + 'x';
+    const ms = cpuMsOf(() => imagesAsLinks(line));
+    expect(ms).toBeLessThan(cpuBudgetMs(60));
   });
 });

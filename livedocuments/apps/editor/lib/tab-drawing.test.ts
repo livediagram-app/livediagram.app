@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { laidOutPagesOf, type Element, type Page, type Tab } from '@livedocuments/document';
-import { pageElements, renderTabDrawingSvg, tabDrawingFontIdsOf } from './tab-drawing';
+import { pageElements, renderTabDrawingSvg } from './tab-drawing';
 import { svgFrameOf } from '@liveworkspace/workbench/lib/svg-frame';
 
 // docs/specs/009-elements/tab-window.md "The drawing": a tab is drawn as its pages.
@@ -65,14 +65,6 @@ describe('renderTabDrawingSvg', () => {
       },
     });
     expect(renderTabDrawingSvg(t)).toContain('Quarterly');
-  });
-});
-
-describe('tabDrawingFontIdsOf', () => {
-  it("names the tab's typeface", () => {
-    expect(
-      tabDrawingFontIdsOf(tab({ font: 'caveat', elements: [box('a', 'A', { x: 0, y: 0 })] })),
-    ).toContain('caveat');
   });
 });
 

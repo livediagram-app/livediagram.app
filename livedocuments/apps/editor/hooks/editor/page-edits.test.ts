@@ -8,7 +8,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const box = (id: string, cx: number) =>
   ({ id, type: 'shape', shape: 'square', x: cx - 10, y: -10, width: 20, height: 20 }) as Element;
 
-function harness(tab: Tab) {
+function harness(tab: Tab, currentPage: () => string | null = () => null) {
   let tabs = [tab];
   const onGoTo = vi.fn();
   const onLayoutPlaced = vi.fn();
@@ -26,6 +26,7 @@ function harness(tab: Tab) {
       onGoTo,
       onLayoutPlaced,
       toastInfo,
+      currentPage,
     });
   return { edits, tab: () => tabs[0]!, commitTabs, onGoTo, onLayoutPlaced, toastInfo };
 }
@@ -290,6 +291,31 @@ describe('slide page edits', () => {
       size: 'slide-classic',
       kind: 'slide',
     });
+  });
+
+  // pages-mode.md "Adding a page": right after the page someone is on, or after the page whose + was pressed.
+  it('adds right after the page someone is on, and goes to it', () => {
+    const h = harness(twoPages(), () => 'page-1');
+    h.edits().addPage!('infographic');
+    const ids = pagesOf(h.tab()).map((p) => p.id);
+    expect(ids).toHaveLength(3);
+    expect(ids[0]).toBe('page-1');
+    expect(ids[2]).toBe('page-2');
+    expect(h.onGoTo).toHaveBeenLastCalledWith(ids[1]);
+    // page-2's box moved along with page-2, now the third page.
+    const b = h.tab().elements.find((e) => e.id === 'b') as Element & { x: number };
+    expect(b.x).toBeGreaterThan(794 + 96);
+  });
+
+  it('adds after the last page with no current page, and after the page whose + was pressed', () => {
+    const last = harness(twoPages());
+    last.edits().addPage!('infographic');
+    const ids = pagesOf(last.tab()).map((p) => p.id);
+    expect(ids.slice(0, 2)).toEqual(['page-1', 'page-2']);
+    const beside = harness(twoPages(), () => 'page-2');
+    beside.edits().addPageLike!('page-1');
+    expect(pagesOf(beside.tab())[0]!.id).toBe('page-1');
+    expect(pagesOf(beside.tab())[2]!.id).toBe('page-2');
   });
 
   it('adds no slide to an infographic tab (one kind a tab)', () => {

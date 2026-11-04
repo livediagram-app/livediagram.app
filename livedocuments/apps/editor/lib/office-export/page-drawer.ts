@@ -39,12 +39,9 @@ async function imageBytes(
 /** A drawer for the tab: its images and fonts loaded once, shared by every picture. */
 export async function pageDrawer(
   tab: Tab,
-  opts: Pick<ImageExportOpts, 'images' | 'resolveTabWindow' | 'tabWindowFontIds'>,
+  opts: Pick<ImageExportOpts, 'images' | 'resolveTabWindow'>,
 ): Promise<PageDrawer> {
-  const fontCss = await embeddedFontFaceCss([
-    ...exportFontIds(tab.elements, tab.font, tab.finish),
-    ...(opts.tabWindowFontIds ?? []),
-  ]);
+  const fontCss = await embeddedFontFaceCss(exportFontIds(tab.elements, tab.font, tab.finish));
   // A deck repeats one animated background: paint it once.
   const motionFrames = new Map();
   const base = { ...opts, fontCss, motionFrames };

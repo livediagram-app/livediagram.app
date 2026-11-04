@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useStableCallbacks } from '@liveworkspace/workbench/hooks/ui/useStableCallbacks';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
@@ -62,13 +62,11 @@ export function useCanvasChromePanels({
   // Layers, a popover over its cluster button, rendered outside the corner layer.
   layersEl: ReactNode;
   collaborateEl: ReactNode;
-  slidesPopoverEl: ReactNode;
   // Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents"): the popover,
   // or docked as the sidebar (useContentsChrome).
   contentsPopoverEl: ReactNode;
   contentsSidebarEl: ReactNode;
   contentsDocked: boolean;
-  contentsSide: import('@liveworkspace/workbench/lib/contents-sidebar').ContentsSide;
   menuJoined: boolean;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
 } {
@@ -164,30 +162,19 @@ export function useCanvasChromePanels({
     commentsPanelPosition,
     onResetCommentsPanel,
   );
-  // The four tool-config panels (laser / spotlight / format / slide
-  // deck), see useCanvasToolPanels. They share one contract: on screen
-  // only while their own tool is active.
-  // The Slides popover belongs to Pages mode's button: leaving the mode (Shift+D, a tab
-  // switch) closes it rather than leaving it floating with no button under it.
-  const slidesOpen = activeDockPanel === 'slides' && !!props.pagesMode;
-  useEffect(() => {
-    if (activeDockPanel === 'slides' && !props.pagesMode) closeDockPanel();
-  }, [activeDockPanel, props.pagesMode, closeDockPanel]);
-  // Contents, likewise, belongs to Pages mode: its popover, or the sidebar docked in its place.
-  const { contentsDocked, contentsSide, menuJoined, contentsSidebarEl, contentsPopoverEl } =
-    useContentsChrome({
-      props,
-      chromeHidden,
-      isMobile,
-      closeDockPanel,
-    });
-  const { laserEl, spotlightEl, formatEl, slideDeckEl } = useCanvasToolPanels({
+  // The three tool-config panels (laser / spotlight / format), see useCanvasToolPanels. They share one
+  // contract: on screen only while their own tool is active.
+  // Contents belongs to Pages mode: its popover, or the sidebar docked in its place.
+  const { contentsDocked, menuJoined, contentsSidebarEl, contentsPopoverEl } = useContentsChrome({
+    props,
+    chromeHidden,
+    isMobile,
+    closeDockPanel,
+  });
+  const { laserEl, spotlightEl, formatEl } = useCanvasToolPanels({
     props,
     chromeHidden,
     panelWiringFor,
-    slidesPopover: slidesOpen
-      ? { anchor: activeDockAnchor ?? undefined, onClose: closeDockPanel }
-      : null,
   });
 
   // Mounted from its first opening on, never before (its code loads then), and kept mounted after so
@@ -325,8 +312,6 @@ export function useCanvasChromePanels({
     minimap: minimapEl,
     laser: laserEl,
     spotlight: spotlightEl,
-    // Over its cluster button (Pages mode) it renders beside the corner layer, like Collaborate.
-    'slide-deck': slidesOpen ? null : slideDeckEl,
     format: formatEl,
   };
   return {
@@ -334,11 +319,9 @@ export function useCanvasChromePanels({
     explorerEl,
     // The cluster popovers, rendered beside the corner layer rather than in it (see panelEls).
     collaborateEl,
-    slidesPopoverEl: slidesOpen ? slideDeckEl : null,
     contentsPopoverEl,
     contentsSidebarEl,
     contentsDocked,
-    contentsSide,
     menuJoined,
     layersEl,
     paletteTint,

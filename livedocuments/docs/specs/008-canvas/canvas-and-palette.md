@@ -285,7 +285,8 @@ The strip leads with the canvas-tool picker, then the **category bar** ([Toolbar
 
 **Tools tab** (other element kinds):
 
-- **Text**: adds a free-floating text element (see [Text element](#text-element)).
+- **Text styles** (Write): Title, Subtitle, Heading, Subheading, Paragraph and Quote, each a tile that adds
+  a free-floating text element already set as that style (see [Text element](#text-element) "Text styles").
 - **Arrow** ("Add Arrow"): drops / draws a straight connector **with a pointer at its end**, OR, with a shape selected, arms click-to-connect (see [Adding an arrow](#adding-an-arrow)).
 - **Line**: the same tool without the heads (`arrowEnds: 'none'`): the same element, gesture and click-to-connect, so a plain line and an arrow are both one tile away. No key (`A` is the Arrow). Its pointers are added in the Pointer accordion like any arrow's. Telemetry: `Element·Added·Line`.
 - **Sticky note**: adds a sticky-note element (see [Sticky note element](#sticky-note-element)).
@@ -578,7 +579,9 @@ The catalogue (`packages/templates/src/templates.ts`, pinned by `template-catalo
 
 ### Templates on pages
 
-Every template opens on pages of its own. `templateCanvasOverrides(kind)` ships the tab's `pages` (ids `page-1`, `page-2`, ..., each already of its kind so the first-page kind choice is not offered, each named); `buildTemplate(kind)` builds the elements in page coordinates on exactly those pages, ignoring the centre it is given, with the page layouts' kit at page scale. The pages are declared once per template (`packages/templates/src/template-pages.ts`), so every application path lands the pages and the elements together. Some of them:
+Every template opens on pages of its own. `templateCanvasOverrides(kind)` ships the tab's `pages` (ids `page-1`, `page-2`, ..., each already of its kind so the first-page kind choice is not offered, each named); `buildTemplate(kind)` builds the elements in page coordinates on exactly those pages, ignoring the centre it is given, with the page layouts' kit at page scale. The pages are declared once per template (`packages/templates/src/template-pages.ts`), so every application path lands the pages and the elements together.
+
+**A template's backgrounds are the theme's own.** Every page background a template ships (solid, gradient or animated) is one the theme owns: a Theme gradient (Dawn, Haze, Glow, Dusk, Twilight, Aurora and the rest), an animated background in a theme colouring (Night, Deep and the rest), or the plain paper. Never a colour of the template's own, which would stay put when the theme changes. They are written against the Default theme's light half (`TEMPLATE_THEME`, `packages/templates/src/template-backgrounds.ts`) and land through the same follow a theme change runs (`withPageBackgroundsFollowingTheme`, from the Default theme to the theme the template is applied in, its content re-inked), so a template applied in Ocean opens on Ocean's backgrounds, and changing the theme later moves them on as it moves any page on a theme fill ([Pages mode](../007-editor/pages-mode.md) "It follows the theme"). Every application path (the picker, `/new`, the api and the MCP worker) runs it, through `withBlankPageThemed`. A guard test fails on any template page whose fill is not the Default theme's own (`template-backgrounds.test.ts`). Some of them:
 
 | Template            | Pages                                                                                                                            |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -587,8 +590,8 @@ Every template opens on pages of its own. `templateCanvasOverrides(kind)` ships 
 | Written documents   | A4 portrait article pages of writing: Meeting Notes, Lesson Plan, Business Proposal, Design Doc, Status Report and Cover Letter. |
 | Class Lesson        | Six 16:9 slide pages built from the slide layouts, like the other layout decks.                                                  |
 | School Presentation | Five flashcards, like the other stacks ([Flashcards](../007-editor/flashcards.md)).                                              |
-| Slide deck          | Six 16:9 slide pages, one per slide; the title on a dark gradient, the ask on a light one.                                       |
-| Group card          | Two Portrait post (4:5) pages: the Cover (blush-to-sunshine) and the Inside (cream).                                             |
+| Slide deck          | Six 16:9 slide pages, one per slide; the title on the theme's Dusk, the ask on its Haze.                                         |
+| Group card          | Two Portrait post (4:5) pages: the Cover (the theme's Glow) and the Inside (the plain paper).                                    |
 | Event Poster        | One A3 portrait page.                                                                                                            |
 | Year in Review      | Four A4 portrait pages: Cover, Numbers, Timeline, Thanks.                                                                        |
 | Résumé              | One A4 portrait page.                                                                                                            |
@@ -612,18 +615,23 @@ The written templates (`packages/templates/src/article-templates.ts`) are articl
 
 livedocuments' categories are its own: they need not match the other products'. They are grouped by **what the document is for** (the use case), never by page kind, so a deck, an article and a stack of flashcards for the same job sit together. Every template but the blanks has one primary category and may be cross-listed where people would genuinely look for it too (`packages/templates/src/template-categories.ts` holds both; a template does not compile until it has a home). Every picker shows them alphabetically by label.
 
-| Category                | Holds                                                           | Also lists                         |
-| ----------------------- | --------------------------------------------------------------- | ---------------------------------- |
-| Careers                 | Résumé, Cover Letter                                            |                                    |
-| Events and Celebrations | Event Poster, Group Card                                        | Wedding Toast                      |
-| Home and Hobbies        | Recipe Card, Floor Plan                                         |                                    |
-| Lessons and Learning    | Lesson Plan, Class Lesson, School Presentation                  | How It Works                       |
-| Marketing and Social    | Social Carousel, Versus, How It Works, Storyboard (an ad)       | Event Poster                       |
-| Pitches and Launches    | Slide Deck (a pitch), Launch Keynote, Product Pitch             |                                    |
-| Plans and Proposals     | Project Brief, Working Backwards, Business Proposal, Design Doc |                                    |
-| Reports                 | Year in Review, Quarterly Review, Data Story, Status Report     |                                    |
-| Speeches and Talks      | Conference Talk, Wedding Toast                                  | Product Pitch, School Presentation |
-| Team and Meetings       | Meeting Notes, Workshop Kickoff, Team Welcome                   |                                    |
+| Category  | Holds                                                           | Also lists                         |
+| --------- | --------------------------------------------------------------- | ---------------------------------- |
+| Careers   | Résumé, Cover Letter                                            |                                    |
+| Events    | Event Poster, Group Card                                        | Wedding Toast                      |
+| Home      | Recipe Card, Floor Plan                                         |                                    |
+| Learning  | Lesson Plan, Class Lesson, School Presentation                  | How It Works                       |
+| Marketing | Social Carousel, Versus, How It Works, Storyboard (an ad)       | Event Poster                       |
+| Pitches   | Slide Deck (a pitch), Launch Keynote, Product Pitch             |                                    |
+| Plans     | Project Brief, Working Backwards, Business Proposal, Design Doc |                                    |
+| Reports   | Year in Review, Quarterly Review, Data Story, Status Report     |                                    |
+| Talks     | Conference Talk, Wedding Toast                                  | Product Pitch, School Presentation |
+| Teams     | Meeting Notes, Workshop Kickoff, Team Welcome                   |                                    |
+
+Each label is **one word**, so it sits on one line in every picker's rail. The longer names they had until 2026-11-04
+(Events and Celebrations, Home and Hobbies, Lessons and Learning, Marketing and Social, Pitches and Launches, Plans and
+Proposals, Speeches and Talks, Team and Meetings) are kept as the categories' search words, so a search for the dropped
+half (celebrations, hobbies, lessons, launches, proposals, speeches, meetings) still finds their templates.
 
 The blanks (Blank Tab, Blank Illustration and the blanks of a page kind) are in no category: they lead Popular, the landing gallery's Blank Slate and the template start's Blank Pages group. A new template joins the category of the job it does; a category is added when a job has no home, rather than stretching one that reads wrong.
 
@@ -720,7 +728,7 @@ Result sections, in order, each capped (8 per section, 12 for elements, 10 for A
 4. **Elements**: the open document's element text (editor only). Matches element labels; **tables match by cell text** (tables have no single label), surfacing the matching cell as the row label. Blank-labelled elements are unmatchable. Opening the panel triggers a **load-all-tabs prefetch**: per-tab lazy loading ([Per-tab storage](../006-document/per-tab-storage.md)) means unvisited tabs are empty placeholders locally, so search pulls every remaining tab's content in one parallel best-effort sweep: without it, element search silently misses tabs the user hasn't opened this session.
 5. **Actions**: synthetic, do-something results rather than navigation: a contextual **command palette** for power users (editor only, non-empty query). The matcher (name + keywords, capped) lives in `lib/search.ts` as a generic `command` result kind; the editor supplies the applicable command list and a dispatcher via `useEditorCommands` (catalogue + applicability logic in `lib/editor-commands.ts`, unit-tested in `editor-commands.test.ts`). The group ranks **below** the navigation + element groups so picking an existing tab / element by name keeps the default Enter; commands are reached by typing their verb (e.g. "delete", "lock", "rotate", "share", "theme", "rename"). Each command reuses the exact same handler (and telemetry) as its menu/toolbar entry point, so behaviour can't drift. Commands never surface on an empty query (no catalogue dump); view-only (`view`-role) sessions keep only the view-safe subset (zen / fit / export / Collaborators, plus the tools that only change how you look at the canvas), mirroring the palette's read-only gate.
 
-   **Tool switches.** The catalogue also carries the **canvas tools** (`tool:select`, `tool:pan`, `tool:format`, `tool:laser`, `tool:spotlight`, `tool:slide-deck`), beside the palette's tool dropdown. The tool already in force is dropped (offering "Hand Tool" while holding the hand does nothing), and the gating **matches the dropdown exactly**: everything but Select and Hand needs content on the canvas, Spotlight and Slide Deck are desktop-only, and the one that writes to the document (the Format painter) is withheld from a read-only visitor. A test compares the offered ids against `buildCanvasToolOptions` under all three conditions, so a tool added to one surface can't quietly skip the other. Zen stays its own command rather than a `tool:` entry, because it is an action in the dropdown too.
+   **Tool switches.** The catalogue also carries the **canvas tools** (`tool:select`, `tool:pan`, `tool:format`, `tool:laser`, `tool:spotlight`), beside the palette's tool dropdown. The tool already in force is dropped (offering "Hand Tool" while holding the hand does nothing), and the gating **matches the dropdown exactly**: everything but Select and Hand needs content on the canvas, Spotlight is desktop-only, and the one that writes to the document (the Format painter) is withheld from a read-only visitor. A test compares the offered ids against `buildCanvasToolOptions` under all three conditions, so a tool added to one surface can't quietly skip the other. Zen stays its own command rather than a `tool:` entry, because it is an action in the dropdown too.
 
    The catalogue is **contextual**:
    - **With a selection** (`selectedId` or a multi-selection): **Delete**, **Duplicate**, **Lock / Unlock**, **Bring to Front**, **Send to Back**, and (single, boxed) **Rotate 90° / 180° / 270°** + **Reset Rotation**, **Add / Edit Note**, **Add Comment**, plus **Clear Animation** (when the element has one) and, for a shape, **Clear Marker** (when set) / **Add … Marker** (the `SHAPE_MARKERS` set). Selection commands rank first so they stay in context with what's selected.
@@ -880,9 +888,36 @@ Any boxed element (shape / text / sticky / image / polygon) can be rotated about
 
 A free-floating text element. The text **is** the element; there is no border or fill.
 
-- Added from the **Text** palette button.
-- Default content: `"Text"`. Default size: 220 × 64.
-- **Drag** to move; **resize** via the same four corner handles as shapes. Text auto-scales to fit the box (same SVG-based fit-to-bounds technique as shape labels).
+- Added from one of Write's **text style** tiles (below), by **T** (a Paragraph), by double-clicking empty canvas (a
+  Paragraph, opened for typing) and by a node's quick add Text (a Paragraph).
+- **Left aligned, always, by default**: every text element the editor makes starts `textAlignX: 'left'`,
+  `textAlignY: 'top'`, a document's reading edge, whatever made it (a style tile, T, a double-click, quick add, an
+  AI or MCP `add text` that names no alignment). The context menu's Alignment changes it as before. Elements made
+  before this keep what they have: an element with no alignment stored still draws centred, so nothing moves.
+- **It hugs its words**: a style's box fits its text (`sizing: 'fit'`, a heading's) or wraps at a set width
+  (`sizing: 'wrap'`, a paragraph's), its height always the text's ([Document structure](../006-document/document-structure.md)).
+- **Drag** to move; **resize** via the same handles as shapes: a side handle sets the width, so the text wraps.
+
+**Text styles.** Write's text tiles are the styles a document is written in, each a plain `text` element whose fields
+are set as the style says (no style is stored: it is a starting point, and the context menu restyles it like any text).
+Every size sits on a document's Size slider, 24 to 72 px ([Fonts](../004-interface-design/fonts.md) "In
+livedocuments"), the same on any page, so a style reads the same on the slider wherever it lands. A size past 48 px is
+stored as 48 with the rest as `textScale`, as the slider stores it. Its words are the style's name, selected for typing
+over. There is no Caption: small print sits below the slider's 24, and a Caption at 24 would be a Paragraph.
+
+| Style      | Size  | Weight / face | Box             | Icon        |
+| ---------- | ----- | ------------- | --------------- | ----------- |
+| Title      | 64 px | Bold          | Fits its words  | Type (T)    |
+| Subtitle   | 36 px | Regular       | Fits its words  | Letter Text |
+| Heading    | 48 px | Bold          | Fits its words  | Heading 1   |
+| Subheading | 32 px | Bold          | Fits its words  | Heading 2   |
+| Paragraph  | 24 px | Regular       | Wraps at 600 px | Pilcrow     |
+| Quote      | 30 px | Italic        | Wraps at 600 px | Quote       |
+
+A tap drops the style's box centred on the tap (never the selected element's size); a drag sets its width, so it
+wraps there. The tab's default text size does not apply to a style: the style is the size asked for. Telemetry stays
+`Element · Added · Text` for every style.
+
 - **Double-click** to edit content; **Enter** and **Escape** commit (see [Labels](#labels) "Escape keeps what you typed").
 - A faint dashed outline appears when selected so the bounds are visible.
 - **Colour.** The text takes the theme's label colour, and can be recoloured like any other element:
@@ -1296,9 +1331,9 @@ Everything in the palette draws; see [Placement on add](#placement-on-add) for t
 
 - **Free-angle rotation**: the 45-degree presets are there (see the rotation section above); an arbitrary angle is not.
 
-## Slide Deck
+## Slide Deck (retired)
 
-The tool dropdown's Present band also carries **Slide Deck** ([Presentation mode](../012-collaboration/presentation-mode.md)), which opens the panel where a slide deck is built and started. Picking it does not present: Start is a deliberate second act. It is a `CanvasTool` only, with no Mode Button: handing somebody else's screen into a full-screen deck is not something one person should do to another. Disabled on an empty canvas, like the other Present-band tools, since there is nothing to put on a slide.
+The tool dropdown's Present band carried **Slide Deck** until 2026-11-04, opening the panel where a deck was built. It is retired with that panel: the deck is built from the pages in Contents and started from the header's Present ([Presentation mode](../012-collaboration/presentation-mode.md) "Building the deck: Contents").
 
 ## Clipboard
 

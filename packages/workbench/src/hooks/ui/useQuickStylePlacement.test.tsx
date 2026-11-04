@@ -175,6 +175,17 @@ describe('useQuickStylePlacement', () => {
     onCanvas.remove();
   });
 
+  it('keeps to the right edge where the editor asks, clear of the cluster there', () => {
+    const cluster = document.createElement('div');
+    cluster.setAttribute('data-zoom-cluster', '');
+    box(cluster, { left: 1100, top: 840, width: 328, height: 44 });
+    document.body.append(cluster);
+    const panelRef = mountPanel();
+    const { result } = renderHook(() => useQuickStylePlacement(panelRef, true, 'right'));
+    expect(result.current).toEqual({ left: 1440 - 12 - 240, top: 350 });
+    cluster.remove();
+  });
+
   it('keeps clear of the Contents panel docked at the left, standing beside it', () => {
     const contents = document.createElement('aside');
     contents.setAttribute('data-contents-sidebar', '');

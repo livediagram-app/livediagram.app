@@ -119,19 +119,19 @@ describe('<ExplorerPanel>', () => {
     );
     renderPanel(createFakeIndex({ items }));
     const grid = await screen.findByRole('list', { name: 'Jump Back In' });
-    expect(grid.className.split(' ')).toContain('@max-2xl:[&>li:nth-child(n+7)]:hidden');
+    expect(grid.className.split(' ')).toContain('@max-[44rem]:[&>li:nth-child(n+7)]:hidden');
     // Eight are asked for and drawn: four across shows all of them.
     expect(within(grid).getAllByRole('listitem')).toHaveLength(8);
   });
 
-  it('runs its preview cards compact: two across, three from 24rem, four from 42rem', async () => {
+  it('runs its preview cards compact: two across, three from 24rem, four from 44rem', async () => {
     const items = [1, 2].map((i) => makeItem(i, { lastOpenedAt: 5_000_000 - i }));
     renderPanel(createFakeIndex({ items }));
     const grid = await screen.findByRole('list', { name: 'Jump Back In' });
     const classes = grid.className.split(' ');
-    for (const c of ['grid-cols-2', '@sm:grid-cols-3', '@2xl:grid-cols-4'])
+    for (const c of ['grid-cols-2', '@sm:grid-cols-3', '@[44rem]:grid-cols-4'])
       expect(classes).toContain(c);
-    expect(classes).not.toContain('@2xl:grid-cols-3');
+    expect(classes).not.toContain('@[44rem]:grid-cols-3');
   });
 
   it('gives the rail room beside the pane: 13rem wide', () => {
@@ -142,8 +142,8 @@ describe('<ExplorerPanel>', () => {
   });
 
   it("names one popover size for every editor's panel", () => {
-    expect(EXPLORER_POPOVER_WIDTH).toBe('w-[64rem]');
-    expect(EXPLORER_POPOVER_HEIGHT).toBe('56rem');
+    expect(EXPLORER_POPOVER_WIDTH).toBe('w-[54rem]');
+    expect(EXPLORER_POPOVER_HEIGHT).toBe('45rem');
   });
 
   it('says Nothing else yet when the open item is the only one', async () => {

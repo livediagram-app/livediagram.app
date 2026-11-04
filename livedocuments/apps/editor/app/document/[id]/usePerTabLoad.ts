@@ -147,7 +147,7 @@ export function usePerTabLoad(opts: {
   const fetchingTabIdsRef = useRef<Set<string>>(new Set());
   // How each fetch under way ends, by tab: so a caller asking for a tab another fetch is already loading waits for
   // that one and hears how it went, rather than answering at once with neither the tab nor a failure (which left
-  // the Tab Window and its export asking again on a timer, docs/specs/009-elements/tab-window.md).
+  // the caller asking again on a timer).
   const inFlightRef = useRef<Map<string, Promise<TabFetchEnd>>>(new Map());
   // Note a fetch under way and how it ends; forgotten once it has.
   const noteInFlight = useCallback((targetId: string, run: Promise<TabFetchEnd>) => {

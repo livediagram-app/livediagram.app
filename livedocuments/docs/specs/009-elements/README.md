@@ -27,4 +27,4 @@ Follow the references below only as needed; never upfront.
 - ./tag-colours.md - when working on Tag colours: A tab-level map from a card tag to a colour; mapped cards take it as their accent edge and their tag chips are tinted
 - ./stack.md - when working on The stack: A container that arranges what is dropped into it in a row, column or grid with an even gap, reflows on every change and hugs its contents
 - ./concept-graphics.md - when working on Concept graphics: Layer stack, Pyramid (pyramid / inverted / funnel) and Cycle as single elements laying out `conceptRows`, an accent ramp, in-place row editing, and the Concept animation set (build / pulse / flow)
-- ./tab-window.md - when working on The tab window: an element showing another tab of the document live, zoomed to fit (`tab-window` with `windowTabId`); its states, the tab list, opening the tab, exports drawing the shown tab, no recursion, share roles
+- ./tab-window.md - when working on The tab window (retired 2026-11-04): what is gone, and how a stored `tab-window` still loads, draws as a still frame named for its tab and exports

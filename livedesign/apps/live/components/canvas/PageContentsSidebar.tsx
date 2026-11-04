@@ -8,7 +8,6 @@ import {
   CONTENTS_SIDEBAR_SETTLE_MS,
   ContentsSidebar,
 } from '@liveworkspace/workbench/components/canvas/PageContentsSidebar';
-import type { ContentsSide } from '@liveworkspace/workbench/lib/contents-sidebar';
 import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { usePageContents } from '@/hooks/ui/usePageContents';
@@ -23,12 +22,9 @@ export function PageContentsSidebar({
   tab: PageThumbTab;
   // Where it starts, in screen px from the canvas's top: below the Toolbar strip.
   top: number;
-  side: ContentsSide;
-  onMoveToSide: (side: ContentsSide) => void;
   onMinimise: () => void;
   // Joined to the menu box above it (docs/specs/007-editor/pages-mode.md "Joined to the menu box").
   joined?: boolean;
-  onDraggingChange?: (dragging: boolean) => void;
 }) {
   // Opened on the tab's first page; the sidebar then follows the page in view.
   const [here] = useState<string | undefined>(() => view.pages[0]?.id);
@@ -38,7 +34,7 @@ export function PageContentsSidebar({
       contents={contents}
       pages={view.pages}
       focusPage={view.focusPage}
-      footer={<ContentsAddPage contents={contents} />}
+      footer={(end) => <ContentsAddPage contents={contents} end={end} />}
       {...placement}
     />
   );

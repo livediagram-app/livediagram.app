@@ -3,12 +3,10 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { pageSlideIdFor, storePresentation, type Deck, type Tab } from '@livedocuments/document';
 import { useSlideDeck } from './useSlideDeck';
-import { tabsWithPageMoved } from './useDeckFollowsPages';
 
 // docs/specs/007-editor/pages-mode.md "Slides": slide pages are in the deck in page order, an editor saves that,
 // a viewer only sees it, and a page slide dragged in the deck moves its page.
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/hooks/ui/useSlideThumbnails', () => ({ useSlideThumbnails: () => new Map() }));
 
 const slide = (id: string) => ({ id, orientation: 'landscape', kind: 'slide' });
 const deckTab = (pageIds: string[]) =>
@@ -21,7 +19,6 @@ const deckTab = (pageIds: string[]) =>
 
 function deckHook(tabs: Tab[], isReadOnly = false) {
   const saveDeck = vi.fn<(serialised: string | null) => void>();
-  const movePage = vi.fn<(tabId: string, pageId: string, unitIndex: number) => void>();
   const hook = renderHook(
     ({ tabs: current }) =>
       useSlideDeck({
@@ -29,17 +26,14 @@ function deckHook(tabs: Tab[], isReadOnly = false) {
         commitPrefs: () => {},
         tabs: current,
         activeTabId: 't',
-        setActiveId: vi.fn(),
-        readSelection: () => ({ ids: new Set() }) as never,
         setSelectedId: vi.fn(),
         setMultiSelectedIds: vi.fn(),
         isReadOnly,
         saveDeck,
-        movePage,
       }),
     { initialProps: { tabs } },
   );
-  return { ...hook, saveDeck, movePage };
+  return { ...hook, saveDeck };
 }
 const pageOrder = (deck: Deck) => deck.slides.map((s) => s.pageId);
 
@@ -89,24 +83,12 @@ describe('the deck following the slide pages', () => {
     expect(saveDeck).not.toHaveBeenCalled();
   });
 
-  it("moves the page when its slide is dragged in the deck, and offers no Delete for a page's own slide", () => {
-    const { result, movePage } = deckHook([deckTab(['a', 'b', 'c'])]);
+  it('presents in Contents order once a page moves (pages-mode.md "Slides")', () => {
+    const { result, rerender } = deckHook([deckTab(['a', 'b', 'c'])]);
     act(() => result.current.hydrateDeck(null));
     act(() => result.current.followPages());
-    expect(result.current.ownPageSlideIds.has(pageSlideIdFor('t', 'a'))).toBe(true);
-    // c dragged to the top of the deck.
-    act(() => result.current.reorderSlides(pageSlideIdFor('t', 'c'), 0));
-    expect(movePage).toHaveBeenCalledWith('t', 'c', 0);
-  });
-});
-
-describe('tabsWithPageMoved', () => {
-  it('moves the page on its tab only, and leaves the tabs when the page is unknown', () => {
-    const other = { id: 'u', name: 'U', elements: [] } as unknown as Tab;
-    const tabs = [deckTab(['a', 'b', 'c']), other];
-    const moved = tabsWithPageMoved(tabs, 't', 'c', 0);
-    expect(moved[0]!.pages!.map((p) => p.id)).toEqual(['c', 'a', 'b']);
-    expect(moved[1]).toBe(other);
-    expect(tabsWithPageMoved(tabs, 't', 'nope', 0)[0]).toBe(tabs[0]);
+    rerender({ tabs: [deckTab(['b', 'c', 'a'])] });
+    act(() => result.current.followPages());
+    expect(result.current.runnable.map((r) => r.slide.pageId)).toEqual(['b', 'c', 'a']);
   });
 });

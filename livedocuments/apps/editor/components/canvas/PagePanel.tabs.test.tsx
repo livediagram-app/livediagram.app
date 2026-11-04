@@ -1,13 +1,14 @@
 // @vitest-environment jsdom
 
-// The page panel's tabs (docs/specs/007-editor/pages-mode.md "page panel"): Page while there is a size
-// or orientation to choose, Background beside it, then the kind's own.
+// The page panel's sections (docs/specs/007-editor/pages-mode.md "page panel"): its name, its Page section while there
+// is a size or orientation to choose, then its actions. No Background tab: a page's Background is its title bar's
+// button. An unnamed card or article page goes by its article's title (pages-mode.md "Page names").
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { layOutPages, type Page } from '@livedocuments/document';
 import type { PageEdits } from '@/hooks/editor/usePagesMode';
-import { PagePanel, pagePanelTabs, type PagePanelTab } from './PagePanel';
+import { PagePanel, pageHasPageSection } from './PagePanel';
 
 afterEach(cleanup);
 
@@ -37,64 +38,50 @@ const edits = (): PageEdits => ({
   removePage: vi.fn(),
 });
 
-function renderPanel(page: Page, initialTab: PagePanelTab, onPreview = vi.fn()) {
+function renderPanel(page: Page, titleName?: string) {
   render(
     <PagePanel
       page={laidOut(page)}
       count={1}
       getAnchor={() => undefined}
-      initialTab={initialTab}
-      themeBackgrounds={[]}
+      titleName={titleName}
       edit={edits()}
-      onPreview={onPreview}
       onClose={vi.fn()}
     />,
   );
-  return onPreview;
 }
 
-describe('pagePanelTabs', () => {
-  it('gives an infographic page Page alone, its Layouts and Background beside the cog', () => {
-    expect(
-      pagePanelTabs(laidOut({ id: 'p', orientation: 'portrait', kind: 'infographic' })),
-    ).toEqual(['page']);
-  });
+const slide: Page = { id: 'p', orientation: 'landscape', kind: 'slide', size: 'slide' };
 
-  it('gives a slide page Page and Background, its Layouts beside the cog', () => {
-    expect(
-      pagePanelTabs(laidOut({ id: 'p', orientation: 'landscape', kind: 'slide', size: 'slide' })),
-    ).toEqual(['page', 'background']);
-  });
-
-  it('gives an article page Page alone, its Style, Text and Background beside the cog', () => {
-    expect(
-      pagePanelTabs(laidOut({ id: 'p', orientation: 'portrait', kind: 'article', flow: 'f' })),
-    ).toEqual(['page']);
-  });
-});
-
-describe('the Background tab', () => {
-  const slide: Page = { id: 'p', orientation: 'landscape', kind: 'slide', size: 'slide' };
-
-  it('holds the backgrounds, which the Page tab no longer shows', () => {
-    renderPanel(slide, 'page');
-    expect(screen.getByText('Size')).toBeTruthy();
-    expect(screen.queryByText('Pattern')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Background' }));
-    expect(screen.getByText('Pattern')).toBeTruthy();
-    expect(screen.queryByText('Size')).toBeNull();
-  });
-
-  it('opens an infographic page asked for Background on Page, with no tab switch', () => {
-    renderPanel({ id: 'p', orientation: 'portrait', kind: 'infographic' }, 'background');
+describe('the page panel', () => {
+  it('has no Background tab, nor any tab switch: a slide shows its size and no backgrounds', () => {
+    renderPanel(slide);
     expect(screen.queryByRole('group', { name: 'Page panel section' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Background' })).toBeNull();
+    expect(screen.queryByText('Pattern')).toBeNull();
     expect(screen.getByText('Size')).toBeTruthy();
   });
 
-  it('takes a hovered preview off the page when leaving it', () => {
-    const onPreview = renderPanel(slide, 'background');
-    onPreview.mockClear();
-    fireEvent.click(screen.getByRole('button', { name: 'Page' }));
-    expect(onPreview).toHaveBeenCalledWith(null);
+  it('shows a Page section only where there is a size or orientation to choose', () => {
+    expect(pageHasPageSection(laidOut(slide))).toBe(true);
+    expect(
+      pageHasPageSection(laidOut({ id: 'p', orientation: 'portrait', kind: 'infographic' })),
+    ).toBe(true);
+  });
+
+  it("shows an unnamed card's title as its name, in the name's own ink, so typing a name overrides it", () => {
+    renderPanel({ id: 'c', orientation: 'landscape', kind: 'flashcard', flow: 'f' }, 'Opening');
+    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Page name' });
+    expect(field.value).toBe('');
+    expect(field.placeholder).toBe('Opening');
+    expect(field.className).toContain('placeholder:text-slate-900');
+    expect(screen.getByRole('dialog').getAttribute('aria-label')).toBe('Opening settings');
+  });
+
+  it('keeps the hint look on a page with no title to go by', () => {
+    renderPanel(slide);
+    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Page name' });
+    expect(field.placeholder).toBe('Untitled page');
+    expect(field.className).toContain('placeholder:text-slate-400');
   });
 });

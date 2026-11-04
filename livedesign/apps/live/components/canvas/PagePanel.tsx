@@ -27,7 +27,9 @@ import {
   useClickOutside,
   useEscape,
   Portal,
+  lucideGlyph,
 } from '@livedesign/ui';
+import { lucideLock, lucideLockOpen } from '@liveworkspace/icons/lucide';
 import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
@@ -42,6 +44,9 @@ import { ApplyBackgroundToAll } from './page-background-apply-all';
 import { BackgroundSection } from './page-background-section';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
+
+const LockIcon = lucideGlyph(lucideLock, 16);
+const UnlockIcon = lucideGlyph(lucideLockOpen, 16);
 
 const WIDTH = 304;
 const GAP = 6;
@@ -195,7 +200,9 @@ export function PagePanel({
           role="status"
           className="mx-3 mt-2 rounded-md bg-amber-50 px-2.5 py-1.5 text-xs text-amber-900 dark:bg-amber-500/15 dark:text-amber-100"
         >
-          This page is locked. Unlock it beside the cog to change it.
+          {mobile
+            ? 'This page is locked. Unlock it below to change it.'
+            : 'This page is locked. Unlock it beside the cog to change it.'}
         </p>
       ) : null}
       {showMe ? (
@@ -272,7 +279,13 @@ export function PagePanel({
           />
         ) : null}
       </div>
-      <PageActions page={page} locked={locked} edit={edit} onClose={() => onClose(false)} />
+      <PageActions
+        page={page}
+        locked={locked}
+        edit={edit}
+        lockHere={mobile}
+        onClose={() => onClose(false)}
+      />
     </>
   );
   const label = `${title} settings`;
@@ -431,18 +444,22 @@ function PageActions({
   page,
   locked,
   edit,
+  lockHere = false,
   onClose,
 }: {
   page: LaidOutPage;
   // The page is held by a lock: no split and no delete.
   locked: boolean;
+  // A phone's bar has no padlock (pages-mode.md "Beside the cog"): Lock or Unlock sits here instead.
+  lockHere?: boolean;
   edit: PageEdits;
   onClose: () => void;
 }) {
   const { duplicatePage, removePage } = edit;
   const noun = 'page';
   return (
-    <div className="mt-1 flex gap-1 border-t border-slate-100 px-2 pt-1.5 dark:border-slate-800">
+    // Under an empty body the name field's hairline already parts it, so it draws none of its own.
+    <div className="mt-1 flex gap-1 border-t border-slate-100 px-2 pt-1.5 dark:border-slate-800 [:empty+&]:mt-0 [:empty+&]:border-t-0">
       {page.size === 'fit' && (
         <ActionButton
           label="Split Into Pages"
@@ -471,6 +488,14 @@ function PageActions({
       >
         <ChevronRightIcon className="h-4 w-4" />
       </ActionButton>
+      {lockHere ? (
+        <ActionButton
+          label={page.locked ? 'Unlock page' : 'Lock page'}
+          onClick={() => edit.setLocked(page.id, !page.locked)}
+        >
+          {page.locked ? <UnlockIcon /> : <LockIcon />}
+        </ActionButton>
+      ) : null}
       <ActionButton
         label={`Delete ${noun}`}
         onClick={

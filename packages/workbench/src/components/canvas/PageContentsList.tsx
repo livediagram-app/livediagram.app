@@ -3,22 +3,18 @@
 // The pieces of Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents"), laid
 // out by its two homes: the popover (PageContentsPanel) and the docked sidebar
 // (PageContentsSidebar). The state behind them is hooks/ui/usePageContents.
-import { Fragment, type CSSProperties, type ReactNode } from 'react';
-import { lucideGripVertical, lucideLock, lucideSearch } from '@liveworkspace/icons/lucide';
+import { Fragment, useId, type CSSProperties, type ReactNode } from 'react';
+import { lucideGripVertical, lucideLock } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@liveworkspace/ui';
 import { trustedHtml } from '@liveworkspace/trusted-types';
 import { DropCaret } from '../primitives/DropCaret';
+import { ContentsVeil, veiledPictureClass } from './ContentsVeil';
 import { PageRowMenu, PageRowMenuButton, PageRowStack, usePageRowMenu } from './PageRowMenu';
-import {
-  CONTENTS_FIND_AFTER,
-  type ContentsRowBase,
-  type ContentsThumb,
-} from '../../lib/page-contents';
+import type { ContentsRowBase, ContentsThumb } from '../../lib/page-contents';
 import type { PageContents } from '../../hooks/ui/usePageContents';
 
 const LockIcon = lucideGlyph(lucideLock, 12);
 const GripIcon = lucideGlyph(lucideGripVertical, 14);
-const FindIcon = lucideGlyph(lucideSearch, 14);
 
 // The popover's rows: a thumbnail this tall, its width following the page's shape, up to LIST_MAX_W.
 const LIST_THUMB_H = 52;
@@ -31,10 +27,7 @@ const FILM_MAX_H = 124;
 export type ContentsListState<R extends ContentsRowBase> = Pick<
   PageContents<R, { id: string }, never>,
   | 'pages'
-  | 'shown'
-  | 'query'
-  | 'setQuery'
-  | 'focusFirst'
+  | 'rows'
   | 'current'
   | 'list'
   | 'registerRow'
@@ -47,40 +40,8 @@ export type ContentsListState<R extends ContentsRowBase> = Pick<
 >;
 
 /** A row's marks of the editor's own, after its name and before the padlock (livedocuments' speaking
- *  time and crossed eye). */
+ *  time). */
 export type ContentsBadges<R extends ContentsRowBase> = (row: R) => ReactNode;
-
-// Find a Page, once the tab has more pages than fit at a glance.
-export function ContentsFind<R extends ContentsRowBase>({
-  contents,
-}: {
-  contents: ContentsListState<R>;
-}) {
-  const { pages, query, setQuery, focusFirst } = contents;
-  if (pages.length <= CONTENTS_FIND_AFTER) return null;
-  return (
-    <label className="mx-3 mb-2 flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-slate-400 focus-within:border-brand-400 dark:border-slate-700 dark:bg-slate-900">
-      <FindIcon />
-      <input
-        type="search"
-        value={query}
-        placeholder="Find a Page"
-        aria-label="Find a Page"
-        onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === 'Escape' && query) {
-            e.stopPropagation();
-            setQuery('');
-          } else if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            focusFirst();
-          }
-        }}
-        className="min-w-0 flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100"
-      />
-    </label>
-  );
-}
 
 // The rows: `list` in the popover (number, small thumbnail, name side by side), `film` in the
 // sidebar (a filmstrip, as a slide editor shows its slides: the number beside a picture as wide as
@@ -104,8 +65,7 @@ export function ContentsList<R extends ContentsRowBase>({
   style?: CSSProperties;
 }) {
   const {
-    shown,
-    query,
+    rows,
     current,
     list,
     registerRow,
@@ -117,9 +77,11 @@ export function ContentsList<R extends ContentsRowBase>({
     actionsFor,
   } = contents;
   const menu = usePageRowMenu();
+  // A set-aside row's reason, read as its button's description.
+  const uid = useId();
   const Row = variant === 'film' ? FilmRow : ListRow;
   // The open menu's page, read afresh each render so its verbs follow the page (locked, moved).
-  const menuRow = menu.openId ? shown.find((r) => r.id === menu.openId) : undefined;
+  const menuRow = menu.openId ? rows.find((r) => r.id === menu.openId) : undefined;
   const menuModel = menuRow ? actionsFor(menuRow) : null;
   return (
     <>
@@ -131,13 +93,9 @@ export function ContentsList<R extends ContentsRowBase>({
         className={`flex min-h-0 flex-col overflow-y-auto ${className}`}
         style={style}
       >
-        {shown.length === 0 ? (
-          <p className="px-2 py-6 text-center text-sm text-slate-500 dark:text-slate-400">
-            No page matches “{query}”.
-          </p>
-        ) : null}
-        {shown.map((row, i) => {
+        {rows.map((row, i) => {
           const actions = actionsFor(row);
+          const asideId = row.setAside ? `${uid}-aside-${row.id}` : undefined;
           const rowMenu = actions ? menu.rowProps(row.id) : null;
           const grip = reorderable ? (
             <span
@@ -182,6 +140,7 @@ export function ContentsList<R extends ContentsRowBase>({
                   ref={(el) => registerRow(row.id, el)}
                   type="button"
                   aria-label={row.name}
+                  aria-describedby={asideId}
                   aria-current={row.id === current ? 'page' : undefined}
                   data-page-row={row.id}
                   onClick={(e) => {
@@ -190,6 +149,11 @@ export function ContentsList<R extends ContentsRowBase>({
                   }}
                   className="absolute inset-0 z-0 cursor-pointer rounded-[inherit] outline-none"
                 />
+                {asideId ? (
+                  <span id={asideId} className="sr-only">
+                    {row.setAside}
+                  </span>
+                ) : null}
                 <Row
                   row={row}
                   here={row.id === current}
@@ -256,33 +220,41 @@ type RowProps = {
   grip: ReactNode;
 };
 
+// A set-aside page (setAside) greys under its veil and trades the sheet's solid edge for a dashed one;
+// the page here keeps its brand ring over that.
 function Picture({
   thumb,
   w,
   h,
   here,
   large,
+  aside = false,
 }: {
   thumb: ContentsThumb | undefined;
   w: number;
   h: number;
   here: boolean;
   large?: boolean;
+  aside?: boolean;
 }) {
   return (
     <span
-      className={`block overflow-hidden bg-white transition dark:bg-slate-800 ${
-        large ? 'rounded-lg' : 'rounded-md'
-      } ${
+      data-contents-picture=""
+      className={`relative block overflow-hidden transition ${
+        aside ? 'bg-slate-50 dark:bg-slate-900' : 'bg-white dark:bg-slate-800'
+      } ${large ? 'rounded-lg' : 'rounded-md'} ${
         here
           ? `ring-brand-500 ${large ? 'shadow-md ring-2' : 'shadow-sm ring-1 ring-brand-400'}`
-          : 'shadow-sm ring-1 ring-slate-900/10 group-hover:shadow-md group-hover:ring-slate-900/20 dark:ring-white/15 dark:group-hover:ring-white/30'
+          : aside
+            ? 'outline-1 outline-offset-0 outline-dashed outline-slate-400 dark:outline-slate-500'
+            : 'shadow-sm ring-1 ring-slate-900/10 group-hover:shadow-md group-hover:ring-slate-900/20 dark:ring-white/15 dark:group-hover:ring-white/30'
       }`}
       style={{ width: w, height: h }}
     >
       {thumb ? (
         <svg
           aria-hidden
+          className={veiledPictureClass(aside)}
           width={w}
           height={h}
           viewBox={thumb.viewBox}
@@ -291,6 +263,7 @@ function Picture({
           dangerouslySetInnerHTML={{ __html: trustedHtml(thumb.markup) }}
         />
       ) : null}
+      <ContentsVeil on={aside} width={w} {...(large ? { large } : {})} />
     </span>
   );
 }
@@ -308,7 +281,9 @@ function NameLine({
   return (
     <span className="flex h-6 min-w-0 items-center gap-1.5">
       <span
-        className={`truncate font-medium text-slate-800 dark:text-slate-100 ${small ? 'text-xs' : 'text-sm'}`}
+        className={`truncate font-medium transition-colors ${
+          row.setAside ? 'text-slate-500 dark:text-slate-400' : 'text-slate-800 dark:text-slate-100'
+        } ${small ? 'text-xs' : 'text-sm'}`}
       >
         {row.name}
       </span>
@@ -342,7 +317,7 @@ function ListRow({ row, here, thumb, badges, tools, grip }: RowProps) {
         className="flex shrink-0 items-center justify-center"
         style={{ width: LIST_MAX_W, height: LIST_THUMB_H + 4 }}
       >
-        <Picture thumb={thumb} w={w} h={h} here={here} />
+        <Picture thumb={thumb} w={w} h={h} here={here} aside={!!row.setAside} />
       </span>
       <span className="flex min-w-0 flex-1 flex-col">
         <NameLine row={row} badges={badges} />
@@ -367,7 +342,7 @@ function FilmRow({ row, here, thumb, badges, tools }: RowProps) {
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-1.5">
         <span className="flex" style={{ width: FILM_MAX_W }}>
-          <Picture thumb={thumb} w={w} h={h} here={here} large />
+          <Picture thumb={thumb} w={w} h={h} here={here} large aside={!!row.setAside} />
         </span>
         <span className="flex min-w-0 flex-col pl-0.5" style={{ width: FILM_MAX_W }}>
           <NameLine row={row} badges={badges} small />

@@ -40,7 +40,8 @@ The interface says **Flashcards** for the kind and the tab ("Blank Flashcards"),
   does ([Pages](pages-mode.md) "A new page's background"). The **Background** button sits beside the cog, with
   **Style** and **Text** ([Article pages](article-pages.md) "Article style"), whose **Page Numbers** row is not offered:
   a card always shows its place.
-- **Title bar**: the label above the card reads its name, then "Flashcard (5:3)" ("Opening · Flashcard (5:3)"); its
+- **Title bar**: the label above the card reads its name, then "Flashcard (5:3)" ("Opening · Flashcard (5:3)"): its
+  own name, else its title, so writing a card's title names it ([Pages](pages-mode.md) "Page names"); its
   cog, lock, Style, Text and Background as on an article page.
 
 ## Text only
@@ -92,22 +93,39 @@ A card is one short piece of writing on its own. It never grows another card.
 
 ## The stack
 
-The canvas shows one card at a time, the **card in front**, centred where any page is framed.
+The canvas shows one card at a time, the **card in front**, centred where any page is framed. The stack is shared:
+any tab but an article's can be switched between stacked and side by side (a tab of infographic pages stacked stands
+the same way; only flashcards stack by default) ([Pages mode](pages-mode.md) "Stacked infographics", "Stacked or side by side"); a tab of cards switched to
+side by side shows its cards in a row, as slides stand, with no fan, footer nav or flip.
 
-- **The cards behind**: the cards after the card in front stand behind it as a stack, each a sheet the card's size
-  peeking out below the one before it, 10 px lower and 14 px narrower each side (`FLASHCARD_STACK_STEP_Y`,
-  `FLASHCARD_STACK_INSET_X`), each in its own background's tone, a little dimmer the further back. Up to **6** show
-  (`FLASHCARD_STACK_MAX`), so the more cards are still to come the deeper the stack; the last card has none behind it.
-  The cards behind are a view: they take no presses and are never exported.
+- **The cards behind**: the cards after the card in front stand behind it **fanned out**, like a hand of cards
+  set down: each a full sheet the card's size, turned about its centre and nudged off it, alternating left and right
+  and turning a little further the deeper it sits (`FLASHCARD_FAN`: 2 degrees for the nearest, up to 5 for the
+  furthest, nudged at most 13 px), so their corners show all round the card, not only below it. They **recede, never
+  compete**: each is in its own background's tone but see-through, the nearest at 50% opacity and each further back
+  6% fainter (never below 20%), with only a hairline shadow, so the card in front is the one thing at full strength. Up to **6** show (`FLASHCARD_STACK_MAX`), so the more
+  cards are still to come the fuller the fan; the last card has none behind it. The fan is set by depth, never by
+  chance, so it looks the same every time; on a flip each card eases to its new place in the fan (200 ms,
+  ease-out; at once under reduced motion). The cards behind are a view: they take no presses and are never
+  exported. The presenter's note cards keep their own small straight stack.
+- **The card in front stands out**: however strong the backgrounds (a dark or busy card over cards of the same tone),
+  its edge reads: it casts a soft shadow onto the fan and wears a thin rim just outside its edge (1.5 canvas px,
+  light on a dark card, faint slate on a light one), both drawn under the card so they never cover it, and only while
+  cards stand behind it. A view like the fan: no presses, never exported.
 - **Cards before** the one in front have been flipped away and are not drawn.
 - The canvas pans and zooms as ever, but only the card in front and its stack are drawn: there is no row to pan along.
+  So a wheel or a two-finger trackpad scroll pans **up and down only** on a stack: its sideways part (and a Shift
+  wheel's) moves nothing, so a stray sideways scroll never slides the card off to an empty canvas; a Ctrl or Cmd wheel
+  still zooms (`stacked`, `hooks/canvas/useCanvasPinchZoom.ts`). A finger's drag, the hand tool and a held Space still
+  pan both ways, because letting go toward a neighbour turns to it (a swipe flips, "Flipping"): that is how a phone
+  goes from card to card.
 - **Long stacks stay quick**: only the writing of the card in front and the cards either side of it is open for
   writing at a time (and the card being written, while it is). The other cards are read from their text where they
   are shown away from the canvas: Contents' thumbnails and the Map draw their lines from it, an export sets their
   words as an export of a document that is not open does, and Find reaches their text and turns to their card. A
   stack of 100 cards opens, types and flips on a mid-range phone as one of a few cards does.
-- **The + to add a card** sits beside the card in front ("Add Another Card"), adding a card after the last as every
-  kind does, and the view flips to it.
+- **The + to add a card** sits beside the card in front ("Add Card"), adding a card right after the card in front
+  (pages-mode.md "Where a new page goes"), as Contents' Add Card does, and the view flips to it.
 
 ## Flipping
 
@@ -116,11 +134,15 @@ Every way of going to a page goes to a card by flipping, never by gliding the vi
 go toward a neighbour, a new card, a duplicate, a split and a delete. The view stays where it is (the card in front
 framed); the card changes.
 
-- **Forward** (to a card later in the stack): the card in front lifts toward the reader and turns up over its top
-  edge, as a cue card does, and fades as it goes, uncovering the card behind it, which is now in front. **420 ms**
-  (`FLASHCARD_FLIP_MS`), ease in-out, in perspective.
-- **Back** (to an earlier card): that card comes back over the top edge and settles onto the stack in front, over the
-  card that was in front. The same 420 ms, mirrored.
+- **Forward** (to a card later in the stack): the card in front lifts away, quietly: it tips back a little over its
+  top edge (14 degrees, in perspective), rises a touch (3% of its height), shrinks a shade (to 98.5%) and fades out,
+  uncovering the card behind it, which is now in front. **240 ms** (`FLASHCARD_FLIP_MS`), a quick ease-out (most of
+  it over in the first half), so the next card reads at once. A flip happens again and again while someone talks: it
+  should register at a glance and never pull the eye (it was a 78 degree, 420 ms turn before 2026-11-04, too much).
+- **Back** (to an earlier card): the card that was in front sinks away toward the stack (tipped 10 degrees the other
+  way, lowered 2%, shrinking a shade) and fades, uncovering the earlier card, now in front. The same 240 ms.
+- **Only the card leaving moves**: the card now in front is the real card, drawn with its writing from the flip's
+  first frame, never a picture standing in for it, so its words are there while the flip plays, not after it.
 - A flip to a card several places away is one flip, forward or back.
 - A second flip while one is under way finishes the first at once and starts the next.
 - **The card in front taken away** (an undo of the split that made it, a peer's delete): the card before its place
@@ -129,10 +151,28 @@ framed); the card changes.
 - The flip is drawn over the canvas, holding no presses; the new card in front is ready for the caret and presses at
   once.
 
+## Getting around a stack
+
+The card in front carries its own **Previous** and **Next**, in its footer at the bottom right: a chevron-left
+button, its place (**Card 3 of 10**), a chevron-right button (`StackNav`, `components/canvas/FlashcardStack.tsx`).
+
+- A press goes to the card before or after by a flip, exactly as Contents or the arrow keys do. **Previous** is
+  disabled on the first card and **Next** on the last. Tooltips "Previous Card" and "Next Card"; spoken names
+  "Previous card" and "Next card", the group named "Card 3 of 10". No First or Last: Contents goes anywhere in one
+  press, and two more buttons would crowd the card's corner.
+- For everyone who can see the pages, Viewers and Participants too: it only moves the view. On a phone too, its
+  buttons 28 px with a 44 px touch reach (`touch-target-y`).
+- In the card's ink, quiet until hovered. Drawn over the card's writing (whose paper would otherwise take the press:
+  the footer is lifted within the canvas world, `z-[2]`), and a press on it is its own: no caret, no marquee, no
+  deselect.
+- Left out of exports and GIFs; not shown in zen (the card's place shows alone there) or while presenting.
+- On a stack the bottom-right cluster's page navigator is not shown: the card's own Previous and Next replace it.
+- Telemetry `UI · Used · StackNav`.
+
 ## Card number and speaking time
 
-Each card's footer, inside its bottom-right corner (in the margin, right-aligned to the text's right edge), reads
-**Card 3 of 10**, then, when the card has words on it, a clock glyph and its speaking time: **45 sec** or **3 min**.
+Each card's footer, inside its bottom-right corner (in the margin, right-aligned to the text's right edge), holds its
+Previous, **Card 3 of 10** and Next ("Getting around a stack"), then, when the card has words on it, a clock glyph and its speaking time: **45 sec** or **3 min**.
 
 - **Speaking time**: the words on the card (its title and every block's text, a word being a run of letters or
   digits) at **130 words a minute** (`FLASHCARD_WORDS_PER_MINUTE`, a steady speaking pace), rounded up: under a minute
@@ -141,14 +181,14 @@ Each card's footer, inside its bottom-right corner (in the margin, right-aligned
 - It counts the writing as written to the tab (each commit, [Article pages](article-pages.md) "Commits"), not each
   keystroke.
 - Small muted type in the card's body font, in the card's ink (dark on a light card, light on a dark one), as an
-  article's page number is. A view, never an element: exports leave it out.
+  article's page number is. Never an element: exports leave it out. Only its Previous and Next take presses.
 - **Contents** says each card's speaking time in its row's line ("Flashcard · Opening · 1 min").
 
 ## Contents
 
 Contents lists every card in order, as it lists any page ([Pages](pages-mode.md) "Contents"): its number, its live
 picture (the card as it is, its writing included) and its name. A press flips to it. The **Add Page** footer reads
-**Add Another Card**. Reordering a row moves the card in the stack.
+**Add Card**. Reordering a row moves the card in the stack.
 
 ## Making flashcards
 
@@ -165,14 +205,14 @@ picture (the card as it is, its writing included) and its name. A press flips to
   - **School Presentation** (`class-presentation`): a five-minute class talk on the water cycle, on five cards.
 
   Each sits in the catalogue category of what it is for ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)):
-  Conference Talk and Wedding Toast in Speeches and Talks (the toast also in Events and Celebrations), Product Pitch in
-  Pitches and Launches and School Presentation in Lessons and Learning (both also in Speeches and Talks). Blank Flashcards is in the Start screen's Blank Pages group.
+  Conference Talk and Wedding Toast in Talks (the toast also in Events), Product Pitch in
+  Pitches and School Presentation in Learning (both also in Talks). Blank Flashcards is in the Start screen's Blank Pages group.
 
   **Their previews tell apart at rest** (`packages/template-previews/src/template-preview-26.tsx`): each draws its stack
   as the editor shows it (the front card with its title, lines and "1 of n" footer, the cards to come peeking out below),
   with a mark of its own on a tinted badge in the front card's top right, drawn without a hover: a clock (Conference Talk,
   indigo), a heart (Wedding Toast, rose), a rising arrow (Product Pitch, emerald) and a raindrop (School Presentation,
-  sky), so four stacks side by side in Speeches and Talks never look alike. On hover the lines write themselves and the
+  sky), so four stacks side by side in Talks never look alike. On hover the lines write themselves and the
   badge swells.
 
 ## Share roles

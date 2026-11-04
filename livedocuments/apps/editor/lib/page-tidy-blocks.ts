@@ -2,7 +2,6 @@
 // lib/page-tidy.ts): the page's elements as a forest, each element carrying what it wholly holds,
 // and the rect arithmetic the steps share.
 import { type BoxedElement, type ElementId } from '@livedocuments/document';
-import { SQUARE_SHAPES } from './auto-align';
 
 // Below this, two values are the same (float noise from the layouts' own arithmetic).
 export const SAME = 0.05;
@@ -19,8 +18,6 @@ export type Block = {
   start: Rect;
   // May move at this level: unlocked, unrotated, nothing locked inside it, not sent back.
   movable: boolean;
-  // May have its size rounded: a shape or sticky with nothing inside it, whose shape keeps no ratio.
-  resizable: boolean;
   children: Block[];
 };
 
@@ -69,10 +66,6 @@ const isPinned = (el: BoxedElement, lockedIds: ReadonlySet<ElementId>) =>
 
 // A shape or sticky whose size may round without distorting it: not a square shape, not
 // aspect-locked. Text (it would rewrap), images and the rest keep theirs.
-const sizeRoundable = (el: BoxedElement) =>
-  (el.type === 'sticky' || (el.type === 'shape' && !SQUARE_SHAPES.has(el.shape))) &&
-  el.aspectLocked !== true;
-
 // The forest of blocks: each element's parent is the smallest other (non-text) element wholly
 // holding it and strictly larger. O(n²) in the page's elements.
 export function blocksOf(els: BoxedElement[], lockedIds: ReadonlySet<ElementId>): Block[] {
@@ -91,19 +84,16 @@ export function blocksOf(els: BoxedElement[], lockedIds: ReadonlySet<ElementId>)
     rect: rects[i]!,
     start: rects[i]!,
     movable: !isPinned(el, lockedIds),
-    resizable: sizeRoundable(el),
     children: [],
   }));
   const roots: Block[] = [];
   blocks.forEach((b, i) =>
     parent[i]! >= 0 ? blocks[parent[i]!]!.children.push(b) : roots.push(b),
   );
-  // A block carrying anything pinned cannot move as one (its pinned part would go with it), and a
-  // block with anything inside it keeps its size.
+  // A block carrying anything pinned cannot move as one (its pinned part would go with it).
   const settle = (b: Block): boolean => {
     let pinnedInside = false;
     for (const c of b.children) pinnedInside = settle(c) || pinnedInside;
-    if (b.children.length > 0) b.resizable = false;
     if (pinnedInside) b.movable = false;
     return !b.movable || pinnedInside;
   };

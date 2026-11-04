@@ -21,7 +21,7 @@ const LayoutsIcon = lucideGlyph(lucidePanelsTopLeft, 14);
 // The title-bar room it takes (24 px and the gap, or named beside its icon), so the page's label
 // truncates first.
 const LAYOUTS_ROOM = 28;
-const LAYOUTS_LABELLED_ROOM = 78;
+const LAYOUTS_LABELLED_ROOM = 77;
 // Three slide tiles across (four of a tall page's), each with its description.
 const POPOVER_WIDTH = 580;
 
@@ -92,12 +92,49 @@ function Body({
 
 export function PageLayoutsButton({
   labelled,
+  openRequest = 0,
+  onOpenChange,
+  headless = false,
   ...props
 }: BodyProps & {
+  // No button of its own: a phone's Appearance sheet opens it (TitlePopoverButton's headless).
+  headless?: boolean;
   // Named beside its icon (a desktop).
   labelled: boolean;
+  // Opens the popover from elsewhere each time it changes (the page's Use a Layout invite); 0 never does.
+  openRequest?: number;
+  // Told when its popover opens or closes (the page's invite steps aside meanwhile).
+  onOpenChange?: (open: boolean) => void;
 }) {
   const mobile = useIsMobileViewport();
+  const popover = (
+    <TitlePopoverButton
+      name="Layout"
+      labelled={labelled}
+      className={titleButtonClass}
+      icon={<LayoutsIcon />}
+      width={POPOVER_WIDTH}
+      openRequest={openRequest}
+      onOpenChange={onOpenChange}
+      headless={headless}
+      onOpen={() => track('UI', 'Opened', 'PageLayoutsButton')}
+    >
+      {(close) => (
+        <Body
+          {...props}
+          wide={!mobile}
+          onClose={close}
+          onApply={(layout) => {
+            props.onPreview(null);
+            props.onApply(layout);
+            close();
+          }}
+          onSurprise={props.onApply}
+        />
+      )}
+    </TitlePopoverButton>
+  );
+  if (headless) return popover;
   return (
     <div
       // The title bar takes no pointer events: the button opts back in, and a press on it is its
@@ -107,28 +144,7 @@ export function PageLayoutsButton({
       onPointerDown={(e) => e.stopPropagation()}
       onDoubleClick={(e) => e.stopPropagation()}
     >
-      <TitlePopoverButton
-        name="Layout"
-        labelled={labelled}
-        className={titleButtonClass}
-        icon={<LayoutsIcon />}
-        width={POPOVER_WIDTH}
-        onOpen={() => track('UI', 'Opened', 'PageLayoutsButton')}
-      >
-        {(close) => (
-          <Body
-            {...props}
-            wide={!mobile}
-            onClose={close}
-            onApply={(layout) => {
-              props.onPreview(null);
-              props.onApply(layout);
-              close();
-            }}
-            onSurprise={props.onApply}
-          />
-        )}
-      </TitlePopoverButton>
+      {popover}
     </div>
   );
 }

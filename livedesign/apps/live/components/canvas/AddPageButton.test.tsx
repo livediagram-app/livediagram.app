@@ -16,7 +16,7 @@ describe('AddPageButton', () => {
   it('sits level with the last page’s middle', () => {
     render(<AddPageButton last={last} like={like()} zoom={1} onAddLike={vi.fn()} />);
     const holder = screen
-      .getByRole('button', { name: 'Add Another Logo Page' })
+      .getByRole('button', { name: 'Add Logo Page' })
       .closest('div[style]') as HTMLElement;
     expect(holder.style.top).toBe('420px');
   });
@@ -32,7 +32,7 @@ describe('AddPageButton', () => {
         onAddDevice={vi.fn()}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Add Another iPad Screen' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add iPad Screen' }));
     expect(onAddLike).toHaveBeenCalledWith('p0');
   });
 
@@ -75,14 +75,14 @@ describe('AddPageButton', () => {
 
 describe('addAnotherLabel', () => {
   it('names each kind, a wireframe by its device', () => {
-    expect(addAnotherLabel({})).toBe('Add Another Page');
-    expect(addAnotherLabel({ kind: 'logo' })).toBe('Add Another Logo Page');
+    expect(addAnotherLabel({})).toBe('Add Page');
+    expect(addAnotherLabel({ kind: 'logo' })).toBe('Add Logo Page');
     expect(addAnotherLabel({ kind: 'wireframe', device: 'iphone-duo' })).toBe(
-      'Add Another iPhone Duo Screen',
+      'Add iPhone Duo Screen',
     );
     expect(addAnotherLabel({ kind: 'wireframe', device: 'browser' })).toBe(
-      'Add Another Browser Page',
+      'Add Browser Page',
     );
-    expect(addAnotherLabel({ kind: 'wireframe', device: 'watch' })).toBe('Add Another Watch Face');
+    expect(addAnotherLabel({ kind: 'wireframe', device: 'watch' })).toBe('Add Watch Face');
   });
 });

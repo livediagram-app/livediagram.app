@@ -1,13 +1,17 @@
 'use client';
 
 // Measures the canvas, the chrome and the quick style panel, and places the
-// panel (docs/specs/008-canvas/quick-style-panel.md "Where it sits"): the left edge, vertically centred,
-// clear of the chrome.
+// panel (docs/specs/008-canvas/quick-style-panel.md "Where it sits"): the left edge (or the right, where an
+// editor asks for it), vertically centred, clear of the chrome.
 // Re-runs when the chrome moves or resizes, or a panel arrives or leaves, coalesced to one run per frame;
 // never on a timer, and never while the chrome is still.
 
 import { useLayoutEffect, useState, type RefObject } from 'react';
-import { placeQuickStylePanel, type Rect } from '../../lib/quick-style-placement';
+import {
+  placeQuickStylePanel,
+  type QuickStyleSide,
+  type Rect,
+} from '../../lib/quick-style-placement';
 import { debugLog } from '../../lib/debug-log';
 import { CANVAS_ROOT_SELECTOR } from '../../lib/canvas-selectors';
 import { workbench } from '../../bindings';
@@ -30,6 +34,7 @@ type QuickStyleSpot = { left: number; top: number };
 export function useQuickStylePlacement(
   panelRef: RefObject<HTMLElement | null>,
   active: boolean,
+  side: QuickStyleSide = 'left',
 ): QuickStyleSpot | null {
   const [spot, setSpot] = useState<QuickStyleSpot | null>(null);
 
@@ -54,6 +59,7 @@ export function useQuickStylePlacement(
         area: toRect(area.getBoundingClientRect()),
         panel: { width: box.width, height: box.height },
         obstacles,
+        side,
       });
       if (placed.fallback) {
         debugLog('[quick-style] placement fallback', { obstacles: obstacles.length });
@@ -107,7 +113,7 @@ export function useQuickStylePlacement(
       for (const ev of captured) window.removeEventListener(ev, schedule, true);
       window.removeEventListener('transitionend', onTransitionEnd, true);
     };
-  }, [active, panelRef]);
+  }, [active, panelRef, side]);
 
   return spot;
 }

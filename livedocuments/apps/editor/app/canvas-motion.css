@@ -58,10 +58,6 @@
   transform-box: fill-box;
   transform-origin: center;
 }
-/* A window off screen holds still (TabWindowDrawing's useHoldOffscreen). */
-[data-tab-window-drawing][data-held] * {
-  animation-play-state: paused !important;
-}
 
 /* Text-native animations (docs/specs/008-canvas/canvas-and-palette.md). A standalone text element has no fill or
  * border, so the box-shadow / ring / background versions above would animate an

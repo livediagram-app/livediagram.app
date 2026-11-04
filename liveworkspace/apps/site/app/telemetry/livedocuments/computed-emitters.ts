@@ -184,7 +184,6 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('ChevronsTour', 'chevrons-tour-steps.ts'),
   ...conceptTourSteps('ChartTour', 'chart-tour-steps.ts'),
   ...conceptTourSteps('StackTour', 'stack-tour-steps.ts'),
-  ...conceptTourSteps('TabWindowTour', 'tab-window-tour-steps.ts'),
 ];
 
 // The Pages tour's steps, as pagesTourStepTelemetryType makes them (apps/editor PagesTourHost.tsx,

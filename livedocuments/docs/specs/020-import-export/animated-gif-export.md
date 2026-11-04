@@ -33,8 +33,8 @@ The GIF card opens an options-and-download panel, like PNG's, with the shared ba
   with All pages, a page of another shape (a 4:3 slide in a 16:9 deck, a portrait infographic) is fitted inside it,
   centred on white, never cropped.
 - **Between pages** (All pages with two or more pages): a one-line note naming the deck's transition and speed, as
-  the Slide Deck settings hold them ("Between pages: Fade, Normal, from the Slide Deck settings."; with None, "Between
-  pages: None, from the Slide Deck settings."), so the GIF moves between pages as presenting does. It is not changed
+  the presenter settings hold them ("Between pages: Fade, Normal, from the Presenting settings."; with None, "Between
+  pages: None, from the Presenting settings."), so the GIF moves between pages as presenting does. It is not changed
   here.
 - **Estimated size**: "About 3.4 MB", worked out from a sample frame of the chosen pages at the chosen size, and
   updated as the options change. Above **15 MB** it goes on "About 20.0 MB. Large for chat and email: try Small or a

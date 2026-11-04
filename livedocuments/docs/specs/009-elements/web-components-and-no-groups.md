@@ -50,7 +50,11 @@ label editor (rich text, alignment, size, bold) exactly like any shape. The mast
 **Every other piece of text edits in place** once the element is selected: click a stat's value,
 a step's caption or a nav link and type. Enter commits, Escape restores. Before the element is
 selected the text is inert, so a press anywhere on it still selects and drags it (the first click
-selects, the second edits, the same rule the timeline rail uses).
+selects, the second edits, the same rule the timeline rail uses). Once it is selected, a press that **moves** is still the element's: holding a line and dragging moves the
+element as a press anywhere else on it would, and only a press that lets go where it started (a click) puts the
+caret in the line, where it was pressed. **The face never changes colour for it**: pressing, holding, dragging and
+editing all leave the element's fills and ink as they are at rest, in every finish; the line being edited shows a
+thin outline round it (scaled with the canvas, like the selection) and nothing else.
 
 **Rows are added and removed from the context menu** (a Stats / Steps / Links section in the
 Tools flyout, beside the checklist editor), and from a **+** on the canvas at the end

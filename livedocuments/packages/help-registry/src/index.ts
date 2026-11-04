@@ -102,7 +102,7 @@ export const categories: Category[] = [
     title: 'Pages',
     description:
       'Build documents out of pages: articles, slide decks and infographics, with layouts, backgrounds and exports.',
-    articleCount: 8,
+    articleCount: 7,
     kind: 'feature',
     groups: ['Basics', 'Kinds of Page'],
   },
@@ -845,7 +845,7 @@ export const articles: Article[] = [
     title: 'Slide Deck',
     description: 'Turn your pages into a deck: each slide is a page, presented full screen.',
     keywords:
-      'presentation presenting present presentation mode slideshow slide show slides slide deck talk demo walkthrough narrate projector screen share screenshare speaker notes presenter notes script full screen fullscreen next previous advance start deck build slides element set spans tabs',
+      'presentation presenting present presentation mode slideshow slide show slides slide deck talk demo walkthrough narrate projector screen share screenshare speaker notes presenter notes script full screen fullscreen next previous advance start deck build slides contents add to slides pages spans tabs one tab at a time',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
   },
@@ -855,7 +855,7 @@ export const articles: Article[] = [
     description:
       'Everything you do to a deck before you present it: slides, order, hiding and notes.',
     keywords:
-      'build deck new slide add remove elements selection membership rename duplicate copy slide delete confirm hide hidden slide skip struck through eye reorder drag order presenter notes script speaker notes budget minutes timing per slide pace slide menu ellipsis',
+      'build deck contents add to slides add page slide page infographic article hide in slides show in slides hidden slide skip veil present from here start from slide reorder drag order page order speaker notes presenter notes note cards script page menu ellipsis right click',
     category: 'Selection Modes',
     categorySlug: 'selection-modes/slide-deck',
     parentSlug: 'slide-deck',
@@ -1211,16 +1211,6 @@ export const articles: Article[] = [
       'Every page or one page as a PDF, images or an animated GIF, a deck as PowerPoint, an article as Word, and pages as slides.',
     keywords:
       'export download pdf png svg gif animated gif animation moving image loop image zip all pages one page import json print printable pages page pages infographic slides slide deck present presentation add as slide page slide deck from pages powerpoint pptx keynote google slides word docx google docs editable speaker notes',
-    category: 'Pages',
-    categorySlug: 'pages',
-    group: 'Basics',
-  },
-  {
-    slug: 'tab-windows',
-    title: 'Tab Windows',
-    description: 'Another tab, live, fitted inside a slide or page.',
-    keywords:
-      'tab window windows live view embed mirror show another tab diagram on a slide reference up to date stale copy paste sync linked picture choose a tab open',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',

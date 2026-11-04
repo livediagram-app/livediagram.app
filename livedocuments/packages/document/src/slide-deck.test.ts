@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 
 import {
-  deckTabIds,
   firstDeck,
   parseStoredPresentation,
   presentableSlides,
@@ -136,29 +136,67 @@ describe('slideBounds', () => {
   });
 });
 
+// presentation-mode.md "One tab, one show".
 describe('presentableSlides', () => {
-  it('pairs slides with their tab and keeps deck order', () => {
+  it("runs the tab's own slides alone, in its deck order, never another tab's", () => {
     const deck: Deck = {
       slides: [
         slide({ id: 's1', tabId: 'a' }),
         slide({ id: 's2', tabId: 'c' }),
         slide({ id: 's3', tabId: 'a' }),
+        slide({ id: 's4', tabId: 'b' }),
       ],
     };
-    const got = presentableSlides(deck, [tab('a', []), tab('c', [])]);
-    expect(got.map((r) => `${r.slide.id}@${r.tab.id}`)).toEqual(['s1@a', 's2@c', 's3@a']);
+    const got = presentableSlides(deck, tab('a', []));
+    expect(got.map((r) => `${r.slide.id}@${r.tab.id}`)).toEqual(['s1@a', 's3@a']);
+    // Each keeps its place in the stored deck, which is never rewritten.
+    expect(got.map((r) => r.index)).toEqual([0, 2]);
   });
 
-  it('drops a slide whose tab is gone rather than blocking the deck', () => {
+  it('gives each tab of a deck stored across tabs its own show', () => {
     const deck: Deck = {
-      slides: [slide({ id: 's1', tabId: 'a' }), slide({ id: 's2', tabId: 'x' })],
+      slides: [
+        slide({ id: 'a1', tabId: 'a' }),
+        slide({ id: 'c1', tabId: 'c' }),
+        slide({ id: 'a2', tabId: 'a' }),
+      ],
     };
-    expect(presentableSlides(deck, [tab('a', [])]).map((r) => r.slide.id)).toEqual(['s1']);
+    expect(presentableSlides(deck, tab('a', [])).map((r) => r.slide.id)).toEqual(['a1', 'a2']);
+    expect(presentableSlides(deck, tab('c', [])).map((r) => r.slide.id)).toEqual(['c1']);
+    expect(presentableSlides(deck, tab('b', []))).toEqual([]);
+  });
+
+  it('is no show without a tab', () => {
+    expect(presentableSlides({ slides: [slide({ tabId: 'a' })] }, undefined)).toEqual([]);
+  });
+
+  it('keeps a stored selection slide in its run, and skips a hidden one', () => {
+    const deck: Deck = {
+      slides: [
+        slide({ id: 'p1', tabId: 'a', elementIds: [], pageId: 'x' }),
+        slide({ id: 'sel', tabId: 'a', elementIds: ['e1'] }),
+        slide({ id: 'gone', tabId: 'a', hidden: true }),
+        slide({ id: 'p2', tabId: 'a', elementIds: [], pageId: 'y' }),
+      ],
+    };
+    expect(presentableSlides(deck, tab('a', [])).map((r) => r.slide.id)).toEqual([
+      'p1',
+      'sel',
+      'p2',
+    ]);
+  });
+
+  it('picks one tab out of a long deck in linear time', () => {
+    const deck: Deck = {
+      slides: Array.from({ length: 5000 }, (_, i) => slide({ id: `s${i}`, tabId: `t${i % 50}` })),
+    };
+    expect(presentableSlides(deck, tab('t0', []))).toHaveLength(100);
+    expect(cpuMsOf(() => presentableSlides(deck, tab('t0', [])))).toBeLessThan(cpuBudgetMs(40));
   });
 
   it('keeps a slide whose elements have all gone', () => {
     const deck: Deck = { slides: [slide({ tabId: 'a', elementIds: ['dead'] })] };
-    expect(presentableSlides(deck, [tab('a', [])])).toHaveLength(1);
+    expect(presentableSlides(deck, tab('a', []))).toHaveLength(1);
   });
 });
 
@@ -169,15 +207,6 @@ describe('slideName', () => {
   });
   it('uses the given name', () => {
     expect(slideName(slide({ name: 'Why now' }), 3)).toBe('Why now');
-  });
-});
-
-describe('deckTabIds', () => {
-  it('is every tab the deck reaches, de-duplicated', () => {
-    const deck: Deck = {
-      slides: [slide({ tabId: 'a' }), slide({ tabId: 'c' }), slide({ tabId: 'a' })],
-    };
-    expect([...deckTabIds(deck)].sort()).toEqual(['a', 'c']);
   });
 });
 

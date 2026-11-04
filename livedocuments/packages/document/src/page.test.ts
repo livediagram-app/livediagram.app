@@ -7,6 +7,9 @@ import {
   pageAt,
   isArticlePage,
   pageKindOf,
+  isPageArrangement,
+  tabArrangesPages,
+  tabStacksPages,
   pageFitBox,
   pagesOf,
   layOutPages,
@@ -278,5 +281,31 @@ describe('the row anchor', () => {
     };
     const out = withPages(tab, [P('b')]);
     expect(out.pages[0]!.rowAt).toEqual({ x: 500, y: 500 });
+  });
+});
+
+// docs/specs/007-editor/pages-mode.md "Stacked or side by side".
+describe('how a tab’s pages stand', () => {
+  it('keeps each kind’s own by default: cards stack; infographics, slides and articles stand in a row', () => {
+    expect(tabStacksPages([{ kind: 'flashcard' }])).toBe(true);
+    expect(tabStacksPages([{}])).toBe(false);
+    expect(tabStacksPages([{ kind: 'infographic' }])).toBe(false);
+    expect(tabStacksPages([{ kind: 'slide' }])).toBe(false);
+    expect(tabStacksPages([{ kind: 'article' }])).toBe(false);
+    expect(tabStacksPages([])).toBe(false);
+  });
+
+  it('follows the tab’s own choice for every kind but an article, whose writing runs on along the row', () => {
+    expect(tabStacksPages([{ kind: 'slide' }], 'stack')).toBe(true);
+    expect(tabStacksPages([{ kind: 'infographic' }], 'stack')).toBe(true);
+    expect(tabStacksPages([{}], 'stack')).toBe(true);
+    expect(tabStacksPages([{ kind: 'flashcard' }], 'row')).toBe(false);
+    expect(tabStacksPages([{ kind: 'infographic' }], 'row')).toBe(false);
+    expect(tabStacksPages([{ kind: 'article' }], 'stack')).toBe(false);
+    expect(tabStacksPages([{ kind: 'slide' }], 'sideways')).toBe(false);
+    expect(tabArrangesPages([{ kind: 'slide' }])).toBe(true);
+    expect(tabArrangesPages([{ kind: 'article' }])).toBe(false);
+    expect(isPageArrangement('stack')).toBe(true);
+    expect(isPageArrangement(1)).toBe(false);
   });
 });

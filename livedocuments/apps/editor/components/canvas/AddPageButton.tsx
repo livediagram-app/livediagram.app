@@ -15,7 +15,7 @@ const IDLE =
 
 // After the last page (docs/specs/007-editor/pages-mode.md "Adding a page"), the +, held at one
 // screen size whatever the zoom: it adds another page like the last one (its kind and shape), named
-// for what it adds ("Add Another Slide"). A tab holds one kind ("One kind a tab"), so there is no
+// for what it adds ("Add Slide"). A tab holds one kind ("One kind a tab"), so there is no
 // choosing another.
 export function AddPageButton({
   last,

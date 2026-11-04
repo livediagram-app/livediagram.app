@@ -134,14 +134,10 @@ card, each line a run joined by `<a:br/>`.
 
 ### PageNotesButton
 
-- Name **Add Notes** while the slide has no card that is not blank, **Notes** (pressed) once it has; the popover body
+- Named **Notes** always, pressed once the slide has a card that is not blank; the popover body
   is `NoteCardList`, `width` 360; on a phone `TitlePopoverButton` makes it a bottom sheet.
 - Shown for an Editor on a slide in the deck on a phone too (`CanvasPages`: `notesButton` needs only the deck's slide
   of the page).
-
-### Slide Deck panel
-
-- The notes area under the list ("Notes · Slide 3", **Done**) holds `NoteCardList compact` and the Budget row.
 
 ### Presenter view
 

@@ -1,10 +1,9 @@
 'use client';
 
 // A slide page's speaker notes, in its title bar once the page is in the slide deck
-// (docs/specs/007-editor/pages-mode.md "Slides"): Add Notes while the slide has none, Notes
-// (pressed) once it has. A popover (a bottom sheet on a phone) holds the slide's note cards
-// (docs/specs/012-collaboration/speaker-note-cards.md), the same cards the Slide Deck panel writes
-// and the presenter view flips through: they belong to the deck's slide, not to the page.
+// (docs/specs/007-editor/pages-mode.md "Slides"): Notes, pressed once the slide has some. A popover (a bottom sheet on a phone) holds the slide's note cards
+// (docs/specs/012-collaboration/speaker-note-cards.md), the same cards the presenter view flips
+// through: they belong to the deck's slide, not to the page.
 import { useCallback, useRef } from 'react';
 import { slideHasNotes } from '@livedocuments/document';
 import type { PageDeckControls } from '@/hooks/editor/usePagesMode';
@@ -13,13 +12,12 @@ import { NoteCardList } from '@/components/slide-notes/NoteCardList';
 import { NoteCardsIcon } from '@/components/slide-notes/NoteCardsIcon';
 import { TitlePopoverButton, titleButtonClass } from './TitlePopoverButton';
 
-const ADD_NOTES = 'Add Notes';
 export const NOTES = 'Notes';
 
 // The title-bar room it takes (24 px and the gap, or named beside its icon), so the page's label
 // truncates first.
 const NOTES_ROOM = 28;
-const NOTES_LABELLED_ROOM = 88;
+const NOTES_LABELLED_ROOM = 72;
 // Room for a card's line at 13 px (blueprint NOTES_POPOVER_WIDTH).
 const POPOVER_WIDTH = 360;
 
@@ -53,7 +51,7 @@ export function PageNotesButton({
       onDoubleClick={(e) => e.stopPropagation()}
     >
       <TitlePopoverButton
-        name={has ? NOTES : ADD_NOTES}
+        name={NOTES}
         on={has}
         labelled={labelled}
         className={titleButtonClass}

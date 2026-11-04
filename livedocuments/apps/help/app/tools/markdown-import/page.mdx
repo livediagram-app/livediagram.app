@@ -21,10 +21,14 @@ Markdown comes into livedocuments as writing. Import a `.md` file into a tab and
 - **Code**: a block fenced with three backticks, kept exactly as written.
 - **Dividers**: a line of `---`, `***` or `___`.
 - **Inline marks**: bold, italic, strikethrough, inline code and links.
+- **Tables**: a pipe table (a header line, a `|---|` line, then rows) becomes a table.
+- **Images**: an imported `![alt](address)` becomes a link named by its alt text. Add the picture itself from **Media**.
 
 Every other line is a paragraph. Pasting into an empty line replaces it with the pasted blocks; pasting into a code block, or pasting a single line with no Markdown in it, puts the text in exactly as typed.
 
 ## Importing a file into a tab
+
+Markdown always becomes an article, so **Import** offers it on an article tab and on an empty tab (one still showing the start screen), never on a slide deck, infographic or flashcard tab, where it would replace those pages with an article. To bring Markdown into a document of slides, add a new tab first.
 
 Open the tab's menu, choose **Import**, then **Markdown**. Paste the Markdown into the box, or press **Import a file instead** to pick a `.md` file. The tab's contents are replaced by an article holding the writing, flowed onto as many pages as it needs; undo brings the old contents back. See [Importing a Tab](/help/tabs/import-tabs/).
 

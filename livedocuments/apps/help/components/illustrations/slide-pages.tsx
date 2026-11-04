@@ -1,41 +1,26 @@
 // Slide page illustrations for the Canvas article on Slide Pages (docs/specs/018-help/help-app.md).
 // Draws the real surface with its real labels: two slide pages in a row, each with its label
-// ("Page 1 · Slide (16:9)") and its title-bar buttons (CanvasPages.tsx), as icons at
-// this size: Add Notes first once the page is in the deck (PageNotesButton.tsx, its tooltip shown on the
-// second), Layout, Background (page-title-bar.tsx), the padlock and the cog, then the + after the last page. A
+// ("Slide (16:9)") and its title bar card (CanvasPages.tsx, PageTitleBar.tsx), its controls as icons at
+// this size: Layout and Background (page-title-bar.tsx), then Notes once the page is in the deck
+// (PageNotesButton.tsx, its tooltip shown on the second), then the padlock and the cog, then the + after the last page. A
 // page's place in the deck (Hide in Slides) is in its Contents menu, not its title bar. Composed from the shared
 // primitives.
 
 import type { ReactNode } from 'react';
 import { Scene, Label, TextBar } from '@liveworkspace/help-site/art/primitives';
-import { BackgroundGlyph, LayoutGlyph, PadlockGlyph, TitleIcon } from './page-title-bar';
+import {
+  BackgroundGlyph,
+  CogGlyph,
+  LayoutGlyph,
+  PadlockGlyph,
+  PageLabel,
+  TitleBarCard,
+  titleBarLayout,
+  type TitleBarItem,
+} from './page-title-bar';
 
-/** The page cog: a small round button with a gear. */
-function Cog({ cx, cy }: { cx: number; cy: number }) {
-  const spokes = [0, 45, 90, 135, 180, 225, 270, 315];
-  return (
-    <g transform={`translate(${cx} ${cy})`}>
-      <circle r={8} className="fill-white stroke-slate-300" strokeWidth={1.2} />
-      {spokes.map((a) => (
-        <line
-          key={a}
-          x1={0}
-          y1={-3}
-          x2={0}
-          y2={-4.8}
-          transform={`rotate(${a})`}
-          className="stroke-slate-500"
-          strokeWidth={1.4}
-          strokeLinecap="round"
-        />
-      ))}
-      <circle r={2.5} fill="none" className="stroke-slate-500" strokeWidth={1.3} />
-    </g>
-  );
-}
-
-/** Add Notes: a page with three lines of writing (PageNotesButton.tsx). */
-function NotesGlyph({ cx, cy }: { cx: number; cy: number }) {
+/** Notes: a page with three lines of writing (PageNotesButton.tsx). */
+function NotesGlyph({ cx, cy }: { cx: number; cy: number; on?: boolean }) {
   return (
     <g
       transform={`translate(${cx} ${cy})`}
@@ -90,8 +75,15 @@ function Slide({ x, y, children }: { x: number; y: number; children?: ReactNode 
   );
 }
 
-/** A slide page's title bar: its label on the left; Add Notes (in the deck), Layout, Background,
- *  the padlock and the cog on the right. */
+/** A slide page's title bar card: Layout and Background, then Notes (in the deck), then the
+ *  padlock and the cog, its right edge at the page's. */
+const slideBar = (inDeck: boolean): TitleBarItem[][] => [
+  [{ Glyph: LayoutGlyph }, { Glyph: BackgroundGlyph }],
+  inDeck ? [{ Glyph: NotesGlyph }] : [],
+  [{ Glyph: PadlockGlyph }, { Glyph: CogGlyph }],
+];
+
+/** A slide page's label on the left (its size, which says Slide) and its title bar card on the right. */
 function TitleBar({
   x,
   y,
@@ -105,27 +97,23 @@ function TitleBar({
 }) {
   return (
     <g>
-      <Label x={x} y={y} size={8} weight={600} tone="body">
-        {label}
-      </Label>
-      {inDeck ? <TitleIcon cx={x + SW - 72} cy={y} Glyph={NotesGlyph} /> : null}
-      <TitleIcon cx={x + SW - 56} cy={y} Glyph={LayoutGlyph} />
-      <TitleIcon cx={x + SW - 40} cy={y} Glyph={BackgroundGlyph} />
-      <TitleIcon cx={x + SW - 24} cy={y} Glyph={PadlockGlyph} />
-      <Cog cx={x + SW - 8} cy={y} />
+      <PageLabel x={x} y={y} size={8} rest={label} />
+      <TitleBarCard right={x + SW} cy={y} groups={slideBar(inDeck)} />
     </g>
   );
 }
 
-/** Two slide pages, both in the deck as every slide page is: the second's Add Notes named. */
+/** Two slide pages, both in the deck as every slide page is: the second's Notes named. */
 export function SlidePagesScene() {
   const y = 66;
   const sy = y + 14;
+  // The second page's Notes, which the tooltip names.
+  const notesCx = titleBarLayout(252 + SW, slideBar(true)).items[2]!.cx;
   return (
     <Scene w={524} h={220}>
-      <Tip cx={400} y={14} toY={y - 10} text="Add Notes" />
+      <Tip cx={notesCx} y={14} toY={y - 10} text="Notes" />
       {/* Page 1: a Title Slide layout */}
-      <TitleBar x={16} y={y} label="Page 1 · Slide (16:9)" inDeck />
+      <TitleBar x={16} y={y} label="Slide (16:9)" inDeck />
       <Slide x={16} y={sy}>
         <TextBar x={34} y={sy + 30} w={120} h={11} tone="accent" />
         <TextBar x={34} y={sy + 50} w={86} />
@@ -134,7 +122,7 @@ export function SlidePagesScene() {
         <TextBar x={180} y={sy + 106} w={40} h={5} tone="faint" />
       </Slide>
       {/* Page 2: a Title and Bullets layout */}
-      <TitleBar x={252} y={y} label="Page 2 · Slide (16:9)" inDeck />
+      <TitleBar x={252} y={y} label="Slide (16:9)" inDeck />
       <Slide x={252} y={sy}>
         <TextBar x={270} y={sy + 16} w={96} h={9} tone="accent" />
         {[0, 1, 2, 3, 4].map((i) => (

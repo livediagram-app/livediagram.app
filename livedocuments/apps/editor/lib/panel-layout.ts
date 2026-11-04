@@ -31,9 +31,7 @@ export type PanelId =
   // Spotlight Panel (docs/specs/008-canvas/spotlight-panel.md): the light's look, on the same terms.
   | 'spotlight'
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, on the same terms.
-  | 'format'
-  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): where a deck is built and started.
-  | 'slide-deck';
+  | 'format';
 
 export const PANEL_CORNERS: readonly PanelCorner[] = [
   'top-left',
@@ -48,7 +46,6 @@ export const PANEL_IDS: readonly PanelId[] = [
   'laser',
   'spotlight',
   'format',
-  'slide-deck',
 ];
 
 // Internal: a free panel's pixel position. Not exported — callers pass
@@ -77,7 +74,6 @@ export const DEFAULT_PANEL_CORNER: Record<PanelId, PanelCorner> = {
   laser: 'bottom-right',
   spotlight: 'bottom-right',
   format: 'bottom-right',
-  'slide-deck': 'bottom-right',
 };
 
 export const STORAGE_KEY = 'livedocuments:panel-layout:v1';

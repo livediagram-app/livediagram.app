@@ -317,7 +317,9 @@ in this call`); an arrow to nowhere is never stored.
 **Values checked.** A whole element the model sends (on `create_document`, `add_tab`, `replace` and an ops `add`)
 is checked as an edit operation's `set` checks a field: a field its type does not have is refused with the fields
 like it (`"icon" is not a field of a shape; fields like it: iconId, iconPosition`), a value off a closed vocabulary
-(`textSize` `sm`, `md`, `lg`, `scale` or a pixel number; the alignments, arrow styles, ends and heads, border styles
+(`textSize` `sm`, `md`, `lg`, `scale` or a pixel number, which on a text or a non-chip shape is stored past 48 px as 48
+with the rest as `textScale` and held to 72, the document's Size slider, [Fonts](../004-interface-design/fonts.md) "In
+livedocuments"; the alignments, arrow styles, ends and heads, border styles
 and radii, and the content kinds' looks, media, attach points and pyramid variants: the
 same list edit operations check, [Edit operations](../024-agents/edit-operations.md)) is refused naming the values,
 and an `iconId` that names no icon is refused with the icons like it and a
@@ -426,7 +428,8 @@ wrongly:
 
 - **Every element takes the presentation defaults the editor's own factory
   gives a new one of its kind** for the fields it leaves out: `textSize` (`md`
-  for shapes, stickies and tables, `sm` for text) and, where the kind sets
+  for shapes, stickies and tables) and, for a new **text**, the Write palette's Paragraph: `textSize: 24`,
+  `textAlignX: 'left'`, `textAlignY: 'top'` (a document's text reads from its left edge), and, where the kind sets
   them, the title alignment and padding. Unset, text scales to
   fill its box, so a sticky's note filled it edge to edge; a box drawn in the
   editor never arrives that way. On a list of more than 12 labelled

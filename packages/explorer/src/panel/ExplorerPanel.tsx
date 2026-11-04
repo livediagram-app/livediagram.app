@@ -145,12 +145,12 @@ export type PanelLayout = 'side' | 'stacked' | 'sheet';
 
 /**
  * The editors' popover (liveworkspace/docs/specs/004-index/one-explorer.md "The editors' panel: its size and the
- * scrim"): up to 64rem wide, so the 13rem rail has room and the pane's compact preview cards run four across, yet a
- * quarter of a 1280px window's canvas stays in sight; and up to 56rem tall. Each editor's MovablePanel takes these,
+ * scrim"): up to 54rem wide, so the 13rem rail has room and the pane's compact preview cards run four across, yet a
+ * third of a 1280px window's canvas stays in sight; and up to 45rem tall. Each editor's MovablePanel takes these,
  * so the size lives once. The host keeps it 1rem inside the window.
  */
-export const EXPLORER_POPOVER_WIDTH = 'w-[64rem]';
-export const EXPLORER_POPOVER_HEIGHT = '56rem';
+export const EXPLORER_POPOVER_WIDTH = 'w-[54rem]';
+export const EXPLORER_POPOVER_HEIGHT = '45rem';
 
 /**
  * The rail and pane's box per layout. `side` (a desktop or tablet popover) fills the popover, which the host sizes
@@ -1061,7 +1061,7 @@ function Pane({
       </div>
       <div
         data-explorer-pane=""
-        className="scrollbar-slim @container min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 pb-5 pt-1 @2xl:px-4"
+        className="scrollbar-slim @container min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 pb-5 pt-1 @[38rem]:px-4"
       >
         {/* Keyed by section: a pick slides the new section in (a fade alone under reduced motion). */}
         <div key={sectionKey(section)} className="animate-view-forward">

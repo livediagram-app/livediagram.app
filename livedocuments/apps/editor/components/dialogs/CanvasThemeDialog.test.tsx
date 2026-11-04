@@ -2,6 +2,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { openTabStyleFrom, registerTabStyleOpen } from '@/lib/tab-style-opener';
 import { CanvasThemeDialog } from './CanvasThemeDialog';
 
 // jsdom has no ResizeObserver; the dialog's animated height measures itself with one.
@@ -56,6 +57,30 @@ describe('CanvasThemeDialog placement', () => {
     const panel = screen.getByRole('dialog', { name: 'Tab style' });
     expect(panel.style.right).toBe('36px');
     expect(panel.style.bottom).toBe('68px');
+  });
+
+  it("drops from a page's Style button, right edges aligned, over the brush", () => {
+    Object.assign(window, { innerWidth: 1440, innerHeight: 900 });
+    const brush = document.createElement('button');
+    brush.setAttribute('data-tour-id', 'canvas-theme');
+    brush.getBoundingClientRect = () =>
+      ({ left: 1360, right: 1404, top: 840, bottom: 884, width: 44, height: 44 }) as DOMRect;
+    document.body.appendChild(brush);
+    const style = document.createElement('button');
+    style.getBoundingClientRect = () =>
+      ({ left: 900, right: 967, top: 120, bottom: 148, width: 67, height: 28 }) as DOMRect;
+    document.body.appendChild(style);
+    const undo = registerTabStyleOpen(() => {});
+    openTabStyleFrom(style);
+    render(<CanvasThemeDialog {...props} />);
+    const panel = screen.getByRole('dialog', { name: 'Tab style' });
+    expect(panel.style.right).toBe('473px');
+    expect(panel.style.top).toBe('156px');
+    expect(panel.style.bottom).toBe('');
+    expect(panel.style.transformOrigin).toBe('top right');
+    undo();
+    style.remove();
+    brush.remove();
   });
 
   it('is the centred dialog without a brush', () => {
