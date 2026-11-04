@@ -25,6 +25,7 @@ import type { AvatarStatus } from '../status';
 import { reactionPose, type AvatarReactionKind, type ReactionPose } from '../reactions';
 import { useAvatarKeys, NO_KEYS_HELD, type AvatarHeldKeys } from './useAvatarKeys';
 import { padEntry } from '../pad';
+import { newSeatClaim, type SeatClaim } from '../seat-claims';
 import { avatarBindings } from '../bindings';
 import {
   arrowDirection,
@@ -69,6 +70,8 @@ type AvatarSnapshot = {
   // when standing. Occupancy is presence, never document state, so a chair is
   // vacated for free when its sitter disconnects.
   seatedOn?: string | null;
+  // Which seat, when and the tiebreak (docs/specs/009-elements/chair.md "Occupancy is presence"), while seated.
+  seat?: SeatClaim | null;
   // A drink in the hand (docs/specs/009-elements/office.md "Using it"), or none.
   holding?: DrinkKind | null;
   // How the person is (docs/specs/008-canvas/avatar-mode.md "Status"), or none.
@@ -161,6 +164,10 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // standing. Kept in state (the sprite and the presence packet both read it)
   // AND in a ref (the rAF tick and walkTo read it between renders).
   const [seatedOn, setSeatedOn] = useState<string | null>(null);
+  // Our claim on the seat (docs/specs/009-elements/chair.md "Occupancy is presence"): which one, when and the
+  // tiebreak, so a peer who sat on it at the same moment settles who keeps it the way we do.
+  const [seatClaim, setSeatClaim] = useState<SeatClaim | null>(null);
+  const claimRef = useRef<SeatClaim | null>(null);
   // A drink in the hand (docs/specs/009-elements/office.md "Using it"): presence, like the seat, and put down
   // after DRINK_HOLD_MS or on leaving the mode.
   // `seq` changes with every drink taken, so taking the same drink again restarts its minute.
@@ -194,6 +201,11 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // The costume last published as a standing snapshot; null = nothing published
   // since the mode was entered. Keeps the entry publish to once per change.
   const publishedLookRef = useRef<string | null>(null);
+  // The seat in a presence snapshot: the piece, and our claim on it only while seated (a walk sends ~30 a second).
+  const seatFields = () => ({
+    seatedOn: seatedRef.current,
+    ...(claimRef.current ? { seat: claimRef.current } : null),
+  });
   // NOTE: posRef is deliberately NOT re-synced from `pos` on every render. The
   // LOOP owns the position; `pos` is a copy for rendering. Assigning
   // `posRef.current = pos` here used to walk the character BACKWARDS whenever
@@ -259,6 +271,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
       setLift(0);
       setWave(null);
       setSeatedOn(null);
+      setSeatClaim(null);
       setDrink(null);
     }
   }
@@ -274,6 +287,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
       // Tell peers to drop our character.
       onPresence?.(null);
       seatedRef.current = null;
+      claimRef.current = null;
       holdingRef.current = null;
       return;
     }
@@ -341,9 +355,10 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // Take a shove from a peer: slide a short way along their direction. It walks
   // rather than teleports, so both people see the same little stumble, and it
   // drops whatever walk was in progress — being pushed interrupts you.
+  // A seated character cannot be pushed (docs/specs/009-elements/chair.md "Sitting"): the push is ignored.
   const shove = (dx: number, dy: number) => {
     const from = posRef.current;
-    if (!from) return;
+    if (!from || seatedRef.current) return;
     const len = Math.hypot(dx, dy) || 1;
     heldRef.current = { ...NO_KEYS_HELD };
     arriveRef.current = null;
@@ -367,7 +382,9 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // turns the figure the way the seat points, drops any walk in progress, and
   // remembers the chair so the sprite draws a seated pose and peers see the
   // seat taken.
-  const sitOn = (chairId: string, seat: AvatarPoint, seatFacing: AvatarFacing) => {
+  // `index` is which of the piece's seats, carried with when we sat in our claim, and the room is told at once so the
+  // seat reads taken before anyone else walks into it.
+  const sitOn = (chairId: string, seat: AvatarPoint, seatFacing: AvatarFacing, index = 0) => {
     targetRef.current = null;
     arriveRef.current = null;
     heldRef.current = { ...NO_KEYS_HELD };
@@ -376,15 +393,41 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     setFacing(seatFacing);
     seatedRef.current = chairId;
     setSeatedOn(chairId);
+    const claim = newSeatClaim(index);
+    claimRef.current = claim;
+    setSeatClaim(claim);
     // Remembered as "what the feet are on" so standing up and staying put
     // doesn't immediately re-seat the character.
     lastUnderFeetRef.current = chairId;
+    publishIdle(seat, seatFacing);
   };
 
+  const unseat = () => {
+    seatedRef.current = null;
+    claimRef.current = null;
+    setSeatedOn(null);
+    setSeatClaim(null);
+  };
+
+  // Standing up frees the seat for everyone at once, not at the next heartbeat.
   const standUp = () => {
     if (!seatedRef.current) return;
-    seatedRef.current = null;
-    setSeatedOn(null);
+    unseat();
+    if (posRef.current) publishIdle(posRef.current);
+  };
+
+  // Stop at a point without walking there (docs/specs/009-elements/chair.md "Sitting"): beside a piece whose seats are
+  // all taken, or beside a seat a peer sat in first. Stands up if seated, drops any walk, and does not count as
+  // arriving on whatever is under the new spot, so stepping aside never seats you somewhere else.
+  const stepAside = (point: AvatarPoint) => {
+    targetRef.current = null;
+    arriveRef.current = null;
+    heldRef.current = { ...NO_KEYS_HELD };
+    if (seatedRef.current) unseat();
+    posRef.current = point;
+    setPos(point);
+    lastUnderFeetRef.current = elementUnderFeet(elements, point);
+    publishIdle(point);
   };
 
   // Portals (docs/specs/009-elements/portal-element.md): drop the character at a point (the far portal's threshold),
@@ -428,10 +471,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
       targetRef.current = null;
       // An arrow key is how you stand up (docs/specs/009-elements/chair.md): a deliberate act, and one
       // that leaves the character where the chair put it, free to walk off.
-      if (seatedRef.current) {
-        seatedRef.current = null;
-        setSeatedOn(null);
-      }
+      if (seatedRef.current) unseat();
     },
     onJump: jump,
   });
@@ -579,7 +619,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
           stepFrame: Math.floor(travelledRef.current / STEP_LENGTH) % 2,
           lift: liftRef.current,
           wave: waveStartRef.current === null ? null : 0,
-          seatedOn: seatedRef.current,
+          ...seatFields(),
           holding: holdingRef.current,
           // Only when set: a missing status reads as none, and a walk sends ~30 a second.
           ...(status ? { status } : null),
@@ -622,7 +662,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
       stepFrame: 0,
       lift: 0,
       wave: null,
-      seatedOn: seatedRef.current,
+      ...seatFields(),
       holding: holdingRef.current,
       // Only when set: a missing status reads as none, and a walk sends ~30 a second.
       ...(status ? { status } : null),
@@ -639,17 +679,17 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   const standingOnId = active && pos ? elementUnderFeet(elements, pos) : null;
 
   // An idle snapshot, for the heartbeat and for a change that is not a step (a drink taken or put down).
-  const publishIdle = (at: AvatarPoint) =>
+  const publishIdle = (at: AvatarPoint, faceTo: AvatarFacing = facing) =>
     onPresence?.({
       x: at.x,
       y: at.y,
-      facing,
+      facing: faceTo,
       config,
       walking: false,
       stepFrame: 0,
       lift: 0,
       wave: null,
-      seatedOn: seatedRef.current,
+      ...seatFields(),
       holding: holdingRef.current,
       // Only when set: a missing status reads as none, and a walk sends ~30 a second.
       ...(status ? { status } : null),
@@ -783,10 +823,12 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     standingOnId,
     pose,
     seatedOn,
+    seatClaim,
     holding: active ? (drink?.kind ?? null) : null,
     giveDrink,
     sitOn,
     standUp,
+    stepAside,
     walkTo,
     jump,
     playReaction,

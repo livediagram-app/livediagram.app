@@ -47,10 +47,11 @@ A table with six chairs round it, every seat facing the table.
 - Drawn upright from the room's camera: two chairs beyond the table (their sitters face you), two in front (their
   backs to you), one at each end in profile, and the table top between them with its front edge toward you.
 - **Six seats.** A character walking into it sits on the seat **nearest where it arrived**, facing the table: the
-  far chairs face down, the near chairs up, the left end right, the right end left. Two people may share a seat,
-  as with any chair.
+  far chairs face down, the near chairs up, the left end right, the right end left. A seat takes one sitter, as
+  any chair does: a taken seat is skipped for the nearest free one, and a full table stops you beside it
+  ([Chair](chair.md) "Sitting").
 - Who is sitting is presence, as for every seat: the table shows the sitters' names in a pill above it. It does not
-  ring one chair, because which seat a peer took is not in their presence.
+  ring one chair yet; which seat each sitter took now rides their presence (`seat.index`).
 - It does not turn (it reads the same from every side). Aspect locked. Default 232 × 168.
 
 ## Plant, Bookshelf

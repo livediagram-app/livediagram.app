@@ -10,6 +10,8 @@ Scope, by file:
 | ----------------------------------------------------------- | ------------------------------------------------------------------------ |
 | `packages/document/src/collab-shapes.ts`                    | `ChairFacing`, labels, guard, `CHAIR_SITTER_FACING` (the package's)      |
 | `../packages/avatar/src/seats.ts`                           | Seat geometry: grids, seats, `seatPoints`, `nearestSeat`, `seatFor`      |
+| `../packages/avatar/src/seat-claims.ts`                     | Taken seats, `seatOnArrival`, the tiebreak (`claimBeats`), `seatToYield` |
+| `../packages/avatar/src/hooks/useSeatYield.ts`              | The later of two sitters on one seat stands up beside it                 |
 | `packages/document/src/shape-geometry.ts`                   | `chairSeatFill`                                                          |
 | `packages/document/src/shape-factory.ts`                    | 76x84, `chairFacing: DEFAULT_CHAIR_FACING`, `aspectLocked`, label bottom |
 | `packages/document/src/colors.ts`                           | `behaviourSkin`: transparent box, outline and label ink per paper        |
@@ -24,7 +26,7 @@ Scope, by file:
 | `apps/editor/components/canvas/useBoxedElementAnimation.ts` | Silhouette animations on the drawing                                     |
 | `apps/editor/components/canvas/useCanvasAvatar.tsx`         | `onWalkIntoChair` → `sitOn(seatFor)`; `chairSitters` from presence       |
 | `../packages/avatar/src/hooks/useAvatarWalk.ts`             | `sitOn`, `standUp`, seated guards, arrival hook, presence packet         |
-| `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`      | Double-click stands up                                                   |
+| `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`      | Double-click stands up; a seated peer is walked to, never pushed         |
 | `../packages/avatar/src/components/AvatarWalker.tsx`        | Seated pose and the **Stand** press                                      |
 | `apps/editor/components/palette/CollabMenuSections.tsx`     | `ChairMenuSection` (facing tiles)                                        |
 | `apps/editor/hooks/canvas/useDataShapeSetters.ts`           | `setChairFacingSelected` (`Element·Changed·Chair`)                       |
@@ -49,6 +51,8 @@ Desk and sofa (spec "Desk and sofa") add:
 | Sitter facing  | `CHAIR_SITTER_FACING[facing]`              | `down`, `left`, `up`, `right`                           |
 | Seat point     | `seatPoints(element)`                      | Where a sitter's feet snap, from the facing's view      |
 | Seated         | `seatedOn: string \| null`                 | The chair id this character sits in                     |
+| Seat claim     | `SeatClaim = { index, at, tie }`           | Which seat, when (epoch ms) and a random tiebreak       |
+| Taken          | `takenSeats(element, peers)`               | The seat indices peers' presence holds                  |
 | Sitter         | `ChairSitter = { name, color }`            | One occupant, from presence                             |
 | Seating        | `SeatingKind`, `isSeatingShape`            | Chair, desk, sofa and meeting table: where one sits     |
 | Furniture art  | `FurnitureArt` (`FURNITURE_ART[kind]`)     | A piece's three drawings (`FurnitureDrawing` each)      |
@@ -66,7 +70,10 @@ in `useAvatarWalk`; published on every avatar presence packet.
 
 | From     | Event                                    | Guard              | To                           |
 | -------- | ---------------------------------------- | ------------------ | ---------------------------- |
-| standing | feet arrive on a chair (frontmost, D124) | Avatar mode active | seated on it                 |
+| standing | feet arrive on a chair (frontmost, D124) | a seat is free     | seated on the nearest free   |
+| standing | feet arrive on a chair (frontmost, D124) | every seat taken   | standing, beside the piece   |
+| seated   | a peer's earlier claim on the same seat  | `claimBeats`       | standing, beside the seat    |
+| seated   | a peer's push                            |                    | unchanged (`shove` refuses)  |
 | seated   | arrival on another chair                 |                    | unchanged (D125)             |
 | seated   | canvas click                             |                    | unchanged (`walkTo` refuses) |
 | seated   | any arrow key (`onSteer`)                |                    | standing                     |
@@ -75,11 +82,14 @@ in `useAvatarWalk`; published on every avatar presence packet.
 | seated   | leaving Avatar mode                      |                    | standing                     |
 | seated   | disconnect, tab change (peer's view)     |                    | gone with presence           |
 
-1. **Sit.** `Canvas` passes `onWalkIntoChair(element, feet)` for any `isSeatingShape` kind: `seatFor(element, feet)`
-   (`@liveworkspace/avatar/seats`) is `nearestSeat(element, feet)` with its facing, the seat's own (a meeting table's)
-   or `CHAIR_SITTER_FACING[seatingFacing(element)]`, then `sitOn(id, seat, seat.facing)`. A chair has one seat; a sofa two; a desk one (each view's `seats`). `sitOn` drops the walk target, arrival callback and held keys,
-   snaps the feet, sets the facing, marks seated, and records the chair as under the feet so
-   standing still does not re-seat.
+1. **Sit.** `Canvas` passes `onWalkIntoChair(element, feet)` for any `isSeatingShape` kind:
+   `seatOnArrival(element, feet, peers)` (`@liveworkspace/avatar/seat-claims`) picks the nearest seat no peer's
+   presence holds (`takenSeats`: a peer's `seat.index`, or for a packet without `seat` the seat nearest its feet),
+   with its facing, the seat's own (a meeting table's) or `CHAIR_SITTER_FACING[seatingFacing(element)]`, then
+   `sitOn(id, seat, seat.facing, seat.index)`. With every seat taken it answers `{ stopAt }`, a point `BESIDE_GAP`
+   outside the piece's box nearest the feet (`besideBox`), and the canvas calls `stepAside(stopAt)`. A chair has one seat; a sofa two; a desk one (each view's `seats`). `sitOn` drops the walk target, arrival callback and held keys,
+   snaps the feet, sets the facing, marks seated with a fresh claim (`at: Date.now()`, `tie: Math.random()`),
+   records the chair as under the feet so standing still does not re-seat, and publishes at once.
 2. **Seat point.** `seatPoints(element)` (`@liveworkspace/avatar/seats`, so livehuddle seats without this product's
    document package): the facing's view (`facingView`) of the kind's seat grid (`SEAT_GRIDS`, which each
    `FurnitureDrawing` here spreads, so the seats and the drawing share one grid), each seat's `(u, v)` as
@@ -87,7 +97,13 @@ in `useAvatarWalk`; published on every avatar presence packet.
    the box (`preserveAspectRatio` meet), so a box of other proportions (a quarter turn written by an agent without
    swapping the box, an aspect unlocked) letterboxes it, and the seats follow the drawn rectangle (`drawnRect`). A chair's seats keep the old points: `n` `(0.5, 0.62)`,
    `s` `(0.5, 0.38)`, `e` `(0.38, 0.5)`, `w` `(0.62, 0.5)` (D123).
-3. **Stand.** `standUp()` clears the seat; the character stays where the chair put it.
+3. **Stand.** `standUp()` clears the seat and publishes at once; the character stays where the chair put it.
+   `stepAside(point)` stands up too and moves the feet to `point` without walking.
+   - **Yield.** `useSeatYield` runs `yieldFrom(elements, seatedOn, ownClaim, peers)` (`seatToYield` on the piece we sit on) whenever presence changes while seated: a
+     peer on the same seat whose claim `claimBeats` ours (earlier `at`, then lower `tie`; a packet without `seat`
+     counts as `at: 0`) sends us `stepAside` to `besideBox(element, seatPoint)`. Both machines compute the same winner.
+   - **No push.** `shove` returns while seated; the pusher's click on a peer whose presence is seated walks up to
+     them with no arrival push.
 4. **Wave and react.** `playReaction` and `jump` do not read `seatedRef`; a seated character keeps
    both.
 5. **Occupancy.** `Canvas.chairSitters` builds `Map<chairId, ChairSitter[]>` from our own
@@ -97,7 +113,7 @@ Invariants:
 
 - **I1:** no seating state is ever written to the document, the index or undo.
 - **I2:** occupancy is a pure function of current presence.
-- **I3:** two or more sitters are allowed; nothing locks a chair.
+- **I3:** one sitter per seat, settled from presence alone (`claimBeats`); nothing locks a chair.
 - **I4:** sitting fires once per arrival, never per frame.
 
 ## Interfaces and contracts
@@ -132,6 +148,7 @@ export function chairSeatFill(fillColor: string | undefined, stroke: string): st
 
 // AvatarPresence (room-messages.ts)
 seatedOn?: string | null;   // absent parses as standing
+seat?: { index: number; at: number; tie: number } | null;   // absent: the seat nearest the feet, earliest
 
 // apps/editor
 export type ChairSitter = { name: string; color: string };
@@ -155,18 +172,20 @@ export function FurnitureView(props: { element: ShapeElement; stroke: string; si
 
 ## Errors and edge cases
 
-| #   | Case                            | Handling                                              |
-| --- | ------------------------------- | ----------------------------------------------------- |
-| E1  | Two characters in one chair     | Both render; ring in the first sitter's colour (D122) |
-| E2  | Sitter closes the laptop        | Presence expires; chair empties (I2)                  |
-| E3  | Chair deleted under a sitter    | Sitter stays seated until they stand or leave         |
-| E4  | Chair rotated as an element     | Arrival uses the unrotated box (D124)                 |
-| E5  | Chair under a frontmost element | The frontmost element wins arrival                    |
-| E6  | Touch device with no keys       | **Stand** press under the character [QF16]            |
-| E7  | Unknown `chairFacing`           | Tab write rejected                                    |
-| E8  | Seat ring and seat point        | Ring at 40/72 of the grid, feet at 0.62 (gap GF10)    |
-| E9  | Unstyled chair on dark paper    | Canvas and export both draw `#64748b`                 |
-| E10 | Chair stored with stamped skin  | `ownColours` drops it; label ink follows the paper    |
+| #   | Case                            | Handling                                            |
+| --- | ------------------------------- | --------------------------------------------------- |
+| E1  | Two characters in one chair     | Later claim stands beside it; an older client stays |
+| E1a | Every seat of a piece taken     | Arrival stops beside the piece, standing            |
+| E1b | Push at a seated character      | Not sent; ignored if it arrives anyway              |
+| E2  | Sitter closes the laptop        | Presence expires; chair empties (I2)                |
+| E3  | Chair deleted under a sitter    | Sitter stays seated until they stand or leave       |
+| E4  | Chair rotated as an element     | Arrival uses the unrotated box (D124)               |
+| E5  | Chair under a frontmost element | The frontmost element wins arrival                  |
+| E6  | Touch device with no keys       | **Stand** press under the character [QF16]          |
+| E7  | Unknown `chairFacing`           | Tab write rejected                                  |
+| E8  | Seat ring and seat point        | Ring at 40/72 of the grid, feet at 0.62 (gap GF10)  |
+| E9  | Unstyled chair on dark paper    | Canvas and export both draw `#64748b`               |
+| E10 | Chair stored with stamped skin  | `ownColours` drops it; label ink follows the paper  |
 
 ## Security and trust
 
@@ -228,31 +247,34 @@ No log exists today. Proposed fingerprints (gap, see the report):
 
 ## Testing
 
-| Rule                                           | Test                                                | File                                                       |
-| ---------------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------- |
-| Four facings only                              | "accepts only the four facings"                     | `packages/document/src/collab-shapes.test.ts`              |
-| Seat on the seat at every facing               | "seats a chair sitter on the seat, never …"         | `packages/document/src/seating.test.ts`                    |
-| A drawing per facing, never rotated            | "shows a drawing per facing, never a rotation …"    | `packages/document/src/seating.test.ts`                    |
-| Every view stands on its shadow                | "keeps every piece standing …"                      | `packages/document/src/seating.test.ts`                    |
-| Side view fits the swapped box                 | "gives a side view the footprint of a quarter turn" | `packages/document/src/seating.test.ts`                    |
-| Sitter faces the way the menu says             | "turns the sitter the way the seat points"          | `packages/document/src/collab-shapes.test.ts`              |
-| No shared `…`                                  | "is on every Behaviours card except the chair …"    | `packages/document/src/collab-shapes.test.ts`              |
-| Export draws the table chair, washed seat      | "the export draws the table chair …"                | `packages/document/src/shape-geometry.test.ts`             |
-| Export draws its facing, mirrors right         | "draws the export for its facing, never rotated …"  | `packages/document/src/shape-geometry.test.ts`             |
-| Canvas draws the same table, upright           | "FurnitureView draws the table chair, upright …"    | `apps/editor/components/canvas/shape-svg-overlay.test.tsx` |
-| Export draws a body                            | "draws more than a box and a label"                 | `packages/document/src/export-consistency.test.ts`         |
-| Frontmost element under the feet               | `elementUnderFeet` block                            | `apps/editor/lib/avatar-walk.test.ts`                      |
-| Sit once on arrival; seated ignores walks (I4) | none                                                | (gap)                                                      |
-| Arrow, double-click, Stand all stand up        | none                                                | (gap)                                                      |
-| Leaving the mode vacates the chair             | "vacates the chair, stands still and tells peers"   | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx`          |
-| Re-entering the mode starts unseated           | "comes back unseated"                               | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx`          |
-| Created with no stored colour; stamp is unset  | "are created with no stored colour", "treat the …"  | `packages/document/src/behaviour-skin.test.ts`             |
-| Occupancy from presence only (I1, I2)          | none                                                | (gap)                                                      |
-| Label survives export                          | "prints a chair label under the seat"               | `packages/document/src/svg-render-fidelity.test.ts`        |
-| Unknown facing rejected                        | "rejects an off-vocabulary chair facing"            | `packages/document/src/collab-shapes.test.ts`              |
-| Desk faces the computer; sofa the reader       | "a new desk faces its sitter at the computer …"     | `packages/document/src/seating.test.ts`                    |
-| Sofa has two seats; nearest seat taken         | `seatPoints`, `nearestSeat` blocks                  | `../packages/avatar/src/seats.test.ts`                     |
-| Quarter turn swaps a desk or sofa box          | "swaps a desk or sofa box about its centre …"       | `packages/document/src/seating.test.ts`                    |
+| Rule                                           | Test                                                | File                                                        |
+| ---------------------------------------------- | --------------------------------------------------- | ----------------------------------------------------------- |
+| Four facings only                              | "accepts only the four facings"                     | `packages/document/src/collab-shapes.test.ts`               |
+| Seat on the seat at every facing               | "seats a chair sitter on the seat, never …"         | `packages/document/src/seating.test.ts`                     |
+| A drawing per facing, never rotated            | "shows a drawing per facing, never a rotation …"    | `packages/document/src/seating.test.ts`                     |
+| Every view stands on its shadow                | "keeps every piece standing …"                      | `packages/document/src/seating.test.ts`                     |
+| Side view fits the swapped box                 | "gives a side view the footprint of a quarter turn" | `packages/document/src/seating.test.ts`                     |
+| Sitter faces the way the menu says             | "turns the sitter the way the seat points"          | `packages/document/src/collab-shapes.test.ts`               |
+| No shared `…`                                  | "is on every Behaviours card except the chair …"    | `packages/document/src/collab-shapes.test.ts`               |
+| Export draws the table chair, washed seat      | "the export draws the table chair …"                | `packages/document/src/shape-geometry.test.ts`              |
+| Export draws its facing, mirrors right         | "draws the export for its facing, never rotated …"  | `packages/document/src/shape-geometry.test.ts`              |
+| Canvas draws the same table, upright           | "FurnitureView draws the table chair, upright …"    | `apps/editor/components/canvas/shape-svg-overlay.test.tsx`  |
+| Export draws a body                            | "draws more than a box and a label"                 | `packages/document/src/export-consistency.test.ts`          |
+| Frontmost element under the feet               | `elementUnderFeet` block                            | `apps/editor/lib/avatar-walk.test.ts`                       |
+| Sit once on arrival; seated ignores walks (I4) | none                                                | (gap)                                                       |
+| Arrow, double-click, Stand all stand up        | none                                                | (gap)                                                       |
+| Leaving the mode vacates the chair             | "vacates the chair, stands still and tells peers"   | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx`           |
+| Re-entering the mode starts unseated           | "comes back unseated"                               | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx`           |
+| Created with no stored colour; stamp is unset  | "are created with no stored colour", "treat the …"  | `packages/document/src/behaviour-skin.test.ts`              |
+| Occupancy from presence only (I1, I2)          | none                                                | (gap)                                                       |
+| Label survives export                          | "prints a chair label under the seat"               | `packages/document/src/svg-render-fidelity.test.ts`         |
+| Unknown facing rejected                        | "rejects an off-vocabulary chair facing"            | `packages/document/src/collab-shapes.test.ts`               |
+| Desk faces the computer; sofa the reader       | "a new desk faces its sitter at the computer …"     | `packages/document/src/seating.test.ts`                     |
+| Sofa has two seats; nearest seat taken         | `seatPoints`, `nearestSeat` blocks                  | `../packages/avatar/src/seats.test.ts`                      |
+| Taken seat skipped; full piece stops beside    | `seatOnArrival` block                               | `../packages/avatar/src/seat-claims.test.ts`                |
+| Tiebreak: earlier, then lower tie; old client  | `claimBeats`, `seatToYield` blocks                  | `../packages/avatar/src/seat-claims.test.ts`                |
+| Seated ignores a push; sit and stand publish   | "a seated character …"                              | `../packages/avatar/src/hooks/useAvatarWalk.seats.test.tsx` |
+| Quarter turn swaps a desk or sofa box          | "swaps a desk or sofa box about its centre …"       | `packages/document/src/seating.test.ts`                     |
 
 ## Constants and configuration
 
@@ -266,6 +288,7 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | `CHAIR_ART` seats          | front `(0.5, 0.62)`, back `(0.5, 0.38)`, side `(0.38, 0.5)`                             | Away from the backrest (D123)                 |
 | `FURNITURE_FACE_SHADE`     | `0.22`                                                                                  | Stroke over the seat fill; 0.15 to 0.3 (D206) |
 | `DEFAULT_CHAIR_FACING`     | `'n'`                                                                                   | Sitter faces the reader                       |
+| `BESIDE_GAP`               | `12` canvas px                                                                          | Clear of the box, inside a click's reach      |
 | `CHAIR_ART` grid           | `64 x 72` in every view                                                                 | Square enough to turn in place                |
 | Desk / sofa grids          | front and back `120 x 112` / `136 x 76`; side swapped                                   | The side fills the swapped box (D207)         |
 | Seat wash alpha            | `0.32` (`chairSeatFill`)                                                                | Visible on light and dark themes              |
