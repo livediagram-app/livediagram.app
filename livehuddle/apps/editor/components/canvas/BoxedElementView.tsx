@@ -44,6 +44,7 @@ import { FenceView } from '@/components/canvas/collab/FenceView';
 import { AvatarPadView } from '@/components/canvas/collab/AvatarPadView';
 import { FurnitureView, isFurnitureViewShape } from '@/components/canvas/collab/FurnitureView';
 import { RoomView } from '@/components/canvas/collab/RoomView';
+import { StageView } from '@/components/canvas/collab/StageView';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant, editingLook } from '@/components/canvas/element-variant';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -579,6 +580,16 @@ function BoxedElementViewImpl({
           back wall (the ordinary label, which sits there). */}
           {element.type === 'shape' && element.shape === 'room' ? (
             <RoomView
+              element={element}
+              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
+              floor={own.fill ?? defaultFillColor(element, surface)}
+              animClass={artAnimClass}
+            />
+          ) : null}
+          {/* A stage (docs/specs/009-elements/office.md "Stage"): its top, front edge and plate, its name on the
+          plate (the ordinary label, which sits there). */}
+          {element.type === 'shape' && element.shape === 'stage' ? (
+            <StageView
               element={element}
               stroke={own.stroke ?? defaultStrokeColor(element, surface)}
               floor={own.fill ?? defaultFillColor(element, surface)}

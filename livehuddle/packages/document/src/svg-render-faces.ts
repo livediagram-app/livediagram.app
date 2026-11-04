@@ -31,11 +31,13 @@ import {
 } from './seating';
 import {
   DEFAULT_ROOM_DOOR,
-  isOfficeShape,
+  isGridOfficeShape,
   OFFICE_ART,
   ROOM_FLOOR,
   roomParts,
   RUG_FILL,
+  STAGE_FLOOR,
+  stageParts,
 } from './office';
 import { chairSeatFill } from './shape-geometry';
 import type { ResolveEmojiArt } from './svg-render-describe';
@@ -110,6 +112,7 @@ export const BEHAVIOUR_FACE_SHAPES = new Set<string>([
   'water-cooler',
   'coffee-machine',
   'rug',
+  'stage',
   'focus-button',
 ]);
 
@@ -214,6 +217,8 @@ export function svgBehaviourFace(
       return furnitureArt(el, fill ?? el.fillColor ?? RUG_FILL, stroke);
     case 'room':
       return roomSvg(el, fill ?? el.fillColor ?? ROOM_FLOOR, stroke);
+    case 'stage':
+      return sizedSvg(el, stageParts(el.width, el.height), fill ?? el.fillColor ?? STAGE_FLOOR, stroke);
     case 'fence':
       return fenceArt(el, stroke);
     case 'avatar-pad':
@@ -557,7 +562,7 @@ function avatarPadArt(el: Face): string {
 function furnitureArt(el: Face, seat: string, stroke: string): string {
   const art = isSeatingShape(el.shape)
     ? FURNITURE_ART[el.shape]
-    : isOfficeShape(el.shape) && el.shape !== 'room'
+    : isGridOfficeShape(el.shape)
       ? OFFICE_ART[el.shape]
       : null;
   if (!art) return '';
@@ -577,10 +582,13 @@ function furnitureArt(el: Face, seat: string, stroke: string): string {
 
 // A room (docs/specs/009-elements/office.md "Room"), drawn to its own size so its walls keep their thickness.
 function roomSvg(el: Face, floor: string, stroke: string): string {
-  const parts = roomParts(el.width, el.height, el.roomDoor ?? DEFAULT_ROOM_DOOR)
-    .map((p) => furniturePart(p, xmlEscape(floor), xmlEscape(stroke)))
-    .join('');
-  return `<g transform="translate(${r2(el.x)} ${r2(el.y)})">${parts}</g>`;
+  return sizedSvg(el, roomParts(el.width, el.height, el.roomDoor ?? DEFAULT_ROOM_DOOR), floor, stroke);
+}
+
+// A piece drawn to its own size (a room, a stage), its parts in its own px from its top left.
+function sizedSvg(el: Face, parts: readonly FurniturePart[], floor: string, stroke: string): string {
+  const drawn = parts.map((p) => furniturePart(p, xmlEscape(floor), xmlEscape(stroke))).join('');
+  return `<g transform="translate(${r2(el.x)} ${r2(el.y)})">${drawn}</g>`;
 }
 
 function furniturePart(p: FurniturePart, seat: string, line: string): string {

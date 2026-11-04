@@ -4503,6 +4503,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       stackPadding: {
         type: 'number',
       },
+      stageCameras: {
+        type: 'boolean',
+      },
+      stageSpeakers: {
+        $ref: '#/components/schemas/StageSpeakers',
+      },
       stats: {
         items: {
           $ref: '#/components/schemas/StatItem',
@@ -4634,6 +4640,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'water-cooler',
       'coffee-machine',
       'rug',
+      'stage',
       'estimate',
       'temperature',
       'idea-box',
@@ -4935,6 +4942,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   StackDirection: {
     enum: ['row', 'column', 'grid'],
+    type: 'string',
+  },
+  StageSpeakers: {
+    description:
+      'Who may speak from a stage (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Share roles").',
+    enum: ['edit', 'take-part'],
     type: 'string',
   },
   StatItem: {

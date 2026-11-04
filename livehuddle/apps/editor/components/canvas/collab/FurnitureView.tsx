@@ -21,7 +21,7 @@ import {
   RUG_FILL,
   seatingFacing,
   type FurniturePart,
-  type OfficeKind,
+  type GridOfficeKind,
   type SeatingKind,
   type ShapeElement,
 } from '@livehuddle/document';
@@ -44,7 +44,7 @@ export type ChairSitter = { name: string; color: string };
 // The plant, the bookshelf, the machines, the meeting table and the rug (docs/specs/009-elements/office.md) are
 // drawn the same way, from OFFICE_ART: one drawing for every side.
 
-const NOUN: Record<SeatingKind | Exclude<OfficeKind, 'room'>, string> = {
+const NOUN: Record<SeatingKind | GridOfficeKind, string> = {
   chair: 'Chair',
   desk: 'Desk',
   sofa: 'Sofa',
@@ -56,7 +56,7 @@ const NOUN: Record<SeatingKind | Exclude<OfficeKind, 'room'>, string> = {
   rug: 'Rug',
 };
 
-/** Whether FurnitureView draws this kind: seating, and every office piece but the room (RoomView). */
+/** Whether FurnitureView draws this kind: seating, and every office piece but the room and the stage (RoomView, StageView). */
 export function isFurnitureViewShape(kind: string): kind is keyof typeof NOUN {
   return kind in NOUN;
 }
@@ -78,7 +78,7 @@ export function FurnitureView({
   const kind = element.shape;
   if (!isFurnitureViewShape(kind)) return null;
   const seating = isSeatingShape(kind);
-  const art = seating ? FURNITURE_ART[kind] : OFFICE_ART[kind as Exclude<OfficeKind, 'room'>];
+  const art = seating ? FURNITURE_ART[kind] : OFFICE_ART[kind as GridOfficeKind];
   const facing = seating ? seatingFacing({ shape: kind, chairFacing: element.chairFacing }) : 'n';
   const frame = furnitureFrame(art, facing);
   const seat = kind === 'rug' ? (fill ?? RUG_FILL) : chairSeatFill(element.fillColor, stroke);

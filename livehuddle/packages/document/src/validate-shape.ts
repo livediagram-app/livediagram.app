@@ -3,7 +3,7 @@
 // check names its field and rule, so a refusal says which value to fix.
 
 import { isChartCategory, isChartSeries, isChartSlice } from './malformed-chart-rows';
-import { isRoomDoor } from './office';
+import { isRoomDoor, isStageSpeakers } from './office';
 import { CHART_VARIANTS, isChartVariant } from './chart-types';
 import { EMBED_PROVIDERS } from './youtube';
 import { SELECTION_MODES, isPickerSource, isSelectionMode, isSessionTool } from './selection-mode';
@@ -308,6 +308,8 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
   },
   { field: 'chairFacing', valid: isChairFacing, rule: 'a chair facing' },
   { field: 'roomDoor', valid: isRoomDoor, rule: 'a room doorway (n, e, s, w or none)' },
+  { field: 'stageSpeakers', valid: isStageSpeakers, rule: 'who may speak from a stage (edit or take-part)' },
+  flag('stageCameras'),
   {
     field: 'responses',
     valid: rowsOf(RESPONSES_MAX, isResponse),

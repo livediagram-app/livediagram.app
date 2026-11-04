@@ -6,9 +6,10 @@
 import type { Rect } from '@liveworkspace/model-core/geometry-primitives';
 
 // The floor pieces: placed behind everything, never blocking, never a destination. An Avatar Pad
-// (docs/specs/009-elements/avatar-pad.md) lies on the floor too: characters stand on it, furniture over it.
-export function isFloorShape(kind: string): kind is 'room' | 'rug' | 'avatar-pad' {
-  return kind === 'room' || kind === 'rug' || kind === 'avatar-pad';
+// (docs/specs/009-elements/avatar-pad.md) lies on the floor too: characters stand on it, furniture over it. So does
+// livehuddle's Stage (its docs/specs/012-collaboration/meeting-rooms-and-stage.md): a platform people stand on.
+export function isFloorShape(kind: string): kind is 'room' | 'rug' | 'avatar-pad' | 'stage' {
+  return kind === 'room' || kind === 'rug' || kind === 'avatar-pad' || kind === 'stage';
 }
 
 // The furniture a character sits down in (docs/specs/009-elements/chair.md "Desk and sofa").

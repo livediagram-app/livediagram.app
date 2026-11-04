@@ -18,7 +18,7 @@ import { MODE_BUTTON_SKIN } from './selection-mode';
 import { hasOwnFace } from './collab-shapes';
 import { isConceptShape } from './concept';
 import { FENCE_WOOD } from '@liveworkspace/avatar/fence';
-import { isOfficeShape, ROOM_FLOOR, RUG_FILL } from './office';
+import { isOfficeShape, ROOM_FLOOR, RUG_FILL, STAGE_FLOOR, STAGE_FLOOR_DARK } from './office';
 import { isSeatingShape } from './seating';
 
 // Per-type default padding bucket (was beside the Padding type).
@@ -235,6 +235,13 @@ export const REVEAL_COVER_BASE: Record<CanvasSurface, string> = {
 const CONTROL_SKIN_DARK = { fill: '#1e293b', stroke: '#475569', text: '#f1f5f9' } as const;
 const OUTLINE_SKIN_LIGHT = { stroke: '#94a3b8', text: '#0f172a' } as const;
 
+// The floor pieces' unstyled fills, [light paper, dark paper] (docs/specs/009-elements/blueprints/DEFAULTS.md D210, D214).
+const FLOOR_FILLS: Record<'room' | 'rug' | 'stage', readonly [string, string]> = {
+  room: [ROOM_FLOOR, '#292524'],
+  rug: [RUG_FILL, '#713f12'],
+  stage: [STAGE_FLOOR, STAGE_FLOOR_DARK],
+};
+
 function behaviourSkin(
   element: BoxedElement,
   surface: CanvasSurface,
@@ -252,17 +259,11 @@ function behaviourSkin(
   if (kind === 'fence') {
     return { fill: 'transparent', stroke: FENCE_WOOD[surface], text: OUTLINE_SKIN_LIGHT.text };
   }
-  // A room's floor and a rug are the element's fill (docs/specs/009-elements/office.md): warm on light paper,
-  // deep on dark. Their outlines are the furniture's.
-  if (kind === 'room' || kind === 'rug') {
-    const fill =
-      kind === 'room'
-        ? surface === 'dark'
-          ? '#292524'
-          : ROOM_FLOOR
-        : surface === 'dark'
-          ? '#713f12'
-          : RUG_FILL;
+  // A room's floor, a rug and a stage's top are the element's fill (docs/specs/009-elements/office.md): warm on
+  // light paper, deep on dark, a stage a little lighter than the room it stands in. Their outlines are the
+  // furniture's.
+  if (kind === 'room' || kind === 'rug' || kind === 'stage') {
+    const fill = FLOOR_FILLS[kind][surface === 'dark' ? 1 : 0];
     return surface === 'dark'
       ? { fill, stroke: DARK_INK.stroke, text: DARK_INK.text }
       : { fill, ...OUTLINE_SKIN_LIGHT };
@@ -608,6 +609,7 @@ export const SELF_PAINTING_SHAPES = new Set<string>([
   'water-cooler',
   'coffee-machine',
   'rug',
+  'stage',
   // A quiz (docs/specs/012-collaboration/quiz.md) paints its own disc and ring of answers; a box behind
   // them would frame a circle in a square.
   'quiz',
