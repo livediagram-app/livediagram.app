@@ -268,6 +268,9 @@ export type CanvasProps = {
   // Opening walking (docs/specs/008-canvas/avatar-mode.md "Opening walking"): where the character starts on a tab
   // whose way in is a Walk In button, sequenced so each opening is a fresh request. Null until a tab opens walking.
   walkIn?: import('@/app/document/[id]/useOpenWalking').WalkIn | null;
+  // A Viewer's Walk button (docs/specs/008-canvas/avatar-mode.md "The Walk button"): on where the surface walks, off
+  // in an embed. Shown only to a session with no palette strip (lib/walk-button.ts).
+  walkButton?: boolean;
   // Laser-pointer trails for the LaserOverlay — local user first
   // followed by any peers laser-pointing on the active tab. The
   // overlay handles fading and cleanup; Canvas just renders.

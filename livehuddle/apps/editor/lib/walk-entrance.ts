@@ -7,11 +7,14 @@ import {
   type Layer,
   type ShapeElement,
 } from '@livehuddle/document';
-import { avatarSpawnFromButton, type AvatarPoint } from '@liveworkspace/avatar/walk';
+
+// The box of the button the character starts below (avatarSpawnBelow, at the character's own Size).
+export type WalkInButton = { x: number; y: number; width: number; height: number };
 
 // A tab's way in to the walk: its Avatar Pad (the walk itself starts the character on it), or a Selection Mode button
-// set to Avatar (every Spaces template's Walk In), which the character starts just below.
-export type WalkEntrance = { kind: 'pad' } | { kind: 'button'; feet: AvatarPoint };
+// set to Avatar (every Spaces template's Walk In), which the character starts just below. The button's box, not a
+// spot: where the feet go depends on the character's Size, which only the canvas knows (useWalkIn).
+export type WalkEntrance = { kind: 'pad' } | { kind: 'button'; button: WalkInButton };
 
 const isShape = (el: Element): el is ShapeElement => el.type === 'shape';
 
@@ -31,7 +34,6 @@ export function walkEntrance(
       button = el;
   }
   if (!button) return null;
-  // Exactly where a press of the button would put the character ('select' stands for any tool but Avatar).
-  const feet = avatarSpawnFromButton(button, 'avatar', 'select');
-  return feet ? { kind: 'button', feet } : null;
+  const { x, y, width, height } = button;
+  return { kind: 'button', button: { x, y, width, height } };
 }

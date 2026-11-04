@@ -45,6 +45,9 @@ import { PHONE_CLUSTER_BUTTON_WIDTH } from '@/components/chrome/phone-toolbar-it
 import { useSnapHaptic } from '@liveworkspace/workbench/hooks/canvas/useSnapHaptic';
 import { CollaborateClusterButton } from '@liveworkspace/workbench/components/canvas/CollaborateClusterButton';
 import { AvatarClusterButton } from '@liveworkspace/avatar/components/AvatarClusterButton';
+import { WalkClusterButton } from '@liveworkspace/avatar/components/WalkClusterButton';
+import { AvatarModeIcon } from '@/components/palette/palette-icons';
+import { walkButtonShown } from '@/lib/walk-button';
 import { CallClusterButton } from '@/components/calls/CallClusterButton';
 import { kindCounts } from '@/components/panels/collaborate/collaborate-model';
 import { panelEnabled } from '@/lib/user-preferences';
@@ -521,6 +524,23 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onRedo={onRedo}
                 canUndo={canUndo}
                 canRedo={canRedo}
+              />
+            ) : null}
+            {/* Walk (docs/specs/008-canvas/avatar-mode.md "The Walk button"): a Viewer has no picker, so this is its
+                way in to Avatar mode and back out, first in the cluster where its Avatar button follows. */}
+            {walkButtonShown({
+              offered: !!props.walkButton,
+              readOnly: !!readOnly,
+              participantPalette: !!props.participantPalette,
+            }) ? (
+              <WalkClusterButton
+                walking={props.canvasTool === 'avatar'}
+                onToggle={() =>
+                  props.canvasTool === 'avatar'
+                    ? props.onExitAvatarMode?.()
+                    : props.onSetCanvasTool('avatar')
+                }
+                icon={<AvatarModeIcon size={16} />}
               />
             ) : null}
             {/* Avatar (docs/specs/008-canvas/avatar-mode.md "The Avatar Panel"): beside Undo / Redo while the mode

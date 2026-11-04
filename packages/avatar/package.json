@@ -17,6 +17,7 @@
     "./components/AvatarSpeechBubble": "./src/components/AvatarSpeechBubble.tsx",
     "./components/AvatarSpeechLayer": "./src/components/AvatarSpeechLayer.tsx",
     "./components/AvatarWalker": "./src/components/AvatarWalker.tsx",
+    "./components/WalkClusterButton": "./src/components/WalkClusterButton.tsx",
     "./components/avatar-sprite": "./src/components/avatar-sprite.tsx",
     "./components/avatar-sprite-head": "./src/components/avatar-sprite-head.tsx",
     "./components/avatar-sprite-palette": "./src/components/avatar-sprite-palette.ts",
