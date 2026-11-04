@@ -16,8 +16,10 @@ import {
   bubbleMotion,
   edgeShift,
   screenX,
+  screenY,
   speechLift,
   tailOffset,
+  topShift,
   SPEECH_LIFT_EASE_MS,
   SPEECH_RISE_PX_PER_S,
   SPEECH_SWAY_PX,
@@ -32,9 +34,11 @@ import { SendIcon, SpeechCard, SpeechCounter, SpeechDraftField } from './AvatarS
 // The brand cyan a character falls back to with no presence colour (AvatarWalker's).
 
 // The composer's width, and the view's: the visible canvas in screen px, which a bubble is kept inside (spec
-// "Kept inside the view"). `offsetX` is the canvas's pan, so a canvas x is at `screenX(x, zoom, offsetX, width)` on screen.
+// "Kept inside the view"). `offsetX` and `offsetY` are the canvas's pan, so a canvas x is at
+// `screenX(x, zoom, offsetX, width)` on screen and a y at `screenY(y, zoom, offsetY, height)`. Without a height, only the
+// sides hold a bubble in.
 const COMPOSER_WIDTH = 240;
-export type SpeechView = { offsetX: number; width: number };
+export type SpeechView = { offsetX: number; width: number; offsetY?: number; height?: number };
 
 type Peer = { id: string; name: string; color: string };
 type Speaker = { name: string; colour: string } | null;
@@ -69,8 +73,9 @@ function motionOf(
   b: SpeechBubble,
   now: number,
   reduced: boolean,
-  // The bubble's anchor on screen, its card's measured width and the view's width: all the edge clamp reads.
-  edge: { x: number; width: number; viewWidth: number },
+  // The bubble's anchor on screen, its card's measured size and the view's: all the edge clamp reads. `y` is null
+  // where the view's height is unknown.
+  edge: { x: number; y: number | null; width: number; height: number; viewWidth: number },
   // Screen px it starts higher by, to keep clear of what is in its path (speechLift).
   lift = 0,
 ): { transform: string; opacity: number; tail: number; tailOffset: number } {
@@ -82,8 +87,12 @@ function motionOf(
   );
   const width = edge.width * m.scale;
   const shift = edge.viewWidth > 0 ? edgeShift(edge.x + m.sway, width, edge.viewWidth) : 0;
+  // Up from the anchor by its rise and lift, then down just enough to keep its top in view: the card scales about its
+  // bottom, so its top is its scaled height above that.
+  const up = m.rise + lift;
+  const down = edge.y === null ? 0 : topShift(edge.y - up - edge.height * m.scale);
   return {
-    transform: `translate(calc(-50% + ${m.sway + shift}px), ${-(m.rise + lift)}px) scale(${m.scale})`,
+    transform: `translate(calc(-50% + ${m.sway + shift}px), ${down - up}px) scale(${m.scale})`,
     opacity: m.opacity,
     tail: m.tail,
     tailOffset: tailOffset(shift, width),
@@ -333,7 +342,13 @@ export function AvatarSpeechLayer({
   // The flight: one loop while anything is flying, its first frame written before paint so a new bubble never
   // shows a frame out of place.
   const shownRef = useLatest(shown);
-  const viewRef = useLatest({ zoom, offsetX: view.offsetX, width: view.width });
+  const viewRef = useLatest({
+    zoom,
+    offsetX: view.offsetX,
+    width: view.width,
+    offsetY: view.offsetY ?? 0,
+    height: view.height ?? 0,
+  });
   const obstaclesRef = useLatest(obstacles);
   const flying = shown.length > 0;
   useLayoutEffect(() => {
@@ -354,7 +369,9 @@ export function AvatarSpeechLayer({
           reduced,
           {
             x: screenX(b.x, v.zoom, v.offsetX, v.width),
+            y: v.height > 0 ? screenY(b.y, v.zoom, v.offsetY, v.height) : null,
             width: n.width,
+            height: n.height,
             viewWidth: v.width,
           },
           liftOf(n, b, now, reduced, v, around) * v.zoom,

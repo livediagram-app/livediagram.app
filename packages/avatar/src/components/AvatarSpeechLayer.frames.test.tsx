@@ -3,7 +3,7 @@ import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { SpeechBubble } from '../speech';
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
-import { AvatarSpeechLayer } from './AvatarSpeechLayer';
+import { AvatarSpeechLayer, type SpeechView } from './AvatarSpeechLayer';
 
 // docs/specs/008-canvas/blueprints/avatar-speech.md: the flight is one loop that writes styles, no work it can skip.
 vi.mock('@liveworkspace/workbench/lib/motion-preference', () => ({
@@ -30,7 +30,7 @@ const props = {
   bubbles: [bubble],
   activeTabId: 't1',
   zoom: 1,
-  view: { offsetX: 0, width: 390 },
+  view: { offsetX: 0, width: 390 } as SpeechView,
   peers: [],
   composer: null,
   self: { name: 'Tom', colour: '#14b8a6' },
@@ -85,6 +85,55 @@ describe('the speech bubbles flight', () => {
       expect(placed(20, { offsetX: 0, width: 0 }).card.style.transform).toContain(
         'calc(-50% + 0px)',
       );
+    });
+  });
+
+  describe('kept below the top of the view (Work Tracker #394)', () => {
+    // A card laid out 100 x 40; reduced motion, so it holds still where it starts.
+    const startAt = (y: number, view: typeof props.view = { ...props.view, height: 600 }) => {
+      vi.mocked(prefersReducedMotion).mockReturnValue(true);
+      vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(100);
+      vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(40);
+      vi.useFakeTimers({
+        toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'],
+      });
+      const { container } = render(
+        <AvatarSpeechLayer {...props} bubbles={[{ ...bubble, x: 200, y }]} view={view} />,
+      );
+      return container.querySelector<HTMLElement>('[aria-hidden].w-max')!.style.transform;
+    };
+
+    it('starts a bubble over a head at the top edge inside the view, 8px below it', () => {
+      // Its top would be at 20 - 40 = -20: dropped 28 to sit at 8.
+      expect(startAt(20)).toContain(', 28px) scale');
+    });
+
+    it('leaves a bubble with room above it where it starts', () => {
+      expect(startAt(300)).toContain(', 0px) scale');
+    });
+
+    it('holds a rising bubble at the top once it meets it', () => {
+      vi.mocked(prefersReducedMotion).mockReturnValue(false);
+      vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(100);
+      vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(40);
+      vi.useFakeTimers({
+        toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'],
+      });
+      const { container } = render(
+        <AvatarSpeechLayer
+          {...props}
+          bubbles={[{ ...bubble, x: 200, y: 60 }]}
+          view={{ ...props.view, height: 600 }}
+        />,
+      );
+      const card = container.querySelector<HTMLElement>('[aria-hidden].w-max')!;
+      // Three seconds in, it has risen 54px; its top stops at 8, so it stands 12px up, not 54.
+      vi.advanceTimersByTime(3000);
+      expect(card.style.transform).toContain(', -12px) scale');
+    });
+
+    it('keeps only the sides where the view has no height', () => {
+      expect(startAt(20, props.view)).toContain(', 0px) scale');
     });
   });
 

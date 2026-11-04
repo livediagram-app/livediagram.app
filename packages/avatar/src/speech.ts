@@ -147,7 +147,12 @@ export function screenX(x: number, zoom: number, offsetX: number, viewWidth: num
   return zoom * (x + offsetX) + (viewWidth / 2) * (1 - zoom);
 }
 
-/** Screen px kept clear between a bubble and the view's left or right edge. */
+/** Where a canvas y is on screen: `screenX`'s formula on the other axis. */
+export function screenY(y: number, zoom: number, offsetY: number, viewHeight: number): number {
+  return screenX(y, zoom, offsetY, viewHeight);
+}
+
+/** Screen px kept clear between a bubble and the view's left, right or top edge. */
 export const SPEECH_EDGE_MARGIN = 8;
 
 /**
@@ -161,6 +166,15 @@ export function edgeShift(centre: number, width: number, viewWidth: number): num
   let shift = Math.min(0, viewWidth - SPEECH_EDGE_MARGIN - right);
   if (left + shift < SPEECH_EDGE_MARGIN) shift = SPEECH_EDGE_MARGIN - left;
   return shift;
+}
+
+/**
+ * The downward shift, in screen px, that keeps a card whose top is at screen y `top` at least SPEECH_EDGE_MARGIN
+ * below the view's top edge. Zero while it already fits: a bubble rises until it meets the top, then holds there as it
+ * fades, and one over a character at the very top starts there rather than out of sight.
+ */
+export function topShift(top: number): number {
+  return Math.max(0, SPEECH_EDGE_MARGIN - top);
 }
 
 /** How far from a card's corners its tail keeps, so it never rides onto the rounded corner. */

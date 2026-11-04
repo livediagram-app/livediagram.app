@@ -158,6 +158,7 @@ the one new stored value, a synced user preference.
 | E11 | Not in a shared room (no share link)       | Own bubble only; nothing sent                                 |
 | E12 | Hide-cursors vote                          | Nothing sent, nothing drawn                                   |
 | E13 | Speaker near the view's left or right edge | The card is shifted inside the view (`edgeShift`), 8px margin |
+| E14 | Bubble rising to the view's top edge       | It stops 8px below the top (`topShift`) and fades there       |
 
 ## Security and trust
 
@@ -182,7 +183,12 @@ Abuse: the room's per-socket frame cap, the client cooldown, and the per-person 
 - Edge clamp: the layer takes the view's screen width and x offset (`viewWidth`, `offsetX`). A bubble's screen x is
   `zoom * (x + offsetX) + width / 2 * (1 - zoom)` (the layer scales about its centre); its card width is measured once when it mounts (a composer is a fixed 240px), so each frame is
   arithmetic only: `edgeShift(centre, width, viewWidth)` (pure, in `speech.ts`) answers the sideways shift in reading px,
-  added to the card's translate. No layout reads per frame.
+  added to the card's translate. The top edge the same way: the layer also takes the view's height and y offset
+  (`viewHeight`, `offsetY`; `screenY` is `screenX`'s formula on the other axis), and `topShift(top)` answers how far
+  down a card whose top is at screen y `top` (its anchor, less its rise, lift and scaled height) moves to keep
+  SPEECH_EDGE_MARGIN below the view's top: zero while it fits, so a bubble rises until it meets the top and holds
+  there as it fades. Floating bubbles only: the composer sits over your own character, which the camera follow
+  keeps clear of the edges. No layout reads per frame.
 - Composer: the same card with an auto-growing textarea (one line to start, up to 5), placeholder "Say
   something…", a 28px round send button with the paper-plane glyph, in your colour while it can send; a single line is padded to the
   button's height so the text sits level with it, and the counter `43 / 50` (amber at 50) under
