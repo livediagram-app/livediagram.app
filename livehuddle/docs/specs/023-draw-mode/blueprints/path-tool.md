@@ -51,7 +51,6 @@ Scope, by file:
 | `apps/editor/hooks/canvas/editor-shortcut-keys.ts`                     | `P` on a whiteboard; `WHITEBOARD_TOOL_KEYS.path`                                                                                  |
 | `apps/editor/components/palette/palette-icons.tsx`                     | `ShapePenIcon` (the Shape Pen tile's icon, shared with the dock), `EditPointsIcon`                                                |
 | liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts | Sentences for the four events                                                                                                     |
-| `apps/help/app/canvas/draw-mode/page.mdx`                              | The Path tool section                                                                                                             |
 
 ## Domain and naming
 
@@ -191,8 +190,7 @@ instead; releasing Space resumes shaping from the node's new place. Release ends
   whenever a draft exists, so the board's history never runs under a draft. Placing a node, or the
   draft ending, empties the redo list. `usePathDrawGesture.history`
   (`{ canUndo: true, canRedo, undo, redo }`, null without a draft) replaces `canUndo` / `canRedo` /
-  `onUndo` / `onRedo` on `CanvasChrome`, so the corner cluster (the only Undo and Redo buttons, in
-  Draw mode too) steps through the draft too.
+  `onUndo` / `onRedo` on `CanvasChrome`, so the corner cluster (the only Undo and Redo buttons) steps through the draft too.
 - Space, Alt, Shift: read from the pointer events and a Space key flag.
 
 **Rubber band**: while not dragging, the last node to `cursor` (Shift: constrained) as a cubic
@@ -316,7 +314,7 @@ With the Path tool in hand, the draft is editable (as in Figma):
 - `pathEditing` (the edited element is a path): the Select button is pressed, labelled "Select,
   editing a path", icon `EditPointsIcon` (the selection toolbar's Edit points glyph); pressing it
   calls `leavePathEdit`.
-- `WHITEBOARD_EDIT_KEYS.p` → `pickPath`; `WHITEBOARD_TOOL_KEYS.path = 'P'`. Diagram tabs keep `P` as
+- `WHITEBOARD_EDIT_KEYS.p` → `pickPath`; `WHITEBOARD_TOOL_KEYS.path = 'P'`. Elsewhere `P` stays
   the pencil.
 - `typeIntoSelected` returns false for a path (no typed label, P1).
 
@@ -327,7 +325,7 @@ With the Path tool in hand, the draft is editable (as in Figma):
   `stroke-width = BORDER_STROKE_PX[strokeWidth ?? DEFAULT_BORDER_STROKE]`, dash from
   `BORDER_DASH_ARRAY[strokeStyle]`, round caps and joins, `fill` = the fill colour when closed, else
   `none`.
-- Picked by its line (`lineHit` for a path neither selected nor multi-selected, on every tab): a
+- Picked by its line (`StrokeHitPath` in `boxed-element-overlays.tsx`, for a path not being edited, on every tab): a
   transparent twin with `stroke-width = strokePx + 2 · STROKE_HIT_SCREEN_PX / zoom`,
   `pointer-events: stroke`, or `all` when closed and filled (the fill picks it too).
 - The draft (`PathDraftLayer`, inside the transformed layer after the elements) is a `div.absolute`
@@ -341,8 +339,8 @@ With the Path tool in hand, the draft is editable (as in Figma):
 ### Style
 
 - Created in Ink by name, unfilled: `boardShape(createPath(...))` writes `penColour: 'ink'` and
-  `fillColor: 'transparent'` (the Path tool is a Draw mode tool), then the remembered Draw style; it
-  looks the same in Diagram mode ([One look](../../007-editor/editor-modes.md#one-look)).
+  `fillColor: 'transparent'` (the Path tool is a whiteboard tool), then the remembered whiteboard style; it
+  looks the same wherever it is opened ([Editor modes](../../007-editor/editor-modes.md#what-a-tab-written-elsewhere-keeps)).
 - Quick style: `isQuickStyleTarget` includes an unlocked path. Sections: stroke, width, style (solid,
   dashed, dotted) always; background when `closed`. Apply and clear as for a shape.
 - Style memory kind `path` (`board:path` on a whiteboard), fields `strokeColor`, `strokeSwatch`,
@@ -352,7 +350,7 @@ With the Path tool in hand, the draft is editable (as in Figma):
 
 ### Selecting, erasing, export
 
-- The whiteboard eraser removes a path whole in both modes (Partial splits only freehand strokes).
+- The whiteboard eraser removes a path whole in both eraser modes (Partial splits only freehand strokes).
 - SVG export: `svgPathElementShape(el, stroke, fill)` writes `<path d="…" fill stroke stroke-width
 stroke-dasharray stroke-linecap="round" stroke-linejoin="round"/>` with `pathD(..., r2)`, inside the
   element's opacity and rotation group, as `svgFreehandShape` is.
@@ -397,7 +395,7 @@ export function openPathAt(anchors: readonly PathAnchor[], i: number): PathAncho
 export function dragNodes(base, moving, pressed, delta: Point, shift: boolean, snapRadius: number): { anchors: PathAnchor[]; guides: PathGuides | null };
 export function pathEditKey(key: { key: string; shiftKey: boolean; mod: boolean }, anchors, closed, selected): PathKeyOutcome;
 export function toLocal(el, p: Point): Point; export function toWorld(el, p: Point): Point;
-export function tabAsSeen(tab: Tab, appearance?: Appearance): Tab; // the tab's Diagram backdrop, stock colours resolved
+export function tabAsSeen(tab: Tab, appearance?: Appearance): Tab; // the tab's backdrop, stock colours resolved
 export function editingLook(element: { type: string }, isEditing: boolean): { raise: boolean; textCursor: boolean };
 // CanvasProps
 onCommitPath: (draft: { anchors: PathAnchor[]; closed: boolean; continuing: { id: string } | null }) => void;
@@ -440,7 +438,7 @@ paths ship with the validator, the OpenAPI schema and the MCP's type list in one
 - Zoom or pan mid-draft: every point converts with its event's rect and zoom.
 - `pointercancel` mid-drag: the drag ends without a commit (edit) or keeps the placed node (draw).
 - Read-only, locked tab, tab loading: the dock hides the tool; commits refuse (`editsBlocked`).
-- A path pasted onto a diagram tab: renders, selects, styles and edits; the tool is not offered.
+- A path pasted onto a board without the tool: renders, selects, styles and edits; the tool is not offered.
 
 ## Security and trust
 

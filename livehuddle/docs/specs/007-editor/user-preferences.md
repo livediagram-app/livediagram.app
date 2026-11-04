@@ -347,7 +347,7 @@ Missing key === undefined === default behaviour. Concretely:
 - `recogniseShapes` is ignored whatever its value ([Two pens instead of a pen and a mode](../008-canvas/two-pens.md)): the
   Shape Pen recognises, Freehand does not, and no stored flag
   changes either.
-- `panelLayout` and `minimalPanels`, if a stored blob carries them, are
+- `panelLayout` and `minimalPanels`, if an older stored blob carries them, are
   ignored: there is one panel layout ([Toolbar layout](toolbar-layout.md#one-layout)).
 - `elementIndicatorStyle` undefined → Top: an element's link, note, action
   and comment glyphs sit inside it along its top, top-right on a box and centred

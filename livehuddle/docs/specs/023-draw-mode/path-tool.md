@@ -17,15 +17,15 @@ editable.
 
 ## Where it lives
 
-- **Whiteboards only.** The Path tool is a dock button and a key on a whiteboard; diagram tabs do
-  not offer it. A path element that reaches a diagram tab (paste, a tab that stops being a
+- **Whiteboard tools only.** The Path tool is a dock button and a key on a whiteboard; the palette's
+  shapes do not offer it. A path element that reaches a board without it (paste, a tab that stops being a
   whiteboard) renders, selects, moves, styles and edits there like any element.
 - **Dock:** in the Shapes group, after the sticky note (see
-  [Draw mode](draw-mode.md) "What a whiteboard shows"), labelled **Path tool**, key **P**
+  [Draw mode](draw-mode.md) "Shapes"), labelled **Path tool**, key **P**
   (shown on the button and in `aria-keyshortcuts`). Its icon is **the Shape Pen's own palette
   icon**, unchanged: the same component, at the dock's icon size, never a
   redrawn copy.
-- **Key P** picks it from anywhere on a whiteboard (not while typing). On diagram tabs P stays the
+- **Key P** picks it from anywhere on a whiteboard (not while typing). Elsewhere P stays the
   pencil.
 - Picking it puts any marker, shape or eraser down, like every dock tool.
 
@@ -199,5 +199,5 @@ corner and handle can be adjusted, by mouse, pen, finger and keyboard.
 - Boolean operations, compound paths (several subpaths in one element), text on a path.
 - Stroke caps, joins, arrowheads and variable width on paths.
 - Pressure, and a pen-pressure-aware Path tool.
-- The Path tool on diagram tabs.
+- The Path tool on a board without the whiteboard tools.
 - Partial erasing of paths.

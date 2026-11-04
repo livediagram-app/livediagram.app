@@ -8,6 +8,11 @@ First-party, anonymous product analytics, surfaced on a **public** dashboard so 
 - **No external vendors.** Events go to the **liveworkspace telemetry service** ([liveworkspace/docs/specs/008-telemetry/telemetry.md](../../../../liveworkspace/docs/specs/008-telemetry/telemetry.md)), our own Worker on `liveworkspace.app/api/telemetry` (its dashboard is `liveworkspace.app/telemetry`) that counts usage for livehuddle and its sister apps, and are stored in its own D1 database. The dashboard is its own app too. Nothing is sent to a third party, and data is never sold or shared beyond the public dashboard.
 - **Off by default.** A single env var gates the whole system, so forks emit/serve nothing unless they opt in. No committed config turns it on: livehuddle.app's own deploys do, through the hosted profile ([Deployment](../016-platform/deployment.md) "Hosted profile"), which a fork's deploys never apply. This keeps the "no required SaaS calls" rule ([03](../002-project-scope/open-source-and-business-model.md)) intact.
 - **Transparent.** The dashboard is public (`liveworkspace.app/telemetry`; `livehuddle.app/telemetry` redirects there with livehuddle picked), and the privacy policy + landing page say plainly what we capture and why, and link to it.
+- **livehuddle's dashboard pages are not built yet** ([Build plan](../005-project-roadmap/build-plan.md) step 8, left
+  for later): its events are stored, and held out of the dashboard's app picker until then. The dashboard rules below,
+  and every blueprint row that cites `liveworkspace/apps/site/app/telemetry/livehuddle/` (its catalogue,
+  `event-explanations.ts` and the rest), name where livehuddle's pages go, beside livediagram's
+  (`liveworkspace/apps/site/app/telemetry/livediagram/`); until they exist, an event livehuddle adds needs no card.
 
 ## Event schema
 

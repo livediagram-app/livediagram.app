@@ -78,7 +78,7 @@ Cost controls, all in `e2e-product.yml` and `playwright.config.ts`:
   server (it seeds it through the api with `seedTab`, watches the api's saves, or shares it) opens `/new` through
   `serverNewUrl`, which keeps the page's adopted guest (or adopts a minted one) and adds a `?folder=` of theirs, the
   placement that makes `/new` create on livehuddle whoever is creating. `createInMode` (with no address of its own),
-  `startBlankDocument`, `startTemplateDocument`, `openStartBlank` and `openBlankSession` do it for every caller; a
+  `startBlankDocument`, `openStartBlank` and `openBlankSession` do it for every caller; a
   spec that means the guest's own create passes `/new` itself. `e2e/server-new.test.ts` holds every spec that seeds
   through the api to it.
 - **Sharded** (`--shard=i/6`, the matrix in `e2e-product.yml`): Playwright splits the `chromium` project's
@@ -148,8 +148,8 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
 3. **api**: `wrangler dev --local` (`apps/api`) on a fixed port, with
    each document's content in its own local Durable Object (no migration to apply).
    `TELEMETRY_ENABLED` unset (the suite asserts on the app, not the
-   events pipe), and `AI_ALLOWED_ORIGINS` blanked with `--var` (production
-   declares it in `[vars]`, which would refuse the localhost editor).
+   events pipe), and `ACCOUNTS_URL`, `ACCOUNTS_CLIENT_ID` and `INDEX_ORIGIN` set with
+   `--var` to the stack's own stand-ins, never what a developer's `.dev.vars` names.
 4. **live**: the static `apps/editor/out` served by a minimal Node
    server that reproduces what the production router +
    editor worker do (so clean routes and the document placeholder resolve
@@ -186,8 +186,7 @@ The stack serves whatever `apps/editor/out` holds and never rebuilds it, so loca
    since marketing owns `/` in production.
 
 The stack also runs the editor alone beside a running one (`E2E_EDITOR_ONLY`,
-`E2E_EDITOR_PORT`, `E2E_API_PORT`) and can pose as a deployment without an AI
-key (`E2E_NO_AI`) or with its AI budget spent (`E2E_AI_BUDGET_SPENT`); see
+`E2E_EDITOR_PORT`, `E2E_API_PORT`); see
 [Local development](../../development/local-development.md).
 
 Locally the same `playwright.config.ts` sets `reuseExistingServer`, so a
@@ -314,9 +313,8 @@ tests where it's cheap.
   `.test.ts` beside them is a Vitest unit test of a pure helper (`optical-snap.test.ts`, `perf/*.test.ts`),
   which `vitest.config.ts` runs and Playwright never loads.
 - `apps/editor/e2e/fixtures.ts`: the `test` with its `pageErrors` fixture, `expectNoPageErrors`, and the
-  shared flows (`startBlankDocument`, `startTemplateDocument`, `seedTab`,
-  `dismissQuickTour`, `openJustDraw`). `startTemplateDocument` exists because the blank helper skips the
-  wizard's category step and so never exercises template creation.
+  shared flows (`startBlankDocument`, `openStartBlank`, `openBlankSession`, `seedTab`,
+  `dismissQuickTour`).
 - `apps/editor/e2e/fixtures/`: `audit-screens.ts`, `contrast.ts`, `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
 - `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, community, marketing).
 - The root `.github/workflows/e2e.yml` and `e2e-product.yml`: the sharded workflow, run on every pull request;

@@ -23,7 +23,7 @@ Scope, by file:
 | `apps/editor/components/canvas/useRichTextSession.ts`     | Scaled px; reports the editor node after every change                                    |
 | `apps/editor/components/rich-text/useRichTextDocument.ts` | Re-sets the caret when an Enter at the end opens the empty last line                     |
 | `apps/editor/components/rich-text/rich-text-dom.ts`       | `reconcileTrailingNewline` says whether it added the line; `reassertSelection`           |
-| `apps/editor/lib/draw-commit.ts`                          | `buildDrawnBoxed` places a Draw mode text box through `placedTextBox`                    |
+| `apps/editor/lib/draw-commit.ts`                          | `buildDrawnBoxed` places a whiteboard text box through `placedTextBox`                   |
 | `apps/editor/app/document/[id]/useSelectionEditing.ts`    | `commitLabel` hugs or removes, in the label's one commit                                 |
 | `apps/editor/hooks/canvas/boxed-drag-resolve.ts`          | `resizedElement`, `TextHugResize`                                                        |
 | `apps/editor/hooks/canvas/useEditorDrag.ts`               | A lone hugging text box resizes through `resizedElement`                                 |
@@ -36,7 +36,7 @@ Scope, by file:
 
 | Term             | Identifier                 | Meaning                                                                                                                 |
 | ---------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Hugging text box | `hugsText(el)`             | A `text` element whose `sizing` is set, in either mode                                                                  |
+| Hugging text box | `hugsText(el)`             | A `text` element whose `sizing` is set, wherever it is                                                                  |
 | Sizing           | `TextElement.sizing`       | `fit`: the width follows the text up to the wrap width; `wrap`: the width is set; absent: a fixed box that does not hug |
 | Text scale       | `TextElement.textScale`    | Multiplier on the label px, from a Shift resize; absent: 1                                                              |
 | Hug padding      | `textHugPadding(el)`       | `{ x: 4, y: 2 }`, or the element's padding preset on every side (T2)                                                    |
@@ -71,7 +71,7 @@ Scope, by file:
   `height = h`.
 - Drag: `label ''`, `sizing: 'wrap'`, the dragged box's `x`, `y` and `width`, `height = h`.
 - Either opens for typing (`opensForTyping`). No placeholder is shown: the caret is the box.
-- Diagram tabs: unchanged (`createText`'s 220 × 64 and "Text").
+- Palette text boxes: unchanged (`createText`'s 220 × 64 and "Text").
 
 ### Typing
 
@@ -162,8 +162,8 @@ export function resizedElement(
 - Empty or whitespace-only on commit: removed (above). Undo brings the empty box back, one step.
 - A word longer than the wrap width breaks inside the word (`overflow-wrap: break-word`).
 - Rotated box, multi-selection resize: the frame's bounds as on any tab (T3).
-- A fixed box (no `sizing`, made in Diagram mode): no hug anywhere (`hugsText` is false), in
-  either mode; a hugging box keeps hugging in Diagram mode too.
+- A fixed box (no `sizing`, made from the palette): no hug anywhere (`hugsText` is false); a hugging box
+  keeps hugging wherever it is edited.
 - An explicit padding preset: that padding on every side (T2).
 
 ## Security and trust

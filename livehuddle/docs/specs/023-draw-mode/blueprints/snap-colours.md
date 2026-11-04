@@ -86,7 +86,7 @@ keeps its exact colour (the board scene's own rule, docs/specs/020-import-export
   (status sentence, no button). The result lives in component state, so closing the flyout (which
   unmounts it) forgets it; undo re-renders **offer** once colours are back and no result is shown.
 - Section heading "Colours" in the flyouts' small capitals; `role="group"`, `aria-label="Colours"`.
-- Offer copy: "1 custom colour" / "N custom colours"; swatches: first `TAB_CUSTOM_COLOURS_MAX` (8, `apps/editor/lib/quick-style-pen.ts`),
+- Offer copy: "1 custom colour" / "N custom colours"; swatches: first `SNAP_PREVIEW_MAX` (8, `SnapColoursSection.tsx`),
   each `aria-hidden`, its hex in `data-snap-swatch`; button "Snap to stock colours", disabled when
   `blocked`.
 - Done copy: "1 custom colour snapped to stock colours" / "N custom colours snapped to stock

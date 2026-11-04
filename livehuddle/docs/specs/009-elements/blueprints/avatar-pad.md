@@ -31,23 +31,22 @@ Scope, by file:
 | `apps/editor/app/canvas-motion.css`                               | `avatar-pad-shimmer`, `-beam`, `-flash`, `-spark`; reduced motion               |
 | `apps/editor/components/palette/palette-tile-defs.tsx`            | `tools:avatar-pad` in **Navigate** (`tileGroup: 'move'`)                        |
 | `apps/editor/components/palette/palette-icons.tsx`                | `AvatarPadIcon`                                                                 |
-| `apps/editor/components/palette/canvas-tool-options.tsx`          | `BOARD_ONLY_TOOLS`: Avatar listed only while in force                           |
+| `apps/editor/components/palette/canvas-tool-options.tsx`          | Avatar is always listed in the canvas-tool picker                               |
 | `apps/editor/lib/editor-commands.ts`, `editor-shortcut-keys.ts`   | No `tool:avatar`, no `W`                                                        |
 | `packages/api-schema/src/telemetry-schema.ts`                     | `Avatar-pad` element type token                                                 |
 
 ## Domain and naming
 
-| Term            | Identifier                        | Meaning                                                  |
-| --------------- | --------------------------------- | -------------------------------------------------------- |
-| Pad             | shape kind `'avatar-pad'`         | The element                                              |
-| Grid            | `AVATAR_PAD_GRID` (32 x 20)       | The pixel grid the drawing is on                         |
-| Part            | `AvatarPadPart`                   | One row run of same-coloured pixels, with a `role`       |
-| Core            | `avatarPadCore(pad)`              | Where a starting character's feet go, canvas px, rotated |
-| Footprint       | `avatarPadFootprint(pad)`         | Top face half-axes, for "standing on the pad"            |
-| Spawn pad       | `pickSpawnPad(pads, centre)`      | The pad an entry starts on                               |
-| Entry           | `padEntry(elements, c, onScreen)` | Feet + whether the view recentres                        |
-| Arrival         | `PadArrival`                      | One beam: person, pad, feet, colour, start               |
-| Board-only tool | `BOARD_ONLY_TOOLS`                | A mode only a Selection Mode button enters (Avatar)      |
+| Term      | Identifier                        | Meaning                                                  |
+| --------- | --------------------------------- | -------------------------------------------------------- |
+| Pad       | shape kind `'avatar-pad'`         | The element                                              |
+| Grid      | `AVATAR_PAD_GRID` (32 x 20)       | The pixel grid the drawing is on                         |
+| Part      | `AvatarPadPart`                   | One row run of same-coloured pixels, with a `role`       |
+| Core      | `avatarPadCore(pad)`              | Where a starting character's feet go, canvas px, rotated |
+| Footprint | `avatarPadFootprint(pad)`         | Top face half-axes, for "standing on the pad"            |
+| Spawn pad | `pickSpawnPad(pads, centre)`      | The pad an entry starts on                               |
+| Entry     | `padEntry(elements, c, onScreen)` | Feet + whether the view recentres                        |
+| Arrival   | `PadArrival`                      | One beam: person, pad, feet, colour, start               |
 
 Banned synonyms: "spawn point" as an identifier (the button's one-shot is `spawnAtRef`), "teleporter", "portal" for a
 pad.

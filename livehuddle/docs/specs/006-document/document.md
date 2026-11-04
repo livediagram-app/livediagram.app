@@ -56,7 +56,7 @@ that named it moved in one change:
 - **Code:** identifiers, files and packages (`@livehuddle/document`, `apps/editor/app/document/[id]`).
 - **Schema:** the document's own schema names the tables and columns `document`, `document_tabs` and
   `document_id`, and the timeline's source, scope and event types say document. The tab kind
-  `'diagram'` and anything naming a drawing (`ErDiagram`) are left alone.
+  `'diagram'` and anything naming a drawing are left alone.
 - **Realtime and storage:** the Durable Object class is `DocumentRoom` (binding `DOCUMENT_ROOM`), a SQLite-backed
   class declared new in its first migration (livehuddle ships fresh on new infrastructure, so it carries no rename
   history); it holds each document's content ([API app, Storage](../015-api/api.md#storage)); the room ops are
@@ -68,9 +68,9 @@ that named it moved in one change:
   untitled, exactly as "Untitled document" does.
 - **Addresses people already have** keep working: `/diagram/<id>` and six help articles redirect
   for good ([Router app](../016-platform/router-app.md#legacy-editor-route)); the public API's
-  `/api/diagrams…` routes and the MCP `*_diagram` tools stay as deprecated aliases until 30 April
-  2027 ([Public API and API tokens §3.8](../015-api/public-api-and-tokens.md#38-deprecated-diagram-routes),
-  [MCP server §4.18](../015-api/mcp-server.md#418-deprecated-tool-names)).
+  `/api/diagrams…` routes stay as a deprecated alias until 30 April 2027
+  ([Public API and API tokens §3.8](../015-api/public-api-and-tokens.md#38-deprecated-diagram-routes)); the MCP server
+  has no `*_diagram` tools.
 - **An editor left open across the deploy** runs the old code, which has no hook to reload it: it
   keeps saving and connecting through the aliases, but stops seeing live name and tab-list
   changes from others until it reloads.

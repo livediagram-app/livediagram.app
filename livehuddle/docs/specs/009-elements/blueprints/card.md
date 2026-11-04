@@ -32,7 +32,7 @@ and the rows menu, and only what differs is written here.
 | Title          | `pageTitle`                                  | Shared masthead field                            |
 | Meta line      | `pageSubtitle`                               | Shared masthead field                            |
 | Tag            | `tags[i]`                                    | One chip                                         |
-| Callout preset | `CALLOUT_PRESET`                             | `cardMedia: 'badge'`, title, body                |
+| Callout preset | `calloutCard` (`shape-variants.ts`)          | `cardMedia: 'badge'`, title, body                |
 
 ## Behaviour and state
 

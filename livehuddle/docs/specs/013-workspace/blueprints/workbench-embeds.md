@@ -4,7 +4,7 @@ Derived from [Workbench embeds](../workbench-embeds.md), with the frame headers 
 choke point of [API](../../015-api/api.md#auth) and [Public API and API tokens](../../015-api/public-api-and-tokens.md),
 the whole-tab save rule of [Agent changesets](../../024-agents/agent-changesets.md#whole-tab-saves-and-tab-renames),
 the person tag of [Agent presence](../../024-agents/agent-presence.md), the levels of
-[Share roles](../share-roles.md#the-levels), the commands of [CLI](../../015-api/cli.md) and the refs and kind words of
+[Share roles](../share-roles.md), the commands of [CLI](../../015-api/cli.md) and the refs and kind words of
 [Document views](../../024-agents/document-views.md). The spec decides; this file only adds engineering precision.
 Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `WBn`.
 
@@ -529,7 +529,7 @@ before asking the index anything ("Opening your Explorer…").
 
 - `workbench open --workspace [--folder <f>] --origin <origin> [--json]`: `<doc>` and `--workspace` exclude each
   other, one is required (exit 2 "name a Space, or --workspace"); `--tab` with `--workspace` exits 2. `--folder`
-  without `--workspace` exits 2. `<f>` resolves through `resolveFolder` over `folderChoices`
+  without `--workspace` exits 2. `<f>` resolves through `resolveFolderRef` over `folderChoices`
   (`@livehuddle/agent-verbs`, shared by `folder` and `workbench`): its full id, an id prefix
   or its name ignoring case; none 3, several 3 with the candidates. `POST /api/workbench/tickets { scope:
 'workspace', folderId?, origin }`. 201: text `url`; `--json` `{ url, scope, folderId, expiresAt }`. 428: exit 4,

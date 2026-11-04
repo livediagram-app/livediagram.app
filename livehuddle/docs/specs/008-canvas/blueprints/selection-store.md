@@ -88,7 +88,7 @@ multiSelectedIds.size === 0`. Element views compare the three booleans.
   `previewDrawnArrow`, the viewport setters), passes through untouched: those are read in render.
 - No `on…` prop is called during render; the audit in the plan confirms it, and any found is renamed
   out of the convention rather than wrapped.
-- Object props built in the host per render (`esBoardControls`, `slideDeck`) pass through
+- Object props built in the host per render (`slideDeck`) pass through
   `useStableObject`: each function field becomes one forwarder per key calling the newest, and the
   object keeps its identity until a data field changes or a field comes or goes. Their functions are
   actions, never called in render.
@@ -128,9 +128,9 @@ Selection` instead and reads it where it acts. By kind:
 | Views that show the selection     | `EditorContextMenuHost` (while a menu is open), `EditorSearchPanel` (`useEditorCommands(open)`, while search is open), `EditorTabDialogs` (while a selection export is open), `ModifierHint` (`selectedKindOf`, the selected element's flavour)                                                                                                                                                                                                                             | `useSelectionOf` in the component; a closed one selects `EMPTY_SELECTION`, so it never renders for a change                                                                                                      |
 | The Quick Style view              | `useQuickStyle`, called by the root                                                                                                                                                                                                                                                                                                                                                                                                                                         | the root returns `quickStyleDeps` (every input but the selection); `QuickStyleHost` (`components/canvas/QuickStyleHost.tsx`) subscribes to `selectionIds` and calls `useQuickStyle`, rendering `QuickStylePanel` |
 
-- The editor root also reads the gesture store only through `useElementGestureActive()` (whether a
-  move, resize, reshape, stroke or erase is open), so a pan, zoom or marquee
-  renders no part of the editor above the canvas.
+- The gesture store (`useCanvasGesture`: whether a move, resize, reshape, stroke or erase is open) is read
+  only below the editor root (`Minimap` through `useSettledElements`, `CanvasSelectionToolbars`), so a pan,
+  zoom or marquee renders no part of the editor above the canvas.
 - One root render per press remains: pressing an element opens a pending drag (`useEditorDrag`'s
   `drag` state), and the release closes it. It is drag state, not selection; a plain click-select
   therefore still renders the root twice.

@@ -17,15 +17,15 @@ is the tool every drawing program has for this: one press on the region you mean
 
 - **Dock:** in the Drawing tools group, after the Path tool and before the Eraser, its own run
   with the Eraser (the two tools that act on what is already drawn): **Select | Markers | Text,
-  Path tool | Fill, Eraser** ([Draw mode](draw-mode.md) "What a whiteboard shows"). Labelled
+  Path tool | Fill, Eraser** ([Draw mode](draw-mode.md) "Pens"; no board shows the dock now). Labelled
   **Fill**, a paint bucket icon with a swatch of its colour under it, key **F** (on the button and
   in `aria-keyshortcuts`).
-- **Key F** picks it from anywhere on a whiteboard (not while typing). On a diagram tab F stays the
+- **Key F** picks it from anywhere on a whiteboard (not while typing). Elsewhere F stays the
   Frame.
 - Picking it puts any marker, shape, Path tool or eraser down, like every dock tool, and it stays
-  in hand until another tool, Escape or a mode switch puts it down, as the eraser does: a bucket is
+  in hand until another tool or Escape puts it down, as the eraser does: a bucket is
   pressed many times in a row.
-- **Whiteboards only**, like the pens: leaving Draw mode puts it down.
+- **Whiteboard tools only**, like the pens: it is not part of the palette's shapes.
 
 ## Its colour
 
@@ -163,4 +163,4 @@ Never a colour or an element's content.
   to work out regions from vector ink; the answer on Work Tracker #9 chose closed elements and single
   loops).
 - A gradient, pattern or image fill from the bucket.
-- The bucket on a diagram tab: the quick style panel's Background already sets a fill there.
+- The bucket on a board without the whiteboard tools: the quick style panel's Background already sets a fill there.

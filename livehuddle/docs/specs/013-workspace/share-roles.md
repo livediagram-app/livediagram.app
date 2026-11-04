@@ -1,6 +1,6 @@
 # Share roles
 
-Status: **proposed**, awaiting the owner's approval (Work Tracker #99).
+Status: **built** (approved on Work Tracker #99; folded back to the code with Work Tracker #190).
 
 livehuddle has the three access levels every liveworkspace product has, with livediagram's meaning
 ([Share roles](../../../../livediagram/docs/specs/013-workspace/share-roles.md)): **Editor** (`edit`),

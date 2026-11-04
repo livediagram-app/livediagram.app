@@ -371,7 +371,7 @@ is. `svgChecklistShape` and `svgLegendShape` letter in the element's face.
 - Preview: `lib/finish-preview.ts` `finishPreviewSvg(finish, { background, theme, font })` renders
   `FINISH_PREVIEW_ELEMENTS` (fixed ids `finish-preview-*`: a 180 x 70 square "Plan the work", a 130 x 100 diamond
   "Ready?", a pinned arrow e → w, a 110 x 100 sticky "Ship it") through `renderElementsToSvg` (padding 16).
-  `FinishTab`'s `FinishPreview` memoises it on finish, background, theme and font and inlines it
+  `TabStylePreview` (`components/dialogs/TabStylePreview.tsx`) memoises it on finish, background, theme and font and inlines it
   (`role="img"`, `aria-label` naming the finish). The background is the tab's own, else the surface default
   (`DARK_CANVAS_BACKGROUND_COLOR` / `DEFAULT_BACKGROUND_COLOR`), passed as `canvasBackground` from `EditorModals`.
 
