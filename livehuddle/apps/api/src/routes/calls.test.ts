@@ -14,6 +14,15 @@ let grant: ItemGrant | null | Response = null;
 vi.mock('./document-grant', () => ({
   resolveDocumentGrant: vi.fn(async () => grant),
 }));
+// What kind of media a track name carries: the real table, unless a test plays a video track through the route.
+const trackKinds = vi.hoisted(() => ({ asVideo: false }));
+vi.mock('../calls/calls-mode', async (load) => {
+  const real = await load<typeof import('../calls/calls-mode')>();
+  return {
+    ...real,
+    callTrackKind: (name: string) => (trackKinds.asVideo ? 'video' : real.callTrackKind(name)),
+  };
+});
 const { handleCallRoutes, MAX_SUBSCRIBE_BATCH, mediaRefused } = await import('./calls');
 
 const SECRETS = {
@@ -44,6 +53,7 @@ let answer: (url: string) => Response;
 
 beforeEach(() => {
   resetCallsModeCache();
+  trackKinds.asVideo = false;
   grant = grantAt('participate');
   upstream = [];
   answer = (url) => {
@@ -410,6 +420,39 @@ describe('the kill switch', () => {
       env,
     );
     expect(subscribe.status).toBe(200);
+  });
+
+  it('checks every publish and subscribe by its track kind: video is refused while audio only', async () => {
+    trackKinds.asVideo = true;
+    const env = withMode('audio-only');
+    const refused = [
+      await call(
+        'POST',
+        'tracks',
+        { ...(await speakerProof()), publish: { sdp: 'v=0', mid: '0' } },
+        env,
+      ),
+      await call(
+        'POST',
+        'tracks',
+        { ...(await listenerProof()), subscribe: [await locator()] },
+        env,
+      ),
+    ];
+    for (const res of refused) {
+      expect(res.status).toBe(503);
+      expect(await res.json()).toEqual({ error: 'calls_off', reason: 'audio-only' });
+    }
+    expect(upstream).toEqual([]);
+    // With calls on, the same tracks go through.
+    resetCallsModeCache();
+    const on = await call(
+      'POST',
+      'tracks',
+      { ...(await listenerProof()), subscribe: [await locator()] },
+      withMode('on'),
+    );
+    expect(on.status).toBe(200);
   });
 
   it('refuses a track whose kind the mode does not allow, or that no call publishes (video and screen add theirs)', async () => {

@@ -48,7 +48,23 @@ describe('calls api client', () => {
       status: 503,
       json: async () => ({ error: 'calls_off' }),
     });
-    await expect(apiCallSession(caller)).rejects.toMatchObject({ status: 503, code: 'calls_off' });
+    await expect(apiCallSession(caller)).rejects.toMatchObject({
+      status: 503,
+      code: 'calls_off',
+      reason: null,
+      paused: false,
+    });
+    // The kill switch's pause carries its reason (docs/specs/016-platform/calls-kill-switch.md "Calls Paused").
+    core.apiFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 503,
+      json: async () => ({ error: 'calls_off', reason: 'paused' }),
+    });
+    await expect(apiCallSession(caller)).rejects.toMatchObject({
+      reason: 'paused',
+      paused: true,
+      message: 'calls 503 calls_off paused',
+    });
     core.apiFetch.mockResolvedValueOnce({
       ok: false,
       status: 500,

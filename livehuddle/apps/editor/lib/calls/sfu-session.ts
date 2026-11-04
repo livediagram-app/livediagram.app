@@ -9,7 +9,13 @@ import {
   type CallTrackLocator,
   type CallTracksResponse,
 } from '@livehuddle/api-schema';
-import { apiCallClose, apiCallRenegotiate, apiCallTracks, type CallsCaller } from '@/lib/api/calls';
+import {
+  apiCallClose,
+  apiCallRenegotiate,
+  apiCallTracks,
+  CallsApiError,
+  type CallsCaller,
+} from '@/lib/api/calls';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
 /** The most speakers asked for in one request (the api's MAX_SUBSCRIBE_BATCH). */
@@ -24,6 +30,8 @@ export type SfuEvents = {
   onTrackEnded: (publisherSessionId: string) => void;
   // The connection failed for good.
   onFailed: () => void;
+  // The calls kill switch paused calls: a publish, subscribe or close was refused with `paused`.
+  onPaused: () => void;
 };
 
 export class SfuSession {
@@ -66,6 +74,7 @@ export class SfuSession {
     // One failed step must not stall the rest: it is logged and the queue moves on.
     this.queue = run.catch((error: unknown) => {
       debugLog('[calls] sfu step failed', error);
+      if (error instanceof CallsApiError && error.paused) this.events.onPaused();
     });
     return run;
   }

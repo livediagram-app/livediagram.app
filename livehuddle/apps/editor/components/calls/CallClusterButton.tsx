@@ -3,24 +3,36 @@
 // Proximity audio's control in the bottom-right cluster, beside Avatar (docs/specs/012-collaboration/
 // proximity-audio.md "Who is in a call" and "The microphone"). Before you join: one button, Join Audio (Listen In for
 // a Viewer). Once in: a strip of the microphone, which mutes and unmutes and shows at a glance whether anyone hears
-// you, and Leave Audio. Nothing at all while calls are off or there is nobody to talk to.
+// you, and Leave Audio. While the calls kill switch pauses calls: Calls Paused, calm, never an error, and a press tries
+// again (docs/specs/016-platform/calls-kill-switch.md "Calls Paused"). Nothing at all while calls are off or there is
+// nobody to talk to.
 import type { ReactNode } from 'react';
 import {
   lucideHeadphoneOff,
   lucideHeadphones,
   lucideMic,
   lucideMicOff,
+  lucidePause,
 } from '@liveworkspace/icons/lucide';
 import { HoverCard, lucideGlyph } from '@livehuddle/ui';
 import { ClusterStrip } from '@liveworkspace/workbench/components/canvas/ClusterPopoverButton';
 import { CLUSTER_CONTROL_REST } from '@liveworkspace/workbench/components/canvas/cluster-strip';
 import { useDockNames } from '@liveworkspace/workbench/hooks/ui/useDockNames';
-import { useCallActions, useCallSelf, type CallSelf } from '@/lib/calls/calls-store';
+import {
+  useCallActions,
+  useCallSelf,
+  type CallActions,
+  type CallSelf,
+} from '@/lib/calls/calls-store';
 
 const MicIcon = lucideGlyph(lucideMic, 16);
 const MicOffIcon = lucideGlyph(lucideMicOff, 16);
 const HeadphonesIcon = lucideGlyph(lucideHeadphones, 16);
 const LeaveIcon = lucideGlyph(lucideHeadphoneOff, 16);
+const PauseIcon = lucideGlyph(lucidePause, 16);
+
+/** What a screen reader hears when the kill switch pauses calls (an `aria-live` region beside the control). */
+export const CALLS_PAUSED_ANNOUNCEMENT = 'Calls are paused';
 
 /** What the microphone shows: the indicator's four states, plus a listener's. */
 export type MicIndicator = 'live' | 'nobody-near' | 'muted' | 'blocked' | 'closed' | 'listening';
@@ -114,6 +126,43 @@ export function CallClusterButton() {
   const self = useCallSelf();
   const actions = useCallActions();
   if (!self.available || !actions) return null;
+  const paused = self.mode === 'off' && self.phase !== 'live';
+  return (
+    <>
+      <CallControl self={self} actions={actions} paused={paused} />
+      {/* Polite, and always present, so the change to paused is read out when it happens. */}
+      <span className="sr-only" aria-live="polite">
+        {paused ? CALLS_PAUSED_ANNOUNCEMENT : ''}
+      </span>
+    </>
+  );
+}
+
+function CallControl({
+  self,
+  actions,
+  paused,
+}: {
+  self: CallSelf;
+  actions: CallActions;
+  paused: boolean;
+}) {
+  if (paused) {
+    const trying = self.phase === 'joining';
+    return (
+      <ClusterStrip dataTourId="call-button">
+        <Segment
+          label="Calls Paused"
+          name={trying ? 'Joining…' : 'Calls Paused'}
+          title="Calls Paused"
+          description="Calls are paused for now. Everything else in the Space carries on. Press to try again."
+          icon={<PauseIcon />}
+          onClick={actions.join}
+          disabled={trying}
+        />
+      </ClusterStrip>
+    );
+  }
 
   if (self.phase === 'off' || self.phase === 'joining' || self.phase === 'error') {
     const joining = self.phase === 'joining';

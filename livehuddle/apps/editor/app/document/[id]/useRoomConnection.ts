@@ -56,6 +56,7 @@ import {
   forgetCallPeer,
   pruneCallPeers,
   receiveCallOp,
+  receiveCallsMode,
   resetCallPeers,
 } from '@/lib/calls/calls-store';
 import type { RemoteViewport } from '@/hooks/collab/useFollowMe';
@@ -548,6 +549,10 @@ export function useRoomConnection(opts: {
         // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
         // the share ops: the room refuses one from a client socket.
         if (from === 'system') receiveChangeset(op);
+      } else if (op.kind === 'calls-mode') {
+        // The calls kill switch changed (docs/specs/016-platform/calls-kill-switch.md "The room tells its clients").
+        // System-only: the store takes it from the room alone, and a running call that may no longer run ends.
+        receiveCallsMode(from, op);
       } else if (op.kind === 'document-trashed') {
         // The document went to the Trash. System-only, like the share ops:
         // the room refuses it from a client socket.

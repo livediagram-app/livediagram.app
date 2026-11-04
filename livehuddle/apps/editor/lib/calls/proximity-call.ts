@@ -1,12 +1,21 @@
 // One browser's proximity call (docs/specs/012-collaboration/proximity-audio.md): from Join Audio to Leave Audio, it
 // mints a Realtime session through the api, publishes the microphone, hears the speakers in earshot at their
 // distance and side, detects your own voice for the equaliser, and closes the microphone while nobody is on your
-// tab. Loaded only when somebody presses Join Audio; the canvas feeds it positions through `update`.
-import type { CallTrackLocator, VoiceLevel } from '@livehuddle/api-schema';
+// tab. Loaded only when somebody presses Join Audio; the canvas feeds it positions through `update`. The calls kill
+// switch (docs/specs/016-platform/calls-kill-switch.md "Calls Paused") ends it quietly, from the room's push or a
+// refused mint.
+import { callsModeAllows, type CallTrackLocator, type VoiceLevel } from '@livehuddle/api-schema';
 import { apiCallSession, CallsApiError, type CallsCaller } from '@/lib/api/calls';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { AudioGraph } from './audio-graph';
-import { callPeers, onCallTracks, setCallSelf } from './calls-store';
+import {
+  callPeers,
+  callSelf,
+  onCallsMode,
+  onCallTracks,
+  setCallSelf,
+  setCallsMode,
+} from './calls-store';
 import { distance, gainAt, HEARING_RADIUS_PX, nextHeard, panAt, type Point } from './hearing';
 import { SfuSession } from './sfu-session';
 import {
@@ -63,11 +72,20 @@ export class ProximityCall {
   private locatorDue: ReturnType<typeof setTimeout> | null = null;
   private stopped = false;
   private readonly unsubscribeTracks: () => void;
+  private readonly unsubscribeMode: () => void;
 
   constructor(input: ProximityCallInput) {
     this.input = input;
     this.graph = new AudioGraph(input.context);
     this.unsubscribeTracks = onCallTracks(() => this.hear());
+    this.unsubscribeMode = onCallsMode(() => {
+      if (!callsModeAllows(callSelf().mode, 'session')) this.pause();
+    });
+  }
+
+  /** Whether this call has stopped (left, failed or paused); a stopped call never starts again. */
+  get ended(): boolean {
+    return this.stopped;
   }
 
   /** Mint the session, open the microphone (a speaker's), publish it and start hearing. */
@@ -77,6 +95,8 @@ export class ProximityCall {
     try {
       const session = await apiCallSession(this.input.caller);
       if (this.stopped) return;
+      // The session says what the switch allows (an older api says nothing: on).
+      setCallsMode(session.mode === 'audio-only' ? 'audio-only' : 'on');
       this.trackToken = session.trackToken ?? null;
       this.sfu = new SfuSession(this.input.caller, session, {
         onTrack: (publisher, stream) => this.onTrack(publisher, stream),
@@ -85,14 +105,27 @@ export class ProximityCall {
           if (id) this.graph.detach(id);
         },
         onFailed: () => this.fail('connection'),
+        onPaused: () => this.pause(),
       });
       if (this.input.canSpeak && session.canSpeak) await this.openMic();
       if (this.stopped) return;
       setCallSelf({ phase: 'live' });
       this.hear();
     } catch (error) {
+      if (error instanceof CallsApiError && error.paused) {
+        this.pause();
+        return;
+      }
       this.fail(error instanceof CallsApiError ? (error.code ?? String(error.status)) : 'start');
     }
+  }
+
+  /** The kill switch paused calls: end as Leave Audio does, into Calls Paused. Never an error. */
+  private pause(): void {
+    if (this.stopped) return;
+    debugLog('[calls] paused');
+    this.stop();
+    setCallsMode('off');
   }
 
   private fail(why: string): void {
@@ -268,6 +301,7 @@ export class ProximityCall {
     if (this.idleTimer) clearTimeout(this.idleTimer);
     if (this.locatorDue) clearTimeout(this.locatorDue);
     this.unsubscribeTracks();
+    this.unsubscribeMode();
     this.stopSampling();
     if (this.published) this.input.send({ kind: 'call-track', track: null });
     if (this.mic) for (const t of this.mic.getTracks()) t.stop();
