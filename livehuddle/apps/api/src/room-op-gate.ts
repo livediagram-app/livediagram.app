@@ -5,6 +5,8 @@ import {
   isPresenceOpKind,
   isSystemOpKind,
   parseAvatarSay,
+  parseAvatarVoice,
+  parseCallTrack,
   parseStoredLevel,
 } from '@livehuddle/api-schema';
 import { answersAsSelf } from './document-room-rules';
@@ -82,6 +84,10 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // Speaking is taking part too (docs/specs/008-canvas/avatar-mode.md "Who may speak"), and a message is held to
   // the limits here as every receiver holds it, so a malformed one reaches nobody.
   if (opKind === 'avatar-say' && (level === 'view' || !parseAvatarSay(op))) return DROP;
+  // So is talking (docs/specs/012-collaboration/proximity-audio.md "Share roles"): a Viewer listens, so it shows no
+  // equaliser and publishes no microphone, and a malformed level or locator reaches nobody.
+  if (opKind === 'avatar-voice' && (level === 'view' || !parseAvatarVoice(op))) return DROP;
+  if (opKind === 'call-track' && (level === 'view' || !parseCallTrack(op))) return DROP;
   // Bring Focus moves everyone's view (docs/specs/012-collaboration/bring-focus.md): running the session, so an
   // Editor's alone.
   if (opKind === 'focus-here' && level !== 'edit') return DROP;
