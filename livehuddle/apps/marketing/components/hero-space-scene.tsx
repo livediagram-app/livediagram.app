@@ -1,4 +1,4 @@
-// The landing hero's Space (docs/specs/019-marketing/marketing-site.md "Hero"): the real Team Pod with five
+// The Space feature scene (docs/specs/019-marketing/marketing-site.md "Feature scenes"): the real Team Pod with five
 // teammates walking in and gathering round the table, drawn once on the server. The room is the template drawn by
 // the editor's renderer (public/hero/team-pod-*.svg); every character is Avatar mode's own sprite
 // (@liveworkspace/avatar), its stills in one cached sprite sheet (public/hero/team-cast.svg); app/hero-scenes/space.css does every move, so the scene
