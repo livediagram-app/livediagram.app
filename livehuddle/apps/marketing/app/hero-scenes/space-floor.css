@@ -1,0 +1,111 @@
+/* The landing hero's Space (components/HeroSpaceStage.tsx, docs/specs/019-marketing/marketing-site.md "Hero"): the
+   look of the stage's characters, chips and bubbles. Their moves are generated (space-floor.generated.css). */
+
+.hsf-stage {
+  --hsf-card: #ffffff;
+  --hsf-card-text: #1e293b;
+  --hsf-chip: #ffffff;
+  --hsf-chip-edge: #d1fae5;
+  --hsf-chip-text: #334155;
+  --hsf-shadow: rgb(2 44 34 / 0.14);
+  /* Off screen, a browser that skips rendering the stage does no work for it. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 800px;
+}
+:where(.dark, .dark *):not(:where(.light, .light *)) .hsf-stage {
+  --hsf-card: #0f172a;
+  --hsf-card-text: #f1f5f9;
+  --hsf-chip: #1e293b;
+  --hsf-chip-edge: #334155;
+  --hsf-chip-text: #e2e8f0;
+  --hsf-shadow: rgb(0 0 0 / 0.5);
+}
+
+/* The band's dot grid is the floor: it reaches the floor's foot rather than fading out under the copy. */
+.hsf-dots {
+  mask-image: linear-gradient(to bottom, black 55%, transparent);
+}
+
+.hsf-art {
+  position: absolute;
+  inset: 0;
+  max-width: none;
+}
+
+/* A character: a zero-size box on its feet, moved by its walk; the one-still window over its strip. */
+.hsf-walker {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.hsf-frame {
+  position: absolute;
+  overflow: hidden;
+}
+.hsf-strip {
+  display: block;
+  max-width: none;
+}
+
+.hsf-chip {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  translate: -50% 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 18px;
+  padding: 0 8px 0 6px;
+  border-radius: 9px;
+  border: 1px solid var(--hsf-chip-edge);
+  background: var(--hsf-chip);
+  color: var(--hsf-chip-text);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+.hsf-chip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+}
+
+/* A bubble, in the editor's bubble look: a card edged in the speaker's colour, the name under the words, a tail
+   down to the speaker. Hidden until its line comes round. */
+.hsf-say {
+  position: absolute;
+  opacity: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 12px;
+  border: 1.5px solid var(--hsf-edge);
+  border-radius: 14px;
+  background: var(--hsf-card);
+  box-shadow: 0 4px 10px var(--hsf-shadow);
+  white-space: nowrap;
+}
+.hsf-say::after {
+  content: '';
+  position: absolute;
+  left: calc(var(--hsf-tail) - 6px);
+  bottom: -7px;
+  width: 11px;
+  height: 11px;
+  rotate: 45deg;
+  border-right: 1.5px solid var(--hsf-edge);
+  border-bottom: 1.5px solid var(--hsf-edge);
+  background: var(--hsf-card);
+}
+.hsf-say-text {
+  color: var(--hsf-card-text);
+  font-size: 13px;
+  line-height: 17px;
+}
+.hsf-say-name {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 13px;
+}

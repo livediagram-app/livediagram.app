@@ -1,4 +1,4 @@
-/* The landing hero's Space (components/hero-space-scene.tsx, docs/specs/019-marketing/marketing-site.md "Hero"):
+/* The Space feature scene (components/hero-space-scene.tsx, docs/specs/019-marketing/marketing-site.md "Feature scenes"):
    every move the scene makes, so it runs with no script. The timings ride on custom properties the scene sets from
    components/hero-space-cast.ts: --d (when), --t (how long), --dx / --dy (a leg of a walk), --n (strides in a leg),
    --r (a reaction's first turn). The walk-in plays once; the bubbles and reactions then take turns on a 12s loop. */

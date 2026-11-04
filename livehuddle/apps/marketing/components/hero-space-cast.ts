@@ -1,4 +1,4 @@
-// The landing hero's Space (docs/specs/019-marketing/marketing-site.md "Hero"): who walks into the Team Pod, the way
+// The Space feature scene (docs/specs/019-marketing/marketing-site.md "Feature scenes"): who walks into the Team Pod, the way
 // they come, and what the room does once they are in. Pure data, in the Team Pod template's own canvas coordinates
 // (buildTemplate('team-pod', 0, 0), whose room spans x -550..210 and y -252..228 with its door at x -212..-128), so
 // the characters stand where the template's furniture is. hero-space-scene.tsx draws it; app/hero-scenes/space.css
