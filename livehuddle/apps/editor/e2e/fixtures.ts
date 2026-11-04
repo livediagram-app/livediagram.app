@@ -401,7 +401,7 @@ export async function settledBox(
 /** A palette tile, from its category's flyout on the category bar (docs/specs/007-editor/toolbar-layout.md "The
  *  category bar"): opens the category (a press, so it stays open whatever the pointer does next) unless its flyout is
  *  already showing, and returns the tile. */
-export async function paletteTile(page: Page, name: string, category = 'Shapes'): Promise<Locator> {
+export async function paletteTile(page: Page, name: string, category = 'Write'): Promise<Locator> {
   const flyout = page.locator('[data-category-flyout]');
   const button = page.locator(`[data-category-bar-button][aria-label="${category}"]`);
   if ((await button.getAttribute('aria-expanded')) !== 'true') await button.click();

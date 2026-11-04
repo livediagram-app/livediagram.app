@@ -78,12 +78,9 @@ describe('create_document intent', () => {
   });
 
   it.each([
-    ['retrospective', { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' }],
-    ['four-ls', { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' }],
-    ['incident-postmortem', { mode: 'workshop', tabKind: 'diagram' }],
-    ['lean-coffee', { mode: 'workshop', tabKind: 'diagram' }],
+    ['team-pod', { mode: 'workshop', tabKind: 'diagram' }],
+    ['all-hands-hall', { mode: 'workshop', tabKind: 'diagram' }],
     ['blank-session', { mode: 'workshop', tabKind: 'diagram' }],
-    ['roadmap', { mode: 'workshop', tabKind: 'diagram' }],
   ])('sends the intent of a %s template tab', async (template, intent) => {
     const { run, posted } = harness(undefined);
     await run([{ name: 'Tab', template }]);
@@ -92,7 +89,7 @@ describe('create_document intent', () => {
 
   it('reads the intent from the first tab only', async () => {
     const { run, posted } = harness(undefined);
-    await run([elements, { name: 'Retro', template: 'start-stop-continue' }]);
+    await run([elements, { name: 'Retro', template: 'virtual-office' }]);
     expect(posted[0]!.intent).toEqual({ mode: 'workshop', tabKind: 'diagram' });
   });
 });
@@ -102,9 +99,13 @@ describe('create_document intent', () => {
 describe('create_document tab names', () => {
   it('names an unnamed template tab after its template, and an unnamed other tab "Tab n"', async () => {
     const { run, posted } = harness(undefined);
-    await run([{ template: 'sailboat' }, { elements: [] }, { name: 'Mine', template: 'swot' }]);
+    await run([
+      { template: 'team-pod' },
+      { elements: [] },
+      { name: 'Mine', template: 'virtual-office' },
+    ]);
     const tabs = posted[0]!.tabs as { name: string }[];
-    expect(tabs.map((t) => t.name)).toEqual(['Sailboat Retrospective', 'Tab 2', 'Mine']);
+    expect(tabs.map((t) => t.name)).toEqual(['Team Pod', 'Tab 2', 'Mine']);
   });
 });
 

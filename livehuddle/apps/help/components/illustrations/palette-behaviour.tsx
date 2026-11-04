@@ -1,12 +1,11 @@
-// Behaviour-category illustrations (docs/specs/018-help/help-app.md, drawing docs/specs/009-elements/mode-button.md to docs/specs/012-collaboration/picker.md and
-// docs/specs/009-elements/reaction-pad.md): the palette's Behaviour groups, plus one scene per element that
-// does something when somebody presses it: Selection Mode buttons, Session
-// buttons, the Done check, Reaction pads, Reveal zones and the Picker.
+// Meeting-element illustrations (docs/specs/018-help/help-app.md, drawing docs/specs/009-elements/mode-button.md and
+// docs/specs/009-elements/reaction-pad.md): the meeting palette's Navigate, React and Selection Mode categories, plus
+// one scene per element that does something when somebody presses it: Selection Mode buttons and Reaction Pads.
 //
 // One scene per sub-article, so each small article can show the surface it
 // describes with the real labels the editor prints on it. Composed from the
 // shared primitives; raw shapes only for motifs the kit lacks (glyph chips,
-// confetti, an eye).
+// confetti).
 
 import type { ReactNode } from 'react';
 
@@ -15,31 +14,14 @@ import {
   Label,
   TextBar,
   Avatar,
-  Button,
   Panel,
   Cursor,
 } from '@liveworkspace/help-site/art/primitives';
 
 // --- Small motifs the primitive kit does not carry -------------------------
 
-/** The eye a Reveal cover draws above its label. */
-function Eye({ x, y, off = false }: { x: number; y: number; off?: boolean }) {
-  return (
-    <g
-      transform={`translate(${x} ${y})`}
-      className="stroke-slate-500"
-      strokeWidth={1.6}
-      fill="none"
-    >
-      <path d="M-9 0s3.6-5 9-5 9 5 9 5-3.6 5-9 5-9-5-9-5z" strokeLinejoin="round" />
-      <circle cx={0} cy={0} r={2.4} />
-      {off ? <path d="M-7 -7 L7 7" strokeLinecap="round" /> : null}
-    </g>
-  );
-}
-
-/** A round glyph chip, the way a Session or Selection Mode button draws its
- *  tool icon above the words. */
+/** A round glyph chip, the way a Selection Mode button draws its tool icon above
+ *  the words. */
 function Chip({
   x,
   y,
@@ -80,24 +62,6 @@ function Lucide({ children }: { children: ReactNode }) {
     </g>
   );
 }
-/** A question mark in a bubble, the Ask group glyph. */
-function AskGlyph() {
-  return (
-    <Lucide>
-      <path d="M20.5 11.6c0 3.8-3.8 6.9-8.5 6.9-.9 0-1.8-.1-2.6-.3l-5 3.1 1.1-4.5A6.5 6.5 0 0 1 3.5 11.6c0-3.8 3.8-6.9 8.5-6.9s8.5 3.1 8.5 6.9z" />
-      <path d="M10.2 9.4a1.9 1.9 0 1 1 2.4 2.2c-.5.2-.8.6-.8 1.1M12 15h.01" />
-    </Lucide>
-  );
-}
-/** A raised hand over a card, the Tools group glyph. */
-function WorkshopGlyph() {
-  return (
-    <Lucide>
-      <rect x="3" y="4" width="18" height="12.5" rx="2" />
-      <path d="M8 20h8M12 16.5V20M9 11.5V8.2M12 11.5V7M15 11.5v-2.6" />
-    </Lucide>
-  );
-}
 /** A smile, the React group glyph. */
 function SmileGlyph() {
   return (
@@ -113,23 +77,6 @@ function DoorGlyph() {
     <Lucide>
       <path d="M4 20V6.5a1 1 0 0 1 .8-1l7-1.4a1 1 0 0 1 1.2 1V20" />
       <path d="M2.6 20h12.8M17 9.5h4.4M19.2 7.3l2.2 2.2-2.2 2.2" />
-    </Lucide>
-  );
-}
-/** A ticked circle, the Dot vote glyph. */
-function VoteGlyph() {
-  return (
-    <Lucide>
-      <circle cx="12" cy="12" r="10" />
-      <path d="m9 12 2 2 4-4" />
-    </Lucide>
-  );
-}
-/** Three rising columns, the Poll glyph. */
-function PollGlyph() {
-  return (
-    <Lucide>
-      <path d="M6 20v-4M12 20V10M18 20V4" />
     </Lucide>
   );
 }
@@ -158,130 +105,82 @@ function AvatarGlyph() {
   );
 }
 
-/** A page with ruled lines, the Record group glyph. */
-function RecordGlyph() {
-  return (
-    <g {...glyph} strokeLinecap="round">
-      <rect x={-6} y={-8} width={12} height={16} rx={2} />
-      <path d="M-3 -3 H3 M-3 1 H3 M-3 5 H1" />
-    </g>
-  );
-}
-/** A stopwatch, the Stopwatch glyph (it counts up). */
-function StopwatchGlyph() {
-  return (
-    <g {...glyph} strokeLinecap="round">
-      <circle cy={1.5} r={6.5} />
-      <path d="M0 1.5 V-2 M-2 -8 H2 M0 -8 V-5" />
-    </g>
-  );
-}
-
 // --- Scenes ----------------------------------------------------------------
 
-/** The Collaborate elements on Workshop's palette strip: **Ask** on its own, then **Session**, open, with its five
- *  groups down the side, room-first, and the open group's elements beside them. `lit` picks out what an article is
- *  about (Ask, and any of Session's groups; the first lit group is the one shown open). */
-export function CollaborateCategories({ lit = [] }: { lit?: readonly string[] }) {
-  const groups: { label: string; icon: ReactNode }[] = [
-    { label: 'Tools', icon: <WorkshopGlyph /> },
-    { label: 'Record', icon: <RecordGlyph /> },
-    { label: 'React', icon: <SmileGlyph /> },
-    { label: 'Selection Mode', icon: <SelectGlyph /> },
-    { label: 'Navigate', icon: <DoorGlyph /> },
+/** The meeting palette's Meet band on the strip: **Navigate**, **React** and **Selection Mode**, one of them open
+ *  (the first named in `lit`, else Navigate) with its elements in the flyout under it. */
+export function MeetingCategories({ lit = [] }: { lit?: readonly string[] }) {
+  const categories: { label: string; icon: ReactNode; x: number; w: number }[] = [
+    { label: 'Navigate', icon: <DoorGlyph />, x: 92, w: 82 },
+    { label: 'React', icon: <SmileGlyph />, x: 178, w: 66 },
+    { label: 'Selection Mode', icon: <SelectGlyph />, x: 248, w: 112 },
   ];
-  const open = groups.find((g) => lit.includes(g.label)) ?? groups[0]!;
-  const askLit = lit.includes('Ask');
+  const open = categories.find((c) => lit.includes(c.label)) ?? categories[0]!;
   return (
     <Scene w={420} h={236} bg="plain">
-      {/* The end of the strip: Ask, then Session, open. */}
+      {/* The Meet band of the strip, the open category pressed. */}
       <rect
-        x={196}
+        x={86}
         y={10}
-        width={168}
+        width={280}
         height={32}
         rx={9}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}
       />
-      <rect
-        x={202}
-        y={14}
-        width={58}
-        height={24}
-        rx={6}
-        className={askLit ? 'fill-brand-50 stroke-brand-300' : 'fill-white stroke-transparent'}
-        strokeWidth={1}
-      />
-      <Chip x={216} y={26} r={8}>
-        <AskGlyph />
-      </Chip>
-      <Label x={228} y={30} size={10} weight={600} tone={askLit ? 'accent' : 'body'}>
-        Ask
-      </Label>
-      <rect x={266} y={14} width={92} height={24} rx={6} className="fill-brand-100" />
-      <Chip x={280} y={26} r={8}>
-        <WorkshopGlyph />
-      </Chip>
-      <Label x={292} y={30} size={10} weight={700} className="fill-brand-700">
-        Session
-      </Label>
-      <rect x={272} y={37} width={80} height={2} rx={1} className="fill-brand-500" />
-      {/* Session's flyout: its groups down the side, the open one's elements beside them. */}
-      <Panel x={56} y={50} w={308} h={176}>
-        <rect x={57} y={51} width={112} height={174} rx={9} className="fill-slate-50" />
-        <path d="M169 52 V225" className="stroke-slate-200" strokeWidth={1} />
-        {groups.map((g, i) => {
-          const gy = 60 + i * 32;
-          const on = g === open;
-          const named = lit.includes(g.label);
-          return (
-            <g key={g.label}>
-              {on ? (
-                <rect
-                  x={62}
-                  y={gy}
-                  width={102}
-                  height={26}
-                  rx={7}
-                  className="fill-white stroke-slate-200"
-                  strokeWidth={1}
-                />
-              ) : null}
-              <Chip x={76} y={gy + 13} r={8}>
-                {g.icon}
-              </Chip>
-              <Label
-                x={88}
-                y={gy + 17}
-                size={9.5}
-                weight={on || named ? 700 : 500}
-                tone={on || named ? 'accent' : 'body'}
-              >
-                {g.label}
-              </Label>
-            </g>
-          );
-        })}
-        <Label x={180} y={70} size={10} weight={700} tone="strong">
+      {categories.map((c) => {
+        const on = c === open;
+        return (
+          <g key={c.label}>
+            {on ? (
+              <rect x={c.x} y={14} width={c.w} height={24} rx={6} className="fill-brand-100" />
+            ) : null}
+            <Chip x={c.x + 14} y={26} r={8}>
+              {c.icon}
+            </Chip>
+            <Label
+              x={c.x + 26}
+              y={30}
+              size={10}
+              weight={on ? 700 : 500}
+              className={on ? 'fill-brand-700' : 'fill-slate-600'}
+            >
+              {c.label}
+            </Label>
+            {on ? (
+              <rect
+                x={c.x + 6}
+                y={37}
+                width={c.w - 12}
+                height={2}
+                rx={1}
+                className="fill-brand-500"
+              />
+            ) : null}
+          </g>
+        );
+      })}
+      {/* The open category's flyout: its elements, one row each. */}
+      <Panel x={86} y={50} w={280} h={176}>
+        <Label x={100} y={70} size={10} weight={700} tone="strong">
           {open.label}
         </Label>
         {[0, 1, 2].map((i) => (
           <g key={i}>
             <rect
-              x={180}
+              x={100}
               y={82 + i * 44}
-              width={172}
+              width={252}
               height={36}
               rx={8}
               className="fill-white stroke-slate-200"
               strokeWidth={1}
             />
-            <Chip x={198} y={100 + i * 44} r={10}>
+            <Chip x={118} y={100 + i * 44} r={10}>
               {open.icon}
             </Chip>
-            <TextBar x={214} y={93 + i * 44} w={88} tone="muted" />
-            <TextBar x={214} y={104 + i * 44} w={120} tone="faint" />
+            <TextBar x={134} y={93 + i * 44} w={96} tone="muted" />
+            <TextBar x={134} y={104 + i * 44} w={150} tone="faint" />
           </g>
         ))}
       </Panel>
@@ -336,142 +235,6 @@ export function ModeButtonBar() {
         everyone else stays where they were
       </Label>
       <Cursor x={216} y={44} name="You" />
-    </Scene>
-  );
-}
-
-/** The four session elements: a Timer, which is the clock itself, then the Stopwatch, Dot vote
- *  and Poll buttons, each labelled from its own setting. */
-export function SessionButtons() {
-  const cards: { kicker: string; action: string; icon: ReactNode }[] = [
-    { kicker: 'START', action: 'a stopwatch', icon: <StopwatchGlyph /> },
-    { kicker: 'START VOTE', action: '3 dots each', icon: <VoteGlyph /> },
-    { kicker: 'ASK', action: 'Ready to ship?', icon: <PollGlyph /> },
-  ];
-  return (
-    <Scene w={420} h={226}>
-      {/* The Timer element: the same clock as the top-bar pill, idle at its length. */}
-      <rect
-        x={98}
-        y={14}
-        width={224}
-        height={50}
-        rx={12}
-        className="fill-white stroke-brand-300"
-        strokeWidth={2}
-      />
-      <Label x={114} y={40} size={13} weight={700} tone="muted">
-        …
-      </Label>
-      {/* The idle face's dial: ticks round the edge, no chip. */}
-      <g className="stroke-brand-300" strokeWidth={1.5} strokeLinecap="round">
-        {Array.from({ length: 12 }, (_, i) => (
-          <path key={i} d="M0 -12 V-9" transform={`translate(146 39) rotate(${i * 30})`} />
-        ))}
-      </g>
-      <Label x={168} y={40} size={10} weight={600} tone="muted">
-        TIMER
-      </Label>
-      <Label x={210} y={40} size={15} weight={700} tone="strong">
-        5:00
-      </Label>
-      <circle cx={292} cy={39} r={11} className="fill-brand-500" />
-      <path d="M288.5 33.5 L297 39 L288.5 44.5 Z" className="fill-white" />
-      {cards.map((c, i) => {
-        const cx = 34 + i * 122;
-        return (
-          <g key={c.kicker}>
-            <rect
-              x={cx}
-              y={80}
-              width={108}
-              height={88}
-              rx={10}
-              className="fill-white stroke-brand-300"
-              strokeWidth={2}
-            />
-            <Label x={cx + 96} y={92} anchor="middle" size={13} weight={700} tone="muted">
-              …
-            </Label>
-            <Chip x={cx + 54} y={107}>
-              {c.icon}
-            </Chip>
-            <Label x={cx + 54} y={137} anchor="middle" size={10} weight={600} tone="muted">
-              {c.kicker}
-            </Label>
-            <Label x={cx + 54} y={153} anchor="middle" size={11} weight={700} tone="strong">
-              {c.action}
-            </Label>
-          </g>
-        );
-      })}
-      <Label x={210} y={192} anchor="middle" size={11} tone="body">
-        Pressing one starts that tool for everyone in the room.
-      </Label>
-      <Label x={210} y={212} anchor="middle" size={10} tone="muted">
-        The … menu holds the setting you change most.
-      </Label>
-    </Scene>
-  );
-}
-
-/** The Done check: the ring with the count, who has finished, and who it is still waiting on. */
-export function DoneCheckCard() {
-  const x = 70;
-  const y = 14;
-  const w = 280;
-  const ringX = x + 62;
-  const ringY = y + 96;
-  const r = 34;
-  const circ = 2 * Math.PI * r;
-  return (
-    <Scene w={420} h={222}>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={194}
-        rx={11}
-        className="fill-white stroke-brand-300"
-        strokeWidth={2}
-      />
-      <Label x={x + 14} y={y + 20} size={13} weight={700} tone="muted">
-        …
-      </Label>
-      <Label x={x + 32} y={y + 20} size={12} weight={700} tone="strong">
-        Everyone done?
-      </Label>
-      <Label x={x + w - 14} y={y + 20} anchor="end" size={11} weight={600} tone="accent">
-        2/4
-      </Label>
-      {/* The ring fills as people finish, with the count in the middle. */}
-      <circle cx={ringX} cy={ringY} r={r} className="fill-none stroke-slate-200" strokeWidth={7} />
-      <circle
-        cx={ringX}
-        cy={ringY}
-        r={r}
-        className="fill-none stroke-brand-500"
-        strokeWidth={7}
-        strokeLinecap="round"
-        strokeDasharray={`${circ / 2} ${circ}`}
-        transform={`rotate(-90 ${ringX} ${ringY})`}
-      />
-      <Label x={ringX} y={ringY + 1} anchor="middle" size={16} weight={700} tone="strong">
-        2/4
-      </Label>
-      <Label x={x + 124} y={y + 50} size={10} weight={700} tone="muted">
-        Done · 2
-      </Label>
-      <Avatar cx={x + 136} cy={y + 72} r={12} initial="A" colour="emerald" />
-      <Avatar cx={x + 166} cy={y + 72} r={12} initial="R" colour="brand" />
-      <Label x={x + 124} y={y + 104} size={10} weight={700} tone="muted">
-        Waiting · 2
-      </Label>
-      <g opacity={0.45}>
-        <Avatar cx={x + 136} cy={y + 126} r={12} initial="P" colour="slate" />
-        <Avatar cx={x + 166} cy={y + 126} r={12} initial="J" colour="slate" />
-      </g>
-      <Button x={x + 14} y={y + 156} w={w - 28} h={26} label="I'm done" variant="primary" />
     </Scene>
   );
 }
@@ -632,115 +395,6 @@ export function ReactionPads() {
       })}
       <Label x={210} y={176} anchor="middle" size={11} tone="muted">
         Press a pad, or walk a character onto it in Avatar mode.
-      </Label>
-    </Scene>
-  );
-}
-
-/** A Reveal zone before and after: the cover, and the same zone uncovered on
- *  one person's screen with the Hide pill. */
-export function RevealZone() {
-  return (
-    <Scene w={420} h={196}>
-      {/* Covered: an opaque panel lit by its accent, a solid border, a lock. */}
-      <defs>
-        <radialGradient id="reveal-glow" cx="0%" cy="0%" r="120%">
-          <stop offset="0%" className="[stop-color:var(--color-brand-300)]" stopOpacity={0.55} />
-          <stop offset="60%" className="[stop-color:var(--color-brand-100)]" stopOpacity={0} />
-        </radialGradient>
-      </defs>
-      <rect x={20} y={38} width={170} height={110} rx={10} className="fill-slate-100" />
-      <rect
-        x={20}
-        y={38}
-        width={170}
-        height={110}
-        rx={10}
-        fill="url(#reveal-glow)"
-        className="stroke-brand-400"
-        strokeWidth={1.5}
-      />
-      <circle cx={105} cy={70} r={12} className="fill-brand-100" />
-      <rect
-        x={101}
-        y={69}
-        width={8}
-        height={6.5}
-        rx={1.5}
-        className="fill-none stroke-brand-600"
-        strokeWidth={1.3}
-      />
-      <path
-        d="M102.6 69v-2a2.4 2.4 0 0 1 4.8 0v2"
-        className="fill-none stroke-brand-600"
-        strokeWidth={1.3}
-      />
-      <Label x={105} y={98} anchor="middle" size={12} weight={700} tone="strong">
-        Estimates
-      </Label>
-      <rect x={44} y={107} width={122} height={18} rx={9} className="fill-slate-200" />
-      <Label x={105} y={116} anchor="middle" size={10} weight={600} tone="body">
-        Double-click to reveal
-      </Label>
-
-      {/* Uncovered, for me only */}
-      <rect
-        x={230}
-        y={38}
-        width={170}
-        height={110}
-        rx={10}
-        className="fill-white stroke-slate-200"
-        strokeWidth={2}
-      />
-      <Label x={248} y={70} size={12} weight={700} tone="strong">
-        Estimates
-      </Label>
-      <TextBar x={248} y={88} w={110} />
-      <TextBar x={248} y={104} w={84} />
-      <TextBar x={248} y={120} w={98} />
-      <g className="help-art-as-drawn">
-        <rect x={336} y={46} width={56} height={18} rx={9} className="fill-slate-800" />
-        <Eye x={349} y={55} off />
-        <Label x={362} y={56} size={10} weight={600} tone="onAccent">
-          Hide
-        </Label>
-      </g>
-      <Label x={210} y={176} anchor="middle" size={10} tone="muted">
-        Uncovering it this way changes only your own screen.
-      </Label>
-    </Scene>
-  );
-}
-
-/** The Picker mid-roll: candidates flicking past, and the answer everyone
- *  lands on. */
-export function PickerCard() {
-  return (
-    <Scene w={400} h={200}>
-      {/* The reel, faded above and below the result */}
-      <Label x={200} y={44} anchor="middle" size={11} tone="muted" className="fill-slate-300">
-        Jamie
-      </Label>
-      <rect
-        x={80}
-        y={58}
-        width={240}
-        height={92}
-        rx={11}
-        className="fill-white stroke-brand-300"
-        strokeWidth={2}
-      />
-      <Label x={200} y={76} anchor="middle" size={10} weight={600} tone="muted">
-        WHO DEMOS?
-      </Label>
-      <Avatar cx={158} cy={102} r={13} initial="P" colour="violet" />
-      <Label x={182} y={103} size={16} weight={700} tone="strong">
-        Priya
-      </Label>
-      <Button x={166} y={124} w={68} h={20} label="Again" variant="ghost" />
-      <Label x={200} y={168} anchor="middle" size={11} tone="muted">
-        It slows to a stop, and everyone sees the same answer.
       </Label>
     </Scene>
   );

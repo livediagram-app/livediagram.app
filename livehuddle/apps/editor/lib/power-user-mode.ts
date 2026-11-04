@@ -7,7 +7,6 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 export const POWER_USER_PRESET = {
   alignmentGuides: { alignmentGuides: true },
   autoRebindArrows: { autoRebindArrows: true },
-  workshopTourSeen: { workshopTourSeen: true },
   avatarTourSeen: { avatarTourSeen: true },
   elementToursSeen: { elementToursSeen: true },
   minimalChrome: { minimalChrome: true },

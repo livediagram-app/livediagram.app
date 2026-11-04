@@ -6,39 +6,34 @@ import {
   isInTemplateCategory,
   templateCategories,
   templateCategory,
+  templateCategoryLabel,
+  templateCategorySearchWords,
 } from './template-categories';
 import { isBlankTemplate, templateEditorMode } from './template-modes';
 import { templateKeywords } from './template-keywords';
 import { templateMatchesQuery } from './template-search';
-import { TEMPLATES, type TemplateKind } from './templates';
+import { TEMPLATES } from './templates';
 
-// docs/specs/008-canvas/canvas-and-palette.md "Template categories".
+// docs/specs/008-canvas/canvas-and-palette.md "Template categories", docs/specs/007-editor/templates-by-mode.md "The
+// catalogue": the four Spaces in the one Virtual Spaces category, the blank in none.
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
-  it('are the thirteen use-case categories, alphabetical by label, Title Case, with even descriptions', () => {
-    expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
-      'Brainstorming',
-      'Decisions',
-      'Goals & Metrics',
-      'Meetings & Workshops',
-      'People & Teams',
-      'Planning',
-      'Product & UX',
-      'Quizzes & Games',
-      'Retrospectives',
-      'Strategy',
-      'Teaching & Learning',
-      'Virtual Spaces',
+  it('is the one Virtual Spaces category, Title Case, with an even description', () => {
+    expect(TEMPLATE_CATEGORIES).toEqual([
+      {
+        id: 'spaces',
+        label: 'Virtual Spaces',
+        description: 'Offices and halls to walk round as an avatar.',
+      },
     ]);
-    const labels = TEMPLATE_CATEGORIES.map((c) => c.label);
-    expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'en')));
-    expect(new Set(ids).size).toBe(ids.length);
     for (const c of TEMPLATE_CATEGORIES) {
       expect(c.description.length, c.id).toBeGreaterThanOrEqual(40);
       expect(c.description.length, c.id).toBeLessThanOrEqual(50);
-      expect(c.description, c.id).not.toMatch(/\u2014/);
+      expect(c.description, c.id).not.toMatch(/—/);
     }
+    expect(templateCategoryLabel('spaces')).toBe('Virtual Spaces');
+    expect(templateCategorySearchWords('spaces')).toContain('avatar');
   });
 
   it('gives every template but the blank exactly one primary category, and the blank none', () => {
@@ -54,39 +49,17 @@ describe('template categories', () => {
     }
   });
 
-  it('pins the primary counts', () => {
-    const counts = ids.map((id) => TEMPLATES.filter((t) => templateCategory(t.kind) === id).length);
-    expect(Object.fromEntries(ids.map((id, i) => [id, counts[i]]))).toEqual({
-      ideas: 3,
-      decisions: 2,
-      goals: 1,
-      meetings: 4,
-      people: 1,
-      planning: 1,
-      product: 5,
-      games: 5,
-      retros: 6,
-      strategy: 5,
-      learning: 1,
-      spaces: 4,
-    });
+  it('files the four Spaces under Virtual Spaces, cross-listed nowhere', () => {
+    const spaces = TEMPLATES.filter((t) => templateCategory(t.kind) === 'spaces').map(
+      (t) => t.kind,
+    );
+    expect(spaces).toEqual(['virtual-office', 'coworking-space', 'team-pod', 'all-hands-hall']);
+    expect(TEMPLATE_ALSO_IN).toEqual({});
+    expect(isInTemplateCategory('team-pod', 'spaces')).toBe(true);
+    expect(isInTemplateCategory('blank-session', 'spaces')).toBe(false);
   });
 
-  it('cross-lists only real templates into real categories, never their primary, never twice', () => {
-    const kinds = new Set(TEMPLATES.map((t) => t.kind));
-    for (const [kind, also] of Object.entries(TEMPLATE_ALSO_IN)) {
-      expect(kinds.has(kind as TemplateKind), kind).toBe(true);
-      expect(isBlankTemplate(kind as TemplateKind), kind).toBe(false);
-      for (const c of also) expect(ids, `${kind} ${c}`).toContain(c);
-      expect(also, kind).not.toContain(templateCategory(kind as TemplateKind));
-      expect(new Set(also).size, kind).toBe(also.length);
-    }
-    expect(isInTemplateCategory('roadmap', 'strategy')).toBe(true);
-    expect(isInTemplateCategory('pub-quiz', 'learning')).toBe(true);
-    expect(isInTemplateCategory('blank-session', 'meetings')).toBe(false);
-  });
-
-  it('leaves no category empty in every mode, and hides one only where a mode has none', () => {
+  it('leaves no category empty in every mode', () => {
     for (const id of ids) {
       const modes = EDITOR_MODES.filter((m) =>
         TEMPLATES.some((t) => isInTemplateCategory(t.kind, id) && templateEditorMode(t.kind) === m),
@@ -109,35 +82,28 @@ describe('template search words', () => {
   it('finds templates by the words people use', () => {
     const find = (q: string) =>
       TEMPLATES.filter((t) => templateMatchesQuery(t, q)).map((t) => t.kind);
-    expect(find('1:1')).toContain('meeting-agenda');
-    expect(find('retro')).toEqual(expect.arrayContaining(['retrospective', 'sailboat']));
-    expect(find('persona')).toContain('user-persona');
+    expect(find('standup')).toContain('team-pod');
+    expect(find('town hall')).toContain('all-hands-hall');
+    expect(find('blank')).toContain('blank-session');
     // A category's search words find its templates.
-    expect(find('technical')).toEqual(expect.arrayContaining(['incident-postmortem']));
-    expect(find('classroom')).toEqual(expect.arrayContaining(['kwl-chart', 'pub-quiz']));
-    expect(find('pestel')).toContain('pestle-analysis');
-    // A category label finds what is cross-listed in it; every word must match.
-    expect(find('goals tree')).toContain('opportunity-solution-tree');
-    expect(find('goals tree')).not.toContain('roadmap');
-    expect(find('roadmap zebra')).toEqual([]);
+    expect(find('avatar')).toEqual(
+      expect.arrayContaining(['virtual-office', 'coworking-space', 'team-pod', 'all-hands-hall']),
+    );
+    // Every word must match.
+    expect(find('office zebra')).toEqual([]);
     expect(find('')).toHaveLength(TEMPLATES.length);
+    // The workshop words left with the workshop templates.
+    expect(find('retro')).toEqual([]);
+    expect(find('workshop')).toEqual([]);
   });
 
   it('reads punctuation and hyphens as no part of a word, in the query and the templates alike', () => {
     const find = (q: string) =>
       TEMPLATES.filter((t) => templateMatchesQuery(t, q)).map((t) => t.kind);
-    expect(find('1-on-1')).toContain('meeting-agenda');
-    expect(find('one-on-one')).toContain('meeting-agenda');
-    // Run together, a hyphenated name is found too ("risk matrix" from the kind risk-matrix).
-    expect(find('riskmatrix')).toContain('risk-matrix');
+    expect(find('all-hands')).toContain('all-hands-hall');
+    // Run together, a hyphenated name is found too ("team pod" from the kind team-pod).
+    expect(find('teampod')).toContain('team-pod');
     // A query of punctuation alone is no query.
     expect(find(' - ')).toHaveLength(TEMPLATES.length);
-  });
-
-  it('matches the whole catalogue in well under a frame (it runs on every keystroke)', () => {
-    const t0 = performance.now();
-    for (let i = 0; i < 100; i++)
-      TEMPLATES.filter((t) => templateMatchesQuery(t, 'flow chart map'));
-    expect((performance.now() - t0) / 100).toBeLessThan(4);
   });
 });

@@ -96,7 +96,7 @@ export const templateView = defineVerb({
   text: ({ text }) => [text],
   cli: {
     positionals: ['kind'],
-    examples: ['livehuddle template view swot', 'livehuddle template view start-stop-continue'],
+    examples: ['livehuddle template view team-pod', 'livehuddle template view virtual-office'],
     prints: 'the outline of the tab the template builds',
   },
 });

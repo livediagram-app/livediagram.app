@@ -166,7 +166,7 @@ export function elementSchemaDoc(): string {
   return `# livehuddle element schema
 
 A livehuddle Space (a document, in the tools' names and arguments) is a shared
-board a team meets and runs workshops on. It has one or more tabs, each its own
+place a team meets in. It has one or more tabs, each its own
 canvas. A tab is { name, elements: Element[] }. Every element needs a unique
 string "id". create_document makes a Space with one or more tabs at once; add_tab
 appends another tab to an existing Space (e.g. an agenda tab, then a tab per
@@ -238,8 +238,8 @@ tabs in a create_document call.
 - Size sibling nodes consistently (e.g. every box 160x64).
 - Prefer pinned arrows (node -> node) so they track their shapes when moved.
 - Give every node an id and a short, clear label.
-- A session board starts from list_templates' hand-tuned scaffolds (kinds such
-  as retrospective, meeting-agenda, lean-coffee), passed as "template", then
+- A Space starts from list_templates' ready-furnished ones (kinds such as
+  virtual-office, team-pod, all-hands-hall), passed as "template", then
   personalised with update_document.
 - A boxes-and-arrows board given as "graph" is laid out in the template look
   (sizes, elbows, side exits, loops round the outside, title, key).
@@ -251,14 +251,13 @@ tabs in a create_document call.
 // with what you send, and where the format is written down), not as rules for
 // the calling model (docs/specs/015-api/mcp-server.md §4.15).
 export const SERVER_INSTRUCTIONS = `Tools to find, read, create, add tabs to, edit, share, rename, delete (to the Trash) and restore the user's livehuddle Spaces.
-A Space is a shared board a team meets and runs workshops on (a retrospective, a stand-up, a planning session, a
-quiz), with one or more tabs, each its own canvas. The tools' names and arguments call a Space a document
+A Space is a shared place a team meets in (an office, a team pod, a stand-up, an all-hands), with one or more tabs, each its own canvas. The tools' names and arguments call a Space a document
 (create_document, documentId).
 The calling model produces the elements AND decides their layout; this server validates, persists and renders them,
 and only auto-arranges a graph when asked to (or when nodes are left unplaced). The full element format is
 documented inline on each tool's element argument, so the tool definitions are the complete reference for it.
-list_templates has hand-tuned session boards (retrospective, meeting-agenda, lean-coffee, icebreaker-questions,
-town-hall, ...): its kind passed as "template" on create_document / add_tab starts a tab from one, and
+list_templates has Blank Space and four ready-furnished Spaces (virtual-office, coworking-space, team-pod,
+all-hands-hall): its kind passed as "template" on create_document / add_tab starts a tab from one, and
 update_document fills in real labels.
 The "graph" argument (nodes + edges by id, or the same as Mermaid text in "mermaid") builds a boxes-and-arrows board
 (a process, a flow, a hierarchy, swimlanes, a cycle) with no coordinates: template-sized boxes, elbow lines, a
@@ -292,7 +291,7 @@ const templateField = z
   .optional()
   .describe(
     'Start from a hand-tuned template scaffold instead of providing elements: a template ' +
-      'kind from list_templates (e.g. "swot", "retrospective", "gantt"). The server ' +
+      'kind from list_templates (e.g. "team-pod", "virtual-office"). The server ' +
       'materialises its curated layout ("layout" is ignored for a template tab) and paints ' +
       'it with the chosen theme. Personalise the placeholder labels afterwards with ' +
       'update_document mode "ops". Provide template OR elements, not both.',
@@ -710,7 +709,7 @@ export const shareDocumentShape = {
     .optional()
     .describe(
       'What the link grants. "participate" (default): recipients add stickies, write and vote ' +
-        'but cannot reshape it; right for a retro or a workshop. "view": they only look, ' +
+        'but cannot reshape it; right for a meeting. "view": they only look, ' +
         'with no comments or votes. "edit": they can change anything. No sign-in is needed to open any.',
     ),
   expiry: z

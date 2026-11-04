@@ -47,8 +47,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['S'], label: 'Search Elements  (Select where there is no strip)' },
       { keys: ['H'], label: 'Hand Tool' },
       { keys: ['K'], label: 'Laser Pointer' },
-      { keys: ['E'], label: 'Eraser (click / drag to delete)' },
-      { keys: ['P'], label: 'Pencil (freehand)' },
+      { keys: ['E'], label: 'Eraser, click / drag to delete  (or 0)' },
       { keys: ['I'], label: 'Isometric View' },
       { keys: ['⇧', 'drag'], label: 'Rotate Isometric Camera' },
       { keys: ['Z'], label: 'Zen Mode (focus)' },
@@ -57,17 +56,10 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
   {
     heading: 'Add elements',
     rows: [
-      { keys: ['R'], label: 'Square' },
-      { keys: ['O'], label: 'Circle' },
-      { keys: ['D'], label: 'Diamond' },
-      { keys: ['C'], label: 'Cylinder' },
-      { keys: ['G'], label: 'Parallelogram' },
-      { keys: ['T'], label: 'Text' },
+      { keys: ['T'], label: 'Text  (or 8)' },
       { keys: ['N'], label: 'Note (sticky)' },
-      { keys: ['A'], label: 'Arrow' },
       { keys: ['F'], label: 'Frame' },
       { keys: ['9'], label: 'Image' },
-      { keys: ['1', '–', '0'], label: 'Number row also picks tools / shapes' },
     ],
   },
   {

@@ -82,7 +82,6 @@ afterEach(() => {
   vi.clearAllMocks();
   vi.useRealTimers();
   setActiveTour('welcome', false);
-  setActiveTour('workshop', false);
   setActiveTour('draw', false);
   setActiveTour('avatar', false);
   setStartPanelOpen(false);

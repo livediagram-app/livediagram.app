@@ -3,8 +3,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { TEMPLATE_CATEGORIES, TEMPLATES } from '@livehuddle/templates';
 
-// The Templates article lists the catalogue by category. A list of forty-odd
-// names is exactly the kind of prose that rots: adding a template is a change
+// The Templates article lists the catalogue by category. A list of names is
+// exactly the kind of prose that rots: adding a template is a change
 // in packages/templates, and nothing about that change makes anyone open the
 // help centre. So the catalogue is pinned to the article here.
 //
@@ -18,8 +18,9 @@ describe('the Templates article lists the real catalogue', () => {
   const page = readFileSync(ARTICLE, 'utf8');
 
   it('reads a real catalogue (guard against this test going blind)', () => {
-    expect(TEMPLATES.length).toBeGreaterThan(30);
-    expect(TEMPLATE_CATEGORIES.length).toBeGreaterThan(5);
+    // The catalogue is Blank Space and the four Spaces (docs/specs/012-collaboration/workshop-mode.md "Templates").
+    expect(TEMPLATES.length).toBeGreaterThanOrEqual(5);
+    expect(TEMPLATE_CATEGORIES.length).toBeGreaterThanOrEqual(1);
   });
 
   it('names every template', () => {

@@ -7,7 +7,7 @@ import { createSharePage } from '@liveworkspace/media';
 
 // What a named preview says under the document's name.
 export const SHARE_PITCH =
-  'Open it in livehuddle: diagrams, whiteboards and workshops, made together.';
+  'Open it in livehuddle: Spaces to walk round, meet and talk in together.';
 
 export const { isSharePagePath, sharePage } = createSharePage({
   app: 'livehuddle',

@@ -69,10 +69,9 @@ export type EditorKeyboardShortcutsDeps = {
   // Active canvas tool. Read by the Escape handler so Escape exits the
   // persistent Format tool (back to Select) from either phase.
   canvasTool: CanvasTool;
-  // Element-add callbacks. R / O / D / C / H / G fire addShape with the
-  // matching ShortcutShape; T / N / A fire the dedicated handlers; I opens
-  // the image picker. All five mirror their palette counterparts so
-  // the keyboard route reaches the same code path as the click route.
+  // Element-add callbacks. F fires addShape('frame'); T and N fire the dedicated handlers; 9 opens the image
+  // picker. Each mirrors its palette counterpart so the keyboard route reaches the same code path as the click
+  // route. addArrow, onBeginFreehand and onBeginShapePen no longer have a key (Work Tracker #423); part 4 drops them.
   // onAddImage is nullable: pure-guest deploys without an api worker
   // hide the palette button + null this prop, and the shortcut goes
   // dormant to match.
@@ -203,30 +202,16 @@ export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
   z: (l) => l.onToggleZen(), // docs/specs/007-editor/zen-mode.md focus mode
 };
 
+// The meeting palette's keys (docs/specs/012-collaboration/workshop-mode.md "The palette"): the eraser, the frame, text
+// and the sticky note. The diagram tools' keys (R, O, D, C, G, A, P and 2 to 7) left with those tools (Work Tracker
+// #423); a press of one does nothing.
 export const EDIT_KEYS: Record<string, ShortcutAction> = {
   e: (l) => l.setCanvasTool('eraser'),
   '0': (l) => l.setCanvasTool('eraser'),
-  p: (l) => l.onBeginFreehand(), // Pencil (P is free now Hand owns H)
-  '7': (l) => l.onBeginFreehand(),
-  // Shape pen (docs/specs/008-canvas/two-pens.md): the same stroke as the pencil, recognised on
-  // release. A number rather than a letter because `s` is still the legacy
-  // Select alias, and 6 is the one gap in the numeric tool row — right beside
-  // the pencil's 7.
-  '6': (l) => l.onBeginShapePen(),
-  f: (l) => l.addShape('frame'), // Frame (was a pencil alias; P owns Pencil)
-  r: (l) => l.addShape('square'),
-  '2': (l) => l.addShape('square'),
-  o: (l) => l.addShape('circle'),
-  '4': (l) => l.addShape('circle'),
-  d: (l) => l.addShape('diamond'),
-  '3': (l) => l.addShape('diamond'),
-  c: (l) => l.addShape('cylinder'),
-  g: (l) => l.addShape('parallelogram'),
+  f: (l) => l.addShape('frame'),
   t: (l) => l.addText(),
   '8': (l) => l.addText(),
   n: (l) => l.addSticky(),
-  a: (l) => l.addArrow(),
-  '5': (l) => l.addArrow(),
 };
 
 // A Participant's plain keys (docs/specs/013-workspace/share-roles.md "The Participant palette"): what its tiles add, by

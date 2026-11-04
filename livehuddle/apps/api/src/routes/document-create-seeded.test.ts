@@ -59,18 +59,15 @@ describe('seeded tabs compiled on create', () => {
 
   // The intent is the index's (it files the create by it, docs/specs/013-workspace/default-folders.md): what the
   // api owns is working it out from the create.
-  it('builds a template tab and derives the intent the index files it by, a retro by its family', async () => {
-    expect(
-      (await create([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }])).status,
-    ).toBe(201);
+  // No template in the catalogue carries a family since the retro formats left (Work Tracker #423).
+  it('builds a template tab and derives the intent the index files it by', async () => {
+    expect((await create([{ id: 't1', name: 'Pod', template: 'team-pod' }])).status).toBe(201);
     expect((await getTab(db.env, 'd1', 't1'))?.elements.length).toBeGreaterThan(0);
-    expect(seedIntentOf([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }])).toBe(
-      'retrospective',
-    );
+    expect(seedIntentOf([{ id: 't1', name: 'Pod', template: 'team-pod' }])).toBeNull();
     expect(
-      compileSeededTabs([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }], 'd1'),
+      compileSeededTabs([{ id: 't1', name: 'Pod', template: 'team-pod' }], 'd1'),
     ).toMatchObject({
-      intent: { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' },
+      intent: { mode: 'workshop', tabKind: 'diagram' },
     });
   });
 
@@ -109,7 +106,7 @@ describe('compileSeededTabs', () => {
     const tabs = [
       { id: 'a', name: 'A', elements: [] },
       { id: 'b', name: 'B', graph: { nodes: [] }, mermaid: 'graph TD' },
-      { name: 'C', template: 'swot' },
+      { name: 'C', template: 'team-pod' },
       'not a tab',
     ];
     expect(compileSeededTabs(tabs, 'd1')).toEqual({ tabs, intent: null });

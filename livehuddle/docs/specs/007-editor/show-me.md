@@ -1,7 +1,7 @@
 # Show Me
 
 **Show Me** is a guided tour of one surface, run there and then on the surface itself, when the person presses
-the **Show Me** button. It is the on-demand cousin of the [Workshop tour](../012-collaboration/workshop-tour.md) and the other
+the **Show Me** button. It is the on-demand cousin of the [Avatar tour](../008-canvas/avatar-tour.md) and the other
 [tours](editor-tour.md), which start from the footer's Start Tour button; Show Me starts from its own button on the surface. It exists for surfaces
 where people make something real in several steps whose ideas are not visible at a glance. An
 [element tour](element-tours.md) is on the footer's button too, while its element is selected. (Until 25 October 2026

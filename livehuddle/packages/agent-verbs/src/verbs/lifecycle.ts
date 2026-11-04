@@ -324,7 +324,7 @@ export const tabAdd = defineVerb({
     flags: { file: { short: 'f' } },
     examples: [
       'livehuddle tab add "Auth flow" Details -f detail.mmd',
-      'livehuddle tab add 3f9c Risks --template swot',
+      'livehuddle tab add 3f9c Hall --template all-hands-hall',
     ],
     prints:
       '+ tab <id> "<name>", the result lines, then the revision, lint verdict and the tab rm that undoes it',

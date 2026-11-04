@@ -59,7 +59,7 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
   {
     key: 'draw',
     word: 'Whiteboard',
-    build: '/new?q=retro',
+    build: '/new?q=blank',
     short: 'Draw',
     title: 'Sprint retro',
     label: 'Draw: sketch on a whiteboard together, markers, stickies and all',
@@ -75,7 +75,7 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
     key: 'townhall',
     word: 'Workshop',
     short: 'Town hall',
-    build: '/new?q=town%20hall',
+    build: '/new?q=all-hands',
     title: 'Q3 all-hands',
     label: 'Town hall: questions in, votes up, answered live with the whole room',
     mode: 'workshop',

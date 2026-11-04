@@ -238,8 +238,8 @@ describe('baseFor', () => {
 
 describe('replaceBodyFrom', () => {
   it('takes one source with its layout, theme and name', () => {
-    expect(replaceBodyFrom({ template: 'swot', theme: 'ocean', name: 'Risks' })).toEqual({
-      template: 'swot',
+    expect(replaceBodyFrom({ template: 'team-pod', theme: 'ocean', name: 'Risks' })).toEqual({
+      template: 'team-pod',
       theme: 'ocean',
       name: 'Risks',
     });

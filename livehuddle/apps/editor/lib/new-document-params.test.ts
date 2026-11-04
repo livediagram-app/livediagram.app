@@ -17,8 +17,10 @@ describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () =>
   });
 
   it('reads ?template=<kind> for a catalogue kind', () => {
-    expect(wizardBypassKind('?template=sailboat')).toBe('sailboat');
-    expect(wizardBypassKind('?team=t1&template=retrospective')).toBe('retrospective');
+    expect(wizardBypassKind('?template=virtual-office')).toBe('virtual-office');
+    // A template that left (Work Tracker #423) reads as no kind: /new opens Blank Space.
+    expect(wizardBypassKind('?template=sailboat')).toBeNull();
+    expect(wizardBypassKind('?team=t1&template=team-pod')).toBe('team-pod');
   });
 
   it('falls back to the wizard for an unknown kind or no bypass', () => {
@@ -33,7 +35,9 @@ describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () =>
   });
 
   it('reads back the link the templates package builds for the gallery', () => {
-    expect(wizardBypassKind(templateCreateHref('swot').slice('/new'.length))).toBe('swot');
+    expect(wizardBypassKind(templateCreateHref('all-hands-hall').slice('/new'.length))).toBe(
+      'all-hands-hall',
+    );
   });
 });
 

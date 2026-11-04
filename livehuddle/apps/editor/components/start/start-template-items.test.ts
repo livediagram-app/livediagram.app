@@ -53,7 +53,7 @@ describe.each(MODES)('the %s template start', (mode) => {
     expect(start.search('  ')).toEqual([]);
     expect(start.search('zzzqqq')).toEqual([]);
     const probe = {
-      workshop: ['retro', 'retrospective'],
+      workshop: ['standup', 'team-pod'],
     }[mode];
     const kinds = start.search(probe[0]!).flatMap((g) => g.kinds);
     expect(kinds).toContain(probe[1]);
@@ -79,49 +79,25 @@ describe.each(MODES)('the %s start’s groups', (mode) => {
 });
 
 describe('Start a Space', () => {
-  it('reaches every session the room runs, by its category', () => {
-    expect(TEMPLATE_STARTS.workshop.groups.map((g) => g.id)).toEqual([
-      'spaces',
-      'recommended',
-      'ideas',
-      'decisions',
-      'goals',
-      'meetings',
-      'people',
-      'planning',
-      'product',
-      'games',
-      'retros',
-      'strategy',
-      'learning',
-    ]);
+  // docs/specs/007-editor/templates-by-mode.md "The catalogue": the Spaces and Recommended, nothing else.
+  it('offers the four Spaces, then Recommended', () => {
+    expect(TEMPLATE_STARTS.workshop.groups.map((g) => g.id)).toEqual(['spaces', 'recommended']);
     const group = (id: string) => TEMPLATE_STARTS.workshop.groups.find((g) => g.id === id)!.kinds;
-    // A cross-listed template shows in each of its categories.
-    expect(group('retros')).toContain('incident-postmortem');
-    expect(group('planning')).toContain('raci-matrix');
-    expect(group('games')).toEqual([
-      'pub-quiz',
-      'icebreaker-questions',
-      'two-truths-and-a-lie',
-      'would-you-rather',
-      'people-bingo',
-    ]);
     expect(group('spaces')).toEqual([
       'virtual-office',
       'coworking-space',
       'team-pod',
       'all-hands-hall',
     ]);
-    expect(group('strategy')).toEqual(
-      expect.arrayContaining(['swot', 'pestle-analysis', 'business-model-canvas']),
-    );
-    expect(group('learning')).toEqual(expect.arrayContaining(['pub-quiz', 'kwl-chart']));
+    expect(group('recommended')[0]).toBe('blank-session');
   });
 
   it('lists a search match once, under its primary category', () => {
-    expect(TEMPLATE_STARTS.workshop.search('postmortem')).toEqual([
-      { group: 'retros', kinds: ['incident-postmortem'] },
+    expect(TEMPLATE_STARTS.workshop.search('pod')).toEqual([
+      { group: 'spaces', kinds: ['team-pod'] },
     ]);
+    // A template that left (Work Tracker #423) is found nowhere.
+    expect(TEMPLATE_STARTS.workshop.search('postmortem')).toEqual([]);
   });
 
   it('lists the Spaces first among search matches, in rail order', () => {

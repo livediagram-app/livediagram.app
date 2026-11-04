@@ -21,9 +21,9 @@ import type { FaqCategory } from '@liveworkspace/marketing-site/lib/faq';
 const ICON = 18;
 // Written out rather than read from @livehuddle/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 39;
+export const TEMPLATE_COUNT = 5;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
-export const TEMPLATE_CATEGORY_COUNT = 12;
+export const TEMPLATE_CATEGORY_COUNT = 1;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
   {
@@ -51,7 +51,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'How do I open my first Space?',
-        a: `Press Open a Space and pick a Space to walk into (a Team Pod, a Virtual Office, a Coworking Space or an All-Hands Hall) or a session to run, from a retro to a town hall. ${TEMPLATE_COUNT} templates are ready, or start blank. The Space opens with you on your feet, and a short tour offers to show you round.`,
+        a: `Press Open a Space and pick a Space to walk into (a Team Pod, a Virtual Office, a Coworking Space or an All-Hands Hall), or start from a blank Space. The Space opens with you on your feet, and a short tour offers to show you round.`,
       },
       {
         q: 'Does it work on my phone or tablet?',
@@ -142,11 +142,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'What can I run with it?',
-        a: 'Stand-ups and team check-ins in a Team Pod, retrospectives in five formats, Lean Coffee and town hall Q&A, brainstorms and affinity maps, Crazy Eights, planning poker, meeting agendas, quizzes, icebreakers and party games, and a whole virtual office to walk round between them.',
+        a: 'Stand-ups and team check-ins in a Team Pod, all-hands in a hall with a stage, quiet work side by side in a Coworking Space, and a whole virtual office to walk round between them, with a shared timer and a quick vote when the meeting needs one.',
       },
       {
         q: 'How many templates and themes are there?',
-        a: `${TEMPLATE_COUNT} starter templates across ${TEMPLATE_CATEGORY_COUNT} categories, and twenty-five themes that recolour the whole board in one click, including dark and multi-colour schemes. You can also build and save a colour scheme of your own.`,
+        a: `${TEMPLATE_COUNT} starter templates (a blank Space and ${TEMPLATE_COUNT - 1} Spaces to walk round), and twenty-five themes that recolour the whole board in one click, including dark and multi-colour schemes. You can also build and save a colour scheme of your own.`,
       },
       {
         q: 'Do I need to switch modes?',
@@ -169,18 +169,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Upload an image once and reuse it from your gallery, or search Openverse for an openly licensed photo or illustration without leaving the editor. See images.',
       },
       {
-        q: 'Can I show data, like a chart?',
-        a: (
-          <>
-            Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or
-            line chart, a progress bar, a rating or a timeline. See{' '}
-            <a href="/help/palette/tools/data-elements/">data elements</a>.
-          </>
-        ),
-        aText:
-          'Yes. Add a table and paste cells straight in from a spreadsheet, or place a pie, bar or line chart, a progress bar, a rating or a timeline. See data elements.',
-      },
-      {
         q: 'Can I use the same tab in two spaces?',
         a: (
           <>
@@ -191,19 +179,6 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         ),
         aText:
           'Yes. Add to Another Space puts the tab you are on into another of your spaces. It is the same tab in both places, not a copy, so an edit in one shows up in the other. See Add to Another Space.',
-      },
-      {
-        q: 'Can I use it as a whiteboard?',
-        a: (
-          <>
-            Yes. Every board is a whiteboard: the palette’s Draw category holds a pencil, a
-            highlighter and arrows, and stickies, text and shapes are a key away, on a plain, dotted
-            or grid backdrop in light or dark. See{' '}
-            <a href="/help/palette/tools/drawing/">Drawing</a>.
-          </>
-        ),
-        aText:
-          'Yes. Every board is a whiteboard: the palette\u2019s Draw category holds a pencil, a highlighter and arrows, and stickies, text and shapes are a key away, on a plain, dotted or grid backdrop in light or dark. See Drawing.',
       },
       {
         q: 'Can I walk the room through something?',

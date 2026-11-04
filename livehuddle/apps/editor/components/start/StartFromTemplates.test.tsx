@@ -34,8 +34,8 @@ describe('StartFromTemplates', () => {
     const onTemplate = vi.fn();
     mount('workshop', onTemplate);
     fireEvent.click(screen.getByRole('button', { name: /^Recommended/ }));
-    fireEvent.click(document.querySelector('[data-start-card="sailboat"]')!);
-    expect(onTemplate).toHaveBeenCalledWith('sailboat');
+    fireEvent.click(document.querySelector('[data-start-card="team-pod"]')!);
+    expect(onTemplate).toHaveBeenCalledWith('team-pod');
     fireEvent.click(document.querySelector('[data-start-card="blank-session"]')!);
     expect(onTemplate).toHaveBeenCalledWith('blank-session');
     expect(screen.queryByRole('heading', { name: 'Start a Space' })).toBeNull();
@@ -97,7 +97,7 @@ describe('StartFromTemplates, switching category', () => {
     mount('workshop');
     const scroller = document.querySelector('[data-start-card]')!.closest('.overflow-y-auto')!;
     scroller.scrollTop = 300;
-    fireEvent.click(document.querySelector('[data-rail="planning"]')!);
+    fireEvent.click(document.querySelector('[data-rail="recommended"]')!);
     expect(scroller.scrollTop).toBe(0);
   });
 });

@@ -20,10 +20,15 @@ const el = (e: Record<string, unknown>) =>
   ({ id: 'x', x: 0, y: 0, width: 1, height: 1, ...e }) as unknown as Element;
 
 describe('elementTileSections', () => {
-  it('flips with the mode', () => {
-    const { here, elsewhere } = elementTileSections({ mode: 'workshop', hasImage: true });
-    expect(ids(here)).toContain('data:pie');
-    expect(ids(elsewhere)).not.toContain('data:pie');
+  // docs/specs/012-collaboration/workshop-mode.md "The palette": the meeting palette's tiles are here; a leaving one
+  // is not, and the Search never offers it.
+  it('holds the meeting palette here, and no leaving tile', () => {
+    const { here } = elementTileSections({ mode: 'workshop', hasImage: true });
+    expect(ids(here)).toEqual(
+      expect.arrayContaining(['tools:sticky', 'tools:room', 'tools:frame']),
+    );
+    expect(ids(here)).not.toContain('data:pie');
+    expect(ids(here)).not.toContain('tools:arrow');
   });
 });
 

@@ -470,23 +470,6 @@ export const CATALOGUE: AppCatalogue = {
       rows: [
         {
           kind: 'toggle',
-          id: 'workshopTourSeen',
-          label: 'Workshop Tour',
-          description: 'In Workshop.',
-          keywords: 'tour walkthrough onboarding tutorial workshop facilitate session retro replay',
-          section: 'Offer Again',
-          key: 'workshopTourSeen',
-          on: false,
-          off: true,
-          fallback: true,
-          event: {
-            category: 'UI',
-            on: 'WorkshopTourSeenOff',
-            off: 'WorkshopTourSeenOn',
-          },
-        },
-        {
-          kind: 'toggle',
           id: 'avatarTourSeen',
           label: 'Avatar Tour',
           description: 'While you walk as an avatar.',

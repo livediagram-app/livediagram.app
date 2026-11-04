@@ -57,24 +57,10 @@ describe('a flyout’s layout', () => {
 });
 
 describe('a flyout’s groups', () => {
-  it('heads Shapes, Draw, Layout, Data and Components by the tile that starts each group', () => {
-    expect(flyoutGroups('shapes', tiles('workshop', 'shapes')).map((g) => g.title)).toEqual([
-      'Basics',
-      'Flowchart',
-      'More Shapes',
-    ]);
-    expect(flyoutGroups('draw', tiles('workshop', 'draw')).map((g) => g.title)).toEqual([
-      'Pens',
-      'Connectors',
-    ]);
-    expect(flyoutGroups('layout', tiles('workshop', 'layout')).map((g) => g.title)).toEqual([
-      'Containers',
-      'Parts',
-    ]);
-    expect(flyoutGroups('data', tiles('workshop', 'data')).map((g) => g.title)).toEqual([
-      'Charts',
-      'Meters',
-    ]);
+  it('heads Navigate by the tile that starts each group: the places and seats, then the office', () => {
+    const groups = flyoutGroups('collab-navigate', tiles('workshop', 'collab-navigate'));
+    expect(groups.map((g) => g.title)).toEqual(['Around the Space', 'Office Pieces']);
+    expect(groups[1]!.tiles[0]!.id).toBe('tools:room');
   });
 
   it('shows one block, unheaded, when not every group has a name', () => {

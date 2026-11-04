@@ -6,21 +6,7 @@
 // from nothing. Choosing a template lands it on the tab at once, another mode's switching the tab to that mode.
 import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@livehuddle/ui';
-import {
-  lucideBuilding2,
-  lucideCalendarRange,
-  lucideDices,
-  lucideGoal,
-  lucideGraduationCap,
-  lucideLightbulb,
-  lucideMap,
-  lucideMessagesSquare,
-  lucidePenTool,
-  lucideRefreshCw,
-  lucideStar,
-  lucideUsers,
-  lucideVote,
-} from '@liveworkspace/icons/lucide';
+import { lucideBuilding2, lucideStar } from '@liveworkspace/icons/lucide';
 import type { TemplateCategory, TemplateKind } from '@livehuddle/templates';
 import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@liveworkspace/workbench/components/canvas/useEmptyCardDismissed';
@@ -40,17 +26,6 @@ const RAIL_ICONS: Readonly<
   Record<'recommended' | TemplateCategory, ReturnType<typeof lucideGlyph>>
 > = {
   recommended: glyph(lucideStar),
-  ideas: glyph(lucideLightbulb),
-  decisions: glyph(lucideVote),
-  goals: glyph(lucideGoal),
-  meetings: glyph(lucideMessagesSquare),
-  people: glyph(lucideUsers),
-  planning: glyph(lucideCalendarRange),
-  product: glyph(lucidePenTool),
-  games: glyph(lucideDices),
-  retros: glyph(lucideRefreshCw),
-  strategy: glyph(lucideMap),
-  learning: glyph(lucideGraduationCap),
   spaces: glyph(lucideBuilding2),
 };
 
@@ -60,7 +35,7 @@ const COPY: Record<
 > = {
   workshop: {
     title: 'Start a Space',
-    line: 'Walk into an office or a hall, or pick a session to run. Close this to start from a blank space.',
+    line: 'Walk into an office, a team pod or a hall. Close this to start from a blank space.',
     noMatch: 'templates',
     help: 'templates',
   },

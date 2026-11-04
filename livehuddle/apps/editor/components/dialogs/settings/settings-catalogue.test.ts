@@ -7,7 +7,6 @@ import { autoRebindArrowsEnabled, type UserPreferences } from '@/lib/user-prefer
 
 const ALL_ROWS = SETTINGS_CATEGORIES.flatMap((c) => c.rows);
 const TOGGLES = ALL_ROWS.filter((r) => r.kind === 'toggle');
-const SWITCHES = TOGGLES;
 const CHOICES = ALL_ROWS.filter((r) => r.kind === 'choice');
 const SLIDERS = ALL_ROWS.filter((r) => r.kind === 'slider');
 const BOTH_CONTEXTS = [
@@ -61,23 +60,11 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('inverts the Workshop tour row the same way', () => {
-    // docs/specs/012-collaboration/workshop-tour.md "Where it appears".
-    const row = SWITCHES.find((r) => r.key === 'workshopTourSeen')!;
-    expect(row.read({ workshopTourSeen: true })).toBe(false);
-    expect(row.read({})).toBe(true);
-    expect(row.write({}, true).workshopTourSeen).toBe(false);
-    expect(row.write({}, false).workshopTourSeen).toBe(true);
-    expect(row.event.on).toBe('WorkshopTourSeenOff');
-    expect(row.event.off).toBe('WorkshopTourSeenOn');
-  });
-
   // docs/specs/007-editor/user-preferences.md "Tours": a category of its own, one switch per tour in
   // the order the tours come.
   it('gives the tours a category of their own, a switch each with its own article', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => [r.key, r.kind, r.label, r.helpArticle])).toEqual([
-      ['workshopTourSeen', 'toggle', 'Workshop Tour', 'workshopTour'],
       ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
       // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
       // linking that element's article.
@@ -100,7 +87,6 @@ describe('settings catalogue', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => (r.kind === 'toggle' ? [r.event.on, r.event.off] : null))).toEqual(
       [
-        ['WorkshopTourSeenOff', 'WorkshopTourSeenOn'],
         ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
         ['ElementToursSeenOff', 'ElementToursSeenOn'],
         ['TimelineTourSeenOff', 'TimelineTourSeenOn'],

@@ -23,7 +23,7 @@ export function registerPrompts(server: McpServer): void {
     'set_up_session',
     {
       title: 'Set up a session',
-      description: 'Turn a plan for a meeting or workshop into a new livehuddle Space.',
+      description: 'Turn a plan for a meeting into a new livehuddle Space.',
       argsSchema: {
         description: z
           .string()
@@ -41,9 +41,9 @@ export function registerPrompts(server: McpServer): void {
             text:
               `Set up a livehuddle Space for this session, then give me a link to open it:\n\n` +
               `${description}\n\n` +
-              `Find fitting session boards with list_templates (a retrospective, a meeting agenda, ` +
-              `an icebreaker) and make the Space with create_document, one tab per part of the ` +
-              `session, each from its "template". Then fill in real labels with update_document. ` +
+              `Find a fitting Space with list_templates (a team pod, an office, an all-hands hall) ` +
+              `and make it with create_document, one tab per room the session needs, each from its ` +
+              `"template". Then fill in real labels with update_document. ` +
               `Pick a fitting theme. Don't set element colours.`,
           },
         },

@@ -39,29 +39,26 @@ describe('filterGallery', () => {
   });
 
   it('matches the title, case-insensitively', () => {
-    expect(filterGallery(all, 'SAILBOAT').map((t) => t.kind)).toEqual(['sailboat']);
+    expect(filterGallery(all, 'TEAM POD').map((t) => t.kind)).toEqual(['team-pod']);
   });
 
   it('matches the description and the category name', () => {
-    expect(filterGallery(all, 'parking lot').map((t) => t.kind)).toContain('meeting-agenda');
-    expect(filterGallery(all, 'retrospectives').map((t) => t.kind)).toContain(
-      'incident-postmortem',
-    );
+    expect(filterGallery(all, 'virtual spaces').map((t) => t.kind)).toContain('coworking-space');
   });
 
   it('needs every word to hit somewhere', () => {
-    const kinds = filterGallery(all, 'sailboat retro').map((t) => t.kind);
-    expect(kinds).toContain('sailboat');
-    expect(kinds).not.toContain('retrospective');
-    expect(filterGallery(all, 'sailboat zebra')).toEqual([]);
+    const kinds = filterGallery(all, 'pod office').map((t) => t.kind);
+    expect(kinds).toEqual(['team-pod']);
+    expect(filterGallery(all, 'office zebra')).toEqual([]);
   });
 });
 
 describe('groupGallery', () => {
   it('keeps catalogue category order and drops emptied categories', () => {
-    const groups = groupGallery(filterGallery(galleryTemplates(), 'sailboat'));
-    expect(groups.map((g) => g.label)).toEqual(['Retrospectives']);
-    expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['sailboat']);
+    const groups = groupGallery(filterGallery(galleryTemplates(), 'team pod'));
+    expect(groups.map((g) => g.label)).toEqual(['Virtual Spaces']);
+    expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['team-pod']);
+    expect(groupGallery(filterGallery(galleryTemplates(), 'zebra'))).toEqual([]);
   });
 
   it('runs the categories alphabetically by name, Blank Slate first', () => {
@@ -71,17 +68,8 @@ describe('groupGallery', () => {
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b, 'en')));
   });
 
-  it('shows a cross-listed template on each of its categories', () => {
-    const browse = groupGallery(galleryTemplates());
-    const holding = (kind: string) =>
-      browse.filter((g) => g.templates.some((t) => t.kind === kind)).map((g) => g.id);
-    expect(holding('roadmap')).toEqual(['planning', 'strategy']);
-  });
-
   it('finds a template by its search words, as the editor does', () => {
-    expect(filterGallery(galleryTemplates(), 'bmc').map((t) => t.kind)).toContain(
-      'business-model-canvas',
-    );
+    expect(filterGallery(galleryTemplates(), 'standup').map((t) => t.kind)).toContain('team-pod');
   });
 });
 

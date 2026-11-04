@@ -1,7 +1,7 @@
 // Palette-category illustrations (docs/specs/018-help/help-app.md): the mode picker (Select, Hand,
 // Eraser, Format Painter, Laser, Spotlight, Avatar, Isometric) and the palette
-// settings (Auto-Attach Arrows, Alignment Guides, Panel Opacity). Composed only from the shared primitives so the house style
-// holds — except the Avatar sprite, which is deliberately pixel art.
+// settings (Alignment Guides, Panel Opacity). Composed only from the shared primitives so the house style
+// holds, except the Avatar sprite, which is deliberately pixel art.
 
 import { Scene, Shape, Arrow, SelectionBox, Panel } from '@liveworkspace/help-site/art/primitives';
 import { IsoCard, iso } from './palette-modes-parts';
@@ -232,32 +232,6 @@ export function PanelOpacity() {
           <rect x={294} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
         </Panel>
       </g>
-    </Scene>
-  );
-}
-
-/** Auto-attach arrows: the target is dragged from the right of the source to
- *  its left. Kept where they were, the ends would run the line through the
- *  source, so both move to the sides that now face each other. */
-export function AutoAttachArrows() {
-  return (
-    <Scene w={420} h={220}>
-      <Shape x={166} y={86} w={88} h={48} label="Source" />
-      {/* Old position (ghost) and the arrow as it was */}
-      <Shape x={320} y={86} w={88} h={48} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
-      <Arrow from={[254, 110]} to={[320, 110]} tone="muted" dashed />
-      {/* Moved shape; both ends now on the facing sides */}
-      <Shape x={12} y={86} w={88} h={48} accent label="Target" />
-      <Arrow from={[166, 110]} to={[100, 110]} tone="accent" />
-      {/* Move trail, over the top */}
-      <path
-        d="M364 80 Q210 -10 56 80"
-        className="stroke-slate-300"
-        strokeWidth={2}
-        fill="none"
-        strokeDasharray="5 5"
-        strokeLinecap="round"
-      />
     </Scene>
   );
 }

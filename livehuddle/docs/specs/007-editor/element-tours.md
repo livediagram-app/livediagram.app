@@ -4,7 +4,7 @@ An **element tour** teaches one complex element type, on the element itself: wha
 how to change it. It is started from the footer's Start Tour button while an element of that type is selected, and it
 walks through the real element the person selected, not a sample.
 
-It sits beside the [Workshop tour](../012-collaboration/workshop-tour.md) and [Show Me](show-me.md) (started from a
+It sits beside the [Avatar tour](../008-canvas/avatar-tour.md) and [Show Me](show-me.md) (started from a
 button on one surface). Like every tour it never offers itself: the one way in is the Start Tour button
 ([Tours](editor-tour.md#where-it-appears)).
 
