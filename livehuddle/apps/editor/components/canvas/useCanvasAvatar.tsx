@@ -82,6 +82,7 @@ export function useCanvasAvatar({
     mainRef,
     wrapperRef,
     viewportZoom,
+    viewportOffset,
     setViewportOffset,
   });
   const pressModeButton = (element: ShapeElement) => {

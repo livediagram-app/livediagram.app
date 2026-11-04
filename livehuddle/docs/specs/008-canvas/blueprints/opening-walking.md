@@ -42,8 +42,10 @@ Synonyms banned: "auto-avatar", "spawn mode", "default tool" (a different featur
 6. `useWalkIn`, a layout effect on `seq`, sets `spawnAtRef` to `avatarSpawnBelow(button, scale)` (the spot a press of
    the button would use, at your character's Size, so the figure stands clear of the button's label) before
    `useAvatarWalk`'s enter effect runs, centres the view on the spot when the spot is outside the canvas, and nudges
-   the view by `followCorrection` when the spot is on the canvas but inside `AVATAR_FOLLOW_MARGIN` of an edge (the
-   current offset read back from the wrapper's box).
+   the view by `followCorrection` when the spot is on the canvas but inside `AVATAR_FOLLOW_MARGIN` of an edge (added
+   to the current `viewportOffset`). The view is judged once it has settled: the wrapper's box unchanged for
+   `WALK_IN_STILL_FRAMES` (6) frames, or after `WALK_IN_MAX_FRAMES` (90), since the tab's fit and the Map's re-fit
+   land frames after the tab opens walking; the spot itself is set at once.
 7. A template landing calls `onLanded(tabId)`, which removes the tab from `judged`; the next render with its new
    elements judges it again.
 
@@ -55,7 +57,7 @@ never brings the walk back.
 - `walkEntrance(elements: Element[], layers: Layer[] | undefined): WalkEntrance | null`.
 - `useOpenWalking({ enabled, tabId, elements, layers, loaded, walking, openWalking }): { walkIn, rejudge }`.
 - `useCanvasTool().openWalking(): void`.
-- `useWalkIn({ walkIn, scale, spawnAtRef, mainRef, wrapperRef, viewportZoom, setViewportOffset })`.
+- `useWalkIn({ walkIn, scale, spawnAtRef, mainRef, wrapperRef, viewportZoom, viewportOffset, setViewportOffset })`.
 - `CanvasProps.walkIn?: WalkIn | null`.
 
 ## Data and persistence
