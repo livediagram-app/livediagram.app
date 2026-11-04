@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   CALL_LOCATOR_MAX,
+  isCallLayer,
+  isCallTrackName,
   parseAvatarVoice,
   parseCallTrack,
   parseCallTrackLocator,
@@ -29,9 +31,14 @@ describe('proximity audio wire (proximity-audio.md "The wire")', () => {
     expect(parseAvatarVoice(null)).toBeNull();
   });
 
-  it('takes a locator for the microphone only, within bounds', () => {
+  it('takes a locator for a track a call publishes, within bounds', () => {
     expect(parseCallTrackLocator({ ...locator, more: true })).toEqual(locator);
     expect(parseCallTrackLocator({ ...locator, trackName: 'camera' })).toBeNull();
+    expect(parseCallTrackLocator({ ...locator, trackName: 'cam' })?.trackName).toBe('cam');
+    expect(parseCallTrackLocator({ ...locator, trackName: 'screen' })?.trackName).toBe('screen');
+    // Held to one slot when named.
+    expect(parseCallTrackLocator({ ...locator, trackName: 'cam' }, 'mic')).toBeNull();
+    expect(parseCallTrackLocator(locator, 'mic')).toEqual(locator);
     expect(parseCallTrackLocator({ ...locator, sessionId: '' })).toBeNull();
     expect(
       parseCallTrackLocator({ ...locator, token: 'x'.repeat(CALL_LOCATOR_MAX + 1) }),
@@ -52,6 +59,36 @@ describe('proximity audio wire (proximity-audio.md "The wire")', () => {
     ).toBeNull();
     expect(parseCallTrack({ kind: 'call-track', tabId: 1, track: null })).toBeNull();
     expect(parseCallTrack(undefined)).toBeNull();
+    // The microphone's slot takes only the microphone.
+    expect(
+      parseCallTrack({ kind: 'call-track', tabId: 't', track: { ...locator, trackName: 'cam' } }),
+    ).toBeNull();
+  });
+
+  it('parses the camera and screen slots (video-and-screen-bubbles.md "The wire")', () => {
+    const cam = { ...locator, trackName: 'cam' };
+    const screen = { ...locator, trackName: 'screen' };
+    expect(
+      parseCallTrack({ kind: 'call-track', tabId: 't', track: null, video: cam, screen }),
+    ).toEqual({ kind: 'call-track', tabId: 't', track: null, video: cam, screen });
+    expect(
+      parseCallTrack({ kind: 'call-track', tabId: 't', track: locator, video: null, screen: null }),
+    ).toEqual({ kind: 'call-track', tabId: 't', track: locator, video: null, screen: null });
+    // Each slot names its own track, and a malformed slot refuses the op.
+    expect(parseCallTrack({ kind: 'call-track', tabId: 't', track: null, video: screen })).toBeNull();
+    expect(parseCallTrack({ kind: 'call-track', tabId: 't', track: null, screen: cam })).toBeNull();
+    expect(parseCallTrack({ kind: 'call-track', tabId: 't', track: null, video: 'cam' })).toBeNull();
+  });
+
+  it('knows the track names and the two layers', () => {
+    expect(['mic', 'cam', 'screen', 'camera', 1].map(isCallTrackName)).toEqual([
+      true,
+      true,
+      true,
+      false,
+      false,
+    ]);
+    expect(['h', 'f', 'q', null].map(isCallLayer)).toEqual([true, true, false, false]);
   });
 
   it('classes both as presence: unordered, never logged or replayed', () => {

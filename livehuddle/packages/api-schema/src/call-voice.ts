@@ -6,8 +6,27 @@
 export type VoiceLevel = 0 | 1 | 2 | 3 | 4;
 export const VOICE_LEVEL_MAX = 4;
 
-/** The one track a browser publishes: its microphone. */
+/** The microphone's track name: the one every speaker publishes. */
 export const CALL_TRACK_NAME = 'mic';
+/** The camera's (docs/specs/012-collaboration/video-and-screen-bubbles.md "The camera"). */
+export const CALL_VIDEO_TRACK_NAME = 'cam';
+/** A shared screen's (docs/specs/012-collaboration/video-and-screen-bubbles.md "The screen share"). */
+export const CALL_SCREEN_TRACK_NAME = 'screen';
+export type CallTrackName =
+  | typeof CALL_TRACK_NAME
+  | typeof CALL_VIDEO_TRACK_NAME
+  | typeof CALL_SCREEN_TRACK_NAME;
+export const CALL_TRACK_NAMES: readonly CallTrackName[] = [
+  CALL_TRACK_NAME,
+  CALL_VIDEO_TRACK_NAME,
+  CALL_SCREEN_TRACK_NAME,
+];
+export const isCallTrackName = (v: unknown): v is CallTrackName =>
+  (CALL_TRACK_NAMES as readonly unknown[]).includes(v);
+
+/** The camera's two simulcast encodings: `h` the small layer every bubble takes, `f` the large one a maximise asks. */
+export type CallLayer = 'h' | 'f';
+export const isCallLayer = (v: unknown): v is CallLayer => v === 'h' || v === 'f';
 /** The longest a locator field may be (a Realtime session id is 32 hex; a token 43 base64url). */
 export const CALL_LOCATOR_MAX = 128;
 // The room's other id bound (MAX_TAB_ID_LEN).
@@ -17,7 +36,17 @@ const TAB_ID_MAX = 64;
 export type CallTrackLocator = { sessionId: string; trackName: string; token: string };
 
 export type AvatarVoiceOp = { kind: 'avatar-voice'; tabId: string; level: VoiceLevel };
-export type CallTrackOp = { kind: 'call-track'; tabId: string; track: CallTrackLocator | null };
+/**
+ * Where a speaker's media is: `track` the microphone, `video` the camera and `screen` a shared screen, each null while
+ * off. `video` and `screen` are absent from an op that predates them, which reads as off.
+ */
+export type CallTrackOp = {
+  kind: 'call-track';
+  tabId: string;
+  track: CallTrackLocator | null;
+  video?: CallTrackLocator | null;
+  screen?: CallTrackLocator | null;
+};
 
 const isTabId = (v: unknown): v is string =>
   typeof v === 'string' && v.length > 0 && v.length <= TAB_ID_MAX;
@@ -39,21 +68,48 @@ export function parseAvatarVoice(op: unknown): AvatarVoiceOp | null {
   return level === null ? null : { kind: 'avatar-voice', tabId: o.tabId, level };
 }
 
-/** A locator, or null for anything malformed or naming a track other than the microphone. */
-export function parseCallTrackLocator(v: unknown): CallTrackLocator | null {
+/**
+ * A locator, or null for anything malformed. `name` holds it to one track (the slot it came in); absent, any track a
+ * call publishes.
+ */
+export function parseCallTrackLocator(v: unknown, name?: CallTrackName): CallTrackLocator | null {
   const t = v as Partial<Record<keyof CallTrackLocator, unknown>> | null;
   if (typeof t !== 'object' || t === null) return null;
-  if (!isField(t.sessionId) || t.trackName !== CALL_TRACK_NAME || !isField(t.token)) return null;
-  return { sessionId: t.sessionId, trackName: t.trackName, token: t.token };
+  const named = name === undefined ? isCallTrackName(t.trackName) : t.trackName === name;
+  if (!isField(t.sessionId) || !named || !isField(t.token)) return null;
+  return { sessionId: t.sessionId, trackName: t.trackName as string, token: t.token };
 }
 
-/** A `call-track` op as sent, or null. */
+// One slot of a `call-track` op: a locator for its own track, null for off, undefined for a malformed one.
+function slotOf(v: unknown, name: CallTrackName): CallTrackLocator | null | undefined {
+  if (v === null) return null;
+  return parseCallTrackLocator(v, name) ?? undefined;
+}
+
+/** A `call-track` op as sent, or null. Each slot's locator must name its own track. */
 export function parseCallTrack(op: unknown): CallTrackOp | null {
-  const o = op as { kind?: unknown; tabId?: unknown; track?: unknown } | null;
+  const o = op as {
+    kind?: unknown;
+    tabId?: unknown;
+    track?: unknown;
+    video?: unknown;
+    screen?: unknown;
+  } | null;
   if (!o || o.kind !== 'call-track' || !isTabId(o.tabId)) return null;
-  if (o.track === null) return { kind: 'call-track', tabId: o.tabId, track: null };
-  const track = parseCallTrackLocator(o.track);
-  return track ? { kind: 'call-track', tabId: o.tabId, track } : null;
+  const track = slotOf(o.track, CALL_TRACK_NAME);
+  if (track === undefined) return null;
+  const parsed: CallTrackOp = { kind: 'call-track', tabId: o.tabId, track };
+  if (o.video !== undefined) {
+    const video = slotOf(o.video, CALL_VIDEO_TRACK_NAME);
+    if (video === undefined) return null;
+    parsed.video = video;
+  }
+  if (o.screen !== undefined) {
+    const screen = slotOf(o.screen, CALL_SCREEN_TRACK_NAME);
+    if (screen === undefined) return null;
+    parsed.screen = screen;
+  }
+  return parsed;
 }
 
 // --- The mint routes (apps/api/src/routes/calls.ts) ---------------------------------------------------------------
@@ -78,12 +134,23 @@ export type CallSessionDescription = { type: 'offer' | 'answer'; sdp: string };
 
 type CallSessionProof = { sessionId: string; sessionToken: string };
 
-/** POST /api/documents/:id/calls/tracks: publish the microphone, or subscribe to speakers'. */
+/** A subscription asked for: a locator, and for a camera the layer to receive (the small one when absent). */
+export type CallSubscribeLocator = CallTrackLocator & { layer?: CallLayer };
+
+/**
+ * POST /api/documents/:id/calls/tracks: publish one of this browser's tracks (the microphone when `trackName` is
+ * absent), or subscribe to other people's.
+ */
 export type CallTracksRequest = CallSessionProof &
   (
-    | { publish: { sdp: string; mid: string }; subscribe?: undefined }
-    | { subscribe: CallTrackLocator[]; publish?: undefined }
+    | { publish: { sdp: string; mid: string; trackName?: CallTrackName }; subscribe?: undefined }
+    | { subscribe: CallSubscribeLocator[]; publish?: undefined }
   );
+
+/** PUT /api/documents/:id/calls/layer: switch camera subscriptions between the small and the large layer. */
+export type CallLayerRequest = CallSessionProof & {
+  tracks: { mid: string; sessionId: string; trackName: string; layer: CallLayer }[];
+};
 
 /** One track's result, as Realtime answers it (an error per track, never for the whole batch). */
 export type CallTrackResult = {
@@ -107,7 +174,11 @@ export type CallCloseRequest = CallSessionProof & { mids: string[]; sdp?: string
 
 /** Why the calls routes refuse: off (and why), a listener publishing, a malformed request, Realtime failing. */
 export type CallsErrorCode =
-  'calls_off' | 'calls_listen_only' | 'invalid_call_request' | 'calls_upstream';
+  | 'calls_off'
+  | 'calls_listen_only'
+  | 'calls_editor_only'
+  | 'invalid_call_request'
+  | 'calls_upstream';
 // `paused` and `audio-only` are the calls kill switch's (docs/specs/016-platform/calls-kill-switch.md "The mint
 // route"): everything is paused, or this track's media is while calls are audio only.
 export type CallsOffReason = 'production' | 'unconfigured' | 'paused' | 'audio-only';

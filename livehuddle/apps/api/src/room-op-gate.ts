@@ -87,7 +87,12 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // So is talking (docs/specs/012-collaboration/proximity-audio.md "Share roles"): a Viewer listens, so it shows no
   // equaliser and publishes no microphone, and a malformed level or locator reaches nobody.
   if (opKind === 'avatar-voice' && (level === 'view' || !parseAvatarVoice(op))) return DROP;
-  if (opKind === 'call-track' && (level === 'view' || !parseCallTrack(op))) return DROP;
+  if (opKind === 'call-track') {
+    const track = level === 'view' ? null : parseCallTrack(op);
+    if (!track) return DROP;
+    // Sharing a screen is an Editor's (docs/specs/012-collaboration/video-and-screen-bubbles.md "Share roles").
+    if (track.screen && level !== 'edit') return DROP;
+  }
   // Bring Focus moves everyone's view (docs/specs/012-collaboration/bring-focus.md): running the session, so an
   // Editor's alone.
   if (opKind === 'focus-here' && level !== 'edit') return DROP;
