@@ -11,7 +11,7 @@ import {
 } from '@livehuddle/api-schema';
 import type { LiveDoc, DocumentResponse, DocumentSummary } from '@livehuddle/api-schema';
 import type { Appearance, Tab } from '@livehuddle/document';
-import { IndexError } from '@liveworkspace/index-client';
+import { createOrResumeItem, type CreatedOrResumed, IndexError } from '@liveworkspace/index-client';
 import { ITEM_GRANT_HEADER } from '@liveworkspace/index-client/browser';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import {
@@ -198,45 +198,38 @@ export async function apiCreateDocument(
 ): Promise<LiveDoc> {
   // The index makes the canvas first (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Items"): its place, its title
   // and the grant on it come back together. The content is then started in the canvas's room with that grant.
-  let grant: Awaited<ReturnType<typeof indexClient.createItem>>['grant'];
-  // The title the index filed it under; a resumed create keeps the one it asked for.
-  let title = d.name;
+  let created: CreatedOrResumed;
   const intent = indexIntentOf(d.intent ?? null);
   try {
-    ({
-      grant,
-      item: { title },
-    } = await indexClient.createItem({
-      id: d.id,
-      // Synced to the cloud from this browser (Offline Mode): the Timeline says so, not "Created".
-      ...(opts.conversion === 'sync' ? { synced: true } : {}),
-      app: 'livehuddle',
-      title: d.name,
-      ...(d.teamId ? { teamId: d.teamId } : {}),
-      // `null` is the space's root chosen on purpose; absent is no choice, where a default folder
-      // may answer (docs/specs/013-workspace/folders.md "Placement on create").
-      ...(d.folderId !== undefined ? { folderId: d.folderId } : {}),
-      ...(intent ? { intent } : {}),
-    }));
-  } catch (err) {
     // A Retry re-runs a create under the ids it first tried (docs/specs/007-editor/new-document-route.md "Retry"):
-    // when the index made the item but the content's create failed, the item is already there, and it is the caller's
-    // own. Its edit grant carries the create on, so the Retry finishes the Space rather than failing again.
-    const resumed =
-      err instanceof IndexError && err.status === 409 && err.code === 'item_exists'
-        ? await documentGrant(d.id)
-        : null;
-    if (resumed?.level === 'edit') {
-      grant = resumed;
-    } else if (err instanceof IndexError) {
+    // when the index made the item but the content's create failed, the item is already there and the caller's own,
+    // so its edit grant carries the create on (createOrResumeItem) rather than failing again.
+    created = await createOrResumeItem(
+      indexClient,
+      {
+        id: d.id,
+        // Synced to the cloud from this browser (Offline Mode): the Timeline says so, not "Created".
+        ...(opts.conversion === 'sync' ? { synced: true } : {}),
+        app: 'livehuddle',
+        title: d.name,
+        ...(d.teamId ? { teamId: d.teamId } : {}),
+        // `null` is the space's root chosen on purpose; absent is no choice, where a default folder
+        // may answer (docs/specs/013-workspace/folders.md "Placement on create").
+        ...(d.folderId !== undefined ? { folderId: d.folderId } : {}),
+        ...(intent ? { intent } : {}),
+      },
+      documentGrant,
+    );
+  } catch (err) {
+    if (err instanceof IndexError) {
       reportApiError(err.status, 'create document in index', err.code);
       const apiErr = new ApiError('create document', err.status, err.code);
       markReported(apiErr);
       throw apiErr;
-    } else {
-      throw err;
     }
+    throw err;
   }
+  const { grant, title } = created;
   seedDocumentGrant(d.id, grant);
   indexTitles.set(d.id, title);
   const res = await apiFetch(`${API_BASE}/documents`, {
