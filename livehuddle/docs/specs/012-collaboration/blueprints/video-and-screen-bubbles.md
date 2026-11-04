@@ -73,6 +73,9 @@ Nothing is stored. Streams live in memory for the call's life and are stopped on
 ## Performance and limits
 
 - `pickSeen` runs with `hear()`: linear in heard peers plus a sort of at most the heard set.
+- `layoutBubbles` runs on every render of the bubble layer (each walk step): a sort of the groups, an order pass of
+  at most n² adjacent swaps and a linear pack, with n at most 9 (6 cameras, 2 screens, your own). Held under a CPU
+  budget by a test of 1,000 layouts of the worst case.
 - A `<video>` per received bubble, at most 6 + 2 + your own two. Bubbles re-render on a walker's step only for their
   own position (one style change), never the video element.
 - Off-screen and hidden-tab rules close subscriptions, so the SFU stops sending; the bubble code adds nothing to the
@@ -82,6 +85,24 @@ Nothing is stored. Streams live in memory for the call's life and are stopped on
 
 - `components/calls/MediaBubble.tsx`: the one bubble (camera or screen), and `CallBubbles.tsx`, the layer that places
   them above characters (above the talking bars, `BUBBLE_LIFT_PX`), side by side when a person has both.
+- **Close together** (`lib/calls/bubble-layout.ts`, pure): `layoutBubbles(boxes, prevOrder)` takes each person's
+  bubble group as a box (`{ id, x, bottom, width, height }` in canvas px: centred on the head, bottom
+  `BUBBLE_LIFT_PX` over it, `groupWidth(count)` wide, 16:9 tall) and answers each group's sideways nudge `dx`, its
+  laid-out rect and the order used. Rows: boxes sorted by top, a box joins the row above when it starts less than
+  `BUBBLE_GAP_PX` below the row's lowest bottom. Order within a row: the previous order (`prevOrder`), new ids put in
+  by x, then adjacent pairs swapped only when the left one's x is more than `BUBBLE_SWAP_PX` right of the other's
+  (a new id swaps on any inversion). Packing: the classic ordered 1D cluster merge, each cluster's left edge the mean
+  of its members' wanted lefts less their offsets in it (least squares), merged with the cluster before while they
+  come within `BUBBLE_GAP_PX`. `CallBubbles` keeps the order in state, adjusted during render (it settles in one
+  extra render, as the order it hands back is already stable), passes each `Group` its `dx`, and writes the rects to
+  its `rectsRef` (`useCallBubbleRects`, made in `Canvas.tsx`; emptied with no stream and on unmount) after each commit.
+- A group's inner row carries the nudge as `translateX(dx)` with a `BUBBLE_NUDGE_MS` ease-out transition (off under
+  reduced motion), apart from the outer box's `left`/`top` glide, so a swap slides while a walk keeps its linear
+  glide. The tail: a 10 px square turned 45°, the person's colour, under the row, at `tailShift(dx, width)` off the
+  row's centre (`-dx` held `BUBBLE_TAIL_INSET_PX` inside each end), with the same transition.
+- **Speech clear of bubbles**: `Canvas.tsx` hands the same ref to `AvatarSpeechLayer` as `obstacles`; the layer's
+  flight loop lifts each speech bubble by `speechLift` (`../packages/avatar/src/speech.ts`, the
+  [avatar speech blueprint](../../008-canvas/blueprints/avatar-speech.md)).
 - `components/calls/MaximisedBubble.tsx`: the large panel, a fixed overlay outside the canvas transform.
 - `components/calls/ScreenShareBar.tsx`: the "You are sharing your screen" bar, top centre, with Stop Sharing.
 - `CallClusterButton.tsx`: Camera and Share Screen segments between the microphone and Leave; **Video Paused**
@@ -103,6 +124,8 @@ restores, focus moves to Restore on open and back to the bubble on close. The sh
 | Simulcast subscribe and `tracks/update` shapes             | `apps/api/src/calls/realtime-api.test.ts`                 |
 | Room drops a non-Editor's screen locator                   | `apps/api/src/room-op-gate.test.ts`                       |
 | Earshot, viewport, hidden tab, caps, maximised kept        | `apps/editor/lib/calls/bubbles.test.ts`                   |
+| Rows, nudge, swap hysteresis, layout CPU budget            | `apps/editor/lib/calls/bubble-layout.test.ts`             |
+| Speech lift past bubbles                                   | `../packages/avatar/src/speech.test.ts`                   |
 | Keys per track, layer change, publish by name              | `apps/editor/lib/calls/sfu-session.test.ts`               |
 | Camera and share on and off, ended, audio-only stops them  | `apps/editor/lib/calls/proximity-call.test.ts`            |
 | Strip segments per role, Video Paused                      | `apps/editor/components/calls/CallClusterButton.test.tsx` |
@@ -116,6 +139,10 @@ restores, focus moves to Restore on open and back to the bubble on close. The sh
 | `MAX_SCREEN_BUBBLES`    | 2                                   | A screen is about three bubbles of traffic |
 | `BUBBLE_VIEW_MARGIN_PX` | 120                                 | An edge bubble does not flicker            |
 | `BUBBLE_WIDTH_PX`       | 120                                 | Readable at 100%, small beside a character |
+| `BUBBLE_GAP_PX`         | 8                                   | Between bubbles, and a person's two        |
+| `BUBBLE_SWAP_PX`        | 24                                  | Crossing needed before two bubbles swap    |
+| `BUBBLE_NUDGE_MS`       | 220                                 | A swap slides, quick enough to follow      |
+| `BUBBLE_TAIL_INSET_PX`  | 14                                  | The tail stays off the rounded corners     |
 | `CAMERA_CONSTRAINTS`    | 1280×720, 24 fps ideal              | The large layer's source                   |
 | `CAMERA_ENCODINGS`      | `f` 1.5 Mbps; `h` scale 2, 300 kbps | The card's cost figures                    |
 | `SCREEN_CONSTRAINTS`    | ≤1920×1080, 5 to 15 fps             | The card's cap                             |

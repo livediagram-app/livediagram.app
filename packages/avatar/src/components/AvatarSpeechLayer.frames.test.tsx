@@ -87,4 +87,68 @@ describe('the speech bubbles flight', () => {
       );
     });
   });
+
+  describe('clear of camera bubbles (docs/specs/012-collaboration/video-and-screen-bubbles.md "Close together")', () => {
+    const sizeOf = (w: number, h: number) => {
+      vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(w);
+      vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(h);
+    };
+    const flying = (
+      reduced: boolean,
+      obstacles: { current: { left: number; top: number; right: number; bottom: number }[] },
+      zoom = 1,
+    ) => {
+      vi.mocked(prefersReducedMotion).mockReturnValue(reduced);
+      sizeOf(100, 40);
+      vi.useFakeTimers({
+        toFake: ['requestAnimationFrame', 'cancelAnimationFrame', 'performance'],
+      });
+      const { container } = render(
+        <AvatarSpeechLayer
+          {...props}
+          bubbles={[{ ...bubble, x: 200, y: 300 }]}
+          zoom={zoom}
+          obstacles={obstacles}
+        />,
+      );
+      return container.querySelector<HTMLElement>('[aria-hidden].w-max')!;
+    };
+    const liftIn = (card: HTMLElement) =>
+      0 - Number(/, (-?[\d.]+)px\) scale/.exec(card.style.transform)![1]);
+
+    it('starts over a camera bubble on its path, at once on its first frame', () => {
+      // A bubble from 182 to 250 straddles its path: it starts 8 over its top, 300 - 182 + 8 = 126 up.
+      const card = flying(true, { current: [{ left: 150, top: 182, right: 270, bottom: 250 }] });
+      expect(liftIn(card)).toBe(126);
+    });
+
+    it('works in canvas px, at any zoom', () => {
+      const card = flying(true, { current: [{ left: 150, top: 182, right: 270, bottom: 250 }] }, 2);
+      expect(liftIn(card)).toBe(252);
+    });
+
+    it('eases up out of the way of one that walks in, and is never pushed down', () => {
+      const obstacles = {
+        current: [] as { left: number; top: number; right: number; bottom: number }[],
+      };
+      const card = flying(false, obstacles);
+      expect(liftIn(card)).toBeLessThan(1);
+      obstacles.current = [{ left: 150, top: 182, right: 270, bottom: 250 }];
+      vi.advanceTimersByTime(20);
+      const partway = liftIn(card);
+      vi.advanceTimersByTime(400);
+      const settled = liftIn(card);
+      expect(partway).toBeGreaterThan(0);
+      expect(settled).toBeGreaterThan(partway);
+      // It walks off: the bubble keeps its height.
+      obstacles.current = [];
+      vi.advanceTimersByTime(100);
+      expect(liftIn(card)).toBeGreaterThanOrEqual(settled);
+    });
+
+    it('is not lifted by a bubble beside its path', () => {
+      const card = flying(true, { current: [{ left: 400, top: 182, right: 520, bottom: 250 }] });
+      expect(liftIn(card)).toBe(0);
+    });
+  });
 });

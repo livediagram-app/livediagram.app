@@ -77,6 +77,28 @@ One bubble for both kinds, drawn in the canvas layer so it zooms and slides with
   its last frame.
 - Under reduced motion the bubble does not slide or scale; it appears in place.
 
+### Close together (#468)
+
+People talking stand close, so their bubbles would cover each other. They never do:
+
+- **Bubbles slide apart sideways.** Bubbles at about the same height (their tops and bottoms within 8 canvas px of
+  meeting) are laid out in one row, in their people's left-to-right order, 8 canvas px apart. A crowded row is
+  centred on its people, each bubble moved as little as the others; a bubble with room to spare stays exactly above
+  its head. A person's camera and screen move together.
+- **A small tail** in the person's colour under each bubble points down at its own head, so a bubble nudged aside
+  still says whose it is. It slides along the bubble's lower edge with the nudge, never past its rounded corners.
+- **No jitter when people walk past each other.** Two bubbles swap sides only once their people have crossed by 24
+  canvas px, and the swap is a short slide (220 ms), never a jump. Walking side by side, the bubbles glide with the
+  characters as before.
+- Under reduced motion the nudge and the swap are not animated.
+
+**Speech bubbles stay clear.** A speech bubble ([Avatar mode](../008-canvas/avatar-mode.md#speech-bubbles)) floats
+up from a head, and a camera or screen bubble sits right there. Wherever a speech bubble's path up would cross a
+camera or screen bubble, its own speaker's or anyone's, it starts 8 canvas px above that bubble instead, so it reads
+as rising from the video. If a bubble moves into its path while it flies (someone walks up), it eases up out of the
+way (about 150 ms) and is never pushed down again during its flight. The composer you type in stays at your head:
+it is yours, open only while you type, and drawn over your own camera.
+
 ### Maximised
 
 - The bubble opens into a large panel over the canvas (at most 1280 px wide, 16:9, never more than 90% of the window),
