@@ -133,8 +133,9 @@ From [Future work](../005-project-roadmap/future-work.md#share-roles) and [Proxi
   by the grant's level in the mint route, and by the room, which drops a `call-track` op naming a screen from anyone
   but an Editor, and any from a Viewer.
 - **An Editor can stop someone else's share** (#469), for a share left running in a meeting. Another person's screen
-  bubble shows a **Stop Sharing** button to an Editor (top left, on hover or focus, beside the maximise mark), and the
-  maximised panel's bar shows it too. Pressing it ends the share as the sharer's own Stop does: their bubble closes
+  bubble shows a **Stop** button to an Editor (top left, on hover or focus, always on a touch screen, beside the
+  maximise mark; its name and hover card say "Stop Sam's Screen"), and the maximised panel's bar shows **Stop
+  Sharing** too. Pressing it ends the share as the sharer's own Stop does: their bubble closes
   for everyone, their strip's Share Screen reads off, and nothing else of their call changes. Counted
   (`StopOthersShare`). The room delivers the stop only from an Editor and the sharer's browser acts on it only from
   someone the room stamped an Editor; until the sharer's call says its screen is off, the mint route refuses anyone a

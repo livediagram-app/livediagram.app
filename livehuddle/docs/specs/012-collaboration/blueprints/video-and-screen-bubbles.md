@@ -70,7 +70,7 @@ Nothing is stored. Streams live in memory for the call's life and are stopped on
   and is addressed to the target. The room records the target's current screen token (from their last `call-track`)
   as stopped, and the mint route answers `stopped` (as `not_heard`) to a new subscription to that screen until the
   sharer's `call-track` names no screen or a new one. The sharer's call stops its screen unless the room stamped the
-  sender something other than an Editor. UI: an Editor-only **Stop Sharing** on someone else's screen bubble (a
+  sender something other than an Editor. UI: an Editor-only **Stop** (named "Stop Sam's Screen") on someone else's screen bubble (a
   sibling of the maximise button, top left, on hover, focus or always on a touch screen) and in the maximised panel's
   bar (focus then goes to the panel, never to Stop). Counted `StopOthersShare`.
 
