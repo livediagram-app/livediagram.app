@@ -83,6 +83,11 @@ type AvatarSnapshot = {
 
 const NO_FENCES: FenceSegment[] = [];
 
+// How long the tab's walls must hold still before a standing character is nudged clear of one moved onto it
+// (docs/specs/009-elements/fence.md "What does not walk"): a drag changes them every frame, and the nudge waits for
+// the drop.
+export const FENCE_SETTLE_MS = 150;
+
 export function useAvatarWalk<E extends AvatarSceneElement>({
   active,
   config,
@@ -241,6 +246,26 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     return main && wrapper ? { main, wrapper } : null;
   };
 
+  // Camera follow: when a point is within the follow margin of the view's edges (behind the bottom-right cluster, say),
+  // move the view just far enough to bring it in. The correction is already in canvas px, so it applies straight to
+  // the viewport offset (which is translated before the zoom scale).
+  const follow = (at: AvatarPoint, r: NonNullable<ReturnType<typeof rects>>) => {
+    const fix = followCorrection(
+      {
+        x: r.wrapper.left + at.x * viewportZoom - r.main.left,
+        y: r.wrapper.top + at.y * viewportZoom - r.main.top,
+      },
+      { width: r.main.width, height: r.main.height },
+      viewportZoom,
+    );
+    if (fix.x === 0 && fix.y === 0) return;
+    const prev = offsetRef.current;
+    const nextOffset = { x: prev.x + fix.x, y: prev.y + fix.y };
+    offsetRef.current = nextOffset;
+    offsetWrittenRef.current = nextOffset;
+    setViewportOffset(nextOffset);
+  };
+
   // Where the avatar should appear when the mode is entered: the centre of
   // the visible viewport, in canvas coords.
   const viewportCentre = (): AvatarPoint | null => {
@@ -334,6 +359,11 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     if (requested) {
       if (spawnAtRef) spawnAtRef.current = null;
       place(requested);
+      // A low Walk In put it within the follow margin of an edge (behind the bottom-right cluster): the view comes
+      // just far enough to bring it in, as the walk's camera follow does (Work Tracker #484). One the press put off
+      // screen (opening walking, before its fit) is left to the opening, which brings the view to it.
+      const at = posRef.current!;
+      if (r && onScreen(at)) follow(at, r);
       return;
     }
     if (!centre) return;
@@ -392,7 +422,10 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // seat taken.
   // `index` is which of the piece's seats, carried with when we sat in our claim, and the room is told at once so the
   // seat reads taken before anyone else walks into it.
-  const sitOn = (chairId: string, seat: AvatarPoint, seatFacing: AvatarFacing, index = 0) => {
+  // A seat beside a wall snaps the feet clear of the wall's reach (Work Tracker #493), so standing up never leaves
+  // the character able to step only away from it.
+  const sitOn = (chairId: string, at: AvatarPoint, seatFacing: AvatarFacing, index = 0) => {
+    const seat = clearOfFences(at, fences, fenceReachFor(avatarScale(config.size)));
     targetRef.current = null;
     arriveRef.current = null;
     heldRef.current = { ...NO_KEYS_HELD };
@@ -427,7 +460,9 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // Stop at a point without walking there (docs/specs/009-elements/chair.md "Sitting"): beside a piece whose seats are
   // all taken, or beside a seat a peer sat in first. Stands up if seated, drops any walk, and does not count as
   // arriving on whatever is under the new spot, so stepping aside never seats you somewhere else.
-  const stepAside = (point: AvatarPoint) => {
+  // The spot is put clear of any wall it lands beside (Work Tracker #493), as an entry is.
+  const stepAside = (to: AvatarPoint) => {
+    const point = clearOfFences(to, fences, fenceReachFor(avatarScale(config.size)));
     targetRef.current = null;
     arriveRef.current = null;
     heldRef.current = { ...NO_KEYS_HELD };
@@ -583,28 +618,9 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
         setWalking(true);
         const nextFacing = facingFromDelta(dx, dy);
         if (nextFacing) setFacing(nextFacing);
-        // Camera follow: keep the avatar clear of the viewport edges. The
-        // correction is already in canvas px, so it applies straight to the
-        // viewport offset (which is translated before the zoom scale).
+        // Camera follow: keep the avatar clear of the viewport edges.
         const r = rects();
-        if (r) {
-          const screen = {
-            x: r.wrapper.left + next.x * viewportZoom - r.main.left,
-            y: r.wrapper.top + next.y * viewportZoom - r.main.top,
-          };
-          const fix = followCorrection(
-            screen,
-            { width: r.main.width, height: r.main.height },
-            viewportZoom,
-          );
-          if (fix.x !== 0 || fix.y !== 0) {
-            const prev = offsetRef.current;
-            const nextOffset = { x: prev.x + fix.x, y: prev.y + fix.y };
-            offsetRef.current = nextOffset;
-            offsetWrittenRef.current = nextOffset;
-            setViewportOffset(nextOffset);
-          }
-        }
+        if (r) follow(next, r);
       } else {
         setWalking(false);
       }
@@ -734,6 +750,25 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     const t = window.setTimeout(() => putDown(), DRINK_HOLD_MS);
     return () => window.clearTimeout(t);
   }, [drink]);
+
+  // A fence or room moved, pasted or resized onto a standing character (docs/specs/009-elements/fence.md "What does
+  // not walk", Work Tracker #493): once the walls have held still for FENCE_SETTLE_MS, a character left inside one's
+  // reach is nudged clear of it, as an entry is. Never per drag frame: each change only restarts the wait. A seated
+  // character stays on its seat.
+  const settleFences = useEffectEvent(() => {
+    const at = posRef.current;
+    if (!at || seatedRef.current) return;
+    const clear = clearOfFences(at, fences, fenceReachFor(avatarScale(config.size)));
+    if (clear === at) return;
+    posRef.current = clear;
+    setPos(clear);
+    if (!inMotion()) publishIdle(clear);
+  });
+  useEffect(() => {
+    if (!active) return;
+    const t = window.setTimeout(() => settleFences(), FENCE_SETTLE_MS);
+    return () => window.clearTimeout(t);
+  }, [active, fences]);
 
   // Standing heartbeat. The publish above only fires on a CHANGE, so a
   // character that arrived before you did was invisible to you until it next
