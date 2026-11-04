@@ -53,7 +53,8 @@ function Character({ stage, walker }: { stage: FloorStage; walker: Walker }) {
       </div>
       <span className="hsf-chip">
         <span className="hsf-chip-dot" style={{ background: walker.colour }} />
-        {walker.name}
+        {/* The name's cap band, not its line box, sits on the chip's middle (optical-alignment.md). */}
+        <span className="text-optical-line">{walker.name}</span>
       </span>
     </div>
   );

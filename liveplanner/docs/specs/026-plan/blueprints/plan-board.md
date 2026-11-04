@@ -183,7 +183,45 @@ column-move-flip.ts      a column moved left or right glides (FLIP): `captureCol
                          Focus follows a toggle to the other chevron (`data-column-toggle`), without scrolling
                          PlanColumnPopover follows: when its column's index changes it re-places itself under the cog
                          each animation frame (style written directly) for COLUMN_MOVE_MS + 40 ms, then setPos; not on a
-                         phone
+                         phone. `beforeMoveFrom(columnId, at)` is `beforeMove` from positions given (a drag let go:
+                         each part's offsetLeft plus the translate it was seen at), so the drop settles from there
+column-drag.ts           Drag a column (spec "Drag a column"), pure: `COLUMN_DRAG_START_PX` (4), `COLUMN_DRAG_RISE_PX` (2),
+                         `COLUMN_DRAG_SCALE` (1.02, sideways only); `pastColumnDragStart(dx, dy)`; `clampColumnOffset(dx,
+                         spans, from, gridWidth)` keeps the carried column inside the grid; `columnDropIndex(spans, from,
+                         dx)` is the place whose middle the carried column's middle has passed; `columnShift(j, from, to,
+                         room)` is ±(width + column gap) for the columns between; `columnMoveKey(e)` reads Alt+Shift+
+                         Left/Right (no Ctrl or Meta) as −1/1; `columnMovedMessage` ("Moved {Name} to position n of N")
+                         and `columnEdgeMessage` ("{Name} is already the first|last column"); `COLUMN_HEAD_ATTR`
+                         (`data-plan-column-head`) and the `ColumnReorder` prop type
+useColumnDrag.ts         the drag: `onHeadPointerDown(columnId, e)` ignores anything but a primary mouse or pen press,
+                         a press on a button, link, field, dialog or the cog, and a press while one is held; it
+                         preventDefaults (no text selected) and listens on the window (pointermove, pointerup,
+                         pointercancel, blur, keydown capture) and on the scroller's scroll. Past the threshold
+                         `pickUp` reads once: every `[data-plan-column]` part grouped by column in board order, each
+                         column's span from its head (offsetLeft, offsetWidth), the grid's computed column-gap and
+                         offsetWidth, the zoom (rect width / offsetWidth), the scroller's scrollLeft; it lifts the
+                         column's parts with one `el.animate([f, f], { duration: 1, fill: 'forwards' })` each (f =
+                         translate3d(dx, −2px, 0) scale(1.02, 1), LIFT_SHADOW, background var(--plan-col-bg), z 3) and
+                         raises the shield (a fixed, clear `[data-column-drag-shield]` div, cursor grabbing, the top
+                         z-index). Each pointer move is folded into one rAF: the edge step (`edgeScrollStep`,
+                         `clampScrollStep` on the body), dx = clamp((x − startX) / zoom + scrolled), the lifted
+                         effects' `setKeyframes`, and only when `columnDropIndex` changes, each other part whose
+                         shift changed glides from its drawn translateX (computed transform m41) to the new shift over
+                         COLUMN_MOVE_MS on COLUMN_MOVE_EASING (0 under reduced motion), `fill: 'forwards'`. No React
+                         state, no style attribute: nothing renders and Marker's settle watcher sees no mutation.
+                         `finish(restore)` reads where each part is seen, cancels every drag animation, drops the
+                         shield and the listeners, swallows the next click (capture, once, cleared on the next
+                         task), then calls `onDrop(columnId, to, at)` when not restoring and `to !== from`, else
+                         `playColumnMove(at, columnId)` (not under reduced motion). Pointerup outside the board's
+                         rect, Escape (stopped, default prevented), pointercancel and blur restore; unmount restores
+useColumnReorder.ts      every reorder of the board's columns: `reorderFor(columnId, position)` gives the head its
+                         `ColumnReorder` only when `enabled` (PlanBoardView: `setUpHere && interactive && !phone`, so
+                         an Editor, never in a slot or on a phone); `reordered(next, columnId, at?)` notes the glide
+                         (`beforeMoveFrom` with `at`, else `beforeMove`), writes (`plan.updateBoard`), tracks
+                         `ColumnReordered` and announces `columnMovedMessage`. Alt+Shift+Arrows use `moveColumn`; at
+                         an end they announce `columnEdgeMessage` and write nothing; focus returns to the head
+                         (`[data-plan-column-head]`, preventScroll) after the move lays out. PlanBoardView routes the
+                         popover's `ColumnReordered` changes through `reordered` too, so they announce
 BoardColumnsSection.tsx  the board's Columns section (cog and element menu): InfoNote, "On This Board" + count, an `ol`
                          option list of the columns (number, StatusSwatch, name, WIP n / Done pills, chevron), each row
                          a button "Open {Name} settings" that calls onClose then requestColumnSettings(id); then the
@@ -708,7 +746,9 @@ statusTypes, item)` from `type-choices.ts`, the catalogue types the boards namin
   each card a `listitem` containing a `button` named "#12 Fix login, Bug, assigned to Sam, high priority".
 - Keyboard per spec (`planBoardKey` in `plan-board-keys.ts`, read by `PlanBoardView`); moves announced in a polite
   live region.
-- Drag has the keyboard equivalent (Shift+arrows). Focus ring 2 px, contrast ≥ 3:1; text ≥ 4.5:1 on every
+- Drag has the keyboard equivalent (Shift+arrows); a column's drag has Alt+Shift+Left/Right on its head (an Editor's
+  head is `role="group"`, `tabIndex 0`, named "{Name} column, position n of N", `aria-keyshortcuts`, a 2 px focus
+  outline in the palette's focus colour), and Move Left and Move Right name the keys ("Move Left (Alt+Shift+Left)"). Focus ring 2 px, contrast ≥ 3:1; text ≥ 4.5:1 on every
   type colour key fill (the #key text meets 4.5:1 on it).
 - Reduced motion: no placeholder animation, no card lift shadow transition; a column collapses and expands at once.
 - Collapse Column name fit: the cell's button is a wrapping flex column (`STRIP_BUTTON_CLASS`) of two full-width
@@ -800,6 +840,8 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Five slots across a maximised board                            | `apps/editor/components/plan/plan-board-columns.test.ts`                                                                                                       |
 | Collapse Column: strip, roles, cog, drops, lanes, keys, phone  | `PlanBoardView.collapse.test.tsx`, `CollapsedColumn.test.tsx`, `board-collapse.test.ts`, `hooks/plan/useBoardCollapsed.test.tsx`, `plan-board-columns.test.ts` |
 | A column collapsing or expanding glides                        | `apps/editor/components/plan/column-move-flip.test.tsx`                                                                                                        |
+| Drag a column: geometry, threshold, keys, messages             | `apps/editor/components/plan/column-drag.test.ts`, `board-setup-edits.test.ts` (`moveColumnTo`)                                                                |
+| Drag a column: drop, animation only, cancel, keys, roles, slot | `apps/editor/components/plan/PlanBoardView.column-drag.test.tsx`                                                                                               |
 | Option list roles, keys, menu items                            | `apps/editor/components/plan/OptionRows.test.tsx`                                                                                                              |
 | Custom assignee: offered when editable, made, reused, roles    | `apps/editor/components/plan/PersonPicker.test.tsx`, `packages/items/src/plan-people.test.ts`                                                                  |
 | Cards push skips custom assignees                              | `apps/api/src/plan-room/plan-outbox.test.ts`                                                                                                                   |
@@ -869,6 +911,9 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | `SWIPE_FLICK_PX_PER_MS`    | 0.45               | DEFAULTS D62; a flick's speed at release; 0.3-0.8                           |
 | `SWIPE_FLICK_MIN_PX`       | 24                 | DEFAULTS D62; a flick's least travel; 16-40                                 |
 | `EDGE_SCROLL_ZONE_PX`      | 56                 | DEFAULTS; capped at a quarter of the viewport; 32-96                        |
+| `COLUMN_DRAG_START_PX`     | 4                  | DEFAULTS D80; a column head's press before it is carried; 3-8               |
+| `COLUMN_DRAG_RISE_PX`      | 2                  | DEFAULTS D80; how far a carried column rises; 0-4                           |
+| `COLUMN_DRAG_SCALE`        | 1.02               | DEFAULTS D80; a carried column's width, sideways only; 1-1.04               |
 | `EDGE_SCROLL_MAX_PX`       | 18                 | DEFAULTS; px per frame at the edge; 8-30                                    |
 | `EDGE_SCROLL_REDUCED_PX`   | 6                  | DEFAULTS; constant under reduced motion; 3-10                               |
 | `WIDE_PANEL_SHARE`         | 0.6                | Side panels are 18-24rem; a sheet spans most of a phone; 0.5-0.8            |

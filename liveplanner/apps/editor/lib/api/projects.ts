@@ -16,10 +16,10 @@ import type { Project, ProjectResponse, ProjectSummary } from '@liveplanner/api-
 import type { Tab } from '@liveplanner/project';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import { isOfflineId, offlineLoadProject, offlineSaveProjectMeta } from '../offline/offline-store';
-import { IndexError } from '@liveworkspace/index-client';
+import { createOrResumeItem, type CreatedOrResumed, IndexError } from '@liveworkspace/index-client';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { markReported, reportApiError } from './error-report';
-import { seedPlanGrant } from './plan-grants';
+import { planGrant, seedPlanGrant } from './plan-grants';
 import {
   API_BASE,
   ApiError,
@@ -181,19 +181,26 @@ export async function apiCreateProject(
 ): Promise<Project> {
   // The index makes the plan first (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Items"): its place, its title
   // and the grant on it come back together. The content is then started in the plan's room with that grant.
-  let created: Awaited<ReturnType<typeof indexClient.createItem>>;
+  let created: CreatedOrResumed;
   try {
-    created = await indexClient.createItem({
-      id: d.id,
-      // Synced to the cloud from this browser (Offline Mode): the Timeline says so, not "Created".
-      ...(opts.conversion === 'sync' ? { synced: true } : {}),
-      app: 'liveplanner',
-      title: d.name,
-      ...(d.teamId ? { teamId: d.teamId } : {}),
-      ...(d.folderId !== undefined ? { folderId: d.folderId } : {}),
-      // The index keeps the intent as a word for filters and defaults: "plan:board", "plan:sheet:okr".
-      ...(d.intent ? { intent: indexIntentOf(d.intent) } : {}),
-    });
+    // A Retry re-runs a create under the ids it first tried (docs/specs/007-editor/new-project-route.md "Retry"):
+    // when the index made the item but the content's create failed, the item is already there and the caller's own,
+    // so its edit grant carries the create on (createOrResumeItem) rather than failing again.
+    created = await createOrResumeItem(
+      indexClient,
+      {
+        id: d.id,
+        // Synced to the cloud from this browser (Offline Mode): the Timeline says so, not "Created".
+        ...(opts.conversion === 'sync' ? { synced: true } : {}),
+        app: 'liveplanner',
+        title: d.name,
+        ...(d.teamId ? { teamId: d.teamId } : {}),
+        ...(d.folderId !== undefined ? { folderId: d.folderId } : {}),
+        // The index keeps the intent as a word for filters and defaults: "plan:board", "plan:sheet:okr".
+        ...(d.intent ? { intent: indexIntentOf(d.intent) } : {}),
+      },
+      planGrant,
+    );
   } catch (err) {
     if (err instanceof IndexError) {
       reportApiError(err.status, 'create plan in index', err.code);
@@ -204,7 +211,7 @@ export async function apiCreateProject(
     throw err;
   }
   seedPlanGrant(d.id, created.grant);
-  indexTitles.set(d.id, created.item.title);
+  indexTitles.set(d.id, created.title);
   const res = await apiFetch(`${API_BASE}/projects`, {
     method: 'POST',
     headers: {

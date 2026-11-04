@@ -52,6 +52,7 @@ import { handleDocumentSharedTabs } from './document-shared-tabs-route';
 import { handleCommunityOwnerRoutes } from './community-owner-routes';
 import { relayDocumentRename } from '../room-client';
 import { handleDocumentRoomRoutes } from './document-room-routes';
+import { handleCallRoutes } from './calls';
 import { handleDocumentSubresources } from './document-subresource-routes';
 import { compileSeededTabs, seedIntentOf } from './document-seed';
 import type { DocumentDTO } from '../types';
@@ -105,6 +106,9 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
   if (indexResp) return indexResp;
   const roomResp = await handleDocumentRoomRoutes(ctx);
   if (roomResp) return roomResp;
+  // Proximity audio's mint route (docs/specs/012-collaboration/proximity-audio.md): answered here, never in the room.
+  const callsResp = await handleCallRoutes(ctx);
+  if (callsResp) return callsResp;
   return forwardToDocument(ctx);
 }
 

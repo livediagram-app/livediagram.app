@@ -34,7 +34,10 @@ side.
 
 ## D2. Does all of Workshop mode go to livehuddle?
 
-**Settled: (a)** (built: livehuddle carries all of Workshop, [Workshop mode](../012-collaboration/workshop-mode.md)).
+**Settled: (a), then moved to (c) without Poll** (owner, 2026-11-04, Work Tracker #423). (a) was built: livehuddle
+carried all of Workshop. The refocus on meeting in Spaces takes livehuddle to Avatar mode, the Navigate elements, Bring
+Focus and the Spaces, plus the Session strip's Timer and Vote; Poll and every other Collaborate element leave
+([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)).
 
 - (a) All of Workshop: the Session strip, every Collaborate element, facilitation, the session templates.
 - (b) Only Avatar mode, the Navigate elements, Bring Focus and the Spaces.
@@ -59,7 +62,9 @@ other app's does ([Platform registration](../016-platform/platform-registration.
 
 ## D4. Audio, video and screen sharing
 
-**Settled: (a)** (v1 shipped without them; [Future work](future-work.md)).
+**Settled: calls are in, audio first** (owner, 2026-11-03; Work Tracker #315). v1 shipped without them; proximity
+audio is built for staging ([Proximity audio](../012-collaboration/proximity-audio.md)) and stays off in production
+until the calls kill switch (Work Tracker #316) is live; video and screen sharing stay [Future work](future-work.md).
 
 - (a) Out of v1. Specify them next, after v1 ships, with TURN and Cloudflare Realtime's SFU, once the owner has set a
   spend limit.

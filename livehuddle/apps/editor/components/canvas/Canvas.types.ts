@@ -254,12 +254,18 @@ export type CanvasProps = {
   // Publishes the local character to the room (null when leaving the mode).
   // Optional: a private, un-shared document has no room to publish to.
   onAvatarPresence?: (avatar: import('@livehuddle/api-schema').AvatarPresence | null) => void;
+  // How many other people are in the room (the roster, yourself not counted): the standing heartbeat rests
+  // while it is 0 (docs/specs/008-canvas/avatar-mode.md "Realtime"). Unset keeps the plain heartbeat.
+  avatarPeers?: number;
   // Shove a peer's character (docs/specs/008-canvas/avatar-mode.md): sent when our character finishes
   // walking up to the one we clicked. Optional — no room, no push.
   onAvatarPush?: (targetId: string, dx: number, dy: number) => void;
   // Say something (docs/specs/008-canvas/avatar-mode.md "Speech bubbles"): sends one message to the room.
   // Optional: with no room the bubble is still drawn for you.
   onAvatarSay?: (say: { id: string; text: string; x: number; y: number }) => void;
+  // Proximity audio (docs/specs/012-collaboration/proximity-audio.md): sends a talking level or this browser's
+  // microphone locator to the room. Absent without a room, which keeps the audio controls away.
+  onCallSignal?: (signal: import('@/lib/calls/proximity-call').CallSignal) => void;
   // A shove somebody sent US, as a direction plus a sequence number so the same
   // push isn't replayed on every render. Null until someone pushes.
   avatarShove?: { dx: number; dy: number; seq: number } | null;

@@ -215,3 +215,20 @@ describe('EditorHeader with a long name', () => {
     expect(actions?.className).toContain('shrink-0');
   });
 });
+
+// In an editor the logo is a plain link to the Explorer, with no site switcher
+// (liveworkspace/docs/specs/010-site/site-switcher.md "Where it shows").
+describe('EditorHeader logo', () => {
+  it('is a plain link with no site switcher, on hover or click', () => {
+    renderHeader();
+    const logo = screen.getByRole('link', { name: 'livehuddle' });
+    expect(logo.className).toContain('touch-target');
+    expect(screen.queryByRole('button', { name: 'Switch site' })).toBeNull();
+    fireEvent.mouseEnter(logo);
+    fireEvent.pointerEnter(logo);
+    expect(screen.queryByRole('menu', { name: 'liveworkspace sites' })).toBeNull();
+    expect(screen.queryByText('liveworkspace')).toBeNull();
+    fireEvent.click(logo);
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+});

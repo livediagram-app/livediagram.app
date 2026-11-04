@@ -64,7 +64,11 @@ describe('the column toolbar', () => {
     open();
     const bar = screen.getByRole('toolbar', { name: 'Column actions' });
     const names = [...bar.querySelectorAll('button')].map((b) => b.getAttribute('aria-label'));
-    expect(names).toEqual(['Move Left', 'Move Right', 'Remove Column']);
+    expect(names).toEqual([
+      'Move Left (Alt+Shift+Left)',
+      'Move Right (Alt+Shift+Right)',
+      'Remove Column',
+    ]);
     // Above the name.
     const name = screen.getByRole('textbox', { name: 'Column name' });
     expect(bar.compareDocumentPosition(name) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -72,8 +76,11 @@ describe('the column toolbar', () => {
 
   it('turns Move Left off on the first column and moves it right', () => {
     const fns = open();
-    expect(screen.getByRole('button', { name: 'Move Left' })).toHaveProperty('disabled', true);
-    fireEvent.click(screen.getByRole('button', { name: 'Move Right' }));
+    expect(screen.getByRole('button', { name: 'Move Left (Alt+Shift+Left)' })).toHaveProperty(
+      'disabled',
+      true,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Move Right (Alt+Shift+Right)' }));
     expect(fns.onChange.mock.lastCall![0].columns.map((c: { status: string }) => c.status)).toEqual(
       ['done', 'todo'],
     );

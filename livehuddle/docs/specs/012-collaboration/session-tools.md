@@ -1,5 +1,10 @@
 # Session tools (timer + voting)
 
+In livehuddle (Work Tracker #423) these are two of the three light meeting tools, with Bring Focus: the Timer and the
+quick vote. The Session strip offers **Timer and Vote**; Poll and the Session button leave
+([Not in livehuddle](../002-project-scope/not-in-livehuddle.md), part 3). What this spec says about them otherwise
+stands.
+
 Live, facilitator-run **workshop tools** that make the collaborative templates
 (retro, brainstorm, planning) interactive: a per-tab **timer** and per-tab
 **dot-voting**, both driven from the Current Tab settings and synced to every
@@ -415,14 +420,14 @@ and behaves as it always did (absent = off).
 
 ### Hide participant cursors (default **on**)
 
-While `vote.active`, peer **cursors**, peer **laser trails**, and peer
-**Avatar-mode characters** ([Avatar mode](../008-canvas/avatar-mode.md)) are neither drawn
-nor sent:
+While `vote.active`, peer **cursors** and peer **laser trails** are neither drawn
+nor sent. **Avatar-mode characters are not hidden** (owner, 2026-11-03): they,
+their speech bubbles and [Proximity audio](proximity-audio.md) carry on through a
+vote ([Avatar mode](../008-canvas/avatar-mode.md#realtime)).
 
-- **Render:** `usePresenceRows` returns empty `remoteCursorRows` and
-  `remoteAvatarRows` and drops remote laser rows, so nothing reaches the canvas
-  overlays.
-- **Wire:** `useEditorBroadcast` stops emitting `cursor`, `laser`, and `avatar`
+- **Render:** `usePresenceRows` returns empty `remoteCursorRows` and drops remote
+  laser rows, so nothing reaches the canvas overlays.
+- **Wire:** `useEditorBroadcast` stops emitting `cursor` and `laser`
   room ops
   altogether. Suppressing the send (not just the paint) is the point: a
   render-only gate would still put every participant's coordinates on the

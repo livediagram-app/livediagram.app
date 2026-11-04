@@ -13,10 +13,10 @@ export const COLUMN_MOVE_EASING = 'cubic-bezier(0.2, 0, 0, 1)';
 // The attribute a column's head and each of its cells carry, set to the column's id.
 export const COLUMN_ATTR = 'data-plan-column';
 
-type ColumnPositions = Map<HTMLElement, number>;
+export type ColumnPositions = Map<HTMLElement, number>;
 
 // The column moved rides above its neighbour, lifted on a soft shadow that settles as it lands.
-const LIFT_SHADOW = '0 12px 28px -10px rgb(15 23 42 / 0.35)';
+export const LIFT_SHADOW = '0 12px 28px -10px rgb(15 23 42 / 0.35)';
 
 // Where each of the board's column parts sits now.
 export function captureColumns(root: ParentNode): ColumnPositions {
@@ -119,8 +119,14 @@ export function useColumnMoveFlip(
     [grid],
   );
   const beforeMove = useCallback((columnId: string) => capture(columnId, false), [capture]);
+  // Just before a column let go from a drag is written (useColumnDrag): its parts and its neighbours' glide from where
+  // they were seen (`at`, each part's offsetLeft plus the drag's translate), not where the layout had them.
+  const beforeMoveFrom = useCallback((columnId: string, at: ColumnPositions) => {
+    if (prefersReducedMotion()) return;
+    pending.current = { at, columnId, resize: false };
+  }, []);
   // Just before a column collapses or expands (`order` then changes too).
   const beforeResize = useCallback((columnId: string) => capture(columnId, true), [capture]);
   const isMoving = useCallback(() => moving.current || pending.current !== null, []);
-  return { beforeMove, beforeResize, isMoving };
+  return { beforeMove, beforeMoveFrom, beforeResize, isMoving };
 }

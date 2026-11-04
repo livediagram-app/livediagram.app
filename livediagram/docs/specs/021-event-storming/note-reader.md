@@ -76,6 +76,20 @@ but unused`) rather than left as a dead secret nobody notices.
 - Auth required: an account access token or a guest token.
 - Per-IP rate limiter (`AI_RATE_LIMITER` binding, 20 req/60 s). Optional: absent on
   deployments falls through to "allow".
+- A daily cap on the whole deployment's reader requests, last in the gate, so a caller the
+  rest of it refused never spends one. The per-IP limiter alone still lets one address spend
+  28,800 requests a day, and guests are admitted, so nothing else bounds the provider bill.
+  The cap defaults to **1,000 requests a UTC day** (`AI_DAILY_CAP`, a Worker var, overrides
+  it with a positive whole number). A request is about six stickies, so that is roughly a
+  hundred large walls a day, and at `gemini-2.5-flash-lite`'s prices well under a dollar a
+  day at the cap. Past it the gate answers `429 ai_quota`, the same answer as a provider
+  out of quota, so the editor reads the rest on the device and says "AI is resting for
+  today" ([Event storming](event-storming.md)). The count lives in one instance of the
+  worker's existing `PERSON_STORE` Durable Object, named `~ai-daily-budget` (no person id
+  starts with `~`), under one storage key holding the day and its count; a new UTC day
+  starts again from zero. No new binding, secret or migration. If that instance cannot be
+  reached the gate admits the request and logs it: a cap that fails closed would switch the
+  reader off on an infrastructure hiccup, and the per-IP limiter still runs.
 - Optional `Origin` allow-list (`AI_ALLOWED_ORIGINS`). When set, the request's `Origin`
   must match one of the comma-separated entries exactly, or the worker answers
   `403 origin_not_allowed` before reaching the model. The hosted deployment sets it in
@@ -96,7 +110,7 @@ Error responses follow the standard worker envelope, `{ "error": "<token>" }`:
 | `method_not_allowed` | 405    | Anything but a `POST`.                                        |
 | `crops_too_large`    | 413    | Too many crops, or a crop over `CROP_MAX_BYTES`.              |
 | `rate_limited`       | 429    | The caller's per-IP request budget is spent.                  |
-| `ai_quota`           | 429    | The model key has spent its quota (raise it; retrying won't). |
+| `ai_quota`           | 429    | The model key has spent its quota, or the day's cap is spent. |
 | `ai_error`           | 502    | The upstream model call failed or answered unusably.          |
 | `ai_not_configured`  | 503    | No model key on this deployment (the default).                |
 
@@ -112,6 +126,7 @@ route sends.
 | `AI_VISION_MODEL`                         | Worker var (optional) | The reader's model. Defaults to `gemini-2.5-flash-lite` on Google; required for the generic key. |
 | `AI_ALLOWED_ORIGINS`                      | Worker var (optional) | Comma-separated `Origin` values that may call the reader. Unset = no check.                      |
 | `AI_REQUIRE_SIGN_IN`                      | Worker var (optional) | `"true"` requires a verified access token (rejects the guest path with 401).                     |
+| `AI_DAILY_CAP`                            | Worker var (optional) | The deployment's reader requests a UTC day. Unset or not a positive whole number = 1000.         |
 
 Set the keys via `wrangler secret put <the key var>` for production; drop them into
 `apps/api/.dev.vars` for local dev (gitignored).

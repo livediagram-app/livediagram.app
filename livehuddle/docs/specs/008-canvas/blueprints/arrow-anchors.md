@@ -1,5 +1,7 @@
 # Arrow anchors and auto-rebind: blueprint
 
+> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/008-canvas/blueprints/arrow-anchors.md) is the one to change. A diagram tool: part 3 takes it out of the palette; deleting its code is its own card. Until then this describes code livehuddle still carries; build nothing new on it.
+
 Derived from [Arrow anchors and auto-rebind](../arrow-anchors.md), with the setting from
 [User preferences](../../007-editor/user-preferences.md). The spec decides; this file only adds
 engineering precision. Defaults applied where the spec is silent are ledgered in

@@ -4,8 +4,8 @@ import { nodeItemSql, nodeTransaction } from '@liveworkspace/index-app/testing';
 import type { Env } from './types';
 
 // env.PERSON_STORE for node tests: one real PersonStore per person id, each on its own in-memory node:sqlite
-// database, built the first time the id is reached. `deleteAll` starts that person's database over, as the
-// runtime's does. Not a `.test.ts` file, so vitest doesn't collect it as a suite.
+// database (and its key-value storage, a Map), built the first time the id is reached. `deleteAll` starts that
+// person's database over, as the runtime's does. Not a `.test.ts` file, so vitest doesn't collect it as a suite.
 export function testPersonStores(): DurableObjectNamespace<PersonStore> & {
   databaseOf(personId: string): DatabaseSync | undefined;
 } {
@@ -14,12 +14,19 @@ export function testPersonStores(): DurableObjectNamespace<PersonStore> & {
     let entry = stores.get(name);
     if (!entry) {
       const holder = { db: new DatabaseSync(':memory:') };
+      // The runtime's key-value storage, beside the SQL (the reader's daily cap keeps its count there).
+      const kv = new Map<string, unknown>();
       const storage = {
+        get: async (key: string) => structuredClone(kv.get(key)),
+        put: async (key: string, value: unknown) => {
+          kv.set(key, structuredClone(value));
+        },
         get sql() {
           return nodeItemSql(holder.db);
         },
         transactionSync: <T>(fn: () => T): T => nodeTransaction(holder.db)(fn),
         deleteAll: async () => {
+          kv.clear();
           holder.db.close();
           holder.db = new DatabaseSync(':memory:');
         },

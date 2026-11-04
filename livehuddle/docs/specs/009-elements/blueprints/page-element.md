@@ -1,5 +1,7 @@
 # The Page element: blueprint
 
+> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../../livediagram/docs/specs/009-elements/blueprints/page-element.md) is the one to change. Part 2 removes it with its help articles. Until then this describes code livehuddle still carries; build nothing new on it.
+
 Derived from [The Page element](../page-element.md). The body's formatting is the label runs model
 ([Canvas and palette](../../008-canvas/canvas-and-palette.md)); headings in it follow
 [The block-type picker](../block-type-picker.md). The spec decides; this file only adds engineering

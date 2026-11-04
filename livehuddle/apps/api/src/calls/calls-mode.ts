@@ -8,10 +8,15 @@ export type CallsSwitchEnv = {
   CALLS_SWITCH?: KVNamespace;
 };
 
-export type CallsMode = 'on' | 'audio-only' | 'off';
+import type { CallsMode } from '@livehuddle/api-schema';
 
-/** What a mint asks for: a Realtime session, or a track of one kind. */
-export type CallsMediaKind = 'session' | 'audio' | 'video' | 'screen';
+// The modes and what each allows are shared with the editor (@livehuddle/api-schema's calls-mode.ts).
+export {
+  callsModeAllows,
+  callTrackKind,
+  type CallsMediaKind,
+  type CallsMode,
+} from '@livehuddle/api-schema';
 
 export const CALLS_MODE_KEY = 'calls-mode';
 
@@ -36,13 +41,6 @@ export function parseCallsMode(raw: string | null | undefined): CallsMode {
 /** The mode that allows less of the two. */
 export function stricterCallsMode(a: CallsMode, b: CallsMode): CallsMode {
   return RANK[a] >= RANK[b] ? a : b;
-}
-
-/** Whether `mode` lets the mint route hand out a session or a track of `kind`. */
-export function callsModeAllows(mode: CallsMode, kind: CallsMediaKind): boolean {
-  if (mode === 'off') return false;
-  if (mode === 'audio-only') return kind === 'session' || kind === 'audio';
-  return true;
 }
 
 let cached: { mode: CallsMode; at: number } | null = null;

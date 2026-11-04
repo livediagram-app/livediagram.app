@@ -1,5 +1,7 @@
 # The Page element
 
+> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/page-element.md) is the one to change. Part 2 removes it with its help articles. Until then this describes code livehuddle still carries; build nothing new on it.
+
 ## What
 
 A **Page** in the palette's **Write** category: a large, paper-proportioned

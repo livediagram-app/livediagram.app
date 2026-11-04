@@ -57,6 +57,39 @@ describe('useEditorBroadcast hidden cursors', () => {
     act(() => hook.result.current.broadcastCursor({ x: 1, y: 1 }));
     expect(sent).toHaveLength(1);
   });
+
+  // docs/specs/008-canvas/avatar-mode.md "Realtime": the vote hides cursors only (owner, 2026-11-03).
+  it('keeps sending characters, shoves, speech and proximity audio while the vote runs', () => {
+    const { hook, sent } = setup({ cursorsHidden: true });
+    sent.length = 0;
+    act(() => {
+      hook.result.current.broadcastAvatar(null);
+      hook.result.current.broadcastAvatarPush('peer', 1, 0);
+      hook.result.current.broadcastAvatarSay({ id: 'b', text: 'hi', x: 0, y: 0 });
+      hook.result.current.broadcastCallSignal({ kind: 'avatar-voice', level: 2 });
+    });
+    expect(sent.map((m) => (m.kind === 'op' ? m.op.kind : m.kind))).toEqual([
+      'avatar',
+      'avatar-push',
+      'avatar-say',
+      'avatar-voice',
+    ]);
+    expect(sent[3]).toEqual({ kind: 'op', op: { kind: 'avatar-voice', level: 2, tabId: 'tab1' } });
+  });
+});
+
+// docs/specs/012-collaboration/proximity-audio.md "The wire".
+describe('useEditorBroadcast call signals', () => {
+  it('go out only while the room is open', () => {
+    const open = setup();
+    expect(open.hook.result.current.callsRoom).toBe(true);
+    const team = setup({ documentShareable: false, documentTeamId: 'team1' });
+    expect(team.hook.result.current.callsRoom).toBe(true);
+    const closed = setup({ documentShareable: false });
+    expect(closed.hook.result.current.callsRoom).toBe(false);
+    act(() => closed.hook.result.current.broadcastCallSignal({ kind: 'call-track', track: null }));
+    expect(closed.sent).toEqual([]);
+  });
 });
 
 // docs/specs/008-canvas/avatar-mode.md "Status": a change is told at once, never lost to the throttle.

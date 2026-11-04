@@ -3,6 +3,7 @@ import { CROP_MAX_BYTES, READ_MAX_CROPS_PER_REQUEST, type NoteText } from '@live
 import { handleAiReadNotes } from './ai-read-notes';
 import type { RouteContext } from './context';
 import type { Env } from '../types';
+import { testPersonStores } from '../test-person-store';
 
 // Reading sticky crops (docs/specs/021-event-storming/event-storming.md Phase 8). Three things are pinned: the shared
 // gate still guards this route (it is the operator's model budget either way),
@@ -117,6 +118,23 @@ describe('the shared gate still guards this route', () => {
       }),
     );
     expect(res.status).toBe(200);
+  });
+
+  it('answers 429 ai_quota once the deployment has spent its daily cap, without calling the provider', async () => {
+    const env = { PERSON_STORE: testPersonStores(), AI_DAILY_CAP: '1' };
+    expect((await handleAiReadNotes(makeCtx({ env }))).status).toBe(200);
+    globalThis.fetch = providerSays({ texts: [] });
+    const res = await handleAiReadNotes(makeCtx({ env, owner: 'someone-else' }));
+    expect(res.status).toBe(429);
+    expect(await res.json()).toEqual({ error: 'ai_quota' });
+    expect(globalThis.fetch).not.toHaveBeenCalled();
+  });
+
+  it('never counts a caller the rate limiter refused against the daily cap', async () => {
+    const env = { PERSON_STORE: testPersonStores(), AI_DAILY_CAP: '1' };
+    const refused = { AI_RATE_LIMITER: { limit: async () => ({ success: false }) } };
+    expect((await handleAiReadNotes(makeCtx({ env: { ...env, ...refused } }))).status).toBe(429);
+    expect((await handleAiReadNotes(makeCtx({ env }))).status).toBe(200);
   });
 
   it('never calls the provider when the gate refuses', async () => {

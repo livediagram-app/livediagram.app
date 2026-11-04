@@ -19,6 +19,8 @@ const say = { kind: 'avatar-say', tabId: 't', id: 'a', text: 'hi', x: 0, y: 0 };
 describe('gateClientOp', () => {
   it('never relays a system op from a client, whatever the role', () => {
     expect(gateClientOp({ kind: 'share-revoked', code: 'x' }, as('edit'))).toEqual(DROP);
+    // The calls kill switch's push is the room's own: a forged one would end everyone's call.
+    expect(gateClientOp({ kind: 'calls-mode', mode: 'off' }, as('edit'))).toEqual(DROP);
   });
 
   it('relays presence from anyone, mutations from an editor only', () => {
@@ -40,6 +42,24 @@ describe('gateClientOp', () => {
 
   it('drops a malformed speech bubble from anyone', () => {
     expect(gateClientOp({ ...say, text: '' }, as('edit'))).toEqual(DROP);
+  });
+
+  // docs/specs/012-collaboration/proximity-audio.md "Share roles": a Viewer listens.
+  it('relays a talking level and a microphone locator from a speaker only, and only well formed', () => {
+    const voice = { kind: 'avatar-voice', tabId: 't', level: 2 };
+    const track = {
+      kind: 'call-track',
+      tabId: 't',
+      track: { sessionId: 's', trackName: 'mic', token: 'k' },
+    };
+    for (const op of [voice, track]) {
+      expect(gateClientOp(op, as('view'))).toEqual(DROP);
+      expect(gateClientOp(op, as('participate'))).toEqual(relay(true));
+      expect(gateClientOp(op, as('edit'))).toEqual(relay(true));
+    }
+    expect(gateClientOp({ ...track, track: null }, as('participate'))).toEqual(relay(true));
+    expect(gateClientOp({ ...voice, level: 7 }, as('edit'))).toEqual(DROP);
+    expect(gateClientOp({ ...track, track: { sessionId: 's' } }, as('edit'))).toEqual(DROP);
   });
 
   it("routes a participant's element op through the content rule, and relays its own answers", () => {

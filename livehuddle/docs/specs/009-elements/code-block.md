@@ -1,5 +1,7 @@
 # Code block
 
+> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/code-block.md) is the one to change. A diagram tool: part 3 takes it out of the palette; deleting its code is its own card. Until then this describes code livehuddle still carries; build nothing new on it.
+
 A monospace, syntax-highlighted code snippet element in the palette's **Components** category ([Palette top-level categories and bands](../010-palette/palette-top-level-categories.md)). The audience is technical (Technology icons, architecture/sequence/class/state templates, the MCP server, Mermaid import); without it, people fake snippets with text elements.
 
 ## Model: a data shape, not a new element kind

@@ -1312,11 +1312,13 @@ Decisions from the operator:
   every batch failed is a failure.
 
 - **When the free budget is spent, this device reads instead.** A server
-  reader whose provider refuses for quota (`ai_quota`, a 429), for every
-  batch or for some, hands the notes it did not read to the in-browser
-  reader, automatically, and the review says so: "Free monthly budget
-  reached. Reading on this device instead." Whose budget it was (the
-  deployment's key, or the author's free share) is deliberately not said. The
+  reader that refuses for quota (`ai_quota`, a 429: the provider's key is out
+  of quota, or the deployment's [daily cap](note-reader.md#security) is
+  reached), for every batch or for some, hands the notes it did not read to
+  the in-browser reader, automatically, and the review says so: "AI is resting
+  for today. Reading on this device instead." Whose budget it was (the
+  deployment's key, its daily cap, or the author's free share) is
+  deliberately not said. The
   words the server did read stay; only the unread crops are read here, and the
   progress bar carries on from where the server stopped. If the in-browser
   reader cannot start either, that is told the way it always is ("The reading

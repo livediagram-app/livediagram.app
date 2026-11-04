@@ -92,6 +92,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   setViewportOffset,
   spawnAtRef,
   onPresence,
+  peers,
   onWalkIntoPortal,
   onWalkIntoChair,
   onWalkIntoReactionPad,
@@ -123,6 +124,10 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // Publishes the local character to the room so peers can see it, and
   // `null` on exit so they drop it. Throttling lives in the broadcaster.
   onPresence?: (snapshot: AvatarSnapshot | null) => void;
+  // How many other people are in the room (the roster's size, yourself not counted), for the standing heartbeat:
+  // none means nobody to tell, so it rests (docs/specs/008-canvas/avatar-mode.md "Realtime"). Unset where the
+  // editor does not know, which keeps the plain heartbeat.
+  peers?: number;
   // Portal (docs/specs/009-elements/portal-element.md): the character walked onto a portal element. Fired once on
   // ARRIVAL, not every frame it stands there, and never for the portal it just
   // came out of.
@@ -688,7 +693,14 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   // A slow republish (every few seconds, only while idle) fixes that for the
   // price of one packet per peer per interval, well under the ~30 Hz the walk
   // itself costs.
-  const heartbeat = useEffectEvent(() => {
+  //
+  // Only to someone who can see it (docs/specs/008-canvas/avatar-mode.md "Realtime"): each beat wakes the room's
+  // Durable Object, so it rests while nobody else is in the room or the tab is hidden, and one beat goes out at
+  // once when someone joins or the tab comes back, so a newcomer still sees a character standing still.
+  // `evenHidden`: a join is told from a hidden tab too, since nothing else would show them the character.
+  const heartbeat = useEffectEvent((evenHidden = false) => {
+    if (peers === 0) return;
+    if (!evenHidden && document.visibilityState === 'hidden') return;
     const at = posRef.current;
     // Only while genuinely idle: a walk publishes at its own rate, and a
     // reaction / jump is a performance the peer is already following.
@@ -697,9 +709,22 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
   });
   useEffect(() => {
     if (!active) return;
-    const beat = window.setInterval(heartbeat, AVATAR_HEARTBEAT_MS);
-    return () => window.clearInterval(beat);
+    const beat = window.setInterval(() => heartbeat(), AVATAR_HEARTBEAT_MS);
+    const onVisibility = () => heartbeat();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      window.clearInterval(beat);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
   }, [active]);
+  // Someone joined: one beat now rather than at the next tick, which a hidden tab never sends. Kept current while
+  // the mode is off too, so entering it is not mistaken for a join (entry publishes its own standing snapshot).
+  const peersBeforeRef = useRef(peers);
+  useEffect(() => {
+    const before = peersBeforeRef.current;
+    peersBeforeRef.current = peers;
+    if (active && peers !== undefined && peers > (before ?? 0)) heartbeat(true);
+  }, [active, peers]);
 
   // Portals (docs/specs/009-elements/portal-element.md): walking a character ONTO a portal travels through it. Fired
   // from an effect on ARRIVAL (the element under the feet changed) rather than

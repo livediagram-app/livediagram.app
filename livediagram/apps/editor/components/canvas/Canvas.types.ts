@@ -272,6 +272,9 @@ export type CanvasProps = {
   // Publishes the local character to the room (null when leaving the mode).
   // Optional: a private, un-shared document has no room to publish to.
   onAvatarPresence?: (avatar: import('@livediagram/api-schema').AvatarPresence | null) => void;
+  // How many other people are in the room (the roster, yourself not counted): the standing heartbeat rests
+  // while it is 0 (docs/specs/008-canvas/avatar-mode.md "Realtime"). Unset keeps the plain heartbeat.
+  avatarPeers?: number;
   // Shove a peer's character (docs/specs/008-canvas/avatar-mode.md): sent when our character finishes
   // walking up to the one we clicked. Optional — no room, no push.
   onAvatarPush?: (targetId: string, dx: number, dy: number) => void;

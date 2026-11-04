@@ -22,6 +22,9 @@ import {
   type NewShapeLibrary,
 } from './shape-library-store';
 
+// The daily cap's one storage key (spendAiBudget).
+const AI_BUDGET_KEY = 'ai-budget';
+
 export class PersonStore extends DurableObject<Env> {
   private ready = false;
 
@@ -94,6 +97,17 @@ export class PersonStore extends DurableObject<Env> {
     if (records.length === 0) return { moved: 0, renamed: 0 };
     const sql = this.writable();
     return this.ctx.storage.transactionSync(() => importLibraries(sql, records));
+  }
+
+  // The deployment's daily cap on reader requests (src/ai-daily-cap.ts): only the one instance named
+  // `~ai-daily-budget` is ever asked, and it keeps nothing but this key. Counts one request against `day` and
+  // answers true, or answers false once `cap` requests have been counted that day. A new day starts from zero.
+  async spendAiBudget(day: string, cap: number): Promise<boolean> {
+    const at = await this.ctx.storage.get<{ day: string; count: number }>(AI_BUDGET_KEY);
+    const count = at?.day === day ? at.count : 0;
+    if (count >= cap) return false;
+    await this.ctx.storage.put(AI_BUDGET_KEY, { day, count: count + 1 });
+    return true;
   }
 
   // The person is gone (their account closed, or the guest they were signed in to an account): everything here

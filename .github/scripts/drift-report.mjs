@@ -1,7 +1,8 @@
 // The drift report (docs/ci.md "Drift report"): how far livehuddle's copy of livediagram has moved from it.
 //
-// livehuddle was forked in-tree from livediagram (livehuddle/.forked-from) and both still carry Workshop
-// mode. This compares the two product folders file by file, with the product names ignored (livediagram and
+// livehuddle was forked in-tree from livediagram (livehuddle/.forked-from). Both carry the meeting kit (Avatar
+// mode, the Spaces, the Timer, the quick vote, Bring Focus); the rest of Workshop mode leaves livehuddle with Work
+// Tracker #423, so its files move to "only in livediagram" as that card's parts land. This compares the two product folders file by file, with the product names ignored (livediagram and
 // livehuddle, in any case, in paths and in contents, read as the same word), and counts the files that are
 // identical, changed, or in one product only, per app and package, in the shape of docs/structure.md's
 // liveplanner table. The owner reads it to see the copies diverge and pick the next extraction to

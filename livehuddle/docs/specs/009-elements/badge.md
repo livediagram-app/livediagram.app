@@ -1,5 +1,7 @@
 # The badge
 
+> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/009-elements/badge.md) is the one to change. A diagram tool: part 3 takes it out of the palette; deleting its code is its own card. Until then this describes code livehuddle still carries; build nothing new on it.
+
 ## What
 
 A **Badge**: a small pill of text ("Beta", "v2.1", "PII", "3×") that either stands alone or **attaches** to a point

@@ -1,5 +1,7 @@
 # Quiz and game templates
 
+> **Leaving livehuddle** (Work Tracker #423): not part of livehuddle's meeting product ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md)). livediagram keeps it, and [its spec there](../../../../livediagram/docs/specs/012-collaboration/quiz-and-game-templates.md) is the one to change. Part 3 takes it out of the palette, the templates and help; part 4 deletes its code. Until then this describes code livehuddle still carries; build nothing new on it.
+
 Five session templates for the lighter end of running a room: a pub quiz, icebreakers and three party games.
 They open in Workshop ([Workshop mode](workshop-mode.md#templates)) and live in their own catalogue
 category, **Quizzes & Games** ([Template categories](../008-canvas/canvas-and-palette.md#template-categories)).
@@ -20,7 +22,7 @@ Workshops beside the retros is hard to find. They get a category of their own.
 - Primary home of the five templates below (Doodle Warm-Up, a drawn icebreaker game, left with step 5.4 of the
   [Build plan](../005-project-roadmap/build-plan.md)).
   **Pub Quiz** is cross-listed in **Teaching & Learning**: a class quiz is the same board.
-- In Start a Space ([Templates by mode](../007-editor/templates-by-mode.md#workshop-templates)) the five are its
+- In Start a Space ([Templates by mode](../007-editor/templates-by-mode.md#the-catalogue)) the five are its
   **Quizzes & Games** group, the catalogue category, as every start's groups are.
 - **Pub Quiz** joins Workshop's Popular, after Crazy 8s.
 

@@ -105,6 +105,7 @@ export function useCanvasAvatar({
     setViewportOffset,
     spawnAtRef: avatarSpawnRef,
     onPresence: props.onAvatarPresence,
+    peers: props.avatarPeers,
     // Walking the character into a portal travels through it (docs/specs/009-elements/portal-element.md) — the same
     // action the portal's own click fires.
     onWalkIntoPortal: (element) => enterPortalRef.current(element),

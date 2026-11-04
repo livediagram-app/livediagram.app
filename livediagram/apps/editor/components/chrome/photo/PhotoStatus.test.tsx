@@ -33,7 +33,7 @@ describe('the budget note', () => {
   it('shows when the reader failed over', () => {
     render(<PhotoStatus {...base} reading={false} readerFallback="budget" />);
     expect(screen.getByTestId('photo-reader-fallback').textContent).toMatch(
-      /free monthly budget reached\. reading on this device instead/i,
+      /ai is resting for today\. reading on this device instead/i,
     );
   });
 

@@ -55,6 +55,8 @@ import {
 import { followerIdsOf, followTargetOf } from '@liveworkspace/api-kit/room-follows';
 import { opForScope, scopedTabOp } from '../room-scope';
 import { gateClientOp } from '../room-op-gate';
+import { callsMode } from '../calls/calls-mode';
+import { CallsModeWatch } from '../calls/calls-mode-watch';
 import { ROOM_ELEMENT_RULES } from '../room-element-rules';
 import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
 import { answerInternal, type InternalRoom } from '../room-internal';
@@ -108,7 +110,11 @@ import {
   type DocumentOutline,
 } from './document-content';
 import { DOCUMENT_OUTBOX, drainOutbox } from './document-outbox';
-import { PresenceRelay, type RelaySession } from '@liveworkspace/api-kit/room-presence-relay';
+import {
+  PresenceRelay,
+  RELAYED_SAMPLE_KINDS,
+  type RelaySession,
+} from '@liveworkspace/api-kit/room-presence-relay';
 import { exportDocumentFile, importDocumentFile, type DocumentFileImport } from './document-file';
 import { importMigratedDocument } from './document-migration';
 import type { MigrationDoorAnswer, MigrationRoomPayload } from '@liveworkspace/migration';
@@ -204,6 +210,12 @@ export { FLUSH_IDLE_MS, FLUSH_MIN_GAP_MS } from '@liveworkspace/index-app';
 // empty clean-up, from the summary's `hasContent` (docs/specs/013-workspace/empty-document-cleanup.md).
 export const MAINTENANCE_EVERY_MS = 24 * 60 * 60 * 1000;
 const MAINTENANCE_KEY = 'maintenance-at';
+
+// The sample streams this room relays and coalesces (docs/specs/015-api/api.md "A busy room bounds its presence
+// fan-out"): the walking characters and cursors, plus proximity audio's talking level
+// (docs/specs/012-collaboration/proximity-audio.md "The wire"), so a full Space talking adds bytes to frames the
+// walkers already cause, never frames.
+const ROOM_SAMPLE_KINDS: ReadonlySet<string> = new Set([...RELAYED_SAMPLE_KINDS, 'avatar-voice']);
 
 export class DocumentRoom extends DurableObject<Env> {
   // The object's state under the name the room's code has always used for it (`this.ctx` is the same).
@@ -1173,6 +1185,13 @@ export class DocumentRoom extends DurableObject<Env> {
   // made that a structured-clone read per peer per packet. Lost with the
   // object when the room hibernates, and read again on the next frame.
   private readonly scopes = new WeakMap<WebSocket, string | null>();
+  // The calls kill switch, read while a call is under way here (docs/specs/016-platform/calls-kill-switch.md "The
+  // room tells its clients"): every socket hears when it changes.
+  private readonly callsWatch = new CallsModeWatch({
+    read: () => callsMode(this.roomEnv ?? {}),
+    tell: (mode) =>
+      this.broadcast({ kind: 'op', from: 'system', op: { kind: 'calls-mode', mode } }),
+  });
   // The sample streams, walking characters and cursors (docs/specs/015-api/api.md "A busy room bounds its
   // presence fan-out"): sent to a character's tab only, and coalesced per socket in a busy room.
   private readonly presenceRelay = new PresenceRelay<WebSocket>({
@@ -1187,6 +1206,7 @@ export class DocumentRoom extends DurableObject<Env> {
       }
     },
     schedule: (fn, ms) => void setTimeout(fn, ms),
+    sampleKinds: ROOM_SAMPLE_KINDS,
   });
   private scopeOf(ws: WebSocket): string | null {
     if (this.scopes.has(ws)) return this.scopes.get(ws) ?? null;
@@ -1562,6 +1582,7 @@ export class DocumentRoom extends DurableObject<Env> {
           }
           return;
         }
+        if (opKind === 'avatar-voice' || opKind === 'call-track') void this.callsWatch.note();
         if (this.presenceRelay.relay(ws, sender.id, msg.op)) return;
         this.broadcast({ kind: 'op', from: sender.id, op: msg.op }, ws);
       } else {

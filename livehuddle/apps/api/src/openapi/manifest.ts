@@ -822,6 +822,44 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     ],
     statuses: [101, 403, 404],
   },
+  {
+    method: 'POST',
+    path: '/documents/{id}/calls/session',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      'Start a proximity-audio Realtime session for this browser (docs/specs/012-collaboration/proximity-audio.md): its session id, a private session token, short-lived TURN servers and whether it may speak. 503 `calls_off` while calls are off.',
+    auth: 'guest-or-clerk',
+    statuses: [200, 400, 403, 404, 410, 502, 503],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/calls/tracks',
+    segment: 'documents',
+    tag: 'Documents',
+    summary:
+      "Publish this browser's microphone (Editor or Participant) or subscribe to speakers' microphones by their locators, through the api's Realtime app.",
+    auth: 'guest-or-clerk',
+    statuses: [200, 400, 403, 404, 410, 502, 503],
+  },
+  {
+    method: 'PUT',
+    path: '/documents/{id}/calls/renegotiate',
+    segment: 'documents',
+    tag: 'Documents',
+    summary: "Send the browser's answer to an offer the Realtime SFU made on a subscribe.",
+    auth: 'guest-or-clerk',
+    statuses: [200, 400, 403, 404, 410, 502, 503],
+  },
+  {
+    method: 'PUT',
+    path: '/documents/{id}/calls/close',
+    segment: 'documents',
+    tag: 'Documents',
+    summary: "Close this session's subscriptions or its microphone, by mid.",
+    auth: 'guest-or-clerk',
+    statuses: [200, 400, 403, 404, 410, 502, 503],
+  },
   // ---- Folders ----
   {
     method: 'GET',

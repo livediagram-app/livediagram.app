@@ -44,6 +44,10 @@ export type PresenceRelayHost<S> = {
   send: (socket: S, frame: string) => void;
   // Run `fn` after `ms` (the room's setTimeout).
   schedule: (fn: () => void, ms: number) => void;
+  // The op kinds relayed as samples, when a product has more than the walking pair (livehuddle's `avatar-voice`,
+  // its proximity audio's talking level): each goes to its `tabId`'s sockets only and is coalesced like the rest.
+  // Unset, RELAYED_SAMPLE_KINDS.
+  sampleKinds?: ReadonlySet<string>;
 };
 
 type AvatarOpShape = { kind?: unknown; tabId?: unknown; avatar?: unknown };
@@ -75,9 +79,11 @@ export class PresenceRelay<S extends object> {
   >();
 
   private readonly host: PresenceRelayHost<S>;
+  private readonly sampleKinds: ReadonlySet<string>;
 
   constructor(host: PresenceRelayHost<S>) {
     this.host = host;
+    this.sampleKinds = host.sampleKinds ?? RELAYED_SAMPLE_KINDS;
   }
 
   private sessionOf(socket: S): RelaySession | null {
@@ -94,22 +100,24 @@ export class PresenceRelay<S extends object> {
 
   /**
    * Relay one sample op from `sender` (presence id `from`) to everyone else. Returns false, sending nothing, for a
-   * kind it does not relay (RELAYED_SAMPLE_KINDS), which the room then broadcasts as before.
+   * kind it does not relay (the host's `sampleKinds`), which the room then broadcasts as before.
    */
   relay(sender: S, from: string, op: unknown): boolean {
     const kind = (op as AvatarOpShape | null)?.kind;
-    if (typeof kind !== 'string' || !RELAYED_SAMPLE_KINDS.has(kind)) return false;
+    if (typeof kind !== 'string' || !this.sampleKinds.has(kind)) return false;
     const payload: RelayedOp = { kind: 'op', from, op };
     const serialized = JSON.stringify(payload);
     const avatar = kind === 'avatar' ? (op as AvatarOpShape) : null;
     if (avatar) this.remember(from, avatar, payload, serialized);
+    // Any other sample kind but the cursor is a tab's alone, the way a standing character is.
+    const scoped = avatar ?? (kind === 'cursor' ? null : (op as AvatarOpShape));
     const sockets = this.host.sockets();
     const batching = presenceBatches(sockets.length);
     const key = `${kind}:${from}`;
     for (const socket of sockets) {
       if (socket === sender) continue;
       const session = this.sessionOf(socket);
-      if (avatar && !avatarReaches(avatar, session)) continue;
+      if (scoped && !avatarReaches(scoped, session)) continue;
       const frame = this.host.frameFor(socket, payload, serialized);
       if (frame === null) continue;
       if (batching && session?.batches) this.hold(socket, key, frame, sockets.length);
