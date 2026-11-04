@@ -240,7 +240,9 @@ export async function checkCommunityPost(check: CommunityCheck): Promise<Communi
   const { env, db, service, documentId, meta, now } = check;
   const post = await readCommunityPost(db);
   if (!post) return null;
-  if (!communityServiceConfigured(env)) return post;
+  // Nothing to ask without the service, but the check still counts as made: the room's next one is due a full
+  // COMMUNITY_CHECK_MS on, never at the stale `checkedAt`, which would put its alarm in the past on every ring.
+  if (!communityServiceConfigured(env)) return { ...post, checkedAt: now };
   const index = meta ? check.indexAs(post.authorId, meta.teamId) : null;
   const state = await communityStateOf(index, documentId, post, meta);
   if (state !== post.sentState) {
