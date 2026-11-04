@@ -1,15 +1,23 @@
-// A runtime colour under white text (avatar initials, cursor and presence labels, a participant's or
-// team's colour) in dark mode (docs/specs/004-interface-design/color-scheme.md in each product, Dark palette
-// rules). White falls below AA on every participant colour, so dark mode paints a deeper shade of the same
-// hue and keeps the white text. Light mode keeps the colour exactly. Each product binds it once to its
-// model package's colour maths (its identity-fill.ts).
+// A runtime colour under text (avatar initials, cursor and presence labels, a participant's or team's colour), in
+// both appearances (docs/specs/004-interface-design/color-scheme.md in each product, Dark palette rules). Light mode
+// keeps the colour exactly; dark mode paints a deeper shade of the same hue. On each, the text is white where white
+// reaches AA, and otherwise the dark ink: white falls below AA on every participant colour as it is, so light mode's
+// initials are dark, while every deep shade keeps white. Each product binds it once to its model package's colour
+// maths (its identity-fill.ts).
 import type { CSSProperties } from 'react';
 import { presenceColour } from '@liveworkspace/settings/presence';
 
 const AA = 4.5;
 const SHADE_STEP = 0.05;
 
-export const IDENTITY_FILL = 'bg-(--identity) dark:bg-(--identity-deep)';
+// The dark ink: slate-950, which reaches AA on every participant colour (4.5:1 on indigo, the darkest).
+export const IDENTITY_DARK_INK = '#020617';
+const WHITE = '#ffffff';
+
+// The fill and its ink in each appearance. The ink is important, so it wins over a caller's own `text-white`, and
+// falls back to white where a caller set the fill's custom properties without the inks.
+export const IDENTITY_FILL =
+  'bg-(--identity) text-[color:var(--identity-ink,#fff)]! dark:bg-(--identity-deep) dark:text-[color:var(--identity-deep-ink,#fff)]!';
 
 export function createIdentityFill({
   shade,
@@ -35,10 +43,22 @@ export function createIdentityFill({
     return '#000000';
   }
 
-  /** Paint an element's background from both shades; the element carries IDENTITY_FILL. */
-  function identityVars(color: string): CSSProperties {
-    return { '--identity': color, '--identity-deep': identityDeep(color) } as CSSProperties;
+  /** The text on a fill: white where it reaches AA, else the dark ink. White for a colour it cannot read. */
+  function identityInk(fill: string): string {
+    if (!/^#[0-9a-f]{6}$/i.test(fill)) return WHITE;
+    return contrastRatio(WHITE, fill) >= AA ? WHITE : IDENTITY_DARK_INK;
   }
 
-  return { identityDeep, identityVars };
+  /** Paint an element's background and text from both shades; the element carries IDENTITY_FILL. */
+  function identityVars(color: string): CSSProperties {
+    const deep = identityDeep(color);
+    return {
+      '--identity': color,
+      '--identity-ink': identityInk(color),
+      '--identity-deep': deep,
+      '--identity-deep-ink': identityInk(deep),
+    } as CSSProperties;
+  }
+
+  return { identityDeep, identityInk, identityVars };
 }

@@ -32,11 +32,16 @@ describe('identityDeep', () => {
 });
 
 describe('identityVars + IDENTITY_FILL', () => {
-  it('carry both shades as custom properties the fill class reads', () => {
+  it('carry both shades and their inks as custom properties the fill class reads', () => {
+    // White fails AA on lime as it is, so light mode's initials take the dark ink (Work Tracker #441).
     expect(identityVars('#84cc16')).toEqual({
       '--identity': '#84cc16',
+      '--identity-ink': '#020617',
       '--identity-deep': '#4d7c0f',
+      '--identity-deep-ink': '#ffffff',
     });
-    expect(IDENTITY_FILL).toBe('bg-(--identity) dark:bg-(--identity-deep)');
+    expect(IDENTITY_FILL).toBe(
+      'bg-(--identity) text-[color:var(--identity-ink,#fff)]! dark:bg-(--identity-deep) dark:text-[color:var(--identity-deep-ink,#fff)]!',
+    );
   });
 });
