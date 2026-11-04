@@ -3,7 +3,7 @@
 liveworkspace.app is one static website. Every page is in it: the front door that says what
 liveworkspace is and sends people on to the app that fits their work, the public telemetry
 dashboard, and the sign-in, registration and consent pages every app sends people to. The apps
-(livediagram.app, liveplanner.app, livedocuments.app, livedesign.app) each keep their own marketing site for the
+(livediagram.app, liveplanner.app, livedocuments.app, livedesign.app, livehuddle.app) each keep their own marketing site for the
 detail.
 
 ```
@@ -147,7 +147,12 @@ ambient motion (the current along the lines, drifting cursors, the cards settlin
 One privacy policy and one set of terms for liveworkspace and every app in it, linked from the
 footer. They were built from the apps' own policies, which said the same things app by app; a
 feature only some apps have (livediagram's sticky-note reader, liveplanner's live sessions) says which;
-Google Drive sync and Offline Mode are every app's. Every app is MIT-licensed, and the terms say so app by app. Both share
+Google Drive sync and Offline Mode are every app's. Every app is MIT-licensed, and the terms say so app by app. Wherever
+either page names all the apps (each page's description, the terms' opening and The software), it names every listed
+app, five today (livediagram, liveplanner, livedocuments, livedesign and livehuddle), and so do the site's own
+description (`app/layout.tsx`) and its install manifest; `app/app-lists.test.ts` fails when a listed app is missing from
+any of them. Each listed app has its own part under App by app, if only to say it does nothing beyond the rest. A
+sentence about a feature only some apps have (Image search: every app but liveplanner) names just those. Both share
 `components/LegalPage.tsx`, and their date and contact form are in `lib/legal.ts`. Change them when what an app stores or who it uses changes.
 The privacy policy's Security section and the terms' Acceptable use send a vulnerability to the private advisory
 form (`SECURITY_ADVISORY_URL`), never the contact form
@@ -167,7 +172,8 @@ Each app keeps its own help centre; a feature that is the platform's, the same i
 instead. That is Google Drive sync (drive.md): `/help/google-drive`, one page in the site's own chrome, listed
 in the sitemap. Settings › Account › Cloud Sync links to it, and each app's help has a short **Google Drive**
 article under Account and Data (`/help/account-and-data/google-drive/`) that points here, so the apps' search,
-links and old addresses still find it. Change it when drive.md changes what a person sees.
+links and old addresses still find it. It names every app's file extension (drive.md "The file"), which
+`app/app-lists.test.ts` checks against the listed apps. Change it when drive.md changes what a person sees.
 
 ### Licences (`/licences`)
 

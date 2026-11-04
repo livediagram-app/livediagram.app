@@ -78,6 +78,12 @@ describe('DeleteAccountDialog', () => {
     expect(screen.getByText(/everything you own in every liveworkspace app/)).toBeTruthy();
     expect(screen.getByText(/not just livediagram/)).toBeTruthy();
     expect(screen.getByText(/Canvases in This Browser stay on this device/)).toBeTruthy();
+    // Every app's work goes, so every app is named: the five that share the account today.
+    expect(
+      screen.getByText(
+        /every canvas, plan, document, design and space in livediagram, liveplanner, livedocuments, livedesign and livehuddle/,
+      ),
+    ).toBeTruthy();
   });
 
   it('asks for a code only once the email matches, whatever its case', async () => {
