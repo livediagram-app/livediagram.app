@@ -6,6 +6,7 @@ import type { AvatarOp, AvatarPushOp } from '@liveworkspace/api-schema/avatar';
 import type { AvatarSayOp } from '@liveworkspace/api-schema/avatar-say';
 import type { AvatarVoiceOp, CallsCheckOp, CallTrackOp } from './call-voice';
 import type { AvatarHandOp, AvatarLetSpeakOp } from './call-hand';
+import type { CallSessionOp, CallStopShareOp } from './call-control';
 import type { CallsModeOp } from './calls-mode';
 import type { PresenceBatchMessage } from '@liveworkspace/api-schema/presence-fanout';
 import type { LivePoll } from './poll';
@@ -70,6 +71,11 @@ export const PRESENCE_OP_KINDS = [
   // a Participant only; a let-speak is ADDRESSED to the hand's owner, as a shove is.
   'avatar-hand',
   'avatar-let-speak',
+  // A call proving its Realtime session to the room (proximity-audio.md "The wire"), so the mint route can ask the room
+  // who may hear whom: consumed by the room, never relayed, from any level. And an Editor asking someone to stop their
+  // screen share (video-and-screen-bubbles.md "Share roles"): ADDRESSED to the sharer, as a let-speak is.
+  'call-session',
+  'call-stop-share',
   // A reaction burst (docs/specs/009-elements/reaction-pad.md) is pure theatre: nothing on the server,
   // nothing in the document, and nothing worth replaying to somebody who
   // arrives after it finished.
@@ -517,6 +523,8 @@ export type RoomOp =
   // Raise hand and Let Speak (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand").
   | AvatarHandOp
   | AvatarLetSpeakOp
+  | CallSessionOp
+  | CallStopShareOp
   // The calls kill switch changed (docs/specs/016-platform/calls-kill-switch.md): system only, from the room.
   | CallsModeOp
   // Somebody set off a REACTION PAD (docs/specs/009-elements/reaction-pad.md). Ephemeral exactly like cursor

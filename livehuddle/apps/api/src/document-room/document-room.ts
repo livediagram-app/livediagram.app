@@ -24,6 +24,7 @@ import {
   DOCUMENT_TRASHED_CLOSE,
   isRoomOpRef,
   parseBuildId,
+  parseCallSession,
   ROOM_FULL_CLOSE,
   ROOM_FULL_REASON,
   ROOM_PING,
@@ -58,6 +59,13 @@ import { opForScope, scopedTabOp } from '../room-scope';
 import { gateClientOp } from '../room-op-gate';
 import { callsMode } from '../calls/calls-mode';
 import { CallsModeWatch } from '../calls/calls-mode-watch';
+import { openSessionToken } from '../calls/call-tokens';
+import {
+  RoomCalls,
+  type CallSessionHolder,
+  type HearingAnswer,
+  type HearingAsk,
+} from '../calls/room-calls';
 import { ROOM_ELEMENT_RULES } from '../room-element-rules';
 import { createRoomElementGate } from '@liveworkspace/api-kit/room-element-ops';
 import { answerInternal, type InternalRoom } from '../room-internal';
@@ -1193,6 +1201,13 @@ export class DocumentRoom extends DurableObject<Env> {
     tell: (mode) =>
       this.broadcast({ kind: 'op', from: 'system', op: { kind: 'calls-mode', mode } }),
   });
+  // Who may hear whom, and who may let a hand speak, as the server sees it (docs/specs/012-collaboration/
+  // meeting-rooms-and-stage.md "Trust"; calls/room-calls.ts): what the mint route asks before a subscription.
+  private readonly calls = new RoomCalls({
+    now: () => Date.now(),
+    sessions: () => this.callSessions(),
+    readTab: (tabId, knownRev) => this.storedTabRev(tabId, knownRev),
+  });
   // The sample streams, walking characters and cursors (docs/specs/015-api/api.md "A busy room bounds its
   // presence fan-out"): sent to a character's tab only, and coalesced per socket in a busy room.
   private readonly presenceRelay = new PresenceRelay<WebSocket>({
@@ -1578,6 +1593,26 @@ export class DocumentRoom extends DurableObject<Env> {
         }
         // A let-speak (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand") is addressed the same
         // way: only the hand's owner acts on it, and it cannot recognise its own id in a broadcast.
+        // The room checks a let-speak's sender may let anyone speak (#495), and keeps what the hearing check reads.
+        if (opKind === 'avatar-let-speak' && !this.calls.letSpeak(sender.id, msg.op)) {
+          console.warn('[calls] let-speak refused');
+          return;
+        }
+        if (opKind === 'avatar') this.calls.noteAvatar(sender.id, msg.op);
+        if (opKind === 'avatar-hand') this.calls.noteHand(sender.id, msg.op);
+        if (opKind === 'call-track') this.calls.noteTrack(sender.id, msg.op);
+        // A call proves its session (proximity-audio.md "The wire"): checked, kept, never relayed.
+        if (opKind === 'call-session') {
+          void this.noteCallSession(ws, msg.op);
+          return;
+        }
+        // An Editor stopping someone's share (#469; the gate let only an Editor's through): addressed like a shove.
+        if (opKind === 'call-stop-share') {
+          const targetId = (msg.op as { targetId: string }).targetId;
+          this.calls.stopShare(targetId);
+          this.sendToPresence(targetId, { kind: 'op', from: sender.id, op: msg.op }, ws);
+          return;
+        }
         if (opKind === 'avatar-push' || opKind === 'avatar-let-speak') {
           const targetId = (msg.op as { targetId?: unknown }).targetId;
           if (typeof targetId === 'string') {
@@ -1815,6 +1850,7 @@ export class DocumentRoom extends DurableObject<Env> {
     const presenceId = leaving?.presence?.id;
     this.presenceRelay.forget(ws, presenceId);
     if (presenceId) {
+      this.calls.forget(presenceId);
       this.baton.startGrace(presenceId);
       void this.selections.drop(presenceId).catch(() => {});
     }
@@ -1822,6 +1858,59 @@ export class DocumentRoom extends DurableObject<Env> {
     // runtime prunes it from getWebSockets(), it could otherwise still
     // appear in the roster of this very broadcast.
     this.broadcastPresence(ws);
+  }
+
+  // The mint route's question (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Trust", #483): may this call
+  // session receive these tracks now? One answer per track.
+  async callsHearing(
+    documentId: string,
+    subscriberSession: string,
+    asks: HearingAsk[],
+  ): Promise<HearingAnswer[]> {
+    this.bindDocument(documentId);
+    return this.calls.hearing(subscriberSession, asks);
+  }
+
+  // A call's `call-session` op: kept on the connection once its token proves the session is this caller's here.
+  private async noteCallSession(ws: WebSocket, op: unknown): Promise<void> {
+    const parsed = parseCallSession(op);
+    const secret = this.roomEnv?.REALTIME_APP_TOKEN;
+    const documentId = this.readSession(ws)?.documentId ?? this.documentId;
+    if (!parsed || !secret || !documentId) return;
+    const role = await openSessionToken(secret, documentId, parsed.sessionId, parsed.sessionToken);
+    if (!role) {
+      console.warn('[calls] token', 'room');
+      return;
+    }
+    const current = this.readSession(ws);
+    if (current) ws.serializeAttachment({ ...current, callSession: parsed.sessionId });
+  }
+
+  // Every hello'd session as the calls read it. A closing socket's position went with its close (dropSession).
+  private *callSessions(): Iterable<CallSessionHolder> {
+    for (const ws of this.state.getWebSockets()) {
+      const session = this.readSession(ws);
+      const presence = session?.presence;
+      if (presence) {
+        yield { presenceId: presence.id, role: presence.role, callSession: session.callSession };
+      }
+    }
+  }
+
+  // A tab's stored revision, and its body when that moved from `knownRev`; one primary-key read either way.
+  private storedTabRev(
+    tabId: string,
+    knownRev: number | null,
+  ): { rev: number; data: string | null } | null {
+    const sql = this.state.storage.sql;
+    if (!sql || !this.hasSchema()) return null;
+    const row = sql.exec<{ rev: number }>('SELECT rev FROM tabs WHERE id = ?', tabId).toArray()[0];
+    if (!row) return null;
+    if (row.rev === knownRev) return { rev: row.rev, data: null };
+    const body = sql
+      .exec<{ data: string }>('SELECT data FROM tabs WHERE id = ?', tabId)
+      .toArray()[0];
+    return { rev: row.rev, data: body?.data ?? null };
   }
 
   // The person tags of the hello'd sessions: who is looking at the canvas now, whom a phone notification skips

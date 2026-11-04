@@ -288,6 +288,7 @@ export * from './poll';
 export * from './room-messages';
 export * from './call-voice';
 export * from './call-hand';
+export * from './call-control';
 export * from './calls-mode';
 export * from './changesets';
 export * from './telemetry-schema';

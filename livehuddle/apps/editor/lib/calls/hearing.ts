@@ -3,12 +3,13 @@
 // all read one answer. Rooms come first (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Rooms are calls"):
 // a room is one call, its walls block sound, and distance decides only in the open. A stage reaches the whole tab, and
 // its room becomes an audience that hears by distance (the same spec's "The stage").
+import { CALL_RELEASE_RADIUS_PX } from '@livehuddle/document';
 import type { CallZoning } from './zones';
 
 /** A speaker within this many canvas px of you, feet to feet, is subscribed. */
 export const HEARING_RADIUS_PX = 260;
 /** A subscribed speaker is let go only beyond this, so somebody on the edge does not flicker in and out. */
-export const RELEASE_RADIUS_PX = 300;
+export const RELEASE_RADIUS_PX = CALL_RELEASE_RADIUS_PX;
 /** Full volume within this. */
 export const FULL_VOLUME_RADIUS_PX = 90;
 /** Never hard left or right. */

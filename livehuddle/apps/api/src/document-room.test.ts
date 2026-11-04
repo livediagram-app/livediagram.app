@@ -636,7 +636,8 @@ describe('DocumentRoom op-role enforcement', () => {
   // exclusion: it is ADDRESSED rather than broadcast (see its own tests just
   // below), so "a peer received it" is not the right assertion for it.
   // A let-speak (docs/specs/012-collaboration/meeting-rooms-and-stage.md "Raise hand") is addressed too.
-  const ADDRESSED_PRESENCE_KINDS = ['avatar-push', 'avatar-let-speak'];
+  // So is an Editor's stop-share (video-and-screen-bubbles.md "Share roles"; document-room-calls.test.ts).
+  const ADDRESSED_PRESENCE_KINDS = ['avatar-push', 'avatar-let-speak', 'call-stop-share'];
   // `drag-preview` is presence an editor alone may send: a viewer's would make others' elements appear
   // to move (docs/specs/008-canvas/drag-preview.md). Its own test below pins both halves.
   const EDITOR_ONLY_PRESENCE_KINDS = ['drag-preview', 'focus-here'];
@@ -644,7 +645,8 @@ describe('DocumentRoom op-role enforcement', () => {
   // (docs/specs/012-collaboration/vote-integrity.md); its own tests below and in the live poll block pin that.
   // `follow` is the room's alone: never relayed, it tells the person followed (the "DocumentRoom follow" block).
   // `calls-check` is the room's too: never relayed, it reads the calls kill switch (document-room-fanout.test.ts).
-  const ROOM_DECIDED_PRESENCE_KINDS = ['poll-answer', 'follow', 'calls-check'];
+  // `call-session` too: the room checks and keeps it, never relays it (document-room-calls.test.ts).
+  const ROOM_DECIDED_PRESENCE_KINDS = ['poll-answer', 'follow', 'calls-check', 'call-session'];
   // A reaction is taking part (docs/specs/013-workspace/share-roles.md): a Participant's, never a Viewer's.
   // So is speaking (docs/specs/008-canvas/avatar-mode.md "Who may speak").
   const PARTICIPANT_PRESENCE_KINDS = ['reaction', 'avatar-say'];
@@ -754,9 +756,11 @@ describe('DocumentRoom op-role enforcement', () => {
     expect(opsReceived(pusher.ws)).toHaveLength(0);
   });
 
+  // The room checks the sender may let anyone speak (#495): an Editor here; a Participant off a stage is refused in
+  // document-room-calls.test.ts.
   it('delivers a let-speak only to the hand’s owner, and never a Viewer’s', () => {
     const { room } = newRoom();
-    const speaker = connect(room, 'speaker', 'participate');
+    const speaker = connect(room, 'speaker', 'edit');
     const target = connect(room, 'target', 'participate');
     const bystander = connect(room, 'bystander', 'edit');
     const viewer = connect(room, 'viewer', 'view');

@@ -400,6 +400,8 @@ export * from '@liveworkspace/avatar/pad-art';
 // Seating (docs/specs/009-elements/chair.md): the chair, desk and sofa drawings and every seat's feet point.
 export * from './seating';
 export * from './office';
+// Where calls happen on a tab (docs/specs/012-collaboration/meeting-rooms-and-stage.md): rooms, stages, who may speak.
+export * from './call-geometry';
 export * from './actor-figure';
 export * from '@liveworkspace/model-core/color-wash';
 export { labelOn } from './readable-colour';

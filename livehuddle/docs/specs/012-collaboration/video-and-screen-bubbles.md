@@ -90,6 +90,11 @@ People talking stand close, so their bubbles would cover each other. They never 
 - **No jitter when people walk past each other.** Two bubbles swap sides only once their people have crossed by 24
   canvas px, and the swap is a short slide (220 ms), never a jump. Walking side by side, the bubbles glide with the
   characters as before.
+- **A row wider than the view wraps** (#487). When a row of bubbles is wider than the visible canvas (three people
+  and a share in a 450 px window), it breaks, in its left-to-right order, into rows that each fit; each further row
+  sits 8 canvas px above the one before, and a wrapped row is kept inside the view. A person's camera and screen
+  never split. The order stays the one above, so wrapping adds no jitter; a wrapped bubble's tail is hidden, since
+  its head is under another row.
 - Under reduced motion the nudge and the swap are not animated.
 
 **Speech bubbles stay clear.** A speech bubble ([Avatar mode](../008-canvas/avatar-mode.md#speech-bubbles)) floats
@@ -119,6 +124,7 @@ From [Future work](../005-project-roadmap/future-work.md#share-roles) and [Proxi
 | Maximise and restore a bubble (your view) | Yes    | Yes         | Yes    |
 | Turn on a camera                          | Yes    | Yes         | No     |
 | Share a screen                            | Yes    | No          | No     |
+| Stop someone else's screen share          | Yes    | No          | No     |
 
 - A camera is taking part, like speaking: an Editor's or a Participant's, guests included, no sign-in.
 - Sharing a screen is an Editor's act (Future work's role table). The card asked for the bubble above the sharer in
@@ -126,6 +132,13 @@ From [Future work](../005-project-roadmap/future-work.md#share-roles) and [Proxi
 - Gated in the editor on `can.takePart` (camera) and `can.level === 'edit'` (screen), never on read-only; on the server
   by the grant's level in the mint route, and by the room, which drops a `call-track` op naming a screen from anyone
   but an Editor, and any from a Viewer.
+- **An Editor can stop someone else's share** (#469), for a share left running in a meeting. Another person's screen
+  bubble shows a **Stop Sharing** button to an Editor (top left, on hover or focus, beside the maximise mark), and the
+  maximised panel's bar shows it too. Pressing it ends the share as the sharer's own Stop does: their bubble closes
+  for everyone, their strip's Share Screen reads off, and nothing else of their call changes. Counted
+  (`StopOthersShare`). The room delivers the stop only from an Editor and the sharer's browser acts on it only from
+  someone the room stamped an Editor; until the sharer's call says its screen is off, the mint route refuses anyone a
+  new subscription to that screen.
 
 ## The kill switch
 
@@ -145,6 +158,10 @@ The `call-track` op ([Proximity audio](proximity-audio.md#the-wire)) gains two o
 microphone's: `video` (track name `cam`) and `screen` (track name `screen`), each the same shape, the same session
 and token, or `null` when off. `track` stays the microphone's, and may be `null` while a camera or screen is on (a
 blocked microphone). The op is sent whenever any of the three changes, and to new walkers as before.
+
+`call-stop-share`: `{ kind, tabId, targetId }`, an Editor's request that `targetId` stop sharing. Addressed like a
+let-speak: the room sends it to that person's connection alone, and drops it from anyone but an Editor or when it
+fails its parser.
 
 ## The mint route
 
@@ -166,10 +183,11 @@ Cloudflare bills $0.05 per GB of egress after the account's first 1,000 GB a mon
 ## Telemetry
 
 `track('Canvas', 'Used', 'CameraOn')` on turning the camera on, `track('Canvas', 'Used', 'ScreenShare')` on starting a
-share, `track('Canvas', 'Used', 'BubbleMaximise')` on maximising. Never who, never what was shown.
+share, `track('Canvas', 'Used', 'BubbleMaximise')` on maximising, `track('Canvas', 'Used', 'StopOthersShare')` on an
+Editor stopping someone else's share. Never who, never what was shown.
 
 ## Out of scope
 
-- An Editor stopping someone else's share (the role table's last row), and per-person hiding of a bubble.
+- Per-person hiding of a bubble, and an Editor turning off someone else's camera.
 - Screen share audio, a frame on the board that holds a share, recording.
 - Background blur or replacement, and choosing a camera other than the browser's default.
